@@ -31,9 +31,9 @@ namespace OpenLocoTool
 		public int @class => flags[0];
 
 		public readonly byte[] flags = new byte[4];
+		public readonly uint subclass;
 		public readonly string filename;
 		public readonly uint checksum;
-		public readonly int subclass;
 	}
 
 	public class DatDecoder
@@ -122,7 +122,7 @@ namespace OpenLocoTool
 			return null;
 		}
 
-		public static UInt32 getvalue(Span<byte> data)
+		public static UInt32 getvalue(ReadOnlySpan<byte> data)
 		{
 			UInt32 result = 0;
 			foreach (byte b in data.ToArray().Reverse())

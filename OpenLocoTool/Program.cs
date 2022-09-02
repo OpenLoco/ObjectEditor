@@ -9,7 +9,12 @@ logger.LogAdded += (s, e) => Console.WriteLine(e.Log);
 
 logger.Log(LogLevel.Info, "=== Welcome to OpenLocoTool ===");
 
-var decoder = new DatDecoder(logger);
-decoder.Decode("Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\P61XX.dat");
+const string path = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\STEAM.dat";
+
+//var decoder = new DatDecoder(logger);
+//decoder.Decode(path);
+
+var ssr = new SawyerStreamReader(logger);
+var bytes = ssr.Load(path);
 
 Console.ReadLine();

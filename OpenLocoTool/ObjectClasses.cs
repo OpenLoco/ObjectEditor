@@ -46,15 +46,15 @@
 
 		private static varinf[] sfxvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 8, string.Empty ),
-			new varinf( 0x08,-4, 1, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 8, string.Empty ),
+			new varinf(0x08,-4, 1, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] sfxdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.sounds),
 			new objdesc(desctype.END),
 		};
@@ -66,16 +66,16 @@
 
 		private static varinf[] currvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 10, string.Empty ),
-			new varinf( 0x0A, 1, 1, "zeroes" ),
-			new varinf( 0x0B, 1, 1, "shiftnum" ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 10, string.Empty ),
+			new varinf(0x0A, 1, 1, "zeroes" ),
+			new varinf(0x0B, 1, 1, "shiftnum" ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] currdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.lang, new int[]{ 1 } ),
 			new objdesc(desctype.lang, new int[]{ 2 } ),
 			new objdesc(desctype.sprites),
@@ -89,10 +89,10 @@
 
 		private static varinf[] exhfxvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 30, string.Empty ),
-			new varinf( 0x1E, 1, 1, "numsnd" ),
-			new varinf( 0x1F, 1, 9, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 30, string.Empty ),
+			new varinf(0x1E, 1, 1, "numsnd" ),
+			new varinf(0x1F, 1, 9, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static auxdesc[] exhfxaux = new auxdesc[2]
@@ -104,7 +104,7 @@
 		private static objdesc[] exhfxdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.auxdatavar, new int[]{ 0, 0, 2, 1 } ),
 			new objdesc(desctype.auxdatavar, new int[]{ 1, 0, 2, 1 } ),
 			new objdesc(desctype.useobj, new int[]{ -0x1e, (int)useobjid.ob_soundeffect, 0x01, -1 } ),
@@ -126,12 +126,12 @@
 
 		private static varinf[] watervars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02, 1, 1, "costind" ),
-			new varinf( 0x03, 1, 1, string.Empty ),
-			new varinf( 0x04,-2, 1, "costfactor" ),
-			new varinf( 0x06, 1, 8, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02, 1, 1, "costind" ),
+			new varinf(0x03, 1, 1, string.Empty ),
+			new varinf(0x04,-2, 1, "costfactor" ),
+			new varinf(0x06, 1, 8, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		// ***********************
@@ -140,18 +140,18 @@
 
 		private static varinf[] groundvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02, 1, 1, "costind" ),
-			new varinf( 0x03, 1, 5, string.Empty ),
-			new varinf( 0x08,-2, 1, "costfactor" ),
-			new varinf( 0x0A, 1, 20, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02, 1, 1, "costind" ),
+			new varinf(0x03, 1, 5, string.Empty ),
+			new varinf(0x08,-2, 1, "costfactor" ),
+			new varinf(0x0A, 1, 20, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] grounddesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.useobj, new int[]{ 0, (int)useobjid.ob_cliff, 0x04, -1 } ),
 			new objdesc(desctype.sprites),
 			new objdesc(desctype.END),
@@ -180,7 +180,7 @@
 		private static objdesc[] towndesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.strtable, new int[]{ 0, 2 + 0 * 4, 4 + 0 * 4 }),
 			new objdesc(desctype.strtable, new int[]{ 1, 2 + 1 * 4, 4 + 1 * 4 }),
 			new objdesc(desctype.strtable, new int[]{ 2, 2 + 2 * 4, 4 + 2 * 4 }),
@@ -204,27 +204,27 @@
 
 		private static varinf[] cargovars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02, 2, 1, "unitweight" ),
-			new varinf( 0x04, 1, 12, string.Empty ),
-			new varinf( 0x10, 1, 1, "id" ),
-			new varinf( 0x11, 1, 1, string.Empty ),
-			new varinf( 0x12, 1, 1, "flags", null, cargoflags ),
-			new varinf( 0x13, 1, 2, string.Empty ),
-			new varinf( 0x15, 1, 1, "peakdays" ),
-			new varinf( 0x16, 1, 1, "decay1days" ),
-			new varinf( 0x17, 2, 1, "decay1rate" ),
-			new varinf( 0x19, 2, 1, "decay2rate" ),
-			new varinf( 0x1B, 2, 1, "paymentfactor" ),
-			new varinf( 0x1D, 1, 1, "paymentind" ),
-			new varinf( 0x1E, 1, 1, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02, 2, 1, "unitweight" ),
+			new varinf(0x04, 1, 12, string.Empty ),
+			new varinf(0x10, 1, 1, "id" ),
+			new varinf(0x11, 1, 1, string.Empty ),
+			new varinf(0x12, 1, 1, "flags", null, cargoflags ),
+			new varinf(0x13, 1, 2, string.Empty ),
+			new varinf(0x15, 1, 1, "peakdays" ),
+			new varinf(0x16, 1, 1, "decay1days" ),
+			new varinf(0x17, 2, 1, "decay1rate" ),
+			new varinf(0x19, 2, 1, "decay2rate" ),
+			new varinf(0x1B, 2, 1, "paymentfactor" ),
+			new varinf(0x1D, 1, 1, "paymentind" ),
+			new varinf(0x1E, 1, 1, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] cargodesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.lang, new int[]{ 1 } ),
 			new objdesc(desctype.lang, new int[]{ 2 } ),
 			new objdesc(desctype.lang, new int[]{ 3 } ),
@@ -244,11 +244,11 @@
 
 		private static varinf[] fencevars = new varinf[]
 		{
-			new varinf( 0x00, 1, 7, string.Empty ),
-			new varinf( 0x07, 1, 1, "flags", null, fenceflags ),
-			new varinf( 0x08, 1, 1, string.Empty ),
-			new varinf( 0x09, 1, 1, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 7, string.Empty ),
+			new varinf(0x07, 1, 1, "flags", null, fenceflags ),
+			new varinf(0x08, 1, 1, string.Empty ),
+			new varinf(0x09, 1, 1, string.Empty ),
+			new varinf(-1 ),
 		};
 
 
@@ -258,20 +258,20 @@
 
 		private static varinf[] signalvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 6, string.Empty ),
-			new varinf( 0x06,-2, 1, "costfactor" ),
-			new varinf( 0x08,-2, 1, "sellcostfactor" ),
-			new varinf( 0x0A, 1, 1, "costind" ),
-			new varinf( 0x0B, 1, 15, string.Empty ),
-			new varinf( 0x1A, 2, 1, "designed" ),
-			new varinf( 0x1C, 2, 1, "obsolete" ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 6, string.Empty ),
+			new varinf(0x06,-2, 1, "costfactor" ),
+			new varinf(0x08,-2, 1, "sellcostfactor" ),
+			new varinf(0x0A, 1, 1, "costind" ),
+			new varinf(0x0B, 1, 15, string.Empty ),
+			new varinf(0x1A, 2, 1, "designed" ),
+			new varinf(0x1C, 2, 1, "obsolete" ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] signaldesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.lang, new int[]{ 1 } ),
 			new objdesc(desctype.sprites),
 			new objdesc(desctype.END),
@@ -284,12 +284,12 @@
 
 		private static varinf[] crossingvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02,-2, 1, "costfactor" ),
-			new varinf( 0x04, 1, 2, string.Empty ),
-			new varinf( 0x06, 1, 1, "costind" ),
-			new varinf( 0x07, 1, 11, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02,-2, 1, "costfactor" ),
+			new varinf(0x04, 1, 2, string.Empty ),
+			new varinf(0x06, 1, 1, "costind" ),
+			new varinf(0x07, 1, 11, string.Empty ),
+			new varinf(-1 ),
 		};
 
 
@@ -299,10 +299,10 @@
 
 		private static varinf[] lightvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02, 2, 3, "year" ),
-			new varinf( 0x08, 1, 4, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02, 2, 3, "year" ),
+			new varinf(0x08, 1, 4, string.Empty ),
+			new varinf(-1 ),
 		};
 
 
@@ -319,24 +319,24 @@
 
 		private static varinf[] bridgevars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02, 1, 1, "noroof" ),
-			new varinf( 0x03, 1, 1, string.Empty ),
-			new varinf( 0x04, 1, 1, string.Empty ),
-			new varinf( 0x05, 1, 1, string.Empty ),
-			new varinf( 0x06, 1, 1, string.Empty ),
-			new varinf( 0x07, 1, 1, string.Empty ),
-			new varinf( 0x08, 1, 1, "spanlength" ),
-			new varinf( 0x09, 1, 1, "pillarspacing" ),
-			new varinf( 0x0A, 2, 1, "maxspeed" ),
-			new varinf( 0x0C, 1, 1, "maxheight" ),
-			new varinf( 0x0D, 1, 1, "costind" ),
-			new varinf( 0x0E,-2, 1, "basecostfact" ),
-			new varinf( 0x10,-2, 1, "heightcostfact" ),
-			new varinf( 0x12,-2, 1, "sellcostfact" ),
-			new varinf( 0x14, 2, 1, "disabledtrackcfg" ),
-			new varinf( 0x16, 1,22, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02, 1, 1, "noroof" ),
+			new varinf(0x03, 1, 1, string.Empty ),
+			new varinf(0x04, 1, 1, string.Empty ),
+			new varinf(0x05, 1, 1, string.Empty ),
+			new varinf(0x06, 1, 1, string.Empty ),
+			new varinf(0x07, 1, 1, string.Empty ),
+			new varinf(0x08, 1, 1, "spanlength" ),
+			new varinf(0x09, 1, 1, "pillarspacing" ),
+			new varinf(0x0A, 2, 1, "maxspeed" ),
+			new varinf(0x0C, 1, 1, "maxheight" ),
+			new varinf(0x0D, 1, 1, "costind" ),
+			new varinf(0x0E,-2, 1, "basecostfact" ),
+			new varinf(0x10,-2, 1, "heightcostfact" ),
+			new varinf(0x12,-2, 1, "sellcostfact" ),
+			new varinf(0x14, 2, 1, "disabledtrackcfg" ),
+			new varinf(0x16, 1,22, string.Empty ),
+			new varinf(-1 ),
 		};
 
 
@@ -361,29 +361,29 @@
 
 		private static varinf[] trnstatvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 4, string.Empty ),
-			new varinf( 0x04, 2, 1, "trackpieces", null, track_pieces ),
-			new varinf( 0x06,-2, 1, "buildcostfact" ),
-			new varinf( 0x08,-2, 1, "sellcostfact" ),
-			new varinf( 0x0A, 1, 1, "costind" ),
-			new varinf( 0x0B, 1,23, string.Empty ),
-			new varinf( 0x22, 1, 1, "numcompat" ),
-			new varinf( 0x23, 1, 7, string.Empty ),
-			new varinf( 0x2a, 2, 1, "designed" ),
-			new varinf( 0x2c, 2, 1, "obsolete" ),
-			new varinf( 0x2e, 1, 128, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 4, string.Empty ),
+			new varinf(0x04, 2, 1, "trackpieces", null, track_pieces ),
+			new varinf(0x06,-2, 1, "buildcostfact" ),
+			new varinf(0x08,-2, 1, "sellcostfact" ),
+			new varinf(0x0A, 1, 1, "costind" ),
+			new varinf(0x0B, 1,23, string.Empty ),
+			new varinf(0x22, 1, 1, "numcompat" ),
+			new varinf(0x23, 1, 7, string.Empty ),
+			new varinf(0x2a, 2, 1, "designed" ),
+			new varinf(0x2c, 2, 1, "obsolete" ),
+			new varinf(0x2e, 1, 128, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static auxdesc[] trnstataux = new auxdesc[]
 		{
-			new auxdesc( string.Empty, null ),
+			new auxdesc(string.Empty, null ),
 		};
 
 		private static objdesc[] trnstatdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.auxdatavar, new int[]{ 0, 32, 1, 4 } ),
 			new objdesc(desctype.sprites),
 			new objdesc(desctype.END),
@@ -396,14 +396,14 @@
 
 		private static varinf[] trkmodvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02, 2, 1, "trackpieces", null, track_pieces ),
-			new varinf( 0x04, 1, 1, "isoverhead" ),
-			new varinf( 0x05, 1, 1, "costind" ),
-			new varinf( 0x06,-2, 1, "buildcostfact" ),
-			new varinf( 0x08,-2, 1, "sellcostfact" ),
-			new varinf( 0x0A, 1, 8, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02, 2, 1, "trackpieces", null, track_pieces ),
+			new varinf(0x04, 1, 1, "isoverhead" ),
+			new varinf(0x05, 1, 1, "costind" ),
+			new varinf(0x06,-2, 1, "buildcostfact" ),
+			new varinf(0x08,-2, 1, "sellcostfact" ),
+			new varinf(0x0A, 1, 8, string.Empty ),
+			new varinf(-1 ),
 		};
 
 
@@ -413,34 +413,34 @@
 
 		private static varinf[] trackvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02, 2, 1, "trackpieces", null, track_pieces ),
-			new varinf( 0x04, 2, 1, "stationtrackpieces", null, track_pieces ),
-			new varinf( 0x06, 1, 1, string.Empty ),
-			new varinf( 0x07, 1, 1, "numcompat" ),
-			new varinf( 0x08, 1, 1, "nummods" ),
-			new varinf( 0x09, 1, 1, "numsignals" ),
-			new varinf( 0x0A, 1, 10, string.Empty ),
-			new varinf( 0x14,-2, 1, "buildcostfact" ),
-			new varinf( 0x16,-2, 1, "sellcostfact" ),
-			new varinf( 0x18,-2, 1, "tunnelcostfact" ),
-			new varinf( 0x1A, 1, 1, "costind" ),
-			new varinf( 0x1B, 1, 1, string.Empty ),
-			new varinf( 0x1C, 2, 1, "curvespeed" ),
-			new varinf( 0x1E, 1, 6, string.Empty ),
-			new varinf( 0x24, 1, 1, "numbridges" ),
-			new varinf( 0x25, 1, 7, string.Empty ),
-			new varinf( 0x2C, 1, 1, "numstations" ),
-			new varinf( 0x2D, 1, 7, string.Empty ),
-			new varinf( 0x34, 1, 1, "displayoffset" ),
-			new varinf( 0x35, 1, 1, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02, 2, 1, "trackpieces", null, track_pieces ),
+			new varinf(0x04, 2, 1, "stationtrackpieces", null, track_pieces ),
+			new varinf(0x06, 1, 1, string.Empty ),
+			new varinf(0x07, 1, 1, "numcompat" ),
+			new varinf(0x08, 1, 1, "nummods" ),
+			new varinf(0x09, 1, 1, "numsignals" ),
+			new varinf(0x0A, 1, 10, string.Empty ),
+			new varinf(0x14,-2, 1, "buildcostfact" ),
+			new varinf(0x16,-2, 1, "sellcostfact" ),
+			new varinf(0x18,-2, 1, "tunnelcostfact" ),
+			new varinf(0x1A, 1, 1, "costind" ),
+			new varinf(0x1B, 1, 1, string.Empty ),
+			new varinf(0x1C, 2, 1, "curvespeed" ),
+			new varinf(0x1E, 1, 6, string.Empty ),
+			new varinf(0x24, 1, 1, "numbridges" ),
+			new varinf(0x25, 1, 7, string.Empty ),
+			new varinf(0x2C, 1, 1, "numstations" ),
+			new varinf(0x2D, 1, 7, string.Empty ),
+			new varinf(0x34, 1, 1, "displayoffset" ),
+			new varinf(0x35, 1, 1, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] trackdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.useobj, new int[]{ -7, (int)useobjid.ob_compatible, 0x11, 0x14, -1 } ),
 			new objdesc(desctype.useobj, new int[]{ -8, (int)useobjid.ob_trackmod, 0x10, -1 } ),
 			new objdesc(desctype.useobj, new int[]{ -9, (int)useobjid.ob_signal, 0x0A, -1 } ),
@@ -469,18 +469,18 @@
 
 		private static varinf[] roadstvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 4, string.Empty ),
-			new varinf( 0x04, 2, 1, "roadpieces", null, road_pieces ),
-			new varinf( 0x06,-2, 1, "buildcostfact" ),
-			new varinf( 0x08,-2, 1, "sellcostfact" ),
-			new varinf( 0x0A, 1, 1, "costind" ),
-			new varinf( 0x0B, 1,22, string.Empty ),
-			new varinf( 0x21, 1, 1, "numcompat" ),
-			new varinf( 0x22, 1, 6, string.Empty ),
-			new varinf( 0x28, 2, 1, "designed" ),
-			new varinf( 0x2a, 2, 1, "obsolete" ),
-			new varinf( 0x2c, 1,66, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 4, string.Empty ),
+			new varinf(0x04, 2, 1, "roadpieces", null, road_pieces ),
+			new varinf(0x06,-2, 1, "buildcostfact" ),
+			new varinf(0x08,-2, 1, "sellcostfact" ),
+			new varinf(0x0A, 1, 1, "costind" ),
+			new varinf(0x0B, 1,22, string.Empty ),
+			new varinf(0x21, 1, 1, "numcompat" ),
+			new varinf(0x22, 1, 6, string.Empty ),
+			new varinf(0x28, 2, 1, "designed" ),
+			new varinf(0x2a, 2, 1, "obsolete" ),
+			new varinf(0x2c, 1,66, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static auxdesc[] roadstaux = new auxdesc[]
@@ -491,7 +491,7 @@
 		private static objdesc[] roadstdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.useobj, new int[]{ 0, (int)useobjid.ob_cargo, 0x08, -1 } ),
 			new objdesc(desctype.auxdatavar, new int[]{ 0, 16, 1, 4 } ),
 			new objdesc(desctype.sprites),
@@ -512,25 +512,25 @@
 
 		private static varinf[] roadvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02, 2, 1, "roadpieces", null, road_pieces ),
-			new varinf( 0x04,-2, 1, "buildcostfact" ),
-			new varinf( 0x06,-2, 1, "sellcostfact" ),
-			new varinf( 0x08,-2, 1, "tunnelcostfact" ),
-			new varinf( 0x0A, 1, 1, "costind" ),
-			new varinf( 0x0B, 1, 9, string.Empty ),
-			new varinf( 0x14, 1, 1, "numbridges" ),
-			new varinf( 0x15, 1, 8, string.Empty ),
-			new varinf( 0x1D, 1, 1, "numstations" ),
-			new varinf( 0x1E, 1, 10, string.Empty ),
-			new varinf( 0x28, 1, 1, "numcompat" ),
-			new varinf( 0x29, 1, 7, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02, 2, 1, "roadpieces", null, road_pieces ),
+			new varinf(0x04,-2, 1, "buildcostfact" ),
+			new varinf(0x06,-2, 1, "sellcostfact" ),
+			new varinf(0x08,-2, 1, "tunnelcostfact" ),
+			new varinf(0x0A, 1, 1, "costind" ),
+			new varinf(0x0B, 1, 9, string.Empty ),
+			new varinf(0x14, 1, 1, "numbridges" ),
+			new varinf(0x15, 1, 8, string.Empty ),
+			new varinf(0x1D, 1, 1, "numstations" ),
+			new varinf(0x1E, 1, 10, string.Empty ),
+			new varinf(0x28, 1, 1, "numcompat" ),
+			new varinf(0x29, 1, 7, string.Empty ),
+			new varinf(-1 ),
 		};
 		private static objdesc[] roaddesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.useobj, new int[]{ -40, (int)useobjid.ob_compatible, 0x11, 0x14, -1 } ),
 			new objdesc(desctype.useobj, new int[]{ -37, (int)useobjid.ob_roadmod, 0x13, -1 } ),
 			new objdesc(desctype.useobj, new int[]{ 0, (int)useobjid.ob_tunnel, 0x0D, -1 } ),
@@ -547,35 +547,35 @@
 
 		private static varinf[] airport_aux0 = new varinf[]
 		{
-			new varinf( 0x00, 1, 0, "height" ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 0, "height" ),
+			new varinf(-1 ),
 		};
 
 		private static varinf[] airport_aux1 = new varinf[]
 		{
-			new varinf( 0x00, 2, 0, "frames" ),
-			new varinf( -1 ),
+			new varinf(0x00, 2, 0, "frames" ),
+			new varinf(-1 ),
 		};
 
 		private static varinf[] airport_aux2 = new varinf[]
 		{
-			new varinf( 0x00, 1, 0, "spriteset" ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 0, "spriteset" ),
+			new varinf(-1 ),
 		};
 
 		private static varinf[] layoutvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 1, "tilenum" ),
-			new varinf( 0x01, 1, 1, "rotate" ),
-			new varinf( 0x02,-1, 1, "x" ),
-			new varinf( 0x03,-1, 1, "y" ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 1, "tilenum" ),
+			new varinf(0x01, 1, 1, "rotate" ),
+			new varinf(0x02,-1, 1, "x" ),
+			new varinf(0x03,-1, 1, "y" ),
+			new varinf(-1 ),
 		};
 
 		private static varinf[] airport_aux3 = new varinf[]
 		{
-			new varinf( 0x00, 4, 0, "tilepos", layoutvars ),
-			new varinf( -1 ),
+			new varinf(0x00, 4, 0, "tilepos", layoutvars ),
+			new varinf(-1 ),
 		};
 
 		private static List<string> airportaux4flags = new()
@@ -593,45 +593,45 @@
 		};
 
 		private static varinf[] airport_aux4 = new varinf[] {
-			new varinf( 0x00,-2, 1, "x" ),
-			new varinf( 0x02,-2, 1, "y" ),
-			new varinf( 0x04,-2, 1, "z" ),
-			new varinf( 0x06, 2, 1, "flags", null, airportaux4flags ),
-			new varinf( -1 ),
+			new varinf(0x00,-2, 1, "x" ),
+			new varinf(0x02,-2, 1, "y" ),
+			new varinf(0x04,-2, 1, "z" ),
+			new varinf(0x06, 2, 1, "flags", null, airportaux4flags ),
+			new varinf(-1 ),
 		};
 
 		private static varinf[] airport_aux5 = new varinf[] {
-			new varinf( 0x00, 1, 1, string.Empty ),
-			new varinf( 0x01, 1, 1, "from" ),
-			new varinf( 0x02, 1, 1, "to" ),
-			new varinf( 0x03, 1, 1, string.Empty ),
-			new varinf( 0x04, 4, 1, "busymask", null, nobits ),
-			new varinf( 0x08, 4, 1, string.Empty, null, nobits ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 1, string.Empty ),
+			new varinf(0x01, 1, 1, "from" ),
+			new varinf(0x02, 1, 1, "to" ),
+			new varinf(0x03, 1, 1, string.Empty ),
+			new varinf(0x04, 4, 1, "busymask", null, nobits ),
+			new varinf(0x08, 4, 1, string.Empty, null, nobits ),
+			new varinf(-1 ),
 		};
 
 		private static varinf[] airportvars = new varinf[] {
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02,-2, 1, "buildcostfact" ),
-			new varinf( 0x04,-2, 1, "sellcostfact" ),
-			new varinf( 0x06, 1, 1, "costind" ),
-			new varinf( 0x07, 1, 9, string.Empty ),
-			new varinf( 0x10, 2, 1, "allowedplanetypes" ),
-			new varinf( 0x12, 1, 1, "numspritesets" ),
-			new varinf( 0x13, 1, 1, "numtiles" ),
-			new varinf( 0x14, 1,140,string.Empty ),
-			new varinf( 0xA0, 4, 1, "2x2tiles", null, nobits ),
-			new varinf( 0xA4,-1, 1, "minx" ),
-			new varinf( 0xA5,-1, 1, "miny" ),
-			new varinf( 0xA6,-1, 1, "maxx" ),
-			new varinf( 0xA7,-1, 1, "maxy" ),
-			new varinf( 0xA8, 2, 1, "designed" ),
-			new varinf( 0xAA, 2, 1, "obsolete" ),
-			new varinf( 0xAC, 1, 1, "numnodes" ),
-			new varinf( 0xAD, 1, 1, "numedges" ),
-			new varinf( 0xAE, 1, 8, string.Empty),
-			new varinf( 0xB6, 4, 1, string.Empty, null, nobits ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02,-2, 1, "buildcostfact" ),
+			new varinf(0x04,-2, 1, "sellcostfact" ),
+			new varinf(0x06, 1, 1, "costind" ),
+			new varinf(0x07, 1, 9, string.Empty ),
+			new varinf(0x10, 2, 1, "allowedplanetypes" ),
+			new varinf(0x12, 1, 1, "numspritesets" ),
+			new varinf(0x13, 1, 1, "numtiles" ),
+			new varinf(0x14, 1,140,string.Empty ),
+			new varinf(0xA0, 4, 1, "2x2tiles", null, nobits ),
+			new varinf(0xA4,-1, 1, "minx" ),
+			new varinf(0xA5,-1, 1, "miny" ),
+			new varinf(0xA6,-1, 1, "maxx" ),
+			new varinf(0xA7,-1, 1, "maxy" ),
+			new varinf(0xA8, 2, 1, "designed" ),
+			new varinf(0xAA, 2, 1, "obsolete" ),
+			new varinf(0xAC, 1, 1, "numnodes" ),
+			new varinf(0xAD, 1, 1, "numedges" ),
+			new varinf(0xAE, 1, 8, string.Empty),
+			new varinf(0xB6, 4, 1, string.Empty, null, nobits ),
+			new varinf(-1 ),
 		};
 
 		private static auxdesc[] airportaux = new auxdesc[]
@@ -647,7 +647,7 @@
 		private static objdesc[] airportdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.auxdata, new int[]{ 0, 0, 1, -0x12 } ),
 			new objdesc(desctype.auxdata, new int[]{ 1, 0, -2, -0x12 } ),
 			new objdesc(desctype.auxdatavar, new int[]{ 2, -0x13, 1, 1 } ),
@@ -665,18 +665,18 @@
 
 		private static varinf[] dockvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02,-2, 1, "buildcostfact" ),
-			new varinf( 0x04,-2, 1, "sellcostfact" ),
-			new varinf( 0x06, 1, 1, "costind" ),
-			new varinf( 0x07, 1,11, string.Empty ),
-			new varinf( 0x12, 1, 1, "numaux01" ),
-			new varinf( 0x13, 1, 1, "numaux2ent" ),
-			new varinf( 0x14, 1,12, string.Empty ),
-			new varinf( 0x20, 2, 1, "designed" ),
-			new varinf( 0x22, 2, 1, "obsolete" ),
-			new varinf( 0x24, 1, 4, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02,-2, 1, "buildcostfact" ),
+			new varinf(0x04,-2, 1, "sellcostfact" ),
+			new varinf(0x06, 1, 1, "costind" ),
+			new varinf(0x07, 1,11, string.Empty ),
+			new varinf(0x12, 1, 1, "numaux01" ),
+			new varinf(0x13, 1, 1, "numaux2ent" ),
+			new varinf(0x14, 1,12, string.Empty ),
+			new varinf(0x20, 2, 1, "designed" ),
+			new varinf(0x22, 2, 1, "obsolete" ),
+			new varinf(0x24, 1, 4, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static auxdesc[] dockaux = new auxdesc[]
@@ -689,7 +689,7 @@
 		private static objdesc[] dockdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.auxdata, new int[]{ 0, 0, 1, -0x12 } ),
 			new objdesc(desctype.auxdata, new int[]{ 1, 0, -2, -0x12 } ),
 			new objdesc(desctype.auxdatavar, new int[]{ 2, -0x13, 1, 1 } ),
@@ -718,38 +718,38 @@
 		// the vehicle sprite definition structure
 		private static varinf[] vehsprites = new varinf[]
 		{
-			new varinf( 0x00, 1, 1, "numdir" ),
-			new varinf( 0x01, 1, 1, string.Empty ),
-			new varinf( 0x02, 1, 1, string.Empty ),
-			new varinf( 0x03, 1, 1, "vehtype" ),
-			new varinf( 0x04, 1, 1, "numunits" ),
-			new varinf( 0x05, 1, 1, string.Empty ),
-			new varinf( 0x06, 1, 1, "bogeypos" ),
-			new varinf( 0x07, 1, 1, "flags", null, vehspriteflags ),
-			new varinf( 0x08, 1, 1, string.Empty ),
-			new varinf( 0x09, 1, 1, string.Empty ),
-			new varinf( 0x0A, 1, 1, string.Empty ),
-			new varinf( 0x0B, 1, 1, string.Empty ),
-			new varinf( 0x0C, 1, 1, string.Empty ),
-			new varinf( 0x0D, 1, 1, string.Empty ),
-			new varinf( 0x0E, 1, 1, "spritenum" ),
-			new varinf( 0x0F, 1, 3, string.Empty ),
-			new varinf( 0x12, 4, 1, string.Empty ),
-			new varinf( 0x16, 4, 1, string.Empty ),
-			new varinf( 0x1A, 4, 1, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 1, "numdir" ),
+			new varinf(0x01, 1, 1, string.Empty ),
+			new varinf(0x02, 1, 1, string.Empty ),
+			new varinf(0x03, 1, 1, "vehtype" ),
+			new varinf(0x04, 1, 1, "numunits" ),
+			new varinf(0x05, 1, 1, string.Empty ),
+			new varinf(0x06, 1, 1, "bogeypos" ),
+			new varinf(0x07, 1, 1, "flags", null, vehspriteflags ),
+			new varinf(0x08, 1, 1, string.Empty ),
+			new varinf(0x09, 1, 1, string.Empty ),
+			new varinf(0x0A, 1, 1, string.Empty ),
+			new varinf(0x0B, 1, 1, string.Empty ),
+			new varinf(0x0C, 1, 1, string.Empty ),
+			new varinf(0x0D, 1, 1, string.Empty ),
+			new varinf(0x0E, 1, 1, "spritenum" ),
+			new varinf(0x0F, 1, 3, string.Empty ),
+			new varinf(0x12, 4, 1, string.Empty ),
+			new varinf(0x16, 4, 1, string.Empty ),
+			new varinf(0x1A, 4, 1, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		// a vehicle structure whose purpose is mostly unknown
 		private static varinf[] vehunk = new varinf[]
 		{
-			new varinf( 0x00, 1, 1, "length" ),
-			new varinf( 0x01, 1, 1, string.Empty ),
-			new varinf( 0x02, 1, 1, string.Empty ),
-			new varinf( 0x03, 1, 1, string.Empty ),
-			new varinf( 0x04, 1, 1, "spriteind" ),
-			new varinf( 0x05, 1, 1, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 1, "length" ),
+			new varinf(0x01, 1, 1, string.Empty ),
+			new varinf(0x02, 1, 1, string.Empty ),
+			new varinf(0x03, 1, 1, string.Empty ),
+			new varinf(0x04, 1, 1, "spriteind" ),
+			new varinf(0x05, 1, 1, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		// the vehicle flags
@@ -777,49 +777,49 @@
 		// the main vehicle data structure
 		private static varinf[] vehvars = new varinf[]
 		{
-			new varinf( 0x000, 1, 2, string.Empty ),
-			new varinf( 0x002, 1, 1, "class" ),
-			new varinf( 0x003, 1, 1, "type" ),
-			new varinf( 0x004, 1, 1, string.Empty ),
-			new varinf( 0x005, 1, 1, string.Empty ),
-			new varinf( 0x006, 1, 1, "nummods" ),
-			new varinf( 0x007, 1, 1, "costind" ),
-			new varinf( 0x008,-2, 1, "costfact" ),	// size -2 means signed word
-			new varinf( 0x00A, 1, 1, "reliability" ),
-			new varinf( 0x00B, 1, 1, "runcostind" ),
-			new varinf( 0x00C,-2, 1, "runcostfact" ),
-			new varinf( 0x00E, 1, 1, "colourtype" ),
-			new varinf( 0x00F, 1, 1, "numcompat" ),
-			new varinf( 0x010, 1,20, string.Empty ),
-			new varinf( 0x024, 6, 4, string.Empty, vehunk ),
-			new varinf( 0x03C,30, 4, "sprites", vehsprites ),
-			new varinf( 0x0B4, 1,36, string.Empty ),
-			new varinf( 0x0D8, 2, 1, "power" ),
-			new varinf( 0x0DA, 2, 1, "speed" ),
-			new varinf( 0x0DC, 2, 1, "rackspeed" ),
-			new varinf( 0x0DE, 2, 1, "weight" ),
-			new varinf( 0x0E0, 2, 1, "flags", null, vehflags ),
-			new varinf( 0x0E2, 1,44, string.Empty ),
-			new varinf( 0x10E, 1, 1, "visfxheight" ),
-			new varinf( 0x10F, 1, 1, "visfxtype" ),
-			new varinf( 0x110, 1, 1, string.Empty ),
-			new varinf( 0x111, 1, 1, string.Empty ),
-			new varinf( 0x112, 1, 1, "wakefxtype" ),
-			new varinf( 0x113, 1, 1, string.Empty ),
-			new varinf( 0x114, 2, 1, "designed" ),
-			new varinf( 0x116, 2, 1, "obsolete" ),
-			new varinf( 0x118, 1, 1, string.Empty ),
-			new varinf( 0x119, 1, 1, "startsndtype" ),
-			new varinf( 0x11A, 1,64, string.Empty ),
-			new varinf( 0x15A, 1, 1, "numsnd" ),
-			new varinf( 0x15B, 1, 3, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x000, 1, 2, string.Empty ),
+			new varinf(0x002, 1, 1, "class" ),
+			new varinf(0x003, 1, 1, "type" ),
+			new varinf(0x004, 1, 1, string.Empty ),
+			new varinf(0x005, 1, 1, string.Empty ),
+			new varinf(0x006, 1, 1, "nummods" ),
+			new varinf(0x007, 1, 1, "costind" ),
+			new varinf(0x008,-2, 1, "costfact" ),	// size -2 means signed word
+			new varinf(0x00A, 1, 1, "reliability" ),
+			new varinf(0x00B, 1, 1, "runcostind" ),
+			new varinf(0x00C,-2, 1, "runcostfact" ),
+			new varinf(0x00E, 1, 1, "colourtype" ),
+			new varinf(0x00F, 1, 1, "numcompat" ),
+			new varinf(0x010, 1,20, string.Empty ),
+			new varinf(0x024, 6, 4, string.Empty, vehunk ),
+			new varinf(0x03C,30, 4, "sprites", vehsprites ),
+			new varinf(0x0B4, 1,36, string.Empty ),
+			new varinf(0x0D8, 2, 1, "power" ),
+			new varinf(0x0DA, 2, 1, "speed" ),
+			new varinf(0x0DC, 2, 1, "rackspeed" ),
+			new varinf(0x0DE, 2, 1, "weight" ),
+			new varinf(0x0E0, 2, 1, "flags", null, vehflags ),
+			new varinf(0x0E2, 1,44, string.Empty ),
+			new varinf(0x10E, 1, 1, "visfxheight" ),
+			new varinf(0x10F, 1, 1, "visfxtype" ),
+			new varinf(0x110, 1, 1, string.Empty ),
+			new varinf(0x111, 1, 1, string.Empty ),
+			new varinf(0x112, 1, 1, "wakefxtype" ),
+			new varinf(0x113, 1, 1, string.Empty ),
+			new varinf(0x114, 2, 1, "designed" ),
+			new varinf(0x116, 2, 1, "obsolete" ),
+			new varinf(0x118, 1, 1, string.Empty ),
+			new varinf(0x119, 1, 1, "startsndtype" ),
+			new varinf(0x11A, 1,64, string.Empty ),
+			new varinf(0x15A, 1, 1, "numsnd" ),
+			new varinf(0x15B, 1, 3, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] vehdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.useobj, new int[]{ descnumspec(0), (int)useobjid.ob_tracktype, 0x11, 0x14, -1 } ),
 			new objdesc(desctype.useobj, new int[]{ -6, (int)useobjid.ob_trackmod, 0x10, 0x13, -1 } ),
 			new objdesc(desctype.cargo, new int[] { 2 }),
@@ -840,14 +840,14 @@
 
 		private static varinf[] treevars = new varinf[]
 		{
-			new varinf( 0x00, 1, 3, string.Empty ),
-			new varinf( 0x03, 1, 1, "height" ),
-			new varinf( 0x04, 1,59, string.Empty ),
-			new varinf( 0x3F, 1, 1, "costind" ),
-			new varinf( 0x40,-2, 1, "buildcostfact" ),
-			new varinf( 0x42,-2, 1, "clearcostfact" ),
-			new varinf( 0x44, 1, 8, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 3, string.Empty ),
+			new varinf(0x03, 1, 1, "height" ),
+			new varinf(0x04, 1,59, string.Empty ),
+			new varinf(0x3F, 1, 1, "costind" ),
+			new varinf(0x40,-2, 1, "buildcostfact" ),
+			new varinf(0x42,-2, 1, "clearcostfact" ),
+			new varinf(0x44, 1, 8, string.Empty ),
+			new varinf(-1 ),
 		};
 
 
@@ -864,17 +864,17 @@
 
 		private static varinf[] climvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 2, string.Empty ),
-			new varinf( 0x02, 1, 1, "firstseason" ),
-			new varinf( 0x03, 1, 4, "seasonlength" ),
-			new varinf( 0x07, 1, 3, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 2, string.Empty ),
+			new varinf(0x02, 1, 1, "firstseason" ),
+			new varinf(0x03, 1, 4, "seasonlength" ),
+			new varinf(0x07, 1, 3, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] climdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.END),
 		};
 
@@ -885,8 +885,8 @@
 
 		private static varinf[] shapevars = new varinf[]
 		{
-			new varinf( 0x00, 1, 14, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 14, string.Empty ),
+			new varinf(-1 ),
 		};
 
 
@@ -905,23 +905,23 @@
 
 		private static varinf[] bldngvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 6, string.Empty ),
-			new varinf( 0x06, 1, 1, "numaux01" ),
-			new varinf( 0x07, 1, 1, "numaux2ent" ),
-			new varinf( 0x08, 1,140,string.Empty ),
-			new varinf( 0x94, 2, 1, "earliestyr" ),
-			new varinf( 0x96, 2, 1, "latestyr" ),
-			new varinf( 0x98, 1, 1, "flags", null, bldg_flags ),
-			new varinf( 0x99, 1, 1, "costind" ),
-			new varinf( 0x9A,-2, 1, "clearcostfact" ),
-			new varinf( 0x9C, 1, 4, string.Empty ),
-			new varinf( 0xA0, 1, 2, "numproduce" ),
-			new varinf( 0xA2, 1, 4, string.Empty ),
-			new varinf( 0xA6, 1, 4, "numaccept" ),
-			new varinf( 0xAA, 1, 3, string.Empty ),
-			new varinf( 0xAD, 1, 1, "numaux3ent" ),
-			new varinf( 0xAE, 1,16, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 6, string.Empty ),
+			new varinf(0x06, 1, 1, "numaux01" ),
+			new varinf(0x07, 1, 1, "numaux2ent" ),
+			new varinf(0x08, 1,140,string.Empty ),
+			new varinf(0x94, 2, 1, "earliestyr" ),
+			new varinf(0x96, 2, 1, "latestyr" ),
+			new varinf(0x98, 1, 1, "flags", null, bldg_flags ),
+			new varinf(0x99, 1, 1, "costind" ),
+			new varinf(0x9A,-2, 1, "clearcostfact" ),
+			new varinf(0x9C, 1, 4, string.Empty ),
+			new varinf(0xA0, 1, 2, "numproduce" ),
+			new varinf(0xA2, 1, 4, string.Empty ),
+			new varinf(0xA6, 1, 4, "numaccept" ),
+			new varinf(0xAA, 1, 3, string.Empty ),
+			new varinf(0xAD, 1, 1, "numaux3ent" ),
+			new varinf(0xAE, 1,16, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static auxdesc[] bldngaux = new auxdesc[]
@@ -935,7 +935,7 @@
 		private static objdesc[] bldngdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.auxdata, new int[]{ 0, 0, 1, -6 } ),
 			new objdesc(desctype.auxdata, new int[]{ 1, 0, -2, -6 } ),
 			new objdesc(desctype.auxdatavar, new int[]{ 2, -7, 1, 1 } ),
@@ -952,8 +952,8 @@
 
 		private static varinf[] scaffvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 18, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 18, string.Empty ),
+			new varinf(-1 ),
 		};
 
 
@@ -989,21 +989,21 @@
 
 		private static varinf[] indvars = new varinf[]
 		{
-			new varinf( 0x00, 1,30, string.Empty ),
-			new varinf( 0x1E, 1, 1, "numaux01" ),
-			new varinf( 0x1F, 1, 1, "numaux4ent" ),
-			new varinf( 0x20, 1,157,string.Empty ),
-			new varinf( 0xBD, 1, 1, "numaux5" ),
-			new varinf( 0xBE, 1,12, string.Empty ),
-			new varinf( 0xCA, 2, 1, "firstyear" ),
-			new varinf( 0xCC, 2, 1, "lastyear" ),
-			new varinf( 0xCE, 1, 1, string.Empty ),
-			new varinf( 0xCF, 1, 1, "costind" ),
-			new varinf( 0xD0,-2, 1, "costfactor1" ),
-			new varinf( 0xD2, 1, 18, string.Empty ),
-			new varinf( 0xE4, 4, 1, "flags", null, industryflags ),
-			new varinf( 0xE8, 1, 12, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1,30, string.Empty ),
+			new varinf(0x1E, 1, 1, "numaux01" ),
+			new varinf(0x1F, 1, 1, "numaux4ent" ),
+			new varinf(0x20, 1,157,string.Empty ),
+			new varinf(0xBD, 1, 1, "numaux5" ),
+			new varinf(0xBE, 1,12, string.Empty ),
+			new varinf(0xCA, 2, 1, "firstyear" ),
+			new varinf(0xCC, 2, 1, "lastyear" ),
+			new varinf(0xCE, 1, 1, string.Empty ),
+			new varinf(0xCF, 1, 1, "costind" ),
+			new varinf(0xD0,-2, 1, "costfactor1" ),
+			new varinf(0xD2, 1, 18, string.Empty ),
+			new varinf(0xE4, 4, 1, "flags", null, industryflags ),
+			new varinf(0xE8, 1, 12, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static auxdesc[] indaux = new auxdesc[]
@@ -1019,7 +1019,7 @@
 		private static objdesc[] inddesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.lang, new int[]{ 1 } ),
 			new objdesc(desctype.lang, new int[]{ 2 } ),
 			new objdesc(desctype.lang, new int[]{ 3 } ),
@@ -1047,14 +1047,14 @@
 
 		private static varinf[] regionvars = new varinf[]
 		{
-			new varinf( 0x00, 1, 18, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1, 18, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] regiondesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.useobj, new int[]{ -8, (int)useobjid.ob_cargo, 0x08, -1 } ),
 			new objdesc(desctype.useobj, new int[]{ descnumuntil(), (int)useobjid.ob_default, 0x100, -1 } ),
 			new objdesc(desctype.sprites),
@@ -1073,20 +1073,20 @@
 
 		private static varinf[] compvars = new varinf[]
 		{
-			new varinf( 0x00, 1,12, string.Empty ),
-			new varinf( 0x0C, 1, 2, "spritesets", null, comp_sprites ),
-			new varinf( 0x0E, 1,38, string.Empty ),
-			new varinf( 0x34, 1, 1, "intelligence" ),
-			new varinf( 0x35, 1, 1, "aggressiveness" ),
-			new varinf( 0x36, 1, 1, "competitiveness" ),
-			new varinf( 0x37, 1, 1, string.Empty ),
-			new varinf( -1 ),
+			new varinf(0x00, 1,12, string.Empty ),
+			new varinf(0x0C, 1, 2, "spritesets", null, comp_sprites ),
+			new varinf(0x0E, 1,38, string.Empty ),
+			new varinf(0x34, 1, 1, "intelligence" ),
+			new varinf(0x35, 1, 1, "aggressiveness" ),
+			new varinf(0x36, 1, 1, "competitiveness" ),
+			new varinf(0x37, 1, 1, string.Empty ),
+			new varinf(-1 ),
 		};
 
 		private static objdesc[] compdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.lang, new int[]{ 1 } ),
 			new objdesc(desctype.sprites),
 			new objdesc(desctype.END),
@@ -1102,7 +1102,7 @@
 		private static objdesc[] textdesc = new objdesc[]
 		{
 			new objdesc(desctype.objdata),
-			new objdesc( desctype.lang, new int[]{ 0 } ),
+			new objdesc(desctype.lang, new int[]{ 0 } ),
 			new objdesc(desctype.lang, new int[]{ 1 } ),
 			new objdesc(desctype.END),
 		};

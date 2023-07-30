@@ -1,7 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OpenLocoTool
 {

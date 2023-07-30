@@ -1,6 +1,6 @@
 ﻿namespace OpenLocoTool.Objects
 {
-	enum VehicleType : uint8_t
+	public enum VehicleType : uint8_t
 	{
 		Train = 0,
 		Bus,

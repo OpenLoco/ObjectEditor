@@ -12,12 +12,12 @@ namespace OpenLocoTool
 
 		public void Save(string path, LocoObject locoObject)
 		{
-			if (locoObject == null)
-			{
-				throw new ArgumentNullException(nameof(locoObject));
-			}
+			//if (locoObject == null)
+			//{
+			//	throw new ArgumentNullException(nameof(locoObject));
+			//}
 
-			Logger.Log(LogLevel.Info, $"Writing to {locoObject.datHdr.Name} to {path}");
+			//Logger.Log(LogLevel.Info, $"Writing to {locoObject.datHdr.Name} to {path}");
 
 			//var datHdr = MemoryMarshal.Write(locoObject.datHdr);
 			//var objHeader = MemoryMarshal.Write(locoObject.objHdr);

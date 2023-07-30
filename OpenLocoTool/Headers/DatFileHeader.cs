@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace OpenLocoTool
@@ -16,6 +17,7 @@ namespace OpenLocoTool
 	//	public ObjectType ObjectType;
 	//}
 
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x10)]
 	public struct DatFileHeader
 	{

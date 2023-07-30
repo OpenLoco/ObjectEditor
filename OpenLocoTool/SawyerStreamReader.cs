@@ -21,20 +21,20 @@ namespace OpenLocoTool
 			}
 
 			Logger.Log(LogLevel.Info, $"Loading {path}");
-			return Load(File.ReadAllBytes(path));
+			var data = File.ReadAllBytes(path);
+			var locoObject = new LocoObject(data);
+			return locoObject;
+			//var 
+
+			//var datHeader = MemoryMarshal.AsRef<DatFileHeader>(data[..Constants.DatFileHeaderSize]);
+			//var objHeader = MemoryMarshal.AsRef<ObjHeader>(data[Constants.DatFileHeaderSize..(Constants.DatFileHeaderSize + Constants.ObjHeaderSize)]);
+
+
+			//var decoded = Decode(objHeader.Encoding, data[(Constants.DatFileHeaderSize + Constants.ObjHeaderSize)..]);
+			//var obj = ReadObject(decoded, datHeader.ObjectType);
+			//return new LocoObject(datHeader, objHeader, obj);
 		}
 
-		public const int DatFileHeaderSize = 0x10;
-		public const int ObjHeaderSize = 0x05;
-
-		public LocoObject Load(ReadOnlySpan<byte> data)
-		{
-			var datHeader = MemoryMarshal.AsRef<DatFileHeader>(data[..DatFileHeaderSize]);
-			var objHeader = MemoryMarshal.AsRef<ObjHeader>(data[DatFileHeaderSize..(DatFileHeaderSize + ObjHeaderSize)]);
-			var decoded = Decode(objHeader.Encoding, data[(DatFileHeaderSize + ObjHeaderSize)..]);
-			var obj = ReadObject(decoded, datHeader.ObjectType);
-			return new LocoObject(datHeader, objHeader, obj);
-		}
 
 		// taken from openloco's SawyerStreamReader::readChunk
 		private ReadOnlySpan<byte> Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)

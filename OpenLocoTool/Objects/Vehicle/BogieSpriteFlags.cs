@@ -1,7 +1,7 @@
 ﻿namespace OpenLocoTool.Objects
 {
 	[Flags]
-	enum BogieSpriteFlags : uint8_t
+	public enum BogieSpriteFlags : uint8_t
 	{
 		none = 0,
 		hasSprites = 1 << 0,         // If not set then no bogie will be loaded

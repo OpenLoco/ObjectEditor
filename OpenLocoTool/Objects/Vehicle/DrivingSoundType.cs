@@ -1,6 +1,6 @@
 ﻿namespace OpenLocoTool.Objects
 {
-	enum DrivingSoundType : uint8_t
+	public enum DrivingSoundType : uint8_t
 	{
 		none,
 		friction,

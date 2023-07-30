@@ -1,6 +1,6 @@
 ﻿namespace OpenLocoTool.Objects
 {
-	enum BodySpriteFlags : uint8_t
+	public enum BodySpriteFlags : uint8_t
 	{
 		none = 0,
 		hasSprites = 1 << 0,         // If not set then no body will be loaded

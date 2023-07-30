@@ -1,6 +1,6 @@
 ﻿namespace OpenLocoTool.Objects
 {
-	enum SimpleAnimationType : uint8_t
+	public enum SimpleAnimationType : uint8_t
 	{
 		none = 0,
 		steam_puff1,

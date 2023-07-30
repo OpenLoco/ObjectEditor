@@ -5,16 +5,24 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x15E)]
-	struct VehicleObject
+	public struct VehicleObject
 	{
 		//static constexpr auto kObjectType = ObjectType::vehicle { get; set; }
 		//static constexpr auto kMaxBodySprites = 4 { get; set; }
 
 		public string_id name { get; set; }     // 0x00
 		public TransportMode mode { get; set; } // 0x02
-		public VehicleType type { get; set; }   // 0x03
+		public VehicleType type
+		{
+			get;
+			set;
+		}   // 0x03
 		public uint8_t var_04 { get; set; }
-		public uint8_t trackType { get; set; }              // 0x05
+		public uint8_t trackType
+		{
+			get;
+			set;
+		}              // 0x05
 		public uint8_t numMods { get; set; }                // 0x06
 		public uint8_t costIndex { get; set; }              // 0x07
 		public int16_t costFactor { get; set; }             // 0x08

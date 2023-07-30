@@ -13,7 +13,7 @@ namespace OpenLocoTool.Objects
 	};
 
 	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x2C)]
-	struct BridgeObject
+	public struct BridgeObject
 	{
 		//static constexpr auto kObjectType = ObjectType::bridge;
 

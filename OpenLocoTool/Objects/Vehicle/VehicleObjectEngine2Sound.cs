@@ -5,7 +5,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x1B)]
-	struct VehicleObjectEngine2Sound
+	public struct VehicleObjectEngine2Sound
 	{
 		public uint8_t soundObjectId { get; set; }         // 0x0
 		public uint16_t defaultFrequency { get; set; }     // 0x1

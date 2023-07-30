@@ -87,5 +87,10 @@ namespace OpenLocoToolGui
 		{
 			// todo: implement sawyerstreamwriter
 		}
+
+		private void btnSetDirectory_Click(object sender, EventArgs e)
+		{
+			folderBrowserDialog1.ShowDialog(this);
+		}
 	}
 }

@@ -29,12 +29,13 @@
 		private void InitializeComponent()
 		{
 			treeView1 = new TreeView();
-			cbObjFilter = new ComboBox();
 			lbLogs = new ListBox();
 			btnSaveChanges = new Button();
 			pgDatHeader = new PropertyGrid();
 			pgObjHeader = new PropertyGrid();
 			pgObject = new PropertyGrid();
+			btnSetDirectory = new Button();
+			folderBrowserDialog1 = new FolderBrowserDialog();
 			SuspendLayout();
 			// 
 			// treeView1
@@ -44,14 +45,6 @@
 			treeView1.Size = new Size(190, 678);
 			treeView1.TabIndex = 1;
 			treeView1.AfterSelect += treeView1_AfterSelect;
-			// 
-			// cbObjFilter
-			// 
-			cbObjFilter.FormattingEnabled = true;
-			cbObjFilter.Location = new Point(12, 12);
-			cbObjFilter.Name = "cbObjFilter";
-			cbObjFilter.Size = new Size(190, 23);
-			cbObjFilter.TabIndex = 15;
 			// 
 			// lbLogs
 			// 
@@ -66,6 +59,7 @@
 			// 
 			// btnSaveChanges
 			// 
+			btnSaveChanges.Enabled = false;
 			btnSaveChanges.Location = new Point(413, 818);
 			btnSaveChanges.Name = "btnSaveChanges";
 			btnSaveChanges.Size = new Size(199, 31);
@@ -73,7 +67,6 @@
 			btnSaveChanges.Text = "Save";
 			btnSaveChanges.UseVisualStyleBackColor = true;
 			btnSaveChanges.Click += btnSaveChanges_Click;
-			btnSaveChanges.Enabled = false;
 			// 
 			// pgDatHeader
 			// 
@@ -105,17 +98,31 @@
 			pgObject.TabIndex = 22;
 			pgObject.ToolbarVisible = false;
 			// 
+			// btnSetDirectory
+			// 
+			btnSetDirectory.Location = new Point(12, 12);
+			btnSetDirectory.Name = "btnSetDirectory";
+			btnSetDirectory.Size = new Size(190, 23);
+			btnSetDirectory.TabIndex = 23;
+			btnSetDirectory.Text = "Set ObjData Directory";
+			btnSetDirectory.UseVisualStyleBackColor = true;
+			btnSetDirectory.Click += btnSetDirectory_Click;
+			// 
+			// folderBrowserDialog1
+			// 
+			folderBrowserDialog1.InitialDirectory = BasePath;
+			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(621, 861);
+			Controls.Add(btnSetDirectory);
 			Controls.Add(pgObject);
 			Controls.Add(pgObjHeader);
 			Controls.Add(pgDatHeader);
 			Controls.Add(btnSaveChanges);
 			Controls.Add(lbLogs);
-			Controls.Add(cbObjFilter);
 			Controls.Add(treeView1);
 			Name = "MainForm";
 			Text = "OpenLocoTool";
@@ -125,11 +132,12 @@
 
 		#endregion
 		private TreeView treeView1;
-		private ComboBox cbObjFilter;
 		private ListBox lbLogs;
 		private Button btnSaveChanges;
 		private PropertyGrid pgDatHeader;
 		private PropertyGrid pgObjHeader;
 		private PropertyGrid pgObject;
+		private Button btnSetDirectory;
+		private FolderBrowserDialog folderBrowserDialog1;
 	}
 }

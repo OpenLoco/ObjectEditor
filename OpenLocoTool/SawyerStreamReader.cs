@@ -12,7 +12,7 @@ namespace OpenLocoTool
 			=> Logger = logger;
 
 		// load file
-		public (DatFileHeader datHdr, ObjHeader objHdr, object? obj) Load(string path)
+		public LocoObject Load(string path)
 		{
 			if (!File.Exists(path))
 			{
@@ -20,81 +20,26 @@ namespace OpenLocoTool
 				return default;
 			}
 
-			Logger.Log(LogLevel.Info, $"Decoding {path}");
-			var bytes = File.ReadAllBytes(path);
-			var loaded = Load(bytes);
-
-			// validate checksum
-			// only valid for S5 files, not individual dat files
-			//var valid = validateChecksum(bytes);
-			//dataDump.Add(valid.ToString());
-
-			return loaded;
+			Logger.Log(LogLevel.Info, $"Loading {path}");
+			return Load(File.ReadAllBytes(path));
 		}
-
-		//public bool validateChecksum(ReadOnlySpan<byte> data)
-		//{
-		//	//int ptr = 0;
-		//	var valid = false;
-		//	if (data.Length >= 4)
-		//	{
-		//		// Read checksum
-		//		var checksum = BitConverter.ToUInt32(data[^4..^0]);
-
-		//		// Calculate checksum
-		//		uint actualChecksum = 0;
-		//		var bufSize = 2048;
-		//		var buffer = new byte[bufSize];
-		//		for (var i = 0; i < data.Length - 4; i += bufSize)
-		//		{
-		//			var readLength = Math.Min(bufSize, data.Length - 4 - i);
-		//			data.Slice(i, readLength);
-		//			for (var j = 0; j < readLength; j++)
-		//			{
-		//				actualChecksum += buffer[j];
-		//			}
-		//		}
-
-		//		valid = checksum == actualChecksum;
-		//	}
-
-		//	return valid;
-		//}
 
 		public const int DatFileHeaderSize = 0x10;
 		public const int ObjHeaderSize = 0x05;
 
-		public (DatFileHeader, ObjHeader, object?) Load(ReadOnlySpan<byte> data)
+		public LocoObject Load(ReadOnlySpan<byte> data)
 		{
 			var datHeader = MemoryMarshal.AsRef<DatFileHeader>(data[..DatFileHeaderSize]);
 			var objHeader = MemoryMarshal.AsRef<ObjHeader>(data[DatFileHeaderSize..(DatFileHeaderSize + ObjHeaderSize)]);
-			var decoded = Decode(objHeader, data[(DatFileHeaderSize + ObjHeaderSize)..]);
-
-			// call this on Save();
-			WriteDecodedObject(data[..DatFileHeaderSize], data[DatFileHeaderSize..(DatFileHeaderSize + ObjHeaderSize)], decoded);
-
+			var decoded = Decode(objHeader.Encoding, data[(DatFileHeaderSize + ObjHeaderSize)..]);
 			var obj = ReadObject(decoded, datHeader.ObjectType);
-			// parse
-
-			return (datHeader, objHeader, obj);
-		}
-
-		public void WriteDecodedObject(ReadOnlySpan<byte> DatHeader, ReadOnlySpan<byte> objHeader, ReadOnlySpan<byte> data)
-		{
-			//var BasePath = @"Q:\Steam\steamapps\common\Locomotion\ObjData";
-			var BasePath = @"Q:\Steam\steamapps\common\Locomotion";
-			var decoded = File.Create(Path.Combine(BasePath, "decoded.dat"));
-			decoded.Write(MemoryMarshal.AsBytes(DatHeader));
-			decoded.Write(objHeader);
-			decoded.Write(data);
-			decoded.Flush();
-			decoded.Close();
+			return new LocoObject(datHeader, objHeader, obj);
 		}
 
 		// taken from openloco's SawyerStreamReader::readChunk
-		private ReadOnlySpan<byte> Decode(ObjHeader objHeader, ReadOnlySpan<byte> data)
+		private ReadOnlySpan<byte> Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
 		{
-			switch (objHeader.Encoding)
+			switch (encoding)
 			{
 				case SawyerEncoding.uncompressed:
 					return data;
@@ -114,20 +59,20 @@ namespace OpenLocoTool
 		{
 			object? obj = objClass switch
 			{
-				ObjectType.bridge => MemoryMarshal.AsRef<BridgeObject>(data),
-				ObjectType.building => MemoryMarshal.AsRef<BuildingObject>(data),
-				ObjectType.cargo => MemoryMarshal.AsRef<CargoObject>(data),
-				ObjectType.cliffEdge => MemoryMarshal.AsRef<CliffEdgeObject>(data),
-				ObjectType.climate => MemoryMarshal.AsRef<ClimateObject>(data),
-				ObjectType.competitor => MemoryMarshal.AsRef<CompetitorObject>(data),
-				ObjectType.currency => MemoryMarshal.AsRef<CurrencyObject>(data),
-				ObjectType.dock => MemoryMarshal.AsRef<DockObject>(data),
-				ObjectType.hillShapes => MemoryMarshal.AsRef<HillShapesObject>(data),
-				ObjectType.industry => MemoryMarshal.AsRef<IndustryObject>(data),
-				ObjectType.track => MemoryMarshal.AsRef<TrackObject>(data),
-				ObjectType.trackSignal => MemoryMarshal.AsRef<TrainSignalObject>(data),
-				ObjectType.tree => MemoryMarshal.AsRef<TreeObject>(data),
-				ObjectType.vehicle => MemoryMarshal.AsRef<VehicleObject>(data),
+				ObjectType.bridge => MemoryMarshal.Read<BridgeObject>(data),
+				ObjectType.building => MemoryMarshal.Read<BuildingObject>(data),
+				ObjectType.cargo => MemoryMarshal.Read<CargoObject>(data),
+				ObjectType.cliffEdge => MemoryMarshal.Read<CliffEdgeObject>(data),
+				ObjectType.climate => MemoryMarshal.Read<ClimateObject>(data),
+				ObjectType.competitor => MemoryMarshal.Read<CompetitorObject>(data),
+				ObjectType.currency => MemoryMarshal.Read<CurrencyObject>(data),
+				ObjectType.dock => MemoryMarshal.Read<DockObject>(data),
+				ObjectType.hillShapes => MemoryMarshal.Read<HillShapesObject>(data),
+				ObjectType.industry => MemoryMarshal.Read<IndustryObject>(data),
+				ObjectType.track => MemoryMarshal.Read<TrackObject>(data),
+				ObjectType.trackSignal => MemoryMarshal.Read<TrainSignalObject>(data),
+				ObjectType.tree => MemoryMarshal.Read<TreeObject>(data),
+				ObjectType.vehicle => MemoryMarshal.Read<VehicleObject>(data),
 				_ => null,
 			};
 

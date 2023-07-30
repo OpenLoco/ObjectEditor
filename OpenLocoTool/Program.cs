@@ -15,6 +15,6 @@ const string path = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\STEAM.da
 //decoder.Decode(path);
 
 var ssr = new SawyerStreamReader(logger);
-var bytes = ssr.Load(path);
+var obj = ssr.Load(path);
 
 Console.ReadLine();

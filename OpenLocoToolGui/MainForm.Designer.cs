@@ -31,70 +31,52 @@
 			treeView1 = new TreeView();
 			lbLogs = new ListBox();
 			btnSaveChanges = new Button();
-			pgDatHeader = new PropertyGrid();
-			pgObjHeader = new PropertyGrid();
 			pgObject = new PropertyGrid();
 			btnSetDirectory = new Button();
 			folderBrowserDialog1 = new FolderBrowserDialog();
+			tbFileFilter = new TextBox();
 			SuspendLayout();
 			// 
 			// treeView1
 			// 
-			treeView1.Location = new Point(12, 41);
+			treeView1.Location = new Point(12, 70);
 			treeView1.Name = "treeView1";
-			treeView1.Size = new Size(190, 678);
+			treeView1.Size = new Size(190, 649);
 			treeView1.TabIndex = 1;
 			treeView1.AfterSelect += treeView1_AfterSelect;
 			// 
 			// lbLogs
 			// 
+			lbLogs.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			lbLogs.FormattingEnabled = true;
 			lbLogs.HorizontalScrollbar = true;
 			lbLogs.ItemHeight = 15;
 			lbLogs.Location = new Point(12, 725);
 			lbLogs.Name = "lbLogs";
 			lbLogs.SelectionMode = SelectionMode.None;
-			lbLogs.Size = new Size(395, 124);
+			lbLogs.Size = new Size(680, 124);
 			lbLogs.TabIndex = 17;
 			// 
 			// btnSaveChanges
 			// 
+			btnSaveChanges.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			btnSaveChanges.Enabled = false;
-			btnSaveChanges.Location = new Point(413, 818);
+			btnSaveChanges.Location = new Point(208, 12);
 			btnSaveChanges.Name = "btnSaveChanges";
-			btnSaveChanges.Size = new Size(199, 31);
+			btnSaveChanges.Size = new Size(484, 52);
 			btnSaveChanges.TabIndex = 18;
 			btnSaveChanges.Text = "Save";
 			btnSaveChanges.UseVisualStyleBackColor = true;
 			btnSaveChanges.Click += btnSaveChanges_Click;
 			// 
-			// pgDatHeader
-			// 
-			pgDatHeader.HelpVisible = false;
-			pgDatHeader.Location = new Point(208, 12);
-			pgDatHeader.Name = "pgDatHeader";
-			pgDatHeader.PropertySort = PropertySort.Alphabetical;
-			pgDatHeader.Size = new Size(199, 200);
-			pgDatHeader.TabIndex = 20;
-			pgDatHeader.ToolbarVisible = false;
-			// 
-			// pgObjHeader
-			// 
-			pgObjHeader.HelpVisible = false;
-			pgObjHeader.Location = new Point(413, 12);
-			pgObjHeader.Name = "pgObjHeader";
-			pgObjHeader.PropertySort = PropertySort.Alphabetical;
-			pgObjHeader.Size = new Size(199, 200);
-			pgObjHeader.TabIndex = 21;
-			pgObjHeader.ToolbarVisible = false;
-			// 
 			// pgObject
 			// 
+			pgObject.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 			pgObject.HelpVisible = false;
-			pgObject.Location = new Point(208, 218);
+			pgObject.Location = new Point(208, 70);
 			pgObject.Name = "pgObject";
 			pgObject.PropertySort = PropertySort.Alphabetical;
-			pgObject.Size = new Size(404, 501);
+			pgObject.Size = new Size(484, 649);
 			pgObject.TabIndex = 22;
 			pgObject.ToolbarVisible = false;
 			// 
@@ -108,19 +90,22 @@
 			btnSetDirectory.UseVisualStyleBackColor = true;
 			btnSetDirectory.Click += btnSetDirectory_Click;
 			// 
-			// folderBrowserDialog1
+			// tbFileFilter
 			// 
-			folderBrowserDialog1.InitialDirectory = BasePath;
+			tbFileFilter.Location = new Point(12, 41);
+			tbFileFilter.Name = "tbFileFilter";
+			tbFileFilter.Size = new Size(190, 23);
+			tbFileFilter.TabIndex = 24;
+			tbFileFilter.TextChanged += tbFileFilter_TextChanged;
 			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(621, 861);
+			ClientSize = new Size(704, 861);
+			Controls.Add(tbFileFilter);
 			Controls.Add(btnSetDirectory);
 			Controls.Add(pgObject);
-			Controls.Add(pgObjHeader);
-			Controls.Add(pgDatHeader);
 			Controls.Add(btnSaveChanges);
 			Controls.Add(lbLogs);
 			Controls.Add(treeView1);
@@ -128,16 +113,16 @@
 			Text = "OpenLocoTool";
 			Load += MainForm_Load;
 			ResumeLayout(false);
+			PerformLayout();
 		}
 
 		#endregion
 		private TreeView treeView1;
 		private ListBox lbLogs;
 		private Button btnSaveChanges;
-		private PropertyGrid pgDatHeader;
-		private PropertyGrid pgObjHeader;
 		private PropertyGrid pgObject;
 		private Button btnSetDirectory;
 		private FolderBrowserDialog folderBrowserDialog1;
+		private TextBox tbFileFilter;
 	}
 }

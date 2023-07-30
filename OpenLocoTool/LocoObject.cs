@@ -9,7 +9,7 @@ namespace OpenLocoTool
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class LocoObject<T> : ILocoObject where T : struct
+	public class LocoObject<T> : ILocoObject
 	{
 		public LocoObject(DatFileHeader datHdr, ObjHeader objHdr, T obj)
 		{

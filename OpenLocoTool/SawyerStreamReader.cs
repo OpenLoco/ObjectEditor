@@ -33,7 +33,7 @@ namespace OpenLocoTool
 				ObjectType.building => MakeLocoObject<BuildingObject>(datFileHeader, objHeader, objSpan),
 				ObjectType.cargo => MakeLocoObject<CargoObject>(datFileHeader, objHeader, objSpan),
 				ObjectType.cliffEdge => MakeLocoObject<CliffEdgeObject>(datFileHeader, objHeader, objSpan),
-				ObjectType.climate => MakeLocoObject<ClimateObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.climate => MakeLocoObject(datFileHeader, objHeader, Factory.MakeClimateObject(objSpan)),
 				ObjectType.competitor => MakeLocoObject<CompetitorObject>(datFileHeader, objHeader, objSpan),
 				ObjectType.currency => MakeLocoObject<CurrencyObject>(datFileHeader, objHeader, objSpan),
 				ObjectType.dock => MakeLocoObject<DockObject>(datFileHeader, objHeader, objSpan),
@@ -46,6 +46,9 @@ namespace OpenLocoTool
 				_ => throw new ArgumentException($"unknown object class {datFileHeader.ObjectType}"),
 			};
 		}
+
+		private static ILocoObject MakeLocoObject<T>(DatFileHeader datFileHeader, ObjHeader ObjHeader, T obj)
+			=> new LocoObject<T>(datFileHeader, ObjHeader, obj);
 
 		private static ILocoObject MakeLocoObject<T>(DatFileHeader datFileHeader, ObjHeader ObjHeader, ReadOnlySpan<byte> objSpan) where T : struct
 			=> new LocoObject<T>(datFileHeader, ObjHeader, MemoryMarshal.Read<T>(objSpan));

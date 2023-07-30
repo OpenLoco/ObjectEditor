@@ -1,7 +1,5 @@
-using System.Runtime.InteropServices;
 using OpenLocoTool;
 using OpenLocoToolCommon;
-using OpenLocoTool.Objects;
 using System.Text.RegularExpressions;
 
 namespace OpenLocoToolGui
@@ -52,7 +50,7 @@ namespace OpenLocoToolGui
 
 			foreach (var file in directoryInfo.GetFiles())
 			{
-				if (Regex.Matches(file.Name, regexFilter).Count > 0)
+				if (Regex.Matches(file.Name, regexFilter, RegexOptions.IgnoreCase).Count > 0)
 				{
 					directoryNode.Nodes.Add(new TreeNode(file.Name));
 				}
@@ -96,6 +94,7 @@ namespace OpenLocoToolGui
 				locoObject = reader.Load(filename);
 				cache.Add(filename, locoObject);
 			}
+
 			locoObject = cache[filename];
 			pgObject.SelectedObject = locoObject;
 		}

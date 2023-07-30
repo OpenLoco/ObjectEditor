@@ -75,7 +75,6 @@
 			pgObject.HelpVisible = false;
 			pgObject.Location = new Point(208, 70);
 			pgObject.Name = "pgObject";
-			pgObject.PropertySort = PropertySort.Alphabetical;
 			pgObject.Size = new Size(484, 649);
 			pgObject.TabIndex = 22;
 			pgObject.ToolbarVisible = false;

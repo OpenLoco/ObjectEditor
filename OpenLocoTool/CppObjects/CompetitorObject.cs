@@ -1,21 +1,43 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
 
 namespace OpenLocoTool.Objects
 {
-	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x38)]
-	struct CompetitorObject
+	// size = 0x38
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public record CompetitorObject(
+		string var_00,           // 0x00
+		string var_02,           // 0x02
+		uint32_t var_04,         // 0x04
+		uint32_t var_08,         // 0x08
+		uint32_t Emotions,       // 0x0C
+		uint32_t[] Images,       // 0x10
+		uint8_t Intelligence,    // 0x34
+		uint8_t Aggressiveness,  // 0x35
+		uint8_t Competitiveness, // 0x36
+		uint8_t var_37)          // 0x37
 	{
-		//static constexpr auto kObjectType = ObjectType::competitor;
+		public static CompetitorObject Read(ReadOnlySpan<byte> data)
+		{
+			var var_00 = "todo: implement code to lookup string table";
+			var var_02 = "todo: implement code to lookup string table";
+			var var_04 = BitConverter.ToUInt32(data[4..8]);
+			var var_08 = BitConverter.ToUInt32(data[8..12]);
+			var emotions = BitConverter.ToUInt32(data[12..16]);
 
-		public string_id var_00 { get; set; }        // 0x00
-		public string_id var_02 { get; set; }        // 0x02
-		public uint32_t var_04 { get; set; }         // 0x04
-		public uint32_t var_08 { get; set; }         // 0x08
-		public uint32_t emotions { get; set; }       // 0x0C
-		public unsafe fixed uint32_t images[9];      // 0x10
-		public uint8_t intelligence { get; set; }    // 0x34
-		public uint8_t aggressiveness { get; set; }  // 0x35
-		public uint8_t competitiveness { get; set; } // 0x36
-		public uint8_t var_37 { get; set; }          // 0x37
+			// images
+			var images = new uint32_t[9];
+			for (var i = 0; i < images.Length; i++)
+			{
+				images[i] = BitConverter.ToUInt32(data[(16 + (i * 4))..(20 + (i * 4))]);
+			}
+
+			var intelligence = data[0x34];
+			var aggressiveness = data[0x35];
+			var competetiveness = data[0x36];
+			var var_37 = data[0x37];
+
+			return new CompetitorObject(var_00, var_02, var_04, var_08, emotions, images, intelligence, aggressiveness, competetiveness, var_37);
+		}
 	}
+
 }

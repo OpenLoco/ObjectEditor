@@ -1,17 +1,30 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
 
 namespace OpenLocoTool.Objects
 {
-	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0xC)]
-	public struct CurrencyObject
+	// size = 0xC
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public record CurrencyObject
+	(
+		string Name,         // 0x00
+		string PrefixSymbol, // 0x02
+		string SuffixSymbol, // 0x04
+		uint32_t ObjectIcon, // 0x06
+		uint8_t Separator,   // 0x0A
+		uint8_t Factor       // 0x0B
+	)
 	{
-		//static constexpr auto kObjectType = ObjectType::currency;
+		public static CurrencyObject Read(ReadOnlySpan<byte> data)
+		{
+			var name = "todo: implement code to lookup string table";
+			var prefix = "todo: implement code to lookup string table";
+			var suffix = "todo: implement code to lookup string table";
 
-		public string_id name { get; set; }         // 0x00
-		public string_id prefixSymbol { get; set; } // 0x02
-		public string_id suffixSymbol { get; set; } // 0x04
-		public uint32_t objectIcon { get; set; }    // 0x06
-		public uint8_t separator { get; set; }      // 0x0A
-		public uint8_t factor { get; set; }         // 0x0B
+			var objectIcon = BitConverter.ToUInt32(data[0x06..0x0A]);
+			var separator = data[0x0A];
+			var factor = data[0x0B];
+
+			return new CurrencyObject(name, prefix, suffix, objectIcon, separator, factor);
+		}
 	}
 }

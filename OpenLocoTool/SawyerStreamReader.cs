@@ -112,25 +112,22 @@ namespace OpenLocoTool
 
 		private object? ReadObject(ReadOnlySpan<byte> data, ObjectType objClass)
 		{
-			var objClassInt = (int)objClass;
-			var oc = ObjectClasses.ObjectClass[objClassInt];
-			Logger.Debug2($"object class description type = {oc.desc[0].type} size={data.Length}");
-
 			object? obj = objClass switch
 			{
-				ObjectType.vehicle => MemoryMarshal.AsRef<VehicleObject>(data),
-				ObjectType.trackSignal => MemoryMarshal.AsRef<TrainSignalObject>(data),
-				ObjectType.cargo => MemoryMarshal.AsRef<CargoObject>(data),
+				ObjectType.bridge => MemoryMarshal.AsRef<BridgeObject>(data),
 				ObjectType.building => MemoryMarshal.AsRef<BuildingObject>(data),
+				ObjectType.cargo => MemoryMarshal.AsRef<CargoObject>(data),
+				ObjectType.cliffEdge => MemoryMarshal.AsRef<CliffEdgeObject>(data),
+				ObjectType.climate => MemoryMarshal.AsRef<ClimateObject>(data),
+				ObjectType.competitor => MemoryMarshal.AsRef<CompetitorObject>(data),
+				ObjectType.currency => MemoryMarshal.AsRef<CurrencyObject>(data),
+				ObjectType.dock => MemoryMarshal.AsRef<DockObject>(data),
 				ObjectType.hillShapes => MemoryMarshal.AsRef<HillShapesObject>(data),
 				ObjectType.industry => MemoryMarshal.AsRef<IndustryObject>(data),
-				ObjectType.tree => MemoryMarshal.AsRef<TreeObject>(data),
 				ObjectType.track => MemoryMarshal.AsRef<TrackObject>(data),
-				ObjectType.bridge => MemoryMarshal.AsRef<BridgeObject>(data),
-				ObjectType.dock => MemoryMarshal.AsRef<DockObject>(data),
-				ObjectType.currency => MemoryMarshal.AsRef<BridgeObject>(data),
-				ObjectType.climate => MemoryMarshal.AsRef<BridgeObject>(data),
-				ObjectType.competitor => MemoryMarshal.AsRef<BridgeObject>(data),
+				ObjectType.trackSignal => MemoryMarshal.AsRef<TrainSignalObject>(data),
+				ObjectType.tree => MemoryMarshal.AsRef<TreeObject>(data),
+				ObjectType.vehicle => MemoryMarshal.AsRef<VehicleObject>(data),
 				_ => null,
 			};
 
@@ -166,7 +163,12 @@ namespace OpenLocoTool
 					}
 
 					var copyLen = rleCodeByte + 1;
-					buffer.AddRange(Enumerable.Repeat(data[i + 1], copyLen));
+
+					for (var j = 0; j < copyLen; ++j)
+					{
+						buffer.Add(data[i + 1 + j]);
+					}
+
 					i += rleCodeByte + 1;
 				}
 			}

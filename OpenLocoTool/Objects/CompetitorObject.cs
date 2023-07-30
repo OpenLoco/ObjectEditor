@@ -7,15 +7,15 @@ namespace OpenLocoTool.Objects
 	{
 		//static constexpr auto kObjectType = ObjectType::competitor;
 
-		string_id var_00;        // 0x00
-		string_id var_02;        // 0x02
-		uint32_t var_04;         // 0x04
-		uint32_t var_08;         // 0x08
-		uint32_t emotions;       // 0x0C
-		unsafe fixed uint32_t images[9];      // 0x10
-		uint8_t intelligence;    // 0x34
-		uint8_t aggressiveness;  // 0x35
-		uint8_t competitiveness; // 0x36
-		uint8_t var_37;          // 0x37
+		public string_id var_00 { get; set; }        // 0x00
+		public string_id var_02 { get; set; }        // 0x02
+		public uint32_t var_04 { get; set; }         // 0x04
+		public uint32_t var_08 { get; set; }         // 0x08
+		public uint32_t emotions { get; set; }       // 0x0C
+		public unsafe fixed uint32_t images[9];      // 0x10
+		public uint8_t intelligence { get; set; }    // 0x34
+		public uint8_t aggressiveness { get; set; }  // 0x35
+		public uint8_t competitiveness { get; set; } // 0x36
+		public uint8_t var_37 { get; set; }          // 0x37
 	}
 }

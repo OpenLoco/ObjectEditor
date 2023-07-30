@@ -7,7 +7,7 @@ namespace OpenLocoTool.Objects
 	{
 		//static constexpr auto kObjectType = ObjectType::cliffEdge;
 
-		string_id name;
-		uint32_t image; // 0x02
+		public string_id name { get; set; }
+		public uint32_t image { get; set; } // 0x02
 	}
 }

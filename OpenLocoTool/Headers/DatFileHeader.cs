@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 
-namespace OpenLocoTool.Objects
+namespace OpenLocoTool
 {
 	//public enum CustomObj : uint16_t
 	//{
@@ -37,7 +37,7 @@ namespace OpenLocoTool.Objects
 			}
 		}
 
-		private readonly byte SourceGame => (byte)((Flags >> 6) & 0x3);
+		private readonly byte SourceGame => (byte)(Flags >> 6 & 0x3);
 
 		public readonly ObjectType ObjectType => (ObjectType)(Flags & 0x3F);
 

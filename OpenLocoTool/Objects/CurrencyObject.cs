@@ -7,11 +7,11 @@ namespace OpenLocoTool.Objects
 	{
 		//static constexpr auto kObjectType = ObjectType::currency;
 
-		string_id name;         // 0x00
-		string_id prefixSymbol; // 0x02
-		string_id suffixSymbol; // 0x04
-		uint32_t objectIcon;    // 0x06
-		uint8_t separator;      // 0x0A
-		uint8_t factor;         // 0x0B
+		public string_id name { get; set; }         // 0x00
+		public string_id prefixSymbol { get; set; } // 0x02
+		public string_id suffixSymbol { get; set; } // 0x04
+		public uint32_t objectIcon { get; set; }    // 0x06
+		public uint8_t separator { get; set; }      // 0x0A
+		public uint8_t factor { get; set; }         // 0x0B
 	}
 }

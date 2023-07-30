@@ -2,6 +2,12 @@
 
 namespace OpenLocoTool.Objects
 {
+	enum DockObjectFlags : uint16_t
+	{
+		none = 0,
+		unk01 = 1 << 0,
+	};
+
 	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x28)]
 	struct DockObject
 	{

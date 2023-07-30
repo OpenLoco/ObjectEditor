@@ -2,6 +2,30 @@
 
 namespace OpenLocoTool.Objects
 {
+	enum TrackObjectPieceFlags : uint16_t
+	{
+		none = 0,
+		diagonal = 1 << 0,
+		largeCurve = 1 << 1,
+		normalCurve = 1 << 2,
+		smallCurve = 1 << 3,
+		verySmallCurve = 1 << 4,
+		slope = 1 << 5,
+		steepSlope = 1 << 6,
+		oneSided = 1 << 7,
+		slopedCurve = 1 << 8,
+		sBend = 1 << 9,
+		junction = 1 << 10,
+	};
+
+	enum TrackObjectFlags : uint16_t
+	{
+		none = 0,
+		unk_00 = 1 << 0,
+		unk_01 = 1 << 1,
+		unk_02 = 1 << 2,
+	};
+
 	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x36)]
 
 	struct TrackObject

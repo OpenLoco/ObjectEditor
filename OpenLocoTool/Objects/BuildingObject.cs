@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.Objects
 {

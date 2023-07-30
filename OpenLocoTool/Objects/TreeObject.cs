@@ -2,6 +2,19 @@
 
 namespace OpenLocoTool.Objects
 {
+	enum TreeObjectFlags : uint16_t
+	{
+		none = 0,
+		hasSnowVariation = 1 << 0,
+		unk1 = 1 << 1,
+		veryHighAltitude = 1 << 2,
+		highAltitude = 1 << 3,
+		requiresWater = 1 << 4,
+		unk5 = 1 << 5,
+		droughtResistant = 1 << 6,
+		hasShadow = 1 << 7,
+	};
+
 	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 32 * sizeof(int))] // 32 32-bit pointers pointers
 
 	struct TreeObject

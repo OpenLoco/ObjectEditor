@@ -3,7 +3,7 @@
 namespace OpenLocoTool.Objects
 {
 	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0xC)]
-	struct CurrencyObject
+	public struct CurrencyObject
 	{
 		//static constexpr auto kObjectType = ObjectType::currency;
 

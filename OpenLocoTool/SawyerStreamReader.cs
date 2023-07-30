@@ -12,7 +12,7 @@ namespace OpenLocoTool
 			=> Logger = logger;
 
 		// load file
-		public LocoObject Load(string path)
+		public ILocoObject Load(string path)
 		{
 			if (!File.Exists(path))
 			{
@@ -21,20 +21,34 @@ namespace OpenLocoTool
 			}
 
 			Logger.Log(LogLevel.Info, $"Loading {path}");
-			var data = File.ReadAllBytes(path);
-			var locoObject = new LocoObject(data);
-			return locoObject;
-			//var 
+			Span<byte> data = File.ReadAllBytes(path);
 
-			//var datHeader = MemoryMarshal.AsRef<DatFileHeader>(data[..Constants.DatFileHeaderSize]);
-			//var objHeader = MemoryMarshal.AsRef<ObjHeader>(data[Constants.DatFileHeaderSize..(Constants.DatFileHeaderSize + Constants.ObjHeaderSize)]);
+			var datFileHeader = Factory.MakeDatFileHeader(data[..Constants.DatFileHeaderSize]);
+			var objHeader = Factory.MakeObjHeader(data[Constants.DatFileHeaderSize..(Constants.DatFileHeaderSize + Constants.ObjHeaderSize)]);
+			var objSpan = Decode(objHeader.Encoding, data[(Constants.DatFileHeaderSize + Constants.ObjHeaderSize)..]);
 
-
-			//var decoded = Decode(objHeader.Encoding, data[(Constants.DatFileHeaderSize + Constants.ObjHeaderSize)..]);
-			//var obj = ReadObject(decoded, datHeader.ObjectType);
-			//return new LocoObject(datHeader, objHeader, obj);
+			return datFileHeader.ObjectType switch
+			{
+				ObjectType.bridge => MakeLocoObject<BridgeObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.building => MakeLocoObject<BuildingObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.cargo => MakeLocoObject<CargoObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.cliffEdge => MakeLocoObject<CliffEdgeObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.climate => MakeLocoObject<ClimateObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.competitor => MakeLocoObject<CompetitorObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.currency => MakeLocoObject<CurrencyObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.dock => MakeLocoObject<DockObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.hillShapes => MakeLocoObject<HillShapesObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.industry => MakeLocoObject<IndustryObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.track => MakeLocoObject<TrackObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.trackSignal => MakeLocoObject<TrainSignalObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.tree => MakeLocoObject<TreeObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.vehicle => MakeLocoObject<VehicleObject>(datFileHeader, objHeader, objSpan),
+				_ => throw new ArgumentException($"unknown object class {datFileHeader.ObjectType}"),
+			};
 		}
 
+		private static ILocoObject MakeLocoObject<T>(DatFileHeader datFileHeader, ObjHeader ObjHeader, ReadOnlySpan<byte> objSpan) where T : struct
+			=> new LocoObject<T>(datFileHeader, ObjHeader, MemoryMarshal.Read<T>(objSpan));
 
 		// taken from openloco's SawyerStreamReader::readChunk
 		private ReadOnlySpan<byte> Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
@@ -53,31 +67,6 @@ namespace OpenLocoTool
 					Logger.Log(LogLevel.Error, "Unknown chunk encoding scheme");
 					throw new InvalidDataException("Unknown encoding");
 			}
-		}
-
-		private object? ReadObject(ReadOnlySpan<byte> data, ObjectType objClass)
-		{
-			object? obj = objClass switch
-			{
-				ObjectType.bridge => MemoryMarshal.Read<BridgeObject>(data),
-				ObjectType.building => MemoryMarshal.Read<BuildingObject>(data),
-				ObjectType.cargo => MemoryMarshal.Read<CargoObject>(data),
-				ObjectType.cliffEdge => MemoryMarshal.Read<CliffEdgeObject>(data),
-				ObjectType.climate => MemoryMarshal.Read<ClimateObject>(data),
-				ObjectType.competitor => MemoryMarshal.Read<CompetitorObject>(data),
-				ObjectType.currency => MemoryMarshal.Read<CurrencyObject>(data),
-				ObjectType.dock => MemoryMarshal.Read<DockObject>(data),
-				ObjectType.hillShapes => MemoryMarshal.Read<HillShapesObject>(data),
-				ObjectType.industry => MemoryMarshal.Read<IndustryObject>(data),
-				ObjectType.track => MemoryMarshal.Read<TrackObject>(data),
-				ObjectType.trackSignal => MemoryMarshal.Read<TrainSignalObject>(data),
-				ObjectType.tree => MemoryMarshal.Read<TreeObject>(data),
-				ObjectType.vehicle => MemoryMarshal.Read<VehicleObject>(data),
-				_ => null,
-			};
-
-			Logger.Info(ReflectionLogger.ToString(obj));
-			return obj;
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle

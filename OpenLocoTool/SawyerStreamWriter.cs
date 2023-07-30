@@ -10,7 +10,7 @@ namespace OpenLocoTool
 		public SawyerStreamWriter(ILogger logger)
 			=> Logger = logger;
 
-		public void Save(string path, LocoObject locoObject)
+		public void Save(string path, ILocoObject locoObject)
 		{
 			//if (locoObject == null)
 			//{

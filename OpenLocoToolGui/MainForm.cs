@@ -77,7 +77,7 @@ namespace OpenLocoToolGui
 				// selected node changed - updated view
 				//MessageBox.Show(e.Node.Text);
 				var filename = Path.Combine(BasePath, name);
-				LocoObject lo;
+				ILocoObject lo;
 				//if (cache.ContainsKey(filename))
 				//{
 				//	lo = cache[filename];
@@ -85,8 +85,8 @@ namespace OpenLocoToolGui
 				//else
 				{
 					lo = reader.Load(filename);
-					lo.DatFileHeader.Checksum = 123;
-					var foo = lo.DatFileHeader.Checksum;
+					//lo.DatFileHeader.Checksum = 123;
+					//var foo = lo.DatFileHeader.Checksum;
 
 					//cache.Add(filename, lo);
 				}
@@ -103,11 +103,11 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		private void SetGridObject(PropertyGrid grid, LocoObject data)
+		private void SetGridObject(PropertyGrid grid, ILocoObject data)
 		{
 			if (data.DatFileHeader.ObjectType == ObjectType.vehicle)
 			{
-				grid.SelectedObject = data.DataAs<VehicleObject>();
+				grid.SelectedObject = data;
 			}
 			//return data.DatFileHeader.ObjectType switch
 			{

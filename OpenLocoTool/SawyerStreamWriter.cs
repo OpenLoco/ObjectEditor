@@ -10,80 +10,105 @@ namespace OpenLocoTool
 		public SawyerStreamWriter(ILogger logger)
 			=> Logger = logger;
 
-		public void Save(string path, ILocoObject locoObject)
+		public void Save(string filepath, ILocoObject locoObject)
 		{
-			//if (locoObject == null)
-			//{
-			//	throw new ArgumentNullException(nameof(locoObject));
-			//}
+			if (locoObject == null)
+			{
+				throw new ArgumentNullException(nameof(locoObject));
+			}
 
-			//Logger.Log(LogLevel.Info, $"Writing to {locoObject.datHdr.Name} to {path}");
+			Logger.Log(LogLevel.Info, $"Writing \"{locoObject.DatFileHeader.Name}\" to {filepath}");
 
-			//var datHdr = MemoryMarshal.Write(locoObject.datHdr);
-			//var objHeader = MemoryMarshal.Write(locoObject.objHdr);
-			//var encoded = Encode(locoObject.objHdr.Encoding, WriteObject(locoObject.obj));
-
-			//WriteToFile(datHdr, objHdr, encoded);
-
+			var encoded = Encode(locoObject.ObjHeader.Encoding, locoObject.Object.Write());
+			WriteToFile(filepath, locoObject.DatFileHeader.Write(), locoObject.ObjHeader.Write(), encoded);
 		}
 
-		//private ReadOnlySpan<byte> Encode<T>(SawyerEncoding encoding, ReadOnlySpan<byte> data)
-		//{
-		//	switch (encoding)
-		//	{
-		//		case SawyerEncoding.uncompressed:
-		//			return data;
-		//		case SawyerEncoding.runLengthSingle:
-		//			return decodeRunLengthSingle(data);
-		//		case SawyerEncoding.runLengthMulti:
-		//			return decodeRunLengthMulti(decodeRunLengthSingle(data));
-		//		case SawyerEncoding.rotate:
-		//			return decodeRotate(data);
-		//		default:
-		//			Logger.Log(LogLevel.Error, "Unknown chunk encoding scheme");
-		//			throw new InvalidDataException("Unknown encoding");
-		//	}
-		//}
-
-		// inverse of SawyerStreamReeader.ReadObject
-		//private ReadOnlySpan<byte> WriteObject(ObjectType objClass, object? locoObject)
-		//{
-		//	if (locoObject == null)
-		//	{
-		//		throw new ArgumentNullException(nameof(locoObject));
-		//	}
-
-		//	var span = new ReadOnlySpan<byte>();
-		//	object? obj = objClass switch
-		//	{
-		//		ObjectType.bridge => MemoryMarshal.Write<BridgeObject>(span, ref ),
-		//		ObjectType.building => MemoryMarshal.Write<BuildingObject>(data),
-		//		ObjectType.cargo => MemoryMarshal.Write<CargoObject>(data),
-		//		ObjectType.cliffEdge => MemoryMarshal.Write<CliffEdgeObject>(data),
-		//		ObjectType.climate => MemoryMarshal.Write<ClimateObject>(data),
-		//		ObjectType.competitor => MemoryMarshal.Write<CompetitorObject>(data),
-		//		ObjectType.currency => MemoryMarshal.Write<CurrencyObject>(data),
-		//		ObjectType.dock => MemoryMarshal.Write<DockObject>(data),
-		//		ObjectType.hillShapes => MemoryMarshal.Write<HillShapesObject>(data),
-		//		ObjectType.industry => MemoryMarshal.Write<IndustryObject>(data),
-		//		ObjectType.track => MemoryMarshal.Write<TrackObject>(data),
-		//		ObjectType.trackSignal => MemoryMarshal.Write<TrainSignalObject>(data),
-		//		ObjectType.tree => MemoryMarshal.Write<TreeObject>(data),
-		//		ObjectType.vehicle => MemoryMarshal.Write<VehicleObject>(data),
-		//		_ => null,
-		//	};
-		//}
-
-		public void WriteToFile(ReadOnlySpan<byte> datHeader, ReadOnlySpan<byte> objHeader, ReadOnlySpan<byte> data)
+		private ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
 		{
-			//var BasePath = @"Q:\Steam\steamapps\common\Locomotion\ObjData";
-			var BasePath = @"Q:\Steam\steamapps\common\Locomotion";
-			var decoded = File.Create(Path.Combine(BasePath, "decoded.dat")); // todo: change name
-			decoded.Write(MemoryMarshal.AsBytes(datHeader));
-			decoded.Write(objHeader);
-			decoded.Write(data);
-			decoded.Flush();
-			decoded.Close();
+			switch (encoding)
+			{
+				case SawyerEncoding.uncompressed:
+					return data;
+				case SawyerEncoding.runLengthSingle:
+					return encodeRunLengthSingle(data);
+				//case SawyerEncoding.runLengthMulti:
+				//	return encodeRunLengthMulti(decodeRunLengthSingle(data));
+				//case SawyerEncoding.rotate:
+				//	return encodeRotate(data);
+				default:
+					Logger.Log(LogLevel.Error, "Unknown chunk encoding scheme");
+					throw new InvalidDataException("Unknown encoding");
+			}
+		}
+
+		public void WriteToFile(string filepath, ReadOnlySpan<byte> datHeader, ReadOnlySpan<byte> objHeader, ReadOnlySpan<byte> data)
+		{
+			var stream = File.Create(filepath);
+			stream.Write(datHeader);
+			stream.Write(objHeader);
+			stream.Write(data);
+			stream.Flush();
+			stream.Close();
+		}
+
+		// taken from openloco SawyerStreamReader::encodeRunLengthSingle
+		private Span<byte> encodeRunLengthSingle(ReadOnlySpan<byte> data)
+		{
+			List<byte> buffer = new();
+			var src = 0; // ptr
+			var srcNormStart = 0; // ptr
+			var srcEnd = data.Length;
+			var count = 0;
+
+			for (var i = 0; i < data.Length; ++i)
+			{
+				if ((count != 0 && data[src] == data[src + 1]) || count > 125)
+				{
+					buffer.Add((byte)(count - 1));
+					buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
+					srcNormStart += count;
+					count = 0;
+				}
+				if (data[src] == data[src + 1])
+				{
+					for (; count < 125 && src + count < srcEnd; count++)
+					{
+						if (data[src] == data[count])
+						{
+							break;
+						}
+					}
+					buffer.Add((byte)(257 - count));
+					buffer.Add(data[src]);
+					src += count;
+					srcNormStart = src;
+					count = 0;
+				}
+				else
+				{
+					count++;
+					src++;
+				}
+			}
+			if (data[src] == data[srcEnd - 1])
+			{
+				count++;
+			}
+			if (count != 0)
+			{
+				buffer.Add((byte)(count - 1));
+				buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
+			}
+
+			// convert to span
+			Span<byte> encodedSpan = new byte[buffer.Count];
+			var counter = 0;
+			foreach (var b in buffer)
+			{
+				encodedSpan[counter++] = b;
+			}
+
+			return encodedSpan;
 		}
 	}
 }

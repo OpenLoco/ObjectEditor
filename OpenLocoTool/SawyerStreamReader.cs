@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using OpenLocoTool.Objects;
+﻿using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 
 namespace OpenLocoTool
@@ -33,9 +32,9 @@ namespace OpenLocoTool
 				//ObjectType.building => MakeLocoObject<BuildingObject>(datFileHeader, objHeader, objSpan),
 				//ObjectType.cargo => MakeLocoObject<CargoObject>(datFileHeader, objHeader, objSpan),
 				//ObjectType.cliffEdge => MakeLocoObject<CliffEdgeObject>(datFileHeader, objHeader, objSpan),
-				ObjectType.climate => MakeLocoObject(datFileHeader, objHeader, ClimateObject.Read(objSpan)),
-				ObjectType.competitor => MakeLocoObject(datFileHeader, objHeader, CompetitorObject.Read(objSpan)),
-				ObjectType.currency => MakeLocoObject(datFileHeader, objHeader, CurrencyObject.Read(objSpan)),
+				///ObjectType.climate => MakeLocoObject(datFileHeader, objHeader, ClimateObject.Read(objSpan)),
+				///ObjectType.competitor => MakeLocoObject(datFileHeader, objHeader, CompetitorObject.Read(objSpan)),
+				///ObjectType.currency => MakeLocoObject(datFileHeader, objHeader, CurrencyObject.Read(objSpan)),
 				//ObjectType.dock => MakeLocoObject<DockObject>(datFileHeader, objHeader, objSpan),
 				//ObjectType.hillShapes => MakeLocoObject<HillShapesObject>(datFileHeader, objHeader, objSpan),
 				//ObjectType.industry => MakeLocoObject<IndustryObject>(datFileHeader, objHeader, objSpan),
@@ -43,12 +42,12 @@ namespace OpenLocoTool
 				//ObjectType.trackSignal => MakeLocoObject<TrainSignalObject>(datFileHeader, objHeader, objSpan),
 				//ObjectType.tree => MakeLocoObject<TreeObject>(datFileHeader, objHeader, objSpan),
 				//ObjectType.vehicle => MakeLocoObject<VehicleObject>(datFileHeader, objHeader, objSpan),
-				_ => new LocoObject<string>(datFileHeader, objHeader, "<unknown>")
+				_ => new LocoObject(datFileHeader, objHeader, new EmptyObject("<unknown>"))
 			};
 		}
 
-		private static ILocoObject MakeLocoObject<T>(DatFileHeader datFileHeader, ObjHeader objHeader, T obj)
-			=> new LocoObject<T>(datFileHeader, objHeader, obj);
+		private static ILocoObject MakeLocoObject(DatFileHeader datFileHeader, ObjHeader objHeader, ILocoSubObject obj)
+			=> new LocoObject(datFileHeader, objHeader, obj);
 
 		//private static ILocoObject MakeLocoObject<T>(DatFileHeader datFileHeader, ObjHeader ObjHeader, ReadOnlySpan<byte> objSpan) where T : struct
 		//	=> new LocoObject<T>(datFileHeader, ObjHeader, MemoryMarshal.Read<T>(objSpan));
@@ -77,7 +76,7 @@ namespace OpenLocoTool
 		{
 			List<byte> buffer = new();
 
-			for (var i = 0; i < data.Length; i++)
+			for (var i = 0; i < data.Length; ++i)
 			{
 				var rleCodeByte = data[i];
 				if ((rleCodeByte & 128) > 0)

@@ -3,11 +3,12 @@ using System.Text;
 
 namespace OpenLocoTool
 {
-	// size = 0x10
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[Category("Header")]
-	public record DatFileHeader(uint32_t Flags, string Name, uint32_t Checksum)
+	public record DatFileHeader(uint32_t Flags, string Name, uint32_t Checksum) : ILocoSubObject
 	{
+		public int BinarySize => 0x10;
+
 		public byte SourceGame => (byte)((Flags >> 6) & 0x3);
 		public ObjectType ObjectType => (ObjectType)(Flags & 0x3F);
 
@@ -19,6 +20,21 @@ namespace OpenLocoTool
 			var name = Encoding.ASCII.GetString(data[4..12]);
 			var checksum = BitConverter.ToUInt32(data[12..16]);
 			return new DatFileHeader(flags, name, checksum);
+		}
+
+		public ReadOnlySpan<byte> Write()
+		{
+			var span = new byte[BinarySize];
+
+			var flags = BitConverter.GetBytes(Flags);
+			var name = Encoding.ASCII.GetBytes(Name);
+			var checksum = BitConverter.GetBytes(Checksum);
+
+			flags.CopyTo(span, 0);
+			name.CopyTo(span, 4);
+			checksum.CopyTo(span, 12);
+
+			return span;
 		}
 	}
 }

@@ -2,16 +2,25 @@
 
 namespace OpenLocoTool
 {
+	public interface ILocoSubObject//<T>
+	{
+		//T Read(ReadOnlySpan<byte> data);
+		ReadOnlySpan<byte> Write();
+
+		int BinarySize { get; }
+	}
+
 	public interface ILocoObject
 	{
-		public DatFileHeader DatFileHeader { get; set; }
-		public ObjHeader ObjHeader { get; set; }
+		DatFileHeader DatFileHeader { get; set; }
+		ObjHeader ObjHeader { get; set; }
+		ILocoSubObject Object { get; set; }
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class LocoObject<T> : ILocoObject
+	public class LocoObject : ILocoObject
 	{
-		public LocoObject(DatFileHeader datHdr, ObjHeader objHdr, T obj)
+		public LocoObject(DatFileHeader datHdr, ObjHeader objHdr, ILocoSubObject obj)
 		{
 			DatFileHeader = datHdr;
 			ObjHeader = objHdr;
@@ -20,9 +29,13 @@ namespace OpenLocoTool
 
 		public DatFileHeader DatFileHeader { get; set; }
 		public ObjHeader ObjHeader { get; set; }
-		public T Object { get; set; }
+		public ILocoSubObject Object { get; set; }
+	}
 
-		//protected virtual T DataAs<T>() where T : struct
-		//	=> MemoryMarshal.Read<T>(dataSpan);
+	public record EmptyObject(string PlaceholderText) : ILocoSubObject
+	{
+		public ReadOnlySpan<byte> Write() => new byte[1] { 123 };
+
+		public int BinarySize => 1;
 	}
 }

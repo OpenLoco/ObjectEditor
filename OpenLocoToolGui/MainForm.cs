@@ -6,8 +6,9 @@ namespace OpenLocoToolGui
 {
 	public partial class MainForm : Form
 	{
-		private Logger logger;
+		private ILogger logger;
 		private SawyerStreamReader reader;
+		private SawyerStreamWriter writer;
 		private const string BasePath = @"Q:\Steam\steamapps\common\Locomotion\ObjData";
 
 		public MainForm()
@@ -18,9 +19,10 @@ namespace OpenLocoToolGui
 			{
 				Level = LogLevel.Debug2
 			};
-			logger.LogAdded += (s, e) => lbLogs.Items.Insert(0, e.Log.ToString());
+			((Logger)logger).LogAdded += (s, e) => lbLogs.Items.Insert(0, e.Log.ToString());
 
 			reader = new SawyerStreamReader(logger);
+			writer = new SawyerStreamWriter(logger);
 		}
 
 		private void MainForm_Load(object sender, EventArgs e) => ListDirectory();
@@ -103,7 +105,24 @@ namespace OpenLocoToolGui
 
 		private void btnSaveChanges_Click(object sender, EventArgs e)
 		{
-			// todo: implement sawyerstreamwriter
+			var obj = (ILocoObject)pgObject.SelectedObject;
+			saveFileDialog1.InitialDirectory = BasePath;
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				var path = saveFileDialog1.FileName;
+				saveFileDialog1.DefaultExt = "dat";
+				saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
+
+				try
+				{
+					writer.Save(path, obj);
+					MessageBox.Show("File saved successfully");
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show("Error: " + ex.Message);
+				}
+			}
 		}
 
 		private void btnSetDirectory_Click(object sender, EventArgs e)

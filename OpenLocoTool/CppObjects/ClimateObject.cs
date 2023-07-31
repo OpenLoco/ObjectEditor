@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Text;
 
 namespace OpenLocoTool.Objects
 {
@@ -10,8 +11,10 @@ namespace OpenLocoTool.Objects
 		uint8_t[] SeasonLength, // 0x03
 		uint8_t WinterSnowLine, // 0x07
 		uint8_t SummerSnowLine, // 0x08
-		uint8_t pad_09)
+		uint8_t pad_09) : ILocoSubObject
 	{
+		public int BinarySize => 0xA;
+
 		public static ClimateObject Read(ReadOnlySpan<byte> data)
 		{
 			var name = "todo: implement code to lookup string table";
@@ -28,6 +31,25 @@ namespace OpenLocoTool.Objects
 			uint8_t pad_09 = 0;
 
 			return new ClimateObject(name, firstSeason, seasonLength, winterSnowLine, summerSnowLine, pad_09);
+		}
+
+		public ReadOnlySpan<byte> Write()
+		{
+			var span = new byte[BinarySize];
+
+			var name = Encoding.ASCII.GetBytes(Name);
+			// copy to string id table
+
+			span[2] = FirstSeason;
+			span[3] = SeasonLength[0];
+			span[4] = SeasonLength[1];
+			span[5] = SeasonLength[2];
+			span[6] = SeasonLength[3];
+			span[7] = WinterSnowLine;
+			span[8] = SummerSnowLine;
+			span[9] = pad_09;
+
+			return span;
 		}
 	}
 }

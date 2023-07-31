@@ -32,7 +32,7 @@ namespace OpenLocoTool
 				//ObjectType.building => MakeLocoObject<BuildingObject>(datFileHeader, objHeader, objSpan),
 				//ObjectType.cargo => MakeLocoObject<CargoObject>(datFileHeader, objHeader, objSpan),
 				//ObjectType.cliffEdge => MakeLocoObject<CliffEdgeObject>(datFileHeader, objHeader, objSpan),
-				///ObjectType.climate => MakeLocoObject(datFileHeader, objHeader, ClimateObject.Read(objSpan)),
+				ObjectType.climate => MakeLocoObject(datFileHeader, objHeader, ClimateObject.Read(objSpan)),
 				///ObjectType.competitor => MakeLocoObject(datFileHeader, objHeader, CompetitorObject.Read(objSpan)),
 				///ObjectType.currency => MakeLocoObject(datFileHeader, objHeader, CurrencyObject.Read(objSpan)),
 				//ObjectType.dock => MakeLocoObject<DockObject>(datFileHeader, objHeader, objSpan),

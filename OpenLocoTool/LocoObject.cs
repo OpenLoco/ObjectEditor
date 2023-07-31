@@ -2,6 +2,7 @@
 
 namespace OpenLocoTool
 {
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public interface ILocoSubObject//<T>
 	{
 		//T Read(ReadOnlySpan<byte> data);
@@ -10,6 +11,7 @@ namespace OpenLocoTool
 		int BinarySize { get; }
 	}
 
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public interface ILocoObject
 	{
 		DatFileHeader DatFileHeader { get; set; }

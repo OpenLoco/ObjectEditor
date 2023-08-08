@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool
+﻿namespace OpenLocoTool.Headers
 {
 	public enum ObjectType : byte
 	{
@@ -12,7 +12,7 @@
 		townNames,
 		cargo,
 		wall,
-		trackSignal,
+		signal,
 		levelCrossing,
 		streetLight,
 		tunnel,

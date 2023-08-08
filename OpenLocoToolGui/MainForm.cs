@@ -1,6 +1,8 @@
-using OpenLocoTool;
+using OpenLocoTool.DatFileParsing;
 using OpenLocoToolCommon;
+using System.ComponentModel;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace OpenLocoToolGui
 {

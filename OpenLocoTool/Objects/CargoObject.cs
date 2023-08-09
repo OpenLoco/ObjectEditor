@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -15,24 +14,24 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record CargoObject(
-		string Name,
-		uint16_t var_2,
-		uint16_t var_4,
-		string_id UnitsAndCargoName,
-		string_id UnitNameSingular,
-		string_id UnitNamePlural,
-		uint32_t UnitInlineSprite,
-		uint16_t MatchFlags,
-		CargoObjectFlags Flags,
-		uint8_t NumPlatformVariations,
-		uint8_t var_14,
-		uint8_t PremiumDays,
-		uint8_t MaxNonPremiumDays,
-		uint16_t MaxPremiumRate,
-		uint16_t PenaltyRate,
-		uint16_t PaymentFactor,
-		uint8_t PaymentIndex,
-		uint8_t UnitSize) : ILocoStruct
+		[property: LocoStructProperty] string_id Name,
+		[property: LocoStructProperty] uint16_t var_2,
+		[property: LocoStructProperty] uint16_t var_4,
+		[property: LocoStructProperty] string_id UnitsAndCargoName,
+		[property: LocoStructProperty] string_id UnitNameSingular,
+		[property: LocoStructProperty] string_id UnitNamePlural,
+		[property: LocoStructProperty] uint32_t UnitInlineSprite,
+		[property: LocoStructProperty] uint16_t MatchFlags,
+		[property: LocoStructProperty] CargoObjectFlags Flags,
+		[property: LocoStructProperty] uint8_t NumPlatformVariations,
+		[property: LocoStructProperty] uint8_t var_14,
+		[property: LocoStructProperty] uint8_t PremiumDays,
+		[property: LocoStructProperty] uint8_t MaxNonPremiumDays,
+		[property: LocoStructProperty] uint16_t MaxPremiumRate,
+		[property: LocoStructProperty] uint16_t PenaltyRate,
+		[property: LocoStructProperty] uint16_t PaymentFactor,
+		[property: LocoStructProperty] uint8_t PaymentIndex,
+		[property: LocoStructProperty] uint8_t UnitSize) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.cargo;
 		public int ObjectStructSize => 0x1F;
@@ -43,7 +42,7 @@ namespace OpenLocoTool.Objects
 
 			var byteReader = new ByteReader(data);
 			return new CargoObject(
-				name,
+				0,
 				byteReader.Read<uint16_t>(),
 				byteReader.Read<uint16_t>(),
 				byteReader.Read<string_id>(),

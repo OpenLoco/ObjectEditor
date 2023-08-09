@@ -5,7 +5,7 @@ using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.Objects
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record TownNamesObject() : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.townNames;

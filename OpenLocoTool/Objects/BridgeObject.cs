@@ -8,7 +8,7 @@ namespace OpenLocoTool.Objects
 	public record BridgeObject(
 		[property: LocoStructProperty] string_id Name,
 		[property: LocoStructProperty] uint8_t NoRoof, // 0x02
-		[property: LocoStructProperty, LocoArrayLength(0x06 - 0x03)] uint8_t pad_03,
+		[property: LocoStructProperty, LocoArrayLength(0x06 - 0x03)] uint8_t[] pad_03,
 		[property: LocoStructProperty] uint16_t var_06,            // 0x06
 		[property: LocoStructProperty] uint8_t SpanLength,         // 0x08
 		[property: LocoStructProperty] uint8_t PillarSpacing,      // 0x09
@@ -21,12 +21,14 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty] uint16_t DisabledTrackCfg,  // 0x14
 		[property: LocoStructProperty] uint32_t Image,             // 0x16
 		[property: LocoStructProperty] uint8_t TrackNumCompatible, // 0x1A
-		[property: LocoStructProperty, LocoArrayLength(7)] uint8_t TrackMods,       // 0x1B
+		[property: LocoStructProperty, LocoArrayLength(BridgeObject.TrackModsLength)] uint8_t[] TrackMods,       // 0x1B
 		[property: LocoStructProperty] uint8_t RoadNumCompatible,  // 0x22
-		[property: LocoStructProperty, LocoArrayLength(7)] uint8_t RoadMods,        // 0x23
+		[property: LocoStructProperty, LocoArrayLength(BridgeObject.RoadModsLength)] uint8_t[] RoadMods,        // 0x23
 		[property: LocoStructProperty] uint16_t DesignedYear      // 0x2A
 	) : ILocoStruct
 	{
+		public const int TrackModsLength = 7;
+		public const int RoadModsLength = 7;
 		public ObjectType ObjectType => ObjectType.bridge;
 		public int ObjectStructSize => 0x2C;
 		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();

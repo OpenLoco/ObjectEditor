@@ -19,18 +19,7 @@ namespace OpenLocoTool.Objects
 
 		public const int Seasons = 4;
 
-		public static ILocoStruct Read(ReadOnlySpan<byte> data)
-		{
-			var name = "todo: implement code to lookup string table";
-			var byteReader = new ByteReader(data);
-			return new ClimateObject(
-				byteReader.Read<string_id>(),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read_Array<uint8_t>(4),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint8_t>());
-		}
+		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
 
 		public ReadOnlySpan<byte> Write()
 		{

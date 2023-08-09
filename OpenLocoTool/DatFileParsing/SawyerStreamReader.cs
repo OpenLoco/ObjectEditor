@@ -12,12 +12,14 @@ namespace OpenLocoTool.DatFileParsing
 			=> Logger = logger;
 
 		// load file
-		public ILocoObject Load(string path)
+		public ILocoObject Load(FileInfo fileInfo)
 		{
-			var (ObjHdr1, ObjHDr2, Data) = LoadFromFile(path);
+			var (ObjHdr1, ObjHDr2, Data) = LoadFromFile(fileInfo.FullName);
 			var decodedData = Decode(ObjHDr2.Encoding, Data);
-			return ParseData(ObjHdr1, ObjHDr2, decodedData);
+			var locoStruct = GetLocoStruct(ObjHdr1.ObjectType, decodedData);
+			return new LocoObject(ObjHdr1, ObjHDr2, locoStruct, fileInfo.Name);
 		}
+
 		public (ObjectHeader ObjHdr1, ObjectHeader2 ObjHdr2, byte[] RawData) LoadFromFile(string path)
 		{
 			if (!File.Exists(path))
@@ -35,33 +37,47 @@ namespace OpenLocoTool.DatFileParsing
 			return (objectHeader, objectHeader2, data[(Constants.DatFileHeaderSize + Constants.ObjHeaderSize)..].ToArray());
 		}
 
-		public static ILocoObject ParseData(ObjectHeader objectHeader, ObjectHeader2 objectHeader2, ReadOnlySpan<byte> data)
+		public static ILocoStruct GetLocoStruct(ObjectType objectType, ReadOnlySpan<byte> data)
 		{
-			return objectHeader.ObjectType switch
+			return objectType switch
 			{
-				ObjectType.bridge => MakeLocoObject(objectHeader, objectHeader2, ByteReader.ReadLocoStruct<BridgeObject>(data)),
-				//ObjectType.building => MakeLocoObject<BuildingObject>(datFileHeader, objHeader, objSpan),
-				//ObjectType.cargo => MakeLocoObject<CargoObject>(datFileHeader, objHeader, objSpan),
-				ObjectType.cliffEdge => MakeLocoObject(objectHeader, objectHeader2, ByteReader.ReadLocoStruct<CliffEdgeObject>(data)),
-				ObjectType.climate => MakeLocoObject(objectHeader, objectHeader2, ByteReader.ReadLocoStruct<ClimateObject>(data)),
-				ObjectType.competitor => MakeLocoObject(objectHeader, objectHeader2, ByteReader.ReadLocoStruct<CompetitorObject>(data)),
-				ObjectType.currency => MakeLocoObject(objectHeader, objectHeader2, ByteReader.ReadLocoStruct<CurrencyObject>(data)),
-				//ObjectType.dock => MakeLocoObject<DockObject>(datFileHeader, objHeader, objSpan),
-				//ObjectType.hillShapes => MakeLocoObject<HillShapesObject>(datFileHeader, objHeader, objSpan),
+				//ObjectType.airport => ByteReader.ReadLocoStruct<AirportObject>(data),
+				ObjectType.bridge => ByteReader.ReadLocoStruct<BridgeObject>(data),
+				//ObjectType.building => ByteReader.ReadLocoStruct<BuildingObject>(data),
+				ObjectType.cargo => ByteReader.ReadLocoStruct<CargoObject>(data),
+				ObjectType.cliffEdge => ByteReader.ReadLocoStruct<CliffEdgeObject>(data),
+				ObjectType.climate => ByteReader.ReadLocoStruct<ClimateObject>(data),
+				ObjectType.competitor => ByteReader.ReadLocoStruct<CompetitorObject>(data),
+				ObjectType.currency => ByteReader.ReadLocoStruct<CurrencyObject>(data),
+				//ObjectType.dock => ByteReader.ReadLocoStruct<DockObject>(data),
+				ObjectType.hillShapes => ByteReader.ReadLocoStruct<HillShapesObject>(data),
 				//ObjectType.industry => MakeLocoObject<IndustryObject>(datFileHeader, objHeader, objSpan),
-				//ObjectType.track => MakeLocoObject<TrackObject>(datFileHeader, objHeader, objSpan),
-				ObjectType.signal => MakeLocoObject(objectHeader, objectHeader2, ByteReader.ReadLocoStruct<TrainSignalObject>(data)),
-				//ObjectType.tree => MakeLocoObject<TreeObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.interfaceSkin => ByteReader.ReadLocoStruct<InterfaceSkinObject>(data),
+				ObjectType.land => ByteReader.ReadLocoStruct<LandObject>(data),
+				ObjectType.levelCrossing => ByteReader.ReadLocoStruct<LevelCrossingObject>(data),
+				ObjectType.region => ByteReader.ReadLocoStruct<RegionObject>(data),
+				ObjectType.roadExtra => ByteReader.ReadLocoStruct<RoadExtraObject>(data),
+				ObjectType.road => ByteReader.ReadLocoStruct<RoadObject>(data),
+				//ObjectType.roadStation => ByteReader.ReadLocoStruct<RoadStationObject>(data),
+				ObjectType.scaffolding => ByteReader.ReadLocoStruct<ScaffoldingObject>(data),
+				ObjectType.scenarioText => ByteReader.ReadLocoStruct<ScenarioTextObject>(data),
+				ObjectType.snow => ByteReader.ReadLocoStruct<SnowObject>(data),
+				//ObjectType.sound => ByteReader.ReadLocoStruct<SoundObject>(data),
+				//ObjectType.steam => ByteReader.ReadLocoStruct<SteamObject>(data),
+				ObjectType.streetLight => ByteReader.ReadLocoStruct<StreetLightObject>(data),
+				//ObjectType.townNames => ByteReader.ReadLocoStruct<TownNamesObject>(data),
+				ObjectType.trackExtra => ByteReader.ReadLocoStruct<TrackExtraObject>(data),
+				ObjectType.track => ByteReader.ReadLocoStruct<TrackObject>(data),
+				ObjectType.trainSignal => ByteReader.ReadLocoStruct<TrainSignalObject>(data),
+				//ObjectType.trainStation => ByteReader.ReadLocoStruct<TrainStationObject>(data),
+				ObjectType.tree => ByteReader.ReadLocoStruct<TreeObject>(data),
+				ObjectType.tunnel => ByteReader.ReadLocoStruct<TunnelObject>(data),
 				//ObjectType.vehicle => MakeLocoObject<VehicleObject>(datFileHeader, objHeader, objSpan),
-				_ => new LocoObject(objectHeader, objectHeader2, new EmptyObject("<unknown>"))
+				ObjectType.wall => ByteReader.ReadLocoStruct<WallObject>(data),
+				ObjectType.water => ByteReader.ReadLocoStruct<WaterObject>(data),
+				_ => new EmptyObject($"{objectType} parsing not implemented yet"),
 			};
 		}
-
-		private static ILocoObject MakeLocoObject(ObjectHeader datFileHeader, ObjectHeader2 objHeader, ILocoStruct obj)
-			=> new LocoObject(datFileHeader, objHeader, obj);
-
-		//private static ILocoObject MakeLocoObject<T>(DatFileHeader datFileHeader, ObjHeader ObjHeader, ReadOnlySpan<byte> objSpan) where T : struct
-		//	=> new LocoObject<T>(datFileHeader, ObjHeader, MemoryMarshal.Read<T>(objSpan));
 
 		// taken from openloco's SawyerStreamReader::readChunk
 		public byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)

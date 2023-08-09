@@ -10,6 +10,7 @@ namespace OpenLocoTool.Objects
 		None = 0 << 0,
 		IsLeft = 1 << 0,
 		HasLights = 1 << 1,
+		unk1 = 1 << 2,
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -25,14 +26,14 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty] uint16_t var_0C,        // 0x0C
 		[property: LocoStructProperty] uint32_t Image,         // 0x0E
 		[property: LocoStructProperty] uint8_t NumCompatible,     // 0x12
-		[property: LocoStructProperty, LocoArrayLength(TrainSignalObject.ModCount)] uint8_t[] Mods,            // 0x13 // 7 length
+		[property: LocoStructProperty, LocoArrayLength(TrainSignalObject.ModsLength)] uint8_t[] Mods,            // 0x13 // 7 length
 		[property: LocoStructProperty] uint16_t DesignedYear,  // 0x1A
 		[property: LocoStructProperty] uint16_t ObsoleteYear   // 0x1C
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.signal;
+		public ObjectType ObjectType => ObjectType.trainSignal;
 
-		public const int ModCount = 7;
+		public const int ModsLength = 7;
 
 		public int ObjectStructSize => 0x1E;
 

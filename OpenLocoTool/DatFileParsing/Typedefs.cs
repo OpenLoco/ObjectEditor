@@ -6,9 +6,7 @@ global using int32_t = System.Int32;
 global using uint32_t = System.UInt32;
 global using string_id = System.UInt16;
 global using Speed16 = System.Int16;
-global using Speed32 = System.Int32;
 global using MicroZ = System.Byte;
-global using SmallZ = System.Byte;
 using System.Runtime.InteropServices;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x28)]

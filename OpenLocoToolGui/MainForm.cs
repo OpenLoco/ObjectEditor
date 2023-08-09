@@ -2,7 +2,6 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoToolCommon;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace OpenLocoToolGui
 {
@@ -27,10 +26,64 @@ namespace OpenLocoToolGui
 			writer = new SawyerStreamWriter(logger);
 		}
 
-		private void MainForm_Load(object sender, EventArgs e) => ListDirectory();
+		Dictionary<string, ILocoObject> cache = new();
+		private BackgroundWorker worker;
+
+		private void MainForm_Load(object sender, EventArgs e)
+		{
+			ListDirectory();
+		}
+
+		private void CreateIndex_DoWork()
+		{
+			// load every object
+			var rootDirectoryInfo = new DirectoryInfo(BasePath);
+			var files = rootDirectoryInfo.GetFiles().Where(f => f.Extension.Equals(".dat", StringComparison.OrdinalIgnoreCase)).ToList();
+			var count = (float)files.Count;
+			var counter = 0;
+			foreach (var fileInfo in files)
+			{
+				cache.Add(fileInfo.Name, reader.Load(fileInfo));
+				var percentCompletion = (int)(++counter / count * 100);
+				progressBar1.Value = percentCompletion;
+				//worker.ReportProgress(percentCompletion, $"Processed {fileInfo.Name}");
+			}
+
+			// generate treeview
+			var grouping = cache.Values.GroupBy(kvp => kvp.ObjectHeader.ObjectType);
+			tvObjType.SuspendLayout();
+			var categoryNodes = new List<TreeNode>();
+			foreach (var group in grouping)
+			{
+				var categoryNode = new TreeNode(group.Key.ToString());
+				foreach (var obj in group)
+				{
+					categoryNode.Nodes.Add(new TreeNode(obj.Filename));
+				}
+				categoryNode.Collapse();
+				categoryNodes.Add(categoryNode);
+			}
+			//categoryNodes.Sort();
+			//tvObjType.Nodes.AddRange(categoryNodes);
+			var sorted = categoryNodes.OrderBy(tn => tn.Text).ToArray();
+			tvObjType.Nodes.AddRange(sorted);
+			tvObjType.ResumeLayout(true);
+		}
+
+		private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			//progressDialog.Close();
+		}
+
+		private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+		{
+			progressBar1.Value = e.ProgressPercentage;
+			logger.Info(e.UserState.ToString());
+			//progressDialog.UpdateProgress(e.ProgressPercentage, e.UserState.ToString());
+		}
 
 		void ListDirectory()
-			=> ListDirectory(treeView1, BasePath, tbFileFilter.Text);
+			=> ListDirectory(tvFileTree, BasePath, tbFileFilter.Text);
 
 		private static void ListDirectory(TreeView treeView, string path, string regexFilter)
 		{
@@ -91,19 +144,17 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			var filename = Path.Combine(BasePath, name);
+			var fileInfo = new FileInfo(Path.Combine(BasePath, name));
 			ILocoObject locoObject;
-			if (!cache.ContainsKey(filename))
+			if (!cache.ContainsKey(fileInfo.Name))
 			{
-				locoObject = reader.Load(filename);
-				cache.Add(filename, locoObject);
+				locoObject = reader.Load(fileInfo);
+				cache.Add(fileInfo.Name, locoObject);
 			}
 
-			locoObject = cache[filename];
+			locoObject = cache[fileInfo.Name];
 			pgObject.SelectedObject = locoObject;
 		}
-
-		Dictionary<string, ILocoObject> cache = new();
 
 		private void btnSaveChanges_Click(object sender, EventArgs e)
 		{
@@ -135,6 +186,24 @@ namespace OpenLocoToolGui
 		private void tbFileFilter_TextChanged(object sender, EventArgs e)
 		{
 			ListDirectory();
+		}
+
+		private void btnParseAll_Click(object sender, EventArgs e)
+		{
+			CreateIndex_DoWork();
+			//worker = new BackgroundWorker();
+			//worker.DoWork += CreateIndex_DoWork;
+			//worker.ProgressChanged += worker_ProgressChanged;
+			//worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
+			//worker.RunWorkerAsync();
+		}
+
+		private void tvObjType_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			if (cache.ContainsKey(e.Node.Text))
+			{
+				pgObject.SelectedObject = cache[e.Node.Text];
+			}
 		}
 	}
 }

@@ -5,8 +5,17 @@ using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.Objects
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-	public record TrackExtraObject() : ILocoStruct
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public record TrackExtraObject(
+		[property: LocoStructProperty] string_id Name,
+		[property: LocoStructProperty] uint16_t TrackPieces,    // 0x02
+		[property: LocoStructProperty] uint8_t PaintStyle,      // 0x04
+		[property: LocoStructProperty] uint8_t CostIndex,       // 0x05
+		[property: LocoStructProperty] int16_t BuildCostFactor, // 0x06
+		[property: LocoStructProperty] int16_t SellCostFactor,  // 0x08
+		[property: LocoStructProperty] uint32_t Image,          // 0x0A
+		[property: LocoStructProperty] uint32_t var_0E
+		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.trackExtra;
 		public int ObjectStructSize => 0x12;

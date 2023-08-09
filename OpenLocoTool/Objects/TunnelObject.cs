@@ -5,8 +5,11 @@ using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.Objects
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-	public record TunnelObject() : ILocoStruct
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public record TunnelObject(
+		[property: LocoStructProperty] string_id Name, // 0x00
+		[property: LocoStructProperty] uint32_t Image  // 0x02
+		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.tunnel;
 		public int ObjectStructSize => 0x6;

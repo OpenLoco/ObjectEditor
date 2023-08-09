@@ -1,9 +1,4 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using OpenLocoTool.Objects;
-
-namespace OpenLocoTool.DatFileParsing
+﻿namespace OpenLocoTool.DatFileParsing
 {
 	public static class StaticByteReader
 	{
@@ -153,15 +148,44 @@ namespace OpenLocoTool.DatFileParsing
 			{
 				return Read_ArrayT(t, arrLength);
 			}
+			//if (t.IsEnum)
+			//{
+			//	var underlying = t.GetEnumUnderlyingType();
+			//	var val = ReadT(underlying);
+
+			//	// need special handling for loco flags :|
+			//	//var enu = Enum.ToObject(t, val);
+			//	//return enu;
+			//	return Enum.GetValues(t).GetValue(0) ?? throw new ArgumentException($"{t}");
+			//}
+
 			if (t.IsEnum)
 			{
-				var underlying = t.GetEnumUnderlyingType();
-				var val = ReadT(underlying);
+				var underlyingType = t.GetEnumUnderlyingType();
+				var underlyingValue = ReadT(underlyingType); // Read the underlying value
 
-				// need special handling for loco flags :|
-				//var enu = Enum.ToObject(t, val);
-				//return enu;
-				return Enum.GetValues(t).GetValue(0) ?? throw new ArgumentException($"{t}");
+				if (t.IsDefined(typeof(FlagsAttribute), inherit: false))
+				{
+					var enumValues = Enum.GetValues(t);
+					var combinedValue = 0;
+
+					foreach (var enumValue in enumValues)
+					{
+						var enumValueInt = Convert.ToInt32(Enum.Parse(t, enumValue.ToString())); // Convert to int
+						if ((enumValueInt & Convert.ToInt32(underlyingValue)) != 0) // Convert to int
+						{
+							combinedValue |= enumValueInt;
+						}
+					}
+
+					var enu = Enum.ToObject(t, combinedValue);
+					return enu;
+				}
+				else
+				{
+					var enu = Enum.ToObject(t, underlyingValue);
+					return enu;
+				}
 			}
 
 			throw new NotImplementedException(t.ToString());
@@ -211,7 +235,13 @@ namespace OpenLocoTool.DatFileParsing
 
 			try
 			{
-				var newInstance = Activator.CreateInstance(typeof(T), args.ToArray());
+				var argsArr = args.ToArray();
+				if (argsArr.Length == 0)
+				{
+					throw new ArgumentException($"{nameof(argsArr)} had no arguments to construct an object");
+				}
+
+				var newInstance = Activator.CreateInstance(typeof(T), argsArr);
 				return newInstance is T instance
 					? (ILocoStruct)instance
 					: throw new InvalidDataException("couldn't parse");

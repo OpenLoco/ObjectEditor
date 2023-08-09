@@ -5,11 +5,20 @@ using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.Objects
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record RoadStationObject() : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.roadStation;
 		public int ObjectStructSize => 0x6E;
+		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
+		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public record TrainStationObject() : ILocoStruct
+	{
+		public ObjectType ObjectType => ObjectType.trainStation;
+		public int ObjectStructSize => 0xAE;
 		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
 		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}

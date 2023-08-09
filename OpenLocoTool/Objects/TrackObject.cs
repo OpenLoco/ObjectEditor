@@ -29,7 +29,33 @@ namespace OpenLocoTool.Objects
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public record TrackObject() : ILocoStruct
+	public record TrackObject(
+		[property: LocoStructProperty] string_id Name,
+		[property: LocoStructProperty] TrackObjectPieceFlags TrackPieces, // 0x02
+		[property: LocoStructProperty] uint16_t StationTrackPieces,       // 0x04
+		[property: LocoStructProperty] uint8_t var_06,
+		[property: LocoStructProperty] uint8_t NumCompatible,     // 0x07
+		[property: LocoStructProperty] uint8_t NumMods,           // 0x08
+		[property: LocoStructProperty] uint8_t NumSignals,        // 0x09
+		[property: LocoStructProperty, LocoArrayLength(4)] uint8_t[] Mods,           // 0x0A
+		[property: LocoStructProperty] uint16_t Signals,          // 0x0E bitset
+		[property: LocoStructProperty] uint16_t CompatibleTracks, // 0x10 bitset
+		[property: LocoStructProperty] uint16_t CompatibleRoads,  // 0x12 bitset
+		[property: LocoStructProperty] int16_t BuildCostFactor,   // 0x14
+		[property: LocoStructProperty] int16_t SellCostFactor,    // 0x16
+		[property: LocoStructProperty] int16_t TunnelCostFactor,  // 0x18
+		[property: LocoStructProperty] uint8_t CostIndex,         // 0x1A
+		[property: LocoStructProperty] uint8_t Tunnel,            // 0x1B
+		[property: LocoStructProperty] uint16_t CurveSpeed,       // 0x1C
+		[property: LocoStructProperty] uint32_t Image,            // 0x1E
+		[property: LocoStructProperty] TrackObjectFlags Flags,    // 0x22
+		[property: LocoStructProperty] uint8_t NumBridges,        // 0x24
+		[property: LocoStructProperty, LocoArrayLength(7)] uint8_t[] Bridges,        // 0x25
+		[property: LocoStructProperty] uint8_t NumStations,       // 0x2C
+		[property: LocoStructProperty, LocoArrayLength(7)] uint8_t[] Stations,       // 0x2D
+		[property: LocoStructProperty] uint8_t DisplayOffset,     // 0x34
+		[property: LocoStructProperty] uint8_t pad_35
+	) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.track;
 		public int ObjectStructSize => 0x36;

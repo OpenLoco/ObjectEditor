@@ -1,6 +1,5 @@
 using OpenLocoTool;
 using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Headers;
 using OpenLocoToolCommon;
 
 namespace OpenLocoToolTests

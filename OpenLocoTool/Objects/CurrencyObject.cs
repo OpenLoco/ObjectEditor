@@ -7,17 +7,17 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record CurrencyObject
 	(
-		[property: LocoStructProperty] string_id Name,         // 0x00
-		[property: LocoStructProperty] string_id PrefixSymbol, // 0x02
-		[property: LocoStructProperty] string_id SuffixSymbol, // 0x04
-		[property: LocoStructProperty] uint32_t ObjectIcon, // 0x06
-		[property: LocoStructProperty] uint8_t Separator,   // 0x0A
-		[property: LocoStructProperty] uint8_t Factor       // 0x0B
+		[property: LocoStructProperty(0x00)] string_id Name,
+		[property: LocoStructProperty(0x02)] string_id PrefixSymbol,
+		[property: LocoStructProperty(0x04)] string_id SuffixSymbol,
+		[property: LocoStructProperty(0x06)] uint32_t ObjectIcon,
+		[property: LocoStructProperty(0x0A)] uint8_t Separator,
+		[property: LocoStructProperty(0x0B)] uint8_t Factor
 	) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.currency;
 
-		public int ObjectStructSize => 0xC;
+		public static int ObjectStructSize => 0xC;
 
 		public static ILocoStruct Read(ReadOnlySpan<byte> data)
 		{

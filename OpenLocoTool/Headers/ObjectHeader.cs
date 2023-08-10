@@ -8,7 +8,7 @@ namespace OpenLocoTool.Headers
 	[Category("Header")]
 	public record ObjectHeader(uint32_t Flags, string Name, uint32_t Checksum) : ILocoStruct
 	{
-		public int ObjectStructSize => 0x10;
+		public static int ObjectStructSize => 0x10;
 
 		public byte SourceGame => (byte)(Flags >> 6 & 0x3);
 		public ObjectType ObjectType => (ObjectType)(Flags & 0x3F);

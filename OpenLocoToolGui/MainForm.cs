@@ -41,7 +41,7 @@ namespace OpenLocoToolGui
 			var files = rootDirectoryInfo.GetFiles().Where(f => f.Extension.Equals(".dat", StringComparison.OrdinalIgnoreCase)).ToList();
 			var count = (float)files.Count;
 			var counter = 0;
-			foreach (var fileInfo in files)
+			foreach (var fileInfo in files.Where(fi => !cache.ContainsKey(fi.Name)))
 			{
 				cache.Add(fileInfo.Name, reader.Load(fileInfo));
 				var percentCompletion = (int)(++counter / count * 100);

@@ -11,6 +11,11 @@
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
 	public class LocoStructPropertyAttribute : Attribute
 	{
-		public LocoStructPropertyAttribute() { }
+		public LocoStructPropertyAttribute(int offset)
+		{
+			Offset = offset;
+		}
+
+		public int Offset { get; }
 	}
 }

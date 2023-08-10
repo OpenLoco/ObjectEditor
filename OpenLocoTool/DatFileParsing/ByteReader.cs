@@ -1,4 +1,8 @@
-﻿namespace OpenLocoTool.DatFileParsing
+﻿using System.Reflection;
+using System.Runtime.InteropServices;
+using OpenLocoTool.Objects;
+
+namespace OpenLocoTool.DatFileParsing
 {
 	public static class StaticByteReader
 	{
@@ -50,47 +54,47 @@
 			=> this.data = data;
 
 		ReadOnlySpan<byte> data { get; }
-		int position;
+		int StreamPosition { get; set; }
 
 		public uint8_t Read_uint8t()
 		{
-			var tmp = data[position];
-			position += 1;
+			var tmp = data[StreamPosition];
+			StreamPosition += 1;
 			return tmp;
 		}
 
 		public int8_t Read_int8t()
 		{
-			var tmp = (sbyte)data[position];
-			position += 1;
+			var tmp = (sbyte)data[StreamPosition];
+			StreamPosition += 1;
 			return tmp;
 		}
 
 		public uint16_t Read_uint16t()
 		{
-			var tmp = BitConverter.ToUInt16(data[position..(position + 2)]);
-			position += 2;
+			var tmp = BitConverter.ToUInt16(data[StreamPosition..(StreamPosition + 2)]);
+			StreamPosition += 2;
 			return tmp;
 		}
 
 		public int16_t Read_int16t()
 		{
-			var tmp = BitConverter.ToInt16(data[position..(position + 2)]);
-			position += 2;
+			var tmp = BitConverter.ToInt16(data[StreamPosition..(StreamPosition + 2)]);
+			StreamPosition += 2;
 			return tmp;
 		}
 
 		public uint32_t Read_uint32t()
 		{
-			var tmp = BitConverter.ToUInt32(data[position..(position + 4)]);
-			position += 4;
+			var tmp = BitConverter.ToUInt32(data[StreamPosition..(StreamPosition + 4)]);
+			StreamPosition += 4;
 			return tmp;
 		}
 
 		public int32_t Read_int32t()
 		{
-			var tmp = BitConverter.ToInt32(data[position..(position + 4)]);
-			position += 4;
+			var tmp = BitConverter.ToInt32(data[StreamPosition..(StreamPosition + 4)]);
+			StreamPosition += 4;
 			return tmp;
 		}
 
@@ -98,6 +102,11 @@
 		{
 			return Read_uint16t();
 		}
+
+		//public T Read_struct<T>() where T : struct
+		//{
+
+		//}
 
 		// this method isn't necessary normally since you can just call the above methods ^
 		// but it saves a lot of code rewriting for the Read_Array method
@@ -112,6 +121,12 @@
 				arr[i] = Read<T>();
 			}
 			return arr;
+		}
+
+		public object ReadT(Type t, int position, int arrLength = 0)
+		{
+			StreamPosition = position;
+			return ReadT(t, arrLength);
 		}
 
 		public object ReadT(Type t, int arrLength = 0)
@@ -148,18 +163,7 @@
 			{
 				return Read_ArrayT(t, arrLength);
 			}
-			//if (t.IsEnum)
-			//{
-			//	var underlying = t.GetEnumUnderlyingType();
-			//	var val = ReadT(underlying);
-
-			//	// need special handling for loco flags :|
-			//	//var enu = Enum.ToObject(t, val);
-			//	//return enu;
-			//	return Enum.GetValues(t).GetValue(0) ?? throw new ArgumentException($"{t}");
-			//}
-
-			if (t.IsEnum)
+			if (t.IsEnum) // this is so big because we need special handling for 'flags' enums
 			{
 				var underlyingType = t.GetEnumUnderlyingType();
 				var underlyingValue = ReadT(underlyingType); // Read the underlying value
@@ -188,7 +192,49 @@
 				}
 			}
 
+			if (t.IsValueType)
+			{
+				var size = StructSizeLookup[t];
+				return CastReadOnlySpanToStruct(t, data[StreamPosition..(StreamPosition + size)]);
+			}
+
 			throw new NotImplementedException(t.ToString());
+		}
+
+		// todo: can just use attributes and reflection to avoid using this table at all
+		static Dictionary<Type, int> StructSizeLookup = new()
+		{
+			{ typeof(Pos2), Pos2.ObjectStructSize },
+			{ typeof(BuildingPartAnimation), BuildingPartAnimation.ObjectStructSize },
+			{ typeof(IndustryObjectUnk38), IndustryObjectUnk38.ObjectStructSize },
+			{ typeof(IndustryObjectProductionRateRange), IndustryObjectProductionRateRange.ObjectStructSize },
+			{ typeof(TownNamesUnk), TownNamesUnk.ObjectStructSize },
+			{ typeof(ImageAndHeight), ImageAndHeight.ObjectStructSize },
+		};
+
+		public static object CastReadOnlySpanToStruct(Type structType, ReadOnlySpan<byte> span)
+		{
+			if (!structType.IsValueType)
+			{
+				throw new ArgumentException(nameof(structType));
+			}
+
+			var result = Activator.CreateInstance(structType);
+
+			var properties = structType.GetProperties();
+			for (var i = 0; i < properties.Length && i < span.Length; i++)
+			{
+				var property = properties[i];
+				var locoAttrs = property.GetCustomAttributes(typeof(LocoStructPropertyAttribute), inherit: false);
+				if (!locoAttrs.Any())
+				{
+					continue;
+				}
+				var propertyValue = Convert.ChangeType(span[i], property.PropertyType);
+				property.SetValue(result, propertyValue);
+			}
+
+			return result;
 		}
 
 		public object Read_ArrayT(Type t, int length)
@@ -211,11 +257,12 @@
 			foreach (var p in properties)
 			{
 				// ignore non-binary properties on the records
-				var shouldParse = p.GetCustomAttributes(typeof(LocoStructPropertyAttribute), inherit: false).Any();
-				if (!shouldParse)
+				var locoAttrs = p.GetCustomAttributes(typeof(LocoStructPropertyAttribute), inherit: false);
+				if (!locoAttrs.Any())
 				{
 					continue;
 				}
+				var locoProperty = (LocoStructPropertyAttribute)locoAttrs[0];
 
 				// special array handling
 				if (p.PropertyType.IsArray)
@@ -225,11 +272,11 @@
 					{
 						throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {typeof(T)} with property {p} didn't have LocoArrayLength attribute specified");
 					}
-					args.Add(byteReader.ReadT(p.PropertyType, ((LocoArrayLengthAttribute)attrs[0]).Length));
+					args.Add(byteReader.ReadT(p.PropertyType, locoProperty.Offset, ((LocoArrayLengthAttribute)attrs[0]).Length));
 				}
 				else
 				{
-					args.Add(byteReader.ReadT(p.PropertyType));
+					args.Add(byteReader.ReadT(p.PropertyType, locoProperty.Offset));
 				}
 			}
 

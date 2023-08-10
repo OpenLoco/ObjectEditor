@@ -7,11 +7,15 @@ global using uint32_t = System.UInt32;
 global using string_id = System.UInt16;
 global using Speed16 = System.Int16;
 global using MicroZ = System.Byte;
-using System.Runtime.InteropServices;
+global using SoundObjectId = System.Byte;
+using OpenLocoTool.DatFileParsing;
+using System.ComponentModel;
 
-[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x28)]
-struct Pos2
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public record struct Pos2(int16_t X, int16_t y) : ILocoStruct
 {
-	public int16_t x { get; set; }
-	public int16_t y { get; set; }
+	public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
+	public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
+
+	public static int ObjectStructSize => 0x04;
 }

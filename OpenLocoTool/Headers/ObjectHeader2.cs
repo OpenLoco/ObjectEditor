@@ -9,7 +9,7 @@ namespace OpenLocoTool.Headers
 	{
 		//public ObjectType ObjectType => throw new NotImplementedException();
 
-		public int ObjectStructSize => 0x5;
+		public static int ObjectStructSize => 0x5;
 
 		public static ILocoStruct Read(ReadOnlySpan<byte> data)
 		{

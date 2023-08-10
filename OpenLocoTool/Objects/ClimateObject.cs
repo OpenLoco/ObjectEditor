@@ -6,16 +6,17 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record ClimateObject(
-		[property: LocoStructProperty] string_id Name,         // 0x00
-		[property: LocoStructProperty] uint8_t FirstSeason,    // 0x02
-		[property: LocoStructProperty, LocoArrayLength(ClimateObject.Seasons)] uint8_t[] SeasonLengths, // 0x03
-		[property: LocoStructProperty] uint8_t WinterSnowLine, // 0x07
-		[property: LocoStructProperty] uint8_t SummerSnowLine, // 0x08
-		[property: LocoStructProperty] uint8_t pad_09) : ILocoStruct
+		[property: LocoStructProperty(0x00)] string_id Name,
+		[property: LocoStructProperty(0x02)] uint8_t FirstSeason,
+		[property: LocoStructProperty(0x03), LocoArrayLength(ClimateObject.Seasons)] uint8_t[] SeasonLengths,
+		[property: LocoStructProperty(0x07)] uint8_t WinterSnowLine,
+		[property: LocoStructProperty(0x08)] uint8_t SummerSnowLine,
+		[property: LocoStructProperty(0x09)] uint8_t pad_09
+		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.climate;
 
-		public int ObjectStructSize => 0xA;
+		public static int ObjectStructSize => 0xA;
 
 		public const int Seasons = 4;
 

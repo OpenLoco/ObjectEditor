@@ -6,12 +6,7 @@ namespace OpenLocoTool.DatFileParsing
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public interface ILocoStruct
 	{
-		abstract static ILocoStruct Read(ReadOnlySpan<byte> data);
-		ReadOnlySpan<byte> Write();
-
-		int ObjectStructSize { get; }
-
-		//ObjectType ObjectType { get; }
+		static int ObjectStructSize { get; }
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -44,11 +39,10 @@ namespace OpenLocoTool.DatFileParsing
 	{
 		public ObjectType ObjectType => throw new NotImplementedException();
 
-		public int ObjectStructSize => 1;
+		public static int ObjectStructSize => 1;
 
 		public ReadOnlySpan<byte> Write() => new byte[1] { 123 };
 
 		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
-
 	}
 }

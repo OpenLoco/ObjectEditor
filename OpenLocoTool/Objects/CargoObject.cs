@@ -14,27 +14,28 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record CargoObject(
-		[property: LocoStructProperty] string_id Name,
-		[property: LocoStructProperty] uint16_t var_2,
-		[property: LocoStructProperty] uint16_t var_4,
-		[property: LocoStructProperty] string_id UnitsAndCargoName,
-		[property: LocoStructProperty] string_id UnitNameSingular,
-		[property: LocoStructProperty] string_id UnitNamePlural,
-		[property: LocoStructProperty] uint32_t UnitInlineSprite,
-		[property: LocoStructProperty] uint16_t MatchFlags,
-		[property: LocoStructProperty] CargoObjectFlags Flags,
-		[property: LocoStructProperty] uint8_t NumPlatformVariations,
-		[property: LocoStructProperty] uint8_t var_14,
-		[property: LocoStructProperty] uint8_t PremiumDays,
-		[property: LocoStructProperty] uint8_t MaxNonPremiumDays,
-		[property: LocoStructProperty] uint16_t MaxPremiumRate,
-		[property: LocoStructProperty] uint16_t PenaltyRate,
-		[property: LocoStructProperty] uint16_t PaymentFactor,
-		[property: LocoStructProperty] uint8_t PaymentIndex,
-		[property: LocoStructProperty] uint8_t UnitSize) : ILocoStruct
+		[property: LocoStructProperty(0x00)] string_id Name,
+		[property: LocoStructProperty(0x02)] uint16_t var_2,
+		[property: LocoStructProperty(0x04)] uint16_t var_4,
+		[property: LocoStructProperty(0x06)] string_id UnitsAndCargoName,
+		[property: LocoStructProperty(0x08)] string_id UnitNameSingular,
+		[property: LocoStructProperty(0x0A)] string_id UnitNamePlural,
+		[property: LocoStructProperty(0x0C)] uint32_t UnitInlineSprite,
+		[property: LocoStructProperty(0x10)] uint16_t MatchFlags,
+		[property: LocoStructProperty(0x12)] CargoObjectFlags Flags,
+		[property: LocoStructProperty(0x13)] uint8_t NumPlatformVariations,
+		[property: LocoStructProperty(0x14)] uint8_t var_14,
+		[property: LocoStructProperty(0x15)] uint8_t PremiumDays,
+		[property: LocoStructProperty(0x16)] uint8_t MaxNonPremiumDays,
+		[property: LocoStructProperty(0x17)] uint16_t MaxPremiumRate,
+		[property: LocoStructProperty(0x19)] uint16_t PenaltyRate,
+		[property: LocoStructProperty(0x1B)] uint16_t PaymentFactor,
+		[property: LocoStructProperty(0x1D)] uint8_t PaymentIndex,
+		[property: LocoStructProperty(0x1E)] uint8_t UnitSize
+		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.cargo;
-		public int ObjectStructSize => 0x1F;
+		public static int ObjectStructSize => 0x1F;
 
 		public static ILocoStruct Read(ReadOnlySpan<byte> data)
 		{

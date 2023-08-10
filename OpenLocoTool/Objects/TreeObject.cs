@@ -18,30 +18,30 @@ namespace OpenLocoTool.Objects
 	};
 
 	public record TreeObject(
-		[property: LocoStructProperty] string_id Name,                  // 0x00
-		[property: LocoStructProperty] uint8_t var_02,                  // 0x02
-		[property: LocoStructProperty] uint8_t Height,                  // 0x03
-		[property: LocoStructProperty] uint8_t var_04,                  // 0x04
-		[property: LocoStructProperty] uint8_t var_05,                  // 0x05
-		[property: LocoStructProperty] uint8_t NumRotations,            // 0x06 (1,2,4)
-		[property: LocoStructProperty] uint8_t Growth,                  // 0x07 (number of tree size images)
-		[property: LocoStructProperty] TreeObjectFlags Flags,           // 0x08
-		[property: LocoStructProperty, LocoArrayLength(6)] uint32_t[] Sprites,             // 0x0A
-		[property: LocoStructProperty, LocoArrayLength(6)] uint32_t[] SnowSprites,         // 0x22
-		[property: LocoStructProperty] uint16_t ShadowImageOffset,      // 0x3A
-		[property: LocoStructProperty] uint8_t var_3C,                  // 0x3C
-		[property: LocoStructProperty] uint8_t SeasonState,             // 0x3D (index for sprites, seasons + dying)
-		[property: LocoStructProperty] uint8_t var_3E,                  // 0x3E
-		[property: LocoStructProperty] uint8_t CostIndex,               // 0x3F
-		[property: LocoStructProperty] int16_t BuildCostFactor,         // 0x40
-		[property: LocoStructProperty] int16_t ClearCostFactor,         // 0x42
-		[property: LocoStructProperty] uint32_t Colours,                // 0x44
-		[property: LocoStructProperty] int16_t Rating,                  // 0x48
-		[property: LocoStructProperty] int16_t DemolishRatingReduction // 0x4A
+		[property: LocoStructProperty(0x00)] string_id Name,
+		[property: LocoStructProperty(0x02)] uint8_t var_02,
+		[property: LocoStructProperty(0x03)] uint8_t Height,
+		[property: LocoStructProperty(0x04)] uint8_t var_04,
+		[property: LocoStructProperty(0x05)] uint8_t var_05,
+		[property: LocoStructProperty(0x06)] uint8_t NumRotations, //  (1,2,4)
+		[property: LocoStructProperty(0x07)] uint8_t Growth, // (number of tree size images)
+		[property: LocoStructProperty(0x08)] TreeObjectFlags Flags,
+		[property: LocoStructProperty(0x0A), LocoArrayLength(6)] uint32_t[] Sprites,             // 0x0A
+		[property: LocoStructProperty(0x22), LocoArrayLength(6)] uint32_t[] SnowSprites,         // 0x22
+		[property: LocoStructProperty(0x3A)] uint16_t ShadowImageOffset,
+		[property: LocoStructProperty(0x3C)] uint8_t var_3C,
+		[property: LocoStructProperty(0x3D)] uint8_t SeasonState, // (index for sprites, seasons + dying)
+		[property: LocoStructProperty(0x3E)] uint8_t var_3E,
+		[property: LocoStructProperty(0x3F)] uint8_t CostIndex,
+		[property: LocoStructProperty(0x40)] int16_t BuildCostFactor,
+		[property: LocoStructProperty(0x42)] int16_t ClearCostFactor,
+		[property: LocoStructProperty(0x44)] uint32_t Colours,
+		[property: LocoStructProperty(0x48)] int16_t Rating,
+		[property: LocoStructProperty(0x4A)] int16_t DemolishRatingReduction
 	) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.tree;
-		public int ObjectStructSize => 0x4C;
+		public static int ObjectStructSize => 0x4C;
 		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
 		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}

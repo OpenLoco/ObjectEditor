@@ -7,20 +7,20 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record LevelCrossingObject(
-		[property: LocoStructProperty] string_id Name,
-		[property: LocoStructProperty] int16_t CostFactor,     // 0x02
-		[property: LocoStructProperty] int16_t SellCostFactor, // 0x04
-		[property: LocoStructProperty] uint8_t CostIndex,      // 0x06
-		[property: LocoStructProperty] uint8_t AnimationSpeed, // 0x07
-		[property: LocoStructProperty] uint8_t ClosingFrames,  // 0x08
-		[property: LocoStructProperty] uint8_t ClosedFrames,   // 0x09
-		[property: LocoStructProperty, LocoArrayLength(0x0C - 0x0A)] uint8_t pad_0A,
-		[property: LocoStructProperty] uint16_t DesignedYear, // 0x0C
-		[property: LocoStructProperty] uint32_t Image         // 0x0E
+		[property: LocoStructProperty(0x00)] string_id Name,
+		[property: LocoStructProperty(0x02)] int16_t CostFactor,
+		[property: LocoStructProperty(0x04)] int16_t SellCostFactor,
+		[property: LocoStructProperty(0x06)] uint8_t CostIndex,
+		[property: LocoStructProperty(0x07)] uint8_t AnimationSpeed,
+		[property: LocoStructProperty(0x08)] uint8_t ClosingFrames,
+		[property: LocoStructProperty(0x09)] uint8_t ClosedFrames,
+		[property: LocoStructProperty(0x0A), LocoArrayLength(0x0C - 0x0A)] uint8_t pad_0A,
+		[property: LocoStructProperty(0x0C)] uint16_t DesignedYear,
+		[property: LocoStructProperty(0x0E)] uint32_t Image
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.levelCrossing;
-		public int ObjectStructSize => 0x12;
+		public static int ObjectStructSize => 0x12;
 		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
 		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}

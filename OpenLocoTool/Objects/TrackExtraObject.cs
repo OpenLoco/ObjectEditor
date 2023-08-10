@@ -7,18 +7,18 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record TrackExtraObject(
-		[property: LocoStructProperty] string_id Name,
-		[property: LocoStructProperty] uint16_t TrackPieces,    // 0x02
-		[property: LocoStructProperty] uint8_t PaintStyle,      // 0x04
-		[property: LocoStructProperty] uint8_t CostIndex,       // 0x05
-		[property: LocoStructProperty] int16_t BuildCostFactor, // 0x06
-		[property: LocoStructProperty] int16_t SellCostFactor,  // 0x08
-		[property: LocoStructProperty] uint32_t Image,          // 0x0A
-		[property: LocoStructProperty] uint32_t var_0E
+		[property: LocoStructProperty(0x00)] string_id Name,
+		[property: LocoStructProperty(0x02)] uint16_t TrackPieces,
+		[property: LocoStructProperty(0x04)] uint8_t PaintStyle,
+		[property: LocoStructProperty(0x05)] uint8_t CostIndex,
+		[property: LocoStructProperty(0x06)] int16_t BuildCostFactor,
+		[property: LocoStructProperty(0x08)] int16_t SellCostFactor,
+		[property: LocoStructProperty(0x0A)] uint32_t Image,
+		[property: LocoStructProperty(0x0E)] uint32_t var_0E
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.trackExtra;
-		public int ObjectStructSize => 0x12;
+		public static int ObjectStructSize => 0x12;
 		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
 		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}

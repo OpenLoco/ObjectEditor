@@ -30,35 +30,35 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record TrackObject(
-		[property: LocoStructProperty] string_id Name,
-		[property: LocoStructProperty] TrackObjectPieceFlags TrackPieces, // 0x02
-		[property: LocoStructProperty] uint16_t StationTrackPieces,       // 0x04
-		[property: LocoStructProperty] uint8_t var_06,
-		[property: LocoStructProperty] uint8_t NumCompatible,     // 0x07
-		[property: LocoStructProperty] uint8_t NumMods,           // 0x08
-		[property: LocoStructProperty] uint8_t NumSignals,        // 0x09
-		[property: LocoStructProperty, LocoArrayLength(4)] uint8_t[] Mods,           // 0x0A
-		[property: LocoStructProperty] uint16_t Signals,          // 0x0E bitset
-		[property: LocoStructProperty] uint16_t CompatibleTracks, // 0x10 bitset
-		[property: LocoStructProperty] uint16_t CompatibleRoads,  // 0x12 bitset
-		[property: LocoStructProperty] int16_t BuildCostFactor,   // 0x14
-		[property: LocoStructProperty] int16_t SellCostFactor,    // 0x16
-		[property: LocoStructProperty] int16_t TunnelCostFactor,  // 0x18
-		[property: LocoStructProperty] uint8_t CostIndex,         // 0x1A
-		[property: LocoStructProperty] uint8_t Tunnel,            // 0x1B
-		[property: LocoStructProperty] uint16_t CurveSpeed,       // 0x1C
-		[property: LocoStructProperty] uint32_t Image,            // 0x1E
-		[property: LocoStructProperty] TrackObjectFlags Flags,    // 0x22
-		[property: LocoStructProperty] uint8_t NumBridges,        // 0x24
-		[property: LocoStructProperty, LocoArrayLength(7)] uint8_t[] Bridges,        // 0x25
-		[property: LocoStructProperty] uint8_t NumStations,       // 0x2C
-		[property: LocoStructProperty, LocoArrayLength(7)] uint8_t[] Stations,       // 0x2D
-		[property: LocoStructProperty] uint8_t DisplayOffset,     // 0x34
-		[property: LocoStructProperty] uint8_t pad_35
+		[property: LocoStructProperty(0x00)] string_id Name,
+		[property: LocoStructProperty(0x02)] TrackObjectPieceFlags TrackPieces,
+		[property: LocoStructProperty(0x04)] uint16_t StationTrackPieces,
+		[property: LocoStructProperty(0x06)] uint8_t var_06,
+		[property: LocoStructProperty(0x07)] uint8_t NumCompatible,
+		[property: LocoStructProperty(0x08)] uint8_t NumMods,
+		[property: LocoStructProperty(0x09)] uint8_t NumSignals,
+		[property: LocoStructProperty(0x0A), LocoArrayLength(4)] uint8_t[] Mods,
+		[property: LocoStructProperty(0x0E)] uint16_t Signals, // bitset
+		[property: LocoStructProperty(0x10)] uint16_t CompatibleTracks, // bitset
+		[property: LocoStructProperty(0x12)] uint16_t CompatibleRoads, // bitset
+		[property: LocoStructProperty(0x14)] int16_t BuildCostFactor,
+		[property: LocoStructProperty(0x16)] int16_t SellCostFactor,
+		[property: LocoStructProperty(0x18)] int16_t TunnelCostFactor,
+		[property: LocoStructProperty(0x1A)] uint8_t CostIndex,
+		[property: LocoStructProperty(0x1B)] uint8_t Tunnel,
+		[property: LocoStructProperty(0x1C)] uint16_t CurveSpeed,
+		[property: LocoStructProperty(0x1E)] uint32_t Image,
+		[property: LocoStructProperty(0x22)] TrackObjectFlags Flags,
+		[property: LocoStructProperty(0x24)] uint8_t NumBridges,
+		[property: LocoStructProperty(0x25), LocoArrayLength(7)] uint8_t[] Bridges,        // 0x25
+		[property: LocoStructProperty(0x2C)] uint8_t NumStations,
+		[property: LocoStructProperty(0x2D), LocoArrayLength(7)] uint8_t[] Stations,       // 0x2D
+		[property: LocoStructProperty(0x34)] uint8_t DisplayOffset,
+		[property: LocoStructProperty(0x35)] uint8_t pad_35
 	) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.track;
-		public int ObjectStructSize => 0x36;
+		public static int ObjectStructSize => 0x36;
 		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
 		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}

@@ -12,29 +12,52 @@ namespace OpenLocoTool.DatFileParsing
 			=> Logger = logger;
 
 		// load file
-		public ILocoObject Load(FileInfo fileInfo)
+		public ILocoObject LoadFull(string filename)
 		{
-			var (ObjHdr1, ObjHDr2, Data) = LoadFromFile(fileInfo.FullName);
-			var decodedData = Decode(ObjHDr2.Encoding, Data);
-			var locoStruct = GetLocoStruct(ObjHdr1.ObjectType, decodedData);
-			return new LocoObject(ObjHdr1, ObjHDr2, locoStruct, fileInfo.Name);
+			var (ObjectHeader, Data) = LoadFromFile(filename);
+			var decodedData = Decode(ObjectHeader.Encoding, Data);
+			var locoStruct = GetLocoStruct(ObjectHeader.ObjectType, decodedData);
+			return new LocoObject(ObjectHeader, locoStruct);
 		}
 
-		public (ObjectHeader ObjHdr1, ObjectHeader2 ObjHdr2, byte[] RawData) LoadFromFile(string path)
+
+		public (ObjectHeader ObjHdr1, byte[] RawData) LoadFromFile(string filename)
 		{
-			if (!File.Exists(path))
+			if (!File.Exists(filename))
 			{
-				Logger.Log(LogLevel.Error, $"Path doesn't exist: {path}");
+				Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
 				return default;
 			}
 
-			Logger.Log(LogLevel.Info, $"Loading {path}");
-			Span<byte> data = File.ReadAllBytes(path);
+			Logger.Log(LogLevel.Info, $"Loading {filename}");
+			Span<byte> data = File.ReadAllBytes(filename);
 
-			var objectHeader = (ObjectHeader)ObjectHeader.Read(data[..Constants.DatFileHeaderSize]);
-			var objectHeader2 = (ObjectHeader2)ObjectHeader2.Read(data[Constants.DatFileHeaderSize..(Constants.DatFileHeaderSize + Constants.ObjHeaderSize)]);
+			var objectHeader = ObjectHeader.Read(data);
+			return (objectHeader, data[ObjectHeader.StructLength..].ToArray());
+		}
 
-			return (objectHeader, objectHeader2, data[(Constants.DatFileHeaderSize + Constants.ObjHeaderSize)..].ToArray());
+		public ObjectHeader LoadHeader(string filename)
+		{
+			if (!File.Exists(filename))
+			{
+				Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
+				return default;
+			}
+
+			Logger.Log(LogLevel.Info, $"Loading header for {filename}");
+			var size = ObjectHeader.StructLength;
+			var data = new byte[size];
+
+			using (var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
+			{
+				var bytesRead = fs.Read(data, 0, size);
+				if (bytesRead != size)
+				{
+					throw new InvalidOperationException($"bytes read ({bytesRead}) didn't match bytes expected ({size})");
+				}
+			}
+
+			return ObjectHeader.Read(data);
 		}
 
 		public static ILocoStruct GetLocoStruct(ObjectType objectType, ReadOnlySpan<byte> data)

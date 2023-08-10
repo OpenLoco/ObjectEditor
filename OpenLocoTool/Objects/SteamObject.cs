@@ -21,7 +21,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x01)] uint8_t Height
 	) : ILocoStruct
 	{
-		public static int ObjectStructSize => 0x02;
+		public static int StructLength => 0x02;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -44,6 +44,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.steam;
-		public static int ObjectStructSize => 0x28;
+		public static int StructLength => 0x28;
 	}
 }

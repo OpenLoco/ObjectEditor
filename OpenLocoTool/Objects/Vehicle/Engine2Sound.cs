@@ -24,6 +24,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x1A)] uint8_t SpeedFreqFactor
 		) : ILocoStruct
 	{
-		public static int ObjectStructSize => 0x1B;
+		public static int StructLength => 0x1B;
 	}
 }

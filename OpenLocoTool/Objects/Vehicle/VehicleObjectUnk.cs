@@ -13,6 +13,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x05)] uint8_t var_05
 		) : ILocoStruct
 	{
-		public static int ObjectStructSize => 0x6;
+		public static int StructLength => 0x6;
 	}
 }

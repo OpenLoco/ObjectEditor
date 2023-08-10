@@ -16,6 +16,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.region;
-		public static int ObjectStructSize => 0x12;
+		public static int StructLength => 0x12;
 	}
 }

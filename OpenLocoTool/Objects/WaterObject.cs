@@ -17,6 +17,6 @@ namespace OpenLocoTool.Objects
 	) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.water;
-		public static int ObjectStructSize => 0xE;
+		public static int StructLength => 0xE;
 	}
 }

@@ -10,6 +10,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x02)] SimpleAnimationType Type
 		) : ILocoStruct
 	{
-		public static int ObjectStructSize => 0x3;
+		public static int StructLength => 0x3;
 	}
 }

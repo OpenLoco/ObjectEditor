@@ -15,6 +15,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.sound;
-		public static int ObjectStructSize => 0xC;
+		public static int StructLength => 0xC;
 	}
 }

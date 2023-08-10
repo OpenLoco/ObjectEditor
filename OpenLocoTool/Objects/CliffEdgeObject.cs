@@ -12,6 +12,6 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.cliffEdge;
 
-		public static int ObjectStructSize => 0x6;
+		public static int StructLength => 0x6;
 	}
 }

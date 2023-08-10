@@ -201,20 +201,20 @@ namespace OpenLocoTool.DatFileParsing
 		static Dictionary<Type, int> StructSizeLookup = new()
 		{
 			// misc
-			{ typeof(Pos2), Pos2.ObjectStructSize },
-			{ typeof(BuildingPartAnimation), BuildingPartAnimation.ObjectStructSize },
-			{ typeof(IndustryObjectUnk38), IndustryObjectUnk38.ObjectStructSize },
-			{ typeof(IndustryObjectProductionRateRange), IndustryObjectProductionRateRange.ObjectStructSize },
-			{ typeof(TownNamesUnk), TownNamesUnk.ObjectStructSize },
-			{ typeof(ImageAndHeight), ImageAndHeight.ObjectStructSize },
+			{ typeof(Pos2), Pos2.StructLength },
+			{ typeof(BuildingPartAnimation), BuildingPartAnimation.StructLength },
+			{ typeof(IndustryObjectUnk38), IndustryObjectUnk38.StructLength },
+			{ typeof(IndustryObjectProductionRateRange), IndustryObjectProductionRateRange.StructLength },
+			{ typeof(TownNamesUnk), TownNamesUnk.StructLength },
+			{ typeof(ImageAndHeight), ImageAndHeight.StructLength },
 			// vehicles
-			{ typeof(BodySprite), BodySprite.ObjectStructSize },
-			{ typeof(BogieSprite), BogieSprite.ObjectStructSize },
-			{ typeof(Engine1Sound), Engine1Sound.ObjectStructSize },
-			{ typeof(Engine2Sound), Engine2Sound.ObjectStructSize },
-			{ typeof(FrictionSound), FrictionSound.ObjectStructSize },
-			{ typeof(SimpleAnimation), SimpleAnimation.ObjectStructSize },
-			{ typeof(VehicleObjectUnk), VehicleObjectUnk.ObjectStructSize },
+			{ typeof(BodySprite), BodySprite.StructLength },
+			{ typeof(BogieSprite), BogieSprite.StructLength },
+			{ typeof(Engine1Sound), Engine1Sound.StructLength },
+			{ typeof(Engine2Sound), Engine2Sound.StructLength },
+			{ typeof(FrictionSound), FrictionSound.StructLength },
+			{ typeof(SimpleAnimation), SimpleAnimation.StructLength },
+			{ typeof(VehicleObjectUnk), VehicleObjectUnk.StructLength },
 		};
 
 		public static object CastReadOnlySpanToStruct(Type structType, ReadOnlySpan<byte> span)

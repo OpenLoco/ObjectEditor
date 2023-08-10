@@ -52,7 +52,7 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.vehicle;
-		public static int ObjectStructSize => 0x15E;
+		public static int StructLength => 0x15E;
 
 		public const int MaxBodySprites = 4;
 	}

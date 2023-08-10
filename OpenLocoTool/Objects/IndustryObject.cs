@@ -45,7 +45,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x01)] uint8_t animationSpeed // Also encodes in bit 7 if the animation is position modified
 		) : ILocoStruct
 	{
-		public static int ObjectStructSize => 0x2;
+		public static int StructLength => 0x2;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -54,7 +54,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x01)] uint8_t var_01
 		) : ILocoStruct
 	{
-		public static int ObjectStructSize => 0x2;
+		public static int StructLength => 0x2;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -63,7 +63,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x02)] uint16_t max
 		) : ILocoStruct
 	{
-		public static int ObjectStructSize => 0x4;
+		public static int StructLength => 0x4;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -116,6 +116,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.industry;
-		public static int ObjectStructSize => 0xF4;
+		public static int StructLength => 0xF4;
 	}
 }

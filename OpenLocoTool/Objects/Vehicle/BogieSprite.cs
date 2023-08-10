@@ -16,6 +16,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x0E)] uint32_t SteepImageIds   // steep sprites
 		) : ILocoStruct
 	{
-		public static int ObjectStructSize => 0x12;
+		public static int StructLength => 0x12;
 	}
 }

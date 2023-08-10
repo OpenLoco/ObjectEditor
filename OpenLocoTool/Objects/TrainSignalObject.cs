@@ -35,7 +35,7 @@ namespace OpenLocoTool.Objects
 
 		public const int ModsLength = 7;
 
-		public static int ObjectStructSize => 0x1E;
+		public static int StructLength => 0x1E;
 
 		public static ILocoStruct Read(ReadOnlySpan<byte> data)
 		{

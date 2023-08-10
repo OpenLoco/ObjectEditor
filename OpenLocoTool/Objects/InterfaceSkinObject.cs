@@ -30,6 +30,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.interfaceSkin;
-		public static int ObjectStructSize => 0x18;
+		public static int StructLength => 0x18;
 	}
 }

@@ -16,7 +16,7 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.climate;
 
-		public static int ObjectStructSize => 0xA;
+		public static int StructLength => 0xA;
 
 		public const int Seasons = 4;
 	}

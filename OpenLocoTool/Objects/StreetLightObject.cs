@@ -12,7 +12,7 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.streetLight;
-		public static int ObjectStructSize => 0xC;
+		public static int StructLength => 0xC;
 		public const int DesignedYearLength = 3;
 
 		public static ILocoStruct Read(ReadOnlySpan<byte> data)

@@ -1,6 +1,10 @@
 using OpenLocoTool.DatFileParsing;
+using OpenLocoTool.Headers;
 using OpenLocoToolCommon;
 using System.ComponentModel;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace OpenLocoToolGui
@@ -10,7 +14,8 @@ namespace OpenLocoToolGui
 		private ILogger logger;
 		private SawyerStreamReader reader;
 		private SawyerStreamWriter writer;
-		private const string BasePath = @"Q:\Steam\steamapps\common\Locomotion\ObjData";
+		private const string BaseDirectory = @"Q:\Steam\steamapps\common\Locomotion\ObjData";
+		private const string IndexFilename = "ObjectIndex.json";
 
 		public MainForm()
 		{
@@ -26,140 +31,82 @@ namespace OpenLocoToolGui
 			writer = new SawyerStreamWriter(logger);
 		}
 
-		Dictionary<string, ILocoObject> cache = new();
-		private BackgroundWorker worker;
+		Dictionary<string, ObjectHeader> headerIndex = new(); // key is full path/filename
+		Dictionary<string, ILocoObject> objectCache = new(); // key is full path/filename
+		string currentDir;
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
-			ListDirectory();
+			Init(BaseDirectory);
 		}
 
-		private void CreateIndex_DoWork()
+		void Init(string directory)
 		{
-			// load every object
-			var rootDirectoryInfo = new DirectoryInfo(BasePath);
-			var files = rootDirectoryInfo.GetFiles().Where(f => f.Extension.Equals(".dat", StringComparison.OrdinalIgnoreCase)).ToList();
-			var count = (float)files.Count;
-			var counter = 0;
-			foreach (var fileInfo in files.Where(fi => !cache.ContainsKey(fi.Name)))
-			{
-				cache.Add(fileInfo.Name, reader.Load(fileInfo));
-				var percentCompletion = (int)(++counter / count * 100);
-				progressBar1.Value = percentCompletion;
-				//worker.ReportProgress(percentCompletion, $"Processed {fileInfo.Name}");
-			}
+			currentDir = directory;
+			InitialiseIndex();
+			// SerialiseHeaderIndexToFile(); // optional - index creation is so fast it's not really necessary to cache this
+			InitFileTreeView();
+			InitCategoryTreeView();
+		}
 
-			// generate treeview
-			var grouping = cache.Values.GroupBy(kvp => kvp.ObjectHeader.ObjectType);
-			tvObjType.SuspendLayout();
-			var categoryNodes = new List<TreeNode>();
-			foreach (var group in grouping)
+		void InitialiseIndex()
+		{
+			var allFiles = Directory.GetFiles(currentDir, "*.dat", SearchOption.AllDirectories);
+			headerIndex.Clear();
+			foreach (var file in allFiles)
 			{
-				var categoryNode = new TreeNode(group.Key.ToString());
+				var objectHeader = reader.LoadHeader(file);
+				if (!headerIndex.TryAdd(file, objectHeader))
+				{
+					logger.Warning($"Didn't add file {file} - already exists (how???)");
+				}
+			}
+		}
+
+		void SerialiseHeaderIndexToFile()
+		{
+			var json = JsonSerializer.Serialize(headerIndex, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, });
+			File.WriteAllText(Path.Combine(currentDir, IndexFilename), json);
+		}
+
+		void InitFileTreeView(string fileFilter = "")
+		{
+			tvFileTree.SuspendLayout();
+			tvFileTree.Nodes.Clear();
+			var filteredFiles = headerIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			foreach (var obj in filteredFiles)
+			{
+				var relative = Path.GetRelativePath(currentDir, obj.Key);
+				tvFileTree.Nodes.Add(obj.Key, relative);
+			}
+			tvFileTree.ResumeLayout(true);
+		}
+
+		void InitCategoryTreeView(string fileFilter = "")
+		{
+			tvObjType.SuspendLayout();
+			tvObjType.Nodes.Clear();
+			var filteredFiles = headerIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
+			{
+				var typeNode = new TreeNode(group.Key.ToString());
 				foreach (var obj in group)
 				{
-					categoryNode.Nodes.Add(new TreeNode(obj.Filename));
+					typeNode.Nodes.Add(obj.Key, obj.Value.Name);
 				}
-				categoryNode.Collapse();
-				categoryNodes.Add(categoryNode);
+				tvObjType.Nodes.Add(typeNode);
 			}
-			//categoryNodes.Sort();
-			//tvObjType.Nodes.AddRange(categoryNodes);
-			var sorted = categoryNodes.OrderBy(tn => tn.Text).ToArray();
-			tvObjType.Nodes.AddRange(sorted);
+
 			tvObjType.ResumeLayout(true);
 		}
 
-		private void Worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-		{
-			//progressDialog.Close();
-		}
-
-		private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
-		{
-			progressBar1.Value = e.ProgressPercentage;
-			logger.Info(e.UserState.ToString());
-			//progressDialog.UpdateProgress(e.ProgressPercentage, e.UserState.ToString());
-		}
-
-		void ListDirectory()
-			=> ListDirectory(tvFileTree, BasePath, tbFileFilter.Text);
-
-		private static void ListDirectory(TreeView treeView, string path, string regexFilter)
-		{
-			treeView.Nodes.Clear();
-			var rootDirectoryInfo = new DirectoryInfo(path);
-			treeView.Nodes.Add(CreateDirectoryNode(rootDirectoryInfo, regexFilter));
-			treeView.TopNode.Expand();
-		}
-
-		private static TreeNode CreateDirectoryNode(DirectoryInfo directoryInfo, string regexFilter)
-		{
-			var directoryNode = new TreeNode(directoryInfo.Name);
-			foreach (var directory in directoryInfo.GetDirectories())
-			{
-				var newDir = CreateDirectoryNode(directory, regexFilter);
-				if (newDir.Nodes.Count > 0)
-				{
-					directoryNode.Nodes.Add(newDir);
-				}
-			}
-
-			foreach (var file in directoryInfo.GetFiles())
-			{
-				if (Regex.Matches(file.Name, regexFilter, RegexOptions.IgnoreCase).Count > 0)
-				{
-					directoryNode.Nodes.Add(new TreeNode(file.Name));
-				}
-			}
-
-			return directoryNode;
-		}
-
-		string PathInTreeView(TreeNode node)
-		{
-			if (node == null)
-			{
-				return string.Empty;
-			}
-
-			var str = string.Empty;
-			if (node.Parent != null)
-			{
-				str = Path.Combine(PathInTreeView(node.Parent), node.Text);
-			}
-			return str;
-		}
-
-		private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
-		{
-			if (e.Node == null)
-			{
-				return;
-			}
-
-			var name = PathInTreeView(e.Node); // use e.Node.FullPath instead...
-			if (!name.EndsWith(".dat", StringComparison.OrdinalIgnoreCase))
-			{
-				return;
-			}
-
-			var fileInfo = new FileInfo(Path.Combine(BasePath, name));
-			ILocoObject locoObject;
-			if (!cache.ContainsKey(fileInfo.Name))
-			{
-				locoObject = reader.Load(fileInfo);
-				cache.Add(fileInfo.Name, locoObject);
-			}
-
-			locoObject = cache[fileInfo.Name];
-			pgObject.SelectedObject = locoObject;
-		}
-
+		// note: doesn't work atm
 		private void btnSaveChanges_Click(object sender, EventArgs e)
 		{
 			var obj = (ILocoObject)pgObject.SelectedObject;
-			saveFileDialog1.InitialDirectory = BasePath;
+			saveFileDialog1.InitialDirectory = BaseDirectory;
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
 				var path = saveFileDialog1.FileName;
@@ -180,30 +127,36 @@ namespace OpenLocoToolGui
 
 		private void btnSetDirectory_Click(object sender, EventArgs e)
 		{
-			folderBrowserDialog1.ShowDialog(this);
+			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
+			{
+				Init(objectDirBrowser.SelectedPath);
+			}
 		}
 
 		private void tbFileFilter_TextChanged(object sender, EventArgs e)
 		{
-			ListDirectory();
+			InitFileTreeView();
+			InitCategoryTreeView();
 		}
 
-		private void btnParseAll_Click(object sender, EventArgs e)
+		private void tv_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-			CreateIndex_DoWork();
-			//worker = new BackgroundWorker();
-			//worker.DoWork += CreateIndex_DoWork;
-			//worker.ProgressChanged += worker_ProgressChanged;
-			//worker.RunWorkerCompleted += Worker_RunWorkerCompleted;
-			//worker.RunWorkerAsync();
-		}
-
-		private void tvObjType_AfterSelect(object sender, TreeViewEventArgs e)
-		{
-			if (cache.ContainsKey(e.Node.Text))
+			if (e.Node == null)
 			{
-				pgObject.SelectedObject = cache[e.Node.Text];
+				return;
 			}
+
+			pgObject.SelectedObject = LoadAndCacheObject(e.Node.Name);
+		}
+
+		ILocoObject LoadAndCacheObject(string filename)
+		{
+			if (!objectCache.ContainsKey(filename))
+			{
+				objectCache.Add(filename, reader.LoadFull(filename));
+			}
+
+			return objectCache[filename];
 		}
 	}
 }

@@ -17,6 +17,6 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.currency;
 
-		public static int ObjectStructSize => 0xC;
+		public static int StructLength => 0xC;
 	}
 }

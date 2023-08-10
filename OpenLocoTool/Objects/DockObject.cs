@@ -32,6 +32,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.dock;
-		public static int ObjectStructSize => 0x28;
+		public static int StructLength => 0x28;
 	}
 }

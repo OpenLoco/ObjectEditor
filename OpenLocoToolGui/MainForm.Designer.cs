@@ -70,12 +70,14 @@
 			// btnSaveChanges
 			// 
 			btnSaveChanges.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			btnSaveChanges.Enabled = false;
 			btnSaveChanges.Location = new Point(276, 12);
 			btnSaveChanges.Name = "btnSaveChanges";
 			btnSaveChanges.Size = new Size(520, 52);
 			btnSaveChanges.TabIndex = 18;
 			btnSaveChanges.Text = "Save Changes";
 			btnSaveChanges.UseVisualStyleBackColor = true;
+			btnSaveChanges.Visible = false;
 			btnSaveChanges.Click += btnSaveChanges_Click;
 			// 
 			// pgObject

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
 using OpenLocoTool.DatFileParsing;
 
 namespace OpenLocoTool.Headers

@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using OpenLocoTool.Objects;
+﻿using OpenLocoTool.Objects;
 
 namespace OpenLocoTool.DatFileParsing
 {

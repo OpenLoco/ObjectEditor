@@ -1,7 +1,3 @@
-using OpenLocoTool;
-using OpenLocoTool.DatFileParsing;
-using OpenLocoToolCommon;
-
 namespace OpenLocoToolTests
 {
 	public class Tests

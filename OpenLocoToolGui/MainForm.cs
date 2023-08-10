@@ -1,11 +1,8 @@
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoToolCommon;
-using System.ComponentModel;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 
 namespace OpenLocoToolGui
 {
@@ -106,21 +103,21 @@ namespace OpenLocoToolGui
 		private void btnSaveChanges_Click(object sender, EventArgs e)
 		{
 			var obj = (ILocoObject)pgObject.SelectedObject;
-			saveFileDialog1.InitialDirectory = BaseDirectory;
+			saveFileDialog1.InitialDirectory = currentDir;
+			saveFileDialog1.DefaultExt = "dat";
+			saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				var path = saveFileDialog1.FileName;
-				saveFileDialog1.DefaultExt = "dat";
-				saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
+				var filename = saveFileDialog1.FileName;
 
 				try
 				{
-					writer.Save(path, obj);
-					MessageBox.Show("File saved successfully");
+					//writer.Save(path, obj);
+					MessageBox.Show($"File \"{filename}\" saved successfully");
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show("Error: " + ex.Message);
+					MessageBox.Show($"Error saving \"{filename}\": " + ex.Message);
 				}
 			}
 		}

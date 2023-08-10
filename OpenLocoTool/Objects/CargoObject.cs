@@ -36,34 +36,5 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.cargo;
 		public static int ObjectStructSize => 0x1F;
-
-		public static ILocoStruct Read(ReadOnlySpan<byte> data)
-		{
-			var name = "todo: implement code to lookup string table";
-
-			var byteReader = new ByteReader(data);
-			return new CargoObject(
-				0,
-				byteReader.Read<uint16_t>(),
-				byteReader.Read<uint16_t>(),
-				byteReader.Read<string_id>(),
-				byteReader.Read<string_id>(),
-				byteReader.Read<string_id>(),
-				byteReader.Read<uint32_t>(),
-				byteReader.Read<uint16_t>(),
-				byteReader.Read<CargoObjectFlags>(),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint16_t>(),
-				byteReader.Read<uint16_t>(),
-				byteReader.Read<uint16_t>(),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint8_t>()
-				);
-		}
-
-		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}
 }

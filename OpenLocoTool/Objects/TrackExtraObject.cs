@@ -19,7 +19,5 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.trackExtra;
 		public static int ObjectStructSize => 0x12;
-		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
-		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}
 }

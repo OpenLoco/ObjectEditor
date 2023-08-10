@@ -3,11 +3,13 @@ using OpenLocoTool.DatFileParsing;
 
 namespace OpenLocoTool.Objects
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-	public record SimpleAnimation() : ILocoStruct
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public record SimpleAnimation(
+		[property: LocoStructProperty(0x00)] uint8_t ObjectId,
+		[property: LocoStructProperty(0x01)] uint8_t Height,
+		[property: LocoStructProperty(0x02)] SimpleAnimationType Type
+		) : ILocoStruct
 	{
 		public static int ObjectStructSize => 0x3;
-		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
-		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}
 }

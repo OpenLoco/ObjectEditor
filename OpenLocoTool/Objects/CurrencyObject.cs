@@ -18,21 +18,5 @@ namespace OpenLocoTool.Objects
 		public ObjectType ObjectType => ObjectType.currency;
 
 		public static int ObjectStructSize => 0xC;
-
-		public static ILocoStruct Read(ReadOnlySpan<byte> data)
-		{
-			//var name = "todo: implement code to lookup string table";
-			//var prefix = "todo: implement code to lookup string table";
-			//var suffix = "todo: implement code to lookup string table";
-
-			//var objectIcon = BitConverter.ToUInt32(data[0x06..0x0A]);
-			//var separator = data[0x0A];
-			//var factor = data[0x0B];
-
-			//return new CurrencyObject(name, prefix, suffix, objectIcon, separator, factor);
-			throw new NotImplementedException("");
-		}
-
-		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}
 }

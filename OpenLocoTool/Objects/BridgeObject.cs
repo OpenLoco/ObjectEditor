@@ -31,7 +31,5 @@ namespace OpenLocoTool.Objects
 		public const int RoadModsLength = 7;
 		public ObjectType ObjectType => ObjectType.bridge;
 		public static int ObjectStructSize => 0x2C;
-		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
-		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}
 }

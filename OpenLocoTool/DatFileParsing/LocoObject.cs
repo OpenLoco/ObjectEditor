@@ -34,15 +34,4 @@ namespace OpenLocoTool.DatFileParsing
 		public ILocoStruct Object { get; set; }
 		public string Filename { get; set; }
 	}
-
-	public record EmptyObject(string PlaceholderText) : ILocoStruct
-	{
-		public ObjectType ObjectType => throw new NotImplementedException();
-
-		public static int ObjectStructSize => 1;
-
-		public ReadOnlySpan<byte> Write() => new byte[1] { 123 };
-
-		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
-	}
 }

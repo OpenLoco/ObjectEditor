@@ -23,24 +23,5 @@ namespace OpenLocoTool.Objects
 		public static int ObjectStructSize => 0x38;
 
 		public const int ImagesLength = 9;
-
-		public static ILocoStruct Read(ReadOnlySpan<byte> data)
-		{
-			var byteReader = new ByteReader(data);
-			return new CompetitorObject(
-				byteReader.Read<string_id>(),
-				byteReader.Read<string_id>(),
-				byteReader.Read<uint32_t>(),
-				byteReader.Read<uint32_t>(),
-				byteReader.Read<uint32_t>(),
-				byteReader.Read_Array<uint32_t>(ImagesLength),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint8_t>(),
-				byteReader.Read<uint8_t>());
-		}
-
-		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}
-
 }

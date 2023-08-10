@@ -31,7 +31,5 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.wall;
 		public static int ObjectStructSize => 0xA;
-		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
-		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}
 }

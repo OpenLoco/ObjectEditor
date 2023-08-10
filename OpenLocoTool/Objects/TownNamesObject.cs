@@ -6,7 +6,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public record struct TownNamesUnk(
+	public record TownNamesUnk(
 		[property: LocoStructProperty(0x00)] uint8_t Count,
 		[property: LocoStructProperty(0x00)] uint8_t Fill,
 		[property: LocoStructProperty(0x00)] uint16_t Offset
@@ -23,7 +23,5 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.townNames;
 		public static int ObjectStructSize => 0x1A;
-		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
-		public ReadOnlySpan<byte> Write() => throw new NotImplementedException();
 	}
 }

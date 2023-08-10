@@ -19,27 +19,5 @@ namespace OpenLocoTool.Objects
 		public static int ObjectStructSize => 0xA;
 
 		public const int Seasons = 4;
-
-		public static ILocoStruct Read(ReadOnlySpan<byte> data) => throw new NotImplementedException();
-
-		public ReadOnlySpan<byte> Write()
-		{
-			var span = new byte[ObjectStructSize];
-
-			//var name = Encoding.ASCII.GetBytes(Name);
-			// copy to string id table
-
-			span[2] = FirstSeason;
-			span[3] = SeasonLengths[0];
-			span[4] = SeasonLengths[1];
-			span[5] = SeasonLengths[2];
-			span[6] = SeasonLengths[3];
-			span[7] = WinterSnowLine;
-			span[8] = SummerSnowLine;
-			span[9] = pad_09;
-
-			return span;
-		}
-
 	}
 }

@@ -38,8 +38,7 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		public static ILocoStruct GetLocoStruct(ObjectType objectType, ReadOnlySpan<byte> data)
-		{
-			return objectType switch
+			=> objectType switch
 			{
 				ObjectType.airport => ByteReader.ReadLocoStruct<AirportObject>(data),
 				ObjectType.bridge => ByteReader.ReadLocoStruct<BridgeObject>(data),
@@ -62,7 +61,7 @@ namespace OpenLocoTool.DatFileParsing
 				ObjectType.scaffolding => ByteReader.ReadLocoStruct<ScaffoldingObject>(data),
 				ObjectType.scenarioText => ByteReader.ReadLocoStruct<ScenarioTextObject>(data),
 				ObjectType.snow => ByteReader.ReadLocoStruct<SnowObject>(data),
-				//ObjectType.sound => ByteReader.ReadLocoStruct<SoundObject>(data),
+				ObjectType.sound => ByteReader.ReadLocoStruct<SoundObject>(data),
 				ObjectType.steam => ByteReader.ReadLocoStruct<SteamObject>(data),
 				ObjectType.streetLight => ByteReader.ReadLocoStruct<StreetLightObject>(data),
 				ObjectType.townNames => ByteReader.ReadLocoStruct<TownNamesObject>(data),
@@ -72,12 +71,11 @@ namespace OpenLocoTool.DatFileParsing
 				ObjectType.trainStation => ByteReader.ReadLocoStruct<TrainStationObject>(data),
 				ObjectType.tree => ByteReader.ReadLocoStruct<TreeObject>(data),
 				ObjectType.tunnel => ByteReader.ReadLocoStruct<TunnelObject>(data),
-				//ObjectType.vehicle => MakeLocoObject<VehicleObject>(datFileHeader, objHeader, objSpan),
+				ObjectType.vehicle => ByteReader.ReadLocoStruct<VehicleObject>(data),
 				ObjectType.wall => ByteReader.ReadLocoStruct<WallObject>(data),
 				ObjectType.water => ByteReader.ReadLocoStruct<WaterObject>(data),
-				_ => new EmptyObject($"{objectType} parsing not implemented yet"),
+				_ => throw new ArgumentOutOfRangeException(nameof(objectType), $"unknown object type {objectType}")
 			};
-		}
 
 		// taken from openloco's SawyerStreamReader::readChunk
 		public byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)

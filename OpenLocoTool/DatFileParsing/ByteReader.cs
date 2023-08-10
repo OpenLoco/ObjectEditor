@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using OpenLocoTool.Objects;
 
@@ -103,22 +104,13 @@ namespace OpenLocoTool.DatFileParsing
 			return Read_uint16t();
 		}
 
-		//public T Read_struct<T>() where T : struct
-		//{
-
-		//}
-
-		// this method isn't necessary normally since you can just call the above methods ^
-		// but it saves a lot of code rewriting for the Read_Array method
-		public T Read<T>() where T : struct
-			=> (T)ReadT(typeof(T));
-
-		public T[] Read_Array<T>(int count) where T : struct
+		public object Read_ArrayT(Type t, int length)
 		{
-			var arr = new T[count];
-			for (var i = 0; i < count; i++)
+			var elementType = t.GetElementType() ?? throw new ArgumentException($"Unable to get array element type for type {t}");
+			var arr = Array.CreateInstance(elementType, length);
+			for (var i = 0; i < length; i++)
 			{
-				arr[i] = Read<T>();
+				arr.SetValue(ReadT(elementType), i);
 			}
 			return arr;
 		}
@@ -191,12 +183,16 @@ namespace OpenLocoTool.DatFileParsing
 					return enu;
 				}
 			}
-
-			if (t.IsValueType)
+			if (t.IsClass)
 			{
-				var size = StructSizeLookup[t];
-				return CastReadOnlySpanToStruct(t, data[StreamPosition..(StreamPosition + size)]);
+				return ReadLocoStruct(data, t);
 			}
+
+			//if (t.IsValueType)
+			//{
+			//	var size = StructSizeLookup[t];
+			//	return CastReadOnlySpanToStruct(t, data[StreamPosition..(StreamPosition + size)]);
+			//}
 
 			throw new NotImplementedException(t.ToString());
 		}
@@ -204,12 +200,21 @@ namespace OpenLocoTool.DatFileParsing
 		// todo: can just use attributes and reflection to avoid using this table at all
 		static Dictionary<Type, int> StructSizeLookup = new()
 		{
+			// misc
 			{ typeof(Pos2), Pos2.ObjectStructSize },
 			{ typeof(BuildingPartAnimation), BuildingPartAnimation.ObjectStructSize },
 			{ typeof(IndustryObjectUnk38), IndustryObjectUnk38.ObjectStructSize },
 			{ typeof(IndustryObjectProductionRateRange), IndustryObjectProductionRateRange.ObjectStructSize },
 			{ typeof(TownNamesUnk), TownNamesUnk.ObjectStructSize },
 			{ typeof(ImageAndHeight), ImageAndHeight.ObjectStructSize },
+			// vehicles
+			{ typeof(BodySprite), BodySprite.ObjectStructSize },
+			{ typeof(BogieSprite), BogieSprite.ObjectStructSize },
+			{ typeof(Engine1Sound), Engine1Sound.ObjectStructSize },
+			{ typeof(Engine2Sound), Engine2Sound.ObjectStructSize },
+			{ typeof(FrictionSound), FrictionSound.ObjectStructSize },
+			{ typeof(SimpleAnimation), SimpleAnimation.ObjectStructSize },
+			{ typeof(VehicleObjectUnk), VehicleObjectUnk.ObjectStructSize },
 		};
 
 		public static object CastReadOnlySpanToStruct(Type structType, ReadOnlySpan<byte> span)
@@ -237,20 +242,12 @@ namespace OpenLocoTool.DatFileParsing
 			return result;
 		}
 
-		public object Read_ArrayT(Type t, int length)
-		{
-			var elementType = t.GetElementType() ?? throw new ArgumentException($"Unable to get array element type for type {t}");
-			var arr = Array.CreateInstance(elementType, length);
-			for (var i = 0; i < length; i++)
-			{
-				arr.SetValue(ReadT(elementType), i);
-			}
-			return arr;
-		}
-
 		public static ILocoStruct ReadLocoStruct<T>(ReadOnlySpan<byte> data) where T : class
+			=> ReadLocoStruct(data, typeof(T));
+
+		public static ILocoStruct ReadLocoStruct(ReadOnlySpan<byte> data, Type t)
 		{
-			var properties = typeof(T).GetProperties();
+			var properties = t.GetProperties();
 			var args = new List<object>();
 			var byteReader = new ByteReader(data);
 
@@ -270,7 +267,7 @@ namespace OpenLocoTool.DatFileParsing
 					var attrs = p.GetCustomAttributes(typeof(LocoArrayLengthAttribute), inherit: false);
 					if (attrs.Length != 1)
 					{
-						throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {typeof(T)} with property {p} didn't have LocoArrayLength attribute specified");
+						throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {t} with property {p} didn't have LocoArrayLength attribute specified");
 					}
 					args.Add(byteReader.ReadT(p.PropertyType, locoProperty.Offset, ((LocoArrayLengthAttribute)attrs[0]).Length));
 				}
@@ -288,10 +285,10 @@ namespace OpenLocoTool.DatFileParsing
 					throw new ArgumentException($"{nameof(argsArr)} had no arguments to construct an object");
 				}
 
-				var newInstance = Activator.CreateInstance(typeof(T), argsArr);
-				return newInstance is T instance
-					? (ILocoStruct)instance
-					: throw new InvalidDataException("couldn't parse");
+				var newInstance = (ILocoStruct)Activator.CreateInstance(t, argsArr);
+				return newInstance == null
+					? throw new InvalidDataException("couldn't parse")
+					: newInstance;
 			}
 			catch (Exception ex)
 			{

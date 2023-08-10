@@ -16,7 +16,7 @@ namespace OpenLocoTool.Objects
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public record struct ImageAndHeight(
+	public record ImageAndHeight(
 		[property: LocoStructProperty(0x00)] uint8_t ImageOffset,
 		[property: LocoStructProperty(0x01)] uint8_t Height
 	) : ILocoStruct

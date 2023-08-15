@@ -20,6 +20,7 @@ namespace OpenLocoTool.Objects
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x0A)]
 	public record WallObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] uint32_t Image,
@@ -30,6 +31,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.wall;
-		public static int StructLength => 0xA;
+		public static int StructLength => 0x0A;
 	}
 }

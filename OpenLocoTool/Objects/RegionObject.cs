@@ -6,6 +6,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x12)]
 	public record RegionObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] uint32_t Image,

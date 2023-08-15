@@ -4,6 +4,7 @@ using OpenLocoTool.DatFileParsing;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x12)]
 	public record BogieSprite(
 		[property: LocoStructProperty(0x00)] uint8_t RollStates,      // valid values 1, 2, 4 related to bogie->var_46 (identical in value to numRollSprites)
 		[property: LocoStructProperty(0x01)] BogieSpriteFlags Flags,  // BogieSpriteFlags

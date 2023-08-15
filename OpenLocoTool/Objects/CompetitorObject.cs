@@ -5,6 +5,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x38)]
 	public record CompetitorObject(
 		[property: LocoStructProperty(0x00)] string_id var_00,
 		[property: LocoStructProperty(0x02)] string_id var_02,

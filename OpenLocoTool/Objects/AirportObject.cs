@@ -20,6 +20,7 @@ namespace OpenLocoTool.Objects
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x08)]
 	public record MovementNode(
 		[property: LocoStructProperty(0x00)] int16_t X,
 		[property: LocoStructProperty(0x02)] int16_t Y,
@@ -31,6 +32,7 @@ namespace OpenLocoTool.Objects
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x0C)]
 	public record MovementEdge(
 		[property: LocoStructProperty(0x00)] uint8_t var_00,
 		[property: LocoStructProperty(0x01)] uint8_t CurrNode,
@@ -40,10 +42,11 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x08)] uint32_t AtLeastOneClearEdges // Which edges must have at least one clear to use transition edge
 		) : ILocoStruct
 	{
-		public static int StructLength => 0xC;
+		public static int StructLength => 0x0C;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0xBA)]
 	public record AirportObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] int16_t BuildCostFactor,

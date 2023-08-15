@@ -16,6 +16,7 @@ namespace OpenLocoTool.Objects
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x02)]
 	public record ImageAndHeight(
 		[property: LocoStructProperty(0x00)] uint8_t ImageOffset,
 		[property: LocoStructProperty(0x01)] uint8_t Height
@@ -25,6 +26,7 @@ namespace OpenLocoTool.Objects
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x28)]
 	public record SteamObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] uint16_t NumImages,

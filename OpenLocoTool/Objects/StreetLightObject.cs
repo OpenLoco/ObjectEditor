@@ -5,6 +5,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0xC)]
 	public record StreetLightObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02), LocoArrayLength(StreetLightObject.DesignedYearLength)] uint16_t[] DesignedYear, // 0x2
@@ -12,13 +13,7 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.streetLight;
-		public static int StructLength => 0xC;
+		public static int StructLength => 0x0C;
 		public const int DesignedYearLength = 3;
-
-		public static ILocoStruct Read(ReadOnlySpan<byte> data)
-			=> throw new NotImplementedException();
-
-		public ReadOnlySpan<byte> Write()
-			=> throw new NotImplementedException();
 	}
 }

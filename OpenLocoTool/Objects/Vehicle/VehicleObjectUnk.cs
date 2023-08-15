@@ -4,6 +4,7 @@ using OpenLocoTool.DatFileParsing;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x06)]
 	public record VehicleObjectUnk(
 		[property: LocoStructProperty(0x00)] uint8_t Length,
 		[property: LocoStructProperty(0x01)] uint8_t var_01,
@@ -13,6 +14,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x05)] uint8_t var_05
 		) : ILocoStruct
 	{
-		public static int StructLength => 0x6;
+		public static int StructLength => 0x06;
 	}
 }

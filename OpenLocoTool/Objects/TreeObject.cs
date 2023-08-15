@@ -1,4 +1,5 @@
-﻿using OpenLocoTool.DatFileParsing;
+﻿using System.ComponentModel;
+using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.Objects
@@ -17,6 +18,8 @@ namespace OpenLocoTool.Objects
 		HasShadow = 1 << 7,
 	};
 
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x4C)]
 	public record TreeObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] uint8_t var_02,

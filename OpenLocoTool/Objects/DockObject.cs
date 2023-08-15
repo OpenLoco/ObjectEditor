@@ -12,6 +12,7 @@ namespace OpenLocoTool.Objects
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x28)]
 	public record DockObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] int16_t BuildCostFactor,

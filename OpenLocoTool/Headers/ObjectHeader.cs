@@ -11,6 +11,17 @@ namespace OpenLocoTool.Headers
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[Category("Header")]
+	[LocoStructSize(0x06)]
+	public record StringTableResult(string_id Str, uint32_t TableLength);
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[Category("Header")]
+	[LocoStructSize(0x08)]
+	public record G1Header(uint32_t NumEntries, uint32_t TotalSize);
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[Category("Header")]
+	[LocoStructSize(0x15)]
 	public record ObjectHeader(string Name, uint32_t Checksum, SawyerEncoding Encoding, uint32_t DataLength)
 	{
 		// this is necessary because Flags must be get-set to enable setters for SourceGame and ObjectType

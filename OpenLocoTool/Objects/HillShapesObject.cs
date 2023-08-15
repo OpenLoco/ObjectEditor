@@ -5,6 +5,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x0E)]
 	public record HillShapesObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] uint8_t HillHeightMapCount,
@@ -15,6 +16,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.hillShapes;
-		public static int StructLength => 0xE;
+		public static int StructLength => 0x0E;
 	}
 }

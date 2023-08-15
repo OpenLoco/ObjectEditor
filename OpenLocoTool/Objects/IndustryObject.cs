@@ -40,6 +40,7 @@ namespace OpenLocoTool.Objects
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x02)]
 	public record BuildingPartAnimation(
 		[property: LocoStructProperty(0x00)] uint8_t numFrames,     // Must be a power of 2 (0 = no part animation, could still have animation sequence)
 		[property: LocoStructProperty(0x01)] uint8_t animationSpeed // Also encodes in bit 7 if the animation is position modified
@@ -49,24 +50,27 @@ namespace OpenLocoTool.Objects
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x02)]
 	public record IndustryObjectUnk38(
 		[property: LocoStructProperty(0x00)] uint8_t var_00,
 		[property: LocoStructProperty(0x01)] uint8_t var_01
 		) : ILocoStruct
 	{
-		public static int StructLength => 0x2;
+		public static int StructLength => 0x02;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x04)]
 	public record IndustryObjectProductionRateRange(
 		[property: LocoStructProperty(0x00)] uint16_t min,
 		[property: LocoStructProperty(0x02)] uint16_t max
 		) : ILocoStruct
 	{
-		public static int StructLength => 0x4;
+		public static int StructLength => 0x04;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0xF4)]
 	public record IndustryObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] string_id var_02,

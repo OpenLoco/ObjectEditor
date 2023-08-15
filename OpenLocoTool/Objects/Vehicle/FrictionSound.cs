@@ -4,6 +4,7 @@ using OpenLocoTool.DatFileParsing;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x0B)]
 	public record FrictionSound(
 		[property: LocoStructProperty(0x00)] uint8_t SoundObjectId,
 		[property: LocoStructProperty(0x01)] Speed32 MinSpeed, // below this speed no sound created
@@ -14,6 +15,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructProperty(0x0A)] uint8_t MaxVolume
 		) : ILocoStruct
 	{
-		public static int StructLength => 0xB;
+		public static int StructLength => 0x0B;
 	}
 }

@@ -6,6 +6,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x0C)]
 	public record SoundObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		//[property: LocoStructProperty(0x02)] const SoundObjectData* Data,
@@ -15,6 +16,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.sound;
-		public static int StructLength => 0xC;
+		public static int StructLength => 0x0C;
 	}
 }

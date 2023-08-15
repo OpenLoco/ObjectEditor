@@ -6,6 +6,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x06)]
 	public record ScenarioTextObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] string_id Details,
@@ -13,6 +14,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.scenarioText;
-		public static int StructLength => 0x6;
+		public static int StructLength => 0x06;
 	}
 }

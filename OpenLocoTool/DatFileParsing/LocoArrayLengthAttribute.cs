@@ -18,4 +18,15 @@
 
 		public int Offset { get; }
 	}
+
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+	public class LocoStructSizeAttribute : Attribute
+	{
+		public LocoStructSizeAttribute(int size)
+		{
+			Size = size;
+		}
+
+		public int Size { get; }
+	}
 }

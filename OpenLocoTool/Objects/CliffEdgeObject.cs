@@ -5,6 +5,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x06)]
 	public record CliffEdgeObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] uint32_t Image
@@ -12,6 +13,6 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.cliffEdge;
 
-		public static int StructLength => 0x6;
+		public static int StructLength => 0x06;
 	}
 }

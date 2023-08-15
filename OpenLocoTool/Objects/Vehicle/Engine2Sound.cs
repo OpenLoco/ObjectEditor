@@ -4,6 +4,7 @@ using OpenLocoTool.DatFileParsing;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x1B)]
 	public record Engine2Sound(
 		[property: LocoStructProperty(0x00)] uint8_t SoundObjectId,
 		[property: LocoStructProperty(0x01)] uint16_t DefaultFrequency,

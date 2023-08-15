@@ -5,6 +5,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x0A)]
 	public record ClimateObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] uint8_t FirstSeason,
@@ -16,7 +17,7 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.climate;
 
-		public static int StructLength => 0xA;
+		public static int StructLength => 0x0A;
 
 		public const int Seasons = 4;
 	}

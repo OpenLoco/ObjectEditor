@@ -5,6 +5,7 @@ using OpenLocoTool.Headers;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x0C)]
 	public record CurrencyObject
 	(
 		[property: LocoStructProperty(0x00)] string_id Name,
@@ -17,6 +18,6 @@ namespace OpenLocoTool.Objects
 	{
 		public ObjectType ObjectType => ObjectType.currency;
 
-		public static int StructLength => 0xC;
+		public static int StructLength => 0x0C;
 	}
 }

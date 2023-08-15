@@ -4,6 +4,7 @@ using OpenLocoTool.DatFileParsing;
 namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x1E)]
 	public record BodySprite(
 		[property: LocoStructProperty(0x00)] uint8_t NumFlatRotationFrames,   // 4, 8, 16, 32, 64?
 		[property: LocoStructProperty(0x01)] uint8_t NumSlopedRotationFrames, // 4, 8, 16, 32?

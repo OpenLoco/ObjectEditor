@@ -1,9 +1,31 @@
-﻿using OpenLocoTool.Headers;
+﻿using System.Reflection;
+using System.Text;
+using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
+	public enum LocoLanguageId : uint8_t
+	{
+		english_uk,
+		english_us,
+		french,
+		german,
+		spanish,
+		italian,
+		dutch,
+		swedish,
+		japanese,
+		korean,
+		chinese_simplified,
+		chinese_traditional,
+		id_12,
+		portuguese,
+		blank = 254,
+		end = 255
+	};
+
 	public class SawyerStreamReader
 	{
 		private readonly ILogger Logger;
@@ -17,11 +39,40 @@ namespace OpenLocoTool.DatFileParsing
 			var (ObjectHeader, Data) = LoadFromFile(filename);
 			var decodedData = Decode(ObjectHeader.Encoding, Data);
 			var locoStruct = GetLocoStruct(ObjectHeader.ObjectType, decodedData);
+
+			var attr = (LocoStructSizeAttribute)locoStruct.GetType().GetCustomAttribute(typeof(LocoStructSizeAttribute), inherit: false);
+			var locoStructSize = attr.Size;
+
+			var extraDataSlice = decodedData[locoStructSize..];
+
+			var strings = new Dictionary<LocoLanguageId, string>();
+			//var ptr = 0;
+			for (var ptr = 0; ptr < extraDataSlice.Length && extraDataSlice[ptr] != 0xFF;)
+			{
+				var lang = (LocoLanguageId)extraDataSlice[ptr++];
+				// get c str length, aka next 0x0 char
+				var ini = ptr;
+
+				while (extraDataSlice[ptr++] != '\0') ;
+				var str = Encoding.ASCII.GetString(extraDataSlice[ini..(ptr - 1)]); // do -1 to exclude the \0
+				strings.Add(lang, str);
+			}
+
+			var stringTableHeader = new StringTableResult(
+				StaticByteReader.Read_uint16t(extraDataSlice, 0),
+				StaticByteReader.Read_uint32t(extraDataSlice, 0x02));
+
+			//var g1Slice = extraDataSlice[(int)stringTableHeader.TableLength..];
+			//var imageTableHeader = new G1Header(
+			//	StaticByteReader.Read_uint32t(extraDataSlice, 0),
+			//	StaticByteReader.Read_uint32t(extraDataSlice, 0x04));
+
+			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={ObjectHeader.DataLength} StringTableLength={stringTableHeader.TableLength}"); // G1Length={imageTableHeader.TotalSize} G1Entries={imageTableHeader.NumEntries}");
+
 			return new LocoObject(ObjectHeader, locoStruct);
 		}
 
-
-		public (ObjectHeader ObjHdr1, byte[] RawData) LoadFromFile(string filename)
+		public (ObjectHeader ObjectHeader, byte[] RawData) LoadFromFile(string filename)
 		{
 			if (!File.Exists(filename))
 			{

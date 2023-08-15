@@ -148,7 +148,7 @@ namespace OpenLocoToolGui
 
 		ILocoObject LoadAndCacheObject(string filename)
 		{
-			if (!objectCache.ContainsKey(filename))
+			if (!objectCache.ContainsKey(filename) && !string.IsNullOrEmpty(filename) && filename.EndsWith(".dat", StringComparison.InvariantCultureIgnoreCase))
 			{
 				objectCache.Add(filename, reader.LoadFull(filename));
 			}

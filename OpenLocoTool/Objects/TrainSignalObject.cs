@@ -14,6 +14,7 @@ namespace OpenLocoTool.Objects
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x1E)]
 	public record TrainSignalObject(
 		[property: LocoStructProperty(0x00)] string_id Name,
 		[property: LocoStructProperty(0x02)] TrainSignalObjectFlags Flags,
@@ -36,15 +37,5 @@ namespace OpenLocoTool.Objects
 		public const int ModsLength = 7;
 
 		public static int StructLength => 0x1E;
-
-		public static ILocoStruct Read(ReadOnlySpan<byte> data)
-		{
-			throw new NotImplementedException("");
-		}
-
-		public ReadOnlySpan<byte> Write()
-		{
-			throw new NotImplementedException("");
-		}
 	}
 }

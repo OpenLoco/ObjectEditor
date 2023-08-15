@@ -43,33 +43,67 @@ namespace OpenLocoTool.DatFileParsing
 			var attr = (LocoStructSizeAttribute)locoStruct.GetType().GetCustomAttribute(typeof(LocoStructSizeAttribute), inherit: false);
 			var locoStructSize = attr.Size;
 
-			var extraDataSlice = decodedData[locoStructSize..];
+			// string table
+			var variableDataSlice = decodedData[locoStructSize..];
+			var (stringTable, stringTableBytesRead) = LoadStringTable(variableDataSlice);
 
+			// g1/gfx table
+			variableDataSlice = variableDataSlice[stringTableBytesRead..];
+			var (imageTable, imageTableBytesRead) = LoadImageTable(variableDataSlice);
+
+			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={ObjectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+
+			return new LocoObject(ObjectHeader, locoStruct, stringTable, imageTable);
+		}
+
+		(Dictionary<LocoLanguageId, string> table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data)
+		{
 			var strings = new Dictionary<LocoLanguageId, string>();
-			//var ptr = 0;
-			for (var ptr = 0; ptr < extraDataSlice.Length && extraDataSlice[ptr] != 0xFF;)
-			{
-				var lang = (LocoLanguageId)extraDataSlice[ptr++];
-				// get c str length, aka next 0x0 char
-				var ini = ptr;
 
-				while (extraDataSlice[ptr++] != '\0') ;
-				var str = Encoding.ASCII.GetString(extraDataSlice[ini..(ptr - 1)]); // do -1 to exclude the \0
+			if (data.Length == 0)
+			{
+				return (strings, 0);
+			}
+
+			var ptr = 0;
+			for (; ptr < data.Length && data[ptr] != 0xFF;)
+			{
+				var lang = (LocoLanguageId)data[ptr++];
+				var ini = ptr;
+				while (data[ptr++] != '\0') ;
+				var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
 				strings.Add(lang, str);
 			}
 
-			var stringTableHeader = new StringTableResult(
-				StaticByteReader.Read_uint16t(extraDataSlice, 0),
-				StaticByteReader.Read_uint32t(extraDataSlice, 0x02));
+			return (strings, ptr + 1); // add one because we 'read' the 0xFF byte at the end (ie we skipped it)
+		}
 
-			//var g1Slice = extraDataSlice[(int)stringTableHeader.TableLength..];
-			//var imageTableHeader = new G1Header(
-			//	StaticByteReader.Read_uint32t(extraDataSlice, 0),
-			//	StaticByteReader.Read_uint32t(extraDataSlice, 0x04));
+		(List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+		{
+			var g1Element32s = new List<G1Element32>();
 
-			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={ObjectHeader.DataLength} StringTableLength={stringTableHeader.TableLength}"); // G1Length={imageTableHeader.TotalSize} G1Entries={imageTableHeader.NumEntries}");
+			if (data.Length == 0)
+			{
+				return (g1Element32s, 0);
+			}
 
-			return new LocoObject(ObjectHeader, locoStruct);
+			var g1Header = new G1Header(
+				BitConverter.ToUInt32(data[0..4]),
+				BitConverter.ToUInt32(data[4..8]));
+
+			var g1ElementHeaders = data[8..];
+
+			var g1Element32Size = 0x10; // todo: lookup from the LocoStructSize attribute
+			var imageData = g1ElementHeaders[((int)g1Header.NumEntries * g1Element32Size)..];
+			g1Header.ImageData = imageData.ToArray();
+			for (var i = 0; i < g1Header.NumEntries; ++i)
+			{
+				var g32ElementData = g1ElementHeaders[(i * g1Element32Size)..((i + 1) * g1Element32Size)];
+				var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(g32ElementData);
+				g1Element32s.Add(g32Element);
+			}
+
+			return (g1Element32s, g1ElementHeaders.Length + imageData.Length);
 		}
 
 		public (ObjectHeader ObjectHeader, byte[] RawData) LoadFromFile(string filename)

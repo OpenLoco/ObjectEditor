@@ -22,12 +22,12 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0A)]
 	public record WallObject(
-		[property: LocoStructProperty(0x00)] string_id Name,
-		[property: LocoStructProperty(0x02)] uint32_t Image,
-		[property: LocoStructProperty(0x06)] uint8_t var_06,
-		[property: LocoStructProperty(0x07)] WallObjectFlags Flags,
-		[property: LocoStructProperty(0x08)] uint8_t Height,
-		[property: LocoStructProperty(0x09)] uint8_t var_09
+		[property: LocoStructOffset(0x00)] string_id Name,
+		[property: LocoStructOffset(0x02)] uint32_t Image,
+		[property: LocoStructOffset(0x06)] uint8_t var_06,
+		[property: LocoStructOffset(0x07)] WallObjectFlags Flags,
+		[property: LocoStructOffset(0x08)] uint8_t Height,
+		[property: LocoStructOffset(0x09)] uint8_t var_09
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.wall;

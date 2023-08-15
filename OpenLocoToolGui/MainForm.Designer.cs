@@ -130,8 +130,8 @@
 			// 
 			// objectSelector
 			// 
-			objectSelector.Controls.Add(tabPage1);
 			objectSelector.Controls.Add(tabPage2);
+			objectSelector.Controls.Add(tabPage1);
 			objectSelector.Location = new Point(12, 70);
 			objectSelector.Name = "objectSelector";
 			objectSelector.SelectedIndex = 0;

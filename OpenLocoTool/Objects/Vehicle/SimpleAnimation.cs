@@ -6,9 +6,9 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x03)]
 	public record SimpleAnimation(
-		[property: LocoStructProperty(0x00)] uint8_t ObjectId,
-		[property: LocoStructProperty(0x01)] uint8_t Height,
-		[property: LocoStructProperty(0x02)] SimpleAnimationType Type
+		[property: LocoStructOffset(0x00)] uint8_t ObjectId,
+		[property: LocoStructOffset(0x01)] uint8_t Height,
+		[property: LocoStructOffset(0x02)] SimpleAnimationType Type
 		) : ILocoStruct
 	{
 		public static int StructLength => 0x03;

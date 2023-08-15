@@ -227,7 +227,7 @@ namespace OpenLocoTool.DatFileParsing
 			for (var i = 0; i < properties.Length && i < span.Length; i++)
 			{
 				var property = properties[i];
-				var locoAttrs = property.GetCustomAttributes(typeof(LocoStructPropertyAttribute), inherit: false);
+				var locoAttrs = property.GetCustomAttributes(typeof(LocoStructOffsetAttribute), inherit: false);
 				if (!locoAttrs.Any())
 				{
 					continue;
@@ -251,12 +251,12 @@ namespace OpenLocoTool.DatFileParsing
 			foreach (var p in properties)
 			{
 				// ignore non-binary properties on the records
-				var locoAttrs = p.GetCustomAttributes(typeof(LocoStructPropertyAttribute), inherit: false);
+				var locoAttrs = p.GetCustomAttributes(typeof(LocoStructOffsetAttribute), inherit: false);
 				if (!locoAttrs.Any())
 				{
 					continue;
 				}
-				var locoProperty = (LocoStructPropertyAttribute)locoAttrs[0];
+				var locoProperty = (LocoStructOffsetAttribute)locoAttrs[0];
 
 				// special array handling
 				if (p.PropertyType.IsArray)

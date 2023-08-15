@@ -16,8 +16,8 @@ namespace OpenLocoTool.DatFileParsing
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x04)]
 	public record Pos2(
-		[property: LocoStructProperty(0x00)] int16_t X,
-		[property: LocoStructProperty(0x02)] int16_t Y
+		[property: LocoStructOffset(0x00)] int16_t X,
+		[property: LocoStructOffset(0x02)] int16_t Y
 		) : ILocoStruct
 	{
 		public static int StructLength => 0x04;

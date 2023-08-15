@@ -86,6 +86,7 @@ namespace OpenLocoToolGui
 			tvObjType.Nodes.Clear();
 			var filteredFiles = headerIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
+			var nodesToAdd = new List<TreeNode>();
 			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
 			{
 				var typeNode = new TreeNode(group.Key.ToString());
@@ -93,8 +94,11 @@ namespace OpenLocoToolGui
 				{
 					typeNode.Nodes.Add(obj.Key, obj.Value.Name);
 				}
-				tvObjType.Nodes.Add(typeNode);
+				nodesToAdd.Add(typeNode);
 			}
+
+			nodesToAdd.Sort((a, b) => a.Text.CompareTo(b.Text));
+			tvObjType.Nodes.AddRange(nodesToAdd.ToArray());
 
 			tvObjType.ResumeLayout(true);
 		}
@@ -146,14 +150,19 @@ namespace OpenLocoToolGui
 			pgObject.SelectedObject = LoadAndCacheObject(e.Node.Name);
 		}
 
-		ILocoObject LoadAndCacheObject(string filename)
+		ILocoObject? LoadAndCacheObject(string filename)
 		{
 			if (!objectCache.ContainsKey(filename) && !string.IsNullOrEmpty(filename) && filename.EndsWith(".dat", StringComparison.InvariantCultureIgnoreCase))
 			{
 				objectCache.Add(filename, reader.LoadFull(filename));
 			}
 
-			return objectCache[filename];
+			if (objectCache.ContainsKey(filename))
+			{
+				return objectCache[filename];
+			}
+
+			return null;
 		}
 	}
 }

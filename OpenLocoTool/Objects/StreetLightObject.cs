@@ -7,9 +7,9 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xC)]
 	public record StreetLightObject(
-		[property: LocoStructProperty(0x00)] string_id Name,
-		[property: LocoStructProperty(0x02), LocoArrayLength(StreetLightObject.DesignedYearLength)] uint16_t[] DesignedYear, // 0x2
-		[property: LocoStructProperty(0x08)] uint32_t Image
+		[property: LocoStructOffset(0x00)] string_id Name,
+		[property: LocoStructOffset(0x02), LocoArrayLength(StreetLightObject.DesignedYearLength)] uint16_t[] DesignedYear, // 0x2
+		[property: LocoStructOffset(0x08)] uint32_t Image
 		) : ILocoStruct
 	{
 		public ObjectType ObjectType => ObjectType.streetLight;

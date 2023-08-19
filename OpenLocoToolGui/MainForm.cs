@@ -12,9 +12,6 @@ namespace OpenLocoToolGui
 		private ILogger logger;
 		private SawyerStreamReader reader;
 		private SawyerStreamWriter writer;
-		private const string BaseDirectory = @"Q:\Steam\steamapps\common\Locomotion\ObjData";
-		private const string BaseDirectoryLaptop = @"C:\Program Files (x86)\Steam\steamapps\common\Locomotion\ObjData";
-		private const string BasePaletteFileLaptop = @"";
 		private const string IndexFilename = "ObjectIndex.json";
 
 		public MainForm()
@@ -38,7 +35,6 @@ namespace OpenLocoToolGui
 		private void MainForm_Load(object sender, EventArgs e)
 		{
 			//Init(BaseDirectory);
-			Init(BaseDirectoryLaptop);
 
 		}
 
@@ -162,7 +158,7 @@ namespace OpenLocoToolGui
 
 			if (obj != null)
 			{
-				//CreateImages(obj);
+				CreateImages(obj);
 			}
 
 			pgObject.SelectedObject = obj;
@@ -173,8 +169,11 @@ namespace OpenLocoToolGui
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
 
-			var paletteBitmap = new Bitmap(BasePaletteFileLaptop);
+			// todo: add user to supply this file
+			var path = "../../../../palette.png";
+			var paletteBitmap = new Bitmap(path);
 			var palette = PaletteFromBitmap(paletteBitmap);
+			
 			for (var i = 0; i < obj.G1Elements.Count; ++i)
 			{
 				var currElement = obj.G1Elements[i];
@@ -201,6 +200,7 @@ namespace OpenLocoToolGui
 						//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
 						//	: palette[paletteIndex];
 
+						// zehmatt: uncomment these 2 lines to draw images
 						var colour = palette[paletteIndex];
 						SetPixel(dstImgData, x, y, colour);
 					}
@@ -244,7 +244,6 @@ namespace OpenLocoToolGui
 					nextRun = srcPtr + dataSize;
 
 					var numPixels = dataSize;
-					//newData.AddRange(Enumerable.Repeat(0, firstPixelX)); // add leading blanks
 					newData.AddRange(src0[srcPtr..(srcPtr + numPixels)]);
 				}
 

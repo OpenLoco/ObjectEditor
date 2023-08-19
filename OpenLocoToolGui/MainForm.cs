@@ -1,13 +1,9 @@
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
-using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
-using System;
-using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OpenLocoToolGui
 {
@@ -17,6 +13,8 @@ namespace OpenLocoToolGui
 		private SawyerStreamReader reader;
 		private SawyerStreamWriter writer;
 		private const string BaseDirectory = @"Q:\Steam\steamapps\common\Locomotion\ObjData";
+		private const string BaseDirectoryLaptop = @"C:\Program Files (x86)\Steam\steamapps\common\Locomotion\ObjData";
+		private const string BasePaletteFileLaptop = @"";
 		private const string IndexFilename = "ObjectIndex.json";
 
 		public MainForm()
@@ -39,7 +37,9 @@ namespace OpenLocoToolGui
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
-			Init(BaseDirectory);
+			//Init(BaseDirectory);
+			Init(BaseDirectoryLaptop);
+
 		}
 
 		void Init(string directory)
@@ -53,6 +53,12 @@ namespace OpenLocoToolGui
 
 		void InitialiseIndex()
 		{
+			if (!Directory.Exists(currentDir))
+			{
+				btnSetDirectory.PerformClick();
+				return;
+			}
+
 			var allFiles = Directory.GetFiles(currentDir, "*.dat", SearchOption.AllDirectories);
 			headerIndex.Clear();
 			foreach (var file in allFiles)
@@ -156,7 +162,7 @@ namespace OpenLocoToolGui
 
 			if (obj != null)
 			{
-				CreateImages(obj);
+				//CreateImages(obj);
 			}
 
 			pgObject.SelectedObject = obj;
@@ -167,12 +173,11 @@ namespace OpenLocoToolGui
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
 
-			var paletteBitmap = new Bitmap("C:\\Users\\bigba\\source\\repos\\OpenLocoTool\\palette.png");
+			var paletteBitmap = new Bitmap(BasePaletteFileLaptop);
 			var palette = PaletteFromBitmap(paletteBitmap);
 			for (var i = 0; i < obj.G1Elements.Count; ++i)
 			{
 				var currElement = obj.G1Elements[i];
-				var srcImg = currElement.ImageData;
 				if (currElement.flags.HasFlag(G1ElementFlags.IsRLECompressed))
 				{
 					currElement.ImageData = DecodeRLEImageData(currElement);
@@ -189,7 +194,7 @@ namespace OpenLocoToolGui
 				{
 					for (var x = 0; x < currElement.width; ++x)
 					{
-						var paletteIndex = srcImg[(y * currElement.width) + x];
+						var paletteIndex = currElement.ImageData[(y * currElement.width) + x];
 
 						// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
 						//var colour = obj.Object is HillShapesObject
@@ -219,8 +224,7 @@ namespace OpenLocoToolGui
 		{
 			var newData = new List<byte>();
 			var zoom = 1;
-			var src0 = img.ImageData; //.AsSpan();
-			var src0Ptr = 0;
+			var src0 = img.ImageData;
 
 			for (var i = 0; i < img.height; i += zoom)
 			{

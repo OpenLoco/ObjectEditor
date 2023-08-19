@@ -1,8 +1,13 @@
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
+using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
+using System;
+using System.ComponentModel;
+using System.Drawing.Imaging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OpenLocoToolGui
 {
@@ -147,7 +152,100 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			pgObject.SelectedObject = LoadAndCacheObject(e.Node.Name);
+			var obj = LoadAndCacheObject(e.Node.Name);
+
+			if (obj != null)
+			{
+				CreateImages(obj);
+			}
+
+			pgObject.SelectedObject = obj;
+		}
+
+		private void CreateImages(ILocoObject obj)
+		{
+			flpImageTable.SuspendLayout();
+			flpImageTable.Controls.Clear();
+
+			var paletteBitmap = new Bitmap("C:\\Users\\bigba\\source\\repos\\OpenLocoTool\\palette.png");
+			var palette = PaletteFromBitmap(paletteBitmap);
+			for (var i = 0; i < obj.G1Elements.Count; ++i)
+			{
+				var currElement = obj.G1Elements[i];
+				var srcImg = currElement.ImageData;
+				if (currElement.flags.HasFlag(G1ElementFlags.IsRLECompressed))
+				{
+					currElement.ImageData = DecodeRLEImageData(currElement);
+				}
+				if (currElement.ImageData.Length == 0 || currElement.flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
+				{
+					continue;
+				}
+
+				var dstImg = new Bitmap(currElement.width, currElement.height);
+				var rect = new Rectangle(0, 0, currElement.width, currElement.height);
+				var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+				for (var y = 0; y < currElement.height; ++y)
+				{
+					for (var x = 0; x < currElement.width; ++x)
+					{
+						var paletteIndex = srcImg[(y * currElement.width) + x];
+
+						// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
+						//var colour = obj.Object is HillShapesObject
+						//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
+						//	: palette[paletteIndex];
+
+						var colour = palette[paletteIndex];
+						SetPixel(dstImgData, x, y, colour);
+					}
+				}
+
+				dstImg.UnlockBits(dstImgData);
+
+				var pb = new PictureBox
+				{
+					Image = dstImg,
+					BorderStyle = BorderStyle.FixedSingle,
+					SizeMode = PictureBoxSizeMode.AutoSize,
+				};
+				flpImageTable.Controls.Add(pb);
+			}
+
+			flpImageTable.ResumeLayout(true);
+		}
+
+		byte[] DecodeRLEImageData(G1Element32 img)
+		{
+			var newData = new List<byte>();
+			var zoom = 1;
+			var src0 = img.ImageData; //.AsSpan();
+			var src0Ptr = 0;
+
+			for (var i = 0; i < img.height; i += zoom)
+			{
+				var y = i;
+				var lineOffset = src0[y * 2] | (src0[y * 2 + 1] << 8);
+				var nextRun = lineOffset;
+
+				var endOfLine = false;
+				while (!endOfLine)
+				{
+					var srcPtr = nextRun;
+					var dataSize = src0[srcPtr++];
+					var firstPixelX = src0[srcPtr++];
+					endOfLine = (dataSize & 0x80) != 0;
+					dataSize &= 0x7F;
+
+					nextRun = srcPtr + dataSize;
+
+					var numPixels = dataSize;
+					//newData.AddRange(Enumerable.Repeat(0, firstPixelX)); // add leading blanks
+					newData.AddRange(src0[srcPtr..(srcPtr + numPixels)]);
+				}
+
+			}
+			return newData.ToArray();
 		}
 
 		ILocoObject? LoadAndCacheObject(string filename)
@@ -163,6 +261,55 @@ namespace OpenLocoToolGui
 			}
 
 			return null;
+		}
+
+		public Color[] PaletteFromBitmap(Bitmap img)
+		{
+			var palette = new Color[256];
+			var rect = new Rectangle(0, 0, img.Width, img.Height);
+			var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+			for (var y = 0; y < 16; ++y)
+			{
+				for (var x = 0; x < 16; ++x)
+				{
+					var pixel = GetPixel(imgData, x * 36, y * 11);
+					palette[(y * 16) + x] = pixel;
+				}
+			}
+
+			img.UnlockBits(imgData);
+			return palette;
+		}
+
+		public unsafe Color GetPixel(BitmapData d, int X, int Y)
+		{
+			var ptr = GetPtrToFirstPixel(d, X, Y);
+			return Color.FromArgb(ptr[2], ptr[1], ptr[0]); // alpha is ptr[3]);
+		}
+
+		public unsafe void SetPixel(BitmapData d, Point p, Color c)
+			=> SetPixel(d, p.X, p.Y, c);
+
+		public unsafe void SetPixel(BitmapData d, int X, int Y, Color c)
+			=> SetPixel(GetPtrToFirstPixel(d, X, Y), c);
+
+		private unsafe byte* GetPtrToFirstPixel(BitmapData d, int X, int Y)
+			=> (byte*)d.Scan0.ToPointer() + (Y * d.Stride) + (X * (Image.GetPixelFormatSize(d.PixelFormat) / 8));
+
+		//private static unsafe void SetPixel(byte* ptr, Color c)
+		//{
+		//	ptr[0] = c.B; // Blue
+		//	ptr[1] = c.G; // Green
+		//	ptr[2] = c.R; // Red
+		//	ptr[3] = c.A; // Alpha
+		//}
+
+		private static unsafe void SetPixel(byte* ptr, Color c)
+		{
+			ptr[0] = (byte)(c.B); // Blue
+			ptr[1] = (byte)(c.G); // Green
+			ptr[2] = (byte)(c.R); // Red
+			ptr[3] = 255; // (byte)(c.A * 255); // Alpha
 		}
 	}
 }

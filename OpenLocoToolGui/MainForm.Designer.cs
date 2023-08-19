@@ -39,11 +39,27 @@
 			saveFileDialog1 = new SaveFileDialog();
 			tvObjType = new TreeView();
 			objectSelector = new TabControl();
-			tabPage1 = new TabPage();
 			tabPage2 = new TabPage();
+			tabPage1 = new TabPage();
+			flpImageTable = new FlowLayoutPanel();
+			splitContainer1 = new SplitContainer();
+			splitContainer2 = new SplitContainer();
+			splitContainer3 = new SplitContainer();
 			objectSelector.SuspendLayout();
-			tabPage1.SuspendLayout();
 			tabPage2.SuspendLayout();
+			tabPage1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+			splitContainer1.Panel1.SuspendLayout();
+			splitContainer1.Panel2.SuspendLayout();
+			splitContainer1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
+			splitContainer2.Panel1.SuspendLayout();
+			splitContainer2.Panel2.SuspendLayout();
+			splitContainer2.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
+			splitContainer3.Panel1.SuspendLayout();
+			splitContainer3.Panel2.SuspendLayout();
+			splitContainer3.SuspendLayout();
 			SuspendLayout();
 			// 
 			// tvFileTree
@@ -51,29 +67,29 @@
 			tvFileTree.Dock = DockStyle.Fill;
 			tvFileTree.Location = new Point(3, 3);
 			tvFileTree.Name = "tvFileTree";
-			tvFileTree.Size = new Size(244, 571);
+			tvFileTree.Size = new Size(286, 597);
 			tvFileTree.TabIndex = 1;
 			tvFileTree.AfterSelect += tv_AfterSelect;
 			// 
 			// lbLogs
 			// 
-			lbLogs.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+			lbLogs.Dock = DockStyle.Fill;
 			lbLogs.FormattingEnabled = true;
 			lbLogs.HorizontalScrollbar = true;
 			lbLogs.ItemHeight = 15;
-			lbLogs.Location = new Point(802, 71);
+			lbLogs.Location = new Point(0, 0);
 			lbLogs.Name = "lbLogs";
 			lbLogs.SelectionMode = SelectionMode.None;
-			lbLogs.Size = new Size(399, 604);
+			lbLogs.Size = new Size(897, 134);
 			lbLogs.TabIndex = 17;
 			// 
 			// btnSaveChanges
 			// 
-			btnSaveChanges.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+			btnSaveChanges.Dock = DockStyle.Top;
 			btnSaveChanges.Enabled = false;
-			btnSaveChanges.Location = new Point(276, 12);
+			btnSaveChanges.Location = new Point(0, 26);
 			btnSaveChanges.Name = "btnSaveChanges";
-			btnSaveChanges.Size = new Size(520, 52);
+			btnSaveChanges.Size = new Size(306, 26);
 			btnSaveChanges.TabIndex = 18;
 			btnSaveChanges.Text = "Save Changes";
 			btnSaveChanges.UseVisualStyleBackColor = true;
@@ -82,19 +98,20 @@
 			// 
 			// pgObject
 			// 
-			pgObject.Anchor = AnchorStyles.Top | AnchorStyles.Bottom;
+			pgObject.Dock = DockStyle.Fill;
 			pgObject.HelpVisible = false;
-			pgObject.Location = new Point(276, 70);
+			pgObject.Location = new Point(0, 0);
 			pgObject.Name = "pgObject";
-			pgObject.Size = new Size(520, 605);
+			pgObject.Size = new Size(297, 607);
 			pgObject.TabIndex = 22;
 			pgObject.ToolbarVisible = false;
 			// 
 			// btnSetDirectory
 			// 
-			btnSetDirectory.Location = new Point(12, 12);
+			btnSetDirectory.Dock = DockStyle.Top;
+			btnSetDirectory.Location = new Point(0, 0);
 			btnSetDirectory.Name = "btnSetDirectory";
-			btnSetDirectory.Size = new Size(231, 23);
+			btnSetDirectory.Size = new Size(306, 26);
 			btnSetDirectory.TabIndex = 23;
 			btnSetDirectory.Text = "Set ObjData Directory";
 			btnSetDirectory.UseVisualStyleBackColor = true;
@@ -103,16 +120,16 @@
 			// tbFileFilter
 			// 
 			tbFileFilter.BorderStyle = BorderStyle.FixedSingle;
-			tbFileFilter.Location = new Point(112, 41);
+			tbFileFilter.Location = new Point(109, 61);
 			tbFileFilter.Name = "tbFileFilter";
-			tbFileFilter.Size = new Size(154, 23);
+			tbFileFilter.Size = new Size(278, 23);
 			tbFileFilter.TabIndex = 24;
 			tbFileFilter.TextChanged += tbFileFilter_TextChanged;
 			// 
 			// lblFilenameRegex
 			// 
 			lblFilenameRegex.BorderStyle = BorderStyle.FixedSingle;
-			lblFilenameRegex.Location = new Point(12, 41);
+			lblFilenameRegex.Location = new Point(3, 61);
 			lblFilenameRegex.Name = "lblFilenameRegex";
 			lblFilenameRegex.Size = new Size(100, 23);
 			lblFilenameRegex.TabIndex = 25;
@@ -124,7 +141,7 @@
 			tvObjType.Dock = DockStyle.Fill;
 			tvObjType.Location = new Point(3, 3);
 			tvObjType.Name = "tvObjType";
-			tvObjType.Size = new Size(244, 571);
+			tvObjType.Size = new Size(292, 597);
 			tvObjType.TabIndex = 26;
 			tvObjType.AfterSelect += tv_AfterSelect;
 			// 
@@ -132,22 +149,12 @@
 			// 
 			objectSelector.Controls.Add(tabPage2);
 			objectSelector.Controls.Add(tabPage1);
-			objectSelector.Location = new Point(12, 70);
+			objectSelector.Dock = DockStyle.Bottom;
+			objectSelector.Location = new Point(0, 114);
 			objectSelector.Name = "objectSelector";
 			objectSelector.SelectedIndex = 0;
-			objectSelector.Size = new Size(258, 605);
+			objectSelector.Size = new Size(306, 631);
 			objectSelector.TabIndex = 29;
-			// 
-			// tabPage1
-			// 
-			tabPage1.Controls.Add(tvFileTree);
-			tabPage1.Location = new Point(4, 24);
-			tabPage1.Name = "tabPage1";
-			tabPage1.Padding = new Padding(3);
-			tabPage1.Size = new Size(250, 577);
-			tabPage1.TabIndex = 0;
-			tabPage1.Text = "File";
-			tabPage1.UseVisualStyleBackColor = true;
 			// 
 			// tabPage2
 			// 
@@ -155,31 +162,114 @@
 			tabPage2.Location = new Point(4, 24);
 			tabPage2.Name = "tabPage2";
 			tabPage2.Padding = new Padding(3);
-			tabPage2.Size = new Size(250, 577);
+			tabPage2.Size = new Size(298, 603);
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "Category";
 			tabPage2.UseVisualStyleBackColor = true;
+			// 
+			// tabPage1
+			// 
+			tabPage1.Controls.Add(tvFileTree);
+			tabPage1.Location = new Point(4, 24);
+			tabPage1.Name = "tabPage1";
+			tabPage1.Padding = new Padding(3);
+			tabPage1.Size = new Size(292, 603);
+			tabPage1.TabIndex = 0;
+			tabPage1.Text = "File";
+			tabPage1.UseVisualStyleBackColor = true;
+			// 
+			// flpImageTable
+			// 
+			flpImageTable.BorderStyle = BorderStyle.FixedSingle;
+			flpImageTable.Dock = DockStyle.Fill;
+			flpImageTable.FlowDirection = FlowDirection.TopDown;
+			flpImageTable.Location = new Point(0, 0);
+			flpImageTable.Name = "flpImageTable";
+			flpImageTable.Size = new Size(596, 607);
+			flpImageTable.TabIndex = 30;
+			// 
+			// splitContainer1
+			// 
+			splitContainer1.Dock = DockStyle.Fill;
+			splitContainer1.Location = new Point(0, 0);
+			splitContainer1.Name = "splitContainer1";
+			splitContainer1.Orientation = Orientation.Horizontal;
+			// 
+			// splitContainer1.Panel1
+			// 
+			splitContainer1.Panel1.Controls.Add(splitContainer2);
+			// 
+			// splitContainer1.Panel2
+			// 
+			splitContainer1.Panel2.Controls.Add(lbLogs);
+			splitContainer1.Size = new Size(897, 745);
+			splitContainer1.SplitterDistance = 607;
+			splitContainer1.TabIndex = 31;
+			// 
+			// splitContainer2
+			// 
+			splitContainer2.Dock = DockStyle.Fill;
+			splitContainer2.Location = new Point(0, 0);
+			splitContainer2.Name = "splitContainer2";
+			// 
+			// splitContainer2.Panel1
+			// 
+			splitContainer2.Panel1.Controls.Add(pgObject);
+			// 
+			// splitContainer2.Panel2
+			// 
+			splitContainer2.Panel2.Controls.Add(flpImageTable);
+			splitContainer2.Size = new Size(897, 607);
+			splitContainer2.SplitterDistance = 297;
+			splitContainer2.TabIndex = 32;
+			// 
+			// splitContainer3
+			// 
+			splitContainer3.Dock = DockStyle.Fill;
+			splitContainer3.Location = new Point(0, 0);
+			splitContainer3.Name = "splitContainer3";
+			// 
+			// splitContainer3.Panel1
+			// 
+			splitContainer3.Panel1.Controls.Add(btnSaveChanges);
+			splitContainer3.Panel1.Controls.Add(btnSetDirectory);
+			splitContainer3.Panel1.Controls.Add(objectSelector);
+			splitContainer3.Panel1.Controls.Add(tbFileFilter);
+			splitContainer3.Panel1.Controls.Add(lblFilenameRegex);
+			// 
+			// splitContainer3.Panel2
+			// 
+			splitContainer3.Panel2.Controls.Add(splitContainer1);
+			splitContainer3.Size = new Size(1207, 745);
+			splitContainer3.SplitterDistance = 306;
+			splitContainer3.TabIndex = 33;
 			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(1213, 689);
-			Controls.Add(objectSelector);
-			Controls.Add(lblFilenameRegex);
-			Controls.Add(tbFileFilter);
-			Controls.Add(btnSetDirectory);
-			Controls.Add(pgObject);
-			Controls.Add(btnSaveChanges);
-			Controls.Add(lbLogs);
+			ClientSize = new Size(1207, 745);
+			Controls.Add(splitContainer3);
 			Name = "MainForm";
 			Text = "OpenLocoTool";
 			Load += MainForm_Load;
 			objectSelector.ResumeLayout(false);
-			tabPage1.ResumeLayout(false);
 			tabPage2.ResumeLayout(false);
+			tabPage1.ResumeLayout(false);
+			splitContainer1.Panel1.ResumeLayout(false);
+			splitContainer1.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+			splitContainer1.ResumeLayout(false);
+			splitContainer2.Panel1.ResumeLayout(false);
+			splitContainer2.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
+			splitContainer2.ResumeLayout(false);
+			splitContainer3.Panel1.ResumeLayout(false);
+			splitContainer3.Panel1.PerformLayout();
+			splitContainer3.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)splitContainer3).EndInit();
+			splitContainer3.ResumeLayout(false);
 			ResumeLayout(false);
-			PerformLayout();
 		}
 
 		#endregion
@@ -196,5 +286,9 @@
 		private TabControl objectSelector;
 		private TabPage tabPage1;
 		private TabPage tabPage2;
+		private FlowLayoutPanel flpImageTable;
+		private SplitContainer splitContainer1;
+		private SplitContainer splitContainer2;
+		private SplitContainer splitContainer3;
 	}
 }

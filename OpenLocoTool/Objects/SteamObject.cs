@@ -17,6 +17,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x02)]
+	[LocoStringCount(0)]
 	public record ImageAndHeight(
 		[property: LocoStructOffset(0x00)] uint8_t ImageOffset,
 		[property: LocoStructOffset(0x01)] uint8_t Height

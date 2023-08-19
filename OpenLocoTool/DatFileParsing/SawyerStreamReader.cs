@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -40,51 +41,92 @@ namespace OpenLocoTool.DatFileParsing
 			var decodedData = Decode(ObjectHeader.Encoding, Data);
 			var locoStruct = GetLocoStruct(ObjectHeader.ObjectType, decodedData);
 
-			var attr = (LocoStructSizeAttribute)locoStruct.GetType().GetCustomAttribute(typeof(LocoStructSizeAttribute), inherit: false);
-			var locoStructSize = attr.Size;
+			var structAttr = (LocoStructSizeAttribute)locoStruct.GetType().GetCustomAttribute(typeof(LocoStructSizeAttribute), inherit: false);
+			var locoStructSize = structAttr.Size;
 
 			// string table
 			var variableDataSlice = decodedData[locoStructSize..];
-			var (stringTable, stringTableBytesRead) = LoadStringTable(variableDataSlice);
+			var stringAttr = (LocoStringCountAttribute)locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false);
+			var locoStrings = stringAttr?.Count ?? 1;
+			var (stringTable, stringTableBytesRead) = LoadStringTable(variableDataSlice, locoStrings);
+			variableDataSlice = variableDataSlice[stringTableBytesRead..];
+
+			// special handling per object type
+			{
+				if (locoStruct is BridgeObject bo)
+				{
+					var bytesToRead = (bo.TrackNumCompatible + bo.RoadNumCompatible) * ObjectHeader.StructLength;
+					variableDataSlice = variableDataSlice[bytesToRead..];
+				}
+			}
 
 			// g1/gfx table
-			variableDataSlice = variableDataSlice[stringTableBytesRead..];
-			var (imageTable, imageTableBytesRead) = LoadImageTable(variableDataSlice);
+
+			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(variableDataSlice);
 
 			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={ObjectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-			return new LocoObject(ObjectHeader, locoStruct, stringTable, imageTable);
+			return new LocoObject(ObjectHeader, locoStruct, stringTable, g1Header, imageTable);
 		}
 
-		(Dictionary<LocoLanguageId, string> table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data)
+		(StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, int stringsInTable)
 		{
-			var strings = new Dictionary<LocoLanguageId, string>();
+			var strings = new StringTable();
 
-			if (data.Length == 0)
+			if (data.Length == 0 || stringsInTable == 0)
 			{
 				return (strings, 0);
 			}
 
 			var ptr = 0;
-			for (; ptr < data.Length && data[ptr] != 0xFF;)
+
+			for (var i = 0; i < stringsInTable; ++i)
 			{
-				var lang = (LocoLanguageId)data[ptr++];
-				var ini = ptr;
-				while (data[ptr++] != '\0') ;
-				var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-				strings.Add(lang, str);
+				for (; ptr < data.Length && data[ptr] != 0xFF;)
+				{
+					var lang = (LocoLanguageId)data[ptr++];
+					var ini = ptr;
+					while (data[ptr++] != '\0') ;
+					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
+					strings.Add((i, lang), str);
+				}
+				ptr++;
 			}
 
-			return (strings, ptr + 1); // add one because we 'read' the 0xFF byte at the end (ie we skipped it)
+			return (strings, ptr); // add one because we 'read' the 0xFF byte at the end (ie we skipped it)
 		}
 
-		(List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+		// === not working ===
+		// airport
+		// building
+		// dock
+		// industry
+		// land
+		// === working ===
+		// bridge (requires RLE)
+		// cargo
+		// cliffEdge
+		// climate (no images)
+		// competitor
+		// currency
+		// hillshapes
+		// interfaceskin
+		// levelCrossing (requires RLE)
+		// roadExtra (requires RLE)
+		// scaffolding (requires RLE)
+		// snow
+		// streetlight
+		// tree
+		// tunnel (requires RLE)
+		// wall
+		// water (though it seems bugged)
+		(G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 		{
 			var g1Element32s = new List<G1Element32>();
 
 			if (data.Length == 0)
 			{
-				return (g1Element32s, 0);
+				return (new G1Header(0, 0), g1Element32s, 0);
 			}
 
 			var g1Header = new G1Header(
@@ -103,7 +145,17 @@ namespace OpenLocoTool.DatFileParsing
 				g1Element32s.Add(g32Element);
 			}
 
-			return (g1Element32s, g1ElementHeaders.Length + imageData.Length);
+			// set image data
+			for (var i = 0; i < g1Header.NumEntries; ++i)
+			{
+				var currElement = g1Element32s[i];
+				var nextOffset = i < g1Header.NumEntries - 1
+					? g1Element32s[i + 1].offset
+					: g1Header.TotalSize;
+				currElement.ImageData = imageData[(int)currElement.offset..(int)nextOffset].ToArray();
+			}
+
+			return (g1Header, g1Element32s, g1ElementHeaders.Length + imageData.Length);
 		}
 
 		public (ObjectHeader ObjectHeader, byte[] RawData) LoadFromFile(string filename)

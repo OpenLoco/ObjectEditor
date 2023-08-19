@@ -29,4 +29,15 @@
 
 		public int Size { get; }
 	}
+
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+	public class LocoStringCountAttribute : Attribute
+	{
+		public LocoStringCountAttribute(int count)
+		{
+			Count = count;
+		}
+
+		public int Count { get; }
+	}
 }

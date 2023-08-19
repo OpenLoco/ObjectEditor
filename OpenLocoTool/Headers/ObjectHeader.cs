@@ -51,7 +51,10 @@ namespace OpenLocoTool.Headers
 		[property: LocoStructOffset(0x0A)] int16_t yOffset,
 		[property: LocoStructOffset(0x0C)] G1ElementFlags flags,
 		[property: LocoStructOffset(0x0E)] int16_t zoomOffset
-	) : ILocoStruct;
+	) : ILocoStruct
+	{
+		public byte[] ImageData;
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[Category("Header")]

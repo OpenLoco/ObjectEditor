@@ -30,7 +30,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x17)] Colour Colour_17
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.interfaceSkin;
+		public static ObjectType ObjectType => ObjectType.interfaceSkin;
 		public static int StructLength => 0x18;
 	}
 }

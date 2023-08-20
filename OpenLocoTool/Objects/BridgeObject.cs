@@ -30,7 +30,7 @@ namespace OpenLocoTool.Objects
 	{
 		public const int TrackModsLength = 7;
 		public const int RoadModsLength = 7;
-		public ObjectType ObjectType => ObjectType.bridge;
+		public static ObjectType ObjectType => ObjectType.bridge;
 		public static int StructLength => 0x2C;
 	}
 }

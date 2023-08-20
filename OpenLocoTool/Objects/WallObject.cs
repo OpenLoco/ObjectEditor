@@ -30,7 +30,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x09)] uint8_t var_09
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.wall;
+		public static ObjectType ObjectType => ObjectType.wall;
 		public static int StructLength => 0x0A;
 	}
 }

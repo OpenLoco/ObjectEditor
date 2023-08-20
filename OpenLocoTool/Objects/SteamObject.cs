@@ -46,7 +46,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x01F), LocoArrayLength(9)] SoundObjectId[] SoundEffects // size tbc
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.steam;
+		public static ObjectType ObjectType => ObjectType.steam;
 		public static int StructLength => 0x28;
 	}
 }

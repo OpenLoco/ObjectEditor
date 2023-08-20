@@ -12,7 +12,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x02)] uint32_t Image
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.tunnel;
+		public static ObjectType ObjectType => ObjectType.tunnel;
 		public static int StructLength => 0x06;
 	}
 }

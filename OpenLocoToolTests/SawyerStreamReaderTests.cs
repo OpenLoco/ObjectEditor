@@ -32,7 +32,7 @@ namespace OpenLocoToolTests
 		//	//ssw.WriteToFile(temp, loaded.ObjHdr1, loaded.ObjHDr2, loaded.Data);
 		//}
 
-		ILocoObject LoadObject(string filename)
+		static ILocoObject LoadObject(string filename)
 		{
 			var fileSize = new FileInfo(filename).Length;
 			var logger = new OpenLocoToolCommon.Logger();
@@ -48,18 +48,17 @@ namespace OpenLocoToolTests
 			=> (T)LoadObject(filename).Object;
 
 		[Test]
+		public void LoadAirportObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
 		public void LoadClimateObject()
 		{
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\CLIM1.DAT";
-			var locoObj = LoadObject(testFile);
+			var obj = LoadObject<ClimateObject>(testFile);
 
-			//var header = locoObj.ObjectHeader;
-			//Assert.Multiple(() =>
-			//{
-			//	Assert.That(locoObj.ObjectHeader.Checksum, Is.EqualTo(123));
-			//});
-
-			var obj = locoObj.Object as ClimateObject;
 			Assert.Multiple(() =>
 			{
 				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));

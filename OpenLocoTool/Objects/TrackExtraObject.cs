@@ -18,7 +18,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0E)] uint32_t var_0E
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.trackExtra;
+		public static ObjectType ObjectType => ObjectType.trackExtra;
 		public static int StructLength => 0x12;
 	}
 }

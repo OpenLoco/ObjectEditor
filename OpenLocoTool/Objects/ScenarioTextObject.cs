@@ -14,7 +14,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x04), LocoArrayLength(0x6 - 0x4)] string_id pad_04 // 0x04
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.scenarioText;
+		public static ObjectType ObjectType => ObjectType.scenarioText;
 		public static int StructLength => 0x06;
 	}
 }

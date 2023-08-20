@@ -123,7 +123,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.industry;
+		public static ObjectType ObjectType => ObjectType.industry;
 		public static int StructLength => 0xF4;
 	}
 }

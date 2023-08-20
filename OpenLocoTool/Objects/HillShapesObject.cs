@@ -15,7 +15,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0C), LocoArrayLength(0x0E - 0x0C)] uint8_t[] pad_0C
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.hillShapes;
+		public static ObjectType ObjectType => ObjectType.hillShapes;
 		public static int StructLength => 0x0E;
 	}
 }

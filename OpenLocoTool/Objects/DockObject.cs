@@ -32,7 +32,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x24)] Pos2 BoatPosition
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.dock;
+		public static ObjectType ObjectType => ObjectType.dock;
 		public static int StructLength => 0x28;
 	}
 }

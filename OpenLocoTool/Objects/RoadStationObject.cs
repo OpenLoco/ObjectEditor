@@ -36,7 +36,7 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructProperty(0x2E)] const std::byte* CargoOffsetBytes[4][4]
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.roadStation;
+		public static ObjectType ObjectType => ObjectType.roadStation;
 		public static int StructLength => 0x6E;
 	}
 }

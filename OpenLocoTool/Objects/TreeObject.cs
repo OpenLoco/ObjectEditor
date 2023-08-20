@@ -43,7 +43,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x4A)] int16_t DemolishRatingReduction
 	) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.tree;
+		public static ObjectType ObjectType => ObjectType.tree;
 		public static int StructLength => 0x4C;
 	}
 }

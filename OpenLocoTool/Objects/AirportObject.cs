@@ -76,7 +76,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
 	) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.airport;
+		public static ObjectType ObjectType => ObjectType.airport;
 		public static int StructLength => 0xBA;
 	}
 }

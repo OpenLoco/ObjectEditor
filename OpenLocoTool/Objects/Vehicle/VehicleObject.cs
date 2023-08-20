@@ -52,7 +52,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x15B), LocoArrayLength(3)] SoundObjectId[] StartSounds // sound array length numStartSounds highest sound is the crossing whistle
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.vehicle;
+		public static ObjectType ObjectType => ObjectType.vehicle;
 		public static int StructLength => 0x15E;
 
 		public const int MaxBodySprites = 4;

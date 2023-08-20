@@ -84,6 +84,7 @@ namespace OpenLocoToolGui
 				var relative = Path.GetRelativePath(currentDir, obj.Key);
 				tvFileTree.Nodes.Add(obj.Key, relative);
 			}
+
 			tvFileTree.ResumeLayout(true);
 		}
 
@@ -101,6 +102,7 @@ namespace OpenLocoToolGui
 				{
 					typeNode.Nodes.Add(obj.Key, obj.Value.Name);
 				}
+
 				nodesToAdd.Add(typeNode);
 			}
 
@@ -170,20 +172,18 @@ namespace OpenLocoToolGui
 			flpImageTable.Controls.Clear();
 
 			// todo: add user to supply this file
-			var path = "../../../../palette.png";
+			const string path = "../../../../palette.png";
 			var paletteBitmap = new Bitmap(path);
 			var palette = PaletteFromBitmap(paletteBitmap);
 
 			for (var i = 0; i < obj.G1Elements.Count; ++i)
 			{
 				var currElement = obj.G1Elements[i];
-				byte[] imageData = currElement.ImageData;
-				if (currElement.flags.HasFlag(G1ElementFlags.IsRLECompressed))
-				{
-					imageData = DecodeRLEImageData(currElement);
-				}
+				var imageData = currElement.ImageData;
+
 				if (currElement.ImageData.Length == 0 || currElement.flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
 				{
+					logger.Info($"skipped loading g1 element {i} with flags {currElement.flags}");
 					continue;
 				}
 
@@ -201,7 +201,6 @@ namespace OpenLocoToolGui
 						//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
 						//	: palette[paletteIndex];
 
-						// zehmatt: uncomment these 2 lines to draw images
 						var colour = palette[paletteIndex];
 						SetPixel(dstImgData, x, y, colour);
 					}
@@ -219,79 +218,6 @@ namespace OpenLocoToolGui
 			}
 
 			flpImageTable.ResumeLayout(true);
-		}
-
-		public byte[] DecodeRLEImageData(G1Element32 img)
-		{
-			var width = img.width;
-			var height = img.height;
-
-			var dstLineWidth = img.width;
-			var dst0Index = 0; // dstLineWidth * img.yOffset + img.xOffset;
-
-			byte[] srcBuf = img.ImageData;
-			byte[] dstBuf = new byte[img.width * img.height]; // Assuming a single byte per pixel
-
-			var srcY = 0;
-
-			if (srcY < 0)
-			{
-				srcY++;
-				height--;
-				dst0Index += dstLineWidth;
-			}
-
-			for (int i = 0; i < height; i++)
-			{
-				var y = srcY + i;
-
-				var lineOffset = srcBuf[y * 2] | (srcBuf[y * 2 + 1] << 8);
-
-				var nextRunIndex = lineOffset;
-				var dstLineStartIndex = dst0Index + dstLineWidth * i;
-
-				while (true)
-				{
-					var srcIndex = nextRunIndex;
-
-					var rleInfoByte = srcBuf[srcIndex++];
-					var dataSize = rleInfoByte & 0x7F;
-					var isEndOfLine = (rleInfoByte & 0x80) != 0;
-
-					var firstPixelX = srcBuf[srcIndex++];
-					nextRunIndex = srcIndex + dataSize;
-
-					var x = firstPixelX - 0; // img.xOffset;
-					var numPixels = dataSize;
-
-					if (x > 0)
-					{
-						x++;
-						srcIndex++;
-						numPixels--;
-					}
-					else if (x < 0)
-					{
-						srcIndex += -x;
-						numPixels += x;
-						x = 0;
-					}
-
-					numPixels = Math.Min(numPixels, width - x);
-
-					var dstIndex = dstLineStartIndex + x;
-
-					if (numPixels > 0)
-					{
-						Array.Copy(srcBuf, srcIndex, dstBuf, dstIndex, numPixels);
-					}
-
-					if (isEndOfLine)
-						break;
-				}
-			}
-
-			return dstBuf;
 		}
 
 		ILocoObject? LoadAndCacheObject(string filename)
@@ -339,7 +265,7 @@ namespace OpenLocoToolGui
 		public unsafe void SetPixel(BitmapData d, int X, int Y, Color c)
 			=> SetPixel(GetPtrToFirstPixel(d, X, Y), c);
 
-		private unsafe byte* GetPtrToFirstPixel(BitmapData d, int X, int Y)
+		private static unsafe byte* GetPtrToFirstPixel(BitmapData d, int X, int Y)
 			=> (byte*)d.Scan0.ToPointer() + (Y * d.Stride) + (X * (Image.GetPixelFormatSize(d.PixelFormat) / 8));
 
 		//private static unsafe void SetPixel(byte* ptr, Color c)

@@ -40,7 +40,7 @@ namespace OpenLocoTool.DatFileParsing
 			}
 		}
 
-		public void WriteToFile(string filepath, ReadOnlySpan<byte> objectHeader1, ReadOnlySpan<byte> objectHeader2, ReadOnlySpan<byte> data)
+		public static void WriteToFile(string filepath, ReadOnlySpan<byte> objectHeader1, ReadOnlySpan<byte> objectHeader2, ReadOnlySpan<byte> data)
 		{
 			var stream = File.Create(filepath);
 			stream.Write(objectHeader1);
@@ -51,7 +51,7 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		// taken from openloco SawyerStreamReader::encodeRunLengthSingle
-		private Span<byte> encodeRunLengthSingle(ReadOnlySpan<byte> data)
+		private static Span<byte> encodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
 			var src = 0; // ptr
@@ -68,6 +68,7 @@ namespace OpenLocoTool.DatFileParsing
 					srcNormStart += count;
 					count = 0;
 				}
+
 				if (data[src] == data[src + 1])
 				{
 					for (; count < 125 && src + count < srcEnd; count++)
@@ -77,6 +78,7 @@ namespace OpenLocoTool.DatFileParsing
 							break;
 						}
 					}
+
 					buffer.Add((byte)(257 - count));
 					buffer.Add(data[src]);
 					src += count;
@@ -89,10 +91,12 @@ namespace OpenLocoTool.DatFileParsing
 					src++;
 				}
 			}
+
 			if (data[src] == data[srcEnd - 1])
 			{
 				count++;
 			}
+
 			if (count != 0)
 			{
 				buffer.Add((byte)(count - 1));

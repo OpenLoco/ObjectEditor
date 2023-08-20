@@ -14,7 +14,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0C), LocoArrayLength(3)] uint16_t[] RoofHeights    // 0x0C
 	) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.scaffolding;
+		public static ObjectType ObjectType => ObjectType.scaffolding;
 		public static int StructLength => 0x12;
 	}
 }

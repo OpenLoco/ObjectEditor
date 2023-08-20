@@ -20,7 +20,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0E)] uint32_t Image
 		) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.levelCrossing;
+		public static ObjectType ObjectType => ObjectType.levelCrossing;
 		public static int StructLength => 0x12;
 	}
 }

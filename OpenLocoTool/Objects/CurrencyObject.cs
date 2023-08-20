@@ -17,7 +17,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0B)] uint8_t Factor
 	) : ILocoStruct
 	{
-		public ObjectType ObjectType => ObjectType.currency;
+		public static ObjectType ObjectType => ObjectType.currency;
 
 		public static int StructLength => 0x0C;
 	}

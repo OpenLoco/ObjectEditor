@@ -37,7 +37,7 @@ namespace OpenLocoTool.DatFileParsing
 		public SawyerStreamReader(ILogger logger)
 			=> Logger = logger;
 
-		uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
+		static uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
 			uint32_t computeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
 			{
@@ -46,6 +46,7 @@ namespace OpenLocoTool.DatFileParsing
 				{
 					checksum = BitOperations.RotateLeft(checksum ^ d, 11);
 				}
+
 				return checksum;
 			}
 
@@ -99,7 +100,7 @@ namespace OpenLocoTool.DatFileParsing
 				{
 					var dependentObjects = new List<ObjectHeader>();
 
-					byte trackType = 0xFF;
+					const byte trackType = 0xFF;
 
 					// dependent objects
 					if (!vo.Flags.HasFlag(VehicleObjectFlags.unk_09) && (vo.Mode == TransportMode.Rail || vo.Mode == TransportMode.Road))
@@ -110,6 +111,7 @@ namespace OpenLocoTool.DatFileParsing
 
 						// load the object handle for the track header, and set tracktype to its id
 					}
+
 					vo = vo with { TrackType = trackType };
 
 					// track mods
@@ -165,6 +167,7 @@ namespace OpenLocoTool.DatFileParsing
 						{
 							continue;
 						}
+
 						remainingData = remainingData[ObjectHeader.SubHeaderLength..];
 					}
 
@@ -206,7 +209,7 @@ namespace OpenLocoTool.DatFileParsing
 			}
 		}
 
-		(StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, int stringsInTable)
+		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, int stringsInTable)
 		{
 			var strings = new StringTable();
 
@@ -227,6 +230,7 @@ namespace OpenLocoTool.DatFileParsing
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
 					strings.Add((i, lang), str);
 				}
+
 				ptr++;
 			}
 
@@ -272,7 +276,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			var g1ElementHeaders = data[8..];
 
-			var g1Element32Size = 0x10; // todo: lookup from the LocoStructSize attribute
+			const int g1Element32Size = 0x10; // todo: lookup from the LocoStructSize attribute
 			var imageData = g1ElementHeaders[((int)g1Header.NumEntries * g1Element32Size)..];
 			g1Header.ImageData = imageData.ToArray();
 			for (var i = 0; i < g1Header.NumEntries; ++i)
@@ -289,10 +293,89 @@ namespace OpenLocoTool.DatFileParsing
 				var nextOffset = i < g1Header.NumEntries - 1
 					? g1Element32s[i + 1].offset
 					: g1Header.TotalSize;
+
 				currElement.ImageData = imageData[(int)currElement.offset..(int)nextOffset].ToArray();
+
+				if (currElement.flags.HasFlag(G1ElementFlags.IsRLECompressed))
+				{
+					currElement.ImageData = DecodeRLEImageData(currElement);
+				}
 			}
 
 			return (g1Header, g1Element32s, g1ElementHeaders.Length + imageData.Length);
+		}
+
+		public static byte[] DecodeRLEImageData(G1Element32 img)
+		{
+			var width = img.width;
+			var height = img.height;
+
+			var dstLineWidth = img.width;
+			var dst0Index = 0; // dstLineWidth * img.yOffset + img.xOffset;
+
+			var srcBuf = img.ImageData;
+			var dstBuf = new byte[img.width * img.height]; // Assuming a single byte per pixel
+
+			var srcY = 0;
+
+			if (srcY < 0)
+			{
+				srcY++;
+				height--;
+				dst0Index += dstLineWidth;
+			}
+
+			for (var i = 0; i < height; i++)
+			{
+				var y = srcY + i;
+
+				var lineOffset = srcBuf[y * 2] | (srcBuf[(y * 2) + 1] << 8);
+
+				var nextRunIndex = lineOffset;
+				var dstLineStartIndex = dst0Index + (dstLineWidth * i);
+
+				while (true)
+				{
+					var srcIndex = nextRunIndex;
+
+					var rleInfoByte = srcBuf[srcIndex++];
+					var dataSize = rleInfoByte & 0x7F;
+					var isEndOfLine = (rleInfoByte & 0x80) != 0;
+
+					var firstPixelX = srcBuf[srcIndex++];
+					nextRunIndex = srcIndex + dataSize;
+
+					var x = firstPixelX - 0; // img.xOffset;
+					var numPixels = dataSize;
+
+					if (x > 0)
+					{
+						x++;
+						srcIndex++;
+						numPixels--;
+					}
+					else if (x < 0)
+					{
+						srcIndex += -x;
+						numPixels += x;
+						x = 0;
+					}
+
+					numPixels = Math.Min(numPixels, width - x);
+
+					var dstIndex = dstLineStartIndex + x;
+
+					if (numPixels > 0)
+					{
+						Array.Copy(srcBuf, srcIndex, dstBuf, dstIndex, numPixels);
+					}
+
+					if (isEndOfLine)
+						break;
+				}
+			}
+
+			return dstBuf;
 		}
 
 		public byte[] LoadBytesFromFile(string filename)
@@ -391,7 +474,7 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
-		private byte[] decodeRunLengthSingle(ReadOnlySpan<byte> data)
+		private static byte[] decodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
 
@@ -440,7 +523,7 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthMulti
-		private byte[] decodeRunLengthMulti(ReadOnlySpan<byte> data)
+		private static byte[] decodeRunLengthMulti(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
 
@@ -453,6 +536,7 @@ namespace OpenLocoTool.DatFileParsing
 					{
 						throw new ArgumentException("Invalid RLE run");
 					}
+
 					buffer.Add(data[i]);
 				}
 				else
@@ -463,6 +547,7 @@ namespace OpenLocoTool.DatFileParsing
 					{
 						throw new ArgumentException("Invalid RLE run");
 					}
+
 					var copySrc = 0 + buffer.Count + offset;
 					var copyLen = (data[i] & 7) + 1;
 
@@ -496,7 +581,7 @@ namespace OpenLocoTool.DatFileParsing
 			for (var i = 0; i < data.Length; i++)
 			{
 				buffer.Add(ror(data[i], code));
-				code = (byte)(code + 2 & 7);
+				code = (byte)((code + 2) & 7);
 			}
 
 			// convert to span
@@ -510,10 +595,10 @@ namespace OpenLocoTool.DatFileParsing
 			return decodedSpan;
 		}
 
-		private byte ror(byte x, byte shift)
+		private static byte ror(byte x, byte shift)
 		{
 			const byte byteDigits = 8;
-			return (byte)(x >> shift | x << byteDigits - shift);
+			return (byte)((x >> shift) | (x << (byteDigits - shift)));
 		}
 	}
 }

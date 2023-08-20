@@ -177,9 +177,10 @@ namespace OpenLocoToolGui
 			for (var i = 0; i < obj.G1Elements.Count; ++i)
 			{
 				var currElement = obj.G1Elements[i];
+				byte[] imageData = currElement.ImageData;
 				if (currElement.flags.HasFlag(G1ElementFlags.IsRLECompressed))
 				{
-					currElement.ImageData = DecodeRLEImageData(currElement);
+					imageData = DecodeRLEImageData(currElement);
 				}
 				if (currElement.ImageData.Length == 0 || currElement.flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
 				{
@@ -193,7 +194,7 @@ namespace OpenLocoToolGui
 				{
 					for (var x = 0; x < currElement.width; ++x)
 					{
-						var paletteIndex = currElement.ImageData[(y * currElement.width) + x];
+						var paletteIndex = imageData[(y * currElement.width) + x];
 
 						// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
 						//var colour = obj.Object is HillShapesObject

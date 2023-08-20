@@ -277,14 +277,14 @@ namespace OpenLocoToolGui
 
 					if (newData.Count != img.width * (i + 1))
 					{
-						//throw new ArgumentException("image size wrong");
+						throw new ArgumentException("image size wrong");
 					}
 				}
 			}
 
 			if (newData.Count != img.width * img.height)
 			{
-				//throw new ArgumentException("image size wrong");
+				throw new ArgumentException("image size wrong");
 			}
 
 			return newData.ToArray();

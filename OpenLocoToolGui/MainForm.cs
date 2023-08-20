@@ -156,7 +156,7 @@ namespace OpenLocoToolGui
 
 			var obj = LoadAndCacheObject(e.Node.Name);
 
-			if (obj != null)
+			if (obj != null && obj.G1Elements != null && obj.G1Header != null)
 			{
 				CreateImages(obj);
 			}
@@ -173,7 +173,7 @@ namespace OpenLocoToolGui
 			var path = "../../../../palette.png";
 			var paletteBitmap = new Bitmap(path);
 			var palette = PaletteFromBitmap(paletteBitmap);
-			
+
 			for (var i = 0; i < obj.G1Elements.Count; ++i)
 			{
 				var currElement = obj.G1Elements[i];

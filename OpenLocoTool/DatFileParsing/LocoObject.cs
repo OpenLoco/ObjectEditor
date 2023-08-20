@@ -30,11 +30,19 @@ namespace OpenLocoTool.DatFileParsing
 			G1Header = g1Header;
 			G1Elements = g1Elements;
 		}
+		public LocoObject(ObjectHeader objHdr, ILocoStruct obj, StringTable stringTable)
+		{
+			ObjectHeader = objHdr;
+			Object = obj;
+			StringTable = stringTable;
+			G1Header = null;
+			G1Elements = null;
+		}
 
 		public ObjectHeader ObjectHeader { get; set; }
 		public ILocoStruct Object { get; set; }
 		public StringTable StringTable { get; set; }
-		public G1Header G1Header { get; set; }
-		public List<G1Element32> G1Elements { get; set; }
+		public G1Header? G1Header { get; set; }
+		public List<G1Element32>? G1Elements { get; set; }
 	}
 }

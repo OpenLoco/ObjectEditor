@@ -39,6 +39,16 @@ namespace OpenLocoTool.DatFileParsing
 
 		uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
+			uint32_t computeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
+			{
+				var checksum = seed;
+				foreach (var d in data)
+				{
+					checksum = BitOperations.RotateLeft(checksum ^ d, 11);
+				}
+				return checksum;
+			}
+
 			const uint32_t objectChecksumMagic = 0xF369A75B;
 			var checksum = computeChecksum(flagByte, objectChecksumMagic);
 
@@ -84,14 +94,23 @@ namespace OpenLocoTool.DatFileParsing
 					var bytesToRead = (bo.TrackNumCompatible + bo.RoadNumCompatible) * ObjectHeader.StructLength;
 					remainingData = remainingData[bytesToRead..];
 				}
-				/*
+
 				if (locoStruct is VehicleObject vo)
 				{
+					var dependentObjects = new List<ObjectHeader>();
+
+					byte trackType = 0xFF;
+
 					// dependent objects
-					if (vo.Flags.HasFlag(VehicleObjectFlags.unk_09) && (vo.Mode == TransportMode.Rail || vo.Mode == TransportMode.Road))
+					if (!vo.Flags.HasFlag(VehicleObjectFlags.unk_09) && (vo.Mode == TransportMode.Rail || vo.Mode == TransportMode.Road))
 					{
+						var trackHeader = ObjectHeader.Read(remainingData);
 						remainingData = remainingData[ObjectHeader.StructLength..];
+						dependentObjects.Add(trackHeader);
+
+						// load the object handle for the track header, and set tracktype to its id
 					}
+					vo = vo with { TrackType = trackType };
 
 					// track mods
 					remainingData = remainingData[(ObjectHeader.StructLength * vo.NumMods)..];
@@ -116,10 +135,10 @@ namespace OpenLocoTool.DatFileParsing
 							var unk = BitConverter.ToUInt16(remainingData[0..2]);
 							remainingData = remainingData[1..]; // uint8_t
 
-							for (var cargoType = 0; cargoType < 32 ; ++cargoType) // 32 is ObjectType::MaxObjects[cargo]
-				{
-					//var cargoObject = new CargoObject();
-					vo.CargoTypes[index] = 0;
+							for (var cargoType = 0; cargoType < 32; ++cargoType) // 32 is ObjectType::MaxObjects[cargo]
+							{
+								//var cargoObject = new CargoObject();
+								vo.CargoTypes[index] = 0;
 							}
 
 							ptr = BitConverter.ToUInt16(remainingData[0..2]);
@@ -146,50 +165,41 @@ namespace OpenLocoTool.DatFileParsing
 						{
 							continue;
 						}
-						remainingData = remainingData[ObjectHeader.StructLength..];
+						remainingData = remainingData[ObjectHeader.SubHeaderLength..];
 					}
 
 					// numCompat
-					remainingData = remainingData[(ObjectHeader.StructLength * vo.NumCompat)..];
+					remainingData = remainingData[(ObjectHeader.SubHeaderLength * vo.NumCompat)..];
 
 					// rack rail
 					if (vo.Flags.HasFlag(VehicleObjectFlags.RackRail))
 					{
-						remainingData = remainingData[ObjectHeader.StructLength..];
+						remainingData = remainingData[ObjectHeader.SubHeaderLength..];
 					}
 
 					// driving sound
 					if (vo.DrivingSoundType != DrivingSoundType.None)
 					{
-						remainingData = remainingData[ObjectHeader.StructLength..];
+						remainingData = remainingData[ObjectHeader.SubHeaderLength..];
 					}
 
 					// driving sound
-					if (vo.DrivingSoundType != DrivingSoundType.None)
-					{
-						remainingData = remainingData[(ObjectHeader.StructLength * vo.NumStartSounds)..];
-					}
+					remainingData = remainingData[(ObjectHeader.SubHeaderLength * vo.NumStartSounds)..];
+					//for (byte i = 0; i < Math.Clamp(vo.NumStartSounds, (byte)0, (byte)127); ++i)
+					//{
+
+					//}
+					//if (vo.DrivingSoundType != DrivingSoundType.None)
+					//{
+					//}
 
 					// should be at image table now
 				}
-					*/
 			}
 
 			// g1/gfx table
-
-			if (locoStruct is VehicleObject) // add curerntly unsupported types to here
-			{
-				Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength=<unknown>");
-				return new LocoObject(objectHeader, locoStruct, stringTable);
-			}
-			else
 			{
 				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-				if (remainingData.Length != imageTableBytesRead)
-				{
-					Debugger.Break();
-				}
-
 				Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
 				return new LocoObject(objectHeader, locoStruct, stringTable, g1Header, imageTable);
@@ -283,16 +293,6 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			return (g1Header, g1Element32s, g1ElementHeaders.Length + imageData.Length);
-		}
-
-		static uint32_t computeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
-		{
-			var checksum = seed;
-			foreach (var d in data)
-			{
-				checksum = BitOperations.RotateLeft(checksum ^ d, 11);
-			}
-			return checksum;
 		}
 
 		public byte[] LoadBytesFromFile(string filename)

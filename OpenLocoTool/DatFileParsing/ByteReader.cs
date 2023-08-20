@@ -19,7 +19,7 @@ namespace OpenLocoTool.DatFileParsing
 		public static uint32_t Read_uint32t(ReadOnlySpan<byte> data, int offset)
 			=> BitConverter.ToUInt32(data[offset..(offset + 4)]);
 
-		public static int32_t Read_int32(ReadOnlySpan<byte> data, int offset)
+		public static int32_t Read_int32t(ReadOnlySpan<byte> data, int offset)
 			=> BitConverter.ToInt32(data[offset..(offset + 4)]);
 
 		// this method isn't necessary normally since you can just call the above methods ^
@@ -52,110 +52,91 @@ namespace OpenLocoTool.DatFileParsing
 			=> this.data = data;
 
 		ReadOnlySpan<byte> data { get; }
-		int StreamPosition { get; set; }
 
-		public uint8_t Read_uint8t()
+		int ObjectSize(Type type)
 		{
-			var tmp = data[StreamPosition];
-			StreamPosition += 1;
-			return tmp;
+			var size = 0;
+			if (type == typeof(byte) || type == typeof(sbyte))
+			{
+				size = 1;
+			}
+			else if (type == typeof(uint16_t) || type == typeof(int16_t))
+			{
+				size = 2;
+			}
+			else if (type == typeof(uint32_t) || type == typeof(int32_t))
+			{
+				size = 4;
+			}
+			else
+			{
+				var attrs = type.GetCustomAttributes(typeof(LocoStructSizeAttribute), inherit: false);
+				if (attrs.Length != 1)
+				{
+					throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {type} didn't have LocoArrayLength attribute specified");
+				}
+				size = ((LocoStructSizeAttribute)attrs[0]).Size;
+			}
+
+			if (size == 0)
+			{
+				throw new ArgumentException("unknown primitive type with no size");
+			}
+
+			return size;
 		}
 
-		public int8_t Read_int8t()
+		public object Read_ArrayT(Type t, int position, int length)
 		{
-			var tmp = (sbyte)data[StreamPosition];
-			StreamPosition += 1;
-			return tmp;
-		}
+			var elementType = t.GetElementType();
+			var size = ObjectSize(elementType);
 
-		public uint16_t Read_uint16t()
-		{
-			var tmp = BitConverter.ToUInt16(data[StreamPosition..(StreamPosition + 2)]);
-			StreamPosition += 2;
-			return tmp;
-		}
-
-		public int16_t Read_int16t()
-		{
-			var tmp = BitConverter.ToInt16(data[StreamPosition..(StreamPosition + 2)]);
-			StreamPosition += 2;
-			return tmp;
-		}
-
-		public uint32_t Read_uint32t()
-		{
-			var tmp = BitConverter.ToUInt32(data[StreamPosition..(StreamPosition + 4)]);
-			StreamPosition += 4;
-			return tmp;
-		}
-
-		public int32_t Read_int32t()
-		{
-			var tmp = BitConverter.ToInt32(data[StreamPosition..(StreamPosition + 4)]);
-			StreamPosition += 4;
-			return tmp;
-		}
-
-		public int32_t Read_stringid()
-		{
-			return Read_uint16t();
-		}
-
-		public object Read_ArrayT(Type t, int length)
-		{
-			var elementType = t.GetElementType() ?? throw new ArgumentException($"Unable to get array element type for type {t}");
 			var arr = Array.CreateInstance(elementType, length);
 			for (var i = 0; i < length; i++)
 			{
-				arr.SetValue(ReadT(elementType), i);
+				arr.SetValue(ReadT(elementType, position + size), i);
 			}
 			return arr;
 		}
 
 		public object ReadT(Type t, int position, int arrLength = 0)
 		{
-			StreamPosition = position;
-			return ReadT(t, arrLength);
-		}
-
-		public object ReadT(Type t, int arrLength = 0)
-		{
 			if (t == typeof(uint8_t))
 			{
-				return Read_uint8t();
+				return StaticByteReader.Read_uint8t(data, position);
 			}
 			if (t == typeof(int8_t))
 			{
-				return Read_int8t();
+				return StaticByteReader.Read_int8t(data, position);
 			}
 			if (t == typeof(uint16_t))
 			{
-				return Read_uint16t();
+				return StaticByteReader.Read_uint16t(data, position);
 			}
 			if (t == typeof(int16_t))
 			{
-				return Read_int16t();
+				return StaticByteReader.Read_int16t(data, position);
 			}
 			if (t == typeof(uint32_t))
 			{
-				return Read_uint32t();
+				return StaticByteReader.Read_uint32t(data, position);
 			}
 			if (t == typeof(int32_t))
 			{
-				return Read_int32t();
+				return StaticByteReader.Read_int32t(data, position);
 			}
 			if (t == typeof(string_id))
 			{
-				return Read_stringid();
+				return StaticByteReader.Read_uint16t(data, position);
 			}
 			if (t.IsArray)
 			{
-				return Read_ArrayT(t, arrLength);
+				return Read_ArrayT(t, position, arrLength);
 			}
 			if (t.IsEnum) // this is so big because we need special handling for 'flags' enums
 			{
 				var underlyingType = t.GetEnumUnderlyingType();
-				var underlyingValue = ReadT(underlyingType); // Read the underlying value
+				var underlyingValue = ReadT(underlyingType, position); // Read the underlying value
 
 				if (t.IsDefined(typeof(FlagsAttribute), inherit: false))
 				{
@@ -182,7 +163,8 @@ namespace OpenLocoTool.DatFileParsing
 			}
 			if (t.IsClass)
 			{
-				return ReadLocoStruct(data, t);
+				var objectSize = ObjectSize(t);
+				return ReadLocoStruct(data[position..(position + objectSize)], t);
 			}
 
 			//if (t.IsValueType)
@@ -270,7 +252,7 @@ namespace OpenLocoTool.DatFileParsing
 				}
 				else
 				{
-					args.Add(byteReader.ReadT(p.PropertyType, locoProperty.Offset));
+					args.Add(byteReader.ReadT(p.PropertyType, locoProperty.Offset, 0));
 				}
 			}
 

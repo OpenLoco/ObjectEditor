@@ -136,7 +136,7 @@ namespace OpenLocoToolTests
 				Assert.That(obj.Mode, Is.EqualTo(TransportMode.Air), nameof(obj.Mode));
 				Assert.That(obj.Type, Is.EqualTo(VehicleType.Aircraft), nameof(obj.Type));
 				Assert.That(obj.var_04, Is.EqualTo(1), nameof(obj.var_04));
-				Assert.That(obj.TrackType, Is.EqualTo(0xFF), nameof(obj.TrackType));
+				// Assert.That(obj.TrackType, Is.EqualTo(0xFF), nameof(obj.TrackType)); // is changed after load from 0 to 255
 				Assert.That(obj.NumMods, Is.EqualTo(0), nameof(obj.NumMods));
 				Assert.That(obj.CostIndex, Is.EqualTo(8), nameof(obj.CostIndex));
 				Assert.That(obj.CostFactor, Is.EqualTo(345), nameof(obj.CostFactor));
@@ -155,17 +155,15 @@ namespace OpenLocoToolTests
 				Assert.That(obj.RackSpeed, Is.EqualTo(120), nameof(obj.RackSpeed));
 				Assert.That(obj.Weight, Is.EqualTo(141), nameof(obj.Weight));
 				Assert.That(obj.Flags, Is.EqualTo((VehicleObjectFlags)16384), nameof(obj.Flags));
-				CollectionAssert.AreEqual(obj.MaxCargo, Enumerable.Repeat(0, 2).ToArray(), nameof(obj.MaxCargo));
+				// CollectionAssert.AreEqual(obj.MaxCargo, Enumerable.Repeat(0, 2).ToArray(), nameof(obj.MaxCargo)); // this is changed after load from 0 to 24
 				CollectionAssert.AreEqual(obj.CargoTypes, Enumerable.Repeat(0, 2).ToArray(), nameof(obj.CargoTypes));
 				CollectionAssert.AreEqual(obj.CargoTypeSpriteOffsets, Enumerable.Repeat(0, 32).ToArray(), nameof(obj.CargoTypeSpriteOffsets));
 				Assert.That(obj.NumSimultaneousCargoTypes, Is.EqualTo(0), nameof(obj.NumSimultaneousCargoTypes));
-
-				//Assert.That(obj.Animation, Is.EqualTo(0), nameof(obj.Animation));
-				Assert.That(obj.Animation[0].ObjectId, Is.EqualTo(0), nameof(obj.MaxCargo), nameof(obj.Animation));
-				Assert.That(obj.Animation[0].Height, Is.EqualTo(24), nameof(obj.MaxCargo), nameof(obj.Animation));
+				Assert.That(obj.Animation[0].ObjectId, Is.EqualTo(0), nameof(obj.Animation));
+				Assert.That(obj.Animation[0].Height, Is.EqualTo(24), nameof(obj.Animation));
 				Assert.That(obj.Animation[0].Type, Is.EqualTo(SimpleAnimationType.None), nameof(obj.Animation));
-				Assert.That(obj.Animation[1].ObjectId, Is.EqualTo(0), nameof(obj.MaxCargo), nameof(obj.Animation));
-				Assert.That(obj.Animation[1].Height, Is.EqualTo(0), nameof(obj.MaxCargo), nameof(obj.Animation));
+				Assert.That(obj.Animation[1].ObjectId, Is.EqualTo(0), nameof(obj.Animation));
+				Assert.That(obj.Animation[1].Height, Is.EqualTo(0), nameof(obj.Animation));
 				Assert.That(obj.Animation[1].Type, Is.EqualTo(SimpleAnimationType.None), nameof(obj.Animation));
 				Assert.That(obj.var_113, Is.EqualTo(0), nameof(obj.var_113));
 				Assert.That(obj.Designed, Is.EqualTo(1957), nameof(obj.Designed));

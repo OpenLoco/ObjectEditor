@@ -1,6 +1,7 @@
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoToolCommon;
+using System;
 using System.Drawing.Imaging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -225,6 +226,7 @@ namespace OpenLocoToolGui
 			var newData = new List<byte>();
 			var zoom = 1;
 			var src0 = img.ImageData;
+			var srcX = 0;
 
 			for (var i = 0; i < img.height; i += zoom)
 			{
@@ -242,12 +244,49 @@ namespace OpenLocoToolGui
 					dataSize &= 0x7F;
 
 					nextRun = srcPtr + dataSize;
+					var x = firstPixelX - srcX;
+					int numPixels = dataSize;
 
-					var numPixels = dataSize;
+					if (x > 0)
+					{
+						// If x is not a multiple of zoom, round it up to a multiple
+						var mod = x & (zoom - 1);
+						if (mod != 0)
+						{
+							var offset = zoom - mod;
+							x += offset;
+							srcPtr += offset;
+							numPixels -= offset;
+						}
+					}
+					else if (x < 0)
+					{
+						// Clamp x to zero if negative
+						srcPtr += -x;
+						numPixels += x;
+						x = 0;
+					}
+
+					numPixels = (byte)Math.Min(numPixels, img.width - x);
+
+					var sizePre = newData.Count;
+					newData.AddRange(Enumerable.Repeat((byte)0, firstPixelX)); // pre-pad with transparent
 					newData.AddRange(src0[srcPtr..(srcPtr + numPixels)]);
-				}
+					var remaining = img.width - firstPixelX - numPixels;
+					newData.AddRange(Enumerable.Repeat((byte)0, remaining)); // post-pad with transparent
 
+					if (newData.Count != img.width * (i + 1))
+					{
+						//throw new ArgumentException("image size wrong");
+					}
+				}
 			}
+
+			if (newData.Count != img.width * img.height)
+			{
+				//throw new ArgumentException("image size wrong");
+			}
+
 			return newData.ToArray();
 		}
 

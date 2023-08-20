@@ -67,6 +67,7 @@ namespace OpenLocoTool.Headers
 			=> Flags = flags;
 
 		public static int StructLength => 0x15;
+		public static int SubHeaderLength => 0x10;
 
 		public uint32_t Flags { get; set; }
 

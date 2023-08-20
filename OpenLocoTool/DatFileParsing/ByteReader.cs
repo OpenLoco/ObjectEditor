@@ -94,7 +94,7 @@ namespace OpenLocoTool.DatFileParsing
 			var arr = Array.CreateInstance(elementType, length);
 			for (var i = 0; i < length; i++)
 			{
-				arr.SetValue(ReadT(elementType, position + size), i);
+				arr.SetValue(ReadT(elementType, position + (i * size)), i);
 			}
 			return arr;
 		}

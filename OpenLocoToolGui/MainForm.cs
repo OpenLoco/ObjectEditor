@@ -1,7 +1,6 @@
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoToolCommon;
-using System;
 using System.Drawing.Imaging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -221,73 +220,77 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		byte[] DecodeRLEImageData(G1Element32 img)
+		public byte[] DecodeRLEImageData(G1Element32 img)
 		{
-			var newData = new List<byte>();
-			var zoom = 1;
-			var src0 = img.ImageData;
-			var srcX = 0;
+			var width = img.width;
+			var height = img.height;
 
-			for (var i = 0; i < img.height; i += zoom)
+			var dstLineWidth = img.width;
+			var dst0Index = 0; // dstLineWidth * img.yOffset + img.xOffset;
+
+			byte[] srcBuf = img.ImageData;
+			byte[] dstBuf = new byte[img.width * img.height]; // Assuming a single byte per pixel
+
+			var srcY = 0;
+
+			if (srcY < 0)
 			{
-				var y = i;
-				var lineOffset = src0[y * 2] | (src0[y * 2 + 1] << 8);
-				var nextRun = lineOffset;
+				srcY++;
+				height--;
+				dst0Index += dstLineWidth;
+			}
 
-				var endOfLine = false;
-				while (!endOfLine)
+			for (int i = 0; i < height; i++)
+			{
+				var y = srcY + i;
+
+				var lineOffset = srcBuf[y * 2] | (srcBuf[y * 2 + 1] << 8);
+
+				var nextRunIndex = lineOffset;
+				var dstLineStartIndex = dst0Index + dstLineWidth * i;
+
+				while (true)
 				{
-					var srcPtr = nextRun;
-					var dataSize = src0[srcPtr++];
-					var firstPixelX = src0[srcPtr++];
-					endOfLine = (dataSize & 0x80) != 0;
-					dataSize &= 0x7F;
+					var srcIndex = nextRunIndex;
 
-					nextRun = srcPtr + dataSize;
-					var x = firstPixelX - srcX;
-					int numPixels = dataSize;
+					var rleInfoByte = srcBuf[srcIndex++];
+					var dataSize = rleInfoByte & 0x7F;
+					var isEndOfLine = (rleInfoByte & 0x80) != 0;
+
+					var firstPixelX = srcBuf[srcIndex++];
+					nextRunIndex = srcIndex + dataSize;
+
+					var x = firstPixelX - 0; // img.xOffset;
+					var numPixels = dataSize;
 
 					if (x > 0)
 					{
-						// If x is not a multiple of zoom, round it up to a multiple
-						var mod = x & (zoom - 1);
-						if (mod != 0)
-						{
-							var offset = zoom - mod;
-							x += offset;
-							srcPtr += offset;
-							numPixels -= offset;
-						}
+						x++;
+						srcIndex++;
+						numPixels--;
 					}
 					else if (x < 0)
 					{
-						// Clamp x to zero if negative
-						srcPtr += -x;
+						srcIndex += -x;
 						numPixels += x;
 						x = 0;
 					}
 
-					numPixels = (byte)Math.Min(numPixels, img.width - x);
+					numPixels = Math.Min(numPixels, width - x);
 
-					var sizePre = newData.Count;
-					newData.AddRange(Enumerable.Repeat((byte)0, firstPixelX)); // pre-pad with transparent
-					newData.AddRange(src0[srcPtr..(srcPtr + numPixels)]);
-					var remaining = img.width - firstPixelX - numPixels;
-					newData.AddRange(Enumerable.Repeat((byte)0, remaining)); // post-pad with transparent
+					var dstIndex = dstLineStartIndex + x;
 
-					if (newData.Count != img.width * (i + 1))
+					if (numPixels > 0)
 					{
-						throw new ArgumentException("image size wrong");
+						Array.Copy(srcBuf, srcIndex, dstBuf, dstIndex, numPixels);
 					}
+
+					if (isEndOfLine)
+						break;
 				}
 			}
 
-			if (newData.Count != img.width * img.height)
-			{
-				throw new ArgumentException("image size wrong");
-			}
-
-			return newData.ToArray();
+			return dstBuf;
 		}
 
 		ILocoObject? LoadAndCacheObject(string filename)

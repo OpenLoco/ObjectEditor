@@ -1,4 +1,5 @@
 ﻿[*.{cs,vb}]
+indent_style = tab
 
 # IDE0040: Add accessibility modifiers
 dotnet_style_require_accessibility_modifiers = always

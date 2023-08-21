@@ -99,12 +99,12 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			// g1/gfx table
-			var hasNoGraphics = AttributeHelper.Get<LocoStructNoGraphicsAttribute>(locoStruct.GetType());
-			if (hasNoGraphics != null)
-			{
-				return new LocoObject(objectHeader, locoStruct, stringTable, new G1Header(0, 0), new List<G1Element32>());
-			}
-			else
+			//var hasNoGraphics = AttributeHelper.Get<LocoStructNoGraphicsAttribute>(locoStruct.GetType());
+			//if (hasNoGraphics != null)
+			//{
+			//	return new LocoObject(objectHeader, locoStruct, stringTable, new G1Header(0, 0), new List<G1Element32>());
+			//}
+			//else
 			{
 				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
 				Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
@@ -113,7 +113,7 @@ namespace OpenLocoTool.DatFileParsing
 			}
 		}
 
-		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
+		(StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
 			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
 			var stringsInTable = stringAttr?.Count ?? 1;
@@ -134,7 +134,15 @@ namespace OpenLocoTool.DatFileParsing
 					var ini = ptr;
 					while (data[ptr++] != '\0') ;
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-					strings.Add((i, lang), str);
+
+					if (strings.ContainsKey((i, lang)))
+					{
+						Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
+					}
+					else
+					{
+						strings.Add((i, lang), str);
+					}
 				}
 
 				ptr++;

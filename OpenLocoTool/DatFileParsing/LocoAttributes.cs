@@ -31,7 +31,8 @@
 		public int Count { get; }
 	}
 
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
-	public class LocoStructNoGraphicsAttribute : Attribute
-	{ }
+	// unused
+	//[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+	//public class LocoStructNoGraphicsAttribute : Attribute
+	//{ }
 }

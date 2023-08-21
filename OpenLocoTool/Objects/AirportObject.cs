@@ -74,9 +74,43 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructProperty(0xAE)] const MovementNode* movementNodes,
 		//[property: LocoStructProperty(0xB2)] const MovementEdge* movementEdges,
 		[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
-	) : ILocoStruct
+	) : ILocoStruct, ILocoStructExtraLoading
 	{
 		public static ObjectType ObjectType => ObjectType.airport;
 		public static int StructSize => 0xBA;
+
+		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		{
+			// var_14
+			remainingData = remainingData[(NumSpriteSets * 1)..]; // uint8_t*
+
+			// var_18
+			remainingData = remainingData[(NumSpriteSets * 2)..]; // uint16_t*
+
+			// numTiles
+			for (var i = 0; i < NumTiles; ++i)
+			{
+				var ptr_1C = 0;
+				while (remainingData[ptr_1C++] != 0xFF) ;
+				remainingData = remainingData[ptr_1C..];
+			}
+
+			// var_9C
+			var ptr_9C = 0;
+			while (remainingData[ptr_9C] != 0xFF)
+			{
+				ptr_9C += 4;
+			}
+			ptr_9C++;
+			remainingData = remainingData[ptr_9C..];
+
+			// movement nodes
+			remainingData = remainingData[(NumMovementNodes * MovementNode.StructSize)..];
+
+			// movement edges
+			remainingData = remainingData[(NumMovementEdges * MovementEdge.StructSize)..];
+
+			return remainingData;
+		}
 	}
 }

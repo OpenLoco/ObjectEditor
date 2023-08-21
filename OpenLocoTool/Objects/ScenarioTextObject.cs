@@ -15,6 +15,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public static ObjectType ObjectType => ObjectType.scenarioText;
-		public static int StructLength => 0x06;
+		public static int StructSize => 0x06;
 	}
 }

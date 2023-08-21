@@ -31,6 +31,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public static ObjectType ObjectType => ObjectType.wall;
-		public static int StructLength => 0x0A;
+		public static int StructSize => 0x0A;
 	}
 }

@@ -22,8 +22,6 @@ namespace OpenLocoTool.DatFileParsing
 		public static int32_t Read_int32t(ReadOnlySpan<byte> data, int offset)
 			=> BitConverter.ToInt32(data[offset..(offset + 4)]);
 
-		// this method isn't necessary normally since you can just call the above methods ^
-		// but it saves a lot of code rewriting for the Read_Array method
 		public static T Read<T>(ReadOnlySpan<byte> data, int offset) where T : struct
 			=> typeof(T) == typeof(uint8_t)
 				? (T)(dynamic)Read_uint8t(data, offset)
@@ -68,7 +66,7 @@ namespace OpenLocoTool.DatFileParsing
 				var attrs = type.GetCustomAttributes(typeof(LocoStructSizeAttribute), inherit: false);
 				if (attrs.Length != 1)
 				{
-					throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {type} didn't have LocoArrayLength attribute specified");
+					throw new ArgumentOutOfRangeException(nameof(LocoStructSizeAttribute), $"type {type} didn't have LocoStructSizeAttribute");
 				}
 
 				size = ((LocoStructSizeAttribute)attrs[0]).Size;
@@ -80,20 +78,6 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			return size;
-		}
-
-		public object Read_ArrayT(Type t, int position, int length)
-		{
-			var elementType = t.GetElementType();
-			var size = ObjectSize(elementType);
-
-			var arr = Array.CreateInstance(elementType, length);
-			for (var i = 0; i < length; i++)
-			{
-				arr.SetValue(ReadT(elementType, position + (i * size)), i);
-			}
-
-			return arr;
 		}
 
 		public object ReadT(Type t, int position, int arrLength = 0)
@@ -135,7 +119,16 @@ namespace OpenLocoTool.DatFileParsing
 
 			if (t.IsArray)
 			{
-				return Read_ArrayT(t, position, arrLength);
+				var elementType = t.GetElementType();
+				var size = ObjectSize(elementType);
+
+				var arr = Array.CreateInstance(elementType, arrLength);
+				for (var i = 0; i < arrLength; i++)
+				{
+					arr.SetValue(ReadT(elementType, position + (i * size)), i);
+				}
+
+				return arr;
 			}
 
 			if (t.IsEnum) // this is so big because we need special handling for 'flags' enums
@@ -174,32 +167,6 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			throw new NotImplementedException(t.ToString());
-		}
-
-		public static object CastReadOnlySpanToStruct(Type structType, ReadOnlySpan<byte> span)
-		{
-			if (!structType.IsValueType)
-			{
-				throw new ArgumentException(nameof(structType));
-			}
-
-			var result = Activator.CreateInstance(structType);
-
-			var properties = structType.GetProperties();
-			for (var i = 0; i < properties.Length && i < span.Length; i++)
-			{
-				var property = properties[i];
-				var locoAttrs = property.GetCustomAttributes(typeof(LocoStructOffsetAttribute), inherit: false);
-				if (!locoAttrs.Any())
-				{
-					continue;
-				}
-
-				var propertyValue = Convert.ChangeType(span[i], property.PropertyType);
-				property.SetValue(result, propertyValue);
-			}
-
-			return result;
 		}
 
 		public static ILocoStruct ReadLocoStruct<T>(ReadOnlySpan<byte> data) where T : class

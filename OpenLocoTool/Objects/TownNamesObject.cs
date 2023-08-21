@@ -14,7 +14,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x00)] uint16_t Offset
 	) : ILocoStruct
 	{
-		public static int StructLength => 0x04;
+		public static int StructSize => 0x04;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -24,6 +24,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public static ObjectType ObjectType => ObjectType.townNames;
-		public static int StructLength => 0x1A;
+		public static int StructSize => 0x1A;
 	}
 }

@@ -26,6 +26,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1A)] uint32_t SteepImageId
 		) : ILocoStruct
 	{
-		public static int StructLength => 0x1E;
+		public static int StructSize => 0x1E;
 	}
 }

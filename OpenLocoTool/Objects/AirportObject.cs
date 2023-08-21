@@ -28,7 +28,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x06)] AirportMovementNodeFlags Flags
 		) : ILocoStruct
 	{
-		public static int StructLength => 0x08;
+		public static int StructSize => 0x08;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -42,7 +42,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x08)] uint32_t AtLeastOneClearEdges // Which edges must have at least one clear to use transition edge
 		) : ILocoStruct
 	{
-		public static int StructLength => 0x0C;
+		public static int StructSize => 0x0C;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -77,6 +77,6 @@ namespace OpenLocoTool.Objects
 	) : ILocoStruct
 	{
 		public static ObjectType ObjectType => ObjectType.airport;
-		public static int StructLength => 0xBA;
+		public static int StructSize => 0xBA;
 	}
 }

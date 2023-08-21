@@ -6,13 +6,18 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x06)]
-	public record CliffEdgeObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint32_t Image
-		) : ILocoStruct
+	public class CliffEdgeObject : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.cliffEdge;
+		public const ObjectType ObjType = ObjectType.cliffEdge;
+		public const int StructSize = 0x06;
 
-		public static int StructLength => 0x06;
+		public CliffEdgeObject(string_id name, uint32_t image)
+		{
+			Name = name;
+			Image = image;
+		}
+
+		[LocoStructOffset(0x00)] public string_id Name { get; set; }
+		[LocoStructOffset(0x02)] public uint32_t Image { get; set; }
 	}
 }

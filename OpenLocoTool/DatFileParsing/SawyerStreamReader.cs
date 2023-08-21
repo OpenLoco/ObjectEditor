@@ -70,6 +70,10 @@ namespace OpenLocoTool.DatFileParsing
 			var decodedData = Decode(objectHeader.Encoding, data);
 			var locoStruct = GetLocoStruct(objectHeader.ObjectType, decodedData);
 
+			var structAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStructSizeAttribute), inherit: false) as LocoStructSizeAttribute;
+			var locoStructSize = structAttr!.Size;
+			ReadOnlySpan<byte> remainingData = decodedData[locoStructSize..];
+
 			var headerFlag = BitConverter.GetBytes(objectHeader.Flags).AsSpan()[0..1];
 			var checksum = ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
 
@@ -78,129 +82,23 @@ namespace OpenLocoTool.DatFileParsing
 				throw new ArgumentException($"{objectHeader.Name} had incorrect checksum. expected={objectHeader.Checksum} actual={checksum}");
 			}
 
-			var structAttr = (LocoStructSizeAttribute)locoStruct.GetType().GetCustomAttribute(typeof(LocoStructSizeAttribute), inherit: false);
-			var locoStructSize = structAttr.Size;
-
-			// string table
-			var remainingData = decodedData[locoStructSize..];
-			var stringAttr = (LocoStringCountAttribute)locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false);
-			var locoStrings = stringAttr?.Count ?? 1;
-			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStrings);
+			// every object has a string table
+			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct);
 			remainingData = remainingData[stringTableBytesRead..];
 
 			// special handling per object type
+			if (locoStruct is ILocoStructExtraLoading locoStructExtra)
 			{
-				if (locoStruct is BridgeObject bo)
-				{
-					var bytesToRead = (bo.TrackNumCompatible + bo.RoadNumCompatible) * ObjectHeader.StructLength;
-					remainingData = remainingData[bytesToRead..];
-				}
-
-				if (locoStruct is VehicleObject vo)
-				{
-					var dependentObjects = new List<ObjectHeader>();
-
-					const byte trackType = 0xFF;
-
-					// dependent objects
-					if (!vo.Flags.HasFlag(VehicleObjectFlags.unk_09) && (vo.Mode == TransportMode.Rail || vo.Mode == TransportMode.Road))
-					{
-						var trackHeader = ObjectHeader.Read(remainingData);
-						remainingData = remainingData[ObjectHeader.StructLength..];
-						dependentObjects.Add(trackHeader);
-
-						// load the object handle for the track header, and set tracktype to its id
-					}
-
-					vo = vo with { TrackType = trackType };
-
-					// track mods
-					remainingData = remainingData[(ObjectHeader.StructLength * vo.NumMods)..];
-
-					var numSimultaneousCargoTypes = vo.NumSimultaneousCargoTypes;
-					// cargo types
-					for (var i = 0; i < vo.CargoTypes.Length; ++i)
-					{
-						var index = numSimultaneousCargoTypes;
-						vo.MaxCargo[i] = remainingData[0];
-						remainingData = remainingData[1..]; // uint8_t
-						if (vo.MaxCargo[index] == 0)
-						{
-							continue;
-						}
-
-						var ptr = BitConverter.ToUInt16(remainingData[0..2]);
-						while (ptr != 0xFFFFU)
-						{
-							var cargoMatchFlags = BitConverter.ToUInt16(remainingData[0..2]);
-							remainingData = remainingData[2..]; // uint16_t
-							var unk = BitConverter.ToUInt16(remainingData[0..2]);
-							remainingData = remainingData[1..]; // uint8_t
-
-							for (var cargoType = 0; cargoType < 32; ++cargoType) // 32 is ObjectType::MaxObjects[cargo]
-							{
-								//var cargoObject = new CargoObject();
-								vo.CargoTypes[index] = 0;
-							}
-
-							ptr = BitConverter.ToUInt16(remainingData[0..2]);
-						}
-
-						remainingData = remainingData[2..]; // uint16_t
-
-						if (vo.CargoTypes[index] == 0)
-						{
-							vo.MaxCargo[index] = 0;
-						}
-						else
-						{
-							numSimultaneousCargoTypes++;
-						}
-					}
-
-					vo = vo with { NumSimultaneousCargoTypes = numSimultaneousCargoTypes };
-
-					// animation
-					foreach (var anim in vo.Animation)
-					{
-						if (anim.Type == SimpleAnimationType.None)
-						{
-							continue;
-						}
-
-						remainingData = remainingData[ObjectHeader.SubHeaderLength..];
-					}
-
-					// numCompat
-					remainingData = remainingData[(ObjectHeader.SubHeaderLength * vo.NumCompat)..];
-
-					// rack rail
-					if (vo.Flags.HasFlag(VehicleObjectFlags.RackRail))
-					{
-						remainingData = remainingData[ObjectHeader.SubHeaderLength..];
-					}
-
-					// driving sound
-					if (vo.DrivingSoundType != DrivingSoundType.None)
-					{
-						remainingData = remainingData[ObjectHeader.SubHeaderLength..];
-					}
-
-					// driving sound
-					remainingData = remainingData[(ObjectHeader.SubHeaderLength * vo.NumStartSounds)..];
-					//for (byte i = 0; i < Math.Clamp(vo.NumStartSounds, (byte)0, (byte)127); ++i)
-					//{
-
-					//}
-					//if (vo.DrivingSoundType != DrivingSoundType.None)
-					//{
-					//}
-
-					// should be at image table now
-				}
+				remainingData = locoStructExtra.Load(remainingData);
 			}
 
 			// g1/gfx table
+			var graphicsAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStructNoGraphicsAttribute), inherit: false) as LocoStructNoGraphicsAttribute;
+			if (graphicsAttr != null)
+			{
+				return new LocoObject(objectHeader, locoStruct, stringTable, new G1Header(0, 0), new List<G1Element32>());
+			}
+			else
 			{
 				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
 				Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
@@ -209,8 +107,10 @@ namespace OpenLocoTool.DatFileParsing
 			}
 		}
 
-		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, int stringsInTable)
+		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
+			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
+			var stringsInTable = stringAttr?.Count ?? 1;
 			var strings = new StringTable();
 
 			if (data.Length == 0 || stringsInTable == 0)

@@ -13,6 +13,6 @@ namespace OpenLocoTool.Objects
 		) : ILocoStruct
 	{
 		public static ObjectType ObjectType => ObjectType.tunnel;
-		public static int StructLength => 0x06;
+		public static int StructSize => 0x06;
 	}
 }

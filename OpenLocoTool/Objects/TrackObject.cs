@@ -59,6 +59,6 @@ namespace OpenLocoTool.Objects
 	) : ILocoStruct
 	{
 		public static ObjectType ObjectType => ObjectType.track;
-		public static int StructLength => 0x36;
+		public static int StructSize => 0x36;
 	}
 }

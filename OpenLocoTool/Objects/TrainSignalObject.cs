@@ -36,6 +36,6 @@ namespace OpenLocoTool.Objects
 
 		public const int ModsLength = 7;
 
-		public static int StructLength => 0x1E;
+		public static int StructSize => 0x1E;
 	}
 }

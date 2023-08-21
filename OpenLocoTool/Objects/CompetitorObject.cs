@@ -22,7 +22,7 @@ namespace OpenLocoTool.Objects
 	{
 		public static ObjectType ObjectType => ObjectType.competitor;
 
-		public static int StructLength => 0x38;
+		public static int StructSize => 0x38;
 
 		public const int ImagesLength = 9;
 	}

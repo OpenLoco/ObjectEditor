@@ -6,7 +6,13 @@ namespace OpenLocoTool.DatFileParsing
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public interface ILocoStruct
 	{
-		static int StructLength { get; }
+		static int StructSize { get; }
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public interface ILocoStructExtraLoading
+	{
+		ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData);
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

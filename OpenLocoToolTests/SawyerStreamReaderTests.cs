@@ -54,6 +54,37 @@ namespace OpenLocoToolTests
 		}
 
 		[Test]
+		public void LoadBridgeObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadBuildingObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadCargoObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadCliffEdgeObject()
+		{
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\LSBROWN.DAT";
+			var obj = LoadObject<CliffEdgeObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+			});
+		}
+
+		[Test]
 		public void LoadClimateObject()
 		{
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\CLIM1.DAT";
@@ -109,6 +140,144 @@ namespace OpenLocoToolTests
 				Assert.That(obj.Separator, Is.EqualTo(0), nameof(obj.Separator));
 				Assert.That(obj.Factor, Is.EqualTo(1), nameof(obj.Factor));
 			});
+		}
+
+		[Test]
+		public void LoadDockObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadHillShapesObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadIndustryObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadInterfaceSkinObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadLandObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadLevelCrossingObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadRegionObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadRoadExtraObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadRoadObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadRoadStationObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadScaffoldingObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadScenarioTextObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadSnowObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadSoundObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadSteamObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadStreetLightObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadTownNamesObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadTrackExtraObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadTrackObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadTrainSignalObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadTrainStationObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadTreeObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadTunnelObject()
+		{
+			Assert.Fail();
 		}
 
 		[Test]
@@ -174,6 +343,18 @@ namespace OpenLocoToolTests
 				Assert.That(obj.NumStartSounds, Is.EqualTo(2), nameof(obj.NumStartSounds));
 				CollectionAssert.AreEqual(obj.StartSounds, Enumerable.Repeat(0, 3).ToArray(), nameof(obj.StartSounds));
 			});
+		}
+
+		[Test]
+		public void LoadWallObject()
+		{
+			Assert.Fail();
+		}
+
+		[Test]
+		public void LoadWaterObject()
+		{
+			Assert.Fail();
 		}
 	}
 }

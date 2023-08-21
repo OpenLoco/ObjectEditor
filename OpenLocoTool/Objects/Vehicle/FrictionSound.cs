@@ -15,6 +15,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0A)] uint8_t MaxVolume
 		) : ILocoStruct
 	{
-		public static int StructLength => 0x0B;
+		public static int StructSize => 0x0B;
 	}
 }

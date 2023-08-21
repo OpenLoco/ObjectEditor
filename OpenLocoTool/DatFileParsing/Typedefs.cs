@@ -22,6 +22,6 @@ namespace OpenLocoTool.DatFileParsing
 		[property: LocoStructOffset(0x02)] int16_t Y
 		) : ILocoStruct
 	{
-		public static int StructLength => 0x04;
+		public static int StructSize => 0x04;
 	}
 }

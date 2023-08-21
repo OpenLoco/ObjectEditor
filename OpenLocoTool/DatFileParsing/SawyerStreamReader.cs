@@ -105,11 +105,17 @@ namespace OpenLocoTool.DatFileParsing
 			//	return new LocoObject(objectHeader, locoStruct, stringTable, new G1Header(0, 0), new List<G1Element32>());
 			//}
 			//else
+			try
 			{
 				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
 				Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
 				return new LocoObject(objectHeader, locoStruct, stringTable, g1Header, imageTable);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(ex.ToString());
+				return new LocoObject(objectHeader, locoStruct, stringTable, new G1Header(0, 0), new List<G1Element32>());
 			}
 		}
 

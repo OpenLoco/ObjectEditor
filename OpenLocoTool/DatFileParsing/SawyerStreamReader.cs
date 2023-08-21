@@ -213,6 +213,7 @@ namespace OpenLocoTool.DatFileParsing
 
 		public static byte[] DecodeRLEImageData(G1Element32 img)
 		{
+			// not sure why this happens, but this seems 'legit'; airport files have these
 			if (img.ImageData.Length == 0)
 			{
 				return img.ImageData;

@@ -42,9 +42,46 @@ namespace OpenLocoTool.Objects
 			[property: LocoStructOffset(0xAC)] uint8_t var_AC,
 			[property: LocoStructOffset(0xAD)] uint8_t var_AD
 		//[property: LocoStructProperty(0xAE)] const uint8_t* var_AE[4] // 0xAE ->0xB2->0xB6->0xBA->0xBE (4 byte pointers)
-		) : ILocoStruct
+		) : ILocoStruct, ILocoStructExtraLoading
 	{
 		public static ObjectType ObjectType => ObjectType.building;
 		public static int StructSize => 0xBE;
+
+		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		{
+			// variationHeights
+			remainingData = remainingData[(var_06 * 1)..]; // sizeof(uint8_t)
+
+			// part animations
+			remainingData = remainingData[(var_06 * 2)..]; // sizeof(uint16_t)
+
+			// parts
+			for (var i = 0; i < NumVariations; ++i)
+			{
+				var ptr_vari = 0;
+				while (remainingData[ptr_vari] != 0xFF)
+				{
+					ptr_vari++;
+				}
+				ptr_vari++;
+				remainingData = remainingData[ptr_vari..];
+			}
+
+			// produced cargo
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * ProducedCargoType.Length)..];
+
+			// load ??? cargo
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * var_A4.Length)..];
+
+			// load ??
+			var ptr_AD = 0;
+			for (var i = 0; i < var_AD; ++i)
+			{
+				var size = BitConverter.ToUInt16(remainingData[..2]);
+				remainingData = remainingData[(2 + size)..];
+			}
+
+			return remainingData;
+		}
 	}
 }

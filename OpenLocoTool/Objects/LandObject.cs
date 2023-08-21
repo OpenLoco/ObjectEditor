@@ -35,9 +35,22 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1B)] uint8_t NumVariations,
 		[property: LocoStructOffset(0x1C)] uint8_t VariationLikelihood,
 		[property: LocoStructOffset(0x1D)] uint8_t pad_1D
-		) : ILocoStruct
+		) : ILocoStruct, ILocoStructExtraLoading
 	{
 		public static ObjectType ObjectType => ObjectType.land;
 		public static int StructSize => 0x1E;
+
+		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		{
+			// cliff edge header
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+
+			if (Flags.HasFlag(LandObjectFlags.unk1))
+			{
+				remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+			}
+
+			return remainingData;
+		}
 	}
 }

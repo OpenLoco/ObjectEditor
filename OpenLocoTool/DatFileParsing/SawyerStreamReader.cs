@@ -213,6 +213,11 @@ namespace OpenLocoTool.DatFileParsing
 
 		public static byte[] DecodeRLEImageData(G1Element32 img)
 		{
+			if (img.ImageData.Length == 0)
+			{
+				return img.ImageData;
+			}
+
 			var width = img.width;
 			var height = img.height;
 

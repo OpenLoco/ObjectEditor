@@ -74,15 +74,15 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xF4)]
-	[LocoStringCount(5)]
+	[LocoStringCount(8)]
 	public record IndustryObject(
 		[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] string_id var_02,
 		[property: LocoStructOffset(0x04)] string_id NameClosingDown,
 		[property: LocoStructOffset(0x06)] string_id NameUpProduction,
 		[property: LocoStructOffset(0x08)] string_id NameDownProduction,
-		[property: LocoStructOffset(0x0A)] uint16_t NameSingular,
-		[property: LocoStructOffset(0x0C)] uint16_t NamePlural,
+		[property: LocoStructOffset(0x0A)] string_id NameSingular,
+		[property: LocoStructOffset(0x0C)] string_id NamePlural,
 		[property: LocoStructOffset(0x0E)] uint32_t var_0E, // shadows image id base
 		[property: LocoStructOffset(0x12)] uint32_t var_12, // Base image id for building 0
 		[property: LocoStructOffset(0x16)] uint32_t var_16,
@@ -121,9 +121,68 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xF1)] uint8_t BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
 		[property: LocoStructOffset(0xF2)] uint8_t BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
-		) : ILocoStruct
+		) : ILocoStruct, ILocoStructExtraLoading
 	{
 		public static ObjectType ObjectType => ObjectType.industry;
 		public static int StructSize => 0xF4;
+
+		public static int AnimationSequencesSize = 4;
+
+		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		{
+			// part heights
+			remainingData = remainingData[(var_1E * 1)..]; // sizeof(uint8_t)
+
+			// part animations
+			remainingData = remainingData[(var_1E * BuildingPartAnimation.StructSize)..]; // sizeof(uint8_t)
+
+			// animation sequences
+			for (var i = 0; i < AnimationSequencesSize; ++i)
+			{
+				var size = (remainingData[0] * 1) + 1;
+				remainingData = remainingData[size..];
+			}
+
+			// unk animation related
+			var ptr_38 = 0;
+			while (remainingData[ptr_38] != 0xFF)
+			{
+				ptr_38 += IndustryObjectUnk38.StructSize;
+			}
+			ptr_38++;
+			remainingData = remainingData[ptr_38..];
+
+			// parts
+			for (var i = 0; i < var_1F; ++i)
+			{
+				var ptr_1F = 0;
+				while (remainingData[ptr_1F] != 0xFF)
+				{
+					ptr_1F++;
+				}
+				ptr_1F++;
+				remainingData = remainingData[ptr_1F..];
+			}
+
+			// unk
+			remainingData = remainingData[(MaxNumBuildings * 1)..]; // sizeof(uint8_t)
+
+			// produced cargo
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * ProducedCargoType.Length)..];
+
+			// required cargo
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * RequiredCargoType.Length)..];
+
+			// wall types
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * WallTypes.Length)..];
+
+			// unk wall type
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+
+			// unk wall type (building entrance?)
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+
+			return remainingData;
+		}
 	}
 }

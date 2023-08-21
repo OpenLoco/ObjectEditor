@@ -72,7 +72,7 @@ namespace OpenLocoTool.Objects
 			// produced cargo
 			remainingData = remainingData[(ObjectHeader.SubHeaderLength * ProducedCargoType.Length)..];
 
-			// load ??? cargo
+			// load ??? cargo (probably required cargo as this matches IndustryObject)
 			remainingData = remainingData[(ObjectHeader.SubHeaderLength * var_A4.Length)..];
 
 			// load ??

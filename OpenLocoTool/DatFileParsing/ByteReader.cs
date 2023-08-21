@@ -1,52 +1,8 @@
-﻿using OpenLocoTool.Objects;
-
-namespace OpenLocoTool.DatFileParsing
+﻿namespace OpenLocoTool.DatFileParsing
 {
-	public static class StaticByteReader
+	public static class ByteReader
 	{
-		public static uint8_t Read_uint8t(ReadOnlySpan<byte> data, int offset)
-			=> data[offset];
-
-		public static int8_t Read_int8t(ReadOnlySpan<byte> data, int offset)
-			=> (sbyte)data[offset];
-
-		public static uint16_t Read_uint16t(ReadOnlySpan<byte> data, int offset)
-			=> BitConverter.ToUInt16(data[offset..(offset + 2)]);
-
-		public static int16_t Read_int16t(ReadOnlySpan<byte> data, int offset)
-			=> BitConverter.ToInt16(data[offset..(offset + 2)]);
-
-		public static uint32_t Read_uint32t(ReadOnlySpan<byte> data, int offset)
-			=> BitConverter.ToUInt32(data[offset..(offset + 4)]);
-
-		public static int32_t Read_int32t(ReadOnlySpan<byte> data, int offset)
-			=> BitConverter.ToInt32(data[offset..(offset + 4)]);
-
-		public static T Read<T>(ReadOnlySpan<byte> data, int offset) where T : struct
-			=> typeof(T) == typeof(uint8_t)
-				? (T)(dynamic)Read_uint8t(data, offset)
-				: throw new NotImplementedException("");
-
-		public static T[] Read_Array<T>(ReadOnlySpan<byte> data, int offset, int count) where T : struct
-		{
-			var arr = new T[count];
-			for (var i = 0; i < count; i++)
-			{
-				arr[i] = Read<T>(data, offset);
-			}
-
-			return arr;
-		}
-	}
-
-	public ref struct ByteReader
-	{
-		public ByteReader(ReadOnlySpan<byte> data)
-			=> this.data = data;
-
-		ReadOnlySpan<byte> data { get; }
-
-		int ObjectSize(Type type)
+		public static int GetObjectSize(Type type)
 		{
 			var size = 0;
 			if (type == typeof(byte) || type == typeof(sbyte))
@@ -63,13 +19,8 @@ namespace OpenLocoTool.DatFileParsing
 			}
 			else
 			{
-				var attrs = type.GetCustomAttributes(typeof(LocoStructSizeAttribute), inherit: false);
-				if (attrs.Length != 1)
-				{
-					throw new ArgumentOutOfRangeException(nameof(LocoStructSizeAttribute), $"type {type} didn't have LocoStructSizeAttribute");
-				}
-
-				size = ((LocoStructSizeAttribute)attrs[0]).Size;
+				var sizeAttr = AttributeHelper.Get<LocoStructSizeAttribute>(type) ?? throw new ArgumentOutOfRangeException(nameof(LocoStructSizeAttribute), $"type {type} didn't have LocoStructSizeAttribute");
+				size = sizeAttr.Size;
 			}
 
 			if (size == 0)
@@ -80,52 +31,52 @@ namespace OpenLocoTool.DatFileParsing
 			return size;
 		}
 
-		public object ReadT(Type t, int position, int arrLength = 0)
+		public static object ReadT(ReadOnlySpan<byte> data, Type t, int position, int arrLength = 0)
 		{
 			if (t == typeof(uint8_t))
 			{
-				return StaticByteReader.Read_uint8t(data, position);
+				return ByteReaderT.Read_uint8t(data, position);
 			}
 
 			if (t == typeof(int8_t))
 			{
-				return StaticByteReader.Read_int8t(data, position);
+				return ByteReaderT.Read_int8t(data, position);
 			}
 
 			if (t == typeof(uint16_t))
 			{
-				return StaticByteReader.Read_uint16t(data, position);
+				return ByteReaderT.Read_uint16t(data, position);
 			}
 
 			if (t == typeof(int16_t))
 			{
-				return StaticByteReader.Read_int16t(data, position);
+				return ByteReaderT.Read_int16t(data, position);
 			}
 
 			if (t == typeof(uint32_t))
 			{
-				return StaticByteReader.Read_uint32t(data, position);
+				return ByteReaderT.Read_uint32t(data, position);
 			}
 
 			if (t == typeof(int32_t))
 			{
-				return StaticByteReader.Read_int32t(data, position);
+				return ByteReaderT.Read_int32t(data, position);
 			}
 
 			if (t == typeof(string_id))
 			{
-				return StaticByteReader.Read_uint16t(data, position);
+				return ByteReaderT.Read_uint16t(data, position);
 			}
 
 			if (t.IsArray)
 			{
 				var elementType = t.GetElementType();
-				var size = ObjectSize(elementType);
+				var size = GetObjectSize(elementType);
 
 				var arr = Array.CreateInstance(elementType, arrLength);
 				for (var i = 0; i < arrLength; i++)
 				{
-					arr.SetValue(ReadT(elementType, position + (i * size)), i);
+					arr.SetValue(ReadT(data, elementType, position + (i * size)), i);
 				}
 
 				return arr;
@@ -134,7 +85,7 @@ namespace OpenLocoTool.DatFileParsing
 			if (t.IsEnum) // this is so big because we need special handling for 'flags' enums
 			{
 				var underlyingType = t.GetEnumUnderlyingType();
-				var underlyingValue = ReadT(underlyingType, position); // Read the underlying value
+				var underlyingValue = ReadT(data, underlyingType, position); // Read the underlying value
 
 				if (t.IsDefined(typeof(FlagsAttribute), inherit: false))
 				{
@@ -162,7 +113,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			if (t.IsClass)
 			{
-				var objectSize = ObjectSize(t);
+				var objectSize = GetObjectSize(t);
 				return ReadLocoStruct(data[position..(position + objectSize)], t);
 			}
 
@@ -176,51 +127,28 @@ namespace OpenLocoTool.DatFileParsing
 		{
 			var properties = t.GetProperties();
 			var args = new List<object>();
-			var byteReader = new ByteReader(data);
 
 			foreach (var p in properties)
 			{
-				// ignore non-binary properties on the records
-				var locoAttrs = p.GetCustomAttributes(typeof(LocoStructOffsetAttribute), inherit: false);
-				if (!locoAttrs.Any())
+				// ignore non-loco properties on the records
+				var offsetAttr = AttributeHelper.Get<LocoStructOffsetAttribute>(p);
+				if (offsetAttr == null)
 				{
 					continue;
 				}
 
-				var locoProperty = (LocoStructOffsetAttribute)locoAttrs[0];
-
 				// special array handling
+				var arrLength = 0;
 				if (p.PropertyType.IsArray)
 				{
-					var attrs = p.GetCustomAttributes(typeof(LocoArrayLengthAttribute), inherit: false);
-					if (attrs.Length != 1)
-					{
-						throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {t} with property {p} didn't have LocoArrayLength attribute specified");
-					}
-
-					args.Add(byteReader.ReadT(p.PropertyType, locoProperty.Offset, ((LocoArrayLengthAttribute)attrs[0]).Length));
-				}
-				else
-				{
-					args.Add(byteReader.ReadT(p.PropertyType, locoProperty.Offset, 0));
-				}
-			}
-
-			try
-			{
-				var argsArr = args.ToArray();
-				if (argsArr.Length == 0)
-				{
-					throw new ArgumentException($"{nameof(argsArr)} had no arguments to construct an object");
+					var arrLengthAttr = AttributeHelper.Get<LocoArrayLengthAttribute>(p) ?? throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {t} with property {p} didn't have LocoArrayLength attribute specified");
+					arrLength = arrLengthAttr.Length;
 				}
 
-				var newInstance = (ILocoStruct?)Activator.CreateInstance(t, argsArr);
-				return newInstance ?? throw new InvalidDataException("couldn't parse");
+				args.Add(ReadT(data, p.PropertyType, offsetAttr.Offset, arrLength));
 			}
-			catch (Exception ex)
-			{
-				return default;
-			}
+
+			return (ILocoStruct?)Activator.CreateInstance(t, args.ToArray()) ?? throw new InvalidDataException("couldn't parse");
 		}
 	}
 }

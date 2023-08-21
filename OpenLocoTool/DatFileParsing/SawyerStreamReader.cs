@@ -67,11 +67,17 @@ namespace OpenLocoTool.DatFileParsing
 			var objectHeader = ObjectHeader.Read(fullData);
 			var data = fullData[ObjectHeader.StructLength..].ToArray();
 
-			var decodedData = Decode(objectHeader.Encoding, data);
+			var decodedData = Decode(objectHeader.Encoding, data).AsSpan();
 			var locoStruct = GetLocoStruct(objectHeader.ObjectType, decodedData);
 
-			var structAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStructSizeAttribute), inherit: false) as LocoStructSizeAttribute;
-			var locoStructSize = structAttr!.Size;
+			if (locoStruct == null)
+			{
+				Debugger.Break();
+				throw new NullReferenceException("loco object was null");
+			}
+
+			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
+			var locoStructSize = structSize!.Size;
 			ReadOnlySpan<byte> remainingData = decodedData[locoStructSize..];
 
 			var headerFlag = BitConverter.GetBytes(objectHeader.Flags).AsSpan()[0..1];
@@ -93,8 +99,8 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			// g1/gfx table
-			var graphicsAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStructNoGraphicsAttribute), inherit: false) as LocoStructNoGraphicsAttribute;
-			if (graphicsAttr != null)
+			var hasNoGraphics = AttributeHelper.Get<LocoStructNoGraphicsAttribute>(locoStruct.GetType());
+			if (hasNoGraphics != null)
 			{
 				return new LocoObject(objectHeader, locoStruct, stringTable, new G1Header(0, 0), new List<G1Element32>());
 			}

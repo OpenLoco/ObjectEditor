@@ -47,6 +47,8 @@ namespace OpenLocoTool.Objects
 		public static ObjectType ObjectType => ObjectType.building;
 		public static int StructSize => 0xBE;
 
+		// known issues:
+		// HOSPITL1.dat - loads without error but graphics are bugged
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// variationHeights

@@ -114,7 +114,7 @@ namespace OpenLocoTool.Objects
 			}
 
 			// track mods
-			remainingData = remainingData[(ObjectHeader.StructLength * NumMods)..];
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumMods)..];
 
 			// cargo types
 			for (var i = 0; i < CargoTypes.Length; ++i)

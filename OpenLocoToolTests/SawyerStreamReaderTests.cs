@@ -48,6 +48,19 @@ namespace OpenLocoToolTests
 			=> (T)LoadObject(filename).Object;
 
 		[Test]
+		public void DebuggingLoadObject()
+		{
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\260RENFE.DAT";
+			var obj = LoadObject<VehicleObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+			});
+		}
+
+
+		[Test]
 		public void LoadAirportObject()
 		{
 			Assert.Fail();

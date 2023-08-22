@@ -74,7 +74,7 @@
 			tvFileTree.Dock = DockStyle.Fill;
 			tvFileTree.Location = new Point(3, 3);
 			tvFileTree.Name = "tvFileTree";
-			tvFileTree.Size = new Size(292, 580);
+			tvFileTree.Size = new Size(289, 578);
 			tvFileTree.TabIndex = 1;
 			tvFileTree.AfterSelect += tv_AfterSelect;
 			// 
@@ -100,7 +100,6 @@
 			btnSaveChanges.TabIndex = 18;
 			btnSaveChanges.Text = "Save Changes";
 			btnSaveChanges.UseVisualStyleBackColor = true;
-			btnSaveChanges.Visible = false;
 			btnSaveChanges.Click += btnSaveChanges_Click;
 			// 
 			// pgObject
@@ -127,18 +126,22 @@
 			// tbFileFilter
 			// 
 			tbFileFilter.BorderStyle = BorderStyle.FixedSingle;
-			tbFileFilter.Location = new Point(7, 29);
+			tbFileFilter.Dock = DockStyle.Top;
+			tbFileFilter.Location = new Point(4, 27);
+			tbFileFilter.Margin = new Padding(4);
 			tbFileFilter.Name = "tbFileFilter";
-			tbFileFilter.Size = new Size(292, 23);
+			tbFileFilter.Size = new Size(295, 23);
 			tbFileFilter.TabIndex = 24;
 			tbFileFilter.TextChanged += tbFileFilter_TextChanged;
 			// 
 			// lblFilenameRegex
 			// 
 			lblFilenameRegex.BorderStyle = BorderStyle.FixedSingle;
-			lblFilenameRegex.Location = new Point(7, 3);
+			lblFilenameRegex.Dock = DockStyle.Top;
+			lblFilenameRegex.Location = new Point(4, 4);
+			lblFilenameRegex.Margin = new Padding(4);
 			lblFilenameRegex.Name = "lblFilenameRegex";
-			lblFilenameRegex.Size = new Size(100, 23);
+			lblFilenameRegex.Size = new Size(295, 23);
 			lblFilenameRegex.TabIndex = 25;
 			lblFilenameRegex.Text = "Filename Filter";
 			lblFilenameRegex.TextAlign = ContentAlignment.MiddleLeft;
@@ -148,7 +151,7 @@
 			tvObjType.Dock = DockStyle.Fill;
 			tvObjType.Location = new Point(3, 3);
 			tvObjType.Name = "tvObjType";
-			tvObjType.Size = new Size(289, 572);
+			tvObjType.Size = new Size(289, 578);
 			tvObjType.TabIndex = 26;
 			tvObjType.AfterSelect += tv_AfterSelect;
 			// 
@@ -157,10 +160,10 @@
 			objectSelector.Controls.Add(tabPage2);
 			objectSelector.Controls.Add(tabPage1);
 			objectSelector.Dock = DockStyle.Fill;
-			objectSelector.Location = new Point(0, 63);
+			objectSelector.Location = new Point(0, 57);
 			objectSelector.Name = "objectSelector";
 			objectSelector.SelectedIndex = 0;
-			objectSelector.Size = new Size(303, 606);
+			objectSelector.Size = new Size(303, 612);
 			objectSelector.TabIndex = 29;
 			// 
 			// tabPage2
@@ -169,7 +172,7 @@
 			tabPage2.Location = new Point(4, 24);
 			tabPage2.Name = "tabPage2";
 			tabPage2.Padding = new Padding(3);
-			tabPage2.Size = new Size(295, 578);
+			tabPage2.Size = new Size(295, 584);
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "Category";
 			tabPage2.UseVisualStyleBackColor = true;
@@ -180,7 +183,7 @@
 			tabPage1.Location = new Point(4, 24);
 			tabPage1.Name = "tabPage1";
 			tabPage1.Padding = new Padding(3);
-			tabPage1.Size = new Size(298, 586);
+			tabPage1.Size = new Size(295, 584);
 			tabPage1.TabIndex = 0;
 			tabPage1.Text = "File";
 			tabPage1.UseVisualStyleBackColor = true;
@@ -270,12 +273,14 @@
 			// 
 			// panel1
 			// 
-			panel1.Controls.Add(lblFilenameRegex);
 			panel1.Controls.Add(tbFileFilter);
+			panel1.Controls.Add(lblFilenameRegex);
 			panel1.Dock = DockStyle.Top;
 			panel1.Location = new Point(0, 0);
+			panel1.Margin = new Padding(4);
 			panel1.Name = "panel1";
-			panel1.Size = new Size(303, 63);
+			panel1.Padding = new Padding(4);
+			panel1.Size = new Size(303, 57);
 			panel1.TabIndex = 30;
 			// 
 			// MainForm

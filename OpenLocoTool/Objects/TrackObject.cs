@@ -56,9 +56,31 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x2D), LocoArrayLength(7)] uint8_t[] Stations,       // 0x2D
 		[property: LocoStructOffset(0x34)] uint8_t DisplayOffset,
 		[property: LocoStructOffset(0x35)] uint8_t pad_35
-	) : ILocoStruct
+	) : ILocoStruct, ILocoStructExtraLoading
 	{
 		public static ObjectType ObjectType => ObjectType.track;
 		public static int StructSize => 0x36;
+
+		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		{
+			// compatible roads/tracks
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumCompatible)..];
+
+			// mods
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumMods)..];
+			// tunnel
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumSignals)..];
+
+			// tunnel
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+
+			// bridges
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumBridges)..];
+
+			// stations
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumStations)..];
+
+			return remainingData;
+		}
 	}
 }

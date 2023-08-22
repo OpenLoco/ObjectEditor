@@ -9,8 +9,8 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x04)]
 	public record TownNamesUnk(
 		[property: LocoStructOffset(0x00)] uint8_t Count,
-		[property: LocoStructOffset(0x00)] uint8_t Fill,
-		[property: LocoStructOffset(0x00)] uint16_t Offset
+		[property: LocoStructOffset(0x01)] uint8_t Fill,
+		[property: LocoStructOffset(0x02)] uint16_t Offset
 	) : ILocoStruct
 	{
 		public static int StructSize => 0x04;

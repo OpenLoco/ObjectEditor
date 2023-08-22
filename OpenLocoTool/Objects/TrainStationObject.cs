@@ -33,10 +33,62 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear
 		//[property: LocoStructProperty(0x2E)] const std::byte* CargoOffsetBytes[4][4]
-		//[property: LocoStructProperty(0x??)] const std::byte* var_6E[16]
-		) : ILocoStruct
+		//[property: LocoStructProperty(0x??)] const std::byte* var_6E[Var6ELength]
+		) : ILocoStruct, ILocoStructExtraLoading
 	{
 		public static ObjectType ObjectType => ObjectType.trainStation;
 		public static int StructSize => 0xAE;
+
+		public const int Var6ELength = 16;
+
+		uint8_t[,] CargoOffsetBytes { get; set; }
+		uint8_t[] var_6E { get; set; }
+
+		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		{
+			// compatible roads/tracks
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumCompatible)..];
+
+			// cargo offsets (for drawing the cargo on the station) (same as roadstation code)
+			CargoOffsetBytes = new byte[4, 4];
+			for (var i = 0; i < 4; ++i)
+			{
+				for (var j = 0; j < 4; ++j)
+				{
+					CargoOffsetBytes[i, j] = remainingData[0];
+					var bytes = 0;
+					bytes++;
+					var length = 1;
+
+					while (remainingData[bytes] != 0xFF)
+					{
+						length += 4; // x, y, x, y
+						bytes += 4;
+					}
+					length += 4;
+					remainingData = remainingData[length..];
+				}
+			}
+
+			// very similar to cargoffsetbytes
+			var_6E = new byte[Var6ELength];
+			for (var i = 0; i < Var6ELength; ++i)
+			{
+				var_6E[i] = remainingData[0];
+				var bytes = 0;
+				bytes++;
+				var length = 1;
+
+				while (remainingData[bytes] != 0xFF)
+				{
+					length += 4; // x, y, x, y
+					bytes += 4;
+				}
+				length += 4;
+				remainingData = remainingData[length..];
+			}
+
+			return remainingData;
+		}
 	}
 }

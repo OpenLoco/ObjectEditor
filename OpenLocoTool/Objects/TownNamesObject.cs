@@ -7,7 +7,6 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x04)]
-	[LocoStringCount(0)]
 	public record TownNamesUnk(
 		[property: LocoStructOffset(0x00)] uint8_t Count,
 		[property: LocoStructOffset(0x00)] uint8_t Fill,

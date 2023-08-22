@@ -1,5 +1,7 @@
+using NAudio.Wave;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
+using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using System.Drawing.Imaging;
 using System.Text.Json;
@@ -158,12 +160,53 @@ namespace OpenLocoToolGui
 
 			var obj = LoadAndCacheObject(e.Node.Name);
 
-			if (obj != null && obj.G1Elements != null && obj.G1Header != null)
+			if (obj != null && obj.G1Elements != null && obj.G1Header != null && obj.G1Header.TotalSize != 0 && obj.G1Elements.Count != 0)
 			{
 				CreateImages(obj);
 			}
 
+			if (obj != null && obj.Object is SoundObject soundObject)
+			{
+				CreateSounds(soundObject);
+			}
+
 			pgObject.SelectedObject = obj;
+		}
+
+		private void CreateSounds(SoundObject soundObject)
+		{
+			flpImageTable.SuspendLayout();
+			flpImageTable.Controls.Clear();
+
+			var pcmHeader = soundObject.SoundObjectData.PcmHeader;
+
+			var soundButton = new Button
+			{
+				Size = new Size(100, 100),
+				Text = "Play sound",
+			};
+
+			soundButton.Click += (args, sender) =>
+			{
+				Task.Run(() =>
+				{
+					using (var ms = new MemoryStream(soundObject.RawPcmData))
+					using (var rs = new RawSourceWaveStream(ms, new WaveFormat(pcmHeader.SamplesPerSecond, 16, pcmHeader.NumberChannels)))
+					using (var wo = new WaveOutEvent())
+					{
+						wo.Init(rs);
+						wo.Play();
+						while (wo.PlaybackState == PlaybackState.Playing)
+						{
+							Thread.Sleep(50);
+						}
+					}
+				});
+			};
+
+			flpImageTable.Controls.Add(soundButton);
+
+			flpImageTable.ResumeLayout(true);
 		}
 
 		private void CreateImages(ILocoObject obj)

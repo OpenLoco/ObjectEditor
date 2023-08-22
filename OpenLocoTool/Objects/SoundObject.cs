@@ -47,10 +47,9 @@ namespace OpenLocoTool.Objects
 		public static ObjectType ObjectType => ObjectType.sound;
 		public static int StructSize => 0x0C;
 
-		// create struct SoundObjectData, see SoundObject.h
-		SoundObjectData SoundObjectData { get; set; }
+		public SoundObjectData SoundObjectData { get; set; }
 
-		byte[] RawPcmData { get; set; }
+		public byte[] RawPcmData { get; set; }
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{

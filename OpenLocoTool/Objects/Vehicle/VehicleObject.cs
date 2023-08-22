@@ -106,10 +106,11 @@ namespace OpenLocoTool.Objects
 			if (!Flags.HasFlag(VehicleObjectFlags.unk_09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
 			{
 				var trackHeader = ObjectHeader.Read(remainingData);
-				remainingData = remainingData[ObjectHeader.StructLength..];
 				dependentObjects.Add(trackHeader);
 				TrackType = trackType;
 				// load the object handle for the track header, and set tracktype to its id
+
+				remainingData = remainingData[ObjectHeader.SubHeaderLength..];
 			}
 
 			// track mods
@@ -121,23 +122,26 @@ namespace OpenLocoTool.Objects
 				var index = NumSimultaneousCargoTypes;
 				MaxCargo[i] = remainingData[0];
 				remainingData = remainingData[1..]; // uint8_t
+
 				if (MaxCargo[index] == 0)
 				{
 					continue;
 				}
 
 				var ptr = BitConverter.ToUInt16(remainingData[0..2]);
-				while (ptr != 0xFFFFU)
+				while (ptr != (ushort)0xFFFF)
 				{
 					var cargoMatchFlags = BitConverter.ToUInt16(remainingData[0..2]);
 					remainingData = remainingData[2..]; // uint16_t
-					var unk = BitConverter.ToUInt16(remainingData[0..2]);
+
+					var unk = remainingData[0];
 					remainingData = remainingData[1..]; // uint8_t
 
 					for (var cargoType = 0; cargoType < 32; ++cargoType) // 32 is ObjectType::MaxObjects[cargo]
 					{
-						//var cargoObject = new CargoObject();
-						CargoTypes[index] = 0;
+						// until the rest of this is implemented, these values will be wrong
+						// but as long as they're non-zero to pass the == 0 check below, it'll work
+						CargoTypes[index] |= (1U << cargoType);
 					}
 
 					ptr = BitConverter.ToUInt16(remainingData[0..2]);
@@ -181,8 +185,9 @@ namespace OpenLocoTool.Objects
 				remainingData = remainingData[ObjectHeader.SubHeaderLength..];
 			}
 
+			var mask = 127;
 			// driving sound
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumStartSounds)..];
+			remainingData = remainingData[(ObjectHeader.SubHeaderLength * (NumStartSounds & mask))..];
 
 			return remainingData;
 		}

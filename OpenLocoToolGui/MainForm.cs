@@ -188,6 +188,7 @@ namespace OpenLocoToolGui
 
 			soundButton.Click += (args, sender) =>
 			{
+				// do it asyncly to a) give user ui control and b) allow multiple sounds to play at once
 				Task.Run(() =>
 				{
 					using (var ms = new MemoryStream(soundObject.RawPcmData))

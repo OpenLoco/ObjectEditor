@@ -44,11 +44,29 @@ namespace OpenLocoToolGui
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
+			// setup dark mode???
+			//DarkModify(this);
+
 			LoadSettings();
 			//InitUI();
 		}
 
 		const string SettingsFile = "./settings.json";
+
+		Color DarkModeBackColor = Color.FromArgb(31, 31, 31);
+		Color DarkModeForeColor = Color.White;
+
+		// poor-mans dark mode
+		void DarkModify(Control control)
+		{
+			foreach (Control c in control.Controls)
+			{
+				c.BackColor = DarkModeBackColor;
+				c.ForeColor = DarkModeForeColor;
+
+				DarkModify(c);
+			}
+		}
 
 		void LoadSettings()
 		{
@@ -220,7 +238,7 @@ namespace OpenLocoToolGui
 		}
 
 		// note: doesn't work atm
-		void btnSaveChanges_Click(object sender, EventArgs e)
+		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			var obj = (ILocoObject)pgObject.SelectedObject;
 			saveFileDialog1.InitialDirectory = Settings.ObjectDirectory;
@@ -242,7 +260,7 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		void btnSetDirectory_Click(object sender, EventArgs e)
+		private void setObjectDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{

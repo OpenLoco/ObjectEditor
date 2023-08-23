@@ -288,7 +288,7 @@ namespace OpenLocoToolGui
 			{
 				for (var x = 0; x < 16; ++x)
 				{
-					var pixel = GetPixel(imgData, x * 36, y * 11);
+					var pixel = GetPixel(imgData, x, y);
 					palette[(y * 16) + x] = pixel;
 				}
 			}

@@ -157,30 +157,6 @@ namespace OpenLocoTool.DatFileParsing
 			return (strings, ptr); // add one because we 'read' the 0xFF byte at the end (ie we skipped it)
 		}
 
-		// === not working ===
-		// airport
-		// building
-		// dock
-		// industry
-		// land
-		// === working ===
-		// bridge (requires RLE)
-		// cargo
-		// cliffEdge
-		// climate (no images)
-		// competitor
-		// currency
-		// hillshapes
-		// interfaceskin
-		// levelCrossing (requires RLE)
-		// roadExtra (requires RLE)
-		// scaffolding (requires RLE)
-		// snow
-		// streetlight
-		// tree
-		// tunnel (requires RLE)
-		// wall
-		// water (though it seems bugged)
 		(G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 		{
 			var g1Element32s = new List<G1Element32>();
@@ -336,26 +312,7 @@ namespace OpenLocoTool.DatFileParsing
 					throw new InvalidOperationException($"bytes read ({bytesRead}) didn't match bytes expected ({size})");
 				}
 
-				var objHeader = ObjectHeader.Read(data);
-
-				// do a little extra for vehicles for categorising them better without fully loading them
-				if (objHeader.ObjectType == ObjectType.vehicle)
-				{
-					var extra = new byte[4];
-					var vehicleExtra = fs.Read(extra, 0, 4); // offset is 0 because the stream has already advanced {ObjectHeader.StructSize} bytes
-					if (vehicleExtra == 4)
-					{
-						objHeader.VehicleType = (VehicleType)extra[3];
-					}
-					else
-					{
-						Logger.Error($"Tried to read 4 bytes but read {vehicleExtra} bytes");
-
-					}
-
-				}
-
-				return objHeader;
+				return ObjectHeader.Read(data);
 			}
 		}
 

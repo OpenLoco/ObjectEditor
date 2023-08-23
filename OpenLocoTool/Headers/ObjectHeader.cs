@@ -72,9 +72,6 @@ namespace OpenLocoTool.Headers
 
 		public uint32_t Flags { get; set; }
 
-		// this is just for index filtering/grouping in the UI
-		public VehicleType? VehicleType { get; set; }
-
 		public SourceGame SourceGame
 		{
 			get => (SourceGame)((Flags >> 6) & 0x3);

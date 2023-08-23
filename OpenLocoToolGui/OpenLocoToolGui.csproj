@@ -17,4 +17,10 @@
     <ProjectReference Include="..\OpenLocoTool\OpenLocoTool.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="palette.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

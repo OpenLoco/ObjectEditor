@@ -4,6 +4,7 @@ using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,7 +15,6 @@ namespace OpenLocoToolGui
 		private ILogger logger;
 		private SawyerStreamReader reader;
 		private SawyerStreamWriter writer;
-		private const string IndexFilename = "ObjectIndex.json";
 
 		public MainForm()
 		{
@@ -32,32 +32,70 @@ namespace OpenLocoToolGui
 
 		Dictionary<string, ObjectHeader> headerIndex = new(); // key is full path/filename
 		Dictionary<string, ILocoObject> objectCache = new(); // key is full path/filename
-		string currentDir;
+
+		OpenLocoToolGuiSettings Settings { get; set; }
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
-			//Init(BaseDirectory);
-
+			LoadSettings();
+			InitUI();
 		}
 
-		void Init(string directory)
+		const string settingsFile = "./settings.json";
+
+		void LoadSettings()
 		{
-			currentDir = directory;
-			InitialiseIndex();
+			if (!File.Exists(settingsFile))
+			{
+				Settings = new();
+				return;
+			}
+			var text = File.ReadAllText(settingsFile);
+			Settings = JsonSerializer.Deserialize<OpenLocoToolGuiSettings>(text);
+
+			if (Settings == null)
+			{
+				logger.Error($"Unable to load settings");
+				return;
+			}
+
+			// validate
+			if (string.IsNullOrEmpty(Settings.ObjectDirectory))
+			{
+				logger.Warning("Object directory was null or empty");
+				return;
+			}
+
+			if (!Directory.Exists(Settings.ObjectDirectory))
+			{
+				logger.Warning($"Directory \"{Settings.ObjectDirectory}\" does not exist");
+				return;
+			}
+		}
+
+		void SaveSettings()
+		{
+			var text = JsonSerializer.Serialize(Settings);
+			File.WriteAllText(text, settingsFile);
+		}
+
+		void InitUI()
+		{
+			CreateIndex();
 			// SerialiseHeaderIndexToFile(); // optional - index creation is so fast it's not really necessary to cache this
 			InitFileTreeView();
 			InitCategoryTreeView();
 		}
 
-		void InitialiseIndex()
+		void CreateIndex()
 		{
-			if (!Directory.Exists(currentDir))
+			if (string.IsNullOrEmpty(Settings.ObjectDirectory))
 			{
-				btnSetDirectory.PerformClick();
+				logger.Warning($"Settings.ObjectDirectory not set");
 				return;
 			}
 
-			var allFiles = Directory.GetFiles(currentDir, "*.dat", SearchOption.AllDirectories);
+			var allFiles = Directory.GetFiles(Settings.ObjectDirectory, "*.dat", SearchOption.AllDirectories);
 			headerIndex.Clear();
 			foreach (var file in allFiles)
 			{
@@ -72,7 +110,7 @@ namespace OpenLocoToolGui
 		void SerialiseHeaderIndexToFile()
 		{
 			var json = JsonSerializer.Serialize(headerIndex, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, });
-			File.WriteAllText(Path.Combine(currentDir, IndexFilename), json);
+			File.WriteAllText(Path.Combine(Settings.ObjectDirectory, Settings.IndexFileName), json);
 		}
 
 		void InitFileTreeView(string fileFilter = "")
@@ -83,7 +121,7 @@ namespace OpenLocoToolGui
 
 			foreach (var obj in filteredFiles)
 			{
-				var relative = Path.GetRelativePath(currentDir, obj.Key);
+				var relative = Path.GetRelativePath(Settings.ObjectDirectory, obj.Key);
 				tvFileTree.Nodes.Add(obj.Key, relative);
 			}
 
@@ -94,6 +132,7 @@ namespace OpenLocoToolGui
 		{
 			tvObjType.SuspendLayout();
 			tvObjType.Nodes.Clear();
+
 			var filteredFiles = headerIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
 			var nodesToAdd = new List<TreeNode>();
@@ -115,10 +154,10 @@ namespace OpenLocoToolGui
 		}
 
 		// note: doesn't work atm
-		private void btnSaveChanges_Click(object sender, EventArgs e)
+		void btnSaveChanges_Click(object sender, EventArgs e)
 		{
 			var obj = (ILocoObject)pgObject.SelectedObject;
-			saveFileDialog1.InitialDirectory = currentDir;
+			saveFileDialog1.InitialDirectory = Settings.ObjectDirectory;
 			saveFileDialog1.DefaultExt = "dat";
 			saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -137,21 +176,23 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		private void btnSetDirectory_Click(object sender, EventArgs e)
+		void btnSetDirectory_Click(object sender, EventArgs e)
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
-				Init(objectDirBrowser.SelectedPath);
+				Settings.ObjectDirectory = objectDirBrowser.SelectedPath;
+				logger.Info($"Settings.ObjectDIrectory set to \"{Settings.ObjectDirectory}\"");
+				InitUI();
 			}
 		}
 
-		private void tbFileFilter_TextChanged(object sender, EventArgs e)
+		void tbFileFilter_TextChanged(object sender, EventArgs e)
 		{
-			InitFileTreeView();
-			InitCategoryTreeView();
+			InitFileTreeView(tbFileFilter.Text);
+			InitCategoryTreeView(tbFileFilter.Text);
 		}
 
-		private void tv_AfterSelect(object sender, TreeViewEventArgs e)
+		void tv_AfterSelect(object sender, TreeViewEventArgs e)
 		{
 			if (e.Node == null)
 			{
@@ -173,7 +214,7 @@ namespace OpenLocoToolGui
 			pgObject.SelectedObject = obj;
 		}
 
-		private void CreateSounds(SoundObject soundObject)
+		void CreateSounds(SoundObject soundObject)
 		{
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
@@ -210,7 +251,7 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		private void CreateImages(ILocoObject obj)
+		void CreateImages(ILocoObject obj)
 		{
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
@@ -279,7 +320,7 @@ namespace OpenLocoToolGui
 			return null;
 		}
 
-		public Color[] PaletteFromBitmap(Bitmap img)
+		Color[] PaletteFromBitmap(Bitmap img)
 		{
 			var palette = new Color[256];
 			var rect = new Rectangle(0, 0, img.Width, img.Height);
@@ -297,19 +338,19 @@ namespace OpenLocoToolGui
 			return palette;
 		}
 
-		public unsafe Color GetPixel(BitmapData d, int X, int Y)
+		unsafe Color GetPixel(BitmapData d, int X, int Y)
 		{
 			var ptr = GetPtrToFirstPixel(d, X, Y);
 			return Color.FromArgb(ptr[2], ptr[1], ptr[0]); // alpha is ptr[3]);
 		}
 
-		public unsafe void SetPixel(BitmapData d, Point p, Color c)
+		unsafe void SetPixel(BitmapData d, Point p, Color c)
 			=> SetPixel(d, p.X, p.Y, c);
 
-		public unsafe void SetPixel(BitmapData d, int X, int Y, Color c)
+		unsafe void SetPixel(BitmapData d, int X, int Y, Color c)
 			=> SetPixel(GetPtrToFirstPixel(d, X, Y), c);
 
-		private static unsafe byte* GetPtrToFirstPixel(BitmapData d, int X, int Y)
+		static unsafe byte* GetPtrToFirstPixel(BitmapData d, int X, int Y)
 			=> (byte*)d.Scan0.ToPointer() + (Y * d.Stride) + (X * (Image.GetPixelFormatSize(d.PixelFormat) / 8));
 
 		//private static unsafe void SetPixel(byte* ptr, Color c)
@@ -320,7 +361,7 @@ namespace OpenLocoToolGui
 		//	ptr[3] = c.A; // Alpha
 		//}
 
-		private static unsafe void SetPixel(byte* ptr, Color c)
+		static unsafe void SetPixel(byte* ptr, Color c)
 		{
 			ptr[0] = (byte)(c.B); // Blue
 			ptr[1] = (byte)(c.G); // Green

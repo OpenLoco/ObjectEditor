@@ -120,8 +120,10 @@ namespace OpenLocoToolGui
 			else
 			{
 				logger.Info($"Index file doesn't exist; creating file \"{Settings.IndexFileName}\"");
-				CreateIndex();
-				SerialiseHeaderIndexToFile();
+				if (CreateIndex())
+				{
+					SerialiseHeaderIndexToFile();
+				}
 			}
 
 			InitFileTreeView();
@@ -129,12 +131,12 @@ namespace OpenLocoToolGui
 		}
 
 		// this method loads every single object entirely
-		void CreateIndex()
+		bool CreateIndex()
 		{
 			if (string.IsNullOrEmpty(Settings.ObjectDirectory))
 			{
 				logger.Warning("Settings.ObjectDirectory not set");
-				return;
+				return false;
 			}
 
 			var allFiles = Directory.GetFiles(Settings.ObjectDirectory, "*.dat", SearchOption.AllDirectories);
@@ -164,6 +166,8 @@ namespace OpenLocoToolGui
 
 			headerIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 			objectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+			return true;
 		}
 
 		void SerialiseHeaderIndexToFile()
@@ -268,6 +272,14 @@ namespace OpenLocoToolGui
 				SaveSettings();
 				logger.Info($"Settings.ObjectDirectory set to \"{Settings.ObjectDirectory}\"");
 				InitUI();
+			}
+		}
+
+		private void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (CreateIndex())
+			{
+				SerialiseHeaderIndexToFile();
 			}
 		}
 

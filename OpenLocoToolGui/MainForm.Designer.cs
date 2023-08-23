@@ -53,8 +53,8 @@
 			tabPage2.SuspendLayout();
 			tabPage1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).BeginInit();
-			scObjectViewer.Panel1.SuspendLayout();
-			scObjectViewer.Panel2.SuspendLayout();
+			scObjectAndLogs.Panel1.SuspendLayout();
+			scObjectAndLogs.Panel2.SuspendLayout();
 			scObjectAndLogs.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)scObjectViewer).BeginInit();
 			scObjectViewer.Panel1.SuspendLayout();
@@ -257,21 +257,22 @@
 			// setObjectDirectoryToolStripMenuItem
 			// 
 			setObjectDirectoryToolStripMenuItem.Name = "setObjectDirectoryToolStripMenuItem";
-			setObjectDirectoryToolStripMenuItem.Size = new Size(179, 22);
+			setObjectDirectoryToolStripMenuItem.Size = new Size(180, 22);
 			setObjectDirectoryToolStripMenuItem.Text = "Set Object Directory";
 			setObjectDirectoryToolStripMenuItem.Click += setObjectDirectoryToolStripMenuItem_Click;
 			// 
 			// recreateIndexToolStripMenuItem
 			// 
 			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
-			recreateIndexToolStripMenuItem.Size = new Size(179, 22);
+			recreateIndexToolStripMenuItem.Size = new Size(180, 22);
 			recreateIndexToolStripMenuItem.Text = "Recreate Index";
+			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
 			// 
 			// saveChangesToolStripMenuItem
 			// 
 			saveChangesToolStripMenuItem.Enabled = false;
 			saveChangesToolStripMenuItem.Name = "saveChangesToolStripMenuItem";
-			saveChangesToolStripMenuItem.Size = new Size(179, 22);
+			saveChangesToolStripMenuItem.Size = new Size(180, 22);
 			saveChangesToolStripMenuItem.Text = "Save Changes (WIP)";
 			saveChangesToolStripMenuItem.Click += saveChangesToolStripMenuItem_Click;
 			// 
@@ -290,8 +291,8 @@
 			tcFileSelector.ResumeLayout(false);
 			tabPage2.ResumeLayout(false);
 			tabPage1.ResumeLayout(false);
-			scObjectViewer.Panel1.ResumeLayout(false);
-			scObjectViewer.Panel2.ResumeLayout(false);
+			scObjectAndLogs.Panel1.ResumeLayout(false);
+			scObjectAndLogs.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).EndInit();
 			scObjectAndLogs.ResumeLayout(false);
 			scObjectViewer.Panel1.ResumeLayout(false);

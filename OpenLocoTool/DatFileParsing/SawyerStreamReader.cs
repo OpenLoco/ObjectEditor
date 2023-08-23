@@ -59,7 +59,7 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		// load file
-		public ILocoObject LoadFull(string filename)
+		public ILocoObject LoadFull(string filename, bool loadExtra = true)
 		{
 			Span<byte> fullData = LoadBytesFromFile(filename);
 
@@ -93,7 +93,7 @@ namespace OpenLocoTool.DatFileParsing
 			remainingData = remainingData[stringTableBytesRead..];
 
 			// special handling per object type
-			if (locoStruct is ILocoStructExtraLoading locoStructExtra)
+			if (loadExtra && locoStruct is ILocoStructExtraLoading locoStructExtra)
 			{
 				remainingData = locoStructExtra.Load(remainingData);
 			}
@@ -335,9 +335,28 @@ namespace OpenLocoTool.DatFileParsing
 				{
 					throw new InvalidOperationException($"bytes read ({bytesRead}) didn't match bytes expected ({size})");
 				}
-			}
 
-			return ObjectHeader.Read(data);
+				var objHeader = ObjectHeader.Read(data);
+
+				// do a little extra for vehicles for categorising them better without fully loading them
+				if (objHeader.ObjectType == ObjectType.vehicle)
+				{
+					var extra = new byte[4];
+					var vehicleExtra = fs.Read(extra, 0, 4); // offset is 0 because the stream has already advanced {ObjectHeader.StructSize} bytes
+					if (vehicleExtra == 4)
+					{
+						objHeader.VehicleType = (VehicleType)extra[3];
+					}
+					else
+					{
+						Logger.Error($"Tried to read 4 bytes but read {vehicleExtra} bytes");
+
+					}
+
+				}
+
+				return objHeader;
+			}
 		}
 
 		public static ILocoStruct GetLocoStruct(ObjectType objectType, ReadOnlySpan<byte> data)

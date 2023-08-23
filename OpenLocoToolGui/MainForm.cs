@@ -41,16 +41,16 @@ namespace OpenLocoToolGui
 			InitUI();
 		}
 
-		const string settingsFile = "./settings.json";
+		const string SettingsFile = "./settings.json";
 
 		void LoadSettings()
 		{
-			if (!File.Exists(settingsFile))
+			if (!File.Exists(SettingsFile))
 			{
 				Settings = new();
 				return;
 			}
-			var text = File.ReadAllText(settingsFile);
+			var text = File.ReadAllText(SettingsFile);
 			Settings = JsonSerializer.Deserialize<OpenLocoToolGuiSettings>(text);
 
 			if (Settings == null)
@@ -75,8 +75,8 @@ namespace OpenLocoToolGui
 
 		void SaveSettings()
 		{
-			var text = JsonSerializer.Serialize(Settings);
-			File.WriteAllText(text, settingsFile);
+			var text = JsonSerializer.Serialize(Settings, new JsonSerializerOptions() { WriteIndented = true });
+			File.WriteAllText(text, SettingsFile);
 		}
 
 		void InitUI()
@@ -97,14 +97,15 @@ namespace OpenLocoToolGui
 
 			var allFiles = Directory.GetFiles(Settings.ObjectDirectory, "*.dat", SearchOption.AllDirectories);
 			headerIndex.Clear();
-			foreach (var file in allFiles)
+
+			Parallel.ForEach(allFiles, (file) =>
 			{
 				var objectHeader = reader.LoadHeader(file);
 				if (!headerIndex.TryAdd(file, objectHeader))
 				{
 					logger.Warning($"Didn't add file {file} - already exists (how???)");
 				}
-			}
+			});
 		}
 
 		void SerialiseHeaderIndexToFile()
@@ -139,9 +140,25 @@ namespace OpenLocoToolGui
 			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
 			{
 				var typeNode = new TreeNode(group.Key.ToString());
-				foreach (var obj in group)
+				if (group.Key != ObjectType.vehicle)
 				{
-					typeNode.Nodes.Add(obj.Key, obj.Value.Name);
+					foreach (var obj in group)
+					{
+						typeNode.Nodes.Add(obj.Key, obj.Value.Name);
+					}
+				}
+				else
+				{
+
+					var vehicleGroup = group.GroupBy(o => o.Value.VehicleType);
+					foreach (var vehicleType in vehicleGroup)
+					{
+						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
+						foreach (var veh in vehicleType)
+						{
+							typeNode.Nodes.Add(veh.Key, veh.Value.Name);
+						}
+					}
 				}
 
 				nodesToAdd.Add(typeNode);

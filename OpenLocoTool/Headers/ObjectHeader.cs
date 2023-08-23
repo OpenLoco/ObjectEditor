@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using OpenLocoTool.DatFileParsing;
+using OpenLocoTool.Objects;
 
 namespace OpenLocoTool.Headers
 {
@@ -70,6 +71,9 @@ namespace OpenLocoTool.Headers
 		public static int SubHeaderLength => 0x10;
 
 		public uint32_t Flags { get; set; }
+
+		// this is just for index filtering/grouping in the UI
+		public VehicleType? VehicleType { get; set; }
 
 		public SourceGame SourceGame
 		{

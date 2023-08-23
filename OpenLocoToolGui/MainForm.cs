@@ -10,6 +10,13 @@ using System.Text.Json.Serialization;
 
 namespace OpenLocoToolGui
 {
+	// how this program works
+	//
+	// 1. open UI, no loading
+	// 2. user selects a directory
+	// 3. if no open-loco-tool index file exists, open-loco-tool fully loads all dat files in directory, creates an index and writes it to `objectIndex.json` in that folder. this is SLOW (currently)
+	// 4. next time that directory is opened, the index is read instead of loading all files. this is FAST
+
 	public partial class MainForm : Form
 	{
 		private ILogger logger;
@@ -137,8 +144,8 @@ namespace OpenLocoToolGui
 				}
 			});
 
-			headerIndex = ccHeaderIndex.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-			objectCache = ccObjectCache.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+			headerIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+			objectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 		}
 
 		void SerialiseHeaderIndexToFile()

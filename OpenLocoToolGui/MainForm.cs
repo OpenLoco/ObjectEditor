@@ -40,7 +40,7 @@ namespace OpenLocoToolGui
 		Dictionary<string, IndexObjectHeader> headerIndex = new(); // key is full path/filename
 		Dictionary<string, ILocoObject> objectCache = new(); // key is full path/filename
 
-		OpenLocoToolGuiSettings Settings { get; set; }
+		GuiSettings Settings { get; set; }
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
@@ -60,12 +60,12 @@ namespace OpenLocoToolGui
 			}
 
 			var text = File.ReadAllText(SettingsFile);
-			Settings = JsonSerializer.Deserialize<OpenLocoToolGuiSettings>(text);
+			Settings = JsonSerializer.Deserialize<GuiSettings>(text);
 
 			ValidateSettings(Settings, logger);
 		}
 
-		static void ValidateSettings(OpenLocoToolGuiSettings settings, ILogger logger)
+		static void ValidateSettings(GuiSettings settings, ILogger logger)
 		{
 			if (settings == null)
 			{

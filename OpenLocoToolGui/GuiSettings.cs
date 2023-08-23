@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace OpenLocoToolGui
 {
-	public class OpenLocoToolGuiSettings
+	public class GuiSettings
 	{
 		public string ObjectDirectory { get; set; }
 

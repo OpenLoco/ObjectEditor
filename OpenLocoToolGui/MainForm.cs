@@ -3,10 +3,7 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
-using System.Collections.Concurrent;
 using System.Drawing.Imaging;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OpenLocoToolGui
 {
@@ -19,9 +16,10 @@ namespace OpenLocoToolGui
 
 	public partial class MainForm : Form
 	{
-		private ILogger logger;
-		private SawyerStreamReader reader;
-		private SawyerStreamWriter writer;
+		MainFormModel model;
+		ILogger logger;
+
+		const string SettingsFile = "./settings.json";
 
 		public MainForm()
 		{
@@ -31,34 +29,19 @@ namespace OpenLocoToolGui
 			{
 				Level = LogLevel.Debug2
 			};
-			((Logger)logger).LogAdded += (s, e) => lbLogs.Items.Insert(0, e.Log.ToString());
+			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log.ToString()));
 
-			reader = new SawyerStreamReader(logger);
-			writer = new SawyerStreamWriter(logger);
+			model = new MainFormModel(logger, SettingsFile);
 		}
-
-		Dictionary<string, IndexObjectHeader> headerIndex = new(); // key is full path/filename
-		Dictionary<string, ILocoObject> objectCache = new(); // key is full path/filename
-
-		GuiSettings Settings { get; set; }
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
 			// setup dark mode???
 			//DarkModify(this);
 
-			// restore previous session, if any
-			LoadSettings();
-			if (File.Exists(Settings.IndexFilePath))
-			{
-				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-				DeserialiseHeaderIndexFromFile();
-				InitFileTreeView();
-				InitCategoryTreeView();
-			}
+			InitFileTreeView();
+			InitCategoryTreeView();
 		}
-
-		const string SettingsFile = "./settings.json";
 
 		Color DarkModeBackColor = Color.FromArgb(31, 31, 31);
 		Color DarkModeForeColor = Color.White;
@@ -75,84 +58,29 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		void LoadSettings()
-		{
-			if (!File.Exists(SettingsFile))
-			{
-				Settings = new();
-				SaveSettings();
-				return;
-			}
-
-			var text = File.ReadAllText(SettingsFile);
-			Settings = JsonSerializer.Deserialize<GuiSettings>(text);
-
-			ValidateSettings(Settings, logger);
-		}
-
-		static void ValidateSettings(GuiSettings settings, ILogger logger)
-		{
-			if (settings == null)
-			{
-				logger.Error($"Unable to load settings");
-				return;
-			}
-
-			if (string.IsNullOrEmpty(settings.ObjectDirectory))
-			{
-				logger.Warning("Object directory was null or empty");
-				return;
-			}
-
-			if (!Directory.Exists(settings.ObjectDirectory))
-			{
-				logger.Warning($"Directory \"{settings.ObjectDirectory}\" does not exist");
-				return;
-			}
-		}
-
-		void SaveSettings()
-		{
-			var text = JsonSerializer.Serialize(Settings, new JsonSerializerOptions() { WriteIndented = true });
-			File.WriteAllText(SettingsFile, text);
-		}
-
 		void InitUI()
 		{
-			if (File.Exists(Settings.IndexFilePath))
-			{
-				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-				DeserialiseHeaderIndexFromFile();
-			}
-			else
-			{
-				logger.Info($"Index file doesn't exist; creating file \"{Settings.IndexFileName}\"");
-				if (CreateIndex())
-				{
-					SerialiseHeaderIndexToFile();
-				}
-			}
-
 			InitFileTreeView();
 			InitCategoryTreeView();
 		}
 
-		bool CreateIndex()
+		bool LoadDirectory(string directory)
 		{
-			if (string.IsNullOrEmpty(Settings.ObjectDirectory))
+			if (string.IsNullOrEmpty(directory))
 			{
 				logger.Warning("Settings.ObjectDirectory not set");
 				return false;
 			}
 
-			var allFiles = Directory.GetFiles(Settings.ObjectDirectory, "*.dat", SearchOption.AllDirectories);
+			var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
 			using (var progressForm = new ProgressBarForm())
 			{
 				progressForm.Text = $"Indexing {allFiles.Length} files";
 				var progress = new Progress<float>(f => progressForm.SetProgress((int)(f * 100)));
+				// can probably use a task instead of a thread, but its good enough
 				var thread = new Thread(() =>
 				{
-					CreateIndexCore(allFiles, progress);
+					model.LoadDirectory(directory, progress);
 					progressForm.CloseForm();
 				});
 				thread.Start();
@@ -162,61 +90,15 @@ namespace OpenLocoToolGui
 			return true;
 		}
 
-		// this method loads every single object entirely. it takes a long time to run
-		void CreateIndexCore(string[] allFiles, IProgress<float> progress)
-		{
-			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
-			ConcurrentDictionary<string, ILocoObject> ccObjectCache = new(); // key is full path/filename
-
-			var total = (float)allFiles.Length;
-			int count = 0;
-			Parallel.ForEach(allFiles, (file) =>
-			{
-				var locoObject = reader.LoadFull(file);
-				if (!ccObjectCache.TryAdd(file, locoObject))
-				{
-					//logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
-				}
-
-				VehicleType? veh = null;
-				if (locoObject.Object is VehicleObject vo)
-					veh = vo.Type;
-
-				var indexObjectHeader = new IndexObjectHeader(locoObject.ObjectHeader.Name, locoObject.ObjectHeader.ObjectType, veh);
-				if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
-				{
-					//logger.Warning($"Didn't add file {file} to index - already exists (how???)");
-				}
-
-				Interlocked.Increment(ref count);
-				progress.Report(count / total);
-			});
-
-			headerIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-			objectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-		}
-
-		void SerialiseHeaderIndexToFile()
-		{
-			var json = JsonSerializer.Serialize(headerIndex, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, });
-			File.WriteAllText(Path.Combine(Settings.ObjectDirectory, Settings.IndexFilePath), json);
-		}
-
-		void DeserialiseHeaderIndexFromFile()
-		{
-			var json = File.ReadAllText(Settings.IndexFilePath);
-			headerIndex = JsonSerializer.Deserialize<Dictionary<string, IndexObjectHeader>>(json, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, });
-		}
-
 		void InitFileTreeView(string fileFilter = "")
 		{
 			tvFileTree.SuspendLayout();
 			tvFileTree.Nodes.Clear();
-			var filteredFiles = headerIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+			var filteredFiles = model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
 			foreach (var obj in filteredFiles)
 			{
-				var relative = Path.GetRelativePath(Settings.ObjectDirectory, obj.Key);
+				var relative = Path.GetRelativePath(model.Settings.ObjectDirectory, obj.Key);
 				tvFileTree.Nodes.Add(obj.Key, relative);
 			}
 
@@ -229,7 +111,7 @@ namespace OpenLocoToolGui
 			tvObjType.SuspendLayout();
 			tvObjType.Nodes.Clear();
 
-			var filteredFiles = headerIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+			var filteredFiles = model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
 			var nodesToAdd = new List<TreeNode>();
 			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
@@ -259,8 +141,6 @@ namespace OpenLocoToolGui
 				nodesToAdd.Add(typeNode);
 			}
 
-			//nodesToAdd.Sort((a, b) => a.Text.CompareTo(b.Text));
-
 			tvObjType.Sort();
 			tvObjType.Nodes.AddRange(nodesToAdd.ToArray());
 
@@ -271,7 +151,7 @@ namespace OpenLocoToolGui
 		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			var obj = (ILocoObject)pgObject.SelectedObject;
-			saveFileDialog1.InitialDirectory = Settings.ObjectDirectory;
+			saveFileDialog1.InitialDirectory = model.Settings.ObjectDirectory;
 			saveFileDialog1.DefaultExt = "dat";
 			saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -294,18 +174,18 @@ namespace OpenLocoToolGui
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
-				Settings.ObjectDirectory = objectDirBrowser.SelectedPath;
-				SaveSettings();
-				logger.Info($"Settings.ObjectDirectory set to \"{Settings.ObjectDirectory}\"");
-				InitUI();
+				if (LoadDirectory(objectDirBrowser.SelectedPath))
+				{
+					InitUI();
+				}
 			}
 		}
 
 		private void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (CreateIndex())
+			if (LoadDirectory(model.Settings.ObjectDirectory))
 			{
-				SerialiseHeaderIndexToFile();
+				InitUI();
 			}
 		}
 
@@ -322,7 +202,7 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			var obj = LoadAndCacheObject(e.Node.Name);
+			var obj = model.LoadAndCacheObject(e.Node.Name);
 
 			if (obj != null && obj.G1Elements != null && obj.G1Header != null && obj.G1Header.TotalSize != 0 && obj.G1Elements.Count != 0)
 			{
@@ -380,7 +260,7 @@ namespace OpenLocoToolGui
 			flpImageTable.Controls.Clear();
 
 			// todo: add user to supply this file
-			var paletteBitmap = new Bitmap(Settings.PaletteFile);
+			var paletteBitmap = new Bitmap(model.Settings.PaletteFile);
 			var palette = PaletteFromBitmap(paletteBitmap);
 
 			for (var i = 0; i < obj.G1Elements.Count; ++i)
@@ -425,21 +305,6 @@ namespace OpenLocoToolGui
 			}
 
 			flpImageTable.ResumeLayout(true);
-		}
-
-		ILocoObject? LoadAndCacheObject(string filename)
-		{
-			if (!objectCache.ContainsKey(filename) && !string.IsNullOrEmpty(filename) && filename.EndsWith(".dat", StringComparison.InvariantCultureIgnoreCase))
-			{
-				objectCache.TryAdd(filename, reader.LoadFull(filename));
-			}
-
-			if (objectCache.ContainsKey(filename))
-			{
-				return objectCache[filename];
-			}
-
-			return null;
 		}
 
 		Color[] PaletteFromBitmap(Bitmap img)

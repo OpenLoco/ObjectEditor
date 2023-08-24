@@ -31,7 +31,7 @@ namespace OpenLocoToolGui
 			{
 				Level = LogLevel.Debug2
 			};
-			//((Logger)logger).LogAdded += (s, e) => lbLogs.Items.Insert(0, e.Log.ToString());
+			((Logger)logger).LogAdded += (s, e) => lbLogs.Items.Insert(0, e.Log.ToString());
 
 			reader = new SawyerStreamReader(logger);
 			writer = new SawyerStreamWriter(logger);
@@ -47,8 +47,15 @@ namespace OpenLocoToolGui
 			// setup dark mode???
 			//DarkModify(this);
 
+			// restore previous session, if any
 			LoadSettings();
-			//InitUI();
+			if (File.Exists(Settings.IndexFilePath))
+			{
+				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
+				DeserialiseHeaderIndexFromFile();
+				InitFileTreeView();
+				InitCategoryTreeView();
+			}
 		}
 
 		const string SettingsFile = "./settings.json";
@@ -130,7 +137,6 @@ namespace OpenLocoToolGui
 			InitCategoryTreeView();
 		}
 
-		// this method loads every single object entirely
 		bool CreateIndex()
 		{
 			if (string.IsNullOrEmpty(Settings.ObjectDirectory))
@@ -140,19 +146,38 @@ namespace OpenLocoToolGui
 			}
 
 			var allFiles = Directory.GetFiles(Settings.ObjectDirectory, "*.dat", SearchOption.AllDirectories);
+			using (var progressForm = new ProgressBarForm())
+			{
+				progressForm.Text = $"Indexing {allFiles.Length} files";
+				var progress = new Progress<float>(f => progressForm.SetProgress((int)(f * 100)));
+				var thread = new Thread(() =>
+				{
+					CreateIndexCore(allFiles, progress);
+					progressForm.CloseForm();
+				});
+				thread.Start();
+				progressForm.ShowDialog();
+			}
 
+			return true;
+		}
+
+		// this method loads every single object entirely. it takes a long time to run
+		void CreateIndexCore(string[] allFiles, IProgress<float> progress)
+		{
 			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
 			ConcurrentDictionary<string, ILocoObject> ccObjectCache = new(); // key is full path/filename
 
+			var total = (float)allFiles.Length;
+			int count = 0;
 			Parallel.ForEach(allFiles, (file) =>
 			{
 				var locoObject = reader.LoadFull(file);
 				if (!ccObjectCache.TryAdd(file, locoObject))
 				{
-					logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
+					//logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
 				}
 
-				// make indexobjectheader
 				VehicleType? veh = null;
 				if (locoObject.Object is VehicleObject vo)
 					veh = vo.Type;
@@ -160,14 +185,15 @@ namespace OpenLocoToolGui
 				var indexObjectHeader = new IndexObjectHeader(locoObject.ObjectHeader.Name, locoObject.ObjectHeader.ObjectType, veh);
 				if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 				{
-					logger.Warning($"Didn't add file {file} to index - already exists (how???)");
+					//logger.Warning($"Didn't add file {file} to index - already exists (how???)");
 				}
+
+				Interlocked.Increment(ref count);
+				progress.Report(count / total);
 			});
 
 			headerIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 			objectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-			return true;
 		}
 
 		void SerialiseHeaderIndexToFile()
@@ -465,6 +491,4 @@ namespace OpenLocoToolGui
 			ptr[3] = 255; // (byte)(c.A * 255); // Alpha
 		}
 	}
-
-	public record IndexObjectHeader(string Name, ObjectType ObjectType, VehicleType? VehicleType);
 }

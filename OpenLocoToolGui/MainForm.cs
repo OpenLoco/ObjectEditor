@@ -41,8 +41,7 @@ namespace OpenLocoToolGui
 			// setup dark mode???
 			//DarkModify(this);
 
-			InitFileTreeView();
-			InitCategoryTreeView();
+			InitUI();
 		}
 
 		Color DarkModeBackColor = Color.FromArgb(31, 31, 31);
@@ -60,10 +59,10 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		void InitUI()
+		void InitUI(string filter = "")
 		{
-			InitFileTreeView();
-			InitCategoryTreeView();
+			InitFileTreeView(filter);
+			InitCategoryTreeView(filter);
 		}
 
 		bool LoadDirectory(string directory)
@@ -193,8 +192,7 @@ namespace OpenLocoToolGui
 
 		void tbFileFilter_TextChanged(object sender, EventArgs e)
 		{
-			InitFileTreeView(tbFileFilter.Text);
-			InitCategoryTreeView(tbFileFilter.Text);
+			InitUI(tbFileFilter.Text);
 		}
 
 		void tv_AfterSelect(object sender, TreeViewEventArgs e)
@@ -203,6 +201,8 @@ namespace OpenLocoToolGui
 			{
 				return;
 			}
+
+			flpImageTable.Controls.Clear();
 
 			var obj = model.LoadAndCacheObject(e.Node.Name);
 
@@ -296,6 +296,7 @@ namespace OpenLocoToolGui
 
 				dstImg.UnlockBits(dstImgData);
 
+				// on these controls we could add a right_click handler to replace image with user-created one
 				var pb = new PictureBox
 				{
 					Image = dstImg,

@@ -7,6 +7,7 @@ using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static OpenLocoTool.Headers.S5Header;
 
 namespace OpenLocoTool.DatFileParsing
 {
@@ -61,14 +62,18 @@ namespace OpenLocoTool.DatFileParsing
 		// load file
 		public ILocoObject LoadFull(string filename, bool loadExtra = true)
 		{
-			Span<byte> fullData = LoadBytesFromFile(filename);
+			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 
 			// make openlocotool useful objects
-			var objectHeader = ObjectHeader.Read(fullData);
-			var data = fullData[ObjectHeader.StructLength..].ToArray();
+			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
+			var remainingData = fullData[S5Header.StructLength..];
 
-			var decodedData = Decode(objectHeader.Encoding, data).AsSpan();
-			var locoStruct = GetLocoStruct(objectHeader.ObjectType, decodedData);
+			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
+			remainingData = remainingData[ObjectHeader.StructLength..];
+
+			var decodedData = Decode(objectHeader.Encoding, remainingData);
+			remainingData = decodedData;
+			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
 
 			if (locoStruct == null)
 			{
@@ -78,14 +83,14 @@ namespace OpenLocoTool.DatFileParsing
 
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
 			var locoStructSize = structSize!.Size;
-			ReadOnlySpan<byte> remainingData = decodedData[locoStructSize..];
+			remainingData = remainingData[locoStructSize..];
 
-			var headerFlag = BitConverter.GetBytes(objectHeader.Flags).AsSpan()[0..1];
+			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
 			var checksum = ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
 
-			if (checksum != objectHeader.Checksum)
+			if (checksum != s5Header.Checksum)
 			{
-				throw new ArgumentException($"{objectHeader.Name} had incorrect checksum. expected={objectHeader.Checksum} actual={checksum}");
+				throw new ArgumentException($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
 			}
 
 			// every object has a string table
@@ -108,9 +113,9 @@ namespace OpenLocoTool.DatFileParsing
 			//try
 			{
 				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-				Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={ObjectHeader.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+				Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-				return new LocoObject(objectHeader, locoStruct, stringTable, g1Header, imageTable);
+				return new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
 			}
 			//catch (Exception ex)
 			//{
@@ -292,7 +297,7 @@ namespace OpenLocoTool.DatFileParsing
 			return File.ReadAllBytes(filename);
 		}
 
-		public ObjectHeader LoadHeader(string filename)
+		public S5Header LoadHeader(string filename)
 		{
 			if (!File.Exists(filename))
 			{
@@ -301,7 +306,7 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			Logger.Log(LogLevel.Info, $"Loading header for {filename}");
-			var size = ObjectHeader.StructLength;
+			var size = S5Header.StructLength;
 			var data = new byte[size];
 
 			using (var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
@@ -312,7 +317,7 @@ namespace OpenLocoTool.DatFileParsing
 					throw new InvalidOperationException($"bytes read ({bytesRead}) didn't match bytes expected ({size})");
 				}
 
-				return ObjectHeader.Read(data);
+				return S5Header.Read(data);
 			}
 		}
 

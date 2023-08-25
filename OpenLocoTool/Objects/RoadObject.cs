@@ -66,19 +66,19 @@ namespace OpenLocoTool.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible roads/tracks
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumCompatible)..];
+			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 
 			// mods
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumMods)..];
+			remainingData = remainingData[(S5Header.StructLength * NumMods)..];
 
 			// tunnel
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+			remainingData = remainingData[(S5Header.StructLength * 1)..];
 
 			// bridges
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumBridges)..];
+			remainingData = remainingData[(S5Header.StructLength * NumBridges)..];
 
 			// stations
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumStations)..];
+			remainingData = remainingData[(S5Header.StructLength * NumStations)..];
 
 			return remainingData;
 		}

@@ -168,19 +168,19 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[(MaxNumBuildings * 1)..]; // sizeof(uint8_t)
 
 			// produced cargo
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * ProducedCargoType.Length)..];
+			remainingData = remainingData[(S5Header.StructLength * ProducedCargoType.Length)..];
 
 			// required cargo
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * RequiredCargoType.Length)..];
+			remainingData = remainingData[(S5Header.StructLength * RequiredCargoType.Length)..];
 
 			// wall types
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * WallTypes.Length)..];
+			remainingData = remainingData[(S5Header.StructLength * WallTypes.Length)..];
 
 			// unk wall type
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+			remainingData = remainingData[(S5Header.StructLength * 1)..];
 
 			// unk wall type (building entrance?)
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+			remainingData = remainingData[(S5Header.StructLength * 1)..];
 
 			return remainingData;
 		}

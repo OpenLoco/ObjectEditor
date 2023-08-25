@@ -47,7 +47,7 @@ namespace OpenLocoTool.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible roads/tracks
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumCompatible)..];
+			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 
 			// cargo offsets (for drawing the cargo on the station) (same as roadstation code)
 			CargoOffsetBytes = new byte[4, 4];

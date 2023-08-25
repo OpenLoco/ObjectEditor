@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Zenith.Core" Version="1.0.20" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\OpenLocoToolCommon\OpenLocoToolCommon.csproj" />
   </ItemGroup>
 

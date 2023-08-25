@@ -43,11 +43,11 @@ namespace OpenLocoTool.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// cliff edge header
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+			remainingData = remainingData[(S5Header.StructLength * 1)..];
 
 			if (Flags.HasFlag(LandObjectFlags.unk1))
 			{
-				remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+				remainingData = remainingData[(S5Header.StructLength * 1)..];
 			}
 
 			return remainingData;

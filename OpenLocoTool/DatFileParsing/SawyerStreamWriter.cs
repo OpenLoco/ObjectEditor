@@ -16,7 +16,7 @@ namespace OpenLocoTool.DatFileParsing
 				throw new ArgumentNullException(nameof(locoObject));
 			}
 
-			Logger.Log(LogLevel.Info, $"[NOT IMPLEMENTED] Writing \"{locoObject.ObjectHeader.Name}\" to {filepath}");
+			Logger.Log(LogLevel.Info, $"[NOT IMPLEMENTED] Writing \"{locoObject.S5Header.Name}\" to {filepath}");
 
 			//var encoded = Encode(locoObject.ObjectHeader2.Encoding, locoObject.Object.Write());
 			//WriteToFile(filepath, locoObject.ObjectHeader.Write(), locoObject.ObjectHeader2.Write(), encoded);

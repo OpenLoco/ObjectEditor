@@ -98,23 +98,23 @@ namespace OpenLocoTool.Objects
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			var dependentObjects = new List<ObjectHeader>();
+			var dependentObjects = new List<S5Header>();
 
 			const byte trackType = 0xFF;
 
 			// dependent objects
 			if (!Flags.HasFlag(VehicleObjectFlags.unk_09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
 			{
-				var trackHeader = ObjectHeader.Read(remainingData);
+				var trackHeader = S5Header.Read(remainingData);
 				dependentObjects.Add(trackHeader);
 				TrackType = trackType;
 				// load the object handle for the track header, and set tracktype to its id
 
-				remainingData = remainingData[ObjectHeader.SubHeaderLength..];
+				remainingData = remainingData[S5Header.StructLength..];
 			}
 
 			// track mods
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumMods)..];
+			remainingData = remainingData[(S5Header.StructLength * NumMods)..];
 
 			// cargo types
 			for (var i = 0; i < CargoTypes.Length; ++i)
@@ -167,27 +167,27 @@ namespace OpenLocoTool.Objects
 					continue;
 				}
 
-				remainingData = remainingData[ObjectHeader.SubHeaderLength..];
+				remainingData = remainingData[S5Header.StructLength..];
 			}
 
 			// numCompat
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumCompat)..];
+			remainingData = remainingData[(S5Header.StructLength * NumCompat)..];
 
 			// rack rail
 			if (Flags.HasFlag(VehicleObjectFlags.RackRail))
 			{
-				remainingData = remainingData[ObjectHeader.SubHeaderLength..];
+				remainingData = remainingData[S5Header.StructLength..];
 			}
 
 			// driving sound
 			if (DrivingSoundType != DrivingSoundType.None)
 			{
-				remainingData = remainingData[ObjectHeader.SubHeaderLength..];
+				remainingData = remainingData[S5Header.StructLength..];
 			}
 
 			var mask = 127;
 			// driving sound
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * (NumStartSounds & mask))..];
+			remainingData = remainingData[(S5Header.StructLength * (NumStartSounds & mask))..];
 
 			return remainingData;
 		}

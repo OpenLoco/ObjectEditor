@@ -109,7 +109,7 @@ namespace OpenLocoToolGui
 				if (locoObject.Object is VehicleObject vo)
 					veh = vo.Type;
 
-				var indexObjectHeader = new IndexObjectHeader(locoObject.ObjectHeader.Name, locoObject.ObjectHeader.ObjectType, veh);
+				var indexObjectHeader = new IndexObjectHeader(locoObject.S5Header.Name, locoObject.S5Header.ObjectType, veh);
 				if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 				{
 					logger.Warning($"Didn't add file {file} to index - already exists (how???)");

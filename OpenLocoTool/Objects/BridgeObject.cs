@@ -40,7 +40,7 @@ namespace OpenLocoTool.Objects
 		// return number of bytes read
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			var bytesRead = (TrackNumCompatible + RoadNumCompatible) * ObjectHeader.StructLength;
+			var bytesRead = (TrackNumCompatible + RoadNumCompatible) * S5Header.StructLength;
 			return remainingData[bytesRead..];
 		}
 

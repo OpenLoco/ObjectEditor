@@ -39,7 +39,7 @@ namespace OpenLocoToolTests
 			var ssr = new SawyerStreamReader(logger);
 			var loaded = ssr.LoadFull(filename);
 
-			Assert.That(loaded.ObjectHeader.DataLength, Is.EqualTo(fileSize - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
+			Assert.That(loaded.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 
 			return loaded;
 		}
@@ -299,15 +299,18 @@ namespace OpenLocoToolTests
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\707.DAT";
 			var locoObj = LoadObject(testFile);
 
-			var header = locoObj.ObjectHeader;
+			var s5header = locoObj.S5Header;
+			var objHeader = locoObj.ObjectHeader;
+
 			Assert.Multiple(() =>
 			{
-				Assert.That(header.Flags, Is.EqualTo(283680407), nameof(header.Flags));
-				Assert.That(header.Name, Is.EqualTo("707     "), nameof(header.Name));
-				Assert.That(header.Checksum, Is.EqualTo(1331114877), nameof(header.Checksum));
+				Assert.That(s5header.Flags, Is.EqualTo(283680407), nameof(s5header.Flags));
+				Assert.That(s5header.Name, Is.EqualTo("707     "), nameof(s5header.Name));
+				Assert.That(s5header.Checksum, Is.EqualTo(1331114877), nameof(s5header.Checksum));
+				Assert.That(s5header.ObjectType, Is.EqualTo(ObjectType.vehicle), nameof(s5header.ObjectType));
 
-				Assert.That(header.Encoding, Is.EqualTo(SawyerEncoding.runLengthSingle), nameof(header.Encoding));
-				Assert.That(header.ObjectType, Is.EqualTo(ObjectType.vehicle), nameof(header.ObjectType));
+				Assert.That(objHeader.Encoding, Is.EqualTo(SawyerEncoding.runLengthSingle), nameof(objHeader.Encoding));
+				Assert.That(objHeader.DataLength, Is.EqualTo(159566), nameof(objHeader.DataLength));
 			});
 
 			var obj = locoObj.Object as VehicleObject;

@@ -44,12 +44,12 @@ namespace OpenLocoTool.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible roads/tracks
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumCompatible)..];
+			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 
 			// cargo
 			if (Flags.HasFlag(RoadStationFlags.Passenger) || Flags.HasFlag(RoadStationFlags.Freight))
 			{
-				remainingData = remainingData[(ObjectHeader.SubHeaderLength * 1)..];
+				remainingData = remainingData[(S5Header.StructLength * 1)..];
 			}
 
 			// cargo offsets (for drawing the cargo on the station)

@@ -40,7 +40,7 @@ namespace OpenLocoTool.Objects
 		public static int StructSize => 0x1E;
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumCompatible)..];
+			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 			return remainingData;
 		}
 	}

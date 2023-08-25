@@ -22,13 +22,13 @@ namespace OpenLocoTool.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// unk
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * var_08)..];
+			remainingData = remainingData[(S5Header.StructLength * var_08)..];
 
 			// find all objects that this object loads
 			var ptr = 0;
 			while (remainingData[ptr] != 0xFF)
 			{
-				ptr += ObjectHeader.SubHeaderLength;
+				ptr += S5Header.StructLength;
 			}
 			ptr++;
 			remainingData = remainingData[ptr..];

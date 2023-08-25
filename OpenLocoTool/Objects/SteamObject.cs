@@ -70,7 +70,7 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[1..];
 
 			// sounds effects
-			remainingData = remainingData[(ObjectHeader.SubHeaderLength * NumSoundEffects)..];
+			remainingData = remainingData[(S5Header.StructLength * NumSoundEffects)..];
 
 			return remainingData;
 		}

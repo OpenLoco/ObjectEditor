@@ -29,13 +29,15 @@ namespace OpenLocoToolGui
 			{
 				Level = LogLevel.Debug2
 			};
-			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log.ToString()));
 
 			model = new MainFormModel(logger, SettingsFile);
 		}
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
+			// can only do this after window handle has been created (so can't do in cstr)
+			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log.ToString()));
+
 			// setup dark mode???
 			//DarkModify(this);
 
@@ -259,9 +261,8 @@ namespace OpenLocoToolGui
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
 
-			// todo: add user to supply this file
 			var paletteBitmap = new Bitmap(model.Settings.PaletteFile);
-			var palette = PaletteFromBitmap(paletteBitmap);
+			var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
 
 			for (var i = 0; i < obj.G1Elements.Count; ++i)
 			{
@@ -289,7 +290,7 @@ namespace OpenLocoToolGui
 						//	: palette[paletteIndex];
 
 						var colour = palette[paletteIndex];
-						SetPixel(dstImgData, x, y, colour);
+						ImageHelpers.SetPixel(dstImgData, x, y, colour);
 					}
 				}
 
@@ -305,55 +306,6 @@ namespace OpenLocoToolGui
 			}
 
 			flpImageTable.ResumeLayout(true);
-		}
-
-		Color[] PaletteFromBitmap(Bitmap img)
-		{
-			var palette = new Color[256];
-			var rect = new Rectangle(0, 0, img.Width, img.Height);
-			var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-			for (var y = 0; y < 16; ++y)
-			{
-				for (var x = 0; x < 16; ++x)
-				{
-					var pixel = GetPixel(imgData, x, y);
-					palette[(y * 16) + x] = pixel;
-				}
-			}
-
-			img.UnlockBits(imgData);
-			return palette;
-		}
-
-		unsafe Color GetPixel(BitmapData d, int X, int Y)
-		{
-			var ptr = GetPtrToFirstPixel(d, X, Y);
-			return Color.FromArgb(ptr[2], ptr[1], ptr[0]); // alpha is ptr[3]);
-		}
-
-		unsafe void SetPixel(BitmapData d, Point p, Color c)
-			=> SetPixel(d, p.X, p.Y, c);
-
-		unsafe void SetPixel(BitmapData d, int X, int Y, Color c)
-			=> SetPixel(GetPtrToFirstPixel(d, X, Y), c);
-
-		static unsafe byte* GetPtrToFirstPixel(BitmapData d, int X, int Y)
-			=> (byte*)d.Scan0.ToPointer() + (Y * d.Stride) + (X * (Image.GetPixelFormatSize(d.PixelFormat) / 8));
-
-		//private static unsafe void SetPixel(byte* ptr, Color c)
-		//{
-		//	ptr[0] = c.B; // Blue
-		//	ptr[1] = c.G; // Green
-		//	ptr[2] = c.R; // Red
-		//	ptr[3] = c.A; // Alpha
-		//}
-
-		static unsafe void SetPixel(byte* ptr, Color c)
-		{
-			ptr[0] = (byte)(c.B); // Blue
-			ptr[1] = (byte)(c.G); // Green
-			ptr[2] = (byte)(c.R); // Red
-			ptr[3] = 255; // (byte)(c.A * 255); // Alpha
 		}
 	}
 }

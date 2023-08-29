@@ -36,7 +36,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1E)] uint8_t UnitSize
 		) : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.cargo;
+		public static ObjectType ObjectType => ObjectType.Cargo;
 		public static int StructSize => 0x1F;
 	}
 }

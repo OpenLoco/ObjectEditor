@@ -33,7 +33,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1C)] uint16_t ObsoleteYear
 		) : ILocoStruct, ILocoStructExtraLoading
 	{
-		public static ObjectType ObjectType => ObjectType.trainSignal;
+		public static ObjectType ObjectType => ObjectType.TrainSignal;
 
 		public const int ModsLength = 7;
 

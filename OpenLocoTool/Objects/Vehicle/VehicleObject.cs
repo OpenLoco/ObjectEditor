@@ -8,7 +8,7 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x15E)]
 	public class VehicleObject : ILocoStruct, ILocoStructExtraLoading
 	{
-		public const ObjectType ObjType = ObjectType.vehicle;
+		public const ObjectType ObjType = ObjectType.Vehicle;
 		public const int StructSize = 0x15E;
 		public const int MaxBodySprites = 4;
 

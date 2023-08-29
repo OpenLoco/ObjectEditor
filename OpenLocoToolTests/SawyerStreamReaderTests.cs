@@ -307,7 +307,7 @@ namespace OpenLocoToolTests
 				Assert.That(s5header.Flags, Is.EqualTo(283680407), nameof(s5header.Flags));
 				Assert.That(s5header.Name, Is.EqualTo("707     "), nameof(s5header.Name));
 				Assert.That(s5header.Checksum, Is.EqualTo(1331114877), nameof(s5header.Checksum));
-				Assert.That(s5header.ObjectType, Is.EqualTo(ObjectType.vehicle), nameof(s5header.ObjectType));
+				Assert.That(s5header.ObjectType, Is.EqualTo(ObjectType.Vehicle), nameof(s5header.ObjectType));
 
 				Assert.That(objHeader.Encoding, Is.EqualTo(SawyerEncoding.runLengthSingle), nameof(objHeader.Encoding));
 				Assert.That(objHeader.DataLength, Is.EqualTo(159566), nameof(objHeader.DataLength));

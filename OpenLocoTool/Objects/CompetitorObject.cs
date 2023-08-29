@@ -20,7 +20,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x37)] uint8_t var_37
 		) : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.competitor;
+		public static ObjectType ObjectType => ObjectType.Competitor;
 
 		public static int StructSize => 0x38;
 

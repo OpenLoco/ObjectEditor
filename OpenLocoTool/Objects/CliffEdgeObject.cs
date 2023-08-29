@@ -8,7 +8,7 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x06)]
 	public class CliffEdgeObject : ILocoStruct
 	{
-		public const ObjectType ObjType = ObjectType.cliffEdge;
+		public const ObjectType ObjType = ObjectType.CliffEdge;
 		public const int StructSize = 0x06;
 
 		public CliffEdgeObject(string_id name, uint32_t image)

@@ -118,7 +118,7 @@ namespace OpenLocoToolGui
 			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
 			{
 				var typeNode = new TreeNode(group.Key.ToString());
-				if (group.Key != ObjectType.vehicle)
+				if (group.Key != ObjectType.Vehicle)
 				{
 					foreach (var obj in group)
 					{

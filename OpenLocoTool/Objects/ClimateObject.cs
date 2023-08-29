@@ -15,7 +15,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x09)] uint8_t pad_09
 		) : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.climate;
+		public static ObjectType ObjectType => ObjectType.Climate;
 
 		public static int StructSize => 0x0A;
 

@@ -12,7 +12,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x02)] uint32_t Image
 		) : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.snow;
+		public static ObjectType ObjectType => ObjectType.Snow;
 		public static int StructSize => 0x06;
 	}
 }

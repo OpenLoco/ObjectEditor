@@ -36,7 +36,7 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructProperty(0x??)] const std::byte* var_6E[Var6ELength]
 		) : ILocoStruct, ILocoStructExtraLoading
 	{
-		public static ObjectType ObjectType => ObjectType.trainStation;
+		public static ObjectType ObjectType => ObjectType.TrainStation;
 		public static int StructSize => 0xAE;
 
 		public const int Var6ELength = 16;

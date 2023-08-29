@@ -123,7 +123,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
 		) : ILocoStruct, ILocoStructExtraLoading
 	{
-		public static ObjectType ObjectType => ObjectType.industry;
+		public static ObjectType ObjectType => ObjectType.Industry;
 		public static int StructSize => 0xF4;
 
 		public static int AnimationSequencesSize = 4;

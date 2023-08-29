@@ -23,7 +23,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x02), LocoArrayLength(6)] TownNamesUnk[] unks
 		) : ILocoStruct, ILocoStructExtraLoading
 	{
-		public static ObjectType ObjectType => ObjectType.townNames;
+		public static ObjectType ObjectType => ObjectType.TownNames;
 		public static int StructSize => 0x1A;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)

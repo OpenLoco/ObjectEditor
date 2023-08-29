@@ -17,7 +17,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0A)] uint32_t var_0A
 	) : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.water;
+		public static ObjectType ObjectType => ObjectType.Water;
 		public static int StructSize => 0x0E;
 	}
 }

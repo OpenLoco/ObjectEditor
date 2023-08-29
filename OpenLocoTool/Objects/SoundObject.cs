@@ -44,7 +44,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x08)] uint32_t Volume
 		) : ILocoStruct, ILocoStructExtraLoading
 	{
-		public static ObjectType ObjectType => ObjectType.sound;
+		public static ObjectType ObjectType => ObjectType.Sound;
 		public static int StructSize => 0x0C;
 
 		public SoundObjectData SoundObjectData { get; set; }

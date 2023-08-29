@@ -12,7 +12,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x08)] uint32_t Image
 		) : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.streetLight;
+		public static ObjectType ObjectType => ObjectType.StreetLight;
 		public static int StructSize => 0x0C;
 		public const int DesignedYearLength = 3;
 	}

@@ -32,7 +32,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x24)] Pos2 BoatPosition
 		) : ILocoStruct, ILocoStructExtraLoading
 	{
-		public static ObjectType ObjectType => ObjectType.dock;
+		public static ObjectType ObjectType => ObjectType.Dock;
 		public static int StructSize => 0x28;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)

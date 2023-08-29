@@ -36,7 +36,7 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructProperty(0x2E)] uint8_t CargoOffsetBytes[4][4]
 		) : ILocoStruct, ILocoStructExtraLoading
 	{
-		public static ObjectType ObjectType => ObjectType.roadStation;
+		public static ObjectType ObjectType => ObjectType.RoadStation;
 		public static int StructSize => 0x6E;
 
 		uint8_t[,] CargoOffsetBytes { get; set; }

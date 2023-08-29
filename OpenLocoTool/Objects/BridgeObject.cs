@@ -8,7 +8,7 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x2C)]
 	public class BridgeObject : ILocoStruct, ILocoStructExtraLoading
 	{
-		public const ObjectType ObjType = ObjectType.bridge;
+		public const ObjectType ObjType = ObjectType.Bridge;
 		public const int StructSize = 0x2C;
 
 		public const int TrackModsLength = 7;

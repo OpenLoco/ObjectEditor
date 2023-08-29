@@ -58,7 +58,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x35)] uint8_t pad_35
 	) : ILocoStruct, ILocoStructExtraLoading
 	{
-		public static ObjectType ObjectType => ObjectType.track;
+		public static ObjectType ObjectType => ObjectType.Track;
 		public static int StructSize => 0x36;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)

@@ -131,6 +131,7 @@ namespace OpenLocoToolGui
 				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.IndexFilePath) ?? HeaderIndex;
 				if (HeaderIndex.Keys.Except(allFiles).Any() || allFiles.Except(HeaderIndex.Keys).Any())
 				{
+					logger.Info("Selected directory had an index file but it was outdated; recreating");
 					// index and current dir are different, need to recreate
 					CreateIndex(allFiles, progress);
 					SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex);
@@ -138,6 +139,7 @@ namespace OpenLocoToolGui
 			}
 			else
 			{
+				logger.Info("Recreating index file");
 				CreateIndex(allFiles, progress);
 				SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex);
 			}

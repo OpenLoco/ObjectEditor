@@ -46,7 +46,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x01F), LocoArrayLength(9)] SoundObjectId[] SoundEffects // size tbc
 		) : ILocoStruct, ILocoStructExtraLoading
 	{
-		public static ObjectType ObjectType => ObjectType.steam;
+		public static ObjectType ObjectType => ObjectType.Steam;
 		public static int StructSize => 0x28;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)

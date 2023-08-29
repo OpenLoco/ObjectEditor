@@ -123,6 +123,18 @@
 		public static ILocoStruct ReadLocoStruct<T>(ReadOnlySpan<byte> data) where T : class
 			=> ReadLocoStruct(data, typeof(T));
 
+		public static IList<ILocoStruct> ReadLocoStructArray(ReadOnlySpan<byte> data, Type t, int count, int structSize) // could get struct size from attribute, but easier just to pass in
+		{
+			// cannot use ReadOnlySpan with yield return :|
+			var list = new List<ILocoStruct>();
+			for (var i = 0; i < count; ++i)
+			{
+				var range = data[(i * structSize)..((i + 1) * structSize)];
+				list.Add(ReadLocoStruct(range, t));
+			}
+			return list;
+		}
+
 		public static ILocoStruct ReadLocoStruct(ReadOnlySpan<byte> data, Type t)
 		{
 			var properties = t.GetProperties();
@@ -134,6 +146,13 @@
 				var offsetAttr = AttributeHelper.Get<LocoStructOffsetAttribute>(p);
 				if (offsetAttr == null)
 				{
+					continue;
+				}
+
+				var variableAttr = AttributeHelper.Get<LocoStructVariableLoadAttribute>(p);
+				if (variableAttr != null)
+				{
+					args.Add(Activator.CreateInstance(p.PropertyType));
 					continue;
 				}
 

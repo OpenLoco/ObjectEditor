@@ -38,8 +38,8 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x01)] uint8_t CurrNode,
 		[property: LocoStructOffset(0x02)] uint8_t NextNode,
 		[property: LocoStructOffset(0x03)] uint8_t var_03,
-		[property: LocoStructOffset(0x04)] uint32_t MustBeClearEdges,    // Which edges must be clear to use the transition edge
-		[property: LocoStructOffset(0x08)] uint32_t AtLeastOneClearEdges // Which edges must have at least one clear to use transition edge
+		[property: LocoStructOffset(0x04)] uint32_t MustBeClearEdges,    // Which edges must be clear to use the transition edge. should probably be some kind of flags?
+		[property: LocoStructOffset(0x08)] uint32_t AtLeastOneClearEdges // Which edges must have at least one clear to use transition edge. should probably be some kind of flags?
 		) : ILocoStruct
 	{
 		public static int StructSize => 0x0C;
@@ -71,8 +71,8 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xAA)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0xAC)] uint8_t NumMovementNodes,
 		[property: LocoStructOffset(0xAD)] uint8_t NumMovementEdges,
-		//[property: LocoStructProperty(0xAE)] const MovementNode* movementNodes,
-		//[property: LocoStructProperty(0xB2)] const MovementEdge* movementEdges,
+		[property: LocoStructOffset(0xAE), LocoStructVariableLoad] List<MovementNode> MovementNodes,
+		[property: LocoStructOffset(0xB2), LocoStructVariableLoad] List<MovementEdge> MovementEdges,
 		[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
 	) : ILocoStruct, ILocoStructExtraLoading
 	{
@@ -105,9 +105,17 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[ptr_9C..];
 
 			// movement nodes
+			// could use ByteReaderT.Read_Array if the MovementNode record was a byte-aligned struct
+			MovementNodes.Clear();
+			MovementNodes.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumMovementNodes * MovementNode.StructSize)], typeof(MovementNode), NumMovementNodes, MovementNode.StructSize)
+				.Cast<MovementNode>());
 			remainingData = remainingData[(NumMovementNodes * MovementNode.StructSize)..];
 
 			// movement edges
+			MovementEdges.Clear();
+			MovementEdges.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumMovementEdges * MovementEdge.StructSize)], typeof(MovementEdge), NumMovementEdges, MovementEdge.StructSize)
+				.Cast<MovementEdge>()
+				.ToList());
 			remainingData = remainingData[(NumMovementEdges * MovementEdge.StructSize)..];
 
 			return remainingData;

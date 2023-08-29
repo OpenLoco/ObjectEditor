@@ -31,6 +31,11 @@
 		public int Count { get; }
 	}
 
+	// basically a 'skip' attribute to allow deferred loading for variable data
+	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
+	public class LocoStructVariableLoadAttribute : Attribute
+	{ }
+
 	// unused
 	//[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
 	//public class LocoStructNoGraphicsAttribute : Attribute

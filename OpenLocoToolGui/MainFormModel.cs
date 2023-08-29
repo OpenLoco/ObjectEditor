@@ -52,7 +52,7 @@ namespace OpenLocoToolGui
 			if (File.Exists(Settings.IndexFilePath))
 			{
 				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.IndexFilePath) ?? HeaderIndex;
+				LoadDirectory(Settings.ObjectDirectory, new Progress<float>(), true);
 			}
 		}
 
@@ -125,13 +125,19 @@ namespace OpenLocoToolGui
 			}
 
 			Settings.ObjectDirectory = directory;
+			var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
 			if (useExistingIndex && File.Exists(Settings.IndexFilePath))
 			{
 				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.IndexFilePath) ?? HeaderIndex;
+				if (HeaderIndex.Keys.Except(allFiles).Any() || allFiles.Except(HeaderIndex.Keys).Any())
+				{
+					// index and current dir are different, need to recreate
+					CreateIndex(allFiles, progress);
+					SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex);
+				}
 			}
 			else
 			{
-				var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
 				CreateIndex(allFiles, progress);
 				SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex);
 			}

@@ -52,7 +52,7 @@ namespace OpenLocoToolGui
 			if (File.Exists(Settings.IndexFilePath))
 			{
 				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-				DeserialiseHeaderIndexFromFile();
+				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.IndexFilePath) ?? HeaderIndex;
 			}
 		}
 
@@ -83,14 +83,8 @@ namespace OpenLocoToolGui
 			File.WriteAllText(SettingsFile, text);
 		}
 
-		public void CreateIndex(string[] allFiles, IProgress<float> progress)
-		{
-			CreateIndexCore(allFiles, progress);
-			SerialiseHeaderIndexToFile();
-		}
-
 		// this method loads every single object entirely. it takes a long time to run
-		void CreateIndexCore(string[] allFiles, IProgress<float> progress)
+		void CreateIndex(string[] allFiles, IProgress<float> progress)
 		{
 			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
 			ConcurrentDictionary<string, ILocoObject> ccObjectCache = new(); // key is full path/filename
@@ -123,7 +117,7 @@ namespace OpenLocoToolGui
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 		}
 
-		public void LoadDirectory(string directory, IProgress<float> progress)
+		public void LoadDirectory(string directory, IProgress<float> progress, bool useExistingIndex)
 		{
 			if (!Directory.Exists(directory))
 			{
@@ -131,34 +125,35 @@ namespace OpenLocoToolGui
 			}
 
 			Settings.ObjectDirectory = directory;
-			if (File.Exists(Settings.IndexFilePath))
+			if (useExistingIndex && File.Exists(Settings.IndexFilePath))
 			{
-				DeserialiseHeaderIndexFromFile();
+				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.IndexFilePath) ?? HeaderIndex;
 			}
 			else
 			{
 				var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
 				CreateIndex(allFiles, progress);
+				SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex);
 			}
 
 			SaveSettings();
 		}
 
-		void SerialiseHeaderIndexToFile()
+		static void SerialiseHeaderIndexToFile(string filename, HeaderIndex headerIndex)
 		{
-			var json = JsonSerializer.Serialize(HeaderIndex, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, });
-			File.WriteAllText(Path.Combine(Settings.ObjectDirectory, Settings.IndexFilePath), json);
+			var json = JsonSerializer.Serialize(headerIndex, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, });
+			File.WriteAllText(filename, json);
 		}
 
-		void DeserialiseHeaderIndexFromFile()
+		static HeaderIndex? DeserialiseHeaderIndexFromFile(string filename)
 		{
-			if (!File.Exists(Settings.IndexFilePath))
+			if (!File.Exists(filename))
 			{
-				return;
+				return null;
 			}
 
-			var json = File.ReadAllText(Settings.IndexFilePath);
-			HeaderIndex = JsonSerializer.Deserialize<HeaderIndex>(json, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, }) ?? new();
+			var json = File.ReadAllText(filename);
+			return JsonSerializer.Deserialize<HeaderIndex>(json, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, }) ?? new();
 		}
 
 		public ILocoObject? LoadAndCacheObject(string filename)

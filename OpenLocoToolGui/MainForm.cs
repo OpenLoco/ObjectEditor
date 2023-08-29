@@ -65,7 +65,7 @@ namespace OpenLocoToolGui
 			InitCategoryTreeView(filter);
 		}
 
-		bool LoadDirectory(string directory)
+		bool LoadDirectory(string directory, bool useExistingIndex)
 		{
 			if (string.IsNullOrEmpty(directory))
 			{
@@ -81,7 +81,7 @@ namespace OpenLocoToolGui
 				// can probably use a task instead of a thread, but its good enough
 				var thread = new Thread(() =>
 				{
-					model.LoadDirectory(directory, progress);
+					model.LoadDirectory(directory, progress, useExistingIndex);
 					progressForm.CloseForm();
 				});
 				thread.Start();
@@ -175,7 +175,7 @@ namespace OpenLocoToolGui
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
-				if (LoadDirectory(objectDirBrowser.SelectedPath))
+				if (LoadDirectory(objectDirBrowser.SelectedPath, true))
 				{
 					InitUI();
 				}
@@ -184,7 +184,7 @@ namespace OpenLocoToolGui
 
 		private void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (LoadDirectory(model.Settings.ObjectDirectory))
+			if (LoadDirectory(model.Settings.ObjectDirectory, false))
 			{
 				InitUI();
 			}

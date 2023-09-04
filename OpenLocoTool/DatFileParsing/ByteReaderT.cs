@@ -21,16 +21,32 @@
 			=> BitConverter.ToInt32(data[offset..(offset + 4)]);
 
 		public static T Read<T>(ReadOnlySpan<byte> data, int offset) where T : struct
-			=> typeof(T) == typeof(uint8_t)
-				? (T)(dynamic)Read_uint8t(data, offset)
-				: throw new NotImplementedException("");
+		{
+			if (typeof(T) == typeof(uint8_t))
+				return (T)(dynamic)Read_uint8t(data, offset);
+			if (typeof(T) == typeof(int8_t))
+				return (T)(dynamic)Read_int8t(data, offset);
 
-		public static T[] Read_Array<T>(ReadOnlySpan<byte> data, int offset, int count) where T : struct
+			if (typeof(T) == typeof(uint16_t))
+				return (T)(dynamic)Read_uint16t(data, offset);
+			if (typeof(T) == typeof(int16_t))
+				return (T)(dynamic)Read_int16t(data, offset);
+
+			if (typeof(T) == typeof(uint32_t))
+				return (T)(dynamic)Read_uint32t(data, offset);
+			if (typeof(T) == typeof(int32_t))
+				return (T)(dynamic)Read_int32t(data, offset);
+
+			throw new NotImplementedException("");
+		}
+
+		public static T[] Read_Array<T>(ReadOnlySpan<byte> data, int count, int offset = 0) where T : struct
 		{
 			var arr = new T[count];
+			var typeSize = ByteReader.GetObjectSize(typeof(T));
 			for (var i = 0; i < count; i++)
 			{
-				arr[i] = Read<T>(data, offset);
+				arr[i] = Read<T>(data, offset + (i * typeSize));
 			}
 
 			return arr;

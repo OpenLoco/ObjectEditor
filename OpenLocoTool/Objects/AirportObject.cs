@@ -58,10 +58,11 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x10)] uint16_t AllowedPlaneTypes,
 		[property: LocoStructOffset(0x12)] uint8_t NumSpriteSets,
 		[property: LocoStructOffset(0x13)] uint8_t NumTiles,
-		//[property: LocoStructProperty(0x14)] const uint8_t* var_14,
-		//[property: LocoStructProperty(0x18)] const uint16_t* var_18,
-		//[property: LocoStructProperty(0x1C)] const uint8_t* var_1C[32],
-		//[property: LocoStructProperty(0x9C)] const uint32_t* var_9C,
+		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> var_14,
+		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint16_t> var_18,
+		//[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(32)] uint8_t[] var_1C, // due to problem in .net7 and lower, winforms cannot display this in property grid
+		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(32)] List<uint8_t> var_1C,
+		[property: LocoStructOffset(0x9C), LocoStructVariableLoad] List<uint32_t> var_9C,
 		[property: LocoStructOffset(0xA0)] uint32_t LargeTiles,
 		[property: LocoStructOffset(0xA4)] int8_t MinX,
 		[property: LocoStructOffset(0xA5)] int8_t MinY,
@@ -82,14 +83,20 @@ namespace OpenLocoTool.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// var_14
+			var_14.Clear();
+			var_14.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumSpriteSets * 1)], NumSpriteSets));
 			remainingData = remainingData[(NumSpriteSets * 1)..]; // uint8_t*
 
 			// var_18
+			var_18.Clear();
+			var_18.AddRange(ByteReaderT.Read_Array<uint16_t>(remainingData[..(NumSpriteSets * 2)], NumSpriteSets));
 			remainingData = remainingData[(NumSpriteSets * 2)..]; // uint16_t*
 
 			// numTiles
+			var_1C.Clear();
 			for (var i = 0; i < NumTiles; ++i)
 			{
+				var_1C.Add(ByteReaderT.Read_uint8t(remainingData[0..1], 0));
 				var ptr_1C = 0;
 				while (remainingData[ptr_1C++] != 0xFF) ;
 				remainingData = remainingData[ptr_1C..];
@@ -97,8 +104,10 @@ namespace OpenLocoTool.Objects
 
 			// var_9C
 			var ptr_9C = 0;
+			var_9C.Clear();
 			while (remainingData[ptr_9C] != 0xFF)
 			{
+				var_9C.Add(ByteReaderT.Read_uint32t(remainingData[ptr_9C..(ptr_9C + 4)], 0));
 				ptr_9C += 4;
 			}
 			ptr_9C++;

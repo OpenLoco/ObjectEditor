@@ -10,6 +10,7 @@ global using Speed32 = System.Int32;
 global using MicroZ = System.Byte;
 global using SoundObjectId = System.Byte;
 global using StringTable = System.Collections.Generic.Dictionary<(int, OpenLocoTool.DatFileParsing.LocoLanguageId), string>;
+global using ptr_t = System.UInt32;
 using System.ComponentModel;
 
 namespace OpenLocoTool.DatFileParsing

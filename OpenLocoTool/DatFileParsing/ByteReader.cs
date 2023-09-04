@@ -149,19 +149,27 @@
 					continue;
 				}
 
-				var variableAttr = AttributeHelper.Get<LocoStructVariableLoadAttribute>(p);
-				if (variableAttr != null)
-				{
-					args.Add(Activator.CreateInstance(p.PropertyType));
-					continue;
-				}
-
 				// special array handling
 				var arrLength = 0;
 				if (p.PropertyType.IsArray)
 				{
 					var arrLengthAttr = AttributeHelper.Get<LocoArrayLengthAttribute>(p) ?? throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {t} with property {p} didn't have LocoArrayLength attribute specified");
 					arrLength = arrLengthAttr.Length;
+				}
+
+				// ignore pointers/variable data - they'll be loaded later in Load()
+				var variableAttr = AttributeHelper.Get<LocoStructVariableLoadAttribute>(p);
+				if (variableAttr != null)
+				{
+					if (p.PropertyType.IsArray && p.PropertyType.GetElementType() == typeof(uint8_t))
+					{
+						args.Add(new uint8_t[arrLength]);
+					}
+					else
+					{
+						args.Add(Activator.CreateInstance(p.PropertyType));
+					}
+					continue;
 				}
 
 				args.Add(ReadT(data, p.PropertyType, offsetAttr.Offset, arrLength));

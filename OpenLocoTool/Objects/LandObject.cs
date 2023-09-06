@@ -35,7 +35,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1B)] uint8_t NumVariations,
 		[property: LocoStructOffset(0x1C)] uint8_t VariationLikelihood,
 		[property: LocoStructOffset(0x1D)] uint8_t pad_1D
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Land;
 		public static int StructSize => 0x1E;

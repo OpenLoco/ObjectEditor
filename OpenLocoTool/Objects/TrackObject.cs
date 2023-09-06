@@ -56,7 +56,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x2D), LocoArrayLength(7)] uint8_t[] Stations,       // 0x2D
 		[property: LocoStructOffset(0x34)] uint8_t DisplayOffset,
 		[property: LocoStructOffset(0x35)] uint8_t pad_35
-	) : ILocoStruct, ILocoStructExtraLoading
+	) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Track;
 		public static int StructSize => 0x36;

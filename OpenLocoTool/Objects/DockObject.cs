@@ -30,7 +30,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x20)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x22)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0x24)] Pos2 BoatPosition
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Dock;
 		public static int StructSize => 0x28;

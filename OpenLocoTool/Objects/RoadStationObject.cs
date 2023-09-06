@@ -34,7 +34,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x2C)] uint8_t CargoType,
 		[property: LocoStructOffset(0x2D)] uint8_t pad_2D
 		//[property: LocoStructProperty(0x2E)] uint8_t CargoOffsetBytes[4][4]
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.RoadStation;
 		public static int StructSize => 0x6E;

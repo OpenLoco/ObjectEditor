@@ -58,7 +58,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x2C)] uint16_t CompatibleTracks,
 		[property: LocoStructOffset(0x2E)] uint8_t TargetTownSize,
 		[property: LocoStructOffset(0x2F)] uint8_t pad_2F
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Road;
 		public static int StructSize => 0x30;

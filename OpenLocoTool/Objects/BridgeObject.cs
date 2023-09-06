@@ -6,7 +6,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x2C)]
-	public class BridgeObject : ILocoStruct, ILocoStructExtraLoading
+	public class BridgeObject : ILocoStruct, ILocoStructVariableData
 	{
 		public const ObjectType ObjType = ObjectType.Bridge;
 		public const int StructSize = 0x2C;

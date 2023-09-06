@@ -14,7 +14,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x08)] uint8_t var_08,
 		[property: LocoStructOffset(0x09), LocoArrayLength(4)] uint8_t[] var_09,
 		[property: LocoStructOffset(0x0D), LocoArrayLength(0x12 - 0xD)] uint8_t[] pad_0D
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Region;
 		public static int StructSize => 0x12;

@@ -16,10 +16,11 @@ namespace OpenLocoTool.DatFileParsing
 				throw new ArgumentNullException(nameof(locoObject));
 			}
 
-			Logger.Log(LogLevel.Info, $"[NOT IMPLEMENTED] Writing \"{locoObject.S5Header.Name}\" to {filepath}");
+			Logger.Log(LogLevel.Info, $"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
 
-			//var encoded = Encode(locoObject.ObjectHeader2.Encoding, locoObject.Object.Write());
-			//WriteToFile(filepath, locoObject.ObjectHeader.Write(), locoObject.ObjectHeader2.Write(), encoded);
+			var objBytes = ByteWriter.WriteLocoObject(locoObject);
+			var encoded = Encode(locoObject.ObjectHeader.Encoding, objBytes);
+			WriteToFile(filepath, locoObject.S5Header.Write(), locoObject.ObjectHeader.Write(), encoded);
 		}
 
 		public ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
@@ -29,7 +30,7 @@ namespace OpenLocoTool.DatFileParsing
 				case SawyerEncoding.uncompressed:
 					return data;
 				case SawyerEncoding.runLengthSingle:
-					return encodeRunLengthSingle(data);
+					return EncodeRunLengthSingle(data);
 				//case SawyerEncoding.runLengthMulti:
 				//	return encodeRunLengthMulti(decodeRunLengthSingle(data));
 				//case SawyerEncoding.rotate:
@@ -40,18 +41,18 @@ namespace OpenLocoTool.DatFileParsing
 			}
 		}
 
-		public static void WriteToFile(string filepath, ReadOnlySpan<byte> objectHeader1, ReadOnlySpan<byte> objectHeader2, ReadOnlySpan<byte> data)
+		public static void WriteToFile(string filepath, ReadOnlySpan<byte> s5Header, ReadOnlySpan<byte> objectHeader, ReadOnlySpan<byte> encodedData)
 		{
 			var stream = File.Create(filepath);
-			stream.Write(objectHeader1);
-			stream.Write(objectHeader2);
-			stream.Write(data);
+			stream.Write(s5Header);
+			stream.Write(objectHeader);
+			stream.Write(encodedData);
 			stream.Flush();
 			stream.Close();
 		}
 
 		// taken from openloco SawyerStreamReader::encodeRunLengthSingle
-		private static Span<byte> encodeRunLengthSingle(ReadOnlySpan<byte> data)
+		private static Span<byte> EncodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
 			var src = 0; // ptr

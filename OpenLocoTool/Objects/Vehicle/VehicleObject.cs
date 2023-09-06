@@ -6,7 +6,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x15E)]
-	public class VehicleObject : ILocoStruct, ILocoStructExtraLoading
+	public class VehicleObject : ILocoStruct, ILocoStructVariableData
 	{
 		public const ObjectType ObjType = ObjectType.Vehicle;
 		public const int StructSize = 0x15E;

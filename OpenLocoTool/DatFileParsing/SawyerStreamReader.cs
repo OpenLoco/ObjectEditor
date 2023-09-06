@@ -74,7 +74,7 @@ namespace OpenLocoTool.DatFileParsing
 			remainingData = remainingData[stringTableBytesRead..];
 
 			// special handling per object type
-			if (loadExtra && locoStruct is ILocoStructExtraLoading locoStructExtra)
+			if (loadExtra && locoStruct is ILocoStructVariableData locoStructExtra)
 			{
 				remainingData = locoStructExtra.Load(remainingData);
 			}

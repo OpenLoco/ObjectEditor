@@ -31,7 +31,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x13), LocoArrayLength(TrainSignalObject.ModsLength)] uint8_t[] Mods,
 		[property: LocoStructOffset(0x1A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x1C)] uint16_t ObsoleteYear
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.TrainSignal;
 

@@ -34,7 +34,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear
 		//[property: LocoStructProperty(0x2E)] const std::byte* CargoOffsetBytes[4][4]
 		//[property: LocoStructProperty(0x??)] const std::byte* var_6E[Var6ELength]
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.TrainStation;
 		public static int StructSize => 0xAE;

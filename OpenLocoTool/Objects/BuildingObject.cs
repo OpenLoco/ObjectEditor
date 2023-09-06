@@ -42,7 +42,7 @@ namespace OpenLocoTool.Objects
 			[property: LocoStructOffset(0xAC)] uint8_t var_AC,
 			[property: LocoStructOffset(0xAD)] uint8_t var_AD
 		//[property: LocoStructProperty(0xAE)] const uint8_t* var_AE[4] // 0xAE ->0xB2->0xB6->0xBA->0xBE (4 byte pointers)
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Building;
 		public static int StructSize => 0xBE;

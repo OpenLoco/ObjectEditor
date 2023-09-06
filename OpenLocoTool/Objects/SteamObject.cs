@@ -44,7 +44,7 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructProperty(0x1A)] const ImageAndHeight* FrameInfoType1,
 		[property: LocoStructOffset(0x1E)] uint8_t NumSoundEffects,
 		[property: LocoStructOffset(0x01F), LocoArrayLength(9)] SoundObjectId[] SoundEffects // size tbc
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Steam;
 		public static int StructSize => 0x28;

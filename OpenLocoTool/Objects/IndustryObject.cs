@@ -121,7 +121,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xF1)] uint8_t BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
 		[property: LocoStructOffset(0xF2)] uint8_t BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Industry;
 		public static int StructSize => 0xF4;

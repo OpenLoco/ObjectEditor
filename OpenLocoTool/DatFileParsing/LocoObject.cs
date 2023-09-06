@@ -10,9 +10,12 @@ namespace OpenLocoTool.DatFileParsing
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public interface ILocoStructExtraLoading
+	public interface ILocoStructVariableData
 	{
 		ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData);
+
+		ReadOnlySpan<byte> Save();
+
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

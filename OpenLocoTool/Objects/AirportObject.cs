@@ -75,7 +75,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xAE), LocoStructVariableLoad] List<MovementNode> MovementNodes,
 		[property: LocoStructOffset(0xB2), LocoStructVariableLoad] List<MovementEdge> MovementEdges,
 		[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
-	) : ILocoStruct, ILocoStructExtraLoading
+	) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Airport;
 		public static int StructSize => 0xBA;

@@ -21,7 +21,7 @@ namespace OpenLocoTool.Objects
 	public record TownNamesObject(
 		[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02), LocoArrayLength(6)] TownNamesUnk[] unks
-		) : ILocoStruct, ILocoStructExtraLoading
+		) : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.TownNames;
 		public static int StructSize => 0x1A;

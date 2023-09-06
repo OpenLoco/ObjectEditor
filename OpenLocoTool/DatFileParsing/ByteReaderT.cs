@@ -43,7 +43,7 @@
 		public static T[] Read_Array<T>(ReadOnlySpan<byte> data, int count, int offset = 0) where T : struct
 		{
 			var arr = new T[count];
-			var typeSize = ByteReader.GetObjectSize(typeof(T));
+			var typeSize = ByteHelpers.GetObjectSize(typeof(T));
 			for (var i = 0; i < count; i++)
 			{
 				arr[i] = Read<T>(data, offset + (i * typeSize));

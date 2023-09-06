@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using OpenLocoTool.Headers;
-using static OpenLocoTool.Headers.S5Header;
 
 namespace OpenLocoTool.DatFileParsing
 {

@@ -1,36 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using static OpenLocoTool.Headers.S5Header;
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public enum LocoLanguageId : uint8_t
-	{
-		english_uk,
-		english_us,
-		french,
-		german,
-		spanish,
-		italian,
-		dutch,
-		swedish,
-		japanese,
-		korean,
-		chinese_simplified,
-		chinese_traditional,
-		id_12,
-		portuguese,
-		blank = 254,
-		end = 255
-	};
-
 	public class SawyerStreamReader
 	{
 		private readonly ILogger Logger;
@@ -40,7 +17,7 @@ namespace OpenLocoTool.DatFileParsing
 
 		static uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
-			uint32_t computeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
+			uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
 			{
 				var checksum = seed;
 				foreach (var d in data)
@@ -52,10 +29,9 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			const uint32_t objectChecksumMagic = 0xF369A75B;
-			var checksum = computeChecksum(flagByte, objectChecksumMagic);
-
-			checksum = computeChecksum(name, checksum);
-			checksum = computeChecksum(data, checksum);
+			var checksum = ComputeChecksum(flagByte, objectChecksumMagic);
+			checksum = ComputeChecksum(name, checksum);
+			checksum = ComputeChecksum(data, checksum);
 			return checksum;
 		}
 
@@ -103,13 +79,6 @@ namespace OpenLocoTool.DatFileParsing
 				remainingData = locoStructExtra.Load(remainingData);
 			}
 
-			// g1/gfx table
-			//var hasNoGraphics = AttributeHelper.Get<LocoStructNoGraphicsAttribute>(locoStruct.GetType());
-			//if (hasNoGraphics != null)
-			//{
-			//	return new LocoObject(objectHeader, locoStruct, stringTable, new G1Header(0, 0), new List<G1Element32>());
-			//}
-			//else
 			//try
 			{
 				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
@@ -141,9 +110,11 @@ namespace OpenLocoTool.DatFileParsing
 			{
 				for (; ptr < data.Length && data[ptr] != 0xFF;)
 				{
-					var lang = (LocoLanguageId)data[ptr++];
+					var lang = (LanguageId)data[ptr++];
 					var ini = ptr;
-					while (data[ptr++] != '\0') ;
+
+					while (data[ptr++] != '\0');
+
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
 
 					if (strings.ContainsKey((i, lang)))
@@ -162,7 +133,7 @@ namespace OpenLocoTool.DatFileParsing
 			return (strings, ptr); // add one because we 'read' the 0xFF byte at the end (ie we skipped it)
 		}
 
-		(G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+		static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 		{
 			var g1Element32s = new List<G1Element32>();
 
@@ -290,7 +261,7 @@ namespace OpenLocoTool.DatFileParsing
 			if (!File.Exists(filename))
 			{
 				Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
-				return default;
+				throw new InvalidOperationException($"File doesn't exist: {filename}");
 			}
 
 			Logger.Log(LogLevel.Info, $"Loading {filename}");
@@ -302,7 +273,8 @@ namespace OpenLocoTool.DatFileParsing
 			if (!File.Exists(filename))
 			{
 				Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
-				return default;
+
+				throw new InvalidOperationException($"File doesn't exist: {filename}");
 			}
 
 			Logger.Log(LogLevel.Info, $"Loading header for {filename}");
@@ -369,11 +341,11 @@ namespace OpenLocoTool.DatFileParsing
 				case SawyerEncoding.uncompressed:
 					return data.ToArray();
 				case SawyerEncoding.runLengthSingle:
-					return decodeRunLengthSingle(data);
+					return DecodeRunLengthSingle(data);
 				case SawyerEncoding.runLengthMulti:
-					return decodeRunLengthMulti(decodeRunLengthSingle(data));
+					return DecodeRunLengthMulti(DecodeRunLengthSingle(data));
 				case SawyerEncoding.rotate:
-					return decodeRotate(data);
+					return DecodeRotate(data);
 				default:
 					Logger.Log(LogLevel.Error, "Unknown chunk encoding scheme");
 					throw new InvalidDataException("Unknown encoding");
@@ -381,7 +353,7 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
-		private static byte[] decodeRunLengthSingle(ReadOnlySpan<byte> data)
+		private static byte[] DecodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
 
@@ -430,7 +402,7 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthMulti
-		private static byte[] decodeRunLengthMulti(ReadOnlySpan<byte> data)
+		private static byte[] DecodeRunLengthMulti(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
 
@@ -480,14 +452,14 @@ namespace OpenLocoTool.DatFileParsing
 			return decodedSpan;
 		}
 
-		private byte[] decodeRotate(ReadOnlySpan<byte> data)
+		private byte[] DecodeRotate(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
 
 			byte code = 1;
 			for (var i = 0; i < data.Length; i++)
 			{
-				buffer.Add(ror(data[i], code));
+				buffer.Add(Ror(data[i], code));
 				code = (byte)((code + 2) & 7);
 			}
 
@@ -502,7 +474,7 @@ namespace OpenLocoTool.DatFileParsing
 			return decodedSpan;
 		}
 
-		private static byte ror(byte x, byte shift)
+		private static byte Ror(byte x, byte shift)
 		{
 			const byte byteDigits = 8;
 			return (byte)((x >> shift) | (x << (byteDigits - shift)));

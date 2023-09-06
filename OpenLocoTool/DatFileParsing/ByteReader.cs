@@ -1,82 +1,120 @@
 ﻿namespace OpenLocoTool.DatFileParsing
 {
-	public static class ByteReader
+
+	public static class ByteWriter
 	{
-		public static int GetObjectSize(Type type)
-		{
-			var size = 0;
-			if (type == typeof(byte) || type == typeof(sbyte))
-			{
-				size = 1;
-			}
-			else if (type == typeof(uint16_t) || type == typeof(int16_t))
-			{
-				size = 2;
-			}
-			else if (type == typeof(uint32_t) || type == typeof(int32_t))
-			{
-				size = 4;
-			}
-			else
-			{
-				var sizeAttr = AttributeHelper.Get<LocoStructSizeAttribute>(type) ?? throw new ArgumentOutOfRangeException(nameof(LocoStructSizeAttribute), $"type {type} didn't have LocoStructSizeAttribute");
-				size = sizeAttr.Size;
-			}
-
-			if (size == 0)
-			{
-				throw new ArgumentException("unknown primitive type with no size");
-			}
-
-			return size;
-		}
-
-		public static object ReadT(ReadOnlySpan<byte> data, Type t, int position, int arrLength = 0)
+		public static void WriteT(Span<byte> data, Type t, int offset, object val)
 		{
 			if (t == typeof(uint8_t))
 			{
-				return ByteReaderT.Read_uint8t(data, position);
+				ByteWriterT.Write(data, offset, (uint8_t)(dynamic)val);
 			}
 
 			if (t == typeof(int8_t))
 			{
-				return ByteReaderT.Read_int8t(data, position);
+				ByteWriterT.Write(data, offset, (int8_t)(dynamic)val);
 			}
 
 			if (t == typeof(uint16_t))
 			{
-				return ByteReaderT.Read_uint16t(data, position);
+				ByteWriterT.Write(data, offset, (uint16_t)(dynamic)val);
 			}
 
 			if (t == typeof(int16_t))
 			{
-				return ByteReaderT.Read_int16t(data, position);
+				ByteWriterT.Write(data, offset, (int16_t)(dynamic)val);
 			}
 
 			if (t == typeof(uint32_t))
 			{
-				return ByteReaderT.Read_uint32t(data, position);
+				ByteWriterT.Write(data, offset, (uint32_t)(dynamic)val);
 			}
 
 			if (t == typeof(int32_t))
 			{
-				return ByteReaderT.Read_int32t(data, position);
+				ByteWriterT.Write(data, offset, (int32_t)(dynamic)val);
 			}
 
 			if (t == typeof(string_id))
 			{
-				return ByteReaderT.Read_uint16t(data, position);
+				ByteWriterT.Write(data, offset, (string_id)(dynamic)val);
+			}
+
+			if (t.IsArray)
+			{
+				var elementType = t.GetElementType() ?? throw new NullReferenceException();
+				var size = ByteHelpers.GetObjectSize(elementType);
+				var arr = (Array)val;
+
+				for (var i = 0; i < arr.Length; i++)
+				{
+					var value = arr.GetValue(i) ?? throw new NullReferenceException();
+					WriteT(data, elementType, offset + (i * size), value);
+				}
+			}
+
+			if (t.IsEnum)
+			{
+				throw new NotImplementedException(t.ToString());
+			}
+
+			if (t.IsClass)
+			{
+				var objectSize = ByteHelpers.GetObjectSize(t);
+				//return WriteLocoStruct(data[offset..(offset + objectSize)], t);
+				throw new NotImplementedException(t.ToString());
+			}
+		}
+	}
+
+	public static class ByteReader
+	{
+		public static object ReadT(ReadOnlySpan<byte> data, Type t, int offset, int arrLength = 0)
+		{
+			if (t == typeof(uint8_t))
+			{
+				return ByteReaderT.Read_uint8t(data, offset);
+			}
+
+			if (t == typeof(int8_t))
+			{
+				return ByteReaderT.Read_int8t(data, offset);
+			}
+
+			if (t == typeof(uint16_t))
+			{
+				return ByteReaderT.Read_uint16t(data, offset);
+			}
+
+			if (t == typeof(int16_t))
+			{
+				return ByteReaderT.Read_int16t(data, offset);
+			}
+
+			if (t == typeof(uint32_t))
+			{
+				return ByteReaderT.Read_uint32t(data, offset);
+			}
+
+			if (t == typeof(int32_t))
+			{
+				return ByteReaderT.Read_int32t(data, offset);
+			}
+
+			if (t == typeof(string_id))
+			{
+				return ByteReaderT.Read_uint16t(data, offset);
 			}
 
 			if (t.IsArray)
 			{
 				var elementType = t.GetElementType();
-				var size = GetObjectSize(elementType);
+				var size = ByteHelpers.GetObjectSize(elementType);
 
 				var arr = Array.CreateInstance(elementType, arrLength);
 				for (var i = 0; i < arrLength; i++)
 				{
-					arr.SetValue(ReadT(data, elementType, position + (i * size)), i);
+					arr.SetValue(ReadT(data, elementType, offset + (i * size)), i); // why pass 'i' in here?
 				}
 
 				return arr;
@@ -85,7 +123,7 @@
 			if (t.IsEnum) // this is so big because we need special handling for 'flags' enums
 			{
 				var underlyingType = t.GetEnumUnderlyingType();
-				var underlyingValue = ReadT(data, underlyingType, position); // Read the underlying value
+				var underlyingValue = ReadT(data, underlyingType, offset);
 
 				if (t.IsDefined(typeof(FlagsAttribute), inherit: false))
 				{
@@ -113,8 +151,8 @@
 
 			if (t.IsClass)
 			{
-				var objectSize = GetObjectSize(t);
-				return ReadLocoStruct(data[position..(position + objectSize)], t);
+				var objectSize = ByteHelpers.GetObjectSize(t);
+				return ReadLocoStruct(data[offset..(offset + objectSize)], t);
 			}
 
 			throw new NotImplementedException(t.ToString());

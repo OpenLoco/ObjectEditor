@@ -43,5 +43,7 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 			return remainingData;
 		}
+
+		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
 	}
 }

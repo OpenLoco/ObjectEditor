@@ -15,7 +15,6 @@ namespace OpenLocoTool.DatFileParsing
 		ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData);
 
 		ReadOnlySpan<byte> Save();
-
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

@@ -166,6 +166,7 @@
 			// 
 			// flpImageTable
 			// 
+			flpImageTable.AutoScroll = true;
 			flpImageTable.BorderStyle = BorderStyle.FixedSingle;
 			flpImageTable.Dock = DockStyle.Fill;
 			flpImageTable.FlowDirection = FlowDirection.TopDown;

@@ -63,6 +63,8 @@ namespace OpenLocoTool.Objects
 		[LocoStructOffset(0x22)] public uint8_t RoadNumCompatible { get; set; }
 		[LocoStructOffset(0x23), LocoArrayLength(BridgeObject.RoadModsLength)] public uint8_t[] RoadMods { get; set; }
 		[LocoStructOffset(0x2A)] public uint16_t DesignedYear { get; set; }
+
+		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
 	}
 
 }

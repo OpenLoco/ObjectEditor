@@ -113,7 +113,7 @@ namespace OpenLocoTool.DatFileParsing
 					var lang = (LanguageId)data[ptr++];
 					var ini = ptr;
 
-					while (data[ptr++] != '\0');
+					while (data[ptr++] != '\0') ;
 
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
 
@@ -338,13 +338,13 @@ namespace OpenLocoTool.DatFileParsing
 		{
 			switch (encoding)
 			{
-				case SawyerEncoding.uncompressed:
+				case SawyerEncoding.Uncompressed:
 					return data.ToArray();
-				case SawyerEncoding.runLengthSingle:
+				case SawyerEncoding.RunLengthSingle:
 					return DecodeRunLengthSingle(data);
-				case SawyerEncoding.runLengthMulti:
+				case SawyerEncoding.RunLengthMulti:
 					return DecodeRunLengthMulti(DecodeRunLengthSingle(data));
-				case SawyerEncoding.rotate:
+				case SawyerEncoding.Rotate:
 					return DecodeRotate(data);
 				default:
 					Logger.Log(LogLevel.Error, "Unknown chunk encoding scheme");
@@ -368,9 +368,7 @@ namespace OpenLocoTool.DatFileParsing
 						throw new ArgumentException("Invalid RLE run");
 					}
 
-					var copyLen = 257 - rleCodeByte;
-					var copyByte = data[i];
-					buffer.AddRange(Enumerable.Repeat(copyByte, copyLen));
+					buffer.AddRange(Enumerable.Repeat(data[i], 257 - rleCodeByte));
 				}
 				else
 				{

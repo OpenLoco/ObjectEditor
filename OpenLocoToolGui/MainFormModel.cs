@@ -117,6 +117,11 @@ namespace OpenLocoToolGui
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 		}
 
+		public void SaveFile(string path, ILocoObject obj)
+		{
+			writer.Save(path, obj);
+		}
+
 		public void LoadDirectory(string directory, IProgress<float> progress, bool useExistingIndex)
 		{
 			if (!Directory.Exists(directory))
@@ -131,10 +136,12 @@ namespace OpenLocoToolGui
 				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.IndexFilePath) ?? HeaderIndex;
 				if (HeaderIndex.Keys.Except(allFiles).Any() || allFiles.Except(HeaderIndex.Keys).Any())
 				{
-					logger.Info("Selected directory had an index file but it was outdated; recreating");
+					logger.Warning("Selected directory had an index file but it was outdated; suggest recreating it when you have a moment");
+
+					//logger.Info("Selected directory had an index file but it was outdated; recreating");
 					// index and current dir are different, need to recreate
-					CreateIndex(allFiles, progress);
-					SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex);
+					//CreateIndex(allFiles, progress);
+					//SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex);
 				}
 			}
 			else

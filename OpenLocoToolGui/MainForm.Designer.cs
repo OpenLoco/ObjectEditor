@@ -259,22 +259,21 @@
 			// setObjectDirectoryToolStripMenuItem
 			// 
 			setObjectDirectoryToolStripMenuItem.Name = "setObjectDirectoryToolStripMenuItem";
-			setObjectDirectoryToolStripMenuItem.Size = new Size(179, 22);
+			setObjectDirectoryToolStripMenuItem.Size = new Size(180, 22);
 			setObjectDirectoryToolStripMenuItem.Text = "Set Object Directory";
 			setObjectDirectoryToolStripMenuItem.Click += setObjectDirectoryToolStripMenuItem_Click;
 			// 
 			// recreateIndexToolStripMenuItem
 			// 
 			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
-			recreateIndexToolStripMenuItem.Size = new Size(179, 22);
+			recreateIndexToolStripMenuItem.Size = new Size(180, 22);
 			recreateIndexToolStripMenuItem.Text = "Recreate Index";
 			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
 			// 
 			// saveChangesToolStripMenuItem
 			// 
-			saveChangesToolStripMenuItem.Enabled = false;
 			saveChangesToolStripMenuItem.Name = "saveChangesToolStripMenuItem";
-			saveChangesToolStripMenuItem.Size = new Size(179, 22);
+			saveChangesToolStripMenuItem.Size = new Size(180, 22);
 			saveChangesToolStripMenuItem.Text = "Save Changes (WIP)";
 			saveChangesToolStripMenuItem.Click += saveChangesToolStripMenuItem_Click;
 			// 

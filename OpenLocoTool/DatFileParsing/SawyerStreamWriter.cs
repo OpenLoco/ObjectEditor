@@ -19,7 +19,11 @@ namespace OpenLocoTool.DatFileParsing
 			Logger.Log(LogLevel.Info, $"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
 
 			var objBytes = ByteWriter.WriteLocoObject(locoObject);
-			var encoded = Encode(locoObject.ObjectHeader.Encoding, objBytes);
+
+			// hardcode uncompressed as encoding is currently not working
+			var encoded = Encode(SawyerEncoding.Uncompressed, objBytes);
+			//var encoded = Encode(locoObject.ObjectHeader.Encoding, objBytes);
+
 			WriteToFile(filepath, locoObject.S5Header.Write(), locoObject.ObjectHeader.Write(), encoded);
 		}
 
@@ -27,9 +31,9 @@ namespace OpenLocoTool.DatFileParsing
 		{
 			switch (encoding)
 			{
-				case SawyerEncoding.uncompressed:
+				case SawyerEncoding.Uncompressed:
 					return data;
-				case SawyerEncoding.runLengthSingle:
+				case SawyerEncoding.RunLengthSingle:
 					return EncodeRunLengthSingle(data);
 				//case SawyerEncoding.runLengthMulti:
 				//	return encodeRunLengthMulti(decodeRunLengthSingle(data));
@@ -52,6 +56,7 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		// taken from openloco SawyerStreamReader::encodeRunLengthSingle
+		// not sure why it doesn't work, but it doesn't work. gets the first 10 or so bytes correct for SIGC3.dat but then fails
 		private static Span<byte> EncodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
@@ -60,9 +65,9 @@ namespace OpenLocoTool.DatFileParsing
 			var srcEnd = data.Length;
 			var count = 0;
 
-			for (var i = 0; i < data.Length; ++i)
+			while (src < srcEnd - 1)
 			{
-				if (count != 0 && data[src] == data[src + 1] || count > 125)
+				if ((count != 0 && data[src] == data[src + 1]) || count > 125)
 				{
 					buffer.Add((byte)(count - 1));
 					buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
@@ -74,7 +79,7 @@ namespace OpenLocoTool.DatFileParsing
 				{
 					for (; count < 125 && src + count < srcEnd; count++)
 					{
-						if (data[src] == data[count])
+						if (data[src] != data[count])
 						{
 							break;
 						}

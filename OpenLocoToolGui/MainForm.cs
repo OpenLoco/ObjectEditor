@@ -151,7 +151,11 @@ namespace OpenLocoToolGui
 		// note: doesn't work atm
 		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var obj = (ILocoObject)pgObject.SelectedObject;
+			if (pgObject.SelectedObject is not ILocoObject obj)
+			{
+				return;
+			}
+
 			saveFileDialog1.InitialDirectory = model.Settings.ObjectDirectory;
 			saveFileDialog1.DefaultExt = "dat";
 			saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
@@ -161,7 +165,14 @@ namespace OpenLocoToolGui
 
 				try
 				{
-					//writer.Save(path, obj);
+					var exists = File.Exists(filename);
+					model.SaveFile(filename, obj);
+
+					if (!exists)
+					{
+						// we made a new file (as opposed to overwriting an existing one) so lets update the UI to show it
+						InitUI();
+					}
 					MessageBox.Show($"File \"{filename}\" saved successfully");
 				}
 				catch (Exception ex)

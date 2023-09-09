@@ -11,37 +11,37 @@ namespace OpenLocoTool.DatFileParsing
 				ByteWriterT.Write(data, offset, (uint8_t)(dynamic)val);
 			}
 
-			if (t == typeof(int8_t))
+			else if (t == typeof(int8_t))
 			{
 				ByteWriterT.Write(data, offset, (int8_t)(dynamic)val);
 			}
 
-			if (t == typeof(uint16_t))
+			else if (t == typeof(uint16_t))
 			{
 				ByteWriterT.Write(data, offset, (uint16_t)(dynamic)val);
 			}
 
-			if (t == typeof(int16_t))
+			else if (t == typeof(int16_t))
 			{
 				ByteWriterT.Write(data, offset, (int16_t)(dynamic)val);
 			}
 
-			if (t == typeof(uint32_t))
+			else if (t == typeof(uint32_t))
 			{
 				ByteWriterT.Write(data, offset, (uint32_t)(dynamic)val);
 			}
 
-			if (t == typeof(int32_t))
+			else if (t == typeof(int32_t))
 			{
 				ByteWriterT.Write(data, offset, (int32_t)(dynamic)val);
 			}
 
-			if (t == typeof(string_id))
+			else if (t == typeof(string_id))
 			{
 				ByteWriterT.Write(data, offset, (string_id)(dynamic)val);
 			}
 
-			if (t.IsArray)
+			else if (t.IsArray)
 			{
 				var elementType = t.GetElementType() ?? throw new NullReferenceException();
 				var size = ByteHelpers.GetObjectSize(elementType);
@@ -54,41 +54,53 @@ namespace OpenLocoTool.DatFileParsing
 				}
 			}
 
-			if (t.IsEnum)
+			else if (t.IsEnum)
 			{
-				throw new NotImplementedException(t.ToString());
+				var underlyingType = t.GetEnumUnderlyingType();
+				var underlyingValue = Convert.ChangeType(val, underlyingType);
+				WriteT(data, underlyingType, offset, underlyingValue);
 			}
 
-			if (t.IsClass)
+			else if (t.IsClass)
 			{
 				var objectSize = ByteHelpers.GetObjectSize(t);
-				//return WriteLocoStruct(data[offset..(offset + objectSize)], t);
-				throw new NotImplementedException(t.ToString());
+				var bytes = WriteLocoStruct((ILocoStruct)val);
+
+				if (bytes.Length != objectSize)
+				{
+					throw new InvalidOperationException();
+				}
+
+				bytes.CopyTo(data[offset..(offset + objectSize)]);
+			}
+			else
+			{
+				throw new InvalidOperationException("how");
 			}
 		}
 
 		public static ReadOnlySpan<byte> WriteLocoObject(ILocoObject obj)
 		{
-			var objBytes = Bytes(obj.Object);
+			var objBytes = WriteLocoStruct(obj.Object);
 			var ms = new MemoryStream();
 			ms.Write(objBytes);
 
-			var stringBytes = Bytes(obj.StringTable);
-			ms.Write(stringBytes);
+			//var stringBytes = Bytes(obj.StringTable);
+			//ms.Write(stringBytes);
 
 			if (obj.Object is ILocoStructVariableData objV)
 			{
-				var variableBytes = objV.Save();
-				ms.Write(variableBytes);
+				//var variableBytes = objV.Save();
+				//ms.Write(variableBytes);
 			}
 
 			if (obj.G1Header.NumEntries != 0 && obj.G1Elements.Count != 0)
 			{
-				var g1Bytes = Bytes(obj.G1Header);
-				ms.Write(g1Bytes);
+				//var g1Bytes = Bytes(obj.G1Header);
+				//ms.Write(g1Bytes);
 
-				var g1ElementsBytes = Bytes(obj.G1Elements);
-				ms.Write(g1ElementsBytes);
+				//var g1ElementsBytes = Bytes(obj.G1Elements);
+				//ms.Write(g1ElementsBytes);
 			}
 
 			ms.Flush();
@@ -103,6 +115,47 @@ namespace OpenLocoTool.DatFileParsing
 			// we need to implement Save() for image table and G1 data
 			throw new NotImplementedException();
 			return new byte[1];
+		}
+
+		public static ReadOnlySpan<byte> WriteLocoStruct(ILocoStruct obj)
+		{
+			if (obj == null)
+			{
+				throw new NullReferenceException();
+			}
+
+			var t = obj.GetType();
+			var objSize = ByteHelpers.GetObjectSize(t);
+			var buf = new byte[objSize];
+			var span = buf.AsSpan();
+
+			foreach (var p in t.GetProperties())
+			{
+				// ignore non-loco properties on the records
+				var offsetAttr = AttributeHelper.Get<LocoStructOffsetAttribute>(p);
+				if (offsetAttr == null)
+				{
+					continue;
+				}
+
+				// special array handling
+				var arrLength = 0;
+				if (p.PropertyType.IsArray)
+				{
+					var arrLengthAttr = AttributeHelper.Get<LocoArrayLengthAttribute>(p) ?? throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {t} with property {p} didn't have LocoArrayLength attribute specified");
+					arrLength = arrLengthAttr.Length;
+				}
+
+				var propVal = p.GetValue(obj);
+				if (propVal == null)
+				{
+					throw new NullReferenceException();
+				}
+
+				WriteT(buf, p.PropertyType, offsetAttr.Offset, propVal);
+			}
+
+			return buf;
 		}
 	}
 }

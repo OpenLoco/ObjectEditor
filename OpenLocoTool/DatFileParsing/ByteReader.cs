@@ -138,7 +138,6 @@
 			return (ILocoStruct?)Activator.CreateInstance(t, args.ToArray()) ?? throw new InvalidDataException("couldn't parse");
 		}
 
-
 		public static IList<ILocoStruct> ReadLocoStructArray(ReadOnlySpan<byte> data, Type t, int count, int structSize) // could get struct size from attribute, but easier just to pass in
 		{
 			// cannot use ReadOnlySpan with yield return :|

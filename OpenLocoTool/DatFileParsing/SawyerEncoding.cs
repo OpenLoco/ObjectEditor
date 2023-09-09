@@ -1,10 +1,10 @@
 ﻿namespace OpenLocoTool.DatFileParsing
 {
-    public enum SawyerEncoding : byte
-    {
-        uncompressed = 0,
-        runLengthSingle = 1,
-        runLengthMulti = 2,
-        rotate = 3,
-    }
+	public enum SawyerEncoding : byte
+	{
+		Uncompressed = 0,
+		RunLengthSingle = 1,
+		RunLengthMulti = 2,
+		Rotate = 3,
+	}
 }

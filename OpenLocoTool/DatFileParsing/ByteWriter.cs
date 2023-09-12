@@ -79,36 +79,6 @@ namespace OpenLocoTool.DatFileParsing
 			}
 		}
 
-		public static ReadOnlySpan<byte> WriteLocoObject(ILocoObject obj)
-		{
-			var objBytes = WriteLocoStruct(obj.Object);
-			var ms = new MemoryStream();
-			ms.Write(objBytes);
-
-			//var stringBytes = Bytes(obj.StringTable);
-			//ms.Write(stringBytes);
-
-			if (obj.Object is ILocoStructVariableData objV)
-			{
-				//var variableBytes = objV.Save();
-				//ms.Write(variableBytes);
-			}
-
-			if (obj.G1Header.NumEntries != 0 && obj.G1Elements.Count != 0)
-			{
-				//var g1Bytes = Bytes(obj.G1Header);
-				//ms.Write(g1Bytes);
-
-				//var g1ElementsBytes = Bytes(obj.G1Elements);
-				//ms.Write(g1ElementsBytes);
-			}
-
-			ms.Flush();
-			ms.Close();
-
-			return ms.ToArray();
-		}
-
 		public static ReadOnlySpan<byte> Bytes(object obj)
 		{
 			// todo: this just a skeleton placeholder method

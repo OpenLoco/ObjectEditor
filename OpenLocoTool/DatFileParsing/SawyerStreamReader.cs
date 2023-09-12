@@ -66,7 +66,8 @@ namespace OpenLocoTool.DatFileParsing
 
 			if (checksum != s5Header.Checksum)
 			{
-				throw new ArgumentException($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
+				//throw new ArgumentException($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
+				Logger.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
 			}
 
 			// every object has a string table
@@ -127,10 +128,10 @@ namespace OpenLocoTool.DatFileParsing
 					}
 				}
 
-				ptr++;
+				ptr++; // add one because we skipped the 0xFF byte at the end
 			}
 
-			return (strings, ptr); // add one because we 'read' the 0xFF byte at the end (ie we skipped it)
+			return (strings, ptr);
 		}
 
 		static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)

@@ -93,24 +93,33 @@ namespace OpenLocoToolGui
 			var count = 0;
 			Parallel.ForEach(allFiles, (file) =>
 			{
-				var locoObject = reader.LoadFull(file);
-				if (!ccObjectCache.TryAdd(file, locoObject))
+				try
 				{
-					logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
+					var locoObject = reader.LoadFull(file);
+					if (!ccObjectCache.TryAdd(file, locoObject))
+					{
+						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
+					}
+
+					VehicleType? veh = null;
+					if (locoObject.Object is VehicleObject vo)
+						veh = vo.Type;
+
+					var indexObjectHeader = new IndexObjectHeader(locoObject.S5Header.Name, locoObject.S5Header.ObjectType, veh);
+					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
+					{
+						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
+					}
 				}
-
-				VehicleType? veh = null;
-				if (locoObject.Object is VehicleObject vo)
-					veh = vo.Type;
-
-				var indexObjectHeader = new IndexObjectHeader(locoObject.S5Header.Name, locoObject.S5Header.ObjectType, veh);
-				if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
+				catch (Exception ex)
 				{
-					logger.Warning($"Didn't add file {file} to index - already exists (how???)");
+					logger.Error(ex);
 				}
-
-				Interlocked.Increment(ref count);
-				progress.Report(count / total);
+				finally
+				{
+					Interlocked.Increment(ref count);
+					progress.Report(count / total);
+				}
 			});
 
 			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

@@ -1,8 +1,10 @@
-﻿namespace OpenLocoTool
+﻿using System.Collections.Generic;
+
+namespace OpenLocoTool
 {
 	public static class OriginalObjects
 	{
-		public static readonly string[] Names = new string[]
+		public static readonly HashSet<string> Names = new HashSet<string>
 		{
 			"114",
 			"142",

@@ -2,110 +2,11 @@ using NUnit.Framework;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
-using OpenLocoToolCommon;
 
 namespace OpenLocoToolTests
 {
 	[TestFixture]
-	public class Tests
-	{
-		[Test]
-		public void WriteLocoStruct()
-		{
-			//const string path = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\STEAM.dat";
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SIGC3.DAT";
-			var fileSize = new FileInfo(testFile).Length;
-			var logger = new Logger();
-			var ssr = new SawyerStreamReader(logger);
-			var ssw = new SawyerStreamWriter(logger);
-			var loaded = ssr.LoadFull(testFile);
-
-			// load data in raw bytes for test
-			ReadOnlySpan<byte> fullData = ssr.LoadBytesFromFile(testFile);
-
-			// make openlocotool useful objects
-			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
-			var remainingData = fullData[S5Header.StructLength..];
-
-			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
-			remainingData = remainingData[ObjectHeader.StructLength..];
-
-			var originalEncodedData = remainingData.ToArray();
-			var decodedData = ssr.Decode(objectHeader.Encoding, originalEncodedData);
-			remainingData = decodedData;
-
-			var originalObjectData = decodedData[..TrainSignalObject.StructSize];
-
-			var bytes = ByteWriter.WriteLocoStruct(loaded.Object);
-			CollectionAssert.AreEqual(originalObjectData, bytes.ToArray());
-
-			//var encodedData = ssw.Encode(objectHeader.Encoding, decodedData).ToArray();
-		}
-
-		//[Test]
-		//public void LoadSaveIdempotent()
-		//{
-		//	//const string path = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\STEAM.dat";
-		//	const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SIGC3.DAT";
-		//	var fileSize = new FileInfo(testFile).Length;
-		//	var logger = new Logger();
-		//	var ssr = new SawyerStreamReader(logger);
-		//	var ssw = new SawyerStreamWriter(logger);
-		//	var loaded = ssr.LoadFull(testFile);
-
-		//	var tempFile = Path.GetTempFileName();
-		//	ssw.Save(tempFile, loaded);
-
-		//	var originalBytes = File.ReadAllBytes(testFile);
-		//	var savedBytes = File.ReadAllBytes(tempFile);
-
-		//	AssertBytesIdentical(originalBytes, savedBytes);
-		//}
-
-		//void AssertBytesIdentical(byte[] a, byte[] b)
-		//{
-		//	Assert.AreEqual(a.Length, b.Length);
-
-		//	Assert.Multiple(() =>
-		//	{
-		//		var count = 0;
-		//		foreach ((byte aa, byte bb) in a.Zip(b))
-		//		{
-		//			Assert.AreEqual(aa, bb, $"[{count++}] [{aa}] [{bb}]");
-		//		}
-		//	});
-		//}
-
-		//[Test]
-		//public void DecodeEncodeIdempotent()
-		//{
-		//	//const string path = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\STEAM.dat";
-		//	const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SIGC3.DAT";
-		//	var fileSize = new FileInfo(testFile).Length;
-		//	var logger = new Logger();
-		//	var ssr = new SawyerStreamReader(logger);
-		//	var ssw = new SawyerStreamWriter(logger);
-
-		//	ReadOnlySpan<byte> fullData = ssr.LoadBytesFromFile(testFile);
-
-		//	// make openlocotool useful objects
-		//	var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
-		//	var remainingData = fullData[S5Header.StructLength..];
-
-		//	var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
-		//	remainingData = remainingData[ObjectHeader.StructLength..];
-
-		//	var originalEncodedData = remainingData.ToArray();
-		//	var decodedData = ssr.Decode(objectHeader.Encoding, originalEncodedData);
-		//	remainingData = decodedData;
-
-		//	var encodedData = ssw.Encode(objectHeader.Encoding, decodedData).ToArray();
-		//	CollectionAssert.AreEqual(originalEncodedData, encodedData);
-		//}
-	}
-
-	[TestFixture]
-	public class ObjectTests
+	public class ObjectLoadingTests
 	{
 		static ILocoObject LoadObject(string filename)
 		{
@@ -122,22 +23,60 @@ namespace OpenLocoToolTests
 		T LoadObject<T>(string filename)
 			=> (T)LoadObject(filename).Object;
 
-		[Test]
-		public void DebuggingLoadObject()
-		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\260RENFE.DAT";
-			var obj = LoadObject<VehicleObject>(testFile);
-			Assert.Multiple(() =>
+		//[Test]
+		//public void DebuggingLoadObject()
+		//{
+		//	const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\260RENFE.DAT";
+		//	var obj = LoadObject<VehicleObject>(testFile);
+		//	Assert.Multiple(() =>
 
-			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-			});
-		}
+		//	{
+		//		Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+		//	});
+		//}
 
 		[Test]
 		public void LoadAirportObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\AIRPORT1.DAT";
+			var obj = LoadObject<AirportObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.BuildCostFactor, Is.EqualTo(256), nameof(obj.BuildCostFactor));
+				Assert.That(obj.SellCostFactor, Is.EqualTo(-192), nameof(obj.SellCostFactor));
+				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
+				Assert.That(obj.var_07, Is.EqualTo(0), nameof(obj.var_07));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_0C, Is.EqualTo(0), nameof(obj.var_0C));
+				Assert.That(obj.AllowedPlaneTypes, Is.EqualTo(24), nameof(obj.AllowedPlaneTypes));
+				Assert.That(obj.NumSpriteSets, Is.EqualTo(94), nameof(obj.NumSpriteSets));
+				Assert.That(obj.NumTiles, Is.EqualTo(23), nameof(obj.NumTiles));
+
+				//Assert.That(obj.var_14, Is.EqualTo(0), nameof(obj.var_14));
+				//Assert.That(obj.var_18, Is.EqualTo(0), nameof(obj.var_18));
+				//Assert.That(obj.var_1C, Is.EqualTo(0), nameof(obj.var_1C));
+				//Assert.That(obj.var_9C, Is.EqualTo(0), nameof(obj.var_9C));
+
+				Assert.That(obj.LargeTiles, Is.EqualTo(917759), nameof(obj.LargeTiles));
+				Assert.That(obj.MinX, Is.EqualTo(-4), nameof(obj.MinX));
+				Assert.That(obj.MinY, Is.EqualTo(-4), nameof(obj.MinY));
+				Assert.That(obj.MaxX, Is.EqualTo(5), nameof(obj.MaxX));
+				Assert.That(obj.MaxY, Is.EqualTo(5), nameof(obj.MaxY));
+				Assert.That(obj.DesignedYear, Is.EqualTo(1970), nameof(obj.DesignedYear));
+				Assert.That(obj.ObsoleteYear, Is.EqualTo(65535), nameof(obj.ObsoleteYear));
+				Assert.That(obj.NumMovementNodes, Is.EqualTo(26), nameof(obj.NumMovementNodes));
+				Assert.That(obj.NumMovementEdges, Is.EqualTo(30), nameof(obj.NumMovementEdges));
+
+				//Assert.That(obj.MovementNodes, Is.EqualTo(0), nameof(obj.MovementNodes));
+				//Assert.That(obj.MovementEdges, Is.EqualTo(0), nameof(obj.MovementEdges));
+
+				Assert.That(obj.pad_B6[0], Is.EqualTo(0), nameof(obj.pad_B6) + "[0]");
+				Assert.That(obj.pad_B6[1], Is.EqualTo(19), nameof(obj.pad_B6) + "[1]");
+				Assert.That(obj.pad_B6[2], Is.EqualTo(0), nameof(obj.pad_B6) + "[2]");
+				Assert.That(obj.pad_B6[3], Is.EqualTo(0), nameof(obj.pad_B6) + "[3]");
+			});
 		}
 
 		[Test]

@@ -1,4 +1,5 @@
 using NAudio.Wave;
+using OpenLocoTool;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -91,16 +92,41 @@ namespace OpenLocoToolGui
 			return true;
 		}
 
+		Bitmap MakeOriginalLocoIcon(bool isOriginal)
+		{
+			var bitmap = new Bitmap(16, 16);
+			if (isOriginal)
+			{
+				var g = Graphics.FromImage(bitmap);
+				g.FillEllipse(Brushes.MediumSpringGreen, new Rectangle(0, 0, bitmap.Width, bitmap.Height));
+				g.Dispose();
+			}
+			return bitmap;
+		}
+
+		ImageList MakeImageList()
+		{
+			var imageList = new ImageList();
+			var blankImage = MakeOriginalLocoIcon(false);
+			var originalImage = MakeOriginalLocoIcon(true);
+			imageList.Images.Add(blankImage);
+			imageList.Images.Add(originalImage);
+			return imageList;
+		}
+
 		void InitFileTreeView(string fileFilter = "")
 		{
 			tvFileTree.SuspendLayout();
 			tvFileTree.Nodes.Clear();
 			var filteredFiles = model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
+			tvFileTree.ImageList = MakeImageList();
+
 			foreach (var obj in filteredFiles)
 			{
 				var relative = Path.GetRelativePath(model.Settings.ObjectDirectory, obj.Key);
-				tvFileTree.Nodes.Add(obj.Key, relative);
+				var imageIndex = OriginalObjects.Names.Contains(obj.Value.Name.Trim()) ? 1 : 0;
+				var node = tvFileTree.Nodes.Add(obj.Key, relative, imageIndex, imageIndex);
 			}
 
 			tvFileTree.Sort();
@@ -114,6 +140,8 @@ namespace OpenLocoToolGui
 
 			var filteredFiles = model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
+			tvObjType.ImageList = MakeImageList();
+
 			var nodesToAdd = new List<TreeNode>();
 			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
 			{
@@ -122,7 +150,8 @@ namespace OpenLocoToolGui
 				{
 					foreach (var obj in group)
 					{
-						typeNode.Nodes.Add(obj.Key, obj.Value.Name);
+						var imageIndex = OriginalObjects.Names.Contains(obj.Value.Name.Trim()) ? 1 : 0;
+						typeNode.Nodes.Add(obj.Key, obj.Value.Name, imageIndex, imageIndex);
 					}
 				}
 				else
@@ -133,7 +162,8 @@ namespace OpenLocoToolGui
 						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
 						foreach (var veh in vehicleType)
 						{
-							vehicleTypeNode.Nodes.Add(veh.Key, veh.Value.Name);
+							var imageIndex = OriginalObjects.Names.Contains(veh.Value.Name.Trim()) ? 1 : 0;
+							vehicleTypeNode.Nodes.Add(veh.Key, veh.Value.Name, imageIndex, imageIndex);
 						}
 						typeNode.Nodes.Add(vehicleTypeNode);
 					}

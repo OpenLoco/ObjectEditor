@@ -18,13 +18,43 @@ namespace OpenLocoTool.DatFileParsing
 
 			Logger.Log(LogLevel.Info, $"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
 
-			var objBytes = ByteWriter.WriteLocoObject(locoObject);
+			var objBytes = WriteLocoObject(locoObject);
 
 			// hardcode uncompressed as encoding is currently not working
 			var encoded = Encode(SawyerEncoding.Uncompressed, objBytes);
 			//var encoded = Encode(locoObject.ObjectHeader.Encoding, objBytes);
 
 			WriteToFile(filepath, locoObject.S5Header.Write(), locoObject.ObjectHeader.Write(), encoded);
+		}
+
+		public static ReadOnlySpan<byte> WriteLocoObject(ILocoObject obj)
+		{
+			var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
+			var ms = new MemoryStream();
+			ms.Write(objBytes);
+
+			//var stringBytes = Bytes(obj.StringTable);
+			//ms.Write(stringBytes);
+
+			if (obj.Object is ILocoStructVariableData objV)
+			{
+				//var variableBytes = objV.Save();
+				//ms.Write(variableBytes);
+			}
+
+			if (obj.G1Header.NumEntries != 0 && obj.G1Elements.Count != 0)
+			{
+				//var g1Bytes = Bytes(obj.G1Header);
+				//ms.Write(g1Bytes);
+
+				//var g1ElementsBytes = Bytes(obj.G1Elements);
+				//ms.Write(g1ElementsBytes);
+			}
+
+			ms.Flush();
+			ms.Close();
+
+			return ms.ToArray();
 		}
 
 		public ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)

@@ -10,5 +10,7 @@
 		void Info(string message) => Log(LogLevel.Info, message);
 		void Warning(string message) => Log(LogLevel.Warning, message);
 		void Error(string message) => Log(LogLevel.Error, message);
+
+		void Error(Exception ex) => Log(LogLevel.Error, ex.Message);
 	}
 }

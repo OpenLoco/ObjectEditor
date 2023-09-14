@@ -10,7 +10,7 @@ namespace OpenLocoTool.Objects
 		None = 0,
 		LargeTile = 1 << 0, // 2x2 tile
 		MiscBuilding = 1 << 1,
-		Undestructible = 1 << 2,
+		Indestructible = 1 << 2,
 		IsHeadquarters = 1 << 3,
 	};
 

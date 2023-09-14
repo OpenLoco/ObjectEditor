@@ -116,13 +116,66 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadBuildingObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\HQ1.DAT";
+			var obj = LoadObject<BuildingObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_06, Is.EqualTo(16), nameof(obj.var_06));
+				Assert.That(obj.NumVariations, Is.EqualTo(5), nameof(obj.NumVariations));
+				CollectionAssert.AreEqual(obj.VariationHeights, Array.CreateInstance(typeof(byte), 4), nameof(obj.VariationHeights));
+				CollectionAssert.AreEqual(obj.var_0C, Array.CreateInstance(typeof(byte), 2), nameof(obj.var_0C));
+				Assert.That(obj.Colours, Is.EqualTo(0), nameof(obj.Colours));
+				Assert.That(obj.DesignedYear, Is.EqualTo(0), nameof(obj.DesignedYear));
+				Assert.That(obj.ObsoleteYear, Is.EqualTo(65535), nameof(obj.ObsoleteYear));
+				Assert.That(obj.Flags, Is.EqualTo(BuildingObjectFlags.LargeTile | BuildingObjectFlags.MiscBuilding | BuildingObjectFlags.IsHeadquarters), nameof(obj.Flags));
+				Assert.That(obj.ClearCostIndex, Is.EqualTo(1), nameof(obj.ClearCostIndex));
+				Assert.That(obj.ClearCostFactor, Is.EqualTo(0), nameof(obj.ClearCostFactor));
+				Assert.That(obj.ScaffoldingSegmentType, Is.EqualTo(1), nameof(obj.ScaffoldingSegmentType));
+				Assert.That(obj.ScaffoldingColour, Is.EqualTo(Colour.yellow), nameof(obj.ScaffoldingColour));
+
+				Assert.That(obj.pad_9E[0], Is.EqualTo(3), nameof(obj.pad_9E) + "[0]");
+				Assert.That(obj.pad_9E[1], Is.EqualTo(3), nameof(obj.pad_9E) + "[1]");
+
+				CollectionAssert.AreEqual(obj.ProducedQuantity, Array.CreateInstance(typeof(byte), 2), nameof(obj.ProducedQuantity));
+				CollectionAssert.AreEqual(obj.ProducedCargoType, Array.CreateInstance(typeof(byte), 2), nameof(obj.ProducedCargoType));
+				CollectionAssert.AreEqual(obj.var_A6, Array.CreateInstance(typeof(byte), 2), nameof(obj.var_A6));
+				CollectionAssert.AreEqual(obj.var_A8, Array.CreateInstance(typeof(byte), 2), nameof(obj.var_A8));
+				CollectionAssert.AreEqual(obj.var_A4, Array.CreateInstance(typeof(byte), 2), nameof(obj.var_A4));
+				Assert.That(obj.DemolishRatingReduction, Is.EqualTo(0), nameof(obj.DemolishRatingReduction));
+				Assert.That(obj.var_AC, Is.EqualTo(255), nameof(obj.var_AC));
+				Assert.That(obj.var_AD, Is.EqualTo(0), nameof(obj.var_AD));
+			});
 		}
 
 		[Test]
 		public void LoadCargoObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\CHEMICAL.DAT";
+			var obj = LoadObject<CargoObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.var_02, Is.EqualTo(256), nameof(obj.var_02));
+				Assert.That(obj.var_04, Is.EqualTo(64), nameof(obj.var_04));
+				Assert.That(obj.UnitsAndCargoName, Is.EqualTo(0), nameof(obj.UnitsAndCargoName));
+				Assert.That(obj.UnitNameSingular, Is.EqualTo(0), nameof(obj.UnitNameSingular));
+				Assert.That(obj.UnitInlineSprite, Is.EqualTo(0), nameof(obj.UnitInlineSprite));
+				Assert.That(obj.MatchFlags, Is.EqualTo(4), nameof(obj.MatchFlags));
+				Assert.That(obj.Flags, Is.EqualTo(CargoObjectFlags.Delivering), nameof(obj.Flags));
+				Assert.That(obj.NumPlatformVariations, Is.EqualTo(1), nameof(obj.NumPlatformVariations));
+				Assert.That(obj.var_14, Is.EqualTo(4), nameof(obj.var_14));
+				Assert.That(obj.PremiumDays, Is.EqualTo(10), nameof(obj.PremiumDays));
+				Assert.That(obj.MaxNonPremiumDays, Is.EqualTo(30), nameof(obj.MaxNonPremiumDays));
+				Assert.That(obj.MaxPremiumRate, Is.EqualTo(128), nameof(obj.MaxPremiumRate));
+				Assert.That(obj.PenaltyRate, Is.EqualTo(256), nameof(obj.PenaltyRate));
+				Assert.That(obj.PaymentFactor, Is.EqualTo(62), nameof(obj.PaymentFactor));
+				Assert.That(obj.PaymentIndex, Is.EqualTo(10), nameof(obj.PaymentIndex));
+				Assert.That(obj.UnitSize, Is.EqualTo(10), nameof(obj.UnitSize));
+			});
 		}
 
 		[Test]

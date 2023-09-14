@@ -82,21 +82,34 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadBridgeObject()
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\AIRPORT1.DAT";
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\BRDGBRCK.DAT";
 			var obj = LoadObject<BridgeObject>(testFile);
 
 			Assert.Multiple(() =>
 			{
 				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.BuildCostFactor, Is.EqualTo(256), nameof(obj.BuildCostFactor));
-				Assert.That(obj.SellCostFactor, Is.EqualTo(-192), nameof(obj.SellCostFactor));
+				Assert.That(obj.NoRoof, Is.EqualTo(0), nameof(obj.NoRoof));
+
+				Assert.That(obj.pad_03[0], Is.EqualTo(0), nameof(obj.pad_03) + "[0]");
+				Assert.That(obj.pad_03[1], Is.EqualTo(0), nameof(obj.pad_03) + "[1]");
+				Assert.That(obj.pad_03[2], Is.EqualTo(0), nameof(obj.pad_03) + "[2]");
+
+				Assert.That(obj.var_06, Is.EqualTo(16), nameof(obj.var_06));
+				Assert.That(obj.SpanLength, Is.EqualTo(1), nameof(obj.SpanLength));
+				Assert.That(obj.PillarSpacing, Is.EqualTo(255), nameof(obj.PillarSpacing));
+				Assert.That(obj.MaxSpeed, Is.EqualTo(60), nameof(obj.MaxSpeed));
+				Assert.That(obj.MaxHeight, Is.EqualTo(10), nameof(obj.MaxHeight));
 				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
-				Assert.That(obj.var_07, Is.EqualTo(0), nameof(obj.var_07));
+				Assert.That(obj.BaseCostFactor, Is.EqualTo(16), nameof(obj.BaseCostFactor));
+				Assert.That(obj.HeightCostFactor, Is.EqualTo(8), nameof(obj.HeightCostFactor));
+				Assert.That(obj.SellCostFactor, Is.EqualTo(-12), nameof(obj.SellCostFactor));
+				Assert.That(obj.DisabledTrackCfg, Is.EqualTo(0), nameof(obj.DisabledTrackCfg));
 				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
-				Assert.That(obj.var_0C, Is.EqualTo(0), nameof(obj.var_0C));
-				Assert.That(obj.AllowedPlaneTypes, Is.EqualTo(24), nameof(obj.AllowedPlaneTypes));
-				Assert.That(obj.NumSpriteSets, Is.EqualTo(94), nameof(obj.NumSpriteSets));
-				Assert.That(obj.NumTiles, Is.EqualTo(23), nameof(obj.NumTiles));
+				Assert.That(obj.TrackNumCompatible, Is.EqualTo(0), nameof(obj.TrackNumCompatible));
+				CollectionAssert.AreEqual(obj.TrackMods, Array.CreateInstance(typeof(byte), 7), nameof(obj.TrackMods));
+				Assert.That(obj.RoadNumCompatible, Is.EqualTo(0), nameof(obj.RoadNumCompatible));
+				CollectionAssert.AreEqual(obj.RoadMods, Array.CreateInstance(typeof(byte), 7), nameof(obj.RoadMods));
+				Assert.That(obj.DesignedYear, Is.EqualTo(0), nameof(obj.DesignedYear));
 			});
 		}
 
@@ -312,13 +325,45 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadTreeObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\BEECH.DAT";
+			var obj = LoadObject<TreeObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.var_02, Is.EqualTo(40), nameof(obj.var_02));
+				Assert.That(obj.Height, Is.EqualTo(131), nameof(obj.Height));
+				Assert.That(obj.var_04, Is.EqualTo(27), nameof(obj.var_04));
+				Assert.That(obj.var_05, Is.EqualTo(83), nameof(obj.var_05));
+				Assert.That(obj.NumRotations, Is.EqualTo(1), nameof(obj.NumRotations));
+				Assert.That(obj.Growth, Is.EqualTo(4), nameof(obj.Growth));
+				Assert.That(obj.Flags, Is.EqualTo(TreeObjectFlags.HighAltitude | TreeObjectFlags.RequiresWater | TreeObjectFlags.HasShadow), nameof(obj.Flags));
+				CollectionAssert.AreEqual(obj.Sprites, Array.CreateInstance(typeof(byte), 6), nameof(obj.Sprites));
+				CollectionAssert.AreEqual(obj.SnowSprites, Array.CreateInstance(typeof(byte), 6), nameof(obj.SnowSprites));
+				Assert.That(obj.ShadowImageOffset, Is.EqualTo(0), nameof(obj.ShadowImageOffset));
+				Assert.That(obj.var_3C, Is.EqualTo(15), nameof(obj.var_3C));
+				Assert.That(obj.SeasonState, Is.EqualTo(3), nameof(obj.SeasonState));
+				Assert.That(obj.var_3E, Is.EqualTo(2), nameof(obj.var_3E));
+				Assert.That(obj.CostIndex, Is.EqualTo(3), nameof(obj.CostIndex));
+				Assert.That(obj.BuildCostFactor, Is.EqualTo(8), nameof(obj.BuildCostFactor));
+				Assert.That(obj.ClearCostFactor, Is.EqualTo(4), nameof(obj.ClearCostFactor));
+				Assert.That(obj.Colours, Is.EqualTo(0), nameof(obj.Colours));
+				Assert.That(obj.Rating, Is.EqualTo(10), nameof(obj.Rating));
+				Assert.That(obj.DemolishRatingReduction, Is.EqualTo(-15), nameof(obj.DemolishRatingReduction));
+			});
 		}
 
 		[Test]
 		public void LoadTunnelObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\TUNNEL1.DAT";
+			var obj = LoadObject<TunnelObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+			});
 		}
 
 		[Test]
@@ -392,13 +437,36 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadWallObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\FENCE1.DAT";
+			var obj = LoadObject<WallObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_06, Is.EqualTo(15), nameof(obj.var_06));
+				Assert.That(obj.Flags, Is.EqualTo(WallObjectFlags.None), nameof(obj.Flags));
+				Assert.That(obj.Height, Is.EqualTo(2), nameof(obj.Height));
+				Assert.That(obj.var_09, Is.EqualTo(8), nameof(obj.var_09));
+			});
 		}
 
 		[Test]
 		public void LoadWaterObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\WATER1.DAT";
+			var obj = LoadObject<WaterObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.CostIndex, Is.EqualTo(2), nameof(obj.CostIndex));
+				Assert.That(obj.var_03, Is.EqualTo(0), nameof(obj.var_03));
+				Assert.That(obj.CostFactor, Is.EqualTo(51), nameof(obj.CostFactor));
+				Assert.That(obj.var_05, Is.EqualTo(0), nameof(obj.var_05));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_0A, Is.EqualTo(0), nameof(obj.var_0A));
+			});
 		}
 	}
 }

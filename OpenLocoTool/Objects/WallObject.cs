@@ -1,5 +1,4 @@
-﻿
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -8,15 +7,15 @@ namespace OpenLocoTool.Objects
 	[Flags]
 	public enum WallObjectFlags : uint8_t
 	{
-		none = 0,
-		hasPrimaryColour = 1 << 0,
+		None = 0,
+		HasPrimaryColour = 1 << 0,
 		unk1 = 1 << 1,
-		onlyOnLevelLand = 1 << 2,
+		OnlyOnLevelLand = 1 << 2,
 		unk3 = 1 << 3,
 		unk4 = 1 << 4,
 		unk5 = 1 << 5,
-		hasSecondaryColour = 1 << 6,
-		hasTertiaryColour = 1 << 7,
+		HasSecondaryColour = 1 << 6,
+		HasTertiaryColour = 1 << 7,
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

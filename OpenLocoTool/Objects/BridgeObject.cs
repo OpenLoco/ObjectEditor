@@ -4,6 +4,8 @@ using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.Objects
 {
+	// for this object I tried a different way (class) of making the object (instead of record)
+	// it works just the same but has more code.
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x2C)]
 	public class BridgeObject : ILocoStruct, ILocoStructVariableData

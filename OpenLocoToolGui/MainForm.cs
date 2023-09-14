@@ -171,7 +171,7 @@ namespace OpenLocoToolGui
 						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
 						foreach (var veh in vehicleType)
 						{
-							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, typeNode);
+							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, vehicleTypeNode);
 						}
 						typeNode.Nodes.Add(vehicleTypeNode);
 					}

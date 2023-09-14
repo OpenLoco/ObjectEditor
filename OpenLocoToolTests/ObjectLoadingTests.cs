@@ -258,7 +258,18 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadHillShapesObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\HS1.DAT";
+			var obj = LoadObject<HillShapesObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.HillHeightMapCount, Is.EqualTo(2), nameof(obj.HillHeightMapCount));
+				Assert.That(obj.MountainHeightMapCount, Is.EqualTo(2), nameof(obj.MountainHeightMapCount));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_08, Is.EqualTo(0), nameof(obj.var_08));
+				CollectionAssert.AreEqual(obj.pad_0C, Array.CreateInstance(typeof(byte), 2), nameof(obj.pad_0C));
+			});
 		}
 
 		[Test]
@@ -588,7 +599,7 @@ namespace OpenLocoToolTests
 				// CollectionAssert.AreEqual(obj.MaxCargo, Enumerable.Repeat(0, 2).ToArray(), nameof(obj.MaxCargo)); // this is changed after load from 0 to 24
 				CollectionAssert.AreEqual(obj.CargoTypes, Enumerable.Repeat(0, 2).ToArray(), nameof(obj.CargoTypes));
 				CollectionAssert.AreEqual(obj.CargoTypeSpriteOffsets, Enumerable.Repeat(0, 32).ToArray(), nameof(obj.CargoTypeSpriteOffsets));
-				Assert.That(obj.NumSimultaneousCargoTypes, Is.EqualTo(0), nameof(obj.NumSimultaneousCargoTypes));
+				Assert.That(obj.NumSimultaneousCargoTypes, Is.EqualTo(1), nameof(obj.NumSimultaneousCargoTypes));
 				Assert.That(obj.Animation[0].ObjectId, Is.EqualTo(0), nameof(obj.Animation));
 				Assert.That(obj.Animation[0].Height, Is.EqualTo(24), nameof(obj.Animation));
 				Assert.That(obj.Animation[0].Type, Is.EqualTo(SimpleAnimationType.None), nameof(obj.Animation));

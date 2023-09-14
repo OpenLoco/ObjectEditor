@@ -241,7 +241,20 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadRoadExtraObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\RDEXCAT1.DAT";
+			var obj = LoadObject<RoadExtraObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.RoadPieces, Is.EqualTo(127), nameof(obj.RoadPieces));
+				Assert.That(obj.PaintStyle, Is.EqualTo(1), nameof(obj.PaintStyle));
+				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
+				Assert.That(obj.BuildCostFactor, Is.EqualTo(4), nameof(obj.BuildCostFactor));
+				Assert.That(obj.SellCostFactor, Is.EqualTo(-3), nameof(obj.SellCostFactor));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_0E, Is.EqualTo(0), nameof(obj.var_0E));
+			});
 		}
 
 		[Test]
@@ -259,19 +272,49 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadScaffoldingObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SCAFDEF.DAT";
+			var obj = LoadObject<ScaffoldingObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+
+				Assert.That(obj.SegmentHeights[0], Is.EqualTo(16), nameof(obj.SegmentHeights) + "[0]");
+				Assert.That(obj.SegmentHeights[1], Is.EqualTo(16), nameof(obj.SegmentHeights) + "[1]");
+				Assert.That(obj.SegmentHeights[2], Is.EqualTo(32), nameof(obj.SegmentHeights) + "[2]");
+
+				Assert.That(obj.RoofHeights[0], Is.EqualTo(0), nameof(obj.RoofHeights) + "[0]");
+				Assert.That(obj.RoofHeights[1], Is.EqualTo(0), nameof(obj.RoofHeights) + "[1]");
+				Assert.That(obj.RoofHeights[2], Is.EqualTo(14), nameof(obj.RoofHeights) + "[2]");
+			});
 		}
 
 		[Test]
 		public void LoadScenarioTextObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\STEX000.DAT";
+			var obj = LoadObject<ScenarioTextObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.Details, Is.EqualTo(0), nameof(obj.Details));
+				Assert.That(obj.pad_04, Is.EqualTo(0), nameof(obj.pad_04));
+			});
 		}
 
 		[Test]
 		public void LoadSnowObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SNOW.DAT";
+			var obj = LoadObject<SnowObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+			});
 		}
 
 		[Test]
@@ -289,7 +332,19 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadStreetLightObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SLIGHT1.DAT";
+			var obj = LoadObject<StreetLightObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+
+				Assert.That(obj.DesignedYear[0], Is.EqualTo(1900), nameof(obj.DesignedYear) + "[0]");
+				Assert.That(obj.DesignedYear[1], Is.EqualTo(1950), nameof(obj.DesignedYear) + "[1]");
+				Assert.That(obj.DesignedYear[2], Is.EqualTo(1985), nameof(obj.DesignedYear) + "[2]");
+
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+			});
 		}
 
 		[Test]
@@ -301,7 +356,20 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadTrackExtraObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\TREXCAT1.DAT";
+			var obj = LoadObject<TrackExtraObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.TrackPieces, Is.EqualTo(1023), nameof(obj.TrackPieces));
+				Assert.That(obj.PaintStyle, Is.EqualTo(1), nameof(obj.PaintStyle));
+				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
+				Assert.That(obj.BuildCostFactor, Is.EqualTo(2), nameof(obj.BuildCostFactor));
+				Assert.That(obj.SellCostFactor, Is.EqualTo(-1), nameof(obj.SellCostFactor));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_0E, Is.EqualTo(0), nameof(obj.var_0E));
+			});
 		}
 
 		[Test]

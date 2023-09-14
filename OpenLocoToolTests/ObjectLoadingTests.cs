@@ -224,7 +224,7 @@ namespace OpenLocoToolTests
 				Assert.That(obj.var_04, Is.EqualTo(6672), nameof(obj.var_04));
 				Assert.That(obj.var_08, Is.EqualTo(2053), nameof(obj.var_08));
 				Assert.That(obj.Emotions, Is.EqualTo(511), nameof(obj.Emotions));
-				// Assert.That(obj.SeasonLengths[3], Is.EqualTo(80)); // images
+				CollectionAssert.AreEqual(obj.Images, Array.CreateInstance(typeof(byte), 9), nameof(obj.Images));
 				Assert.That(obj.Intelligence, Is.EqualTo(7), nameof(obj.Intelligence));
 				Assert.That(obj.Aggressiveness, Is.EqualTo(5), nameof(obj.Aggressiveness));
 				Assert.That(obj.Competitiveness, Is.EqualTo(6), nameof(obj.Competitiveness));
@@ -276,19 +276,71 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadLandObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\GRASS1.DAT";
+			var obj = LoadObject<LandObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.CostIndex, Is.EqualTo(2), nameof(obj.CostIndex));
+				Assert.That(obj.var_03, Is.EqualTo(5), nameof(obj.var_03));
+				Assert.That(obj.var_04, Is.EqualTo(1), nameof(obj.var_04));
+				Assert.That(obj.Flags, Is.EqualTo(LandObjectFlags.unk0), nameof(obj.Flags));
+				Assert.That(obj.var_06, Is.EqualTo(0), nameof(obj.var_06));
+				Assert.That(obj.var_07, Is.EqualTo(0), nameof(obj.var_07));
+				Assert.That(obj.CostFactor, Is.EqualTo(20), nameof(obj.CostFactor));
+				Assert.That(obj.pad_09, Is.EqualTo(0), nameof(obj.pad_09));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_0E, Is.EqualTo(0), nameof(obj.var_0E));
+				Assert.That(obj.var_12, Is.EqualTo(0), nameof(obj.var_12));
+				Assert.That(obj.var_16, Is.EqualTo(0), nameof(obj.var_16));
+				Assert.That(obj.pad_1A, Is.EqualTo(0), nameof(obj.pad_1A));
+				Assert.That(obj.NumVariations, Is.EqualTo(3), nameof(obj.NumVariations));
+				Assert.That(obj.VariationLikelihood, Is.EqualTo(10), nameof(obj.VariationLikelihood));
+				Assert.That(obj.pad_1D, Is.EqualTo(0), nameof(obj.pad_1D));
+			});
 		}
 
 		[Test]
 		public void LoadLevelCrossingObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\LCROSS1.DAT";
+			var obj = LoadObject<LevelCrossingObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.CostFactor, Is.EqualTo(30), nameof(obj.CostFactor));
+				Assert.That(obj.SellCostFactor, Is.EqualTo(-10), nameof(obj.SellCostFactor));
+				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
+
+				Assert.That(obj.AnimationSpeed, Is.EqualTo(3), nameof(obj.AnimationSpeed));
+				Assert.That(obj.ClosingFrames, Is.EqualTo(4), nameof(obj.ClosingFrames));
+				Assert.That(obj.ClosedFrames, Is.EqualTo(11), nameof(obj.ClosedFrames));
+
+				Assert.That(obj.pad_0A[0], Is.EqualTo(3), nameof(obj.pad_0A) + "[0]");
+				Assert.That(obj.pad_0A[1], Is.EqualTo(0), nameof(obj.pad_0A) + "[1]");
+
+				Assert.That(obj.DesignedYear, Is.EqualTo(1955), nameof(obj.DesignedYear));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+			});
 		}
 
 		[Test]
 		public void LoadRegionObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\REGUK.DAT";
+			var obj = LoadObject<RegionObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				CollectionAssert.AreEqual(obj.pad_06, Array.CreateInstance(typeof(byte), 2), nameof(obj.pad_06));
+				Assert.That(obj.var_08, Is.EqualTo(1), nameof(obj.var_08));
+				CollectionAssert.AreEqual(obj.var_09, Array.CreateInstance(typeof(byte), 4), nameof(obj.var_09));
+				CollectionAssert.AreEqual(obj.pad_0D, Array.CreateInstance(typeof(byte), 5), nameof(obj.pad_0D));
+			});
 		}
 
 		[Test]

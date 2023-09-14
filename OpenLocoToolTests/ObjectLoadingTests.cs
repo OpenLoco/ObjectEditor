@@ -82,7 +82,22 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadBridgeObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\AIRPORT1.DAT";
+			var obj = LoadObject<BridgeObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.BuildCostFactor, Is.EqualTo(256), nameof(obj.BuildCostFactor));
+				Assert.That(obj.SellCostFactor, Is.EqualTo(-192), nameof(obj.SellCostFactor));
+				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
+				Assert.That(obj.var_07, Is.EqualTo(0), nameof(obj.var_07));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_0C, Is.EqualTo(0), nameof(obj.var_0C));
+				Assert.That(obj.AllowedPlaneTypes, Is.EqualTo(24), nameof(obj.AllowedPlaneTypes));
+				Assert.That(obj.NumSpriteSets, Is.EqualTo(94), nameof(obj.NumSpriteSets));
+				Assert.That(obj.NumTiles, Is.EqualTo(23), nameof(obj.NumTiles));
+			});
 		}
 
 		[Test]

@@ -114,6 +114,17 @@ namespace OpenLocoToolGui
 			return imageList;
 		}
 
+		static void AddObjectNode(string key, string text, string objName, TreeView tv)
+		{
+			var imageIndex = OriginalObjects.Names.Contains(objName.Trim()) ? 1 : 0;
+			_ = tv.Nodes.Add(key, text, imageIndex, imageIndex);
+		}
+		static void AddObjectNode(string key, string text, string objName, TreeNode tn)
+		{
+			var imageIndex = OriginalObjects.Names.Contains(objName.Trim()) ? 1 : 0;
+			_ = tn.Nodes.Add(key, text, imageIndex, imageIndex);
+		}
+
 		void InitFileTreeView(string fileFilter = "")
 		{
 			tvFileTree.SuspendLayout();
@@ -125,8 +136,7 @@ namespace OpenLocoToolGui
 			foreach (var obj in filteredFiles)
 			{
 				var relative = Path.GetRelativePath(model.Settings.ObjectDirectory, obj.Key);
-				var imageIndex = OriginalObjects.Names.Contains(obj.Value.Name.Trim()) ? 1 : 0;
-				var node = tvFileTree.Nodes.Add(obj.Key, relative, imageIndex, imageIndex);
+				AddObjectNode(obj.Key, relative, obj.Value.Name, tvFileTree);
 			}
 
 			tvFileTree.Sort();
@@ -150,8 +160,7 @@ namespace OpenLocoToolGui
 				{
 					foreach (var obj in group)
 					{
-						var imageIndex = OriginalObjects.Names.Contains(obj.Value.Name.Trim()) ? 1 : 0;
-						typeNode.Nodes.Add(obj.Key, obj.Value.Name, imageIndex, imageIndex);
+						AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, typeNode);
 					}
 				}
 				else
@@ -162,8 +171,7 @@ namespace OpenLocoToolGui
 						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
 						foreach (var veh in vehicleType)
 						{
-							var imageIndex = OriginalObjects.Names.Contains(veh.Value.Name.Trim()) ? 1 : 0;
-							vehicleTypeNode.Nodes.Add(veh.Key, veh.Value.Name, imageIndex, imageIndex);
+							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, typeNode);
 						}
 						typeNode.Nodes.Add(vehicleTypeNode);
 					}

@@ -305,57 +305,88 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
+		void selectNewPalette()
+		{
+			using (OpenFileDialog openFileDialog = new OpenFileDialog())
+			{
+				openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+				openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
+				openFileDialog.FilterIndex = 1;
+				openFileDialog.RestoreDirectory = true;
+
+				if (openFileDialog.ShowDialog() == DialogResult.OK)
+				{
+					model.Settings.PaletteFile = openFileDialog.FileName;
+					model.SaveSettings();
+				}
+			}
+		}
+
 		void CreateImages(ILocoObject obj)
 		{
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
-
-			var paletteBitmap = new Bitmap(model.Settings.PaletteFile);
-			var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
-
-			for (var i = 0; i < obj.G1Elements.Count; ++i)
+			try
 			{
-				var currElement = obj.G1Elements[i];
-				var imageData = currElement.ImageData;
+				var paletteBitmap = new Bitmap(model.Settings.PaletteFile);
+				var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
 
-				if (currElement.ImageData.Length == 0 || currElement.flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
+				for (var i = 0; i < obj.G1Elements.Count; ++i)
 				{
-					logger.Info($"skipped loading g1 element {i} with flags {currElement.flags}");
-					continue;
-				}
+					var currElement = obj.G1Elements[i];
+					var imageData = currElement.ImageData;
 
-				var dstImg = new Bitmap(currElement.width, currElement.height);
-				var rect = new Rectangle(0, 0, currElement.width, currElement.height);
-				var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-				for (var y = 0; y < currElement.height; ++y)
-				{
-					for (var x = 0; x < currElement.width; ++x)
+					if (currElement.ImageData.Length == 0 || currElement.flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
 					{
-						var paletteIndex = imageData[(y * currElement.width) + x];
-
-						// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
-						//var colour = obj.Object is HillShapesObject
-						//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
-						//	: palette[paletteIndex];
-
-						var colour = palette[paletteIndex];
-						ImageHelpers.SetPixel(dstImgData, x, y, colour);
+						logger.Info($"skipped loading g1 element {i} with flags {currElement.flags}");
+						continue;
 					}
+
+					var dstImg = new Bitmap(currElement.width, currElement.height);
+					var rect = new Rectangle(0, 0, currElement.width, currElement.height);
+					var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+					for (var y = 0; y < currElement.height; ++y)
+					{
+						for (var x = 0; x < currElement.width; ++x)
+						{
+							var paletteIndex = imageData[(y * currElement.width) + x];
+
+							// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
+							//var colour = obj.Object is HillShapesObject
+							//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
+							//	: palette[paletteIndex];
+
+							var colour = palette[paletteIndex];
+							ImageHelpers.SetPixel(dstImgData, x, y, colour);
+						}
+					}
+
+					dstImg.UnlockBits(dstImgData);
+
+					// on these controls we could add a right_click handler to replace image with user-created one
+					var pb = new PictureBox
+					{
+						Image = dstImg,
+						BorderStyle = BorderStyle.FixedSingle,
+						SizeMode = PictureBoxSizeMode.AutoSize,
+					};
+					flpImageTable.Controls.Add(pb);
 				}
 
-				dstImg.UnlockBits(dstImgData);
-
-				// on these controls we could add a right_click handler to replace image with user-created one
-				var pb = new PictureBox
-				{
-					Image = dstImg,
-					BorderStyle = BorderStyle.FixedSingle,
-					SizeMode = PictureBoxSizeMode.AutoSize,
-				};
-				flpImageTable.Controls.Add(pb);
+				flpImageTable.ResumeLayout(true);
 			}
+			catch (ArgumentException e)
+			{
+				flpImageTable.ResumeLayout(true);
+				MessageBox.Show("Invalid palette file: " + e.Message, "Palette image file invalid");
+				selectNewPalette();
+				CreateImages(obj);
+			}
+		}
 
-			flpImageTable.ResumeLayout(true);
+		private void palleteToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			selectNewPalette();
 		}
 	}
 }

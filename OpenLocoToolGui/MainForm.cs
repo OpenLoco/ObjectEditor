@@ -305,12 +305,49 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
+		Bitmap PalletteBitmap
+		{
+			get
+			{
+				try
+				{
+					return new Bitmap(model.Settings.PaletteFile);
+				}
+				catch
+				{
+					while (true)
+					{
+						try
+						{
+							using (OpenFileDialog openFileDialog = new OpenFileDialog())
+							{
+								openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+								openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
+								openFileDialog.FilterIndex = 1;
+								openFileDialog.RestoreDirectory = true;
+
+								if (openFileDialog.ShowDialog() == DialogResult.OK)
+								{
+									model.Settings.PaletteFile = openFileDialog.FileName;
+									return new Bitmap(model.Settings.PaletteFile);
+								}
+							}
+						}
+						catch (ArgumentException e)
+						{
+							MessageBox.Show("Invalid palete file: " + e.Message, "Pallette image file invalid");
+						}
+					}
+				}
+			}
+		}
+
 		void CreateImages(ILocoObject obj)
 		{
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
 
-			var paletteBitmap = new Bitmap(model.Settings.PaletteFile);
+			var paletteBitmap = PalletteBitmap;
 			var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
 
 			for (var i = 0; i < obj.G1Elements.Count; ++i)

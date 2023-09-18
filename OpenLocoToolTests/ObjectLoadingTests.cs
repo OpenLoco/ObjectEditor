@@ -252,7 +252,30 @@ namespace OpenLocoToolTests
 		[Test]
 		public void LoadDockObject()
 		{
-			Assert.Fail();
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SHIPST1.DAT";
+			var obj = LoadObject<DockObject>(testFile);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.BuildCostFactor, Is.EqualTo(38), nameof(obj.BuildCostFactor));
+				Assert.That(obj.SellCostFactor, Is.EqualTo(-35), nameof(obj.SellCostFactor));
+				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
+				Assert.That(obj.var_07, Is.EqualTo(0), nameof(obj.var_07));
+				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
+				Assert.That(obj.var_0C, Is.EqualTo(0), nameof(obj.var_0C));
+				Assert.That(obj.Flags, Is.EqualTo(DockObjectFlags.None), nameof(obj.Flags));
+				Assert.That(obj.NumAux01, Is.EqualTo(2), nameof(obj.NumAux01));
+				Assert.That(obj.NumAux02Ent, Is.EqualTo(1), nameof(obj.NumAux02Ent));
+
+				//Assert.That(obj.var_14, Is.EqualTo(1), nameof(obj.var_14));
+				//Assert.That(obj.var_14, Is.EqualTo(1), nameof(obj.var_18));
+				//Assert.That(obj.var_1C[0], Is.EqualTo(1), nameof(obj.var_1C[0]));
+
+				Assert.That(obj.DesignedYear, Is.EqualTo(0), nameof(obj.DesignedYear));
+				Assert.That(obj.ObsoleteYear, Is.EqualTo(65535), nameof(obj.ObsoleteYear));
+				Assert.That(obj.BoatPosition, Is.EqualTo(new Pos2(48, 0)), nameof(obj.BoatPosition));
+			});
 		}
 
 		[Test]
@@ -586,8 +609,8 @@ namespace OpenLocoToolTests
 				Assert.That(obj.RunCostFactor, Is.EqualTo(55), nameof(obj.RunCostFactor));
 				Assert.That(obj.ColourType, Is.EqualTo(9), nameof(obj.ColourType));
 				Assert.That(obj.NumCompat, Is.EqualTo(0), nameof(obj.NumCompat));
-				CollectionAssert.AreEqual(obj.CompatibleVehicles, Enumerable.Repeat(0, 8).ToArray(), nameof(obj.CompatibleVehicles));
-				CollectionAssert.AreEqual(obj.RequiredTrackExtras, Enumerable.Repeat(0, 4).ToArray(), nameof(obj.RequiredTrackExtras));
+				CollectionAssert.AreEqual(Enumerable.Repeat(0, 8).ToArray(), obj.CompatibleVehicles, nameof(obj.CompatibleVehicles));
+				CollectionAssert.AreEqual(Enumerable.Repeat(0, 4).ToArray(), obj.RequiredTrackExtras, nameof(obj.RequiredTrackExtras));
 				//Assert.That(obj.var_24, Is.EqualTo(0), nameof(obj.var_24));
 				//Assert.That(obj.BodySprites, Is.EqualTo(0), nameof(obj.BodySprites));
 				//Assert.That(obj.BogieSprites, Is.EqualTo(1), nameof(obj.BogieSprites));
@@ -597,8 +620,8 @@ namespace OpenLocoToolTests
 				Assert.That(obj.Weight, Is.EqualTo(141), nameof(obj.Weight));
 				Assert.That(obj.Flags, Is.EqualTo((VehicleObjectFlags)16384), nameof(obj.Flags));
 				// CollectionAssert.AreEqual(obj.MaxCargo, Enumerable.Repeat(0, 2).ToArray(), nameof(obj.MaxCargo)); // this is changed after load from 0 to 24
-				CollectionAssert.AreEqual(obj.CargoTypes, Enumerable.Repeat(0, 2).ToArray(), nameof(obj.CargoTypes));
-				CollectionAssert.AreEqual(obj.CargoTypeSpriteOffsets, Enumerable.Repeat(0, 32).ToArray(), nameof(obj.CargoTypeSpriteOffsets));
+				CollectionAssert.AreEqual(Enumerable.Repeat(0, 2).ToArray(), obj.CargoTypes, nameof(obj.CargoTypes));
+				CollectionAssert.AreEqual(Enumerable.Repeat(0, 32).ToArray(), obj.CargoTypeSpriteOffsets, nameof(obj.CargoTypeSpriteOffsets));
 				Assert.That(obj.NumSimultaneousCargoTypes, Is.EqualTo(1), nameof(obj.NumSimultaneousCargoTypes));
 				Assert.That(obj.Animation[0].ObjectId, Is.EqualTo(0), nameof(obj.Animation));
 				Assert.That(obj.Animation[0].Height, Is.EqualTo(24), nameof(obj.Animation));
@@ -614,7 +637,7 @@ namespace OpenLocoToolTests
 				//Assert.That(obj.Sound, Is.EqualTo(0), nameof(obj.Sound));
 				//Assert.That(obj.pad_135, Is.EqualTo(0), nameof(obj.pad_135));
 				Assert.That(obj.NumStartSounds, Is.EqualTo(2), nameof(obj.NumStartSounds));
-				CollectionAssert.AreEqual(obj.StartSounds, Enumerable.Repeat(0, 3).ToArray(), nameof(obj.StartSounds));
+				CollectionAssert.AreEqual(Enumerable.Repeat(0, 3).ToArray(), obj.StartSounds, nameof(obj.StartSounds));
 			});
 		}
 

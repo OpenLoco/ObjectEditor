@@ -164,12 +164,12 @@ namespace OpenLocoTool.DatFileParsing
 			{
 				var currElement = g1Element32s[i];
 				var nextOffset = i < g1Header.NumEntries - 1
-					? g1Element32s[i + 1].offset
+					? g1Element32s[i + 1].Offset
 					: g1Header.TotalSize;
 
-				currElement.ImageData = imageData[(int)currElement.offset..(int)nextOffset].ToArray();
+				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
 
-				if (currElement.flags.HasFlag(G1ElementFlags.IsRLECompressed))
+				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed))
 				{
 					currElement.ImageData = DecodeRLEImageData(currElement);
 				}
@@ -186,14 +186,14 @@ namespace OpenLocoTool.DatFileParsing
 				return img.ImageData;
 			}
 
-			var width = img.width;
-			var height = img.height;
+			var width = img.Width;
+			var height = img.Height;
 
-			var dstLineWidth = img.width;
+			var dstLineWidth = img.Width;
 			var dst0Index = 0; // dstLineWidth * img.yOffset + img.xOffset;
 
 			var srcBuf = img.ImageData;
-			var dstBuf = new byte[img.width * img.height]; // Assuming a single byte per pixel
+			var dstBuf = new byte[img.Width * img.Height]; // Assuming a single byte per pixel
 
 			var srcY = 0;
 

@@ -20,13 +20,13 @@ namespace OpenLocoTool.Headers
 	[Category("Header")]
 	[LocoStructSize(0x10)]
 	public record G1Element32(
-		[property: LocoStructOffset(0x00)] uint32_t offset,
-		[property: LocoStructOffset(0x04)] int16_t width,
-		[property: LocoStructOffset(0x06)] int16_t height,
+		[property: LocoStructOffset(0x00)] uint32_t Offset,
+		[property: LocoStructOffset(0x04)] int16_t Width,
+		[property: LocoStructOffset(0x06)] int16_t Height,
 		[property: LocoStructOffset(0x08)] int16_t xOffset,
 		[property: LocoStructOffset(0x0A)] int16_t yOffset,
-		[property: LocoStructOffset(0x0C)] G1ElementFlags flags,
-		[property: LocoStructOffset(0x0E)] int16_t zoomOffset
+		[property: LocoStructOffset(0x0C)] G1ElementFlags Flags,
+		[property: LocoStructOffset(0x0E)] int16_t ZoomOffset
 	) : ILocoStruct
 	{
 		public byte[] ImageData;

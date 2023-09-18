@@ -255,12 +255,17 @@ namespace OpenLocoToolGui
 
 			var obj = model.LoadAndCacheObject(e.Node.Name);
 
-			if (obj != null && obj.G1Elements != null && obj.G1Header != null && obj.G1Header.TotalSize != 0 && obj.G1Elements.Count != 0)
+			if (obj?.G1Elements != null && obj.G1Header != null && obj.G1Header.TotalSize != 0 && obj.G1Elements.Count != 0)
 			{
-				CreateImages(obj);
+				if (model.Palette is null)
+				{
+					SelectNewPalette();
+				}
+
+				CreateImages(obj, model.Palette);
 			}
 
-			if (obj != null && obj.Object is SoundObject soundObject)
+			if (obj?.Object is SoundObject soundObject)
 			{
 				CreateSounds(soundObject);
 			}
@@ -305,9 +310,9 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		void selectNewPalette()
+		void SelectNewPalette()
 		{
-			using (OpenFileDialog openFileDialog = new OpenFileDialog())
+			using (var openFileDialog = new OpenFileDialog())
 			{
 				openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
 				openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
@@ -316,77 +321,70 @@ namespace OpenLocoToolGui
 
 				if (openFileDialog.ShowDialog() == DialogResult.OK)
 				{
-					model.Settings.PaletteFile = openFileDialog.FileName;
-					model.SaveSettings();
+					model.PaletteFile = openFileDialog.FileName;
 				}
 			}
 		}
 
-		void CreateImages(ILocoObject obj)
+		void CreateImages(ILocoObject obj, Color[] palette)
 		{
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
-			try
+
+			if (palette is null)
 			{
-				var paletteBitmap = new Bitmap(model.Settings.PaletteFile);
-				var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
+				logger.Error("Palette was empty; please load a valid palette file");
+				return;
+			}
 
-				for (var i = 0; i < obj.G1Elements.Count; ++i)
+			for (var i = 0; i < obj.G1Elements.Count; ++i)
+			{
+				var currElement = obj.G1Elements[i];
+				var imageData = currElement.ImageData;
+
+				if (currElement.ImageData.Length == 0 || currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
 				{
-					var currElement = obj.G1Elements[i];
-					var imageData = currElement.ImageData;
-
-					if (currElement.ImageData.Length == 0 || currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
-					{
-						logger.Info($"skipped loading g1 element {i} with flags {currElement.Flags}");
-						continue;
-					}
-
-					var dstImg = new Bitmap(currElement.Width, currElement.Height);
-					var rect = new Rectangle(0, 0, currElement.Width, currElement.Height);
-					var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-					for (var y = 0; y < currElement.Height; ++y)
-					{
-						for (var x = 0; x < currElement.Width; ++x)
-						{
-							var paletteIndex = imageData[(y * currElement.Width) + x];
-
-							// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
-							//var colour = obj.Object is HillShapesObject
-							//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
-							//	: palette[paletteIndex];
-
-							var colour = palette[paletteIndex];
-							ImageHelpers.SetPixel(dstImgData, x, y, colour);
-						}
-					}
-
-					dstImg.UnlockBits(dstImgData);
-
-					// on these controls we could add a right_click handler to replace image with user-created one
-					var pb = new PictureBox
-					{
-						Image = dstImg,
-						BorderStyle = BorderStyle.FixedSingle,
-						SizeMode = PictureBoxSizeMode.AutoSize,
-					};
-					flpImageTable.Controls.Add(pb);
+					logger.Info($"skipped loading g1 element {i} with flags {currElement.Flags}");
+					continue;
 				}
 
-				flpImageTable.ResumeLayout(true);
+				var dstImg = new Bitmap(currElement.Width, currElement.Height);
+				var rect = new Rectangle(0, 0, currElement.Width, currElement.Height);
+				var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+				for (var y = 0; y < currElement.Height; ++y)
+				{
+					for (var x = 0; x < currElement.Width; ++x)
+					{
+						var paletteIndex = imageData[(y * currElement.Width) + x];
+
+						// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
+						//var colour = obj.Object is HillShapesObject
+						//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
+						//	: palette[paletteIndex];
+
+						var colour = palette[paletteIndex];
+						ImageHelpers.SetPixel(dstImgData, x, y, colour);
+					}
+				}
+
+				dstImg.UnlockBits(dstImgData);
+
+				// on these controls we could add a right_click handler to replace image with user-created one
+				var pb = new PictureBox
+				{
+					Image = dstImg,
+					BorderStyle = BorderStyle.FixedSingle,
+					SizeMode = PictureBoxSizeMode.AutoSize,
+				};
+				flpImageTable.Controls.Add(pb);
 			}
-			catch (ArgumentException e)
-			{
-				flpImageTable.ResumeLayout(true);
-				MessageBox.Show("Invalid palette file: " + e.Message, "Palette image file invalid");
-				selectNewPalette();
-				CreateImages(obj);
-			}
+
+			flpImageTable.ResumeLayout(true);
 		}
 
-		private void palleteToolStripMenuItem_Click(object sender, EventArgs e)
+		private void setPaletteToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			selectNewPalette();
+			SelectNewPalette();
 		}
 	}
 }

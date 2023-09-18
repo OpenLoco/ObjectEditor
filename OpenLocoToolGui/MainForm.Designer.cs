@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+			var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			tvFileTree = new TreeView();
 			lbLogs = new ListBox();
 			pgObject = new PropertyGrid();
@@ -48,10 +48,9 @@
 			menuStrip = new MenuStrip();
 			fileToolStripMenuItem = new ToolStripMenuItem();
 			setObjectDirectoryToolStripMenuItem = new ToolStripMenuItem();
+			setPaletteToolStripMenuItem = new ToolStripMenuItem();
 			recreateIndexToolStripMenuItem = new ToolStripMenuItem();
 			saveChangesToolStripMenuItem = new ToolStripMenuItem();
-			settingsToolStripMenuItem = new ToolStripMenuItem();
-			palleteToolStripMenuItem = new ToolStripMenuItem();
 			tcFileSelector.SuspendLayout();
 			tabPage2.SuspendLayout();
 			tabPage1.SuspendLayout();
@@ -244,7 +243,7 @@
 			// 
 			// menuStrip
 			// 
-			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, settingsToolStripMenuItem });
+			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem });
 			menuStrip.Location = new Point(4, 4);
 			menuStrip.Name = "menuStrip";
 			menuStrip.Size = new Size(1199, 24);
@@ -253,7 +252,7 @@
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, recreateIndexToolStripMenuItem, saveChangesToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem, saveChangesToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
@@ -261,37 +260,30 @@
 			// setObjectDirectoryToolStripMenuItem
 			// 
 			setObjectDirectoryToolStripMenuItem.Name = "setObjectDirectoryToolStripMenuItem";
-			setObjectDirectoryToolStripMenuItem.Size = new Size(179, 22);
+			setObjectDirectoryToolStripMenuItem.Size = new Size(180, 22);
 			setObjectDirectoryToolStripMenuItem.Text = "Set Object Directory";
 			setObjectDirectoryToolStripMenuItem.Click += setObjectDirectoryToolStripMenuItem_Click;
+			// 
+			// setPaletteToolStripMenuItem
+			// 
+			setPaletteToolStripMenuItem.Name = "setPaletteToolStripMenuItem";
+			setPaletteToolStripMenuItem.Size = new Size(180, 22);
+			setPaletteToolStripMenuItem.Text = "Set Palette";
+			setPaletteToolStripMenuItem.Click += setPaletteToolStripMenuItem_Click;
 			// 
 			// recreateIndexToolStripMenuItem
 			// 
 			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
-			recreateIndexToolStripMenuItem.Size = new Size(179, 22);
+			recreateIndexToolStripMenuItem.Size = new Size(180, 22);
 			recreateIndexToolStripMenuItem.Text = "Recreate Index";
 			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
 			// 
 			// saveChangesToolStripMenuItem
 			// 
 			saveChangesToolStripMenuItem.Name = "saveChangesToolStripMenuItem";
-			saveChangesToolStripMenuItem.Size = new Size(179, 22);
+			saveChangesToolStripMenuItem.Size = new Size(180, 22);
 			saveChangesToolStripMenuItem.Text = "Save Changes (WIP)";
 			saveChangesToolStripMenuItem.Click += saveChangesToolStripMenuItem_Click;
-			// 
-			// settingsToolStripMenuItem
-			// 
-			settingsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { palleteToolStripMenuItem });
-			settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-			settingsToolStripMenuItem.Size = new Size(61, 20);
-			settingsToolStripMenuItem.Text = "Settings";
-			// 
-			// palleteToolStripMenuItem
-			// 
-			palleteToolStripMenuItem.Name = "palleteToolStripMenuItem";
-			palleteToolStripMenuItem.Size = new Size(109, 22);
-			palleteToolStripMenuItem.Text = "Pallete";
-			palleteToolStripMenuItem.Click += palleteToolStripMenuItem_Click;
 			// 
 			// MainForm
 			// 
@@ -351,7 +343,6 @@
 		private ToolStripMenuItem setObjectDirectoryToolStripMenuItem;
 		private ToolStripMenuItem recreateIndexToolStripMenuItem;
 		private ToolStripMenuItem saveChangesToolStripMenuItem;
-		private ToolStripMenuItem settingsToolStripMenuItem;
-		private ToolStripMenuItem palleteToolStripMenuItem;
+		private ToolStripMenuItem setPaletteToolStripMenuItem;
 	}
 }

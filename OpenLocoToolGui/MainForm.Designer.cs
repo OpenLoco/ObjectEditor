@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			components = new System.ComponentModel.Container();
 			var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			tvFileTree = new TreeView();
 			lbLogs = new ListBox();
@@ -48,11 +49,13 @@
 			menuStrip = new MenuStrip();
 			fileToolStripMenuItem = new ToolStripMenuItem();
 			setObjectDirectoryToolStripMenuItem = new ToolStripMenuItem();
+			setDataDirectoryToolStripMenuItem = new ToolStripMenuItem();
 			setPaletteToolStripMenuItem = new ToolStripMenuItem();
 			recreateIndexToolStripMenuItem = new ToolStripMenuItem();
 			saveChangesToolStripMenuItem = new ToolStripMenuItem();
 			fileToolStripMenuItem1 = new ToolStripMenuItem();
-			setDataDirectoryToolStripMenuItem = new ToolStripMenuItem();
+			imgContextMenu = new ContextMenuStrip(components);
+			imgContextMenuSave = new ToolStripMenuItem();
 			tcFileSelector.SuspendLayout();
 			tabPage2.SuspendLayout();
 			tabPage1.SuspendLayout();
@@ -70,6 +73,7 @@
 			scTop.SuspendLayout();
 			pnFileFilter.SuspendLayout();
 			menuStrip.SuspendLayout();
+			imgContextMenu.SuspendLayout();
 			SuspendLayout();
 			// 
 			// tvFileTree
@@ -266,6 +270,13 @@
 			setObjectDirectoryToolStripMenuItem.Text = "Set ObjData Directory";
 			setObjectDirectoryToolStripMenuItem.Click += setObjectDirectoryToolStripMenuItem_Click;
 			// 
+			// setDataDirectoryToolStripMenuItem
+			// 
+			setDataDirectoryToolStripMenuItem.Name = "setDataDirectoryToolStripMenuItem";
+			setDataDirectoryToolStripMenuItem.Size = new Size(217, 22);
+			setDataDirectoryToolStripMenuItem.Text = "Set Data Directory";
+			setDataDirectoryToolStripMenuItem.Click += setDataDirectoryToolStripMenuItem_Click;
+			// 
 			// setPaletteToolStripMenuItem
 			// 
 			setPaletteToolStripMenuItem.Name = "setPaletteToolStripMenuItem";
@@ -293,12 +304,18 @@
 			fileToolStripMenuItem1.Size = new Size(217, 22);
 			fileToolStripMenuItem1.Text = "File";
 			// 
-			// setDataDirectoryToolStripMenuItem
+			// imgContextMenu
 			// 
-			setDataDirectoryToolStripMenuItem.Name = "setDataDirectoryToolStripMenuItem";
-			setDataDirectoryToolStripMenuItem.Size = new Size(217, 22);
-			setDataDirectoryToolStripMenuItem.Text = "Set Data Directory";
-			setDataDirectoryToolStripMenuItem.Click += setDataDirectoryToolStripMenuItem_Click;
+			imgContextMenu.Items.AddRange(new ToolStripItem[] { imgContextMenuSave });
+			imgContextMenu.Name = "imgContextMenu";
+			imgContextMenu.Size = new Size(181, 48);
+			// 
+			// imgContextMenuSave
+			// 
+			imgContextMenuSave.Name = "imgContextMenuSave";
+			imgContextMenuSave.Size = new Size(180, 22);
+			imgContextMenuSave.Text = "Export Image";
+			imgContextMenuSave.Click += imgContextMenuSave_Click;
 			// 
 			// MainForm
 			// 
@@ -332,6 +349,7 @@
 			pnFileFilter.PerformLayout();
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
+			imgContextMenu.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -361,5 +379,7 @@
 		private ToolStripMenuItem setPaletteToolStripMenuItem;
 		private ToolStripMenuItem setDataDirectoryToolStripMenuItem;
 		private ToolStripMenuItem fileToolStripMenuItem1;
+		private ContextMenuStrip imgContextMenu;
+		private ToolStripMenuItem imgContextMenuSave;
 	}
 }

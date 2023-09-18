@@ -6,6 +6,7 @@ using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Windows.Forms;
 
 namespace OpenLocoToolGui
 {
@@ -251,7 +252,7 @@ namespace OpenLocoToolGui
 				if (model.LoadDataDirectory(objectDirBrowser.SelectedPath))
 				{
 					pgObject.SelectedObject = model.G1;
-					CreateImages(model.G1, model.Palette);
+					CreateImages(model.G1.G1Header, model.G1.G1Elements, model.Palette);
 				}
 			}
 		}
@@ -312,7 +313,7 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		void CreateImages(IG1Dat obj, Color[] palette)
+		void CreateImages(G1Header G1Header, List<G1Element32> G1Elements, Color[] palette)
 		{
 			if (palette is null)
 			{
@@ -320,9 +321,9 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			for (var i = 0; i < obj.G1Elements.Count; ++i)
+			for (var i = 0; i < G1Elements.Count; ++i)
 			{
-				var currElement = obj.G1Elements[i];
+				var currElement = G1Elements[i];
 				var imageData = currElement.ImageData;
 
 				if (currElement.ImageData.Length == 0 || currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
@@ -359,57 +360,9 @@ namespace OpenLocoToolGui
 					BorderStyle = BorderStyle.FixedSingle,
 					SizeMode = PictureBoxSizeMode.AutoSize,
 				};
-				flpImageTable.Controls.Add(pb);
-			}
-		}
 
-		void CreateImages(ILocoObject obj, Color[] palette)
-		{
-			if (palette is null)
-			{
-				logger.Error("Palette was empty; please load a valid palette file");
-				return;
-			}
+				pb.ContextMenuStrip = imgContextMenu;
 
-			for (var i = 0; i < obj.G1Elements.Count; ++i)
-			{
-				var currElement = obj.G1Elements[i];
-				var imageData = currElement.ImageData;
-
-				if (currElement.ImageData.Length == 0 || currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
-				{
-					logger.Info($"skipped loading g1 element {i} with flags {currElement.Flags}");
-					continue;
-				}
-
-				var dstImg = new Bitmap(currElement.Width, currElement.Height);
-				var rect = new Rectangle(0, 0, currElement.Width, currElement.Height);
-				var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-				for (var y = 0; y < currElement.Height; ++y)
-				{
-					for (var x = 0; x < currElement.Width; ++x)
-					{
-						var paletteIndex = imageData[(y * currElement.Width) + x];
-
-						// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
-						//var colour = obj.Object is HillShapesObject
-						//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
-						//	: palette[paletteIndex];
-
-						var colour = palette[paletteIndex];
-						ImageHelpers.SetPixel(dstImgData, x, y, colour);
-					}
-				}
-
-				dstImg.UnlockBits(dstImgData);
-
-				// on these controls we could add a right_click handler to replace image with user-created one
-				var pb = new PictureBox
-				{
-					Image = dstImg,
-					BorderStyle = BorderStyle.FixedSingle,
-					SizeMode = PictureBoxSizeMode.AutoSize,
-				};
 				flpImageTable.Controls.Add(pb);
 			}
 		}
@@ -450,7 +403,7 @@ namespace OpenLocoToolGui
 					//SelectNewPalette();
 				}
 
-				CreateImages(CurrentUIObject, model.Palette);
+				CreateImages(CurrentUIObject.G1Header, CurrentUIObject.G1Elements, model.Palette);
 			}
 
 			if (CurrentUIObject?.Object is SoundObject soundObject)
@@ -461,6 +414,26 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 
 			pgObject.SelectedObject = CurrentUIObject;
+		}
+
+		private void imgContextMenuSave_Click(object sender, EventArgs e)
+		{
+			if (imgContextMenu.SourceControl is PictureBox pb)
+			{
+				using (var saveFileDialog = new SaveFileDialog())
+				{
+					saveFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+					saveFileDialog.Filter = "PNG Files(*.png)|*.png|All files (*.*)|*.*";
+					saveFileDialog.FilterIndex = 1;
+					saveFileDialog.RestoreDirectory = true;
+
+					if (saveFileDialog.ShowDialog() == DialogResult.OK)
+					{
+						pb.Image.Save(saveFileDialog.FileName);
+						logger.Info($"Saved image to {saveFileDialog.FileName}");
+					}
+				}
+			}
 		}
 	}
 }

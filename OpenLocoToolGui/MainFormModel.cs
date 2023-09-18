@@ -20,6 +20,33 @@ namespace OpenLocoToolGui
 
 		public ObjectCache ObjectCache { get; private set; } = new();
 
+		public string PaletteFile
+		{
+			get => Settings.PaletteFile;
+			set
+			{
+				Settings.PaletteFile = value;
+				LoadPaletteFile();
+			}
+		}
+
+		private void LoadPaletteFile()
+		{
+			try
+			{
+				var paletteBitmap = new Bitmap(Settings.PaletteFile);
+				Palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
+				SaveSettings();
+				logger.Debug($"Successfully loaded palette file {Settings.PaletteFile}");
+			}
+			catch (ArgumentException ex)
+			{
+				logger.Error(ex);
+			}
+		}
+
+		public Color[] Palette { get; private set; }
+
 		public MainFormModel(ILogger logger, string settingsFile)
 		{
 			this.logger = logger;
@@ -54,6 +81,8 @@ namespace OpenLocoToolGui
 				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
 				LoadDirectory(Settings.ObjectDirectory, new Progress<float>(), true);
 			}
+
+			LoadPaletteFile();
 		}
 
 		static void ValidateSettings(GuiSettings settings, ILogger logger)

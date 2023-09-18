@@ -74,36 +74,41 @@ namespace OpenLocoToolGui
 			var text = File.ReadAllText(settingsFile);
 			Settings = JsonSerializer.Deserialize<GuiSettings>(text);
 
-			ValidateSettings(Settings, logger);
+			if (!ValidateSettings(Settings, logger))
+			{
+				return;
+			}
 
 			if (File.Exists(Settings.IndexFilePath))
 			{
 				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-				LoadDirectory(Settings.ObjectDirectory, new Progress<float>(), true);
+				LoadDirectory(Settings.ObjDataDirectory, new Progress<float>(), true);
 			}
 
 			LoadPaletteFile();
 		}
 
-		static void ValidateSettings(GuiSettings settings, ILogger logger)
+		static bool ValidateSettings(GuiSettings settings, ILogger logger)
 		{
 			if (settings == null)
 			{
-				logger.Error($"Unable to load settings");
-				return;
+				logger.Error("Invalid settings file: Unable to deserialise settings file");
+				return false;
 			}
 
-			if (string.IsNullOrEmpty(settings.ObjectDirectory))
+			if (string.IsNullOrEmpty(settings.ObjDataDirectory))
 			{
-				logger.Warning("Object directory was null or empty");
-				return;
+				logger.Warning("Invalid settings file: Object directory was null or empty");
+				return false;
 			}
 
-			if (!Directory.Exists(settings.ObjectDirectory))
+			if (!Directory.Exists(settings.ObjDataDirectory))
 			{
-				logger.Warning($"Directory \"{settings.ObjectDirectory}\" does not exist");
-				return;
+				logger.Warning($"Invalid settings file: Directory \"{settings.ObjDataDirectory}\" does not exist");
+				return false;
 			}
+
+			return true;
 		}
 
 		public void SaveSettings()
@@ -167,7 +172,7 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			Settings.ObjectDirectory = directory;
+			Settings.ObjDataDirectory = directory;
 			var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
 			if (useExistingIndex && File.Exists(Settings.IndexFilePath))
 			{

@@ -51,6 +51,8 @@
 			setPaletteToolStripMenuItem = new ToolStripMenuItem();
 			recreateIndexToolStripMenuItem = new ToolStripMenuItem();
 			saveChangesToolStripMenuItem = new ToolStripMenuItem();
+			fileToolStripMenuItem1 = new ToolStripMenuItem();
+			setDataDirectoryToolStripMenuItem = new ToolStripMenuItem();
 			tcFileSelector.SuspendLayout();
 			tabPage2.SuspendLayout();
 			tabPage1.SuspendLayout();
@@ -252,7 +254,7 @@
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem, saveChangesToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, setDataDirectoryToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem, saveChangesToolStripMenuItem, fileToolStripMenuItem1 });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
@@ -260,30 +262,43 @@
 			// setObjectDirectoryToolStripMenuItem
 			// 
 			setObjectDirectoryToolStripMenuItem.Name = "setObjectDirectoryToolStripMenuItem";
-			setObjectDirectoryToolStripMenuItem.Size = new Size(189, 22);
-			setObjectDirectoryToolStripMenuItem.Text = "Load Object Directory";
+			setObjectDirectoryToolStripMenuItem.Size = new Size(217, 22);
+			setObjectDirectoryToolStripMenuItem.Text = "Set ObjData Directory";
 			setObjectDirectoryToolStripMenuItem.Click += setObjectDirectoryToolStripMenuItem_Click;
 			// 
 			// setPaletteToolStripMenuItem
 			// 
 			setPaletteToolStripMenuItem.Name = "setPaletteToolStripMenuItem";
-			setPaletteToolStripMenuItem.Size = new Size(189, 22);
-			setPaletteToolStripMenuItem.Text = "Load Palette";
+			setPaletteToolStripMenuItem.Size = new Size(217, 22);
+			setPaletteToolStripMenuItem.Text = "Load Palette Bitmap";
 			setPaletteToolStripMenuItem.Click += setPaletteToolStripMenuItem_Click;
 			// 
 			// recreateIndexToolStripMenuItem
 			// 
 			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
-			recreateIndexToolStripMenuItem.Size = new Size(189, 22);
+			recreateIndexToolStripMenuItem.Size = new Size(217, 22);
 			recreateIndexToolStripMenuItem.Text = "Recreate Index";
 			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
 			// 
 			// saveChangesToolStripMenuItem
 			// 
 			saveChangesToolStripMenuItem.Name = "saveChangesToolStripMenuItem";
-			saveChangesToolStripMenuItem.Size = new Size(189, 22);
-			saveChangesToolStripMenuItem.Text = "Save Changes (WIP)";
+			saveChangesToolStripMenuItem.Size = new Size(217, 22);
+			saveChangesToolStripMenuItem.Text = "Save Object Changes (WIP)";
 			saveChangesToolStripMenuItem.Click += saveChangesToolStripMenuItem_Click;
+			// 
+			// fileToolStripMenuItem1
+			// 
+			fileToolStripMenuItem1.Name = "fileToolStripMenuItem1";
+			fileToolStripMenuItem1.Size = new Size(217, 22);
+			fileToolStripMenuItem1.Text = "File";
+			// 
+			// setDataDirectoryToolStripMenuItem
+			// 
+			setDataDirectoryToolStripMenuItem.Name = "setDataDirectoryToolStripMenuItem";
+			setDataDirectoryToolStripMenuItem.Size = new Size(217, 22);
+			setDataDirectoryToolStripMenuItem.Text = "Set Data Directory";
+			setDataDirectoryToolStripMenuItem.Click += setDataDirectoryToolStripMenuItem_Click;
 			// 
 			// MainForm
 			// 
@@ -344,5 +359,7 @@
 		private ToolStripMenuItem recreateIndexToolStripMenuItem;
 		private ToolStripMenuItem saveChangesToolStripMenuItem;
 		private ToolStripMenuItem setPaletteToolStripMenuItem;
+		private ToolStripMenuItem setDataDirectoryToolStripMenuItem;
+		private ToolStripMenuItem fileToolStripMenuItem1;
 	}
 }

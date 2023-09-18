@@ -121,6 +121,7 @@ namespace OpenLocoTool.DatFileParsing
 					if (strings.ContainsKey((i, lang)))
 					{
 						Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
+						break;
 					}
 					else
 					{

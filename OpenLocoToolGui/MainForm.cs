@@ -82,7 +82,7 @@ namespace OpenLocoToolGui
 		{
 			if (string.IsNullOrEmpty(directory))
 			{
-				logger.Warning("Settings.ObjectDirectory not set");
+				logger.Warning("Invalid directory");
 				return false;
 			}
 
@@ -104,7 +104,7 @@ namespace OpenLocoToolGui
 			return true;
 		}
 
-		Bitmap MakeOriginalLocoIcon(bool isOriginal)
+		static Bitmap MakeOriginalLocoIcon(bool isOriginal)
 		{
 			var bitmap = new Bitmap(16, 16);
 			if (isOriginal)
@@ -116,7 +116,7 @@ namespace OpenLocoToolGui
 			return bitmap;
 		}
 
-		ImageList MakeImageList()
+		static ImageList MakeImageList()
 		{
 			var imageList = new ImageList();
 			var blankImage = MakeOriginalLocoIcon(false);
@@ -147,7 +147,7 @@ namespace OpenLocoToolGui
 
 			foreach (var obj in filteredFiles)
 			{
-				var relative = Path.GetRelativePath(model.Settings.ObjectDirectory, obj.Key);
+				var relative = Path.GetRelativePath(model.Settings.ObjDataDirectory, obj.Key);
 				AddObjectNode(obj.Key, relative, obj.Value.Name, tvFileTree);
 			}
 
@@ -206,7 +206,7 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			saveFileDialog1.InitialDirectory = model.Settings.ObjectDirectory;
+			saveFileDialog1.InitialDirectory = model.Settings.ObjDataDirectory;
 			saveFileDialog1.DefaultExt = "dat";
 			saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
 			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -243,9 +243,22 @@ namespace OpenLocoToolGui
 			}
 		}
 
+		private void setDataDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
+			{
+				MessageBox.Show("Data directory not supported yet");
+				return;
+				//if (LoadDirectory(objectDirBrowser.SelectedPath, true))
+				//{
+				//	InitUI();
+				//}
+			}
+		}
+
 		private void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (LoadDirectory(model.Settings.ObjectDirectory, false))
+			if (LoadDirectory(model.Settings.ObjDataDirectory, false))
 			{
 				InitUI();
 			}

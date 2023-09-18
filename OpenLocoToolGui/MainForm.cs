@@ -34,6 +34,34 @@ namespace OpenLocoToolGui
 		}
 		ILocoObject? currentUIObject;
 
+		IList<PictureBox> CurrentUIImages
+		{
+			get => currentUIImages;
+			set
+			{
+				currentUIImages = value;
+				CurrentUIImagePageNumber = 0;
+			}
+		}
+		IList<PictureBox> currentUIImages;
+
+		int CurrentUIImagePageNumber
+		{
+			get => currentUIImagePageNumber;
+			set
+			{
+				currentUIImagePageNumber = value;
+				var controls = GetPictureBoxesForPage(currentUIImagePageNumber);
+				flpImageTable.SuspendLayout();
+				flpImageTable.Controls.Clear();
+				flpImageTable.Controls.AddRange(controls.ToArray());
+				flpImageTable.ResumeLayout(true);
+			}
+		}
+		int currentUIImagePageNumber;
+
+		const int imagesPerPage = 50;
+
 		const string SettingsFile = "./settings.json";
 
 		public MainForm()
@@ -252,10 +280,13 @@ namespace OpenLocoToolGui
 				if (model.LoadDataDirectory(objectDirBrowser.SelectedPath))
 				{
 					pgObject.SelectedObject = model.G1;
-					CreateImages(model.G1.G1Header, model.G1.G1Elements, model.Palette);
+					var images = CreateImages(model.G1.G1Header, model.G1.G1Elements, model.Palette);
+					CurrentUIImages = CreateImageControls(images).ToList();
 				}
 			}
 		}
+
+		IEnumerable<PictureBox> GetPictureBoxesForPage(int page) => CurrentUIImages.Skip(page * imagesPerPage).Take(imagesPerPage);
 
 		private void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -313,12 +344,29 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		void CreateImages(G1Header G1Header, List<G1Element32> G1Elements, Color[] palette)
+		IEnumerable<PictureBox> CreateImageControls(IEnumerable<Bitmap> images)
+		{
+			// on these controls we could add a right_click handler to replace image with user-created one
+			foreach (var img in images)
+			{
+				var pb = new PictureBox
+				{
+					Image = img,
+					BorderStyle = BorderStyle.FixedSingle,
+					SizeMode = PictureBoxSizeMode.AutoSize,
+					ContextMenuStrip = imgContextMenu
+				};
+
+				yield return pb;
+			}
+		}
+
+		IEnumerable<Bitmap> CreateImages(G1Header G1Header, List<G1Element32> G1Elements, Color[] palette)
 		{
 			if (palette is null)
 			{
 				logger.Error("Palette was empty; please load a valid palette file");
-				return;
+				yield break;
 			}
 
 			for (var i = 0; i < G1Elements.Count; ++i)
@@ -352,18 +400,7 @@ namespace OpenLocoToolGui
 				}
 
 				dstImg.UnlockBits(dstImgData);
-
-				// on these controls we could add a right_click handler to replace image with user-created one
-				var pb = new PictureBox
-				{
-					Image = dstImg,
-					BorderStyle = BorderStyle.FixedSingle,
-					SizeMode = PictureBoxSizeMode.AutoSize,
-				};
-
-				pb.ContextMenuStrip = imgContextMenu;
-
-				flpImageTable.Controls.Add(pb);
+				yield return dstImg;
 			}
 		}
 
@@ -403,7 +440,8 @@ namespace OpenLocoToolGui
 					//SelectNewPalette();
 				}
 
-				CreateImages(CurrentUIObject.G1Header, CurrentUIObject.G1Elements, model.Palette);
+				var images = CreateImages(CurrentUIObject.G1Header, CurrentUIObject.G1Elements, model.Palette);
+				CurrentUIImages = CreateImageControls(images).ToArray();
 			}
 
 			if (CurrentUIObject?.Object is SoundObject soundObject)
@@ -435,5 +473,17 @@ namespace OpenLocoToolGui
 				}
 			}
 		}
+
+		private void btnPagePrevious_Click(object sender, EventArgs e)
+		{
+			CurrentUIImagePageNumber = Math.Max(CurrentUIImagePageNumber - 1, 0);
+		}
+
+		private void btnPageNext_Click(object sender, EventArgs e)
+		{
+			CurrentUIImagePageNumber = Math.Min(CurrentUIImagePageNumber + 1, CurrentUIImages.Count / imagesPerPage);
+		}
+
+		// todo: load image (though this is useless until full object + image table saving is implemented)
 	}
 }

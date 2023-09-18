@@ -56,6 +56,9 @@
 			fileToolStripMenuItem1 = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
+			btnPagePrevious = new Button();
+			btnPageNext = new Button();
+			scImageViewer = new SplitContainer();
 			tcFileSelector.SuspendLayout();
 			tabPage2.SuspendLayout();
 			tabPage1.SuspendLayout();
@@ -74,6 +77,10 @@
 			pnFileFilter.SuspendLayout();
 			menuStrip.SuspendLayout();
 			imgContextMenu.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)scImageViewer).BeginInit();
+			scImageViewer.Panel1.SuspendLayout();
+			scImageViewer.Panel2.SuspendLayout();
+			scImageViewer.SuspendLayout();
 			SuspendLayout();
 			// 
 			// tvFileTree
@@ -179,7 +186,7 @@
 			flpImageTable.FlowDirection = FlowDirection.TopDown;
 			flpImageTable.Location = new Point(0, 0);
 			flpImageTable.Name = "flpImageTable";
-			flpImageTable.Size = new Size(593, 580);
+			flpImageTable.Size = new Size(593, 550);
 			flpImageTable.TabIndex = 30;
 			// 
 			// scObjectAndLogs
@@ -212,7 +219,7 @@
 			// 
 			// scObjectViewer.Panel2
 			// 
-			scObjectViewer.Panel2.Controls.Add(flpImageTable);
+			scObjectViewer.Panel2.Controls.Add(scImageViewer);
 			scObjectViewer.Size = new Size(892, 580);
 			scObjectViewer.SplitterDistance = 295;
 			scObjectViewer.TabIndex = 32;
@@ -308,14 +315,56 @@
 			// 
 			imgContextMenu.Items.AddRange(new ToolStripItem[] { imgContextMenuSave });
 			imgContextMenu.Name = "imgContextMenu";
-			imgContextMenu.Size = new Size(181, 48);
+			imgContextMenu.Size = new Size(145, 26);
 			// 
 			// imgContextMenuSave
 			// 
 			imgContextMenuSave.Name = "imgContextMenuSave";
-			imgContextMenuSave.Size = new Size(180, 22);
+			imgContextMenuSave.Size = new Size(144, 22);
 			imgContextMenuSave.Text = "Export Image";
 			imgContextMenuSave.Click += imgContextMenuSave_Click;
+			// 
+			// btnPagePrevious
+			// 
+			btnPagePrevious.Dock = DockStyle.Left;
+			btnPagePrevious.Location = new Point(0, 0);
+			btnPagePrevious.Name = "btnPagePrevious";
+			btnPagePrevious.Size = new Size(294, 26);
+			btnPagePrevious.TabIndex = 0;
+			btnPagePrevious.Text = "Previous Page";
+			btnPagePrevious.UseVisualStyleBackColor = true;
+			btnPagePrevious.Click += btnPagePrevious_Click;
+			// 
+			// btnPageNext
+			// 
+			btnPageNext.Dock = DockStyle.Right;
+			btnPageNext.Location = new Point(299, 0);
+			btnPageNext.Name = "btnPageNext";
+			btnPageNext.Size = new Size(294, 26);
+			btnPageNext.TabIndex = 31;
+			btnPageNext.Text = "Next Page";
+			btnPageNext.UseVisualStyleBackColor = true;
+			btnPageNext.Click += btnPageNext_Click;
+			// 
+			// scImageViewer
+			// 
+			scImageViewer.Dock = DockStyle.Fill;
+			scImageViewer.IsSplitterFixed = true;
+			scImageViewer.Location = new Point(0, 0);
+			scImageViewer.Name = "scImageViewer";
+			scImageViewer.Orientation = Orientation.Horizontal;
+			// 
+			// scImageViewer.Panel1
+			// 
+			scImageViewer.Panel1.Controls.Add(flpImageTable);
+			// 
+			// scImageViewer.Panel2
+			// 
+			scImageViewer.Panel2.Controls.Add(btnPagePrevious);
+			scImageViewer.Panel2.Controls.Add(btnPageNext);
+			scImageViewer.Size = new Size(593, 580);
+			scImageViewer.SplitterDistance = 550;
+			scImageViewer.TabIndex = 32;
 			// 
 			// MainForm
 			// 
@@ -350,6 +399,10 @@
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
 			imgContextMenu.ResumeLayout(false);
+			scImageViewer.Panel1.ResumeLayout(false);
+			scImageViewer.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)scImageViewer).EndInit();
+			scImageViewer.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -381,5 +434,8 @@
 		private ToolStripMenuItem fileToolStripMenuItem1;
 		private ContextMenuStrip imgContextMenu;
 		private ToolStripMenuItem imgContextMenuSave;
+		private SplitContainer scImageViewer;
+		private Button btnPageNext;
+		private Button btnPagePrevious;
 	}
 }

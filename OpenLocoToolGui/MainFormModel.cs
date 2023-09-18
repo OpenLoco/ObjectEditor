@@ -143,14 +143,22 @@ namespace OpenLocoToolGui
 			if (useExistingIndex && File.Exists(Settings.IndexFilePath))
 			{
 				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.IndexFilePath) ?? HeaderIndex;
-				if (HeaderIndex.Keys.Except(allFiles).Any() || allFiles.Except(HeaderIndex.Keys).Any())
+
+				var a = HeaderIndex.Keys.Except(allFiles);
+				var b = allFiles.Except(HeaderIndex.Keys);
+				if (a.Any() || b.Any())
 				{
 					logger.Warning("Selected directory had an index file but it was outdated; suggest recreating it when you have a moment");
-
-					//logger.Info("Selected directory had an index file but it was outdated; recreating");
-					// index and current dir are different, need to recreate
-					//CreateIndex(allFiles, progress);
-					//SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex);
+					logger.Warning("Files in index that weren't in the directory:");
+					foreach (var aa in a)
+					{
+						logger.Warning($"  {aa}");
+					}
+					logger.Warning("Files in directory that weren't in the index:");
+					foreach (var bb in b)
+					{
+						logger.Warning($"  {bb}");
+					}
 				}
 			}
 			else

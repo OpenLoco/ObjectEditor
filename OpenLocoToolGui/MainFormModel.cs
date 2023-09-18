@@ -47,6 +47,8 @@ namespace OpenLocoToolGui
 
 		public Color[] Palette { get; private set; }
 
+		public IG1Dat G1 { get; set; }
+
 		public MainFormModel(ILogger logger, string settingsFile)
 		{
 			this.logger = logger;
@@ -163,6 +165,24 @@ namespace OpenLocoToolGui
 		public void SaveFile(string path, ILocoObject obj)
 		{
 			writer.Save(path, obj);
+		}
+
+		public bool LoadDataDirectory(string directory)
+		{
+			if (!Directory.Exists(directory))
+			{
+				logger.Warning("Invalid directory");
+				return false;
+			}
+
+			Settings.DataDirectory = directory;
+
+			// load G1 only for now
+			G1 = reader.LoadG1(Settings.G1Path);
+
+			SaveSettings();
+
+			return true;
 		}
 
 		public void LoadDirectory(string directory, IProgress<float> progress, bool useExistingIndex)

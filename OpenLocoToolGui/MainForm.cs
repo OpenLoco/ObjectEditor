@@ -5,6 +5,7 @@ using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace OpenLocoToolGui
 {
@@ -78,7 +79,7 @@ namespace OpenLocoToolGui
 			InitCategoryTreeView(filter);
 		}
 
-		bool LoadDirectory(string directory, bool useExistingIndex)
+		bool LoadObjDataDirectory(string directory, bool useExistingIndex)
 		{
 			if (string.IsNullOrEmpty(directory))
 			{
@@ -236,7 +237,7 @@ namespace OpenLocoToolGui
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
-				if (LoadDirectory(objectDirBrowser.SelectedPath, true))
+				if (LoadObjDataDirectory(objectDirBrowser.SelectedPath, true))
 				{
 					InitUI();
 				}
@@ -247,20 +248,20 @@ namespace OpenLocoToolGui
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
-				MessageBox.Show("Data directory not supported yet");
-				return;
-				//if (LoadDirectory(objectDirBrowser.SelectedPath, true))
-				//{
-				//	InitUI();
-				//}
+				if (model.LoadDataDirectory(objectDirBrowser.SelectedPath))
+				{
+					pgObject.SelectedObject = model.G1;
+					CreateImages(model.G1, model.Palette);
+				}
 			}
 		}
 
 		private void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (LoadDirectory(model.Settings.ObjDataDirectory, false))
+			if (LoadObjDataDirectory(model.Settings.ObjDataDirectory, false))
 			{
 				InitUI();
+
 			}
 		}
 
@@ -271,11 +272,6 @@ namespace OpenLocoToolGui
 
 		void tv_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-			if (e.Node == null)
-			{
-				//return;
-			}
-
 			CurrentUIObject = model.LoadAndCacheObject(e.Node.Name);
 		}
 
@@ -314,6 +310,57 @@ namespace OpenLocoToolGui
 			flpImageTable.Controls.Add(soundButton);
 
 			flpImageTable.ResumeLayout(true);
+		}
+
+		void CreateImages(IG1Dat obj, Color[] palette)
+		{
+			if (palette is null)
+			{
+				logger.Error("Palette was empty; please load a valid palette file");
+				return;
+			}
+
+			for (var i = 0; i < obj.G1Elements.Count; ++i)
+			{
+				var currElement = obj.G1Elements[i];
+				var imageData = currElement.ImageData;
+
+				if (currElement.ImageData.Length == 0 || currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
+				{
+					logger.Info($"skipped loading g1 element {i} with flags {currElement.Flags}");
+					continue;
+				}
+
+				var dstImg = new Bitmap(currElement.Width, currElement.Height);
+				var rect = new Rectangle(0, 0, currElement.Width, currElement.Height);
+				var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+				for (var y = 0; y < currElement.Height; ++y)
+				{
+					for (var x = 0; x < currElement.Width; ++x)
+					{
+						var paletteIndex = imageData[(y * currElement.Width) + x];
+
+						// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
+						//var colour = obj.Object is HillShapesObject
+						//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
+						//	: palette[paletteIndex];
+
+						var colour = palette[paletteIndex];
+						ImageHelpers.SetPixel(dstImgData, x, y, colour);
+					}
+				}
+
+				dstImg.UnlockBits(dstImgData);
+
+				// on these controls we could add a right_click handler to replace image with user-created one
+				var pb = new PictureBox
+				{
+					Image = dstImg,
+					BorderStyle = BorderStyle.FixedSingle,
+					SizeMode = PictureBoxSizeMode.AutoSize,
+				};
+				flpImageTable.Controls.Add(pb);
+			}
 		}
 
 		void CreateImages(ILocoObject obj, Color[] palette)

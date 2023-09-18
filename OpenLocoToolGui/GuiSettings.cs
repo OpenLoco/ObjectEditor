@@ -13,7 +13,12 @@ namespace OpenLocoToolGui
 
 		public string IndexFileName { get; set; } = "objectIndex.json";
 
+		public string G1DatFileName { get; set; } = "g1.DAT";
+
 		[JsonIgnore]
 		public string IndexFilePath => Path.Combine(ObjDataDirectory, IndexFileName);
+
+		[JsonIgnore]
+		public string G1Path => Path.Combine(DataDirectory, G1DatFileName);
 	}
 }

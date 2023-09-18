@@ -35,6 +35,14 @@ namespace OpenLocoTool.DatFileParsing
 			return checksum;
 		}
 
+		public IG1Dat LoadG1(string filename)
+		{
+			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
+			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
+			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
+			return new G1Dat(g1Header, imageTable);
+		}
+
 		// load file
 		public ILocoObject LoadFull(string filename, bool loadExtra = true)
 		{

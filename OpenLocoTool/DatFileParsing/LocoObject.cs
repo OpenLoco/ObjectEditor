@@ -74,6 +74,26 @@ namespace OpenLocoTool.DatFileParsing
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public interface IG1Dat
+	{
+		G1Header G1Header { get; set; }
+		List<G1Element32> G1Elements { get; set; }
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public class G1Dat : IG1Dat
+	{
+		public G1Dat(G1Header g1Header, List<G1Element32> g1Elements)
+		{
+			G1Header = g1Header;
+			G1Elements = g1Elements;
+		}
+
+		public G1Header G1Header { get; set; }
+		public List<G1Element32> G1Elements { get; set; }
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class LocoObject : ILocoObject
 	{
 		public LocoObject(S5Header s5Hdr, ObjectHeader objHdr, ILocoStruct obj, StringTable stringTable, G1Header g1Header, List<G1Element32> g1Elements)

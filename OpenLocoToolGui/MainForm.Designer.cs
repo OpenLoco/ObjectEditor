@@ -260,28 +260,28 @@
 			// setObjectDirectoryToolStripMenuItem
 			// 
 			setObjectDirectoryToolStripMenuItem.Name = "setObjectDirectoryToolStripMenuItem";
-			setObjectDirectoryToolStripMenuItem.Size = new Size(180, 22);
-			setObjectDirectoryToolStripMenuItem.Text = "Set Object Directory";
+			setObjectDirectoryToolStripMenuItem.Size = new Size(189, 22);
+			setObjectDirectoryToolStripMenuItem.Text = "Load Object Directory";
 			setObjectDirectoryToolStripMenuItem.Click += setObjectDirectoryToolStripMenuItem_Click;
 			// 
 			// setPaletteToolStripMenuItem
 			// 
 			setPaletteToolStripMenuItem.Name = "setPaletteToolStripMenuItem";
-			setPaletteToolStripMenuItem.Size = new Size(180, 22);
-			setPaletteToolStripMenuItem.Text = "Set Palette";
+			setPaletteToolStripMenuItem.Size = new Size(189, 22);
+			setPaletteToolStripMenuItem.Text = "Load Palette";
 			setPaletteToolStripMenuItem.Click += setPaletteToolStripMenuItem_Click;
 			// 
 			// recreateIndexToolStripMenuItem
 			// 
 			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
-			recreateIndexToolStripMenuItem.Size = new Size(180, 22);
+			recreateIndexToolStripMenuItem.Size = new Size(189, 22);
 			recreateIndexToolStripMenuItem.Text = "Recreate Index";
 			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
 			// 
 			// saveChangesToolStripMenuItem
 			// 
 			saveChangesToolStripMenuItem.Name = "saveChangesToolStripMenuItem";
-			saveChangesToolStripMenuItem.Size = new Size(180, 22);
+			saveChangesToolStripMenuItem.Size = new Size(189, 22);
 			saveChangesToolStripMenuItem.Text = "Save Changes (WIP)";
 			saveChangesToolStripMenuItem.Click += saveChangesToolStripMenuItem_Click;
 			// 

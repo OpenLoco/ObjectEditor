@@ -20,6 +20,18 @@ namespace OpenLocoToolGui
 		MainFormModel model;
 		ILogger logger;
 
+		// could use pgObject.SelectedObjectsChanged event, but we'll just do this for now
+		public ILocoObject? CurrentUIObject
+		{
+			get => currentUIObject;
+			set
+			{
+				currentUIObject = value;
+				RefreshObjectUI();
+			}
+		}
+		ILocoObject? currentUIObject;
+
 		const string SettingsFile = "./settings.json";
 
 		public MainForm()
@@ -248,29 +260,10 @@ namespace OpenLocoToolGui
 		{
 			if (e.Node == null)
 			{
-				return;
+				//return;
 			}
 
-			flpImageTable.Controls.Clear();
-
-			var obj = model.LoadAndCacheObject(e.Node.Name);
-
-			if (obj?.G1Elements != null && obj.G1Header != null && obj.G1Header.TotalSize != 0 && obj.G1Elements.Count != 0)
-			{
-				if (model.Palette is null)
-				{
-					SelectNewPalette();
-				}
-
-				CreateImages(obj, model.Palette);
-			}
-
-			if (obj?.Object is SoundObject soundObject)
-			{
-				CreateSounds(soundObject);
-			}
-
-			pgObject.SelectedObject = obj;
+			CurrentUIObject = model.LoadAndCacheObject(e.Node.Name);
 		}
 
 		void CreateSounds(SoundObject soundObject)
@@ -310,27 +303,8 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		void SelectNewPalette()
-		{
-			using (var openFileDialog = new OpenFileDialog())
-			{
-				openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
-				openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
-				openFileDialog.FilterIndex = 1;
-				openFileDialog.RestoreDirectory = true;
-
-				if (openFileDialog.ShowDialog() == DialogResult.OK)
-				{
-					model.PaletteFile = openFileDialog.FileName;
-				}
-			}
-		}
-
 		void CreateImages(ILocoObject obj, Color[] palette)
 		{
-			flpImageTable.SuspendLayout();
-			flpImageTable.Controls.Clear();
-
 			if (palette is null)
 			{
 				logger.Error("Palette was empty; please load a valid palette file");
@@ -378,13 +352,54 @@ namespace OpenLocoToolGui
 				};
 				flpImageTable.Controls.Add(pb);
 			}
+		}
 
-			flpImageTable.ResumeLayout(true);
+		void SelectNewPalette()
+		{
+			using (var openFileDialog = new OpenFileDialog())
+			{
+				openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+				openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
+				openFileDialog.FilterIndex = 1;
+				openFileDialog.RestoreDirectory = true;
+
+				if (openFileDialog.ShowDialog() == DialogResult.OK)
+				{
+					model.PaletteFile = openFileDialog.FileName;
+					RefreshObjectUI();
+				}
+			}
 		}
 
 		private void setPaletteToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			SelectNewPalette();
+		}
+
+		private void RefreshObjectUI()
+		{
+			flpImageTable.SuspendLayout();
+			flpImageTable.Controls.Clear();
+
+			if (CurrentUIObject?.G1Elements != null && CurrentUIObject.G1Header != null && CurrentUIObject.G1Header.TotalSize != 0 && CurrentUIObject.G1Elements.Count != 0)
+			{
+				if (model.Palette is null)
+				{
+					MessageBox.Show("No palette file loaded - please load one from File -> Load Palette");
+					//SelectNewPalette();
+				}
+
+				CreateImages(CurrentUIObject, model.Palette);
+			}
+
+			if (CurrentUIObject?.Object is SoundObject soundObject)
+			{
+				CreateSounds(soundObject);
+			}
+
+			flpImageTable.ResumeLayout(true);
+
+			pgObject.SelectedObject = CurrentUIObject;
 		}
 	}
 }

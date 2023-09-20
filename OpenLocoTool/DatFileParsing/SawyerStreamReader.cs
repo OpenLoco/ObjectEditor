@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Reflection;
 using System.Text;
+using System.Linq;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
@@ -41,6 +42,33 @@ namespace OpenLocoTool.DatFileParsing
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
 			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
 			return new G1Dat(g1Header, imageTable);
+		}
+
+		public IDictionary<int, string> Annotate(byte[] bytelist, out byte[] fullData)
+		{
+			Dictionary<int, string> annotations = new Dictionary<int, string>();
+			int running_count = 0;
+			annotations[0] = "S5 Header";
+			var s5Header = S5Header.Read(bytelist[0..S5Header.StructLength]);
+			running_count += S5Header.StructLength;
+			annotations[running_count] = "Object Header";
+			var objectHeader = ObjectHeader.Read(bytelist[running_count..(running_count + ObjectHeader.StructLength)]);
+			running_count += ObjectHeader.StructLength;
+			annotations[running_count] = "Loco Struct";
+			fullData = bytelist[..running_count].Concat(Decode(objectHeader.Encoding, bytelist[running_count..(int) (running_count + objectHeader.DataLength)]))
+				.ToArray();
+			var locoStruct = GetLocoStruct(s5Header.ObjectType, fullData[running_count..]);
+			if (locoStruct == null)
+			{
+				Debugger.Break();
+				throw new NullReferenceException("loco object was null");
+			}
+
+			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
+			var locoStructSize = structSize!.Size;
+			running_count += structSize!.Size;
+			annotations[running_count] = "String Table";
+			return annotations;
 		}
 
 		// load file

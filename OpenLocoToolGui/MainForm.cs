@@ -222,8 +222,23 @@ namespace OpenLocoToolGui
 				nodesToAdd.Add(typeNode);
 			}
 
+			TreeNode objDataNode = new TreeNode("ObjData");
+
+
 			tvObjType.Sort();
-			tvObjType.Nodes.AddRange(nodesToAdd.ToArray());
+			tvObjType.Nodes.Add(objDataNode);
+
+			if (File.Exists(model.Settings.G1Path))
+			{
+				TreeNode dataNode = new TreeNode("Data");
+
+				objDataNode.Nodes.AddRange(nodesToAdd.ToArray());
+
+				AddObjectNode(model.Settings.G1Path, "g1", "g1", dataNode);
+				tvObjType.Nodes.Add(dataNode);
+
+				model.LoadDataDirectory(model.Settings.DataDirectory);
+			}
 
 			tvObjType.ResumeLayout(true);
 		}
@@ -302,9 +317,41 @@ namespace OpenLocoToolGui
 			InitUI(tbFileFilter.Text);
 		}
 
+		void loadDataDump(string path)
+		{
+			if (File.Exists(path))
+			{
+				byte[] byteList = File.ReadAllBytes(path);
+				byte[] resultingByteList = byteList;
+				var annotations = new SawyerStreamReader(logger).Annotate(byteList, out resultingByteList);
+				string[] dumpLines = resultingByteList
+						.Select(b => string.Format("{0,2:X2}", b))
+						.Chunk(4)
+						.Select(c => string.Format("{0} ",string.Join("", c)))
+						.Chunk(4)
+						.Zip(Enumerable.Range(0,byteList.Length/16))
+						.Select(l => string.Format("{0:X8}: {1}",l.Second * 16, string.Join("",l.First))).ToArray();
+				foreach (var annotation in annotations)
+				{
+					dumpLines[annotation.Key / 16] += string.Format("{0} (0x{1:X2}) ",annotation.Value,annotation.Key);
+				}
+				richTextBox1.Text = string.Join("\n", dumpLines);
+			}
+		}
+
 		void tv_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-			CurrentUIObject = model.LoadAndCacheObject(e.Node.Name);
+			if (e.Node != null && e.Node.FullPath == "Data\\g1")
+			{
+				pgObject.SelectedObject = model.G1;
+				var images = CreateImages(model.G1.G1Header, model.G1.G1Elements, model.Palette);
+				CurrentUIImages = CreateImageControls(images).ToList();
+			}
+			else
+			{
+				CurrentUIObject = model.LoadAndCacheObject(e.Node.Name);
+			}
+			loadDataDump(e.Node.Name);
 		}
 
 		void CreateSounds(SoundObject soundObject)

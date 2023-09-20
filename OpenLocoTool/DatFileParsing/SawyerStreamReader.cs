@@ -44,14 +44,56 @@ namespace OpenLocoTool.DatFileParsing
 			return new G1Dat(g1Header, imageTable);
 		}
 
+		public int AnnotateStringTable(byte[] fullData, int running_count, ILocoStruct locoStruct, IDictionary<int,string> annotations)
+		{
+			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
+			var stringsInTable = stringAttr?.Count ?? 1;
+			for (int i = 0; i < stringsInTable; i++)
+			{
+				string value = "";
+				if (annotations.TryGetValue(running_count, out value))
+				{
+					annotations[running_count] = value + ", Stringlist " + i;
+				}
+				else
+				{
+					annotations[running_count] = "Stringlist " + i;
+				}
+				int index = Array.IndexOf(fullData[running_count..], (byte)0xFF);
+				int endIndexOfStringList = index + running_count;
+				int null_index = 0;
+				do
+				{
+					annotations[running_count] = ((LanguageId)fullData[running_count]).ToString();
+					running_count++;
+					null_index = Array.IndexOf(fullData[running_count..], (byte)0);
+					string string_element = new string(fullData[running_count..(running_count + null_index)].Select(b => (char)b).ToArray());
+					value = "";
+					if (annotations.TryGetValue(running_count, out value))
+					{
+						annotations[running_count] = value + ", '" + string_element + "'";
+					}
+					else
+					{
+						annotations[running_count] = "'" + string_element + "'";
+					}
+					running_count += null_index + 1;
+				} while (running_count < endIndexOfStringList);
+				running_count = endIndexOfStringList + 1;
+			}
+			return running_count;
+		}
 		public IDictionary<int, string> Annotate(byte[] bytelist, out byte[] fullData)
 		{
 			Dictionary<int, string> annotations = new Dictionary<int, string>();
 			int running_count = 0;
-			annotations[0] = "S5 Header";
+			annotations[0] = "S5 Header, Flags";
+			annotations[4] = "Name: " + System.Text.Encoding.ASCII.GetString(bytelist[4..12]);
+			annotations[12] = "Checksum";
 			var s5Header = S5Header.Read(bytelist[0..S5Header.StructLength]);
 			running_count += S5Header.StructLength;
-			annotations[running_count] = "Object Header";
+			annotations[running_count] = "Object Header, Encoding";
+			annotations[running_count + 1] = "Data Length";
 			var objectHeader = ObjectHeader.Read(bytelist[running_count..(running_count + ObjectHeader.StructLength)]);
 			running_count += ObjectHeader.StructLength;
 			annotations[running_count] = "Loco Struct";
@@ -64,10 +106,41 @@ namespace OpenLocoTool.DatFileParsing
 				throw new NullReferenceException("loco object was null");
 			}
 
+			var annotateProperties = (object o,Dictionary<int,string> annotations) =>
+			{
+				foreach (var p in o.GetType().GetProperties())
+				{
+					var offset = p.GetCustomAttribute<LocoStructOffsetAttribute>();
+					if (offset != null)
+					{
+						int location = running_count + (int)offset!.Offset;
+						string value = "";
+						if (annotations.TryGetValue(location, out value))
+						{
+							annotations[location] = value + ", " + p.Name;
+						}
+						else if (p != null)
+						{
+							annotations[location] = p.Name;
+						}
+					}
+				}
+			};
+
+
+			//			annotateProperties(s5Header, annotations);
+			//			annotateProperties(objectHeader, annotations);
+			annotateProperties(locoStruct, annotations);
+
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
 			var locoStructSize = structSize!.Size;
 			running_count += structSize!.Size;
 			annotations[running_count] = "String Table";
+
+			running_count = AnnotateStringTable(fullData, running_count, locoStruct, annotations);
+
+			annotations[running_count] = "Loco Variables";
+
 			return annotations;
 		}
 

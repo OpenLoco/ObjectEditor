@@ -44,21 +44,26 @@ namespace OpenLocoTool.DatFileParsing
 			return new G1Dat(g1Header, imageTable);
 		}
 
+		void AddToAnnotation(IDictionary<int,string> annotations, int key, string new_value)
+		{
+			string check = "";
+			if (annotations.TryGetValue(key, out check))
+			{
+				annotations[key] = check + ", " + new_value;
+			}
+			else
+			{
+				annotations[key] = new_value;
+			}
+		}
+
 		public int AnnotateStringTable(byte[] fullData, int running_count, ILocoStruct locoStruct, IDictionary<int,string> annotations)
 		{
 			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
 			var stringsInTable = stringAttr?.Count ?? 1;
 			for (int i = 0; i < stringsInTable; i++)
 			{
-				string value = "";
-				if (annotations.TryGetValue(running_count, out value))
-				{
-					annotations[running_count] = value + ", Stringlist " + i;
-				}
-				else
-				{
-					annotations[running_count] = "Stringlist " + i;
-				}
+				AddToAnnotation(annotations,running_count,", Stringlist " + i);
 				int index = Array.IndexOf(fullData[running_count..], (byte)0xFF);
 				int endIndexOfStringList = index + running_count;
 				int null_index = 0;
@@ -68,15 +73,7 @@ namespace OpenLocoTool.DatFileParsing
 					running_count++;
 					null_index = Array.IndexOf(fullData[running_count..], (byte)0);
 					string string_element = new string(fullData[running_count..(running_count + null_index)].Select(b => (char)b).ToArray());
-					value = "";
-					if (annotations.TryGetValue(running_count, out value))
-					{
-						annotations[running_count] = value + ", '" + string_element + "'";
-					}
-					else
-					{
-						annotations[running_count] = "'" + string_element + "'";
-					}
+					AddToAnnotation(annotations, running_count, ", '" + string_element + "'");
 					running_count += null_index + 1;
 				} while (running_count < endIndexOfStringList);
 				running_count = endIndexOfStringList + 1;
@@ -127,9 +124,6 @@ namespace OpenLocoTool.DatFileParsing
 				}
 			};
 
-
-			//			annotateProperties(s5Header, annotations);
-			//			annotateProperties(objectHeader, annotations);
 			annotateProperties(locoStruct, annotations);
 
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
@@ -141,6 +135,49 @@ namespace OpenLocoTool.DatFileParsing
 
 			annotations[running_count] = "Loco Variables";
 
+			ReadOnlySpan<byte> remainingData = fullData[running_count..];
+			int currentRemainingData = remainingData.Length;
+			if (locoStruct is ILocoStructVariableData locoStructExtra)
+			{
+				remainingData = locoStructExtra.Load(remainingData);
+			}
+			running_count += currentRemainingData - remainingData.Length;
+
+            annotations[running_count] = "G1 Header";
+			if(running_count < fullData.Length)
+			{
+				var g1Header = new G1Header(
+					BitConverter.ToUInt32(remainingData[0..4]),
+					BitConverter.ToUInt32(remainingData[4..8]));
+				running_count += 8;
+				annotations[running_count] = "G1 Data";
+
+				int imageDataStart = running_count;
+
+				int g1Element32Size = 0x10;
+
+				List<G1Element32> g32elements = new List<G1Element32>();
+
+				for (int i = 0; i < g1Header.NumEntries; i++)
+				{
+					annotations[running_count] = "G1Header " + (i + 1);
+					var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(fullData[running_count..]);
+					annotateProperties(g32Element, annotations);
+					g32elements.Add(g32Element);
+					running_count += g1Element32Size;
+				}
+
+				annotations[running_count] = "G1 Image Data";
+                imageDataStart = running_count;
+
+				for (int i = 0; i < g32elements.Count; i++)
+				{
+					running_count = imageDataStart + (int)g32elements[i].Offset;
+					AddToAnnotation(annotations, running_count, "G1 Image " + (i + 1));
+				}
+
+
+			}
 			return annotations;
 		}
 

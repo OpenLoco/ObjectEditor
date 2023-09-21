@@ -329,17 +329,17 @@ namespace OpenLocoToolGui
 						.Chunk(4)
 						.Select(c => string.Format("{0} ", string.Join("", c)))
 						.Chunk(4)
-						.Zip(Enumerable.Range(0, byteList.Length / 16))
+						.Zip(Enumerable.Range(0, resultingByteList.Length / 16))
 						.Select(l => string.Format("{0:X8}: {1}", l.Second * 16, string.Join("", l.First))).ToArray();
 				foreach (var annotation in annotations)
 				{
-					if(annotation.Key / 16 < dumpLines.Length)
+					if (annotation.Key / 16 < dumpLines.Length)
 					{
 						dumpLines[annotation.Key / 16] += string.Format("{0} (0x{1:X2}) ", annotation.Value, annotation.Key);
 					}
 					else
 					{
-					    logger.Error(string.Format("annotation.Key is too large: {0:X8}", annotation.Key / 16));
+						logger.Error(string.Format("annotation.Key is too large: {0:X8}", annotation.Key / 16));
 					}
 				}
 				richTextBox1.Text = string.Join("\n", dumpLines);

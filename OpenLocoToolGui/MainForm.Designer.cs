@@ -45,7 +45,8 @@
 			btnPagePrevious = new Button();
 			btnPageNext = new Button();
 			ObjectDumpTab = new TabPage();
-			richTextBox1 = new RichTextBox();
+			tvDATDumpAnnotations = new TreeView();
+			rtbDATDumpView = new RichTextBox();
 			scTop = new SplitContainer();
 			tcFileSelector = new TabControl();
 			tabPage2 = new TabPage();
@@ -63,6 +64,9 @@
 			fileToolStripMenuItem1 = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
+			goToHeaderInDumpToolStripMenuItem = new ToolStripMenuItem();
+			headerToolStripMenuItem = new ToolStripMenuItem();
+			pictureDataToolStripMenuItem = new ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).BeginInit();
 			scObjectAndLogs.Panel1.SuspendLayout();
 			scObjectAndLogs.Panel2.SuspendLayout();
@@ -246,7 +250,8 @@
 			// 
 			// ObjectDumpTab
 			// 
-			ObjectDumpTab.Controls.Add(richTextBox1);
+			ObjectDumpTab.Controls.Add(tvDATDumpAnnotations);
+			ObjectDumpTab.Controls.Add(rtbDATDumpView);
 			ObjectDumpTab.Location = new Point(4, 24);
 			ObjectDumpTab.Name = "ObjectDumpTab";
 			ObjectDumpTab.Padding = new Padding(3);
@@ -255,17 +260,28 @@
 			ObjectDumpTab.Text = "Object Data";
 			ObjectDumpTab.UseVisualStyleBackColor = true;
 			// 
-			// richTextBox1
+			// tvDATDumpAnnotations
 			// 
-			richTextBox1.Dock = DockStyle.Fill;
-			richTextBox1.Font = new Font("Cascadia Mono", 9F, FontStyle.Regular, GraphicsUnit.Point);
-			richTextBox1.Location = new Point(3, 3);
-			richTextBox1.Name = "richTextBox1";
-			richTextBox1.ReadOnly = true;
-			richTextBox1.Size = new Size(878, 546);
-			richTextBox1.TabIndex = 0;
-			richTextBox1.Text = "";
-			richTextBox1.WordWrap = false;
+			tvDATDumpAnnotations.Dock = DockStyle.Left;
+			tvDATDumpAnnotations.Location = new Point(3, 3);
+			tvDATDumpAnnotations.Name = "tvDATDumpAnnotations";
+			tvDATDumpAnnotations.Size = new Size(200, 546);
+			tvDATDumpAnnotations.TabIndex = 1;
+			tvDATDumpAnnotations.AfterSelect += dataDumpAnnotations_AfterSelect;
+			// 
+			// rtbDATDumpView
+			// 
+			rtbDATDumpView.Dock = DockStyle.Right;
+			rtbDATDumpView.Font = new Font("Cascadia Mono", 9F, FontStyle.Regular, GraphicsUnit.Point);
+			rtbDATDumpView.HideSelection = false;
+			rtbDATDumpView.Location = new Point(209, 3);
+			rtbDATDumpView.Name = "rtbDATDumpView";
+			rtbDATDumpView.ReadOnly = true;
+			rtbDATDumpView.ShowSelectionMargin = true;
+			rtbDATDumpView.Size = new Size(672, 546);
+			rtbDATDumpView.TabIndex = 0;
+			rtbDATDumpView.Text = "";
+			rtbDATDumpView.WordWrap = false;
 			// 
 			// scTop
 			// 
@@ -407,16 +423,37 @@
 			// 
 			// imgContextMenu
 			// 
-			imgContextMenu.Items.AddRange(new ToolStripItem[] { imgContextMenuSave });
+			imgContextMenu.Items.AddRange(new ToolStripItem[] { imgContextMenuSave, goToHeaderInDumpToolStripMenuItem });
 			imgContextMenu.Name = "imgContextMenu";
-			imgContextMenu.Size = new Size(145, 26);
+			imgContextMenu.Size = new Size(155, 48);
 			// 
 			// imgContextMenuSave
 			// 
 			imgContextMenuSave.Name = "imgContextMenuSave";
-			imgContextMenuSave.Size = new Size(144, 22);
+			imgContextMenuSave.Size = new Size(154, 22);
 			imgContextMenuSave.Text = "Export Image";
 			imgContextMenuSave.Click += imgContextMenuSave_Click;
+			// 
+			// goToHeaderInDumpToolStripMenuItem
+			// 
+			goToHeaderInDumpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { headerToolStripMenuItem, pictureDataToolStripMenuItem });
+			goToHeaderInDumpToolStripMenuItem.Name = "goToHeaderInDumpToolStripMenuItem";
+			goToHeaderInDumpToolStripMenuItem.Size = new Size(154, 22);
+			goToHeaderInDumpToolStripMenuItem.Text = "Select In Dump";
+			// 
+			// headerToolStripMenuItem
+			// 
+			headerToolStripMenuItem.Name = "headerToolStripMenuItem";
+			headerToolStripMenuItem.Size = new Size(180, 22);
+			headerToolStripMenuItem.Text = "Header";
+			headerToolStripMenuItem.Click += headerToolStripMenuItem_Click;
+			// 
+			// pictureDataToolStripMenuItem
+			// 
+			pictureDataToolStripMenuItem.Name = "pictureDataToolStripMenuItem";
+			pictureDataToolStripMenuItem.Size = new Size(180, 22);
+			pictureDataToolStripMenuItem.Text = "Picture Data";
+			pictureDataToolStripMenuItem.Click += pictureDataToolStripMenuItem_Click;
 			// 
 			// MainForm
 			// 
@@ -495,6 +532,10 @@
 		private TreeView tvObjType;
 		private TabPage tabPage1;
 		private TreeView tvFileTree;
-		private RichTextBox richTextBox1;
+		private RichTextBox rtbDATDumpView;
+		private TreeView tvDATDumpAnnotations;
+		private ToolStripMenuItem goToHeaderInDumpToolStripMenuItem;
+		private ToolStripMenuItem headerToolStripMenuItem;
+		private ToolStripMenuItem pictureDataToolStripMenuItem;
 	}
 }

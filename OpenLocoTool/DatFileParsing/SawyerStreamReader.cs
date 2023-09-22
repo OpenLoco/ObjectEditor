@@ -80,6 +80,27 @@ namespace OpenLocoTool.DatFileParsing
 			}
 			return running_count;
 		}
+
+		void annotateProperties(object o, IDictionary<int, string> annotations, int running_count = 0)
+		{
+			foreach (var p in o.GetType().GetProperties())
+			{
+				var offset = p.GetCustomAttribute<LocoStructOffsetAttribute>();
+				if (offset != null)
+				{
+					int location = running_count + (int)offset!.Offset;
+					string value;
+					if (annotations.TryGetValue(location, out value))
+					{
+						annotations[location] = value + ", " + p.Name;
+					}
+					else if (p != null)
+					{
+						annotations[location] = p.Name;
+					}
+				}
+			}
+		}
 		public IDictionary<int, string> Annotate(byte[] bytelist, out byte[] fullData)
 		{
 			Dictionary<int, string> annotations = new Dictionary<int, string>();
@@ -94,7 +115,7 @@ namespace OpenLocoTool.DatFileParsing
 			var objectHeader = ObjectHeader.Read(bytelist[running_count..(running_count + ObjectHeader.StructLength)]);
 			running_count += ObjectHeader.StructLength;
 			annotations[running_count] = "Loco Struct";
-			fullData = bytelist[..running_count].Concat(Decode(objectHeader.Encoding, bytelist[running_count..(int) (running_count + objectHeader.DataLength)]))
+			fullData = bytelist[..running_count].Concat(Decode(objectHeader.Encoding, bytelist[running_count..(int)(running_count + objectHeader.DataLength)]))
 				.ToArray();
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, fullData[running_count..]);
 			if (locoStruct == null)
@@ -103,28 +124,7 @@ namespace OpenLocoTool.DatFileParsing
 				throw new NullReferenceException("loco object was null");
 			}
 
-			var annotateProperties = (object o,Dictionary<int,string> annotations) =>
-			{
-				foreach (var p in o.GetType().GetProperties())
-				{
-					var offset = p.GetCustomAttribute<LocoStructOffsetAttribute>();
-					if (offset != null)
-					{
-						int location = running_count + (int)offset!.Offset;
-						string value = "";
-						if (annotations.TryGetValue(location, out value))
-						{
-							annotations[location] = value + ", " + p.Name;
-						}
-						else if (p != null)
-						{
-							annotations[location] = p.Name;
-						}
-					}
-				}
-			};
-
-			annotateProperties(locoStruct, annotations);
+			annotateProperties(locoStruct, annotations, running_count);
 
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
 			var locoStructSize = structSize!.Size;
@@ -143,12 +143,19 @@ namespace OpenLocoTool.DatFileParsing
 			}
 			running_count += currentRemainingData - remainingData.Length;
 
+			return AnnotateG1Data(fullData, annotations, running_count);
+		}
+
+		public IDictionary<int,string> AnnotateG1Data(byte[] fullData, IDictionary<int, string> annotations, int running_count = 0)
+		{
             annotations[running_count] = "G1 Header";
 			if(running_count < fullData.Length)
 			{
+				AddToAnnotation(annotations, running_count, "Number Of Entries");
+				AddToAnnotation(annotations, running_count + 4, "Total Size");
 				var g1Header = new G1Header(
-					BitConverter.ToUInt32(remainingData[0..4]),
-					BitConverter.ToUInt32(remainingData[4..8]));
+					BitConverter.ToUInt32(fullData[running_count..(running_count + 4)]),
+					BitConverter.ToUInt32(fullData[running_count..(running_count + 8)]));
 				running_count += 8;
 				annotations[running_count] = "G1 Data";
 
@@ -160,9 +167,9 @@ namespace OpenLocoTool.DatFileParsing
 
 				for (int i = 0; i < g1Header.NumEntries; i++)
 				{
-					annotations[running_count] = "G1Header " + (i + 1);
+					AddToAnnotation(annotations, running_count, "G1Header " + (i + 1));
 					var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(fullData[running_count..]);
-					annotateProperties(g32Element, annotations);
+					annotateProperties(g32Element, annotations, running_count);
 					g32elements.Add(g32Element);
 					running_count += g1Element32Size;
 				}
@@ -175,8 +182,6 @@ namespace OpenLocoTool.DatFileParsing
 					running_count = imageDataStart + (int)g32elements[i].Offset;
 					AddToAnnotation(annotations, running_count, "G1 Image " + (i + 1));
 				}
-
-
 			}
 			return annotations;
 		}

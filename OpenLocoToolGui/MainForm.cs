@@ -4,9 +4,11 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
+using System;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace OpenLocoToolGui
 {
@@ -43,7 +45,7 @@ namespace OpenLocoToolGui
 				CurrentUIImagePageNumber = 0;
 			}
 		}
-		IList<PictureBox> currentUIImages;
+		IList<PictureBox> currentUIImages = new List<PictureBox>();
 
 		int CurrentUIImagePageNumber
 		{
@@ -59,6 +61,14 @@ namespace OpenLocoToolGui
 			}
 		}
 		int currentUIImagePageNumber;
+		// DAT Dump viewer fields
+		IDictionary<int, string> DATDumpAnnotations;
+		IDictionary<string, (int, int)> DATDumpAnnotationIdentifiers = new Dictionary<string, (int, int)>();
+		const int bytesPerDumpLine = 32;
+		const int addressStringSizeBytes = 8;
+		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
+		const int dumpWordSize = 4;
+		// End DAT Dump viewer fields
 
 		const int imagesPerPage = 50;
 
@@ -317,32 +327,89 @@ namespace OpenLocoToolGui
 			InitUI(tbFileFilter.Text);
 		}
 
-		void loadDataDump(string path)
+		void loadDataDump(string path, bool isG1 = false)
 		{
 			if (File.Exists(path))
 			{
 				byte[] byteList = File.ReadAllBytes(path);
 				byte[] resultingByteList = byteList;
-				var annotations = new SawyerStreamReader(logger).Annotate(byteList, out resultingByteList);
+				if(!isG1)
+				{
+					DATDumpAnnotations = new SawyerStreamReader(logger).Annotate(byteList, out resultingByteList);
+				}
+				else
+				{
+					DATDumpAnnotations = new SawyerStreamReader(logger).AnnotateG1Data(byteList, new Dictionary<int, string>());
+				}
+
 				string[] dumpLines = resultingByteList
 						.Select(b => string.Format("{0,2:X2}", b))
-						.Chunk(4)
+						.Chunk(dumpWordSize)
 						.Select(c => string.Format("{0} ", string.Join("", c)))
-						.Chunk(4)
-						.Zip(Enumerable.Range(0, resultingByteList.Length / 16))
-						.Select(l => string.Format("{0:X8}: {1}", l.Second * 16, string.Join("", l.First))).ToArray();
-				foreach (var annotation in annotations)
+						.Chunk(bytesPerDumpLine / dumpWordSize)
+						.Zip(Enumerable.Range(0, resultingByteList.Length / bytesPerDumpLine))
+						.Select(l => string.Format("{0:X" + addressStringSizeBytes + "}: {1}", l.Second * bytesPerDumpLine, string.Join("", l.First))).ToArray();
+				tvDATDumpAnnotations.SuspendLayout();
+				tvDATDumpAnnotations.Nodes.Clear();
+				var currentParent = new TreeNode();
+				string previousNodeText = null;
+				int previousNodeValue = 0;
+				string previousParentNodeText = null;
+				int previousParentNodeValue = 0;
+				foreach (var annotation in DATDumpAnnotations)
 				{
-					if (annotation.Key / 16 < dumpLines.Length)
+					if (annotation.Value.Contains(",") && !annotation.Value.Contains("'"))
 					{
-						dumpLines[annotation.Key / 16] += string.Format("{0} (0x{1:X2}) ", annotation.Value, annotation.Key);
+						currentParent = new TreeNode(annotation.Value.Split(",").First());
+						tvDATDumpAnnotations.Nodes.Add(currentParent);
+						if (previousParentNodeText != null)
+						{
+							DATDumpAnnotationIdentifiers[previousParentNodeText] = (previousParentNodeValue, annotation.Key);
+						}
+						previousParentNodeText = string.Format("{0} (0x{1:X2})", currentParent.Text, annotation.Key);
+						previousParentNodeValue = annotation.Key;
+						foreach (var val in annotation.Value.Split(","))
+						{
+							TreeNode node = new TreeNode(string.Format("{0} (0x{1:X2})", val.Trim(), annotation.Key));
+							currentParent.Nodes.Add(node);
+							if (previousNodeText != null)
+							{
+								DATDumpAnnotationIdentifiers[previousNodeText] = (previousNodeValue, annotation.Key);
+							}
+							previousNodeText = node.Text;
+							previousNodeValue = annotation.Key;
+						}
 					}
 					else
 					{
-						logger.Error(string.Format("annotation.Key is too large: {0:X8}", annotation.Key / 16));
+						TreeNode node = new TreeNode(string.Format("{0} (0x{1:X2})", annotation.Value.Trim(), annotation.Key));
+						currentParent.Nodes.Add(node);
+						if (previousNodeText != null)
+						{
+							DATDumpAnnotationIdentifiers[previousNodeText] = (previousNodeValue, annotation.Key);
+						}
+						previousNodeText = node.Text;
+						previousNodeValue = annotation.Key;
 					}
+					//if (annotation.Key / 16 < dumpLines.Length)
+					//{
+					//	dumpLines[annotation.Key / 16] += string.Format("{0} (0x{1:X2}) ", annotation.Value, annotation.Key);
+					//}
+					//else
+					//{
+					//	logger.Error(string.Format("annotation.Key is too large: {0:X8}", annotation.Key / 16));
+					//}
 				}
-				richTextBox1.Text = string.Join("\n", dumpLines);
+				if (previousNodeText != null)
+				{
+					DATDumpAnnotationIdentifiers[previousNodeText] = (previousNodeValue, resultingByteList.Length - 1);
+				}
+				if (previousParentNodeText != null)
+				{
+					DATDumpAnnotationIdentifiers[previousParentNodeText] = (previousParentNodeValue, resultingByteList.Length - 1);
+				}
+				tvDATDumpAnnotations.ResumeLayout();
+				rtbDATDumpView.Text = string.Join("\n", dumpLines);
 			}
 		}
 
@@ -353,12 +420,13 @@ namespace OpenLocoToolGui
 				pgObject.SelectedObject = model.G1;
 				var images = CreateImages(model.G1.G1Header, model.G1.G1Elements, model.Palette);
 				CurrentUIImages = CreateImageControls(images).ToList();
+				loadDataDump(e.Node.Name,true);
 			}
 			else
 			{
 				CurrentUIObject = model.LoadAndCacheObject(e.Node.Name);
+				loadDataDump(e.Node.Name);
 			}
-			loadDataDump(e.Node.Name);
 		}
 
 		void CreateSounds(SoundObject soundObject)
@@ -535,7 +603,76 @@ namespace OpenLocoToolGui
 
 		private void btnPageNext_Click(object sender, EventArgs e)
 		{
-			CurrentUIImagePageNumber = Math.Min(CurrentUIImagePageNumber + 1, CurrentUIImages.Count / imagesPerPage);
+			if (currentUIImages != null && currentUIImages.Count > 0)
+			{
+				CurrentUIImagePageNumber = Math.Min(CurrentUIImagePageNumber + 1, CurrentUIImages.Count / imagesPerPage);
+			}
+		}
+
+		private void dataDumpAnnotations_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			(int, int) positionValues;
+
+			var dumpPositionToRTBPosition = (int position) => rtbDATDumpView.GetFirstCharIndexFromLine(
+				Math.Min(position / bytesPerDumpLine, rtbDATDumpView.Lines.Length - 1))
+				+ (position % bytesPerDumpLine) * 2            // Bytes are displayed 2 characters wide
+				+ (position % bytesPerDumpLine) / dumpWordSize // Every word is separated by an extra space
+				+ addressStringSizePrependBytes;               // Each line starts with 10 characters indicating address
+
+			if (DATDumpAnnotationIdentifiers.TryGetValue(e.Node!.Text, out positionValues))
+			{
+				var linePosStart = rtbDATDumpView.GetFirstCharIndexFromLine(positionValues.Item1 / bytesPerDumpLine);
+				var linePosEnd = rtbDATDumpView.GetFirstCharIndexFromLine(positionValues.Item2 / bytesPerDumpLine);
+
+				int selectPositionStart = dumpPositionToRTBPosition(positionValues.Item1);
+				int selectPositionEnd = dumpPositionToRTBPosition(positionValues.Item2);
+				rtbDATDumpView.Select(dumpPositionToRTBPosition(positionValues.Item1),
+									  dumpPositionToRTBPosition(positionValues.Item2) - dumpPositionToRTBPosition(positionValues.Item1));
+			}
+		}
+
+		private void headerToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (imgContextMenu.SourceControl is PictureBox pb)
+			{
+				int index = currentUIImages.IndexOf(pb);
+				if (index >= 0)
+				{
+					foreach (TreeNode node in tvDATDumpAnnotations.Nodes)
+					{
+						if (node.Text == "G1Header " + (index + 1) && node.Nodes.Count > 0)
+						{
+							ObjectTabViewControl.SelectedIndex = 1;
+							dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(node.Nodes[0]));
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		private void pictureDataToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (imgContextMenu.SourceControl is PictureBox pb)
+			{
+				int index = currentUIImages.IndexOf(pb);
+				if (index >= 0)
+				{
+					foreach (TreeNode parent in tvDATDumpAnnotations.Nodes)
+					{
+						foreach (TreeNode node in parent.Nodes)
+						{
+							if (node.Text.Contains("G1 Image " + (index + 1)))
+							{
+								ObjectTabViewControl.SelectedIndex = 1;
+								tvDATDumpAnnotations.SelectedNode = node;
+								dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(node));
+								break;
+							}
+						}
+					}
+				}
+			}
 		}
 
 		// todo: load image (though this is useless until full object + image table saving is implemented)

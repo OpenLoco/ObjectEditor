@@ -1,6 +1,4 @@
-﻿using OpenLocoTool.Objects;
-
-namespace OpenLocoTool.DatFileParsing
+﻿namespace OpenLocoTool.DatFileParsing
 {
 	public static class ByteWriter
 	{

@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace OpenLocoTool
+﻿namespace OpenLocoTool
 {
 	public class Annotation
 	{
-		private string name = "";
-		private Annotation? parent = null;
 		private int start = 0;
 		private int end = 0;
 		private int length = 0;
@@ -29,8 +21,8 @@ namespace OpenLocoTool
 			Length = length;
 		}
 
-		public string Name { get => name; set => name = value; }
-		public Annotation? Parent { get => parent; set => parent = value; }
+		public string Name { get; set; }
+		public Annotation? Parent { get; set; }
 		public int Start { get => start; set { start = value; Length = Length; } }
 		public int End { get => end; set { end = value; length = end - start; } }
 		public int Length { get => length; set { length = value; end = start + length; } }

@@ -46,7 +46,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			var locoStructAnnotation = new Annotation("Loco Struct", runningCount, locoStructSize);
 			annotations.Add(locoStructAnnotation);
-			AnnotateProperties(locoStruct, annotations, runningCount, locoStructAnnotation);
+			annotations.AddRange(AnnotateProperties(locoStruct, runningCount, locoStructAnnotation));
 
 			runningCount += structSize!.Size;
 
@@ -80,38 +80,41 @@ namespace OpenLocoTool.DatFileParsing
 				annotations.Add(g1HeaderAnnotation);
 				annotations.Add(new Annotation("Number Of Entries", g1HeaderAnnotation, runningCount, sizeof(uint32_t)));
 				annotations.Add(new Annotation("Total Size", g1HeaderAnnotation, runningCount + sizeof(uint32_t), sizeof(uint32_t)));
+
 				var g1Header = new G1Header(
 					BitConverter.ToUInt32(fullData.AsSpan()[runningCount..(runningCount + 4)]),
 					BitConverter.ToUInt32(fullData.AsSpan()[runningCount..(runningCount + 8)]));
 
 				runningCount += 8;
 
-				var g1DataAnnotation = new Annotation("Data", g1Annotation, runningCount, 1);
-				g1DataAnnotation.End = fullData.Length;
+				var g1DataAnnotation = new Annotation("Data", g1Annotation, runningCount, 1)
+				{
+					End = fullData.Length
+				};
 
 				var gHeadersAnnotation = new Annotation("Headers", g1DataAnnotation, runningCount, 1);
 				annotations.Add(g1DataAnnotation);
 				annotations.Add(gHeadersAnnotation);
 
-				var imageDataStart = runningCount;
-				var g1Element32Size = 0x10;
 				var g32elements = new List<G1Element32>();
 
 				for (var i = 0; i < g1Header.NumEntries; i++)
 				{
 					var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(fullData.AsSpan()[runningCount..]);
-					var g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, runningCount, g1Element32Size);
+					var g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, runningCount, G1Element32.StructLength);
+
 					annotations.Add(g32ElementAnnotation);
-					AnnotateProperties(g32Element, annotations, runningCount, g32ElementAnnotation);
+					annotations.AddRange(AnnotateProperties(g32Element, runningCount, g32ElementAnnotation));
+
 					g32elements.Add(g32Element);
-					runningCount += g1Element32Size;
+					runningCount += G1Element32.StructLength;
 				}
 
 				gHeadersAnnotation.End = runningCount;
 
-				imageDataStart = runningCount;
-
+				var imageDataStart = runningCount;
 				var g1ImageDataAnnotation = new Annotation("Images", g1DataAnnotation, runningCount, 8);
+
 				annotations.Add(g1ImageDataAnnotation);
 				g1ImageDataAnnotation.End = fullData.Length;
 
@@ -168,8 +171,10 @@ namespace OpenLocoTool.DatFileParsing
 			return runningCount;
 		}
 
-		static void AnnotateProperties(object o, IList<Annotation> annotations, int runningCount = 0, Annotation? root = null)
+		static IList<Annotation> AnnotateProperties(object o, int runningCount = 0, Annotation? root = null)
 		{
+			var annotations = new List<Annotation>();
+
 			foreach (var p in o.GetType().GetProperties())
 			{
 				var offset = p.GetCustomAttribute<LocoStructOffsetAttribute>();
@@ -179,6 +184,8 @@ namespace OpenLocoTool.DatFileParsing
 					annotations.Add(new Annotation(p.Name, root, location, 1));
 				}
 			}
+
+			return annotations;
 		}
 	}
 }

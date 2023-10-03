@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace OpenLocoTool
+﻿namespace OpenLocoTool
 {
 	public static class OriginalObjects
 	{

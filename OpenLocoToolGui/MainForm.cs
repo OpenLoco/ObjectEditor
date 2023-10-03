@@ -4,13 +4,7 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
-using System;
 using System.Drawing.Imaging;
-using System.IO;
-using System.Windows.Forms;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 namespace OpenLocoToolGui
 {
@@ -347,15 +341,15 @@ namespace OpenLocoToolGui
 			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 		}
 
-		void loadDataDump(string path, bool isG1 = false)
+		void LoadDataDump(string path, bool isG1 = false)
 		{
 			if (File.Exists(path))
 			{
 				var byteList = File.ReadAllBytes(path);
 				var resultingByteList = byteList;
 				DATDumpAnnotations = isG1
-					? new SawyerStreamReader(logger).AnnotateG1Data(byteList, new List<Annotation>())
-					: new SawyerStreamReader(logger).Annotate(byteList, out resultingByteList);
+					? ObjectAnnotator.AnnotateG1Data(byteList)
+					: ObjectAnnotator.Annotate(byteList, out resultingByteList);
 
 				var extraLine = resultingByteList.Length % bytesPerDumpLine;
 				if (extraLine > 0)
@@ -370,10 +364,12 @@ namespace OpenLocoToolGui
 						.Chunk(bytesPerDumpLine / dumpWordSize)
 						.Zip(Enumerable.Range(0, (resultingByteList.Length / bytesPerDumpLine) + extraLine))
 						.Select(l => string.Format("{0:X" + addressStringSizeBytes + "}: {1}", l.Second * bytesPerDumpLine, string.Concat(l.First))).ToArray();
+
 				tvDATDumpAnnotations.SuspendLayout();
 				tvDATDumpAnnotations.Nodes.Clear();
 				var currentParent = new TreeNode();
 				IDictionary<string, TreeNode> parents = new Dictionary<string, TreeNode>();
+
 				foreach (var annotation in DATDumpAnnotations)
 				{
 					var constructAnnotationText = (Annotation annotation) => string.Format("{0} (0x{1:X}-0x{2:X})", annotation.Name, annotation.Start, annotation.End);
@@ -411,7 +407,7 @@ namespace OpenLocoToolGui
 			pgObject.SelectedObject = model.G1;
 			var images = CreateImages(model.G1.G1Elements, model.Palette);
 			CurrentUIImages = CreateImageControls(images).ToList();
-			loadDataDump(filename, true);
+			LoadDataDump(filename, true);
 		}
 
 		void tv_AfterSelect(object sender, TreeViewEventArgs e)
@@ -423,7 +419,7 @@ namespace OpenLocoToolGui
 			else
 			{
 				CurrentUIObject = model.LoadAndCacheObject(e.Node.Name);
-				loadDataDump(e.Node.Name);
+				LoadDataDump(e.Node.Name);
 			}
 		}
 

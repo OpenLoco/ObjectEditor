@@ -2,11 +2,9 @@
 using System.Numerics;
 using System.Reflection;
 using System.Text;
-using System.Linq;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
-using System.Runtime.InteropServices;
 
 namespace OpenLocoTool.DatFileParsing
 {
@@ -19,7 +17,7 @@ namespace OpenLocoTool.DatFileParsing
 
 		static uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
-			uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
+			static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
 			{
 				var checksum = seed;
 				foreach (var d in data)
@@ -43,169 +41,6 @@ namespace OpenLocoTool.DatFileParsing
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
 			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
 			return new G1Dat(g1Header, imageTable);
-		}
-
-		public int AnnotateStringTable(byte[] fullData, int running_count, ILocoStruct locoStruct, IList<Annotation> annotations)
-		{
-			var root = new Annotation("String Table", running_count, 1);
-			annotations.Add(root);
-			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
-			var stringsInTable = stringAttr?.Count ?? 1;
-			for (var i = 0; i < stringsInTable; i++)
-			{
-				var index = Array.IndexOf(fullData[running_count..], (byte)0xFF);
-				var endIndexOfStringList = index + running_count;
-				var null_index = 0;
-				var elementRoot = new Annotation("Element " + i, root, running_count, index);
-				annotations.Add(elementRoot);
-				do
-				{
-					annotations.Add(new Annotation(((LanguageId)fullData[running_count]).ToString(), elementRoot, running_count, 1));
-					running_count++;
-					null_index = Array.IndexOf(fullData[running_count..], (byte)0);
-					var string_element = new string(fullData[running_count..(running_count + null_index)].Select(b => (char)b).ToArray());
-					annotations.Add(new Annotation("'" + string_element + "'", elementRoot, running_count, string_element.Length + 1));
-					running_count += null_index + 1;
-				} while (running_count < endIndexOfStringList);
-				running_count = endIndexOfStringList + 1;
-			}
-
-			root.End = running_count;
-			return running_count;
-		}
-
-		void annotateProperties(object o, IList<Annotation> annotations, int running_count = 0, Annotation? root = null)
-		{
-			foreach (var p in o.GetType().GetProperties())
-			{
-				var offset = p.GetCustomAttribute<LocoStructOffsetAttribute>();
-				if (offset != null)
-				{
-					var location = running_count + (int)offset!.Offset;
-					annotations.Add(new Annotation(p.Name, root!, location, 1));
-				}
-			}
-		}
-		public IList<Annotation> Annotate(byte[] bytelist, out byte[] fullData)
-		{
-			var annotations = new List<Annotation>();
-			var running_count = 0;
-			// S5 Header Annotations
-			var s5HeaderAnnotation = new Annotation("S5 Header", 0, S5Header.StructLength);
-			annotations.Add(s5HeaderAnnotation);
-			annotations.Add(new Annotation("Flags", s5HeaderAnnotation, 0, 4));
-			annotations.Add(new Annotation("Name: '" + System.Text.Encoding.ASCII.GetString(bytelist[4..12]) + "'",
-											  s5HeaderAnnotation,
-										   4,
-										   8));
-			annotations.Add(new Annotation("Checksum",
-										   s5HeaderAnnotation,
-										   12,
-										   4));
-			var s5Header = S5Header.Read(bytelist[0..S5Header.StructLength]);
-			running_count += S5Header.StructLength;
-
-			// Object Header Annotations
-			var objectHeaderAnnotation = new Annotation("Object Header", running_count, ObjectHeader.StructLength);
-			annotations.Add(new Annotation("Encoding", objectHeaderAnnotation, running_count, 1));
-			annotations.Add(new Annotation("Data Length", objectHeaderAnnotation, running_count + 1, 4));
-			var objectHeader = ObjectHeader.Read(bytelist[running_count..(running_count + ObjectHeader.StructLength)]);
-			running_count += ObjectHeader.StructLength;
-
-			// Decode Loco Struct
-			fullData = bytelist[..running_count].Concat(Decode(objectHeader.Encoding, bytelist[running_count..(int)(running_count + objectHeader.DataLength)]))
-				.ToArray();
-			var locoStruct = GetLocoStruct(s5Header.ObjectType, fullData[running_count..]);
-			if (locoStruct == null)
-			{
-				Debugger.Break();
-				throw new NullReferenceException("loco object was null");
-			}
-
-			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
-			var locoStructSize = structSize!.Size;
-
-			var locoStructAnnotation = new Annotation("Loco Struct", running_count, locoStructSize);
-			annotations.Add(locoStructAnnotation);
-			annotateProperties(locoStruct, annotations, running_count, locoStructAnnotation);
-
-			running_count += structSize!.Size;
-
-			// String Table
-			running_count = AnnotateStringTable(fullData, running_count, locoStruct, annotations);
-
-			ReadOnlySpan<byte> remainingData = fullData[running_count..];
-			var currentRemainingData = remainingData.Length;
-			if (locoStruct is ILocoStructVariableData locoStructExtra)
-			{
-				remainingData = locoStructExtra.Load(remainingData);
-			}
-
-			annotations.Add(new Annotation("Loco Variables", running_count, currentRemainingData - remainingData.Length));
-			running_count += currentRemainingData - remainingData.Length;
-
-			return AnnotateG1Data(fullData, annotations, running_count);
-		}
-
-		public IList<Annotation> AnnotateG1Data(byte[] fullData, IList<Annotation> annotations, int runningCount = 0)
-		{
-			var g1Annotation = new Annotation("G1", runningCount, fullData.Length - runningCount);
-			var g1HeaderAnnotation = new Annotation("Header", g1Annotation, runningCount, 8);
-
-			if (runningCount < fullData.Length)
-			{
-				annotations.Add(g1Annotation);
-				annotations.Add(g1HeaderAnnotation);
-				annotations.Add(new Annotation("Number Of Entries", g1HeaderAnnotation, runningCount, sizeof(UInt32)));
-				annotations.Add(new Annotation("Total Size", g1HeaderAnnotation, runningCount + sizeof(UInt32), sizeof(UInt32)));
-				var g1Header = new G1Header(
-					BitConverter.ToUInt32(fullData[runningCount..(runningCount + 4)]),
-					BitConverter.ToUInt32(fullData[runningCount..(runningCount + 8)]));
-				runningCount += 8;
-				var g1DataAnnotation = new Annotation("Data", g1Annotation, runningCount, 1);
-				g1DataAnnotation.End = fullData.Length;
-				var gHeadersAnnotation = new Annotation("Headers", g1DataAnnotation, runningCount, 1);
-				annotations.Add(g1DataAnnotation);
-				annotations.Add(gHeadersAnnotation);
-				var imageDataStart = runningCount;
-
-				var g1Element32Size = 0x10;
-
-				var g32elements = new List<G1Element32>();
-
-				for (var i = 0; i < g1Header.NumEntries; i++)
-				{
-					var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(fullData[runningCount..]);
-					var g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, runningCount, g1Element32Size);
-					annotations.Add(g32ElementAnnotation);
-					annotateProperties(g32Element, annotations, runningCount, g32ElementAnnotation);
-					g32elements.Add(g32Element);
-					runningCount += g1Element32Size;
-				}
-
-				gHeadersAnnotation.End = runningCount;
-
-				imageDataStart = runningCount;
-
-				var g1ImageDataAnnotation = new Annotation("Images", g1DataAnnotation, runningCount, 8);
-				annotations.Add(g1ImageDataAnnotation);
-				g1ImageDataAnnotation.End = fullData.Length;
-
-				for (var i = 0; i < g32elements.Count; i++)
-				{
-					var imageStart = imageDataStart + (int)g32elements[i].Offset;
-					var imageSize = fullData.Length - imageStart;
-					if (i + 1 < g32elements.Count)
-					{
-						imageSize = (int)g32elements[i + 1].Offset - (int)g32elements[i].Offset;
-					}
-
-					annotations.Add(new Annotation("Image " + (i + 1), g1ImageDataAnnotation, imageStart, imageSize));
-					runningCount = imageDataStart + (int)g32elements[i].Offset;
-				}
-			}
-
-			return annotations;
 		}
 
 		// load file
@@ -511,19 +346,14 @@ namespace OpenLocoTool.DatFileParsing
 		// taken from openloco's SawyerStreamReader::readChunk
 		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
 		{
-			switch (encoding)
+			return encoding switch
 			{
-				case SawyerEncoding.Uncompressed:
-					return data.ToArray();
-				case SawyerEncoding.RunLengthSingle:
-					return DecodeRunLengthSingle(data);
-				case SawyerEncoding.RunLengthMulti:
-					return DecodeRunLengthMulti(DecodeRunLengthSingle(data));
-				case SawyerEncoding.Rotate:
-					return DecodeRotate(data);
-				default:
-					throw new InvalidDataException("Unknown chunk encoding scheme");
-			}
+				SawyerEncoding.Uncompressed => data.ToArray(),
+				SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data),
+				SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
+				SawyerEncoding.Rotate => DecodeRotate(data),
+				_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
+			};
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle

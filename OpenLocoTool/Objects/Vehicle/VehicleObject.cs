@@ -11,6 +11,7 @@ namespace OpenLocoTool.Objects
 		public const ObjectType ObjType = ObjectType.Vehicle;
 		public const int StructSize = 0x15E;
 		public const int MaxBodySprites = 4;
+		public List<uint16_t> CargoMatchFlags { get; set; } = new();
 
 		public VehicleObject(ushort name, TransportMode mode, VehicleType type, byte var_04, byte trackType, byte numMods, byte costIndex, short costFactor, byte reliability, byte runCostIndex, short runCostFactor, byte colourType, byte numCompat, ushort[] compatibleVehicles, byte[] requiredTrackExtras, VehicleObjectUnk[] var_24, BodySprite[] bodySprites, BogieSprite[] bogieSprites, ushort power, short speed, short rackSpeed, ushort weight, VehicleObjectFlags flags, byte[] maxCargo, uint[] cargoTypes, byte[] cargoTypeSpriteOffsets, byte numSimultaneousCargoTypes, SimpleAnimation[] animation, byte var_113, ushort designed, ushort obsolete, byte rackRailType, DrivingSoundType drivingSoundType, byte[] pad_135, byte numStartSounds, byte[] startSounds)
 		{
@@ -132,6 +133,7 @@ namespace OpenLocoTool.Objects
 				while (ptr != (ushort)0xFFFF)
 				{
 					var cargoMatchFlags = BitConverter.ToUInt16(remainingData[0..2]);
+					CargoMatchFlags.Add(cargoMatchFlags);
 					remainingData = remainingData[2..]; // uint16_t
 
 					var unk = remainingData[0];

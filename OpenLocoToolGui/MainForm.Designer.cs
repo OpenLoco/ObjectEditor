@@ -45,10 +45,12 @@
 			scObjectAndLogs = new SplitContainer();
 			scObjectViewer = new SplitContainer();
 			scImageViewer = new SplitContainer();
+			tbCurrentPage = new TextBox();
 			btnPagePrevious = new Button();
 			btnPageNext = new Button();
 			scTop = new SplitContainer();
 			pnFileFilter = new Panel();
+			cbVanillaObjects = new CheckBox();
 			menuStrip = new MenuStrip();
 			fileToolStripMenuItem = new ToolStripMenuItem();
 			setObjectDirectoryToolStripMenuItem = new ToolStripMenuItem();
@@ -59,7 +61,6 @@
 			fileToolStripMenuItem1 = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
-			cbVanillaObjects = new CheckBox();
 			tcFileSelector.SuspendLayout();
 			tabPage2.SuspendLayout();
 			tabPage1.SuspendLayout();
@@ -89,7 +90,7 @@
 			tvFileTree.Dock = DockStyle.Fill;
 			tvFileTree.Location = new Point(3, 3);
 			tvFileTree.Name = "tvFileTree";
-			tvFileTree.Size = new Size(289, 622);
+			tvFileTree.Size = new Size(289, 605);
 			tvFileTree.TabIndex = 1;
 			tvFileTree.AfterSelect += tv_AfterSelect;
 			// 
@@ -174,7 +175,7 @@
 			tabPage1.Location = new Point(4, 24);
 			tabPage1.Name = "tabPage1";
 			tabPage1.Padding = new Padding(3);
-			tabPage1.Size = new Size(295, 628);
+			tabPage1.Size = new Size(295, 611);
 			tabPage1.TabIndex = 0;
 			tabPage1.Text = "File";
 			tabPage1.UseVisualStyleBackColor = true;
@@ -239,18 +240,30 @@
 			// 
 			// scImageViewer.Panel2
 			// 
+			scImageViewer.Panel2.Controls.Add(tbCurrentPage);
 			scImageViewer.Panel2.Controls.Add(btnPagePrevious);
 			scImageViewer.Panel2.Controls.Add(btnPageNext);
 			scImageViewer.Size = new Size(593, 580);
 			scImageViewer.SplitterDistance = 550;
 			scImageViewer.TabIndex = 32;
 			// 
+			// tbCurrentPage
+			// 
+			tbCurrentPage.BorderStyle = BorderStyle.FixedSingle;
+			tbCurrentPage.Dock = DockStyle.Bottom;
+			tbCurrentPage.Enabled = false;
+			tbCurrentPage.Location = new Point(253, 3);
+			tbCurrentPage.Name = "tbCurrentPage";
+			tbCurrentPage.Size = new Size(112, 23);
+			tbCurrentPage.TabIndex = 33;
+			tbCurrentPage.TextAlign = HorizontalAlignment.Center;
+			// 
 			// btnPagePrevious
 			// 
 			btnPagePrevious.Dock = DockStyle.Left;
 			btnPagePrevious.Location = new Point(0, 0);
 			btnPagePrevious.Name = "btnPagePrevious";
-			btnPagePrevious.Size = new Size(294, 26);
+			btnPagePrevious.Size = new Size(253, 26);
 			btnPagePrevious.TabIndex = 0;
 			btnPagePrevious.Text = "Previous Page";
 			btnPagePrevious.UseVisualStyleBackColor = true;
@@ -259,9 +272,9 @@
 			// btnPageNext
 			// 
 			btnPageNext.Dock = DockStyle.Right;
-			btnPageNext.Location = new Point(299, 0);
+			btnPageNext.Location = new Point(365, 0);
 			btnPageNext.Name = "btnPageNext";
-			btnPageNext.Size = new Size(294, 26);
+			btnPageNext.Size = new Size(228, 26);
 			btnPageNext.TabIndex = 31;
 			btnPageNext.Text = "Next Page";
 			btnPageNext.UseVisualStyleBackColor = true;
@@ -297,6 +310,18 @@
 			pnFileFilter.Padding = new Padding(4);
 			pnFileFilter.Size = new Size(303, 74);
 			pnFileFilter.TabIndex = 30;
+			// 
+			// cbVanillaObjects
+			// 
+			cbVanillaObjects.AutoSize = true;
+			cbVanillaObjects.Dock = DockStyle.Top;
+			cbVanillaObjects.Location = new Point(4, 50);
+			cbVanillaObjects.Name = "cbVanillaObjects";
+			cbVanillaObjects.Size = new Size(295, 19);
+			cbVanillaObjects.TabIndex = 26;
+			cbVanillaObjects.Text = "Vanilla Objects Only";
+			cbVanillaObjects.UseVisualStyleBackColor = true;
+			cbVanillaObjects.CheckedChanged += cbVanillaObjects_CheckedChanged;
 			// 
 			// menuStrip
 			// 
@@ -368,18 +393,6 @@
 			imgContextMenuSave.Text = "Export Image";
 			imgContextMenuSave.Click += imgContextMenuSave_Click;
 			// 
-			// cbVanillaObjects
-			// 
-			cbVanillaObjects.AutoSize = true;
-			cbVanillaObjects.Dock = DockStyle.Top;
-			cbVanillaObjects.Location = new Point(4, 50);
-			cbVanillaObjects.Name = "cbVanillaObjects";
-			cbVanillaObjects.Size = new Size(295, 19);
-			cbVanillaObjects.TabIndex = 26;
-			cbVanillaObjects.Text = "Vanilla Objects Only";
-			cbVanillaObjects.UseVisualStyleBackColor = true;
-			cbVanillaObjects.CheckedChanged += cbVanillaObjects_CheckedChanged;
-			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -406,6 +419,7 @@
 			scObjectViewer.ResumeLayout(false);
 			scImageViewer.Panel1.ResumeLayout(false);
 			scImageViewer.Panel2.ResumeLayout(false);
+			scImageViewer.Panel2.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)scImageViewer).EndInit();
 			scImageViewer.ResumeLayout(false);
 			scTop.Panel1.ResumeLayout(false);
@@ -452,5 +466,6 @@
 		private Button btnPageNext;
 		private Button btnPagePrevious;
 		private CheckBox cbVanillaObjects;
+		private TextBox tbCurrentPage;
 	}
 }

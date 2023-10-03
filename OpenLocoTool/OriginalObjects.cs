@@ -4,7 +4,7 @@ namespace OpenLocoTool
 {
 	public static class OriginalObjects
 	{
-		public static readonly HashSet<string> Names = new HashSet<string>
+		public static readonly HashSet<string> Names = new()
 		{
 			"114",
 			"142",

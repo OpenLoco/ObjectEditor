@@ -84,7 +84,7 @@ namespace OpenLocoToolGui
 			// setup dark mode???
 			//DarkModify(this);
 
-			InitUI();
+			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 		}
 
 		Color DarkModeBackColor = Color.FromArgb(31, 31, 31);
@@ -102,10 +102,10 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		void InitUI(string filter = "")
+		void InitUI(bool vanillaOnly, string filter)
 		{
-			InitFileTreeView(filter);
-			InitCategoryTreeView(filter);
+			InitFileTreeView(vanillaOnly, filter);
+			InitCategoryTreeView(vanillaOnly, filter);
 		}
 
 		bool LoadObjDataDirectory(string directory, bool useExistingIndex)
@@ -167,11 +167,16 @@ namespace OpenLocoToolGui
 			_ = tn.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
 
-		void InitFileTreeView(string fileFilter = "")
+		void InitFileTreeView(bool vanillaOnly, string fileFilter)
 		{
 			tvFileTree.SuspendLayout();
 			tvFileTree.Nodes.Clear();
-			var filteredFiles = model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			var filteredFiles = string.IsNullOrEmpty(fileFilter)
+				? model.HeaderIndex
+				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjects.Names.Contains(f.Value.Name.Trim()));
 
 			tvFileTree.ImageList = MakeImageList();
 
@@ -185,12 +190,16 @@ namespace OpenLocoToolGui
 			tvFileTree.ResumeLayout(true);
 		}
 
-		void InitCategoryTreeView(string fileFilter = "")
+		void InitCategoryTreeView(bool vanillaOnly, string fileFilter)
 		{
 			tvObjType.SuspendLayout();
 			tvObjType.Nodes.Clear();
 
-			var filteredFiles = model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+			var filteredFiles = string.IsNullOrEmpty(fileFilter)
+				? model.HeaderIndex
+				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjects.Names.Contains(f.Value.Name.Trim()));
 
 			tvObjType.ImageList = MakeImageList();
 
@@ -251,7 +260,7 @@ namespace OpenLocoToolGui
 					if (!exists)
 					{
 						// we made a new file (as opposed to overwriting an existing one) so lets update the UI to show it
-						InitUI();
+						InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 					}
 					MessageBox.Show($"File \"{filename}\" saved successfully");
 				}
@@ -268,7 +277,7 @@ namespace OpenLocoToolGui
 			{
 				if (LoadObjDataDirectory(objectDirBrowser.SelectedPath, true))
 				{
-					InitUI();
+					InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 				}
 			}
 		}
@@ -292,14 +301,13 @@ namespace OpenLocoToolGui
 		{
 			if (LoadObjDataDirectory(model.Settings.ObjDataDirectory, false))
 			{
-				InitUI();
-
+				InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 			}
 		}
 
 		void tbFileFilter_TextChanged(object sender, EventArgs e)
 		{
-			InitUI(tbFileFilter.Text);
+			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 		}
 
 		void tv_AfterSelect(object sender, TreeViewEventArgs e)
@@ -484,6 +492,9 @@ namespace OpenLocoToolGui
 			CurrentUIImagePageNumber = Math.Min(CurrentUIImagePageNumber + 1, CurrentUIImages.Count / imagesPerPage);
 		}
 
-		// todo: load image (though this is useless until full object + image table saving is implemented)
+		private void cbVanillaObjects_CheckedChanged(object sender, EventArgs e)
+		{
+			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+		}
 	}
 }

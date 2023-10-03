@@ -44,6 +44,9 @@
 			flpImageTable = new FlowLayoutPanel();
 			scObjectAndLogs = new SplitContainer();
 			scObjectViewer = new SplitContainer();
+			scImageViewer = new SplitContainer();
+			btnPagePrevious = new Button();
+			btnPageNext = new Button();
 			scTop = new SplitContainer();
 			pnFileFilter = new Panel();
 			menuStrip = new MenuStrip();
@@ -56,9 +59,7 @@
 			fileToolStripMenuItem1 = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
-			btnPagePrevious = new Button();
-			btnPageNext = new Button();
-			scImageViewer = new SplitContainer();
+			cbVanillaObjects = new CheckBox();
 			tcFileSelector.SuspendLayout();
 			tabPage2.SuspendLayout();
 			tabPage1.SuspendLayout();
@@ -70,6 +71,10 @@
 			scObjectViewer.Panel1.SuspendLayout();
 			scObjectViewer.Panel2.SuspendLayout();
 			scObjectViewer.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)scImageViewer).BeginInit();
+			scImageViewer.Panel1.SuspendLayout();
+			scImageViewer.Panel2.SuspendLayout();
+			scImageViewer.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)scTop).BeginInit();
 			scTop.Panel1.SuspendLayout();
 			scTop.Panel2.SuspendLayout();
@@ -77,10 +82,6 @@
 			pnFileFilter.SuspendLayout();
 			menuStrip.SuspendLayout();
 			imgContextMenu.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)scImageViewer).BeginInit();
-			scImageViewer.Panel1.SuspendLayout();
-			scImageViewer.Panel2.SuspendLayout();
-			scImageViewer.SuspendLayout();
 			SuspendLayout();
 			// 
 			// tvFileTree
@@ -141,7 +142,7 @@
 			tvObjType.Dock = DockStyle.Fill;
 			tvObjType.Location = new Point(3, 3);
 			tvObjType.Name = "tvObjType";
-			tvObjType.Size = new Size(289, 622);
+			tvObjType.Size = new Size(289, 605);
 			tvObjType.TabIndex = 26;
 			tvObjType.AfterSelect += tv_AfterSelect;
 			// 
@@ -150,10 +151,10 @@
 			tcFileSelector.Controls.Add(tabPage2);
 			tcFileSelector.Controls.Add(tabPage1);
 			tcFileSelector.Dock = DockStyle.Fill;
-			tcFileSelector.Location = new Point(0, 57);
+			tcFileSelector.Location = new Point(0, 74);
 			tcFileSelector.Name = "tcFileSelector";
 			tcFileSelector.SelectedIndex = 0;
-			tcFileSelector.Size = new Size(303, 656);
+			tcFileSelector.Size = new Size(303, 639);
 			tcFileSelector.TabIndex = 29;
 			// 
 			// tabPage2
@@ -162,7 +163,7 @@
 			tabPage2.Location = new Point(4, 24);
 			tabPage2.Name = "tabPage2";
 			tabPage2.Padding = new Padding(3);
-			tabPage2.Size = new Size(295, 628);
+			tabPage2.Size = new Size(295, 611);
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "Category";
 			tabPage2.UseVisualStyleBackColor = true;
@@ -224,6 +225,48 @@
 			scObjectViewer.SplitterDistance = 295;
 			scObjectViewer.TabIndex = 32;
 			// 
+			// scImageViewer
+			// 
+			scImageViewer.Dock = DockStyle.Fill;
+			scImageViewer.IsSplitterFixed = true;
+			scImageViewer.Location = new Point(0, 0);
+			scImageViewer.Name = "scImageViewer";
+			scImageViewer.Orientation = Orientation.Horizontal;
+			// 
+			// scImageViewer.Panel1
+			// 
+			scImageViewer.Panel1.Controls.Add(flpImageTable);
+			// 
+			// scImageViewer.Panel2
+			// 
+			scImageViewer.Panel2.Controls.Add(btnPagePrevious);
+			scImageViewer.Panel2.Controls.Add(btnPageNext);
+			scImageViewer.Size = new Size(593, 580);
+			scImageViewer.SplitterDistance = 550;
+			scImageViewer.TabIndex = 32;
+			// 
+			// btnPagePrevious
+			// 
+			btnPagePrevious.Dock = DockStyle.Left;
+			btnPagePrevious.Location = new Point(0, 0);
+			btnPagePrevious.Name = "btnPagePrevious";
+			btnPagePrevious.Size = new Size(294, 26);
+			btnPagePrevious.TabIndex = 0;
+			btnPagePrevious.Text = "Previous Page";
+			btnPagePrevious.UseVisualStyleBackColor = true;
+			btnPagePrevious.Click += btnPagePrevious_Click;
+			// 
+			// btnPageNext
+			// 
+			btnPageNext.Dock = DockStyle.Right;
+			btnPageNext.Location = new Point(299, 0);
+			btnPageNext.Name = "btnPageNext";
+			btnPageNext.Size = new Size(294, 26);
+			btnPageNext.TabIndex = 31;
+			btnPageNext.Text = "Next Page";
+			btnPageNext.UseVisualStyleBackColor = true;
+			btnPageNext.Click += btnPageNext_Click;
+			// 
 			// scTop
 			// 
 			scTop.Dock = DockStyle.Fill;
@@ -244,6 +287,7 @@
 			// 
 			// pnFileFilter
 			// 
+			pnFileFilter.Controls.Add(cbVanillaObjects);
 			pnFileFilter.Controls.Add(tbFileFilter);
 			pnFileFilter.Controls.Add(lblFilenameRegex);
 			pnFileFilter.Dock = DockStyle.Top;
@@ -251,7 +295,7 @@
 			pnFileFilter.Margin = new Padding(4);
 			pnFileFilter.Name = "pnFileFilter";
 			pnFileFilter.Padding = new Padding(4);
-			pnFileFilter.Size = new Size(303, 57);
+			pnFileFilter.Size = new Size(303, 74);
 			pnFileFilter.TabIndex = 30;
 			// 
 			// menuStrip
@@ -324,47 +368,17 @@
 			imgContextMenuSave.Text = "Export Image";
 			imgContextMenuSave.Click += imgContextMenuSave_Click;
 			// 
-			// btnPagePrevious
+			// cbVanillaObjects
 			// 
-			btnPagePrevious.Dock = DockStyle.Left;
-			btnPagePrevious.Location = new Point(0, 0);
-			btnPagePrevious.Name = "btnPagePrevious";
-			btnPagePrevious.Size = new Size(294, 26);
-			btnPagePrevious.TabIndex = 0;
-			btnPagePrevious.Text = "Previous Page";
-			btnPagePrevious.UseVisualStyleBackColor = true;
-			btnPagePrevious.Click += btnPagePrevious_Click;
-			// 
-			// btnPageNext
-			// 
-			btnPageNext.Dock = DockStyle.Right;
-			btnPageNext.Location = new Point(299, 0);
-			btnPageNext.Name = "btnPageNext";
-			btnPageNext.Size = new Size(294, 26);
-			btnPageNext.TabIndex = 31;
-			btnPageNext.Text = "Next Page";
-			btnPageNext.UseVisualStyleBackColor = true;
-			btnPageNext.Click += btnPageNext_Click;
-			// 
-			// scImageViewer
-			// 
-			scImageViewer.Dock = DockStyle.Fill;
-			scImageViewer.IsSplitterFixed = true;
-			scImageViewer.Location = new Point(0, 0);
-			scImageViewer.Name = "scImageViewer";
-			scImageViewer.Orientation = Orientation.Horizontal;
-			// 
-			// scImageViewer.Panel1
-			// 
-			scImageViewer.Panel1.Controls.Add(flpImageTable);
-			// 
-			// scImageViewer.Panel2
-			// 
-			scImageViewer.Panel2.Controls.Add(btnPagePrevious);
-			scImageViewer.Panel2.Controls.Add(btnPageNext);
-			scImageViewer.Size = new Size(593, 580);
-			scImageViewer.SplitterDistance = 550;
-			scImageViewer.TabIndex = 32;
+			cbVanillaObjects.AutoSize = true;
+			cbVanillaObjects.Dock = DockStyle.Top;
+			cbVanillaObjects.Location = new Point(4, 50);
+			cbVanillaObjects.Name = "cbVanillaObjects";
+			cbVanillaObjects.Size = new Size(295, 19);
+			cbVanillaObjects.TabIndex = 26;
+			cbVanillaObjects.Text = "Vanilla Objects Only";
+			cbVanillaObjects.UseVisualStyleBackColor = true;
+			cbVanillaObjects.CheckedChanged += cbVanillaObjects_CheckedChanged;
 			// 
 			// MainForm
 			// 
@@ -390,6 +404,10 @@
 			scObjectViewer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scObjectViewer).EndInit();
 			scObjectViewer.ResumeLayout(false);
+			scImageViewer.Panel1.ResumeLayout(false);
+			scImageViewer.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)scImageViewer).EndInit();
+			scImageViewer.ResumeLayout(false);
 			scTop.Panel1.ResumeLayout(false);
 			scTop.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scTop).EndInit();
@@ -399,10 +417,6 @@
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
 			imgContextMenu.ResumeLayout(false);
-			scImageViewer.Panel1.ResumeLayout(false);
-			scImageViewer.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)scImageViewer).EndInit();
-			scImageViewer.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -437,5 +451,6 @@
 		private SplitContainer scImageViewer;
 		private Button btnPageNext;
 		private Button btnPagePrevious;
+		private CheckBox cbVanillaObjects;
 	}
 }

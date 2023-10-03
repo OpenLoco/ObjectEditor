@@ -68,6 +68,7 @@ namespace OpenLocoTool.Objects
 						length += 4; // x, y, x, y
 						bytes += 4;
 					}
+
 					length += 4;
 					remainingData = remainingData[length..];
 				}

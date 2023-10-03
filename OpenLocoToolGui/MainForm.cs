@@ -143,6 +143,7 @@ namespace OpenLocoToolGui
 				g.FillEllipse(Brushes.MediumSpringGreen, new Rectangle(0, 0, bitmap.Width, bitmap.Height));
 				g.Dispose();
 			}
+
 			return bitmap;
 		}
 
@@ -224,6 +225,7 @@ namespace OpenLocoToolGui
 						{
 							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, vehicleTypeNode);
 						}
+
 						typeNode.Nodes.Add(vehicleTypeNode);
 					}
 				}
@@ -262,6 +264,7 @@ namespace OpenLocoToolGui
 						// we made a new file (as opposed to overwriting an existing one) so lets update the UI to show it
 						InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 					}
+
 					MessageBox.Show($"File \"{filename}\" saved successfully");
 				}
 				catch (Exception ex)

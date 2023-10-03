@@ -30,6 +30,7 @@ namespace OpenLocoTool.Objects
 			{
 				ptr += S5Header.StructLength;
 			}
+
 			ptr++;
 			remainingData = remainingData[ptr..];
 

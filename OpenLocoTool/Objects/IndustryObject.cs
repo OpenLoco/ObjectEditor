@@ -149,6 +149,7 @@ namespace OpenLocoTool.Objects
 			{
 				ptr_38 += IndustryObjectUnk38.StructSize;
 			}
+
 			ptr_38++;
 			remainingData = remainingData[ptr_38..];
 
@@ -160,6 +161,7 @@ namespace OpenLocoTool.Objects
 				{
 					ptr_1F++;
 				}
+
 				ptr_1F++;
 				remainingData = remainingData[ptr_1F..];
 			}

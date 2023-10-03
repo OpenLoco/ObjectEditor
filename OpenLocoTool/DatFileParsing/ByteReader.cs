@@ -129,6 +129,7 @@
 					{
 						args.Add(Activator.CreateInstance(p.PropertyType));
 					}
+
 					continue;
 				}
 
@@ -147,6 +148,7 @@
 				var range = data[(i * structSize)..((i + 1) * structSize)];
 				list.Add(ReadLocoStruct(range, t));
 			}
+
 			return list;
 		}
 	}

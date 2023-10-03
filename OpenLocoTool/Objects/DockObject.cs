@@ -51,6 +51,7 @@ namespace OpenLocoTool.Objects
 				{
 					ptr_1C++;
 				}
+
 				ptr_1C++;
 				remainingData = remainingData[ptr_1C..];
 			}

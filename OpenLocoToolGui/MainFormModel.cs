@@ -12,9 +12,9 @@ namespace OpenLocoToolGui
 {
 	class MainFormModel
 	{
-		private ILogger logger;
-		private SawyerStreamReader reader;
-		private SawyerStreamWriter writer;
+		private readonly ILogger logger;
+		private readonly SawyerStreamReader reader;
+		private readonly SawyerStreamWriter writer;
 
 		public HeaderIndex HeaderIndex { get; private set; } = new();
 
@@ -208,6 +208,7 @@ namespace OpenLocoToolGui
 					{
 						logger.Warning($"  {aa}");
 					}
+
 					logger.Warning("Files in directory that weren't in the index:");
 					foreach (var bb in b)
 					{

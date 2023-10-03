@@ -94,9 +94,9 @@ namespace OpenLocoTool.DatFileParsing
 			var s5HeaderAnnotation = new Annotation("S5 Header", 0, S5Header.StructLength);
 			annotations.Add(s5HeaderAnnotation);
 			annotations.Add(new Annotation("Flags", s5HeaderAnnotation, 0, 4));
-			annotations.Add(new Annotation("Name: '" + System.Text.Encoding.ASCII.GetString(bytelist[4..12]) + "'", 
-   										   s5HeaderAnnotation, 
-										   4, 
+			annotations.Add(new Annotation("Name: '" + System.Text.Encoding.ASCII.GetString(bytelist[4..12]) + "'",
+											  s5HeaderAnnotation,
+										   4,
 										   8));
 			annotations.Add(new Annotation("Checksum",
 										   s5HeaderAnnotation,
@@ -147,26 +147,27 @@ namespace OpenLocoTool.DatFileParsing
 			return AnnotateG1Data(fullData, annotations, running_count);
 		}
 
-		public IList<Annotation> AnnotateG1Data(byte[] fullData, IList<Annotation> annotations, int running_count = 0)
+		public IList<Annotation> AnnotateG1Data(byte[] fullData, IList<Annotation> annotations, int runningCount = 0)
 		{
-			var g1Annotation = new Annotation("G1", running_count, fullData.Length - running_count);
-			var g1HeaderAnnotation = new Annotation("Header", g1Annotation, running_count, 8);
-			if(running_count < fullData.Length)
+			var g1Annotation = new Annotation("G1", runningCount, fullData.Length - runningCount);
+			var g1HeaderAnnotation = new Annotation("Header", g1Annotation, runningCount, 8);
+
+			if (runningCount < fullData.Length)
 			{
 				annotations.Add(g1Annotation);
 				annotations.Add(g1HeaderAnnotation);
-				annotations.Add(new Annotation("Number Of Entries", g1HeaderAnnotation, running_count, sizeof(UInt32)));
-				annotations.Add(new Annotation("Total Size", g1HeaderAnnotation, running_count + sizeof(UInt32), sizeof(UInt32)));
+				annotations.Add(new Annotation("Number Of Entries", g1HeaderAnnotation, runningCount, sizeof(UInt32)));
+				annotations.Add(new Annotation("Total Size", g1HeaderAnnotation, runningCount + sizeof(UInt32), sizeof(UInt32)));
 				var g1Header = new G1Header(
-					BitConverter.ToUInt32(fullData[running_count..(running_count + 4)]),
-					BitConverter.ToUInt32(fullData[running_count..(running_count + 8)]));
-				running_count += 8;
-				var g1DataAnnotation = new Annotation("Data", g1Annotation, running_count, 1);
+					BitConverter.ToUInt32(fullData[runningCount..(runningCount + 4)]),
+					BitConverter.ToUInt32(fullData[runningCount..(runningCount + 8)]));
+				runningCount += 8;
+				var g1DataAnnotation = new Annotation("Data", g1Annotation, runningCount, 1);
 				g1DataAnnotation.End = fullData.Length;
-				var gHeadersAnnotation = new Annotation("Headers", g1DataAnnotation, running_count, 1);
+				var gHeadersAnnotation = new Annotation("Headers", g1DataAnnotation, runningCount, 1);
 				annotations.Add(g1DataAnnotation);
 				annotations.Add(gHeadersAnnotation);
-				var imageDataStart = running_count;
+				var imageDataStart = runningCount;
 
 				var g1Element32Size = 0x10;
 
@@ -174,19 +175,19 @@ namespace OpenLocoTool.DatFileParsing
 
 				for (var i = 0; i < g1Header.NumEntries; i++)
 				{
-					var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(fullData[running_count..]);
-					var g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, running_count, g1Element32Size);
+					var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(fullData[runningCount..]);
+					var g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, runningCount, g1Element32Size);
 					annotations.Add(g32ElementAnnotation);
-					annotateProperties(g32Element, annotations, running_count, g32ElementAnnotation);
+					annotateProperties(g32Element, annotations, runningCount, g32ElementAnnotation);
 					g32elements.Add(g32Element);
-					running_count += g1Element32Size;
+					runningCount += g1Element32Size;
 				}
 
-				gHeadersAnnotation.End = running_count;
+				gHeadersAnnotation.End = runningCount;
 
-				imageDataStart = running_count;
+				imageDataStart = runningCount;
 
-				var g1ImageDataAnnotation = new Annotation("Images", g1DataAnnotation, running_count, 8);
+				var g1ImageDataAnnotation = new Annotation("Images", g1DataAnnotation, runningCount, 8);
 				annotations.Add(g1ImageDataAnnotation);
 				g1ImageDataAnnotation.End = fullData.Length;
 
@@ -200,7 +201,7 @@ namespace OpenLocoTool.DatFileParsing
 					}
 
 					annotations.Add(new Annotation("Image " + (i + 1), g1ImageDataAnnotation, imageStart, imageSize));
-					running_count = imageDataStart + (int)g32elements[i].Offset;
+					runningCount = imageDataStart + (int)g32elements[i].Offset;
 				}
 			}
 
@@ -508,7 +509,7 @@ namespace OpenLocoTool.DatFileParsing
 			};
 
 		// taken from openloco's SawyerStreamReader::readChunk
-		public byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
+		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
 		{
 			switch (encoding)
 			{
@@ -521,8 +522,7 @@ namespace OpenLocoTool.DatFileParsing
 				case SawyerEncoding.Rotate:
 					return DecodeRotate(data);
 				default:
-					Logger.Log(LogLevel.Error, "Unknown chunk encoding scheme");
-					throw new InvalidDataException("Unknown encoding");
+					throw new InvalidDataException("Unknown chunk encoding scheme");
 			}
 		}
 
@@ -624,7 +624,7 @@ namespace OpenLocoTool.DatFileParsing
 			return decodedSpan;
 		}
 
-		private byte[] DecodeRotate(ReadOnlySpan<byte> data)
+		private static byte[] DecodeRotate(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
 

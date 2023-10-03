@@ -101,7 +101,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xC6)] uint32_t BuildingSizeFlags, // flags indicating the building types size 1:large4x4, 0:small1x1
 		[property: LocoStructOffset(0xCA)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0xCC)] uint16_t ObsoleteYear,
-		[property: LocoStructOffset(0xCE)] uint8_t TotalOfTypeInScenario, // Total industries of this type that can be created in a scenario Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.
+		[property: LocoStructOffset(0xCE)] uint8_t TotalOfTypeInScenario, // Total industries of this type that can be created in a scenario Note: this is not directly comparabile to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.
 		[property: LocoStructOffset(0xCF)] uint8_t CostIndex,
 		[property: LocoStructOffset(0xD0)] int16_t CostFactor,
 		[property: LocoStructOffset(0xD2)] int16_t ClearCostFactor,
@@ -183,7 +183,6 @@ namespace OpenLocoTool.Objects
 				{
 					ProducedCargo.Add(header);
 				}
-
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
@@ -195,7 +194,6 @@ namespace OpenLocoTool.Objects
 				{
 					RequiredCargo.Add(header);
 				}
-
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 

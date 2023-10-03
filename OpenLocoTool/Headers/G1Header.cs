@@ -29,7 +29,6 @@ namespace OpenLocoTool.Headers
 		[property: LocoStructOffset(0x0E)] int16_t ZoomOffset
 	) : ILocoStruct
 	{
-		public static int StructLength => 0x10;
 		public byte[] ImageData;
 	}
 
@@ -41,7 +40,6 @@ namespace OpenLocoTool.Headers
 		[property: LocoStructOffset(0x04)] uint32_t TotalSize
 		) : ILocoStruct
 	{
-		public static int StructLength => 0x08;
 		public byte[] ImageData;
 	}
 }

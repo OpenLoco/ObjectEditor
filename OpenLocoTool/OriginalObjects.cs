@@ -1,4 +1,6 @@
-﻿namespace OpenLocoTool
+﻿using System.Collections.Generic;
+
+namespace OpenLocoTool
 {
 	public static class OriginalObjects
 	{

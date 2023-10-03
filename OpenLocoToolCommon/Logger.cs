@@ -20,7 +20,7 @@
 
 	public class Logger : ILogger
 	{
-		List<LogLine> loglines = new();
+		readonly List<LogLine> loglines = new();
 		public LogLevel Level = LogLevel.Info;
 
 		public event EventHandler<LogAddedEventArgs> LogAdded;

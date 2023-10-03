@@ -65,16 +65,17 @@ namespace OpenLocoToolGui
 			}
 		}
 		int currentUIImagePageNumber;
+
 		// DAT Dump viewer fields
 		IList<Annotation> DATDumpAnnotations;
-		IDictionary<string, (int, int)> DATDumpAnnotationIdentifiers = new Dictionary<string, (int, int)>();
-		IDictionary<string, TreeNode> imageHeaderIndexToNode = new Dictionary<string, TreeNode>();
-		IDictionary<string, TreeNode> imageDataIndexToNode = new Dictionary<string, TreeNode>();
+		readonly IDictionary<string, (int, int)> DATDumpAnnotationIdentifiers = new Dictionary<string, (int, int)>();
+		readonly IDictionary<string, TreeNode> imageHeaderIndexToNode = new Dictionary<string, TreeNode>();
+		readonly IDictionary<string, TreeNode> imageDataIndexToNode = new Dictionary<string, TreeNode>();
 		const int bytesPerDumpLine = 32;
 		const int addressStringSizeBytes = 8;
 		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
 		const int dumpWordSize = 4;
-		IDictionary<string, Action<string>> tvUniqueLoadValues = new Dictionary<string, Action<string>>();
+		readonly IDictionary<string, Action<string>> tvUniqueLoadValues = new Dictionary<string, Action<string>>();
 		// End DAT Dump viewer fields
 
 		const int imagesPerPage = 50;
@@ -250,15 +251,14 @@ namespace OpenLocoToolGui
 				nodesToAdd.Add(typeNode);
 			}
 
-			TreeNode objDataNode = new TreeNode("ObjData");
-
+			var objDataNode = new TreeNode("ObjData");
 
 			tvObjType.Sort();
 			tvObjType.Nodes.Add(objDataNode);
 
 			if (File.Exists(model.Settings.G1Path))
 			{
-				TreeNode dataNode = new TreeNode("Data");
+				var dataNode = new TreeNode("Data");
 
 				objDataNode.Nodes.AddRange(nodesToAdd.ToArray());
 
@@ -351,30 +351,25 @@ namespace OpenLocoToolGui
 		{
 			if (File.Exists(path))
 			{
-				byte[] byteList = File.ReadAllBytes(path);
-				byte[] resultingByteList = byteList;
-				if (isG1)
-				{
-					DATDumpAnnotations = new SawyerStreamReader(logger).AnnotateG1Data(byteList, new List<Annotation>());
-				}
-				else
-				{
-					DATDumpAnnotations = new SawyerStreamReader(logger).Annotate(byteList, out resultingByteList);
-				}
+				var byteList = File.ReadAllBytes(path);
+				var resultingByteList = byteList;
+				DATDumpAnnotations = isG1
+					? new SawyerStreamReader(logger).AnnotateG1Data(byteList, new List<Annotation>())
+					: new SawyerStreamReader(logger).Annotate(byteList, out resultingByteList);
 
-				int extraLine = resultingByteList.Length % bytesPerDumpLine;
+				var extraLine = resultingByteList.Length % bytesPerDumpLine;
 				if (extraLine > 0)
 				{
 					extraLine = 1;
 				}
 
-				string[] dumpLines = resultingByteList
+				var dumpLines = resultingByteList
 						.Select(b => string.Format("{0,2:X2}", b))
 						.Chunk(dumpWordSize)
-						.Select(c => string.Format("{0} ", string.Join("", c)))
+						.Select(c => string.Format("{0} ", string.Concat(c)))
 						.Chunk(bytesPerDumpLine / dumpWordSize)
-						.Zip(Enumerable.Range(0, resultingByteList.Length / bytesPerDumpLine + extraLine))
-						.Select(l => string.Format("{0:X" + addressStringSizeBytes + "}: {1}", l.Second * bytesPerDumpLine, string.Join("", l.First))).ToArray();
+						.Zip(Enumerable.Range(0, (resultingByteList.Length / bytesPerDumpLine) + extraLine))
+						.Select(l => string.Format("{0:X" + addressStringSizeBytes + "}: {1}", l.Second * bytesPerDumpLine, string.Concat(l.First))).ToArray();
 				tvDATDumpAnnotations.SuspendLayout();
 				tvDATDumpAnnotations.Nodes.Clear();
 				var currentParent = new TreeNode();
@@ -398,12 +393,14 @@ namespace OpenLocoToolGui
 						{
 							imageHeaderIndexToNode[annotation.Name] = parents[annotationText];
 						}
+
 						if (annotation.Parent.Name == "Images")
 						{
 							imageDataIndexToNode[annotation.Name] = parents[annotationText];
 						}
 					}
 				}
+
 				tvDATDumpAnnotations.ResumeLayout();
 				rtbDATDumpView.Text = string.Join("\n", dumpLines);
 			}
@@ -604,7 +601,7 @@ namespace OpenLocoToolGui
 
 		private void btnPageNext_Click(object sender, EventArgs e)
 		{
-			if (currentUIImages != null && currentUIImages.Count > 0)
+			if (currentUIImages?.Count > 0)
 			{
 				CurrentUIImagePageNumber = Math.Min(CurrentUIImagePageNumber + 1, CurrentUIImages.Count / imagesPerPage);
 			}
@@ -612,23 +609,20 @@ namespace OpenLocoToolGui
 
 		private void dataDumpAnnotations_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-			(int, int) positionValues;
-
 			var dumpPositionToRTBPosition = (int position) => rtbDATDumpView.GetFirstCharIndexFromLine(
-						(position / bytesPerDumpLine))
-						 + ((position % bytesPerDumpLine) * 2)            // Bytes are displayed 2 characters wide
-						 + ((position % bytesPerDumpLine) / dumpWordSize) // Every word is separated by an extra space
-						 + addressStringSizePrependBytes;                 // Each line starts with 10 characters indicating address
+				position / bytesPerDumpLine)
+				+ (position % bytesPerDumpLine * 2)            // Bytes are displayed 2 characters wide
+				+ (position % bytesPerDumpLine / dumpWordSize) // Every word is separated by an extra space
+				+ addressStringSizePrependBytes;               // Each line starts with 10 characters indicating address
 
-			if (DATDumpAnnotationIdentifiers.TryGetValue(e.Node!.Text, out positionValues))
+			if (DATDumpAnnotationIdentifiers.TryGetValue(e.Node!.Text, out var positionValues))
 			{
-				var linePosStart = rtbDATDumpView.GetFirstCharIndexFromLine(positionValues.Item1 / bytesPerDumpLine);
-				var linePosEnd = rtbDATDumpView.GetFirstCharIndexFromLine(positionValues.Item2 / bytesPerDumpLine);
+				//var linePosStart = rtbDATDumpView.GetFirstCharIndexFromLine(positionValues.Item1 / bytesPerDumpLine);
+				//var linePosEnd = rtbDATDumpView.GetFirstCharIndexFromLine(positionValues.Item2 / bytesPerDumpLine);
 
-				int selectPositionStart = dumpPositionToRTBPosition(positionValues.Item1);
-				int selectPositionEnd = Math.Min(dumpPositionToRTBPosition(positionValues.Item2), rtbDATDumpView.TextLength - 1);
-				rtbDATDumpView.Select(selectPositionStart,
-									  selectPositionEnd - selectPositionStart);
+				var selectPositionStart = dumpPositionToRTBPosition(positionValues.Item1);
+				var selectPositionEnd = Math.Min(dumpPositionToRTBPosition(positionValues.Item2), rtbDATDumpView.TextLength - 1);
+				rtbDATDumpView.Select(selectPositionStart, selectPositionEnd - selectPositionStart);
 			}
 		}
 
@@ -636,8 +630,8 @@ namespace OpenLocoToolGui
 		{
 			if (imgContextMenu.SourceControl is PictureBox pb)
 			{
-				int index = currentUIImages.IndexOf(pb);
-				string keys = "Header " + (index + 1);
+				var index = currentUIImages.IndexOf(pb);
+				var keys = "Header " + (index + 1);
 				if (index >= 0 && imageHeaderIndexToNode.ContainsKey(keys))
 				{
 					ObjectTabViewControl.SelectedIndex = 1;
@@ -652,8 +646,8 @@ namespace OpenLocoToolGui
 		{
 			if (imgContextMenu.SourceControl is PictureBox pb)
 			{
-				int index = currentUIImages.IndexOf(pb);
-				string keys = "Image " + (index + 1);
+				var index = currentUIImages.IndexOf(pb);
+				var keys = "Image " + (index + 1);
 				if (index >= 0 && imageDataIndexToNode.ContainsKey(keys))
 				{
 					ObjectTabViewControl.SelectedIndex = 1;

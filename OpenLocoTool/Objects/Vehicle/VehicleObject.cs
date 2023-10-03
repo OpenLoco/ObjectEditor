@@ -143,7 +143,7 @@ namespace OpenLocoTool.Objects
 					{
 						// until the rest of this is implemented, these values will be wrong
 						// but as long as they're non-zero to pass the == 0 check below, it'll work
-						CargoTypes[index] |= (1U << cargoType);
+						CargoTypes[index] |= 1U << cargoType;
 					}
 
 					ptr = BitConverter.ToUInt16(remainingData[0..2]);

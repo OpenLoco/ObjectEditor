@@ -47,28 +47,29 @@ namespace OpenLocoTool.DatFileParsing
 
 		public int AnnotateStringTable(byte[] fullData, int running_count, ILocoStruct locoStruct, IList<Annotation> annotations)
 		{
-			Annotation root = new Annotation("String Table", running_count, 1);
+			var root = new Annotation("String Table", running_count, 1);
 			annotations.Add(root);
 			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
 			var stringsInTable = stringAttr?.Count ?? 1;
-			for (int i = 0; i < stringsInTable; i++)
+			for (var i = 0; i < stringsInTable; i++)
 			{
-				int index = Array.IndexOf(fullData[running_count..], (byte)0xFF);
-				int endIndexOfStringList = index + running_count;
-				int null_index = 0;
-				Annotation elementRoot = new Annotation("Element " + i, root, running_count, index);
+				var index = Array.IndexOf(fullData[running_count..], (byte)0xFF);
+				var endIndexOfStringList = index + running_count;
+				var null_index = 0;
+				var elementRoot = new Annotation("Element " + i, root, running_count, index);
 				annotations.Add(elementRoot);
 				do
 				{
 					annotations.Add(new Annotation(((LanguageId)fullData[running_count]).ToString(), elementRoot, running_count, 1));
 					running_count++;
 					null_index = Array.IndexOf(fullData[running_count..], (byte)0);
-					string string_element = new string(fullData[running_count..(running_count + null_index)].Select(b => (char)b).ToArray());
+					var string_element = new string(fullData[running_count..(running_count + null_index)].Select(b => (char)b).ToArray());
 					annotations.Add(new Annotation("'" + string_element + "'", elementRoot, running_count, string_element.Length + 1));
 					running_count += null_index + 1;
 				} while (running_count < endIndexOfStringList);
 				running_count = endIndexOfStringList + 1;
 			}
+
 			root.End = running_count;
 			return running_count;
 		}
@@ -80,17 +81,17 @@ namespace OpenLocoTool.DatFileParsing
 				var offset = p.GetCustomAttribute<LocoStructOffsetAttribute>();
 				if (offset != null)
 				{
-					int location = running_count + (int)offset!.Offset;
+					var location = running_count + (int)offset!.Offset;
 					annotations.Add(new Annotation(p.Name, root!, location, 1));
 				}
 			}
 		}
 		public IList<Annotation> Annotate(byte[] bytelist, out byte[] fullData)
 		{
-			List<Annotation> annotations = new List<Annotation>();
-			int running_count = 0;
+			var annotations = new List<Annotation>();
+			var running_count = 0;
 			// S5 Header Annotations
-			Annotation s5HeaderAnnotation = new Annotation("S5 Header", 0, S5Header.StructLength);
+			var s5HeaderAnnotation = new Annotation("S5 Header", 0, S5Header.StructLength);
 			annotations.Add(s5HeaderAnnotation);
 			annotations.Add(new Annotation("Flags", s5HeaderAnnotation, 0, 4));
 			annotations.Add(new Annotation("Name: '" + System.Text.Encoding.ASCII.GetString(bytelist[4..12]) + "'", 
@@ -105,7 +106,7 @@ namespace OpenLocoTool.DatFileParsing
 			running_count += S5Header.StructLength;
 
 			// Object Header Annotations
-			Annotation objectHeaderAnnotation = new Annotation("Object Header", running_count, ObjectHeader.StructLength);
+			var objectHeaderAnnotation = new Annotation("Object Header", running_count, ObjectHeader.StructLength);
 			annotations.Add(new Annotation("Encoding", objectHeaderAnnotation, running_count, 1));
 			annotations.Add(new Annotation("Data Length", objectHeaderAnnotation, running_count + 1, 4));
 			var objectHeader = ObjectHeader.Read(bytelist[running_count..(running_count + ObjectHeader.StructLength)]);
@@ -124,7 +125,7 @@ namespace OpenLocoTool.DatFileParsing
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
 			var locoStructSize = structSize!.Size;
 
-			Annotation locoStructAnnotation = new Annotation("Loco Struct", running_count, locoStructSize);
+			var locoStructAnnotation = new Annotation("Loco Struct", running_count, locoStructSize);
 			annotations.Add(locoStructAnnotation);
 			annotateProperties(locoStruct, annotations, running_count, locoStructAnnotation);
 
@@ -134,11 +135,12 @@ namespace OpenLocoTool.DatFileParsing
 			running_count = AnnotateStringTable(fullData, running_count, locoStruct, annotations);
 
 			ReadOnlySpan<byte> remainingData = fullData[running_count..];
-			int currentRemainingData = remainingData.Length;
+			var currentRemainingData = remainingData.Length;
 			if (locoStruct is ILocoStructVariableData locoStructExtra)
 			{
 				remainingData = locoStructExtra.Load(remainingData);
 			}
+
 			annotations.Add(new Annotation("Loco Variables", running_count, currentRemainingData - remainingData.Length));
 			running_count += currentRemainingData - remainingData.Length;
 
@@ -147,8 +149,8 @@ namespace OpenLocoTool.DatFileParsing
 
 		public IList<Annotation> AnnotateG1Data(byte[] fullData, IList<Annotation> annotations, int running_count = 0)
 		{
-			Annotation g1Annotation = new Annotation("G1", running_count, fullData.Length - running_count);
-			Annotation g1HeaderAnnotation = new Annotation("Header", g1Annotation, running_count, 8);
+			var g1Annotation = new Annotation("G1", running_count, fullData.Length - running_count);
+			var g1HeaderAnnotation = new Annotation("Header", g1Annotation, running_count, 8);
 			if(running_count < fullData.Length)
 			{
 				annotations.Add(g1Annotation);
@@ -159,46 +161,49 @@ namespace OpenLocoTool.DatFileParsing
 					BitConverter.ToUInt32(fullData[running_count..(running_count + 4)]),
 					BitConverter.ToUInt32(fullData[running_count..(running_count + 8)]));
 				running_count += 8;
-				Annotation g1DataAnnotation = new Annotation("Data", g1Annotation, running_count, 1);
+				var g1DataAnnotation = new Annotation("Data", g1Annotation, running_count, 1);
 				g1DataAnnotation.End = fullData.Length;
-				Annotation gHeadersAnnotation = new Annotation("Headers", g1DataAnnotation, running_count, 1);
+				var gHeadersAnnotation = new Annotation("Headers", g1DataAnnotation, running_count, 1);
 				annotations.Add(g1DataAnnotation);
 				annotations.Add(gHeadersAnnotation);
-				int imageDataStart = running_count;
+				var imageDataStart = running_count;
 
-				int g1Element32Size = 0x10;
+				var g1Element32Size = 0x10;
 
-				List<G1Element32> g32elements = new List<G1Element32>();
+				var g32elements = new List<G1Element32>();
 
-				for (int i = 0; i < g1Header.NumEntries; i++)
+				for (var i = 0; i < g1Header.NumEntries; i++)
 				{
 					var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(fullData[running_count..]);
-					Annotation g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, running_count, g1Element32Size);
+					var g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, running_count, g1Element32Size);
 					annotations.Add(g32ElementAnnotation);
 					annotateProperties(g32Element, annotations, running_count, g32ElementAnnotation);
 					g32elements.Add(g32Element);
 					running_count += g1Element32Size;
 				}
+
 				gHeadersAnnotation.End = running_count;
 
 				imageDataStart = running_count;
 
-				Annotation g1ImageDataAnnotation = new Annotation("Images", g1DataAnnotation, running_count, 8);
+				var g1ImageDataAnnotation = new Annotation("Images", g1DataAnnotation, running_count, 8);
 				annotations.Add(g1ImageDataAnnotation);
 				g1ImageDataAnnotation.End = fullData.Length;
 
-				for (int i = 0; i < g32elements.Count; i++)
+				for (var i = 0; i < g32elements.Count; i++)
 				{
-					int imageStart = imageDataStart + (int)g32elements[i].Offset;
-					int imageSize = fullData.Length - imageStart;
+					var imageStart = imageDataStart + (int)g32elements[i].Offset;
+					var imageSize = fullData.Length - imageStart;
 					if (i + 1 < g32elements.Count)
 					{
 						imageSize = (int)g32elements[i + 1].Offset - (int)g32elements[i].Offset;
 					}
+
 					annotations.Add(new Annotation("Image " + (i + 1), g1ImageDataAnnotation, imageStart, imageSize));
 					running_count = imageDataStart + (int)g32elements[i].Offset;
 				}
 			}
+
 			return annotations;
 		}
 

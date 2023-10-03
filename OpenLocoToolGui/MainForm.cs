@@ -74,7 +74,7 @@ namespace OpenLocoToolGui
 		const int addressStringSizeBytes = 8;
 		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
 		const int dumpWordSize = 4;
-		IDictionary<string,Action<string>> tvUniqueLoadValues = new Dictionary<string,Action<string>>();
+		IDictionary<string, Action<string>> tvUniqueLoadValues = new Dictionary<string, Action<string>>();
 		// End DAT Dump viewer fields
 
 		const int imagesPerPage = 50;
@@ -353,7 +353,7 @@ namespace OpenLocoToolGui
 			{
 				byte[] byteList = File.ReadAllBytes(path);
 				byte[] resultingByteList = byteList;
-				if(isG1)
+				if (isG1)
 				{
 					DATDumpAnnotations = new SawyerStreamReader(logger).AnnotateG1Data(byteList, new List<Annotation>());
 				}
@@ -363,7 +363,7 @@ namespace OpenLocoToolGui
 				}
 
 				int extraLine = resultingByteList.Length % bytesPerDumpLine;
-				if(extraLine > 0)
+				if (extraLine > 0)
 				{
 					extraLine = 1;
 				}
@@ -412,7 +412,7 @@ namespace OpenLocoToolGui
 		void LoadG1(string filename)
 		{
 			pgObject.SelectedObject = model.G1;
-			var images = CreateImages(model.G1.G1Header, model.G1.G1Elements, model.Palette);
+			var images = CreateImages(model.G1.G1Elements, model.Palette);
 			CurrentUIImages = CreateImageControls(images).ToList();
 			loadDataDump(filename, true);
 		}
@@ -618,7 +618,7 @@ namespace OpenLocoToolGui
 						(position / bytesPerDumpLine))
 						 + ((position % bytesPerDumpLine) * 2)            // Bytes are displayed 2 characters wide
 						 + ((position % bytesPerDumpLine) / dumpWordSize) // Every word is separated by an extra space
-						 + addressStringSizePrependBytes;				  // Each line starts with 10 characters indicating address
+						 + addressStringSizePrependBytes;                 // Each line starts with 10 characters indicating address
 
 			if (DATDumpAnnotationIdentifiers.TryGetValue(e.Node!.Text, out positionValues))
 			{
@@ -626,7 +626,7 @@ namespace OpenLocoToolGui
 				var linePosEnd = rtbDATDumpView.GetFirstCharIndexFromLine(positionValues.Item2 / bytesPerDumpLine);
 
 				int selectPositionStart = dumpPositionToRTBPosition(positionValues.Item1);
-				int selectPositionEnd = Math.Min(dumpPositionToRTBPosition(positionValues.Item2),rtbDATDumpView.TextLength - 1);
+				int selectPositionEnd = Math.Min(dumpPositionToRTBPosition(positionValues.Item2), rtbDATDumpView.TextLength - 1);
 				rtbDATDumpView.Select(selectPositionStart,
 									  selectPositionEnd - selectPositionStart);
 			}

@@ -41,14 +41,9 @@
 			ObjectTabViewControl = new TabControl();
 			scObjectViewerTabPage = new TabPage();
 			scObjectViewer = new SplitContainer();
-
 			scImageViewer = new SplitContainer();
-			scImageViewer = new SplitContainer();
+			btnPagePrevious = new Button();
 			tbCurrentPage = new TextBox();
-			btnPagePrevious = new Button();
-			btnPageNext = new Button();
-			scImageViewer = new SplitContainer();
-			btnPagePrevious = new Button();
 			btnPageNext = new Button();
 			ObjectDumpTab = new TabPage();
 			tvDATDumpAnnotations = new TreeView();
@@ -71,9 +66,6 @@
 			fileToolStripMenuItem1 = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
-			tcFileSelector.SuspendLayout();
-			tabPage2.SuspendLayout();
-			tabPage1.SuspendLayout();
 			goToHeaderInDumpToolStripMenuItem = new ToolStripMenuItem();
 			headerToolStripMenuItem = new ToolStripMenuItem();
 			pictureDataToolStripMenuItem = new ToolStripMenuItem();
@@ -91,7 +83,8 @@
 			scImageViewer.Panel1.SuspendLayout();
 			scImageViewer.Panel2.SuspendLayout();
 			scImageViewer.SuspendLayout();
-			ObjectDumpTab.SuspendLayout();			((System.ComponentModel.ISupportInitialize)scTop).BeginInit();
+			ObjectDumpTab.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)scTop).BeginInit();
 			scTop.Panel1.SuspendLayout();
 			scTop.Panel2.SuspendLayout();
 			scTop.SuspendLayout();
@@ -102,15 +95,6 @@
 			menuStrip.SuspendLayout();
 			imgContextMenu.SuspendLayout();
 			SuspendLayout();
-			// 
-			// tvFileTree
-			// 
-			tvFileTree.Dock = DockStyle.Fill;
-			tvFileTree.Location = new Point(3, 3);
-			tvFileTree.Name = "tvFileTree";
-			tvFileTree.Size = new Size(289, 605);
-			tvFileTree.TabIndex = 1;
-			tvFileTree.AfterSelect += tv_AfterSelect;
 			// 
 			// lbLogs
 			// 
@@ -155,48 +139,6 @@
 			lblFilenameRegex.TabIndex = 25;
 			lblFilenameRegex.Text = "Filename Filter";
 			lblFilenameRegex.TextAlign = ContentAlignment.MiddleLeft;
-			// 
-			// tvObjType
-			// 
-			tvObjType.Dock = DockStyle.Fill;
-			tvObjType.Location = new Point(3, 3);
-			tvObjType.Name = "tvObjType";
-			tvObjType.Size = new Size(289, 605);
-			tvObjType.TabIndex = 26;
-			tvObjType.AfterSelect += tv_AfterSelect;
-			// 
-			// tcFileSelector
-			// 
-			tcFileSelector.Controls.Add(tabPage2);
-			tcFileSelector.Controls.Add(tabPage1);
-			tcFileSelector.Dock = DockStyle.Fill;
-			tcFileSelector.Location = new Point(0, 74);
-			tcFileSelector.Name = "tcFileSelector";
-			tcFileSelector.SelectedIndex = 0;
-			tcFileSelector.Size = new Size(303, 639);
-			tcFileSelector.TabIndex = 29;
-			// 
-			// tabPage2
-			// 
-			tabPage2.Controls.Add(tvObjType);
-			tabPage2.Location = new Point(4, 24);
-			tabPage2.Name = "tabPage2";
-			tabPage2.Padding = new Padding(3);
-			tabPage2.Size = new Size(295, 611);
-			tabPage2.TabIndex = 1;
-			tabPage2.Text = "Category";
-			tabPage2.UseVisualStyleBackColor = true;
-			// 
-			// tabPage1
-			// 
-			tabPage1.Controls.Add(tvFileTree);
-			tabPage1.Location = new Point(4, 24);
-			tabPage1.Name = "tabPage1";
-			tabPage1.Padding = new Padding(3);
-			tabPage1.Size = new Size(295, 611);
-			tabPage1.TabIndex = 0;
-			tabPage1.Text = "File";
-			tabPage1.UseVisualStyleBackColor = true;
 			// 
 			// flpImageTable
 			// 
@@ -280,6 +222,7 @@
 			// 
 			// scImageViewer.Panel2
 			// 
+			scImageViewer.Panel2.Controls.Add(tbCurrentPage);
 			scImageViewer.Panel2.Controls.Add(btnPagePrevious);
 			scImageViewer.Panel2.Controls.Add(btnPageNext);
 			scImageViewer.Size = new Size(584, 546);
@@ -291,18 +234,29 @@
 			btnPagePrevious.Dock = DockStyle.Left;
 			btnPagePrevious.Location = new Point(0, 0);
 			btnPagePrevious.Name = "btnPagePrevious";
-			btnPagePrevious.Size = new Size(294, 25);
+			btnPagePrevious.Size = new Size(253, 2);
 			btnPagePrevious.TabIndex = 0;
 			btnPagePrevious.Text = "Previous Page";
 			btnPagePrevious.UseVisualStyleBackColor = true;
 			btnPagePrevious.Click += btnPagePrevious_Click;
 			// 
+			// tbCurrentPage
+			// 
+			tbCurrentPage.BorderStyle = BorderStyle.FixedSingle;
+			tbCurrentPage.Dock = DockStyle.Bottom;
+			tbCurrentPage.Enabled = false;
+			tbCurrentPage.Location = new Point(0, 2);
+			tbCurrentPage.Name = "tbCurrentPage";
+			tbCurrentPage.Size = new Size(356, 23);
+			tbCurrentPage.TabIndex = 33;
+			tbCurrentPage.TextAlign = HorizontalAlignment.Center;
+			// 
 			// btnPageNext
 			// 
 			btnPageNext.Dock = DockStyle.Right;
-			btnPageNext.Location = new Point(290, 0);
+			btnPageNext.Location = new Point(356, 0);
 			btnPageNext.Name = "btnPageNext";
-			btnPageNext.Size = new Size(294, 25);
+			btnPageNext.Size = new Size(228, 25);
 			btnPageNext.TabIndex = 31;
 			btnPageNext.Text = "Next Page";
 			btnPageNext.UseVisualStyleBackColor = true;
@@ -366,10 +320,10 @@
 			tcFileSelector.Controls.Add(tabPage2);
 			tcFileSelector.Controls.Add(tabPage1);
 			tcFileSelector.Dock = DockStyle.Fill;
-			tcFileSelector.Location = new Point(0, 57);
+			tcFileSelector.Location = new Point(0, 74);
 			tcFileSelector.Name = "tcFileSelector";
 			tcFileSelector.SelectedIndex = 0;
-			tcFileSelector.Size = new Size(303, 656);
+			tcFileSelector.Size = new Size(303, 639);
 			tcFileSelector.TabIndex = 29;
 			// 
 			// tabPage2
@@ -378,7 +332,7 @@
 			tabPage2.Location = new Point(4, 24);
 			tabPage2.Name = "tabPage2";
 			tabPage2.Padding = new Padding(3);
-			tabPage2.Size = new Size(295, 628);
+			tabPage2.Size = new Size(295, 611);
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "Category";
 			tabPage2.UseVisualStyleBackColor = true;
@@ -517,14 +471,14 @@
 			// headerToolStripMenuItem
 			// 
 			headerToolStripMenuItem.Name = "headerToolStripMenuItem";
-			headerToolStripMenuItem.Size = new Size(180, 22);
+			headerToolStripMenuItem.Size = new Size(138, 22);
 			headerToolStripMenuItem.Text = "Header";
 			headerToolStripMenuItem.Click += headerToolStripMenuItem_Click;
 			// 
 			// pictureDataToolStripMenuItem
 			// 
 			pictureDataToolStripMenuItem.Name = "pictureDataToolStripMenuItem";
-			pictureDataToolStripMenuItem.Size = new Size(180, 22);
+			pictureDataToolStripMenuItem.Size = new Size(138, 22);
 			pictureDataToolStripMenuItem.Text = "Picture Data";
 			pictureDataToolStripMenuItem.Click += pictureDataToolStripMenuItem_Click;
 			// 
@@ -612,5 +566,6 @@
 		private TreeView tvDATDumpAnnotations;
 		private ToolStripMenuItem goToHeaderInDumpToolStripMenuItem;
 		private ToolStripMenuItem headerToolStripMenuItem;
-		private ToolStripMenuItem pictureDataToolStripMenuItem;	}
+		private ToolStripMenuItem pictureDataToolStripMenuItem;
+	}
 }

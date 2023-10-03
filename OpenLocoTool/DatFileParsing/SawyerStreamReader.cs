@@ -17,7 +17,7 @@ namespace OpenLocoTool.DatFileParsing
 
 		static uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
-			uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
+			static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
 			{
 				var checksum = seed;
 				foreach (var d in data)
@@ -344,22 +344,16 @@ namespace OpenLocoTool.DatFileParsing
 			};
 
 		// taken from openloco's SawyerStreamReader::readChunk
-		public byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
+		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
 		{
-			switch (encoding)
+			return encoding switch
 			{
-				case SawyerEncoding.Uncompressed:
-					return data.ToArray();
-				case SawyerEncoding.RunLengthSingle:
-					return DecodeRunLengthSingle(data);
-				case SawyerEncoding.RunLengthMulti:
-					return DecodeRunLengthMulti(DecodeRunLengthSingle(data));
-				case SawyerEncoding.Rotate:
-					return DecodeRotate(data);
-				default:
-					Logger.Log(LogLevel.Error, "Unknown chunk encoding scheme");
-					throw new InvalidDataException("Unknown encoding");
-			}
+				SawyerEncoding.Uncompressed => data.ToArray(),
+				SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data),
+				SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
+				SawyerEncoding.Rotate => DecodeRotate(data),
+				_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
+			};
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
@@ -460,7 +454,7 @@ namespace OpenLocoTool.DatFileParsing
 			return decodedSpan;
 		}
 
-		private byte[] DecodeRotate(ReadOnlySpan<byte> data)
+		private static byte[] DecodeRotate(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = new();
 

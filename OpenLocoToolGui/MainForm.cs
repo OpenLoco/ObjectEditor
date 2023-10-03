@@ -76,6 +76,18 @@ namespace OpenLocoToolGui
 			};
 
 			model = new MainFormModel(logger, SettingsFile);
+
+			if (model.Settings.DataDirectory == null || Path.Exists(model.Settings.DataDirectory))
+			{
+				MessageBox.Show("Please set your Locomotion Data directory");
+				SetDataDirectory();
+			}
+
+			if (model.Settings.ObjDataDirectory == null || Path.Exists(model.Settings.ObjDataDirectory))
+			{
+				MessageBox.Show("Please set your Locomotion ObjData directory");
+				SetObjectDirectory();
+			}
 		}
 
 		private void MainForm_Load(object sender, EventArgs e)
@@ -278,6 +290,11 @@ namespace OpenLocoToolGui
 
 		private void setObjectDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			SetObjectDirectory();
+		}
+
+		private void SetObjectDirectory()
+		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
 				if (LoadObjDataDirectory(objectDirBrowser.SelectedPath, true))
@@ -288,6 +305,11 @@ namespace OpenLocoToolGui
 		}
 
 		private void setDataDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			SetDataDirectory();
+		}
+
+		private void SetDataDirectory()
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{

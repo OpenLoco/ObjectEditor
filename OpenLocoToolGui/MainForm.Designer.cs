@@ -41,6 +41,12 @@
 			ObjectTabViewControl = new TabControl();
 			scObjectViewerTabPage = new TabPage();
 			scObjectViewer = new SplitContainer();
+
+			scImageViewer = new SplitContainer();
+			scImageViewer = new SplitContainer();
+			tbCurrentPage = new TextBox();
+			btnPagePrevious = new Button();
+			btnPageNext = new Button();
 			scImageViewer = new SplitContainer();
 			btnPagePrevious = new Button();
 			btnPageNext = new Button();
@@ -54,6 +60,7 @@
 			tabPage1 = new TabPage();
 			tvFileTree = new TreeView();
 			pnFileFilter = new Panel();
+			cbVanillaObjects = new CheckBox();
 			menuStrip = new MenuStrip();
 			fileToolStripMenuItem = new ToolStripMenuItem();
 			setObjectDirectoryToolStripMenuItem = new ToolStripMenuItem();
@@ -64,6 +71,9 @@
 			fileToolStripMenuItem1 = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
+			tcFileSelector.SuspendLayout();
+			tabPage2.SuspendLayout();
+			tabPage1.SuspendLayout();
 			goToHeaderInDumpToolStripMenuItem = new ToolStripMenuItem();
 			headerToolStripMenuItem = new ToolStripMenuItem();
 			pictureDataToolStripMenuItem = new ToolStripMenuItem();
@@ -81,8 +91,7 @@
 			scImageViewer.Panel1.SuspendLayout();
 			scImageViewer.Panel2.SuspendLayout();
 			scImageViewer.SuspendLayout();
-			ObjectDumpTab.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)scTop).BeginInit();
+			ObjectDumpTab.SuspendLayout();			((System.ComponentModel.ISupportInitialize)scTop).BeginInit();
 			scTop.Panel1.SuspendLayout();
 			scTop.Panel2.SuspendLayout();
 			scTop.SuspendLayout();
@@ -93,6 +102,15 @@
 			menuStrip.SuspendLayout();
 			imgContextMenu.SuspendLayout();
 			SuspendLayout();
+			// 
+			// tvFileTree
+			// 
+			tvFileTree.Dock = DockStyle.Fill;
+			tvFileTree.Location = new Point(3, 3);
+			tvFileTree.Name = "tvFileTree";
+			tvFileTree.Size = new Size(289, 605);
+			tvFileTree.TabIndex = 1;
+			tvFileTree.AfterSelect += tv_AfterSelect;
 			// 
 			// lbLogs
 			// 
@@ -137,6 +155,48 @@
 			lblFilenameRegex.TabIndex = 25;
 			lblFilenameRegex.Text = "Filename Filter";
 			lblFilenameRegex.TextAlign = ContentAlignment.MiddleLeft;
+			// 
+			// tvObjType
+			// 
+			tvObjType.Dock = DockStyle.Fill;
+			tvObjType.Location = new Point(3, 3);
+			tvObjType.Name = "tvObjType";
+			tvObjType.Size = new Size(289, 605);
+			tvObjType.TabIndex = 26;
+			tvObjType.AfterSelect += tv_AfterSelect;
+			// 
+			// tcFileSelector
+			// 
+			tcFileSelector.Controls.Add(tabPage2);
+			tcFileSelector.Controls.Add(tabPage1);
+			tcFileSelector.Dock = DockStyle.Fill;
+			tcFileSelector.Location = new Point(0, 74);
+			tcFileSelector.Name = "tcFileSelector";
+			tcFileSelector.SelectedIndex = 0;
+			tcFileSelector.Size = new Size(303, 639);
+			tcFileSelector.TabIndex = 29;
+			// 
+			// tabPage2
+			// 
+			tabPage2.Controls.Add(tvObjType);
+			tabPage2.Location = new Point(4, 24);
+			tabPage2.Name = "tabPage2";
+			tabPage2.Padding = new Padding(3);
+			tabPage2.Size = new Size(295, 611);
+			tabPage2.TabIndex = 1;
+			tabPage2.Text = "Category";
+			tabPage2.UseVisualStyleBackColor = true;
+			// 
+			// tabPage1
+			// 
+			tabPage1.Controls.Add(tvFileTree);
+			tabPage1.Location = new Point(4, 24);
+			tabPage1.Name = "tabPage1";
+			tabPage1.Padding = new Padding(3);
+			tabPage1.Size = new Size(295, 611);
+			tabPage1.TabIndex = 0;
+			tabPage1.Text = "File";
+			tabPage1.UseVisualStyleBackColor = true;
 			// 
 			// flpImageTable
 			// 
@@ -354,6 +414,7 @@
 			// 
 			// pnFileFilter
 			// 
+			pnFileFilter.Controls.Add(cbVanillaObjects);
 			pnFileFilter.Controls.Add(tbFileFilter);
 			pnFileFilter.Controls.Add(lblFilenameRegex);
 			pnFileFilter.Dock = DockStyle.Top;
@@ -361,8 +422,20 @@
 			pnFileFilter.Margin = new Padding(4);
 			pnFileFilter.Name = "pnFileFilter";
 			pnFileFilter.Padding = new Padding(4);
-			pnFileFilter.Size = new Size(303, 57);
+			pnFileFilter.Size = new Size(303, 74);
 			pnFileFilter.TabIndex = 30;
+			// 
+			// cbVanillaObjects
+			// 
+			cbVanillaObjects.AutoSize = true;
+			cbVanillaObjects.Dock = DockStyle.Top;
+			cbVanillaObjects.Location = new Point(4, 50);
+			cbVanillaObjects.Name = "cbVanillaObjects";
+			cbVanillaObjects.Size = new Size(295, 19);
+			cbVanillaObjects.TabIndex = 26;
+			cbVanillaObjects.Text = "Vanilla Objects Only";
+			cbVanillaObjects.UseVisualStyleBackColor = true;
+			cbVanillaObjects.CheckedChanged += cbVanillaObjects_CheckedChanged;
 			// 
 			// menuStrip
 			// 
@@ -480,6 +553,7 @@
 			scObjectViewer.ResumeLayout(false);
 			scImageViewer.Panel1.ResumeLayout(false);
 			scImageViewer.Panel2.ResumeLayout(false);
+			scImageViewer.Panel2.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)scImageViewer).EndInit();
 			scImageViewer.ResumeLayout(false);
 			ObjectDumpTab.ResumeLayout(false);
@@ -524,6 +598,8 @@
 		private SplitContainer scImageViewer;
 		private Button btnPageNext;
 		private Button btnPagePrevious;
+		private CheckBox cbVanillaObjects;
+		private TextBox tbCurrentPage;
 		private TabControl ObjectTabViewControl;
 		private TabPage scObjectViewerTabPage;
 		private TabPage ObjectDumpTab;
@@ -536,6 +612,5 @@
 		private TreeView tvDATDumpAnnotations;
 		private ToolStripMenuItem goToHeaderInDumpToolStripMenuItem;
 		private ToolStripMenuItem headerToolStripMenuItem;
-		private ToolStripMenuItem pictureDataToolStripMenuItem;
-	}
+		private ToolStripMenuItem pictureDataToolStripMenuItem;	}
 }

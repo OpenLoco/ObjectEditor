@@ -23,8 +23,8 @@ namespace OpenLocoToolGui
 
 	public partial class MainForm : Form
 	{
-		MainFormModel model;
-		ILogger logger;
+		readonly MainFormModel model;
+		readonly ILogger logger;
 
 		// could use pgObject.SelectedObjectsChanged event, but we'll just do this for now
 		public ILocoObject? CurrentUIObject
@@ -59,6 +59,8 @@ namespace OpenLocoToolGui
 				flpImageTable.SuspendLayout();
 				flpImageTable.Controls.Clear();
 				flpImageTable.Controls.AddRange(controls.ToArray());
+				var pages = (CurrentUIImages.Count / imagesPerPage) + 1;
+				tbCurrentPage.Text = $"Page ({currentUIImagePageNumber + 1} / {pages}) ";
 				flpImageTable.ResumeLayout(true);
 			}
 		}
@@ -93,17 +95,17 @@ namespace OpenLocoToolGui
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
-			// can only do this after window handle has been created (so can't do in cstr)
+			// can only do this after window handle has been created (so can't do in constructor)
 			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log.ToString()));
 
 			// setup dark mode???
 			//DarkModify(this);
 
-			InitUI();
+			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 		}
 
-		Color DarkModeBackColor = Color.FromArgb(31, 31, 31);
-		Color DarkModeForeColor = Color.White;
+		readonly Color DarkModeBackColor = Color.FromArgb(31, 31, 31);
+		readonly Color DarkModeForeColor = Color.White;
 
 		// poor-mans dark mode
 		void DarkModify(Control control)
@@ -117,10 +119,10 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		void InitUI(string filter = "")
+		void InitUI(bool vanillaOnly, string filter)
 		{
-			InitFileTreeView(filter);
-			InitCategoryTreeView(filter);
+			InitFileTreeView(vanillaOnly, filter);
+			InitCategoryTreeView(vanillaOnly, filter);
 		}
 
 		bool LoadObjDataDirectory(string directory, bool useExistingIndex)
@@ -158,6 +160,7 @@ namespace OpenLocoToolGui
 				g.FillEllipse(Brushes.MediumSpringGreen, new Rectangle(0, 0, bitmap.Width, bitmap.Height));
 				g.Dispose();
 			}
+
 			return bitmap;
 		}
 
@@ -182,11 +185,16 @@ namespace OpenLocoToolGui
 			_ = tn.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
 
-		void InitFileTreeView(string fileFilter = "")
+		void InitFileTreeView(bool vanillaOnly, string fileFilter)
 		{
 			tvFileTree.SuspendLayout();
 			tvFileTree.Nodes.Clear();
-			var filteredFiles = model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			var filteredFiles = string.IsNullOrEmpty(fileFilter)
+				? model.HeaderIndex
+				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjects.Names.Contains(f.Value.Name.Trim()));
 
 			tvFileTree.ImageList = MakeImageList();
 
@@ -200,12 +208,16 @@ namespace OpenLocoToolGui
 			tvFileTree.ResumeLayout(true);
 		}
 
-		void InitCategoryTreeView(string fileFilter = "")
+		void InitCategoryTreeView(bool vanillaOnly, string fileFilter)
 		{
 			tvObjType.SuspendLayout();
 			tvObjType.Nodes.Clear();
 
-			var filteredFiles = model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+			var filteredFiles = string.IsNullOrEmpty(fileFilter)
+				? model.HeaderIndex
+				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjects.Names.Contains(f.Value.Name.Trim()));
 
 			tvObjType.ImageList = MakeImageList();
 
@@ -230,6 +242,7 @@ namespace OpenLocoToolGui
 						{
 							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, vehicleTypeNode);
 						}
+
 						typeNode.Nodes.Add(vehicleTypeNode);
 					}
 				}
@@ -283,8 +296,9 @@ namespace OpenLocoToolGui
 					if (!exists)
 					{
 						// we made a new file (as opposed to overwriting an existing one) so lets update the UI to show it
-						InitUI();
+						InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 					}
+
 					MessageBox.Show($"File \"{filename}\" saved successfully");
 				}
 				catch (Exception ex)
@@ -300,7 +314,7 @@ namespace OpenLocoToolGui
 			{
 				if (LoadObjDataDirectory(objectDirBrowser.SelectedPath, true))
 				{
-					InitUI();
+					InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 				}
 			}
 		}
@@ -312,7 +326,7 @@ namespace OpenLocoToolGui
 				if (model.LoadDataDirectory(objectDirBrowser.SelectedPath))
 				{
 					pgObject.SelectedObject = model.G1;
-					var images = CreateImages(model.G1.G1Header, model.G1.G1Elements, model.Palette);
+					var images = CreateImages(model.G1.G1Elements, model.Palette);
 					CurrentUIImages = CreateImageControls(images).ToList();
 				}
 			}
@@ -324,14 +338,13 @@ namespace OpenLocoToolGui
 		{
 			if (LoadObjDataDirectory(model.Settings.ObjDataDirectory, false))
 			{
-				InitUI();
-
+				InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 			}
 		}
 
 		void tbFileFilter_TextChanged(object sender, EventArgs e)
 		{
-			InitUI(tbFileFilter.Text);
+			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 		}
 
 		void loadDataDump(string path, bool isG1 = false)
@@ -471,7 +484,7 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		IEnumerable<Bitmap> CreateImages(G1Header G1Header, List<G1Element32> G1Elements, Color[] palette)
+		IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, Color[] palette)
 		{
 			if (palette is null)
 			{
@@ -550,7 +563,7 @@ namespace OpenLocoToolGui
 					//SelectNewPalette();
 				}
 
-				var images = CreateImages(CurrentUIObject.G1Header, CurrentUIObject.G1Elements, model.Palette);
+				var images = CreateImages(CurrentUIObject.G1Elements, model.Palette);
 				CurrentUIImages = CreateImageControls(images).ToArray();
 			}
 
@@ -651,6 +664,9 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		// todo: load image (though this is useless until full object + image table saving is implemented)
+		private void cbVanillaObjects_CheckedChanged(object sender, EventArgs e)
+		{
+			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+		}
 	}
 }

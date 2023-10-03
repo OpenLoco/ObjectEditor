@@ -65,6 +65,7 @@ namespace OpenLocoTool.Objects
 				{
 					ptr_vari++;
 				}
+
 				ptr_vari++;
 				remainingData = remainingData[ptr_vari..];
 			}

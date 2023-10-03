@@ -108,8 +108,8 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xD4)] uint8_t ScaffoldingSegmentType,
 		[property: LocoStructOffset(0xD5)] Colour ScaffoldingColour,
 		[property: LocoStructOffset(0xD6), LocoArrayLength(2)] IndustryObjectProductionRateRange[] InitialProductionRate,
-		[property: LocoStructOffset(0xDE), LocoArrayLength(2)] uint8_t[] ProducedCargoType,                               // (0xFF = null)
-		[property: LocoStructOffset(0xE0), LocoArrayLength(3)] uint8_t[] RequiredCargoType,                               // (0xFF = null)
+		///[property: LocoStructOffset(0xDE), LocoArrayLength(IndustryObject.MaxProducedCargoType)] uint8_t[] ProducedCargoType,                               // (0xFF = null)
+		//[property: LocoStructOffset(0xE0), LocoArrayLength(IndustryObject.MaxRequiredCargoType)] uint8_t[] RequiredCargoType,                               // (0xFF = null)
 		[property: LocoStructOffset(0xE3)] uint8_t pad_E3,
 		[property: LocoStructOffset(0xE4)] IndustryObjectFlags Flags,
 		[property: LocoStructOffset(0xE8)] uint8_t var_E8,
@@ -127,6 +127,12 @@ namespace OpenLocoTool.Objects
 		public static int StructSize => 0xF4;
 
 		public static int AnimationSequencesSize = 4;
+
+		public const int MaxProducedCargoType = 2;
+		public const int MaxRequiredCargoType = 3;
+
+		public List<S5Header> ProducedCargo { get; set; } = new();
+		public List<S5Header> RequiredCargo { get; set; } = new();
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
@@ -149,6 +155,7 @@ namespace OpenLocoTool.Objects
 			{
 				ptr_38 += IndustryObjectUnk38.StructSize;
 			}
+
 			ptr_38++;
 			remainingData = remainingData[ptr_38..];
 
@@ -160,6 +167,7 @@ namespace OpenLocoTool.Objects
 				{
 					ptr_1F++;
 				}
+
 				ptr_1F++;
 				remainingData = remainingData[ptr_1F..];
 			}
@@ -168,10 +176,26 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[(MaxNumBuildings * 1)..]; // sizeof(uint8_t)
 
 			// produced cargo
-			remainingData = remainingData[(S5Header.StructLength * ProducedCargoType.Length)..];
+			for (var i = 0; i < MaxProducedCargoType; ++i)
+			{
+				var header = S5Header.Read(remainingData[..S5Header.StructLength]);
+				if (header.Checksum != 0 || header.Flags != 255)
+				{
+					ProducedCargo.Add(header);
+				}
+				remainingData = remainingData[S5Header.StructLength..];
+			}
 
 			// required cargo
-			remainingData = remainingData[(S5Header.StructLength * RequiredCargoType.Length)..];
+			for (var i = 0; i < MaxRequiredCargoType; ++i)
+			{
+				var header = S5Header.Read(remainingData[..S5Header.StructLength]);
+				if (header.Checksum != 0 || header.Flags != 255)
+				{
+					RequiredCargo.Add(header);
+				}
+				remainingData = remainingData[S5Header.StructLength..];
+			}
 
 			// wall types
 			remainingData = remainingData[(S5Header.StructLength * WallTypes.Length)..];

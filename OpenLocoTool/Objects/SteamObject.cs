@@ -58,6 +58,7 @@ namespace OpenLocoTool.Objects
 				frameInfo0++;
 				remainingData = remainingData[ImageAndHeight.StructSize..];
 			}
+
 			remainingData = remainingData[1..];
 
 			// frameInfoType0
@@ -67,6 +68,7 @@ namespace OpenLocoTool.Objects
 				frameInfo1++;
 				remainingData = remainingData[ImageAndHeight.StructSize..];
 			}
+
 			remainingData = remainingData[1..];
 
 			// sounds effects

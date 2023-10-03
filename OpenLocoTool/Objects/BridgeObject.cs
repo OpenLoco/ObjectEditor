@@ -68,5 +68,4 @@ namespace OpenLocoTool.Objects
 
 		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
 	}
-
 }

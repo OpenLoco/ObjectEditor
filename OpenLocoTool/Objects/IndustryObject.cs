@@ -183,7 +183,6 @@ namespace OpenLocoTool.Objects
 				{
 					ProducedCargo.Add(header);
 				}
-
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
@@ -195,7 +194,6 @@ namespace OpenLocoTool.Objects
 				{
 					RequiredCargo.Add(header);
 				}
-
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 

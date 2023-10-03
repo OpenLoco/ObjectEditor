@@ -19,8 +19,8 @@ namespace OpenLocoToolGui
 
 	public partial class MainForm : Form
 	{
-		MainFormModel model;
-		ILogger logger;
+		readonly MainFormModel model;
+		readonly ILogger logger;
 
 		// could use pgObject.SelectedObjectsChanged event, but we'll just do this for now
 		public ILocoObject? CurrentUIObject
@@ -55,6 +55,8 @@ namespace OpenLocoToolGui
 				flpImageTable.SuspendLayout();
 				flpImageTable.Controls.Clear();
 				flpImageTable.Controls.AddRange(controls.ToArray());
+				var pages = (CurrentUIImages.Count / imagesPerPage) + 1;
+				tbCurrentPage.Text = $"Page ({currentUIImagePageNumber + 1} / {pages}) ";
 				flpImageTable.ResumeLayout(true);
 			}
 		}
@@ -78,7 +80,7 @@ namespace OpenLocoToolGui
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
-			// can only do this after window handle has been created (so can't do in cstr)
+			// can only do this after window handle has been created (so can't do in constructor)
 			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log.ToString()));
 
 			// setup dark mode???
@@ -87,8 +89,8 @@ namespace OpenLocoToolGui
 			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 		}
 
-		Color DarkModeBackColor = Color.FromArgb(31, 31, 31);
-		Color DarkModeForeColor = Color.White;
+		readonly Color DarkModeBackColor = Color.FromArgb(31, 31, 31);
+		readonly Color DarkModeForeColor = Color.White;
 
 		// poor-mans dark mode
 		void DarkModify(Control control)
@@ -292,7 +294,7 @@ namespace OpenLocoToolGui
 				if (model.LoadDataDirectory(objectDirBrowser.SelectedPath))
 				{
 					pgObject.SelectedObject = model.G1;
-					var images = CreateImages(model.G1.G1Header, model.G1.G1Elements, model.Palette);
+					var images = CreateImages(model.G1.G1Elements, model.Palette);
 					CurrentUIImages = CreateImageControls(images).ToList();
 				}
 			}
@@ -372,7 +374,7 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		IEnumerable<Bitmap> CreateImages(G1Header G1Header, List<G1Element32> G1Elements, Color[] palette)
+		IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, Color[] palette)
 		{
 			if (palette is null)
 			{
@@ -451,7 +453,7 @@ namespace OpenLocoToolGui
 					//SelectNewPalette();
 				}
 
-				var images = CreateImages(CurrentUIObject.G1Header, CurrentUIObject.G1Elements, model.Palette);
+				var images = CreateImages(CurrentUIObject.G1Elements, model.Palette);
 				CurrentUIImages = CreateImageControls(images).ToArray();
 			}
 

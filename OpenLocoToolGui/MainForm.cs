@@ -77,13 +77,13 @@ namespace OpenLocoToolGui
 
 			model = new MainFormModel(logger, SettingsFile);
 
-			if (model.Settings.DataDirectory == null || Path.Exists(model.Settings.DataDirectory))
+			if (model.Settings.DataDirectory == null || !Directory.Exists(model.Settings.DataDirectory))
 			{
 				MessageBox.Show("Please set your Locomotion Data directory");
 				SetDataDirectory();
 			}
 
-			if (model.Settings.ObjDataDirectory == null || Path.Exists(model.Settings.ObjDataDirectory))
+			if (model.Settings.ObjDataDirectory == null || !Directory.Exists(model.Settings.ObjDataDirectory))
 			{
 				MessageBox.Show("Please set your Locomotion ObjData directory");
 				SetObjectDirectory();

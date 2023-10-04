@@ -59,8 +59,6 @@ namespace OpenLocoTool.DatFileParsing
 	{
 		ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData);
 
-		//int Annotate(ReadOnlySpan<byte> remainingData, int running_count, IDictionary<int,string> annotations);
-
 		ReadOnlySpan<byte> Save();
 	}
 

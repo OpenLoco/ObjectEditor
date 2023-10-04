@@ -551,7 +551,7 @@ namespace OpenLocoToolGui
 			{
 				if (model.Palette is null)
 				{
-					MessageBox.Show("No palette file loaded - please load one from File -> Load Palette");
+					MessageBox.Show("No palette file loaded - please load one from File -> Load Palette. You can use palette.png in the top level folder of this repo.");
 					return;
 					//SelectNewPalette();
 				}

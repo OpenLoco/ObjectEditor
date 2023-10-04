@@ -46,7 +46,7 @@
 			btnPagePrevious = new Button();
 			btnPageNext = new Button();
 			ObjectDumpTab = new TabPage();
-			splitContainer1 = new SplitContainer();
+			scAnnnotationDump = new SplitContainer();
 			tvDATDumpAnnotations = new TreeView();
 			rtbDATDumpView = new RichTextBox();
 			scTop = new SplitContainer();
@@ -85,10 +85,10 @@
 			scImageViewer.Panel2.SuspendLayout();
 			scImageViewer.SuspendLayout();
 			ObjectDumpTab.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
-			splitContainer1.Panel1.SuspendLayout();
-			splitContainer1.Panel2.SuspendLayout();
-			splitContainer1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)scAnnnotationDump).BeginInit();
+			scAnnnotationDump.Panel1.SuspendLayout();
+			scAnnnotationDump.Panel2.SuspendLayout();
+			scAnnnotationDump.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)scTop).BeginInit();
 			scTop.Panel1.SuspendLayout();
 			scTop.Panel2.SuspendLayout();
@@ -269,7 +269,7 @@
 			// 
 			// ObjectDumpTab
 			// 
-			ObjectDumpTab.Controls.Add(splitContainer1);
+			ObjectDumpTab.Controls.Add(scAnnnotationDump);
 			ObjectDumpTab.Location = new Point(4, 24);
 			ObjectDumpTab.Name = "ObjectDumpTab";
 			ObjectDumpTab.Padding = new Padding(3);
@@ -278,23 +278,23 @@
 			ObjectDumpTab.Text = "Object Data";
 			ObjectDumpTab.UseVisualStyleBackColor = true;
 			// 
-			// splitContainer1
+			// scAnnnotationDump
 			// 
-			splitContainer1.Dock = DockStyle.Fill;
-			splitContainer1.Location = new Point(3, 3);
-			splitContainer1.Name = "splitContainer1";
+			scAnnnotationDump.Dock = DockStyle.Fill;
+			scAnnnotationDump.Location = new Point(3, 3);
+			scAnnnotationDump.Name = "scAnnnotationDump";
 			// 
-			// splitContainer1.Panel1
+			// scAnnnotationDump.Panel1
 			// 
-			splitContainer1.Panel1.AutoScroll = true;
-			splitContainer1.Panel1.Controls.Add(tvDATDumpAnnotations);
+			scAnnnotationDump.Panel1.AutoScroll = true;
+			scAnnnotationDump.Panel1.Controls.Add(tvDATDumpAnnotations);
 			// 
-			// splitContainer1.Panel2
+			// scAnnnotationDump.Panel2
 			// 
-			splitContainer1.Panel2.Controls.Add(rtbDATDumpView);
-			splitContainer1.Size = new Size(878, 546);
-			splitContainer1.SplitterDistance = 303;
-			splitContainer1.TabIndex = 2;
+			scAnnnotationDump.Panel2.Controls.Add(rtbDATDumpView);
+			scAnnnotationDump.Size = new Size(878, 546);
+			scAnnnotationDump.SplitterDistance = 303;
+			scAnnnotationDump.TabIndex = 2;
 			// 
 			// tvDATDumpAnnotations
 			// 
@@ -533,10 +533,10 @@
 			((System.ComponentModel.ISupportInitialize)scImageViewer).EndInit();
 			scImageViewer.ResumeLayout(false);
 			ObjectDumpTab.ResumeLayout(false);
-			splitContainer1.Panel1.ResumeLayout(false);
-			splitContainer1.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
-			splitContainer1.ResumeLayout(false);
+			scAnnnotationDump.Panel1.ResumeLayout(false);
+			scAnnnotationDump.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)scAnnnotationDump).EndInit();
+			scAnnnotationDump.ResumeLayout(false);
 			scTop.Panel1.ResumeLayout(false);
 			scTop.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scTop).EndInit();
@@ -593,6 +593,6 @@
 		private ToolStripMenuItem goToHeaderInDumpToolStripMenuItem;
 		private ToolStripMenuItem headerToolStripMenuItem;
 		private ToolStripMenuItem pictureDataToolStripMenuItem;
-		private SplitContainer splitContainer1;
+		private SplitContainer scAnnnotationDump;
 	}
 }

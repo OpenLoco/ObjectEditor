@@ -42,10 +42,11 @@
 			scObjectViewerTabPage = new TabPage();
 			scObjectViewer = new SplitContainer();
 			scImageViewer = new SplitContainer();
-			btnPagePrevious = new Button();
 			tbCurrentPage = new TextBox();
+			btnPagePrevious = new Button();
 			btnPageNext = new Button();
 			ObjectDumpTab = new TabPage();
+			splitContainer1 = new SplitContainer();
 			tvDATDumpAnnotations = new TreeView();
 			rtbDATDumpView = new RichTextBox();
 			scTop = new SplitContainer();
@@ -84,6 +85,10 @@
 			scImageViewer.Panel2.SuspendLayout();
 			scImageViewer.SuspendLayout();
 			ObjectDumpTab.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+			splitContainer1.Panel1.SuspendLayout();
+			splitContainer1.Panel2.SuspendLayout();
+			splitContainer1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)scTop).BeginInit();
 			scTop.Panel1.SuspendLayout();
 			scTop.Panel2.SuspendLayout();
@@ -229,27 +234,27 @@
 			scImageViewer.SplitterDistance = 517;
 			scImageViewer.TabIndex = 32;
 			// 
-			// btnPagePrevious
-			// 
-			btnPagePrevious.Dock = DockStyle.Left;
-			btnPagePrevious.Location = new Point(0, 0);
-			btnPagePrevious.Name = "btnPagePrevious";
-			btnPagePrevious.Size = new Size(253, 2);
-			btnPagePrevious.TabIndex = 0;
-			btnPagePrevious.Text = "Previous Page";
-			btnPagePrevious.UseVisualStyleBackColor = true;
-			btnPagePrevious.Click += btnPagePrevious_Click;
-			// 
 			// tbCurrentPage
 			// 
 			tbCurrentPage.BorderStyle = BorderStyle.FixedSingle;
 			tbCurrentPage.Dock = DockStyle.Bottom;
 			tbCurrentPage.Enabled = false;
-			tbCurrentPage.Location = new Point(0, 2);
+			tbCurrentPage.Location = new Point(253, 2);
 			tbCurrentPage.Name = "tbCurrentPage";
-			tbCurrentPage.Size = new Size(356, 23);
+			tbCurrentPage.Size = new Size(103, 23);
 			tbCurrentPage.TabIndex = 33;
 			tbCurrentPage.TextAlign = HorizontalAlignment.Center;
+			// 
+			// btnPagePrevious
+			// 
+			btnPagePrevious.Dock = DockStyle.Left;
+			btnPagePrevious.Location = new Point(0, 0);
+			btnPagePrevious.Name = "btnPagePrevious";
+			btnPagePrevious.Size = new Size(253, 25);
+			btnPagePrevious.TabIndex = 0;
+			btnPagePrevious.Text = "Previous Page";
+			btnPagePrevious.UseVisualStyleBackColor = true;
+			btnPagePrevious.Click += btnPagePrevious_Click;
 			// 
 			// btnPageNext
 			// 
@@ -264,8 +269,7 @@
 			// 
 			// ObjectDumpTab
 			// 
-			ObjectDumpTab.Controls.Add(tvDATDumpAnnotations);
-			ObjectDumpTab.Controls.Add(rtbDATDumpView);
+			ObjectDumpTab.Controls.Add(splitContainer1);
 			ObjectDumpTab.Location = new Point(4, 24);
 			ObjectDumpTab.Name = "ObjectDumpTab";
 			ObjectDumpTab.Padding = new Padding(3);
@@ -274,25 +278,43 @@
 			ObjectDumpTab.Text = "Object Data";
 			ObjectDumpTab.UseVisualStyleBackColor = true;
 			// 
+			// splitContainer1
+			// 
+			splitContainer1.Dock = DockStyle.Fill;
+			splitContainer1.Location = new Point(3, 3);
+			splitContainer1.Name = "splitContainer1";
+			// 
+			// splitContainer1.Panel1
+			// 
+			splitContainer1.Panel1.AutoScroll = true;
+			splitContainer1.Panel1.Controls.Add(tvDATDumpAnnotations);
+			// 
+			// splitContainer1.Panel2
+			// 
+			splitContainer1.Panel2.Controls.Add(rtbDATDumpView);
+			splitContainer1.Size = new Size(878, 546);
+			splitContainer1.SplitterDistance = 303;
+			splitContainer1.TabIndex = 2;
+			// 
 			// tvDATDumpAnnotations
 			// 
-			tvDATDumpAnnotations.Dock = DockStyle.Left;
-			tvDATDumpAnnotations.Location = new Point(3, 3);
+			tvDATDumpAnnotations.Dock = DockStyle.Fill;
+			tvDATDumpAnnotations.Location = new Point(0, 0);
 			tvDATDumpAnnotations.Name = "tvDATDumpAnnotations";
-			tvDATDumpAnnotations.Size = new Size(200, 546);
+			tvDATDumpAnnotations.Size = new Size(303, 546);
 			tvDATDumpAnnotations.TabIndex = 1;
 			tvDATDumpAnnotations.AfterSelect += dataDumpAnnotations_AfterSelect;
 			// 
 			// rtbDATDumpView
 			// 
-			rtbDATDumpView.Dock = DockStyle.Right;
+			rtbDATDumpView.Dock = DockStyle.Fill;
 			rtbDATDumpView.Font = new Font("Cascadia Mono", 9F, FontStyle.Regular, GraphicsUnit.Point);
 			rtbDATDumpView.HideSelection = false;
-			rtbDATDumpView.Location = new Point(209, 3);
+			rtbDATDumpView.Location = new Point(0, 0);
 			rtbDATDumpView.Name = "rtbDATDumpView";
 			rtbDATDumpView.ReadOnly = true;
 			rtbDATDumpView.ShowSelectionMargin = true;
-			rtbDATDumpView.Size = new Size(672, 546);
+			rtbDATDumpView.Size = new Size(571, 546);
 			rtbDATDumpView.TabIndex = 0;
 			rtbDATDumpView.Text = "";
 			rtbDATDumpView.WordWrap = false;
@@ -342,7 +364,7 @@
 			tvObjType.Dock = DockStyle.Fill;
 			tvObjType.Location = new Point(3, 3);
 			tvObjType.Name = "tvObjType";
-			tvObjType.Size = new Size(289, 622);
+			tvObjType.Size = new Size(289, 605);
 			tvObjType.TabIndex = 26;
 			tvObjType.AfterSelect += tv_AfterSelect;
 			// 
@@ -352,7 +374,7 @@
 			tabPage1.Location = new Point(4, 24);
 			tabPage1.Name = "tabPage1";
 			tabPage1.Padding = new Padding(3);
-			tabPage1.Size = new Size(295, 628);
+			tabPage1.Size = new Size(295, 611);
 			tabPage1.TabIndex = 0;
 			tabPage1.Text = "File";
 			tabPage1.UseVisualStyleBackColor = true;
@@ -362,7 +384,7 @@
 			tvFileTree.Dock = DockStyle.Fill;
 			tvFileTree.Location = new Point(3, 3);
 			tvFileTree.Name = "tvFileTree";
-			tvFileTree.Size = new Size(289, 622);
+			tvFileTree.Size = new Size(289, 605);
 			tvFileTree.TabIndex = 1;
 			tvFileTree.AfterSelect += tv_AfterSelect;
 			// 
@@ -511,6 +533,10 @@
 			((System.ComponentModel.ISupportInitialize)scImageViewer).EndInit();
 			scImageViewer.ResumeLayout(false);
 			ObjectDumpTab.ResumeLayout(false);
+			splitContainer1.Panel1.ResumeLayout(false);
+			splitContainer1.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+			splitContainer1.ResumeLayout(false);
 			scTop.Panel1.ResumeLayout(false);
 			scTop.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scTop).EndInit();
@@ -567,5 +593,6 @@
 		private ToolStripMenuItem goToHeaderInDumpToolStripMenuItem;
 		private ToolStripMenuItem headerToolStripMenuItem;
 		private ToolStripMenuItem pictureDataToolStripMenuItem;
+		private SplitContainer splitContainer1;
 	}
 }

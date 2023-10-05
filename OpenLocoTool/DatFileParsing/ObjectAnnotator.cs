@@ -145,7 +145,24 @@ namespace OpenLocoTool.DatFileParsing
 
 			for (var i = 0; i < stringsInTable; i++)
 			{
-				var index = Array.IndexOf(fullData[runningCount..], (byte)0xFF);
+				var index = 0;
+				var continuing = true;
+				do
+				{
+					index += Array.IndexOf(fullData[(runningCount + index)..], (byte)0);
+					// The terminating sequence is actually 0x00 0xFF as
+					// 0xFF is a character in the encoding scheme
+					if (fullData[runningCount + ++index] != 0xFF)
+					{
+						index++;
+					}
+					else
+					{
+						continuing = false;
+					}	
+				}
+				while (continuing); 
+
 				var endIndexOfStringList = index + runningCount;
 				var nullIndex = 0;
 				var elementRoot = new Annotation("Element " + i, root, runningCount, index);
@@ -157,8 +174,7 @@ namespace OpenLocoTool.DatFileParsing
 					runningCount++;
 					nullIndex = Array.IndexOf(fullData[runningCount..], (byte)0);
 
-					var stringElement = new string(fullData[runningCount..(runningCount + nullIndex)]
-						.Select(b => (char)b).ToArray());
+					var stringElement = Encoding.ASCII.GetString(fullData[runningCount..(runningCount + nullIndex)]);
 
 					annotations.Add(new Annotation($"'{stringElement}'", elementRoot, runningCount, stringElement.Length + 1));
 					runningCount += nullIndex + 1;

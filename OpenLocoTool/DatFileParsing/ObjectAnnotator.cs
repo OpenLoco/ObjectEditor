@@ -24,6 +24,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			// Object Header Annotations
 			var objectHeaderAnnotation = new Annotation("Object Header", runningCount, ObjectHeader.StructLength);
+			annotations.Add(objectHeaderAnnotation);
 			annotations.Add(new Annotation("Encoding", objectHeaderAnnotation, runningCount, 1));
 			annotations.Add(new Annotation("Data Length", objectHeaderAnnotation, runningCount + 1, 4));
 			var objectHeader = ObjectHeader.Read(bytelist.AsSpan()[runningCount..(runningCount + ObjectHeader.StructLength)]);

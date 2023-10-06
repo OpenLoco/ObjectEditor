@@ -31,7 +31,7 @@ namespace OpenLocoToolTests
 			remainingData = remainingData[ObjectHeader.StructLength..];
 
 			var originalEncodedData = remainingData.ToArray();
-			var decodedData = ssr.Decode(objectHeader.Encoding, originalEncodedData);
+			var decodedData = SawyerStreamReader.Decode(objectHeader.Encoding, originalEncodedData);
 			remainingData = decodedData;
 
 			var originalObjectData = decodedData[..TrainSignalObject.StructSize];

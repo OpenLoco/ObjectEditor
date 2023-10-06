@@ -174,7 +174,6 @@ namespace OpenLocoToolGui
 				logger.Warning("Invalid directory");
 				return false;
 			}
-
 			Settings.DataDirectory = directory;
 
 			// load G1 only for now

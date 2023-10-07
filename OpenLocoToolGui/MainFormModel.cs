@@ -20,6 +20,8 @@ namespace OpenLocoToolGui
 
 		public ObjectCache ObjectCache { get; private set; } = new();
 
+		//public OpenLocoTool.ObjectManager ObjectManager { get; private set; } = new();
+
 		public string PaletteFile
 		{
 			get => Settings.PaletteFile;
@@ -131,7 +133,7 @@ namespace OpenLocoToolGui
 			{
 				try
 				{
-					var locoObject = reader.LoadFull(file);
+					ILocoObject locoObject = reader.LoadFull(file);
 					if (!ccObjectCache.TryAdd(file, locoObject))
 					{
 						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");

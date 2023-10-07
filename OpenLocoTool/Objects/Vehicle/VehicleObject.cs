@@ -8,7 +8,7 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x15E)]
 	public class VehicleObject : ILocoStruct, ILocoStructVariableData
 	{
-		public const ObjectType ObjType = ObjectType.Vehicle;
+		public static ObjectType ObjectType => ObjectType.Vehicle;
 		public const int StructSize = 0x15E;
 		public const int MaxBodySprites = 4;
 		public List<uint16_t> CargoMatchFlags { get; set; } = new();
@@ -139,11 +139,22 @@ namespace OpenLocoTool.Objects
 					var unk = remainingData[0];
 					remainingData = remainingData[1..]; // uint8_t
 
-					for (var cargoType = 0; cargoType < 32; ++cargoType) // 32 is ObjectType::MaxObjects[cargo]
+					var cargoObjs = SObjectManager.Get<CargoObject>(ObjectType.Cargo);
+					for (var cargoType = 0; cargoType < cargoObjs.Count; ++cargoType) // 32 is ObjectType::MaxObjects[cargo]
 					{
+						if (!cargoObjs.Any())
+						{
+							continue;
+						}
+						var cargoObj = cargoObjs[cargoType];
+						if (cargoObj.MatchFlags != cargoMatchFlags)
+						{
+							continue;
+						}
 						// until the rest of this is implemented, these values will be wrong
 						// but as long as they're non-zero to pass the == 0 check below, it'll work
 						CargoTypes[index] |= 1U << cargoType;
+						CargoTypeSpriteOffsets[cargoType] = unk;
 					}
 
 					ptr = BitConverter.ToUInt16(remainingData[0..2]);

@@ -16,7 +16,7 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x1F)]
 	[LocoStringCount(4)]
 	public record CargoObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint16_t var_02,
 		[property: LocoStructOffset(0x04)] uint16_t var_04,
 		[property: LocoStructOffset(0x06)] string_id UnitsAndCargoName,
@@ -34,9 +34,16 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1B)] uint16_t PaymentFactor,
 		[property: LocoStructOffset(0x1D)] uint8_t PaymentIndex,
 		[property: LocoStructOffset(0x1E)] uint8_t UnitSize
-		) : ILocoStruct
+		) : ILocoStruct, ILocoStructStringTablePostLoad
 	{
 		public static ObjectType ObjectType => ObjectType.Cargo;
 		public static int StructSize => 0x1F;
+
+		public string Name { get; set; }
+
+		public void LoadPostStringTable(StringTable stringTable)
+		{
+			Name = stringTable[(0, (LanguageId)0)];
+		}
 	}
 }

@@ -82,24 +82,26 @@ namespace OpenLocoTool.DatFileParsing
 			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct);
 			remainingData = remainingData[stringTableBytesRead..];
 
+			if (locoStruct is ILocoStructStringTablePostLoad locoStructString)
+			{
+				locoStructString.LoadPostStringTable(stringTable);
+			}
+
 			// special handling per object type
 			if (loadExtra && locoStruct is ILocoStructVariableData locoStructExtra)
 			{
 				remainingData = locoStructExtra.Load(remainingData);
 			}
 
-			//try
-			{
-				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-				Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
+			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-				return new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
-			}
-			//catch (Exception ex)
-			//{
-			//	Logger.Error(ex.ToString());
-			//	return new LocoObject(objectHeader, locoStruct, stringTable, new G1Header(0, 0), new List<G1Element32>());
-			//}
+			var newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
+
+			// add to object manager
+			SObjectManager.Add(newObj);
+
+			return newObj;
 		}
 
 		(StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)

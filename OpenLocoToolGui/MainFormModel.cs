@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
+using OpenLocoTool.Headers;
 
 namespace OpenLocoToolGui
 {
@@ -19,6 +20,8 @@ namespace OpenLocoToolGui
 		public HeaderIndex HeaderIndex { get; private set; } = new();
 
 		public ObjectCache ObjectCache { get; private set; } = new();
+
+		//public OpenLocoTool.ObjectManager ObjectManager { get; private set; } = new();
 
 		public string PaletteFile
 		{
@@ -56,6 +59,20 @@ namespace OpenLocoToolGui
 			writer = new SawyerStreamWriter(logger);
 
 			LoadSettings(settingsFile);
+
+			// Load all cargo objects on startup
+			// Until a better solution is found (dynamic load-on-demand) we'll just do this
+			// for now. We'll have to do this for every dependent object type
+
+			var dependentObjectTypes = new HashSet<ObjectType>() { ObjectType.Cargo };
+			foreach (var depObjectType in dependentObjectTypes)
+			{
+				logger.Debug($"Preloading dependent {depObjectType} objects");
+			}
+			foreach (var dep in HeaderIndex.Where(kvp => dependentObjectTypes.Contains(kvp.Value.ObjectType)))
+			{
+				reader.LoadFull(dep.Key);
+			}
 		}
 
 		public GuiSettings Settings { get; private set; }

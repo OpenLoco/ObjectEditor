@@ -90,6 +90,8 @@ namespace OpenLocoToolGui
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
+			// pre-add any existing log lines
+			lbLogs.Items.AddRange(((Logger)logger).Logs.ToArray());
 			// can only do this after window handle has been created (so can't do in constructor)
 			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log.ToString()));
 

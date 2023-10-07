@@ -20,7 +20,7 @@
 
 	public class Logger : ILogger
 	{
-		readonly List<LogLine> loglines = new();
+		public readonly List<LogLine> Logs = new();
 		public LogLevel Level = LogLevel.Info;
 
 		public event EventHandler<LogAddedEventArgs> LogAdded;
@@ -28,7 +28,7 @@
 		public void Log(LogLevel level, string message)
 		{
 			var log = new LogLine { Time = DateTime.Now, Level = level, Message = message };
-			loglines.Add(log);
+			Logs.Add(log);
 
 			if (Level <= level)
 			{

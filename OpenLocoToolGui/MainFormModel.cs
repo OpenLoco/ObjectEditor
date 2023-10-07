@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
+using OpenLocoTool.Headers;
 
 namespace OpenLocoToolGui
 {
@@ -59,13 +60,18 @@ namespace OpenLocoToolGui
 
 			LoadSettings(settingsFile);
 
-			// Load all cargo objects
-			foreach (var co in HeaderIndex)
+			// Load all cargo objects on startup
+			// Until a better solution is found (dynamic load-on-demand) we'll just do this
+			// for now. We'll have to do this for every dependent object type
+
+			var dependentObjectTypes = new HashSet<ObjectType>() { ObjectType.Cargo };
+			foreach (var depObjectType in dependentObjectTypes)
 			{
-				if (co.Value.ObjectType == OpenLocoTool.Headers.ObjectType.Cargo)
-				{
-					reader.LoadFull(co.Key);
-				}
+				logger.Debug($"Preloading dependent {depObjectType} objects");
+			}
+			foreach (var dep in HeaderIndex.Where(kvp => dependentObjectTypes.Contains(kvp.Value.ObjectType)))
+			{
+				reader.LoadFull(dep.Key);
 			}
 		}
 
@@ -142,7 +148,7 @@ namespace OpenLocoToolGui
 			{
 				try
 				{
-					ILocoObject locoObject = reader.LoadFull(file);
+					var locoObject = reader.LoadFull(file);
 					if (!ccObjectCache.TryAdd(file, locoObject))
 					{
 						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");

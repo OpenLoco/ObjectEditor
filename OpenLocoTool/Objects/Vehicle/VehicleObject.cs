@@ -13,6 +13,8 @@ namespace OpenLocoTool.Objects
 		public const int MaxBodySprites = 4;
 		public List<uint16_t> CargoMatchFlags { get; set; } = new();
 
+		public List<CargoObject> CompatibleCargo { get; set; } = new();
+
 		public VehicleObject(ushort name, TransportMode mode, VehicleType type, byte var_04, byte trackType, byte numMods, byte costIndex, short costFactor, byte reliability, byte runCostIndex, short runCostFactor, byte colourType, byte numCompat, ushort[] compatibleVehicles, byte[] requiredTrackExtras, VehicleObjectUnk[] var_24, BodySprite[] bodySprites, BogieSprite[] bogieSprites, ushort power, short speed, short rackSpeed, ushort weight, VehicleObjectFlags flags, byte[] maxCargo, uint[] cargoTypes, byte[] cargoTypeSpriteOffsets, byte numSimultaneousCargoTypes, SimpleAnimation[] animation, byte var_113, ushort designed, ushort obsolete, byte rackRailType, DrivingSoundType drivingSoundType, byte[] pad_135, byte numStartSounds, byte[] startSounds)
 		{
 			Name = name;
@@ -77,7 +79,7 @@ namespace OpenLocoTool.Objects
 		[LocoStructOffset(0xDE)] public uint16_t Weight { get; set; }
 		[LocoStructOffset(0xE0)] public VehicleObjectFlags Flags { get; set; }
 		[LocoStructOffset(0xE2), LocoArrayLength(2)] public uint8_t[] MaxCargo { get; set; } // size is relative to the first cargoTypes
-		[LocoStructOffset(0xE4), LocoArrayLength(2)] public uint32_t[] CargoTypes { get; set; }
+		[LocoStructOffset(0xE4), LocoArrayLength(2), Browsable(false)] public uint32_t[] CargoTypes { get; set; }
 		[LocoStructOffset(0xEC), LocoArrayLength(32)] public uint8_t[] CargoTypeSpriteOffsets { get; set; }
 		[LocoStructOffset(0x10C)] public uint8_t NumSimultaneousCargoTypes { get; set; }
 		[LocoStructOffset(0x10D), LocoArrayLength(2)] public SimpleAnimation[] Animation { get; set; }
@@ -118,6 +120,7 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[(S5Header.StructLength * NumMods)..];
 
 			// cargo types
+			// this whole bullshit is mostly copied and pasted from openloco
 			for (var i = 0; i < CargoTypes.Length; ++i)
 			{
 				var index = NumSimultaneousCargoTypes;
@@ -140,17 +143,9 @@ namespace OpenLocoTool.Objects
 					remainingData = remainingData[1..]; // uint8_t
 
 					var cargoObjs = SObjectManager.Get<CargoObject>(ObjectType.Cargo);
-					for (var cargoType = 0; cargoType < cargoObjs.Count; ++cargoType) // 32 is ObjectType::MaxObjects[cargo]
+
+					for (var cargoType = 0; cargoType < 32; ++cargoType) // 32 is ObjectType::MaxObjects[cargo]
 					{
-						if (!cargoObjs.Any())
-						{
-							continue;
-						}
-						var cargoObj = cargoObjs[cargoType];
-						if (cargoObj.MatchFlags != cargoMatchFlags)
-						{
-							continue;
-						}
 						// until the rest of this is implemented, these values will be wrong
 						// but as long as they're non-zero to pass the == 0 check below, it'll work
 						CargoTypes[index] |= 1U << cargoType;
@@ -169,6 +164,15 @@ namespace OpenLocoTool.Objects
 				else
 				{
 					NumSimultaneousCargoTypes++;
+				}
+			}
+
+			// afterwards, we'll do nice c# load of the cargo
+			foreach (var cargo in SObjectManager.Get<CargoObject>(ObjectType.Cargo))
+			{
+				if (CargoMatchFlags.Contains(cargo.MatchFlags))
+				{
+					CompatibleCargo.Add(cargo);
 				}
 			}
 

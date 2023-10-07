@@ -63,6 +63,12 @@ namespace OpenLocoTool.DatFileParsing
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public interface ILocoStructStringTablePostLoad
+	{
+		void LoadPostStringTable(StringTable stringTable);
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public interface ILocoObject
 	{
 		S5Header S5Header { get; set; }

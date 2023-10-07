@@ -58,6 +58,15 @@ namespace OpenLocoToolGui
 			writer = new SawyerStreamWriter(logger);
 
 			LoadSettings(settingsFile);
+
+			// Load all cargo objects
+			foreach (var co in HeaderIndex)
+			{
+				if (co.Value.ObjectType == OpenLocoTool.Headers.ObjectType.Cargo)
+				{
+					reader.LoadFull(co.Key);
+				}
+			}
 		}
 
 		public GuiSettings Settings { get; private set; }

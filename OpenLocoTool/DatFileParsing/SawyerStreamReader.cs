@@ -82,6 +82,11 @@ namespace OpenLocoTool.DatFileParsing
 			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct);
 			remainingData = remainingData[stringTableBytesRead..];
 
+			if (locoStruct is ILocoStructStringTablePostLoad locoStructString)
+			{
+				locoStructString.LoadPostStringTable(stringTable);
+			}
+
 			// special handling per object type
 			if (loadExtra && locoStruct is ILocoStructVariableData locoStructExtra)
 			{

@@ -121,6 +121,8 @@ namespace OpenLocoTool.Objects
 
 			// cargo types
 			// this whole bullshit is mostly copied and pasted from openloco
+			// but we need to do it to a) load the cargo match flags and b) to move the stream to the right offset to load the next variable data
+			// afterwards, we'll do nice c# load of the cargo based on the match flags
 			for (var i = 0; i < CargoTypes.Length; ++i)
 			{
 				var index = NumSimultaneousCargoTypes;
@@ -167,7 +169,6 @@ namespace OpenLocoTool.Objects
 				}
 			}
 
-			// afterwards, we'll do nice c# load of the cargo
 			foreach (var cargo in SObjectManager.Get<CargoObject>(ObjectType.Cargo))
 			{
 				if (CargoMatchFlags.Contains(cargo.MatchFlags))

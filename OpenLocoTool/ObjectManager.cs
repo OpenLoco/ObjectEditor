@@ -22,22 +22,23 @@ namespace OpenLocoTool
 			=> Objects[obj.S5Header.ObjectType].Add(obj);
 	}
 
-	public class ObjectManager
-	{
-		readonly Dictionary<ObjectType, List<ILocoObject>> Objects = new();
+	// unused for now
+	//public class ObjectManager
+	//{
+	//	readonly Dictionary<ObjectType, List<ILocoObject>> Objects = new();
 
-		public ObjectManager()
-		{
-			foreach (var v in Enum.GetValues(typeof(ObjectType)))
-			{
-				Objects.Add((ObjectType)v, new List<ILocoObject>());
-			}
-		}
+	//	public ObjectManager()
+	//	{
+	//		foreach (var v in Enum.GetValues(typeof(ObjectType)))
+	//		{
+	//			Objects.Add((ObjectType)v, new List<ILocoObject>());
+	//		}
+	//	}
 
-		public List<T> Get<T>(ObjectType type) where T : ILocoObject
-			=> Objects[type].Cast<T>().ToList();
+	//	public List<T> Get<T>(ObjectType type)
+	//		where T : ILocoStruct => Objects[type].Select(a => a.Object).Cast<T>().ToList();
 
-		public void Add<T>(T obj) where T : ILocoObject
-			=> Objects[obj.S5Header.ObjectType].Add(obj);
-	}
+	//	public void Add<T>(T obj) where T : ILocoObject
+	//		=> Objects[obj.S5Header.ObjectType].Add(obj);
+	//}
 }

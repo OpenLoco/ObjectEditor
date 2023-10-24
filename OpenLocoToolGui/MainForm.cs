@@ -347,7 +347,7 @@ namespace OpenLocoToolGui
 				{
 					pgObject.SelectedObject = model.G1;
 					var images = CreateImages(model.G1.G1Elements, model.Palette);
-					CurrentUIImages = CreateImageControls(images).ToList();
+					CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToList();
 				}
 			}
 		}
@@ -432,7 +432,7 @@ namespace OpenLocoToolGui
 		{
 			pgObject.SelectedObject = model.G1;
 			var images = CreateImages(model.G1.G1Elements, model.Palette);
-			CurrentUIImages = CreateImageControls(images).ToList();
+			CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToList();
 			LoadDataDump(filename, true);
 		}
 
@@ -492,7 +492,7 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images)
+		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images, List<G1Element32> g1Elements) // g1Elements is simply used for metadata at this stage
 		{
 			// on these controls we could add a right_click handler to replace image with user-created one
 			var count = 0;
@@ -515,8 +515,9 @@ namespace OpenLocoToolGui
 				};
 
 				var tb = new TextBox();
-				tb.MinimumSize = new Size(32, 16);
-				tb.Text = count++.ToString();
+				tb.MinimumSize = new Size(96, 16);
+				tb.Text = $"i={count} w={g1Elements[count].Width} h={g1Elements[count].Height}";
+				count++;
 				tb.Dock = DockStyle.Top;
 
 				panel.Controls.Add(tb);
@@ -537,43 +538,73 @@ namespace OpenLocoToolGui
 			for (var i = 0; i < G1Elements.Count; ++i)
 			{
 				var currElement = G1Elements[i];
-				var imageData = currElement.ImageData;
-
-				if (currElement.ImageData.Length == 0 || currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
+				if (currElement.ImageData.Length == 0)
 				{
-					logger.Info($"skipped loading g1 element {i} with flags {currElement.Flags}");
+					logger.Info($"skipped loading g1 element {i} with 0 length");
 					continue;
 				}
 
-				var dstImg = new Bitmap(currElement.Width, currElement.Height);
-				var rect = new Rectangle(0, 0, currElement.Width, currElement.Height);
-				var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-				for (var y = 0; y < currElement.Height; ++y)
+				if (currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
 				{
-					for (var x = 0; x < currElement.Width; ++x)
+					var imageData = currElement.ImageData;
+					var dstImg = new Bitmap(currElement.Width, currElement.Height);
+					var rect = new Rectangle(0, 0, currElement.Width, currElement.Height);
+					var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+					var k = 0;
+					for (var j = 0; j < currElement.Width; ++j) // += 4 for a 32-bit ptr++
 					{
-						var paletteIndex = imageData[(y * currElement.Width) + x];
+						var b = imageData[k++];
+						var g = imageData[k++];
+						var r = imageData[k++];
+						ImageHelpers.SetPixel(dstImgData, j, 1, Color.FromArgb(r, g, b));
+					}
 
-						// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
-						//var colour = obj.Object is HillShapesObject
-						//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
-						//	: palette[paletteIndex];
-
-						if (paletteIndex == 0 && useTransparency)
-						{
-							//ImageHelpers.SetPixel(dstImgData, x, y, colour);
-						}
-						else
-						{
-							var colour = palette[paletteIndex];
-							ImageHelpers.SetPixel(dstImgData, x, y, colour);
-						}
+					dstImg.UnlockBits(dstImgData);
+					yield return dstImg;
+				}
+				else
+				{
+					var bmp = G1ElementToBitmap(currElement, palette, useTransparency);
+					if (bmp != null)
+					{
+						yield return bmp;
 					}
 				}
-
-				dstImg.UnlockBits(dstImgData);
-				yield return dstImg;
 			}
+		}
+
+		Bitmap? G1ElementToBitmap(G1Element32 currElement, Color[] palette, bool useTransparency = false)
+		{
+			var imageData = currElement.ImageData;
+			var dstImg = new Bitmap(currElement.Width, currElement.Height);
+			var rect = new Rectangle(0, 0, currElement.Width, currElement.Height);
+			var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+			for (var y = 0; y < currElement.Height; ++y)
+			{
+				for (var x = 0; x < currElement.Width; ++x)
+				{
+					var paletteIndex = imageData[(y * currElement.Width) + x];
+
+					// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
+					//var colour = obj.Object is HillShapesObject
+					//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
+					//	: palette[paletteIndex];
+
+					if (paletteIndex == 0 && useTransparency)
+					{
+						//ImageHelpers.SetPixel(dstImgData, x, y, colour);
+					}
+					else
+					{
+						var colour = palette[paletteIndex];
+						ImageHelpers.SetPixel(dstImgData, x, y, colour);
+					}
+				}
+			}
+
+			dstImg.UnlockBits(dstImgData);
+			return dstImg;
 		}
 
 		void SelectNewPalette()
@@ -613,7 +644,11 @@ namespace OpenLocoToolGui
 				}
 
 				var images = CreateImages(CurrentUIObject.G1Elements, model.Palette);
-				CurrentUIImages = CreateImageControls(images).ToArray();
+				CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToArray();
+			}
+			else
+			{
+				CurrentUIImages = new List<Control>();
 			}
 
 			if (CurrentUIObject?.Object is SoundObject soundObject)

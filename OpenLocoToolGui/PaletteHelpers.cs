@@ -9,11 +9,11 @@ namespace OpenLocoToolGui
 			var palette = new Color[256];
 			var rect = new Rectangle(0, 0, img.Width, img.Height);
 			var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-			for (var y = 0; y < 16; ++y)
+			for (var y = 0; y < img.Width; ++y)
 			{
-				for (var x = 0; x < 16; ++x)
+				for (var x = 0; x < img.Height; ++x)
 				{
-					palette[(y * 16) + x] = ImageHelpers.GetPixel(imgData, x, y);
+					palette[(y * img.Height) + x] = ImageHelpers.GetPixel(imgData, x, y);
 				}
 			}
 

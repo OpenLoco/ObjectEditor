@@ -19,9 +19,9 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint16_t var_02,
 		[property: LocoStructOffset(0x04)] uint16_t var_04,
-		[property: LocoStructOffset(0x06)] string_id UnitsAndCargoName,
-		[property: LocoStructOffset(0x08)] string_id UnitNameSingular,
-		[property: LocoStructOffset(0x0A)] string_id UnitNamePlural,
+		//[property: LocoStructOffset(0x06)] string_id UnitsAndCargoName,
+		//[property: LocoStructOffset(0x08)] string_id UnitNameSingular,
+		//[property: LocoStructOffset(0x0A)] string_id UnitNamePlural,
 		[property: LocoStructOffset(0x0C)] uint32_t UnitInlineSprite,
 		[property: LocoStructOffset(0x10)] uint16_t MatchFlags,
 		[property: LocoStructOffset(0x12)] CargoObjectFlags Flags,
@@ -40,10 +40,18 @@ namespace OpenLocoTool.Objects
 		public static int StructSize => 0x1F;
 
 		public string Name { get; set; }
+		public string UnitsAndCargoName { get; set; }
+
+		public string UnitNameSingular { get; set; }
+
+		public string UnitNamePlural { get; set; }
 
 		public void LoadPostStringTable(StringTable stringTable)
 		{
 			Name = stringTable[(0, (LanguageId)0)];
+			UnitsAndCargoName = stringTable[(1, (LanguageId)0)];
+			UnitNameSingular = stringTable[(2, (LanguageId)0)];
+			UnitNamePlural = stringTable[(3, (LanguageId)0)];
 		}
 	}
 }

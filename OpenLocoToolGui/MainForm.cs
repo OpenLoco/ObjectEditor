@@ -4,6 +4,7 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
+using System.Drawing;
 using System.Drawing.Imaging;
 
 namespace OpenLocoToolGui
@@ -118,6 +119,12 @@ namespace OpenLocoToolGui
 
 		void InitUI(bool vanillaOnly, string filter)
 		{
+			// required to load the object type images from g1.dat
+			if (Directory.Exists(model.Settings.DataDirectory))
+			{
+				model.LoadDataDirectory(model.Settings.DataDirectory);
+			}
+
 			InitFileTreeView(vanillaOnly, filter);
 			InitCategoryTreeView(vanillaOnly, filter);
 		}
@@ -138,7 +145,7 @@ namespace OpenLocoToolGui
 				// can probably use a task instead of a thread, but its good enough
 				var thread = new Thread(() =>
 				{
-					model.LoadDirectory(directory, progress, useExistingIndex);
+					model.LoadObjDirectory(directory, progress, useExistingIndex);
 					progressForm.CloseForm();
 				});
 				thread.Start();
@@ -161,13 +168,23 @@ namespace OpenLocoToolGui
 			return bitmap;
 		}
 
-		static ImageList MakeImageList()
+		ImageList MakeImageList(MainFormModel model)
 		{
 			var imageList = new ImageList();
 			var blankImage = MakeOriginalLocoIcon(false);
 			var originalImage = MakeOriginalLocoIcon(true);
 			imageList.Images.Add(blankImage);
 			imageList.Images.Add(originalImage);
+
+			if (model.G1 != null)
+			{
+				var objectTypes = Enum.GetValues<ObjectType>().Length;
+				var g1TabElements = model.G1.G1Elements.Skip(Constants.G1ObjectTabsOffset).Take(objectTypes).ToList();
+
+				var images = CreateImages(g1TabElements, model.Palette, true).ToArray();
+				imageList.Images.AddRange(images);
+			}
+
 			return imageList;
 		}
 
@@ -193,7 +210,7 @@ namespace OpenLocoToolGui
 
 			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjects.Names.Contains(f.Value.Name.Trim()));
 
-			tvFileTree.ImageList = MakeImageList();
+			tvFileTree.ImageList = MakeImageList(model);
 
 			foreach (var obj in filteredFiles)
 			{
@@ -210,60 +227,67 @@ namespace OpenLocoToolGui
 			tvObjType.SuspendLayout();
 			tvObjType.Nodes.Clear();
 
-			var filteredFiles = string.IsNullOrEmpty(fileFilter)
-				? model.HeaderIndex
-				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
-
-			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjects.Names.Contains(f.Value.Name.Trim()));
-
-			tvObjType.ImageList = MakeImageList();
-
-			var nodesToAdd = new List<TreeNode>();
-			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
-			{
-				var typeNode = new TreeNode(group.Key.ToString());
-				if (group.Key != ObjectType.Vehicle)
-				{
-					foreach (var obj in group)
-					{
-						AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, typeNode);
-					}
-				}
-				else
-				{
-					var vehicleGroup = group.GroupBy(o => o.Value.VehicleType);
-					foreach (var vehicleType in vehicleGroup)
-					{
-						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
-						foreach (var veh in vehicleType)
-						{
-							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, vehicleTypeNode);
-						}
-
-						typeNode.Nodes.Add(vehicleTypeNode);
-					}
-				}
-
-				nodesToAdd.Add(typeNode);
-			}
-
-			var objDataNode = new TreeNode("ObjData");
-
-			tvObjType.Sort();
-			tvObjType.Nodes.Add(objDataNode);
-
-			if (File.Exists(model.Settings.G1Path))
+			if (Directory.Exists(model.Settings.DataDirectory))
 			{
 				var dataNode = new TreeNode("Data");
 
-				objDataNode.Nodes.AddRange(nodesToAdd.ToArray());
+				// if we want to add every file
+				//foreach (var file in Directory.GetFiles(model.Settings.DataDirectory))
+				//{
+				//	AddObjectNode(file, Path.GetFileName(file), file, dataNode);
+				//}
 
-				AddObjectNode(model.Settings.G1Path, "g1", "g1", dataNode);
+				var g1 = model.Settings.G1DatFileName;
+				AddObjectNode(g1, Path.GetFileName(g1), g1, dataNode);
+
 				tvObjType.Nodes.Add(dataNode);
 
-				model.LoadDataDirectory(model.Settings.DataDirectory);
+				tvUniqueLoadValues["g1.dat"] = LoadG1;
+			}
 
-				tvUniqueLoadValues["g1"] = LoadG1;
+			if (Directory.Exists(model.Settings.ObjDataDirectory))
+			{
+				var filteredFiles = string.IsNullOrEmpty(fileFilter)
+					? model.HeaderIndex
+					: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+				filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjects.Names.Contains(f.Value.Name.Trim()));
+
+				tvObjType.ImageList = MakeImageList(model);
+
+				var nodesToAdd = new List<TreeNode>();
+				foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
+				{
+					var imageListOffset = model.G1 == null ? 0 : ((int)group.Key) + 2; // + 2 because we have a vanilla+custom image first
+					var typeNode = new TreeNode(group.Key.ToString(), imageListOffset, imageListOffset);
+					if (group.Key != ObjectType.Vehicle)
+					{
+						foreach (var obj in group)
+						{
+							AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, typeNode);
+						}
+					}
+					else
+					{
+						var vehicleGroup = group.GroupBy(o => o.Value.VehicleType);
+						foreach (var vehicleType in vehicleGroup)
+						{
+							var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
+							foreach (var veh in vehicleType)
+							{
+								AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, vehicleTypeNode);
+							}
+
+							typeNode.Nodes.Add(vehicleTypeNode);
+						}
+					}
+
+					nodesToAdd.Add(typeNode);
+				}
+
+				var objDataNode = new TreeNode("ObjData");
+				objDataNode.Nodes.AddRange(nodesToAdd.ToArray());
+				tvObjType.Nodes.Add(objDataNode);
 			}
 
 			tvObjType.ResumeLayout(true);
@@ -414,14 +438,21 @@ namespace OpenLocoToolGui
 
 		void tv_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-			if (e != null && e.Node != null && tvUniqueLoadValues.ContainsKey(e.Node.Text))
+			if (e?.Node == null)
 			{
-				tvUniqueLoadValues[e.Node.Text].Invoke(e.Node.Name);
+				return;
 			}
-			else
+
+			var nodeText = e.Node.Text.ToLower();
+			if (tvUniqueLoadValues.ContainsKey(nodeText)) // for custom functions for the individual data files
 			{
-				CurrentUIObject = model.LoadAndCacheObject(e.Node.Name);
-				LoadDataDump(e.Node.Name);
+				tvUniqueLoadValues[nodeText].Invoke(e.Node.Name);
+			}
+			else if (e.Node.Name.Contains("ObjData"))
+			{
+				var filename = e.Node.Name;
+				CurrentUIObject = model.LoadAndCacheObject(filename);
+				LoadDataDump(filename);
 			}
 		}
 
@@ -479,7 +510,7 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, Color[] palette)
+		IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, Color[] palette, bool useTransparency = false)
 		{
 			if (palette is null)
 			{
@@ -512,8 +543,15 @@ namespace OpenLocoToolGui
 						//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
 						//	: palette[paletteIndex];
 
-						var colour = palette[paletteIndex];
-						ImageHelpers.SetPixel(dstImgData, x, y, colour);
+						if (paletteIndex == 0 && useTransparency)
+						{
+							//ImageHelpers.SetPixel(dstImgData, x, y, colour);
+						}
+						else
+						{
+							var colour = palette[paletteIndex];
+							ImageHelpers.SetPixel(dstImgData, x, y, colour);
+						}
 					}
 				}
 

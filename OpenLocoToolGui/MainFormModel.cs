@@ -101,7 +101,7 @@ namespace OpenLocoToolGui
 			if (File.Exists(Settings.IndexFilePath))
 			{
 				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-				LoadDirectory(Settings.ObjDataDirectory, new Progress<float>(), true);
+				LoadObjDirectory(Settings.ObjDataDirectory, new Progress<float>(), true);
 			}
 
 			LoadPaletteFile();
@@ -201,7 +201,7 @@ namespace OpenLocoToolGui
 			return true;
 		}
 
-		public void LoadDirectory(string directory, IProgress<float> progress, bool useExistingIndex)
+		public void LoadObjDirectory(string directory, IProgress<float> progress, bool useExistingIndex)
 		{
 			if (!Directory.Exists(directory))
 			{

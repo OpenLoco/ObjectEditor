@@ -268,28 +268,28 @@ namespace OpenLocoTool.DatFileParsing
 			return dstBuf;
 		}
 
-		public byte[] LoadBytesFromFile(string filename)
+		public static byte[] LoadBytesFromFile(string filename)
 		{
 			if (!File.Exists(filename))
 			{
-				Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
+				//Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
 				throw new InvalidOperationException($"File doesn't exist: {filename}");
 			}
 
-			Logger.Log(LogLevel.Info, $"Loading {filename}");
+			//Logger.Log(LogLevel.Info, $"Loading {filename}");
 			return File.ReadAllBytes(filename);
 		}
 
-		public S5Header LoadHeader(string filename)
+		public static S5Header LoadHeader(string filename)
 		{
 			if (!File.Exists(filename))
 			{
-				Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
+				//Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
 
 				throw new InvalidOperationException($"File doesn't exist: {filename}");
 			}
 
-			Logger.Log(LogLevel.Info, $"Loading header for {filename}");
+			//Logger.Log(LogLevel.Info, $"Loading header for {filename}");
 			var size = S5Header.StructLength;
 			var data = new byte[size];
 

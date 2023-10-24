@@ -99,6 +99,16 @@ namespace OpenLocoTool.DatFileParsing
 		public List<G1Element32> G1Elements { get; set; }
 	}
 
+	//public class ByteLocoObject
+	//{
+	//	public byte[] S5Header { get; }
+	//	public byte[] ObjectHeader { get; set; }
+	//	public byte[] Object { get; set; }
+	//	public byte[] StringTable { get; set; }
+	//	public byte[] G1Header { get; set; }
+	//	public byte[] G1Elements { get; set; }
+	//}
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class LocoObject : ILocoObject
 	{

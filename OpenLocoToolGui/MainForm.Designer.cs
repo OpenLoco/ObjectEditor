@@ -29,7 +29,7 @@
 		private void InitializeComponent()
 		{
 			components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+			var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			lbLogs = new ListBox();
 			pgObject = new PropertyGrid();
 			objectDirBrowser = new FolderBrowserDialog();
@@ -64,7 +64,6 @@
 			setPaletteToolStripMenuItem = new ToolStripMenuItem();
 			recreateIndexToolStripMenuItem = new ToolStripMenuItem();
 			saveChangesToolStripMenuItem = new ToolStripMenuItem();
-			fileToolStripMenuItem1 = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
 			goToHeaderInDumpToolStripMenuItem = new ToolStripMenuItem();
@@ -424,7 +423,7 @@
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, setDataDirectoryToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem, saveChangesToolStripMenuItem, fileToolStripMenuItem1 });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, setDataDirectoryToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem, saveChangesToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
@@ -463,12 +462,6 @@
 			saveChangesToolStripMenuItem.Size = new Size(217, 22);
 			saveChangesToolStripMenuItem.Text = "Save Object Changes (WIP)";
 			saveChangesToolStripMenuItem.Click += saveChangesToolStripMenuItem_Click;
-			// 
-			// fileToolStripMenuItem1
-			// 
-			fileToolStripMenuItem1.Name = "fileToolStripMenuItem1";
-			fileToolStripMenuItem1.Size = new Size(217, 22);
-			fileToolStripMenuItem1.Text = "File";
 			// 
 			// imgContextMenu
 			// 
@@ -572,7 +565,6 @@
 		private ToolStripMenuItem saveChangesToolStripMenuItem;
 		private ToolStripMenuItem setPaletteToolStripMenuItem;
 		private ToolStripMenuItem setDataDirectoryToolStripMenuItem;
-		private ToolStripMenuItem fileToolStripMenuItem1;
 		private ContextMenuStrip imgContextMenu;
 		private ToolStripMenuItem imgContextMenuSave;
 		private SplitContainer scImageViewer;

@@ -259,12 +259,12 @@ namespace OpenLocoToolGui
 				foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
 				{
 					var imageListOffset = model.G1 == null ? 0 : ((int)group.Key) + 2; // + 2 because we have a vanilla+custom image first
-					var typeNode = new TreeNode(group.Key.ToString(), imageListOffset, imageListOffset);
+					var objTypeNode = new TreeNode(group.Key.ToString(), imageListOffset, imageListOffset);
 					if (group.Key != ObjectType.Vehicle)
 					{
 						foreach (var obj in group)
 						{
-							AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, typeNode);
+							AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, objTypeNode);
 						}
 					}
 					else
@@ -278,16 +278,17 @@ namespace OpenLocoToolGui
 								AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, vehicleTypeNode);
 							}
 
-							typeNode.Nodes.Add(vehicleTypeNode);
+							objTypeNode.Nodes.Add(vehicleTypeNode);
 						}
 					}
 
-					nodesToAdd.Add(typeNode);
+					nodesToAdd.Add(objTypeNode);
 				}
 
 				var objDataNode = new TreeNode("ObjData");
 				objDataNode.Nodes.AddRange(nodesToAdd.ToArray());
 				tvObjType.Nodes.Add(objDataNode);
+				tvObjType.Sort();
 			}
 
 			tvObjType.ResumeLayout(true);

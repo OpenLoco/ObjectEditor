@@ -33,7 +33,7 @@ namespace OpenLocoToolGui
 		}
 		ILocoObject? currentUIObject;
 
-		IList<PictureBox> CurrentUIImages
+		IList<Control> CurrentUIImages
 		{
 			get => currentUIImages;
 			set
@@ -42,7 +42,7 @@ namespace OpenLocoToolGui
 				CurrentUIImagePageNumber = 0;
 			}
 		}
-		IList<PictureBox> currentUIImages = new List<PictureBox>();
+		IList<Control> currentUIImages = new List<Control>();
 
 		int CurrentUIImagePageNumber
 		{
@@ -352,7 +352,7 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		IEnumerable<PictureBox> GetPictureBoxesForPage(int page) => CurrentUIImages.Skip(page * imagesPerPage).Take(imagesPerPage);
+		IEnumerable<Control> GetPictureBoxesForPage(int page) => CurrentUIImages.Skip(page * imagesPerPage).Take(imagesPerPage);
 
 		private void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -489,24 +489,40 @@ namespace OpenLocoToolGui
 			};
 
 			flpImageTable.Controls.Add(soundButton);
-
 			flpImageTable.ResumeLayout(true);
 		}
 
-		IEnumerable<PictureBox> CreateImageControls(IEnumerable<Bitmap> images)
+		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images)
 		{
 			// on these controls we could add a right_click handler to replace image with user-created one
+			var count = 0;
 			foreach (var img in images)
 			{
+				var panel = new FlowLayoutPanel
+				{
+					AutoSize = true,
+					BackColor = Color.LightGray,
+					BorderStyle = BorderStyle.FixedSingle,
+					FlowDirection = FlowDirection.TopDown,
+				};
+
 				var pb = new PictureBox
 				{
 					Image = img,
-					BorderStyle = BorderStyle.FixedSingle,
 					SizeMode = PictureBoxSizeMode.AutoSize,
-					ContextMenuStrip = imgContextMenu
+					ContextMenuStrip = imgContextMenu,
+					Dock = DockStyle.Bottom,
 				};
 
-				yield return pb;
+				var tb = new TextBox();
+				tb.MinimumSize = new Size(32, 16);
+				tb.Text = count++.ToString();
+				tb.Dock = DockStyle.Top;
+
+				panel.Controls.Add(tb);
+				panel.Controls.Add(pb);
+
+				yield return panel;
 			}
 		}
 

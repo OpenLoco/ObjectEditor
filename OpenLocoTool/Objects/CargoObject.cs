@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
+using OpenLocoTool;
 
 namespace OpenLocoTool.Objects
 {

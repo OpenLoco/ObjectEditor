@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.DatFileParsing
+﻿namespace OpenLocoTool
 {
 	public enum LanguageId : uint8_t
 	{

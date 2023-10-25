@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.DataFiles
+﻿namespace OpenLocoTool
 {
 	// these are indexed to the strings in OriginalDateFiles.cs
 	public enum OriginalDataPathIds : uint8_t

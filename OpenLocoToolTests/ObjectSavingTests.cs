@@ -21,7 +21,7 @@ namespace OpenLocoToolTests
 			var loaded = ssr.LoadFull(testFile);
 
 			// load data in raw bytes for test
-			ReadOnlySpan<byte> fullData = ssr.LoadBytesFromFile(testFile);
+			ReadOnlySpan<byte> fullData = SawyerStreamReader.LoadBytesFromFile(testFile);
 
 			// make openlocotool useful objects
 			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);

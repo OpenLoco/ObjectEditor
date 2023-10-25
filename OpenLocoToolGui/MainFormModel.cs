@@ -8,7 +8,6 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using OpenLocoTool.Headers;
-using OpenLocoTool.DataFiles;
 
 namespace OpenLocoToolGui
 {

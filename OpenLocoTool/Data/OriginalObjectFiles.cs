@@ -1,6 +1,6 @@
 ﻿namespace OpenLocoTool
 {
-	public static class OriginalObjects
+	public static class OriginalObjectFiles
 	{
 		public static readonly HashSet<string> Names = new()
 		{

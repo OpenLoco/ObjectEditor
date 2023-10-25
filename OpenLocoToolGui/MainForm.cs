@@ -190,12 +190,12 @@ namespace OpenLocoToolGui
 
 		static void AddObjectNode(string key, string text, string objName, TreeView tv)
 		{
-			var imageIndex = OriginalObjects.Names.Contains(objName.Trim()) ? 1 : 0;
+			var imageIndex = OriginalObjectFiles.Names.Contains(objName.Trim()) ? 1 : 0;
 			_ = tv.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
 		static void AddObjectNode(string key, string text, string objName, TreeNode tn)
 		{
-			var imageIndex = OriginalObjects.Names.Contains(objName.Trim()) ? 1 : 0;
+			var imageIndex = OriginalObjectFiles.Names.Contains(objName.Trim()) ? 1 : 0;
 			_ = tn.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
 
@@ -208,7 +208,7 @@ namespace OpenLocoToolGui
 				? model.HeaderIndex
 				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
-			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjects.Names.Contains(f.Value.Name.Trim()));
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjectFiles.Names.Contains(f.Value.Name.Trim()));
 
 			tvFileTree.ImageList = MakeImageList(model);
 
@@ -251,7 +251,7 @@ namespace OpenLocoToolGui
 					? model.HeaderIndex
 					: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
-				filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjects.Names.Contains(f.Value.Name.Trim()));
+				filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjectFiles.Names.Contains(f.Value.Name.Trim()));
 
 				tvObjType.ImageList = MakeImageList(model);
 

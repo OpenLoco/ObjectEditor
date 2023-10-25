@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.DataFiles
+﻿namespace OpenLocoTool
 {
 	public static class OriginalDataFiles
 	{

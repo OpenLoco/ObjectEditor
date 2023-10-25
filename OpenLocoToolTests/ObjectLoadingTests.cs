@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using OpenLocoTool;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -158,11 +159,11 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
+				Assert.That(obj.Name, Is.EqualTo(string.Empty), nameof(obj.Name));
 				Assert.That(obj.var_02, Is.EqualTo(256), nameof(obj.var_02));
 				Assert.That(obj.var_04, Is.EqualTo(64), nameof(obj.var_04));
-				Assert.That(obj.UnitsAndCargoName, Is.EqualTo(0), nameof(obj.UnitsAndCargoName));
-				Assert.That(obj.UnitNameSingular, Is.EqualTo(0), nameof(obj.UnitNameSingular));
+				Assert.That(obj.UnitsAndCargoName, Is.EqualTo(string.Empty), nameof(obj.UnitsAndCargoName));
+				Assert.That(obj.UnitNameSingular, Is.EqualTo(string.Empty), nameof(obj.UnitNameSingular));
 				Assert.That(obj.UnitInlineSprite, Is.EqualTo(0), nameof(obj.UnitInlineSprite));
 				Assert.That(obj.MatchFlags, Is.EqualTo(4), nameof(obj.MatchFlags));
 				Assert.That(obj.Flags, Is.EqualTo(CargoObjectFlags.Delivering), nameof(obj.Flags));

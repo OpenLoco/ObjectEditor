@@ -9,7 +9,7 @@ namespace OpenLocoTool.Headers
 	[LocoStructSize(0x05)]
 	public record ObjectHeader(SawyerEncoding Encoding, uint32_t DataLength)
 	{
-		public static int StructLength => 0x05;
+		public const int StructLength = 0x05;
 
 		public static ObjectHeader Read(ReadOnlySpan<byte> data)
 		{

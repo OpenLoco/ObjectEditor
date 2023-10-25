@@ -21,7 +21,7 @@ namespace OpenLocoTool.Headers
 			: this(name, checksum)
 			=> Flags = flags;
 
-		public static int StructLength => 0x10;
+		public const int StructLength = 0x10;
 
 		public uint32_t Flags { get; set; }
 

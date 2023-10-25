@@ -45,7 +45,7 @@ namespace OpenLocoTool.DatFileParsing
 			return new G1Dat(g1Header, imageTable);
 		}
 
-		public void LoadFullExperimental(string filename)
+		public static LocoMemoryObject LoadFullExperimental(string filename)
 		{
 			var fullData = LoadBytesFromFile(filename);
 			var locoMemoryObject = new LocoMemoryObject();
@@ -58,8 +58,9 @@ namespace OpenLocoTool.DatFileParsing
 				fullData[(S5Header.StructLength + ObjectHeader.StructLength)..]);
 
 			var fixedDataLength = ObjectTypeFixedSize.GetSize(locoMemoryObject.SHeader.ObjectType);
+			locoMemoryObject.BytesFixedData = new byte[fixedDataLength];
 			remainingData[0..fixedDataLength].CopyTo(locoMemoryObject.BytesFixedData, 0);
-			
+
 			remainingData = remainingData[fixedDataLength..];
 
 			var locoStruct = locoMemoryObject.FixedData;
@@ -78,19 +79,20 @@ namespace OpenLocoTool.DatFileParsing
 			{
 				remainingData = locoStructExtra.Load(remainingData).ToArray();
 			}
-			
+
 			// some objects have graphics data
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			Verify.AreEqual(imageTableBytesRead, remainingData.Length);
 
 			// no more data
+			//Verify.AreEqual(imageTableBytesRead, remainingData.Length);
 
+			return locoMemoryObject;
 		}
 
 		// load file
 		public ILocoObject LoadFull(string filename, bool loadExtra = true)
 		{
-			LoadFullExperimental(filename);
+			//LoadFullExperimental(filename);
 
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 
@@ -151,7 +153,7 @@ namespace OpenLocoTool.DatFileParsing
 			return newObj;
 		}
 
-		(StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
+		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
 			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
 			var stringsInTable = stringAttr?.Count ?? 1;
@@ -177,7 +179,7 @@ namespace OpenLocoTool.DatFileParsing
 
 					if (strings.ContainsKey((i, lang)))
 					{
-						Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
+						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
 						break;
 					}
 					else

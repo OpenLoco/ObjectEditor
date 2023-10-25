@@ -176,13 +176,13 @@ namespace OpenLocoTool.DatFileParsing
 			set => value.Write().CopyTo(BytesOHeader);
 		}
 
-		const int FixedDataOffset = S5Header.StructLength + ObjectHeader.StructLength;
+		//const int FixedDataOffset = S5Header.StructLength + ObjectHeader.StructLength;
 		int FixedDataLength => ObjectTypeFixedSize.GetSize(SHeader.ObjectType);
-		
+
 		public ILocoStruct FixedData
 		{
-			get => SawyerStreamReader.GetLocoStruct(SHeader.ObjectType, BytesFixedData.AsSpan()[FixedDataOffset..FixedDataLength]);
-			set => ByteWriter.WriteLocoStruct(value).CopyTo(BytesFixedData.AsSpan()[FixedDataOffset..FixedDataLength]);
+			get => SawyerStreamReader.GetLocoStruct(SHeader.ObjectType, BytesFixedData.AsSpan()[0..FixedDataLength]);
+			set => ByteWriter.WriteLocoStruct(value).CopyTo(BytesFixedData.AsSpan()[0..FixedDataLength]);
 		}
 
 		// variable data

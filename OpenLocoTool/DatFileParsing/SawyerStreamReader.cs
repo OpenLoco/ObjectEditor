@@ -87,12 +87,13 @@ namespace OpenLocoTool.DatFileParsing
 				locoStructString.LoadPostStringTable(stringTable);
 			}
 
-			// special handling per object type
+			// some objects have variable-sized data
 			if (loadExtra && locoStruct is ILocoStructVariableData locoStructExtra)
 			{
 				remainingData = locoStructExtra.Load(remainingData);
 			}
 
+			// some objects have graphics data
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
 			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 

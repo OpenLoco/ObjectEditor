@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using OpenLocoTool.Headers;
+using OpenLocoTool.Objects;
 
 namespace OpenLocoTool.DatFileParsing
 {
@@ -103,11 +104,84 @@ namespace OpenLocoTool.DatFileParsing
 	//{
 	//	public byte[] S5Header { get; }
 	//	public byte[] ObjectHeader { get; set; }
-	//	public byte[] Object { get; set; }
+	//	public byte[] FixedData { get; set; }
+	//  public byte[] VariableData { get; set; }
 	//	public byte[] StringTable { get; set; }
 	//	public byte[] G1Header { get; set; }
 	//	public byte[] G1Elements { get; set; }
 	//}
+
+	public static class ObjectTypeFixedSize
+	{
+		public static int GetSize(ObjectType objectType)
+			=> objectType switch
+			{
+				ObjectType.Airport => AirportObject.StructSize,
+				ObjectType.Bridge => BridgeObject.StructSize,
+				ObjectType.Building => BuildingObject.StructSize,
+				ObjectType.Cargo => CargoObject.StructSize,
+				ObjectType.CliffEdge => CliffEdgeObject.StructSize,
+				ObjectType.Climate => ClimateObject.StructSize,
+				ObjectType.Competitor => CompetitorObject.StructSize,
+				ObjectType.Currency => CurrencyObject.StructSize,
+				ObjectType.Dock => DockObject.StructSize,
+				ObjectType.HillShapes => HillShapesObject.StructSize,
+				ObjectType.Industry => IndustryObject.StructSize,
+				ObjectType.InterfaceSkin => InterfaceSkinObject.StructSize,
+				ObjectType.Land => LandObject.StructSize,
+				ObjectType.LevelCrossing => LevelCrossingObject.StructSize,
+				ObjectType.Region => RegionObject.StructSize,
+				ObjectType.RoadExtra => RoadExtraObject.StructSize,
+				ObjectType.Road => RoadObject.StructSize,
+				ObjectType.RoadStation => RoadStationObject.StructSize,
+				ObjectType.Scaffolding => ScaffoldingObject.StructSize,
+				ObjectType.ScenarioText => ScenarioTextObject.StructSize,
+				ObjectType.Snow => SnowObject.StructSize,
+				ObjectType.Sound => SoundObject.StructSize,
+				ObjectType.Steam => SteamObject.StructSize,
+				ObjectType.StreetLight => StreetLightObject.StructSize,
+				ObjectType.TownNames => TownNamesObject.StructSize,
+				ObjectType.TrackExtra => TrackExtraObject.StructSize,
+				ObjectType.Track => TrackObject.StructSize,
+				ObjectType.TrainSignal => TrainSignalObject.StructSize,
+				ObjectType.TrainStation => TrainStationObject.StructSize,
+				ObjectType.Tree => TreeObject.StructSize,
+				ObjectType.Tunnel => TunnelObject.StructSize,
+				ObjectType.Vehicle => VehicleObject.StructSize,
+				ObjectType.Wall => WallObject.StructSize,
+				ObjectType.Water => WaterObject.StructSize,
+				_ => throw new ArgumentOutOfRangeException(nameof(objectType), $"unknown object type {objectType}")
+			};
+	}
+
+	public class LocoMemoryObject
+	{
+		byte[] full; // the full bytes of the object, decoded
+
+		public S5Header SHeader
+		{
+			get => S5Header.Read(full.AsSpan()[0..S5Header.StructLength]);
+			set => value.Write().CopyTo(full.AsSpan()[0..S5Header.StructLength]);
+		}
+
+		public ObjectHeader OHeader
+		{
+			get => ObjectHeader.Read(full.AsSpan()[0..ObjectHeader.StructLength]);
+			set => value.Write().CopyTo(full.AsSpan()[S5Header.StructLength..ObjectHeader.StructLength]);
+		}
+
+		int FixedDataOffset => S5Header.StructLength + ObjectHeader.StructLength;
+		int FixedDataLength => ObjectTypeFixedSize.GetSize(SHeader.ObjectType);
+		public ILocoStruct FixedData
+		{
+			get => SawyerStreamReader.GetLocoStruct(SHeader.ObjectType, full.AsSpan()[FixedDataOffset..FixedDataLength]);
+			set => ByteWriter.WriteLocoStruct(value).CopyTo(full.AsSpan()[FixedDataOffset..FixedDataLength]);
+		}
+
+		// variable data
+		// string table
+		// graphics data
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class LocoObject : ILocoObject

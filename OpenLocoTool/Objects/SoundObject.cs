@@ -6,7 +6,6 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]
-	[LocoStringCount(0)]
 	public record WaveFormatEx(
 		[property: LocoStructOffset(0x00)] int16_t WaveFormatTag,
 		[property: LocoStructOffset(0x02)] int16_t NumberChannels,
@@ -22,7 +21,6 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
-	[LocoStringCount(0)]
 	public record SoundObjectData(
 		[property: LocoStructOffset(0x00)] int32_t var_00,
 		[property: LocoStructOffset(0x04)] int32_t Offset,
@@ -35,9 +33,9 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0C)]
-	[LocoStringCount(1)]
+	[LocoStringTable("Name")]
 	public record SoundObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint32_t SoundObjectDataPtr,
 		[property: LocoStructOffset(0x06)] uint8_t var_06,
 		[property: LocoStructOffset(0x07)] uint8_t pad_07,

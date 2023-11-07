@@ -48,8 +48,6 @@ namespace OpenLocoTool.DatFileParsing
 		// load file
 		public ILocoObject LoadFull(string filename, bool loadExtra = true)
 		{
-			//LoadFullExperimental(filename);
-
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 
 			// make openlocotool useful objects
@@ -111,18 +109,17 @@ namespace OpenLocoTool.DatFileParsing
 
 		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
-			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
-			var stringsInTable = stringAttr?.Count ?? throw new ArgumentException($"Struct {locoStruct.GetType().Name} had no string count attribute");
-			var strings = new StringTable();
+			var stringTableAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringTableAttribute), inherit: false) as LocoStringTableAttribute;
+			var stringTable = new StringTable();
 
-			if (data.Length == 0 || stringsInTable == 0)
+			if (data.Length == 0 || stringTableAttr == null || stringTableAttr.Count == 0)
 			{
-				return (strings, 0);
+				return (stringTable, 0);
 			}
 
 			var ptr = 0;
 
-			for (var i = 0; i < stringsInTable; ++i)
+			for (var i = 0; i < stringTableAttr.Count; ++i)
 			{
 				for (; ptr < data.Length && data[ptr] != 0xFF;)
 				{
@@ -132,22 +129,22 @@ namespace OpenLocoTool.DatFileParsing
 					while (data[ptr++] != '\0') ;
 
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-
-					if (strings.ContainsKey((i, lang)))
+					var stringName = stringTableAttr.Names[i];
+					if (stringTable.ContainsKey((stringName, lang)))
 					{
 						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
 						break;
 					}
 					else
 					{
-						strings.Add((i, lang), str);
+						stringTable.Add((stringName, lang), str);
 					}
 				}
 
 				ptr++; // add one because we skipped the 0xFF byte at the end
 			}
 
-			return (strings, ptr);
+			return (stringTable, ptr);
 		}
 
 		static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)

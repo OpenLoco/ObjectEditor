@@ -44,12 +44,10 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.BuildCostFactor, Is.EqualTo(256), nameof(obj.BuildCostFactor));
 				Assert.That(obj.SellCostFactor, Is.EqualTo(-192), nameof(obj.SellCostFactor));
 				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
 				Assert.That(obj.var_07, Is.EqualTo(0), nameof(obj.var_07));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.var_0C, Is.EqualTo(0), nameof(obj.var_0C));
 				Assert.That(obj.AllowedPlaneTypes, Is.EqualTo(24), nameof(obj.AllowedPlaneTypes));
 				Assert.That(obj.NumSpriteSets, Is.EqualTo(94), nameof(obj.NumSpriteSets));
@@ -88,7 +86,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.NoRoof, Is.EqualTo(0), nameof(obj.NoRoof));
 
 				Assert.That(obj.pad_03[0], Is.EqualTo(0), nameof(obj.pad_03) + "[0]");
@@ -105,7 +102,6 @@ namespace OpenLocoToolTests
 				Assert.That(obj.HeightCostFactor, Is.EqualTo(8), nameof(obj.HeightCostFactor));
 				Assert.That(obj.SellCostFactor, Is.EqualTo(-12), nameof(obj.SellCostFactor));
 				Assert.That(obj.DisabledTrackCfg, Is.EqualTo(0), nameof(obj.DisabledTrackCfg));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.TrackNumCompatible, Is.EqualTo(0), nameof(obj.TrackNumCompatible));
 				CollectionAssert.AreEqual(obj.TrackMods, Array.CreateInstance(typeof(byte), 7), nameof(obj.TrackMods));
 				Assert.That(obj.RoadNumCompatible, Is.EqualTo(0), nameof(obj.RoadNumCompatible));
@@ -122,8 +118,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.var_06, Is.EqualTo(16), nameof(obj.var_06));
 				Assert.That(obj.NumVariations, Is.EqualTo(5), nameof(obj.NumVariations));
 				CollectionAssert.AreEqual(obj.VariationHeights, Array.CreateInstance(typeof(byte), 4), nameof(obj.VariationHeights));
@@ -159,11 +153,8 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(string.Empty), nameof(obj.Name));
 				Assert.That(obj.var_02, Is.EqualTo(256), nameof(obj.var_02));
 				Assert.That(obj.var_04, Is.EqualTo(64), nameof(obj.var_04));
-				Assert.That(obj.UnitsAndCargoName, Is.EqualTo(string.Empty), nameof(obj.UnitsAndCargoName));
-				Assert.That(obj.UnitNameSingular, Is.EqualTo(string.Empty), nameof(obj.UnitNameSingular));
 				Assert.That(obj.UnitInlineSprite, Is.EqualTo(0), nameof(obj.UnitInlineSprite));
 				Assert.That(obj.MatchFlags, Is.EqualTo(4), nameof(obj.MatchFlags));
 				Assert.That(obj.Flags, Is.EqualTo(CargoObjectFlags.Delivering), nameof(obj.Flags));
@@ -184,12 +175,6 @@ namespace OpenLocoToolTests
 		{
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\LSBROWN.DAT";
 			var obj = LoadObject<CliffEdgeObject>(testFile);
-
-			Assert.Multiple(() =>
-			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
-			});
 		}
 
 		[Test]
@@ -200,7 +185,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.FirstSeason, Is.EqualTo(1), nameof(obj.FirstSeason));
 				Assert.That(obj.SeasonLengths[0], Is.EqualTo(57), nameof(obj.SeasonLengths) + "[0]");
 				Assert.That(obj.SeasonLengths[1], Is.EqualTo(80), nameof(obj.SeasonLengths) + "[1]");
@@ -220,8 +204,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.var_00, Is.EqualTo(0), nameof(obj.var_00));
-				Assert.That(obj.var_02, Is.EqualTo(0), nameof(obj.var_02));
 				Assert.That(obj.var_04, Is.EqualTo(6672), nameof(obj.var_04));
 				Assert.That(obj.var_08, Is.EqualTo(2053), nameof(obj.var_08));
 				Assert.That(obj.Emotions, Is.EqualTo(511), nameof(obj.Emotions));
@@ -241,9 +223,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.PrefixSymbol, Is.EqualTo(0), nameof(obj.PrefixSymbol));
-				Assert.That(obj.SuffixSymbol, Is.EqualTo(0), nameof(obj.SuffixSymbol));
 				Assert.That(obj.ObjectIcon, Is.EqualTo(0), nameof(obj.ObjectIcon));
 				Assert.That(obj.Separator, Is.EqualTo(0), nameof(obj.Separator));
 				Assert.That(obj.Factor, Is.EqualTo(1), nameof(obj.Factor));
@@ -258,12 +237,10 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.BuildCostFactor, Is.EqualTo(38), nameof(obj.BuildCostFactor));
 				Assert.That(obj.SellCostFactor, Is.EqualTo(-35), nameof(obj.SellCostFactor));
 				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
 				Assert.That(obj.var_07, Is.EqualTo(0), nameof(obj.var_07));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.var_0C, Is.EqualTo(0), nameof(obj.var_0C));
 				Assert.That(obj.Flags, Is.EqualTo(DockObjectFlags.None), nameof(obj.Flags));
 				Assert.That(obj.NumAux01, Is.EqualTo(2), nameof(obj.NumAux01));
@@ -287,10 +264,8 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.HillHeightMapCount, Is.EqualTo(2), nameof(obj.HillHeightMapCount));
 				Assert.That(obj.MountainHeightMapCount, Is.EqualTo(2), nameof(obj.MountainHeightMapCount));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.var_08, Is.EqualTo(0), nameof(obj.var_08));
 				CollectionAssert.AreEqual(obj.pad_0C, Array.CreateInstance(typeof(byte), 2), nameof(obj.pad_0C));
 			});
@@ -316,7 +291,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.CostIndex, Is.EqualTo(2), nameof(obj.CostIndex));
 				Assert.That(obj.var_03, Is.EqualTo(5), nameof(obj.var_03));
 				Assert.That(obj.var_04, Is.EqualTo(1), nameof(obj.var_04));
@@ -325,7 +299,6 @@ namespace OpenLocoToolTests
 				Assert.That(obj.var_07, Is.EqualTo(0), nameof(obj.var_07));
 				Assert.That(obj.CostFactor, Is.EqualTo(20), nameof(obj.CostFactor));
 				Assert.That(obj.pad_09, Is.EqualTo(0), nameof(obj.pad_09));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.var_0E, Is.EqualTo(0), nameof(obj.var_0E));
 				Assert.That(obj.var_12, Is.EqualTo(0), nameof(obj.var_12));
 				Assert.That(obj.var_16, Is.EqualTo(0), nameof(obj.var_16));
@@ -344,7 +317,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.CostFactor, Is.EqualTo(30), nameof(obj.CostFactor));
 				Assert.That(obj.SellCostFactor, Is.EqualTo(-10), nameof(obj.SellCostFactor));
 				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
@@ -357,7 +329,6 @@ namespace OpenLocoToolTests
 				Assert.That(obj.pad_0A[1], Is.EqualTo(0), nameof(obj.pad_0A) + "[1]");
 
 				Assert.That(obj.DesignedYear, Is.EqualTo(1955), nameof(obj.DesignedYear));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 			});
 		}
 
@@ -369,8 +340,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				CollectionAssert.AreEqual(obj.pad_06, Array.CreateInstance(typeof(byte), 2), nameof(obj.pad_06));
 				Assert.That(obj.var_08, Is.EqualTo(1), nameof(obj.var_08));
 				CollectionAssert.AreEqual(obj.var_09, Array.CreateInstance(typeof(byte), 4), nameof(obj.var_09));
@@ -386,13 +355,11 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.RoadPieces, Is.EqualTo(127), nameof(obj.RoadPieces));
 				Assert.That(obj.PaintStyle, Is.EqualTo(1), nameof(obj.PaintStyle));
 				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
 				Assert.That(obj.BuildCostFactor, Is.EqualTo(4), nameof(obj.BuildCostFactor));
 				Assert.That(obj.SellCostFactor, Is.EqualTo(-3), nameof(obj.SellCostFactor));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.var_0E, Is.EqualTo(0), nameof(obj.var_0E));
 			});
 		}
@@ -417,9 +384,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
-
 				Assert.That(obj.SegmentHeights[0], Is.EqualTo(16), nameof(obj.SegmentHeights) + "[0]");
 				Assert.That(obj.SegmentHeights[1], Is.EqualTo(16), nameof(obj.SegmentHeights) + "[1]");
 				Assert.That(obj.SegmentHeights[2], Is.EqualTo(32), nameof(obj.SegmentHeights) + "[2]");
@@ -438,8 +402,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.Details, Is.EqualTo(0), nameof(obj.Details));
 				Assert.That(obj.pad_04, Is.EqualTo(0), nameof(obj.pad_04));
 			});
 		}
@@ -449,12 +411,7 @@ namespace OpenLocoToolTests
 		{
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SNOW.DAT";
 			var obj = LoadObject<SnowObject>(testFile);
-
-			Assert.Multiple(() =>
-			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
-			});
+			Assert.Pass();
 		}
 
 		[Test]
@@ -477,13 +434,9 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-
 				Assert.That(obj.DesignedYear[0], Is.EqualTo(1900), nameof(obj.DesignedYear) + "[0]");
 				Assert.That(obj.DesignedYear[1], Is.EqualTo(1950), nameof(obj.DesignedYear) + "[1]");
 				Assert.That(obj.DesignedYear[2], Is.EqualTo(1985), nameof(obj.DesignedYear) + "[2]");
-
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 			});
 		}
 
@@ -501,13 +454,11 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.TrackPieces, Is.EqualTo(1023), nameof(obj.TrackPieces));
 				Assert.That(obj.PaintStyle, Is.EqualTo(1), nameof(obj.PaintStyle));
 				Assert.That(obj.CostIndex, Is.EqualTo(1), nameof(obj.CostIndex));
 				Assert.That(obj.BuildCostFactor, Is.EqualTo(2), nameof(obj.BuildCostFactor));
 				Assert.That(obj.SellCostFactor, Is.EqualTo(-1), nameof(obj.SellCostFactor));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.var_0E, Is.EqualTo(0), nameof(obj.var_0E));
 			});
 		}
@@ -538,7 +489,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.var_02, Is.EqualTo(40), nameof(obj.var_02));
 				Assert.That(obj.Height, Is.EqualTo(131), nameof(obj.Height));
 				Assert.That(obj.var_04, Is.EqualTo(27), nameof(obj.var_04));
@@ -566,12 +516,7 @@ namespace OpenLocoToolTests
 		{
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\TUNNEL1.DAT";
 			var obj = LoadObject<TunnelObject>(testFile);
-
-			Assert.Multiple(() =>
-			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
-			});
+			Assert.Pass();
 		}
 
 		[Test]
@@ -597,7 +542,6 @@ namespace OpenLocoToolTests
 			var obj = locoObj.Object as VehicleObject;
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name)); // after loading string table -> 8711
 				Assert.That(obj.Mode, Is.EqualTo(TransportMode.Air), nameof(obj.Mode));
 				Assert.That(obj.Type, Is.EqualTo(VehicleType.Aircraft), nameof(obj.Type));
 				Assert.That(obj.var_04, Is.EqualTo(1), nameof(obj.var_04));
@@ -650,8 +594,6 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.var_06, Is.EqualTo(15), nameof(obj.var_06));
 				Assert.That(obj.Flags, Is.EqualTo(WallObjectFlags.None), nameof(obj.Flags));
 				Assert.That(obj.Height, Is.EqualTo(2), nameof(obj.Height));
@@ -667,12 +609,10 @@ namespace OpenLocoToolTests
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(obj.Name, Is.EqualTo(0), nameof(obj.Name));
 				Assert.That(obj.CostIndex, Is.EqualTo(2), nameof(obj.CostIndex));
 				Assert.That(obj.var_03, Is.EqualTo(0), nameof(obj.var_03));
 				Assert.That(obj.CostFactor, Is.EqualTo(51), nameof(obj.CostFactor));
 				Assert.That(obj.var_05, Is.EqualTo(0), nameof(obj.var_05));
-				Assert.That(obj.Image, Is.EqualTo(0), nameof(obj.Image));
 				Assert.That(obj.var_0A, Is.EqualTo(0), nameof(obj.var_0A));
 			});
 		}

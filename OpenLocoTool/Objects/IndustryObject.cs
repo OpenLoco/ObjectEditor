@@ -41,7 +41,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x02)]
-	[LocoStringCount(0)]
+
 	public record BuildingPartAnimation(
 		[property: LocoStructOffset(0x00)] uint8_t numFrames,     // Must be a power of 2 (0 = no part animation, could still have animation sequence)
 		[property: LocoStructOffset(0x01)] uint8_t animationSpeed // Also encodes in bit 7 if the animation is position modified
@@ -52,7 +52,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x02)]
-	[LocoStringCount(0)]
+
 	public record IndustryObjectUnk38(
 		[property: LocoStructOffset(0x00)] uint8_t var_00,
 		[property: LocoStructOffset(0x01)] uint8_t var_01
@@ -63,7 +63,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x04)]
-	[LocoStringCount(0)]
+
 	public record IndustryObjectProductionRateRange(
 		[property: LocoStructOffset(0x00)] uint16_t min,
 		[property: LocoStructOffset(0x02)] uint16_t max
@@ -74,7 +74,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xF4)]
-	[LocoStringCount(8)]
+	[LocoStringTable("Name", "var_02", "<unused>", "NameClosingDown", "NameUpProduction", "NameDownProduction", "NameSingular", "NamePlural")]
 	public record IndustryObject(
 		//[property: LocoStructOffset(0x00)] string_id Name,
 		//[property: LocoStructOffset(0x02)] string_id var_02,

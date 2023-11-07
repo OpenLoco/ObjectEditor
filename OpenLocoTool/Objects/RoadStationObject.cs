@@ -16,7 +16,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x6E)]
-	[LocoStringCount(1)]
+	[LocoStringTable("Name")]
 	public record RoadStationObject(
 		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,

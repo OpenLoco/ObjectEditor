@@ -129,7 +129,6 @@ namespace OpenLocoTool.DatFileParsing
 					}
 
 					annotations.Add(new Annotation("Image " + (i + 1), g1ImageDataAnnotation, imageStart, imageSize));
-					//runningCount = imageDataStart + (int)g32elements[i].Offset;
 				}
 			}
 
@@ -141,8 +140,8 @@ namespace OpenLocoTool.DatFileParsing
 			var root = new Annotation("String Table", runningCount, 1);
 			annotations.Add(root);
 
-			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
-			var stringsInTable = stringAttr?.Count ?? 1;
+			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringTableAttribute), inherit: false) as LocoStringTableAttribute;
+			var stringsInTable = stringAttr?.Count ?? 0;
 
 			for (var i = 0; i < stringsInTable; i++)
 			{
@@ -160,9 +159,9 @@ namespace OpenLocoTool.DatFileParsing
 					else
 					{
 						continuing = false;
-					}	
+					}
 				}
-				while (continuing); 
+				while (continuing);
 
 				var endIndexOfStringList = index + runningCount;
 				var nullIndex = 0;

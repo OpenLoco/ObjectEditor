@@ -7,7 +7,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]
-	[LocoStringCount(1)]
+	[LocoStringTable("Name")]
 	public record LevelCrossingObject(
 		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] int16_t CostFactor,

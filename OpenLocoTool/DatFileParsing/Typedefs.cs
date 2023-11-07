@@ -9,14 +9,13 @@ global using Speed16 = System.Int16;
 global using Speed32 = System.Int32;
 global using MicroZ = System.Byte;
 global using SoundObjectId = System.Byte;
-global using StringTable = System.Collections.Generic.Dictionary<(int, OpenLocoTool.LanguageId), string>;
+global using StringTable = System.Collections.Generic.Dictionary<(string, OpenLocoTool.LanguageId), string>;
 using System.ComponentModel;
 
 namespace OpenLocoTool.DatFileParsing
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x04)]
-	[LocoStringCount(0)]
 	public record Pos2(
 		[property: LocoStructOffset(0x00)] int16_t X,
 		[property: LocoStructOffset(0x02)] int16_t Y

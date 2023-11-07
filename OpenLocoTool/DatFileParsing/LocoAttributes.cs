@@ -24,11 +24,16 @@
 	}
 
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
-	public class LocoStringCountAttribute : Attribute
+	public class LocoStringTableAttribute : Attribute
 	{
-		public LocoStringCountAttribute(int count) => Count = count;
+		public LocoStringTableAttribute(params string[] names)
+		{
+			Names = names;
+		}
 
-		public int Count { get; }
+		public string[] Names { get; }
+
+		public int Count => Names.Length;
 	}
 
 	// basically a 'skip' attribute to allow deferred loading for variable data

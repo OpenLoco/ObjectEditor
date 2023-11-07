@@ -15,7 +15,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1F)]
-	[LocoStringCount(4)]
+	[LocoStringTable("Name", "UnitsAndCargoName", "UnitNameSingular", "UnitNamePlural")]
 	public record CargoObject(
 		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint16_t var_02,
@@ -40,19 +40,19 @@ namespace OpenLocoTool.Objects
 		public static ObjectType ObjectType => ObjectType.Cargo;
 		public static int StructSize => 0x1F;
 
-		public string Name { get; set; }
-		public string UnitsAndCargoName { get; set; }
-
-		public string UnitNameSingular { get; set; }
-
-		public string UnitNamePlural { get; set; }
+		//public string Name { get; set; }
+		//public string UnitsAndCargoName { get; set; }
+		//
+		//public string UnitNameSingular { get; set; }
+		//
+		//public string UnitNamePlural { get; set; }
 
 		public void LoadPostStringTable(StringTable stringTable)
 		{
-			Name = stringTable[(0, (LanguageId)0)];
-			UnitsAndCargoName = stringTable[(1, (LanguageId)0)];
-			UnitNameSingular = stringTable[(2, (LanguageId)0)];
-			UnitNamePlural = stringTable[(3, (LanguageId)0)];
+			// Name = stringTable[(0, (LanguageId)0)];
+			// UnitsAndCargoName = stringTable[(1, (LanguageId)0)];
+			// UnitNameSingular = stringTable[(2, (LanguageId)0)];
+			// UnitNamePlural = stringTable[(3, (LanguageId)0)];
 		}
 	}
 }

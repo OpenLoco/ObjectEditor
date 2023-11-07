@@ -30,7 +30,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x36)]
-	[LocoStringCount(1)]
+	[LocoStringTable("Name")]
 	public record TrackObject(
 		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] TrackObjectPieceFlags TrackPieces,

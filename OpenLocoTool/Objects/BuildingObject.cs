@@ -16,7 +16,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xBE)]
-	[LocoStringCount(1)]
+	[LocoStringTable("Name")]
 	public record BuildingObject(
 			//[property: LocoStructOffset(0x00)] string_id Name,
 			//[property: LocoStructOffset(0x02)] uint32_t Image,

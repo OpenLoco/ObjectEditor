@@ -81,14 +81,7 @@ namespace OpenLocoTool.DatFileParsing
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public interface IG1Dat
-	{
-		G1Header G1Header { get; set; }
-		List<G1Element32> G1Elements { get; set; }
-	}
-
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class G1Dat : IG1Dat
+	public class G1Dat
 	{
 		public G1Dat(G1Header g1Header, List<G1Element32> g1Elements)
 		{

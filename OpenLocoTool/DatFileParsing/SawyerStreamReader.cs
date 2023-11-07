@@ -37,7 +37,7 @@ namespace OpenLocoTool.DatFileParsing
 			return checksum;
 		}
 
-		public IG1Dat LoadG1(string filename)
+		public G1Dat LoadG1(string filename)
 		{
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);

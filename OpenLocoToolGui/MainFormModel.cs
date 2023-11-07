@@ -62,7 +62,7 @@ namespace OpenLocoToolGui
 
 		public Color[] Palette { get; private set; }
 
-		public IG1Dat G1 { get; set; }
+		public G1Dat G1 { get; set; }
 
 		public MainFormModel(ILogger logger, string settingsFile)
 		{

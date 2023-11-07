@@ -127,6 +127,7 @@ namespace OpenLocoToolGui
 
 			InitFileTreeView(vanillaOnly, filter);
 			InitCategoryTreeView(vanillaOnly, filter);
+			InitToolStripMenuItems();
 		}
 
 		bool LoadObjDataDirectory(string directory, bool useExistingIndex)
@@ -294,6 +295,41 @@ namespace OpenLocoToolGui
 			tvObjType.ResumeLayout(true);
 		}
 
+		void InitToolStripMenuItems()
+		{
+			// clear dynamic items
+			while (objectDirectoriesToolStripMenuItem.DropDownItems.Count > 2)
+			{
+				objectDirectoriesToolStripMenuItem.DropDownItems.RemoveAt(2);
+			}
+
+			// regenerate them
+			List<ToolStripMenuItem> newObjDirs = new();
+			foreach (var objDir in model.Settings.ObjDataDirectories)
+			{
+				var tsmi = new ToolStripMenuItem(objDir + (model.Settings.ObjDataDirectory == objDir ? " (Current)" : string.Empty));
+				tsmi.Click += (sender, e) => setObjectDirectoryToolStripMenuItem_ClickCore(objDir);
+				newObjDirs.Add(tsmi);
+			}
+			objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(newObjDirs.ToArray());
+
+			// clear dynamic items
+			while (dataDirectoriesToolStripMenuItem.DropDownItems.Count > 2)
+			{
+				dataDirectoriesToolStripMenuItem.DropDownItems.RemoveAt(2);
+			}
+
+			// regenerate them
+			List<ToolStripMenuItem> newDataDirs = new();
+			foreach (var dataDir in model.Settings.DataDirectories)
+			{
+				var tsmi = new ToolStripMenuItem(dataDir + (model.Settings.DataDirectory == dataDir ? " (Current)" : string.Empty));
+				tsmi.Click += (sender, e) => setDataDirectoryToolStripMenuItem_ClickCore(dataDir);
+				newDataDirs.Add(tsmi);
+			}
+			dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(newDataDirs.ToArray());
+		}
+
 		// note: doesn't work atm
 		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -333,10 +369,15 @@ namespace OpenLocoToolGui
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
-				if (LoadObjDataDirectory(objectDirBrowser.SelectedPath, true))
-				{
-					InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
-				}
+				setObjectDirectoryToolStripMenuItem_ClickCore(objectDirBrowser.SelectedPath);
+			}
+		}
+
+		private void setObjectDirectoryToolStripMenuItem_ClickCore(string path)
+		{
+			if (LoadObjDataDirectory(path, true))
+			{
+				InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 			}
 		}
 
@@ -344,12 +385,17 @@ namespace OpenLocoToolGui
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
-				if (model.LoadDataDirectory(objectDirBrowser.SelectedPath))
-				{
-					pgObject.SelectedObject = model.G1;
-					var images = CreateImages(model.G1.G1Elements, model.Palette);
-					CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToList();
-				}
+				setDataDirectoryToolStripMenuItem_ClickCore(objectDirBrowser.SelectedPath);
+			}
+		}
+
+		private void setDataDirectoryToolStripMenuItem_ClickCore(string path)
+		{
+			if (model.LoadDataDirectory(path))
+			{
+				pgObject.SelectedObject = model.G1;
+				var images = CreateImages(model.G1.G1Elements, model.Palette);
+				CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToList();
 			}
 		}
 

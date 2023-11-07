@@ -59,8 +59,12 @@
 			cbVanillaObjects = new CheckBox();
 			menuStrip = new MenuStrip();
 			fileToolStripMenuItem = new ToolStripMenuItem();
+			objectDirectoriesToolStripMenuItem = new ToolStripMenuItem();
 			setObjectDirectoryToolStripMenuItem = new ToolStripMenuItem();
+			toolStripSeparator1 = new ToolStripSeparator();
+			dataDirectoriesToolStripMenuItem = new ToolStripMenuItem();
 			setDataDirectoryToolStripMenuItem = new ToolStripMenuItem();
+			toolStripSeparator2 = new ToolStripSeparator();
 			setPaletteToolStripMenuItem = new ToolStripMenuItem();
 			recreateIndexToolStripMenuItem = new ToolStripMenuItem();
 			saveChangesToolStripMenuItem = new ToolStripMenuItem();
@@ -423,24 +427,48 @@
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, setDataDirectoryToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem, saveChangesToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem, saveChangesToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
 			// 
+			// objectDirectoriesToolStripMenuItem
+			// 
+			objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, toolStripSeparator1 });
+			objectDirectoriesToolStripMenuItem.Name = "objectDirectoriesToolStripMenuItem";
+			objectDirectoriesToolStripMenuItem.Size = new Size(217, 22);
+			objectDirectoriesToolStripMenuItem.Text = "ObjData Directories";
+			// 
 			// setObjectDirectoryToolStripMenuItem
 			// 
 			setObjectDirectoryToolStripMenuItem.Name = "setObjectDirectoryToolStripMenuItem";
-			setObjectDirectoryToolStripMenuItem.Size = new Size(217, 22);
-			setObjectDirectoryToolStripMenuItem.Text = "Set ObjData Directory";
+			setObjectDirectoryToolStripMenuItem.Size = new Size(180, 22);
+			setObjectDirectoryToolStripMenuItem.Text = "Add New";
 			setObjectDirectoryToolStripMenuItem.Click += setObjectDirectoryToolStripMenuItem_Click;
+			// 
+			// toolStripSeparator1
+			// 
+			toolStripSeparator1.Name = "toolStripSeparator1";
+			toolStripSeparator1.Size = new Size(177, 6);
+			// 
+			// dataDirectoriesToolStripMenuItem
+			// 
+			dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setDataDirectoryToolStripMenuItem, toolStripSeparator2 });
+			dataDirectoriesToolStripMenuItem.Name = "dataDirectoriesToolStripMenuItem";
+			dataDirectoriesToolStripMenuItem.Size = new Size(217, 22);
+			dataDirectoriesToolStripMenuItem.Text = "Data Directories";
 			// 
 			// setDataDirectoryToolStripMenuItem
 			// 
 			setDataDirectoryToolStripMenuItem.Name = "setDataDirectoryToolStripMenuItem";
-			setDataDirectoryToolStripMenuItem.Size = new Size(217, 22);
-			setDataDirectoryToolStripMenuItem.Text = "Set Data Directory";
+			setDataDirectoryToolStripMenuItem.Size = new Size(123, 22);
+			setDataDirectoryToolStripMenuItem.Text = "Add New";
 			setDataDirectoryToolStripMenuItem.Click += setDataDirectoryToolStripMenuItem_Click;
+			// 
+			// toolStripSeparator2
+			// 
+			toolStripSeparator2.Name = "toolStripSeparator2";
+			toolStripSeparator2.Size = new Size(120, 6);
 			// 
 			// setPaletteToolStripMenuItem
 			// 
@@ -560,11 +588,11 @@
 		private Panel pnFileFilter;
 		private MenuStrip menuStrip;
 		private ToolStripMenuItem fileToolStripMenuItem;
-		private ToolStripMenuItem setObjectDirectoryToolStripMenuItem;
+		private ToolStripMenuItem objectDirectoriesToolStripMenuItem;
 		private ToolStripMenuItem recreateIndexToolStripMenuItem;
 		private ToolStripMenuItem saveChangesToolStripMenuItem;
 		private ToolStripMenuItem setPaletteToolStripMenuItem;
-		private ToolStripMenuItem setDataDirectoryToolStripMenuItem;
+		private ToolStripMenuItem dataDirectoriesToolStripMenuItem;
 		private ContextMenuStrip imgContextMenu;
 		private ToolStripMenuItem imgContextMenuSave;
 		private SplitContainer scImageViewer;
@@ -586,5 +614,9 @@
 		private ToolStripMenuItem headerToolStripMenuItem;
 		private ToolStripMenuItem pictureDataToolStripMenuItem;
 		private SplitContainer scAnnnotationDump;
+		private ToolStripMenuItem setObjectDirectoryToolStripMenuItem;
+		private ToolStripSeparator toolStripSeparator1;
+		private ToolStripMenuItem setDataDirectoryToolStripMenuItem;
+		private ToolStripSeparator toolStripSeparator2;
 	}
 }

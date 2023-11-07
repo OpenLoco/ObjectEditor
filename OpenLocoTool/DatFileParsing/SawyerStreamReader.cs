@@ -45,50 +45,6 @@ namespace OpenLocoTool.DatFileParsing
 			return new G1Dat(g1Header, imageTable);
 		}
 
-		public static LocoMemoryObject LoadFullExperimental(string filename)
-		{
-			var fullData = LoadBytesFromFile(filename);
-			var locoMemoryObject = new LocoMemoryObject();
-
-			fullData[0..S5Header.StructLength].CopyTo(locoMemoryObject.BytesSHeader, 0);
-			fullData[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)].CopyTo(locoMemoryObject.BytesOHeader, 0);
-
-			var remainingData = Decode(
-				locoMemoryObject.OHeader.Encoding,
-				fullData[(S5Header.StructLength + ObjectHeader.StructLength)..]);
-
-			var fixedDataLength = ObjectTypeFixedSize.GetSize(locoMemoryObject.SHeader.ObjectType);
-			locoMemoryObject.BytesFixedData = new byte[fixedDataLength];
-			remainingData[0..fixedDataLength].CopyTo(locoMemoryObject.BytesFixedData, 0);
-
-			remainingData = remainingData[fixedDataLength..];
-
-			var locoStruct = locoMemoryObject.FixedData;
-
-			// every object has a string table
-			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct);
-			remainingData = remainingData[stringTableBytesRead..];
-
-			if (locoStruct is ILocoStructStringTablePostLoad locoStructString)
-			{
-				locoStructString.LoadPostStringTable(stringTable);
-			}
-
-			// variable data
-			if (locoMemoryObject.FixedData is ILocoStructVariableData locoStructExtra)
-			{
-				remainingData = locoStructExtra.Load(remainingData).ToArray();
-			}
-
-			// some objects have graphics data
-			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-
-			// no more data
-			//Verify.AreEqual(imageTableBytesRead, remainingData.Length);
-
-			return locoMemoryObject;
-		}
-
 		// load file
 		public ILocoObject LoadFull(string filename, bool loadExtra = true)
 		{

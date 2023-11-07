@@ -93,17 +93,6 @@ namespace OpenLocoTool.DatFileParsing
 		public List<G1Element32> G1Elements { get; set; }
 	}
 
-	//public class ByteLocoObject
-	//{
-	//	public byte[] S5Header { get; }
-	//	public byte[] ObjectHeader { get; set; }
-	//	public byte[] FixedData { get; set; }
-	//  public byte[] VariableData { get; set; }
-	//	public byte[] StringTable { get; set; }
-	//	public byte[] G1Header { get; set; }
-	//	public byte[] G1Elements { get; set; }
-	//}
-
 	public static class ObjectTypeFixedSize
 	{
 		public static int GetSize(ObjectType objectType)
@@ -145,49 +134,6 @@ namespace OpenLocoTool.DatFileParsing
 				ObjectType.Water => WaterObject.StructSize,
 				_ => throw new ArgumentOutOfRangeException(nameof(objectType), $"unknown object type {objectType}")
 			};
-	}
-
-	public class LocoMemoryObject
-	{
-		public byte[] BytesSHeader { get; } = new byte[S5Header.StructLength];
-		public byte[] BytesOHeader { get; } = new byte[ObjectHeader.StructLength];
-		public byte[] BytesFixedData { get; set; }
-		public byte[] BytesStringTable { get; set; }
-		public byte[] BytesVariableData { get; set; }
-		public byte[] BytesG1Header { get; set; } = new byte[G1Header.StructLength];
-		public byte[] BytesG1Elements { get; set; }
-
-		public S5Header SHeader
-		{
-			get => S5Header.Read(BytesSHeader);
-			set => value.Write().CopyTo(BytesSHeader);
-		}
-
-		public ObjectHeader OHeader
-		{
-			get => ObjectHeader.Read(BytesOHeader);
-			set => value.Write().CopyTo(BytesOHeader);
-		}
-
-		//const int FixedDataOffset = S5Header.StructLength + ObjectHeader.StructLength;
-		int FixedDataLength => ObjectTypeFixedSize.GetSize(SHeader.ObjectType);
-
-		public ILocoStruct FixedData
-		{
-			get => SawyerStreamReader.GetLocoStruct(SHeader.ObjectType, BytesFixedData.AsSpan()[0..FixedDataLength]);
-			set => ByteWriter.WriteLocoStruct(value).CopyTo(BytesFixedData.AsSpan()[0..FixedDataLength]);
-		}
-
-		// variable data
-
-		// string table
-
-		// graphics data
-		//public G1Header G1Header
-		//{
-		//	get => G1Header.Read(BytesG1Header);
-		//	set => value.Write().CopyTo(BytesG1Header);
-		//}
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

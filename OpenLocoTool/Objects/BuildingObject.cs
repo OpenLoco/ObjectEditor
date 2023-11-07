@@ -16,9 +16,10 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xBE)]
+	[LocoStringCount(1)]
 	public record BuildingObject(
-			[property: LocoStructOffset(0x00)] string_id Name,
-			[property: LocoStructOffset(0x02)] uint32_t Image,
+			//[property: LocoStructOffset(0x00)] string_id Name,
+			//[property: LocoStructOffset(0x02)] uint32_t Image,
 			[property: LocoStructOffset(0x06)] uint8_t var_06,
 			[property: LocoStructOffset(0x07)] uint8_t NumVariations,
 			[property: LocoStructOffset(0x08), LocoArrayLength(4)] uint8_t[] VariationHeights,

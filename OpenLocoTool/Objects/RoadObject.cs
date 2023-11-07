@@ -34,8 +34,9 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x30)]
+	[LocoStringCount(1)]
 	public record RoadObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] RoadObjectPieceFlags RoadPieces,
 		[property: LocoStructOffset(0x04)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x06)] int16_t SellCostFactor,
@@ -43,7 +44,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x0B)] uint8_t Tunnel,
 		[property: LocoStructOffset(0x0C)] Speed16 MaxSpeed,
-		[property: LocoStructOffset(0x0E)] uint32_t Image,
+		//[property: LocoStructOffset(0x0E)] uint32_t Image,
 		[property: LocoStructOffset(0x12)] RoadObjectFlags Flags,
 		[property: LocoStructOffset(0x14)] uint8_t NumBridges,
 		[property: LocoStructOffset(0x15), LocoArrayLength(7)] uint8_t[] Bridges,

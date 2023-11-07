@@ -18,8 +18,9 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1A)]
+	[LocoStringCount(1)]
 	public record TownNamesObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02), LocoArrayLength(6)] TownNamesUnk[] unks
 		) : ILocoStruct, ILocoStructVariableData
 	{

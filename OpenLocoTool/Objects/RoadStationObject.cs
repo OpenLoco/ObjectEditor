@@ -16,8 +16,9 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x6E)]
+	[LocoStringCount(1)]
 	public record RoadStationObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
 		[property: LocoStructOffset(0x03)] uint8_t pad_03,
 		[property: LocoStructOffset(0x04)] uint16_t RoadPieces,
@@ -25,7 +26,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x0B)] RoadStationFlags Flags,
-		[property: LocoStructOffset(0x0C)] uint32_t Image,
+		//[property: LocoStructOffset(0x0C)] uint32_t Image,
 		[property: LocoStructOffset(0x10), LocoArrayLength(4)] uint32_t[] var_10,
 		[property: LocoStructOffset(0x20)] uint8_t NumCompatible,
 		[property: LocoStructOffset(0x21), LocoArrayLength(7)] uint8_t[] Mods,

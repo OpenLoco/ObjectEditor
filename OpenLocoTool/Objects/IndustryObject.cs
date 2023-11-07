@@ -76,13 +76,13 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0xF4)]
 	[LocoStringCount(8)]
 	public record IndustryObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
-		[property: LocoStructOffset(0x02)] string_id var_02,
-		[property: LocoStructOffset(0x04)] string_id NameClosingDown,
-		[property: LocoStructOffset(0x06)] string_id NameUpProduction,
-		[property: LocoStructOffset(0x08)] string_id NameDownProduction,
-		[property: LocoStructOffset(0x0A)] string_id NameSingular,
-		[property: LocoStructOffset(0x0C)] string_id NamePlural,
+		//[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x02)] string_id var_02,
+		//[property: LocoStructOffset(0x04)] string_id NameClosingDown,
+		//[property: LocoStructOffset(0x06)] string_id NameUpProduction,
+		//[property: LocoStructOffset(0x08)] string_id NameDownProduction,
+		//[property: LocoStructOffset(0x0A)] string_id NameSingular,
+		//[property: LocoStructOffset(0x0C)] string_id NamePlural,
 		[property: LocoStructOffset(0x0E)] uint32_t var_0E, // shadows image id base
 		[property: LocoStructOffset(0x12)] uint32_t var_12, // Base image id for building 0
 		[property: LocoStructOffset(0x16)] uint32_t var_16,

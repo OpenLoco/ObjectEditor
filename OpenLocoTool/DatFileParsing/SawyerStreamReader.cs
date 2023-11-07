@@ -112,7 +112,7 @@ namespace OpenLocoTool.DatFileParsing
 		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
 			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringCountAttribute), inherit: false) as LocoStringCountAttribute;
-			var stringsInTable = stringAttr?.Count ?? 1;
+			var stringsInTable = stringAttr?.Count ?? throw new ArgumentException($"Struct {locoStruct.GetType().Name} had no string count attribute");
 			var strings = new StringTable();
 
 			if (data.Length == 0 || stringsInTable == 0)

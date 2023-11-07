@@ -7,9 +7,10 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x18)]
+	[LocoStringCount(1)]
 	public record InterfaceSkinObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint32_t Image,
+		//[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x02)] uint32_t Image,
 		[property: LocoStructOffset(0x06)] Colour Colour_06,
 		[property: LocoStructOffset(0x07)] Colour Colour_07,
 		[property: LocoStructOffset(0x08)] Colour TooltipColour,

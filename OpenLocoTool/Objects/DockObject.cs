@@ -13,13 +13,14 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x28)]
+	[LocoStringCount(1)]
 	public record DockObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x04)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x06)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x07)] uint8_t var_07,
-		[property: LocoStructOffset(0x08)] uint32_t Image,
+		//[property: LocoStructOffset(0x08)] uint32_t Image,
 		[property: LocoStructOffset(0x0C)] uint32_t var_0C,
 		[property: LocoStructOffset(0x10)] DockObjectFlags Flags,
 		[property: LocoStructOffset(0x12)] uint8_t NumAux01,

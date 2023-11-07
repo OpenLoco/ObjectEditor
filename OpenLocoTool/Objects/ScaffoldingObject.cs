@@ -7,9 +7,10 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]
+	[LocoStringCount(1)]
 	public record ScaffoldingObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint32_t Image,
+		//[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x02)] uint32_t Image,
 		[property: LocoStructOffset(0x06), LocoArrayLength(3)] uint16_t[] SegmentHeights, // 0x06
 		[property: LocoStructOffset(0x0C), LocoArrayLength(3)] uint16_t[] RoofHeights    // 0x0C
 	) : ILocoStruct

@@ -6,6 +6,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x15E)]
+	[LocoStringCount(1)]
 	public class VehicleObject : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Vehicle;
@@ -15,9 +16,9 @@ namespace OpenLocoTool.Objects
 
 		public List<CargoObject> CompatibleCargo { get; set; } = new();
 
-		public VehicleObject(ushort name, TransportMode mode, VehicleType type, byte var_04, byte trackType, byte numMods, byte costIndex, short costFactor, byte reliability, byte runCostIndex, short runCostFactor, byte colourType, byte numCompat, ushort[] compatibleVehicles, byte[] requiredTrackExtras, VehicleObjectUnk[] var_24, BodySprite[] bodySprites, BogieSprite[] bogieSprites, ushort power, short speed, short rackSpeed, ushort weight, VehicleObjectFlags flags, byte[] maxCargo, uint[] cargoTypes, byte[] cargoTypeSpriteOffsets, byte numSimultaneousCargoTypes, SimpleAnimation[] animation, byte var_113, ushort designed, ushort obsolete, byte rackRailType, DrivingSoundType drivingSoundType, byte[] pad_135, byte numStartSounds, byte[] startSounds)
+		public VehicleObject(/*ushort name,*/ TransportMode mode, VehicleType type, byte var_04, byte trackType, byte numMods, byte costIndex, short costFactor, byte reliability, byte runCostIndex, short runCostFactor, byte colourType, byte numCompat, ushort[] compatibleVehicles, byte[] requiredTrackExtras, VehicleObjectUnk[] var_24, BodySprite[] bodySprites, BogieSprite[] bogieSprites, ushort power, short speed, short rackSpeed, ushort weight, VehicleObjectFlags flags, byte[] maxCargo, uint[] cargoTypes, byte[] cargoTypeSpriteOffsets, byte numSimultaneousCargoTypes, SimpleAnimation[] animation, byte var_113, ushort designed, ushort obsolete, byte rackRailType, DrivingSoundType drivingSoundType, byte[] pad_135, byte numStartSounds, byte[] startSounds)
 		{
-			Name = name;
+			//Name = name;
 			Mode = mode;
 			Type = type;
 			this.var_04 = var_04;
@@ -55,7 +56,7 @@ namespace OpenLocoTool.Objects
 			StartSounds = startSounds;
 		}
 
-		[LocoStructOffset(0x00)] public string_id Name { get; set; }
+		//[LocoStructOffset(0x00)] public string_id Name { get; set; }
 		[LocoStructOffset(0x02)] public TransportMode Mode { get; set; }
 		[LocoStructOffset(0x03)] public VehicleType Type { get; set; }
 		[LocoStructOffset(0x04)] public uint8_t var_04 { get; set; }

@@ -20,8 +20,9 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x4C)]
+	[LocoStringCount(1)]
 	public record TreeObject(
-		[property: LocoStructOffset(0x00)] string_id Name,
+		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t var_02,
 		[property: LocoStructOffset(0x03)] uint8_t Height,
 		[property: LocoStructOffset(0x04)] uint8_t var_04,

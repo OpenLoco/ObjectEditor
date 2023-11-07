@@ -8,6 +8,7 @@ namespace OpenLocoTool.Objects
 	// it works just the same but has more code.
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x2C)]
+	[LocoStringCount(1)]
 	public class BridgeObject : ILocoStruct, ILocoStructVariableData
 	{
 		public const ObjectType ObjType = ObjectType.Bridge;
@@ -16,9 +17,9 @@ namespace OpenLocoTool.Objects
 		public const int TrackModsLength = 7;
 		public const int RoadModsLength = 7;
 
-		public BridgeObject(ushort name, byte noRoof, byte[] pad_03, ushort var_06, byte spanLength, byte pillarSpacing, short maxSpeed, byte maxHeight, byte costIndex, short baseCostFactor, short heightCostFactor, short sellCostFactor, ushort disabledTrackCfg, uint image, byte trackNumCompatible, byte[] trackMods, byte roadNumCompatible, byte[] roadMods, ushort designedYear)
+		public BridgeObject(/*ushort name, */ byte noRoof, byte[] pad_03, ushort var_06, byte spanLength, byte pillarSpacing, short maxSpeed, byte maxHeight, byte costIndex, short baseCostFactor, short heightCostFactor, short sellCostFactor, ushort disabledTrackCfg, /*uint image,*/ byte trackNumCompatible, byte[] trackMods, byte roadNumCompatible, byte[] roadMods, ushort designedYear)
 		{
-			Name = name;
+			//Name = name;
 			NoRoof = noRoof;
 			this.pad_03 = pad_03;
 			this.var_06 = var_06;
@@ -31,7 +32,7 @@ namespace OpenLocoTool.Objects
 			HeightCostFactor = heightCostFactor;
 			SellCostFactor = sellCostFactor;
 			DisabledTrackCfg = disabledTrackCfg;
-			Image = image;
+			//Image = image;
 			TrackNumCompatible = trackNumCompatible;
 			TrackMods = trackMods;
 			RoadNumCompatible = roadNumCompatible;
@@ -46,7 +47,7 @@ namespace OpenLocoTool.Objects
 			return remainingData[bytesRead..];
 		}
 
-		[LocoStructOffset(0x00)] public string_id Name { get; set; }
+		//[LocoStructOffset(0x00)] public string_id Name { get; set; }
 		[LocoStructOffset(0x02)] public uint8_t NoRoof { get; set; }
 		[LocoStructOffset(0x03), LocoArrayLength(0x06 - 0x03)] public uint8_t[] pad_03 { get; set; }
 		[LocoStructOffset(0x06)] public uint16_t var_06 { get; set; }
@@ -59,7 +60,7 @@ namespace OpenLocoTool.Objects
 		[LocoStructOffset(0x10)] public int16_t HeightCostFactor { get; set; }
 		[LocoStructOffset(0x12)] public int16_t SellCostFactor { get; set; }
 		[LocoStructOffset(0x14)] public uint16_t DisabledTrackCfg { get; set; }
-		[LocoStructOffset(0x16)] public uint32_t Image { get; set; }
+		//[LocoStructOffset(0x16)] public uint32_t Image { get; set; }
 		[LocoStructOffset(0x1A)] public uint8_t TrackNumCompatible { get; set; }
 		[LocoStructOffset(0x1B), LocoArrayLength(BridgeObject.TrackModsLength)] public uint8_t[] TrackMods { get; set; }
 		[LocoStructOffset(0x22)] public uint8_t RoadNumCompatible { get; set; }

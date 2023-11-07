@@ -8,8 +8,8 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x38)]
 	[LocoStringCount(2)]
 	public record CompetitorObject(
-		[property: LocoStructOffset(0x00)] string_id var_00,
-		[property: LocoStructOffset(0x02)] string_id var_02,
+		//[property: LocoStructOffset(0x00)] string_id var_00,
+		//[property: LocoStructOffset(0x02)] string_id var_02,
 		[property: LocoStructOffset(0x04)] uint32_t var_04,
 		[property: LocoStructOffset(0x08)] uint32_t var_08,
 		[property: LocoStructOffset(0x0C)] uint32_t Emotions,

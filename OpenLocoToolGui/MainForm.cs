@@ -449,13 +449,10 @@ namespace OpenLocoToolGui
 			{
 				tvUniqueLoadValues[nodeText].Invoke(e.Node.Name);
 			}
-			else if (e.Node.Name.Contains("ObjData"))
+			else if (Path.GetExtension(e.Node.Name).ToLower() == ".dat")
 			{
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
-
-				//var exp = SawyerStreamReader.LoadFullExperimental(filename);
-				//pgObject.SelectedObject = exp;
 
 				LoadDataDump(filename);
 			}

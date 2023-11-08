@@ -4,7 +4,6 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
-using System.Drawing;
 using System.Drawing.Imaging;
 
 namespace OpenLocoToolGui

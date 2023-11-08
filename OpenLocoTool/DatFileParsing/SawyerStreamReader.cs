@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
-using Zenith.Core;
 
 namespace OpenLocoTool.DatFileParsing
 {

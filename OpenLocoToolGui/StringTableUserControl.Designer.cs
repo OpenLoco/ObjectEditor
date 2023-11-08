@@ -35,11 +35,13 @@
 			// 
 			// dgvLanguageSelector
 			// 
+			dgvLanguageSelector.AllowUserToResizeRows = false;
 			dgvLanguageSelector.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			dgvLanguageSelector.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			dgvLanguageSelector.Location = new Point(397, 3);
+			dgvLanguageSelector.MultiSelect = false;
 			dgvLanguageSelector.Name = "dgvLanguageSelector";
-			dgvLanguageSelector.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
+			dgvLanguageSelector.RowHeadersWidth = 82;
 			dgvLanguageSelector.RowTemplate.Height = 41;
 			dgvLanguageSelector.Size = new Size(1028, 622);
 			dgvLanguageSelector.TabIndex = 1;

@@ -303,15 +303,18 @@ namespace OpenLocoToolGui
 				objectDirectoriesToolStripMenuItem.DropDownItems.RemoveAt(2);
 			}
 
-			// regenerate them
-			List<ToolStripMenuItem> newObjDirs = new();
-			foreach (var objDir in model.Settings.ObjDataDirectories)
+			if (model.Settings.ObjDataDirectories != null)
 			{
-				var tsmi = new ToolStripMenuItem(objDir + (model.Settings.ObjDataDirectory == objDir ? " (Current)" : string.Empty));
-				tsmi.Click += (sender, e) => setObjectDirectoryToolStripMenuItem_ClickCore(objDir);
-				newObjDirs.Add(tsmi);
+				// regenerate them
+				List<ToolStripMenuItem> newObjDirs = new();
+				foreach (var objDir in model.Settings.ObjDataDirectories)
+				{
+					var tsmi = new ToolStripMenuItem(objDir + (model.Settings.ObjDataDirectory == objDir ? " (Current)" : string.Empty));
+					tsmi.Click += (sender, e) => setObjectDirectoryToolStripMenuItem_ClickCore(objDir);
+					newObjDirs.Add(tsmi);
+				}
+				objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(newObjDirs.ToArray());
 			}
-			objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(newObjDirs.ToArray());
 
 			// clear dynamic items
 			while (dataDirectoriesToolStripMenuItem.DropDownItems.Count > 2)
@@ -319,21 +322,24 @@ namespace OpenLocoToolGui
 				dataDirectoriesToolStripMenuItem.DropDownItems.RemoveAt(2);
 			}
 
-			// regenerate them
-			List<ToolStripMenuItem> newDataDirs = new();
-			foreach (var dataDir in model.Settings.DataDirectories)
+			if (model.Settings.DataDirectories != null)
 			{
-				var tsmi = new ToolStripMenuItem(dataDir + (model.Settings.DataDirectory == dataDir ? " (Current)" : string.Empty));
-				tsmi.Click += (sender, e) => setDataDirectoryToolStripMenuItem_ClickCore(dataDir);
-				newDataDirs.Add(tsmi);
+				// regenerate them
+				List<ToolStripMenuItem> newDataDirs = new();
+				foreach (var dataDir in model.Settings.DataDirectories)
+				{
+					var tsmi = new ToolStripMenuItem(dataDir + (model.Settings.DataDirectory == dataDir ? " (Current)" : string.Empty));
+					tsmi.Click += (sender, e) => setDataDirectoryToolStripMenuItem_ClickCore(dataDir);
+					newDataDirs.Add(tsmi);
+				}
+				dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(newDataDirs.ToArray());
 			}
-			dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(newDataDirs.ToArray());
 		}
 
 		// note: doesn't work atm
 		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (pgObject.SelectedObject is not ILocoObject obj)
+			if (pgS5Header.SelectedObject is not ILocoObject obj)
 			{
 				return;
 			}
@@ -393,7 +399,7 @@ namespace OpenLocoToolGui
 		{
 			if (model.LoadDataDirectory(path))
 			{
-				pgObject.SelectedObject = model.G1;
+				pgS5Header.SelectedObject = model.G1;
 				var images = CreateImages(model.G1.G1Elements, model.Palette);
 				CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToList();
 			}
@@ -477,7 +483,7 @@ namespace OpenLocoToolGui
 
 		void LoadG1(string filename)
 		{
-			pgObject.SelectedObject = model.G1;
+			pgS5Header.SelectedObject = model.G1;
 			var images = CreateImages(model.G1.G1Elements, model.Palette);
 			CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToList();
 			LoadDataDump(filename, true);
@@ -692,7 +698,7 @@ namespace OpenLocoToolGui
 				}
 
 				var images = CreateImages(CurrentUIObject.G1Elements, model.Palette);
-				CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToArray();
+				CurrentUIImages = CreateImageControls(images, CurrentUIObject.G1Elements).ToArray();
 			}
 			else
 			{
@@ -706,7 +712,11 @@ namespace OpenLocoToolGui
 
 			flpImageTable.ResumeLayout(true);
 
-			pgObject.SelectedObject = CurrentUIObject;
+			pgS5Header.SelectedObject = CurrentUIObject.S5Header;
+			pgObjHeader.SelectedObject = CurrentUIObject.ObjectHeader;
+			pgObject.SelectedObject = CurrentUIObject.Object;
+			ucStringTable.SetDataBinding(CurrentUIObject.StringTable);
+			//pgS5Header.SelectedObject = CurrentUIObject; // dont above with flpImageTable
 		}
 
 		private void imgContextMenuSave_Click(object sender, EventArgs e)
@@ -769,7 +779,7 @@ namespace OpenLocoToolGui
 				var keys = "Header " + (index + 1);
 				if (index >= 0 && imageHeaderIndexToNode.ContainsKey(keys))
 				{
-					ObjectTabViewControl.SelectedIndex = 1;
+					tcObjectOverview.SelectedIndex = 1;
 					tvDATDumpAnnotations.SelectedNode = imageHeaderIndexToNode[keys];
 					dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(imageHeaderIndexToNode[keys]));
 					tvDATDumpAnnotations.Focus();
@@ -785,7 +795,7 @@ namespace OpenLocoToolGui
 				var keys = "Image " + (index + 1);
 				if (index >= 0 && imageDataIndexToNode.ContainsKey(keys))
 				{
-					ObjectTabViewControl.SelectedIndex = 1;
+					tcObjectOverview.SelectedIndex = 1;
 					tvDATDumpAnnotations.SelectedNode = imageDataIndexToNode[keys];
 					dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(imageDataIndexToNode[keys]));
 					tvDATDumpAnnotations.Focus();

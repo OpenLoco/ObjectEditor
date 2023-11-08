@@ -121,6 +121,10 @@ namespace OpenLocoTool.DatFileParsing
 
 			for (var i = 0; i < stringTableAttr.Count; ++i)
 			{
+				var stringName = stringTableAttr.Names[i];
+				stringTable.Add(stringName, new());
+				var languageDict = stringTable[stringName];
+
 				for (; ptr < data.Length && data[ptr] != 0xFF;)
 				{
 					var lang = (LanguageId)data[ptr++];
@@ -129,15 +133,14 @@ namespace OpenLocoTool.DatFileParsing
 					while (data[ptr++] != '\0') ;
 
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-					var stringName = stringTableAttr.Names[i];
-					if (stringTable.ContainsKey((stringName, lang)))
+					if (languageDict.ContainsKey(lang))
 					{
 						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
 						break;
 					}
 					else
 					{
-						stringTable.Add((stringName, lang), str);
+						languageDict.Add(lang, str);
 					}
 				}
 

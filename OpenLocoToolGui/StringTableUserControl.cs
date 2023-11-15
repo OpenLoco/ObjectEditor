@@ -1,4 +1,5 @@
 ﻿using OpenLocoTool;
+using OpenLocoTool.DatFileParsing;
 using System.ComponentModel;
 
 namespace OpenLocoToolGui
@@ -9,7 +10,7 @@ namespace OpenLocoToolGui
 
 		public StringTableUserControl() => InitializeComponent();
 
-		public void SetDataBinding(Dictionary<string, Dictionary<LanguageId, string>> data)
+		public void SetDataBinding(StringTable data)
 		{
 			blKeys.Clear();
 			foreach (var key in data.Keys)

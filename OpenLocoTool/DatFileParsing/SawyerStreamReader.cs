@@ -123,13 +123,10 @@ namespace OpenLocoTool.DatFileParsing
 					var lang = (LanguageId)data[ptr++];
 					var ini = ptr;
 
-					while (data[ptr++] != '\0')
-					{
-						;
-					}
+					while (data[ptr++] != '\0') ;
 
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-					if (!languageDict.TryAdd(lang, str))
+					if (!languageDict.TryAdd(lang, new StringTableEntry { String = str }))
 					{
 						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
 						break;

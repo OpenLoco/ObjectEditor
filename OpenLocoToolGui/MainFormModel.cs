@@ -8,6 +8,7 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using OpenLocoTool.Headers;
+using System.Diagnostics;
 
 namespace OpenLocoToolGui
 {
@@ -84,7 +85,7 @@ namespace OpenLocoToolGui
 
 			foreach (var dep in HeaderIndex.Where(kvp => dependentObjectTypes.Contains(kvp.Value.ObjectType)))
 			{
-				reader.LoadFull(dep.Key);
+				SawyerStreamReader.LoadFull(dep.Key);
 			}
 		}
 
@@ -156,13 +157,18 @@ namespace OpenLocoToolGui
 			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
 			ConcurrentDictionary<string, ILocoObject> ccObjectCache = new(); // key is full path/filename
 
-			var total = (float)allFiles.Length;
 			var count = 0;
+
+			logger.Info($"Creating index on {allFiles.Length} files");
+			var sw = new Stopwatch();
+			sw.Start();
+
 			Parallel.ForEach(allFiles, (file) =>
+			//foreach (var file in allFiles)
 			{
 				try
 				{
-					var locoObject = reader.LoadFull(file);
+					var locoObject = SawyerStreamReader.LoadFull(file);
 					if (!ccObjectCache.TryAdd(file, locoObject))
 					{
 						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
@@ -182,17 +188,21 @@ namespace OpenLocoToolGui
 				}
 				catch (Exception ex)
 				{
-					logger.Error(ex);
+					logger.Error($"Failed to load \"{file}\"", ex);
 				}
 				finally
 				{
 					Interlocked.Increment(ref count);
-					progress.Report(count / total);
+					progress.Report(count / (float)allFiles.Length);
 				}
+			//}
 			});
 
 			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+			sw.Stop();
+			logger.Info($"Finished creating index. Time={sw.Elapsed}");
 		}
 
 		public void SaveFile(string path, ILocoObject obj)
@@ -292,7 +302,7 @@ namespace OpenLocoToolGui
 			}
 			else
 			{
-				var obj = reader.LoadFull(filename);
+				var obj = SawyerStreamReader.LoadFull(filename);
 				ObjectCache.TryAdd(filename, obj);
 				return obj;
 			}

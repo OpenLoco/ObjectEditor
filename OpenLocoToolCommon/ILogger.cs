@@ -1,16 +1,33 @@
-﻿namespace OpenLocoToolCommon
+﻿using System.Runtime.CompilerServices;
+
+namespace OpenLocoToolCommon
 {
 	public enum LogLevel { Debug2, Debug, Info, Warning, Error };
 
 	public interface ILogger
 	{
-		void Log(LogLevel level, string message);
-		void Debug2(string message) => Log(LogLevel.Debug2, message);
-		void Debug(string message) => Log(LogLevel.Debug, message);
-		void Info(string message) => Log(LogLevel.Info, message);
-		void Warning(string message) => Log(LogLevel.Warning, message);
-		void Error(string message) => Log(LogLevel.Error, message);
+		// should be 'private'
+		void Log(LogLevel level, string message, string callerMemberName);
 
-		void Error(Exception ex) => Log(LogLevel.Error, ex.Message);
+		void Debug2(string message, [CallerMemberName] string callerMemberName = "")
+			=> Log(LogLevel.Debug2, message, callerMemberName);
+		
+		void Debug(string message, [CallerMemberName] string callerMemberName = "")
+			=> Log(LogLevel.Debug, message, callerMemberName);
+		
+		void Info(string message, [CallerMemberName] string callerMemberName = "")
+			=> Log(LogLevel.Info, message, callerMemberName);
+		
+		void Warning(string message, [CallerMemberName] string callerMemberName = "")
+			=> Log(LogLevel.Warning, message, callerMemberName);
+		
+		void Error(string message, [CallerMemberName] string callerMemberName = "")
+			=> Log(LogLevel.Error, message, callerMemberName);
+
+		void Error(Exception ex, [CallerMemberName] string callerMemberName = "")
+			=> Log(LogLevel.Error, $"{ex.Message} - {ex.StackTrace}", callerMemberName);
+
+		void Error(string message, Exception ex, [CallerMemberName] string callerMemberName = "")
+			=> Log(LogLevel.Error, $"{message} - {ex.Message} - {ex.StackTrace}", callerMemberName);
 	}
 }

@@ -20,7 +20,7 @@ foreach (var datFile in datFiles)
 	// read each files S5Header
 	using var fileStream = new FileStream(datFile, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
 	using var reader = new BinaryReader(fileStream);
-	var data = reader.ReadBytes(0x10);
+	var data = reader.ReadBytes(0x10).AsSpan();
 
 	var flags = BitConverter.ToUInt32(data[0..4]);
 	var datName = System.Text.Encoding.ASCII.GetString(data[4..12]).Trim();

@@ -13,7 +13,7 @@ namespace OpenLocoTool.Headers
 
 		public static ObjectHeader Read(ReadOnlySpan<byte> data)
 		{
-			Verify.Equals(data.Length, StructLength);
+			Verify.AreEqual(data.Length, StructLength);
 
 			var encoding = (SawyerEncoding)data[0];
 			var dataLength = BitConverter.ToUInt32(data[1..5]);

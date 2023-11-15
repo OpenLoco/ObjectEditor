@@ -109,7 +109,7 @@ namespace OpenLocoTool.Objects
 			// dependent objects
 			if (!Flags.HasFlag(VehicleObjectFlags.unk_09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
 			{
-				var trackHeader = S5Header.Read(remainingData);
+				var trackHeader = S5Header.Read(remainingData[..S5Header.StructLength]);
 				dependentObjects.Add(trackHeader);
 				TrackType = trackType;
 				// load the object handle for the track header, and set tracktype to its id

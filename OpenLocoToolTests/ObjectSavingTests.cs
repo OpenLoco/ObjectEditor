@@ -18,7 +18,7 @@ namespace OpenLocoToolTests
 			var logger = new Logger();
 			var ssr = new SawyerStreamReader(logger);
 			var ssw = new SawyerStreamWriter(logger);
-			var loaded = ssr.LoadFull(testFile);
+			var loaded = SawyerStreamReader.LoadFull(testFile);
 
 			// load data in raw bytes for test
 			ReadOnlySpan<byte> fullData = SawyerStreamReader.LoadBytesFromFile(testFile);

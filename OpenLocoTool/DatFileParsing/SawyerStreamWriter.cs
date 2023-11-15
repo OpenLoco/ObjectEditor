@@ -8,7 +8,7 @@ namespace OpenLocoTool.DatFileParsing
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
-			logger.Log(LogLevel.Info, $"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
+			logger.Info($"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
 
 			var objBytes = WriteLocoObject(locoObject);
 
@@ -62,7 +62,7 @@ namespace OpenLocoTool.DatFileParsing
 				//case SawyerEncoding.rotate:
 				//	return encodeRotate(data);
 				default:
-					logger.Log(LogLevel.Error, "Unknown chunk encoding scheme");
+					logger.Error("Unknown chunk encoding scheme");
 					throw new InvalidDataException("Unknown encoding");
 			}
 		}

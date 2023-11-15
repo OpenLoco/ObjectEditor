@@ -34,13 +34,15 @@ namespace OpenLocoTool.DatFileParsing
 		{
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
-			logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
+			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
 			return new G1Dat(g1Header, imageTable);
 		}
 
 		// load file
-		public ILocoObject LoadFull(string filename, bool loadExtra = true)
+		public static ILocoObject LoadFull(string filename, ILogger? logger = null, bool loadExtra = true)
 		{
+			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
+
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 
 			// make openlocotool useful objects
@@ -57,7 +59,7 @@ namespace OpenLocoTool.DatFileParsing
 			if (locoStruct == null)
 			{
 				Debugger.Break();
-				throw new NullReferenceException("loco object was null");
+				throw new NullReferenceException($"{filename} was unable to be decoded");
 			}
 
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
@@ -69,8 +71,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			if (checksum != s5Header.Checksum)
 			{
-				//throw new ArgumentException($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
-				logger.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
+				logger?.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
 			}
 
 			// every object has a string table
@@ -90,7 +91,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			// some objects have graphics data
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
 			var newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
 
@@ -278,26 +279,21 @@ namespace OpenLocoTool.DatFileParsing
 			return File.ReadAllBytes(filename);
 		}
 
-		public static S5Header LoadHeader(string filename)
+		public static S5Header LoadHeader(string filename, ILogger? logger)
 		{
 			if (!File.Exists(filename))
 			{
-				//Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
-
-				throw new InvalidOperationException($"File doesn't exist: {filename}");
+				logger?.Error($"Path doesn't exist: {filename}");
 			}
 
-			//Logger.Log(LogLevel.Info, $"Loading header for {filename}");
-			var size = S5Header.StructLength;
-			var data = new byte[size];
+			logger?.Info($"Loading header for {filename}");
 
-			using (var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
-			{
-				var bytesRead = fs.Read(data, 0, size);
-				return bytesRead != size
-					? throw new InvalidOperationException($"bytes read ({bytesRead}) didn't match bytes expected ({size})")
+			using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
+			using var reader = new BinaryReader(fileStream);
+			var data = reader.ReadBytes(S5Header.StructLength);
+			return data.Length != S5Header.StructLength
+					? throw new InvalidOperationException($"bytes read ({data.Length}) didn't match bytes expected ({S5Header.StructLength})")
 					: S5Header.Read(data);
-			}
 		}
 
 		public static ILocoStruct GetLocoStruct(ObjectType objectType, ReadOnlySpan<byte> data)

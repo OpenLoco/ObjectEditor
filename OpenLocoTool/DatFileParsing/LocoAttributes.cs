@@ -30,4 +30,9 @@
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
 	public class LocoStructVariableLoadAttribute : Attribute
 	{ }
+	
+	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
+	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
+	public class LocoStructZeroAttribute : Attribute
+	{ }
 }

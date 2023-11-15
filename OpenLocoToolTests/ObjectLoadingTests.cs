@@ -14,7 +14,7 @@ namespace OpenLocoToolTests
 			var fileSize = new FileInfo(filename).Length;
 			var logger = new OpenLocoToolCommon.Logger();
 			var ssr = new SawyerStreamReader(logger);
-			var loaded = ssr.LoadFull(filename);
+			var loaded = SawyerStreamReader.LoadFull(filename);
 
 			Assert.That(loaded.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 

@@ -41,10 +41,7 @@ namespace OpenLocoToolGui
 			return bytes;
 		}
 
-		static byte ColorToPaletteIndex(Color c)
-		{
-			return 0;
-		}
+		static byte ColorToPaletteIndex(Color c) => 0;
 	}
 
 	public static class ImageHelpers

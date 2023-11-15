@@ -5,12 +5,9 @@ namespace OpenLocoToolGui
 {
 	public partial class StringTableUserControl : UserControl
 	{
-		private BindingList<string> blKeys = new BindingList<string>();
+		private readonly BindingList<string> blKeys = [];
 
-		public StringTableUserControl()
-		{
-			InitializeComponent();
-		}
+		public StringTableUserControl() => InitializeComponent();
 
 		public void SetDataBinding(Dictionary<string, Dictionary<LanguageId, string>> data)
 		{

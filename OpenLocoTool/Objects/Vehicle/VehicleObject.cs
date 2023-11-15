@@ -12,9 +12,9 @@ namespace OpenLocoTool.Objects
 		public static ObjectType ObjectType => ObjectType.Vehicle;
 		public const int StructSize = 0x15E;
 		public const int MaxBodySprites = 4;
-		public List<uint16_t> CargoMatchFlags { get; set; } = new();
+		public List<uint16_t> CargoMatchFlags { get; set; } = [];
 
-		public List<CargoObject> CompatibleCargo { get; set; } = new();
+		public List<CargoObject> CompatibleCargo { get; set; } = [];
 
 		public VehicleObject(/*ushort name,*/ TransportMode mode, VehicleType type, byte var_04, byte trackType, byte numMods, byte costIndex, short costFactor, byte reliability, byte runCostIndex, short runCostFactor, byte colourType, byte numCompat, ushort[] compatibleVehicles, byte[] requiredTrackExtras, VehicleObjectUnk[] var_24, BodySprite[] bodySprites, BogieSprite[] bogieSprites, ushort power, short speed, short rackSpeed, ushort weight, VehicleObjectFlags flags, byte[] maxCargo, uint[] cargoTypes, byte[] cargoTypeSpriteOffsets, byte numSimultaneousCargoTypes, SimpleAnimation[] animation, byte var_113, ushort designed, ushort obsolete, byte rackRailType, DrivingSoundType drivingSoundType, byte[] pad_135, byte numStartSounds, byte[] startSounds)
 		{

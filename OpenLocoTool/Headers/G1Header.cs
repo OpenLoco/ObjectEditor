@@ -23,8 +23,8 @@ namespace OpenLocoTool.Headers
 		[property: LocoStructOffset(0x00)] uint32_t Offset,
 		[property: LocoStructOffset(0x04)] int16_t Width,
 		[property: LocoStructOffset(0x06)] int16_t Height,
-		[property: LocoStructOffset(0x08)] int16_t xOffset,
-		[property: LocoStructOffset(0x0A)] int16_t yOffset,
+		[property: LocoStructOffset(0x08)] int16_t XOffset,
+		[property: LocoStructOffset(0x0A)] int16_t YOffset,
 		[property: LocoStructOffset(0x0C)] G1ElementFlags Flags,
 		[property: LocoStructOffset(0x0E)] int16_t ZoomOffset
 	) : ILocoStruct

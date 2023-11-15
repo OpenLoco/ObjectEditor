@@ -2,10 +2,7 @@
 {
 	public partial class ProgressBarForm : Form
 	{
-		public ProgressBarForm()
-		{
-			InitializeComponent();
-		}
+		public ProgressBarForm() => InitializeComponent();
 
 		public void SetProgress(int value)
 		{

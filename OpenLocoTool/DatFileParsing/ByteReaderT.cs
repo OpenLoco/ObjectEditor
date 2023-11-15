@@ -23,19 +23,34 @@
 		public static T Read<T>(ReadOnlySpan<byte> data, int offset) where T : struct
 		{
 			if (typeof(T) == typeof(uint8_t))
+			{
 				return (T)(dynamic)Read_uint8t(data, offset);
+			}
+
 			if (typeof(T) == typeof(int8_t))
+			{
 				return (T)(dynamic)Read_int8t(data, offset);
+			}
 
 			if (typeof(T) == typeof(uint16_t))
+			{
 				return (T)(dynamic)Read_uint16t(data, offset);
+			}
+
 			if (typeof(T) == typeof(int16_t))
+			{
 				return (T)(dynamic)Read_int16t(data, offset);
+			}
 
 			if (typeof(T) == typeof(uint32_t))
+			{
 				return (T)(dynamic)Read_uint32t(data, offset);
+			}
+
 			if (typeof(T) == typeof(int32_t))
+			{
 				return (T)(dynamic)Read_int32t(data, offset);
+			}
 
 			throw new NotImplementedException("");
 		}

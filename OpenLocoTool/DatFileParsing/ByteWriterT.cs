@@ -23,22 +23,33 @@
 		public static void Write<T>(Span<byte> data, int offset, T val) where T : struct
 		{
 			if (typeof(T) == typeof(uint8_t))
+			{
 				Write_uint8t(data, offset, (uint8_t)(dynamic)val);
+			}
 			else if (typeof(T) == typeof(int8_t))
+			{
 				Write_int8t(data, offset, (int8_t)(dynamic)val);
-
+			}
 			else if (typeof(T) == typeof(uint16_t))
+			{
 				Write_uint16t(data, offset, (uint16_t)(dynamic)val);
+			}
 			else if (typeof(T) == typeof(int16_t))
+			{
 				Write_int16t(data, offset, (int16_t)(dynamic)val);
-
+			}
 			else if (typeof(T) == typeof(uint32_t))
+			{
 				Write_uint32t(data, offset, (uint32_t)(dynamic)val);
+			}
 			else if (typeof(T) == typeof(int32_t))
+			{
 				Write_int32t(data, offset, (int32_t)(dynamic)val);
-
+			}
 			else
+			{
 				throw new NotImplementedException($"{typeof(T)}");
+			}
 		}
 
 		public static T[] Write_Array<T>(Span<byte> data, int count, int offset = 0) where T : struct

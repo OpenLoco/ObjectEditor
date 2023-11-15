@@ -2,8 +2,8 @@
 {
 	public static class OriginalObjectFiles
 	{
-		public static readonly HashSet<string> Names = new()
-		{
+		public static readonly HashSet<string> Names =
+		[
 			"114",
 			"142",
 			"158",
@@ -548,6 +548,6 @@
 			"WWAKE1",
 			"YEW",
 			"YUKKA",
-		};
+		];
 	}
 }

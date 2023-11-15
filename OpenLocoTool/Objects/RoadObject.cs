@@ -26,7 +26,7 @@ namespace OpenLocoTool.Objects
 		Track = 1 << 1,
 		Slope = 1 << 2,
 		SteepSlope = 1 << 3,
-		Intersection = 1 << 2,
+		Intersection = 1 << 4,
 		OneSided = 1 << 5,
 		Overtake = 1 << 6,
 		StreetLights = 1 << 8,

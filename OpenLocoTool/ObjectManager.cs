@@ -5,13 +5,13 @@ namespace OpenLocoTool
 {
 	public static class SObjectManager
 	{
-		static readonly Dictionary<ObjectType, List<ILocoObject>> Objects = new();
+		static readonly Dictionary<ObjectType, List<ILocoObject>> Objects = [];
 
 		static SObjectManager()
 		{
 			foreach (var v in Enum.GetValues(typeof(ObjectType)))
 			{
-				Objects.Add((ObjectType)v, new List<ILocoObject>());
+				Objects.Add((ObjectType)v, []);
 			}
 		}
 

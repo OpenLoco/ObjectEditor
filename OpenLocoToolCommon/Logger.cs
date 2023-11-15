@@ -1,11 +1,8 @@
 ﻿namespace OpenLocoToolCommon
 {
-	public class LogAddedEventArgs : EventArgs
+	public class LogAddedEventArgs(LogLine log) : EventArgs
 	{
-		public readonly LogLine Log;
-
-		public LogAddedEventArgs(LogLine log)
-			=> Log = log;
+		public readonly LogLine Log = log;
 	}
 
 	public record LogLine
@@ -20,7 +17,7 @@
 
 	public class Logger : ILogger
 	{
-		public readonly List<LogLine> Logs = new();
+		public readonly List<LogLine> Logs = [];
 		public LogLevel Level = LogLevel.Info;
 
 		public event EventHandler<LogAddedEventArgs> LogAdded;

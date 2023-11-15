@@ -2,8 +2,8 @@
 {
 	public static class OriginalDataFiles
 	{
-		public static readonly HashSet<string> Names = new()
-		{
+		public static readonly HashSet<string> Names =
+		[
 			"Data/g1.DAT",
 			"plugin.dat",
 			"plugin2.dat",
@@ -59,6 +59,6 @@
 			"1.TMP",
 			"ObjData",
 			"Scenarios",
-		};
+		];
 	}
 }

@@ -114,12 +114,7 @@
 					arrLength = arrLengthAttr.Length;
 				}
 
-				var propVal = p.GetValue(obj);
-				if (propVal == null)
-				{
-					throw new NullReferenceException();
-				}
-
+				var propVal = p.GetValue(obj) ?? throw new NullReferenceException();
 				WriteT(buf, p.PropertyType, offsetAttr.Offset, propVal);
 			}
 

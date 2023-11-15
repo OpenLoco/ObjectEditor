@@ -99,7 +99,11 @@ namespace OpenLocoTool.Objects
 			{
 				var_1C.Add(ByteReaderT.Read_uint8t(remainingData[0..1], 0));
 				var ptr_1C = 0;
-				while (remainingData[ptr_1C++] != 0xFF) ;
+				while (remainingData[ptr_1C++] != 0xFF)
+				{
+					;
+				}
+
 				remainingData = remainingData[ptr_1C..];
 			}
 

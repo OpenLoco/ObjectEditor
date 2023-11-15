@@ -31,9 +31,11 @@ namespace OpenLocoTool.DatFileParsing
 			runningCount += ObjectHeader.StructLength;
 
 			// Decode Loco Struct
-			fullData = bytelist[..runningCount]
-				.Concat(SawyerStreamReader.Decode(objectHeader.Encoding, bytelist.AsSpan()[runningCount..(int)(runningCount + objectHeader.DataLength)]))
-				.ToArray();
+			fullData =
+			[
+				.. bytelist[..runningCount],
+				.. SawyerStreamReader.Decode(objectHeader.Encoding, bytelist.AsSpan()[runningCount..(int)(runningCount + objectHeader.DataLength)]),
+			];
 
 			var locoStruct = SawyerStreamReader.GetLocoStruct(s5Header.ObjectType, fullData.AsSpan()[runningCount..]);
 			if (locoStruct == null)
@@ -164,7 +166,6 @@ namespace OpenLocoTool.DatFileParsing
 				while (continuing);
 
 				var endIndexOfStringList = index + runningCount;
-				var nullIndex = 0;
 				var elementRoot = new Annotation("Element " + i, root, runningCount, index);
 				annotations.Add(elementRoot);
 
@@ -172,7 +173,7 @@ namespace OpenLocoTool.DatFileParsing
 				{
 					annotations.Add(new Annotation(((LanguageId)fullData[runningCount]).ToString(), elementRoot, runningCount, 1));
 					runningCount++;
-					nullIndex = Array.IndexOf(fullData[runningCount..], (byte)0);
+					var nullIndex = Array.IndexOf(fullData[runningCount..], (byte)0);
 
 					var stringElement = Encoding.ASCII.GetString(fullData[runningCount..(runningCount + nullIndex)]);
 
@@ -187,7 +188,7 @@ namespace OpenLocoTool.DatFileParsing
 			return runningCount;
 		}
 
-		static IList<Annotation> AnnotateProperties(object o, int runningCount = 0, Annotation? root = null)
+		static List<Annotation> AnnotateProperties(object o, int runningCount = 0, Annotation? root = null)
 		{
 			var annotations = new List<Annotation>();
 

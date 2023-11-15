@@ -14,14 +14,14 @@ namespace OpenLocoToolTests
 			var fileSize = new FileInfo(filename).Length;
 			var logger = new OpenLocoToolCommon.Logger();
 			var ssr = new SawyerStreamReader(logger);
-			var loaded = ssr.LoadFull(filename);
+			var loaded = SawyerStreamReader.LoadFull(filename);
 
 			Assert.That(loaded.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 
 			return loaded;
 		}
 
-		T LoadObject<T>(string filename)
+		static T LoadObject<T>(string filename)
 			=> (T)LoadObject(filename).Object;
 
 		//[Test]
@@ -272,16 +272,10 @@ namespace OpenLocoToolTests
 		}
 
 		[Test]
-		public void LoadIndustryObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadIndustryObject() => Assert.Fail();
 
 		[Test]
-		public void LoadInterfaceSkinObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadInterfaceSkinObject() => Assert.Fail();
 
 		[Test]
 		public void LoadLandObject()
@@ -365,16 +359,10 @@ namespace OpenLocoToolTests
 		}
 
 		[Test]
-		public void LoadRoadObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadRoadObject() => Assert.Fail();
 
 		[Test]
-		public void LoadRoadStationObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadRoadStationObject() => Assert.Fail();
 
 		[Test]
 		public void LoadScaffoldingObject()
@@ -415,16 +403,10 @@ namespace OpenLocoToolTests
 		}
 
 		[Test]
-		public void LoadSoundObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadSoundObject() => Assert.Fail();
 
 		[Test]
-		public void LoadSteamObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadSteamObject() => Assert.Fail();
 
 		[Test]
 		public void LoadStreetLightObject()
@@ -441,10 +423,7 @@ namespace OpenLocoToolTests
 		}
 
 		[Test]
-		public void LoadTownNamesObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadTownNamesObject() => Assert.Fail();
 
 		[Test]
 		public void LoadTrackExtraObject()
@@ -464,22 +443,13 @@ namespace OpenLocoToolTests
 		}
 
 		[Test]
-		public void LoadTrackObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadTrackObject() => Assert.Fail();
 
 		[Test]
-		public void LoadTrainSignalObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadTrainSignalObject() => Assert.Fail();
 
 		[Test]
-		public void LoadTrainStationObject()
-		{
-			Assert.Fail();
-		}
+		public void LoadTrainStationObject() => Assert.Fail();
 
 		[Test]
 		public void LoadTreeObject()

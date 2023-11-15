@@ -62,14 +62,14 @@ namespace OpenLocoToolGui
 
 		// DAT Dump viewer fields
 		IList<Annotation> DATDumpAnnotations;
-		readonly IDictionary<string, (int, int)> DATDumpAnnotationIdentifiers = new Dictionary<string, (int, int)>();
-		readonly IDictionary<string, TreeNode> imageHeaderIndexToNode = new Dictionary<string, TreeNode>();
-		readonly IDictionary<string, TreeNode> imageDataIndexToNode = new Dictionary<string, TreeNode>();
+		readonly Dictionary<string, (int, int)> DATDumpAnnotationIdentifiers = [];
+		readonly Dictionary<string, TreeNode> imageHeaderIndexToNode = [];
+		readonly Dictionary<string, TreeNode> imageDataIndexToNode = [];
 		const int bytesPerDumpLine = 32;
 		const int addressStringSizeBytes = 8;
 		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
 		const int dumpWordSize = 4;
-		readonly IDictionary<string, Action<string>> tvUniqueLoadValues = new Dictionary<string, Action<string>>();
+		readonly Dictionary<string, Action<string>> tvUniqueLoadValues = [];
 		// End DAT Dump viewer fields
 
 		const int imagesPerPage = 50;
@@ -286,7 +286,7 @@ namespace OpenLocoToolGui
 				}
 
 				var objDataNode = new TreeNode("ObjData");
-				objDataNode.Nodes.AddRange(nodesToAdd.ToArray());
+				objDataNode.Nodes.AddRange([.. nodesToAdd]);
 				tvObjType.Nodes.Add(objDataNode);
 				tvObjType.Sort();
 			}
@@ -305,13 +305,14 @@ namespace OpenLocoToolGui
 			if (model.Settings.ObjDataDirectories != null)
 			{
 				// regenerate them
-				List<ToolStripMenuItem> newObjDirs = new();
+				List<ToolStripMenuItem> newObjDirs = [];
 				foreach (var objDir in model.Settings.ObjDataDirectories)
 				{
 					var tsmi = new ToolStripMenuItem(objDir + (model.Settings.ObjDataDirectory == objDir ? " (Current)" : string.Empty));
 					tsmi.Click += (sender, e) => setObjectDirectoryToolStripMenuItem_ClickCore(objDir);
 					newObjDirs.Add(tsmi);
 				}
+
 				objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(newObjDirs.ToArray());
 			}
 
@@ -324,13 +325,14 @@ namespace OpenLocoToolGui
 			if (model.Settings.DataDirectories != null)
 			{
 				// regenerate them
-				List<ToolStripMenuItem> newDataDirs = new();
+				List<ToolStripMenuItem> newDataDirs = [];
 				foreach (var dataDir in model.Settings.DataDirectories)
 				{
 					var tsmi = new ToolStripMenuItem(dataDir + (model.Settings.DataDirectory == dataDir ? " (Current)" : string.Empty));
 					tsmi.Click += (sender, e) => setDataDirectoryToolStripMenuItem_ClickCore(dataDir);
 					newDataDirs.Add(tsmi);
 				}
+
 				dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(newDataDirs.ToArray());
 			}
 		}
@@ -415,9 +417,7 @@ namespace OpenLocoToolGui
 		}
 
 		void tbFileFilter_TextChanged(object sender, EventArgs e)
-		{
-			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
-		}
+			=> InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 
 		void LoadDataDump(string path, bool isG1 = false)
 		{
@@ -446,11 +446,14 @@ namespace OpenLocoToolGui
 				tvDATDumpAnnotations.SuspendLayout();
 				tvDATDumpAnnotations.Nodes.Clear();
 				var currentParent = new TreeNode();
-				IDictionary<string, TreeNode> parents = new Dictionary<string, TreeNode>();
+
+				static string constructAnnotationText(Annotation annotation)
+					=> string.Format("{0} (0x{1:X}-0x{2:X})", annotation.Name, annotation.Start, annotation.End);
+				
+				var parents = new Dictionary<string, TreeNode>();
 
 				foreach (var annotation in DATDumpAnnotations)
 				{
-					var constructAnnotationText = (Annotation annotation) => string.Format("{0} (0x{1:X}-0x{2:X})", annotation.Name, annotation.Start, annotation.End);
 					var annotationText = constructAnnotationText(annotation);
 					parents[annotationText] = new TreeNode(annotationText);
 					DATDumpAnnotationIdentifiers[annotationText] = (annotation.Start, annotation.End);
@@ -496,11 +499,11 @@ namespace OpenLocoToolGui
 			}
 
 			var nodeText = e.Node.Text.ToLower();
-			if (tvUniqueLoadValues.ContainsKey(nodeText)) // for custom functions for the individual data files
+			if (tvUniqueLoadValues.TryGetValue(nodeText, out var value)) // for custom functions for the individual data files
 			{
-				tvUniqueLoadValues[nodeText].Invoke(e.Node.Name);
+				value.Invoke(e.Node.Name);
 			}
-			else if (Path.GetExtension(e.Node.Name).ToLower() == ".dat")
+			else if (Path.GetExtension(e.Node.Name).Equals(".dat", StringComparison.CurrentCultureIgnoreCase))
 			{
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
@@ -567,11 +570,13 @@ namespace OpenLocoToolGui
 					Dock = DockStyle.Bottom,
 				};
 
-				var tb = new TextBox();
-				tb.MinimumSize = new Size(96, 16);
-				tb.Text = $"i={count} w={g1Elements[count].Width} h={g1Elements[count].Height}";
+				var tb = new TextBox
+				{
+					MinimumSize = new Size(96, 16),
+					Text = $"i={count} w={g1Elements[count].Width} h={g1Elements[count].Height}",
+					Dock = DockStyle.Top
+				};
 				count++;
-				tb.Dock = DockStyle.Top;
 
 				panel.Controls.Add(tb);
 				panel.Controls.Add(pb);
@@ -627,7 +632,7 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		Bitmap? G1ElementToBitmap(G1Element32 currElement, Color[] palette, bool useTransparency = false)
+		static Bitmap? G1ElementToBitmap(G1Element32 currElement, Color[] palette, bool useTransparency = false)
 		{
 			var imageData = currElement.ImageData;
 			var dstImg = new Bitmap(currElement.Width, currElement.Height);
@@ -678,9 +683,7 @@ namespace OpenLocoToolGui
 		}
 
 		private void setPaletteToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			SelectNewPalette();
-		}
+			=> SelectNewPalette();
 
 		private void RefreshObjectUI()
 		{
@@ -739,9 +742,7 @@ namespace OpenLocoToolGui
 		}
 
 		private void btnPagePrevious_Click(object sender, EventArgs e)
-		{
-			CurrentUIImagePageNumber = Math.Max(CurrentUIImagePageNumber - 1, 0);
-		}
+			=> CurrentUIImagePageNumber = Math.Max(CurrentUIImagePageNumber - 1, 0);
 
 		private void btnPageNext_Click(object sender, EventArgs e)
 		{
@@ -753,7 +754,7 @@ namespace OpenLocoToolGui
 
 		private void dataDumpAnnotations_AfterSelect(object sender, TreeViewEventArgs e)
 		{
-			var dumpPositionToRTBPosition = (int position) => rtbDATDumpView.GetFirstCharIndexFromLine(
+			int dumpPositionToRTBPosition(int position) => rtbDATDumpView.GetFirstCharIndexFromLine(
 				position / bytesPerDumpLine)
 				+ (position % bytesPerDumpLine * 2)            // Bytes are displayed 2 characters wide
 				+ (position % bytesPerDumpLine / dumpWordSize) // Every word is separated by an extra space
@@ -776,11 +777,11 @@ namespace OpenLocoToolGui
 			{
 				var index = currentUIImages.IndexOf(pb);
 				var keys = "Header " + (index + 1);
-				if (index >= 0 && imageHeaderIndexToNode.ContainsKey(keys))
+				if (index >= 0 && imageHeaderIndexToNode.TryGetValue(keys, out var value))
 				{
 					tcObjectOverview.SelectedIndex = 1;
-					tvDATDumpAnnotations.SelectedNode = imageHeaderIndexToNode[keys];
-					dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(imageHeaderIndexToNode[keys]));
+					tvDATDumpAnnotations.SelectedNode = value;
+					dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(value));
 					tvDATDumpAnnotations.Focus();
 				}
 			}
@@ -792,19 +793,16 @@ namespace OpenLocoToolGui
 			{
 				var index = currentUIImages.IndexOf(pb);
 				var keys = "Image " + (index + 1);
-				if (index >= 0 && imageDataIndexToNode.ContainsKey(keys))
+				if (index >= 0 && imageDataIndexToNode.TryGetValue(keys, out var value))
 				{
 					tcObjectOverview.SelectedIndex = 1;
-					tvDATDumpAnnotations.SelectedNode = imageDataIndexToNode[keys];
-					dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(imageDataIndexToNode[keys]));
+					tvDATDumpAnnotations.SelectedNode = value;
+					dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(value));
 					tvDATDumpAnnotations.Focus();
 				}
 			}
 		}
 
-		private void cbVanillaObjects_CheckedChanged(object sender, EventArgs e)
-		{
-			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
-		}
+		private void cbVanillaObjects_CheckedChanged(object sender, EventArgs e) => InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 	}
 }

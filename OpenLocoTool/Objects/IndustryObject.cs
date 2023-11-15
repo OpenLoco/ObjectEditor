@@ -43,8 +43,8 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x02)]
 
 	public record BuildingPartAnimation(
-		[property: LocoStructOffset(0x00)] uint8_t numFrames,     // Must be a power of 2 (0 = no part animation, could still have animation sequence)
-		[property: LocoStructOffset(0x01)] uint8_t animationSpeed // Also encodes in bit 7 if the animation is position modified
+		[property: LocoStructOffset(0x00)] uint8_t NumFrames,     // Must be a power of 2 (0 = no part animation, could still have animation sequence)
+		[property: LocoStructOffset(0x01)] uint8_t AnimationSpeed // Also encodes in bit 7 if the animation is position modified
 		) : ILocoStruct
 	{
 		public static int StructSize => 0x2;
@@ -65,8 +65,8 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x04)]
 
 	public record IndustryObjectProductionRateRange(
-		[property: LocoStructOffset(0x00)] uint16_t min,
-		[property: LocoStructOffset(0x02)] uint16_t max
+		[property: LocoStructOffset(0x00)] uint16_t Min,
+		[property: LocoStructOffset(0x02)] uint16_t Max
 		) : ILocoStruct
 	{
 		public static int StructSize => 0x04;
@@ -126,13 +126,13 @@ namespace OpenLocoTool.Objects
 		public static ObjectType ObjectType => ObjectType.Industry;
 		public static int StructSize => 0xF4;
 
-		public static int AnimationSequencesSize = 4;
+		public const int AnimationSequencesSize = 4;
 
 		public const int MaxProducedCargoType = 2;
 		public const int MaxRequiredCargoType = 3;
 
-		public List<S5Header> ProducedCargo { get; set; } = new();
-		public List<S5Header> RequiredCargo { get; set; } = new();
+		public List<S5Header> ProducedCargo { get; set; } = [];
+		public List<S5Header> RequiredCargo { get; set; } = [];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
@@ -183,6 +183,7 @@ namespace OpenLocoTool.Objects
 				{
 					ProducedCargo.Add(header);
 				}
+
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
@@ -194,6 +195,7 @@ namespace OpenLocoTool.Objects
 				{
 					RequiredCargo.Add(header);
 				}
+
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 

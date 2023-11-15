@@ -1,37 +1,27 @@
 ﻿namespace OpenLocoTool.DatFileParsing
 {
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
-	public class LocoArrayLengthAttribute : Attribute
+	public class LocoArrayLengthAttribute(int length) : Attribute
 	{
-		public LocoArrayLengthAttribute(int length) => Length = length;
-		public int Length { get; }
+		public int Length => length;
 	}
 
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
-	public class LocoStructOffsetAttribute : Attribute
+	public class LocoStructOffsetAttribute(int offset) : Attribute
 	{
-		public LocoStructOffsetAttribute(int offset) => Offset = offset;
-
-		public int Offset { get; }
+		public int Offset => offset;
 	}
 
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
-	public class LocoStructSizeAttribute : Attribute
+	public class LocoStructSizeAttribute(int size) : Attribute
 	{
-		public LocoStructSizeAttribute(int size) => Size = size;
-
-		public int Size { get; }
+		public int Size => size;
 	}
 
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
-	public class LocoStringTableAttribute : Attribute
+	public class LocoStringTableAttribute(params string[] names) : Attribute
 	{
-		public LocoStringTableAttribute(params string[] names)
-		{
-			Names = names;
-		}
-
-		public string[] Names { get; }
+		public string[] Names => names;
 
 		public int Count => Names.Length;
 	}
@@ -39,5 +29,10 @@
 	// basically a 'skip' attribute to allow deferred loading for variable data
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
 	public class LocoStructVariableLoadAttribute : Attribute
+	{ }
+	
+	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
+	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
+	public class LocoStructZeroAttribute : Attribute
 	{ }
 }

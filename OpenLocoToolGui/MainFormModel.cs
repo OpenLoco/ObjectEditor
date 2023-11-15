@@ -8,6 +8,7 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using OpenLocoTool.Headers;
+using System.Diagnostics;
 
 namespace OpenLocoToolGui
 {
@@ -17,9 +18,9 @@ namespace OpenLocoToolGui
 		private readonly SawyerStreamReader reader;
 		private readonly SawyerStreamWriter writer;
 
-		public HeaderIndex HeaderIndex { get; private set; } = new();
+		public HeaderIndex HeaderIndex { get; private set; } = [];
 
-		public ObjectCache ObjectCache { get; private set; } = new();
+		public ObjectCache ObjectCache { get; private set; } = [];
 
 		//public OpenLocoTool.ObjectManager ObjectManager { get; private set; } = new();
 
@@ -81,9 +82,10 @@ namespace OpenLocoToolGui
 			{
 				logger.Debug($"Preloading dependent {depObjectType} objects");
 			}
+
 			foreach (var dep in HeaderIndex.Where(kvp => dependentObjectTypes.Contains(kvp.Value.ObjectType)))
 			{
-				reader.LoadFull(dep.Key);
+				SawyerStreamReader.LoadFull(dep.Key);
 			}
 		}
 
@@ -144,7 +146,8 @@ namespace OpenLocoToolGui
 
 		public void SaveSettings()
 		{
-			var text = JsonSerializer.Serialize(Settings, new JsonSerializerOptions() { WriteIndented = true });
+			var options = GetOptions();
+			var text = JsonSerializer.Serialize(Settings, options);
 			File.WriteAllText(SettingsFile, text);
 		}
 
@@ -154,13 +157,18 @@ namespace OpenLocoToolGui
 			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
 			ConcurrentDictionary<string, ILocoObject> ccObjectCache = new(); // key is full path/filename
 
-			var total = (float)allFiles.Length;
 			var count = 0;
+
+			logger.Info($"Creating index on {allFiles.Length} files");
+			var sw = new Stopwatch();
+			sw.Start();
+
 			Parallel.ForEach(allFiles, (file) =>
+			//foreach (var file in allFiles)
 			{
 				try
 				{
-					var locoObject = reader.LoadFull(file);
+					var locoObject = SawyerStreamReader.LoadFull(file);
 					if (!ccObjectCache.TryAdd(file, locoObject))
 					{
 						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
@@ -168,7 +176,9 @@ namespace OpenLocoToolGui
 
 					VehicleType? veh = null;
 					if (locoObject.Object is VehicleObject vo)
+					{
 						veh = vo.Type;
+					}
 
 					var indexObjectHeader = new IndexObjectHeader(locoObject.S5Header.Name, locoObject.S5Header.ObjectType, veh);
 					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
@@ -178,23 +188,25 @@ namespace OpenLocoToolGui
 				}
 				catch (Exception ex)
 				{
-					logger.Error(ex);
+					logger.Error($"Failed to load \"{file}\"", ex);
 				}
 				finally
 				{
 					Interlocked.Increment(ref count);
-					progress.Report(count / total);
+					progress.Report(count / (float)allFiles.Length);
 				}
+			//}
 			});
 
 			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+			sw.Stop();
+			logger.Info($"Finished creating index. Time={sw.Elapsed}");
 		}
 
 		public void SaveFile(string path, ILocoObject obj)
-		{
-			writer.Save(path, obj);
-		}
+			=> writer.Save(path, obj);
 
 		public bool LoadDataDirectory(string directory)
 		{
@@ -203,6 +215,7 @@ namespace OpenLocoToolGui
 				logger.Warning("Invalid directory");
 				return false;
 			}
+
 			Settings.DataDirectory = directory;
 
 			// load G1 only for now
@@ -249,15 +262,18 @@ namespace OpenLocoToolGui
 			{
 				logger.Info("Recreating index file");
 				CreateIndex(allFiles, progress);
-				SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex);
+				SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex, GetOptions());
 			}
 
 			SaveSettings();
 		}
 
-		static void SerialiseHeaderIndexToFile(string filename, HeaderIndex headerIndex)
+		private static JsonSerializerOptions GetOptions()
+			=> new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
+
+		static void SerialiseHeaderIndexToFile(string filename, HeaderIndex headerIndex, JsonSerializerOptions options)
 		{
-			var json = JsonSerializer.Serialize(headerIndex, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, });
+			var json = JsonSerializer.Serialize(headerIndex, options);
 			File.WriteAllText(filename, json);
 		}
 
@@ -269,7 +285,8 @@ namespace OpenLocoToolGui
 			}
 
 			var json = File.ReadAllText(filename);
-			return JsonSerializer.Deserialize<HeaderIndex>(json, new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, }) ?? new();
+
+			return JsonSerializer.Deserialize<HeaderIndex>(json, GetOptions()) ?? [];
 		}
 
 		public ILocoObject? LoadAndCacheObject(string filename)
@@ -279,13 +296,13 @@ namespace OpenLocoToolGui
 				return null;
 			}
 
-			if (ObjectCache.ContainsKey(filename))
+			if (ObjectCache.TryGetValue(filename, out var value))
 			{
-				return ObjectCache[filename];
+				return value;
 			}
 			else
 			{
-				var obj = reader.LoadFull(filename);
+				var obj = SawyerStreamReader.LoadFull(filename);
 				ObjectCache.TryAdd(filename, obj);
 				return obj;
 			}

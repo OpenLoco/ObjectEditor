@@ -39,7 +39,7 @@ namespace OpenLocoTool.Headers
 
 		public static S5Header Read(ReadOnlySpan<byte> data)
 		{
-			Verify.Equals(data.Length, StructLength);
+			Verify.AreEqual(data.Length, StructLength);
 
 			var flags = BitConverter.ToUInt32(data[0..4]);
 			var name = System.Text.Encoding.ASCII.GetString(data[4..12]);

@@ -51,7 +51,7 @@ namespace OpenLocoToolCommon
 					var fieldValue = field.GetValue(obj);
 
 					sb.Append(fieldName);
-					sb.Append("=");
+					sb.Append('=');
 					sb.Append(ToString(fieldValue));
 
 					if (i < fields.Length - 1)
@@ -67,7 +67,7 @@ namespace OpenLocoToolCommon
 					var propertyValue = property.GetValue(obj);
 
 					sb.Append(propertyName);
-					sb.Append("=");
+					sb.Append('=');
 					sb.Append(ToString(propertyValue));
 
 					if (i < properties.Length - 1)

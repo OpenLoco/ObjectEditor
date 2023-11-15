@@ -8,13 +8,8 @@ using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public class SawyerStreamReader
+	public class SawyerStreamReader(ILogger logger)
 	{
-		private readonly ILogger Logger;
-
-		public SawyerStreamReader(ILogger logger)
-			=> Logger = logger;
-
 		static uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
 			static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
@@ -39,13 +34,15 @@ namespace OpenLocoTool.DatFileParsing
 		{
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
-			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
+			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
 			return new G1Dat(g1Header, imageTable);
 		}
 
 		// load file
-		public ILocoObject LoadFull(string filename, bool loadExtra = true)
+		public static ILocoObject LoadFull(string filename, ILogger? logger = null, bool loadExtra = true)
 		{
+			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
+
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 
 			// make openlocotool useful objects
@@ -62,7 +59,7 @@ namespace OpenLocoTool.DatFileParsing
 			if (locoStruct == null)
 			{
 				Debugger.Break();
-				throw new NullReferenceException("loco object was null");
+				throw new NullReferenceException($"{filename} was unable to be decoded");
 			}
 
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
@@ -74,8 +71,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			if (checksum != s5Header.Checksum)
 			{
-				//throw new ArgumentException($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
-				Logger.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
+				logger?.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
 			}
 
 			// every object has a string table
@@ -95,7 +91,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			// some objects have graphics data
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			Logger.Log(LogLevel.Info, $"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
 			var newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
 
@@ -107,10 +103,9 @@ namespace OpenLocoTool.DatFileParsing
 
 		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
-			var stringTableAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringTableAttribute), inherit: false) as LocoStringTableAttribute;
 			var stringTable = new StringTable();
 
-			if (data.Length == 0 || stringTableAttr == null || stringTableAttr.Count == 0)
+			if (data.Length == 0 || locoStruct.GetType().GetCustomAttribute(typeof(LocoStringTableAttribute), inherit: false) is not LocoStringTableAttribute stringTableAttr || stringTableAttr.Count == 0)
 			{
 				return (stringTable, 0);
 			}
@@ -120,7 +115,7 @@ namespace OpenLocoTool.DatFileParsing
 			for (var i = 0; i < stringTableAttr.Count; ++i)
 			{
 				var stringName = stringTableAttr.Names[i];
-				stringTable.Add(stringName, new());
+				stringTable.Add(stringName, []);
 				var languageDict = stringTable[stringName];
 
 				for (; ptr < data.Length && data[ptr] != 0xFF;)
@@ -128,17 +123,16 @@ namespace OpenLocoTool.DatFileParsing
 					var lang = (LanguageId)data[ptr++];
 					var ini = ptr;
 
-					while (data[ptr++] != '\0') ;
+					while (data[ptr++] != '\0')
+					{
+						;
+					}
 
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-					if (languageDict.ContainsKey(lang))
+					if (!languageDict.TryAdd(lang, str))
 					{
 						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
 						break;
-					}
-					else
-					{
-						languageDict.Add(lang, str);
 					}
 				}
 
@@ -264,7 +258,9 @@ namespace OpenLocoTool.DatFileParsing
 					}
 
 					if (isEndOfLine)
+					{
 						break;
+					}
 				}
 			}
 
@@ -283,29 +279,21 @@ namespace OpenLocoTool.DatFileParsing
 			return File.ReadAllBytes(filename);
 		}
 
-		public static S5Header LoadHeader(string filename)
+		public static S5Header LoadHeader(string filename, ILogger? logger)
 		{
 			if (!File.Exists(filename))
 			{
-				//Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
-
-				throw new InvalidOperationException($"File doesn't exist: {filename}");
+				logger?.Error($"Path doesn't exist: {filename}");
 			}
 
-			//Logger.Log(LogLevel.Info, $"Loading header for {filename}");
-			var size = S5Header.StructLength;
-			var data = new byte[size];
+			logger?.Info($"Loading header for {filename}");
 
-			using (var fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
-			{
-				var bytesRead = fs.Read(data, 0, size);
-				if (bytesRead != size)
-				{
-					throw new InvalidOperationException($"bytes read ({bytesRead}) didn't match bytes expected ({size})");
-				}
-
-				return S5Header.Read(data);
-			}
+			using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
+			using var reader = new BinaryReader(fileStream);
+			var data = reader.ReadBytes(S5Header.StructLength);
+			return data.Length != S5Header.StructLength
+					? throw new InvalidOperationException($"bytes read ({data.Length}) didn't match bytes expected ({S5Header.StructLength})")
+					: S5Header.Read(data);
 		}
 
 		public static ILocoStruct GetLocoStruct(ObjectType objectType, ReadOnlySpan<byte> data)
@@ -349,22 +337,19 @@ namespace OpenLocoTool.DatFileParsing
 			};
 
 		// taken from openloco's SawyerStreamReader::readChunk
-		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
+		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data) => encoding switch
 		{
-			return encoding switch
-			{
-				SawyerEncoding.Uncompressed => data.ToArray(),
-				SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data),
-				SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
-				SawyerEncoding.Rotate => DecodeRotate(data),
-				_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
-			};
-		}
+			SawyerEncoding.Uncompressed => data.ToArray(),
+			SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data),
+			SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
+			SawyerEncoding.Rotate => DecodeRotate(data),
+			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
+		};
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
 		private static byte[] DecodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
-			List<byte> buffer = new();
+			List<byte> buffer = [];
 
 			for (var i = 0; i < data.Length; ++i)
 			{
@@ -411,7 +396,7 @@ namespace OpenLocoTool.DatFileParsing
 		// taken from openloco SawyerStreamReader::decodeRunLengthMulti
 		private static byte[] DecodeRunLengthMulti(ReadOnlySpan<byte> data)
 		{
-			List<byte> buffer = new();
+			List<byte> buffer = [];
 
 			for (var i = 0; i < data.Length; i++)
 			{
@@ -461,7 +446,7 @@ namespace OpenLocoTool.DatFileParsing
 
 		private static byte[] DecodeRotate(ReadOnlySpan<byte> data)
 		{
-			List<byte> buffer = new();
+			List<byte> buffer = [];
 
 			byte code = 1;
 			for (var i = 0; i < data.Length; i++)

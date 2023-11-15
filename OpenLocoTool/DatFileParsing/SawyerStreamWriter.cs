@@ -2,21 +2,13 @@
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public class SawyerStreamWriter
+	public class SawyerStreamWriter(ILogger logger)
 	{
-		private readonly ILogger Logger;
-
-		public SawyerStreamWriter(ILogger logger)
-			=> Logger = logger;
-
 		public void Save(string filepath, ILocoObject locoObject)
 		{
-			if (locoObject == null)
-			{
-				throw new ArgumentNullException(nameof(locoObject));
-			}
+			ArgumentNullException.ThrowIfNull(locoObject);
 
-			Logger.Log(LogLevel.Info, $"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
+			logger.Info($"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
 
 			var objBytes = WriteLocoObject(locoObject);
 
@@ -70,7 +62,7 @@ namespace OpenLocoTool.DatFileParsing
 				//case SawyerEncoding.rotate:
 				//	return encodeRotate(data);
 				default:
-					Logger.Log(LogLevel.Error, "Unknown chunk encoding scheme");
+					logger.Error("Unknown chunk encoding scheme");
 					throw new InvalidDataException("Unknown encoding");
 			}
 		}
@@ -89,7 +81,7 @@ namespace OpenLocoTool.DatFileParsing
 		// not sure why it doesn't work, but it doesn't work. gets the first 10 or so bytes correct for SIGC3.dat but then fails
 		private static Span<byte> EncodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
-			List<byte> buffer = new();
+			List<byte> buffer = [];
 			var src = 0; // ptr
 			var srcNormStart = 0; // ptr
 			var srcEnd = data.Length;

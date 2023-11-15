@@ -11,7 +11,7 @@ namespace OpenLocoToolGui
 			set
 			{
 				objectDirectory = value;
-				ObjDataDirectories ??= new();
+				ObjDataDirectories ??= [];
 				ObjDataDirectories.Add(objectDirectory);
 			}
 		}
@@ -25,7 +25,7 @@ namespace OpenLocoToolGui
 			set
 			{
 				dataDirectory = value;
-				DataDirectories ??= new();
+				DataDirectories ??= [];
 				DataDirectories.Add(dataDirectory);
 			}
 		}

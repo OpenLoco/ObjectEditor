@@ -21,7 +21,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0C)] uint8_t SlopedYawAccuracy,    // 0 - 3 accuracy of yaw on slopes built from numSlopedRotationFrames  (0 = lowest accuracy 3bits, 3 = highest accuracy 6bits)
 		[property: LocoStructOffset(0x0D)] uint8_t NumFramesPerRotation, // numAnimationFrames * numCargoFrames * numRollFrames + 1 (for braking lights)
 		[property: LocoStructOffset(0x0E)] uint32_t FlatImageId,
-		[property: LocoStructOffset(0x12)] uint32_t unkImageId,
+		[property: LocoStructOffset(0x12)] uint32_t UnkImageId,
 		[property: LocoStructOffset(0x16)] uint32_t GentleImageId,
 		[property: LocoStructOffset(0x1A)] uint32_t SteepImageId
 		) : ILocoStruct

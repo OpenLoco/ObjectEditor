@@ -106,6 +106,14 @@
 					continue;
 				}
 
+				// write 0s to properties that need it
+				var skip = AttributeHelper.Get<LocoStructSkipReadAttribute>(p);
+				if (skip != null)
+				{
+					WriteT(buf, p.PropertyType, offsetAttr.Offset, 0);
+					continue;
+				}
+
 				// special array handling
 				var arrLength = 0;
 				if (p.PropertyType.IsArray)

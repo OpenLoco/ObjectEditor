@@ -47,7 +47,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xBA)]
-	[LocoStringTable("Name")]
+	////[LocoStringTable("Name")]
 	public record AirportObject(
 		//[property: LocoStructOffset(0x00)] string_id Name,
 		[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,

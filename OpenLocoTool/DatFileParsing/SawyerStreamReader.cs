@@ -104,17 +104,18 @@ namespace OpenLocoTool.DatFileParsing
 		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
 			var stringTable = new StringTable();
+			var stringAttrs = AttributeHelper.GetAll<LocoStringAttribute>(locoStruct.GetType());
 
-			if (data.Length == 0 || locoStruct.GetType().GetCustomAttribute(typeof(LocoStringTableAttribute), inherit: false) is not LocoStringTableAttribute stringTableAttr || stringTableAttr.Count == 0)
+			if (data.Length == 0 || stringAttrs.Count() == 0)
 			{
 				return (stringTable, 0);
 			}
 
 			var ptr = 0;
 
-			for (var i = 0; i < stringTableAttr.Count; ++i)
+			foreach (var locoString in locoStruct.GetType().GetProperties().Where(AttributeHelper.Has<LocoStringAttribute>))
 			{
-				var stringName = stringTableAttr.Names[i];
+				var stringName = locoString.Name;
 				stringTable.Add(stringName, []);
 				var languageDict = stringTable[stringName];
 

@@ -7,7 +7,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]
-	[LocoStringTable("Name")]
+	//[LocoStringTable("Name")]
 	public record ScaffoldingObject(
 		//[property: LocoStructOffset(0x00)] string_id Name,
 		//[property: LocoStructOffset(0x02)] uint32_t Image,

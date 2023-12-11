@@ -6,7 +6,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0C)]
-	[LocoStringTable("Name", "PrefixSymbol", "SuffixSymbol")]
+	//[LocoStringTable("Name", "PrefixSymbol", "SuffixSymbol")]
 	public record CurrencyObject
 	(
 		//[property: LocoStructOffset(0x00)] string_id Name,

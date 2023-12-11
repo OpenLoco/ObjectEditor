@@ -74,8 +74,8 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xF4)]
-	[LocoStringTable("Name", "var_02", "<unused>", "NameClosingDown", "NameUpProduction", "NameDownProduction", "NameSingular", "NamePlural")]
-	public record IndustryObject(
+	//[LocoStringTable("Name", "var_02", "<unused>", "NameClosingDown", "NameUpProduction", "NameDownProduction", "NameSingular", "NamePlural")]
+	public class IndustryObject(
 		//[property: LocoStructOffset(0x00)] string_id Name,
 		//[property: LocoStructOffset(0x02)] string_id var_02,
 		//[property: LocoStructOffset(0x04)] string_id NameClosingDown,

@@ -18,13 +18,13 @@
 		public int Size => size;
 	}
 
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
-	public class LocoStringTableAttribute(params string[] names) : Attribute
-	{
-		public string[] Names => names;
+	//[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+	//public class LocoStringTableAttribute(params string[] names) : Attribute
+	//{
+	//	public string[] Names => names;
 
-		public int Count => Names.Length;
-	}
+	//	public int Count => Names.Length;
+	//}
 
 	// basically a 'skip' attribute to allow deferred loading for variable data
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
@@ -34,5 +34,10 @@
 	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
 	public class LocoStructSkipReadAttribute : Attribute
+	{ }
+
+	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
+	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
+	public class LocoStringAttribute : Attribute
 	{ }
 }

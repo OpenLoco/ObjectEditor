@@ -6,7 +6,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x06)]
-	[LocoStringTable("Name")]
+	//[LocoStringTable("Name")]
 	public class CliffEdgeObject : ILocoStruct
 	{
 		public const ObjectType ObjType = ObjectType.CliffEdge;

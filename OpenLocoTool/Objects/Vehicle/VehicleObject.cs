@@ -6,7 +6,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x15E)]
-	[LocoStringTable("Name")]
+	//[LocoStringTable("Name")]
 	public class VehicleObject : ILocoStruct, ILocoStructVariableData
 	{
 		public static ObjectType ObjectType => ObjectType.Vehicle;

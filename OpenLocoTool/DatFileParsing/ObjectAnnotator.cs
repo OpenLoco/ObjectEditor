@@ -142,8 +142,8 @@ namespace OpenLocoTool.DatFileParsing
 			var root = new Annotation("String Table", runningCount, 1);
 			annotations.Add(root);
 
-			var stringAttr = locoStruct.GetType().GetCustomAttribute(typeof(LocoStringTableAttribute), inherit: false) as LocoStringTableAttribute;
-			var stringsInTable = stringAttr?.Count ?? 0;
+			var stringAttrs = locoStruct.GetType().GetProperties().Where(p => p.PropertyType.Name == nameof(string_id)).ToList();
+			var stringsInTable = stringAttrs?.Count ?? 0;
 
 			for (var i = 0; i < stringsInTable; i++)
 			{

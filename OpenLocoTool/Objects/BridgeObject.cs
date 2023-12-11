@@ -8,7 +8,7 @@ namespace OpenLocoTool.Objects
 	// it works just the same but has more code.
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x2C)]
-	[LocoStringTable("Name")]
+	//[LocoStringTable("Name")]
 	public class BridgeObject : ILocoStruct, ILocoStructVariableData
 	{
 		public const ObjectType ObjType = ObjectType.Bridge;

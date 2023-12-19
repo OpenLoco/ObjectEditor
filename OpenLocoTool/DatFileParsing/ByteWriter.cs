@@ -36,7 +36,7 @@
 
 			else if (t == typeof(string_id))
 			{
-				ByteWriterT.Write(data, offset, (string_id)(dynamic)val);
+				ByteWriterT.Write(data, offset, (string_id)(dynamic)0);
 			}
 
 			else if (t.IsArray)

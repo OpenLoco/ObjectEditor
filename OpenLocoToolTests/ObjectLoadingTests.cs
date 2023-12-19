@@ -471,11 +471,19 @@ namespace OpenLocoToolTests
 			var saveA = "Q:\\Games\\Locomotion\\ExperimentalObjects\\original.dat";
 			var saveB = "Q:\\Games\\Locomotion\\ExperimentalObjects\\saved.dat";
 
-			//File.WriteAllBytes(saveA, bytesSource);
-			//File.WriteAllBytes(saveB, bytesDest);
+			File.WriteAllBytes(saveA, bytesSource);
+			File.WriteAllBytes(saveB, bytesDest);
 
 			var headerA = SawyerStreamReader.LoadHeader(saveA);
 			var headerB = SawyerStreamReader.LoadHeader(saveB);
+
+			//Assert.Multiple(() =>
+			//{
+			//	for (int i = 0; i < Math.Min(bytesSource.Length, bytesDest.Length); ++i)
+			//	{
+			//		Assert.AreEqual(bytesSource[i], bytesDest[i], $"[{i}] {bytesSource[i]} {bytesDest[i]}");
+			//	}
+			//});
 
 			CollectionAssert.AreEqual(bytesSource[0..16], bytesDest[0..16]);
 			// skip object header

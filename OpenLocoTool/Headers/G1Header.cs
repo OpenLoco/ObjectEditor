@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Xml.Linq;
 using OpenLocoTool.DatFileParsing;
 
 namespace OpenLocoTool.Headers
@@ -35,7 +34,7 @@ namespace OpenLocoTool.Headers
 
 		public ReadOnlySpan<byte> Write()
 		{
-			var span = new byte[StructLength + ImageData.Length];
+			var span = new byte[StructLength];
 
 			var offset = BitConverter.GetBytes(Offset);
 			var width = BitConverter.GetBytes(Width);
@@ -45,7 +44,7 @@ namespace OpenLocoTool.Headers
 			var flags = BitConverter.GetBytes((uint16_t)Flags);
 			var zoomOffset = BitConverter.GetBytes(ZoomOffset);
 
-			offset.CopyTo(span, 0);
+			offset.CopyTo(span, 0x00);
 			width.CopyTo(span, 0x04);
 			height.CopyTo(span, 0x06);
 			xOffset.CopyTo(span, 0x08);
@@ -53,7 +52,7 @@ namespace OpenLocoTool.Headers
 			flags.CopyTo(span, 0x0C);
 			zoomOffset.CopyTo(span, 0x0E);
 
-			ImageData.CopyTo(span, 0x10);
+			// image data is copied later
 
 			return span;
 		}

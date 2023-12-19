@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Numerics;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -107,11 +109,19 @@ namespace OpenLocoTool.DatFileParsing
 				remainingData = locoStructExtra.Load(remainingData);
 			}
 
+			LocoObject newObj = null;
+			//try
+			//{
 			// some objects have graphics data
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
 			logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-			var newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
+			newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
+			//}
+			//catch (Exception ex)
+			//{
+			//	newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable);
+			//}
 
 			// add to object manager
 			SObjectManager.Add(newObj);
@@ -173,12 +183,11 @@ namespace OpenLocoTool.DatFileParsing
 
 			var g1ElementHeaders = data[8..];
 
-			const int g1Element32Size = 0x10; // todo: lookup from the LocoStructSize attribute
-			var imageData = g1ElementHeaders[((int)g1Header.NumEntries * g1Element32Size)..];
+			var imageData = g1ElementHeaders[((int)g1Header.NumEntries * G1Element32.StructLength)..];
 			g1Header.ImageData = imageData.ToArray();
 			for (var i = 0; i < g1Header.NumEntries; ++i)
 			{
-				var g32ElementData = g1ElementHeaders[(i * g1Element32Size)..((i + 1) * g1Element32Size)];
+				var g32ElementData = g1ElementHeaders[(i * G1Element32.StructLength)..((i + 1) * G1Element32.StructLength)];
 				var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(g32ElementData);
 				g1Element32s.Add(g32Element);
 			}
@@ -189,7 +198,8 @@ namespace OpenLocoTool.DatFileParsing
 				var currElement = g1Element32s[i];
 				var nextOffset = i < g1Header.NumEntries - 1
 					? g1Element32s[i + 1].Offset
-					: g1Header.TotalSize;
+					//	: g1Header.TotalSize;
+					: (uint)g1Header.ImageData.Length;
 
 				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
 

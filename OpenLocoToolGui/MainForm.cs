@@ -449,7 +449,7 @@ namespace OpenLocoToolGui
 
 				static string constructAnnotationText(Annotation annotation)
 					=> string.Format("{0} (0x{1:X}-0x{2:X})", annotation.Name, annotation.Start, annotation.End);
-				
+
 				var parents = new Dictionary<string, TreeNode>();
 
 				foreach (var annotation in DATDumpAnnotations)
@@ -508,7 +508,7 @@ namespace OpenLocoToolGui
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
 
-				LoadDataDump(filename);
+				//LoadDataDump(filename);
 			}
 		}
 

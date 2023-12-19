@@ -7,6 +7,7 @@ namespace OpenLocoTool.DatFileParsing
 {
 	public class SawyerStreamWriter()
 	{
+		// DO NOT USE
 		public static void Save(string filepath, ILocoObject locoObject, ILogger? logger = null)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
@@ -28,7 +29,7 @@ namespace OpenLocoTool.DatFileParsing
 			var ms = new MemoryStream();
 
 			ms.Write(obj.S5Header.Write());
-			ms.Write(obj.ObjectHeader.Write());
+			ms.Write((obj.ObjectHeader with { Encoding = SawyerEncoding.Uncompressed }).Write());
 
 			var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
 			ms.Write(objBytes);
@@ -44,6 +45,7 @@ namespace OpenLocoTool.DatFileParsing
 					ms.Write(strBytes, 0, strBytes.Length);
 					ms.WriteByte((byte)'\0');
 				}
+				ms.WriteByte(0xff);
 			}
 
 			// variable data
@@ -60,19 +62,34 @@ namespace OpenLocoTool.DatFileParsing
 				ms.Write(BitConverter.GetBytes(obj.G1Header.NumEntries));
 				ms.Write(BitConverter.GetBytes(obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
 
+				int idx = 0;
 				// write G1Elements
 				foreach (var g1Element in obj.G1Elements)
 				{
+					// we need to update the offsets of the image data
+					// and we're not going to compress the data on save, so make sure the RLECompressed flag is not set
+					var offset = idx < 1 ? 0 : (uint)obj.G1Elements[idx - 1].Offset + (uint)obj.G1Elements[idx - 1].ImageData.Length;
+					var newElement = g1Element with
+					{
+						Offset = offset,
+						Flags = g1Element.Flags & ~G1ElementFlags.IsRLECompressed
+					};
+					ms.Write(newElement.Write());
+					idx++;
+				}
+
+				// write G1Elements ImageData
+				foreach (var g1Element in obj.G1Elements)
+				{
 					// we're not going to compress the data on save, so make sure the RLECompressed flag is not set
-					var newElement = g1Element with { Flags = g1Element.Flags & ~G1ElementFlags.IsRLECompressed };
-					ms.Write(g1Element.Write());
+					ms.Write(g1Element.ImageData);
 				}
 			}
 
 			// calculate size and write the size in obj header offset 18
-			var length = ms.Position - 21;
-			ms.Position = 17; // this is the offset of the length unit32_t in the whole object
-			ms.Write(BitConverter.GetBytes(length), 0, 4);
+			//var length = ms.Position - 21;
+			//ms.Position = 17; // this is the offset of the length unit32_t in the whole object
+			//ms.Write(BitConverter.GetBytes(length), 0, 4);
 
 			ms.Flush();
 			ms.Close();

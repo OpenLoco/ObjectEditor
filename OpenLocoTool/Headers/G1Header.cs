@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Xml.Linq;
 using OpenLocoTool.DatFileParsing;
 
 namespace OpenLocoTool.Headers
@@ -31,6 +32,31 @@ namespace OpenLocoTool.Headers
 	{
 		public static int StructLength => 0x10;
 		public byte[] ImageData;
+
+		public ReadOnlySpan<byte> Write()
+		{
+			var span = new byte[StructLength + ImageData.Length];
+
+			var offset = BitConverter.GetBytes(Offset);
+			var width = BitConverter.GetBytes(Width);
+			var height = BitConverter.GetBytes(Height);
+			var xOffset = BitConverter.GetBytes(XOffset);
+			var yOffset = BitConverter.GetBytes(YOffset);
+			var flags = BitConverter.GetBytes((uint16_t)Flags);
+			var zoomOffset = BitConverter.GetBytes(ZoomOffset);
+
+			offset.CopyTo(span, 0);
+			width.CopyTo(span, 0x04);
+			height.CopyTo(span, 0x06);
+			xOffset.CopyTo(span, 0x08);
+			yOffset.CopyTo(span, 0x0A);
+			flags.CopyTo(span, 0x0C);
+			zoomOffset.CopyTo(span, 0x0E);
+
+			ImageData.CopyTo(span, 0x10);
+
+			return span;
+		}
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

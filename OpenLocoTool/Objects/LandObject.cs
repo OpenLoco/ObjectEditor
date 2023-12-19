@@ -17,9 +17,8 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
-	//[LocoStringTable("Name")]
 	public record LandObject(
-		//[property: LocoStructOffset(0x00)] string_id Name,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x03)] uint8_t var_03,
 		[property: LocoStructOffset(0x04)] uint8_t var_04,
@@ -28,7 +27,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x07)] uint8_t var_07,
 		[property: LocoStructOffset(0x08)] int8_t CostFactor,
 		[property: LocoStructOffset(0x09)] uint8_t pad_09,
-		//[property: LocoStructOffset(0x0A)] uint32_t Image,
+		[property: LocoStructOffset(0x0A)] uint32_t Image,
 		[property: LocoStructOffset(0x0E)] uint32_t var_0E,
 		[property: LocoStructOffset(0x12)] uint32_t var_12,
 		[property: LocoStructOffset(0x16)] uint32_t var_16,

@@ -8,7 +8,7 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x0A)]
 	//[LocoStringTable("Name")]
 	public record ClimateObject(
-		//[property: LocoStructOffset(0x00)] string_id Name,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t FirstSeason,
 		[property: LocoStructOffset(0x03), LocoArrayLength(ClimateObject.Seasons)] uint8_t[] SeasonLengths,
 		[property: LocoStructOffset(0x07)] uint8_t WinterSnowLine,

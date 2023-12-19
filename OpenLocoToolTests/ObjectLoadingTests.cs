@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 using OpenLocoTool;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
@@ -384,10 +385,7 @@ namespace OpenLocoToolTests
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\STEX000.DAT";
 			var (obj, struc) = LoadObject<ScenarioTextObject>(testFile);
 
-			Assert.Multiple(() =>
-			{
-				Assert.That(struc.pad_04, Is.EqualTo(0), nameof(struc.pad_04));
-			});
+			Assert.That(struc.pad_04, Is.EqualTo(0), nameof(struc.pad_04));
 		}
 
 		[Test]
@@ -422,6 +420,66 @@ namespace OpenLocoToolTests
 				Assert.That(obj.StringTable["Name"][LanguageId.english_uk].String, Is.EqualTo("Street Lights"));
 				Assert.That(obj.StringTable["Name"][LanguageId.english_us].String, Is.EqualTo("Street Lights"));
 			});
+		}
+
+		[Test]
+		public void SaveStreetLightObject()
+		{
+			// load
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SLIGHT1.DAT";
+
+			var (obj, struc) = LoadObject<StreetLightObject>(testFile);
+
+			// struct write only
+			//var bytes = SawyerStreamWriter.WriteLocoObject(obj);
+			//CollectionAssert.AreEqual((byte[])[0, 0, 108, 7, 158, 7, 193, 7, 0, 0, 0, 0], bytes.ToArray());
+
+			// save
+			var tempFile = Path.GetTempFileName();
+			SawyerStreamWriter.Save(tempFile, obj);
+
+			// load the saved object
+			var (obj2, struc2) = LoadObject<StreetLightObject>(tempFile);
+
+			// this is just the asserts from LoadStreetLightObject
+			Assert.Multiple(() =>
+			{
+				Assert.That(struc2.DesignedYear[0], Is.EqualTo(1900), nameof(struc2.DesignedYear) + "[0]");
+				Assert.That(struc2.DesignedYear[1], Is.EqualTo(1950), nameof(struc2.DesignedYear) + "[1]");
+				Assert.That(struc2.DesignedYear[2], Is.EqualTo(1985), nameof(struc2.DesignedYear) + "[2]");
+
+				Assert.That(struc2.Image, Is.EqualTo(0));
+
+				Assert.That(obj2.StringTable["Name"].Count, Is.EqualTo(2));
+				Assert.That(obj2.StringTable["Name"][LanguageId.english_uk].String, Is.EqualTo("Street Lights"));
+				Assert.That(obj2.StringTable["Name"][LanguageId.english_us].String, Is.EqualTo("Street Lights"));
+			});
+		}
+
+		[Test]
+		public void SaveStreetLightObject2()
+		{
+			// load
+			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SLIGHT1.DAT";
+
+			var (obj, struc) = LoadObject<StreetLightObject>(testFile);
+
+			// save
+			var bytesSource = SawyerStreamReader.LoadDecode(testFile);
+			var bytesDest = SawyerStreamWriter.WriteLocoObject(obj).ToArray();
+
+			var saveA = "Q:\\Games\\Locomotion\\ExperimentalObjects\\original.dat";
+			var saveB = "Q:\\Games\\Locomotion\\ExperimentalObjects\\saved.dat";
+
+			//File.WriteAllBytes(saveA, bytesSource);
+			//File.WriteAllBytes(saveB, bytesDest);
+
+			var headerA = SawyerStreamReader.LoadHeader(saveA);
+			var headerB = SawyerStreamReader.LoadHeader(saveB);
+
+			CollectionAssert.AreEqual(bytesSource[0..16], bytesDest[0..16]);
+			// skip object header
+			CollectionAssert.AreEqual(bytesSource[21..], bytesDest[21..]);
 		}
 
 		[Test]

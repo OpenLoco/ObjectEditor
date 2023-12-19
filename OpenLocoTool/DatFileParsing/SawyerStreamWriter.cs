@@ -1,47 +1,78 @@
-﻿using OpenLocoToolCommon;
+﻿using System.Diagnostics;
+using System.Text;
+using OpenLocoTool.Headers;
+using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public class SawyerStreamWriter(ILogger logger)
+	public class SawyerStreamWriter()
 	{
-		public void Save(string filepath, ILocoObject locoObject)
+		public static void Save(string filepath, ILocoObject locoObject, ILogger? logger = null)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
-			logger.Info($"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
+			logger?.Info($"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
 
 			var objBytes = WriteLocoObject(locoObject);
 
 			// hardcode uncompressed as encoding is currently not working
 			var encoded = Encode(SawyerEncoding.Uncompressed, objBytes);
+			var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint)encoded.Length);
 			//var encoded = Encode(locoObject.ObjectHeader.Encoding, objBytes);
 
-			WriteToFile(filepath, locoObject.S5Header.Write(), locoObject.ObjectHeader.Write(), encoded);
+			WriteToFile(filepath, locoObject.S5Header.Write(), objHeader.Write(), encoded);
 		}
 
 		public static ReadOnlySpan<byte> WriteLocoObject(ILocoObject obj)
 		{
-			var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
 			var ms = new MemoryStream();
+
+			ms.Write(obj.S5Header.Write());
+			ms.Write(obj.ObjectHeader.Write());
+
+			var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
 			ms.Write(objBytes);
 
-			//var stringBytes = Bytes(obj.StringTable);
-			//ms.Write(stringBytes);
+			// string table
+			foreach (var ste in obj.StringTable.table)
+			{
+				foreach (var language in ste.Value)
+				{
+					ms.WriteByte((byte)language.Key);
 
+					var strBytes = Encoding.ASCII.GetBytes(language.Value.String);
+					ms.Write(strBytes, 0, strBytes.Length);
+					ms.WriteByte((byte)'\0');
+				}
+			}
+
+			// variable data
 			if (obj.Object is ILocoStructVariableData objV)
 			{
-				//var variableBytes = objV.Save();
-				//ms.Write(variableBytes);
+				var variableBytes = objV.Save();
+				ms.Write(variableBytes);
 			}
 
+			// graphics data
 			if (obj.G1Header.NumEntries != 0 && obj.G1Elements.Count != 0)
 			{
-				//var g1Bytes = Bytes(obj.G1Header);
-				//ms.Write(g1Bytes);
+				// write G1Header
+				ms.Write(BitConverter.GetBytes(obj.G1Header.NumEntries));
+				ms.Write(BitConverter.GetBytes(obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
 
-				//var g1ElementsBytes = Bytes(obj.G1Elements);
-				//ms.Write(g1ElementsBytes);
+				// write G1Elements
+				foreach (var g1Element in obj.G1Elements)
+				{
+					// we're not going to compress the data on save, so make sure the RLECompressed flag is not set
+					var newElement = g1Element with { Flags = g1Element.Flags & ~G1ElementFlags.IsRLECompressed };
+					ms.Write(g1Element.Write());
+				}
 			}
+
+			// calculate size and write the size in obj header offset 18
+			var length = ms.Position - 21;
+			ms.Position = 17; // this is the offset of the length unit32_t in the whole object
+			ms.Write(BitConverter.GetBytes(length), 0, 4);
 
 			ms.Flush();
 			ms.Close();
@@ -49,7 +80,7 @@ namespace OpenLocoTool.DatFileParsing
 			return ms.ToArray();
 		}
 
-		public ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
+		public static ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data, ILogger? logger = null)
 		{
 			switch (encoding)
 			{
@@ -62,7 +93,7 @@ namespace OpenLocoTool.DatFileParsing
 				//case SawyerEncoding.rotate:
 				//	return encodeRotate(data);
 				default:
-					logger.Error("Unknown chunk encoding scheme");
+					logger?.Error("Unknown chunk encoding scheme");
 					throw new InvalidDataException("Unknown encoding");
 			}
 		}

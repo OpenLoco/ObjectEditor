@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
-using System.Reflection;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -30,12 +29,30 @@ namespace OpenLocoTool.DatFileParsing
 			return checksum;
 		}
 
-		public G1Dat LoadG1(string filename)
+		public static G1Dat LoadG1(string filename, ILogger? logger = null)
 		{
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
-			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
+			logger?.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
 			return new G1Dat(g1Header, imageTable);
+		}
+
+		// load file
+		public static byte[] LoadDecode(string filename)
+		{
+			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
+
+			// make openlocotool useful objects
+			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
+			var remainingData = fullData[S5Header.StructLength..];
+
+			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
+			remainingData = remainingData[ObjectHeader.StructLength..];
+
+			var decodedData = Decode(objectHeader.Encoding, remainingData);
+			remainingData = decodedData;
+
+			return [.. fullData[0..(S5Header.StructLength + ObjectHeader.StructLength)], .. decodedData];
 		}
 
 		// load file
@@ -54,6 +71,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			var decodedData = Decode(objectHeader.Encoding, remainingData);
 			remainingData = decodedData;
+
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
 
 			if (locoStruct == null)
@@ -104,16 +122,16 @@ namespace OpenLocoTool.DatFileParsing
 		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
 			var stringTable = new StringTable();
-			var stringAttrs = AttributeHelper.GetAll<LocoStringAttribute>(locoStruct.GetType());
+			var stringAttrs = locoStruct.GetType().GetProperties().Where(AttributeHelper.Has<LocoStringAttribute>);
 
-			if (data.Length == 0 || stringAttrs.Count() == 0)
+			if (data.Length == 0 || !stringAttrs.Any())
 			{
 				return (stringTable, 0);
 			}
 
 			var ptr = 0;
 
-			foreach (var locoString in locoStruct.GetType().GetProperties().Where(AttributeHelper.Has<LocoStringAttribute>))
+			foreach (var locoString in stringAttrs)
 			{
 				var stringName = locoString.Name;
 				stringTable.Add(stringName, []);
@@ -277,7 +295,7 @@ namespace OpenLocoTool.DatFileParsing
 			return File.ReadAllBytes(filename);
 		}
 
-		public static S5Header LoadHeader(string filename, ILogger? logger)
+		public static S5Header LoadHeader(string filename, ILogger? logger = null)
 		{
 			if (!File.Exists(filename))
 			{

@@ -14,14 +14,13 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1F)]
-	//[LocoStringTable("Name", "UnitsAndCargoName", "UnitNameSingular", "UnitNamePlural")]
 	public record CargoObject(
-		//[property: LocoStructOffset(0x00)] string_id Name,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint16_t var_02,
 		[property: LocoStructOffset(0x04)] uint16_t var_04,
-		//[property: LocoStructOffset(0x06)] string_id UnitsAndCargoName,
-		//[property: LocoStructOffset(0x08)] string_id UnitNameSingular,
-		//[property: LocoStructOffset(0x0A)] string_id UnitNamePlural,
+		[property: LocoStructOffset(0x06), LocoString, Browsable(false)] string_id UnitsAndCargoName,
+		[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id UnitNameSingular,
+		[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id UnitNamePlural,
 		[property: LocoStructOffset(0x0C)] uint32_t UnitInlineSprite,
 		[property: LocoStructOffset(0x10)] uint16_t MatchFlags,
 		[property: LocoStructOffset(0x12)] CargoObjectFlags Flags,

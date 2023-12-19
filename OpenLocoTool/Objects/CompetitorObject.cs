@@ -6,10 +6,9 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x38)]
-	//[LocoStringTable("var_00, var_02")]
 	public record CompetitorObject(
-		//[property: LocoStructOffset(0x00)] string_id var_00,
-		//[property: LocoStructOffset(0x02)] string_id var_02,
+		[property: LocoStructOffset(0x00), LocoString] string_id var_00,
+		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id var_02,
 		[property: LocoStructOffset(0x04)] uint32_t var_04,
 		[property: LocoStructOffset(0x08)] uint32_t var_08,
 		[property: LocoStructOffset(0x0C)] uint32_t Emotions,

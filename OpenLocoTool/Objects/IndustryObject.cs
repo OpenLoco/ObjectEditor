@@ -74,15 +74,14 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xF4)]
-	//[LocoStringTable("Name", "var_02", "<unused>", "NameClosingDown", "NameUpProduction", "NameDownProduction", "NameSingular", "NamePlural")]
 	public class IndustryObject(
-		//[property: LocoStructOffset(0x00)] string_id Name,
-		//[property: LocoStructOffset(0x02)] string_id var_02,
-		//[property: LocoStructOffset(0x04)] string_id NameClosingDown,
-		//[property: LocoStructOffset(0x06)] string_id NameUpProduction,
-		//[property: LocoStructOffset(0x08)] string_id NameDownProduction,
-		//[property: LocoStructOffset(0x0A)] string_id NameSingular,
-		//[property: LocoStructOffset(0x0C)] string_id NamePlural,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id var_02,
+		[property: LocoStructOffset(0x04), LocoString, Browsable(false)] string_id NameClosingDown,
+		[property: LocoStructOffset(0x06), LocoString, Browsable(false)] string_id NameUpProduction,
+		[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id NameDownProduction,
+		[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id NameSingular,
+		[property: LocoStructOffset(0x0C), LocoString, Browsable(false)] string_id NamePlural,
 		[property: LocoStructOffset(0x0E)] uint32_t var_0E, // shadows image id base
 		[property: LocoStructOffset(0x12)] uint32_t var_12, // Base image id for building 0
 		[property: LocoStructOffset(0x16)] uint32_t var_16,
@@ -108,8 +107,8 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xD4)] uint8_t ScaffoldingSegmentType,
 		[property: LocoStructOffset(0xD5)] Colour ScaffoldingColour,
 		[property: LocoStructOffset(0xD6), LocoArrayLength(2)] IndustryObjectProductionRateRange[] InitialProductionRate,
-		///[property: LocoStructOffset(0xDE), LocoArrayLength(IndustryObject.MaxProducedCargoType)] uint8_t[] ProducedCargoType,                               // (0xFF = null)
-		//[property: LocoStructOffset(0xE0), LocoArrayLength(IndustryObject.MaxRequiredCargoType)] uint8_t[] RequiredCargoType,                               // (0xFF = null)
+		[property: LocoStructOffset(0xDE), LocoArrayLength(IndustryObject.MaxProducedCargoType)] uint8_t[] ProducedCargoType,                               // (0xFF = null)
+		[property: LocoStructOffset(0xE0), LocoArrayLength(IndustryObject.MaxRequiredCargoType)] uint8_t[] RequiredCargoType,                               // (0xFF = null)
 		[property: LocoStructOffset(0xE3)] uint8_t pad_E3,
 		[property: LocoStructOffset(0xE4)] IndustryObjectFlags Flags,
 		[property: LocoStructOffset(0xE8)] uint8_t var_E8,

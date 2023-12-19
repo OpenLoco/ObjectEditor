@@ -7,11 +7,10 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x06)]
-	//[LocoStringTable("Name", "Details")]
 	public record ScenarioTextObject(
-		//[property: LocoStructOffset(0x00)] string_id Name,
-		//[property: LocoStructOffset(0x02)] string_id Details,
-		[property: LocoStructOffset(0x04), LocoArrayLength(0x6 - 0x4)] string_id pad_04 // 0x04
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id Details,
+		[property: LocoStructOffset(0x04), LocoArrayLength(0x6 - 0x4), LocoString, Browsable(false)] string_id pad_04 // 0x04
 		) : ILocoStruct
 	{
 		public static ObjectType ObjectType => ObjectType.ScenarioText;

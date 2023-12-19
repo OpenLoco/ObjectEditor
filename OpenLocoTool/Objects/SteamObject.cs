@@ -27,9 +27,8 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x28)]
-	//[LocoStringTable("Name")]
 	public record SteamObject(
-		//[property: LocoStructOffset(0x00)] string_id Name,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint16_t NumImages,
 		[property: LocoStructOffset(0x04)] uint8_t NumStationaryTicks, // while stationary can be affected by wind
 		[property: LocoStructOffset(0x05)] uint8_t SpriteWidth,

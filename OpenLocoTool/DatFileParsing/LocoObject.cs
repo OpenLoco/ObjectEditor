@@ -40,7 +40,7 @@ namespace OpenLocoTool.DatFileParsing
 	|-Language-|-StringBytes-|
 
 	|-G1Header---------------|
-	|-Numentries-|-Totalsize-|
+	|-NumEntries-|-TotalSize-|
 
 	|-G1Element32------------------------------------------------------|
 	|-Offset-|-Width-|-Height-|-xOffset-|-yOffset-|-Flags-|-ZoomOffset-|

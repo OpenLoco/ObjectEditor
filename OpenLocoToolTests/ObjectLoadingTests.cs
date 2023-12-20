@@ -417,8 +417,8 @@ namespace OpenLocoToolTests
 				Assert.That(struc.Image, Is.EqualTo(0));
 
 				Assert.That(obj.StringTable["Name"].Count, Is.EqualTo(2));
-				Assert.That(obj.StringTable["Name"][LanguageId.english_uk].String, Is.EqualTo("Street Lights"));
-				Assert.That(obj.StringTable["Name"][LanguageId.english_us].String, Is.EqualTo("Street Lights"));
+				Assert.That(obj.StringTable["Name"][LanguageId.english_uk], Is.EqualTo("Street Lights"));
+				Assert.That(obj.StringTable["Name"][LanguageId.english_us], Is.EqualTo("Street Lights"));
 			});
 		}
 
@@ -451,8 +451,8 @@ namespace OpenLocoToolTests
 				Assert.That(struc2.Image, Is.EqualTo(0));
 
 				Assert.That(obj2.StringTable["Name"].Count, Is.EqualTo(2));
-				Assert.That(obj2.StringTable["Name"][LanguageId.english_uk].String, Is.EqualTo("Street Lights"));
-				Assert.That(obj2.StringTable["Name"][LanguageId.english_us].String, Is.EqualTo("Street Lights"));
+				Assert.That(obj2.StringTable["Name"][LanguageId.english_uk], Is.EqualTo("Street Lights"));
+				Assert.That(obj2.StringTable["Name"][LanguageId.english_us], Is.EqualTo("Street Lights"));
 			});
 		}
 

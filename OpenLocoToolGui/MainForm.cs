@@ -1,5 +1,6 @@
 using NAudio.Wave;
 using OpenLocoTool;
+using OpenLocoTool.Data;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -344,6 +345,15 @@ namespace OpenLocoToolGui
 				return;
 			}
 
+			if (!SaveEnabledObjects.Types.Contains(obj.S5Header.ObjectType))
+			{
+				var msg = $"Saving is not currently implemented for {obj.S5Header.ObjectType} objects";
+				logger.Error(msg);
+				logger.Info($"Saving is currently supported for the following objects: [{SaveEnabledObjects.Types.Aggregate("", (a, b) => a + ", " + b)}]");
+				MessageBox.Show(msg);
+				return;
+			}
+
 			saveFileDialog1.InitialDirectory = model.Settings.ObjDataDirectory;
 			saveFileDialog1.DefaultExt = "dat";
 			saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
@@ -362,11 +372,12 @@ namespace OpenLocoToolGui
 						InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 					}
 
-					MessageBox.Show($"File \"{filename}\" saved successfully");
+					logger.Info($"File \"{filename}\" saved successfully");
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show($"Error saving \"{filename}\": " + ex.Message);
+					logger.Error($"Error saving \"{filename}\": {ex.Message}");
+					MessageBox.Show($"Error saving \"{filename}\": {ex.Message}");
 				}
 			}
 		}

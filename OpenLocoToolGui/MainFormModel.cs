@@ -15,8 +15,6 @@ namespace OpenLocoToolGui
 	class MainFormModel
 	{
 		private readonly ILogger logger;
-		private readonly SawyerStreamReader reader;
-		private readonly SawyerStreamWriter writer;
 
 		public HeaderIndex HeaderIndex { get; private set; } = [];
 
@@ -68,8 +66,6 @@ namespace OpenLocoToolGui
 		public MainFormModel(ILogger logger, string settingsFile)
 		{
 			this.logger = logger;
-			reader = new SawyerStreamReader(logger);
-			writer = new SawyerStreamWriter(logger);
 
 			LoadSettings(settingsFile);
 
@@ -85,7 +81,14 @@ namespace OpenLocoToolGui
 
 			foreach (var dep in HeaderIndex.Where(kvp => dependentObjectTypes.Contains(kvp.Value.ObjectType)))
 			{
+				//try
+				//{
 				SawyerStreamReader.LoadFull(dep.Key);
+				//}
+				//catch (Exception ex)
+				//{
+				//	logger.Error($"File=\"{dep}\" Message=\"{ex.Message}\"");
+				//}
 			}
 		}
 
@@ -189,13 +192,17 @@ namespace OpenLocoToolGui
 				catch (Exception ex)
 				{
 					logger.Error($"Failed to load \"{file}\"", ex);
+
+					var obj = SawyerStreamReader.LoadHeader(file);
+					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, null);
+					ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}
 				finally
 				{
 					Interlocked.Increment(ref count);
 					progress.Report(count / (float)allFiles.Length);
 				}
-			//}
+				//}
 			});
 
 			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -206,7 +213,7 @@ namespace OpenLocoToolGui
 		}
 
 		public void SaveFile(string path, ILocoObject obj)
-			=> writer.Save(path, obj);
+			=> SawyerStreamWriter.Save(path, obj);
 
 		public bool LoadDataDirectory(string directory)
 		{
@@ -219,7 +226,7 @@ namespace OpenLocoToolGui
 			Settings.DataDirectory = directory;
 
 			// load G1 only for now
-			G1 = reader.LoadG1(Settings.G1Path);
+			G1 = SawyerStreamReader.LoadG1(Settings.G1Path);
 			LoadPalette(); // update palette from g1
 
 			SaveSettings();

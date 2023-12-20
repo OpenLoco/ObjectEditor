@@ -23,29 +23,18 @@ namespace OpenLocoTool.DatFileParsing
 		public static int StructSize => 0x04;
 	}
 
-	// this is only required because WinForms' DataGridView cannot handle plain old dictionary<foo, string>, because string type doesn't have the getter+setter it needs
-	//public class StringTable
-	//{
-	//	Dictionary<string, StringTableInner> table = new();
-	//}
-
 	public class StringTable
 	{
-		public Dictionary<string, Dictionary<LanguageId, StringTableEntry>> table { get; set; } = new();
+		public Dictionary<string, Dictionary<LanguageId, string>> table { get; set; } = new();
 
-		public void Add(string key, Dictionary<LanguageId, StringTableEntry> value) => table.Add(key, value);
+		public void Add(string key, Dictionary<LanguageId, string> value) => table.Add(key, value);
 
-		public Dictionary<LanguageId, StringTableEntry> this[string key]
+		public Dictionary<LanguageId, string> this[string key]
 		{
 			get => table[key];
 			set => table[key] = value;
 		}
 
-		public Dictionary<string, Dictionary<LanguageId, StringTableEntry>>.KeyCollection Keys => table.Keys;
-	}
-
-	public class StringTableEntry
-	{
-		public string String { get; set; }
+		public Dictionary<string, Dictionary<LanguageId, string>>.KeyCollection Keys => table.Keys;
 	}
 }

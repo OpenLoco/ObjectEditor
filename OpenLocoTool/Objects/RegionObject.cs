@@ -7,10 +7,9 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]
-	[LocoStringTable("Name")]
 	public record RegionObject(
-		//[property: LocoStructOffset(0x00)] string_id Name,
-		//[property: LocoStructOffset(0x02)] uint32_t Image,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02)] uint32_t Image,
 		[property: LocoStructOffset(0x06), LocoArrayLength(0x8 - 0x6)] uint8_t[] pad_06,
 		[property: LocoStructOffset(0x08)] uint8_t var_08,
 		[property: LocoStructOffset(0x09), LocoArrayLength(4)] uint8_t[] var_09,

@@ -47,14 +47,13 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xBA)]
-	[LocoStringTable("Name")]
 	public record AirportObject(
-		//[property: LocoStructOffset(0x00)] string_id Name,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x04)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x06)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x07)] uint8_t var_07,
-		//[property: LocoStructOffset(0x08)] uint32_t Image,
+		[property: LocoStructOffset(0x08)] uint32_t Image,
 		[property: LocoStructOffset(0x0C)] uint32_t var_0C,
 		[property: LocoStructOffset(0x10)] uint16_t AllowedPlaneTypes,
 		[property: LocoStructOffset(0x12)] uint8_t NumSpriteSets,

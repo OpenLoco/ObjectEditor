@@ -36,6 +36,8 @@
 
 			else if (t == typeof(string_id))
 			{
+				// string ids should always be 0 in the dat file - they're only set when loaded into memory and never saved
+				val = 0;
 				ByteWriterT.Write(data, offset, (string_id)(dynamic)val);
 			}
 
@@ -75,14 +77,6 @@
 			{
 				throw new InvalidOperationException("how");
 			}
-		}
-
-		public static ReadOnlySpan<byte> Bytes(object obj)
-		{
-			// todo: this just a skeleton placeholder method
-			// we need to implement Save() for image table and G1 data
-			throw new NotImplementedException();
-			return new byte[1];
 		}
 
 		public static ReadOnlySpan<byte> WriteLocoStruct(ILocoStruct obj)

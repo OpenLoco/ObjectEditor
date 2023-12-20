@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
-using System.Reflection;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -30,12 +29,30 @@ namespace OpenLocoTool.DatFileParsing
 			return checksum;
 		}
 
-		public G1Dat LoadG1(string filename)
+		public static G1Dat LoadG1(string filename, ILogger? logger = null)
 		{
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
-			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
+			logger?.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
 			return new G1Dat(g1Header, imageTable);
+		}
+
+		// load file
+		public static byte[] LoadDecode(string filename)
+		{
+			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
+
+			// make openlocotool useful objects
+			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
+			var remainingData = fullData[S5Header.StructLength..];
+
+			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
+			remainingData = remainingData[ObjectHeader.StructLength..];
+
+			var decodedData = Decode(objectHeader.Encoding, remainingData);
+			remainingData = decodedData;
+
+			return [.. fullData[0..(S5Header.StructLength + ObjectHeader.StructLength)], .. decodedData];
 		}
 
 		// load file
@@ -54,6 +71,7 @@ namespace OpenLocoTool.DatFileParsing
 
 			var decodedData = Decode(objectHeader.Encoding, remainingData);
 			remainingData = decodedData;
+
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
 
 			if (locoStruct == null)
@@ -89,11 +107,20 @@ namespace OpenLocoTool.DatFileParsing
 				remainingData = locoStructExtra.Load(remainingData);
 			}
 
-			// some objects have graphics data
-			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			LocoObject newObj = null;
+			try
+			{
+				// some objects have graphics data
+				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
+				logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-			var newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
+				newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
+			}
+			catch (Exception ex)
+			{
+				newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable);
+				logger?.Error(ex, "Error loading graphics table");
+			}
 
 			// add to object manager
 			SObjectManager.Add(newObj);
@@ -104,17 +131,18 @@ namespace OpenLocoTool.DatFileParsing
 		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
 			var stringTable = new StringTable();
+			var stringAttributes = AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStruct.GetType());
 
-			if (data.Length == 0 || locoStruct.GetType().GetCustomAttribute(typeof(LocoStringTableAttribute), inherit: false) is not LocoStringTableAttribute stringTableAttr || stringTableAttr.Count == 0)
+			if (data.Length == 0 || !stringAttributes.Any())
 			{
 				return (stringTable, 0);
 			}
 
 			var ptr = 0;
 
-			for (var i = 0; i < stringTableAttr.Count; ++i)
+			foreach (var locoString in stringAttributes)
 			{
-				var stringName = stringTableAttr.Names[i];
+				var stringName = locoString.Name;
 				stringTable.Add(stringName, []);
 				var languageDict = stringTable[stringName];
 
@@ -126,7 +154,7 @@ namespace OpenLocoTool.DatFileParsing
 					while (data[ptr++] != '\0') ;
 
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-					if (!languageDict.TryAdd(lang, new StringTableEntry { String = str }))
+					if (!languageDict.TryAdd(lang, str)) //new StringTableEntry { String = str }))
 					{
 						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
 						break;
@@ -154,12 +182,11 @@ namespace OpenLocoTool.DatFileParsing
 
 			var g1ElementHeaders = data[8..];
 
-			const int g1Element32Size = 0x10; // todo: lookup from the LocoStructSize attribute
-			var imageData = g1ElementHeaders[((int)g1Header.NumEntries * g1Element32Size)..];
+			var imageData = g1ElementHeaders[((int)g1Header.NumEntries * G1Element32.StructLength)..];
 			g1Header.ImageData = imageData.ToArray();
 			for (var i = 0; i < g1Header.NumEntries; ++i)
 			{
-				var g32ElementData = g1ElementHeaders[(i * g1Element32Size)..((i + 1) * g1Element32Size)];
+				var g32ElementData = g1ElementHeaders[(i * G1Element32.StructLength)..((i + 1) * G1Element32.StructLength)];
 				var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(g32ElementData);
 				g1Element32s.Add(g32Element);
 			}
@@ -170,7 +197,8 @@ namespace OpenLocoTool.DatFileParsing
 				var currElement = g1Element32s[i];
 				var nextOffset = i < g1Header.NumEntries - 1
 					? g1Element32s[i + 1].Offset
-					: g1Header.TotalSize;
+					//	: g1Header.TotalSize;
+					: (uint)g1Header.ImageData.Length;
 
 				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
 
@@ -276,7 +304,7 @@ namespace OpenLocoTool.DatFileParsing
 			return File.ReadAllBytes(filename);
 		}
 
-		public static S5Header LoadHeader(string filename, ILogger? logger)
+		public static S5Header LoadHeader(string filename, ILogger? logger = null)
 		{
 			if (!File.Exists(filename))
 			{

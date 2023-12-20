@@ -1,5 +1,6 @@
 using NAudio.Wave;
 using OpenLocoTool;
+using OpenLocoTool.Data;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -337,11 +338,19 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		// note: doesn't work atm
 		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (pgS5Header.SelectedObject is not ILocoObject obj)
+			if (CurrentUIObject is not ILocoObject obj)
 			{
+				return;
+			}
+
+			if (!SaveEnabledObjects.Types.Contains(obj.S5Header.ObjectType))
+			{
+				var msg = $"Saving is not currently implemented for {obj.S5Header.ObjectType} objects";
+				logger.Error(msg);
+				logger.Info($"Saving is currently supported for the following objects: [{SaveEnabledObjects.Types.Aggregate("", (a, b) => a + ", " + b)}]");
+				MessageBox.Show(msg);
 				return;
 			}
 
@@ -363,11 +372,12 @@ namespace OpenLocoToolGui
 						InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 					}
 
-					MessageBox.Show($"File \"{filename}\" saved successfully");
+					logger.Info($"File \"{filename}\" saved successfully");
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show($"Error saving \"{filename}\": " + ex.Message);
+					logger.Error($"Error saving \"{filename}\": {ex.Message}");
+					MessageBox.Show($"Error saving \"{filename}\": {ex.Message}");
 				}
 			}
 		}
@@ -449,7 +459,7 @@ namespace OpenLocoToolGui
 
 				static string constructAnnotationText(Annotation annotation)
 					=> string.Format("{0} (0x{1:X}-0x{2:X})", annotation.Name, annotation.Start, annotation.End);
-				
+
 				var parents = new Dictionary<string, TreeNode>();
 
 				foreach (var annotation in DATDumpAnnotations)
@@ -508,7 +518,14 @@ namespace OpenLocoToolGui
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
 
-				LoadDataDump(filename);
+				try
+				{
+					LoadDataDump(filename);
+				}
+				catch (Exception ex)
+				{
+					logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
+				}
 			}
 		}
 

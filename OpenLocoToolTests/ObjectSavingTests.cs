@@ -16,8 +16,6 @@ namespace OpenLocoToolTests
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SIGC3.DAT";
 			var fileSize = new FileInfo(testFile).Length;
 			var logger = new Logger();
-			var ssr = new SawyerStreamReader(logger);
-			var ssw = new SawyerStreamWriter(logger);
 			var loaded = SawyerStreamReader.LoadFull(testFile);
 
 			// load data in raw bytes for test

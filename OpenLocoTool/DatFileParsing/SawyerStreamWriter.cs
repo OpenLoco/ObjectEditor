@@ -18,13 +18,6 @@ namespace OpenLocoTool.DatFileParsing
 			stream.Write(objBytes);
 			stream.Flush();
 			stream.Close();
-
-			// hardcode uncompressed as encoding is currently not working
-			//var encoded = Encode(SawyerEncoding.Uncompressed, objBytes);
-			//var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint)encoded.Length);
-			//var encoded = Encode(locoObject.ObjectHeader.Encoding, objBytes);
-
-			//WriteToFile(filepath, locoObject.S5Header.Write(), objHeader.Write(), encoded);
 		}
 
 		public static ReadOnlySpan<byte> WriteLocoObject(ILocoObject obj)
@@ -59,7 +52,7 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			// graphics data
-			if (obj.G1Header.NumEntries != 0 && obj.G1Elements.Count != 0)
+			if (obj.G1Header != null && obj.G1Elements != null && obj.G1Header.NumEntries != 0 && obj.G1Elements.Count != 0)
 			{
 				// write G1Header
 				ms.Write(BitConverter.GetBytes(obj.G1Header.NumEntries));
@@ -71,7 +64,7 @@ namespace OpenLocoTool.DatFileParsing
 				{
 					// we need to update the offsets of the image data
 					// and we're not going to compress the data on save, so make sure the RLECompressed flag is not set
-					var offset = idx < 1 ? 0 : (uint)obj.G1Elements[idx - 1].Offset + (uint)obj.G1Elements[idx - 1].ImageData.Length;
+					var offset = idx < 1 ? 0 : obj.G1Elements[idx - 1].Offset + (uint)obj.G1Elements[idx - 1].ImageData.Length;
 					var newElement = g1Element with
 					{
 						Offset = offset,

@@ -142,10 +142,11 @@ namespace OpenLocoTool.DatFileParsing
 			var root = new Annotation("String Table", runningCount, 1);
 			annotations.Add(root);
 
-			var stringAttrs = locoStruct.GetType().GetProperties().Where(AttributeHelper.Has<LocoStringAttribute>).ToList();
-			var stringsInTable = stringAttrs?.Count ?? 0;
+			var stringAttributes = AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStruct.GetType());
+			//var stringsInTable = stringAttributes?.Count ?? 0;
 
-			for (var i = 0; i < stringsInTable; i++)
+			var i = 0;
+			foreach (var locoString in stringAttributes)
 			{
 				var index = 0;
 				var continuing = true;
@@ -166,7 +167,7 @@ namespace OpenLocoTool.DatFileParsing
 				while (continuing);
 
 				var endIndexOfStringList = index + runningCount;
-				var elementRoot = new Annotation("Element " + i, root, runningCount, index);
+				var elementRoot = new Annotation("Element " + i++, root, runningCount, index);
 				annotations.Add(elementRoot);
 
 				do

@@ -46,7 +46,7 @@ namespace OpenLocoTool.Objects
 
 		public SoundObjectData SoundObjectData { get; set; }
 
-		public byte[] RawPcmData { get; set; }
+		public byte[] RawPcmData { get; set; } = [];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{

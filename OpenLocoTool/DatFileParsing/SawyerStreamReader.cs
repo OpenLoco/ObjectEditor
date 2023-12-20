@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
-using System.Linq.Expressions;
 using System.Numerics;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -110,18 +108,19 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			LocoObject newObj = null;
-			//try
-			//{
-			// some objects have graphics data
-			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			try
+			{
+				// some objects have graphics data
+				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
+				logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-			newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
-			//}
-			//catch (Exception ex)
-			//{
-			//	newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable);
-			//}
+				newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
+			}
+			catch (Exception ex)
+			{
+				newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable);
+				logger?.Error(ex, "Error loading graphics table");
+			}
 
 			// add to object manager
 			SObjectManager.Add(newObj);
@@ -132,16 +131,16 @@ namespace OpenLocoTool.DatFileParsing
 		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
 			var stringTable = new StringTable();
-			var stringAttrs = locoStruct.GetType().GetProperties().Where(AttributeHelper.Has<LocoStringAttribute>);
+			var stringAttributes = AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStruct.GetType());
 
-			if (data.Length == 0 || !stringAttrs.Any())
+			if (data.Length == 0 || !stringAttributes.Any())
 			{
 				return (stringTable, 0);
 			}
 
 			var ptr = 0;
 
-			foreach (var locoString in stringAttrs)
+			foreach (var locoString in stringAttributes)
 			{
 				var stringName = locoString.Name;
 				stringTable.Add(stringName, []);

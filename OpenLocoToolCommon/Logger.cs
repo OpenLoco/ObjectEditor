@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace OpenLocoToolCommon
+﻿namespace OpenLocoToolCommon
 {
 	public class LogAddedEventArgs(LogLine log) : EventArgs
 	{

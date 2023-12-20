@@ -135,7 +135,7 @@ namespace OpenLocoTool.Objects
 				}
 
 				var ptr = BitConverter.ToUInt16(remainingData[0..2]);
-				while (ptr != (ushort)0xFFFF)
+				while (ptr != 0xFFFF)
 				{
 					var cargoMatchFlags = BitConverter.ToUInt16(remainingData[0..2]);
 					CargoMatchFlags.Add(cargoMatchFlags);

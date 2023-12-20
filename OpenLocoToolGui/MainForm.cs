@@ -507,14 +507,14 @@ namespace OpenLocoToolGui
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
 
-				//try
-				//{
-				//	LoadDataDump(filename);
-				//}
-				//catch (Exception ex)
-				//{
-				//	logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
-				//}
+				try
+				{
+					LoadDataDump(filename);
+				}
+				catch (Exception ex)
+				{
+					logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
+				}
 			}
 		}
 

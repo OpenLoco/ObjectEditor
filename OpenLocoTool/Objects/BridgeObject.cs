@@ -4,11 +4,28 @@ using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.Objects
 {
-	// for this object I tried a different way (class) of making the object (instead of record)
-	// it works just the same but has more code.
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x2C)]
-	public class BridgeObject : ILocoStruct, ILocoStructVariableData
+	public record BridgeObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02)] uint8_t NoRoof,
+		[property: LocoStructOffset(0x03), LocoArrayLength(0x06 - 0x03)] uint8_t[] pad_03,
+		[property: LocoStructOffset(0x06)] uint16_t var_06,
+		[property: LocoStructOffset(0x08)] uint8_t SpanLength,
+		[property: LocoStructOffset(0x09)] uint8_t PillarSpacing,
+		[property: LocoStructOffset(0x0A)] Speed16 MaxSpeed,
+		[property: LocoStructOffset(0x0C)] MicroZ MaxHeight,
+		[property: LocoStructOffset(0x0D)] uint8_t CostIndex,
+		[property: LocoStructOffset(0x0E)] int16_t BaseCostFactor,
+		[property: LocoStructOffset(0x10)] int16_t HeightCostFactor,
+		[property: LocoStructOffset(0x12)] int16_t SellCostFactor,
+		[property: LocoStructOffset(0x14)] uint16_t DisabledTrackCfg,
+		[property: LocoStructOffset(0x16)] uint32_t Image,
+		[property: LocoStructOffset(0x1A)] uint8_t TrackNumCompatible,
+		[property: LocoStructOffset(0x1B), LocoArrayLength(BridgeObject.TrackModsLength)] uint8_t[] TrackMods,
+		[property: LocoStructOffset(0x22)] uint8_t RoadNumCompatible,
+		[property: LocoStructOffset(0x23), LocoArrayLength(BridgeObject.RoadModsLength)] uint8_t[] RoadMods,
+		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear) : ILocoStruct, ILocoStructVariableData
 	{
 		public const ObjectType ObjType = ObjectType.Bridge;
 		public const int StructSize = 0x2C;
@@ -16,55 +33,12 @@ namespace OpenLocoTool.Objects
 		public const int TrackModsLength = 7;
 		public const int RoadModsLength = 7;
 
-		public BridgeObject(ushort name, byte noRoof, byte[] pad_03, ushort var_06, byte spanLength, byte pillarSpacing, short maxSpeed, byte maxHeight, byte costIndex, short baseCostFactor, short heightCostFactor, short sellCostFactor, ushort disabledTrackCfg, uint image, byte trackNumCompatible, byte[] trackMods, byte roadNumCompatible, byte[] roadMods, ushort designedYear)
-		{
-			Name = name;
-			NoRoof = noRoof;
-			this.pad_03 = pad_03;
-			this.var_06 = var_06;
-			SpanLength = spanLength;
-			PillarSpacing = pillarSpacing;
-			MaxSpeed = maxSpeed;
-			MaxHeight = maxHeight;
-			CostIndex = costIndex;
-			BaseCostFactor = baseCostFactor;
-			HeightCostFactor = heightCostFactor;
-			SellCostFactor = sellCostFactor;
-			DisabledTrackCfg = disabledTrackCfg;
-			Image = image;
-			TrackNumCompatible = trackNumCompatible;
-			TrackMods = trackMods;
-			RoadNumCompatible = roadNumCompatible;
-			RoadMods = roadMods;
-			DesignedYear = designedYear;
-		}
-
 		// return number of bytes read
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			var bytesRead = (TrackNumCompatible + RoadNumCompatible) * S5Header.StructLength;
 			return remainingData[bytesRead..];
 		}
-
-		[LocoStructOffset(0x00), LocoString, Browsable(false)] public string_id Name { get; set; }
-		[LocoStructOffset(0x02)] public uint8_t NoRoof { get; set; }
-		[LocoStructOffset(0x03), LocoArrayLength(0x06 - 0x03)] public uint8_t[] pad_03 { get; set; }
-		[LocoStructOffset(0x06)] public uint16_t var_06 { get; set; }
-		[LocoStructOffset(0x08)] public uint8_t SpanLength { get; set; }
-		[LocoStructOffset(0x09)] public uint8_t PillarSpacing { get; set; }
-		[LocoStructOffset(0x0A)] public Speed16 MaxSpeed { get; set; }
-		[LocoStructOffset(0x0C)] public MicroZ MaxHeight { get; set; }
-		[LocoStructOffset(0x0D)] public uint8_t CostIndex { get; set; }
-		[LocoStructOffset(0x0E)] public int16_t BaseCostFactor { get; set; }
-		[LocoStructOffset(0x10)] public int16_t HeightCostFactor { get; set; }
-		[LocoStructOffset(0x12)] public int16_t SellCostFactor { get; set; }
-		[LocoStructOffset(0x14)] public uint16_t DisabledTrackCfg { get; set; }
-		[LocoStructOffset(0x16)] public uint32_t Image { get; set; }
-		[LocoStructOffset(0x1A)] public uint8_t TrackNumCompatible { get; set; }
-		[LocoStructOffset(0x1B), LocoArrayLength(BridgeObject.TrackModsLength)] public uint8_t[] TrackMods { get; set; }
-		[LocoStructOffset(0x22)] public uint8_t RoadNumCompatible { get; set; }
-		[LocoStructOffset(0x23), LocoArrayLength(BridgeObject.RoadModsLength)] public uint8_t[] RoadMods { get; set; }
-		[LocoStructOffset(0x2A)] public uint16_t DesignedYear { get; set; }
 
 		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
 	}

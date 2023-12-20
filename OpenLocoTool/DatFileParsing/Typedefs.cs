@@ -31,21 +31,21 @@ namespace OpenLocoTool.DatFileParsing
 
 	public class StringTable
 	{
-		public Dictionary<string, Dictionary<LanguageId, StringTableEntry>> table { get; set; } = new();
+		public Dictionary<string, Dictionary<LanguageId, string>> table { get; set; } = new();
 
-		public void Add(string key, Dictionary<LanguageId, StringTableEntry> value) => table.Add(key, value);
+		public void Add(string key, Dictionary<LanguageId, string> value) => table.Add(key, value);
 
-		public Dictionary<LanguageId, StringTableEntry> this[string key]
+		public Dictionary<LanguageId, string> this[string key]
 		{
 			get => table[key];
 			set => table[key] = value;
 		}
 
-		public Dictionary<string, Dictionary<LanguageId, StringTableEntry>>.KeyCollection Keys => table.Keys;
+		public Dictionary<string, Dictionary<LanguageId, string>>.KeyCollection Keys => table.Keys;
 	}
 
-	public class StringTableEntry
-	{
-		public string String { get; set; }
-	}
+	//public class StringTableEntry
+	//{
+	//	public string String { get; set; }
+	//}
 }

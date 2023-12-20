@@ -155,7 +155,7 @@ namespace OpenLocoTool.DatFileParsing
 					while (data[ptr++] != '\0') ;
 
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-					if (!languageDict.TryAdd(lang, new StringTableEntry { String = str }))
+					if (!languageDict.TryAdd(lang, str)) //new StringTableEntry { String = str }))
 					{
 						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
 						break;

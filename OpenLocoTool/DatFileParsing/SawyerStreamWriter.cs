@@ -1,13 +1,11 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public class SawyerStreamWriter()
+	public static class SawyerStreamWriter
 	{
-		// DO NOT USE
 		public static void Save(string filepath, ILocoObject locoObject, ILogger? logger = null)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
@@ -16,12 +14,17 @@ namespace OpenLocoTool.DatFileParsing
 
 			var objBytes = WriteLocoObject(locoObject);
 
+			var stream = File.Create(filepath);
+			stream.Write(objBytes);
+			stream.Flush();
+			stream.Close();
+
 			// hardcode uncompressed as encoding is currently not working
-			var encoded = Encode(SawyerEncoding.Uncompressed, objBytes);
-			var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint)encoded.Length);
+			//var encoded = Encode(SawyerEncoding.Uncompressed, objBytes);
+			//var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint)encoded.Length);
 			//var encoded = Encode(locoObject.ObjectHeader.Encoding, objBytes);
 
-			WriteToFile(filepath, locoObject.S5Header.Write(), objHeader.Write(), encoded);
+			//WriteToFile(filepath, locoObject.S5Header.Write(), objHeader.Write(), encoded);
 		}
 
 		public static ReadOnlySpan<byte> WriteLocoObject(ILocoObject obj)
@@ -41,7 +44,7 @@ namespace OpenLocoTool.DatFileParsing
 				{
 					ms.WriteByte((byte)language.Key);
 
-					var strBytes = Encoding.ASCII.GetBytes(language.Value.String);
+					var strBytes = Encoding.ASCII.GetBytes(language.Value);
 					ms.Write(strBytes, 0, strBytes.Length);
 					ms.WriteByte((byte)'\0');
 				}
@@ -97,97 +100,97 @@ namespace OpenLocoTool.DatFileParsing
 			return ms.ToArray();
 		}
 
-		public static ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data, ILogger? logger = null)
-		{
-			switch (encoding)
-			{
-				case SawyerEncoding.Uncompressed:
-					return data;
-				case SawyerEncoding.RunLengthSingle:
-					return EncodeRunLengthSingle(data);
-				//case SawyerEncoding.runLengthMulti:
-				//	return encodeRunLengthMulti(decodeRunLengthSingle(data));
-				//case SawyerEncoding.rotate:
-				//	return encodeRotate(data);
-				default:
-					logger?.Error("Unknown chunk encoding scheme");
-					throw new InvalidDataException("Unknown encoding");
-			}
-		}
+		//public static ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data, ILogger? logger = null)
+		//{
+		//	switch (encoding)
+		//	{
+		//		case SawyerEncoding.Uncompressed:
+		//			return data;
+		//		case SawyerEncoding.RunLengthSingle:
+		//			return EncodeRunLengthSingle(data);
+		//		//case SawyerEncoding.runLengthMulti:
+		//		//	return encodeRunLengthMulti(decodeRunLengthSingle(data));
+		//		//case SawyerEncoding.rotate:
+		//		//	return encodeRotate(data);
+		//		default:
+		//			logger?.Error("Unknown chunk encoding scheme");
+		//			throw new InvalidDataException("Unknown encoding");
+		//	}
+		//}
 
-		public static void WriteToFile(string filepath, ReadOnlySpan<byte> s5Header, ReadOnlySpan<byte> objectHeader, ReadOnlySpan<byte> encodedData)
-		{
-			var stream = File.Create(filepath);
-			stream.Write(s5Header);
-			stream.Write(objectHeader);
-			stream.Write(encodedData);
-			stream.Flush();
-			stream.Close();
-		}
+		//public static void WriteToFile(string filepath, ReadOnlySpan<byte> s5Header, ReadOnlySpan<byte> objectHeader, ReadOnlySpan<byte> encodedData)
+		//{
+		//	var stream = File.Create(filepath);
+		//	stream.Write(s5Header);
+		//	stream.Write(objectHeader);
+		//	stream.Write(encodedData);
+		//	stream.Flush();
+		//	stream.Close();
+		//}
 
 		// taken from openloco SawyerStreamReader::encodeRunLengthSingle
 		// not sure why it doesn't work, but it doesn't work. gets the first 10 or so bytes correct for SIGC3.dat but then fails
-		private static Span<byte> EncodeRunLengthSingle(ReadOnlySpan<byte> data)
-		{
-			List<byte> buffer = [];
-			var src = 0; // ptr
-			var srcNormStart = 0; // ptr
-			var srcEnd = data.Length;
-			var count = 0;
+		//private static Span<byte> EncodeRunLengthSingle(ReadOnlySpan<byte> data)
+		//{
+		//	List<byte> buffer = [];
+		//	var src = 0; // ptr
+		//	var srcNormStart = 0; // ptr
+		//	var srcEnd = data.Length;
+		//	var count = 0;
 
-			while (src < srcEnd - 1)
-			{
-				if ((count != 0 && data[src] == data[src + 1]) || count > 125)
-				{
-					buffer.Add((byte)(count - 1));
-					buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
-					srcNormStart += count;
-					count = 0;
-				}
+		//	while (src < srcEnd - 1)
+		//	{
+		//		if ((count != 0 && data[src] == data[src + 1]) || count > 125)
+		//		{
+		//			buffer.Add((byte)(count - 1));
+		//			buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
+		//			srcNormStart += count;
+		//			count = 0;
+		//		}
 
-				if (data[src] == data[src + 1])
-				{
-					for (; count < 125 && src + count < srcEnd; count++)
-					{
-						if (data[src] != data[count])
-						{
-							break;
-						}
-					}
+		//		if (data[src] == data[src + 1])
+		//		{
+		//			for (; count < 125 && src + count < srcEnd; count++)
+		//			{
+		//				if (data[src] != data[count])
+		//				{
+		//					break;
+		//				}
+		//			}
 
-					buffer.Add((byte)(257 - count));
-					buffer.Add(data[src]);
-					src += count;
-					srcNormStart = src;
-					count = 0;
-				}
-				else
-				{
-					count++;
-					src++;
-				}
-			}
+		//			buffer.Add((byte)(257 - count));
+		//			buffer.Add(data[src]);
+		//			src += count;
+		//			srcNormStart = src;
+		//			count = 0;
+		//		}
+		//		else
+		//		{
+		//			count++;
+		//			src++;
+		//		}
+		//	}
 
-			if (data[src] == data[srcEnd - 1])
-			{
-				count++;
-			}
+		//	if (data[src] == data[srcEnd - 1])
+		//	{
+		//		count++;
+		//	}
 
-			if (count != 0)
-			{
-				buffer.Add((byte)(count - 1));
-				buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
-			}
+		//	if (count != 0)
+		//	{
+		//		buffer.Add((byte)(count - 1));
+		//		buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
+		//	}
 
-			// convert to span
-			Span<byte> encodedSpan = new byte[buffer.Count];
-			var counter = 0;
-			foreach (var b in buffer)
-			{
-				encodedSpan[counter++] = b;
-			}
+		//	// convert to span
+		//	Span<byte> encodedSpan = new byte[buffer.Count];
+		//	var counter = 0;
+		//	foreach (var b in buffer)
+		//	{
+		//		encodedSpan[counter++] = b;
+		//	}
 
-			return encodedSpan;
-		}
+		//	return encodedSpan;
+		//}
 	}
 }

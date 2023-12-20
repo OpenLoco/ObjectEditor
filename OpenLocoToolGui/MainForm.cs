@@ -337,10 +337,9 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		// note: doesn't work atm
 		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (pgS5Header.SelectedObject is not ILocoObject obj)
+			if (CurrentUIObject is not ILocoObject obj)
 			{
 				return;
 			}
@@ -508,7 +507,14 @@ namespace OpenLocoToolGui
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
 
-				//LoadDataDump(filename);
+				//try
+				//{
+				//	LoadDataDump(filename);
+				//}
+				//catch (Exception ex)
+				//{
+				//	logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
+				//}
 			}
 		}
 

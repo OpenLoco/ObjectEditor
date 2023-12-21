@@ -6,6 +6,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x38)]
+	[LocoStructType(ObjectType.Competitor)]
 	public record CompetitorObject(
 		[property: LocoStructOffset(0x00), LocoString] string_id var_00,
 		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id var_02,
@@ -19,10 +20,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x37)] uint8_t var_37
 		) : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.Competitor;
-
-		public static int StructSize => 0x38;
-
 		public const int ImagesLength = 9;
 	}
 }

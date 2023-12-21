@@ -6,10 +6,9 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x15E)]
+	[LocoStructType(ObjectType.Vehicle)]
 	public class VehicleObject : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.Vehicle;
-		public const int StructSize = 0x15E;
 		public const int MaxBodySprites = 4;
 		public List<uint16_t> CargoMatchFlags { get; set; } = [];
 

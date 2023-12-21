@@ -74,6 +74,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xF4)]
+	[LocoStructType(ObjectType.Industry)]
 	public record IndustryObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id var_02,
@@ -123,8 +124,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.Industry;
-		public static int StructSize => 0xF4;
 
 		public const int AnimationSequencesSize = 4;
 

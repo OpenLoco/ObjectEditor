@@ -17,6 +17,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
+	[LocoStructType(ObjectType.Land)]
 	public record LandObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t CostIndex,
@@ -37,9 +38,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1D)] uint8_t pad_1D
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.Land;
-		public static int StructSize => 0x1E;
-
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// cliff edge header

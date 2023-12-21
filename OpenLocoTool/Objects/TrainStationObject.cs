@@ -15,6 +15,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xAE)]
+	[LocoStructType(ObjectType.TrainStation)]
 	public record TrainStationObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
@@ -36,9 +37,6 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructProperty(0x??)] const std::byte* var_6E[Var6ELength]
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.TrainStation;
-		public static int StructSize => 0xAE;
-
 		public const int Var6ELength = 16;
 
 		uint8_t[,] CargoOffsetBytes { get; set; }

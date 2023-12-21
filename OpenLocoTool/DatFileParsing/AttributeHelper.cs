@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.DatFileParsing
 {
@@ -18,5 +19,14 @@ namespace OpenLocoTool.DatFileParsing
 
 		public static IEnumerable<PropertyInfo> GetAllPropertiesWithAttribute<T>(Type t) where T : Attribute
 			=> t.GetProperties().Where(Has<T>);
+	}
+
+	public static class ObjectAttributes
+	{
+		public static int StructSize<T>() where T : ILocoStruct
+			=> AttributeHelper.Get<LocoStructSizeAttribute>(typeof(T)).Size;
+
+		public static ObjectType ObjectType<T>() // where T : ILocoStruct
+			=> AttributeHelper.Get<LocoStructTypeAttribute>(typeof(T)).ObjectType;
 	}
 }

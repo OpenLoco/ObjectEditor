@@ -13,6 +13,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x28)]
+	[LocoStructType(ObjectType.Dock)]
 	public record DockObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
@@ -32,9 +33,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x24)] Pos2 BoatPosition
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.Dock;
-		public static int StructSize => 0x28;
-
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// var_14

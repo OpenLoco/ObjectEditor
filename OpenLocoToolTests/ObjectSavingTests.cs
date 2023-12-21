@@ -32,7 +32,7 @@ namespace OpenLocoToolTests
 			var decodedData = SawyerStreamReader.Decode(objectHeader.Encoding, originalEncodedData);
 			remainingData = decodedData;
 
-			var originalObjectData = decodedData[..TrainSignalObject.StructSize];
+			var originalObjectData = decodedData[..ObjectAttributes.StructSize<TrainSignalObject>()];
 
 			// act
 			var bytes = ByteWriter.WriteLocoStruct(loaded.Object);

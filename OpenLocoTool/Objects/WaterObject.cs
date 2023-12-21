@@ -7,6 +7,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0E)]
+	[LocoStructType(ObjectType.Water)]
 	public record WaterObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t CostIndex,
@@ -15,9 +16,5 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x05)] uint8_t var_05,
 		[property: LocoStructOffset(0x06)] uint32_t Image,
 		[property: LocoStructOffset(0x0A)] uint32_t var_0A
-	) : ILocoStruct
-	{
-		public static ObjectType ObjectType => ObjectType.Water;
-		public static int StructSize => 0x0E;
-	}
+	) : ILocoStruct;
 }

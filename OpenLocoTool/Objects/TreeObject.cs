@@ -20,6 +20,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x4C)]
+	[LocoStructType(ObjectType.Tree)]
 	public record TreeObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t var_02,
@@ -41,9 +42,5 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x44)] uint32_t Colours,
 		[property: LocoStructOffset(0x48)] int16_t Rating,
 		[property: LocoStructOffset(0x4A)] int16_t DemolishRatingReduction
-	) : ILocoStruct
-	{
-		public static ObjectType ObjectType => ObjectType.Tree;
-		public static int StructSize => 0x4C;
-	}
+	) : ILocoStruct;
 }

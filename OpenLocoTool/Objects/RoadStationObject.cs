@@ -16,6 +16,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x6E)]
+	[LocoStructType(ObjectType.RoadStation)]
 	public record RoadStationObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
@@ -36,9 +37,6 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructProperty(0x2E)] uint8_t CargoOffsetBytes[4][4]
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.RoadStation;
-		public static int StructSize => 0x6E;
-
 		uint8_t[,] CargoOffsetBytes { get; set; }
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)

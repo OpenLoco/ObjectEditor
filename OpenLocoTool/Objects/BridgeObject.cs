@@ -6,6 +6,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x2C)]
+	[LocoStructType(ObjectType.Bridge)]
 	public record BridgeObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t NoRoof,
@@ -27,9 +28,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x23), LocoArrayLength(BridgeObject.RoadModsLength)] uint8_t[] RoadMods,
 		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear) : ILocoStruct, ILocoStructVariableData
 	{
-		public const ObjectType ObjType = ObjectType.Bridge;
-		public const int StructSize = 0x2C;
-
 		public const int TrackModsLength = 7;
 		public const int RoadModsLength = 7;
 

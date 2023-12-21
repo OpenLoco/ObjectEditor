@@ -34,6 +34,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x30)]
+	[LocoStructType(ObjectType.Road)]
 	public record RoadObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] RoadObjectPieceFlags RoadPieces,
@@ -60,9 +61,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x2F)] uint8_t pad_2F
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.Road;
-		public static int StructSize => 0x30;
-
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible roads/tracks

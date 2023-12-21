@@ -33,6 +33,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0C)]
+	[LocoStructType(ObjectType.Sound)]
 	public record SoundObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint32_t SoundObjectDataPtr,
@@ -41,9 +42,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x08)] uint32_t Volume
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.Sound;
-		public static int StructSize => 0x0C;
-
 		public SoundObjectData SoundObjectData { get; set; }
 
 		public byte[] RawPcmData { get; set; } = [];

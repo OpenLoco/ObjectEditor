@@ -14,6 +14,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1F)]
+	[LocoStructType(ObjectType.Cargo)]
 	public record CargoObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint16_t var_02,
@@ -35,9 +36,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1E)] uint8_t UnitSize
 		) : ILocoStruct, ILocoStructStringTablePostLoad
 	{
-		public static ObjectType ObjectType => ObjectType.Cargo;
-		public static int StructSize => 0x1F;
-
 		//public string Name { get; set; }
 		//public string UnitsAndCargoName { get; set; }
 		//

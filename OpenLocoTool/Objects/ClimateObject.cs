@@ -6,7 +6,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0A)]
-	//[LocoStringTable("Name")]
+	[LocoStructType(ObjectType.Climate)]
 	public record ClimateObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t FirstSeason,
@@ -16,10 +16,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x09)] uint8_t pad_09
 		) : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.Climate;
-
-		public static int StructSize => 0x0A;
-
 		public const int Seasons = 4;
 	}
 }

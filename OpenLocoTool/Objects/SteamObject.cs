@@ -27,6 +27,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x28)]
+	[LocoStructType(ObjectType.Steam)]
 	public record SteamObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint16_t NumImages,
@@ -45,9 +46,6 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x01F), LocoArrayLength(9)] SoundObjectId[] SoundEffects // size tbc
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.Steam;
-		public static int StructSize => 0x28;
-
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// frameInfoType0

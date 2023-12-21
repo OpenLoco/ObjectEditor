@@ -1,4 +1,6 @@
-﻿namespace OpenLocoTool.DatFileParsing
+﻿using OpenLocoTool.Headers;
+
+namespace OpenLocoTool.DatFileParsing
 {
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
 	public class LocoArrayLengthAttribute(int length) : Attribute
@@ -16,6 +18,12 @@
 	public class LocoStructSizeAttribute(int size) : Attribute
 	{
 		public int Size => size;
+	}
+
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+	public class LocoStructTypeAttribute(ObjectType objectType) : Attribute
+	{
+		public ObjectType ObjectType => objectType;
 	}
 
 	// basically a 'skip' attribute to allow deferred loading for variable data

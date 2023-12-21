@@ -7,6 +7,7 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]
+	[LocoStructType(ObjectType.RoadExtra)]
 	public record RoadExtraObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint16_t RoadPieces,
@@ -16,9 +17,5 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A)] uint32_t Image,
 		[property: LocoStructOffset(0x0E)] uint32_t var_0E
-		) : ILocoStruct
-	{
-		public static ObjectType ObjectType => ObjectType.RoadExtra;
-		public static int StructSize => 0x12;
-	}
+		) : ILocoStruct;
 }

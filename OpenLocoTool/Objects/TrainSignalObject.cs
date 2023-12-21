@@ -15,6 +15,7 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
+	[LocoStructType(ObjectType.TrainSignal)]
 	public record TrainSignalObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] TrainSignalObjectFlags Flags,
@@ -32,11 +33,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1C)] uint16_t ObsoleteYear
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.TrainSignal;
-
 		public const int ModsLength = 7;
-
-		public static int StructSize => 0x1E;
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];

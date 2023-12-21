@@ -1,6 +1,13 @@
 # OpenLocoTool
 A modern implementation of 'LocoTool' for dat file parsing
 
+# GUI
+
+1. open UI, no loading
+2. user selects a directory
+3. if no open-loco-tool index file exists, open-loco-tool fully loads all dat files in directory, creates an index and writes it to `objectIndex.json` in that folder. this is SLOW (currently)
+4. next time that directory is opened, the index is read instead of loading all files. this is FAST
+
 # Dat Object Layout
 
 |-File-------------------------------|

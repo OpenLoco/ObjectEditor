@@ -7,7 +7,7 @@ using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public class SawyerStreamReader(ILogger logger)
+	public static class SawyerStreamReader
 	{
 		static uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
@@ -107,7 +107,7 @@ namespace OpenLocoTool.DatFileParsing
 				remainingData = locoStructExtra.Load(remainingData);
 			}
 
-			LocoObject newObj = null;
+			LocoObject? newObj;
 			try
 			{
 				// some objects have graphics data

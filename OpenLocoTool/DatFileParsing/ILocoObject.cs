@@ -10,7 +10,7 @@ namespace OpenLocoTool.DatFileParsing
 		ObjectHeader ObjectHeader { get; set; }
 		ILocoStruct Object { get; set; }
 		StringTable StringTable { get; set; }
-		G1Header G1Header { get; set; }
-		List<G1Element32> G1Elements { get; set; }
+		G1Header? G1Header { get; set; }
+		List<G1Element32>? G1Elements { get; set; }
 	}
 }

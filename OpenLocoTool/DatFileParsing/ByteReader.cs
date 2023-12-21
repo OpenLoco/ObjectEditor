@@ -1,6 +1,5 @@
 ﻿namespace OpenLocoTool.DatFileParsing
 {
-
 	public static class ByteReader
 	{
 		public static object ReadT(ReadOnlySpan<byte> data, Type t, int offset, int arrLength = 0)
@@ -120,7 +119,7 @@
 				var arrLength = 0;
 				if (p.PropertyType.IsArray)
 				{
-					var arrLengthAttr = AttributeHelper.Get<LocoArrayLengthAttribute>(p) ?? throw new ArgumentOutOfRangeException(nameof(LocoArrayLengthAttribute), $"type {t} with property {p} didn't have LocoArrayLength attribute specified");
+					var arrLengthAttr = AttributeHelper.Get<LocoArrayLengthAttribute>(p) ?? throw new ArgumentOutOfRangeException(nameof(data), $"type {t} with property {p} didn't have LocoArrayLength attribute specified");
 					arrLength = arrLengthAttr.Length;
 				}
 

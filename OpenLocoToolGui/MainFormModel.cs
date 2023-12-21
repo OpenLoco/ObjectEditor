@@ -212,7 +212,7 @@ namespace OpenLocoToolGui
 			logger.Info($"Finished creating index. Time={sw.Elapsed}");
 		}
 
-		public void SaveFile(string path, ILocoObject obj)
+		public static void SaveFile(string path, ILocoObject obj)
 			=> SawyerStreamWriter.Save(path, obj);
 
 		public bool LoadDataDirectory(string directory)

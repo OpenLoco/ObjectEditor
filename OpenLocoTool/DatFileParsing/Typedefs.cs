@@ -25,7 +25,7 @@ namespace OpenLocoTool.DatFileParsing
 
 	public class StringTable
 	{
-		public Dictionary<string, Dictionary<LanguageId, string>> table { get; set; } = new();
+		public Dictionary<string, Dictionary<LanguageId, string>> table { get; set; } = [];
 
 		public void Add(string key, Dictionary<LanguageId, string> value) => table.Add(key, value);
 

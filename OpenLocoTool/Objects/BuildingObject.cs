@@ -77,7 +77,6 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[(S5Header.StructLength * var_A4.Length)..];
 
 			// load ??
-			var ptr_AD = 0;
 			for (var i = 0; i < var_AD; ++i)
 			{
 				var size = BitConverter.ToUInt16(remainingData[..2]);

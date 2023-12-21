@@ -42,7 +42,7 @@ namespace OpenLocoTool.Objects
 		public const int Var6ELength = 16;
 
 		uint8_t[,] CargoOffsetBytes { get; set; }
-		uint8_t[] var_6E { get; set; }
+		uint8_t[] var_6E { get; set; } = [];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{

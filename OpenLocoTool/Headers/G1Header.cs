@@ -30,7 +30,7 @@ namespace OpenLocoTool.Headers
 	) : ILocoStruct
 	{
 		public static int StructLength => 0x10;
-		public byte[] ImageData;
+		public byte[] ImageData = [];
 
 		public ReadOnlySpan<byte> Write()
 		{
@@ -67,6 +67,6 @@ namespace OpenLocoTool.Headers
 		) : ILocoStruct
 	{
 		public static int StructLength => 0x08;
-		public byte[] ImageData;
+		public byte[] ImageData = [];
 	}
 }

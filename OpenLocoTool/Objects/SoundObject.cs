@@ -55,7 +55,7 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[4..];
 
 			// pcm data length
-			var pcmDataLength = BitConverter.ToUInt32(remainingData[0..4]);
+			//var pcmDataLength = BitConverter.ToUInt32(remainingData[0..4]); // unused
 			remainingData = remainingData[4..];
 
 			remainingData = remainingData[(int)(numUnkStructs * 16)..];
@@ -66,9 +66,7 @@ namespace OpenLocoTool.Objects
 
 			RawPcmData = remainingData.ToArray();
 
-			remainingData = remainingData[remainingData.Length..];
-
-			return remainingData;
+			return remainingData[remainingData.Length..];
 		}
 
 		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();

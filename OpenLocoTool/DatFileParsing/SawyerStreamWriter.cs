@@ -41,6 +41,7 @@ namespace OpenLocoTool.DatFileParsing
 					ms.Write(strBytes, 0, strBytes.Length);
 					ms.WriteByte((byte)'\0');
 				}
+
 				ms.WriteByte(0xff);
 			}
 
@@ -58,7 +59,7 @@ namespace OpenLocoTool.DatFileParsing
 				ms.Write(BitConverter.GetBytes(obj.G1Header.NumEntries));
 				ms.Write(BitConverter.GetBytes(obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
 
-				int idx = 0;
+				var idx = 0;
 				// write G1Elements
 				foreach (var g1Element in obj.G1Elements)
 				{

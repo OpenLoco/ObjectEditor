@@ -9,13 +9,6 @@ using System.Drawing.Imaging;
 
 namespace OpenLocoToolGui
 {
-	// how this program works
-	//
-	// 1. open UI, no loading
-	// 2. user selects a directory
-	// 3. if no open-loco-tool index file exists, open-loco-tool fully loads all dat files in directory, creates an index and writes it to `objectIndex.json` in that folder. this is SLOW (currently)
-	// 4. next time that directory is opened, the index is read instead of loading all files. this is FAST
-
 	public partial class MainForm : Form
 	{
 		readonly MainFormModel model;
@@ -364,7 +357,7 @@ namespace OpenLocoToolGui
 				try
 				{
 					var exists = File.Exists(filename);
-					model.SaveFile(filename, obj);
+					MainFormModel.SaveFile(filename, obj);
 
 					if (!exists)
 					{
@@ -731,11 +724,11 @@ namespace OpenLocoToolGui
 
 			flpImageTable.ResumeLayout(true);
 
-			pgS5Header.SelectedObject = CurrentUIObject.S5Header;
-			pgObjHeader.SelectedObject = CurrentUIObject.ObjectHeader;
-			pgObject.SelectedObject = CurrentUIObject.Object;
-			ucStringTable.SetDataBinding(CurrentUIObject.StringTable);
-			//pgS5Header.SelectedObject = CurrentUIObject; // dont above with flpImageTable
+			pgS5Header.SelectedObject = CurrentUIObject?.S5Header;
+			pgObjHeader.SelectedObject = CurrentUIObject?.ObjectHeader;
+			pgObject.SelectedObject = CurrentUIObject?.Object;
+			ucStringTable.SetDataBinding(CurrentUIObject?.StringTable);
+			//pgS5Header.SelectedObject = CurrentUIObject; // done above with flpImageTable
 		}
 
 		private void imgContextMenuSave_Click(object sender, EventArgs e)

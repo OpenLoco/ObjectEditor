@@ -700,7 +700,7 @@ namespace OpenLocoToolGui
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
 
-			if (CurrentUIObject?.G1Elements != null && CurrentUIObject.G1Header != null && CurrentUIObject.G1Header.TotalSize != 0 && CurrentUIObject.G1Elements.Count != 0)
+			if (CurrentUIObject?.G1Elements != null && CurrentUIObject.G1Elements.Count != 0)
 			{
 				if (model.Palette is null)
 				{

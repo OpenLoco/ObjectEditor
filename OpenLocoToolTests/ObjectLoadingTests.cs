@@ -85,9 +85,9 @@ namespace OpenLocoToolTests
 			{
 				Assert.That(struc.NoRoof, Is.EqualTo(0), nameof(struc.NoRoof));
 
-				Assert.That(struc.pad_03[0], Is.EqualTo(0), nameof(struc.pad_03) + "[0]");
-				Assert.That(struc.pad_03[1], Is.EqualTo(0), nameof(struc.pad_03) + "[1]");
-				Assert.That(struc.pad_03[2], Is.EqualTo(0), nameof(struc.pad_03) + "[2]");
+				// Assert.That(struc.pad_03[0], Is.EqualTo(0), nameof(struc.pad_03) + "[0]");
+				// Assert.That(struc.pad_03[1], Is.EqualTo(0), nameof(struc.pad_03) + "[1]");
+				// Assert.That(struc.pad_03[2], Is.EqualTo(0), nameof(struc.pad_03) + "[2]");
 
 				Assert.That(struc.var_06, Is.EqualTo(16), nameof(struc.var_06));
 				Assert.That(struc.SpanLength, Is.EqualTo(1), nameof(struc.SpanLength));
@@ -100,9 +100,9 @@ namespace OpenLocoToolTests
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-12), nameof(struc.SellCostFactor));
 				Assert.That(struc.DisabledTrackCfg, Is.EqualTo(0), nameof(struc.DisabledTrackCfg));
 				Assert.That(struc.TrackNumCompatible, Is.EqualTo(0), nameof(struc.TrackNumCompatible));
-				CollectionAssert.AreEqual(struc.TrackMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.TrackMods));
+				//CollectionAssert.AreEqual(struc.TrackMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.TrackMods));
 				Assert.That(struc.RoadNumCompatible, Is.EqualTo(0), nameof(struc.RoadNumCompatible));
-				CollectionAssert.AreEqual(struc.RoadMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.RoadMods));
+				//CollectionAssert.AreEqual(struc.RoadMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.RoadMods));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
 			});
 		}

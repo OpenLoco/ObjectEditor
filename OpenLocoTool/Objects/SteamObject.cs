@@ -20,10 +20,7 @@ namespace OpenLocoTool.Objects
 	public record ImageAndHeight(
 		[property: LocoStructOffset(0x00)] uint8_t ImageOffset,
 		[property: LocoStructOffset(0x01)] uint8_t Height
-	) : ILocoStruct
-	{
-		public static int StructSize => 0x02;
-	}
+	) : ILocoStruct;
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x28)]
@@ -53,7 +50,7 @@ namespace OpenLocoTool.Objects
 			while (remainingData[0] != 0xFF)
 			{
 				frameInfo0++;
-				remainingData = remainingData[ImageAndHeight.StructSize..];
+				remainingData = remainingData[ObjectAttributes.StructSize<ImageAndHeight>()..];
 			}
 
 			remainingData = remainingData[1..];
@@ -63,7 +60,7 @@ namespace OpenLocoTool.Objects
 			while (remainingData[0] != 0xFF)
 			{
 				frameInfo1++;
-				remainingData = remainingData[ImageAndHeight.StructSize..];
+				remainingData = remainingData[ObjectAttributes.StructSize<ImageAndHeight>()..];
 			}
 
 			remainingData = remainingData[1..];

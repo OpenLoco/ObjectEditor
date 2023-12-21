@@ -12,8 +12,5 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x03)] uint8_t BackBogieSpriteInd, // index of a bogieSprites struct
 		[property: LocoStructOffset(0x04)] uint8_t BodySpriteInd, // index of a bogieSprites struct
 		[property: LocoStructOffset(0x05)] uint8_t var_05
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x06;
-	}
+		) : ILocoStruct;
 }

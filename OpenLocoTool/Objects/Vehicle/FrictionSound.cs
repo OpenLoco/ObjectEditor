@@ -13,8 +13,5 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x08)] uint8_t SpeedVolumeFactor,
 		[property: LocoStructOffset(0x09)] uint8_t BaseVolume,
 		[property: LocoStructOffset(0x0A)] uint8_t MaxVolume
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x0B;
-	}
+		) : ILocoStruct;
 }

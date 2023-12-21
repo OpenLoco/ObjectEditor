@@ -24,8 +24,5 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x12)] uint32_t UnkImageId,
 		[property: LocoStructOffset(0x16)] uint32_t GentleImageId,
 		[property: LocoStructOffset(0x1A)] uint32_t SteepImageId
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x1E;
-	}
+		) : ILocoStruct;
 }

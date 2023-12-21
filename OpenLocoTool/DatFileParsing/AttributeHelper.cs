@@ -28,5 +28,8 @@ namespace OpenLocoTool.DatFileParsing
 
 		public static ObjectType ObjectType<T>() // where T : ILocoStruct
 			=> AttributeHelper.Get<LocoStructTypeAttribute>(typeof(T)).ObjectType;
+
+		public static string[] StringTableNames<T>() // where T : ILocoStruct
+			=> AttributeHelper.Get<LocoStringTableAttribute>(typeof(T)).Strings;
 	}
 }

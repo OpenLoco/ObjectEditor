@@ -72,6 +72,12 @@ namespace OpenLocoTool.DatFileParsing
 			var decodedData = Decode(objectHeader.Encoding, remainingData);
 			remainingData = decodedData;
 
+			if (s5Header.ObjectType == ObjectType.Bridge)
+			{
+				var bridge = ObjectLoader.LoadBridge(remainingData);
+				return new LocoObject(s5Header, objectHeader, bridge.Object, bridge.StringTable, bridge.GraphicsTable);
+			}
+
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
 
 			if (locoStruct == null)
@@ -114,7 +120,7 @@ namespace OpenLocoTool.DatFileParsing
 				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
 				logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-				newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
+				newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, imageTable);
 			}
 			catch (Exception ex)
 			{
@@ -128,7 +134,44 @@ namespace OpenLocoTool.DatFileParsing
 			return newObj;
 		}
 
-		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
+		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames)
+		{
+			var stringTable = new StringTable();
+
+			if (data.Length == 0 || stringNames.Length == 0)
+			{
+				return (stringTable, 0);
+			}
+
+			var ptr = 0;
+
+			foreach (var locoString in stringNames)
+			{
+				stringTable.Add(locoString, []);
+				var languageDict = stringTable[locoString];
+
+				for (; ptr < data.Length && data[ptr] != 0xFF;)
+				{
+					var lang = (LanguageId)data[ptr++];
+					var ini = ptr;
+
+					while (data[ptr++] != '\0') ;
+
+					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
+					if (!languageDict.TryAdd(lang, str)) //new StringTableEntry { String = str }))
+					{
+						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
+						break;
+					}
+				}
+
+				ptr++; // add one because we skipped the 0xFF byte at the end
+			}
+
+			return (stringTable, ptr);
+		}
+
+		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
 		{
 			var stringTable = new StringTable();
 			var stringAttributes = AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStruct.GetType());
@@ -167,7 +210,7 @@ namespace OpenLocoTool.DatFileParsing
 			return (stringTable, ptr);
 		}
 
-		static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+		public static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 		{
 			var g1Element32s = new List<G1Element32>();
 
@@ -325,7 +368,7 @@ namespace OpenLocoTool.DatFileParsing
 			=> objectType switch
 			{
 				ObjectType.Airport => ByteReader.ReadLocoStruct<AirportObject>(data),
-				ObjectType.Bridge => ByteReader.ReadLocoStruct<BridgeObject>(data),
+				ObjectType.Bridge => ByteReader.ReadLocoStruct<BridgeObject_>(data),
 				ObjectType.Building => ByteReader.ReadLocoStruct<BuildingObject>(data),
 				ObjectType.Cargo => ByteReader.ReadLocoStruct<CargoObject>(data),
 				ObjectType.CliffEdge => ByteReader.ReadLocoStruct<CliffEdgeObject>(data),

@@ -40,4 +40,11 @@ namespace OpenLocoTool.DatFileParsing
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
 	public class LocoStringAttribute : Attribute
 	{ }
+
+	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
+	public class LocoStringTableAttribute(params string[] strings) : Attribute
+	{
+		public string[] Strings => strings;
+	}
 }

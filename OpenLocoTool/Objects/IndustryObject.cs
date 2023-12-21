@@ -45,10 +45,7 @@ namespace OpenLocoTool.Objects
 	public record BuildingPartAnimation(
 		[property: LocoStructOffset(0x00)] uint8_t NumFrames,     // Must be a power of 2 (0 = no part animation, could still have animation sequence)
 		[property: LocoStructOffset(0x01)] uint8_t AnimationSpeed // Also encodes in bit 7 if the animation is position modified
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x2;
-	}
+		) : ILocoStruct;
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x02)]
@@ -56,10 +53,7 @@ namespace OpenLocoTool.Objects
 	public record IndustryObjectUnk38(
 		[property: LocoStructOffset(0x00)] uint8_t var_00,
 		[property: LocoStructOffset(0x01)] uint8_t var_01
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x02;
-	}
+		) : ILocoStruct;
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x04)]
@@ -67,10 +61,7 @@ namespace OpenLocoTool.Objects
 	public record IndustryObjectProductionRateRange(
 		[property: LocoStructOffset(0x00)] uint16_t Min,
 		[property: LocoStructOffset(0x02)] uint16_t Max
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x04;
-	}
+		) : ILocoStruct;
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xF4)]
@@ -139,7 +130,7 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[(var_1E * 1)..]; // sizeof(uint8_t)
 
 			// part animations
-			remainingData = remainingData[(var_1E * BuildingPartAnimation.StructSize)..]; // sizeof(uint8_t)
+			remainingData = remainingData[(var_1E * ObjectAttributes.StructSize<BuildingPartAnimation>())..]; // sizeof(uint8_t)
 
 			// animation sequences
 			for (var i = 0; i < AnimationSequencesSize; ++i)
@@ -152,7 +143,7 @@ namespace OpenLocoTool.Objects
 			var ptr_38 = 0;
 			while (remainingData[ptr_38] != 0xFF)
 			{
-				ptr_38 += IndustryObjectUnk38.StructSize;
+				ptr_38 += ObjectAttributes.StructSize<IndustryObjectUnk38>();
 			}
 
 			ptr_38++;

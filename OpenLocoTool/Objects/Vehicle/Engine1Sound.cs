@@ -18,8 +18,5 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0E)] uint8_t VolumeIncreaseStep,
 		[property: LocoStructOffset(0x0F)] uint8_t VolumeDecreaseStep,
 		[property: LocoStructOffset(0x10)] uint8_t SpeedFreqFactor
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x11;
-	}
+		) : ILocoStruct;
 }

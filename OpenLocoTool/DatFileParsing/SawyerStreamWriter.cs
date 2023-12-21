@@ -53,10 +53,10 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			// graphics data
-			if (obj.G1Header != null && obj.G1Elements != null && obj.G1Header.NumEntries != 0 && obj.G1Elements.Count != 0)
+			if (obj.G1Elements != null && obj.G1Elements.Count != 0)
 			{
 				// write G1Header
-				ms.Write(BitConverter.GetBytes(obj.G1Header.NumEntries));
+				ms.Write(BitConverter.GetBytes(obj.G1Elements.Count));
 				ms.Write(BitConverter.GetBytes(obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
 
 				var idx = 0;

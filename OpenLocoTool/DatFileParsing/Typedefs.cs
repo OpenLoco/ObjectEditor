@@ -18,11 +18,9 @@ namespace OpenLocoTool.DatFileParsing
 	public record Pos2(
 		[property: LocoStructOffset(0x00)] int16_t X,
 		[property: LocoStructOffset(0x02)] int16_t Y
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x04;
-	}
+		) : ILocoStruct;
 
+	//[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class StringTable
 	{
 		public Dictionary<string, Dictionary<LanguageId, string>> table { get; set; } = [];

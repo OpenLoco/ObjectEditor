@@ -15,7 +15,7 @@ namespace OpenLocoToolGui
 		readonly ILogger logger;
 
 		// could use pgObject.SelectedObjectsChanged event, but we'll just do this for now
-		public ILocoObject? CurrentUIObject
+		public UiLocoObject? CurrentUIObject
 		{
 			get => currentUIObject;
 			set
@@ -24,7 +24,7 @@ namespace OpenLocoToolGui
 				RefreshObjectUI();
 			}
 		}
-		ILocoObject? currentUIObject;
+		UiLocoObject? currentUIObject;
 
 		IList<Control> CurrentUIImages
 		{
@@ -333,14 +333,14 @@ namespace OpenLocoToolGui
 
 		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (CurrentUIObject is not ILocoObject obj)
+			if (CurrentUIObject is not UiLocoObject obj)
 			{
 				return;
 			}
 
-			if (!SaveEnabledObjects.Types.Contains(obj.S5Header.ObjectType))
+			if (!SaveEnabledObjects.Types.Contains(obj.DatFileInfo.S5Header.ObjectType))
 			{
-				var msg = $"Saving is not currently implemented for {obj.S5Header.ObjectType} objects";
+				var msg = $"Saving is not currently implemented for {obj.DatFileInfo.S5Header.ObjectType} objects";
 				logger.Error(msg);
 				logger.Info($"Saving is currently supported for the following objects: [{SaveEnabledObjects.Types.Aggregate("", (a, b) => a + ", " + b)}]");
 				MessageBox.Show(msg);
@@ -700,34 +700,43 @@ namespace OpenLocoToolGui
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
 
-			if (CurrentUIObject?.G1Elements != null && CurrentUIObject.G1Elements.Count != 0)
+			if (CurrentUIObject == null)
+			{
+				var selectedFile = tvFileTree.SelectedNode.Text;
+				MessageBox.Show($"File \"{selectedFile}\" couldn't be loaded. Does it exist? Suggest recreating object index.");
+				logger.Error($"File \"{selectedFile}\" couldn't be loaded. Does it exist? Suggest recreating object index.");
+				return;
+			}
+
+			if (CurrentUIObject.LocoObject.G1Elements != null && CurrentUIObject.LocoObject?.G1Elements.Count != 0)
 			{
 				if (model.Palette is null)
 				{
 					MessageBox.Show("No palette file loaded - please load one from File -> Load Palette. You can use palette.png in the top level folder of this repo.");
+					logger.Error("No palette file loaded - please load one from File -> Load Palette. You can use palette.png in the top level folder of this repo.");
 					return;
 					//SelectNewPalette();
 				}
 
-				var images = CreateImages(CurrentUIObject.G1Elements, model.Palette);
-				CurrentUIImages = CreateImageControls(images, CurrentUIObject.G1Elements).ToArray();
+				var images = CreateImages(CurrentUIObject.LocoObject.G1Elements, model.Palette);
+				CurrentUIImages = CreateImageControls(images, CurrentUIObject.LocoObject.G1Elements).ToArray();
 			}
 			else
 			{
 				CurrentUIImages = new List<Control>();
 			}
 
-			if (CurrentUIObject?.Object is SoundObject soundObject)
+			if (CurrentUIObject?.LocoObject.Object is SoundObject soundObject)
 			{
 				CreateSounds(soundObject);
 			}
 
 			flpImageTable.ResumeLayout(true);
 
-			pgS5Header.SelectedObject = CurrentUIObject?.S5Header;
-			pgObjHeader.SelectedObject = CurrentUIObject?.ObjectHeader;
-			pgObject.SelectedObject = CurrentUIObject?.Object;
-			ucStringTable.SetDataBinding(CurrentUIObject?.StringTable);
+			pgS5Header.SelectedObject = CurrentUIObject?.DatFileInfo.S5Header;
+			pgObjHeader.SelectedObject = CurrentUIObject?.DatFileInfo.ObjectHeader;
+			pgObject.SelectedObject = CurrentUIObject?.LocoObject.Object;
+			ucStringTable.SetDataBinding(CurrentUIObject?.LocoObject.StringTable);
 			//pgS5Header.SelectedObject = CurrentUIObject; // done above with flpImageTable
 		}
 

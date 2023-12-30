@@ -6,6 +6,7 @@ namespace OpenLocoTool.Data
 	{
 		public static HashSet<ObjectType> Types =
 		[
+			ObjectType.Bridge,
 			ObjectType.StreetLight,
 		];
 	}

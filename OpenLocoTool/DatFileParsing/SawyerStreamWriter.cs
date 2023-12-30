@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Xml.Linq;
 using OpenLocoTool.Headers;
 using OpenLocoToolCommon;
 
@@ -6,13 +7,13 @@ namespace OpenLocoTool.DatFileParsing
 {
 	public static class SawyerStreamWriter
 	{
-		public static void Save(string filepath, ILocoObject locoObject, ILogger? logger = null)
+		public static void Save(string filepath, string objName, ILocoObject locoObject, ILogger? logger = null)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
-			logger?.Info($"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
+			logger?.Info($"Writing \"{objName}\" to {filepath}");
 
-			var objBytes = WriteLocoObject(locoObject);
+			var objBytes = WriteLocoObject(objName, locoObject);
 
 			var stream = File.Create(filepath);
 			stream.Write(objBytes);
@@ -20,13 +21,25 @@ namespace OpenLocoTool.DatFileParsing
 			stream.Close();
 		}
 
-		public static ReadOnlySpan<byte> WriteLocoObject(ILocoObject obj)
+		public static ReadOnlySpan<byte> WriteLocoObject(string objName, ILocoObject obj)
 		{
 			var ms = new MemoryStream();
 
-			ms.Write(obj.S5Header.Write());
-			ms.Write((obj.ObjectHeader with { Encoding = SawyerEncoding.Uncompressed }).Write());
+			// s5 header
+			uint32_t checksum = 0; // todo: compute this
+			var s5Header = new S5Header(objName, checksum);
+			s5Header.SourceGame = SourceGame.Custom;
+			var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
+			s5Header.ObjectType = attr!.ObjectType;
 
+			ms.Write(s5Header.Write());
+
+			// obj header
+			ms.WriteByte((byte)SawyerEncoding.Uncompressed);
+			uint32_t objectSize = 0; // todo: this is the size of the object in bytes, we need to calculate it
+			ms.Write(BitConverter.GetBytes(objectSize));
+
+			// obj
 			var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
 			ms.Write(objBytes);
 
@@ -59,26 +72,25 @@ namespace OpenLocoTool.DatFileParsing
 				ms.Write(BitConverter.GetBytes(obj.G1Elements.Count));
 				ms.Write(BitConverter.GetBytes(obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
 
-				var idx = 0;
-				// write G1Elements
+				var offsetBytesIntoImageData = 0;
+				// write G1Element headers
 				foreach (var g1Element in obj.G1Elements)
 				{
 					// we need to update the offsets of the image data
 					// and we're not going to compress the data on save, so make sure the RLECompressed flag is not set
-					var offset = idx < 1 ? 0 : obj.G1Elements[idx - 1].Offset + (uint)obj.G1Elements[idx - 1].ImageData.Length;
 					var newElement = g1Element with
 					{
-						Offset = offset,
+						Offset = (uint)offsetBytesIntoImageData,
 						Flags = g1Element.Flags & ~G1ElementFlags.IsRLECompressed
 					};
+
 					ms.Write(newElement.Write());
-					idx++;
+					offsetBytesIntoImageData += g1Element.ImageData.Length;
 				}
 
 				// write G1Elements ImageData
 				foreach (var g1Element in obj.G1Elements)
 				{
-					// we're not going to compress the data on save, so make sure the RLECompressed flag is not set
 					ms.Write(g1Element.ImageData);
 				}
 			}

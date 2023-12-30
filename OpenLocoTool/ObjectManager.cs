@@ -19,7 +19,7 @@ namespace OpenLocoTool
 			where T : ILocoStruct => Objects[type].Select(a => a.Object).Cast<T>().ToList();
 
 		public static void Add<T>(T obj) where T : ILocoObject
-			=> Objects[obj.S5Header.ObjectType].Add(obj);
+			=> Objects[ObjectAttributes.ObjectType(obj.Object)].Add(obj);
 	}
 
 	// unused for now

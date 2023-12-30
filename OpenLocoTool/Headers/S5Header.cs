@@ -27,14 +27,14 @@ namespace OpenLocoTool.Headers
 
 		public SourceGame SourceGame
 		{
-			get => (SourceGame)((Flags >> 6) & 0x3);
+			get => (SourceGame)((Flags >> 6) & 0x3u);
 			set => Flags = (Flags & ~(0x3u << 6)) | (((uint)value & 0x3u) << 6);
 		}
 
 		public ObjectType ObjectType
 		{
 			get => (ObjectType)(Flags & 0x3F);
-			set => Flags = (Flags & ~0x3u) | ((uint)value & 0x3u);
+			set => Flags = (Flags & (~0x3u << 6)) | ((uint)value & 0x3F);
 		}
 
 		public static S5Header Read(ReadOnlySpan<byte> data)

@@ -1,5 +1,5 @@
 ﻿global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLocoToolGui.IndexObjectHeader>;
-global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLocoTool.DatFileParsing.ILocoObject>;
+global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLocoToolGui.UiLocoObject>;
 
 using System.Collections.Concurrent;
 using System.Text.Json;
@@ -158,7 +158,7 @@ namespace OpenLocoToolGui
 		void CreateIndex(string[] allFiles, IProgress<float> progress)
 		{
 			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
-			ConcurrentDictionary<string, ILocoObject> ccObjectCache = new(); // key is full path/filename
+			ConcurrentDictionary<string, UiLocoObject> ccObjectCache = new(); // key is full path/filename
 
 			var count = 0;
 
@@ -171,8 +171,8 @@ namespace OpenLocoToolGui
 			{
 				try
 				{
-					var locoObject = SawyerStreamReader.LoadFull(file);
-					if (!ccObjectCache.TryAdd(file, locoObject))
+					var (fileInfo, locoObject) = SawyerStreamReader.LoadFull(file);
+					if (!ccObjectCache.TryAdd(file, new UiLocoObject { DatFileInfo = fileInfo, LocoObject = locoObject }))
 					{
 						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
 					}
@@ -183,7 +183,7 @@ namespace OpenLocoToolGui
 						veh = vo.Type;
 					}
 
-					var indexObjectHeader = new IndexObjectHeader(locoObject.S5Header.Name, locoObject.S5Header.ObjectType, veh);
+					var indexObjectHeader = new IndexObjectHeader(fileInfo.S5Header.Name, fileInfo.S5Header.ObjectType, veh);
 					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 					{
 						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
@@ -212,8 +212,8 @@ namespace OpenLocoToolGui
 			logger.Info($"Finished creating index. Time={sw.Elapsed}");
 		}
 
-		public static void SaveFile(string path, ILocoObject obj)
-			=> SawyerStreamWriter.Save(path, obj);
+		public static void SaveFile(string path, UiLocoObject obj)
+			=> SawyerStreamWriter.Save(path, obj.DatFileInfo.S5Header.Name, obj.LocoObject);
 
 		public bool LoadDataDirectory(string directory)
 		{
@@ -296,7 +296,7 @@ namespace OpenLocoToolGui
 			return JsonSerializer.Deserialize<HeaderIndex>(json, GetOptions()) ?? [];
 		}
 
-		public ILocoObject? LoadAndCacheObject(string filename)
+		public UiLocoObject? LoadAndCacheObject(string filename)
 		{
 			if (string.IsNullOrEmpty(filename) || !filename.EndsWith(".dat", StringComparison.InvariantCultureIgnoreCase) || !File.Exists(filename))
 			{
@@ -310,8 +310,9 @@ namespace OpenLocoToolGui
 			else
 			{
 				var obj = SawyerStreamReader.LoadFull(filename);
-				ObjectCache.TryAdd(filename, obj);
-				return obj;
+				var uiObj = new UiLocoObject { DatFileInfo = obj.Item1, LocoObject = obj.Item2 };
+				ObjectCache.TryAdd(filename, uiObj);
+				return uiObj;
 			}
 		}
 	}

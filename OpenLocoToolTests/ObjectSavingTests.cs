@@ -35,7 +35,7 @@ namespace OpenLocoToolTests
 			var originalObjectData = decodedData[..ObjectAttributes.StructSize<TrainSignalObject>()];
 
 			// act
-			var bytes = ByteWriter.WriteLocoStruct(loaded.Object);
+			var bytes = ByteWriter.WriteLocoStruct(loaded.LocoObject.Object);
 
 			// assert
 			CollectionAssert.AreEqual(originalObjectData, bytes.ToArray());

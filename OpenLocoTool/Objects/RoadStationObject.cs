@@ -26,7 +26,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x0B)] RoadStationFlags Flags,
-		[property: LocoStructOffset(0x0C)] uint32_t Image,
+		[property: LocoStructOffset(0x0C)] image_id Image,
 		[property: LocoStructOffset(0x10), LocoArrayLength(4)] uint32_t[] var_10,
 		[property: LocoStructOffset(0x20)] uint8_t NumCompatible,
 		[property: LocoStructOffset(0x21), LocoArrayLength(7)] uint8_t[] Mods,

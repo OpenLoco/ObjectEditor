@@ -38,12 +38,14 @@
 			flpImageTable = new FlowLayoutPanel();
 			scObjectAndLogs = new SplitContainer();
 			tcObjectOverview = new TabControl();
-			tpObjectView = new TabPage();
-			tcSubObjectView = new TabControl();
+			tpObjectFileHeaders = new TabPage();
+			tcFileHeaders = new TabControl();
 			tpObjectS5Header = new TabPage();
 			pgS5Header = new PropertyGrid();
 			tpObjectObjHeader = new TabPage();
 			pgObjHeader = new PropertyGrid();
+			tpObjectView = new TabPage();
+			tcSubObjectView = new TabControl();
 			tpObjectObject = new TabPage();
 			pgObject = new PropertyGrid();
 			tpObjectStringTable = new TabPage();
@@ -82,17 +84,17 @@
 			headerToolStripMenuItem = new ToolStripMenuItem();
 			pictureDataToolStripMenuItem = new ToolStripMenuItem();
 			locoObjectBindingSource = new BindingSource(components);
-			tpObjectFileHeaders = new TabPage();
-			tcFileHeaders = new TabControl();
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).BeginInit();
 			scObjectAndLogs.Panel1.SuspendLayout();
 			scObjectAndLogs.Panel2.SuspendLayout();
 			scObjectAndLogs.SuspendLayout();
 			tcObjectOverview.SuspendLayout();
-			tpObjectView.SuspendLayout();
-			tcSubObjectView.SuspendLayout();
+			tpObjectFileHeaders.SuspendLayout();
+			tcFileHeaders.SuspendLayout();
 			tpObjectS5Header.SuspendLayout();
 			tpObjectObjHeader.SuspendLayout();
+			tpObjectView.SuspendLayout();
+			tcSubObjectView.SuspendLayout();
 			tpObjectObject.SuspendLayout();
 			tpObjectStringTable.SuspendLayout();
 			tpObjectGraphicsTable.SuspendLayout();
@@ -116,8 +118,6 @@
 			menuStrip.SuspendLayout();
 			imgContextMenu.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)locoObjectBindingSource).BeginInit();
-			tpObjectFileHeaders.SuspendLayout();
-			tcFileHeaders.SuspendLayout();
 			SuspendLayout();
 			// 
 			// lbLogs
@@ -137,7 +137,7 @@
 			tbFileFilter.BorderStyle = BorderStyle.FixedSingle;
 			tbFileFilter.Dock = DockStyle.Top;
 			tbFileFilter.Location = new Point(4, 27);
-			tbFileFilter.Margin = new Padding(4, 4, 4, 4);
+			tbFileFilter.Margin = new Padding(4);
 			tbFileFilter.Name = "tbFileFilter";
 			tbFileFilter.Size = new Size(294, 23);
 			tbFileFilter.TabIndex = 24;
@@ -147,7 +147,7 @@
 			// 
 			lblFilenameRegex.Dock = DockStyle.Top;
 			lblFilenameRegex.Location = new Point(4, 4);
-			lblFilenameRegex.Margin = new Padding(4, 4, 4, 4);
+			lblFilenameRegex.Margin = new Padding(4);
 			lblFilenameRegex.Name = "lblFilenameRegex";
 			lblFilenameRegex.Size = new Size(294, 23);
 			lblFilenameRegex.TabIndex = 25;
@@ -162,7 +162,7 @@
 			flpImageTable.FlowDirection = FlowDirection.TopDown;
 			flpImageTable.Location = new Point(0, 0);
 			flpImageTable.Name = "flpImageTable";
-			flpImageTable.Size = new Size(870, 504);
+			flpImageTable.Size = new Size(867, 422);
 			flpImageTable.TabIndex = 30;
 			// 
 			// scObjectAndLogs
@@ -195,29 +195,26 @@
 			tcObjectOverview.Size = new Size(893, 515);
 			tcObjectOverview.TabIndex = 34;
 			// 
-			// tpObjectView
+			// tpObjectFileHeaders
 			// 
-			tpObjectView.Controls.Add(tcSubObjectView);
-			tpObjectView.Location = new Point(4, 24);
-			tpObjectView.Name = "tpObjectView";
-			tpObjectView.Padding = new Padding(3, 3, 3, 3);
-			tpObjectView.Size = new Size(885, 487);
-			tpObjectView.TabIndex = 0;
-			tpObjectView.Text = "Object View";
-			tpObjectView.UseVisualStyleBackColor = true;
+			tpObjectFileHeaders.Controls.Add(tcFileHeaders);
+			tpObjectFileHeaders.Location = new Point(4, 24);
+			tpObjectFileHeaders.Name = "tpObjectFileHeaders";
+			tpObjectFileHeaders.Size = new Size(885, 487);
+			tpObjectFileHeaders.TabIndex = 2;
+			tpObjectFileHeaders.Text = "File Headers";
+			tpObjectFileHeaders.UseVisualStyleBackColor = true;
 			// 
-			// tcSubObjectView
+			// tcFileHeaders
 			// 
-			tcSubObjectView.Controls.Add(tpObjectObject);
-			tcSubObjectView.Controls.Add(tpObjectStringTable);
-			tcSubObjectView.Controls.Add(tpObjectGraphicsTable);
-			tcSubObjectView.Dock = DockStyle.Fill;
-			tcSubObjectView.Location = new Point(3, 3);
-			tcSubObjectView.Margin = new Padding(2, 1, 2, 1);
-			tcSubObjectView.Name = "tcSubObjectView";
-			tcSubObjectView.SelectedIndex = 0;
-			tcSubObjectView.Size = new Size(879, 481);
-			tcSubObjectView.TabIndex = 33;
+			tcFileHeaders.Controls.Add(tpObjectS5Header);
+			tcFileHeaders.Controls.Add(tpObjectObjHeader);
+			tcFileHeaders.Dock = DockStyle.Fill;
+			tcFileHeaders.Location = new Point(0, 0);
+			tcFileHeaders.Name = "tcFileHeaders";
+			tcFileHeaders.SelectedIndex = 0;
+			tcFileHeaders.Size = new Size(885, 487);
+			tcFileHeaders.TabIndex = 0;
 			// 
 			// tpObjectS5Header
 			// 
@@ -263,6 +260,30 @@
 			pgObjHeader.TabIndex = 23;
 			pgObjHeader.ToolbarVisible = false;
 			// 
+			// tpObjectView
+			// 
+			tpObjectView.Controls.Add(tcSubObjectView);
+			tpObjectView.Location = new Point(4, 24);
+			tpObjectView.Name = "tpObjectView";
+			tpObjectView.Padding = new Padding(3);
+			tpObjectView.Size = new Size(885, 487);
+			tpObjectView.TabIndex = 0;
+			tpObjectView.Text = "Object View";
+			tpObjectView.UseVisualStyleBackColor = true;
+			// 
+			// tcSubObjectView
+			// 
+			tcSubObjectView.Controls.Add(tpObjectObject);
+			tcSubObjectView.Controls.Add(tpObjectStringTable);
+			tcSubObjectView.Controls.Add(tpObjectGraphicsTable);
+			tcSubObjectView.Dock = DockStyle.Fill;
+			tcSubObjectView.Location = new Point(3, 3);
+			tcSubObjectView.Margin = new Padding(2, 1, 2, 1);
+			tcSubObjectView.Name = "tcSubObjectView";
+			tcSubObjectView.SelectedIndex = 0;
+			tcSubObjectView.Size = new Size(879, 481);
+			tcSubObjectView.TabIndex = 33;
+			// 
 			// tpObjectObject
 			// 
 			tpObjectObject.Controls.Add(pgObject);
@@ -292,7 +313,7 @@
 			tpObjectStringTable.Margin = new Padding(2, 1, 2, 1);
 			tpObjectStringTable.Name = "tpObjectStringTable";
 			tpObjectStringTable.Padding = new Padding(2, 1, 2, 1);
-			tpObjectStringTable.Size = new Size(874, 535);
+			tpObjectStringTable.Size = new Size(871, 453);
 			tpObjectStringTable.TabIndex = 3;
 			tpObjectStringTable.Text = "Strings";
 			tpObjectStringTable.UseVisualStyleBackColor = true;
@@ -303,7 +324,7 @@
 			ucStringTable.Location = new Point(2, 1);
 			ucStringTable.Margin = new Padding(1, 0, 1, 0);
 			ucStringTable.Name = "ucStringTable";
-			ucStringTable.Size = new Size(870, 533);
+			ucStringTable.Size = new Size(867, 451);
 			ucStringTable.TabIndex = 0;
 			// 
 			// tpObjectGraphicsTable
@@ -313,7 +334,7 @@
 			tpObjectGraphicsTable.Margin = new Padding(2, 1, 2, 1);
 			tpObjectGraphicsTable.Name = "tpObjectGraphicsTable";
 			tpObjectGraphicsTable.Padding = new Padding(2, 1, 2, 1);
-			tpObjectGraphicsTable.Size = new Size(874, 535);
+			tpObjectGraphicsTable.Size = new Size(871, 453);
 			tpObjectGraphicsTable.TabIndex = 4;
 			tpObjectGraphicsTable.Text = "Graphics";
 			tpObjectGraphicsTable.UseVisualStyleBackColor = true;
@@ -335,8 +356,8 @@
 			scImageViewer.Panel2.Controls.Add(tbCurrentPage);
 			scImageViewer.Panel2.Controls.Add(btnPagePrevious);
 			scImageViewer.Panel2.Controls.Add(btnPageNext);
-			scImageViewer.Size = new Size(870, 533);
-			scImageViewer.SplitterDistance = 504;
+			scImageViewer.Size = new Size(867, 451);
+			scImageViewer.SplitterDistance = 422;
 			scImageViewer.TabIndex = 32;
 			// 
 			// tbCurrentPage
@@ -346,7 +367,7 @@
 			tbCurrentPage.Enabled = false;
 			tbCurrentPage.Location = new Point(253, 2);
 			tbCurrentPage.Name = "tbCurrentPage";
-			tbCurrentPage.Size = new Size(389, 23);
+			tbCurrentPage.Size = new Size(386, 23);
 			tbCurrentPage.TabIndex = 33;
 			tbCurrentPage.TextAlign = HorizontalAlignment.Center;
 			// 
@@ -364,7 +385,7 @@
 			// btnPageNext
 			// 
 			btnPageNext.Dock = DockStyle.Right;
-			btnPageNext.Location = new Point(642, 0);
+			btnPageNext.Location = new Point(639, 0);
 			btnPageNext.Name = "btnPageNext";
 			btnPageNext.Size = new Size(228, 25);
 			btnPageNext.TabIndex = 31;
@@ -377,7 +398,7 @@
 			tpObjectDump.Controls.Add(scAnnnotationDump);
 			tpObjectDump.Location = new Point(4, 24);
 			tpObjectDump.Name = "tpObjectDump";
-			tpObjectDump.Padding = new Padding(3, 3, 3, 3);
+			tpObjectDump.Padding = new Padding(3);
 			tpObjectDump.Size = new Size(885, 487);
 			tpObjectDump.TabIndex = 1;
 			tpObjectDump.Text = "Object Dump";
@@ -458,7 +479,7 @@
 			tabPage2.Controls.Add(tvObjType);
 			tabPage2.Location = new Point(4, 24);
 			tabPage2.Name = "tabPage2";
-			tabPage2.Padding = new Padding(3, 3, 3, 3);
+			tabPage2.Padding = new Padding(3);
 			tabPage2.Size = new Size(294, 532);
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "Category";
@@ -478,8 +499,8 @@
 			tabPage1.Controls.Add(tvFileTree);
 			tabPage1.Location = new Point(4, 24);
 			tabPage1.Name = "tabPage1";
-			tabPage1.Padding = new Padding(3, 3, 3, 3);
-			tabPage1.Size = new Size(295, 614);
+			tabPage1.Padding = new Padding(3);
+			tabPage1.Size = new Size(294, 532);
 			tabPage1.TabIndex = 0;
 			tabPage1.Text = "File";
 			tabPage1.UseVisualStyleBackColor = true;
@@ -489,7 +510,7 @@
 			tvFileTree.Dock = DockStyle.Fill;
 			tvFileTree.Location = new Point(3, 3);
 			tvFileTree.Name = "tvFileTree";
-			tvFileTree.Size = new Size(289, 608);
+			tvFileTree.Size = new Size(288, 526);
 			tvFileTree.TabIndex = 1;
 			tvFileTree.AfterSelect += tv_AfterSelect;
 			// 
@@ -500,9 +521,9 @@
 			pnFileFilter.Controls.Add(lblFilenameRegex);
 			pnFileFilter.Dock = DockStyle.Top;
 			pnFileFilter.Location = new Point(0, 0);
-			pnFileFilter.Margin = new Padding(4, 4, 4, 4);
+			pnFileFilter.Margin = new Padding(4);
 			pnFileFilter.Name = "pnFileFilter";
-			pnFileFilter.Padding = new Padding(4, 4, 4, 4);
+			pnFileFilter.Padding = new Padding(4);
 			pnFileFilter.Size = new Size(302, 74);
 			pnFileFilter.TabIndex = 30;
 			// 
@@ -633,27 +654,6 @@
 			// 
 			locoObjectBindingSource.DataSource = typeof(OpenLocoTool.DatFileParsing.LocoObject);
 			// 
-			// tpObjectFileHeaders
-			// 
-			tpObjectFileHeaders.Controls.Add(tcFileHeaders);
-			tpObjectFileHeaders.Location = new Point(4, 24);
-			tpObjectFileHeaders.Name = "tpObjectFileHeaders";
-			tpObjectFileHeaders.Size = new Size(885, 487);
-			tpObjectFileHeaders.TabIndex = 2;
-			tpObjectFileHeaders.Text = "File Headers";
-			tpObjectFileHeaders.UseVisualStyleBackColor = true;
-			// 
-			// tcFileHeaders
-			// 
-			tcFileHeaders.Controls.Add(tpObjectS5Header);
-			tcFileHeaders.Controls.Add(tpObjectObjHeader);
-			tcFileHeaders.Dock = DockStyle.Fill;
-			tcFileHeaders.Location = new Point(0, 0);
-			tcFileHeaders.Name = "tcFileHeaders";
-			tcFileHeaders.SelectedIndex = 0;
-			tcFileHeaders.Size = new Size(885, 487);
-			tcFileHeaders.TabIndex = 0;
-			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -664,7 +664,7 @@
 			Icon = (Icon)resources.GetObject("$this.Icon");
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
-			Padding = new Padding(4, 4, 4, 4);
+			Padding = new Padding(4);
 			Text = "OpenLocoTool";
 			Load += MainForm_Load;
 			scObjectAndLogs.Panel1.ResumeLayout(false);
@@ -672,10 +672,12 @@
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).EndInit();
 			scObjectAndLogs.ResumeLayout(false);
 			tcObjectOverview.ResumeLayout(false);
-			tpObjectView.ResumeLayout(false);
-			tcSubObjectView.ResumeLayout(false);
+			tpObjectFileHeaders.ResumeLayout(false);
+			tcFileHeaders.ResumeLayout(false);
 			tpObjectS5Header.ResumeLayout(false);
 			tpObjectObjHeader.ResumeLayout(false);
+			tpObjectView.ResumeLayout(false);
+			tcSubObjectView.ResumeLayout(false);
 			tpObjectObject.ResumeLayout(false);
 			tpObjectStringTable.ResumeLayout(false);
 			tpObjectGraphicsTable.ResumeLayout(false);
@@ -702,8 +704,6 @@
 			menuStrip.PerformLayout();
 			imgContextMenu.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)locoObjectBindingSource).EndInit();
-			tpObjectFileHeaders.ResumeLayout(false);
-			tcFileHeaders.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}

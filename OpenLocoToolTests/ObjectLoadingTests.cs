@@ -291,8 +291,8 @@ namespace OpenLocoToolTests
 				Assert.That(struc.CostFactor, Is.EqualTo(20), nameof(struc.CostFactor));
 				Assert.That(struc.pad_09, Is.EqualTo(0), nameof(struc.pad_09));
 				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
-				Assert.That(struc.var_12, Is.EqualTo(0), nameof(struc.var_12));
-				Assert.That(struc.var_16, Is.EqualTo(0), nameof(struc.var_16));
+				Assert.That(struc.CliffEdgeImage, Is.EqualTo(0), nameof(struc.CliffEdgeImage));
+				Assert.That(struc.mapPixelImage, Is.EqualTo(0), nameof(struc.mapPixelImage));
 				Assert.That(struc.pad_1A, Is.EqualTo(0), nameof(struc.pad_1A));
 				Assert.That(struc.NumVariations, Is.EqualTo(3), nameof(struc.NumVariations));
 				Assert.That(struc.VariationLikelihood, Is.EqualTo(10), nameof(struc.VariationLikelihood));
@@ -332,8 +332,8 @@ namespace OpenLocoToolTests
 			Assert.Multiple(() =>
 			{
 				CollectionAssert.AreEqual(struc.pad_06, Array.CreateInstance(typeof(byte), 2), nameof(struc.pad_06));
-				Assert.That(struc.var_08, Is.EqualTo(1), nameof(struc.var_08));
-				CollectionAssert.AreEqual(struc.var_09, Array.CreateInstance(typeof(byte), 4), nameof(struc.var_09));
+				Assert.That(struc.RequiredObjectCount, Is.EqualTo(1), nameof(struc.RequiredObjectCount));
+				CollectionAssert.AreEqual(struc.requiredObjects, Array.CreateInstance(typeof(byte), 4), nameof(struc.requiredObjects));
 				CollectionAssert.AreEqual(struc.pad_0D, Array.CreateInstance(typeof(byte), 5), nameof(struc.pad_0D));
 			});
 		}

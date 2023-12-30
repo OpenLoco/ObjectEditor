@@ -22,9 +22,12 @@ namespace OpenLocoTool.Objects
 		uint16_t disabledTrackCfg,
 		uint8_t trackNumCompatible,
 		uint8_t roadNumCompatible,
-		uint16_t designedYear) : ILocoStruct, ILocoStructVariableData
+		uint16_t designedYear)
+		: ILocoStruct, ILocoStructVariableData
 	{
-		[LocoStructOffset(0x00)] public uint8_t NoRoof { get; set; } = noRoof;
+		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name { get; set; }
+		[LocoStructOffset(0x02)] public uint8_t NoRoof { get; set; } = noRoof;
+		//[LocoStructOffset(0x03)] uint8_t[] pad_03 { get; set; } = new uint8_t[3];
 		[LocoStructOffset(0x06)] public uint16_t var_06 { get; set; } = var_06;
 		[LocoStructOffset(0x08)] public uint8_t SpanLength { get; set; } = spanLength;
 		[LocoStructOffset(0x09)] public uint8_t PillarSpacing { get; set; } = pillarSpacing;
@@ -35,8 +38,11 @@ namespace OpenLocoTool.Objects
 		[LocoStructOffset(0x10)] public int16_t HeightCostFactor { get; set; } = heightCostFactor;
 		[LocoStructOffset(0x12)] public int16_t SellCostFactor { get; set; } = sellCostFactor;
 		[LocoStructOffset(0x14)] public uint16_t DisabledTrackCfg { get; set; } = disabledTrackCfg;
+		//[LocoStructOffset(0x16)] image_id Image { get; set; }
 		[LocoStructOffset(0x1A)] public uint8_t TrackNumCompatible { get; set; } = trackNumCompatible;
+		//[LocoStructOffset(0x1B)] uint8_t[] trackMods { get; set; } = new uint8_t[7];
 		[LocoStructOffset(0x22)] public uint8_t RoadNumCompatible { get; set; } = roadNumCompatible;
+		//[LocoStructOffset(0x23)] uint8_t[] roadMods { get; set; } = new uint8_t[7];
 		[LocoStructOffset(0x2A)] public uint16_t DesignedYear { get; set; } = designedYear;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)

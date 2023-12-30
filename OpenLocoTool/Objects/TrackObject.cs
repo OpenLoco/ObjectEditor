@@ -49,7 +49,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x1A)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x1B)] uint8_t Tunnel,
 		[property: LocoStructOffset(0x1C)] uint16_t CurveSpeed,
-		[property: LocoStructOffset(0x1E)] uint32_t Image,
+		[property: LocoStructOffset(0x1E)] image_id Image,
 		[property: LocoStructOffset(0x22)] TrackObjectFlags Flags,
 		[property: LocoStructOffset(0x24)] uint8_t NumBridges,
 		[property: LocoStructOffset(0x25), LocoArrayLength(7)] uint8_t[] Bridges,        // 0x25

@@ -18,39 +18,65 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
 	[LocoStructType(ObjectType.Land)]
-	public record LandObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint8_t CostIndex,
-		[property: LocoStructOffset(0x03)] uint8_t var_03,
-		[property: LocoStructOffset(0x04)] uint8_t var_04,
-		[property: LocoStructOffset(0x05)] LandObjectFlags Flags,
-		[property: LocoStructOffset(0x06)] uint8_t var_06,
-		[property: LocoStructOffset(0x07)] uint8_t var_07,
-		[property: LocoStructOffset(0x08)] int8_t CostFactor,
-		[property: LocoStructOffset(0x09)] uint8_t pad_09,
-		[property: LocoStructOffset(0x0A)] uint32_t Image,
-		[property: LocoStructOffset(0x0E)] uint32_t var_0E,
-		[property: LocoStructOffset(0x12)] uint32_t var_12,
-		[property: LocoStructOffset(0x16)] uint32_t var_16,
-		[property: LocoStructOffset(0x1A)] uint8_t pad_1A,
-		[property: LocoStructOffset(0x1B)] uint8_t NumVariations,
-		[property: LocoStructOffset(0x1C)] uint8_t VariationLikelihood,
-		[property: LocoStructOffset(0x1D)] uint8_t pad_1D
-		) : ILocoStruct, ILocoStructVariableData
+	[LocoStringTable("Name")]
+	public class LandObject(
+		uint8_t costIndex,
+		uint8_t var_03,
+		uint8_t var_04,
+		LandObjectFlags flags,
+		int8_t costFactor,
+		uint8_t numVariations,
+		uint8_t variationLikelihood) : ILocoStruct, ILocoStructVariableData
 	{
+		[LocoStructOffset(0x02)] public uint8_t CostIndex { get; set; } = costIndex;
+		[LocoStructOffset(0x03)] public uint8_t var_03 { get; set; } = var_03;
+		[LocoStructOffset(0x04)] public uint8_t var_04 { get; set; } = var_04;
+		[LocoStructOffset(0x05)] public LandObjectFlags Flags { get; set; } = flags;
+		//[LocoStructOffset(0x06)] public uint8_t CliffEdgeHeader1 { get; set; }
+		//[LocoStructOffset(0x07)] public uint8_t CliffEdgeHeader2 { get; set; } // unused
+		[LocoStructOffset(0x08)] public int8_t CostFactor { get; set; } = costFactor;
+		//[LocoStructOffset(0x09)] public uint8_t pad_09 { get; set; }
+		//[LocoStructOffset(0x0A)] public image_id Image { get; set; }
+		//[LocoStructOffset(0x0E)] public image_id var_0E { get; set; }
+		//[LocoStructOffset(0x12)] public image_id CliffEdgeImage { get; set; }
+		//[LocoStructOffset(0x16)] public image_id MapPixelImage { get; set; }
+		//[LocoStructOffset(0x1A)] public uint8_t pad_1A { get; set; }
+		[LocoStructOffset(0x1B)] public uint8_t NumVariations { get; set; } = numVariations;
+		[LocoStructOffset(0x1C)] public uint8_t VariationLikelihood { get; set; } = variationLikelihood;
+		//[LocoStructOffset(0x1D)] public uint8_t pad_1D { get; set; }
+
+		public S5Header? CliffEdgeHeader { get; set; }
+		public S5Header? UnkObjHeader { get; set; }
+
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// cliff edge header
-			remainingData = remainingData[(S5Header.StructLength * 1)..];
+			CliffEdgeHeader = S5Header.Read(remainingData[..S5Header.StructLength]);
+			remainingData = remainingData[S5Header.StructLength..];
 
+			// unused obj
 			if (Flags.HasFlag(LandObjectFlags.unk1))
 			{
-				remainingData = remainingData[(S5Header.StructLength * 1)..];
+				UnkObjHeader = S5Header.Read(remainingData[..S5Header.StructLength]);
+				remainingData = remainingData[S5Header.StructLength..];
 			}
 
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
+		public ReadOnlySpan<byte> Save()
+		{
+			var variableDataSize = S5Header.StructLength + (Flags.HasFlag(LandObjectFlags.unk1) ? S5Header.StructLength : 0);
+
+			var data = new byte[variableDataSize];
+			data = [.. CliffEdgeHeader.Write()];
+
+			if (Flags.HasFlag(LandObjectFlags.unk1))
+			{
+				UnkObjHeader.Write().CopyTo(data.AsSpan()[S5Header.StructLength..]);
+			}
+
+			return data;
+		}
 	}
 }

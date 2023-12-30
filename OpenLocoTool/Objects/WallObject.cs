@@ -23,7 +23,7 @@ namespace OpenLocoTool.Objects
 	[LocoStructType(ObjectType.Wall)]
 	public record WallObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint32_t Image,
+		[property: LocoStructOffset(0x02)] image_id Image,
 		[property: LocoStructOffset(0x06)] uint8_t var_06,
 		[property: LocoStructOffset(0x07)] WallObjectFlags Flags,
 		[property: LocoStructOffset(0x08)] uint8_t Height,

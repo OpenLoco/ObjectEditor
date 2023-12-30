@@ -562,36 +562,40 @@ namespace OpenLocoToolGui
 		{
 			// on these controls we could add a right_click handler to replace image with user-created one
 			var count = 0;
+			const int scale = 2;
 			foreach (var img in images)
 			{
-				var panel = new FlowLayoutPanel
+				//var panel = new FlowLayoutPanel
+				//{
+				//	AutoSize = true,
+				//	BackColor = Color.LightGray,
+				//	BorderStyle = BorderStyle.FixedSingle,
+				//	FlowDirection = FlowDirection.TopDown,
+				//};
+
+				var pb = new PictureBoxWithInterpolationMode
 				{
-					AutoSize = true,
-					BackColor = Color.LightGray,
 					BorderStyle = BorderStyle.FixedSingle,
-					FlowDirection = FlowDirection.TopDown,
-				};
-
-				var pb = new PictureBox
-				{
 					Image = img,
-					SizeMode = PictureBoxSizeMode.AutoSize,
+					InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor,
+					SizeMode = PictureBoxSizeMode.StretchImage,
+					Size = new Size(img.Width * scale, img.Height * scale),
 					ContextMenuStrip = imgContextMenu,
-					Dock = DockStyle.Bottom,
+					//Dock = DockStyle.Bottom,
 				};
 
-				var tb = new TextBox
-				{
-					MinimumSize = new Size(96, 16),
-					Text = $"i={count} w={g1Elements[count].Width} h={g1Elements[count].Height}",
-					Dock = DockStyle.Top
-				};
+				//var tb = new TextBox
+				//{
+				//	MinimumSize = new Size(96, 16),
+				//	Text = $"i={count} w={g1Elements[count].Width} h={g1Elements[count].Height}",
+				//	Dock = DockStyle.Top
+				//};
 				count++;
 
-				panel.Controls.Add(tb);
-				panel.Controls.Add(pb);
+				//panel.Controls.Add(tb);
+				//panel.Controls.Add(pb);
 
-				yield return panel;
+				yield return pb;
 			}
 		}
 

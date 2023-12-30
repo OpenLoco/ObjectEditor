@@ -8,8 +8,10 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x06)]
 	[LocoStructType(ObjectType.Snow)]
-	public record SnowObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint32_t Image
-		) : ILocoStruct;
+	[LocoStringTable("Name")]
+	public class SnowObject : ILocoStruct
+	{
+		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		//[LocoStructOffset(0x02)] image_id Image
+	}
 }

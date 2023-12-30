@@ -14,7 +14,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x03)] uint8_t var_03,
 		[property: LocoStructOffset(0x04)] int8_t CostFactor,
 		[property: LocoStructOffset(0x05)] uint8_t var_05,
-		[property: LocoStructOffset(0x06)] uint32_t Image,
+		[property: LocoStructOffset(0x06)] image_id Image,
 		[property: LocoStructOffset(0x0A)] uint32_t var_0A
 	) : ILocoStruct;
 }

@@ -20,7 +20,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x04)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x06)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x07)] uint8_t var_07,
-		[property: LocoStructOffset(0x08)] uint32_t Image,
+		[property: LocoStructOffset(0x08)] image_id Image,
 		[property: LocoStructOffset(0x0C)] uint32_t var_0C,
 		[property: LocoStructOffset(0x10)] DockObjectFlags Flags,
 		[property: LocoStructOffset(0x12)] uint8_t NumAux01,

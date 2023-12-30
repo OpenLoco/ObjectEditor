@@ -44,7 +44,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x0B)] uint8_t Tunnel,
 		[property: LocoStructOffset(0x0C)] Speed16 MaxSpeed,
-		[property: LocoStructOffset(0x0E)] uint32_t Image,
+		[property: LocoStructOffset(0x0E)] image_id Image,
 		[property: LocoStructOffset(0x12)] RoadObjectFlags Flags,
 		[property: LocoStructOffset(0x14)] uint8_t NumBridges,
 		[property: LocoStructOffset(0x15), LocoArrayLength(7)] uint8_t[] Bridges,

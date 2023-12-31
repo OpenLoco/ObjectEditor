@@ -11,6 +11,7 @@ namespace OpenLocoTool.Data
 			ObjectType.Climate,
 			ObjectType.Competitor,
 			ObjectType.Currency,
+			ObjectType.Dock,
 			ObjectType.HillShapes,
 			ObjectType.InterfaceSkin,
 			ObjectType.Land,

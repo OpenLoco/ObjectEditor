@@ -238,7 +238,7 @@ namespace OpenLocoToolTests
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-35), nameof(struc.SellCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.var_07, Is.EqualTo(0), nameof(struc.var_07));
-				Assert.That(struc.var_0C, Is.EqualTo(0), nameof(struc.var_0C));
+				Assert.That(struc.UnkImage, Is.EqualTo(0), nameof(struc.UnkImage));
 				Assert.That(struc.Flags, Is.EqualTo(DockObjectFlags.None), nameof(struc.Flags));
 				Assert.That(struc.NumAux01, Is.EqualTo(2), nameof(struc.NumAux01));
 				Assert.That(struc.NumAux02Ent, Is.EqualTo(1), nameof(struc.NumAux02Ent));

@@ -21,8 +21,8 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructOffset(0x09), LocoArrayLength(4)] public uint8_t[] requiredObjects { get; set; }
 		//[property: LocoStructOffset(0x0D), LocoArrayLength(0x12 - 0xD)] uint8_t[] pad_0D
 
-		public List<S5Header> RequiredObjects { get; set; } = new();
-		public List<S5Header> DependentObjects { get; set; } = new();
+		public List<S5Header> RequiredObjects { get; set; } = [];
+		public List<S5Header> DependentObjects { get; set; } = [];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{

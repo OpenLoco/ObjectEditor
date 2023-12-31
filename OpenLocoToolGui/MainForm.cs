@@ -87,7 +87,7 @@ namespace OpenLocoToolGui
 			// pre-add any existing log lines
 			lbLogs.Items.AddRange(((Logger)logger).Logs.ToArray());
 			// can only do this after window handle has been created (so can't do in constructor)
-			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log.ToString()));
+			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log));
 
 			// setup dark mode???
 			//DarkModify(this);
@@ -827,5 +827,42 @@ namespace OpenLocoToolGui
 		}
 
 		private void cbVanillaObjects_CheckedChanged(object sender, EventArgs e) => InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+
+		private void lbLogs_DrawItem(object sender, DrawItemEventArgs e)
+		{
+			if (e.Index < 0)
+				return;
+
+			var item = (LogLine)lbLogs.Items[e.Index];
+			//var backgroundColour = item.Level switch
+			//{
+			//	LogLevel.Debug2 => Color.White,
+			//	LogLevel.Debug => Color.White,
+			//	LogLevel.Info => Color.White,
+			//	LogLevel.Warning => Color.Yellow,
+			//	LogLevel.Error => Color.Red,
+			//	_ => throw new NotImplementedException(),
+			//};
+
+			using (var brush = new SolidBrush(lbLogs.BackColor))
+			{
+				e.Graphics.FillRectangle(brush, e.Bounds);
+			}
+
+			//e.DrawBackground();
+
+			var foregroundBrush = item.Level switch
+			{
+				LogLevel.Debug2 => Brushes.LightGray,
+				LogLevel.Debug => Brushes.Gray,
+				LogLevel.Info => Brushes.Green,
+				LogLevel.Warning => Brushes.Yellow,
+				LogLevel.Error => Brushes.Red,
+				_ => throw new NotImplementedException(),
+			};
+			e.Graphics.DrawString(item.ToString(), e.Font, foregroundBrush, e.Bounds.Left, e.Bounds.Y);
+
+			e.DrawFocusRectangle();
+		}
 	}
 }

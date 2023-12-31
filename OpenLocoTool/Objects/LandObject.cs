@@ -30,7 +30,7 @@ namespace OpenLocoTool.Objects
 	{
 		[LocoStructOffset(0x02)] public uint8_t CostIndex { get; set; } = costIndex;
 		[LocoStructOffset(0x03)] public uint8_t var_03 { get; set; } = var_03;
-		[LocoStructOffset(0x04)] public uint8_t var_04 { get; set; } = var_04;
+		[LocoStructOffset(0x04), LocoPropertyMaybeUnused] public uint8_t var_04 { get; set; } = var_04;
 		[LocoStructOffset(0x05)] public LandObjectFlags Flags { get; set; } = flags;
 		//[LocoStructOffset(0x06)] public uint8_t CliffEdgeHeader1 { get; set; }
 		//[LocoStructOffset(0x07)] public uint8_t CliffEdgeHeader2 { get; set; } // unused

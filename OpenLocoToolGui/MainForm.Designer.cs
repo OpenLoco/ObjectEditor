@@ -122,15 +122,18 @@
 			// 
 			// lbLogs
 			// 
+			lbLogs.BorderStyle = BorderStyle.FixedSingle;
 			lbLogs.Dock = DockStyle.Fill;
+			lbLogs.DrawMode = DrawMode.OwnerDrawFixed;
 			lbLogs.FormattingEnabled = true;
 			lbLogs.HorizontalScrollbar = true;
-			lbLogs.ItemHeight = 15;
+			lbLogs.ItemHeight = 18;
 			lbLogs.Location = new Point(0, 0);
 			lbLogs.Name = "lbLogs";
 			lbLogs.SelectionMode = SelectionMode.None;
 			lbLogs.Size = new Size(893, 115);
 			lbLogs.TabIndex = 17;
+			lbLogs.DrawItem += lbLogs_DrawItem;
 			// 
 			// tbFileFilter
 			// 
@@ -162,7 +165,7 @@
 			flpImageTable.FlowDirection = FlowDirection.TopDown;
 			flpImageTable.Location = new Point(0, 0);
 			flpImageTable.Name = "flpImageTable";
-			flpImageTable.Size = new Size(867, 422);
+			flpImageTable.Size = new Size(867, 421);
 			flpImageTable.TabIndex = 30;
 			// 
 			// scObjectAndLogs
@@ -357,7 +360,7 @@
 			scImageViewer.Panel2.Controls.Add(btnPagePrevious);
 			scImageViewer.Panel2.Controls.Add(btnPageNext);
 			scImageViewer.Size = new Size(867, 451);
-			scImageViewer.SplitterDistance = 422;
+			scImageViewer.SplitterDistance = 421;
 			scImageViewer.TabIndex = 32;
 			// 
 			// tbCurrentPage
@@ -365,7 +368,7 @@
 			tbCurrentPage.BorderStyle = BorderStyle.FixedSingle;
 			tbCurrentPage.Dock = DockStyle.Bottom;
 			tbCurrentPage.Enabled = false;
-			tbCurrentPage.Location = new Point(253, 2);
+			tbCurrentPage.Location = new Point(253, 3);
 			tbCurrentPage.Name = "tbCurrentPage";
 			tbCurrentPage.Size = new Size(386, 23);
 			tbCurrentPage.TabIndex = 33;
@@ -376,7 +379,7 @@
 			btnPagePrevious.Dock = DockStyle.Left;
 			btnPagePrevious.Location = new Point(0, 0);
 			btnPagePrevious.Name = "btnPagePrevious";
-			btnPagePrevious.Size = new Size(253, 25);
+			btnPagePrevious.Size = new Size(253, 26);
 			btnPagePrevious.TabIndex = 0;
 			btnPagePrevious.Text = "Previous Page";
 			btnPagePrevious.UseVisualStyleBackColor = true;
@@ -387,7 +390,7 @@
 			btnPageNext.Dock = DockStyle.Right;
 			btnPageNext.Location = new Point(639, 0);
 			btnPageNext.Name = "btnPageNext";
-			btnPageNext.Size = new Size(228, 25);
+			btnPageNext.Size = new Size(228, 26);
 			btnPageNext.TabIndex = 31;
 			btnPageNext.Text = "Next Page";
 			btnPageNext.UseVisualStyleBackColor = true;

@@ -21,6 +21,8 @@ namespace OpenLocoTool.Data
 			ObjectType.Snow,
 			ObjectType.StreetLight,
 			ObjectType.Tree,
+			ObjectType.Wall,
+			ObjectType.Water,
 		];
 	}
 }

@@ -16,20 +16,26 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1A)]
 	[LocoStructType(ObjectType.TownNames)]
-	public record TownNamesObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02), LocoArrayLength(6)] TownNamesUnk[] unks
-		) : ILocoStruct, ILocoStructVariableData
+	[LocoStringTable("Name")]
+	public class TownNamesObject(TownNamesUnk[] unks)
+		: ILocoStruct, ILocoStructVariableData
 	{
+		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[LocoStructOffset(0x02), LocoArrayLength(6)] public TownNamesUnk[] unks { get; set; } = unks;
+
+		byte[] tempUnkVariableData;
+
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// town names is interesting - loco has not RE'd the the whole object and there are no graphics, so we just
 			// skip the rest of the data/object
+			tempUnkVariableData = remainingData.ToArray();
 			remainingData = remainingData[remainingData.Length..];
 
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
+		public ReadOnlySpan<byte> Save()
+			=> tempUnkVariableData;
 	}
 }

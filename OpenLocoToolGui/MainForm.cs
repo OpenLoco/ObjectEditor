@@ -563,7 +563,7 @@ namespace OpenLocoToolGui
 		{
 			// on these controls we could add a right_click handler to replace image with user-created one
 			var count = 0;
-			const int scale = 2;
+			const int scale = 4;
 			foreach (var img in images)
 			{
 				var panel = new FlowLayoutPanel

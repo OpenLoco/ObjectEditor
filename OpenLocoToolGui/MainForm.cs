@@ -566,13 +566,13 @@ namespace OpenLocoToolGui
 			const int scale = 2;
 			foreach (var img in images)
 			{
-				//var panel = new FlowLayoutPanel
-				//{
-				//	AutoSize = true,
-				//	BackColor = Color.LightGray,
-				//	BorderStyle = BorderStyle.FixedSingle,
-				//	FlowDirection = FlowDirection.TopDown,
-				//};
+				var panel = new FlowLayoutPanel
+				{
+					AutoSize = true,
+					BackColor = Color.LightGray,
+					BorderStyle = BorderStyle.FixedSingle,
+					FlowDirection = FlowDirection.TopDown,
+				};
 
 				var pb = new PictureBoxWithInterpolationMode
 				{
@@ -585,18 +585,18 @@ namespace OpenLocoToolGui
 					//Dock = DockStyle.Bottom,
 				};
 
-				//var tb = new TextBox
-				//{
-				//	MinimumSize = new Size(96, 16),
-				//	Text = $"i={count} w={g1Elements[count].Width} h={g1Elements[count].Height}",
-				//	Dock = DockStyle.Top
-				//};
+				var tb = new TextBox
+				{
+					MinimumSize = new Size(96, 16),
+					Text = $"i={count} w={g1Elements[count].Width} h={g1Elements[count].Height}",
+					Dock = DockStyle.Top
+				};
 				count++;
 
-				//panel.Controls.Add(tb);
-				//panel.Controls.Add(pb);
+				panel.Controls.Add(tb);
+				panel.Controls.Add(pb);
 
-				yield return pb;
+				yield return panel;
 			}
 		}
 

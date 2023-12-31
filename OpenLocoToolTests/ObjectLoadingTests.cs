@@ -151,7 +151,7 @@ namespace OpenLocoToolTests
 			Assert.Multiple(() =>
 			{
 				Assert.That(struc.var_02, Is.EqualTo(256), nameof(struc.var_02));
-				Assert.That(struc.var_04, Is.EqualTo(64), nameof(struc.var_04));
+				Assert.That(struc.CargoTransferTime, Is.EqualTo(64), nameof(struc.CargoTransferTime));
 				Assert.That(struc.UnitInlineSprite, Is.EqualTo(0), nameof(struc.UnitInlineSprite));
 				Assert.That(struc.MatchFlags, Is.EqualTo(4), nameof(struc.MatchFlags));
 				Assert.That(struc.Flags, Is.EqualTo(CargoObjectFlags.Delivering), nameof(struc.Flags));

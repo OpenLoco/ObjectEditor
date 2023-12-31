@@ -15,40 +15,40 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1F)]
 	[LocoStructType(ObjectType.Cargo)]
-	public record CargoObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint16_t var_02,
-		[property: LocoStructOffset(0x04)] uint16_t var_04,
-		[property: LocoStructOffset(0x06), LocoString, Browsable(false)] string_id UnitsAndCargoName,
-		[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id UnitNameSingular,
-		[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id UnitNamePlural,
-		[property: LocoStructOffset(0x0C)] uint32_t UnitInlineSprite,
-		[property: LocoStructOffset(0x10)] uint16_t MatchFlags,
-		[property: LocoStructOffset(0x12)] CargoObjectFlags Flags,
-		[property: LocoStructOffset(0x13)] uint8_t NumPlatformVariations,
-		[property: LocoStructOffset(0x14)] uint8_t var_14,
-		[property: LocoStructOffset(0x15)] uint8_t PremiumDays,
-		[property: LocoStructOffset(0x16)] uint8_t MaxNonPremiumDays,
-		[property: LocoStructOffset(0x17)] uint16_t MaxPremiumRate,
-		[property: LocoStructOffset(0x19)] uint16_t PenaltyRate,
-		[property: LocoStructOffset(0x1B)] uint16_t PaymentFactor,
-		[property: LocoStructOffset(0x1D)] uint8_t PaymentIndex,
-		[property: LocoStructOffset(0x1E)] uint8_t UnitSize
-		) : ILocoStruct, ILocoStructStringTablePostLoad
+	[LocoStringTable("Name", "UnitsAndCargoName", "UnitNameSingular", "UnitNamePlural")]
+	public class CargoObject(
+		uint16_t var_02,
+		uint16_t cargoTransferTime,
+		uint16_t matchFlags,
+		CargoObjectFlags flags,
+		uint8_t numPlatformVariations,
+		uint8_t var_14,
+		uint8_t premiumDays,
+		uint8_t maxNonPremiumDays,
+		uint16_t maxPremiumRate,
+		uint16_t penaltyRate,
+		uint16_t paymentFactor,
+		uint8_t paymentIndex,
+		uint8_t unitSize)
+		: ILocoStruct
 	{
-		//public string Name { get; set; }
-		//public string UnitsAndCargoName { get; set; }
-		//
-		//public string UnitNameSingular { get; set; }
-		//
-		//public string UnitNamePlural { get; set; }
-
-		public void LoadPostStringTable(StringTable stringTable)
-		{
-			// Name = stringTable[(0, (LanguageId)0)];
-			// UnitsAndCargoName = stringTable[(1, (LanguageId)0)];
-			// UnitNameSingular = stringTable[(2, (LanguageId)0)];
-			// UnitNamePlural = stringTable[(3, (LanguageId)0)];
-		}
+		//[LocoStructOffset(0x00), LocoString, Browsable(false)] public string_id Name { get; set; }
+		[LocoStructOffset(0x02), LocoPropertyMaybeUnused] public uint16_t var_02 { get; set; } = var_02;
+		[LocoStructOffset(0x04)] public uint16_t CargoTransferTime { get; set; } = cargoTransferTime;
+		//[LocoStructOffset(0x06), LocoString, Browsable(false)] public string_id UnitsAndCargoName { get; set; }
+		//[LocoStructOffset(0x08), LocoString, Browsable(false)] public string_id UnitNameSingular { get; set; }
+		//[LocoStructOffset(0x0A), LocoString, Browsable(false)] public string_id UnitNamePlural { get; set; }
+		//[LocoStructOffset(0x0C)] public image_id UnitInlineSprite { get; set; }
+		[LocoStructOffset(0x10)] public uint16_t MatchFlags { get; set; } = matchFlags;
+		[LocoStructOffset(0x12)] public CargoObjectFlags Flags { get; set; } = flags;
+		[LocoStructOffset(0x13)] public uint8_t NumPlatformVariations { get; set; } = numPlatformVariations;
+		[LocoStructOffset(0x14), LocoPropertyMaybeUnused] public uint8_t var_14 { get; set; } = var_14;
+		[LocoStructOffset(0x15)] public uint8_t PremiumDays { get; set; } = premiumDays;
+		[LocoStructOffset(0x16)] public uint8_t MaxNonPremiumDays { get; set; } = maxNonPremiumDays;
+		[LocoStructOffset(0x17)] public uint16_t MaxPremiumRate { get; set; } = maxPremiumRate;
+		[LocoStructOffset(0x19)] public uint16_t PenaltyRate { get; set; } = penaltyRate;
+		[LocoStructOffset(0x1B)] public uint16_t PaymentFactor { get; set; } = paymentFactor;
+		[LocoStructOffset(0x1D)] public uint8_t PaymentIndex { get; set; } = paymentIndex;
+		[LocoStructOffset(0x1E)] public uint8_t UnitSize { get; set; } = unitSize;
 	}
 }

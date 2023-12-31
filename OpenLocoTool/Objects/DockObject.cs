@@ -87,13 +87,10 @@ namespace OpenLocoTool.Objects
 		}
 
 		public ReadOnlySpan<byte> Save()
-		{
-			var data = UnknownAuxData1A
-				.Concat(UnknownAuxData1B.SelectMany(BitConverter.GetBytes))
-				.Concat(UnknownAuxData2)
-				.Concat(new byte[] { 0xFF });
-
-			return data.ToArray();
-		}
+			=> UnknownAuxData1A
+			.Concat(UnknownAuxData1B.SelectMany(BitConverter.GetBytes))
+			.Concat(UnknownAuxData2)
+			.Concat(new byte[] { 0xFF })
+			.ToArray();
 	}
 }

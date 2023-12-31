@@ -7,6 +7,7 @@ namespace OpenLocoTool.Data
 		public static HashSet<ObjectType> Types =
 		[
 			ObjectType.Bridge,
+			ObjectType.Cargo,
 			ObjectType.CliffEdge,
 			ObjectType.Climate,
 			ObjectType.Competitor,
@@ -17,10 +18,13 @@ namespace OpenLocoTool.Data
 			ObjectType.Land,
 			ObjectType.LevelCrossing,
 			ObjectType.Region,
+			ObjectType.RoadExtra,
 			ObjectType.Scaffolding,
 			ObjectType.ScenarioText,
 			ObjectType.Snow,
+			ObjectType.Steam,
 			ObjectType.StreetLight,
+			ObjectType.TrackExtra,
 			ObjectType.Tree,
 			ObjectType.Wall,
 			ObjectType.Water,

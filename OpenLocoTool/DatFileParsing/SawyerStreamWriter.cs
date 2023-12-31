@@ -96,9 +96,9 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			// calculate size and write the size in obj header offset 18
-			//var length = ms.Position - 21;
-			//ms.Position = 17; // this is the offset of the length unit32_t in the whole object
-			//ms.Write(BitConverter.GetBytes(length), 0, 4);
+			var length = ms.Length - S5Header.StructLength - ObjectHeader.StructLength;
+			ms.Position = 17;
+			ms.Write(BitConverter.GetBytes(length), 0, 4);
 
 			ms.Flush();
 			ms.Close();

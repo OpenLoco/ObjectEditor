@@ -444,7 +444,8 @@ namespace OpenLocoToolGui
 						.Select(c => string.Format("{0} ", string.Concat(c)))
 						.Chunk(bytesPerDumpLine / dumpWordSize)
 						.Zip(Enumerable.Range(0, (resultingByteList.Length / bytesPerDumpLine) + extraLine))
-						.Select(l => string.Format("{0:X" + addressStringSizeBytes + "}: {1}", l.Second * bytesPerDumpLine, string.Concat(l.First))).ToArray();
+						.Select(l => string.Format("{0:X" + addressStringSizeBytes + "}: {1}", l.Second * bytesPerDumpLine, string.Concat(l.First)))
+						.ToArray();
 
 				tvDATDumpAnnotations.SuspendLayout();
 				tvDATDumpAnnotations.Nodes.Clear();
@@ -511,13 +512,13 @@ namespace OpenLocoToolGui
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
 
-				try
+				//try
 				{
 					LoadDataDump(filename);
 				}
-				catch (Exception ex)
+				//catch (Exception ex)
 				{
-					logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
+					//	logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
 				}
 			}
 		}
@@ -830,26 +831,26 @@ namespace OpenLocoToolGui
 
 		private void lbLogs_DrawItem(object sender, DrawItemEventArgs e)
 		{
+			e.DrawBackground();
+
 			if (e.Index < 0)
 				return;
 
 			var item = (LogLine)lbLogs.Items[e.Index];
-			//var backgroundColour = item.Level switch
-			//{
-			//	LogLevel.Debug2 => Color.White,
-			//	LogLevel.Debug => Color.White,
-			//	LogLevel.Info => Color.White,
-			//	LogLevel.Warning => Color.Yellow,
-			//	LogLevel.Error => Color.Red,
-			//	_ => throw new NotImplementedException(),
-			//};
+			var backgroundColour = item.Level switch
+			{
+				LogLevel.Debug2 => lbLogs.BackColor,
+				LogLevel.Debug => lbLogs.BackColor,
+				LogLevel.Info => lbLogs.BackColor,
+				LogLevel.Warning => Color.LightGray,
+				LogLevel.Error => Color.LightGray,
+				_ => throw new NotImplementedException(),
+			};
 
-			using (var brush = new SolidBrush(lbLogs.BackColor))
+			using (var brush = new SolidBrush(backgroundColour))
 			{
 				e.Graphics.FillRectangle(brush, e.Bounds);
 			}
-
-			//e.DrawBackground();
 
 			var foregroundBrush = item.Level switch
 			{
@@ -862,7 +863,7 @@ namespace OpenLocoToolGui
 			};
 			e.Graphics.DrawString(item.ToString(), e.Font, foregroundBrush, e.Bounds.Left, e.Bounds.Y);
 
-			e.DrawFocusRectangle();
+			//e.DrawFocusRectangle();
 		}
 	}
 }

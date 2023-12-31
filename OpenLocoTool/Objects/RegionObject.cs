@@ -50,7 +50,7 @@ namespace OpenLocoTool.Objects
 
 		public ReadOnlySpan<byte> Save()
 		{
-			var variableBytesLength = S5Header.StructLength * (RequiredObjects.Count + DependentObjects.Count);
+			var variableBytesLength = (S5Header.StructLength * (RequiredObjects.Count + DependentObjects.Count)) + 1;
 			var data = new byte[variableBytesLength];
 			var span = data.AsSpan();
 
@@ -61,6 +61,7 @@ namespace OpenLocoTool.Objects
 				bytes.CopyTo(span[ptr..(ptr + S5Header.StructLength)]);
 				ptr += S5Header.StructLength;
 			}
+			span[^1] = 0xff;
 
 			return data;
 		}

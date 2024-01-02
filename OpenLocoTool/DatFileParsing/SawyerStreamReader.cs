@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using System.Text;
 using OpenLocoTool.Headers;
@@ -9,6 +10,18 @@ namespace OpenLocoTool.DatFileParsing
 {
 	public static class SawyerStreamReader
 	{
+		public static List<S5Header> LoadVariableHeaders(ReadOnlySpan<byte> data, int count)
+		{
+			List<S5Header> result = [];
+			for (var i = 0; i < count; ++i)
+			{
+				result.Add(S5Header.Read(data[..S5Header.StructLength]));
+				data = data[S5Header.StructLength..];
+			}
+
+			return result;
+		}
+
 		static uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
 			static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)

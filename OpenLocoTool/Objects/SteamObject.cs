@@ -56,7 +56,7 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructProperty(0x16)] public const ImageAndHeight* FrameInfoType0,
 		//[property: LocoStructProperty(0x1A)] public const ImageAndHeight* FrameInfoType1,
 		[LocoStructOffset(0x1E)] public uint8_t NumSoundEffects { get; set; } = numSoundEffects;
-		//[LocoStructOffset(0x01F), LocoArrayLength(9)] public SoundObjectId[] SoundEffects { get; set; } = soundEffects;
+		//[LocoStructOffset(0x01F), LocoArrayLength(9)] public object_index[] SoundEffects { get; set; } = soundEffects;
 
 		public List<ImageAndHeight> FrameInfoType0 { get; set; } = [];
 		public List<ImageAndHeight> FrameInfoType1 { get; set; } = [];

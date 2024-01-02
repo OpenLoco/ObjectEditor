@@ -18,7 +18,7 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructOffset(0x02)] image_id Image,
 		//[property: LocoStructOffset(0x06), LocoArrayLength(0x8 - 0x6)] uint8_t[] pad_06,
 		[property: LocoStructOffset(0x08)] public uint8_t RequiredObjectCount { get; set; } = requiredObjectCount;
-		//[property: LocoStructOffset(0x09), LocoArrayLength(4)] public uint8_t[] requiredObjects { get; set; }
+		//[property: LocoStructOffset(0x09), LocoArrayLength(4)] public object_index[] requiredObjects { get; set; }
 		//[property: LocoStructOffset(0x0D), LocoArrayLength(0x12 - 0xD)] uint8_t[] pad_0D
 
 		public List<S5Header> RequiredObjects { get; set; } = [];
@@ -26,17 +26,13 @@ namespace OpenLocoTool.Objects
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			RequiredObjects.Clear();
-			DependentObjects.Clear();
-
 			// unk
-			for (var i = 0; i < RequiredObjectCount; ++i)
-			{
-				RequiredObjects.Add(S5Header.Read(remainingData[..S5Header.StructLength]));
-				remainingData = remainingData[S5Header.StructLength..];
-			}
+			RequiredObjects.Clear();
+			RequiredObjects = SawyerStreamReader.LoadVariableHeaders(remainingData, RequiredObjectCount);
+			remainingData = remainingData[(S5Header.StructLength * RequiredObjectCount)..];
 
 			// dependent objects
+			DependentObjects.Clear();
 			var ptr = 0;
 			while (remainingData[ptr] != 0xFF)
 			{

@@ -32,8 +32,8 @@ namespace OpenLocoTool.Objects
 		[LocoStructOffset(0x03)] public uint8_t var_03 { get; set; } = var_03;
 		[LocoStructOffset(0x04), LocoPropertyMaybeUnused] public uint8_t var_04 { get; set; } = var_04;
 		[LocoStructOffset(0x05)] public LandObjectFlags Flags { get; set; } = flags;
-		//[LocoStructOffset(0x06)] public uint8_t CliffEdgeHeader1 { get; set; }
-		//[LocoStructOffset(0x07)] public uint8_t CliffEdgeHeader2 { get; set; } // unused
+		//[LocoStructOffset(0x06)] public object_index CliffEdgeHeader1 { get; set; }
+		//[LocoStructOffset(0x07)] public object_index CliffEdgeHeader2 { get; set; } // unused
 		[LocoStructOffset(0x08)] public int8_t CostFactor { get; set; } = costFactor;
 		//[LocoStructOffset(0x09)] public uint8_t pad_09 { get; set; }
 		//[LocoStructOffset(0x0A)] public image_id Image { get; set; }

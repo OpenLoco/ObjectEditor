@@ -6,6 +6,7 @@ global using int32_t = System.Int32;
 global using uint32_t = System.UInt32;
 global using string_id = System.UInt16;
 global using image_id = System.UInt32;
+global using object_index = System.Byte;
 global using Speed16 = System.Int16;
 global using Speed32 = System.Int32;
 global using MicroZ = System.Byte;
@@ -21,7 +22,7 @@ namespace OpenLocoTool.DatFileParsing
 		[property: LocoStructOffset(0x02)] int16_t Y
 		) : ILocoStruct;
 
-	//[TypeConverter(typeof(ExpandableObjectConverter))]
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class StringTable
 	{
 		public Dictionary<string, Dictionary<LanguageId, string>> table { get; set; } = [];

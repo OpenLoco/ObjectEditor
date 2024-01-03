@@ -98,6 +98,13 @@
 					continue;
 				}
 
+				// skip variable struct loading as they'll be set in special save
+				var variable = AttributeHelper.Get<LocoStructVariableLoadAttribute>(p);
+				if (variable != null)
+				{
+					continue;
+				}
+
 				// special array handling
 				var arrLength = 0;
 				if (p.PropertyType.IsArray)

@@ -7,7 +7,7 @@ namespace OpenLocoTool.Data
 	{
 		public static HashSet<ObjectType> Types =
 		[
-			//ObjectType.Airport,
+			ObjectType.Airport,
 			ObjectType.Bridge,
 			//ObjectType.Building,
 			ObjectType.Cargo,

@@ -42,21 +42,21 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xBA)]
 	[LocoStructType(ObjectType.Airport)]
+	[LocoStringTable("Name")]
 	public record AirportObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x04)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x06)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x07)] uint8_t var_07,
-		[property: LocoStructOffset(0x08)] image_id Image,
-		[property: LocoStructOffset(0x0C)] uint32_t var_0C,
+		//[property: LocoStructOffset(0x08)] image_id Image,
+		//[property: LocoStructOffset(0x0C)] image_id ImageOffset,
 		[property: LocoStructOffset(0x10)] uint16_t AllowedPlaneTypes,
 		[property: LocoStructOffset(0x12)] uint8_t NumSpriteSets,
 		[property: LocoStructOffset(0x13)] uint8_t NumTiles,
 		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> var_14,
 		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint16_t> var_18,
-		//[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(32)] uint8_t[] var_1C, // due to problem in .net7 and lower, winforms cannot display this in property grid
-		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(32)] List<uint8_t> var_1C,
+		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(32)] List<uint8_t[]> var_1C,
 		[property: LocoStructOffset(0x9C), LocoStructVariableLoad] List<uint32_t> var_9C,
 		[property: LocoStructOffset(0xA0)] uint32_t LargeTiles,
 		[property: LocoStructOffset(0xA4)] int8_t MinX,
@@ -68,8 +68,8 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xAC)] uint8_t NumMovementNodes,
 		[property: LocoStructOffset(0xAD)] uint8_t NumMovementEdges,
 		[property: LocoStructOffset(0xAE), LocoStructVariableLoad] List<MovementNode> MovementNodes,
-		[property: LocoStructOffset(0xB2), LocoStructVariableLoad] List<MovementEdge> MovementEdges,
-		[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
+		[property: LocoStructOffset(0xB2), LocoStructVariableLoad] List<MovementEdge> MovementEdges
+	//[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
 	) : ILocoStruct, ILocoStructVariableData
 	{
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
@@ -88,13 +88,10 @@ namespace OpenLocoTool.Objects
 			var_1C.Clear();
 			for (var i = 0; i < NumTiles; ++i)
 			{
-				var_1C.Add(ByteReaderT.Read_uint8t(remainingData[0..1], 0));
 				var ptr_1C = 0;
-				while (remainingData[ptr_1C++] != 0xFF)
-				{
-					;
-				}
+				while (remainingData[ptr_1C++] != 0xFF) ;
 
+				var_1C.Add(remainingData[..(ptr_1C - 1)].ToArray()); // do -1 to skip 0xFF byte
 				remainingData = remainingData[ptr_1C..];
 			}
 
@@ -129,6 +126,51 @@ namespace OpenLocoTool.Objects
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
+		public ReadOnlySpan<byte> Save()
+		{
+			var ms = new MemoryStream();
+
+			foreach (var x in var_14)
+			{
+				ms.WriteByte(x);
+			}
+
+			foreach (var x in var_18)
+			{
+				ms.Write(BitConverter.GetBytes(x));
+			}
+
+			foreach (var x in var_1C)
+			{
+				ms.Write(x);
+				ms.WriteByte(0xFF);
+			}
+
+			foreach (var x in var_9C)
+			{
+				ms.Write(BitConverter.GetBytes(x));
+			}
+			ms.WriteByte(0xFF);
+
+			foreach (var x in MovementNodes)
+			{
+				ms.Write(BitConverter.GetBytes(x.X));
+				ms.Write(BitConverter.GetBytes(x.Y));
+				ms.Write(BitConverter.GetBytes(x.Z));
+				ms.Write(BitConverter.GetBytes((uint16_t)x.Flags));
+			}
+
+			foreach (var x in MovementEdges)
+			{
+				ms.WriteByte(x.var_00);
+				ms.WriteByte(x.CurrNode);
+				ms.WriteByte(x.NextNode);
+				ms.WriteByte(x.var_03);
+				ms.Write(BitConverter.GetBytes(x.MustBeClearEdges));
+				ms.Write(BitConverter.GetBytes(x.AtLeastOneClearEdges));
+			}
+
+			return ms.ToArray();
+		}
 	}
 }

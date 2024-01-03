@@ -9,7 +9,7 @@ namespace OpenLocoTool.Data
 		[
 			ObjectType.Airport,
 			ObjectType.Bridge,
-			//ObjectType.Building,
+			ObjectType.Building,
 			ObjectType.Cargo,
 			ObjectType.CliffEdge,
 			ObjectType.Climate,

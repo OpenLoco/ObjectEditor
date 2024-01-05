@@ -34,7 +34,8 @@ namespace OpenLocoTool.Objects
 			[property: LocoStructOffset(0x9A)] uint16_t ClearCostFactor,
 			[property: LocoStructOffset(0x9C)] uint8_t ScaffoldingSegmentType,
 			[property: LocoStructOffset(0x9D)] Colour ScaffoldingColour,
-			//[property: LocoStructOffset(0x9E), LocoArrayLength(2)] uint8_t[] pad_9E,
+			[property: LocoStructOffset(0x9E)] uint8_t GeneratorFunction,
+			[property: LocoStructOffset(0x9F)] uint8_t var_9F,
 			//[property: LocoStructOffset(0xA0), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> ProducedQuantity,
 			//[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> ProducedCargoType,
 			//[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> RequiredCargoType,
@@ -50,7 +51,7 @@ namespace OpenLocoTool.Objects
 		public List<S5Header> ProducedCargo { get; set; } = [];
 		public List<S5Header> RequiredCargo { get; set; } = [];
 
-		public List<uint16_t[]> var_AE { get; set; } = [];
+		public List<uint8_t[]> var_AE { get; set; } = [];
 
 		// known issues:
 		// HOSPITL1.dat - loads without error but graphics are bugged
@@ -94,12 +95,8 @@ namespace OpenLocoTool.Objects
 				var size = BitConverter.ToUInt16(remainingData[..2]);
 				remainingData = remainingData[2..];
 
-				var_AE[i] = new uint16_t[size];
-				for (var j = 0; j < size; ++j)
-				{
-					var_AE[i][j] = BitConverter.ToUInt16(remainingData[..(2 + size)]);
-					remainingData = remainingData[2..];
-				}
+				var_AE.Add(remainingData[..size].ToArray());
+				remainingData = remainingData[size..];
 			}
 
 			return remainingData;

@@ -66,29 +66,30 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xF4)]
 	[LocoStructType(ObjectType.Industry)]
+	[LocoStringTable("Name", "var_02", "<unused>", "NameClosingDown", "NameUpProduction", "NameDownProduction", "NameSingular", "NamePlural")]
 	public record IndustryObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id var_02,
-		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id _unused,
-		[property: LocoStructOffset(0x04), LocoString, Browsable(false)] string_id NameClosingDown,
-		[property: LocoStructOffset(0x06), LocoString, Browsable(false)] string_id NameUpProduction,
-		[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id NameDownProduction,
-		[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id NameSingular,
-		[property: LocoStructOffset(0x0C), LocoString, Browsable(false)] string_id NamePlural,
-		[property: LocoStructOffset(0x0E)] uint32_t var_0E, // shadows image id base
-		[property: LocoStructOffset(0x12)] uint32_t var_12, // Base image id for building 0
-		[property: LocoStructOffset(0x16)] uint32_t var_16,
-		[property: LocoStructOffset(0x1A)] uint32_t var_1A,
-		[property: LocoStructOffset(0x1E)] uint8_t var_1E,
-		[property: LocoStructOffset(0x1F)] uint8_t var_1F,
-		//[property: LocoStructProperty(0x20)] const uint8_t* buildingPartHeight,    // This is the height of a building image
-		//[property: LocoStructProperty(0x24)] const BuildingPartAnimation* buildingPartAnimations, 
-		//[property: LocoStructProperty(0x28)] const uint8_t* animationSequences[4], // Access with getAnimationSequence helper method
-		//[property: LocoStructProperty(0x38)] const IndustryObjectUnk38* var_38,    // Access with getUnk38 helper method
-		//[property: LocoStructProperty(0x3C)] const uint8_t* buildingParts[32],     // Access with getBuildingParts helper method
+		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		//[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id var_02,
+		//[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id _unused,
+		//[property: LocoStructOffset(0x04), LocoString, Browsable(false)] string_id NameClosingDown,
+		//[property: LocoStructOffset(0x06), LocoString, Browsable(false)] string_id NameUpProduction,
+		//[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id NameDownProduction,
+		//[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id NameSingular,
+		//[property: LocoStructOffset(0x0C), LocoString, Browsable(false)] string_id NamePlural,
+		//[property: LocoStructOffset(0x0E)] image_id var_0E, // shadows image id base
+		//[property: LocoStructOffset(0x12)] image_id var_12, // Base image id for building 0
+		//[property: LocoStructOffset(0x16)] image_id var_16,
+		//[property: LocoStructOffset(0x1A)] image_id var_1A,
+		[property: LocoStructOffset(0x1E)] uint8_t BuildingPartCount1,
+		[property: LocoStructOffset(0x1F)] uint8_t BuildingPartCount2,
+		[property: LocoStructOffset(0x20), LocoStructVariableLoad] List<uint8_t> BuildingPartHeight,    // This is the height of a building image
+		[property: LocoStructOffset(0x24), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingPartAnimations,
+		[property: LocoStructOffset(0x28), LocoStructVariableLoad, LocoArrayLength(IndustryObject.AnimationSequencesSize)] List<uint8_t> AnimationSequences, // Access with getAnimationSequence helper method
+		[property: LocoStructOffset(0x38), LocoStructVariableLoad] List<IndustryObjectUnk38> var_38,    // Access with getUnk38 helper method
+		[property: LocoStructOffset(0x3C), LocoStructVariableLoad, LocoArrayLength(IndustryObject.PartCount)] List<uint8_t[]> Parts,  // Access with getBuildingParts helper method
 		[property: LocoStructOffset(0xBC)] uint8_t MinNumBuildings,
 		[property: LocoStructOffset(0xBD)] uint8_t MaxNumBuildings,
-		//[property: LocoStructProperty(0xBE)] const uint8_t* buildings,
+		[property: LocoStructOffset(0xBE), LocoStructVariableLoad] List<uint8_t> Buildings,
 		[property: LocoStructOffset(0xC2)] uint32_t AvailableColours,  // bitset
 		[property: LocoStructOffset(0xC6)] uint32_t BuildingSizeFlags, // flags indicating the building types size 1:large4x4, 0:small1x1
 		[property: LocoStructOffset(0xCA)] uint16_t DesignedYear,
@@ -99,27 +100,28 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xD2)] int16_t ClearCostFactor,
 		[property: LocoStructOffset(0xD4)] uint8_t ScaffoldingSegmentType,
 		[property: LocoStructOffset(0xD5)] Colour ScaffoldingColour,
-		[property: LocoStructOffset(0xD6), LocoArrayLength(2)] IndustryObjectProductionRateRange[] InitialProductionRate,
-		[property: LocoStructOffset(0xDE), LocoArrayLength(IndustryObject.MaxProducedCargoType)] uint8_t[] ProducedCargoType,                               // (0xFF = null)
-		[property: LocoStructOffset(0xE0), LocoArrayLength(IndustryObject.MaxRequiredCargoType)] uint8_t[] RequiredCargoType,                               // (0xFF = null)
-		[property: LocoStructOffset(0xE3)] uint8_t pad_E3,
+		[property: LocoStructOffset(0xD6), LocoArrayLength(IndustryObject.InitialProductionRateCount)] IndustryObjectProductionRateRange[] InitialProductionRate,
+		//[property: LocoStructOffset(0xDE), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxProducedCargoType)] object_id[] ProducedCargoType,   // (0xFF = null)
+		//[property: LocoStructOffset(0xE0), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxRequiredCargoType)] object_id[] RequiredCargoType, // (0xFF = null)
+		//[property: LocoStructOffset(0xE3)] uint8_t pad_E3,
 		[property: LocoStructOffset(0xE4)] IndustryObjectFlags Flags,
 		[property: LocoStructOffset(0xE8)] uint8_t var_E8,
 		[property: LocoStructOffset(0xE9)] uint8_t var_E9,
 		[property: LocoStructOffset(0xEA)] uint8_t var_EA,
 		[property: LocoStructOffset(0xEB)] uint8_t var_EB,
 		[property: LocoStructOffset(0xEC)] uint8_t var_EC, // Used by Livestock cow shed count??
-		[property: LocoStructOffset(0xED), LocoArrayLength(4)] uint8_t[] WallTypes, // There can be up to 4 different wall types for an industry
-		[property: LocoStructOffset(0xF1)] uint8_t BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
-		[property: LocoStructOffset(0xF2)] uint8_t BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
+		[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.WallTypeCount)] object_id[] WallTypes, // There can be up to 4 different wall types for an industry
+		[property: LocoStructOffset(0xF1), LocoStructVariableLoad] object_id BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
+		[property: LocoStructOffset(0xF2), LocoStructVariableLoad] object_id BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
 		) : ILocoStruct, ILocoStructVariableData
 	{
-
 		public const int AnimationSequencesSize = 4;
-
+		public const int InitialProductionRateCount = 2;
 		public const int MaxProducedCargoType = 2;
 		public const int MaxRequiredCargoType = 3;
+		public const int PartCount = 32;
+		public const int WallTypeCount = 4;
 
 		public List<S5Header> ProducedCargo { get; set; } = [];
 		public List<S5Header> RequiredCargo { get; set; } = [];
@@ -127,10 +129,10 @@ namespace OpenLocoTool.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// part heights
-			remainingData = remainingData[(var_1E * 1)..]; // sizeof(uint8_t)
+			remainingData = remainingData[(BuildingPartCount1 * 1)..]; // sizeof(uint8_t)
 
 			// part animations
-			remainingData = remainingData[(var_1E * ObjectAttributes.StructSize<BuildingPartAnimation>())..]; // sizeof(uint8_t)
+			remainingData = remainingData[(BuildingPartCount1 * ObjectAttributes.StructSize<BuildingPartAnimation>())..]; // sizeof(uint8_t)
 
 			// animation sequences
 			for (var i = 0; i < AnimationSequencesSize; ++i)
@@ -150,7 +152,7 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[ptr_38..];
 
 			// parts
-			for (var i = 0; i < var_1F; ++i)
+			for (var i = 0; i < BuildingPartCount2; ++i)
 			{
 				var ptr_1F = 0;
 				while (remainingData[ptr_1F] != 0xFF)

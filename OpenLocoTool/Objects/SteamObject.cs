@@ -1,6 +1,5 @@
 ﻿
 using System.ComponentModel;
-using System.Linq;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 

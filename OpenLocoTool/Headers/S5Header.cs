@@ -60,5 +60,7 @@ namespace OpenLocoTool.Headers
 			checksum.CopyTo(span, 12);
 			return span;
 		}
+
+		public static S5Header NullHeader = new(0, string.Empty, 0);
 	}
 }

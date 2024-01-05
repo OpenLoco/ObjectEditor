@@ -1,5 +1,4 @@
-﻿using System;
-using OpenLocoTool.Headers;
+﻿using OpenLocoTool.Headers;
 
 namespace OpenLocoTool.Data
 {
@@ -17,7 +16,7 @@ namespace OpenLocoTool.Data
 			ObjectType.Currency,
 			ObjectType.Dock,
 			ObjectType.HillShapes,
-			//ObjectType.Industry,
+			ObjectType.Industry,
 			ObjectType.InterfaceSkin,
 			ObjectType.Land,
 			ObjectType.LevelCrossing,

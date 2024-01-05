@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Numerics;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;

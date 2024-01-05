@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -113,24 +112,27 @@ namespace OpenLocoTool.Objects
 		{
 			var ms = new MemoryStream();
 
+			// variation heights
 			foreach (var x in VariationHeights)
 			{
 				ms.WriteByte(x);
 			}
 
+			// variation animations
 			foreach (var x in VariationAnimations)
 			{
 				ms.WriteByte(x.NumFrames);
 				ms.WriteByte(x.AnimationSpeed);
 			}
 
-			foreach (var x in VariationParts)
+			// produced cargo
+			foreach (var obj in ProducedCargo.Fill(MaxProducedCargoType, S5Header.NullHeader))
 			{
-				ms.Write(x);
-				ms.WriteByte(0xFF);
+				ms.Write(obj.Write());
 			}
 
-			foreach (var obj in ProducedCargo.Concat(RequiredCargo))
+			// required cargo
+			foreach (var obj in RequiredCargo.Fill(MaxRequiredCargoType, S5Header.NullHeader))
 			{
 				ms.Write(obj.Write());
 			}

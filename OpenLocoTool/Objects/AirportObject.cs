@@ -1,6 +1,4 @@
-﻿
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -107,12 +105,10 @@ namespace OpenLocoTool.Objects
 				var_9C.Add(ByteReaderT.Read_uint32t(remainingData[ptr_9C..(ptr_9C + 4)], 0));
 				ptr_9C += 4;
 			}
-
 			ptr_9C++;
 			remainingData = remainingData[ptr_9C..];
 
 			// movement nodes
-			// could use ByteReaderT.Read_Array if the MovementNode record was a byte-aligned struct
 			MovementNodes.Clear();
 			var nodeSize = ObjectAttributes.StructSize<MovementNode>();
 			var edgeSize = ObjectAttributes.StructSize<MovementEdge>();
@@ -134,17 +130,20 @@ namespace OpenLocoTool.Objects
 		{
 			var ms = new MemoryStream();
 
+			// variation heights
 			foreach (var x in BuildingVariationHeights)
 			{
 				ms.WriteByte(x);
 			}
 
+			// variation animations
 			foreach (var x in BuildingVariationAnimations)
 			{
 				ms.WriteByte(x.NumFrames);
 				ms.WriteByte(x.AnimationSpeed);
 			}
 
+			// variation parts
 			foreach (var x in BuildingVariationParts)
 			{
 				ms.Write(x);
@@ -157,6 +156,7 @@ namespace OpenLocoTool.Objects
 			}
 			ms.WriteByte(0xFF);
 
+			// movement nodes
 			foreach (var x in MovementNodes)
 			{
 				ms.Write(BitConverter.GetBytes(x.X));
@@ -165,6 +165,7 @@ namespace OpenLocoTool.Objects
 				ms.Write(BitConverter.GetBytes((uint16_t)x.Flags));
 			}
 
+			// movement edges
 			foreach (var x in MovementEdges)
 			{
 				ms.WriteByte(x.var_00);

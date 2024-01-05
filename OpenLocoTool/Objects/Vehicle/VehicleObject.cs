@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using Microsoft.VisualBasic;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -7,86 +9,41 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x15E)]
 	[LocoStructType(ObjectType.Vehicle)]
-	public class VehicleObject : ILocoStruct, ILocoStructVariableData
-	{
-		public const int MaxBodySprites = 4;
-		public List<uint16_t> CargoMatchFlags { get; set; } = [];
-
-		public List<CargoObject> CompatibleCargo { get; set; } = [];
-
-		public VehicleObject(ushort name, TransportMode mode, VehicleType type, byte var_04, byte trackType, byte numMods, byte costIndex, short costFactor, byte reliability, byte runCostIndex, short runCostFactor, byte colourType, byte numCompat, ushort[] compatibleVehicles, byte[] requiredTrackExtras, VehicleObjectUnk[] var_24, BodySprite[] bodySprites, BogieSprite[] bogieSprites, ushort power, short speed, short rackSpeed, ushort weight, VehicleObjectFlags flags, byte[] maxCargo, uint[] cargoTypes, byte[] cargoTypeSpriteOffsets, byte numSimultaneousCargoTypes, SimpleAnimation[] animation, byte var_113, ushort designed, ushort obsolete, byte rackRailType, DrivingSoundType drivingSoundType, byte[] pad_135, byte numStartSounds, byte[] startSounds)
-		{
-			Name = name;
-			Mode = mode;
-			Type = type;
-			this.var_04 = var_04;
-			TrackType = trackType;
-			NumMods = numMods;
-			CostIndex = costIndex;
-			CostFactor = costFactor;
-			Reliability = reliability;
-			RunCostIndex = runCostIndex;
-			RunCostFactor = runCostFactor;
-			ColourType = colourType;
-			NumCompat = numCompat;
-			CompatibleVehicles = compatibleVehicles;
-			RequiredTrackExtras = requiredTrackExtras;
-			this.var_24 = var_24;
-			BodySprites = bodySprites;
-			BogieSprites = bogieSprites;
-			Power = power;
-			Speed = speed;
-			RackSpeed = rackSpeed;
-			Weight = weight;
-			Flags = flags;
-			MaxCargo = maxCargo;
-			CargoTypes = cargoTypes;
-			CargoTypeSpriteOffsets = cargoTypeSpriteOffsets;
-			NumSimultaneousCargoTypes = numSimultaneousCargoTypes;
-			Animation = animation;
-			this.var_113 = var_113;
-			Designed = designed;
-			Obsolete = obsolete;
-			RackRailType = rackRailType;
-			DrivingSoundType = drivingSoundType;
-			this.pad_135 = pad_135;
-			NumStartSounds = numStartSounds;
-			StartSounds = startSounds;
-		}
-
-		[LocoStructOffset(0x00), LocoString, Browsable(false)] public string_id Name { get; set; }
-		[LocoStructOffset(0x02)] public TransportMode Mode { get; set; }
-		[LocoStructOffset(0x03)] public VehicleType Type { get; set; }
-		[LocoStructOffset(0x04)] public uint8_t var_04 { get; set; }
-		[LocoStructOffset(0x05)] public uint8_t TrackType { get; set; }
-		[LocoStructOffset(0x06)] public uint8_t NumMods { get; set; }
-		[LocoStructOffset(0x07)] public uint8_t CostIndex { get; set; }
-		[LocoStructOffset(0x08)] public int16_t CostFactor { get; set; }
-		[LocoStructOffset(0x0A)] public uint8_t Reliability { get; set; }
-		[LocoStructOffset(0x0B)] public uint8_t RunCostIndex { get; set; }
-		[LocoStructOffset(0x0C)] public int16_t RunCostFactor { get; set; }
-		[LocoStructOffset(0x0E)] public uint8_t ColourType { get; set; }
-		[LocoStructOffset(0x0F)] public uint8_t NumCompat { get; set; }
-		[LocoStructOffset(0x10), LocoArrayLength(8)] public uint16_t[] CompatibleVehicles { get; set; } // array of compatible vehicle_types
-		[LocoStructOffset(0x20), LocoArrayLength(4)] public uint8_t[] RequiredTrackExtras { get; set; }
-		[LocoStructOffset(0x24), LocoArrayLength(4)] public VehicleObjectUnk[] var_24 { get; set; }
-		[LocoStructOffset(0x3C), LocoArrayLength(MaxBodySprites)] public BodySprite[] BodySprites { get; set; }
-		[LocoStructOffset(0xB4), LocoArrayLength(2)] public BogieSprite[] BogieSprites { get; set; }
-		[LocoStructOffset(0xD8)] public uint16_t Power { get; set; }
-		[LocoStructOffset(0xDA)] public Speed16 Speed { get; set; }
-		[LocoStructOffset(0xDC)] public Speed16 RackSpeed { get; set; }
-		[LocoStructOffset(0xDE)] public uint16_t Weight { get; set; }
-		[LocoStructOffset(0xE0)] public VehicleObjectFlags Flags { get; set; }
-		[LocoStructOffset(0xE2), LocoArrayLength(2)] public uint8_t[] MaxCargo { get; set; } // size is relative to the first cargoTypes
-		[LocoStructOffset(0xE4), LocoArrayLength(2), Browsable(false)] public uint32_t[] CargoTypes { get; set; }
-		[LocoStructOffset(0xEC), LocoArrayLength(32)] public uint8_t[] CargoTypeSpriteOffsets { get; set; }
-		[LocoStructOffset(0x10C)] public uint8_t NumSimultaneousCargoTypes { get; set; }
-		[LocoStructOffset(0x10D), LocoArrayLength(2)] public SimpleAnimation[] Animation { get; set; }
-		[LocoStructOffset(0x113)] public uint8_t var_113 { get; set; }
-		[LocoStructOffset(0x114)] public uint16_t Designed { get; set; }
-		[LocoStructOffset(0x116)] public uint16_t Obsolete { get; set; }
-		[LocoStructOffset(0x118)] public uint8_t RackRailType { get; set; }
-		[LocoStructOffset(0x119)] public DrivingSoundType DrivingSoundType { get; set; }
+	[LocoStringTable("Name")]
+	public record VehicleObject(
+		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name ,
+		[property: LocoStructOffset(0x02)] TransportMode Mode,
+		[property: LocoStructOffset(0x03)] VehicleType Type,
+		[property: LocoStructOffset(0x04)] uint8_t var_04,
+		//[LocoStructOffset(0x05)] object_id TrackType ,
+		[property: LocoStructOffset(0x06)] uint8_t NumMods,
+		[property: LocoStructOffset(0x07)] uint8_t CostIndex,
+		[property: LocoStructOffset(0x08)] int16_t CostFactor,
+		[property: LocoStructOffset(0x0A)] uint8_t Reliability,
+		[property: LocoStructOffset(0x0B)] uint8_t RunCostIndex,
+		[property: LocoStructOffset(0x0C)] int16_t RunCostFactor,
+		[property: LocoStructOffset(0x0E)] uint8_t ColourType,
+		[property: LocoStructOffset(0x0F)] uint8_t NumCompat,
+		[property: LocoStructOffset(0x10), LocoArrayLength(8), LocoStructVariableLoad] List<S5Header> CompatibleVehicles,
+		[property: LocoStructOffset(0x20), LocoArrayLength(4), LocoStructVariableLoad] List<S5Header> RequiredTrackExtras,
+		[property: LocoStructOffset(0x24), LocoArrayLength(4)] VehicleObjectUnk[] var_24,
+		[property: LocoStructOffset(0x3C), LocoArrayLength(VehicleObject.MaxBodySprites), LocoStructVariableLoad] List<BodySprite> BodySprites,
+		[property: LocoStructOffset(0xB4), LocoArrayLength(2), LocoStructVariableLoad] List<BogieSprite> BogieSprites,
+		[property: LocoStructOffset(0xD8)] uint16_t Power,
+		[property: LocoStructOffset(0xDA)] Speed16 Speed,
+		[property: LocoStructOffset(0xDC)] Speed16 RackSpeed,
+		[property: LocoStructOffset(0xDE)] uint16_t Weight,
+		[property: LocoStructOffset(0xE0)] VehicleObjectFlags Flags,
+		[property: LocoStructOffset(0xE2), LocoArrayLength(2), LocoStructVariableLoad] List<uint8_t> MaxCargo,
+		[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObject.CargoTypesLength), LocoStructVariableLoad] List<uint32_t> CargoTypes,
+		[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObject.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] List<uint8_t> CargoTypeSpriteOffsets,
+		//[property: LocoStructOffset(0x10C), LocoStructVariableLoad] uint8_t NumSimultaneousCargoTypes,
+		[property: LocoStructOffset(0x10D), LocoArrayLength(VehicleObject.AnimationCount)] SimpleAnimation[] Animation,
+		[property: LocoStructOffset(0x113)] uint8_t var_113,
+		[property: LocoStructOffset(0x114)] uint16_t Designed,
+		[property: LocoStructOffset(0x116)] uint16_t Obsolete,
+		[property: LocoStructOffset(0x118), LocoStructVariableLoad] uint8_t RackRailType,
+		[property: LocoStructOffset(0x119)] DrivingSoundType DrivingSoundType,
 		//union
 		//{
 		//	VehicleObjectFrictionSound friction,
@@ -94,38 +51,58 @@ namespace OpenLocoTool.Objects
 		//	VehicleObjectEngine2Sound engine2,
 		//}
 		//sound,
-		[LocoStructOffset(0x135), LocoArrayLength(0x15A - 0x135)] public uint8_t[] pad_135 { get; set; }
-		[LocoStructOffset(0x15A)] public uint8_t NumStartSounds { get; set; } // use mask when accessing kHasCrossingWhistle stuffed in (1 << 7)
-		[LocoStructOffset(0x15B), LocoArrayLength(3)] public SoundObjectId[] StartSounds { get; set; }
+		[property: LocoStructOffset(0x135), LocoArrayLength(0x15A - 0x135), LocoStructVariableLoad] List<uint8_t> pad_135,
+		[property: LocoStructOffset(0x15A)] uint8_t NumStartSounds,
+		[property: LocoStructOffset(0x15B), LocoArrayLength(3), LocoStructVariableLoad] List<S5Header> StartSounds
+	) : ILocoStruct, ILocoStructVariableData
+	{
+		public const int MaxBodySprites = 4;
+		public const int AnimationCount = 2;
+		public const int CargoTypesLength = 2;
+		public const int CargoTypeSpriteOffsetsLength = 32;
+		public List<uint16_t> CargoMatchFlags = [];
+
+		public List<CargoObject> CompatibleCargo = [];
+
+		public uint8_t NumSimultaneousCargoTypes { get; set; }
+
+		public S5Header? TrackType { get; set; }
+		public S5Header? RackRail { get; set; }
+		public S5Header? DrivingSound { get; set; }
+
+		public List<S5Header> AnimationHeaders { get; set; } = [];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			var dependentObjects = new List<S5Header>();
-
-			const byte trackType = 0xFF;
-
-			// dependent objects
+			// track type
 			if (!Flags.HasFlag(VehicleObjectFlags.unk_09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
 			{
-				var trackHeader = S5Header.Read(remainingData[..S5Header.StructLength]);
-				dependentObjects.Add(trackHeader);
-				TrackType = trackType;
-				// load the object handle for the track header, and set tracktype to its id
-
+				TrackType = S5Header.Read(remainingData[..S5Header.StructLength]);
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
-			// track mods
+			// track extra
+			RequiredTrackExtras.Clear();
+			RequiredTrackExtras.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, NumMods));
 			remainingData = remainingData[(S5Header.StructLength * NumMods)..];
 
 			// cargo types
 			// this whole bullshit is mostly copied and pasted from openloco
 			// but we need to do it to a) load the cargo match flags and b) to move the stream to the right offset to load the next variable data
 			// afterwards, we'll do nice c# load of the cargo based on the match flags
-			for (var i = 0; i < CargoTypes.Length; ++i)
+			MaxCargo.Clear();
+			CargoMatchFlags.Clear();
+
+			CargoTypes.Clear();
+			CargoTypes.AddRange(Enumerable.Repeat(0U, CargoTypesLength));
+
+			CargoTypeSpriteOffsets.Clear();
+			CargoTypeSpriteOffsets.AddRange(Enumerable.Repeat((byte)0, CargoTypeSpriteOffsetsLength));
+
+			for (var i = 0; i < CargoTypesLength; ++i)
 			{
 				var index = NumSimultaneousCargoTypes;
-				MaxCargo[i] = remainingData[0];
+				MaxCargo.Add(remainingData[0]);
 				remainingData = remainingData[1..]; // uint8_t
 
 				if (MaxCargo[index] == 0)
@@ -177,6 +154,7 @@ namespace OpenLocoTool.Objects
 			}
 
 			// animation
+			AnimationHeaders.Clear();
 			foreach (var anim in Animation)
 			{
 				if (anim.Type == SimpleAnimationType.None)
@@ -184,31 +162,46 @@ namespace OpenLocoTool.Objects
 					continue;
 				}
 
+				var animation = S5Header.Read(remainingData[..S5Header.StructLength]);
+				AnimationHeaders.Add(animation);
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
 			// numCompat
+			CompatibleVehicles.Clear();
+			CompatibleVehicles.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, NumCompat));
 			remainingData = remainingData[(S5Header.StructLength * NumCompat)..];
 
 			// rack rail
 			if (Flags.HasFlag(VehicleObjectFlags.RackRail))
 			{
+				RackRail = S5Header.Read(remainingData[..S5Header.StructLength]);
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
 			// driving sound
 			if (DrivingSoundType != DrivingSoundType.None)
 			{
+				DrivingSound = S5Header.Read(remainingData[..S5Header.StructLength]);
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
+			// driving/start sound
+			StartSounds.Clear();
 			var mask = 127;
-			// driving sound
-			remainingData = remainingData[(S5Header.StructLength * (NumStartSounds & mask))..];
+			for (var i = 0; i < (NumStartSounds & mask); ++i)
+			{
+				var startSound = S5Header.Read(remainingData[..S5Header.StructLength]);
+				StartSounds.Add(startSound);
+				remainingData = remainingData[S5Header.StructLength..];
+			}
 
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
+		public ReadOnlySpan<byte> Save()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

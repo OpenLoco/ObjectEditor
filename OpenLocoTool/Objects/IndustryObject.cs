@@ -101,18 +101,18 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xD4)] uint8_t ScaffoldingSegmentType,
 		[property: LocoStructOffset(0xD5)] Colour ScaffoldingColour,
 		[property: LocoStructOffset(0xD6), LocoArrayLength(IndustryObject.InitialProductionRateCount)] IndustryObjectProductionRateRange[] InitialProductionRate,
-		//[property: LocoStructOffset(0xDE), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxProducedCargoType)] object_id[] ProducedCargoType,   // (0xFF = null)
-		//[property: LocoStructOffset(0xE0), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxRequiredCargoType)] object_id[] RequiredCargoType, // (0xFF = null)
-		//[property: LocoStructOffset(0xE3)] uint8_t pad_E3,
+		[property: LocoStructOffset(0xDE), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxProducedCargoType)] List<S5Header> ProducedCargo,   // (0xFF = null)
+		[property: LocoStructOffset(0xE0), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxRequiredCargoType)] List<S5Header> RequiredCargo, // (0xFF = null)
+																																					   //[property: LocoStructOffset(0xE3)] uint8_t pad_E3,
 		[property: LocoStructOffset(0xE4)] IndustryObjectFlags Flags,
 		[property: LocoStructOffset(0xE8)] uint8_t var_E8,
 		[property: LocoStructOffset(0xE9)] uint8_t var_E9,
 		[property: LocoStructOffset(0xEA)] uint8_t var_EA,
 		[property: LocoStructOffset(0xEB)] uint8_t var_EB,
 		[property: LocoStructOffset(0xEC)] uint8_t var_EC,
-		//[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.WallTypeCount)] object_id[] WallTypes, // There can be up to 4 different wall types for an industry
-		//[property: LocoStructOffset(0xF1), LocoStructVariableLoad] object_id BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
-		//[property: LocoStructOffset(0xF2), LocoStructVariableLoad] object_id BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
+		[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.WallTypeCount)] List<S5Header> WallTypes, // There can be up to 4 different wall types for an industry
+																																			//[property: LocoStructOffset(0xF1), LocoStructVariableLoad] object_id BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
+																																			//[property: LocoStructOffset(0xF2), LocoStructVariableLoad] object_id BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
 		) : ILocoStruct, ILocoStructVariableData
 	{
@@ -123,12 +123,8 @@ namespace OpenLocoTool.Objects
 		public const int VariationPartCount = 32;
 		public const int WallTypeCount = 4;
 
-		public List<S5Header> ProducedCargo { get; set; } = [];
-		public List<S5Header> RequiredCargo { get; set; } = [];
-
 		public List<IndustryObjectUnk38> UnkIndustry38 { get; set; } = [];
 
-		public List<S5Header> WallTypes { get; set; } = [];
 		public S5Header BuildingWall { get; set; }
 
 		public S5Header BuildingWallEntrance { get; set; }
@@ -152,14 +148,12 @@ namespace OpenLocoTool.Objects
 			for (var i = 0; i < AnimationSequencesCount; ++i)
 			{
 				var size = remainingData[0];
+				byte[] arr = [];
 				if (size != 0)
 				{
-					AnimationSequences.Add(remainingData[1..size].ToArray());
+					arr = remainingData[1..size].ToArray();
 				}
-				else
-				{
-					AnimationSequences.Add([]);
-				}
+				AnimationSequences.Add(arr);
 				remainingData = remainingData[(size + 1)..];
 			}
 
@@ -191,17 +185,17 @@ namespace OpenLocoTool.Objects
 
 			// produced cargo
 			ProducedCargo.Clear();
-			ProducedCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, MaxProducedCargoType);
+			ProducedCargo.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, MaxProducedCargoType));
 			remainingData = remainingData[(S5Header.StructLength * MaxProducedCargoType)..];
 
 			// required cargo
 			RequiredCargo.Clear();
-			RequiredCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, MaxRequiredCargoType);
+			RequiredCargo.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, MaxRequiredCargoType));
 			remainingData = remainingData[(S5Header.StructLength * MaxRequiredCargoType)..];
 
 			// wall types
 			WallTypes.Clear();
-			WallTypes = SawyerStreamReader.LoadVariableHeaders(remainingData, WallTypeCount);
+			WallTypes.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, WallTypeCount));
 			remainingData = remainingData[(S5Header.StructLength * WallTypeCount)..];
 
 			// wall type

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -21,11 +22,11 @@ namespace OpenLocoTool.Objects
 	public record BuildingObject(
 			//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 			//[property: LocoStructOffset(0x02)] image_id Image,
-			[property: LocoStructOffset(0x06)] uint8_t NumSpriteSets,
-			[property: LocoStructOffset(0x07)] uint8_t NumParts,
-			[property: LocoStructOffset(0x08), LocoStructVariableLoad, LocoArrayLength(4)] List<uint8_t> PartHeights,
-			[property: LocoStructOffset(0x0C), LocoStructVariableLoad, LocoArrayLength(2)] List<uint16_t> PartAnimations,
-			[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(32)] List<uint8_t[]> Parts,
+			[property: LocoStructOffset(0x06)] uint8_t NumAnimations,
+			[property: LocoStructOffset(0x07)] uint8_t NumVariations,
+			[property: LocoStructOffset(0x08), LocoStructVariableLoad, LocoArrayLength(4)] List<uint8_t> VariationHeights,
+			[property: LocoStructOffset(0x0C), LocoStructVariableLoad, LocoArrayLength(2)] List<BuildingPartAnimation> VariationAnimations,
+			[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(BuildingObject.VariationPartCount)] List<uint8_t[]> VariationParts,
 			[property: LocoStructOffset(0x90)] uint32_t Colours,
 			[property: LocoStructOffset(0x94)] uint16_t DesignedYear,
 			[property: LocoStructOffset(0x96)] uint16_t ObsoleteYear,
@@ -37,8 +38,8 @@ namespace OpenLocoTool.Objects
 			[property: LocoStructOffset(0x9E)] uint8_t GeneratorFunction,
 			[property: LocoStructOffset(0x9F)] uint8_t var_9F,
 			//[property: LocoStructOffset(0xA0), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> ProducedQuantity,
-			//[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> ProducedCargoType,
-			//[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> RequiredCargoType,
+			//[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(MaxProducedCargoType)] List<uint8_t> ProducedCargoType,
+			//[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(MaxRequiredCargoType)] List<uint8_t> RequiredCargoType,
 			[property: LocoStructOffset(0xA6), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A6,
 			[property: LocoStructOffset(0xA8), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A8,
 			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A4, // Some type of Cargo
@@ -48,6 +49,10 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructOffset(0xAE), LocoStructVariableLoad, LocoArrayLength(4)] uint8_t[][] var_AE // 0xAE ->0xB2->0xB6->0xBA->0xBE (4 byte pointers)
 		) : ILocoStruct, ILocoStructVariableData
 	{
+		public const int VariationPartCount = 32;
+		public const int MaxProducedCargoType = 2;
+		public const int MaxRequiredCargoType = 2;
+
 		public List<S5Header> ProducedCargo { get; set; } = [];
 		public List<S5Header> RequiredCargo { get; set; } = [];
 
@@ -57,36 +62,38 @@ namespace OpenLocoTool.Objects
 		// HOSPITL1.dat - loads without error but graphics are bugged
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			// partHeights
-			PartHeights.Clear();
-			PartHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumSpriteSets * 1)], NumSpriteSets));
-			remainingData = remainingData[(NumSpriteSets * 1)..]; // uint8_t*
+			// variation heights
+			VariationHeights.Clear();
+			VariationHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumAnimations * 1)], NumAnimations));
+			remainingData = remainingData[(NumAnimations * 1)..]; // uint8_t*
 
-			// part animations
-			PartAnimations.Clear();
-			PartAnimations.AddRange(ByteReaderT.Read_Array<uint16_t>(remainingData[..(NumSpriteSets * 2)], NumSpriteSets));
-			remainingData = remainingData[(NumSpriteSets * 2)..]; // uint16_t*
+			// variation animations
+			VariationAnimations.Clear();
+			var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
+			VariationAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumAnimations * buildingAnimationSize)], typeof(BuildingPartAnimation), NumAnimations, buildingAnimationSize)
+				.Cast<BuildingPartAnimation>());
+			remainingData = remainingData[(NumAnimations * 2)..]; // uint16_t*
 
-			// parts
-			Parts.Clear();
-			for (var i = 0; i < NumParts; ++i)
+			// variation parts
+			VariationParts.Clear();
+			for (var i = 0; i < NumVariations; ++i)
 			{
-				var ptr_vari = 0;
-				while (remainingData[++ptr_vari] != 0xFF) ;
-				Parts.Add(remainingData[..ptr_vari].ToArray());
-				ptr_vari++;
-				remainingData = remainingData[ptr_vari..];
+				var ptr_10 = 0;
+				while (remainingData[++ptr_10] != 0xFF) ;
+				VariationParts.Add(remainingData[..ptr_10].ToArray());
+				ptr_10++;
+				remainingData = remainingData[ptr_10..];
 			}
 
 			// produced cargo
 			ProducedCargo.Clear();
-			ProducedCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, 2);
-			remainingData = remainingData[(S5Header.StructLength * 2)..];
+			ProducedCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, MaxProducedCargoType);
+			remainingData = remainingData[(S5Header.StructLength * MaxProducedCargoType)..];
 
 			// required cargo
 			RequiredCargo.Clear();
-			RequiredCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, 2);
-			remainingData = remainingData[(S5Header.StructLength * 2)..];
+			RequiredCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, MaxRequiredCargoType);
+			remainingData = remainingData[(S5Header.StructLength * MaxRequiredCargoType)..];
 
 			// load ??
 			var_AE.Clear();
@@ -106,17 +113,18 @@ namespace OpenLocoTool.Objects
 		{
 			var ms = new MemoryStream();
 
-			foreach (var x in PartHeights)
+			foreach (var x in VariationHeights)
 			{
 				ms.WriteByte(x);
 			}
 
-			foreach (var x in PartAnimations)
+			foreach (var x in VariationAnimations)
 			{
-				ms.Write(BitConverter.GetBytes(x));
+				ms.WriteByte(x.NumFrames);
+				ms.WriteByte(x.AnimationSpeed);
 			}
 
-			foreach (var x in Parts)
+			foreach (var x in VariationParts)
 			{
 				ms.Write(x);
 				ms.WriteByte(0xFF);

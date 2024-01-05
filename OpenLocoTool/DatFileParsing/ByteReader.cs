@@ -1,4 +1,6 @@
-﻿namespace OpenLocoTool.DatFileParsing
+﻿using OpenLocoTool.Objects;
+
+namespace OpenLocoTool.DatFileParsing
 {
 	public static class ByteReader
 	{
@@ -91,8 +93,8 @@
 			throw new NotImplementedException(t.ToString());
 		}
 
-		public static ILocoStruct ReadLocoStruct<T>(ReadOnlySpan<byte> data) where T : class
-			=> ReadLocoStruct(data, typeof(T));
+		public static T ReadLocoStruct<T>(ReadOnlySpan<byte> data) where T : class
+			=> (T)ReadLocoStruct(data, typeof(T));
 
 		public static ILocoStruct ReadLocoStruct(ReadOnlySpan<byte> data, Type t)
 		{

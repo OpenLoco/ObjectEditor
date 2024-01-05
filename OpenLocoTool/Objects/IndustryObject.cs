@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -80,13 +81,13 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructOffset(0x12)] image_id var_12, // Base image id for building 0
 		//[property: LocoStructOffset(0x16)] image_id var_16,
 		//[property: LocoStructOffset(0x1A)] image_id var_1A,
-		[property: LocoStructOffset(0x1E)] uint8_t BuildingPartCount1,
-		[property: LocoStructOffset(0x1F)] uint8_t BuildingPartCount2,
-		[property: LocoStructOffset(0x20), LocoStructVariableLoad] List<uint8_t> BuildingPartHeight,    // This is the height of a building image
-		[property: LocoStructOffset(0x24), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingPartAnimations,
-		[property: LocoStructOffset(0x28), LocoStructVariableLoad, LocoArrayLength(IndustryObject.AnimationSequencesSize)] List<uint8_t> AnimationSequences, // Access with getAnimationSequence helper method
+		[property: LocoStructOffset(0x1E)] uint8_t NumBuildingAnimations,
+		[property: LocoStructOffset(0x1F)] uint8_t NumBuildingVariations,
+		[property: LocoStructOffset(0x20), LocoStructVariableLoad] List<uint8_t> BuildingVariationHeights,    // This is the height of a building image
+		[property: LocoStructOffset(0x24), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingVariationAnimations,
+		[property: LocoStructOffset(0x28), LocoStructVariableLoad, LocoArrayLength(IndustryObject.AnimationSequencesCount)] List<uint8_t[]> AnimationSequences, // Access with getAnimationSequence helper method
 		[property: LocoStructOffset(0x38), LocoStructVariableLoad] List<IndustryObjectUnk38> var_38,    // Access with getUnk38 helper method
-		[property: LocoStructOffset(0x3C), LocoStructVariableLoad, LocoArrayLength(IndustryObject.PartCount)] List<uint8_t[]> Parts,  // Access with getBuildingParts helper method
+		[property: LocoStructOffset(0x3C), LocoStructVariableLoad, LocoArrayLength(IndustryObject.VariationPartCount)] List<uint8_t[]> BuildingVariationParts,  // Access with getBuildingParts helper method
 		[property: LocoStructOffset(0xBC)] uint8_t MinNumBuildings,
 		[property: LocoStructOffset(0xBD)] uint8_t MaxNumBuildings,
 		[property: LocoStructOffset(0xBE), LocoStructVariableLoad] List<uint8_t> Buildings,
@@ -109,100 +110,124 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xE9)] uint8_t var_E9,
 		[property: LocoStructOffset(0xEA)] uint8_t var_EA,
 		[property: LocoStructOffset(0xEB)] uint8_t var_EB,
-		[property: LocoStructOffset(0xEC)] uint8_t var_EC, // Used by Livestock cow shed count??
-		[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.WallTypeCount)] object_id[] WallTypes, // There can be up to 4 different wall types for an industry
-		[property: LocoStructOffset(0xF1), LocoStructVariableLoad] object_id BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
-		[property: LocoStructOffset(0xF2), LocoStructVariableLoad] object_id BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
+		[property: LocoStructOffset(0xEC)] uint8_t var_EC,
+		//[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.WallTypeCount)] object_id[] WallTypes, // There can be up to 4 different wall types for an industry
+		//[property: LocoStructOffset(0xF1), LocoStructVariableLoad] object_id BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
+		//[property: LocoStructOffset(0xF2), LocoStructVariableLoad] object_id BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public const int AnimationSequencesSize = 4;
+		public const int AnimationSequencesCount = 4;
 		public const int InitialProductionRateCount = 2;
 		public const int MaxProducedCargoType = 2;
 		public const int MaxRequiredCargoType = 3;
-		public const int PartCount = 32;
+		public const int VariationPartCount = 32;
 		public const int WallTypeCount = 4;
 
 		public List<S5Header> ProducedCargo { get; set; } = [];
 		public List<S5Header> RequiredCargo { get; set; } = [];
 
+		public List<IndustryObjectUnk38> UnkIndustry38 { get; set; } = [];
+
+		public List<S5Header> WallTypes { get; set; } = [];
+		public S5Header BuildingWall { get; set; }
+
+		public S5Header BuildingWallEntrance { get; set; }
+
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			// part heights
-			remainingData = remainingData[(BuildingPartCount1 * 1)..]; // sizeof(uint8_t)
+			// variation heights
+			BuildingVariationHeights.Clear();
+			BuildingVariationHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingAnimations * 1)], NumBuildingAnimations));
+			remainingData = remainingData[(NumBuildingAnimations * 1)..]; // uint8_t*
 
-			// part animations
-			remainingData = remainingData[(BuildingPartCount1 * ObjectAttributes.StructSize<BuildingPartAnimation>())..]; // sizeof(uint8_t)
+			// variation animations
+			BuildingVariationAnimations.Clear();
+			var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
+			BuildingVariationAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingAnimations * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingAnimations, buildingAnimationSize)
+				.Cast<BuildingPartAnimation>());
+			remainingData = remainingData[(NumBuildingAnimations * 2)..]; // uint16_t*
 
 			// animation sequences
-			for (var i = 0; i < AnimationSequencesSize; ++i)
+			AnimationSequences.Clear();
+			for (var i = 0; i < AnimationSequencesCount; ++i)
 			{
-				var size = (remainingData[0] * 1) + 1;
-				remainingData = remainingData[size..];
+				var size = remainingData[0];
+				if (size != 0)
+				{
+					AnimationSequences.Add(remainingData[1..size].ToArray());
+				}
+				remainingData = remainingData[(size + 1)..];
 			}
 
 			// unk animation related
-			var ptr_38 = 0;
-			while (remainingData[ptr_38] != 0xFF)
+			UnkIndustry38.Clear();
+			var structSize = ObjectAttributes.StructSize<IndustryObjectUnk38>();
+			while (remainingData[0] != 0xFF)
 			{
-				ptr_38 += ObjectAttributes.StructSize<IndustryObjectUnk38>();
+				UnkIndustry38.Add(ByteReader.ReadLocoStruct<IndustryObjectUnk38>(remainingData[..structSize]));
+				remainingData = remainingData[structSize..];
 			}
+			remainingData = remainingData[1..]; // skip final 0xFF byte
 
-			ptr_38++;
-			remainingData = remainingData[ptr_38..];
-
-			// parts
-			for (var i = 0; i < BuildingPartCount2; ++i)
+			// variation parts
+			BuildingVariationParts.Clear();
+			for (var i = 0; i < NumBuildingVariations; ++i)
 			{
 				var ptr_1F = 0;
-				while (remainingData[ptr_1F] != 0xFF)
-				{
-					ptr_1F++;
-				}
-
+				while (remainingData[++ptr_1F] != 0xFF) ;
+				BuildingVariationParts.Add(remainingData[..ptr_1F].ToArray());
 				ptr_1F++;
 				remainingData = remainingData[ptr_1F..];
 			}
 
 			// unk
+			Buildings.Clear();
+			Buildings.AddRange(remainingData[..MaxNumBuildings].ToArray());
 			remainingData = remainingData[(MaxNumBuildings * 1)..]; // sizeof(uint8_t)
 
 			// produced cargo
-			for (var i = 0; i < MaxProducedCargoType; ++i)
-			{
-				var header = S5Header.Read(remainingData[..S5Header.StructLength]);
-				if (header.Checksum != 0 || header.Flags != 255)
-				{
-					ProducedCargo.Add(header);
-				}
-
-				remainingData = remainingData[S5Header.StructLength..];
-			}
+			ProducedCargo.Clear();
+			ProducedCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, MaxProducedCargoType);
+			remainingData = remainingData[(S5Header.StructLength * MaxProducedCargoType)..];
 
 			// required cargo
-			for (var i = 0; i < MaxRequiredCargoType; ++i)
-			{
-				var header = S5Header.Read(remainingData[..S5Header.StructLength]);
-				if (header.Checksum != 0 || header.Flags != 255)
-				{
-					RequiredCargo.Add(header);
-				}
-
-				remainingData = remainingData[S5Header.StructLength..];
-			}
+			RequiredCargo.Clear();
+			RequiredCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, MaxRequiredCargoType);
+			remainingData = remainingData[(S5Header.StructLength * MaxRequiredCargoType)..];
 
 			// wall types
-			remainingData = remainingData[(S5Header.StructLength * WallTypes.Length)..];
+			WallTypes.Clear();
+			WallTypes = SawyerStreamReader.LoadVariableHeaders(remainingData, WallTypeCount);
+			remainingData = remainingData[(S5Header.StructLength * WallTypeCount)..];
 
 			// unk wall type
-			remainingData = remainingData[(S5Header.StructLength * 1)..];
+			BuildingWall = S5Header.Read(remainingData[..S5Header.StructLength]);
+			remainingData = remainingData[S5Header.StructLength..];
 
 			// unk wall type (building entrance?)
-			remainingData = remainingData[(S5Header.StructLength * 1)..];
+			BuildingWallEntrance = S5Header.Read(remainingData[..S5Header.StructLength]);
+			remainingData = remainingData[S5Header.StructLength..];
 
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
+		public ReadOnlySpan<byte> Save()
+		{
+			var ms = new MemoryStream();
+
+			foreach (var x in BuildingVariationHeights)
+			{
+				ms.WriteByte(x);
+			}
+
+			foreach (var x in BuildingVariationAnimations)
+			{
+				ms.WriteByte(x.NumFrames);
+				ms.WriteByte(x.AnimationSpeed);
+			}
+
+			return ms.ToArray();
+		}
 	}
 }

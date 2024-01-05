@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -15,7 +16,11 @@ namespace OpenLocoTool.DatFileParsing
 			List<S5Header> result = [];
 			for (var i = 0; i < count; ++i)
 			{
-				result.Add(S5Header.Read(data[..S5Header.StructLength]));
+				var header = S5Header.Read(data[..S5Header.StructLength]);
+				if (header.Checksum != 0 || header.Flags != 255)
+				{
+					result.Add(header);
+				}
 				data = data[S5Header.StructLength..];
 			}
 

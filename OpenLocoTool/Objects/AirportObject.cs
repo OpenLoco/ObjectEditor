@@ -1,4 +1,5 @@
 ﻿
+using System.Collections.Generic;
 using System.ComponentModel;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
@@ -52,11 +53,11 @@ namespace OpenLocoTool.Objects
 		//[property: LocoStructOffset(0x08)] image_id Image,
 		//[property: LocoStructOffset(0x0C)] image_id ImageOffset,
 		[property: LocoStructOffset(0x10)] uint16_t AllowedPlaneTypes,
-		[property: LocoStructOffset(0x12)] uint8_t NumSpriteSets,
-		[property: LocoStructOffset(0x13)] uint8_t NumParts,
-		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> PartHeights,
-		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<uint16_t> PartAnimations,
-		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(32)] List<uint8_t[]> Parts,
+		[property: LocoStructOffset(0x12)] uint8_t NumBuildingAnimations,
+		[property: LocoStructOffset(0x13)] uint8_t NumBuildingVariations,
+		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> BuildingVariationHeights,
+		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingVariationAnimations,
+		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(AirportObject.VariationPartCount)] List<uint8_t[]> BuildingVariationParts,
 		[property: LocoStructOffset(0x9C), LocoStructVariableLoad] List<uint32_t> var_9C,
 		[property: LocoStructOffset(0xA0)] uint32_t LargeTiles,
 		[property: LocoStructOffset(0xA4)] int8_t MinX,
@@ -72,26 +73,29 @@ namespace OpenLocoTool.Objects
 	//[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
 	) : ILocoStruct, ILocoStructVariableData
 	{
+		public const int VariationPartCount = 32;
+
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			// var_14 (variation heights)
-			PartHeights.Clear();
-			PartHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumSpriteSets * 1)], NumSpriteSets));
-			remainingData = remainingData[(NumSpriteSets * 1)..]; // uint8_t*
+			// variation heights
+			BuildingVariationHeights.Clear();
+			BuildingVariationHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingAnimations * 1)], NumBuildingAnimations));
+			remainingData = remainingData[(NumBuildingAnimations * 1)..]; // uint8_t*
 
-			// var_18 (part animations)
-			PartAnimations.Clear();
-			PartAnimations.AddRange(ByteReaderT.Read_Array<uint16_t>(remainingData[..(NumSpriteSets * 2)], NumSpriteSets));
-			remainingData = remainingData[(NumSpriteSets * 2)..]; // uint16_t*
+			// variation animations
+			BuildingVariationAnimations.Clear();
+			var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
+			BuildingVariationAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingAnimations * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingAnimations, buildingAnimationSize)
+				.Cast<BuildingPartAnimation>());
+			remainingData = remainingData[(NumBuildingAnimations * 2)..]; // uint16_t*
 
-			// numTiles
-			Parts.Clear();
-			for (var i = 0; i < NumParts; ++i)
+			// variation parts
+			for (var i = 0; i < NumBuildingVariations; ++i)
 			{
 				var ptr_1C = 0;
-				while (remainingData[ptr_1C++] != 0xFF) ;
-
-				Parts.Add(remainingData[..(ptr_1C - 1)].ToArray()); // do -1 to skip 0xFF byte
+				while (remainingData[++ptr_1C] != 0xFF) ;
+				BuildingVariationParts.Add(remainingData[..ptr_1C].ToArray());
+				ptr_1C++;
 				remainingData = remainingData[ptr_1C..];
 			}
 
@@ -130,17 +134,18 @@ namespace OpenLocoTool.Objects
 		{
 			var ms = new MemoryStream();
 
-			foreach (var x in PartHeights)
+			foreach (var x in BuildingVariationHeights)
 			{
 				ms.WriteByte(x);
 			}
 
-			foreach (var x in PartAnimations)
+			foreach (var x in BuildingVariationAnimations)
 			{
-				ms.Write(BitConverter.GetBytes(x));
+				ms.WriteByte(x.NumFrames);
+				ms.WriteByte(x.AnimationSpeed);
 			}
 
-			foreach (var x in Parts)
+			foreach (var x in BuildingVariationParts)
 			{
 				ms.Write(x);
 				ms.WriteByte(0xFF);

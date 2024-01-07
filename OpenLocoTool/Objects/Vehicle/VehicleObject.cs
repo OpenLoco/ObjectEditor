@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Globalization;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -42,7 +41,9 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x114)] uint16_t Designed,
 		[property: LocoStructOffset(0x116)] uint16_t Obsolete,
 		[property: LocoStructOffset(0x118), LocoStructVariableLoad] uint8_t RackRailType,
-		[property: LocoStructOffset(0x119)] DrivingSoundType DrivingSoundType,
+		[property: LocoStructOffset(0x119)] DrivingSoundType SoundType,
+		// this is a union...length is the length of the longest union struct, which is Engine2Sound. make the byte[] not visible in editor
+		[property: LocoStructOffset(0x11A), LocoArrayLength(VehicleObject.MaxUnionSoundStructLength), Browsable(false)] byte[] SoundPropertiesData,
 		//union
 		//{
 		//	VehicleObjectFrictionSound friction,
@@ -55,10 +56,83 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x15B), LocoArrayLength(3), LocoStructVariableLoad] List<S5Header> StartSounds
 	) : ILocoStruct, ILocoStructVariableData
 	{
+		public const int MaxUnionSoundStructLength = 0x1B;
 		public const int MaxBodySprites = 4;
 		public const int AnimationCount = 2;
 		public const int CompatibleCargoTypesLength = 2;
 		public const int CargoTypeSpriteOffsetsLength = 32;
+
+		public FrictionSound? SoundPropertyFriction
+		{
+			get
+			{
+				return SoundType == DrivingSoundType.Friction
+					? (FrictionSound)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<FrictionSound>()], typeof(FrictionSound))
+					: null;
+			}
+			set
+			{
+				if (value != null)
+				{
+					ByteWriter.WriteLocoStruct(value).CopyTo(SoundPropertiesData);
+				}
+				else
+				{
+					for (var i = 0; i < MaxUnionSoundStructLength; ++i)
+					{
+						SoundPropertiesData[i] = 0;
+					}
+				}
+			}
+		}
+
+		public Engine1Sound? SoundPropertyEngine1
+		{
+			get
+			{
+				return SoundType == DrivingSoundType.Engine1
+					? (Engine1Sound)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<Engine1Sound>()], typeof(Engine1Sound))
+					: null;
+			}
+			set
+			{
+				if (value != null)
+				{
+					ByteWriter.WriteLocoStruct(value).CopyTo(SoundPropertiesData);
+				}
+				else
+				{
+					for (var i = 0; i < MaxUnionSoundStructLength; ++i)
+					{
+						SoundPropertiesData[i] = 0;
+					}
+				}
+			}
+		}
+
+		public Engine2Sound? SoundPropertyEngine2
+		{
+			get
+			{
+				return SoundType == DrivingSoundType.Engine2
+					? (Engine2Sound)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<Engine2Sound>()], typeof(Engine2Sound))
+					: null;
+			}
+			set
+			{
+				if (value != null)
+				{
+					ByteWriter.WriteLocoStruct(value).CopyTo(SoundPropertiesData);
+				}
+				else
+				{
+					for (var i = 0; i < MaxUnionSoundStructLength; ++i)
+					{
+						SoundPropertiesData[i] = 0;
+					}
+				}
+			}
+		}
 
 		// this hack is because winforms won't show a list of lists properly...
 		public List<CargoCategory> CompatibleCargoCategories1 { get => CompatibleCargoCategories[0]; set => CompatibleCargoCategories[0] = value; }
@@ -68,7 +142,7 @@ namespace OpenLocoTool.Objects
 
 		public S5Header? TrackType { get; set; }
 		public S5Header? RackRail { get; set; }
-		public S5Header? DrivingSound { get; set; }
+		public S5Header? Sound { get; set; }
 
 		public List<S5Header> AnimationHeaders { get; set; } = [];
 
@@ -86,11 +160,7 @@ namespace OpenLocoTool.Objects
 			RequiredTrackExtras.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, NumTrackExtras));
 			remainingData = remainingData[(S5Header.StructLength * NumTrackExtras)..];
 
-			// cargo types
-			// this whole bullshit is mostly copied and pasted from openloco
-			// but we need to do it to a) load the cargo match flags and b) to move the stream to the right offset to load the next variable data
-			// afterwards, we'll do nice c# load of the cargo based on the match flags
-
+			// compatible cargo types
 			CompatibleCargoCategories.Clear();
 			for (var i = 0; i < CompatibleCargoTypesLength; ++i)
 			{
@@ -171,9 +241,9 @@ namespace OpenLocoTool.Objects
 			}
 
 			// driving sound
-			if (DrivingSoundType != DrivingSoundType.None)
+			if (SoundType != DrivingSoundType.None)
 			{
-				DrivingSound = S5Header.Read(remainingData[..S5Header.StructLength]);
+				Sound = S5Header.Read(remainingData[..S5Header.StructLength]);
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
@@ -223,17 +293,6 @@ namespace OpenLocoTool.Objects
 					ms.WriteByte(CargoTypeSpriteOffsets[cc]);
 				}
 
-				// loop
-				//var cargoCategoryBits = new BitArray(BitConverter.GetBytes(CargoTypes[i]));
-				//for (var j = 0; j < 32; j++)
-				//{
-				//	if (cargoCategoryBits[j])
-				//	{
-				//		ms.Write(BitConverter.GetBytes((uint16_t)j));
-				//		ms.WriteByte(CargoTypeSpriteOffsets[j]);
-				//	}
-				//}
-
 				ms.WriteByte(0xFF);
 				ms.WriteByte(0xFF);
 			}
@@ -257,9 +316,9 @@ namespace OpenLocoTool.Objects
 			}
 
 			// driving sound
-			if (DrivingSoundType != DrivingSoundType.None)
+			if (SoundType != DrivingSoundType.None)
 			{
-				ms.Write(DrivingSound!.Write());
+				ms.Write(Sound!.Write());
 			}
 
 			// driving start sounds

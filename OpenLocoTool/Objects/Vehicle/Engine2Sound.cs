@@ -6,7 +6,7 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1B)]
 	public record Engine2Sound(
-		[property: LocoStructOffset(0x00)] uint8_t SoundObjectId,
+		[property: LocoStructOffset(0x00), Browsable(false)] uint8_t SoundObjectId,
 		[property: LocoStructOffset(0x01)] uint16_t DefaultFrequency,
 		[property: LocoStructOffset(0x02)] uint8_t DefaultVolume,
 		[property: LocoStructOffset(0x04)] uint16_t FirstGearFrequency, // All subsequent gears are based on this frequency

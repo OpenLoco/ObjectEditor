@@ -333,46 +333,7 @@ namespace OpenLocoToolGui
 
 		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (CurrentUIObject is not UiLocoObject obj)
-			{
-				return;
-			}
 
-			if (!SaveEnabledObjects.Types.Contains(obj.DatFileInfo.S5Header.ObjectType))
-			{
-				var msg = $"Saving is not currently implemented for {obj.DatFileInfo.S5Header.ObjectType} objects";
-				logger.Error(msg);
-				logger.Info($"Saving is currently supported for the following objects: [{SaveEnabledObjects.Types.Aggregate("", (a, b) => a + ", " + b)}]");
-				MessageBox.Show(msg);
-				return;
-			}
-
-			saveFileDialog1.InitialDirectory = model.Settings.ObjDataDirectory;
-			saveFileDialog1.DefaultExt = "dat";
-			saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
-			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-			{
-				var filename = saveFileDialog1.FileName;
-
-				try
-				{
-					var exists = File.Exists(filename);
-					MainFormModel.SaveFile(filename, obj);
-
-					if (!exists)
-					{
-						// we made a new file (as opposed to overwriting an existing one) so lets update the UI to show it
-						InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
-					}
-
-					logger.Info($"File \"{filename}\" saved successfully");
-				}
-				catch (Exception ex)
-				{
-					logger.Error($"Error saving \"{filename}\": {ex.Message}");
-					MessageBox.Show($"Error saving \"{filename}\": {ex.Message}");
-				}
-			}
 		}
 
 		private void setObjectDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
@@ -864,6 +825,50 @@ namespace OpenLocoToolGui
 			e.Graphics.DrawString(item.ToString(), e.Font, foregroundBrush, e.Bounds.Left, e.Bounds.Y);
 
 			//e.DrawFocusRectangle();
+		}
+
+		private void toolStripButton1_Click(object sender, EventArgs e)
+		{
+			if (CurrentUIObject is not UiLocoObject obj)
+			{
+				return;
+			}
+
+			if (!SaveEnabledObjects.Types.Contains(obj.DatFileInfo.S5Header.ObjectType))
+			{
+				var msg = $"Saving is not currently implemented for {obj.DatFileInfo.S5Header.ObjectType} objects";
+				logger.Error(msg);
+				logger.Info($"Saving is currently supported for the following objects: [{SaveEnabledObjects.Types.Aggregate("", (a, b) => a + ", " + b)}]");
+				MessageBox.Show(msg);
+				return;
+			}
+
+			saveFileDialog1.InitialDirectory = model.Settings.ObjDataDirectory;
+			saveFileDialog1.DefaultExt = "dat";
+			saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";
+			if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+			{
+				var filename = saveFileDialog1.FileName;
+
+				try
+				{
+					var exists = File.Exists(filename);
+					MainFormModel.SaveFile(filename, obj);
+
+					if (!exists)
+					{
+						// we made a new file (as opposed to overwriting an existing one) so lets update the UI to show it
+						InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+					}
+
+					logger.Info($"File \"{filename}\" saved successfully");
+				}
+				catch (Exception ex)
+				{
+					logger.Error($"Error saving \"{filename}\": {ex.Message}");
+					MessageBox.Show($"Error saving \"{filename}\": {ex.Message}");
+				}
+			}
 		}
 	}
 }

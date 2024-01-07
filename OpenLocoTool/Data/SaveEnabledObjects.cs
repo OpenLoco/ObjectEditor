@@ -37,7 +37,7 @@ namespace OpenLocoTool.Data
 			ObjectType.TrainStation,
 			ObjectType.Tree,
 			ObjectType.Tunnel,
-			//ObjectType.Vehicle,
+			ObjectType.Vehicle,
 			ObjectType.Wall,
 			ObjectType.Water,
 		];

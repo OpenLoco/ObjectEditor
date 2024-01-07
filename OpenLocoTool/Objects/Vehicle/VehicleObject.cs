@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
-using Microsoft.VisualBasic;
+﻿using System.ComponentModel;
+using System.Globalization;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -16,14 +15,14 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x03)] VehicleType Type,
 		[property: LocoStructOffset(0x04)] uint8_t var_04,
 		//[LocoStructOffset(0x05)] object_id TrackType ,
-		[property: LocoStructOffset(0x06)] uint8_t NumMods,
+		[property: LocoStructOffset(0x06)] uint8_t NumTrackExtras,
 		[property: LocoStructOffset(0x07)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x08)] int16_t CostFactor,
 		[property: LocoStructOffset(0x0A)] uint8_t Reliability,
 		[property: LocoStructOffset(0x0B)] uint8_t RunCostIndex,
 		[property: LocoStructOffset(0x0C)] int16_t RunCostFactor,
 		[property: LocoStructOffset(0x0E)] uint8_t ColourType,
-		[property: LocoStructOffset(0x0F)] uint8_t NumCompat,
+		[property: LocoStructOffset(0x0F)] uint8_t NumCompatibleVehicles,
 		[property: LocoStructOffset(0x10), LocoArrayLength(8), LocoStructVariableLoad] List<S5Header> CompatibleVehicles,
 		[property: LocoStructOffset(0x20), LocoArrayLength(4), LocoStructVariableLoad] List<S5Header> RequiredTrackExtras,
 		[property: LocoStructOffset(0x24), LocoArrayLength(4)] VehicleObjectUnk[] var_24,
@@ -35,8 +34,8 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xDE)] uint16_t Weight,
 		[property: LocoStructOffset(0xE0)] VehicleObjectFlags Flags,
 		[property: LocoStructOffset(0xE2), LocoArrayLength(2), LocoStructVariableLoad] List<uint8_t> MaxCargo,
-		[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObject.CargoTypesLength), LocoStructVariableLoad] List<uint32_t> CargoTypes,
-		[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObject.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] List<uint8_t> CargoTypeSpriteOffsets,
+		[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad, Browsable(false)] List<List<CargoCategory>> CompatibleCargoCategories,
+		[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObject.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets,
 		//[property: LocoStructOffset(0x10C), LocoStructVariableLoad] uint8_t NumSimultaneousCargoTypes,
 		[property: LocoStructOffset(0x10D), LocoArrayLength(VehicleObject.AnimationCount)] SimpleAnimation[] Animation,
 		[property: LocoStructOffset(0x113)] uint8_t var_113,
@@ -58,11 +57,12 @@ namespace OpenLocoTool.Objects
 	{
 		public const int MaxBodySprites = 4;
 		public const int AnimationCount = 2;
-		public const int CargoTypesLength = 2;
+		public const int CompatibleCargoTypesLength = 2;
 		public const int CargoTypeSpriteOffsetsLength = 32;
-		public List<uint16_t> CargoMatchFlags = [];
 
-		public List<CargoObject> CompatibleCargo = [];
+		// this hack is because winforms won't show a list of lists properly...
+		public List<CargoCategory> CompatibleCargoCategories1 { get => CompatibleCargoCategories[0]; set => CompatibleCargoCategories[0] = value; }
+		public List<CargoCategory> CompatibleCargoCategories2 { get => CompatibleCargoCategories[1]; set => CompatibleCargoCategories[1] = value; }
 
 		public uint8_t NumSimultaneousCargoTypes { get; set; }
 
@@ -81,25 +81,32 @@ namespace OpenLocoTool.Objects
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
-			// track extra
+			// track extras
 			RequiredTrackExtras.Clear();
-			RequiredTrackExtras.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, NumMods));
-			remainingData = remainingData[(S5Header.StructLength * NumMods)..];
+			RequiredTrackExtras.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, NumTrackExtras));
+			remainingData = remainingData[(S5Header.StructLength * NumTrackExtras)..];
 
 			// cargo types
 			// this whole bullshit is mostly copied and pasted from openloco
 			// but we need to do it to a) load the cargo match flags and b) to move the stream to the right offset to load the next variable data
 			// afterwards, we'll do nice c# load of the cargo based on the match flags
-			MaxCargo.Clear();
-			CargoMatchFlags.Clear();
 
-			CargoTypes.Clear();
-			CargoTypes.AddRange(Enumerable.Repeat(0U, CargoTypesLength));
+			CompatibleCargoCategories.Clear();
+			for (var i = 0; i < CompatibleCargoTypesLength; ++i)
+			{
+				CompatibleCargoCategories.Add([]);
+			}
+
+			var cargoCategories = SObjectManager.Get<CargoObject>(ObjectType.Cargo)
+				.Select(c => c.CargoCategory)
+				.Distinct()
+				.OrderBy(cc => (uint16_t)cc);
 
 			CargoTypeSpriteOffsets.Clear();
-			CargoTypeSpriteOffsets.AddRange(Enumerable.Repeat((byte)0, CargoTypeSpriteOffsetsLength));
 
-			for (var i = 0; i < CargoTypesLength; ++i)
+			MaxCargo.Clear();
+
+			for (var i = 0; i < CompatibleCargoTypesLength; ++i)
 			{
 				var index = NumSimultaneousCargoTypes;
 				MaxCargo.Add(remainingData[0]);
@@ -111,45 +118,29 @@ namespace OpenLocoTool.Objects
 				}
 
 				var ptr = BitConverter.ToUInt16(remainingData[0..2]);
-				while (ptr != 0xFFFF)
+				while (ptr != (uint16_t)CargoCategory.NULL)
 				{
-					var cargoMatchFlags = BitConverter.ToUInt16(remainingData[0..2]);
-					CargoMatchFlags.Add(cargoMatchFlags);
+					var vehicleCargoCategory = (CargoCategory)BitConverter.ToUInt16(remainingData[0..2]);
 					remainingData = remainingData[2..]; // uint16_t
 
-					var unk = remainingData[0];
+					var cargoTypeSpriteOffset = remainingData[0];
 					remainingData = remainingData[1..]; // uint8_t
 
-					var cargoObjs = SObjectManager.Get<CargoObject>(ObjectType.Cargo);
-
-					for (var cargoType = 0; cargoType < 32; ++cargoType) // 32 is ObjectType::MaxObjects[cargo]
-					{
-						// until the rest of this is implemented, these values will be wrong
-						// but as long as they're non-zero to pass the == 0 check below, it'll work
-						CargoTypes[index] |= 1U << cargoType;
-						CargoTypeSpriteOffsets[cargoType] = unk;
-					}
+					CompatibleCargoCategories[index].Add(vehicleCargoCategory);
+					CargoTypeSpriteOffsets.Add(vehicleCargoCategory, cargoTypeSpriteOffset);
 
 					ptr = BitConverter.ToUInt16(remainingData[0..2]);
 				}
 
-				remainingData = remainingData[2..]; // uint16_t
+				remainingData = remainingData[2..]; // uint16_t, skips the 0xFFFF bytes
 
-				if (CargoTypes[index] == 0)
+				if (CompatibleCargoCategories[index].Count == 0)
 				{
 					MaxCargo[index] = 0;
 				}
 				else
 				{
 					NumSimultaneousCargoTypes++;
-				}
-			}
-
-			foreach (var cargo in SObjectManager.Get<CargoObject>(ObjectType.Cargo))
-			{
-				if (CargoMatchFlags.Contains(cargo.MatchFlags))
-				{
-					CompatibleCargo.Add(cargo);
 				}
 			}
 
@@ -169,8 +160,8 @@ namespace OpenLocoTool.Objects
 
 			// numCompat
 			CompatibleVehicles.Clear();
-			CompatibleVehicles.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, NumCompat));
-			remainingData = remainingData[(S5Header.StructLength * NumCompat)..];
+			CompatibleVehicles.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, NumCompatibleVehicles));
+			remainingData = remainingData[(S5Header.StructLength * NumCompatibleVehicles)..];
 
 			// rack rail
 			if (Flags.HasFlag(VehicleObjectFlags.RackRail))
@@ -186,10 +177,11 @@ namespace OpenLocoTool.Objects
 				remainingData = remainingData[S5Header.StructLength..];
 			}
 
-			// driving/start sound
+			// driving/start sounds
 			StartSounds.Clear();
 			var mask = 127;
-			for (var i = 0; i < (NumStartSounds & mask); ++i)
+			var count = NumStartSounds & mask;
+			for (var i = 0; i < count; ++i)
 			{
 				var startSound = S5Header.Read(remainingData[..S5Header.StructLength]);
 				StartSounds.Add(startSound);
@@ -201,7 +193,82 @@ namespace OpenLocoTool.Objects
 
 		public ReadOnlySpan<byte> Save()
 		{
-			throw new NotImplementedException();
+			var ms = new MemoryStream();
+
+			// track type
+			if (!Flags.HasFlag(VehicleObjectFlags.unk_09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
+			{
+				ms.Write(TrackType!.Write());
+			}
+
+			// track extras
+			foreach (var x in RequiredTrackExtras)
+			{
+				ms.Write(x.Write());
+			}
+
+			// cargo types
+			for (var i = 0; i < CompatibleCargoTypesLength; ++i) // CompatibleCargoTypesLength should == CompatibleCargoCategories.Length
+			{
+				ms.WriteByte(MaxCargo[i]);
+
+				if (MaxCargo[i] == 0)
+				{
+					continue;
+				}
+
+				foreach (var cc in CompatibleCargoCategories[i])
+				{
+					ms.Write(BitConverter.GetBytes((uint16_t)cc));
+					ms.WriteByte(CargoTypeSpriteOffsets[cc]);
+				}
+
+				// loop
+				//var cargoCategoryBits = new BitArray(BitConverter.GetBytes(CargoTypes[i]));
+				//for (var j = 0; j < 32; j++)
+				//{
+				//	if (cargoCategoryBits[j])
+				//	{
+				//		ms.Write(BitConverter.GetBytes((uint16_t)j));
+				//		ms.WriteByte(CargoTypeSpriteOffsets[j]);
+				//	}
+				//}
+
+				ms.WriteByte(0xFF);
+				ms.WriteByte(0xFF);
+			}
+
+			// animation
+			foreach (var x in CompatibleVehicles)
+			{
+				ms.Write(x.Write());
+			}
+
+			// numCompat
+			foreach (var x in AnimationHeaders)
+			{
+				ms.Write(x.Write());
+			}
+
+			// rack rail
+			if (Flags.HasFlag(VehicleObjectFlags.RackRail))
+			{
+				ms.Write(RackRail!.Write());
+			}
+
+			// driving sound
+			if (DrivingSoundType != DrivingSoundType.None)
+			{
+				ms.Write(DrivingSound!.Write());
+			}
+
+			// driving start sounds
+			foreach (var x in StartSounds)
+			{
+				ms.Write(x.Write());
+			}
+
+			return ms.ToArray();
 		}
 	}
 }

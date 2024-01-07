@@ -583,14 +583,14 @@ namespace OpenLocoToolTests
 				Assert.That(struc.Type, Is.EqualTo(VehicleType.Aircraft), nameof(struc.Type));
 				Assert.That(struc.var_04, Is.EqualTo(1), nameof(struc.var_04));
 				// Assert.That(struc.TrackType, Is.EqualTo(0xFF), nameof(struc.TrackType)); // is changed after load from 0 to 255
-				Assert.That(struc.NumMods, Is.EqualTo(0), nameof(struc.NumMods));
+				Assert.That(struc.NumTrackExtras, Is.EqualTo(0), nameof(struc.NumTrackExtras));
 				Assert.That(struc.CostIndex, Is.EqualTo(8), nameof(struc.CostIndex));
 				Assert.That(struc.CostFactor, Is.EqualTo(345), nameof(struc.CostFactor));
 				Assert.That(struc.Reliability, Is.EqualTo(88), nameof(struc.Reliability));
 				Assert.That(struc.RunCostIndex, Is.EqualTo(4), nameof(struc.RunCostIndex));
 				Assert.That(struc.RunCostFactor, Is.EqualTo(55), nameof(struc.RunCostFactor));
 				Assert.That(struc.ColourType, Is.EqualTo(9), nameof(struc.ColourType));
-				Assert.That(struc.NumCompat, Is.EqualTo(0), nameof(struc.NumCompat));
+				Assert.That(struc.NumCompatibleVehicles, Is.EqualTo(0), nameof(struc.NumCompatibleVehicles));
 				CollectionAssert.AreEqual(Enumerable.Repeat(0, 8).ToArray(), struc.CompatibleVehicles, nameof(struc.CompatibleVehicles));
 				CollectionAssert.AreEqual(Enumerable.Repeat(0, 4).ToArray(), struc.RequiredTrackExtras, nameof(struc.RequiredTrackExtras));
 				//Assert.That(struc.var_24, Is.EqualTo(0), nameof(struc.var_24));
@@ -602,7 +602,7 @@ namespace OpenLocoToolTests
 				Assert.That(struc.Weight, Is.EqualTo(141), nameof(struc.Weight));
 				Assert.That(struc.Flags, Is.EqualTo((VehicleObjectFlags)16384), nameof(struc.Flags));
 				// CollectionAssert.AreEqual(struc.MaxCargo, Enumerable.Repeat(0, 2).ToArray(), nameof(struc.MaxCargo)); // this is changed after load from 0 to 24
-				CollectionAssert.AreEqual(Enumerable.Repeat(0, 2).ToArray(), struc.CargoTypes, nameof(struc.CargoTypes));
+				CollectionAssert.AreEqual(Enumerable.Repeat(0, 2).ToArray(), struc.CompatibleCargoCategories, nameof(struc.CompatibleCargoCategories));
 				CollectionAssert.AreEqual(Enumerable.Repeat(0, 32).ToArray(), struc.CargoTypeSpriteOffsets, nameof(struc.CargoTypeSpriteOffsets));
 				Assert.That(struc.NumSimultaneousCargoTypes, Is.EqualTo(1), nameof(struc.NumSimultaneousCargoTypes));
 				Assert.That(struc.Animation[0].ObjectId, Is.EqualTo(0), nameof(struc.Animation));

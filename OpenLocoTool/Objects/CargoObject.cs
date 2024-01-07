@@ -12,6 +12,24 @@ namespace OpenLocoTool.Objects
 		Delivering = 1 << 2,
 	};
 
+	public enum CargoCategory : uint16_t
+	{
+		grain = 1,
+		coal,
+		ironOre,
+		liquids,
+		paper,
+		steel,
+		timber,
+		goods,
+		foods,
+		livestock = 11,
+		passengers,
+		mail,
+		// Note: Mods may (and do) use other numbers not covered by this list
+		NULL = (uint16_t)0xFFFFU,
+	};
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1F)]
 	[LocoStructType(ObjectType.Cargo)]
@@ -19,7 +37,7 @@ namespace OpenLocoTool.Objects
 	public class CargoObject(
 		uint16_t var_02,
 		uint16_t cargoTransferTime,
-		uint16_t matchFlags,
+		CargoCategory cargoCategory,
 		CargoObjectFlags flags,
 		uint8_t numPlatformVariations,
 		uint8_t var_14,
@@ -39,7 +57,7 @@ namespace OpenLocoTool.Objects
 		//[LocoStructOffset(0x08), LocoString, Browsable(false)] public string_id UnitNameSingular { get; set; }
 		//[LocoStructOffset(0x0A), LocoString, Browsable(false)] public string_id UnitNamePlural { get; set; }
 		//[LocoStructOffset(0x0C)] public image_id UnitInlineSprite { get; set; }
-		[LocoStructOffset(0x10)] public uint16_t MatchFlags { get; set; } = matchFlags;
+		[LocoStructOffset(0x10)] public CargoCategory CargoCategory { get; set; } = cargoCategory;
 		[LocoStructOffset(0x12)] public CargoObjectFlags Flags { get; set; } = flags;
 		[LocoStructOffset(0x13)] public uint8_t NumPlatformVariations { get; set; } = numPlatformVariations;
 		[LocoStructOffset(0x14), LocoPropertyMaybeUnused] public uint8_t var_14 { get; set; } = var_14;

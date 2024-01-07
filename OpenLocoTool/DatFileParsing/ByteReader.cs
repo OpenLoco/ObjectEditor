@@ -91,8 +91,8 @@
 			throw new NotImplementedException(t.ToString());
 		}
 
-		public static ILocoStruct ReadLocoStruct<T>(ReadOnlySpan<byte> data) where T : class
-			=> ReadLocoStruct(data, typeof(T));
+		public static T ReadLocoStruct<T>(ReadOnlySpan<byte> data) where T : class
+			=> (T)ReadLocoStruct(data, typeof(T));
 
 		public static ILocoStruct ReadLocoStruct(ReadOnlySpan<byte> data, Type t)
 		{
@@ -110,7 +110,7 @@
 
 				// ignore skipped properties (usually image ids and string ids which are only used in loco itself, not this tool
 				var skip = AttributeHelper.Get<LocoStructSkipReadAttribute>(p);
-				if (offsetAttr == null)
+				if (skip != null)
 				{
 					continue;
 				}

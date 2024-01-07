@@ -34,55 +34,97 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x30)]
-	public record RoadObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] RoadObjectPieceFlags RoadPieces,
-		[property: LocoStructOffset(0x04)] int16_t BuildCostFactor,
-		[property: LocoStructOffset(0x06)] int16_t SellCostFactor,
-		[property: LocoStructOffset(0x08)] int16_t TunnelCostFactor,
-		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
-		[property: LocoStructOffset(0x0B)] uint8_t Tunnel,
-		[property: LocoStructOffset(0x0C)] Speed16 MaxSpeed,
-		[property: LocoStructOffset(0x0E)] uint32_t Image,
-		[property: LocoStructOffset(0x12)] RoadObjectFlags Flags,
-		[property: LocoStructOffset(0x14)] uint8_t NumBridges,
-		[property: LocoStructOffset(0x15), LocoArrayLength(7)] uint8_t[] Bridges,
-		[property: LocoStructOffset(0x1C)] uint8_t NumStations,
-		[property: LocoStructOffset(0x1D), LocoArrayLength(7)] uint8_t[] Stations,
-		[property: LocoStructOffset(0x24)] uint8_t PaintStyle,
-		[property: LocoStructOffset(0x25)] uint8_t NumMods,
-		[property: LocoStructOffset(0x26), LocoArrayLength(2)] uint8_t[] Mods,
-		[property: LocoStructOffset(0x28)] uint8_t NumCompatible,
-		[property: LocoStructOffset(0x29)] uint8_t pad_29,
-		[property: LocoStructOffset(0x2A)] uint16_t CompatibleRoads,
-		[property: LocoStructOffset(0x2C)] uint16_t CompatibleTracks,
-		[property: LocoStructOffset(0x2E)] uint8_t TargetTownSize,
-		[property: LocoStructOffset(0x2F)] uint8_t pad_2F
-		) : ILocoStruct, ILocoStructVariableData
+	[LocoStructType(ObjectType.Road)]
+	[LocoStringTable("Name")]
+	public class RoadObject(
+		RoadObjectPieceFlags roadPieces,
+		int16_t buildCostFactor,
+		int16_t sellCostFactor,
+		int16_t tunnelCostFactor,
+		uint8_t costIndex,
+		int16_t maxSpeed,
+		RoadObjectFlags flags,
+		uint8_t numBridges,
+		uint8_t numStations,
+		uint8_t paintStyle,
+		uint8_t numMods,
+		uint8_t numCompatible,
+		uint8_t targetTownSize)
+		: ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.Road;
-		public static int StructSize => 0x30;
+		//[LocoStructOffset(0x00), LocoString, Browsable(false)] public string_id Name,
+		[LocoStructOffset(0x02)] public RoadObjectPieceFlags RoadPieces { get; set; } = roadPieces;
+		[LocoStructOffset(0x04)] public int16_t BuildCostFactor { get; set; } = buildCostFactor;
+		[LocoStructOffset(0x06)] public int16_t SellCostFactor { get; set; } = sellCostFactor;
+		[LocoStructOffset(0x08)] public int16_t TunnelCostFactor { get; set; } = tunnelCostFactor;
+		[LocoStructOffset(0x0A)] public uint8_t CostIndex { get; set; } = costIndex;
+		//[LocoStructOffset(0x0B)] public object_index Tunnel { get; set; }
+		[LocoStructOffset(0x0C)] public Speed16 MaxSpeed { get; set; } = maxSpeed;
+		//[LocoStructOffset(0x0E)] public image_id Image,
+		[LocoStructOffset(0x12)] public RoadObjectFlags Flags { get; set; } = flags;
+		[LocoStructOffset(0x14)] public uint8_t NumBridges { get; set; } = numBridges;
+		//[LocoStructOffset(0x15), LocoArrayLength(7)] object_index[] Bridges { get; set; }
+		[LocoStructOffset(0x1C)] public uint8_t NumStations { get; set; } = numStations;
+		//[LocoStructOffset(0x1D), LocoArrayLength(7)] object_index[] Stations { get; set; }
+		[LocoStructOffset(0x24)] public uint8_t PaintStyle { get; set; } = paintStyle;
+		[LocoStructOffset(0x25)] public uint8_t NumMods { get; set; } = numMods;
+		//[LocoStructOffset(0x26), LocoArrayLength(2)] object_index[] Mods { get; set; }
+		[LocoStructOffset(0x28)] public uint8_t NumCompatible { get; set; } = numCompatible;
+		//[LocoStructOffset(0x29)] public uint8_t pad_29 { get; set; } = pad_29;
+		//[LocoStructOffset(0x2A)] public uint16_t CompatibleRoads { get; set; } // bitset
+		//[LocoStructOffset(0x2C)] public uint16_t CompatibleTracks { get; set; } // bitset
+		[LocoStructOffset(0x2E)] public uint8_t TargetTownSize { get; set; } = targetTownSize;
+		//[LocoStructOffset(0x2F)] public uint8_t pad_2F { get; set; } = pad_2F;
+
+		public List<S5Header> Compatible { get; set; } = [];
+		public List<S5Header> Mods { get; set; } = [];
+		public S5Header Tunnel { get; set; }
+		public List<S5Header> Bridges { get; set; } = [];
+		public List<S5Header> Stations { get; set; } = [];
+
+		public const int NumTunnels = 1;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
+			Compatible.Clear();
+			Mods.Clear();
+			Bridges.Clear();
+			Stations.Clear();
+
 			// compatible roads/tracks
+			Compatible = SawyerStreamReader.LoadVariableHeaders(remainingData, NumCompatible);
 			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 
 			// mods
+			Mods = SawyerStreamReader.LoadVariableHeaders(remainingData, NumMods);
 			remainingData = remainingData[(S5Header.StructLength * NumMods)..];
 
 			// tunnel
-			remainingData = remainingData[(S5Header.StructLength * 1)..];
+			Tunnel = SawyerStreamReader.LoadVariableHeaders(remainingData, NumTunnels)[0];
+			remainingData = remainingData[(S5Header.StructLength * NumTunnels)..];
 
 			// bridges
+			Bridges = SawyerStreamReader.LoadVariableHeaders(remainingData, NumBridges);
 			remainingData = remainingData[(S5Header.StructLength * NumBridges)..];
 
 			// stations
+			Stations = SawyerStreamReader.LoadVariableHeaders(remainingData, NumStations);
 			remainingData = remainingData[(S5Header.StructLength * NumStations)..];
 
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
+		public ReadOnlySpan<byte> Save()
+		{
+			//var data = new byte[S5Header.StructLength * (NumCompatible + NumMods + 1 + NumBridges + NumStations)];
+
+			var headers = Compatible
+				.Concat(Mods)
+				.Concat(Enumerable.Repeat(Tunnel, 1))
+				.Concat(Bridges)
+				.Concat(Stations);
+
+			return headers.SelectMany(h => h.Write().ToArray()).ToArray();
+		}
 	}
 }

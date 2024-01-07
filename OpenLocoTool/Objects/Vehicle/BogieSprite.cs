@@ -15,8 +15,5 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x06)] uint32_t FlatImageIds,   // flat sprites
 		[property: LocoStructOffset(0x0A)] uint32_t GentleImageIds, // gentle sprites
 		[property: LocoStructOffset(0x0E)] uint32_t SteepImageIds   // steep sprites
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x12;
-	}
+		) : ILocoStruct;
 }

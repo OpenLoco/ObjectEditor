@@ -7,12 +7,11 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x06)]
-	public record TunnelObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint32_t Image
-		) : ILocoStruct
+	[LocoStructType(ObjectType.Tunnel)]
+	[LocoStringTable("Name")]
+	public class TunnelObject : ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.Tunnel;
-		public static int StructSize => 0x06;
+		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		//[LocoStructOffset(0x02)] public image_id Image
 	}
 }

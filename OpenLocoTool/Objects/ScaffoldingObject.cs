@@ -7,14 +7,16 @@ namespace OpenLocoTool.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]
-	public record ScaffoldingObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint32_t Image,
-		[property: LocoStructOffset(0x06), LocoArrayLength(3)] uint16_t[] SegmentHeights, // 0x06
-		[property: LocoStructOffset(0x0C), LocoArrayLength(3)] uint16_t[] RoofHeights    // 0x0C
-	) : ILocoStruct
+	[LocoStructType(ObjectType.Scaffolding)]
+	[LocoStringTable("Name")]
+	public class ScaffoldingObject(
+		uint16_t[] segmentHeights,
+		uint16_t[] roofHeights)
+		: ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.Scaffolding;
-		public static int StructSize => 0x12;
+		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		//[property: LocoStructOffset(0x02)] image_id Image,
+		[LocoStructOffset(0x06), LocoArrayLength(3)] public uint16_t[] SegmentHeights { get; set; } = segmentHeights;
+		[LocoStructOffset(0x0C), LocoArrayLength(3)] public uint16_t[] RoofHeights { get; set; } = roofHeights;
 	}
 }

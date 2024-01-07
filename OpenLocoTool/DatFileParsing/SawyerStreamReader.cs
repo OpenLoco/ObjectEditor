@@ -7,9 +7,9 @@ using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public static class SawyerStreamReader
+	public static class SawyerStreamUtils
 	{
-		static uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
+		public static uint ComputeObjectChecksum(ReadOnlySpan<byte> headerFlagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
 			static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
 			{
@@ -23,10 +23,30 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			const uint32_t objectChecksumMagic = 0xF369A75B;
-			var checksum = ComputeChecksum(flagByte, objectChecksumMagic);
+			var checksum = ComputeChecksum(headerFlagByte, objectChecksumMagic);
 			checksum = ComputeChecksum(name, checksum);
 			checksum = ComputeChecksum(data, checksum);
 			return checksum;
+		}
+	}
+
+	public static class SawyerStreamReader
+	{
+		public static List<S5Header> LoadVariableHeaders(ReadOnlySpan<byte> data, int count)
+		{
+			List<S5Header> result = [];
+			for (var i = 0; i < count; ++i)
+			{
+				var header = S5Header.Read(data[..S5Header.StructLength]);
+				if (header.Checksum != 0 || header.Flags != 255)
+				{
+					result.Add(header);
+				}
+
+				data = data[S5Header.StructLength..];
+			}
+
+			return result;
 		}
 
 		public static G1Dat LoadG1(string filename, ILogger? logger = null)
@@ -56,7 +76,7 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		// load file
-		public static ILocoObject LoadFull(string filename, ILogger? logger = null, bool loadExtra = true)
+		public static (DatFileInfo DatFileInfo, ILocoObject LocoObject) LoadFull(string filename, ILogger? logger = null, bool loadExtra = true)
 		{
 			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
@@ -85,7 +105,7 @@ namespace OpenLocoTool.DatFileParsing
 			remainingData = remainingData[locoStructSize..];
 
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
-			var checksum = ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
+			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
 
 			if (checksum != s5Header.Checksum)
 			{
@@ -96,11 +116,6 @@ namespace OpenLocoTool.DatFileParsing
 			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct);
 			remainingData = remainingData[stringTableBytesRead..];
 
-			if (locoStruct is ILocoStructStringTablePostLoad locoStructString)
-			{
-				locoStructString.LoadPostStringTable(stringTable);
-			}
-
 			// some objects have variable-sized data
 			if (loadExtra && locoStruct is ILocoStructVariableData locoStructExtra)
 			{
@@ -108,43 +123,41 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			LocoObject? newObj;
-			try
-			{
-				// some objects have graphics data
-				var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-				logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			//try
+			//{
+			// some objects have graphics data
+			var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
+			logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-				newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable, g1Header, imageTable);
-			}
-			catch (Exception ex)
-			{
-				newObj = new LocoObject(s5Header, objectHeader, locoStruct, stringTable);
-				logger?.Error(ex, "Error loading graphics table");
-			}
+			newObj = new LocoObject(locoStruct, stringTable, imageTable);
+			//}
+			//catch (Exception ex)
+			//{
+			//	newObj = new LocoObject(locoStruct, stringTable);
+			//	logger?.Error(ex, "Error loading graphics table");
+			//}
 
 			// add to object manager
 			SObjectManager.Add(newObj);
 
-			return newObj;
+			return new(new DatFileInfo(s5Header, objectHeader), newObj);
 		}
 
-		static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
+		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames)
 		{
 			var stringTable = new StringTable();
-			var stringAttributes = AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStruct.GetType());
 
-			if (data.Length == 0 || !stringAttributes.Any())
+			if (data.Length == 0 || stringNames.Length == 0)
 			{
 				return (stringTable, 0);
 			}
 
 			var ptr = 0;
 
-			foreach (var locoString in stringAttributes)
+			foreach (var locoString in stringNames)
 			{
-				var stringName = locoString.Name;
-				stringTable.Add(stringName, []);
-				var languageDict = stringTable[stringName];
+				stringTable.Add(locoString, []);
+				var languageDict = stringTable[locoString];
 
 				for (; ptr < data.Length && data[ptr] != 0xFF;)
 				{
@@ -167,7 +180,17 @@ namespace OpenLocoTool.DatFileParsing
 			return (stringTable, ptr);
 		}
 
-		static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
+		{
+			var locoStructType = locoStruct.GetType();
+			var stringTableStrings = AttributeHelper.Has<LocoStringTableAttribute>(locoStructType)
+				? AttributeHelper.Get<LocoStringTableAttribute>(locoStructType)!.Strings
+				: AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStructType).Select(s => s.Name).ToArray();
+
+			return LoadStringTable(data, stringTableStrings);
+		}
+
+		public static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 		{
 			var g1Element32s = new List<G1Element32>();
 
@@ -187,7 +210,7 @@ namespace OpenLocoTool.DatFileParsing
 			for (var i = 0; i < g1Header.NumEntries; ++i)
 			{
 				var g32ElementData = g1ElementHeaders[(i * G1Element32.StructLength)..((i + 1) * G1Element32.StructLength)];
-				var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(g32ElementData);
+				var g32Element = ByteReader.ReadLocoStruct<G1Element32>(g32ElementData);
 				g1Element32s.Add(g32Element);
 			}
 

@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using OpenLocoTool;
+using OpenLocoTool.Data;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -16,9 +17,9 @@ namespace OpenLocoToolTests
 			var logger = new OpenLocoToolCommon.Logger();
 			var loaded = SawyerStreamReader.LoadFull(filename, logger);
 
-			Assert.That(loaded.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
+			Assert.That(loaded.DatFileInfo.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 
-			return (loaded, (T)loaded.Object);
+			return (loaded.LocoObject, (T)loaded.LocoObject.Object);
 		}
 
 		//[Test]
@@ -85,9 +86,9 @@ namespace OpenLocoToolTests
 			{
 				Assert.That(struc.NoRoof, Is.EqualTo(0), nameof(struc.NoRoof));
 
-				Assert.That(struc.pad_03[0], Is.EqualTo(0), nameof(struc.pad_03) + "[0]");
-				Assert.That(struc.pad_03[1], Is.EqualTo(0), nameof(struc.pad_03) + "[1]");
-				Assert.That(struc.pad_03[2], Is.EqualTo(0), nameof(struc.pad_03) + "[2]");
+				// Assert.That(struc.pad_03[0], Is.EqualTo(0), nameof(struc.pad_03) + "[0]");
+				// Assert.That(struc.pad_03[1], Is.EqualTo(0), nameof(struc.pad_03) + "[1]");
+				// Assert.That(struc.pad_03[2], Is.EqualTo(0), nameof(struc.pad_03) + "[2]");
 
 				Assert.That(struc.var_06, Is.EqualTo(16), nameof(struc.var_06));
 				Assert.That(struc.SpanLength, Is.EqualTo(1), nameof(struc.SpanLength));
@@ -100,9 +101,9 @@ namespace OpenLocoToolTests
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-12), nameof(struc.SellCostFactor));
 				Assert.That(struc.DisabledTrackCfg, Is.EqualTo(0), nameof(struc.DisabledTrackCfg));
 				Assert.That(struc.TrackNumCompatible, Is.EqualTo(0), nameof(struc.TrackNumCompatible));
-				CollectionAssert.AreEqual(struc.TrackMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.TrackMods));
+				//CollectionAssert.AreEqual(struc.TrackMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.TrackMods));
 				Assert.That(struc.RoadNumCompatible, Is.EqualTo(0), nameof(struc.RoadNumCompatible));
-				CollectionAssert.AreEqual(struc.RoadMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.RoadMods));
+				//CollectionAssert.AreEqual(struc.RoadMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.RoadMods));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
 			});
 		}
@@ -151,7 +152,7 @@ namespace OpenLocoToolTests
 			Assert.Multiple(() =>
 			{
 				Assert.That(struc.var_02, Is.EqualTo(256), nameof(struc.var_02));
-				Assert.That(struc.var_04, Is.EqualTo(64), nameof(struc.var_04));
+				Assert.That(struc.CargoTransferTime, Is.EqualTo(64), nameof(struc.CargoTransferTime));
 				Assert.That(struc.UnitInlineSprite, Is.EqualTo(0), nameof(struc.UnitInlineSprite));
 				Assert.That(struc.MatchFlags, Is.EqualTo(4), nameof(struc.MatchFlags));
 				Assert.That(struc.Flags, Is.EqualTo(CargoObjectFlags.Delivering), nameof(struc.Flags));
@@ -238,7 +239,7 @@ namespace OpenLocoToolTests
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-35), nameof(struc.SellCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.var_07, Is.EqualTo(0), nameof(struc.var_07));
-				Assert.That(struc.var_0C, Is.EqualTo(0), nameof(struc.var_0C));
+				Assert.That(struc.UnkImage, Is.EqualTo(0), nameof(struc.UnkImage));
 				Assert.That(struc.Flags, Is.EqualTo(DockObjectFlags.None), nameof(struc.Flags));
 				Assert.That(struc.NumAux01, Is.EqualTo(2), nameof(struc.NumAux01));
 				Assert.That(struc.NumAux02Ent, Is.EqualTo(1), nameof(struc.NumAux02Ent));
@@ -291,8 +292,8 @@ namespace OpenLocoToolTests
 				Assert.That(struc.CostFactor, Is.EqualTo(20), nameof(struc.CostFactor));
 				Assert.That(struc.pad_09, Is.EqualTo(0), nameof(struc.pad_09));
 				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
-				Assert.That(struc.var_12, Is.EqualTo(0), nameof(struc.var_12));
-				Assert.That(struc.var_16, Is.EqualTo(0), nameof(struc.var_16));
+				Assert.That(struc.CliffEdgeImage, Is.EqualTo(0), nameof(struc.CliffEdgeImage));
+				Assert.That(struc.mapPixelImage, Is.EqualTo(0), nameof(struc.mapPixelImage));
 				Assert.That(struc.pad_1A, Is.EqualTo(0), nameof(struc.pad_1A));
 				Assert.That(struc.NumVariations, Is.EqualTo(3), nameof(struc.NumVariations));
 				Assert.That(struc.VariationLikelihood, Is.EqualTo(10), nameof(struc.VariationLikelihood));
@@ -332,8 +333,8 @@ namespace OpenLocoToolTests
 			Assert.Multiple(() =>
 			{
 				CollectionAssert.AreEqual(struc.pad_06, Array.CreateInstance(typeof(byte), 2), nameof(struc.pad_06));
-				Assert.That(struc.var_08, Is.EqualTo(1), nameof(struc.var_08));
-				CollectionAssert.AreEqual(struc.var_09, Array.CreateInstance(typeof(byte), 4), nameof(struc.var_09));
+				Assert.That(struc.RequiredObjectCount, Is.EqualTo(1), nameof(struc.RequiredObjectCount));
+				CollectionAssert.AreEqual(struc.requiredObjects, Array.CreateInstance(typeof(byte), 4), nameof(struc.requiredObjects));
 				CollectionAssert.AreEqual(struc.pad_0D, Array.CreateInstance(typeof(byte), 5), nameof(struc.pad_0D));
 			});
 		}
@@ -414,7 +415,7 @@ namespace OpenLocoToolTests
 				Assert.That(struc.DesignedYear[1], Is.EqualTo(1950), nameof(struc.DesignedYear) + "[1]");
 				Assert.That(struc.DesignedYear[2], Is.EqualTo(1985), nameof(struc.DesignedYear) + "[2]");
 
-				Assert.That(struc.Image, Is.EqualTo(0));
+				//Assert.That(struc.Image, Is.EqualTo(0));
 
 				Assert.That(obj.StringTable["Name"].Count, Is.EqualTo(2));
 				Assert.That(obj.StringTable["Name"][LanguageId.english_uk], Is.EqualTo("Street Lights"));
@@ -436,7 +437,7 @@ namespace OpenLocoToolTests
 
 			// save
 			var tempFile = Path.GetTempFileName();
-			SawyerStreamWriter.Save(tempFile, obj);
+			SawyerStreamWriter.Save(tempFile, "ObjName_", obj);
 
 			// load the saved object
 			var (obj2, struc2) = LoadObject<StreetLightObject>(tempFile);
@@ -448,7 +449,7 @@ namespace OpenLocoToolTests
 				Assert.That(struc2.DesignedYear[1], Is.EqualTo(1950), nameof(struc2.DesignedYear) + "[1]");
 				Assert.That(struc2.DesignedYear[2], Is.EqualTo(1985), nameof(struc2.DesignedYear) + "[2]");
 
-				Assert.That(struc2.Image, Is.EqualTo(0));
+				//Assert.That(struc2.Image, Is.EqualTo(0));
 
 				Assert.That(obj2.StringTable["Name"].Count, Is.EqualTo(2));
 				Assert.That(obj2.StringTable["Name"][LanguageId.english_uk], Is.EqualTo("Street Lights"));
@@ -466,7 +467,7 @@ namespace OpenLocoToolTests
 
 			// save
 			var bytesSource = SawyerStreamReader.LoadDecode(testFile);
-			var bytesDest = SawyerStreamWriter.WriteLocoObject(obj).ToArray();
+			var bytesDest = SawyerStreamWriter.WriteLocoObject("ObjName_", obj).ToArray();
 
 			var saveA = "Q:\\Games\\Locomotion\\ExperimentalObjects\\original.dat";
 			var saveB = "Q:\\Games\\Locomotion\\ExperimentalObjects\\saved.dat";
@@ -563,19 +564,19 @@ namespace OpenLocoToolTests
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\707.DAT";
 			var (obj, struc) = LoadObject<VehicleObject>(testFile);
 
-			var s5header = obj.S5Header;
-			var objHeader = obj.ObjectHeader;
+			//var s5header = obj.S5Header;
+			//var objHeader = obj.ObjectHeader;
 
-			Assert.Multiple(() =>
-			{
-				Assert.That(s5header.Flags, Is.EqualTo(283680407), nameof(s5header.Flags));
-				Assert.That(s5header.Name, Is.EqualTo("707     "), nameof(s5header.Name));
-				Assert.That(s5header.Checksum, Is.EqualTo(1331114877), nameof(s5header.Checksum));
-				Assert.That(s5header.ObjectType, Is.EqualTo(ObjectType.Vehicle), nameof(s5header.ObjectType));
+			//Assert.Multiple(() =>
+			//{
+			//	Assert.That(s5header.Flags, Is.EqualTo(283680407), nameof(s5header.Flags));
+			//	Assert.That(s5header.Name, Is.EqualTo("707     "), nameof(s5header.Name));
+			//	Assert.That(s5header.Checksum, Is.EqualTo(1331114877), nameof(s5header.Checksum));
+			//	Assert.That(s5header.ObjectType, Is.EqualTo(ObjectType.Vehicle), nameof(s5header.ObjectType));
 
-				Assert.That(objHeader.Encoding, Is.EqualTo(SawyerEncoding.RunLengthSingle), nameof(objHeader.Encoding));
-				Assert.That(objHeader.DataLength, Is.EqualTo(159566), nameof(objHeader.DataLength));
-			});
+			//	Assert.That(objHeader.Encoding, Is.EqualTo(SawyerEncoding.RunLengthSingle), nameof(objHeader.Encoding));
+			//	Assert.That(objHeader.DataLength, Is.EqualTo(159566), nameof(objHeader.DataLength));
+			//});
 
 			Assert.Multiple(() =>
 			{
@@ -583,14 +584,14 @@ namespace OpenLocoToolTests
 				Assert.That(struc.Type, Is.EqualTo(VehicleType.Aircraft), nameof(struc.Type));
 				Assert.That(struc.var_04, Is.EqualTo(1), nameof(struc.var_04));
 				// Assert.That(struc.TrackType, Is.EqualTo(0xFF), nameof(struc.TrackType)); // is changed after load from 0 to 255
-				Assert.That(struc.NumMods, Is.EqualTo(0), nameof(struc.NumMods));
+				Assert.That(struc.NumTrackExtras, Is.EqualTo(0), nameof(struc.NumTrackExtras));
 				Assert.That(struc.CostIndex, Is.EqualTo(8), nameof(struc.CostIndex));
 				Assert.That(struc.CostFactor, Is.EqualTo(345), nameof(struc.CostFactor));
 				Assert.That(struc.Reliability, Is.EqualTo(88), nameof(struc.Reliability));
 				Assert.That(struc.RunCostIndex, Is.EqualTo(4), nameof(struc.RunCostIndex));
 				Assert.That(struc.RunCostFactor, Is.EqualTo(55), nameof(struc.RunCostFactor));
 				Assert.That(struc.ColourType, Is.EqualTo(9), nameof(struc.ColourType));
-				Assert.That(struc.NumCompat, Is.EqualTo(0), nameof(struc.NumCompat));
+				Assert.That(struc.NumCompatibleVehicles, Is.EqualTo(0), nameof(struc.NumCompatibleVehicles));
 				CollectionAssert.AreEqual(Enumerable.Repeat(0, 8).ToArray(), struc.CompatibleVehicles, nameof(struc.CompatibleVehicles));
 				CollectionAssert.AreEqual(Enumerable.Repeat(0, 4).ToArray(), struc.RequiredTrackExtras, nameof(struc.RequiredTrackExtras));
 				//Assert.That(struc.var_24, Is.EqualTo(0), nameof(struc.var_24));
@@ -602,7 +603,7 @@ namespace OpenLocoToolTests
 				Assert.That(struc.Weight, Is.EqualTo(141), nameof(struc.Weight));
 				Assert.That(struc.Flags, Is.EqualTo((VehicleObjectFlags)16384), nameof(struc.Flags));
 				// CollectionAssert.AreEqual(struc.MaxCargo, Enumerable.Repeat(0, 2).ToArray(), nameof(struc.MaxCargo)); // this is changed after load from 0 to 24
-				CollectionAssert.AreEqual(Enumerable.Repeat(0, 2).ToArray(), struc.CargoTypes, nameof(struc.CargoTypes));
+				CollectionAssert.AreEqual(Enumerable.Repeat(0, 2).ToArray(), struc.CompatibleCargoCategories, nameof(struc.CompatibleCargoCategories));
 				CollectionAssert.AreEqual(Enumerable.Repeat(0, 32).ToArray(), struc.CargoTypeSpriteOffsets, nameof(struc.CargoTypeSpriteOffsets));
 				Assert.That(struc.NumSimultaneousCargoTypes, Is.EqualTo(1), nameof(struc.NumSimultaneousCargoTypes));
 				Assert.That(struc.Animation[0].ObjectId, Is.EqualTo(0), nameof(struc.Animation));

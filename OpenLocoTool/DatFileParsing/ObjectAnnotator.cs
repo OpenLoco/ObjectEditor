@@ -103,7 +103,7 @@ namespace OpenLocoTool.DatFileParsing
 
 				for (var i = 0; i < g1Header.NumEntries; i++)
 				{
-					var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(fullData.AsSpan()[runningCount..]);
+					var g32Element = ByteReader.ReadLocoStruct<G1Element32>(fullData.AsSpan()[runningCount..]);
 					var g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, runningCount, G1Element32.StructLength);
 
 					annotations.Add(g32ElementAnnotation);
@@ -142,11 +142,13 @@ namespace OpenLocoTool.DatFileParsing
 			var root = new Annotation("String Table", runningCount, 1);
 			annotations.Add(root);
 
-			var stringAttributes = AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStruct.GetType());
-			//var stringsInTable = stringAttributes?.Count ?? 0;
+			var locoStructType = locoStruct.GetType();
+			var stringTableStrings = AttributeHelper.Has<LocoStringTableAttribute>(locoStructType)
+				? AttributeHelper.Get<LocoStringTableAttribute>(locoStructType)!.Strings
+				: AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStructType).Select(s => s.Name).ToArray();
 
 			var i = 0;
-			foreach (var locoString in stringAttributes)
+			foreach (var locoString in stringTableStrings)
 			{
 				var index = 0;
 				var continuing = true;

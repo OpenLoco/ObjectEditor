@@ -15,47 +15,63 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xAE)]
-	public record TrainStationObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
-		[property: LocoStructOffset(0x03)] uint8_t var_03,
-		[property: LocoStructOffset(0x04)] uint16_t TrackPieces,
-		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
-		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
-		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
-		[property: LocoStructOffset(0x0B)] uint8_t var_0B,
-		[property: LocoStructOffset(0x0C)] RoadStationFlags Flags,
-		[property: LocoStructOffset(0x0D)] uint8_t var_0D,
-		[property: LocoStructOffset(0x0E)] uint32_t Image,
-		[property: LocoStructOffset(0x12), LocoArrayLength(4)] uint32_t[] var_12,
-		[property: LocoStructOffset(0x22)] uint8_t NumCompatible,
-		[property: LocoStructOffset(0x23), LocoArrayLength(7)] uint8_t[] Mods,
-		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear,
-		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear
-		//[property: LocoStructProperty(0x2E)] const std::byte* CargoOffsetBytes[4][4]
-		//[property: LocoStructProperty(0x??)] const std::byte* var_6E[Var6ELength]
-		) : ILocoStruct, ILocoStructVariableData
+	[LocoStructType(ObjectType.TrainStation)]
+	[LocoStringTable("Name")]
+	public class TrainStationObject(
+		uint8_t paintStyle,
+		uint8_t var_03,
+		uint16_t trackPieces,
+		int16_t buildCostFactor,
+		int16_t sellCostFactor,
+		uint8_t costIndex,
+		uint8_t var_0B,
+		RoadStationFlags flags,
+		uint8_t var_0D,
+		uint8_t numCompatible,
+		uint16_t designedYear,
+		uint16_t obsoleteYear)
+		: ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.TrainStation;
-		public static int StructSize => 0xAE;
+		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[LocoStructOffset(0x02)] public uint8_t PaintStyle { get; set; } = paintStyle;
+		[LocoStructOffset(0x03)] public uint8_t var_03 { get; set; } = var_03;
+		[LocoStructOffset(0x04)] public uint16_t TrackPieces { get; set; } = trackPieces;
+		[LocoStructOffset(0x06)] public int16_t BuildCostFactor { get; set; } = buildCostFactor;
+		[LocoStructOffset(0x08)] public int16_t SellCostFactor { get; set; } = sellCostFactor;
+		[LocoStructOffset(0x0A)] public uint8_t CostIndex { get; set; } = costIndex;
+		[LocoStructOffset(0x0B)] public uint8_t var_0B { get; set; } = var_0B;
+		[LocoStructOffset(0x0C)] public RoadStationFlags Flags { get; set; } = flags;
+		[LocoStructOffset(0x0D)] public uint8_t var_0D { get; set; } = var_0D;
+		//[LocoStructOffset(0x0E)] image_id Image,
+		//[LocoStructOffset(0x12), LocoArrayLength(4)] public uint32_t[] ImageOffsets { get; set; }
+		[LocoStructOffset(0x22)] public uint8_t NumCompatible { get; set; } = numCompatible;
+		//[LocoStructOffset(0x23), LocoArrayLength(7)] uint8_t[] Mods,
+		[LocoStructOffset(0x2A)] public uint16_t DesignedYear { get; set; } = designedYear;
+		[LocoStructOffset(0x2C)] public uint16_t ObsoleteYear { get; set; } = obsoleteYear;
+		//[LocoStructProperty(0x2E)] const std::byte* CargoOffsetBytes[4][4]
+		//[LocoStructProperty(0x??)] const std::byte* ManualPower[ManualPowerLength]
 
-		public const int Var6ELength = 16;
+		public List<S5Header> Compatible { get; set; } = [];
 
-		uint8_t[,] CargoOffsetBytes { get; set; }
-		uint8_t[] var_6E { get; set; } = [];
+		public const int ManualPowerLength = 16;
+
+		public uint8_t[][][] CargoOffsetBytes { get; set; }
+
+		public uint8_t[][] ManualPower { get; set; }
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			// compatible roads/tracks
+			// compatible
+			Compatible = SawyerStreamReader.LoadVariableHeaders(remainingData, NumCompatible);
 			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 
-			// cargo offsets (for drawing the cargo on the station) (same as roadstation code)
-			CargoOffsetBytes = new byte[4, 4];
+			// cargo offsets (for drawing the cargo on the station)
+			CargoOffsetBytes = new byte[4][][];
 			for (var i = 0; i < 4; ++i)
 			{
+				CargoOffsetBytes[i] = new byte[4][];
 				for (var j = 0; j < 4; ++j)
 				{
-					CargoOffsetBytes[i, j] = remainingData[0];
 					var bytes = 0;
 					bytes++;
 					var length = 1;
@@ -67,15 +83,15 @@ namespace OpenLocoTool.Objects
 					}
 
 					length += 4;
+					CargoOffsetBytes[i][j] = remainingData[..length].ToArray();
 					remainingData = remainingData[length..];
 				}
 			}
 
 			// very similar to cargoffsetbytes
-			var_6E = new byte[Var6ELength];
-			for (var i = 0; i < Var6ELength; ++i)
+			ManualPower = new byte[ManualPowerLength][];
+			for (var i = 0; i < ManualPowerLength; ++i)
 			{
-				var_6E[i] = remainingData[0];
 				var bytes = 0;
 				bytes++;
 				var length = 1;
@@ -87,12 +103,40 @@ namespace OpenLocoTool.Objects
 				}
 
 				length += 4;
+				ManualPower[i] = remainingData[..length].ToArray();
 				remainingData = remainingData[length..];
 			}
 
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
+		public ReadOnlySpan<byte> Save()
+		{
+			using (var ms = new MemoryStream())
+			{
+				// compatible
+				foreach (var co in Compatible)
+				{
+					ms.Write(co.Write());
+				}
+
+				// cargo offsets
+				for (var i = 0; i < 4; ++i)
+				{
+					for (var j = 0; j < 4; ++j)
+					{
+						ms.Write(CargoOffsetBytes[i][j]);
+					}
+				}
+
+				// manual power offsets
+				for (var i = 0; i < ManualPowerLength; ++i)
+				{
+					ms.Write(ManualPower[i]);
+				}
+
+				return ms.ToArray();
+			}
+		}
 	}
 }

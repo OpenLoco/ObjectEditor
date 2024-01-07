@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using OpenLocoTool.Data;
 using OpenLocoTool.Headers;
 using OpenLocoToolCommon;
 
@@ -6,13 +7,13 @@ namespace OpenLocoTool.DatFileParsing
 {
 	public static class SawyerStreamWriter
 	{
-		public static void Save(string filepath, ILocoObject locoObject, ILogger? logger = null)
+		public static void Save(string filepath, string objName, ILocoObject locoObject, ILogger? logger = null)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
-			logger?.Info($"Writing \"{locoObject.S5Header.Name}\" to {filepath}");
+			logger?.Info($"Writing \"{objName}\" to {filepath}");
 
-			var objBytes = WriteLocoObject(locoObject);
+			var objBytes = WriteLocoObject(objName, locoObject);
 
 			var stream = File.Create(filepath);
 			stream.Write(objBytes);
@@ -20,78 +21,106 @@ namespace OpenLocoTool.DatFileParsing
 			stream.Close();
 		}
 
-		public static ReadOnlySpan<byte> WriteLocoObject(ILocoObject obj)
+		public static ReadOnlySpan<byte> WriteLocoObject(string objName, ILocoObject obj)
 		{
-			var ms = new MemoryStream();
+			var objStream = new MemoryStream();
 
-			ms.Write(obj.S5Header.Write());
-			ms.Write((obj.ObjectHeader with { Encoding = SawyerEncoding.Uncompressed }).Write());
-
+			// obj
 			var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
-			ms.Write(objBytes);
+			objStream.Write(objBytes);
 
 			// string table
 			foreach (var ste in obj.StringTable.table)
 			{
 				foreach (var language in ste.Value)
 				{
-					ms.WriteByte((byte)language.Key);
+					objStream.WriteByte((byte)language.Key);
 
 					var strBytes = Encoding.ASCII.GetBytes(language.Value);
-					ms.Write(strBytes, 0, strBytes.Length);
-					ms.WriteByte((byte)'\0');
+					objStream.Write(strBytes, 0, strBytes.Length);
+					objStream.WriteByte((byte)'\0');
 				}
 
-				ms.WriteByte(0xff);
+				objStream.WriteByte(0xff);
 			}
 
 			// variable data
 			if (obj.Object is ILocoStructVariableData objV)
 			{
 				var variableBytes = objV.Save();
-				ms.Write(variableBytes);
+				objStream.Write(variableBytes);
 			}
 
 			// graphics data
-			if (obj.G1Header != null && obj.G1Elements != null && obj.G1Header.NumEntries != 0 && obj.G1Elements.Count != 0)
+			if (obj.G1Elements != null && obj.G1Elements.Count != 0)
 			{
 				// write G1Header
-				ms.Write(BitConverter.GetBytes(obj.G1Header.NumEntries));
-				ms.Write(BitConverter.GetBytes(obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
+				objStream.Write(BitConverter.GetBytes(obj.G1Elements.Count));
+				objStream.Write(BitConverter.GetBytes(obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
 
-				var idx = 0;
-				// write G1Elements
+				var offsetBytesIntoImageData = 0;
+				// write G1Element headers
 				foreach (var g1Element in obj.G1Elements)
 				{
 					// we need to update the offsets of the image data
 					// and we're not going to compress the data on save, so make sure the RLECompressed flag is not set
-					var offset = idx < 1 ? 0 : obj.G1Elements[idx - 1].Offset + (uint)obj.G1Elements[idx - 1].ImageData.Length;
 					var newElement = g1Element with
 					{
-						Offset = offset,
+						Offset = (uint)offsetBytesIntoImageData,
 						Flags = g1Element.Flags & ~G1ElementFlags.IsRLECompressed
 					};
-					ms.Write(newElement.Write());
-					idx++;
+
+					objStream.Write(newElement.Write());
+					offsetBytesIntoImageData += g1Element.ImageData.Length;
 				}
 
 				// write G1Elements ImageData
 				foreach (var g1Element in obj.G1Elements)
 				{
-					// we're not going to compress the data on save, so make sure the RLECompressed flag is not set
-					ms.Write(g1Element.ImageData);
+					objStream.Write(g1Element.ImageData);
 				}
 			}
 
-			// calculate size and write the size in obj header offset 18
-			//var length = ms.Position - 21;
-			//ms.Position = 17; // this is the offset of the length unit32_t in the whole object
-			//ms.Write(BitConverter.GetBytes(length), 0, 4);
+			objStream.Flush();
 
-			ms.Flush();
-			ms.Close();
+			// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
 
-			return ms.ToArray();
+			// s5 header
+			uint32_t checksum = 0; // todo: compute this
+			var s5Header = new S5Header(objName, checksum)
+			{
+				SourceGame = SourceGame.Custom
+			};
+			var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
+			s5Header.ObjectType = attr!.ObjectType;
+
+			// calculate checksum
+			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
+			var asciiName = objName.Take(8).Select(c => (byte)c).ToArray();
+			checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, objStream.ToArray());
+			s5Header = s5Header with { Checksum = checksum };
+
+			var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint32_t)objStream.Length);
+
+			// actual writing
+			var headerStream = new MemoryStream();
+
+			// s5 header
+			headerStream.Write(s5Header.Write());
+
+			// obj header
+			headerStream.Write(objHeader.Write());
+
+			// loco object itself
+			headerStream.Write(objStream.ToArray());
+
+			// stream cleanup
+			headerStream.Flush();
+
+			headerStream.Close();
+			objStream.Close();
+
+			return headerStream.ToArray();
 		}
 
 		//public static ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data, ILogger? logger = null)

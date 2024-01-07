@@ -15,7 +15,7 @@ namespace OpenLocoToolGui
 		readonly ILogger logger;
 
 		// could use pgObject.SelectedObjectsChanged event, but we'll just do this for now
-		public ILocoObject? CurrentUIObject
+		public UiLocoObject? CurrentUIObject
 		{
 			get => currentUIObject;
 			set
@@ -24,7 +24,7 @@ namespace OpenLocoToolGui
 				RefreshObjectUI();
 			}
 		}
-		ILocoObject? currentUIObject;
+		UiLocoObject? currentUIObject;
 
 		IList<Control> CurrentUIImages
 		{
@@ -87,7 +87,7 @@ namespace OpenLocoToolGui
 			// pre-add any existing log lines
 			lbLogs.Items.AddRange(((Logger)logger).Logs.ToArray());
 			// can only do this after window handle has been created (so can't do in constructor)
-			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log.ToString()));
+			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log));
 
 			// setup dark mode???
 			//DarkModify(this);
@@ -333,14 +333,14 @@ namespace OpenLocoToolGui
 
 		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (CurrentUIObject is not ILocoObject obj)
+			if (CurrentUIObject is not UiLocoObject obj)
 			{
 				return;
 			}
 
-			if (!SaveEnabledObjects.Types.Contains(obj.S5Header.ObjectType))
+			if (!SaveEnabledObjects.Types.Contains(obj.DatFileInfo.S5Header.ObjectType))
 			{
-				var msg = $"Saving is not currently implemented for {obj.S5Header.ObjectType} objects";
+				var msg = $"Saving is not currently implemented for {obj.DatFileInfo.S5Header.ObjectType} objects";
 				logger.Error(msg);
 				logger.Info($"Saving is currently supported for the following objects: [{SaveEnabledObjects.Types.Aggregate("", (a, b) => a + ", " + b)}]");
 				MessageBox.Show(msg);
@@ -444,7 +444,8 @@ namespace OpenLocoToolGui
 						.Select(c => string.Format("{0} ", string.Concat(c)))
 						.Chunk(bytesPerDumpLine / dumpWordSize)
 						.Zip(Enumerable.Range(0, (resultingByteList.Length / bytesPerDumpLine) + extraLine))
-						.Select(l => string.Format("{0:X" + addressStringSizeBytes + "}: {1}", l.Second * bytesPerDumpLine, string.Concat(l.First))).ToArray();
+						.Select(l => string.Format("{0:X" + addressStringSizeBytes + "}: {1}", l.Second * bytesPerDumpLine, string.Concat(l.First)))
+						.ToArray();
 
 				tvDATDumpAnnotations.SuspendLayout();
 				tvDATDumpAnnotations.Nodes.Clear();
@@ -511,13 +512,13 @@ namespace OpenLocoToolGui
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
 
-				try
+				//try
 				{
 					LoadDataDump(filename);
 				}
-				catch (Exception ex)
+				//catch (Exception ex)
 				{
-					logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
+					//	logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
 				}
 			}
 		}
@@ -562,6 +563,7 @@ namespace OpenLocoToolGui
 		{
 			// on these controls we could add a right_click handler to replace image with user-created one
 			var count = 0;
+			const int scale = 4;
 			foreach (var img in images)
 			{
 				var panel = new FlowLayoutPanel
@@ -572,12 +574,15 @@ namespace OpenLocoToolGui
 					FlowDirection = FlowDirection.TopDown,
 				};
 
-				var pb = new PictureBox
+				var pb = new PictureBoxWithInterpolationMode
 				{
+					BorderStyle = BorderStyle.FixedSingle,
 					Image = img,
-					SizeMode = PictureBoxSizeMode.AutoSize,
+					InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor,
+					SizeMode = PictureBoxSizeMode.StretchImage,
+					Size = new Size(img.Width * scale, img.Height * scale),
 					ContextMenuStrip = imgContextMenu,
-					Dock = DockStyle.Bottom,
+					//Dock = DockStyle.Bottom,
 				};
 
 				var tb = new TextBox
@@ -700,34 +705,43 @@ namespace OpenLocoToolGui
 			flpImageTable.SuspendLayout();
 			flpImageTable.Controls.Clear();
 
-			if (CurrentUIObject?.G1Elements != null && CurrentUIObject.G1Header != null && CurrentUIObject.G1Header.TotalSize != 0 && CurrentUIObject.G1Elements.Count != 0)
+			if (CurrentUIObject == null)
+			{
+				var selectedFile = tvFileTree.SelectedNode.Text;
+				MessageBox.Show($"File \"{selectedFile}\" couldn't be loaded. Does it exist? Suggest recreating object index.");
+				logger.Error($"File \"{selectedFile}\" couldn't be loaded. Does it exist? Suggest recreating object index.");
+				return;
+			}
+
+			if (CurrentUIObject.LocoObject.G1Elements != null && CurrentUIObject.LocoObject?.G1Elements.Count != 0)
 			{
 				if (model.Palette is null)
 				{
 					MessageBox.Show("No palette file loaded - please load one from File -> Load Palette. You can use palette.png in the top level folder of this repo.");
+					logger.Error("No palette file loaded - please load one from File -> Load Palette. You can use palette.png in the top level folder of this repo.");
 					return;
 					//SelectNewPalette();
 				}
 
-				var images = CreateImages(CurrentUIObject.G1Elements, model.Palette);
-				CurrentUIImages = CreateImageControls(images, CurrentUIObject.G1Elements).ToArray();
+				var images = CreateImages(CurrentUIObject.LocoObject.G1Elements, model.Palette);
+				CurrentUIImages = CreateImageControls(images, CurrentUIObject.LocoObject.G1Elements).ToArray();
 			}
 			else
 			{
 				CurrentUIImages = new List<Control>();
 			}
 
-			if (CurrentUIObject?.Object is SoundObject soundObject)
+			if (CurrentUIObject?.LocoObject.Object is SoundObject soundObject)
 			{
 				CreateSounds(soundObject);
 			}
 
 			flpImageTable.ResumeLayout(true);
 
-			pgS5Header.SelectedObject = CurrentUIObject?.S5Header;
-			pgObjHeader.SelectedObject = CurrentUIObject?.ObjectHeader;
-			pgObject.SelectedObject = CurrentUIObject?.Object;
-			ucStringTable.SetDataBinding(CurrentUIObject?.StringTable);
+			pgS5Header.SelectedObject = CurrentUIObject?.DatFileInfo.S5Header;
+			pgObjHeader.SelectedObject = CurrentUIObject?.DatFileInfo.ObjectHeader;
+			pgObject.SelectedObject = CurrentUIObject?.LocoObject.Object;
+			ucStringTable.SetDataBinding(CurrentUIObject?.LocoObject.StringTable);
 			//pgS5Header.SelectedObject = CurrentUIObject; // done above with flpImageTable
 		}
 
@@ -814,5 +828,42 @@ namespace OpenLocoToolGui
 		}
 
 		private void cbVanillaObjects_CheckedChanged(object sender, EventArgs e) => InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+
+		private void lbLogs_DrawItem(object sender, DrawItemEventArgs e)
+		{
+			e.DrawBackground();
+
+			if (e.Index < 0)
+				return;
+
+			var item = (LogLine)lbLogs.Items[e.Index];
+			var backgroundColour = item.Level switch
+			{
+				LogLevel.Debug2 => lbLogs.BackColor,
+				LogLevel.Debug => lbLogs.BackColor,
+				LogLevel.Info => lbLogs.BackColor,
+				LogLevel.Warning => Color.LightGray,
+				LogLevel.Error => Color.LightGray,
+				_ => throw new NotImplementedException(),
+			};
+
+			using (var brush = new SolidBrush(backgroundColour))
+			{
+				e.Graphics.FillRectangle(brush, e.Bounds);
+			}
+
+			var foregroundBrush = item.Level switch
+			{
+				LogLevel.Debug2 => Brushes.LightGray,
+				LogLevel.Debug => Brushes.Gray,
+				LogLevel.Info => Brushes.Green,
+				LogLevel.Warning => Brushes.Yellow,
+				LogLevel.Error => Brushes.Red,
+				_ => throw new NotImplementedException(),
+			};
+			e.Graphics.DrawString(item.ToString(), e.Font, foregroundBrush, e.Bounds.Left, e.Bounds.Y);
+
+			//e.DrawFocusRectangle();
+		}
 	}
 }

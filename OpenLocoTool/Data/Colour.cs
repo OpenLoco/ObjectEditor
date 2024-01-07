@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.Headers
+﻿namespace OpenLocoTool.Data
 {
 	public enum Colour : uint8_t
 	{

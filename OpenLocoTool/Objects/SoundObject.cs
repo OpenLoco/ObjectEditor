@@ -14,10 +14,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0B)] int16_t BlockAlign,
 		[property: LocoStructOffset(0x0D)] int16_t BitsPerSample,
 		[property: LocoStructOffset(0x010)] int16_t CBSize
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x12;
-	}
+		) : ILocoStruct;
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
@@ -26,24 +23,20 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x04)] int32_t Offset,
 		[property: LocoStructOffset(0x08)] uint32_t Length,
 		[property: LocoStructOffset(0x0C)] WaveFormatEx PcmHeader
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x1E;
-	}
+		) : ILocoStruct;
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0C)]
+	[LocoStructType(ObjectType.Sound)]
+	[LocoStringTable("Name")]
 	public record SoundObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint32_t SoundObjectDataPtr,
 		[property: LocoStructOffset(0x06)] uint8_t var_06,
 		[property: LocoStructOffset(0x07)] uint8_t pad_07,
 		[property: LocoStructOffset(0x08)] uint32_t Volume
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public static ObjectType ObjectType => ObjectType.Sound;
-		public static int StructSize => 0x0C;
-
 		public SoundObjectData SoundObjectData { get; set; }
 
 		public byte[] RawPcmData { get; set; } = [];
@@ -61,8 +54,8 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[(int)(numUnkStructs * 16)..];
 
 			// pcm data
-			SoundObjectData = (SoundObjectData)ByteReader.ReadLocoStruct<SoundObjectData>(remainingData[..SoundObjectData.StructSize]);
-			remainingData = remainingData[SoundObjectData.StructSize..];
+			SoundObjectData = ByteReader.ReadLocoStruct<SoundObjectData>(remainingData[..ObjectAttributes.StructSize<SoundObjectData>()]);
+			remainingData = remainingData[ObjectAttributes.StructSize<SoundObjectData>()..];
 
 			RawPcmData = remainingData.ToArray();
 

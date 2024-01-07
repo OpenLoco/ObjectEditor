@@ -6,7 +6,7 @@ namespace OpenLocoTool.Objects
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x11)]
 	public record Engine1Sound(
-		[property: LocoStructOffset(0x00)] uint8_t SoundObjectId,
+		[property: LocoStructOffset(0x00), Browsable(false)] uint8_t SoundObjectId,
 		[property: LocoStructOffset(0x01)] uint16_t DefaultFrequency,
 		[property: LocoStructOffset(0x03)] uint8_t DefaultVolume,
 		[property: LocoStructOffset(0x04)] uint16_t var_04,
@@ -18,8 +18,5 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x0E)] uint8_t VolumeIncreaseStep,
 		[property: LocoStructOffset(0x0F)] uint8_t VolumeDecreaseStep,
 		[property: LocoStructOffset(0x10)] uint8_t SpeedFreqFactor
-		) : ILocoStruct
-	{
-		public static int StructSize => 0x11;
-	}
+		) : ILocoStruct;
 }

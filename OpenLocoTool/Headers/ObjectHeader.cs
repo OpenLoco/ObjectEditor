@@ -25,8 +25,7 @@ namespace OpenLocoTool.Headers
 			var span = new byte[StructLength];
 			span[0] = (byte)Encoding;
 
-			// we don't know full struct length until the object has been fully written...just write 0 for now
-			//BitConverter.GetBytes(StructLength).CopyTo(span, 1);
+			BitConverter.GetBytes(DataLength).CopyTo(span, 1);
 
 			return span;
 		}

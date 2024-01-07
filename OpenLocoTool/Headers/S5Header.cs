@@ -1,15 +1,10 @@
 ﻿using System.ComponentModel;
+using OpenLocoTool.Data;
 using OpenLocoTool.DatFileParsing;
 using Zenith.Core;
 
 namespace OpenLocoTool.Headers
 {
-	public enum SourceGame : byte
-	{
-		Custom = 0,
-		DataFile = 1,
-		Vanilla = 2,
-	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[Category("Header")]
@@ -27,14 +22,14 @@ namespace OpenLocoTool.Headers
 
 		public SourceGame SourceGame
 		{
-			get => (SourceGame)((Flags >> 6) & 0x3);
+			get => (SourceGame)((Flags >> 6) & 0x3u);
 			set => Flags = (Flags & ~(0x3u << 6)) | (((uint)value & 0x3u) << 6);
 		}
 
 		public ObjectType ObjectType
 		{
 			get => (ObjectType)(Flags & 0x3F);
-			set => Flags = (Flags & ~0x3u) | ((uint)value & 0x3u);
+			set => Flags = (Flags & (~0x3u << 6)) | ((uint)value & 0x3F);
 		}
 
 		public static S5Header Read(ReadOnlySpan<byte> data)
@@ -60,5 +55,7 @@ namespace OpenLocoTool.Headers
 			checksum.CopyTo(span, 12);
 			return span;
 		}
+
+		public static S5Header NullHeader = new(0, string.Empty, 0);
 	}
 }

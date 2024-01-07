@@ -20,30 +20,46 @@ namespace OpenLocoTool.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x4C)]
-	public record TreeObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint8_t var_02,
-		[property: LocoStructOffset(0x03)] uint8_t Height,
-		[property: LocoStructOffset(0x04)] uint8_t var_04,
-		[property: LocoStructOffset(0x05)] uint8_t var_05,
-		[property: LocoStructOffset(0x06)] uint8_t NumRotations, //  (1,2,4)
-		[property: LocoStructOffset(0x07)] uint8_t Growth, // (number of tree size images)
-		[property: LocoStructOffset(0x08)] TreeObjectFlags Flags,
-		[property: LocoStructOffset(0x0A), LocoArrayLength(6)] uint32_t[] Sprites,             // 0x0A
-		[property: LocoStructOffset(0x22), LocoArrayLength(6)] uint32_t[] SnowSprites,         // 0x22
-		[property: LocoStructOffset(0x3A)] uint16_t ShadowImageOffset,
-		[property: LocoStructOffset(0x3C)] uint8_t var_3C,
-		[property: LocoStructOffset(0x3D)] uint8_t SeasonState, // (index for sprites, seasons + dying)
-		[property: LocoStructOffset(0x3E)] uint8_t var_3E,
-		[property: LocoStructOffset(0x3F)] uint8_t CostIndex,
-		[property: LocoStructOffset(0x40)] int16_t BuildCostFactor,
-		[property: LocoStructOffset(0x42)] int16_t ClearCostFactor,
-		[property: LocoStructOffset(0x44)] uint32_t Colours,
-		[property: LocoStructOffset(0x48)] int16_t Rating,
-		[property: LocoStructOffset(0x4A)] int16_t DemolishRatingReduction
-	) : ILocoStruct
+	[LocoStructType(ObjectType.Tree)]
+	[LocoStringTable("Name")]
+	public class TreeObject(
+		uint8_t initialHeight,
+		uint8_t maxHeight,
+		uint8_t var_04,
+		uint8_t var_05,
+		uint8_t numRotations,
+		uint8_t growth,
+		TreeObjectFlags flags,
+		uint8_t var_3C,
+		uint8_t seasonState,
+		uint8_t var_3E,
+		uint8_t costIndex,
+		int16_t buildCostFactor,
+		int16_t clearCostFactor,
+		uint32_t colours,
+		int16_t rating,
+		int16_t demolishRatingReduction)
+		: ILocoStruct
 	{
-		public static ObjectType ObjectType => ObjectType.Tree;
-		public static int StructSize => 0x4C;
+		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[LocoStructOffset(0x02)] public uint8_t Clearance { get; set; } = initialHeight;
+		[LocoStructOffset(0x03)] public uint8_t Height { get; set; } = maxHeight;
+		[LocoStructOffset(0x04)] public uint8_t var_04 { get; set; } = var_04;
+		[LocoStructOffset(0x05)] public uint8_t var_05 { get; set; } = var_05;
+		[LocoStructOffset(0x06)] public uint8_t NumRotations { get; set; } = numRotations;
+		[LocoStructOffset(0x07)] public uint8_t Growth { get; set; } = growth;
+		[LocoStructOffset(0x08)] public TreeObjectFlags Flags { get; set; } = flags;
+		//[LocoStructOffset(0x0A), LocoArrayLength(6)] public image_id[] Sprites { get; set; } = sprites;
+		//[LocoStructOffset(0x22), LocoArrayLength(6)] public image_id[] SnowSprites { get; set; } = snowSprites;
+		//[LocoStructOffset(0x3A)] public uint16_t ShadowImageOffset { get; set; } = shadowImageOffset;
+		[LocoStructOffset(0x3C)] public uint8_t var_3C { get; set; } = var_3C;
+		[LocoStructOffset(0x3D)] public uint8_t SeasonState { get; set; } = seasonState;
+		[LocoStructOffset(0x3E)] public uint8_t var_3E { get; set; } = var_3E; // something to do with season
+		[LocoStructOffset(0x3F)] public uint8_t CostIndex { get; set; } = costIndex;
+		[LocoStructOffset(0x40)] public int16_t BuildCostFactor { get; set; } = buildCostFactor;
+		[LocoStructOffset(0x42)] public int16_t ClearCostFactor { get; set; } = clearCostFactor;
+		[LocoStructOffset(0x44)] public uint32_t Colours { get; set; } = colours;
+		[LocoStructOffset(0x48)] public int16_t Rating { get; set; } = rating;
+		[LocoStructOffset(0x4A)] public int16_t DemolishRatingReduction { get; set; } = demolishRatingReduction;
 	}
 }

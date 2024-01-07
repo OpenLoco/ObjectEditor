@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Numerics;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
@@ -7,29 +6,6 @@ using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public static class SawyerStreamUtils
-	{
-		public static uint ComputeObjectChecksum(ReadOnlySpan<byte> headerFlagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
-		{
-			static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
-			{
-				var checksum = seed;
-				foreach (var d in data)
-				{
-					checksum = BitOperations.RotateLeft(checksum ^ d, 11);
-				}
-
-				return checksum;
-			}
-
-			const uint32_t objectChecksumMagic = 0xF369A75B;
-			var checksum = ComputeChecksum(headerFlagByte, objectChecksumMagic);
-			checksum = ComputeChecksum(name, checksum);
-			checksum = ComputeChecksum(data, checksum);
-			return checksum;
-		}
-	}
-
 	public static class SawyerStreamReader
 	{
 		public static List<S5Header> LoadVariableHeaders(ReadOnlySpan<byte> data, int count)
@@ -49,20 +25,40 @@ namespace OpenLocoTool.DatFileParsing
 			return result;
 		}
 
-		public static G1Dat LoadG1(string filename, ILogger? logger = null)
+		public static S5Header LoadS5Header(string filename, ILogger? logger = null)
 		{
-			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
-			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
-			logger?.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
-			return new G1Dat(g1Header, imageTable);
+			if (!File.Exists(filename))
+			{
+				logger?.Error($"Path doesn't exist: {filename}");
+			}
+
+			logger?.Info($"Loading header for {filename}");
+
+			using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
+			using var reader = new BinaryReader(fileStream);
+			var data = reader.ReadBytes(S5Header.StructLength);
+			return data.Length != S5Header.StructLength
+				? throw new InvalidOperationException($"bytes read ({data.Length}) didn't match bytes expected ({S5Header.StructLength})")
+				: S5Header.Read(data);
+		}
+
+		public static byte[] LoadBytesFromFile(string filename, ILogger? logger = null)
+		{
+			if (!File.Exists(filename))
+			{
+				var ex = new InvalidOperationException($"File doesn't exist: {filename}");
+				logger?.Error(ex);
+			}
+
+			logger?.Info($"Loading {filename}");
+			return File.ReadAllBytes(filename);
 		}
 
 		// load file
-		public static byte[] LoadDecode(string filename)
+		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData) LoadDecode(string filename, ILogger? logger = null)
 		{
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 
-			// make openlocotool useful objects
 			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
 			var remainingData = fullData[S5Header.StructLength..];
 
@@ -70,9 +66,17 @@ namespace OpenLocoTool.DatFileParsing
 			remainingData = remainingData[ObjectHeader.StructLength..];
 
 			var decodedData = Decode(objectHeader.Encoding, remainingData);
-			remainingData = decodedData;
+			//remainingData = decodedData;
 
-			return [.. fullData[0..(S5Header.StructLength + ObjectHeader.StructLength)], .. decodedData];
+			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
+			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
+
+			if (checksum != s5Header.Checksum)
+			{
+				logger?.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
+			}
+
+			return (s5Header, objectHeader, decodedData);
 		}
 
 		// load file
@@ -80,17 +84,8 @@ namespace OpenLocoTool.DatFileParsing
 		{
 			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
-			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
-
-			// make openlocotool useful objects
-			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
-			var remainingData = fullData[S5Header.StructLength..];
-
-			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
-			remainingData = remainingData[ObjectHeader.StructLength..];
-
-			var decodedData = Decode(objectHeader.Encoding, remainingData);
-			remainingData = decodedData;
+			var (s5Header, objectHeader, decodedData) = LoadDecode(filename, logger);
+			ReadOnlySpan<byte> remainingData = decodedData;
 
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
 
@@ -104,14 +99,6 @@ namespace OpenLocoTool.DatFileParsing
 			var locoStructSize = structSize!.Size;
 			remainingData = remainingData[locoStructSize..];
 
-			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
-			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
-
-			if (checksum != s5Header.Checksum)
-			{
-				logger?.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
-			}
-
 			// every object has a string table
 			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct);
 			remainingData = remainingData[stringTableBytesRead..];
@@ -123,19 +110,19 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			LocoObject? newObj;
-			//try
-			//{
-			// some objects have graphics data
-			var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			try
+			{
+				// some objects have graphics data
+				var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
+				logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-			newObj = new LocoObject(locoStruct, stringTable, imageTable);
-			//}
-			//catch (Exception ex)
-			//{
-			//	newObj = new LocoObject(locoStruct, stringTable);
-			//	logger?.Error(ex, "Error loading graphics table");
-			//}
+				newObj = new LocoObject(locoStruct, stringTable, imageTable);
+			}
+			catch (Exception ex)
+			{
+				newObj = new LocoObject(locoStruct, stringTable);
+				logger?.Error(ex, "Error loading graphics table");
+			}
 
 			// add to object manager
 			SObjectManager.Add(newObj);
@@ -188,6 +175,14 @@ namespace OpenLocoTool.DatFileParsing
 				: AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStructType).Select(s => s.Name).ToArray();
 
 			return LoadStringTable(data, stringTableStrings);
+		}
+
+		public static G1Dat LoadG1(string filename, ILogger? logger = null)
+		{
+			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
+			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
+			logger?.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
+			return new G1Dat(g1Header, imageTable);
 		}
 
 		public static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
@@ -313,35 +308,6 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			return dstBuf;
-		}
-
-		public static byte[] LoadBytesFromFile(string filename)
-		{
-			if (!File.Exists(filename))
-			{
-				//Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
-				throw new InvalidOperationException($"File doesn't exist: {filename}");
-			}
-
-			//Logger.Log(LogLevel.Info, $"Loading {filename}");
-			return File.ReadAllBytes(filename);
-		}
-
-		public static S5Header LoadHeader(string filename, ILogger? logger = null)
-		{
-			if (!File.Exists(filename))
-			{
-				logger?.Error($"Path doesn't exist: {filename}");
-			}
-
-			logger?.Info($"Loading header for {filename}");
-
-			using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
-			using var reader = new BinaryReader(fileStream);
-			var data = reader.ReadBytes(S5Header.StructLength);
-			return data.Length != S5Header.StructLength
-					? throw new InvalidOperationException($"bytes read ({data.Length}) didn't match bytes expected ({S5Header.StructLength})")
-					: S5Header.Read(data);
 		}
 
 		public static ILocoStruct GetLocoStruct(ObjectType objectType, ReadOnlySpan<byte> data)

@@ -193,7 +193,7 @@ namespace OpenLocoToolGui
 				{
 					logger.Error($"Failed to load \"{file}\"", ex);
 
-					var obj = SawyerStreamReader.LoadHeader(file);
+					var obj = SawyerStreamReader.LoadS5Header(file);
 					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, null);
 					ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}

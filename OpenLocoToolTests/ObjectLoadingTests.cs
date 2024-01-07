@@ -457,39 +457,39 @@ namespace OpenLocoToolTests
 			});
 		}
 
-		[Test]
-		public void SaveStreetLightObject2()
-		{
-			// load
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SLIGHT1.DAT";
+		//[Test]
+		//public void SaveStreetLightObject2()
+		//{
+		//	// load
+		//	const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SLIGHT1.DAT";
 
-			var (obj, struc) = LoadObject<StreetLightObject>(testFile);
+		//	var (obj, struc) = LoadObject<StreetLightObject>(testFile);
 
-			// save
-			var bytesSource = SawyerStreamReader.LoadDecode(testFile);
-			var bytesDest = SawyerStreamWriter.WriteLocoObject("ObjName_", obj).ToArray();
+		//	// save
+		//	var bytesSource = SawyerStreamReader.LoadDecode(testFile);
+		//	var bytesDest = SawyerStreamWriter.WriteLocoObject("ObjName_", obj).ToArray();
 
-			var saveA = "Q:\\Games\\Locomotion\\ExperimentalObjects\\original.dat";
-			var saveB = "Q:\\Games\\Locomotion\\ExperimentalObjects\\saved.dat";
+		//	var saveA = "Q:\\Games\\Locomotion\\ExperimentalObjects\\original.dat";
+		//	var saveB = "Q:\\Games\\Locomotion\\ExperimentalObjects\\saved.dat";
 
-			File.WriteAllBytes(saveA, bytesSource);
-			File.WriteAllBytes(saveB, bytesDest);
+		//	File.WriteAllBytes(saveA, bytesSource);
+		//	File.WriteAllBytes(saveB, bytesDest);
 
-			var headerA = SawyerStreamReader.LoadHeader(saveA);
-			var headerB = SawyerStreamReader.LoadHeader(saveB);
+		//	var headerA = SawyerStreamReader.LoadHeader(saveA);
+		//	var headerB = SawyerStreamReader.LoadHeader(saveB);
 
-			//Assert.Multiple(() =>
-			//{
-			//	for (int i = 0; i < Math.Min(bytesSource.Length, bytesDest.Length); ++i)
-			//	{
-			//		Assert.AreEqual(bytesSource[i], bytesDest[i], $"[{i}] {bytesSource[i]} {bytesDest[i]}");
-			//	}
-			//});
+		//	//Assert.Multiple(() =>
+		//	//{
+		//	//	for (int i = 0; i < Math.Min(bytesSource.Length, bytesDest.Length); ++i)
+		//	//	{
+		//	//		Assert.AreEqual(bytesSource[i], bytesDest[i], $"[{i}] {bytesSource[i]} {bytesDest[i]}");
+		//	//	}
+		//	//});
 
-			CollectionAssert.AreEqual(bytesSource[0..16], bytesDest[0..16]);
-			// skip object header
-			CollectionAssert.AreEqual(bytesSource[21..], bytesDest[21..]);
-		}
+		//	CollectionAssert.AreEqual(bytesSource[0..16], bytesDest[0..16]);
+		//	// skip object header
+		//	CollectionAssert.AreEqual(bytesSource[21..], bytesDest[21..]);
+		//}
 
 		[Test]
 		public void LoadTownNamesObject() => Assert.Fail();

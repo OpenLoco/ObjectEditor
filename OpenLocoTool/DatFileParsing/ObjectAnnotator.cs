@@ -103,7 +103,7 @@ namespace OpenLocoTool.DatFileParsing
 
 				for (var i = 0; i < g1Header.NumEntries; i++)
 				{
-					var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(fullData.AsSpan()[runningCount..]);
+					var g32Element = ByteReader.ReadLocoStruct<G1Element32>(fullData.AsSpan()[runningCount..]);
 					var g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, runningCount, G1Element32.StructLength);
 
 					annotations.Add(g32ElementAnnotation);

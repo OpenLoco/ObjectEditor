@@ -54,7 +54,7 @@ namespace OpenLocoTool.Objects
 			remainingData = remainingData[(int)(numUnkStructs * 16)..];
 
 			// pcm data
-			SoundObjectData = (SoundObjectData)ByteReader.ReadLocoStruct<SoundObjectData>(remainingData[..ObjectAttributes.StructSize<SoundObjectData>()]);
+			SoundObjectData = ByteReader.ReadLocoStruct<SoundObjectData>(remainingData[..ObjectAttributes.StructSize<SoundObjectData>()]);
 			remainingData = remainingData[ObjectAttributes.StructSize<SoundObjectData>()..];
 
 			RawPcmData = remainingData.ToArray();

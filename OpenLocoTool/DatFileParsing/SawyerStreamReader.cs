@@ -210,7 +210,7 @@ namespace OpenLocoTool.DatFileParsing
 			for (var i = 0; i < g1Header.NumEntries; ++i)
 			{
 				var g32ElementData = g1ElementHeaders[(i * G1Element32.StructLength)..((i + 1) * G1Element32.StructLength)];
-				var g32Element = (G1Element32)ByteReader.ReadLocoStruct<G1Element32>(g32ElementData);
+				var g32Element = ByteReader.ReadLocoStruct<G1Element32>(g32ElementData);
 				g1Element32s.Add(g32Element);
 			}
 

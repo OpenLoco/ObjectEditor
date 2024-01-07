@@ -153,6 +153,7 @@ namespace OpenLocoTool.Objects
 				{
 					arr = remainingData[1..size].ToArray();
 				}
+
 				AnimationSequences.Add(arr);
 				remainingData = remainingData[(size + 1)..];
 			}
@@ -165,6 +166,7 @@ namespace OpenLocoTool.Objects
 				UnkIndustry38.Add(ByteReader.ReadLocoStruct<IndustryObjectUnk38>(remainingData[..structSize]));
 				remainingData = remainingData[structSize..];
 			}
+
 			remainingData = remainingData[1..]; // skip final 0xFF byte
 
 			// variation parts
@@ -239,6 +241,7 @@ namespace OpenLocoTool.Objects
 				ms.WriteByte(x.var_00);
 				ms.WriteByte(x.var_01);
 			}
+
 			ms.WriteByte(0xFF);
 
 			// variation parts

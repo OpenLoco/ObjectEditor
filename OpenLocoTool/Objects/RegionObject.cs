@@ -57,6 +57,7 @@ namespace OpenLocoTool.Objects
 				bytes.CopyTo(span[ptr..(ptr + S5Header.StructLength)]);
 				ptr += S5Header.StructLength;
 			}
+
 			span[^1] = 0xFF;
 
 			return data;

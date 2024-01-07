@@ -105,6 +105,7 @@ namespace OpenLocoTool.Objects
 				var_9C.Add(ByteReaderT.Read_uint32t(remainingData[ptr_9C..(ptr_9C + 4)], 0));
 				ptr_9C += 4;
 			}
+
 			ptr_9C++;
 			remainingData = remainingData[ptr_9C..];
 
@@ -154,6 +155,7 @@ namespace OpenLocoTool.Objects
 			{
 				ms.Write(BitConverter.GetBytes(x));
 			}
+
 			ms.WriteByte(0xFF);
 
 			// movement nodes

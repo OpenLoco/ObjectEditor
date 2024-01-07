@@ -7,25 +7,9 @@ using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public static class SawyerStreamReader
+	public static class SawyerStreamUtils
 	{
-		public static List<S5Header> LoadVariableHeaders(ReadOnlySpan<byte> data, int count)
-		{
-			List<S5Header> result = [];
-			for (var i = 0; i < count; ++i)
-			{
-				var header = S5Header.Read(data[..S5Header.StructLength]);
-				if (header.Checksum != 0 || header.Flags != 255)
-				{
-					result.Add(header);
-				}
-				data = data[S5Header.StructLength..];
-			}
-
-			return result;
-		}
-
-		static uint ComputeObjectChecksum(ReadOnlySpan<byte> flagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
+		public static uint ComputeObjectChecksum(ReadOnlySpan<byte> headerFlagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
 			static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
 			{
@@ -39,10 +23,30 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			const uint32_t objectChecksumMagic = 0xF369A75B;
-			var checksum = ComputeChecksum(flagByte, objectChecksumMagic);
+			var checksum = ComputeChecksum(headerFlagByte, objectChecksumMagic);
 			checksum = ComputeChecksum(name, checksum);
 			checksum = ComputeChecksum(data, checksum);
 			return checksum;
+		}
+	}
+
+	public static class SawyerStreamReader
+	{
+		public static List<S5Header> LoadVariableHeaders(ReadOnlySpan<byte> data, int count)
+		{
+			List<S5Header> result = [];
+			for (var i = 0; i < count; ++i)
+			{
+				var header = S5Header.Read(data[..S5Header.StructLength]);
+				if (header.Checksum != 0 || header.Flags != 255)
+				{
+					result.Add(header);
+				}
+
+				data = data[S5Header.StructLength..];
+			}
+
+			return result;
 		}
 
 		public static G1Dat LoadG1(string filename, ILogger? logger = null)
@@ -101,7 +105,7 @@ namespace OpenLocoTool.DatFileParsing
 			remainingData = remainingData[locoStructSize..];
 
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
-			var checksum = ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
+			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
 
 			if (checksum != s5Header.Checksum)
 			{
@@ -122,7 +126,7 @@ namespace OpenLocoTool.DatFileParsing
 			//try
 			//{
 			// some objects have graphics data
-			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
+			var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
 			logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
 			newObj = new LocoObject(locoStruct, stringTable, imageTable);

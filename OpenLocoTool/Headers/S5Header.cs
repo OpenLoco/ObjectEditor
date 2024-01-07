@@ -1,15 +1,10 @@
 ﻿using System.ComponentModel;
+using OpenLocoTool.Data;
 using OpenLocoTool.DatFileParsing;
 using Zenith.Core;
 
 namespace OpenLocoTool.Headers
 {
-	public enum SourceGame : byte
-	{
-		Custom = 0,
-		DataFile = 1,
-		Vanilla = 2,
-	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[Category("Header")]

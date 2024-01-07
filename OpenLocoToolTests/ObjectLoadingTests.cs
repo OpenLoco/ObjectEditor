@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using OpenLocoTool;
+using OpenLocoTool.Data;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;

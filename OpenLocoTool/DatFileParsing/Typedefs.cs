@@ -19,20 +19,4 @@ namespace OpenLocoTool.DatFileParsing
 		[property: LocoStructOffset(0x00)] int16_t X,
 		[property: LocoStructOffset(0x02)] int16_t Y
 		) : ILocoStruct;
-
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class StringTable
-	{
-		public Dictionary<string, Dictionary<LanguageId, string>> table { get; set; } = [];
-
-		public void Add(string key, Dictionary<LanguageId, string> value) => table.Add(key, value);
-
-		public Dictionary<LanguageId, string> this[string key]
-		{
-			get => table[key];
-			set => table[key] = value;
-		}
-
-		public Dictionary<string, Dictionary<LanguageId, string>>.KeyCollection Keys => table.Keys;
-	}
 }

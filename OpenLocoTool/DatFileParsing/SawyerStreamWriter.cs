@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using OpenLocoTool.Data;
 using OpenLocoTool.Headers;
 using OpenLocoToolCommon;
 

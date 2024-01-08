@@ -65,7 +65,7 @@ namespace OpenLocoTool.DatFileParsing
 			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
 			remainingData = remainingData[ObjectHeader.StructLength..];
 
-			var decodedData = Decode(objectHeader.Encoding, remainingData);
+			var decodedData = Decode(objectHeader.Encoding, remainingData.ToArray());
 			//remainingData = decodedData;
 
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
@@ -351,9 +351,9 @@ namespace OpenLocoTool.DatFileParsing
 			};
 
 		// taken from openloco's SawyerStreamReader::readChunk
-		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data) => encoding switch
+		public static byte[] Decode(SawyerEncoding encoding, byte[] data) => encoding switch
 		{
-			SawyerEncoding.Uncompressed => data.ToArray(),
+			SawyerEncoding.Uncompressed => data,
 			SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data),
 			SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
 			SawyerEncoding.Rotate => DecodeRotate(data),
@@ -361,9 +361,9 @@ namespace OpenLocoTool.DatFileParsing
 		};
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
-		private static byte[] DecodeRunLengthSingle(ReadOnlySpan<byte> data)
+		private static byte[] DecodeRunLengthSingle(byte[] data)
 		{
-			List<byte> buffer = [];
+			var ms = new MemoryStream();
 
 			for (var i = 0; i < data.Length; ++i)
 			{
@@ -376,7 +376,11 @@ namespace OpenLocoTool.DatFileParsing
 						throw new ArgumentException("Invalid RLE run");
 					}
 
-					buffer.AddRange(Enumerable.Repeat(data[i], 257 - rleCodeByte));
+					var count = 257 - rleCodeByte;
+
+					var arr = new byte[count];
+					Array.Fill(arr, data[i]);
+					ms.Write(arr);
 				}
 				else
 				{
@@ -387,24 +391,17 @@ namespace OpenLocoTool.DatFileParsing
 
 					var copyLen = rleCodeByte + 1;
 
-					for (var j = 0; j < copyLen; ++j)
-					{
-						buffer.Add(data[i + 1 + j]);
-					}
+					ms.Write(data, i + 1, copyLen);
+					//for (var j = 0; j < copyLen; ++j)
+					//{
+					//	ms.WriteByte(data[i + 1 + j]);
+					//}
 
 					i += rleCodeByte + 1;
 				}
 			}
 
-			// convert to span
-			var decodedSpan = new byte[buffer.Count];
-			var counter = 0;
-			foreach (var b in buffer)
-			{
-				decodedSpan[counter++] = b;
-			}
-
-			return decodedSpan;
+			return ms.ToArray();
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthMulti

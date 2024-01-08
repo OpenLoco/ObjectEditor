@@ -155,22 +155,25 @@ namespace OpenLocoToolGui
 		}
 
 		// this method loads every single object entirely. it takes a long time to run
-		void CreateIndex(string[] allFiles, IProgress<float> progress)
+		void CreateIndex(string[] allFiles, IProgress<float>? progress)
 		{
 			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
 			ConcurrentDictionary<string, UiLocoObject> ccObjectCache = new(); // key is full path/filename
 
 			var count = 0;
 
+			ConcurrentDictionary<string, TimeSpan> timePerFile = new();
+
 			logger.Info($"Creating index on {allFiles.Length} files");
 			var sw = new Stopwatch();
 			sw.Start();
 
-			Parallel.ForEach(allFiles, (file) =>
+			Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (file) =>
 			//foreach (var file in allFiles)
 			{
 				try
 				{
+					var startTime = sw.Elapsed;
 					var (fileInfo, locoObject) = SawyerStreamReader.LoadFull(file);
 					if (!ccObjectCache.TryAdd(file, new UiLocoObject { DatFileInfo = fileInfo, LocoObject = locoObject }))
 					{
@@ -188,6 +191,11 @@ namespace OpenLocoToolGui
 					{
 						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
 					}
+					else
+					{
+						var elapsed = sw.Elapsed - startTime;
+						timePerFile.TryAdd(fileInfo.S5Header.Name, elapsed);
+					}
 				}
 				catch (Exception ex)
 				{
@@ -200,7 +208,7 @@ namespace OpenLocoToolGui
 				finally
 				{
 					Interlocked.Increment(ref count);
-					progress.Report(count / (float)allFiles.Length);
+					progress?.Report(count / (float)allFiles.Length);
 				}
 				//}
 			});
@@ -209,7 +217,18 @@ namespace OpenLocoToolGui
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 			sw.Stop();
-			logger.Info($"Finished creating index. Time={sw.Elapsed}");
+			logger.Info("Finished creating index");
+
+			logger.Debug($"Time time={sw.Elapsed}");
+
+			var slowest = timePerFile.MaxBy(x => x.Value.Ticks);
+			logger.Debug($"Slowest file={slowest.Key} Time={slowest.Value}");
+
+			var average = timePerFile.Average(x => x.Value.TotalMilliseconds);
+			logger.Debug($"Average time={average}ms");
+
+			var median = timePerFile.OrderBy(x => x.Value).Skip(timePerFile.Count / 2).Take(1).Single();
+			logger.Debug($"Median time={median.Value}ms");
 		}
 
 		public static void SaveFile(string path, UiLocoObject obj)
@@ -234,7 +253,7 @@ namespace OpenLocoToolGui
 			return true;
 		}
 
-		public void LoadObjDirectory(string directory, IProgress<float> progress, bool useExistingIndex)
+		public void LoadObjDirectory(string directory, IProgress<float>? progress, bool useExistingIndex)
 		{
 			if (!Directory.Exists(directory))
 			{

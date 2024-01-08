@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 
@@ -197,8 +198,13 @@ namespace OpenLocoTool.Objects
 					remainingData = remainingData[1..]; // uint8_t
 
 					CompatibleCargoCategories[index].Add(vehicleCargoCategory);
-					CargoTypeSpriteOffsets.Add(vehicleCargoCategory, cargoTypeSpriteOffset);
 
+					if (!CargoTypeSpriteOffsets.TryAdd(vehicleCargoCategory, cargoTypeSpriteOffset))
+					{
+						// invalid object - shouldn't have 2 cargo types that are the same
+					}
+
+					// advance ptr
 					ptr = BitConverter.ToUInt16(remainingData[0..2]);
 				}
 

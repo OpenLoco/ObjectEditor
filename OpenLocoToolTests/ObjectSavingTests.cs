@@ -16,7 +16,7 @@ namespace OpenLocoToolTests
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SIGC3.DAT";
 			var fileSize = new FileInfo(testFile).Length;
 			var logger = new Logger();
-			var loaded = SawyerStreamReader.LoadFull(testFile);
+			var loaded = SawyerStreamReader.LoadFullObjectFromFile(testFile);
 
 			// load data in raw bytes for test
 			ReadOnlySpan<byte> fullData = SawyerStreamReader.LoadBytesFromFile(testFile);
@@ -48,7 +48,7 @@ namespace OpenLocoToolTests
 			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\BREWERY.DAT";
 			var fileSize = new FileInfo(testFile).Length;
 			var logger = new Logger();
-			var loaded = SawyerStreamReader.LoadFull(testFile);
+			var loaded = SawyerStreamReader.LoadFullObjectFromFile(testFile);
 
 			// load data in raw bytes for test
 			ReadOnlySpan<byte> fullData = SawyerStreamReader.LoadBytesFromFile(testFile);

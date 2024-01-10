@@ -28,7 +28,7 @@ namespace OpenLocoTool.Objects
 		{
 			// unk
 			RequiredObjects.Clear();
-			RequiredObjects = SawyerStreamReader.LoadVariableHeaders(remainingData, RequiredObjectCount);
+			RequiredObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, RequiredObjectCount);
 			remainingData = remainingData[(S5Header.StructLength * RequiredObjectCount)..];
 
 			// dependent objects

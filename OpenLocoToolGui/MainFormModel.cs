@@ -83,7 +83,7 @@ namespace OpenLocoToolGui
 			{
 				//try
 				//{
-				SawyerStreamReader.LoadFull(dep.Key);
+				SawyerStreamReader.LoadFullObjectFromFile(dep.Key);
 				//}
 				//catch (Exception ex)
 				//{
@@ -174,7 +174,7 @@ namespace OpenLocoToolGui
 				try
 				{
 					var startTime = sw.Elapsed;
-					var (fileInfo, locoObject) = SawyerStreamReader.LoadFull(file);
+					var (fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(file);
 					if (!ccObjectCache.TryAdd(file, new UiLocoObject { DatFileInfo = fileInfo, LocoObject = locoObject }))
 					{
 						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
@@ -201,7 +201,7 @@ namespace OpenLocoToolGui
 				{
 					logger.Error($"Failed to load \"{file}\"", ex);
 
-					var obj = SawyerStreamReader.LoadS5Header(file);
+					var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
 					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, null);
 					ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}
@@ -328,7 +328,7 @@ namespace OpenLocoToolGui
 			}
 			else
 			{
-				var obj = SawyerStreamReader.LoadFull(filename);
+				var obj = SawyerStreamReader.LoadFullObjectFromFile(filename);
 				var uiObj = new UiLocoObject { DatFileInfo = obj.Item1, LocoObject = obj.Item2 };
 				ObjectCache.TryAdd(filename, uiObj);
 				return uiObj;

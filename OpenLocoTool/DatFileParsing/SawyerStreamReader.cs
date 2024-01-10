@@ -8,7 +8,7 @@ namespace OpenLocoTool.DatFileParsing
 {
 	public static class SawyerStreamReader
 	{
-		public static List<S5Header> LoadVariableHeaders(ReadOnlySpan<byte> data, int count)
+		public static List<S5Header> LoadVariableCountS5Headers(ReadOnlySpan<byte> data, int count)
 		{
 			List<S5Header> result = [];
 			for (var i = 0; i < count; ++i)
@@ -25,7 +25,7 @@ namespace OpenLocoTool.DatFileParsing
 			return result;
 		}
 
-		public static S5Header LoadS5Header(string filename, ILogger? logger = null)
+		public static S5Header LoadS5HeaderFromFile(string filename, ILogger? logger = null)
 		{
 			if (!File.Exists(filename))
 			{
@@ -54,8 +54,7 @@ namespace OpenLocoTool.DatFileParsing
 			return File.ReadAllBytes(filename);
 		}
 
-		// load file
-		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData) LoadDecode(string filename, ILogger? logger = null)
+		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData) LoadAndDecodeFromFile(string filename, ILogger? logger = null)
 		{
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 
@@ -80,11 +79,11 @@ namespace OpenLocoTool.DatFileParsing
 		}
 
 		// load file
-		public static (DatFileInfo DatFileInfo, ILocoObject LocoObject) LoadFull(string filename, ILogger? logger = null, bool loadExtra = true)
+		public static (DatFileInfo DatFileInfo, ILocoObject LocoObject) LoadFullObjectFromFile(string filename, bool loadExtra = true, ILogger? logger = null)
 		{
 			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
-			var (s5Header, objectHeader, decodedData) = LoadDecode(filename, logger);
+			var (s5Header, objectHeader, decodedData) = LoadAndDecodeFromFile(filename, logger);
 			ReadOnlySpan<byte> remainingData = decodedData;
 
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
@@ -130,7 +129,7 @@ namespace OpenLocoTool.DatFileParsing
 			return new(new DatFileInfo(s5Header, objectHeader), newObj);
 		}
 
-		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames)
+		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames, ILogger? logger = null)
 		{
 			var stringTable = new StringTable();
 
@@ -156,7 +155,7 @@ namespace OpenLocoTool.DatFileParsing
 					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
 					if (!languageDict.TryAdd(lang, str)) //new StringTableEntry { String = str }))
 					{
-						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
+						logger?.Error($"Key \"{lang}\" already exists (this should not happen)");
 						break;
 					}
 				}
@@ -189,7 +188,7 @@ namespace OpenLocoTool.DatFileParsing
 		{
 			var g1Element32s = new List<G1Element32>();
 
-			if (data.Length == 0)
+			if (data.Length < ObjectAttributes.StructSize<G1Header>())
 			{
 				return (new G1Header(0, 0), g1Element32s, 0);
 			}
@@ -215,7 +214,6 @@ namespace OpenLocoTool.DatFileParsing
 				var currElement = g1Element32s[i];
 				var nextOffset = i < g1Header.NumEntries - 1
 					? g1Element32s[i + 1].Offset
-					//	: g1Header.TotalSize;
 					: (uint)g1Header.ImageData.Length;
 
 				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
@@ -234,7 +232,7 @@ namespace OpenLocoTool.DatFileParsing
 			// not sure why this happens, but this seems 'legit'; airport files have these
 			if (img.ImageData.Length == 0)
 			{
-				return img.ImageData;
+				return [];
 			}
 
 			var width = img.Width;
@@ -392,11 +390,6 @@ namespace OpenLocoTool.DatFileParsing
 					var copyLen = rleCodeByte + 1;
 
 					ms.Write(data, i + 1, copyLen);
-					//for (var j = 0; j < copyLen; ++j)
-					//{
-					//	ms.WriteByte(data[i + 1 + j]);
-					//}
-
 					i += rleCodeByte + 1;
 				}
 			}
@@ -424,7 +417,6 @@ namespace OpenLocoTool.DatFileParsing
 				else
 				{
 					var offset = (data[i] >> 3) - 32;
-					//assert(offset < 0);
 					if (-offset > buffer.Count)
 					{
 						throw new ArgumentException("Invalid RLE run");
@@ -433,54 +425,31 @@ namespace OpenLocoTool.DatFileParsing
 					var copySrc = 0 + buffer.Count + offset;
 					var copyLen = (data[i] & 7) + 1;
 
-					// Copy it to temp buffer first as we can't copy buffer to itself due to potential
-					// realloc in between reserve and push
-					//uint8_t copyBuffer[32];
-					//assert(copyLen <= sizeof(copyBuffer));
-					//std::memcpy(copyBuffer, copySrc, copyLen);
-					//buffer.push_back(copyBuffer, copyLen);
-
 					buffer.AddRange(buffer.GetRange(copySrc, copyLen));
 				}
 			}
 
-			// convert to span
-			var decodedSpan = new byte[buffer.Count];
-			var counter = 0;
-			foreach (var b in buffer)
-			{
-				decodedSpan[counter++] = b;
-			}
-
-			return decodedSpan;
+			return [.. buffer];
 		}
 
 		private static byte[] DecodeRotate(ReadOnlySpan<byte> data)
 		{
-			List<byte> buffer = [];
+			static byte Ror(byte x, byte shift)
+			{
+				const byte byteDigits = 8;
+				return (byte)((x >> shift) | (x << (byteDigits - shift)));
+			}
+
+			var buffer = new byte[data.Length];
 
 			byte code = 1;
 			for (var i = 0; i < data.Length; i++)
 			{
-				buffer.Add(Ror(data[i], code));
+				buffer[i] = Ror(data[i], code);
 				code = (byte)((code + 2) & 7);
 			}
 
-			// convert to span
-			var decodedSpan = new byte[buffer.Count];
-			var counter = 0;
-			foreach (var b in buffer)
-			{
-				decodedSpan[counter++] = b;
-			}
-
-			return decodedSpan;
-		}
-
-		private static byte Ror(byte x, byte shift)
-		{
-			const byte byteDigits = 8;
-			return (byte)((x >> shift) | (x << (byteDigits - shift)));
+			return buffer;
 		}
 	}
 }

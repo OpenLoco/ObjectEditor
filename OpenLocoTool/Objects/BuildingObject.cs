@@ -87,12 +87,12 @@ namespace OpenLocoTool.Objects
 
 			// produced cargo
 			ProducedCargo.Clear();
-			ProducedCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, MaxProducedCargoType);
+			ProducedCargo = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxProducedCargoType);
 			remainingData = remainingData[(S5Header.StructLength * MaxProducedCargoType)..];
 
 			// required cargo
 			RequiredCargo.Clear();
-			RequiredCargo = SawyerStreamReader.LoadVariableHeaders(remainingData, MaxRequiredCargoType);
+			RequiredCargo = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxRequiredCargoType);
 			remainingData = remainingData[(S5Header.StructLength * MaxRequiredCargoType)..];
 
 			// load ??

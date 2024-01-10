@@ -1,4 +1,6 @@
-﻿namespace OpenLocoToolGui
+﻿using OpenLocoTool.Types;
+
+namespace OpenLocoToolGui
 {
 	partial class MainForm
 	{
@@ -652,7 +654,7 @@
 			// 
 			// locoObjectBindingSource
 			// 
-			locoObjectBindingSource.DataSource = typeof(OpenLocoTool.DatFileParsing.LocoObject);
+			locoObjectBindingSource.DataSource = typeof(LocoObject);
 			// 
 			// MainForm
 			// 

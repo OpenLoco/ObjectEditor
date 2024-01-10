@@ -137,7 +137,7 @@ namespace OpenLocoTool.DatFileParsing
 			return annotations;
 		}
 
-		public static int AnnotateStringTable(byte[] fullData, int runningCount, ILocoStruct locoStruct, IList<Annotation> annotations)
+		static int AnnotateStringTable(byte[] fullData, int runningCount, ILocoStruct locoStruct, IList<Annotation> annotations)
 		{
 			var root = new Annotation("String Table", runningCount, 1);
 			annotations.Add(root);

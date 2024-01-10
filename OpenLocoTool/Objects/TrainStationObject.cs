@@ -62,7 +62,7 @@ namespace OpenLocoTool.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible
-			Compatible = SawyerStreamReader.LoadVariableHeaders(remainingData, NumCompatible);
+			Compatible = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
 			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 
 			// cargo offsets (for drawing the cargo on the station)

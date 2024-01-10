@@ -1,4 +1,4 @@
-﻿using OpenLocoTool.DatFileParsing;
+﻿using OpenLocoTool.Types;
 using System.ComponentModel;
 
 namespace OpenLocoToolGui

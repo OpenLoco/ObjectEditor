@@ -30,13 +30,13 @@ namespace OpenLocoTool.DatFileParsing
 			objStream.Write(objBytes);
 
 			// string table
-			foreach (var ste in obj.StringTable.table)
+			foreach (var ste in obj.StringTable.Table)
 			{
-				foreach (var language in ste.Value)
+				foreach (var language in ste.Value.Where(str => !string.IsNullOrEmpty(str.Value))) // skip strings with empty content
 				{
 					objStream.WriteByte((byte)language.Key);
 
-					var strBytes = Encoding.ASCII.GetBytes(language.Value);
+					var strBytes = Encoding.Latin1.GetBytes(language.Value);
 					objStream.Write(strBytes, 0, strBytes.Length);
 					objStream.WriteByte((byte)'\0');
 				}

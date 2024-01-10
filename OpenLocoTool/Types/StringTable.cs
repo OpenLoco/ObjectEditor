@@ -1,20 +1,16 @@
 ﻿using System.ComponentModel;
 
-namespace OpenLocoTool.DatFileParsing
+namespace OpenLocoTool.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class StringTable
 	{
-		public Dictionary<string, Dictionary<LanguageId, string>> table { get; set; } = [];
-
-		public void Add(string key, Dictionary<LanguageId, string> value) => table.Add(key, value);
+		public Dictionary<string, Dictionary<LanguageId, string>> Table { get; set; } = [];
 
 		public Dictionary<LanguageId, string> this[string key]
 		{
-			get => table[key];
-			set => table[key] = value;
+			get => Table[key];
+			set => Table[key] = value;
 		}
-
-		public Dictionary<string, Dictionary<LanguageId, string>>.KeyCollection Keys => table.Keys;
 	}
 }

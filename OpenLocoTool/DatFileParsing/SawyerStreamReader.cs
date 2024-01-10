@@ -2,6 +2,7 @@
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
+using OpenLocoTool.Types;
 using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
@@ -142,8 +143,14 @@ namespace OpenLocoTool.DatFileParsing
 
 			foreach (var locoString in stringNames)
 			{
-				stringTable.Add(locoString, []);
+				stringTable.Table.Add(locoString, []);
 				var languageDict = stringTable[locoString];
+
+				// add empty strings for every single language
+				foreach (var language in Enum.GetValues<LanguageId>())
+				{
+					languageDict.Add(language, string.Empty);
+				}
 
 				for (; ptr < data.Length && data[ptr] != 0xFF;)
 				{
@@ -152,12 +159,14 @@ namespace OpenLocoTool.DatFileParsing
 
 					while (data[ptr++] != '\0') ;
 
-					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-					if (!languageDict.TryAdd(lang, str)) //new StringTableEntry { String = str }))
+					var str = Encoding.Latin1.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
+
+					if (!languageDict.ContainsKey(lang))
 					{
-						logger?.Error($"Key \"{lang}\" already exists (this should not happen)");
+						logger?.Error($"Skipping unknown language: \"{lang}\"");
 						break;
 					}
+					languageDict[lang] = str;
 				}
 
 				ptr++; // add one because we skipped the 0xFF byte at the end

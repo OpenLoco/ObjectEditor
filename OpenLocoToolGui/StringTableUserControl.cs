@@ -1,41 +1,22 @@
-﻿using OpenLocoTool.Types;
+﻿using OpenLocoTool;
+using OpenLocoTool.Types;
 using System.ComponentModel;
 
 namespace OpenLocoToolGui
 {
 	public partial class StringTableUserControl : UserControl
 	{
-		private readonly BindingList<string> blKeys = [];
-
 		public StringTableUserControl() => InitializeComponent();
 
-		StringTable _data;
-		StringTable Data
-		{
-			get => _data;
-			set
-			{
-				_data = value;
-				BindingSource.DataSource = _data;
-			}
-		}
-		BindingSource BindingSource = new();
+		StringTable _data { get; set; }
 
 		public void SetDataBinding(StringTable data)
 		{
-			Data = data;
-			//dgvLanguageSelector.DataSource = BindingSource;
-
-			//DataContext = Data;
-
-			blKeys.Clear();
-			foreach (var key in Data.Keys)
-			{
-				blKeys.Add(key);
-			}
+			_data = data;
+			lbStringSelector.DataSource = null;
 
 			// Set up data binding for the outer dictionary DataGridView.
-			lbStringSelector.DataSource = blKeys;
+			lbStringSelector.DataSource = data.Table.Keys.ToList();
 
 			// Subscribe to the SelectionChanged event to populate the inner DataGridView.
 			lbStringSelector.SelectedValueChanged += (sender, e) => UpdateDGVSource();
@@ -47,10 +28,53 @@ namespace OpenLocoToolGui
 
 		void UpdateDGVSource()
 		{
-			if (lbStringSelector.SelectedValue != null && Data.table.ContainsKey((string)lbStringSelector.SelectedValue))
+			flpLanguageStrings.SuspendLayout();
+			flpLanguageStrings.Controls.Clear();
+
+			var sel = lbStringSelector.SelectedValue as string;
+			if (sel != null && _data.Table.ContainsKey(sel))
 			{
-				dgvLanguageSelector.DataSource = new BindingSource(Data[(string)lbStringSelector.SelectedValue], null);
+				foreach (var language in _data.Table[sel])
+				{
+					var lblLanguage = new Label
+					{
+						BorderStyle = BorderStyle.FixedSingle,
+						Text = language.Key.ToString(),
+						Dock = DockStyle.Left,
+						Height = 24,
+						Width = 128,
+						TextAlign = ContentAlignment.MiddleLeft,
+					};
+
+					var pn = new Panel
+					{
+						//AutoSize = true,
+						//Dock = DockStyle.Top,
+						Height = 24,
+						Width = flpLanguageStrings.Width,
+						Margin = new Padding(0, 0, 0, 0),
+						Padding = new Padding(0, 0, 0, 0),
+					};
+
+					var tbText = new TextBox
+					{
+						BorderStyle = BorderStyle.FixedSingle,
+						Text = language.Value,
+						Dock = DockStyle.Left,
+						Height = 24,
+						Width = pn.Width - lblLanguage.Width - 4,
+						TextAlign = HorizontalAlignment.Left,
+					};
+					tbText.TextChanged += (a, b) => _data.Table[sel][Enum.Parse<LanguageId>(lblLanguage.Text)] = tbText.Text;
+
+					pn.Controls.Add(tbText);
+					pn.Controls.Add(lblLanguage);
+
+					flpLanguageStrings.Controls.Add(pn);
+				}
 			}
+
+			flpLanguageStrings.ResumeLayout(true);
 		}
 	}
 }

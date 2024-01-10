@@ -28,51 +28,45 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			dgvLanguageSelector = new DataGridView();
 			lbStringSelector = new ListBox();
-			((System.ComponentModel.ISupportInitialize)dgvLanguageSelector).BeginInit();
+			flpLanguageStrings = new FlowLayoutPanel();
 			SuspendLayout();
-			// 
-			// dgvLanguageSelector
-			// 
-			dgvLanguageSelector.AllowUserToResizeRows = false;
-			dgvLanguageSelector.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-			dgvLanguageSelector.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			dgvLanguageSelector.Location = new Point(214, 1);
-			dgvLanguageSelector.Margin = new Padding(2, 1, 2, 1);
-			dgvLanguageSelector.MultiSelect = false;
-			dgvLanguageSelector.Name = "dgvLanguageSelector";
-			dgvLanguageSelector.RowHeadersWidth = 82;
-			dgvLanguageSelector.RowTemplate.Height = 41;
-			dgvLanguageSelector.Size = new Size(554, 292);
-			dgvLanguageSelector.TabIndex = 1;
 			// 
 			// lbStringSelector
 			// 
-			lbStringSelector.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+			lbStringSelector.Dock = DockStyle.Left;
 			lbStringSelector.FormattingEnabled = true;
 			lbStringSelector.ItemHeight = 15;
-			lbStringSelector.Location = new Point(2, 1);
+			lbStringSelector.Location = new Point(0, 0);
 			lbStringSelector.Margin = new Padding(2, 1, 2, 1);
 			lbStringSelector.Name = "lbStringSelector";
-			lbStringSelector.Size = new Size(211, 289);
+			lbStringSelector.Size = new Size(211, 294);
 			lbStringSelector.TabIndex = 2;
+			// 
+			// flpLanguageStrings
+			// 
+			flpLanguageStrings.BorderStyle = BorderStyle.Fixed3D;
+			flpLanguageStrings.Dock = DockStyle.Fill;
+			flpLanguageStrings.FlowDirection = FlowDirection.TopDown;
+			flpLanguageStrings.Location = new Point(211, 0);
+			flpLanguageStrings.Name = "flpLanguageStrings";
+			flpLanguageStrings.Size = new Size(558, 294);
+			flpLanguageStrings.TabIndex = 3;
 			// 
 			// StringTableUserControl
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
+			Controls.Add(flpLanguageStrings);
 			Controls.Add(lbStringSelector);
-			Controls.Add(dgvLanguageSelector);
 			Margin = new Padding(2, 1, 2, 1);
 			Name = "StringTableUserControl";
 			Size = new Size(769, 294);
-			((System.ComponentModel.ISupportInitialize)dgvLanguageSelector).EndInit();
 			ResumeLayout(false);
 		}
 
 		#endregion
-		private DataGridView dgvLanguageSelector;
 		private ListBox lbStringSelector;
+		private FlowLayoutPanel flpLanguageStrings;
 	}
 }

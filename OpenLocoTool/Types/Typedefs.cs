@@ -10,8 +10,9 @@ global using Speed32 = System.Int32;
 global using MicroZ = System.Byte;
 global using SoundObjectId = System.Byte;
 using System.ComponentModel;
+using OpenLocoTool.DatFileParsing;
 
-namespace OpenLocoTool.DatFileParsing
+namespace OpenLocoTool.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x04)]

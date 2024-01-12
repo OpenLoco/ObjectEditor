@@ -9,6 +9,7 @@ using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using OpenLocoTool.Headers;
 using System.Diagnostics;
+using OpenLocoTool;
 
 namespace OpenLocoToolGui
 {
@@ -63,6 +64,12 @@ namespace OpenLocoToolGui
 
 		public G1Dat G1 { get; set; }
 
+		public Dictionary<string, byte[]> Music { get; set; } = [];
+
+		public Dictionary<string, byte[]> SoundEffects { get; set; } = [];
+
+		public Dictionary<string, byte[]> Tutorials { get; set; } = [];
+
 		public MainFormModel(ILogger logger, string settingsFile)
 		{
 			this.logger = logger;
@@ -115,7 +122,7 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			if (File.Exists(Settings.IndexFilePath))
+			if (File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
 			{
 				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
 				LoadObjDirectory(Settings.ObjDataDirectory, new Progress<float>(), true);
@@ -245,7 +252,8 @@ namespace OpenLocoToolGui
 			Settings.DataDirectory = directory;
 
 			// load G1 only for now
-			G1 = SawyerStreamReader.LoadG1(Settings.G1Path);
+			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
+
 			LoadPalette(); // update palette from g1
 
 			SaveSettings();
@@ -262,9 +270,9 @@ namespace OpenLocoToolGui
 
 			Settings.ObjDataDirectory = directory;
 			var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
-			if (useExistingIndex && File.Exists(Settings.IndexFilePath))
+			if (useExistingIndex && File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
 			{
-				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.IndexFilePath) ?? HeaderIndex;
+				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.GetObjDataFullPath(Settings.IndexFileName)) ?? HeaderIndex;
 
 				var a = HeaderIndex.Keys.Except(allFiles);
 				var b = allFiles.Except(HeaderIndex.Keys);
@@ -288,7 +296,7 @@ namespace OpenLocoToolGui
 			{
 				logger.Info("Recreating index file");
 				CreateIndex(allFiles, progress);
-				SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex, GetOptions());
+				SerialiseHeaderIndexToFile(Settings.GetObjDataFullPath(Settings.IndexFileName), HeaderIndex, GetOptions());
 			}
 
 			SaveSettings();

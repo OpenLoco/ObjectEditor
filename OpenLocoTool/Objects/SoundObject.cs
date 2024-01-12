@@ -30,8 +30,8 @@ namespace OpenLocoTool.Objects
 	[LocoStructType(ObjectType.Sound)]
 	[LocoStringTable("Name")]
 	public record SoundObject(
-		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint32_t SoundObjectDataPtr,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), Browsable(false)] uint32_t SoundObjectDataPtr,
 		[property: LocoStructOffset(0x06)] uint8_t var_06,
 		[property: LocoStructOffset(0x07)] uint8_t pad_07,
 		[property: LocoStructOffset(0x08)] uint32_t Volume

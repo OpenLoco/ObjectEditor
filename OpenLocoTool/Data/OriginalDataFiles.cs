@@ -2,18 +2,8 @@
 {
 	public static class OriginalDataFiles
 	{
-		public static readonly HashSet<string> Names =
+		public static readonly HashSet<string> Music =
 		[
-			"Data/g1.DAT",
-			"plugin.dat",
-			"plugin2.dat",
-			"Data/CSS1.DAT",
-			"Data/CSS2.DAT",
-			"Data/CSS3.DAT",
-			"Data/CSS4.DAT",
-			"Data/CSS5.DAT",
-			"game.cfg",
-			"Data/KANJI.DAT",
 			"Data/20s1.DAT",
 			"Data/20s2.DAT",
 			"Data/20s4.DAT",
@@ -43,22 +33,44 @@
 			"Data/80s4.DAT",
 			"Data/20s5.DAT",
 			"Data/20s6.DAT",
-			"Data/title.dat",
-			"scores.dat",
-			"Scenarios/Boulder Breakers.SC5",
+		];
+
+		public static readonly HashSet<string> SoundEffects =
+		[
+			"Data/CSS1.DAT",
+			"Data/CSS2.DAT",
+			"Data/CSS3.DAT",
+			"Data/CSS4.DAT",
+			"Data/CSS5.DAT",
+		];
+
+		public static readonly HashSet<string> Tutorials =
+		[
 			"Data/TUT1024_1.DAT",
 			"Data/TUT1024_2.DAT",
 			"Data/TUT1024_3.DAT",
 			"Data/TUT800_1.DAT",
 			"Data/TUT800_2.DAT",
 			"Data/TUT800_3.DAT",
-			"openloco.yml",
-			"language",
-			"save",
-			"save/autosave",
-			"1.TMP",
-			"ObjData",
-			"Scenarios",
+		];
+
+		public static readonly HashSet<string> Uncategorised =
+		[
+			"Data/g1.DAT",
+			"plugin.dat",
+			"plugin2.dat",
+			"game.cfg",
+			"Data/KANJI.DAT",
+			"Data/title.dat",
+			"scores.dat",
+			//"Scenarios/Boulder Breakers.SC5",
+			//"openloco.yml",
+			//"language",
+			//"save",
+			//"save/autosave",
+			//"1.TMP",
+			//"ObjData",
+			//"Scenarios",
 		];
 	}
 }

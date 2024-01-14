@@ -1,3 +1,4 @@
+using NAudio.Gui;
 using NAudio.Wave;
 using OpenLocoTool;
 using OpenLocoTool.Data;
@@ -6,6 +7,7 @@ using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using System.Drawing.Imaging;
+using System.Xml.Linq;
 
 namespace OpenLocoToolGui
 {
@@ -497,9 +499,9 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		static bool isMusicPlaying { get; set; } = false;
+		static bool MusicIsPlaying { get; set; } = false;
 
-		private void LoadMusic(string dataKey)
+		void LoadMusic(string dataKey)
 		{
 			var music = model.Music[dataKey];
 			var (header, pcmData) = SawyerStreamReader.LoadMusicTrack(music);
@@ -515,30 +517,134 @@ namespace OpenLocoToolGui
 			PlayMusic(header, pcmData);
 		}
 
-		private static void PlayMusic(MusicHeader header, byte[] pcmData)
+		void PlayMusic(MusicHeader hdr, byte[] pcmData)
 		{
-			if (isMusicPlaying)
+			CreateSoundUI(pcmData, (int)hdr.SampleRate, hdr.BitsPerSample, hdr.NumberOfChannels);
+		}
+
+		void CreateSounds(SoundObject soundObject)
+		{
+			var hdr = soundObject.SoundObjectData.PcmHeader;
+			CreateSoundUI(soundObject.RawPcmData, hdr.SampleRate, hdr.BitsPerSample, hdr.NumberOfChannels);
+		}
+
+		void CreateSoundUI(byte[] pcmData, int samplesPerSecond, int bits, int numberOfChannels)
+		{
+			flpImageTable.SuspendLayout();
+			flpImageTable.Controls.Clear();
+
+			// for some reason the SoundObject files have the wrong bitspersample set
+			if (bits != 16)
 			{
-				isMusicPlaying = false;
+				bits = 16;
+			}
+
+			if (MusicIsPlaying)
+			{
+				MusicIsPlaying = false;
 				Thread.Sleep(100);
 			}
 
-			_ = Task.Run(() =>
+			var playButton = new Button
 			{
-				using (var ms2 = new MemoryStream(pcmData))
-				using (var rs = new RawSourceWaveStream(ms2, new WaveFormat((int)header.SampleRate, header.Bits, header.Channels)))
-				using (var wo = new WaveOutEvent())
+				Size = new Size(64, 64),
+				Text = "Play",
+			};
+
+			var stopButton = new Button
+			{
+				Size = new Size(64, 64),
+				Text = "Stop",
+			};
+			stopButton.Click += (args, sender) => CurrentWOEvent?.Stop();
+
+			var pauseButton = new Button
+			{
+				Size = new Size(64, 64),
+				Text = "Pause",
+			};
+			pauseButton.Click += (args, sender) => CurrentWOEvent?.Pause();
+
+			var waveViewer = new WaveViewer
+			{
+				BorderStyle = BorderStyle.FixedSingle,
+				WaveStream = new RawSourceWaveStream(new MemoryStream(pcmData), new WaveFormat(samplesPerSecond, bits, numberOfChannels)),
+				Size = new Size(1024, 128),
+			};
+			waveViewer.SamplesPerPixel = pcmData.Length / waveViewer.Width / numberOfChannels / 2, // dunno why i need /2
+
+			playButton.Click += (args, sender) =>
+			{
+				if (CurrentWOEvent != null)
 				{
-					wo.Init(rs);
-					wo.Play();
-					isMusicPlaying = true;
-					while (wo.PlaybackState == PlaybackState.Playing && isMusicPlaying)
+					if (CurrentWOEvent.PlaybackState == PlaybackState.Playing)
 					{
-						Thread.Sleep(50);
+						return;
+					}
+
+					if (CurrentWOEvent.PlaybackState == PlaybackState.Paused)
+					{
+						CurrentWOEvent.Play();
+						return;
 					}
 				}
-			});
+
+				// do it asyncly to a) give user ui control and b) allow multiple sounds to play at once
+				_ = Task.Run(() =>
+				{
+					if (CurrentWOEvent?.PlaybackState == PlaybackState.Stopped)
+					{
+						Thread.Sleep(100); // give time to wait until previous sound is disposed
+					}
+					CurrentWOEvent?.Dispose();
+
+					using (var ms = new MemoryStream(pcmData))
+					using (var rs = new RawSourceWaveStream(ms, new WaveFormat(samplesPerSecond, bits, numberOfChannels)))
+					using (CurrentWOEvent = new WaveOutEvent())
+					using (var transparentBrush = new SolidBrush(Color.FromArgb(27, 0, 0, 0)))
+					{
+						var g = waveViewer.CreateGraphics();
+
+						// clear the previously-drawn progress overlay
+						g.Clear(Color.White);
+						waveViewer.Invoke(() => waveViewer.Refresh());
+
+						MusicIsPlaying = true;
+						CurrentWOEvent.Init(rs);
+						CurrentWOEvent.Play();
+
+						var prevX = 0;
+
+						while (CurrentWOEvent?.PlaybackState != PlaybackState.Stopped && MusicIsPlaying)
+						{
+							if (CurrentWOEvent == null)
+							{
+								break;
+							}
+
+							var progressInBytes = CurrentWOEvent.GetPosition();
+							var percentPlayed = progressInBytes / (double)pcmData.Length;
+							var newX = (int)(percentPlayed * waveViewer.Width);
+							var diff = newX - prevX;
+							g.FillRectangle(transparentBrush, new Rectangle(prevX, 0, (int)diff, waveViewer.Height));
+							prevX = newX;
+
+							Thread.Sleep(50);
+						}
+					}
+					CurrentWOEvent = null;
+					MusicIsPlaying = false;
+				});
+			};
+
+			flpImageTable.Controls.Add(waveViewer);
+			flpImageTable.Controls.Add(playButton);
+			flpImageTable.Controls.Add(pauseButton);
+			flpImageTable.Controls.Add(stopButton);
+			flpImageTable.ResumeLayout(true);
 		}
+
+		WaveOutEvent? CurrentWOEvent { get; set; }
 
 		void LoadNull(string dataKey)
 		{
@@ -580,42 +686,6 @@ namespace OpenLocoToolGui
 					//	logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
 				}
 			}
-		}
-
-		void CreateSounds(SoundObject soundObject)
-		{
-			flpImageTable.SuspendLayout();
-			flpImageTable.Controls.Clear();
-
-			var pcmHeader = soundObject.SoundObjectData.PcmHeader;
-
-			var soundButton = new Button
-			{
-				Size = new Size(100, 100),
-				Text = "Play sound",
-			};
-
-			soundButton.Click += (args, sender) =>
-			{
-				// do it asyncly to a) give user ui control and b) allow multiple sounds to play at once
-				Task.Run(() =>
-				{
-					using (var ms = new MemoryStream(soundObject.RawPcmData))
-					using (var rs = new RawSourceWaveStream(ms, new WaveFormat(pcmHeader.SamplesPerSecond, 16, pcmHeader.NumberChannels)))
-					using (var wo = new WaveOutEvent())
-					{
-						wo.Init(rs);
-						wo.Play();
-						while (wo.PlaybackState == PlaybackState.Playing)
-						{
-							Thread.Sleep(50);
-						}
-					}
-				});
-			};
-
-			flpImageTable.Controls.Add(soundButton);
-			flpImageTable.ResumeLayout(true);
 		}
 
 		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images, List<G1Element32> g1Elements) // g1Elements is simply used for metadata at this stage
@@ -761,7 +831,7 @@ namespace OpenLocoToolGui
 
 		private void RefreshObjectUI()
 		{
-			isMusicPlaying = false;
+			MusicIsPlaying = false;
 
 			if (CurrentUIObject == null)
 			{

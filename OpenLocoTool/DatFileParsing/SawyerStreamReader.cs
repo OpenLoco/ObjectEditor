@@ -15,11 +15,11 @@ namespace OpenLocoTool.DatFileParsing
 		[property: LocoStructOffset(0x0C)] uint32_t FormatMarker,
 		[property: LocoStructOffset(0x10)] uint32_t HeaderSize,
 		[property: LocoStructOffset(0x14)] uint16_t FormatType,
-		[property: LocoStructOffset(0x16)] uint16_t Channels,
+		[property: LocoStructOffset(0x16)] uint16_t NumberOfChannels,
 		[property: LocoStructOffset(0x18)] uint32_t SampleRate,
 		[property: LocoStructOffset(0x1C)] uint32_t unk1,
 		[property: LocoStructOffset(0x20)] uint16_t unk2,
-		[property: LocoStructOffset(0x22)] uint16_t Bits,
+		[property: LocoStructOffset(0x22)] uint16_t BitsPerSample,
 		[property: LocoStructOffset(0x24)] uint32_t DataMarker,
 		[property: LocoStructOffset(0x28)] uint32_t PcmDataLength) : ILocoStruct
 	{
@@ -45,7 +45,7 @@ namespace OpenLocoTool.DatFileParsing
 				return false;
 			}
 
-			if (Bits != 16)
+			if (BitsPerSample != 16)
 			{
 				return false;
 			}

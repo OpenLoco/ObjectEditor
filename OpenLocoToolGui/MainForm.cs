@@ -571,7 +571,7 @@ namespace OpenLocoToolGui
 				WaveStream = new RawSourceWaveStream(new MemoryStream(pcmData), new WaveFormat(samplesPerSecond, bits, numberOfChannels)),
 				Size = new Size(1024, 128),
 			};
-			waveViewer.SamplesPerPixel = pcmData.Length / waveViewer.Width / numberOfChannels / 2, // dunno why i need /2
+			waveViewer.SamplesPerPixel = pcmData.Length / waveViewer.Width / numberOfChannels / (bits / 8);
 
 			playButton.Click += (args, sender) =>
 			{

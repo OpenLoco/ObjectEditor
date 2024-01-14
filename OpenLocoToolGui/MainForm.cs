@@ -5,9 +5,7 @@ using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
-using System;
 using System.Drawing.Imaging;
-using System.Reflection.PortableExecutable;
 
 namespace OpenLocoToolGui
 {
@@ -225,131 +223,118 @@ namespace OpenLocoToolGui
 
 			if (Directory.Exists(model.Settings.DataDirectory))
 			{
-				var dataNode = new TreeNode("Data");
-
-				var musicNode = new TreeNode("Music");
-				var sfxNode = new TreeNode("Sound Effects");
-				var tutorialsNode = new TreeNode("Tutorials");
-				var miscNode = new TreeNode("Uncategorised");
-
-				var unknownNode = new TreeNode("Unknown");
-
-				var allDataFiles = Directory.GetFiles(model.Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower());
-
-				// music
-				var expectedMusicFiles = OriginalDataFiles.Music.Select(f => f.ToLower().Replace("data/", string.Empty));
-				foreach (var music in expectedMusicFiles)
-				{
-					if (allDataFiles.Any(f => f.EndsWith(music)))
-					{
-						musicNode.Nodes.Add(music, music);
-						tvUniqueLoadValues[music] = LoadBinaryMusic;
-					}
-					else
-					{
-						musicNode.Nodes.Add($"<MISSING> {music}");
-					}
-				}
-
-				// sound effects
-				var expectedSfxFiles = OriginalDataFiles.SoundEffects.Select(f => f.ToLower().Replace("data/", string.Empty));
-				foreach (var sfx in expectedSfxFiles)
-				{
-					if (allDataFiles.Any(f => f.EndsWith(sfx)))
-					{
-						sfxNode.Nodes.Add(sfx);
-					}
-					else
-					{
-						sfxNode.Nodes.Add($"<MISSING> {sfx}");
-					}
-				}
-
-				// tutorials
-				var expectedTutorialFiles = OriginalDataFiles.Tutorials.Select(f => f.ToLower().Replace("data/", string.Empty));
-				foreach (var tut in expectedTutorialFiles)
-				{
-					if (allDataFiles.Any(f => f.EndsWith(tut)))
-					{
-						tutorialsNode.Nodes.Add(tut);
-					}
-					else
-					{
-						tutorialsNode.Nodes.Add($"<MISSING> {tut}");
-					}
-				}
-
-				// uncategorised
-				var expectedMiscFiles = OriginalDataFiles.Uncategorised.Select(f => f.ToLower().Replace("data/", string.Empty));
-				foreach (var tut in expectedMiscFiles)
-				{
-					if (allDataFiles.Any(f => f.EndsWith(tut)))
-					{
-						miscNode.Nodes.Add(tut);
-					}
-					else
-					{
-						miscNode.Nodes.Add($"<MISSING> {tut}");
-					}
-				}
-
-				dataNode.Nodes.Add(musicNode);
-				dataNode.Nodes.Add(sfxNode);
-				dataNode.Nodes.Add(tutorialsNode);
-				dataNode.Nodes.Add(miscNode);
-
-				tvObjType.Nodes.Add(dataNode);
-
-				tvUniqueLoadValues["g1.dat"] = LoadG1;
+				InitDataCategoryTree();
 			}
 
 			if (Directory.Exists(model.Settings.ObjDataDirectory))
 			{
-				var filteredFiles = string.IsNullOrEmpty(fileFilter)
-					? model.HeaderIndex
-					: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
-
-				filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjectFiles.Names.Contains(f.Value.Name.Trim()));
-
-				tvObjType.ImageList = MakeImageList(model);
-
-				var nodesToAdd = new List<TreeNode>();
-				foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
-				{
-					var imageListOffset = model.G1 == null ? 0 : ((int)group.Key) + 2; // + 2 because we have a vanilla+custom image first
-					var objTypeNode = new TreeNode(group.Key.ToString(), imageListOffset, imageListOffset);
-					if (group.Key != ObjectType.Vehicle)
-					{
-						foreach (var obj in group)
-						{
-							AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, objTypeNode);
-						}
-					}
-					else
-					{
-						var vehicleGroup = group.GroupBy(o => o.Value.VehicleType);
-						foreach (var vehicleType in vehicleGroup)
-						{
-							var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
-							foreach (var veh in vehicleType)
-							{
-								AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, vehicleTypeNode);
-							}
-
-							objTypeNode.Nodes.Add(vehicleTypeNode);
-						}
-					}
-
-					nodesToAdd.Add(objTypeNode);
-				}
-
-				var objDataNode = new TreeNode("ObjData");
-				objDataNode.Nodes.AddRange([.. nodesToAdd]);
-				tvObjType.Nodes.Add(objDataNode);
-				tvObjType.Sort();
+				InitObjectCategoryTree(vanillaOnly, fileFilter);
 			}
 
 			tvObjType.ResumeLayout(true);
+		}
+
+		private void InitDataCategoryTree()
+		{
+			var dataNode = new TreeNode("Data");
+
+			var musicNode = new TreeNode("Music");
+			var sfxNode = new TreeNode("Sound Effects");
+			var tutorialsNode = new TreeNode("Tutorials");
+			var miscNode = new TreeNode("Uncategorised");
+
+			//var unknownNode = new TreeNode("Unknown");
+
+			var allDataFiles = Directory.GetFiles(model.Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower());
+
+			// music
+			foreach (var music in model.Music)
+			{
+				musicNode.Nodes.Add(music.Key, music.Key, 1, 1);
+				tvUniqueLoadValues[music.Key] = LoadMusic;
+			}
+
+			// sound effects
+			foreach (var sfx in model.SoundEffects)
+			{
+				sfxNode.Nodes.Add(sfx.Key, sfx.Key, 1, 1);
+				tvUniqueLoadValues[sfx.Key] = LoadNull;
+			}
+
+			// tutorials
+			foreach (var tut in model.Tutorials)
+			{
+				tutorialsNode.Nodes.Add(tut.Key, tut.Key, 1, 1);
+				tvUniqueLoadValues[tut.Key] = LoadNull;
+			}
+
+			// uncategorised
+			foreach (var misc in model.MiscFiles)
+			{
+				miscNode.Nodes.Add(misc, misc, 1, 1);
+
+				if (misc == "g1.dat")
+				{
+					tvUniqueLoadValues["g1.dat"] = LoadG1;
+				}
+				else
+				{
+					tvUniqueLoadValues[misc] = LoadNull;
+				}
+			}
+
+			dataNode.Nodes.Add(musicNode);
+			dataNode.Nodes.Add(sfxNode);
+			dataNode.Nodes.Add(tutorialsNode);
+			dataNode.Nodes.Add(miscNode);
+
+			tvObjType.Nodes.Add(dataNode);
+		}
+
+		private void InitObjectCategoryTree(bool vanillaOnly, string fileFilter)
+		{
+			var filteredFiles = string.IsNullOrEmpty(fileFilter)
+				? model.HeaderIndex
+				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjectFiles.Names.Contains(f.Value.Name.Trim()));
+
+			tvObjType.ImageList = MakeImageList(model);
+
+			var nodesToAdd = new List<TreeNode>();
+			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
+			{
+				var imageListOffset = model.G1 == null ? 0 : ((int)group.Key) + 2; // + 2 because we have a vanilla+custom image first
+				var objTypeNode = new TreeNode(group.Key.ToString(), imageListOffset, imageListOffset);
+				if (group.Key != ObjectType.Vehicle)
+				{
+					foreach (var obj in group)
+					{
+						AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, objTypeNode);
+					}
+				}
+				else
+				{
+					var vehicleGroup = group.GroupBy(o => o.Value.VehicleType);
+					foreach (var vehicleType in vehicleGroup)
+					{
+						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
+						foreach (var veh in vehicleType)
+						{
+							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, vehicleTypeNode);
+						}
+
+						objTypeNode.Nodes.Add(vehicleTypeNode);
+					}
+				}
+
+				nodesToAdd.Add(objTypeNode);
+			}
+
+			var objDataNode = new TreeNode("ObjData");
+			objDataNode.Nodes.AddRange([.. nodesToAdd]);
+			tvObjType.Nodes.Add(objDataNode);
+			tvObjType.Sort();
 		}
 
 		void InitToolStripMenuItems()
@@ -512,25 +497,25 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		void LoadBinaryMusic(string filename)
+		static bool isMusicPlaying { get; set; } = false;
+
+		private void LoadMusic(string dataKey)
 		{
-			var path = model.Settings.GetDataFullPath(filename);
-			if (!File.Exists(path))
+			var music = model.Music[dataKey];
+			var (header, pcmData) = SawyerStreamReader.LoadMusicTrack(music);
+
+			pgS5Header.SelectedObject = header;
+
+			if (!header.Validate())
 			{
+				// invalid music file
 				return;
 			}
 
-			var bytes = File.ReadAllBytes(path);
-
-			model.Music.Add(filename, bytes);
-
-			// play as music to test
-			PlayMusic(bytes);
+			PlayMusic(header, pcmData);
 		}
 
-		static bool isMusicPlaying;
-
-		private static void PlayMusic(byte[] bytes)
+		private static void PlayMusic(MusicHeader header, byte[] pcmData)
 		{
 			if (isMusicPlaying)
 			{
@@ -540,74 +525,25 @@ namespace OpenLocoToolGui
 
 			_ = Task.Run(() =>
 			{
-				using (var ms = new MemoryStream(bytes))
+				using (var ms2 = new MemoryStream(pcmData))
+				using (var rs = new RawSourceWaveStream(ms2, new WaveFormat((int)header.SampleRate, header.Bits, header.Channels)))
+				using (var wo = new WaveOutEvent())
 				{
-					var br = new BinaryReader(ms);
-					var sig = br.ReadUInt32();
-					if (sig != 0x46464952) // "RIFF"
+					wo.Init(rs);
+					wo.Play();
+					isMusicPlaying = true;
+					while (wo.PlaybackState == PlaybackState.Playing && isMusicPlaying)
 					{
-						// invalid signature
-						return;
-					}
-
-					_ = br.ReadUInt32(); // size
-
-					var riffType = br.ReadUInt32();
-					if (riffType != 0x45564157) // "WAVE"
-					{
-						// invalid format
-						return;
-					}
-
-					var formatMarker = br.ReadUInt32();
-					if (formatMarker != 0x20746d66 && formatMarker != 0x00746d66) // "fmt\0" or "fmt"
-					{
-						// invalid format marker
-						return;
-					}
-
-					_ = br.ReadUInt32(); // headersize
-
-					var typeFormat = br.ReadUInt16();
-					if (typeFormat != 1)
-					{
-						// invalid format type; expected PCM
-						return;
-					}
-
-					var channels = br.ReadUInt16();
-					var sampleRate = br.ReadUInt32();
-
-					_ = br.ReadUInt32();
-					_ = br.ReadUInt16();
-
-					var bits = br.ReadUInt16();
-
-					var dataMarker = br.ReadUInt32();
-					if (dataMarker != 0x61746164) // data
-					{
-						// invalid data marker
-						return;
-					}
-
-					var pcmLength = br.ReadUInt32();
-					var pcmData = new byte[pcmLength];
-					br.Read(pcmData);
-
-					using (var ms2 = new MemoryStream(pcmData))
-					using (var rs = new RawSourceWaveStream(ms2, new WaveFormat((int)sampleRate, 16, channels)))
-					using (var wo = new WaveOutEvent())
-					{
-						wo.Init(rs);
-						wo.Play();
-						isMusicPlaying = true;
-						while (wo.PlaybackState == PlaybackState.Playing && isMusicPlaying)
-						{
-							Thread.Sleep(50);
-						}
+						Thread.Sleep(50);
 					}
 				}
 			});
+		}
+
+		void LoadNull(string dataKey)
+		{
+			CurrentUIObject = null;
+			CurrentUIImages = new List<Control>();
 		}
 
 		void LoadG1(string filename)
@@ -616,11 +552,6 @@ namespace OpenLocoToolGui
 			var images = CreateImages(model.G1.G1Elements, model.Palette);
 			CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToList();
 			LoadDataDump(filename, true);
-		}
-
-		void LoadMusic(string filename)
-		{
-
 		}
 
 		void tv_AfterSelect(object sender, TreeViewEventArgs e)
@@ -830,16 +761,28 @@ namespace OpenLocoToolGui
 
 		private void RefreshObjectUI()
 		{
-			flpImageTable.SuspendLayout();
-			flpImageTable.Controls.Clear();
+			isMusicPlaying = false;
 
 			if (CurrentUIObject == null)
 			{
+				pgS5Header.SelectedObject = null;
+				pgObjHeader.SelectedObject = null;
+				pgObject.SelectedObject = null;
+				ucStringTable.SetDataBinding(null);
+
+				if (tvFileTree.SelectedNode == null)
+				{
+					return;
+				}
+
 				var selectedFile = tvFileTree.SelectedNode.Text;
 				MessageBox.Show($"File \"{selectedFile}\" couldn't be loaded. Does it exist? Suggest recreating object index.");
 				logger.Error($"File \"{selectedFile}\" couldn't be loaded. Does it exist? Suggest recreating object index.");
 				return;
 			}
+
+			flpImageTable.SuspendLayout();
+			flpImageTable.Controls.Clear();
 
 			if (CurrentUIObject.LocoObject.G1Elements != null && CurrentUIObject.LocoObject?.G1Elements.Count != 0)
 			{

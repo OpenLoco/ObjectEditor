@@ -1,7 +1,4 @@
-﻿
-using System.Text.Json.Serialization;
-
-namespace OpenLocoToolGui
+﻿namespace OpenLocoToolGui
 {
 	public class GuiSettings
 	{

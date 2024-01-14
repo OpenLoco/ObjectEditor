@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 

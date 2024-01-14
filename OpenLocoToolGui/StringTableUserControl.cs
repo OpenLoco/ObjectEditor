@@ -1,6 +1,5 @@
 ﻿using OpenLocoTool;
 using OpenLocoTool.Types;
-using System.ComponentModel;
 
 namespace OpenLocoToolGui
 {
@@ -14,6 +13,11 @@ namespace OpenLocoToolGui
 		{
 			_data = data;
 			lbStringSelector.DataSource = null;
+
+			if (data == null)
+			{
+				return;
+			}
 
 			// Set up data binding for the outer dictionary DataGridView.
 			lbStringSelector.DataSource = data.Table.Keys.ToList();

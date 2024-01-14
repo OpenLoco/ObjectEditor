@@ -70,6 +70,8 @@ namespace OpenLocoToolGui
 
 		public Dictionary<string, byte[]> Tutorials { get; set; } = [];
 
+		public List<string> MiscFiles { get; set; } = [];
+
 		public MainFormModel(ILogger logger, string settingsFile)
 		{
 			this.logger = logger;
@@ -251,7 +253,29 @@ namespace OpenLocoToolGui
 
 			Settings.DataDirectory = directory;
 
-			// load G1 only for now
+			var allDataFiles = Directory.GetFiles(Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower()).ToHashSet();
+
+			void LoadKnownData(HashSet<string> allFilesInDir, HashSet<string> knownFilenames, Dictionary<string, byte[]> dict)
+			{
+				var expectedMusicFiles = knownFilenames.Select(f => f.ToLower().Replace("data/", string.Empty));
+				foreach (var music in expectedMusicFiles)
+				{
+					var matching = allFilesInDir.Where(f => f.EndsWith(music));
+					if (matching.Any())
+					{
+						dict.Add(music, File.ReadAllBytes(Path.Combine(Settings.DataDirectory, music)));
+						allFilesInDir.RemoveWhere(f => f.EndsWith(music));
+					}
+				}
+			}
+
+			LoadKnownData(allDataFiles, OriginalDataFiles.Music, Music);
+			LoadKnownData(allDataFiles, OriginalDataFiles.SoundEffects, SoundEffects);
+			LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
+
+			MiscFiles = [.. allDataFiles];
+
+			// load G1 only for now since we need it for palette
 			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
 
 			LoadPalette(); // update palette from g1

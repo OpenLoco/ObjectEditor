@@ -5,6 +5,7 @@ using OpenLocoTool.Data;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
+using OpenLocoTool.Types;
 using OpenLocoToolCommon;
 using System.Drawing.Imaging;
 using System.Xml.Linq;
@@ -517,7 +518,7 @@ namespace OpenLocoToolGui
 			PlayMusic(header, pcmData);
 		}
 
-		void PlayMusic(MusicHeader hdr, byte[] pcmData)
+		void PlayMusic(RiffWavHeader hdr, byte[] pcmData)
 		{
 			CreateSoundUI(pcmData, (int)hdr.SampleRate, hdr.BitsPerSample, hdr.NumberOfChannels);
 		}

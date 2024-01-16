@@ -524,7 +524,7 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			var pn = CreateSoundUI(pcmData, (int)header.SampleRate, header.BitsPerSample, header.NumberOfChannels);
+			var pn = CreateSoundUI(pcmData, header);
 			flpImageTable.Controls.Add(pn);
 		}
 
@@ -542,15 +542,91 @@ namespace OpenLocoToolGui
 
 			foreach (var (header, pcmData) in sfxs)
 			{
-				var pn = CreateSoundUI(pcmData, header.SampleRate, header.BitsPerSample, header.NumberOfChannels);
+				var pn = CreateSoundUI(pcmData, header);
 				flp.Controls.Add(pn);
 			}
 
 			flpImageTable.Controls.Add(flp);
 		}
 
-		FlowLayoutPanel CreateSoundUI(byte[] pcmData, int samplesPerSecond, int bits, int numberOfChannels)
+		public void ExportMusic(byte[] pcmData, object waveHeader)
 		{
+			using (var saveFileDialog = new SaveFileDialog())
+			{
+				saveFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+				saveFileDialog.Filter = "WAV Files(*.wav)|*.wav|All files (*.*)|*.*";
+				saveFileDialog.FilterIndex = 1;
+				saveFileDialog.RestoreDirectory = true;
+
+				// suggested filename for the save dialog
+				if (OriginalDataFiles.Music.TryGetValue(tvObjType.SelectedNode.Name, out string? value))
+				{
+					saveFileDialog.FileName = value;
+				}
+				else
+				{
+					saveFileDialog.FileName = "export.wav";
+				}
+
+				if (saveFileDialog.ShowDialog() == DialogResult.OK)
+				{
+					if (waveHeader is RiffWavHeader riffHeader)
+					{
+						SawyerStreamWriter.ExportMusicAsWave(saveFileDialog.FileName, riffHeader, pcmData);
+						logger.Info($"Saved music to {saveFileDialog.FileName}");
+					}
+					else if (waveHeader is WaveFormatEx waveFHeader)
+					{
+						// make riff header
+						var newRiffHeader = new RiffWavHeader(
+							0x46464952, // "RIFF"
+							(uint)(pcmData.Length + 36), // file size
+							0x45564157, // "WAVE"
+							0x20746d66, // "fmt "
+							16, // size of fmt chunk
+							1, // format tag
+							(ushort)waveFHeader.NumberOfChannels,
+							(uint)waveFHeader.SampleRate,
+							(uint)waveFHeader.AverageBytesPerSecond,
+							4, //(ushort)waveFHeader.BlockAlign,
+							16, //(ushort)waveFHeader.BitsPerSample,
+							0x61746164, // "data"
+							(uint)pcmData.Length // data size
+							);
+
+						SawyerStreamWriter.ExportMusicAsWave(saveFileDialog.FileName, newRiffHeader, pcmData);
+						logger.Info($"Saved sound effect to {saveFileDialog.FileName}");
+					}
+					else
+					{
+						logger.Error($"Selected UI object was not a sound file");
+					}
+				}
+			}
+		}
+
+		FlowLayoutPanel CreateSoundUI(byte[] pcmData, object waveHeader)
+		{
+			int samplesPerSecond = 0;
+			int bits = 0;
+			int numberOfChannels = 0;
+			bool isRiff = false;
+
+			if (waveHeader is RiffWavHeader riffHeader)
+			{
+				samplesPerSecond = (int)riffHeader.SampleRate;
+				bits = riffHeader.BitsPerSample;
+				numberOfChannels = riffHeader.NumberOfChannels;
+				isRiff = true;
+			}
+			else if (waveHeader is WaveFormatEx waveFHeader)
+			{
+				samplesPerSecond = waveFHeader.SampleRate;
+				bits = waveFHeader.BitsPerSample;
+				numberOfChannels = waveFHeader.NumberOfChannels;
+				isRiff = false;
+			}
+
 			// for some reason the SoundObject files have the wrong bitspersample set
 			if (bits != 16)
 			{
@@ -582,6 +658,20 @@ namespace OpenLocoToolGui
 				Text = "\u23f8 Pause",
 			};
 			pauseButton.Click += (args, sender) => CurrentWOEvent?.Pause();
+
+			var exportButton = new Button
+			{
+				Size = new Size(64, 64),
+				Text = "Export",
+			};
+			exportButton.Click += (args, sender) => ExportMusic(pcmData, waveHeader); // isRiff ? ExportMusic(pcmData, waveHeader) : ExportSoundEffect(pcmData, waveHeader);
+
+			var importButton = new Button
+			{
+				Size = new Size(64, 64),
+				Text = "Import (not implemented)",
+				Enabled = false,
+			};
 
 			var waveViewer = new WaveViewer
 			{
@@ -670,6 +760,8 @@ namespace OpenLocoToolGui
 			pn.Controls.Add(playButton);
 			pn.Controls.Add(pauseButton);
 			pn.Controls.Add(stopButton);
+			pn.Controls.Add(exportButton);
+			pn.Controls.Add(importButton);
 			return pn;
 		}
 
@@ -929,7 +1021,7 @@ namespace OpenLocoToolGui
 			if (CurrentUIObject?.LocoObject.Object is SoundObject soundObject)
 			{
 				var hdr = soundObject.SoundObjectData.PcmHeader;
-				var pn = CreateSoundUI(soundObject.RawPcmData, hdr.SampleRate, hdr.BitsPerSample, hdr.NumberOfChannels);
+				var pn = CreateSoundUI(soundObject.RawPcmData, hdr);
 				flpImageTable.Controls.Add(pn);
 			}
 

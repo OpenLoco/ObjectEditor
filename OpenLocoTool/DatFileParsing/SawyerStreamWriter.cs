@@ -1,12 +1,36 @@
 ﻿using System.Text;
 using OpenLocoTool.Data;
 using OpenLocoTool.Headers;
+using OpenLocoTool.Objects;
+using OpenLocoTool.Types;
 using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
 	public static class SawyerStreamWriter
 	{
+		public static void ExportSoundEffectAsWave(string filename, WaveFormatEx header, byte[] pcmData)
+		{
+			using (var stream = File.Create(filename))
+			{
+				stream.Write(ByteWriter.WriteLocoStruct(header));
+				stream.Write(pcmData);
+				stream.Flush();
+				stream.Close();
+			}
+		}
+
+		public static void ExportMusicAsWave(string filename, RiffWavHeader header, byte[] pcmData)
+		{
+			using (var stream = File.Create(filename))
+			{
+				stream.Write(ByteWriter.WriteLocoStruct(header));
+				stream.Write(pcmData);
+				stream.Flush();
+				stream.Close();
+			}
+		}
+
 		public static void Save(string filepath, string objName, ILocoObject locoObject, ILogger? logger = null)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);

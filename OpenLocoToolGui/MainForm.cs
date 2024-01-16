@@ -7,8 +7,8 @@ using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoTool.Types;
 using OpenLocoToolCommon;
+using System.Data;
 using System.Drawing.Imaging;
-using System.Xml.Linq;
 
 namespace OpenLocoToolGui
 {
@@ -242,6 +242,7 @@ namespace OpenLocoToolGui
 			var dataNode = new TreeNode("Data");
 
 			var musicNode = new TreeNode("Music");
+			var miscTrackNode = new TreeNode("Misc Tracks");
 			var sfxNode = new TreeNode("Sound Effects");
 			var tutorialsNode = new TreeNode("Tutorials");
 			var miscNode = new TreeNode("Uncategorised");
@@ -253,15 +254,22 @@ namespace OpenLocoToolGui
 			// music
 			foreach (var music in model.Music)
 			{
-				musicNode.Nodes.Add(music.Key, music.Key, 1, 1);
-				tvUniqueLoadValues[music.Key] = LoadMusic;
+				var displayName = OriginalDataFiles.Music[music.Key];
+				musicNode.Nodes.Add(music.Key, displayName, 1, 1);
+			}
+
+			//misc tracks
+			foreach (var miscTrack in model.MiscellaneousTracks)
+			{
+				var displayName = OriginalDataFiles.MiscellaneousTracks[miscTrack.Key];
+				miscTrackNode.Nodes.Add(miscTrack.Key, displayName, 1, 1);
 			}
 
 			// sound effects
 			foreach (var sfx in model.SoundEffects)
 			{
-				sfxNode.Nodes.Add(sfx.Key, sfx.Key, 1, 1);
-				tvUniqueLoadValues[sfx.Key] = LoadNull;
+				var displayName = OriginalDataFiles.SoundEffects[sfx.Key];
+				sfxNode.Nodes.Add(sfx.Key, displayName, 1, 1);
 			}
 
 			// tutorials
@@ -287,6 +295,7 @@ namespace OpenLocoToolGui
 			}
 
 			dataNode.Nodes.Add(musicNode);
+			dataNode.Nodes.Add(miscTrackNode);
 			dataNode.Nodes.Add(sfxNode);
 			dataNode.Nodes.Add(tutorialsNode);
 			dataNode.Nodes.Add(miscNode);
@@ -502,38 +511,46 @@ namespace OpenLocoToolGui
 
 		static bool MusicIsPlaying { get; set; } = false;
 
-		void LoadMusic(string dataKey)
+		private void LoadAndPlaySound(byte[] data)
 		{
-			var music = model.Music[dataKey];
-			var (header, pcmData) = SawyerStreamReader.LoadMusicTrack(music);
+			var (header, pcmData) = SawyerStreamReader.LoadMusicTrack(data);
 
 			pgS5Header.SelectedObject = header;
 
 			if (!header.Validate())
 			{
-				// invalid music file
+				// invalid file
+				logger?.Warning($"Invalid music track");
 				return;
 			}
 
-			PlayMusic(header, pcmData);
+			var pn = CreateSoundUI(pcmData, (int)header.SampleRate, header.BitsPerSample, header.NumberOfChannels);
+			flpImageTable.Controls.Add(pn);
 		}
 
-		void PlayMusic(RiffWavHeader hdr, byte[] pcmData)
+		void LoadAndPlaySoundEffect(byte[] data)
 		{
-			CreateSoundUI(pcmData, (int)hdr.SampleRate, hdr.BitsPerSample, hdr.NumberOfChannels);
+			var sfxs = SawyerStreamReader.LoadSoundEffectsFromCSS(data);
+
+			pgS5Header.SelectedObject = sfxs;
+
+			var flp = new FlowLayoutPanel();
+			flp.FlowDirection = FlowDirection.TopDown;
+			flp.Dock = DockStyle.Fill;
+			flp.AutoSize = true;
+			flp.WrapContents = false;
+
+			foreach (var (header, pcmData) in sfxs)
+			{
+				var pn = CreateSoundUI(pcmData, header.SampleRate, header.BitsPerSample, header.NumberOfChannels);
+				flp.Controls.Add(pn);
+			}
+
+			flpImageTable.Controls.Add(flp);
 		}
 
-		void CreateSounds(SoundObject soundObject)
+		FlowLayoutPanel CreateSoundUI(byte[] pcmData, int samplesPerSecond, int bits, int numberOfChannels)
 		{
-			var hdr = soundObject.SoundObjectData.PcmHeader;
-			CreateSoundUI(soundObject.RawPcmData, hdr.SampleRate, hdr.BitsPerSample, hdr.NumberOfChannels);
-		}
-
-		void CreateSoundUI(byte[] pcmData, int samplesPerSecond, int bits, int numberOfChannels)
-		{
-			flpImageTable.SuspendLayout();
-			flpImageTable.Controls.Clear();
-
 			// for some reason the SoundObject files have the wrong bitspersample set
 			if (bits != 16)
 			{
@@ -549,20 +566,20 @@ namespace OpenLocoToolGui
 			var playButton = new Button
 			{
 				Size = new Size(64, 64),
-				Text = "Play",
+				Text = "\u23f5 Play",
 			};
 
 			var stopButton = new Button
 			{
 				Size = new Size(64, 64),
-				Text = "Stop",
+				Text = "\u23f9 Stop",
 			};
 			stopButton.Click += (args, sender) => CurrentWOEvent?.Stop();
 
 			var pauseButton = new Button
 			{
 				Size = new Size(64, 64),
-				Text = "Pause",
+				Text = "\u23f8 Pause",
 			};
 			pauseButton.Click += (args, sender) => CurrentWOEvent?.Pause();
 
@@ -570,7 +587,7 @@ namespace OpenLocoToolGui
 			{
 				BorderStyle = BorderStyle.FixedSingle,
 				WaveStream = new RawSourceWaveStream(new MemoryStream(pcmData), new WaveFormat(samplesPerSecond, bits, numberOfChannels)),
-				Size = new Size(1024, 128),
+				Size = new Size(512, 64),
 			};
 			waveViewer.SamplesPerPixel = pcmData.Length / waveViewer.Width / numberOfChannels / (bits / 8);
 
@@ -602,7 +619,7 @@ namespace OpenLocoToolGui
 					using (var ms = new MemoryStream(pcmData))
 					using (var rs = new RawSourceWaveStream(ms, new WaveFormat(samplesPerSecond, bits, numberOfChannels)))
 					using (CurrentWOEvent = new WaveOutEvent())
-					using (var transparentBrush = new SolidBrush(Color.FromArgb(27, 0, 0, 0)))
+					using (var transparentBrush = new SolidBrush(Color.FromArgb(63, 0, 0, 0)))
 					{
 						var g = waveViewer.CreateGraphics();
 
@@ -632,17 +649,28 @@ namespace OpenLocoToolGui
 
 							Thread.Sleep(50);
 						}
+
+						// complete overlay to the very end
+						g.FillRectangle(transparentBrush, new Rectangle(prevX, 0, waveViewer.Width - prevX, waveViewer.Height));
 					}
 					CurrentWOEvent = null;
 					MusicIsPlaying = false;
 				});
 			};
 
-			flpImageTable.Controls.Add(waveViewer);
-			flpImageTable.Controls.Add(playButton);
-			flpImageTable.Controls.Add(pauseButton);
-			flpImageTable.Controls.Add(stopButton);
-			flpImageTable.ResumeLayout(true);
+			var pn = new FlowLayoutPanel();
+			pn.BorderStyle = BorderStyle.Fixed3D;
+			pn.FlowDirection = FlowDirection.LeftToRight;
+			//pn.BackColor = Color.LightCoral;
+			pn.Dock = DockStyle.Fill;
+			pn.AutoSize = true;
+			//pn.WrapContents = false;
+			//pn.AutoScroll = true;
+			pn.Controls.Add(waveViewer);
+			pn.Controls.Add(playButton);
+			pn.Controls.Add(pauseButton);
+			pn.Controls.Add(stopButton);
+			return pn;
 		}
 
 		WaveOutEvent? CurrentWOEvent { get; set; }
@@ -668,13 +696,36 @@ namespace OpenLocoToolGui
 				return;
 			}
 
+			flpImageTable.SuspendLayout();
+			flpImageTable.Controls.Clear();
+
 			var nodeText = e.Node.Text.ToLower();
 			if (tvUniqueLoadValues.TryGetValue(nodeText, out var value)) // for custom functions for the individual data files
 			{
+				logger.Debug($"Loading special object {e.Node.Name}");
 				value.Invoke(e.Node.Name);
+			}
+			else if (OriginalDataFiles.Music.ContainsKey(e.Node.Name.ToLower()))
+			{
+				logger.Debug($"Loading music for {e.Node.Name}");
+				var music = model.Music[e.Node.Name];
+				LoadAndPlaySound(music);
+			}
+			else if (OriginalDataFiles.MiscellaneousTracks.ContainsKey(e.Node.Name.ToLower()))
+			{
+				logger.Debug($"Loading miscellaneous track {e.Node.Name}");
+				var misc = model.MiscellaneousTracks[e.Node.Name];
+				LoadAndPlaySound(misc);
+			}
+			else if (OriginalDataFiles.SoundEffects.ContainsKey(e.Node.Name.ToLower()))
+			{
+				logger.Debug($"Loading sound effects for {e.Node.Name}");
+				var sfx = model.SoundEffects[e.Node.Name];
+				LoadAndPlaySoundEffect(sfx);
 			}
 			else if (Path.GetExtension(e.Node.Name).Equals(".dat", StringComparison.CurrentCultureIgnoreCase))
 			{
+				logger.Debug($"Loading object {e.Node.Name}");
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
 
@@ -687,6 +738,8 @@ namespace OpenLocoToolGui
 					//	logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
 				}
 			}
+
+			flpImageTable.ResumeLayout(true);
 		}
 
 		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images, List<G1Element32> g1Elements) // g1Elements is simply used for metadata at this stage
@@ -875,7 +928,9 @@ namespace OpenLocoToolGui
 
 			if (CurrentUIObject?.LocoObject.Object is SoundObject soundObject)
 			{
-				CreateSounds(soundObject);
+				var hdr = soundObject.SoundObjectData.PcmHeader;
+				var pn = CreateSoundUI(soundObject.RawPcmData, hdr.SampleRate, hdr.BitsPerSample, hdr.NumberOfChannels);
+				flpImageTable.Controls.Add(pn);
 			}
 
 			flpImageTable.ResumeLayout(true);

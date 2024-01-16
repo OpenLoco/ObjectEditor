@@ -2,75 +2,80 @@
 {
 	public static class OriginalDataFiles
 	{
-		public static readonly HashSet<string> Music =
-		[
-			"Data/20s1.DAT",
-			"Data/20s2.DAT",
-			"Data/20s4.DAT",
-			"Data/50s1.DAT",
-			"Data/50s2.DAT",
-			"Data/70s1.DAT",
-			"Data/70s2.DAT",
-			"Data/70s3.DAT",
-			"Data/80s1.DAT",
-			"Data/90s1.DAT",
-			"Data/90s2.DAT",
-			"Data/rag3.DAT",
-			"Data/Chrysanthemum.DAT",
-			"Data/Eugenia.DAT",
-			"Data/Rag2.DAT",
-			"Data/Rag1.DAT",
-			"Data/20s3.DAT",
-			"Data/40s1.DAT",
-			"Data/40s2.DAT",
-			"Data/50s3.DAT",
-			"Data/40s3.DAT",
-			"Data/80s2.DAT",
-			"Data/60s1.DAT",
-			"Data/80s3.DAT",
-			"Data/60s2.DAT",
-			"Data/60s3.DAT",
-			"Data/80s4.DAT",
-			"Data/20s5.DAT",
-			"Data/20s6.DAT",
-		];
+		public static readonly Dictionary<string, string> Music = new()
+		{
+			{ "chrysanthemum.dat", "Chrysanthemum" },
+			{ "eugenia.dat", "Eugenia" },
+			{ "rag1.dat", "Easy Winners" },
+			{ "rag2.dat", "The Ragtime Dance" },
+			{ "rag3.dat", "Solace" },
+			//
+			{ "20s1.dat", "Chuggin' Along" },
+			{ "20s2.dat", "Long Dusty Road" },
+			{ "20s3.dat", "Setting Off" },
+			{ "20s4.dat", "Flying High" },
+			{ "20s5.dat", "Get Me To Gladstone Bay" },
+			{ "20s6.dat", "Sandy Track Blues" },
+			{ "40s1.dat", "A Traveller's Serenade" }, // in loco its misspelt - Seranade
+			{ "40s2.dat", "Latino Trip" },
+			{ "40s3.dat", "Head To The Bop" },
+			{ "50s1.dat", "Gettin' On The Gas" },
+			{ "50s2.dat", "Jumpin' The Rails" },
+			{ "50s3.dat", "A Good Head Of Steam" },
+			{ "60s1.dat", "Steamin' Down Town" },
+			{ "60s2.dat", "Mo' Station" },
+			{ "60s3.dat", "Far Out" },
+			{ "70s1.dat", "Smooth Running" },
+			{ "70s2.dat", "Traffic Jam" },
+			{ "70s3.dat", "Never Stop 'til You Get There" },
+			{ "80s1.dat", "Soaring Away" },
+			{ "80s2.dat", "The City Lights" },
+			{ "80s3.dat", "Bright Expectations" },
+			{ "80s4.dat", "Running On Time" },
+			{ "90s1.dat", "Techno Torture" },
+			{ "90s2.dat", "Everlasting High-Rise" },
+		};
 
-		public static readonly HashSet<string> SoundEffects =
-		[
-			"Data/CSS1.DAT",
-			"Data/CSS2.DAT",
-			"Data/CSS3.DAT",
-			"Data/CSS4.DAT",
-			"Data/CSS5.DAT",
-		];
+		public static readonly Dictionary<string, string> SoundEffects = new()
+		{
+			{ "css1.dat", "Sound Effects" },
+		};
+
+		public static readonly Dictionary<string, string> MiscellaneousTracks = new()
+		{
+			{ "css2.dat", "Ambient Wind" },
+			{ "css3.dat", "Ambient Ocean" },
+			{ "css4.dat", "Ambient Forest" },
+			{ "css5.dat", "Main Theme" },
+		};
 
 		public static readonly HashSet<string> Tutorials =
 		[
-			"Data/TUT1024_1.DAT",
-			"Data/TUT1024_2.DAT",
-			"Data/TUT1024_3.DAT",
-			"Data/TUT800_1.DAT",
-			"Data/TUT800_2.DAT",
-			"Data/TUT800_3.DAT",
+			"tut1024_1.dat",
+			"tut1024_2.dat",
+			"tut1024_3.dat",
+			"tut800_1.dat",
+			"tut800_2.dat",
+			"tut800_3.dat",
 		];
 
 		public static readonly HashSet<string> Uncategorised =
 		[
-			"Data/g1.DAT",
+			"data/g1.dat",
 			"plugin.dat",
 			"plugin2.dat",
 			"game.cfg",
-			"Data/KANJI.DAT",
-			"Data/title.dat",
+			"data/kanji.dat",
+			"data/title.dat",
 			"scores.dat",
-			//"Scenarios/Boulder Breakers.SC5",
+			//"scenarios/boulder breakers.sc5",
 			//"openloco.yml",
 			//"language",
 			//"save",
 			//"save/autosave",
-			//"1.TMP",
-			//"ObjData",
-			//"Scenarios",
+			//"1.tmp",
+			//"objdata",
+			//"scenarios",
 		];
 	}
 }

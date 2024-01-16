@@ -31,7 +31,7 @@ namespace OpenLocoToolGui
 		private void InitializeComponent()
 		{
 			components = new System.ComponentModel.Container();
-			var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			lbLogs = new ListBox();
 			objectDirBrowser = new FolderBrowserDialog();
 			tbFileFilter = new TextBox();
@@ -287,7 +287,7 @@ namespace OpenLocoToolGui
 			tpObjectStringTable.Padding = new Padding(2, 1, 2, 1);
 			tpObjectStringTable.Size = new Size(1385, 629);
 			tpObjectStringTable.TabIndex = 3;
-			tpObjectStringTable.Text = "Strings";
+			tpObjectStringTable.Text = "String Table";
 			tpObjectStringTable.UseVisualStyleBackColor = true;
 			// 
 			// ucStringTable
@@ -308,7 +308,7 @@ namespace OpenLocoToolGui
 			tpObjectGraphicsTable.Padding = new Padding(2, 1, 2, 1);
 			tpObjectGraphicsTable.Size = new Size(1385, 629);
 			tpObjectGraphicsTable.TabIndex = 4;
-			tpObjectGraphicsTable.Text = "Graphics";
+			tpObjectGraphicsTable.Text = "Graphics/Sounds";
 			tpObjectGraphicsTable.UseVisualStyleBackColor = true;
 			// 
 			// scImageViewer
@@ -575,14 +575,14 @@ namespace OpenLocoToolGui
 			// setObjectDirectoryToolStripMenuItem
 			// 
 			setObjectDirectoryToolStripMenuItem.Name = "setObjectDirectoryToolStripMenuItem";
-			setObjectDirectoryToolStripMenuItem.Size = new Size(180, 22);
+			setObjectDirectoryToolStripMenuItem.Size = new Size(123, 22);
 			setObjectDirectoryToolStripMenuItem.Text = "Add New";
 			setObjectDirectoryToolStripMenuItem.Click += setObjectDirectoryToolStripMenuItem_Click;
 			// 
 			// toolStripSeparator1
 			// 
 			toolStripSeparator1.Name = "toolStripSeparator1";
-			toolStripSeparator1.Size = new Size(177, 6);
+			toolStripSeparator1.Size = new Size(120, 6);
 			// 
 			// dataDirectoriesToolStripMenuItem
 			// 

@@ -66,6 +66,8 @@ namespace OpenLocoToolGui
 
 		public Dictionary<string, byte[]> Music { get; set; } = [];
 
+		public Dictionary<string, byte[]> MiscellaneousTracks { get; set; } = [];
+
 		public Dictionary<string, byte[]> SoundEffects { get; set; } = [];
 
 		public Dictionary<string, byte[]> Tutorials { get; set; } = [];
@@ -257,7 +259,7 @@ namespace OpenLocoToolGui
 
 			void LoadKnownData(HashSet<string> allFilesInDir, HashSet<string> knownFilenames, Dictionary<string, byte[]> dict)
 			{
-				var expectedMusicFiles = knownFilenames.Select(f => f.ToLower().Replace("data/", string.Empty));
+				var expectedMusicFiles = knownFilenames.Select(f => f.ToLower());
 				foreach (var music in expectedMusicFiles)
 				{
 					var matching = allFilesInDir.Where(f => f.EndsWith(music));
@@ -269,8 +271,9 @@ namespace OpenLocoToolGui
 				}
 			}
 
-			LoadKnownData(allDataFiles, OriginalDataFiles.Music, Music);
-			LoadKnownData(allDataFiles, OriginalDataFiles.SoundEffects, SoundEffects);
+			LoadKnownData(allDataFiles, [.. OriginalDataFiles.Music.Keys], Music);
+			LoadKnownData(allDataFiles, [.. OriginalDataFiles.MiscellaneousTracks.Keys], MiscellaneousTracks);
+			LoadKnownData(allDataFiles, [.. OriginalDataFiles.SoundEffects.Keys], SoundEffects);
 			LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
 
 			MiscFiles = [.. allDataFiles];

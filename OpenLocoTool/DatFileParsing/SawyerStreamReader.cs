@@ -382,6 +382,34 @@ namespace OpenLocoTool.DatFileParsing
 			}
 		}
 
+		public static List<(WaveFormatEx header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
+		{
+			var result = new List<(WaveFormatEx, byte[])>();
+
+			using (var ms = new MemoryStream(data))
+			using (var br = new BinaryReader(ms))
+			{
+				var numSounds = br.ReadUInt32();
+				var soundOffsets = new uint32_t[numSounds];
+				for (var i = 0; i < numSounds; ++i)
+				{
+					soundOffsets[i] = br.ReadUInt32();
+				}
+
+				for (var i = 0; i < numSounds; ++i)
+				{
+					br.BaseStream.Position = soundOffsets[i];
+					var pcmLen = br.ReadUInt32();
+					var format = ByteReader.ReadLocoStruct<WaveFormatEx>(br.ReadBytes(ObjectAttributes.StructSize<WaveFormatEx>()));
+
+					var pcmData = br.ReadBytes((int)pcmLen);
+					result.Add((format, pcmData));
+				}
+			}
+
+			return result;
+		}
+
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
 		private static byte[] DecodeRunLengthSingle(byte[] data)
 		{

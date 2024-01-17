@@ -1,12 +1,36 @@
 ﻿using System.Text;
 using OpenLocoTool.Data;
 using OpenLocoTool.Headers;
+using OpenLocoTool.Objects;
+using OpenLocoTool.Types;
 using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
 	public static class SawyerStreamWriter
 	{
+		public static void ExportSoundEffectAsWave(string filename, WaveFormatEx header, byte[] pcmData)
+		{
+			using (var stream = File.Create(filename))
+			{
+				stream.Write(ByteWriter.WriteLocoStruct(header));
+				stream.Write(pcmData);
+				stream.Flush();
+				stream.Close();
+			}
+		}
+
+		public static void ExportMusicAsWave(string filename, RiffWavHeader header, byte[] pcmData)
+		{
+			using (var stream = File.Create(filename))
+			{
+				stream.Write(ByteWriter.WriteLocoStruct(header));
+				stream.Write(pcmData);
+				stream.Flush();
+				stream.Close();
+			}
+		}
+
 		public static void Save(string filepath, string objName, ILocoObject locoObject, ILogger? logger = null)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
@@ -30,13 +54,13 @@ namespace OpenLocoTool.DatFileParsing
 			objStream.Write(objBytes);
 
 			// string table
-			foreach (var ste in obj.StringTable.table)
+			foreach (var ste in obj.StringTable.Table)
 			{
-				foreach (var language in ste.Value)
+				foreach (var language in ste.Value.Where(str => !string.IsNullOrEmpty(str.Value))) // skip strings with empty content
 				{
 					objStream.WriteByte((byte)language.Key);
 
-					var strBytes = Encoding.ASCII.GetBytes(language.Value);
+					var strBytes = Encoding.Latin1.GetBytes(language.Value);
 					objStream.Write(strBytes, 0, strBytes.Length);
 					objStream.WriteByte((byte)'\0');
 				}

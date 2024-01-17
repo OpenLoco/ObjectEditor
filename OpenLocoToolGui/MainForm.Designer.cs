@@ -1,4 +1,6 @@
-﻿namespace OpenLocoToolGui
+﻿using OpenLocoTool.Types;
+
+namespace OpenLocoToolGui
 {
 	partial class MainForm
 	{
@@ -29,7 +31,7 @@
 		private void InitializeComponent()
 		{
 			components = new System.ComponentModel.Container();
-			var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			lbLogs = new ListBox();
 			objectDirBrowser = new FolderBrowserDialog();
 			tbFileFilter = new TextBox();
@@ -37,13 +39,10 @@
 			saveFileDialog1 = new SaveFileDialog();
 			flpImageTable = new FlowLayoutPanel();
 			scObjectAndLogs = new SplitContainer();
+			pnObjectEditor = new Panel();
+			toolStrip1 = new ToolStrip();
+			toolStripButton1 = new ToolStripButton();
 			tcObjectOverview = new TabControl();
-			tpObjectFileHeaders = new TabPage();
-			tcFileHeaders = new TabControl();
-			tpObjectS5Header = new TabPage();
-			pgS5Header = new PropertyGrid();
-			tpObjectObjHeader = new TabPage();
-			pgObjHeader = new PropertyGrid();
 			tpObjectView = new TabPage();
 			tcSubObjectView = new TabControl();
 			tpObjectObject = new TabPage();
@@ -55,6 +54,9 @@
 			tbCurrentPage = new TextBox();
 			btnPagePrevious = new Button();
 			btnPageNext = new Button();
+			scHeaders = new SplitContainer();
+			pgS5Header = new PropertyGrid();
+			pgObjHeader = new PropertyGrid();
 			tpObjectDump = new TabPage();
 			scAnnnotationDump = new SplitContainer();
 			tvDATDumpAnnotations = new TreeView();
@@ -77,7 +79,6 @@
 			toolStripSeparator2 = new ToolStripSeparator();
 			setPaletteToolStripMenuItem = new ToolStripMenuItem();
 			recreateIndexToolStripMenuItem = new ToolStripMenuItem();
-			saveChangesToolStripMenuItem = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
 			goToHeaderInDumpToolStripMenuItem = new ToolStripMenuItem();
@@ -88,11 +89,9 @@
 			scObjectAndLogs.Panel1.SuspendLayout();
 			scObjectAndLogs.Panel2.SuspendLayout();
 			scObjectAndLogs.SuspendLayout();
+			pnObjectEditor.SuspendLayout();
+			toolStrip1.SuspendLayout();
 			tcObjectOverview.SuspendLayout();
-			tpObjectFileHeaders.SuspendLayout();
-			tcFileHeaders.SuspendLayout();
-			tpObjectS5Header.SuspendLayout();
-			tpObjectObjHeader.SuspendLayout();
 			tpObjectView.SuspendLayout();
 			tcSubObjectView.SuspendLayout();
 			tpObjectObject.SuspendLayout();
@@ -102,6 +101,10 @@
 			scImageViewer.Panel1.SuspendLayout();
 			scImageViewer.Panel2.SuspendLayout();
 			scImageViewer.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)scHeaders).BeginInit();
+			scHeaders.Panel1.SuspendLayout();
+			scHeaders.Panel2.SuspendLayout();
+			scHeaders.SuspendLayout();
 			tpObjectDump.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)scAnnnotationDump).BeginInit();
 			scAnnnotationDump.Panel1.SuspendLayout();
@@ -131,7 +134,7 @@
 			lbLogs.Location = new Point(0, 0);
 			lbLogs.Name = "lbLogs";
 			lbLogs.SelectionMode = SelectionMode.None;
-			lbLogs.Size = new Size(893, 115);
+			lbLogs.Size = new Size(1415, 186);
 			lbLogs.TabIndex = 17;
 			lbLogs.DrawItem += lbLogs_DrawItem;
 			// 
@@ -142,7 +145,7 @@
 			tbFileFilter.Location = new Point(4, 27);
 			tbFileFilter.Margin = new Padding(4);
 			tbFileFilter.Name = "tbFileFilter";
-			tbFileFilter.Size = new Size(294, 23);
+			tbFileFilter.Size = new Size(469, 23);
 			tbFileFilter.TabIndex = 24;
 			tbFileFilter.TextChanged += tbFileFilter_TextChanged;
 			// 
@@ -152,7 +155,7 @@
 			lblFilenameRegex.Location = new Point(4, 4);
 			lblFilenameRegex.Margin = new Padding(4);
 			lblFilenameRegex.Name = "lblFilenameRegex";
-			lblFilenameRegex.Size = new Size(294, 23);
+			lblFilenameRegex.Size = new Size(469, 23);
 			lblFilenameRegex.TabIndex = 25;
 			lblFilenameRegex.Text = "Filename Filter";
 			lblFilenameRegex.TextAlign = ContentAlignment.MiddleLeft;
@@ -165,7 +168,7 @@
 			flpImageTable.FlowDirection = FlowDirection.TopDown;
 			flpImageTable.Location = new Point(0, 0);
 			flpImageTable.Name = "flpImageTable";
-			flpImageTable.Size = new Size(867, 421);
+			flpImageTable.Size = new Size(1381, 584);
 			flpImageTable.TabIndex = 30;
 			// 
 			// scObjectAndLogs
@@ -177,99 +180,65 @@
 			// 
 			// scObjectAndLogs.Panel1
 			// 
-			scObjectAndLogs.Panel1.Controls.Add(tcObjectOverview);
+			scObjectAndLogs.Panel1.Controls.Add(pnObjectEditor);
 			// 
 			// scObjectAndLogs.Panel2
 			// 
 			scObjectAndLogs.Panel2.Controls.Add(lbLogs);
-			scObjectAndLogs.Size = new Size(893, 634);
-			scObjectAndLogs.SplitterDistance = 515;
+			scObjectAndLogs.Size = new Size(1415, 1009);
+			scObjectAndLogs.SplitterDistance = 819;
 			scObjectAndLogs.TabIndex = 31;
+			// 
+			// pnObjectEditor
+			// 
+			pnObjectEditor.BackColor = SystemColors.ControlDark;
+			pnObjectEditor.Controls.Add(toolStrip1);
+			pnObjectEditor.Controls.Add(tcObjectOverview);
+			pnObjectEditor.Dock = DockStyle.Fill;
+			pnObjectEditor.Location = new Point(0, 0);
+			pnObjectEditor.Name = "pnObjectEditor";
+			pnObjectEditor.Padding = new Padding(4);
+			pnObjectEditor.Size = new Size(1415, 819);
+			pnObjectEditor.TabIndex = 35;
+			// 
+			// toolStrip1
+			// 
+			toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1 });
+			toolStrip1.Location = new Point(4, 4);
+			toolStrip1.Name = "toolStrip1";
+			toolStrip1.Size = new Size(1407, 25);
+			toolStrip1.TabIndex = 35;
+			toolStrip1.Text = "toolStrip1";
+			// 
+			// toolStripButton1
+			// 
+			toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+			toolStripButton1.ImageTransparentColor = Color.Magenta;
+			toolStripButton1.Name = "toolStripButton1";
+			toolStripButton1.Size = new Size(84, 22);
+			toolStripButton1.Text = "Save Changes";
+			toolStripButton1.Click += toolStripButton1_Click;
 			// 
 			// tcObjectOverview
 			// 
-			tcObjectOverview.Controls.Add(tpObjectFileHeaders);
 			tcObjectOverview.Controls.Add(tpObjectView);
 			tcObjectOverview.Controls.Add(tpObjectDump);
 			tcObjectOverview.Dock = DockStyle.Fill;
-			tcObjectOverview.Location = new Point(0, 0);
+			tcObjectOverview.Location = new Point(4, 4);
 			tcObjectOverview.Name = "tcObjectOverview";
 			tcObjectOverview.SelectedIndex = 0;
-			tcObjectOverview.Size = new Size(893, 515);
+			tcObjectOverview.Size = new Size(1407, 811);
 			tcObjectOverview.TabIndex = 34;
-			// 
-			// tpObjectFileHeaders
-			// 
-			tpObjectFileHeaders.Controls.Add(tcFileHeaders);
-			tpObjectFileHeaders.Location = new Point(4, 24);
-			tpObjectFileHeaders.Name = "tpObjectFileHeaders";
-			tpObjectFileHeaders.Size = new Size(885, 487);
-			tpObjectFileHeaders.TabIndex = 2;
-			tpObjectFileHeaders.Text = "File Headers";
-			tpObjectFileHeaders.UseVisualStyleBackColor = true;
-			// 
-			// tcFileHeaders
-			// 
-			tcFileHeaders.Controls.Add(tpObjectS5Header);
-			tcFileHeaders.Controls.Add(tpObjectObjHeader);
-			tcFileHeaders.Dock = DockStyle.Fill;
-			tcFileHeaders.Location = new Point(0, 0);
-			tcFileHeaders.Name = "tcFileHeaders";
-			tcFileHeaders.SelectedIndex = 0;
-			tcFileHeaders.Size = new Size(885, 487);
-			tcFileHeaders.TabIndex = 0;
-			// 
-			// tpObjectS5Header
-			// 
-			tpObjectS5Header.Controls.Add(pgS5Header);
-			tpObjectS5Header.Location = new Point(4, 24);
-			tpObjectS5Header.Margin = new Padding(2, 1, 2, 1);
-			tpObjectS5Header.Name = "tpObjectS5Header";
-			tpObjectS5Header.Padding = new Padding(2, 1, 2, 1);
-			tpObjectS5Header.Size = new Size(877, 459);
-			tpObjectS5Header.TabIndex = 0;
-			tpObjectS5Header.Text = "S5 Header";
-			tpObjectS5Header.UseVisualStyleBackColor = true;
-			// 
-			// pgS5Header
-			// 
-			pgS5Header.Dock = DockStyle.Fill;
-			pgS5Header.HelpVisible = false;
-			pgS5Header.Location = new Point(2, 1);
-			pgS5Header.Name = "pgS5Header";
-			pgS5Header.Size = new Size(873, 457);
-			pgS5Header.TabIndex = 22;
-			pgS5Header.ToolbarVisible = false;
-			// 
-			// tpObjectObjHeader
-			// 
-			tpObjectObjHeader.Controls.Add(pgObjHeader);
-			tpObjectObjHeader.Location = new Point(4, 24);
-			tpObjectObjHeader.Margin = new Padding(2, 1, 2, 1);
-			tpObjectObjHeader.Name = "tpObjectObjHeader";
-			tpObjectObjHeader.Padding = new Padding(2, 1, 2, 1);
-			tpObjectObjHeader.Size = new Size(877, 459);
-			tpObjectObjHeader.TabIndex = 1;
-			tpObjectObjHeader.Text = "Object Header";
-			tpObjectObjHeader.UseVisualStyleBackColor = true;
-			// 
-			// pgObjHeader
-			// 
-			pgObjHeader.Dock = DockStyle.Fill;
-			pgObjHeader.HelpVisible = false;
-			pgObjHeader.Location = new Point(2, 1);
-			pgObjHeader.Name = "pgObjHeader";
-			pgObjHeader.Size = new Size(873, 457);
-			pgObjHeader.TabIndex = 23;
-			pgObjHeader.ToolbarVisible = false;
 			// 
 			// tpObjectView
 			// 
 			tpObjectView.Controls.Add(tcSubObjectView);
+			tpObjectView.Controls.Add(scHeaders);
 			tpObjectView.Location = new Point(4, 24);
 			tpObjectView.Name = "tpObjectView";
 			tpObjectView.Padding = new Padding(3);
-			tpObjectView.Size = new Size(885, 487);
+			tpObjectView.Size = new Size(1399, 783);
 			tpObjectView.TabIndex = 0;
 			tpObjectView.Text = "Object View";
 			tpObjectView.UseVisualStyleBackColor = true;
@@ -280,11 +249,11 @@
 			tcSubObjectView.Controls.Add(tpObjectStringTable);
 			tcSubObjectView.Controls.Add(tpObjectGraphicsTable);
 			tcSubObjectView.Dock = DockStyle.Fill;
-			tcSubObjectView.Location = new Point(3, 3);
+			tcSubObjectView.Location = new Point(3, 123);
 			tcSubObjectView.Margin = new Padding(2, 1, 2, 1);
 			tcSubObjectView.Name = "tcSubObjectView";
 			tcSubObjectView.SelectedIndex = 0;
-			tcSubObjectView.Size = new Size(879, 481);
+			tcSubObjectView.Size = new Size(1393, 657);
 			tcSubObjectView.TabIndex = 33;
 			// 
 			// tpObjectObject
@@ -294,7 +263,7 @@
 			tpObjectObject.Margin = new Padding(2, 1, 2, 1);
 			tpObjectObject.Name = "tpObjectObject";
 			tpObjectObject.Padding = new Padding(2, 1, 2, 1);
-			tpObjectObject.Size = new Size(871, 453);
+			tpObjectObject.Size = new Size(1385, 629);
 			tpObjectObject.TabIndex = 2;
 			tpObjectObject.Text = "Object";
 			tpObjectObject.UseVisualStyleBackColor = true;
@@ -305,7 +274,7 @@
 			pgObject.HelpVisible = false;
 			pgObject.Location = new Point(2, 1);
 			pgObject.Name = "pgObject";
-			pgObject.Size = new Size(867, 451);
+			pgObject.Size = new Size(1381, 627);
 			pgObject.TabIndex = 24;
 			pgObject.ToolbarVisible = false;
 			// 
@@ -316,9 +285,9 @@
 			tpObjectStringTable.Margin = new Padding(2, 1, 2, 1);
 			tpObjectStringTable.Name = "tpObjectStringTable";
 			tpObjectStringTable.Padding = new Padding(2, 1, 2, 1);
-			tpObjectStringTable.Size = new Size(871, 453);
+			tpObjectStringTable.Size = new Size(1385, 629);
 			tpObjectStringTable.TabIndex = 3;
-			tpObjectStringTable.Text = "Strings";
+			tpObjectStringTable.Text = "String Table";
 			tpObjectStringTable.UseVisualStyleBackColor = true;
 			// 
 			// ucStringTable
@@ -327,7 +296,7 @@
 			ucStringTable.Location = new Point(2, 1);
 			ucStringTable.Margin = new Padding(1, 0, 1, 0);
 			ucStringTable.Name = "ucStringTable";
-			ucStringTable.Size = new Size(867, 451);
+			ucStringTable.Size = new Size(1381, 627);
 			ucStringTable.TabIndex = 0;
 			// 
 			// tpObjectGraphicsTable
@@ -337,9 +306,9 @@
 			tpObjectGraphicsTable.Margin = new Padding(2, 1, 2, 1);
 			tpObjectGraphicsTable.Name = "tpObjectGraphicsTable";
 			tpObjectGraphicsTable.Padding = new Padding(2, 1, 2, 1);
-			tpObjectGraphicsTable.Size = new Size(871, 453);
+			tpObjectGraphicsTable.Size = new Size(1385, 629);
 			tpObjectGraphicsTable.TabIndex = 4;
-			tpObjectGraphicsTable.Text = "Graphics";
+			tpObjectGraphicsTable.Text = "Graphics/Sounds";
 			tpObjectGraphicsTable.UseVisualStyleBackColor = true;
 			// 
 			// scImageViewer
@@ -359,8 +328,8 @@
 			scImageViewer.Panel2.Controls.Add(tbCurrentPage);
 			scImageViewer.Panel2.Controls.Add(btnPagePrevious);
 			scImageViewer.Panel2.Controls.Add(btnPageNext);
-			scImageViewer.Size = new Size(867, 451);
-			scImageViewer.SplitterDistance = 421;
+			scImageViewer.Size = new Size(1381, 627);
+			scImageViewer.SplitterDistance = 584;
 			scImageViewer.TabIndex = 32;
 			// 
 			// tbCurrentPage
@@ -368,9 +337,9 @@
 			tbCurrentPage.BorderStyle = BorderStyle.FixedSingle;
 			tbCurrentPage.Dock = DockStyle.Bottom;
 			tbCurrentPage.Enabled = false;
-			tbCurrentPage.Location = new Point(253, 3);
+			tbCurrentPage.Location = new Point(253, 16);
 			tbCurrentPage.Name = "tbCurrentPage";
-			tbCurrentPage.Size = new Size(386, 23);
+			tbCurrentPage.Size = new Size(900, 23);
 			tbCurrentPage.TabIndex = 33;
 			tbCurrentPage.TextAlign = HorizontalAlignment.Center;
 			// 
@@ -379,7 +348,7 @@
 			btnPagePrevious.Dock = DockStyle.Left;
 			btnPagePrevious.Location = new Point(0, 0);
 			btnPagePrevious.Name = "btnPagePrevious";
-			btnPagePrevious.Size = new Size(253, 26);
+			btnPagePrevious.Size = new Size(253, 39);
 			btnPagePrevious.TabIndex = 0;
 			btnPagePrevious.Text = "Previous Page";
 			btnPagePrevious.UseVisualStyleBackColor = true;
@@ -388,13 +357,50 @@
 			// btnPageNext
 			// 
 			btnPageNext.Dock = DockStyle.Right;
-			btnPageNext.Location = new Point(639, 0);
+			btnPageNext.Location = new Point(1153, 0);
 			btnPageNext.Name = "btnPageNext";
-			btnPageNext.Size = new Size(228, 26);
+			btnPageNext.Size = new Size(228, 39);
 			btnPageNext.TabIndex = 31;
 			btnPageNext.Text = "Next Page";
 			btnPageNext.UseVisualStyleBackColor = true;
 			btnPageNext.Click += btnPageNext_Click;
+			// 
+			// scHeaders
+			// 
+			scHeaders.Dock = DockStyle.Top;
+			scHeaders.Location = new Point(3, 3);
+			scHeaders.Name = "scHeaders";
+			// 
+			// scHeaders.Panel1
+			// 
+			scHeaders.Panel1.Controls.Add(pgS5Header);
+			// 
+			// scHeaders.Panel2
+			// 
+			scHeaders.Panel2.Controls.Add(pgObjHeader);
+			scHeaders.Size = new Size(1393, 120);
+			scHeaders.SplitterDistance = 695;
+			scHeaders.TabIndex = 34;
+			// 
+			// pgS5Header
+			// 
+			pgS5Header.Dock = DockStyle.Fill;
+			pgS5Header.HelpVisible = false;
+			pgS5Header.Location = new Point(0, 0);
+			pgS5Header.Name = "pgS5Header";
+			pgS5Header.Size = new Size(695, 120);
+			pgS5Header.TabIndex = 22;
+			pgS5Header.ToolbarVisible = false;
+			// 
+			// pgObjHeader
+			// 
+			pgObjHeader.Dock = DockStyle.Fill;
+			pgObjHeader.HelpVisible = false;
+			pgObjHeader.Location = new Point(0, 0);
+			pgObjHeader.Name = "pgObjHeader";
+			pgObjHeader.Size = new Size(694, 120);
+			pgObjHeader.TabIndex = 23;
+			pgObjHeader.ToolbarVisible = false;
 			// 
 			// tpObjectDump
 			// 
@@ -402,7 +408,7 @@
 			tpObjectDump.Location = new Point(4, 24);
 			tpObjectDump.Name = "tpObjectDump";
 			tpObjectDump.Padding = new Padding(3);
-			tpObjectDump.Size = new Size(885, 487);
+			tpObjectDump.Size = new Size(1399, 783);
 			tpObjectDump.TabIndex = 1;
 			tpObjectDump.Text = "Object Dump";
 			tpObjectDump.UseVisualStyleBackColor = true;
@@ -421,8 +427,8 @@
 			// scAnnnotationDump.Panel2
 			// 
 			scAnnnotationDump.Panel2.Controls.Add(rtbDATDumpView);
-			scAnnnotationDump.Size = new Size(879, 481);
-			scAnnnotationDump.SplitterDistance = 303;
+			scAnnnotationDump.Size = new Size(1393, 777);
+			scAnnnotationDump.SplitterDistance = 479;
 			scAnnnotationDump.TabIndex = 2;
 			// 
 			// tvDATDumpAnnotations
@@ -430,7 +436,7 @@
 			tvDATDumpAnnotations.Dock = DockStyle.Fill;
 			tvDATDumpAnnotations.Location = new Point(0, 0);
 			tvDATDumpAnnotations.Name = "tvDATDumpAnnotations";
-			tvDATDumpAnnotations.Size = new Size(303, 481);
+			tvDATDumpAnnotations.Size = new Size(479, 777);
 			tvDATDumpAnnotations.TabIndex = 1;
 			tvDATDumpAnnotations.AfterSelect += dataDumpAnnotations_AfterSelect;
 			// 
@@ -443,7 +449,7 @@
 			rtbDATDumpView.Name = "rtbDATDumpView";
 			rtbDATDumpView.ReadOnly = true;
 			rtbDATDumpView.ShowSelectionMargin = true;
-			rtbDATDumpView.Size = new Size(572, 481);
+			rtbDATDumpView.Size = new Size(910, 777);
 			rtbDATDumpView.TabIndex = 0;
 			rtbDATDumpView.Text = "";
 			rtbDATDumpView.WordWrap = false;
@@ -462,8 +468,8 @@
 			// scTop.Panel2
 			// 
 			scTop.Panel2.Controls.Add(scObjectAndLogs);
-			scTop.Size = new Size(1199, 634);
-			scTop.SplitterDistance = 302;
+			scTop.Size = new Size(1896, 1009);
+			scTop.SplitterDistance = 477;
 			scTop.TabIndex = 33;
 			// 
 			// tcFileSelector
@@ -474,7 +480,7 @@
 			tcFileSelector.Location = new Point(0, 74);
 			tcFileSelector.Name = "tcFileSelector";
 			tcFileSelector.SelectedIndex = 0;
-			tcFileSelector.Size = new Size(302, 560);
+			tcFileSelector.Size = new Size(477, 935);
 			tcFileSelector.TabIndex = 29;
 			// 
 			// tabPage2
@@ -483,7 +489,7 @@
 			tabPage2.Location = new Point(4, 24);
 			tabPage2.Name = "tabPage2";
 			tabPage2.Padding = new Padding(3);
-			tabPage2.Size = new Size(294, 532);
+			tabPage2.Size = new Size(469, 907);
 			tabPage2.TabIndex = 1;
 			tabPage2.Text = "Category";
 			tabPage2.UseVisualStyleBackColor = true;
@@ -493,7 +499,7 @@
 			tvObjType.Dock = DockStyle.Fill;
 			tvObjType.Location = new Point(3, 3);
 			tvObjType.Name = "tvObjType";
-			tvObjType.Size = new Size(288, 526);
+			tvObjType.Size = new Size(463, 901);
 			tvObjType.TabIndex = 26;
 			tvObjType.AfterSelect += tv_AfterSelect;
 			// 
@@ -503,7 +509,7 @@
 			tabPage1.Location = new Point(4, 24);
 			tabPage1.Name = "tabPage1";
 			tabPage1.Padding = new Padding(3);
-			tabPage1.Size = new Size(294, 532);
+			tabPage1.Size = new Size(469, 907);
 			tabPage1.TabIndex = 0;
 			tabPage1.Text = "File";
 			tabPage1.UseVisualStyleBackColor = true;
@@ -513,7 +519,7 @@
 			tvFileTree.Dock = DockStyle.Fill;
 			tvFileTree.Location = new Point(3, 3);
 			tvFileTree.Name = "tvFileTree";
-			tvFileTree.Size = new Size(288, 526);
+			tvFileTree.Size = new Size(463, 901);
 			tvFileTree.TabIndex = 1;
 			tvFileTree.AfterSelect += tv_AfterSelect;
 			// 
@@ -527,7 +533,7 @@
 			pnFileFilter.Margin = new Padding(4);
 			pnFileFilter.Name = "pnFileFilter";
 			pnFileFilter.Padding = new Padding(4);
-			pnFileFilter.Size = new Size(302, 74);
+			pnFileFilter.Size = new Size(477, 74);
 			pnFileFilter.TabIndex = 30;
 			// 
 			// cbVanillaObjects
@@ -536,7 +542,7 @@
 			cbVanillaObjects.Dock = DockStyle.Top;
 			cbVanillaObjects.Location = new Point(4, 50);
 			cbVanillaObjects.Name = "cbVanillaObjects";
-			cbVanillaObjects.Size = new Size(294, 19);
+			cbVanillaObjects.Size = new Size(469, 19);
 			cbVanillaObjects.TabIndex = 26;
 			cbVanillaObjects.Text = "Vanilla Objects Only";
 			cbVanillaObjects.UseVisualStyleBackColor = true;
@@ -548,13 +554,13 @@
 			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem });
 			menuStrip.Location = new Point(4, 4);
 			menuStrip.Name = "menuStrip";
-			menuStrip.Size = new Size(1199, 24);
+			menuStrip.Size = new Size(1896, 24);
 			menuStrip.TabIndex = 23;
 			menuStrip.Text = "menuStrip1";
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem, saveChangesToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
@@ -563,7 +569,7 @@
 			// 
 			objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, toolStripSeparator1 });
 			objectDirectoriesToolStripMenuItem.Name = "objectDirectoriesToolStripMenuItem";
-			objectDirectoriesToolStripMenuItem.Size = new Size(217, 22);
+			objectDirectoriesToolStripMenuItem.Size = new Size(180, 22);
 			objectDirectoriesToolStripMenuItem.Text = "ObjData Directories";
 			// 
 			// setObjectDirectoryToolStripMenuItem
@@ -582,7 +588,7 @@
 			// 
 			dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setDataDirectoryToolStripMenuItem, toolStripSeparator2 });
 			dataDirectoriesToolStripMenuItem.Name = "dataDirectoriesToolStripMenuItem";
-			dataDirectoriesToolStripMenuItem.Size = new Size(217, 22);
+			dataDirectoriesToolStripMenuItem.Size = new Size(180, 22);
 			dataDirectoriesToolStripMenuItem.Text = "Data Directories";
 			// 
 			// setDataDirectoryToolStripMenuItem
@@ -600,23 +606,16 @@
 			// setPaletteToolStripMenuItem
 			// 
 			setPaletteToolStripMenuItem.Name = "setPaletteToolStripMenuItem";
-			setPaletteToolStripMenuItem.Size = new Size(217, 22);
+			setPaletteToolStripMenuItem.Size = new Size(180, 22);
 			setPaletteToolStripMenuItem.Text = "Load Palette Bitmap";
 			setPaletteToolStripMenuItem.Click += setPaletteToolStripMenuItem_Click;
 			// 
 			// recreateIndexToolStripMenuItem
 			// 
 			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
-			recreateIndexToolStripMenuItem.Size = new Size(217, 22);
+			recreateIndexToolStripMenuItem.Size = new Size(180, 22);
 			recreateIndexToolStripMenuItem.Text = "Recreate Index";
 			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
-			// 
-			// saveChangesToolStripMenuItem
-			// 
-			saveChangesToolStripMenuItem.Name = "saveChangesToolStripMenuItem";
-			saveChangesToolStripMenuItem.Size = new Size(217, 22);
-			saveChangesToolStripMenuItem.Text = "Save Object Changes (WIP)";
-			saveChangesToolStripMenuItem.Click += saveChangesToolStripMenuItem_Click;
 			// 
 			// imgContextMenu
 			// 
@@ -655,13 +654,13 @@
 			// 
 			// locoObjectBindingSource
 			// 
-			locoObjectBindingSource.DataSource = typeof(OpenLocoTool.DatFileParsing.LocoObject);
+			locoObjectBindingSource.DataSource = typeof(LocoObject);
 			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(1207, 666);
+			ClientSize = new Size(1904, 1041);
 			Controls.Add(scTop);
 			Controls.Add(menuStrip);
 			Icon = (Icon)resources.GetObject("$this.Icon");
@@ -674,11 +673,11 @@
 			scObjectAndLogs.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).EndInit();
 			scObjectAndLogs.ResumeLayout(false);
+			pnObjectEditor.ResumeLayout(false);
+			pnObjectEditor.PerformLayout();
+			toolStrip1.ResumeLayout(false);
+			toolStrip1.PerformLayout();
 			tcObjectOverview.ResumeLayout(false);
-			tpObjectFileHeaders.ResumeLayout(false);
-			tcFileHeaders.ResumeLayout(false);
-			tpObjectS5Header.ResumeLayout(false);
-			tpObjectObjHeader.ResumeLayout(false);
 			tpObjectView.ResumeLayout(false);
 			tcSubObjectView.ResumeLayout(false);
 			tpObjectObject.ResumeLayout(false);
@@ -689,6 +688,10 @@
 			scImageViewer.Panel2.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)scImageViewer).EndInit();
 			scImageViewer.ResumeLayout(false);
+			scHeaders.Panel1.ResumeLayout(false);
+			scHeaders.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)scHeaders).EndInit();
+			scHeaders.ResumeLayout(false);
 			tpObjectDump.ResumeLayout(false);
 			scAnnnotationDump.Panel1.ResumeLayout(false);
 			scAnnnotationDump.Panel2.ResumeLayout(false);
@@ -725,7 +728,6 @@
 		private ToolStripMenuItem fileToolStripMenuItem;
 		private ToolStripMenuItem objectDirectoriesToolStripMenuItem;
 		private ToolStripMenuItem recreateIndexToolStripMenuItem;
-		private ToolStripMenuItem saveChangesToolStripMenuItem;
 		private ToolStripMenuItem setPaletteToolStripMenuItem;
 		private ToolStripMenuItem dataDirectoriesToolStripMenuItem;
 		private ContextMenuStrip imgContextMenu;
@@ -754,8 +756,6 @@
 		private ToolStripMenuItem setDataDirectoryToolStripMenuItem;
 		private ToolStripSeparator toolStripSeparator2;
 		private TabControl tcSubObjectView;
-		private TabPage tpObjectS5Header;
-		private TabPage tpObjectObjHeader;
 		private TabPage tpObjectObject;
 		private TabPage tpObjectStringTable;
 		private TabPage tpObjectGraphicsTable;
@@ -764,7 +764,9 @@
 		private PropertyGrid pgObjHeader;
 		private PropertyGrid pgObject;
 		private StringTableUserControl ucStringTable;
-		private TabPage tpObjectFileHeaders;
-		private TabControl tcFileHeaders;
+		private SplitContainer scHeaders;
+		private Panel pnObjectEditor;
+		private ToolStrip toolStrip1;
+		private ToolStripButton toolStripButton1;
 	}
 }

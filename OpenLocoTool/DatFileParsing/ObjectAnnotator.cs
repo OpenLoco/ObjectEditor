@@ -34,7 +34,7 @@ namespace OpenLocoTool.DatFileParsing
 			fullData =
 			[
 				.. bytelist[..runningCount],
-				.. SawyerStreamReader.Decode(objectHeader.Encoding, bytelist.AsSpan()[runningCount..(int)(runningCount + objectHeader.DataLength)]),
+				.. SawyerStreamReader.Decode(objectHeader.Encoding, bytelist[runningCount..(int)(runningCount + objectHeader.DataLength)]),
 			];
 
 			var locoStruct = SawyerStreamReader.GetLocoStruct(s5Header.ObjectType, fullData.AsSpan()[runningCount..]);
@@ -137,7 +137,7 @@ namespace OpenLocoTool.DatFileParsing
 			return annotations;
 		}
 
-		public static int AnnotateStringTable(byte[] fullData, int runningCount, ILocoStruct locoStruct, IList<Annotation> annotations)
+		static int AnnotateStringTable(byte[] fullData, int runningCount, ILocoStruct locoStruct, IList<Annotation> annotations)
 		{
 			var root = new Annotation("String Table", runningCount, 1);
 			annotations.Add(root);

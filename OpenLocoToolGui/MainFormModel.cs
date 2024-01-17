@@ -9,6 +9,7 @@ using OpenLocoTool.Objects;
 using OpenLocoToolCommon;
 using OpenLocoTool.Headers;
 using System.Diagnostics;
+using OpenLocoTool;
 
 namespace OpenLocoToolGui
 {
@@ -63,6 +64,16 @@ namespace OpenLocoToolGui
 
 		public G1Dat G1 { get; set; }
 
+		public Dictionary<string, byte[]> Music { get; set; } = [];
+
+		public Dictionary<string, byte[]> MiscellaneousTracks { get; set; } = [];
+
+		public Dictionary<string, byte[]> SoundEffects { get; set; } = [];
+
+		public Dictionary<string, byte[]> Tutorials { get; set; } = [];
+
+		public List<string> MiscFiles { get; set; } = [];
+
 		public MainFormModel(ILogger logger, string settingsFile)
 		{
 			this.logger = logger;
@@ -83,7 +94,7 @@ namespace OpenLocoToolGui
 			{
 				//try
 				//{
-				SawyerStreamReader.LoadFull(dep.Key);
+				SawyerStreamReader.LoadFullObjectFromFile(dep.Key);
 				//}
 				//catch (Exception ex)
 				//{
@@ -115,7 +126,7 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			if (File.Exists(Settings.IndexFilePath))
+			if (File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
 			{
 				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
 				LoadObjDirectory(Settings.ObjDataDirectory, new Progress<float>(), true);
@@ -155,23 +166,26 @@ namespace OpenLocoToolGui
 		}
 
 		// this method loads every single object entirely. it takes a long time to run
-		void CreateIndex(string[] allFiles, IProgress<float> progress)
+		void CreateIndex(string[] allFiles, IProgress<float>? progress)
 		{
 			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
 			ConcurrentDictionary<string, UiLocoObject> ccObjectCache = new(); // key is full path/filename
 
 			var count = 0;
 
+			ConcurrentDictionary<string, TimeSpan> timePerFile = new();
+
 			logger.Info($"Creating index on {allFiles.Length} files");
 			var sw = new Stopwatch();
 			sw.Start();
 
-			Parallel.ForEach(allFiles, (file) =>
+			Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (file) =>
 			//foreach (var file in allFiles)
 			{
 				try
 				{
-					var (fileInfo, locoObject) = SawyerStreamReader.LoadFull(file);
+					var startTime = sw.Elapsed;
+					var (fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(file);
 					if (!ccObjectCache.TryAdd(file, new UiLocoObject { DatFileInfo = fileInfo, LocoObject = locoObject }))
 					{
 						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
@@ -188,19 +202,24 @@ namespace OpenLocoToolGui
 					{
 						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
 					}
+					else
+					{
+						var elapsed = sw.Elapsed - startTime;
+						timePerFile.TryAdd(fileInfo.S5Header.Name, elapsed);
+					}
 				}
 				catch (Exception ex)
 				{
 					logger.Error($"Failed to load \"{file}\"", ex);
 
-					var obj = SawyerStreamReader.LoadHeader(file);
+					var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
 					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, null);
 					ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}
 				finally
 				{
 					Interlocked.Increment(ref count);
-					progress.Report(count / (float)allFiles.Length);
+					progress?.Report(count / (float)allFiles.Length);
 				}
 				//}
 			});
@@ -209,7 +228,18 @@ namespace OpenLocoToolGui
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 			sw.Stop();
-			logger.Info($"Finished creating index. Time={sw.Elapsed}");
+			logger.Info("Finished creating index");
+
+			logger.Debug($"Time time={sw.Elapsed}");
+
+			var slowest = timePerFile.MaxBy(x => x.Value.Ticks);
+			logger.Debug($"Slowest file={slowest.Key} Time={slowest.Value}");
+
+			var average = timePerFile.Average(x => x.Value.TotalMilliseconds);
+			logger.Debug($"Average time={average}ms");
+
+			var median = timePerFile.OrderBy(x => x.Value).Skip(timePerFile.Count / 2).Take(1).Single();
+			logger.Debug($"Median time={median.Value}ms");
 		}
 
 		public static void SaveFile(string path, UiLocoObject obj)
@@ -225,8 +255,32 @@ namespace OpenLocoToolGui
 
 			Settings.DataDirectory = directory;
 
-			// load G1 only for now
-			G1 = SawyerStreamReader.LoadG1(Settings.G1Path);
+			var allDataFiles = Directory.GetFiles(Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower()).ToHashSet();
+
+			void LoadKnownData(HashSet<string> allFilesInDir, HashSet<string> knownFilenames, Dictionary<string, byte[]> dict)
+			{
+				var expectedMusicFiles = knownFilenames.Select(f => f.ToLower());
+				foreach (var music in expectedMusicFiles)
+				{
+					var matching = allFilesInDir.Where(f => f.EndsWith(music));
+					if (matching.Any())
+					{
+						dict.Add(music, File.ReadAllBytes(Path.Combine(Settings.DataDirectory, music)));
+						allFilesInDir.RemoveWhere(f => f.EndsWith(music));
+					}
+				}
+			}
+
+			LoadKnownData(allDataFiles, [.. OriginalDataFiles.Music.Keys], Music);
+			LoadKnownData(allDataFiles, [.. OriginalDataFiles.MiscellaneousTracks.Keys], MiscellaneousTracks);
+			LoadKnownData(allDataFiles, [.. OriginalDataFiles.SoundEffects.Keys], SoundEffects);
+			LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
+
+			MiscFiles = [.. allDataFiles];
+
+			// load G1 only for now since we need it for palette
+			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
+
 			LoadPalette(); // update palette from g1
 
 			SaveSettings();
@@ -234,7 +288,7 @@ namespace OpenLocoToolGui
 			return true;
 		}
 
-		public void LoadObjDirectory(string directory, IProgress<float> progress, bool useExistingIndex)
+		public void LoadObjDirectory(string directory, IProgress<float>? progress, bool useExistingIndex)
 		{
 			if (!Directory.Exists(directory))
 			{
@@ -243,9 +297,9 @@ namespace OpenLocoToolGui
 
 			Settings.ObjDataDirectory = directory;
 			var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
-			if (useExistingIndex && File.Exists(Settings.IndexFilePath))
+			if (useExistingIndex && File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
 			{
-				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.IndexFilePath) ?? HeaderIndex;
+				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.GetObjDataFullPath(Settings.IndexFileName)) ?? HeaderIndex;
 
 				var a = HeaderIndex.Keys.Except(allFiles);
 				var b = allFiles.Except(HeaderIndex.Keys);
@@ -269,7 +323,7 @@ namespace OpenLocoToolGui
 			{
 				logger.Info("Recreating index file");
 				CreateIndex(allFiles, progress);
-				SerialiseHeaderIndexToFile(Settings.IndexFilePath, HeaderIndex, GetOptions());
+				SerialiseHeaderIndexToFile(Settings.GetObjDataFullPath(Settings.IndexFileName), HeaderIndex, GetOptions());
 			}
 
 			SaveSettings();
@@ -309,7 +363,7 @@ namespace OpenLocoToolGui
 			}
 			else
 			{
-				var obj = SawyerStreamReader.LoadFull(filename);
+				var obj = SawyerStreamReader.LoadFullObjectFromFile(filename);
 				var uiObj = new UiLocoObject { DatFileInfo = obj.Item1, LocoObject = obj.Item2 };
 				ObjectCache.TryAdd(filename, uiObj);
 				return uiObj;

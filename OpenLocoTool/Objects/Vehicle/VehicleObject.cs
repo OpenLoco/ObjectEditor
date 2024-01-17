@@ -157,7 +157,7 @@ namespace OpenLocoTool.Objects
 
 			// track extras
 			RequiredTrackExtras.Clear();
-			RequiredTrackExtras.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, NumTrackExtras));
+			RequiredTrackExtras.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumTrackExtras));
 			remainingData = remainingData[(S5Header.StructLength * NumTrackExtras)..];
 
 			// compatible cargo types
@@ -197,8 +197,13 @@ namespace OpenLocoTool.Objects
 					remainingData = remainingData[1..]; // uint8_t
 
 					CompatibleCargoCategories[index].Add(vehicleCargoCategory);
-					CargoTypeSpriteOffsets.Add(vehicleCargoCategory, cargoTypeSpriteOffset);
 
+					if (!CargoTypeSpriteOffsets.TryAdd(vehicleCargoCategory, cargoTypeSpriteOffset))
+					{
+						// invalid object - shouldn't have 2 cargo types that are the same
+					}
+
+					// advance ptr
 					ptr = BitConverter.ToUInt16(remainingData[0..2]);
 				}
 
@@ -230,7 +235,7 @@ namespace OpenLocoTool.Objects
 
 			// numCompat
 			CompatibleVehicles.Clear();
-			CompatibleVehicles.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, NumCompatibleVehicles));
+			CompatibleVehicles.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatibleVehicles));
 			remainingData = remainingData[(S5Header.StructLength * NumCompatibleVehicles)..];
 
 			// rack rail

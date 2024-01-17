@@ -52,7 +52,7 @@ namespace OpenLocoTool.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			Mods.Clear();
-			Mods = SawyerStreamReader.LoadVariableHeaders(remainingData, NumCompatible);
+			Mods = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
 			return remainingData[(S5Header.StructLength * NumCompatible)..];
 		}
 

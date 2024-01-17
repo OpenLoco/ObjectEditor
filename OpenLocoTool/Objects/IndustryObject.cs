@@ -188,17 +188,17 @@ namespace OpenLocoTool.Objects
 
 			// produced cargo
 			ProducedCargo.Clear();
-			ProducedCargo.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, MaxProducedCargoType));
+			ProducedCargo.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxProducedCargoType));
 			remainingData = remainingData[(S5Header.StructLength * MaxProducedCargoType)..];
 
 			// required cargo
 			RequiredCargo.Clear();
-			RequiredCargo.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, MaxRequiredCargoType));
+			RequiredCargo.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxRequiredCargoType));
 			remainingData = remainingData[(S5Header.StructLength * MaxRequiredCargoType)..];
 
 			// wall types
 			WallTypes.Clear();
-			WallTypes.AddRange(SawyerStreamReader.LoadVariableHeaders(remainingData, WallTypeCount));
+			WallTypes.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, WallTypeCount));
 			remainingData = remainingData[(S5Header.StructLength * WallTypeCount)..];
 
 			// wall type
@@ -282,25 +282,6 @@ namespace OpenLocoTool.Objects
 			ms.Write(BuildingWallEntrance.Write());
 
 			return ms.ToArray();
-		}
-	}
-
-	public static class IEnumerableExtensions
-	{
-		public static IEnumerable<T> Fill<T>(this IEnumerable<T> source, int minLength, T fillValue = default)
-		{
-			var i = 0;
-			foreach (var item in source)
-			{
-				i++;
-				yield return item;
-			}
-
-			while (i < minLength)
-			{
-				i++;
-				yield return fillValue;
-			}
 		}
 	}
 }

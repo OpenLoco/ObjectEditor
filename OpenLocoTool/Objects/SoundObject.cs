@@ -8,8 +8,8 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x12)]
 	public record WaveFormatEx(
 		[property: LocoStructOffset(0x00)] int16_t WaveFormatTag,
-		[property: LocoStructOffset(0x02)] int16_t NumberChannels,
-		[property: LocoStructOffset(0x04)] int32_t SamplesPerSecond,
+		[property: LocoStructOffset(0x02)] int16_t NumberOfChannels,
+		[property: LocoStructOffset(0x04)] int32_t SampleRate,
 		[property: LocoStructOffset(0x08)] int32_t AverageBytesPerSecond,
 		[property: LocoStructOffset(0x0B)] int16_t BlockAlign,
 		[property: LocoStructOffset(0x0D)] int16_t BitsPerSample,
@@ -30,8 +30,8 @@ namespace OpenLocoTool.Objects
 	[LocoStructType(ObjectType.Sound)]
 	[LocoStringTable("Name")]
 	public record SoundObject(
-		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint32_t SoundObjectDataPtr,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), Browsable(false)] uint32_t SoundObjectDataPtr,
 		[property: LocoStructOffset(0x06)] uint8_t var_06,
 		[property: LocoStructOffset(0x07)] uint8_t pad_07,
 		[property: LocoStructOffset(0x08)] uint32_t Volume

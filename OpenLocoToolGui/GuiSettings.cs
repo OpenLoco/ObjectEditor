@@ -1,7 +1,4 @@
-﻿
-using System.Text.Json.Serialization;
-
-namespace OpenLocoToolGui
+﻿namespace OpenLocoToolGui
 {
 	public class GuiSettings
 	{
@@ -39,10 +36,7 @@ namespace OpenLocoToolGui
 
 		public string G1DatFileName { get; set; } = "g1.DAT";
 
-		[JsonIgnore]
-		public string IndexFilePath => Path.Combine(ObjDataDirectory, IndexFileName);
-
-		[JsonIgnore]
-		public string G1Path => Path.Combine(DataDirectory, G1DatFileName);
+		public string GetObjDataFullPath(string fileName) => Path.Combine(ObjDataDirectory, fileName);
+		public string GetDataFullPath(string fileName) => Path.Combine(DataDirectory, fileName);
 	}
 }

@@ -92,23 +92,23 @@ namespace OpenLocoTool.Objects
 			Stations.Clear();
 
 			// compatible roads/tracks
-			Compatible = SawyerStreamReader.LoadVariableHeaders(remainingData, NumCompatible);
+			Compatible = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
 			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 
 			// mods
-			Mods = SawyerStreamReader.LoadVariableHeaders(remainingData, NumMods);
+			Mods = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumMods);
 			remainingData = remainingData[(S5Header.StructLength * NumMods)..];
 
 			// tunnel
-			Tunnel = SawyerStreamReader.LoadVariableHeaders(remainingData, NumTunnels)[0];
+			Tunnel = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumTunnels)[0];
 			remainingData = remainingData[(S5Header.StructLength * NumTunnels)..];
 
 			// bridges
-			Bridges = SawyerStreamReader.LoadVariableHeaders(remainingData, NumBridges);
+			Bridges = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumBridges);
 			remainingData = remainingData[(S5Header.StructLength * NumBridges)..];
 
 			// stations
-			Stations = SawyerStreamReader.LoadVariableHeaders(remainingData, NumStations);
+			Stations = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumStations);
 			remainingData = remainingData[(S5Header.StructLength * NumStations)..];
 
 			return remainingData;

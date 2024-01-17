@@ -1,38 +1,16 @@
 ﻿using System.Diagnostics;
-using System.Numerics;
 using System.Text;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
+using OpenLocoTool.Types;
 using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
-	public static class SawyerStreamUtils
-	{
-		public static uint ComputeObjectChecksum(ReadOnlySpan<byte> headerFlagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
-		{
-			static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
-			{
-				var checksum = seed;
-				foreach (var d in data)
-				{
-					checksum = BitOperations.RotateLeft(checksum ^ d, 11);
-				}
-
-				return checksum;
-			}
-
-			const uint32_t objectChecksumMagic = 0xF369A75B;
-			var checksum = ComputeChecksum(headerFlagByte, objectChecksumMagic);
-			checksum = ComputeChecksum(name, checksum);
-			checksum = ComputeChecksum(data, checksum);
-			return checksum;
-		}
-	}
 
 	public static class SawyerStreamReader
 	{
-		public static List<S5Header> LoadVariableHeaders(ReadOnlySpan<byte> data, int count)
+		public static List<S5Header> LoadVariableCountS5Headers(ReadOnlySpan<byte> data, int count)
 		{
 			List<S5Header> result = [];
 			for (var i = 0; i < count; ++i)
@@ -49,48 +27,66 @@ namespace OpenLocoTool.DatFileParsing
 			return result;
 		}
 
-		public static G1Dat LoadG1(string filename, ILogger? logger = null)
+		public static S5Header LoadS5HeaderFromFile(string filename, ILogger? logger = null)
 		{
-			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
-			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
-			logger?.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
-			return new G1Dat(g1Header, imageTable);
+			if (!File.Exists(filename))
+			{
+				logger?.Error($"Path doesn't exist: {filename}");
+			}
+
+			logger?.Info($"Loading header for {filename}");
+
+			using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
+			using var reader = new BinaryReader(fileStream);
+			var data = reader.ReadBytes(S5Header.StructLength);
+			return data.Length != S5Header.StructLength
+				? throw new InvalidOperationException($"bytes read ({data.Length}) didn't match bytes expected ({S5Header.StructLength})")
+				: S5Header.Read(data);
 		}
 
-		// load file
-		public static byte[] LoadDecode(string filename)
+		public static byte[] LoadBytesFromFile(string filename, ILogger? logger = null)
+		{
+			if (!File.Exists(filename))
+			{
+				var ex = new InvalidOperationException($"File doesn't exist: {filename}");
+				logger?.Error(ex);
+			}
+
+			logger?.Info($"Loading {filename}");
+			return File.ReadAllBytes(filename);
+		}
+
+		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData) LoadAndDecodeFromFile(string filename, ILogger? logger = null)
 		{
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 
-			// make openlocotool useful objects
 			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
 			var remainingData = fullData[S5Header.StructLength..];
 
 			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
 			remainingData = remainingData[ObjectHeader.StructLength..];
 
-			var decodedData = Decode(objectHeader.Encoding, remainingData);
-			remainingData = decodedData;
+			var decodedData = Decode(objectHeader.Encoding, remainingData.ToArray());
+			//remainingData = decodedData;
 
-			return [.. fullData[0..(S5Header.StructLength + ObjectHeader.StructLength)], .. decodedData];
+			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
+			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
+
+			if (checksum != s5Header.Checksum)
+			{
+				logger?.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
+			}
+
+			return (s5Header, objectHeader, decodedData);
 		}
 
 		// load file
-		public static (DatFileInfo DatFileInfo, ILocoObject LocoObject) LoadFull(string filename, ILogger? logger = null, bool loadExtra = true)
+		public static (DatFileInfo DatFileInfo, ILocoObject LocoObject) LoadFullObjectFromFile(string filename, bool loadExtra = true, ILogger? logger = null)
 		{
 			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
-			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
-
-			// make openlocotool useful objects
-			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
-			var remainingData = fullData[S5Header.StructLength..];
-
-			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
-			remainingData = remainingData[ObjectHeader.StructLength..];
-
-			var decodedData = Decode(objectHeader.Encoding, remainingData);
-			remainingData = decodedData;
+			var (s5Header, objectHeader, decodedData) = LoadAndDecodeFromFile(filename, logger);
+			ReadOnlySpan<byte> remainingData = decodedData;
 
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
 
@@ -104,14 +100,6 @@ namespace OpenLocoTool.DatFileParsing
 			var locoStructSize = structSize!.Size;
 			remainingData = remainingData[locoStructSize..];
 
-			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
-			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
-
-			if (checksum != s5Header.Checksum)
-			{
-				logger?.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
-			}
-
 			// every object has a string table
 			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct);
 			remainingData = remainingData[stringTableBytesRead..];
@@ -123,19 +111,19 @@ namespace OpenLocoTool.DatFileParsing
 			}
 
 			LocoObject? newObj;
-			//try
-			//{
-			// some objects have graphics data
-			var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			try
+			{
+				// some objects have graphics data
+				var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
+				logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-			newObj = new LocoObject(locoStruct, stringTable, imageTable);
-			//}
-			//catch (Exception ex)
-			//{
-			//	newObj = new LocoObject(locoStruct, stringTable);
-			//	logger?.Error(ex, "Error loading graphics table");
-			//}
+				newObj = new LocoObject(locoStruct, stringTable, imageTable);
+			}
+			catch (Exception ex)
+			{
+				newObj = new LocoObject(locoStruct, stringTable);
+				logger?.Error(ex, "Error loading graphics table");
+			}
 
 			// add to object manager
 			SObjectManager.Add(newObj);
@@ -143,7 +131,7 @@ namespace OpenLocoTool.DatFileParsing
 			return new(new DatFileInfo(s5Header, objectHeader), newObj);
 		}
 
-		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames)
+		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames, ILogger? logger = null)
 		{
 			var stringTable = new StringTable();
 
@@ -156,8 +144,14 @@ namespace OpenLocoTool.DatFileParsing
 
 			foreach (var locoString in stringNames)
 			{
-				stringTable.Add(locoString, []);
+				stringTable.Table.Add(locoString, []);
 				var languageDict = stringTable[locoString];
+
+				// add empty strings for every single language
+				foreach (var language in Enum.GetValues<LanguageId>())
+				{
+					languageDict.Add(language, string.Empty);
+				}
 
 				for (; ptr < data.Length && data[ptr] != 0xFF;)
 				{
@@ -166,12 +160,14 @@ namespace OpenLocoTool.DatFileParsing
 
 					while (data[ptr++] != '\0') ;
 
-					var str = Encoding.ASCII.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-					if (!languageDict.TryAdd(lang, str)) //new StringTableEntry { String = str }))
+					var str = Encoding.Latin1.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
+
+					if (!languageDict.ContainsKey(lang))
 					{
-						//Logger.Error($"Key {(i, lang)} already exists (this shouldn't happen)");
+						logger?.Error($"Skipping unknown language: \"{lang}\"");
 						break;
 					}
+					languageDict[lang] = str;
 				}
 
 				ptr++; // add one because we skipped the 0xFF byte at the end
@@ -190,11 +186,19 @@ namespace OpenLocoTool.DatFileParsing
 			return LoadStringTable(data, stringTableStrings);
 		}
 
+		public static G1Dat LoadG1(string filename, ILogger? logger = null)
+		{
+			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
+			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
+			logger?.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
+			return new G1Dat(g1Header, imageTable);
+		}
+
 		public static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 		{
 			var g1Element32s = new List<G1Element32>();
 
-			if (data.Length == 0)
+			if (data.Length < ObjectAttributes.StructSize<G1Header>())
 			{
 				return (new G1Header(0, 0), g1Element32s, 0);
 			}
@@ -220,7 +224,6 @@ namespace OpenLocoTool.DatFileParsing
 				var currElement = g1Element32s[i];
 				var nextOffset = i < g1Header.NumEntries - 1
 					? g1Element32s[i + 1].Offset
-					//	: g1Header.TotalSize;
 					: (uint)g1Header.ImageData.Length;
 
 				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
@@ -239,7 +242,7 @@ namespace OpenLocoTool.DatFileParsing
 			// not sure why this happens, but this seems 'legit'; airport files have these
 			if (img.ImageData.Length == 0)
 			{
-				return img.ImageData;
+				return [];
 			}
 
 			var width = img.Width;
@@ -315,35 +318,6 @@ namespace OpenLocoTool.DatFileParsing
 			return dstBuf;
 		}
 
-		public static byte[] LoadBytesFromFile(string filename)
-		{
-			if (!File.Exists(filename))
-			{
-				//Logger.Log(LogLevel.Error, $"Path doesn't exist: {filename}");
-				throw new InvalidOperationException($"File doesn't exist: {filename}");
-			}
-
-			//Logger.Log(LogLevel.Info, $"Loading {filename}");
-			return File.ReadAllBytes(filename);
-		}
-
-		public static S5Header LoadHeader(string filename, ILogger? logger = null)
-		{
-			if (!File.Exists(filename))
-			{
-				logger?.Error($"Path doesn't exist: {filename}");
-			}
-
-			logger?.Info($"Loading header for {filename}");
-
-			using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
-			using var reader = new BinaryReader(fileStream);
-			var data = reader.ReadBytes(S5Header.StructLength);
-			return data.Length != S5Header.StructLength
-					? throw new InvalidOperationException($"bytes read ({data.Length}) didn't match bytes expected ({S5Header.StructLength})")
-					: S5Header.Read(data);
-		}
-
 		public static ILocoStruct GetLocoStruct(ObjectType objectType, ReadOnlySpan<byte> data)
 			=> objectType switch
 			{
@@ -385,19 +359,61 @@ namespace OpenLocoTool.DatFileParsing
 			};
 
 		// taken from openloco's SawyerStreamReader::readChunk
-		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data) => encoding switch
+		public static byte[] Decode(SawyerEncoding encoding, byte[] data) => encoding switch
 		{
-			SawyerEncoding.Uncompressed => data.ToArray(),
+			SawyerEncoding.Uncompressed => data,
 			SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data),
 			SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
 			SawyerEncoding.Rotate => DecodeRotate(data),
 			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
 		};
 
-		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
-		private static byte[] DecodeRunLengthSingle(ReadOnlySpan<byte> data)
+		public static (RiffWavHeader header, byte[] data) LoadMusicTrack(byte[] data)
 		{
-			List<byte> buffer = [];
+			using (var ms = new MemoryStream(data))
+			using (var br = new BinaryReader(ms))
+			{
+				var headerBytes = br.ReadBytes(ObjectAttributes.StructSize<RiffWavHeader>());
+				var header = ByteReader.ReadLocoStruct<RiffWavHeader>(headerBytes);
+
+				var pcmData = new byte[header.DataLength];
+				br.Read(pcmData);
+				return (header, pcmData);
+			}
+		}
+
+		public static List<(WaveFormatEx header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
+		{
+			var result = new List<(WaveFormatEx, byte[])>();
+
+			using (var ms = new MemoryStream(data))
+			using (var br = new BinaryReader(ms))
+			{
+				var numSounds = br.ReadUInt32();
+				var soundOffsets = new uint32_t[numSounds];
+				for (var i = 0; i < numSounds; ++i)
+				{
+					soundOffsets[i] = br.ReadUInt32();
+				}
+
+				for (var i = 0; i < numSounds; ++i)
+				{
+					br.BaseStream.Position = soundOffsets[i];
+					var pcmLen = br.ReadUInt32();
+					var format = ByteReader.ReadLocoStruct<WaveFormatEx>(br.ReadBytes(ObjectAttributes.StructSize<WaveFormatEx>()));
+
+					var pcmData = br.ReadBytes((int)pcmLen);
+					result.Add((format, pcmData));
+				}
+			}
+
+			return result;
+		}
+
+		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
+		private static byte[] DecodeRunLengthSingle(byte[] data)
+		{
+			var ms = new MemoryStream();
 
 			for (var i = 0; i < data.Length; ++i)
 			{
@@ -410,7 +426,11 @@ namespace OpenLocoTool.DatFileParsing
 						throw new ArgumentException("Invalid RLE run");
 					}
 
-					buffer.AddRange(Enumerable.Repeat(data[i], 257 - rleCodeByte));
+					var count = 257 - rleCodeByte;
+
+					var arr = new byte[count];
+					Array.Fill(arr, data[i]);
+					ms.Write(arr);
 				}
 				else
 				{
@@ -421,24 +441,12 @@ namespace OpenLocoTool.DatFileParsing
 
 					var copyLen = rleCodeByte + 1;
 
-					for (var j = 0; j < copyLen; ++j)
-					{
-						buffer.Add(data[i + 1 + j]);
-					}
-
+					ms.Write(data, i + 1, copyLen);
 					i += rleCodeByte + 1;
 				}
 			}
 
-			// convert to span
-			var decodedSpan = new byte[buffer.Count];
-			var counter = 0;
-			foreach (var b in buffer)
-			{
-				decodedSpan[counter++] = b;
-			}
-
-			return decodedSpan;
+			return ms.ToArray();
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthMulti
@@ -461,7 +469,6 @@ namespace OpenLocoTool.DatFileParsing
 				else
 				{
 					var offset = (data[i] >> 3) - 32;
-					//assert(offset < 0);
 					if (-offset > buffer.Count)
 					{
 						throw new ArgumentException("Invalid RLE run");
@@ -470,54 +477,31 @@ namespace OpenLocoTool.DatFileParsing
 					var copySrc = 0 + buffer.Count + offset;
 					var copyLen = (data[i] & 7) + 1;
 
-					// Copy it to temp buffer first as we can't copy buffer to itself due to potential
-					// realloc in between reserve and push
-					//uint8_t copyBuffer[32];
-					//assert(copyLen <= sizeof(copyBuffer));
-					//std::memcpy(copyBuffer, copySrc, copyLen);
-					//buffer.push_back(copyBuffer, copyLen);
-
 					buffer.AddRange(buffer.GetRange(copySrc, copyLen));
 				}
 			}
 
-			// convert to span
-			var decodedSpan = new byte[buffer.Count];
-			var counter = 0;
-			foreach (var b in buffer)
-			{
-				decodedSpan[counter++] = b;
-			}
-
-			return decodedSpan;
+			return [.. buffer];
 		}
 
 		private static byte[] DecodeRotate(ReadOnlySpan<byte> data)
 		{
-			List<byte> buffer = [];
+			static byte Ror(byte x, byte shift)
+			{
+				const byte byteDigits = 8;
+				return (byte)((x >> shift) | (x << (byteDigits - shift)));
+			}
+
+			var buffer = new byte[data.Length];
 
 			byte code = 1;
 			for (var i = 0; i < data.Length; i++)
 			{
-				buffer.Add(Ror(data[i], code));
+				buffer[i] = Ror(data[i], code);
 				code = (byte)((code + 2) & 7);
 			}
 
-			// convert to span
-			var decodedSpan = new byte[buffer.Count];
-			var counter = 0;
-			foreach (var b in buffer)
-			{
-				decodedSpan[counter++] = b;
-			}
-
-			return decodedSpan;
-		}
-
-		private static byte Ror(byte x, byte shift)
-		{
-			const byte byteDigits = 8;
-			return (byte)((x >> shift) | (x << (byteDigits - shift)));
+			return buffer;
 		}
 	}
 }

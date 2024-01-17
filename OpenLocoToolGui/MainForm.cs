@@ -511,7 +511,7 @@ namespace OpenLocoToolGui
 
 		static bool MusicIsPlaying { get; set; } = false;
 
-		private void LoadAndPlaySound(byte[] data)
+		private void LoadAndPlaySound(byte[] data, string soundName)
 		{
 			var (header, pcmData) = SawyerStreamReader.LoadMusicTrack(data);
 
@@ -524,7 +524,7 @@ namespace OpenLocoToolGui
 				return;
 			}
 
-			var pn = CreateSoundUI(pcmData, header);
+			var pn = CreateSoundUI(pcmData, header, soundName);
 			flpImageTable.Controls.Add(pn);
 		}
 
@@ -540,9 +540,10 @@ namespace OpenLocoToolGui
 			flp.AutoSize = true;
 			flp.WrapContents = false;
 
+			var i = 0;
 			foreach (var (header, pcmData) in sfxs)
 			{
-				var pn = CreateSoundUI(pcmData, header);
+				var pn = CreateSoundUI(pcmData, header, $"{(SoundId)i++}");
 				flp.Controls.Add(pn);
 			}
 
@@ -605,7 +606,7 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		FlowLayoutPanel CreateSoundUI(byte[] pcmData, object waveHeader)
+		Panel CreateSoundUI(byte[] pcmData, object waveHeader, string soundName)
 		{
 			int samplesPerSecond = 0;
 			int bits = 0;
@@ -748,20 +749,35 @@ namespace OpenLocoToolGui
 				});
 			};
 
-			var pn = new FlowLayoutPanel();
-			pn.BorderStyle = BorderStyle.Fixed3D;
-			pn.FlowDirection = FlowDirection.LeftToRight;
-			//pn.BackColor = Color.LightCoral;
+			// text
+			var tb = new TextBox();
+			tb.Text = soundName;
+			tb.Enabled = false;
+			tb.Width = 128;
+			tb.Height = 32;
+			tb.Dock = DockStyle.Top;
+
+			// object controls
+			var flp = new FlowLayoutPanel();
+			flp.FlowDirection = FlowDirection.LeftToRight;
+			flp.Dock = DockStyle.Fill;
+			flp.AutoSize = true;
+
+			flp.Controls.Add(tb);
+			flp.Controls.Add(waveViewer);
+			flp.Controls.Add(playButton);
+			flp.Controls.Add(pauseButton);
+			flp.Controls.Add(stopButton);
+			flp.Controls.Add(exportButton);
+			flp.Controls.Add(importButton);
+
+			var pn = new Panel();
 			pn.Dock = DockStyle.Fill;
+			pn.BorderStyle = BorderStyle.Fixed3D;
 			pn.AutoSize = true;
-			//pn.WrapContents = false;
-			//pn.AutoScroll = true;
-			pn.Controls.Add(waveViewer);
-			pn.Controls.Add(playButton);
-			pn.Controls.Add(pauseButton);
-			pn.Controls.Add(stopButton);
-			pn.Controls.Add(exportButton);
-			pn.Controls.Add(importButton);
+			pn.Controls.Add(flp);
+			pn.Controls.Add(tb);
+
 			return pn;
 		}
 
@@ -799,15 +815,15 @@ namespace OpenLocoToolGui
 			}
 			else if (OriginalDataFiles.Music.ContainsKey(e.Node.Name.ToLower()))
 			{
-				logger.Debug($"Loading music for {e.Node.Name}");
+				logger.Debug($"Loading music for {e.Node.Name} ({e.Node.Text})");
 				var music = model.Music[e.Node.Name];
-				LoadAndPlaySound(music);
+				LoadAndPlaySound(music, $"{e.Node.Name} ({e.Node.Text})");
 			}
 			else if (OriginalDataFiles.MiscellaneousTracks.ContainsKey(e.Node.Name.ToLower()))
 			{
-				logger.Debug($"Loading miscellaneous track {e.Node.Name}");
+				logger.Debug($"Loading miscellaneous track {e.Node.Name} ({e.Node.Text})");
 				var misc = model.MiscellaneousTracks[e.Node.Name];
-				LoadAndPlaySound(misc);
+				LoadAndPlaySound(misc, $"{e.Node.Name} ({e.Node.Text})");
 			}
 			else if (OriginalDataFiles.SoundEffects.ContainsKey(e.Node.Name.ToLower()))
 			{
@@ -1021,7 +1037,7 @@ namespace OpenLocoToolGui
 			if (CurrentUIObject?.LocoObject.Object is SoundObject soundObject)
 			{
 				var hdr = soundObject.SoundObjectData.PcmHeader;
-				var pn = CreateSoundUI(soundObject.RawPcmData, hdr);
+				var pn = CreateSoundUI(soundObject.RawPcmData, hdr, CurrentUIObject?.LocoObject.StringTable.Table["Name"][LanguageId.english_uk] ?? "<null>");
 				flpImageTable.Controls.Add(pn);
 			}
 

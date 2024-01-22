@@ -41,7 +41,7 @@ namespace OpenLocoToolGui
 			scObjectAndLogs = new SplitContainer();
 			pnObjectEditor = new Panel();
 			toolStrip1 = new ToolStrip();
-			toolStripButton1 = new ToolStripButton();
+			btnSave = new ToolStripButton();
 			tcObjectOverview = new TabControl();
 			tpObjectView = new TabPage();
 			tcSubObjectView = new TabControl();
@@ -203,22 +203,22 @@ namespace OpenLocoToolGui
 			// 
 			// toolStrip1
 			// 
-			toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1 });
+			toolStrip1.Items.AddRange(new ToolStripItem[] { btnSave });
 			toolStrip1.Location = new Point(4, 4);
 			toolStrip1.Name = "toolStrip1";
 			toolStrip1.Size = new Size(1407, 25);
 			toolStrip1.TabIndex = 35;
 			toolStrip1.Text = "toolStrip1";
 			// 
-			// toolStripButton1
+			// btnSave
 			// 
-			toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
-			toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
-			toolStripButton1.ImageTransparentColor = Color.Magenta;
-			toolStripButton1.Name = "toolStripButton1";
-			toolStripButton1.Size = new Size(84, 22);
-			toolStripButton1.Text = "Save Changes";
-			toolStripButton1.Click += toolStripButton1_Click;
+			btnSave.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			btnSave.Image = (Image)resources.GetObject("btnSave.Image");
+			btnSave.ImageTransparentColor = Color.Magenta;
+			btnSave.Name = "btnSave";
+			btnSave.Size = new Size(84, 22);
+			btnSave.Text = "Save Changes";
+			btnSave.Click += btnSave_Click;
 			// 
 			// tcObjectOverview
 			// 
@@ -767,6 +767,6 @@ namespace OpenLocoToolGui
 		private SplitContainer scHeaders;
 		private Panel pnObjectEditor;
 		private ToolStrip toolStrip1;
-		private ToolStripButton toolStripButton1;
+		private ToolStripButton btnSave;
 	}
 }

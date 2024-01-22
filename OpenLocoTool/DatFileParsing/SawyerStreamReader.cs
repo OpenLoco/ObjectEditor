@@ -368,7 +368,7 @@ namespace OpenLocoTool.DatFileParsing
 			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
 		};
 
-		public static (RiffWavHeader header, byte[] data) LoadMusicTrack(byte[] data)
+		public static (RiffWavHeader header, byte[] data) LoadWavFile(byte[] data)
 		{
 			using (var ms = new MemoryStream(data))
 			using (var br = new BinaryReader(ms))

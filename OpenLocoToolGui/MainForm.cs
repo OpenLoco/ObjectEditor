@@ -9,6 +9,7 @@ using OpenLocoTool.Types;
 using OpenLocoToolCommon;
 using System.Data;
 using System.Drawing.Imaging;
+using System.Xml.Linq;
 
 namespace OpenLocoToolGui
 {
@@ -254,21 +255,21 @@ namespace OpenLocoToolGui
 			// music
 			foreach (var music in model.Music)
 			{
-				var displayName = OriginalDataFiles.Music[music.Key];
+				var displayName = $"{OriginalDataFiles.Music[music.Key]} ({music.Key})";
 				musicNode.Nodes.Add(music.Key, displayName, 1, 1);
 			}
 
 			//misc tracks
 			foreach (var miscTrack in model.MiscellaneousTracks)
 			{
-				var displayName = OriginalDataFiles.MiscellaneousTracks[miscTrack.Key];
+				var displayName = $"{OriginalDataFiles.MiscellaneousTracks[miscTrack.Key]} ({miscTrack.Key})";
 				miscTrackNode.Nodes.Add(miscTrack.Key, displayName, 1, 1);
 			}
 
 			// sound effects
 			foreach (var sfx in model.SoundEffects)
 			{
-				var displayName = OriginalDataFiles.SoundEffects[sfx.Key];
+				var displayName = $"{OriginalDataFiles.SoundEffects[sfx.Key]} ({sfx.Key})";
 				sfxNode.Nodes.Add(sfx.Key, displayName, 1, 1);
 			}
 
@@ -513,7 +514,7 @@ namespace OpenLocoToolGui
 
 		private void LoadAndPlaySound(byte[] data, string soundName)
 		{
-			var (header, pcmData) = SawyerStreamReader.LoadMusicTrack(data);
+			var (header, pcmData) = SawyerStreamReader.LoadWavFile(data);
 
 			pgS5Header.SelectedObject = header;
 
@@ -534,11 +535,7 @@ namespace OpenLocoToolGui
 
 			pgS5Header.SelectedObject = sfxs;
 
-			var flp = new FlowLayoutPanel();
-			flp.FlowDirection = FlowDirection.TopDown;
-			flp.Dock = DockStyle.Fill;
-			flp.AutoSize = true;
-			flp.WrapContents = false;
+			var flp = GetNewSoundUIFLP();
 
 			var i = 0;
 			foreach (var (header, pcmData) in sfxs)
@@ -548,6 +545,77 @@ namespace OpenLocoToolGui
 			}
 
 			flpImageTable.Controls.Add(flp);
+		}
+
+		FlowLayoutPanel GetNewSoundUIFLP()
+		{
+			var flp = new FlowLayoutPanel
+			{
+				FlowDirection = FlowDirection.TopDown,
+				Dock = DockStyle.Fill,
+				AutoSize = true,
+				WrapContents = false
+			};
+			return flp;
+		}
+
+		public void ImportWave(string soundNameToUpdate)
+		{
+			using (var openFileDialog = new OpenFileDialog())
+			{
+				openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+				openFileDialog.Filter = "WAV Files(*.wav)|*.wav|All files (*.*)|*.*";
+				openFileDialog.FilterIndex = 1;
+				openFileDialog.RestoreDirectory = true;
+
+				if (openFileDialog.ShowDialog() == DialogResult.OK)
+				{
+					// open dialog
+					var bytes = File.ReadAllBytes(openFileDialog.FileName);
+					var (header, pcmData) = SawyerStreamReader.LoadWavFile(bytes);
+
+					// if for music - just replace current data
+					if (OriginalDataFiles.Music.ContainsKey(soundNameToUpdate))
+					{
+						logger.Info($"Replacing music track {soundNameToUpdate} with {openFileDialog.FileName}");
+						var flp = flpImageTable.Controls.OfType<FlowLayoutPanel>().Single();
+						var pn = flpImageTable.Controls.OfType<Panel>().Single(pn => pn.Tag == soundNameToUpdate);
+						flp.Controls.Remove(pn);
+						flp.Controls.Add(CreateSoundUI(pcmData, header, soundNameToUpdate));
+					}
+					else if (Enum.GetValues<SoundId>().Select(sid => sid.ToString()).Contains(soundNameToUpdate))
+					{
+						logger.Info($"Replacing sound effect {soundNameToUpdate} with {openFileDialog.FileName}");
+						var wavHeader = new WaveFormatEx(1, (short)header.NumberOfChannels, (int)header.SampleRate, (int)header.ByteRate, 512, 4096, 0);
+
+						var newSoundUi = CreateSoundUI(pcmData, wavHeader, soundNameToUpdate);
+						var newFlp = GetNewSoundUIFLP();
+						var oldFlp = flpImageTable.Controls.OfType<FlowLayoutPanel>().Single();
+						var oldPn = oldFlp.Controls.OfType<Panel>().Single(pn => pn.Tag == soundNameToUpdate);
+						var oldIndex = oldFlp.Controls.IndexOf(oldPn);
+
+						while (oldFlp.Controls.Count > 0)
+						{
+							if (newFlp.Controls.Count == oldIndex)
+							{
+								oldFlp.Controls.RemoveAt(0);
+								newFlp.Controls.Add(newSoundUi);
+							}
+							else
+							{
+								newFlp.Controls.Add(oldFlp.Controls[0]);
+							}
+						}
+
+						flpImageTable.Controls.Clear();
+						flpImageTable.Controls.Add(newFlp);
+					}
+					else
+					{
+						logger.Warning($"Sound name {soundNameToUpdate} was not recognised - no action will be taken.");
+					}
+				}
+			}
 		}
 
 		public void ExportMusic(byte[] pcmData, object waveHeader)
@@ -664,15 +732,17 @@ namespace OpenLocoToolGui
 			{
 				Size = new Size(64, 64),
 				Text = "Export",
+				//Tag = soundName,
 			};
 			exportButton.Click += (args, sender) => ExportMusic(pcmData, waveHeader); // isRiff ? ExportMusic(pcmData, waveHeader) : ExportSoundEffect(pcmData, waveHeader);
 
 			var importButton = new Button
 			{
 				Size = new Size(64, 64),
-				Text = "Import (not implemented)",
-				Enabled = false,
+				Text = "Import",
+				//Tag = soundName,
 			};
+			importButton.Click += (args, sender) => ImportWave(soundName);
 
 			var waveViewer = new WaveViewer
 			{
@@ -775,6 +845,7 @@ namespace OpenLocoToolGui
 			pn.Dock = DockStyle.Fill;
 			pn.BorderStyle = BorderStyle.Fixed3D;
 			pn.AutoSize = true;
+			pn.Tag = soundName;
 			pn.Controls.Add(flp);
 			pn.Controls.Add(tb);
 
@@ -817,13 +888,13 @@ namespace OpenLocoToolGui
 			{
 				logger.Debug($"Loading music for {e.Node.Name} ({e.Node.Text})");
 				var music = model.Music[e.Node.Name];
-				LoadAndPlaySound(music, $"{e.Node.Name} ({e.Node.Text})");
+				LoadAndPlaySound(music, e.Node.Text);
 			}
 			else if (OriginalDataFiles.MiscellaneousTracks.ContainsKey(e.Node.Name.ToLower()))
 			{
 				logger.Debug($"Loading miscellaneous track {e.Node.Name} ({e.Node.Text})");
 				var misc = model.MiscellaneousTracks[e.Node.Name];
-				LoadAndPlaySound(misc, $"{e.Node.Name} ({e.Node.Text})");
+				LoadAndPlaySound(misc, e.Node.Text);
 			}
 			else if (OriginalDataFiles.SoundEffects.ContainsKey(e.Node.Name.ToLower()))
 			{
@@ -1171,10 +1242,23 @@ namespace OpenLocoToolGui
 			//e.DrawFocusRectangle();
 		}
 
-		private void toolStripButton1_Click(object sender, EventArgs e)
+		private void btnSave_Click(object sender, EventArgs e)
 		{
+			if (tvObjType.SelectedNode.Name == "css1.dat")
+			{
+				// save sound effect
+
+			}
+
+			if (CurrentUIObject is null)
+			{
+				logger.Warning("Current UI object is null");
+				return;
+			}
+
 			if (CurrentUIObject is not UiLocoObject obj)
 			{
+				logger.Warning("Current UI object is not a UiLocoObject");
 				return;
 			}
 

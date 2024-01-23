@@ -36,10 +36,12 @@
 			{ "90s2.dat", "Everlasting High-Rise" },
 		};
 
-		public static readonly Dictionary<string, string> SoundEffects = new()
-		{
-			{ "css1.dat", "Sound Effects" },
-		};
+		public const string SoundEffect = "css1.dat";
+
+		//public static readonly Dictionary<string, string> SoundEffect = new()
+		//{
+		//	{ "css1.dat", "Sound Effects" },
+		//};
 
 		public static readonly Dictionary<string, string> MiscellaneousTracks = new()
 		{

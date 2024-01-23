@@ -4,6 +4,7 @@ using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoTool.Types;
 using OpenLocoToolCommon;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OpenLocoTool.DatFileParsing
 {
@@ -186,8 +187,13 @@ namespace OpenLocoTool.DatFileParsing
 			return LoadStringTable(data, stringTableStrings);
 		}
 
-		public static G1Dat LoadG1(string filename, ILogger? logger = null)
+		public static G1Dat? LoadG1(string filename, ILogger? logger = null)
 		{
+			if (!File.Exists(filename))
+			{
+				logger?.Debug($"File {filename} does not exist");
+				return null;
+			}
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
 			logger?.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
@@ -391,6 +397,7 @@ namespace OpenLocoTool.DatFileParsing
 			{
 				var numSounds = br.ReadUInt32();
 				var soundOffsets = new uint32_t[numSounds];
+
 				for (var i = 0; i < numSounds; ++i)
 				{
 					soundOffsets[i] = br.ReadUInt32();
@@ -400,10 +407,10 @@ namespace OpenLocoTool.DatFileParsing
 				{
 					br.BaseStream.Position = soundOffsets[i];
 					var pcmLen = br.ReadUInt32();
-					var format = ByteReader.ReadLocoStruct<WaveFormatEx>(br.ReadBytes(ObjectAttributes.StructSize<WaveFormatEx>()));
+					var header = ByteReader.ReadLocoStruct<WaveFormatEx>(br.ReadBytes(ObjectAttributes.StructSize<WaveFormatEx>()));
 
 					var pcmData = br.ReadBytes((int)pcmLen);
-					result.Add((format, pcmData));
+					result.Add((header, pcmData));
 				}
 			}
 

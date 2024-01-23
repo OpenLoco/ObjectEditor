@@ -39,7 +39,7 @@ namespace OpenLocoTool.Objects
 	{
 		public SoundObjectData SoundObjectData { get; set; }
 
-		public byte[] RawPcmData { get; set; } = [];
+		public byte[] PcmData { get; set; } = [];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
@@ -57,7 +57,7 @@ namespace OpenLocoTool.Objects
 			SoundObjectData = ByteReader.ReadLocoStruct<SoundObjectData>(remainingData[..ObjectAttributes.StructSize<SoundObjectData>()]);
 			remainingData = remainingData[ObjectAttributes.StructSize<SoundObjectData>()..];
 
-			RawPcmData = remainingData.ToArray();
+			PcmData = remainingData.ToArray();
 
 			return remainingData[remainingData.Length..];
 		}

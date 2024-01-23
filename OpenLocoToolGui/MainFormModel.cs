@@ -62,7 +62,7 @@ namespace OpenLocoToolGui
 
 		public Color[] Palette { get; private set; }
 
-		public G1Dat G1 { get; set; }
+		public G1Dat? G1 { get; set; }
 
 		public Dictionary<string, byte[]> Music { get; set; } = [];
 
@@ -259,6 +259,7 @@ namespace OpenLocoToolGui
 
 			void LoadKnownData(HashSet<string> allFilesInDir, HashSet<string> knownFilenames, Dictionary<string, byte[]> dict)
 			{
+				dict.Clear();
 				var expectedMusicFiles = knownFilenames.Select(f => f.ToLower());
 				foreach (var music in expectedMusicFiles)
 				{
@@ -273,7 +274,7 @@ namespace OpenLocoToolGui
 
 			LoadKnownData(allDataFiles, [.. OriginalDataFiles.Music.Keys], Music);
 			LoadKnownData(allDataFiles, [.. OriginalDataFiles.MiscellaneousTracks.Keys], MiscellaneousTracks);
-			LoadKnownData(allDataFiles, [.. OriginalDataFiles.SoundEffects.Keys], SoundEffects);
+			LoadKnownData(allDataFiles, [OriginalDataFiles.SoundEffect], SoundEffects);
 			LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
 
 			MiscFiles = [.. allDataFiles];

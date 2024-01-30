@@ -8,6 +8,7 @@ using OpenLocoTool.Objects;
 using OpenLocoTool.Types;
 using OpenLocoToolCommon;
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.Drawing.Imaging;
 
 namespace OpenLocoToolGui
@@ -52,16 +53,21 @@ namespace OpenLocoToolGui
 				flpImageTable.SuspendLayout();
 				flpImageTable.Controls.Clear();
 
-				var exportBtn = new Button();
-				exportBtn.Text = "Export images to folder";
-				exportBtn.Click += (args, sender) => ExportImages();
+				if (controls.Count() > 0)
+				{
+					var exportBtn = new Button();
+					exportBtn.Width = 128;
+					exportBtn.Text = "Export all";
+					exportBtn.Click += (args, sender) => ExportImages();
 
-				var importBtn = new Button();
-				importBtn.Text = "Import images from folder";
-				importBtn.Click += (args, sender) => ImportImages();
+					var importBtn = new Button();
+					importBtn.Width = 128;
+					importBtn.Text = "Import folder";
+					importBtn.Click += (args, sender) => ImportImages();
 
-				flpImageTable.Controls.Add(exportBtn);
-				flpImageTable.Controls.Add(importBtn);
+					flpImageTable.Controls.Add(exportBtn);
+					flpImageTable.Controls.Add(importBtn);
+				}
 
 				flpImageTable.Controls.AddRange(controls.ToArray());
 				var pages = (CurrentUIImages.Count / imagesPerPage) + 1;
@@ -674,7 +680,8 @@ namespace OpenLocoToolGui
 					var counter = 0;
 					foreach (var image in currentUIObjectImages)
 					{
-						var path = Path.Combine(fbDialog.SelectedPath, $"image{counter++}.png");
+						var imageName = GetImageName(CurrentUIObject, counter++);
+						var path = Path.Combine(fbDialog.SelectedPath, $"{imageName}.png");
 						logger.Debug($"Saving image to {path}");
 						image.Save(path);
 					}
@@ -682,6 +689,24 @@ namespace OpenLocoToolGui
 					logger.Info($"Saved {counter} images to {fbDialog.SelectedPath}");
 				}
 			}
+		}
+
+		public string GetImageName(IUiObject? uiObj, int counter)
+		{
+			if (uiObj is UiLocoObject uiLocoObj)
+			{
+				if (uiLocoObj.LocoObject.Object is TrackObject)
+				{
+					if (!TrackObject.ImageIdNameMap.TryGetValue(counter, out string? value))
+					{
+						logger.Error($"Object \"{uiLocoObj.DatFileInfo.S5Header.Name}\" does not have an image for id {counter}");
+						return $"{uiLocoObj.DatFileInfo.S5Header.Name}-{counter}";
+					}
+					return value;
+				}
+			}
+
+			return $"image{counter}";
 		}
 
 		public void ExportMusic(UiSoundObject uiSoundObj)
@@ -937,9 +962,9 @@ namespace OpenLocoToolGui
 
 		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images)
 		{
-			// on these controls we could add a right_click handler to replace image with user-created one
+			// todo: on these controls we could add a right_click handler to replace image with user-created one
 			var count = 0;
-			const int scale = 4;
+			const int scale = 3;
 			foreach (var img in images)
 			{
 				var panel = new FlowLayoutPanel
@@ -958,15 +983,17 @@ namespace OpenLocoToolGui
 					SizeMode = PictureBoxSizeMode.StretchImage,
 					Size = new Size(img.Width * scale, img.Height * scale),
 					ContextMenuStrip = imgContextMenu,
-					//Dock = DockStyle.Bottom,
 				};
 
+				var text = GetImageName(CurrentUIObject, count);
 				var tb = new TextBox
 				{
-					MinimumSize = new Size(96, 16),
-					Text = $"i={count} w={img.Width} h={img.Height}",
+					Text = GetImageName(CurrentUIObject, count),
 					Dock = DockStyle.Top
 				};
+				var size = TextRenderer.MeasureText(text, tb.Font);
+				tb.MinimumSize = new Size(size.Width, 16);
+				
 				count++;
 
 				panel.Controls.Add(tb);

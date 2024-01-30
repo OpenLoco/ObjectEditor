@@ -40,6 +40,8 @@ namespace OpenLocoToolGui
 		}
 		IList<Control> currentUIImages = new List<Control>();
 
+		IList<Bitmap> currentUIObjectImages = new List<Bitmap>();
+
 		int CurrentUIImagePageNumber
 		{
 			get => currentUIImagePageNumber;
@@ -49,6 +51,18 @@ namespace OpenLocoToolGui
 				var controls = GetPictureBoxesForPage(currentUIImagePageNumber);
 				flpImageTable.SuspendLayout();
 				flpImageTable.Controls.Clear();
+
+				var exportBtn = new Button();
+				exportBtn.Text = "Export images to folder";
+				exportBtn.Click += (args, sender) => ExportImages();
+
+				var importBtn = new Button();
+				importBtn.Text = "Import images from folder";
+				importBtn.Click += (args, sender) => ImportImages();
+
+				flpImageTable.Controls.Add(exportBtn);
+				flpImageTable.Controls.Add(importBtn);
+
 				flpImageTable.Controls.AddRange(controls.ToArray());
 				var pages = (CurrentUIImages.Count / imagesPerPage) + 1;
 				tbCurrentPage.Text = $"Page ({currentUIImagePageNumber + 1} / {pages}) ";
@@ -627,29 +641,72 @@ namespace OpenLocoToolGui
 			}
 		}
 
+		public void ImportImages()
+		{
+			using (var fbDialog = new FolderBrowserDialog())
+			{
+				fbDialog.InitialDirectory = Directory.GetCurrentDirectory();
+
+				if (fbDialog.ShowDialog() == DialogResult.OK)
+				{
+					currentUIObjectImages.Clear();
+					var files = Directory.GetFiles(fbDialog.SelectedPath);
+					var sorted = files.OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f)[5..]));
+					foreach (var file in sorted)
+					{
+						var img = (Bitmap)Image.FromFile(file);
+						currentUIObjectImages.Add(img);
+					}
+
+					CurrentUIImages = CreateImageControls(currentUIObjectImages).ToList();
+				}
+			}
+		}
+
+		public void ExportImages()
+		{
+			using (var fbDialog = new FolderBrowserDialog())
+			{
+				fbDialog.InitialDirectory = Directory.GetCurrentDirectory();
+
+				if (fbDialog.ShowDialog() == DialogResult.OK)
+				{
+					var counter = 0;
+					foreach (var image in currentUIObjectImages)
+					{
+						var path = Path.Combine(fbDialog.SelectedPath, $"image{counter++}.png");
+						logger.Debug($"Saving image to {path}");
+						image.Save(path);
+					}
+
+					logger.Info($"Saved {counter} images to {fbDialog.SelectedPath}");
+				}
+			}
+		}
+
 		public void ExportMusic(UiSoundObject uiSoundObj)
 		{
-			using (var saveFileDialog = new SaveFileDialog())
+			using (var sfDialog = new SaveFileDialog())
 			{
-				saveFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
-				saveFileDialog.Filter = "WAV Files(*.wav)|*.wav|All files (*.*)|*.*";
-				saveFileDialog.FilterIndex = 1;
-				saveFileDialog.RestoreDirectory = true;
+				sfDialog.InitialDirectory = Directory.GetCurrentDirectory();
+				sfDialog.Filter = "WAV Files(*.wav)|*.wav|All files (*.*)|*.*";
+				sfDialog.FilterIndex = 1;
+				sfDialog.RestoreDirectory = true;
 
 				// suggested filename for the save dialog
 				if (OriginalDataFiles.Music.TryGetValue(tvObjType.SelectedNode.Name, out string? value))
 				{
-					saveFileDialog.FileName = value;
+					sfDialog.FileName = value;
 				}
 				else
 				{
-					saveFileDialog.FileName = "export.wav";
+					sfDialog.FileName = "export.wav";
 				}
 
-				if (saveFileDialog.ShowDialog() == DialogResult.OK)
+				if (sfDialog.ShowDialog() == DialogResult.OK)
 				{
-					SawyerStreamWriter.ExportMusicAsWave(saveFileDialog.FileName, uiSoundObj.Header, uiSoundObj.Data);
-					logger.Info($"Saved music to {saveFileDialog.FileName}");
+					SawyerStreamWriter.ExportMusicAsWave(sfDialog.FileName, uiSoundObj.Header, uiSoundObj.Data);
+					logger.Info($"Saved music to {sfDialog.FileName}");
 
 				}
 			}
@@ -818,8 +875,10 @@ namespace OpenLocoToolGui
 		void LoadG1(string filename)
 		{
 			pgS5Header.SelectedObject = model.G1;
-			var images = CreateImages(model.G1.G1Elements, model.Palette);
-			CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToList();
+
+			currentUIObjectImages = CreateImages(model.G1.G1Elements, model.Palette).ToList();
+			CurrentUIImages = CreateImageControls(currentUIObjectImages).ToList();
+
 			LoadDataDump(filename, true);
 		}
 
@@ -876,7 +935,7 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images, List<G1Element32> g1Elements) // g1Elements is simply used for metadata at this stage
+		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images)
 		{
 			// on these controls we could add a right_click handler to replace image with user-created one
 			var count = 0;
@@ -905,7 +964,7 @@ namespace OpenLocoToolGui
 				var tb = new TextBox
 				{
 					MinimumSize = new Size(96, 16),
-					Text = $"i={count} w={g1Elements[count].Width} h={g1Elements[count].Height}",
+					Text = $"i={count} w={img.Width} h={img.Height}",
 					Dock = DockStyle.Top
 				};
 				count++;
@@ -1055,8 +1114,8 @@ namespace OpenLocoToolGui
 						return;
 					}
 
-					var images = CreateImages(uiLocoObj.LocoObject.G1Elements, model.Palette);
-					CurrentUIImages = CreateImageControls(images, uiLocoObj.LocoObject.G1Elements).ToArray();
+					currentUIObjectImages = CreateImages(uiLocoObj.LocoObject.G1Elements, model.Palette).ToList();
+					CurrentUIImages = CreateImageControls(currentUIObjectImages).ToArray();
 				}
 
 				if (uiLocoObj.LocoObject.Object is SoundObject soundObject)

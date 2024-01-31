@@ -9,9 +9,8 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x06)]
 	[LocoStructType(ObjectType.Snow)]
 	[LocoStringTable("Name")]
-	public class SnowObject : ILocoStruct
-	{
-		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		//[LocoStructOffset(0x02)] image_id Image
-	}
+	public record SnowObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image
+	) : ILocoStruct;
 }

@@ -23,18 +23,11 @@ namespace OpenLocoTool.Objects
 	[LocoStructType(ObjectType.Wall)]
 	[LocoStringTable("Name")]
 	public class WallObject(
-		uint8_t var_06,
-		WallObjectFlags flags,
-		uint8_t height,
-		uint8_t var_09)
-		: ILocoStruct
-	{
-
-		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		//[LocoStructOffset(0x02)] public image_id Image,
-		[LocoStructOffset(0x06), LocoPropertyMaybeUnused] public uint8_t var_06 { get; set; } = var_06;
-		[LocoStructOffset(0x07)] public WallObjectFlags Flags { get; set; } = flags;
-		[LocoStructOffset(0x08)] public uint8_t Height { get; set; } = height;
-		[LocoStructOffset(0x09), LocoPropertyMaybeUnused] public uint8_t var_09 { get; set; } = var_09;
-	}
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
+		[property: LocoStructOffset(0x06), LocoPropertyMaybeUnused] uint8_t var_06,
+		[property: LocoStructOffset(0x07)] WallObjectFlags Flags,
+		[property: LocoStructOffset(0x08)] uint8_t Height,
+		[property: LocoStructOffset(0x09), LocoPropertyMaybeUnused] uint8_t var_09
+	) : ILocoStruct;
 }

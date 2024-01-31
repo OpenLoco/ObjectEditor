@@ -8,11 +8,11 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x0C)]
 	[LocoStructType(ObjectType.StreetLight)]
 	[LocoStringTable("Name")]
-	public class StreetLightObject(uint16_t[] designedYear)
-		: ILocoStruct
+	public record StreetLightObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), LocoArrayLength(StreetLightObject.DesignedYearLength)] uint16_t[] DesignedYear
+	) : ILocoStruct
 	{
-		[LocoStructOffset(0x02), LocoArrayLength(DesignedYearLength)] public uint16_t[] DesignedYear { get; set; } = designedYear;
-
 		public const int DesignedYearLength = 3;
 	}
 }

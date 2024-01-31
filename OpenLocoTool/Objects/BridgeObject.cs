@@ -24,9 +24,9 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x14)] uint16_t DisabledTrackCfg,
 		[property: LocoStructOffset(0x16), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x1A), LocoPropertyMaybeUnused] uint8_t NumCompatibleTrackMods,
-		[property: LocoStructOffset(0x1B), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumTrackMods), LocoPropertyMaybeUnused, Browsable(false)] uint8_t[] TrackModHeaderIds,
+		[property: LocoStructOffset(0x1B), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumTrackMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] TrackModHeaderIds,
 		[property: LocoStructOffset(0x22), LocoPropertyMaybeUnused] uint8_t NumCompatibleRoadMods,
-		[property: LocoStructOffset(0x23), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumRoadMods), LocoPropertyMaybeUnused, Browsable(false)] uint8_t[] RoadModHeaderIds,
+		[property: LocoStructOffset(0x23), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumRoadMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] RoadModHeaderIds,
 		[property: LocoStructOffset(0x2A), LocoPropertyMaybeUnused] uint16_t DesignedYear
 		) : ILocoStruct, ILocoStructVariableData
 	{

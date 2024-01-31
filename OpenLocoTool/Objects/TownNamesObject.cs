@@ -17,12 +17,11 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x1A)]
 	[LocoStructType(ObjectType.TownNames)]
 	[LocoStringTable("Name")]
-	public class TownNamesObject(TownNamesUnk[] unks)
-		: ILocoStruct, ILocoStructVariableData
+	public record TownNamesObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), LocoArrayLength(6)] TownNamesUnk[] UnknownTownNameStructs
+	) : ILocoStruct, ILocoStructVariableData
 	{
-		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[LocoStructOffset(0x02), LocoArrayLength(6)] public TownNamesUnk[] unks { get; set; } = unks;
-
 		byte[] tempUnkVariableData;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)

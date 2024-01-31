@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics.Metrics;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
+using OpenLocoTool.Types;
 
 namespace OpenLocoTool.Objects
 {
@@ -48,7 +50,7 @@ namespace OpenLocoTool.Objects
 		uint8_t numBridges,
 		uint8_t numStations,
 		uint8_t displayOffset)
-		: ILocoStruct, ILocoStructVariableData
+		: ILocoStruct, ILocoStructVariableData, IImageTableStrings
 	{
 		//[LocoStructOffset(0x00), LocoString, Browsable(false)] public string_id Name,
 		[LocoStructOffset(0x02)] public TrackObjectPieceFlags TrackPieces { get; set; } = trackPieces;
@@ -133,6 +135,9 @@ namespace OpenLocoTool.Objects
 
 			return headers.SelectMany(h => h.Write().ToArray()).ToArray();
 		}
+
+		public bool TryGetImageName(int id, out string? value)
+			=> ImageIdNameMap.TryGetValue(id, out value);
 
 		// taken from OpenLoco TrackObject.h
 		public static Dictionary<int, string> ImageIdNameMap = new()

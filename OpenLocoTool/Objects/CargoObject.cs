@@ -41,7 +41,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x06), LocoString, Browsable(false)] string_id UnitsAndCargoName,
 		[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id UnitNameSingular,
 		[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id UnitNamePlural,
-		[property: LocoStructOffset(0x0C)] image_id UnitInlineSprite,
+		[property: LocoStructOffset(0x0C), Browsable(false)] image_id UnitInlineSprite,
 		[property: LocoStructOffset(0x10)] CargoCategory CargoCategory,
 		[property: LocoStructOffset(0x12)] CargoObjectFlags Flags,
 		[property: LocoStructOffset(0x13)] uint8_t NumPlatformVariations,

@@ -688,9 +688,9 @@ namespace OpenLocoToolGui
 		{
 			if (uiObj is UiLocoObject uiLocoObj)
 			{
-				if (uiLocoObj.LocoObject.Object is TrackObject)
+				if (uiLocoObj.LocoObject.Object is IImageTableStrings its)
 				{
-					if (!TrackObject.ImageIdNameMap.TryGetValue(counter, out string? value))
+					if (!its.TryGetImageName(counter, out string? value) || value == null)
 					{
 						logger.Error($"Object \"{uiLocoObj.DatFileInfo.S5Header.Name}\" does not have an image for id {counter}");
 						return $"{uiLocoObj.DatFileInfo.S5Header.Name}-{counter}";

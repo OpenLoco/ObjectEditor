@@ -41,16 +41,22 @@ namespace OpenLocoTool.Objects
 
 		public byte[] PcmData { get; set; } = [];
 
+		uint numUnkStructs;
+		uint pcmDataLength;
+		byte[] unkData;
+
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// unknown structs
-			var numUnkStructs = BitConverter.ToUInt32(remainingData[0..4]);
+			numUnkStructs = BitConverter.ToUInt32(remainingData[0..4]);
 			remainingData = remainingData[4..];
 
 			// pcm data length
-			//var pcmDataLength = BitConverter.ToUInt32(remainingData[0..4]); // unused
+			pcmDataLength = BitConverter.ToUInt32(remainingData[0..4]); // unused
 			remainingData = remainingData[4..];
 
+			// unk
+			unkData = remainingData[..(int)(numUnkStructs * 16)].ToArray();
 			remainingData = remainingData[(int)(numUnkStructs * 16)..];
 
 			// pcm data
@@ -62,6 +68,23 @@ namespace OpenLocoTool.Objects
 			return remainingData[remainingData.Length..];
 		}
 
-		public ReadOnlySpan<byte> Save() => throw new NotImplementedException();
+		public ReadOnlySpan<byte> Save()
+		{
+			using (var ms = new MemoryStream())
+			using (var br = new BinaryWriter(ms))
+			{
+				br.Write(numUnkStructs);
+				br.Write(pcmDataLength);
+				br.Write(unkData);
+				br.Write(ByteWriter.WriteLocoStruct(SoundObjectData));
+				br.Write(PcmData);
+
+				br.Flush();
+				ms.Flush();
+
+				return ms.ToArray();
+			}
+
+		}
 	}
 }

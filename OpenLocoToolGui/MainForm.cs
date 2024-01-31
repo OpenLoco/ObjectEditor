@@ -547,7 +547,6 @@ namespace OpenLocoToolGui
 			}
 
 			CurrentUIObject = uiSoundObjectList;
-
 		}
 
 		FlowLayoutPanel GetNewSoundUIFLP()
@@ -1139,6 +1138,9 @@ namespace OpenLocoToolGui
 
 			if (CurrentUIObject is UiLocoObject uiLocoObj)
 			{
+				tsImageTable.Enabled = true;
+				tsImageTable.Visible = true;
+
 				if (uiLocoObj.LocoObject.G1Elements != null && uiLocoObj.LocoObject.G1Elements.Count != 0)
 				{
 					if (model.Palette is null)
@@ -1154,6 +1156,9 @@ namespace OpenLocoToolGui
 
 				if (uiLocoObj.LocoObject.Object is SoundObject soundObject)
 				{
+					tsImageTable.Enabled = false;
+					tsImageTable.Visible = false;
+
 					var hdr = soundObject.SoundObjectData.PcmHeader;
 					var text = uiLocoObj.LocoObject.StringTable.Table["Name"][LanguageId.english_uk] ?? "<null>";
 					var pn = CreateSoundUI(new UiSoundObject { Data = soundObject.PcmData, Header = SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), SoundName = text });
@@ -1169,6 +1174,9 @@ namespace OpenLocoToolGui
 
 			if (CurrentUIObject is UiSoundObjectList uiSoundObjList)
 			{
+				tsImageTable.Enabled = false;
+				tsImageTable.Visible = false;
+
 				pgS5Header.SelectedObject = uiSoundObjList.Audio[0].Header;
 
 				var flp = GetNewSoundUIFLP();
@@ -1312,15 +1320,6 @@ namespace OpenLocoToolGui
 			if (CurrentUIObject is null)
 			{
 				logger.Warning("Current UI object is null");
-				return;
-			}
-
-			if (CurrentUIObject is UiLocoObject obje && !SaveEnabledObjects.Types.Contains(obje.DatFileInfo.S5Header.ObjectType))
-			{
-				var msg = $"Saving is not currently implemented for {obje.DatFileInfo.S5Header.ObjectType} objects";
-				logger.Error(msg);
-				logger.Info($"Saving is currently supported for the following objects: [{SaveEnabledObjects.Types.Aggregate("", (a, b) => a + ", " + b)}]");
-				MessageBox.Show(msg);
 				return;
 			}
 

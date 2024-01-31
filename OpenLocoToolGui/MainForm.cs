@@ -53,22 +53,6 @@ namespace OpenLocoToolGui
 				flpImageTable.SuspendLayout();
 				flpImageTable.Controls.Clear();
 
-				if (controls.Count() > 0)
-				{
-					var exportBtn = new Button();
-					exportBtn.Width = 128;
-					exportBtn.Text = "Export all";
-					exportBtn.Click += (args, sender) => ExportImages();
-
-					var importBtn = new Button();
-					importBtn.Width = 128;
-					importBtn.Text = "Import folder";
-					importBtn.Click += (args, sender) => ImportImages();
-
-					flpImageTable.Controls.Add(exportBtn);
-					flpImageTable.Controls.Add(importBtn);
-				}
-
 				flpImageTable.Controls.AddRange(controls.ToArray());
 				var pages = (CurrentUIImages.Count / imagesPerPage) + 1;
 				tbCurrentPage.Text = $"Page ({currentUIImagePageNumber + 1} / {pages}) ";
@@ -664,9 +648,14 @@ namespace OpenLocoToolGui
 						currentUIObjectImages.Add(img);
 					}
 
-					CurrentUIImages = CreateImageControls(currentUIObjectImages).ToList();
+					RefreshImageControls();
 				}
 			}
+		}
+
+		public void RefreshImageControls()
+		{
+			CurrentUIImages = CreateImageControls(currentUIObjectImages).ToList();
 		}
 
 		public void ExportImages()
@@ -902,7 +891,7 @@ namespace OpenLocoToolGui
 			pgS5Header.SelectedObject = model.G1;
 
 			currentUIObjectImages = CreateImages(model.G1.G1Elements, model.Palette).ToList();
-			CurrentUIImages = CreateImageControls(currentUIObjectImages).ToList();
+			RefreshImageControls();
 
 			LoadDataDump(filename, true);
 		}
@@ -960,11 +949,29 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
+		public int ImageScale
+		{
+			get => imageScale;
+			set
+			{
+				if (value is < 1 or > 10)
+				{
+					value = 1;
+				}
+				if (value != imageScale)
+				{
+					imageScale = value;
+					RefreshImageControls();
+				}
+			}
+		}
+		int imageScale = 1;
+
 		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images)
 		{
 			// todo: on these controls we could add a right_click handler to replace image with user-created one
 			var count = 0;
-			const int scale = 3;
+
 			foreach (var img in images)
 			{
 				var panel = new FlowLayoutPanel
@@ -981,7 +988,7 @@ namespace OpenLocoToolGui
 					Image = img,
 					InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor,
 					SizeMode = PictureBoxSizeMode.StretchImage,
-					Size = new Size(img.Width * scale, img.Height * scale),
+					Size = new Size(img.Width * ImageScale, img.Height * ImageScale),
 					ContextMenuStrip = imgContextMenu,
 				};
 
@@ -993,7 +1000,7 @@ namespace OpenLocoToolGui
 				};
 				var size = TextRenderer.MeasureText(text, tb.Font);
 				tb.MinimumSize = new Size(size.Width, 16);
-				
+
 				count++;
 
 				panel.Controls.Add(tb);
@@ -1142,7 +1149,7 @@ namespace OpenLocoToolGui
 					}
 
 					currentUIObjectImages = CreateImages(uiLocoObj.LocoObject.G1Elements, model.Palette).ToList();
-					CurrentUIImages = CreateImageControls(currentUIObjectImages).ToArray();
+					RefreshImageControls();
 				}
 
 				if (uiLocoObj.LocoObject.Object is SoundObject soundObject)
@@ -1359,6 +1366,25 @@ namespace OpenLocoToolGui
 				//	logger.Error($"Error saving \"{filename}\": {ex.Message}");
 				//	MessageBox.Show($"Error saving \"{filename}\": {ex.Message}");
 				//}
+			}
+		}
+
+		private void tsbImportFromDirectory_Click(object sender, EventArgs e)
+		{
+			ImportImages();
+		}
+
+		private void tsbExportToDirectory_Click(object sender, EventArgs e)
+		{
+			ExportImages();
+		}
+
+		private void tstbImageScaling_TextChanged(object sender, EventArgs e)
+		{
+			var parsed = int.TryParse(tstbImageScaling.Text, out int scale);
+			if (parsed)
+			{
+				ImageScale = scale;
 			}
 		}
 	}

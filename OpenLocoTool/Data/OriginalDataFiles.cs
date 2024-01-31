@@ -16,7 +16,7 @@
 			{ "20s4.dat", "Flying High" },
 			{ "20s5.dat", "Get Me To Gladstone Bay" },
 			{ "20s6.dat", "Sandy Track Blues" },
-			{ "40s1.dat", "A Traveller's Serenade" }, // in loco its misspelt - Seranade
+			{ "40s1.dat", "A Traveller's Serenade" }, // todo: in loco its misspelt - Seranade
 			{ "40s2.dat", "Latino Trip" },
 			{ "40s3.dat", "Head To The Bop" },
 			{ "50s1.dat", "Gettin' On The Gas" },

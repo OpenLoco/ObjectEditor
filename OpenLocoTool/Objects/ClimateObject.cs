@@ -8,20 +8,15 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x0A)]
 	[LocoStructType(ObjectType.Climate)]
 	[LocoStringTable("Name")]
-	public class ClimateObject(
-		byte firstSeason,
-		byte[] seasonLengths,
-		byte winterSnowLine,
-		byte summerSnowLine)
-		: ILocoStruct
+	public record ClimateObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02)] uint8_t FirstSeason,
+		[property: LocoStructOffset(0x03), LocoArrayLength(ClimateObject.Seasons)] uint8_t[] SeasonLengths,
+		[property: LocoStructOffset(0x07)] uint8_t WinterSnowLine,
+		[property: LocoStructOffset(0x08)] uint8_t SummerSnowLine,
+		[property: LocoStructOffset(0x09)] uint8_t pad_09
+		) : ILocoStruct
 	{
-		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name { get; set; }
-		[LocoStructOffset(0x02)] public uint8_t FirstSeason { get; set; } = firstSeason;
-		[LocoStructOffset(0x03), LocoArrayLength(Seasons)] public uint8_t[] SeasonLengths { get; set; } = seasonLengths;
-		[LocoStructOffset(0x07)] public uint8_t WinterSnowLine { get; set; } = winterSnowLine;
-		[LocoStructOffset(0x08)] public uint8_t SummerSnowLine { get; set; } = summerSnowLine;
-		//[LocoStructOffset(0x09)] uint8_t pad_09 { get; set; }
-
 		public const int Seasons = 4;
 	}
 }

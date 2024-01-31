@@ -8,6 +8,7 @@ namespace OpenLocoTool.Objects
 	[LocoStructSize(0x06)]
 	[LocoStructType(ObjectType.CliffEdge)]
 	[LocoStringTable("Name")]
-	public class CliffEdgeObject : ILocoStruct
-	{ }
+	public record CliffEdgeObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name
+		) : ILocoStruct;
 }

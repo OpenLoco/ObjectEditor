@@ -4,11 +4,9 @@ using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoTool.Types;
 using OpenLocoToolCommon;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OpenLocoTool.DatFileParsing
 {
-
 	public static class SawyerStreamReader
 	{
 		public static List<S5Header> LoadVariableCountS5Headers(ReadOnlySpan<byte> data, int count)

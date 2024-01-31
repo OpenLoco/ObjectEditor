@@ -7,6 +7,7 @@ using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoTool.Types;
 using OpenLocoToolCommon;
+using System;
 using System.Data;
 using System.Diagnostics.Metrics;
 using System.Drawing.Imaging;
@@ -189,16 +190,20 @@ namespace OpenLocoToolGui
 			return imageList;
 		}
 
-		static void AddObjectNode(string key, string text, string objName, TreeView tv)
+		static void AddObjectNode(string key, string text, string objName, uint objChecksum, TreeView tv)
 		{
-			var imageIndex = OriginalObjectFiles.Names.Contains(objName.Trim()) ? 1 : 0;
+			var imageIndex = IsOriginalFile(objName, objChecksum) ? 1 : 0;
 			_ = tv.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
-		static void AddObjectNode(string key, string text, string objName, TreeNode tn)
+
+		static void AddObjectNode(string key, string text, string objName, uint objChecksum, TreeNode tn)
 		{
-			var imageIndex = OriginalObjectFiles.Names.Contains(objName.Trim()) ? 1 : 0;
+			var imageIndex = IsOriginalFile(objName, objChecksum) ? 1 : 0;
 			_ = tn.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
+
+		static bool IsOriginalFile(string name, uint checksum)
+			=> OriginalObjectFiles.Names.TryGetValue(name.Trim(), out uint expectedChecksum) && expectedChecksum == checksum;
 
 		void InitFileTreeView(bool vanillaOnly, string fileFilter)
 		{
@@ -209,14 +214,14 @@ namespace OpenLocoToolGui
 				? model.HeaderIndex
 				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
-			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjectFiles.Names.Contains(f.Value.Name.Trim()));
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.Name, f.Value.Checksum));
 
 			tvFileTree.ImageList = MakeImageList(model);
 
 			foreach (var obj in filteredFiles)
 			{
 				var relative = Path.GetRelativePath(model.Settings.ObjDataDirectory, obj.Key);
-				AddObjectNode(obj.Key, relative, obj.Value.Name, tvFileTree);
+				AddObjectNode(obj.Key, relative, obj.Value.Name, obj.Value.Checksum, tvFileTree);
 			}
 
 			tvFileTree.Sort();
@@ -313,7 +318,7 @@ namespace OpenLocoToolGui
 				? model.HeaderIndex
 				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
-			filteredFiles = filteredFiles.Where(f => !vanillaOnly || OriginalObjectFiles.Names.Contains(f.Value.Name.Trim()));
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.Name, f.Value.Checksum));
 
 			tvObjType.ImageList = MakeImageList(model);
 
@@ -326,7 +331,7 @@ namespace OpenLocoToolGui
 				{
 					foreach (var obj in group)
 					{
-						AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, objTypeNode);
+						AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, obj.Value.Checksum, objTypeNode);
 					}
 				}
 				else
@@ -337,7 +342,7 @@ namespace OpenLocoToolGui
 						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
 						foreach (var veh in vehicleType)
 						{
-							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, vehicleTypeNode);
+							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, veh.Value.Checksum, vehicleTypeNode);
 						}
 
 						objTypeNode.Nodes.Add(vehicleTypeNode);

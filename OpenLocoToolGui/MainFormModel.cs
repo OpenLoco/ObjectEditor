@@ -197,7 +197,7 @@ namespace OpenLocoToolGui
 						veh = vo.Type;
 					}
 
-					var indexObjectHeader = new IndexObjectHeader(fileInfo.S5Header.Name, fileInfo.S5Header.ObjectType, veh);
+					var indexObjectHeader = new IndexObjectHeader(fileInfo.S5Header.Name, fileInfo.S5Header.ObjectType, fileInfo.S5Header.Checksum, veh);
 					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 					{
 						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
@@ -213,7 +213,7 @@ namespace OpenLocoToolGui
 					logger.Error($"Failed to load \"{file}\"", ex);
 
 					var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
-					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, null);
+					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, obj.Checksum, null);
 					ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}
 				finally

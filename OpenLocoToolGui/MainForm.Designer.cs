@@ -39,8 +39,6 @@ namespace OpenLocoToolGui
 			saveFileDialog1 = new SaveFileDialog();
 			flpImageTable = new FlowLayoutPanel();
 			scObjectAndLogs = new SplitContainer();
-			tsObjectEditor = new ToolStrip();
-			btnSave = new ToolStripButton();
 			tcObjectOverview = new TabControl();
 			tpObjectView = new TabPage();
 			tcSubObjectView = new TabControl();
@@ -49,6 +47,10 @@ namespace OpenLocoToolGui
 			tpObjectStringTable = new TabPage();
 			ucStringTable = new StringTableUserControl();
 			tpObjectGraphicsTable = new TabPage();
+			pnImagePageControls = new Panel();
+			tbCurrentPage = new TextBox();
+			btnPagePrevious = new Button();
+			btnPageNext = new Button();
 			tsImageTable = new ToolStrip();
 			tsbImportFromDirectory = new ToolStripButton();
 			toolStripSeparator4 = new ToolStripSeparator();
@@ -56,9 +58,16 @@ namespace OpenLocoToolGui
 			toolStripSeparator3 = new ToolStripSeparator();
 			tslImageScaling = new ToolStripLabel();
 			tstbImageScaling = new ToolStripTextBox();
-			tbCurrentPage = new TextBox();
-			btnPagePrevious = new Button();
-			btnPageNext = new Button();
+			tpObjectPreview = new TabPage();
+			tbTiltValue = new TextBox();
+			btnTiltUp = new Button();
+			btnTiltDown = new Button();
+			tbRotateValue = new TextBox();
+			btnRotateRight = new Button();
+			btnRotateLeft = new Button();
+			trbTilt = new TrackBar();
+			trbRotate = new TrackBar();
+			pbVehiclePreview = new PictureBoxWithInterpolationMode();
 			scHeaders = new SplitContainer();
 			pgS5Header = new PropertyGrid();
 			pgObjHeader = new PropertyGrid();
@@ -66,6 +75,8 @@ namespace OpenLocoToolGui
 			scAnnnotationDump = new SplitContainer();
 			tvDATDumpAnnotations = new TreeView();
 			rtbDATDumpView = new RichTextBox();
+			tsObjectEditor = new ToolStrip();
+			btnSave = new ToolStripButton();
 			scTop = new SplitContainer();
 			tcFileSelector = new TabControl();
 			tpCategory = new TabPage();
@@ -90,19 +101,22 @@ namespace OpenLocoToolGui
 			headerToolStripMenuItem = new ToolStripMenuItem();
 			pictureDataToolStripMenuItem = new ToolStripMenuItem();
 			locoObjectBindingSource = new BindingSource(components);
-			pnImagePageControls = new Panel();
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).BeginInit();
 			scObjectAndLogs.Panel1.SuspendLayout();
 			scObjectAndLogs.Panel2.SuspendLayout();
 			scObjectAndLogs.SuspendLayout();
-			tsObjectEditor.SuspendLayout();
 			tcObjectOverview.SuspendLayout();
 			tpObjectView.SuspendLayout();
 			tcSubObjectView.SuspendLayout();
 			tpObjectObject.SuspendLayout();
 			tpObjectStringTable.SuspendLayout();
 			tpObjectGraphicsTable.SuspendLayout();
+			pnImagePageControls.SuspendLayout();
 			tsImageTable.SuspendLayout();
+			tpObjectPreview.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)trbTilt).BeginInit();
+			((System.ComponentModel.ISupportInitialize)trbRotate).BeginInit();
+			((System.ComponentModel.ISupportInitialize)pbVehiclePreview).BeginInit();
 			((System.ComponentModel.ISupportInitialize)scHeaders).BeginInit();
 			scHeaders.Panel1.SuspendLayout();
 			scHeaders.Panel2.SuspendLayout();
@@ -112,6 +126,7 @@ namespace OpenLocoToolGui
 			scAnnnotationDump.Panel1.SuspendLayout();
 			scAnnnotationDump.Panel2.SuspendLayout();
 			scAnnnotationDump.SuspendLayout();
+			tsObjectEditor.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)scTop).BeginInit();
 			scTop.Panel1.SuspendLayout();
 			scTop.Panel2.SuspendLayout();
@@ -123,7 +138,6 @@ namespace OpenLocoToolGui
 			menuStrip.SuspendLayout();
 			imgContextMenu.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)locoObjectBindingSource).BeginInit();
-			pnImagePageControls.SuspendLayout();
 			SuspendLayout();
 			// 
 			// lbLogs
@@ -171,7 +185,7 @@ namespace OpenLocoToolGui
 			flpImageTable.FlowDirection = FlowDirection.TopDown;
 			flpImageTable.Location = new Point(2, 26);
 			flpImageTable.Name = "flpImageTable";
-			flpImageTable.Size = new Size(1381, 602);
+			flpImageTable.Size = new Size(1389, 585);
 			flpImageTable.TabIndex = 30;
 			// 
 			// scObjectAndLogs
@@ -192,25 +206,6 @@ namespace OpenLocoToolGui
 			scObjectAndLogs.Size = new Size(1415, 1009);
 			scObjectAndLogs.SplitterDistance = 819;
 			scObjectAndLogs.TabIndex = 31;
-			// 
-			// tsObjectEditor
-			// 
-			tsObjectEditor.Items.AddRange(new ToolStripItem[] { btnSave });
-			tsObjectEditor.Location = new Point(0, 0);
-			tsObjectEditor.Name = "tsObjectEditor";
-			tsObjectEditor.Size = new Size(1415, 25);
-			tsObjectEditor.TabIndex = 35;
-			tsObjectEditor.Text = "toolStrip1";
-			// 
-			// btnSave
-			// 
-			btnSave.DisplayStyle = ToolStripItemDisplayStyle.Text;
-			btnSave.Image = (Image)resources.GetObject("btnSave.Image");
-			btnSave.ImageTransparentColor = Color.Magenta;
-			btnSave.Name = "btnSave";
-			btnSave.Size = new Size(84, 22);
-			btnSave.Text = "Save Changes";
-			btnSave.Click += btnSave_Click;
 			// 
 			// tcObjectOverview
 			// 
@@ -240,6 +235,7 @@ namespace OpenLocoToolGui
 			tcSubObjectView.Controls.Add(tpObjectObject);
 			tcSubObjectView.Controls.Add(tpObjectStringTable);
 			tcSubObjectView.Controls.Add(tpObjectGraphicsTable);
+			tcSubObjectView.Controls.Add(tpObjectPreview);
 			tcSubObjectView.Dock = DockStyle.Fill;
 			tcSubObjectView.Location = new Point(3, 123);
 			tcSubObjectView.Margin = new Padding(2, 1, 2, 1);
@@ -255,7 +251,7 @@ namespace OpenLocoToolGui
 			tpObjectObject.Margin = new Padding(2, 1, 2, 1);
 			tpObjectObject.Name = "tpObjectObject";
 			tpObjectObject.Padding = new Padding(2, 1, 2, 1);
-			tpObjectObject.Size = new Size(1385, 629);
+			tpObjectObject.Size = new Size(1393, 612);
 			tpObjectObject.TabIndex = 2;
 			tpObjectObject.Text = "Object";
 			tpObjectObject.UseVisualStyleBackColor = true;
@@ -266,7 +262,7 @@ namespace OpenLocoToolGui
 			pgObject.HelpVisible = false;
 			pgObject.Location = new Point(2, 1);
 			pgObject.Name = "pgObject";
-			pgObject.Size = new Size(1381, 627);
+			pgObject.Size = new Size(1389, 610);
 			pgObject.TabIndex = 24;
 			pgObject.ToolbarVisible = false;
 			// 
@@ -300,17 +296,61 @@ namespace OpenLocoToolGui
 			tpObjectGraphicsTable.Margin = new Padding(2, 1, 2, 1);
 			tpObjectGraphicsTable.Name = "tpObjectGraphicsTable";
 			tpObjectGraphicsTable.Padding = new Padding(2, 1, 2, 1);
-			tpObjectGraphicsTable.Size = new Size(1385, 629);
+			tpObjectGraphicsTable.Size = new Size(1393, 612);
 			tpObjectGraphicsTable.TabIndex = 4;
 			tpObjectGraphicsTable.Text = "Graphics/Sounds";
 			tpObjectGraphicsTable.UseVisualStyleBackColor = true;
+			// 
+			// pnImagePageControls
+			// 
+			pnImagePageControls.Controls.Add(tbCurrentPage);
+			pnImagePageControls.Controls.Add(btnPagePrevious);
+			pnImagePageControls.Controls.Add(btnPageNext);
+			pnImagePageControls.Dock = DockStyle.Bottom;
+			pnImagePageControls.Location = new Point(2, 588);
+			pnImagePageControls.Name = "pnImagePageControls";
+			pnImagePageControls.Size = new Size(1389, 23);
+			pnImagePageControls.TabIndex = 0;
+			// 
+			// tbCurrentPage
+			// 
+			tbCurrentPage.BorderStyle = BorderStyle.FixedSingle;
+			tbCurrentPage.Dock = DockStyle.Bottom;
+			tbCurrentPage.Enabled = false;
+			tbCurrentPage.Location = new Point(253, 0);
+			tbCurrentPage.Name = "tbCurrentPage";
+			tbCurrentPage.Size = new Size(908, 23);
+			tbCurrentPage.TabIndex = 33;
+			tbCurrentPage.TextAlign = HorizontalAlignment.Center;
+			// 
+			// btnPagePrevious
+			// 
+			btnPagePrevious.Dock = DockStyle.Left;
+			btnPagePrevious.Location = new Point(0, 0);
+			btnPagePrevious.Name = "btnPagePrevious";
+			btnPagePrevious.Size = new Size(253, 23);
+			btnPagePrevious.TabIndex = 0;
+			btnPagePrevious.Text = "← Previous Page";
+			btnPagePrevious.UseVisualStyleBackColor = true;
+			btnPagePrevious.Click += btnPagePrevious_Click;
+			// 
+			// btnPageNext
+			// 
+			btnPageNext.Dock = DockStyle.Right;
+			btnPageNext.Location = new Point(1161, 0);
+			btnPageNext.Name = "btnPageNext";
+			btnPageNext.Size = new Size(228, 23);
+			btnPageNext.TabIndex = 31;
+			btnPageNext.Text = "Next Page →";
+			btnPageNext.UseVisualStyleBackColor = true;
+			btnPageNext.Click += btnPageNext_Click;
 			// 
 			// tsImageTable
 			// 
 			tsImageTable.Items.AddRange(new ToolStripItem[] { tsbImportFromDirectory, toolStripSeparator4, tsbExportToDirectory, toolStripSeparator3, tslImageScaling, tstbImageScaling });
 			tsImageTable.Location = new Point(2, 1);
 			tsImageTable.Name = "tsImageTable";
-			tsImageTable.Size = new Size(1381, 25);
+			tsImageTable.Size = new Size(1389, 25);
 			tsImageTable.TabIndex = 31;
 			tsImageTable.Text = "toolStrip2";
 			// 
@@ -359,38 +399,110 @@ namespace OpenLocoToolGui
 			tstbImageScaling.ToolTipText = "Image Scaling";
 			tstbImageScaling.TextChanged += tstbImageScaling_TextChanged;
 			// 
-			// tbCurrentPage
+			// tpObjectPreview
 			// 
-			tbCurrentPage.BorderStyle = BorderStyle.FixedSingle;
-			tbCurrentPage.Dock = DockStyle.Bottom;
-			tbCurrentPage.Enabled = false;
-			tbCurrentPage.Location = new Point(253, 0);
-			tbCurrentPage.Name = "tbCurrentPage";
-			tbCurrentPage.Size = new Size(900, 23);
-			tbCurrentPage.TabIndex = 33;
-			tbCurrentPage.TextAlign = HorizontalAlignment.Center;
+			tpObjectPreview.Controls.Add(tbTiltValue);
+			tpObjectPreview.Controls.Add(btnTiltUp);
+			tpObjectPreview.Controls.Add(btnTiltDown);
+			tpObjectPreview.Controls.Add(tbRotateValue);
+			tpObjectPreview.Controls.Add(btnRotateRight);
+			tpObjectPreview.Controls.Add(btnRotateLeft);
+			tpObjectPreview.Controls.Add(trbTilt);
+			tpObjectPreview.Controls.Add(trbRotate);
+			tpObjectPreview.Controls.Add(pbVehiclePreview);
+			tpObjectPreview.Location = new Point(4, 24);
+			tpObjectPreview.Name = "tpObjectPreview";
+			tpObjectPreview.Size = new Size(1393, 612);
+			tpObjectPreview.TabIndex = 5;
+			tpObjectPreview.Text = "Vehicle Rotator";
+			tpObjectPreview.UseVisualStyleBackColor = true;
 			// 
-			// btnPagePrevious
+			// tbTiltValue
 			// 
-			btnPagePrevious.Dock = DockStyle.Left;
-			btnPagePrevious.Location = new Point(0, 0);
-			btnPagePrevious.Name = "btnPagePrevious";
-			btnPagePrevious.Size = new Size(253, 23);
-			btnPagePrevious.TabIndex = 0;
-			btnPagePrevious.Text = "← Previous Page";
-			btnPagePrevious.UseVisualStyleBackColor = true;
-			btnPagePrevious.Click += btnPagePrevious_Click;
+			tbTiltValue.Enabled = false;
+			tbTiltValue.Location = new Point(34, 452);
+			tbTiltValue.Name = "tbTiltValue";
+			tbTiltValue.Size = new Size(194, 23);
+			tbTiltValue.TabIndex = 37;
+			tbTiltValue.Text = "0";
+			tbTiltValue.TextAlign = HorizontalAlignment.Center;
 			// 
-			// btnPageNext
+			// btnTiltUp
 			// 
-			btnPageNext.Dock = DockStyle.Right;
-			btnPageNext.Location = new Point(1153, 0);
-			btnPageNext.Name = "btnPageNext";
-			btnPageNext.Size = new Size(228, 23);
-			btnPageNext.TabIndex = 31;
-			btnPageNext.Text = "Next Page →";
-			btnPageNext.UseVisualStyleBackColor = true;
-			btnPageNext.Click += btnPageNext_Click;
+			btnTiltUp.Location = new Point(234, 452);
+			btnTiltUp.Name = "btnTiltUp";
+			btnTiltUp.Size = new Size(23, 23);
+			btnTiltUp.TabIndex = 36;
+			btnTiltUp.Text = ">";
+			btnTiltUp.UseVisualStyleBackColor = true;
+			btnTiltUp.Click += btnTiltUp_Click;
+			// 
+			// btnTiltDown
+			// 
+			btnTiltDown.Location = new Point(3, 451);
+			btnTiltDown.Name = "btnTiltDown";
+			btnTiltDown.Size = new Size(23, 23);
+			btnTiltDown.TabIndex = 35;
+			btnTiltDown.Text = "<";
+			btnTiltDown.UseVisualStyleBackColor = true;
+			btnTiltDown.Click += btnTiltDown_Click;
+			// 
+			// tbRotateValue
+			// 
+			tbRotateValue.Enabled = false;
+			tbRotateValue.Location = new Point(34, 314);
+			tbRotateValue.Name = "tbRotateValue";
+			tbRotateValue.Size = new Size(194, 23);
+			tbRotateValue.TabIndex = 34;
+			tbRotateValue.Text = "0";
+			tbRotateValue.TextAlign = HorizontalAlignment.Center;
+			// 
+			// btnRotateRight
+			// 
+			btnRotateRight.Location = new Point(234, 314);
+			btnRotateRight.Name = "btnRotateRight";
+			btnRotateRight.Size = new Size(23, 23);
+			btnRotateRight.TabIndex = 33;
+			btnRotateRight.Text = ">";
+			btnRotateRight.UseVisualStyleBackColor = true;
+			btnRotateRight.Click += btnRotateRight_Click;
+			// 
+			// btnRotateLeft
+			// 
+			btnRotateLeft.Location = new Point(3, 313);
+			btnRotateLeft.Name = "btnRotateLeft";
+			btnRotateLeft.Size = new Size(23, 23);
+			btnRotateLeft.TabIndex = 32;
+			btnRotateLeft.Text = "<";
+			btnRotateLeft.UseVisualStyleBackColor = true;
+			btnRotateLeft.Click += btnRotateLeft_Click;
+			// 
+			// trbTilt
+			// 
+			trbTilt.Location = new Point(4, 401);
+			trbTilt.Name = "trbTilt";
+			trbTilt.Size = new Size(253, 45);
+			trbTilt.TabIndex = 30;
+			trbTilt.TickStyle = TickStyle.Both;
+			// 
+			// trbRotate
+			// 
+			trbRotate.Location = new Point(3, 262);
+			trbRotate.Name = "trbRotate";
+			trbRotate.Size = new Size(254, 45);
+			trbRotate.TabIndex = 29;
+			trbRotate.TickStyle = TickStyle.Both;
+			trbRotate.Scroll += trbRotate_Scroll;
+			// 
+			// pbVehiclePreview
+			// 
+			pbVehiclePreview.BorderStyle = BorderStyle.FixedSingle;
+			pbVehiclePreview.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
+			pbVehiclePreview.Location = new Point(0, 0);
+			pbVehiclePreview.Name = "pbVehiclePreview";
+			pbVehiclePreview.Size = new Size(256, 256);
+			pbVehiclePreview.TabIndex = 28;
+			pbVehiclePreview.TabStop = false;
 			// 
 			// scHeaders
 			// 
@@ -435,7 +547,7 @@ namespace OpenLocoToolGui
 			tpObjectDump.Location = new Point(4, 24);
 			tpObjectDump.Name = "tpObjectDump";
 			tpObjectDump.Padding = new Padding(3);
-			tpObjectDump.Size = new Size(1399, 783);
+			tpObjectDump.Size = new Size(1407, 766);
 			tpObjectDump.TabIndex = 1;
 			tpObjectDump.Text = "Object Dump";
 			tpObjectDump.UseVisualStyleBackColor = true;
@@ -454,8 +566,8 @@ namespace OpenLocoToolGui
 			// scAnnnotationDump.Panel2
 			// 
 			scAnnnotationDump.Panel2.Controls.Add(rtbDATDumpView);
-			scAnnnotationDump.Size = new Size(1393, 777);
-			scAnnnotationDump.SplitterDistance = 479;
+			scAnnnotationDump.Size = new Size(1401, 760);
+			scAnnnotationDump.SplitterDistance = 481;
 			scAnnnotationDump.TabIndex = 2;
 			// 
 			// tvDATDumpAnnotations
@@ -463,7 +575,7 @@ namespace OpenLocoToolGui
 			tvDATDumpAnnotations.Dock = DockStyle.Fill;
 			tvDATDumpAnnotations.Location = new Point(0, 0);
 			tvDATDumpAnnotations.Name = "tvDATDumpAnnotations";
-			tvDATDumpAnnotations.Size = new Size(479, 777);
+			tvDATDumpAnnotations.Size = new Size(481, 760);
 			tvDATDumpAnnotations.TabIndex = 1;
 			tvDATDumpAnnotations.AfterSelect += dataDumpAnnotations_AfterSelect;
 			// 
@@ -476,10 +588,29 @@ namespace OpenLocoToolGui
 			rtbDATDumpView.Name = "rtbDATDumpView";
 			rtbDATDumpView.ReadOnly = true;
 			rtbDATDumpView.ShowSelectionMargin = true;
-			rtbDATDumpView.Size = new Size(910, 777);
+			rtbDATDumpView.Size = new Size(916, 760);
 			rtbDATDumpView.TabIndex = 0;
 			rtbDATDumpView.Text = "";
 			rtbDATDumpView.WordWrap = false;
+			// 
+			// tsObjectEditor
+			// 
+			tsObjectEditor.Items.AddRange(new ToolStripItem[] { btnSave });
+			tsObjectEditor.Location = new Point(0, 0);
+			tsObjectEditor.Name = "tsObjectEditor";
+			tsObjectEditor.Size = new Size(1415, 25);
+			tsObjectEditor.TabIndex = 35;
+			tsObjectEditor.Text = "toolStrip1";
+			// 
+			// btnSave
+			// 
+			btnSave.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			btnSave.Image = (Image)resources.GetObject("btnSave.Image");
+			btnSave.ImageTransparentColor = Color.Magenta;
+			btnSave.Name = "btnSave";
+			btnSave.Size = new Size(84, 22);
+			btnSave.Text = "Save Changes";
+			btnSave.Click += btnSave_Click;
 			// 
 			// scTop
 			// 
@@ -683,17 +814,6 @@ namespace OpenLocoToolGui
 			// 
 			locoObjectBindingSource.DataSource = typeof(LocoObject);
 			// 
-			// pnImagePageControls
-			// 
-			pnImagePageControls.Controls.Add(tbCurrentPage);
-			pnImagePageControls.Controls.Add(btnPagePrevious);
-			pnImagePageControls.Controls.Add(btnPageNext);
-			pnImagePageControls.Dock = DockStyle.Bottom;
-			pnImagePageControls.Location = new Point(2, 605);
-			pnImagePageControls.Name = "pnImagePageControls";
-			pnImagePageControls.Size = new Size(1381, 23);
-			pnImagePageControls.TabIndex = 0;
-			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -712,8 +832,6 @@ namespace OpenLocoToolGui
 			scObjectAndLogs.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).EndInit();
 			scObjectAndLogs.ResumeLayout(false);
-			tsObjectEditor.ResumeLayout(false);
-			tsObjectEditor.PerformLayout();
 			tcObjectOverview.ResumeLayout(false);
 			tpObjectView.ResumeLayout(false);
 			tcSubObjectView.ResumeLayout(false);
@@ -721,8 +839,15 @@ namespace OpenLocoToolGui
 			tpObjectStringTable.ResumeLayout(false);
 			tpObjectGraphicsTable.ResumeLayout(false);
 			tpObjectGraphicsTable.PerformLayout();
+			pnImagePageControls.ResumeLayout(false);
+			pnImagePageControls.PerformLayout();
 			tsImageTable.ResumeLayout(false);
 			tsImageTable.PerformLayout();
+			tpObjectPreview.ResumeLayout(false);
+			tpObjectPreview.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)trbTilt).EndInit();
+			((System.ComponentModel.ISupportInitialize)trbRotate).EndInit();
+			((System.ComponentModel.ISupportInitialize)pbVehiclePreview).EndInit();
 			scHeaders.Panel1.ResumeLayout(false);
 			scHeaders.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scHeaders).EndInit();
@@ -732,6 +857,8 @@ namespace OpenLocoToolGui
 			scAnnnotationDump.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scAnnnotationDump).EndInit();
 			scAnnnotationDump.ResumeLayout(false);
+			tsObjectEditor.ResumeLayout(false);
+			tsObjectEditor.PerformLayout();
 			scTop.Panel1.ResumeLayout(false);
 			scTop.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scTop).EndInit();
@@ -745,8 +872,6 @@ namespace OpenLocoToolGui
 			menuStrip.PerformLayout();
 			imgContextMenu.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)locoObjectBindingSource).EndInit();
-			pnImagePageControls.ResumeLayout(false);
-			pnImagePageControls.PerformLayout();
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -811,5 +936,15 @@ namespace OpenLocoToolGui
 		private ToolStripSeparator toolStripSeparator3;
 		private ToolStripLabel tslImageScaling;
 		private Panel pnImagePageControls;
+		private TabPage tpObjectPreview;
+		private PictureBoxWithInterpolationMode pbVehiclePreview;
+		private TrackBar trbTilt;
+		private TrackBar trbRotate;
+		private Button btnRotateRight;
+		private Button btnRotateLeft;
+		private TextBox tbRotateValue;
+		private TextBox tbTiltValue;
+		private Button btnTiltUp;
+		private Button btnTiltDown;
 	}
 }

@@ -9,11 +9,11 @@ namespace OpenLocoTool.Objects
 	[LocoStructType(ObjectType.Vehicle)]
 	[LocoStringTable("Name")]
 	public record VehicleObject(
-		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name ,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] TransportMode Mode,
 		[property: LocoStructOffset(0x03)] VehicleType Type,
 		[property: LocoStructOffset(0x04)] uint8_t var_04,
-		//[LocoStructOffset(0x05)] object_id TrackType ,
+		[property: LocoStructOffset(0x05), LocoStructVariableLoad, Browsable(false)] object_id TrackTypeId,
 		[property: LocoStructOffset(0x06)] uint8_t NumTrackExtras,
 		[property: LocoStructOffset(0x07)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x08)] int16_t CostFactor,
@@ -35,7 +35,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xE2), LocoArrayLength(2), LocoStructVariableLoad] List<uint8_t> MaxCargo,
 		[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad, Browsable(false)] List<List<CargoCategory>> CompatibleCargoCategories,
 		[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObject.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets,
-		//[property: LocoStructOffset(0x10C), LocoStructVariableLoad] uint8_t NumSimultaneousCargoTypes,
+		[property: LocoStructOffset(0x10C), LocoStructVariableLoad, Browsable(false)] uint8_t _NumSimultaneousCargoTypes,
 		[property: LocoStructOffset(0x10D), LocoArrayLength(VehicleObject.AnimationCount)] SimpleAnimation[] Animation,
 		[property: LocoStructOffset(0x113)] uint8_t var_113,
 		[property: LocoStructOffset(0x114)] uint16_t Designed,

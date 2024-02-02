@@ -1,15 +1,12 @@
 using NAudio.Gui;
 using NAudio.Wave;
 using OpenLocoTool;
-using OpenLocoTool.Data;
 using OpenLocoTool.DatFileParsing;
 using OpenLocoTool.Headers;
 using OpenLocoTool.Objects;
 using OpenLocoTool.Types;
 using OpenLocoToolCommon;
-using System;
 using System.Data;
-using System.Diagnostics.Metrics;
 using System.Drawing.Imaging;
 
 namespace OpenLocoToolGui
@@ -1157,6 +1154,7 @@ namespace OpenLocoToolGui
 
 					currentUIObjectImages = CreateImages(uiLocoObj.LocoObject.G1Elements, model.Palette).ToList();
 					RefreshImageControls();
+					RefreshVehiclePreview(uiLocoObj.LocoObject);
 				}
 
 				if (uiLocoObj.LocoObject.Object is SoundObject soundObject)
@@ -1197,6 +1195,19 @@ namespace OpenLocoToolGui
 			}
 
 			flpImageTable.ResumeLayout(true);
+		}
+
+		void RefreshVehiclePreview(ILocoObject obj)
+		{
+			if (obj.Object is not VehicleObject veh)
+			{
+				return;
+			}
+
+			trbRotate.Minimum = 0;
+			trbRotate.Maximum = currentUIObjectImages.Count - 1;
+			trbRotate.Value = 0;
+			VehicleRotateIndex = 0;
 		}
 
 		private void imgContextMenuSave_Click(object sender, EventArgs e)
@@ -1391,5 +1402,75 @@ namespace OpenLocoToolGui
 				ImageScale = scale;
 			}
 		}
+
+		#region VehicleRotate
+
+		public int VehicleRotateIndex
+		{
+			get => vehicleRotateIndex;
+			set
+			{
+				if (value < 0)
+					value = 0;
+
+				if (value >= currentUIObjectImages.Count)
+					value = currentUIObjectImages.Count - 1;
+
+				vehicleRotateIndex = value;
+
+				tbRotateValue.Text = $"{vehicleRotateIndex} / {currentUIObjectImages.Count - 1}";
+				pbVehiclePreview.Image = currentUIObjectImages[vehicleRotateIndex];
+			}
+		}
+		public int vehicleRotateIndex = 0;
+
+		private void trbRotate_Scroll(object sender, EventArgs e)
+		{
+			VehicleRotateIndex = trbRotate.Value;
+		}
+
+		private void btnRotateRight_Click(object sender, EventArgs e)
+		{
+			VehicleRotateIndex++;
+		}
+		private void btnRotateLeft_Click(object sender, EventArgs e)
+		{
+			VehicleRotateIndex--;
+		}
+
+		#endregion
+
+		#region VehicleTilt
+
+		public int VehicleTiltIndex
+		{
+			get => vehicleRotateIndex;
+			set
+			{
+				if (value < 0)
+					value = 0;
+
+				if (value >= currentUIObjectImages.Count)
+					value = currentUIObjectImages.Count - 1;
+
+				vehicleTiltIndex = value;
+
+				tbRotateValue.Text = $"{vehicleTiltIndex} / {currentUIObjectImages.Count - 1}";
+				pbVehiclePreview.Image = currentUIObjectImages[vehicleTiltIndex];
+			}
+		}
+		public int vehicleTiltIndex = 0;
+
+		private void btnTiltDown_Click(object sender, EventArgs e)
+		{
+			VehicleTiltIndex++;
+		}
+
+		private void btnTiltUp_Click(object sender, EventArgs e)
+		{
+			VehicleTiltIndex--;
+		}
+
+		#endregion
 	}
 }

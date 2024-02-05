@@ -22,11 +22,19 @@ namespace OpenLocoTool.Objects
 	: ILocoStruct, IImageTableStrings
 	{
 		public bool TryGetImageName(int id, out string? value)
-			=> ImageIdNameMap.TryGetValue(id, out value);
+			=> ImageIdNameMap.TryGetValue(id - 8, out value);
 
-		// taken from OpenLoco TrackObject.h
+		// taken from OpenLoco TrackExtraObject.h
 		public static Dictionary<int, string> ImageIdNameMap = new()
 		{
+			{ -8, "previewImage0" },
+			{ -7, "previewImage1" },
+			{ -6, "previewImage2" },
+			{ -5, "previewImage3" },
+			{ -4, "previewImage4" },
+			{ -3, "previewImage5" },
+			{ -2, "previewImage6" },
+			{ -1, "previewImage7" },
 			{ 0, "kStraight0NE" },
 			{ 1, "kStraight0SE" },
 			{ 2, "kStraight0SW" },

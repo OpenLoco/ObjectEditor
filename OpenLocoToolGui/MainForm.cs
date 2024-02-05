@@ -398,11 +398,6 @@ namespace OpenLocoToolGui
 			}
 		}
 
-		private void saveChangesToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-
-		}
-
 		private void setObjectDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
@@ -432,10 +427,6 @@ namespace OpenLocoToolGui
 			if (model.LoadDataDirectory(path))
 			{
 				InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
-
-				//pgS5Header.SelectedObject = model.G1;
-				//var images = CreateImages(model.G1.G1Elements, model.Palette);
-				//CurrentUIImages = CreateImageControls(images, model.G1.G1Elements).ToList();
 			}
 		}
 
@@ -689,7 +680,7 @@ namespace OpenLocoToolGui
 				{
 					if (!its.TryGetImageName(counter, out string? value) || value == null)
 					{
-						logger.Error($"Object \"{uiLocoObj.DatFileInfo.S5Header.Name}\" does not have an image for id {counter}");
+						logger.Warning($"Object \"{uiLocoObj.DatFileInfo.S5Header.Name}\" does not have an image for id {counter}");
 						return $"{uiLocoObj.DatFileInfo.S5Header.Name}-{counter}";
 					}
 					return value;

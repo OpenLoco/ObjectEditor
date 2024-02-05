@@ -124,8 +124,6 @@ namespace OpenLocoTool.Objects
 
 		public ReadOnlySpan<byte> Save()
 		{
-			//var data = new byte[S5Header.StructLength * (NumCompatible + NumMods + 1 + NumBridges + NumStations)];
-
 			var headers = Compatible
 				.Concat(Mods)
 				.Concat(Enumerable.Repeat(Tunnel, 1))

@@ -249,7 +249,7 @@ namespace OpenLocoToolGui
 		{
 			if (!Directory.Exists(directory))
 			{
-				logger.Warning("Invalid directory");
+				logger.Warning("Invalid directory: doesn't exist");
 				return false;
 			}
 

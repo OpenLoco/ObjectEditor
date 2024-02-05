@@ -17,8 +17,8 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x05)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
-		[property: LocoStructOffset(0x0A)] image_id Image,
-		[property: LocoStructOffset(0x0E)] image_id var_0E)
+		[property: LocoStructOffset(0x0A), Browsable(false)] image_id Image,
+		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E)
 	: ILocoStruct, IImageTableStrings
 	{
 		public bool TryGetImageName(int id, out string? value)

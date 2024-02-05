@@ -255,7 +255,9 @@ namespace OpenLocoToolGui
 			tcSubObjectView.Controls.Add(tpObjectObject);
 			tcSubObjectView.Controls.Add(tpObjectStringTable);
 			tcSubObjectView.Controls.Add(tpObjectGraphicsTable);
-			tcSubObjectView.Controls.Add(tpObjectPreview);
+#if DEBUG
+			tcSubObjectView.Controls.Add(tpObjectPreview); // whilst its WIP, let's leave this out
+#endif
 			tcSubObjectView.Dock = DockStyle.Fill;
 			tcSubObjectView.Location = new Point(3, 123);
 			tcSubObjectView.Margin = new Padding(2, 1, 2, 1);
@@ -1095,6 +1097,7 @@ namespace OpenLocoToolGui
 		private TabPage tpObjectObject;
 		private TabPage tpObjectStringTable;
 		private TabPage tpObjectGraphicsTable;
+		private TabPage tpObjectPreview;
 		private BindingSource locoObjectBindingSource;
 		private PropertyGrid pgS5Header;
 		private PropertyGrid pgObjHeader;
@@ -1111,7 +1114,6 @@ namespace OpenLocoToolGui
 		private ToolStripSeparator toolStripSeparator3;
 		private ToolStripLabel tslImageScaling;
 		private Panel pnImagePageControls;
-		private TabPage tpObjectPreview;
 		private PictureBoxWithInterpolationMode pbVehicleBodyPreview;
 		private TrackBar trbTilt;
 		private TrackBar trbRotate;

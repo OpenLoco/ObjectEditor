@@ -35,12 +35,16 @@ namespace OpenLocoTool.Objects
 		public uint8_t FlatYawAccuracy { get; set; }
 		public uint8_t SlopedYawAccuracy { get; set; }
 		public uint8_t NumFramesPerRotation { get; set; }
-		//public image_id FlatImageId { get; set; }
-		//public image_id GentleImageId { get; set; }
-		//public image_id SlopedImageId { get; set; }
-		//public image_id SteepImageId { get; set; }
-		//public image_id UnkImageId1 { get; set; }
-		//public image_id UnkImageId2 { get; set; }
+
+		// unused in this tool, but we need to keep them so the object saves properly
+		public image_id FlatImageId { get; set; }
+		public image_id GentleImageId { get; set; }
+		public image_id SlopedImageId { get; set; }
+		public image_id SteepImageId { get; set; }
+		public image_id UnkImageId1 { get; set; }
+		public image_id UnkImageId2 { get; set; }
+
+		//
 
 		public Dictionary<BodySpriteSlopeType, List<int>> ImageIds = [];
 

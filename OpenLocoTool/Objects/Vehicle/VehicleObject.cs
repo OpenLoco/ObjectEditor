@@ -349,7 +349,7 @@ namespace OpenLocoTool.Objects
 				}
 
 				var initial = offset;
-				//bodySprite.FlatImageId = offset;
+				bodySprite.FlatImageId = (uint)offset;
 				var curr = offset;
 				bodySprite.FlatYawAccuracy = getYawAccuracyFlat(bodySprite.NumFlatRotationFrames);
 
@@ -360,13 +360,13 @@ namespace OpenLocoTool.Objects
 
 				if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasGentleSprites))
 				{
-					//bodySprite.GentleImageId = offset;
+					bodySprite.GentleImageId = (uint)offset;
 					curr = offset;
 					var numGentleFrames = bodySprite.NumFramesPerRotation * 8;
 					offset += numGentleFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
 					bodySprite.ImageIds[BodySpriteSlopeType.Gentle] = Enumerable.Range(curr, offset - curr).ToList();
 
-					//bodySprite.SlopedImageId = offset;
+					bodySprite.SlopedImageId = (uint)offset;
 					curr = offset;
 					bodySprite.SlopedYawAccuracy = getYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
 					var numSlopedFrames = bodySprite.NumFramesPerRotation * bodySprite.NumSlopedRotationFrames * 2;
@@ -375,14 +375,14 @@ namespace OpenLocoTool.Objects
 
 					if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasSteepSprites))
 					{
-						//bodySprite.SteepImageId = offset;
+						bodySprite.SteepImageId = (uint)offset;
 						curr = offset;
 						var numSteepFrames = bodySprite.NumFramesPerRotation * 8;
 						offset += numSteepFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
 						bodySprite.ImageIds[BodySpriteSlopeType.Steep] = Enumerable.Range(curr, offset - curr).ToList();
 
 						// TODO: add these two together??
-						//bodySprite.UnkImageId1 = offset;
+						bodySprite.UnkImageId1 = (uint)offset;
 						curr = offset;
 						var numUnkFrames = bodySprite.NumSlopedRotationFrames * bodySprite.NumFramesPerRotation * 2;
 						offset += numUnkFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);

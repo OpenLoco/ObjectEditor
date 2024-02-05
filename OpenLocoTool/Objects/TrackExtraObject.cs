@@ -24,6 +24,7 @@ namespace OpenLocoTool.Objects
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id, out value);
 
+		// taken from OpenLoco TrackObject.h
 		public static Dictionary<int, string> ImageIdNameMap = new()
 		{
 			{ 0, "kStraight0NE" },

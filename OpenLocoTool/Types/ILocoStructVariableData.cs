@@ -9,4 +9,12 @@ namespace OpenLocoTool.DatFileParsing
 
 		ReadOnlySpan<byte> Save();
 	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public interface ILocoStructPostLoad
+	{
+		void PostLoad();
+
+		//ReadOnlySpan<byte> Save();
+	}
 }

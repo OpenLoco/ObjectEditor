@@ -124,6 +124,12 @@ namespace OpenLocoTool.DatFileParsing
 				logger?.Error(ex, "Error loading graphics table");
 			}
 
+			// some objects have variable-sized data
+			if (loadExtra && locoStruct is ILocoStructPostLoad locoStructPostLoad)
+			{
+				locoStructPostLoad.PostLoad();
+			}
+
 			// add to object manager
 			SObjectManager.Add(newObj);
 

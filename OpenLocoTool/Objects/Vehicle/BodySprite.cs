@@ -3,6 +3,8 @@ using OpenLocoTool.DatFileParsing;
 
 namespace OpenLocoTool.Objects
 {
+	public enum BodySpriteSlopeType { Flat, Gentle, Sloped, Steep, Unk1, Unk2 }
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
 	public record BodySprite(
@@ -14,15 +16,34 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x05)] uint8_t NumRollFrames,
 		[property: LocoStructOffset(0x06)] uint8_t BogeyPosition,
 		[property: LocoStructOffset(0x07)] BodySpriteFlags Flags,
-		[property: LocoStructOffset(0x08)] uint8_t Width,                // sprite width
-		[property: LocoStructOffset(0x09)] uint8_t HeightNegative,       // sprite height negative
-		[property: LocoStructOffset(0x0A)] uint8_t HeightPositive,       // sprite height positive
-		[property: LocoStructOffset(0x0B)] uint8_t FlatYawAccuracy,      // 0 - 4 accuracy of yaw on flat built from numFlatRotationFrames (0 = lowest accuracy 3bits, 4 = highest accuracy 7bits)
-		[property: LocoStructOffset(0x0C)] uint8_t SlopedYawAccuracy,    // 0 - 3 accuracy of yaw on slopes built from numSlopedRotationFrames  (0 = lowest accuracy 3bits, 3 = highest accuracy 6bits)
-		[property: LocoStructOffset(0x0D)] uint8_t NumFramesPerRotation, // numAnimationFrames * numCargoFrames * numRollFrames + 1 (for braking lights)
-		[property: LocoStructOffset(0x0E)] uint32_t FlatImageId,
-		[property: LocoStructOffset(0x12)] uint32_t UnkImageId,
-		[property: LocoStructOffset(0x16)] uint32_t GentleImageId,
-		[property: LocoStructOffset(0x1A)] uint32_t SteepImageId
-		) : ILocoStruct;
+		[property: LocoStructOffset(0x08), LocoStructVariableLoad, Browsable(false)] uint8_t _Width,                // sprite width
+		[property: LocoStructOffset(0x09), LocoStructVariableLoad, Browsable(false)] uint8_t _HeightNegative,       // sprite height negative
+		[property: LocoStructOffset(0x0A), LocoStructVariableLoad, Browsable(false)] uint8_t _HeightPositive,       // sprite height positive
+		[property: LocoStructOffset(0x0B), LocoStructVariableLoad, Browsable(false)] uint8_t _FlatYawAccuracy,      // 0 - 4 accuracy of yaw on flat built from numFlatRotationFrames (0 = lowest accuracy 3bits, 4 = highest accuracy 7bits)
+		[property: LocoStructOffset(0x0C), LocoStructVariableLoad, Browsable(false)] uint8_t _SlopedYawAccuracy,    // 0 - 3 accuracy of yaw on slopes built from numSlopedRotationFrames  (0 = lowest accuracy 3bits, 3 = highest accuracy 6bits)
+		[property: LocoStructOffset(0x0D), LocoStructVariableLoad, Browsable(false)] uint8_t _NumFramesPerRotation, // numAnimationFrames * numCargoFrames * numRollFrames + 1 (for braking lights)
+		[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)] image_id _FlatImageId,
+		[property: LocoStructOffset(0x12), LocoStructVariableLoad, Browsable(false)] image_id _UnkImageId,
+		[property: LocoStructOffset(0x16), LocoStructVariableLoad, Browsable(false)] image_id _GentleImageId,
+		[property: LocoStructOffset(0x1A), LocoStructVariableLoad, Browsable(false)] image_id _SteepImageId
+		) : ILocoStruct
+	{
+		// these properties are set on vehicle load and are not saved in the struct/object file itself
+		public uint8_t Width { get; set; }
+		public uint8_t HeightNegative { get; set; }
+		public uint8_t HeightPositive { get; set; }
+		public uint8_t FlatYawAccuracy { get; set; }
+		public uint8_t SlopedYawAccuracy { get; set; }
+		public uint8_t NumFramesPerRotation { get; set; }
+		//public image_id FlatImageId { get; set; }
+		//public image_id GentleImageId { get; set; }
+		//public image_id SlopedImageId { get; set; }
+		//public image_id SteepImageId { get; set; }
+		//public image_id UnkImageId1 { get; set; }
+		//public image_id UnkImageId2 { get; set; }
+
+		public Dictionary<BodySpriteSlopeType, List<int>> ImageIds = [];
+
+		public int NumImages { get; set; }
+	}
 }

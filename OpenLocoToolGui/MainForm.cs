@@ -1197,19 +1197,6 @@ namespace OpenLocoToolGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		void RefreshVehiclePreview(ILocoObject obj)
-		{
-			if (obj.Object is not VehicleObject veh)
-			{
-				return;
-			}
-
-			trbRotate.Minimum = 0;
-			trbRotate.Maximum = currentUIObjectImages.Count - 1;
-			trbRotate.Value = 0;
-			VehicleRotateIndex = 0;
-		}
-
 		private void imgContextMenuSave_Click(object sender, EventArgs e)
 		{
 			if (imgContextMenu.SourceControl is PictureBox pb)
@@ -1403,6 +1390,177 @@ namespace OpenLocoToolGui
 			}
 		}
 
+		int GetTiltCount(VehicleObject veh, int bodySprite)
+		{
+			var count = 0;
+			if (veh.BodySprites[bodySprite].Flags.HasFlag(BodySpriteFlags.HasSprites))
+			{
+				count++;
+			}
+
+			if (veh.BodySprites[bodySprite].Flags.HasFlag(BodySpriteFlags.HasGentleSprites))
+			{
+				count++;
+			}
+
+			if (veh.BodySprites[bodySprite].Flags.HasFlag(BodySpriteFlags.HasSteepSprites))
+			{
+				count++;
+			}
+
+			return count;
+		}
+
+		void RefreshVehiclePreview(ILocoObject obj)
+		{
+			if (obj.Object is not VehicleObject veh)
+			{
+				return;
+			}
+
+			//trbBodySprites.Maximum = veh.BodySprites.Count(bs => bs.Flags.HasFlag(BodySpriteFlags.HasSprites));
+			//trbBogieSprites.Maximum = veh.BogieSprites.Count(bs => bs.SteepImageIds != 0);
+			//trbRotate.Maximum = currentUIObjectImages.Count - 1;
+			//trbTilt.Maximum = veh.BodySprites[0].Flags.
+
+			CurrentBodySprite = 0;
+			CurrentBogieSprite = 0;
+			VehicleRotateIndex = 0;
+			VehicleTiltIndex = 0;
+
+		}
+
+		public void SetBodyAndBogieImages()
+		{
+			var veh = (CurrentUIObject as UiLocoObject)?.LocoObject.Object as VehicleObject;
+
+			if (veh == null)
+				return;
+
+			var currentBody = veh.BodySprites[CurrentBodySprite];
+
+			var tilt = (BodySpriteSlopeType)trbTilt.Value;
+
+			if (currentBody.NumImages == 0 || !currentBody.ImageIds.TryGetValue(tilt, out List<int>? value) || value == null)
+			{
+				pbVehicleBodyPreview.Image = null;
+				return;
+			}
+			trbRotate.Maximum = value.Count;
+			pbVehicleBodyPreview.Image = currentUIObjectImages[value[0] + vehicleRotateIndex];
+
+			//if (tilt == 0)
+			//{
+			//	pbVehicleBodyPreview.Image = currentUIObjectImages[(int)currentBody.FlatImageId + vehicleRotateIndex];
+			//}
+			//else if (tilt == 1)
+			//{
+			//	pbVehicleBodyPreview.Image = currentUIObjectImages[(int)currentBody.GentleImageId + vehicleRotateIndex];
+			//}
+			//else if (tilt == 2)
+			//{
+			//	pbVehicleBodyPreview.Image = currentUIObjectImages[(int)currentBody.SlopedImageId + vehicleRotateIndex];
+			//}
+			//else if (tilt == 3)
+			//{
+			//	pbVehicleBodyPreview.Image = currentUIObjectImages[(int)currentBody.SteepImageId + vehicleRotateIndex];
+			//}
+			//else if (tilt == 4)
+			//{
+			//	pbVehicleBodyPreview.Image = currentUIObjectImages[(int)currentBody.UnkImageId1 + vehicleRotateIndex];
+			//}
+			//else
+			//{
+			//	pbVehicleBodyPreview.Image = currentUIObjectImages[(int)currentBody.UnkImageId2 + vehicleRotateIndex];
+			//}
+
+			//pbVehicleBodyPreview.Image = currentUIObjectImages[VehicleRotateIndex];
+
+			//pbVehicleBogiePreview.Image = currentUIObjectImages[VehicleRotateIndex];
+
+		}
+
+		#region CurrentBodySprite
+
+		public int CurrentBodySprite
+		{
+			get => currentBodySprite;
+			set
+			{
+				if (value < 0)
+					value = 0;
+
+				if (value > trbBodySprites.Maximum)
+					value = trbBodySprites.Maximum;
+
+				currentBodySprite = value;
+
+				tbCurrentBodySprite.Text = $"{currentBodySprite} / {trbBodySprites.Maximum}";
+				trbBodySprites.Value = value;
+
+				// need to update this here: trbRotate.Maximum = BodySprites[value].NumFlatRotationFrames - 1;
+
+				SetBodyAndBogieImages();
+			}
+		}
+		public int currentBodySprite = 0;
+
+		private void trbBodySprites_Scroll(object sender, EventArgs e)
+		{
+			CurrentBodySprite = trbBodySprites.Value;
+		}
+
+		private void btnBodySpriteNext_Click(object sender, EventArgs e)
+		{
+			CurrentBodySprite++;
+		}
+
+		private void btnBodySpritePrevious_Click(object sender, EventArgs e)
+		{
+			CurrentBodySprite--;
+		}
+
+		#endregion
+
+		#region CurrentBogieSprite
+
+		public int CurrentBogieSprite
+		{
+			get => currentBogieSprite;
+			set
+			{
+				if (value < 0)
+					value = 0;
+
+				if (value > trbBogieSprites.Maximum)
+					value = trbBogieSprites.Maximum;
+
+				currentBogieSprite = value;
+
+				tbCurrentBogieSprite.Text = $"{currentBogieSprite} / {trbBogieSprites.Maximum}";
+				trbBogieSprites.Value = value;
+				SetBodyAndBogieImages();
+			}
+		}
+		public int currentBogieSprite = 0;
+
+		private void trbBogieSprites_Scroll(object sender, EventArgs e)
+		{
+			CurrentBogieSprite = trbBogieSprites.Value;
+		}
+
+		private void btnBogieSpriteNext_Click(object sender, EventArgs e)
+		{
+			CurrentBogieSprite++;
+		}
+
+		private void btnBogieSpritePrevious_Click(object sender, EventArgs e)
+		{
+			CurrentBogieSprite--;
+		}
+
+		#endregion
+
 		#region VehicleRotate
 
 		public int VehicleRotateIndex
@@ -1410,16 +1568,18 @@ namespace OpenLocoToolGui
 			get => vehicleRotateIndex;
 			set
 			{
+				if (value > trbRotate.Maximum)
+					value = trbRotate.Maximum;
+
 				if (value < 0)
 					value = 0;
 
-				if (value >= currentUIObjectImages.Count)
-					value = currentUIObjectImages.Count - 1;
-
 				vehicleRotateIndex = value;
 
-				tbRotateValue.Text = $"{vehicleRotateIndex} / {currentUIObjectImages.Count - 1}";
-				pbVehiclePreview.Image = currentUIObjectImages[vehicleRotateIndex];
+				tbRotateValue.Text = $"{vehicleRotateIndex} / {trbRotate.Maximum}";
+				trbRotate.Value = value;
+
+				SetBodyAndBogieImages();
 			}
 		}
 		public int vehicleRotateIndex = 0;
@@ -1444,33 +1604,51 @@ namespace OpenLocoToolGui
 
 		public int VehicleTiltIndex
 		{
-			get => vehicleRotateIndex;
+			get => vehicleTiltIndex;
 			set
 			{
 				if (value < 0)
 					value = 0;
 
-				if (value >= currentUIObjectImages.Count)
-					value = currentUIObjectImages.Count - 1;
+				if (value > trbTilt.Maximum)
+					value = trbTilt.Maximum;
 
 				vehicleTiltIndex = value;
 
-				tbRotateValue.Text = $"{vehicleTiltIndex} / {currentUIObjectImages.Count - 1}";
-				pbVehiclePreview.Image = currentUIObjectImages[vehicleTiltIndex];
+				var text = vehicleTiltIndex switch
+				{
+					0 => "Flat",
+					1 => "Gentle",
+					2 => "Sloped",
+					3 => "Steep",
+					4 => "Unk1",
+					5 => "Unk2",
+					_ => "Unknown"
+				};
+				tbTiltValue.Text = $"{vehicleTiltIndex} / {trbTilt.Maximum} ({text})";
+				trbTilt.Value = value;
+
+				SetBodyAndBogieImages();
 			}
 		}
 		public int vehicleTiltIndex = 0;
 
-		private void btnTiltDown_Click(object sender, EventArgs e)
+		private void trbTilt_Scroll(object sender, EventArgs e)
+		{
+			VehicleTiltIndex = trbTilt.Value;
+		}
+
+		private void btnTiltUp_Click(object sender, EventArgs e)
 		{
 			VehicleTiltIndex++;
 		}
 
-		private void btnTiltUp_Click(object sender, EventArgs e)
+		private void btnTiltDown_Click(object sender, EventArgs e)
 		{
 			VehicleTiltIndex--;
 		}
 
 		#endregion
+
 	}
 }

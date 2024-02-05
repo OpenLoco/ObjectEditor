@@ -59,15 +59,28 @@ namespace OpenLocoToolGui
 			tslImageScaling = new ToolStripLabel();
 			tstbImageScaling = new ToolStripTextBox();
 			tpObjectPreview = new TabPage();
-			tbTiltValue = new TextBox();
-			btnTiltUp = new Button();
-			btnTiltDown = new Button();
-			tbRotateValue = new TextBox();
-			btnRotateRight = new Button();
-			btnRotateLeft = new Button();
+			gbBogieSprites = new GroupBox();
+			trbBogieSprites = new TrackBar();
+			btnBogieSpritePrevious = new Button();
+			btnBogieSpriteNext = new Button();
+			tbCurrentBogieSprite = new TextBox();
+			gbBodySprites = new GroupBox();
+			trbBodySprites = new TrackBar();
+			btnBodySpritePrevious = new Button();
+			btnBodySpriteNext = new Button();
+			tbCurrentBodySprite = new TextBox();
+			gbTilt = new GroupBox();
 			trbTilt = new TrackBar();
+			btnTiltDown = new Button();
+			btnTiltUp = new Button();
+			tbTiltValue = new TextBox();
+			gbRotation = new GroupBox();
 			trbRotate = new TrackBar();
-			pbVehiclePreview = new PictureBoxWithInterpolationMode();
+			btnRotateLeft = new Button();
+			btnRotateRight = new Button();
+			tbRotateValue = new TextBox();
+			pbVehicleBogiePreview = new PictureBoxWithInterpolationMode();
+			pbVehicleBodyPreview = new PictureBoxWithInterpolationMode();
 			scHeaders = new SplitContainer();
 			pgS5Header = new PropertyGrid();
 			pgObjHeader = new PropertyGrid();
@@ -114,9 +127,16 @@ namespace OpenLocoToolGui
 			pnImagePageControls.SuspendLayout();
 			tsImageTable.SuspendLayout();
 			tpObjectPreview.SuspendLayout();
+			gbBogieSprites.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)trbBogieSprites).BeginInit();
+			gbBodySprites.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)trbBodySprites).BeginInit();
+			gbTilt.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)trbTilt).BeginInit();
+			gbRotation.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)trbRotate).BeginInit();
-			((System.ComponentModel.ISupportInitialize)pbVehiclePreview).BeginInit();
+			((System.ComponentModel.ISupportInitialize)pbVehicleBogiePreview).BeginInit();
+			((System.ComponentModel.ISupportInitialize)pbVehicleBodyPreview).BeginInit();
 			((System.ComponentModel.ISupportInitialize)scHeaders).BeginInit();
 			scHeaders.Panel1.SuspendLayout();
 			scHeaders.Panel2.SuspendLayout();
@@ -401,15 +421,12 @@ namespace OpenLocoToolGui
 			// 
 			// tpObjectPreview
 			// 
-			tpObjectPreview.Controls.Add(tbTiltValue);
-			tpObjectPreview.Controls.Add(btnTiltUp);
-			tpObjectPreview.Controls.Add(btnTiltDown);
-			tpObjectPreview.Controls.Add(tbRotateValue);
-			tpObjectPreview.Controls.Add(btnRotateRight);
-			tpObjectPreview.Controls.Add(btnRotateLeft);
-			tpObjectPreview.Controls.Add(trbTilt);
-			tpObjectPreview.Controls.Add(trbRotate);
-			tpObjectPreview.Controls.Add(pbVehiclePreview);
+			tpObjectPreview.Controls.Add(gbBogieSprites);
+			tpObjectPreview.Controls.Add(gbBodySprites);
+			tpObjectPreview.Controls.Add(gbTilt);
+			tpObjectPreview.Controls.Add(gbRotation);
+			tpObjectPreview.Controls.Add(pbVehicleBogiePreview);
+			tpObjectPreview.Controls.Add(pbVehicleBodyPreview);
 			tpObjectPreview.Location = new Point(4, 24);
 			tpObjectPreview.Name = "tpObjectPreview";
 			tpObjectPreview.Size = new Size(1393, 612);
@@ -417,29 +434,140 @@ namespace OpenLocoToolGui
 			tpObjectPreview.Text = "Vehicle Rotator";
 			tpObjectPreview.UseVisualStyleBackColor = true;
 			// 
-			// tbTiltValue
+			// gbBogieSprites
 			// 
-			tbTiltValue.Enabled = false;
-			tbTiltValue.Location = new Point(34, 452);
-			tbTiltValue.Name = "tbTiltValue";
-			tbTiltValue.Size = new Size(194, 23);
-			tbTiltValue.TabIndex = 37;
-			tbTiltValue.Text = "0";
-			tbTiltValue.TextAlign = HorizontalAlignment.Center;
+			gbBogieSprites.Controls.Add(trbBogieSprites);
+			gbBogieSprites.Controls.Add(btnBogieSpritePrevious);
+			gbBogieSprites.Controls.Add(btnBogieSpriteNext);
+			gbBogieSprites.Controls.Add(tbCurrentBogieSprite);
+			gbBogieSprites.Location = new Point(266, 265);
+			gbBogieSprites.Name = "gbBogieSprites";
+			gbBogieSprites.Size = new Size(256, 104);
+			gbBogieSprites.TabIndex = 41;
+			gbBogieSprites.TabStop = false;
+			gbBogieSprites.Text = "Bogie Sprites";
 			// 
-			// btnTiltUp
+			// trbBogieSprites
 			// 
-			btnTiltUp.Location = new Point(234, 452);
-			btnTiltUp.Name = "btnTiltUp";
-			btnTiltUp.Size = new Size(23, 23);
-			btnTiltUp.TabIndex = 36;
-			btnTiltUp.Text = ">";
-			btnTiltUp.UseVisualStyleBackColor = true;
-			btnTiltUp.Click += btnTiltUp_Click;
+			trbBogieSprites.Location = new Point(6, 22);
+			trbBogieSprites.Maximum = 1;
+			trbBogieSprites.Name = "trbBogieSprites";
+			trbBogieSprites.Size = new Size(244, 45);
+			trbBogieSprites.TabIndex = 29;
+			trbBogieSprites.TickStyle = TickStyle.Both;
+			trbBogieSprites.Scroll += trbBogieSprites_Scroll;
+			// 
+			// btnBogieSpritePrevious
+			// 
+			btnBogieSpritePrevious.Location = new Point(6, 72);
+			btnBogieSpritePrevious.Name = "btnBogieSpritePrevious";
+			btnBogieSpritePrevious.Size = new Size(23, 23);
+			btnBogieSpritePrevious.TabIndex = 32;
+			btnBogieSpritePrevious.Text = "<";
+			btnBogieSpritePrevious.UseVisualStyleBackColor = true;
+			btnBogieSpritePrevious.Click += btnBogieSpritePrevious_Click;
+			// 
+			// btnBogieSpriteNext
+			// 
+			btnBogieSpriteNext.Location = new Point(227, 73);
+			btnBogieSpriteNext.Name = "btnBogieSpriteNext";
+			btnBogieSpriteNext.Size = new Size(23, 23);
+			btnBogieSpriteNext.TabIndex = 33;
+			btnBogieSpriteNext.Text = ">";
+			btnBogieSpriteNext.UseVisualStyleBackColor = true;
+			btnBogieSpriteNext.Click += btnBogieSpriteNext_Click;
+			// 
+			// tbCurrentBogieSprite
+			// 
+			tbCurrentBogieSprite.BorderStyle = BorderStyle.FixedSingle;
+			tbCurrentBogieSprite.Enabled = false;
+			tbCurrentBogieSprite.Location = new Point(35, 73);
+			tbCurrentBogieSprite.Name = "tbCurrentBogieSprite";
+			tbCurrentBogieSprite.Size = new Size(186, 23);
+			tbCurrentBogieSprite.TabIndex = 34;
+			tbCurrentBogieSprite.Text = "0";
+			tbCurrentBogieSprite.TextAlign = HorizontalAlignment.Center;
+			// 
+			// gbBodySprites
+			// 
+			gbBodySprites.Controls.Add(trbBodySprites);
+			gbBodySprites.Controls.Add(btnBodySpritePrevious);
+			gbBodySprites.Controls.Add(btnBodySpriteNext);
+			gbBodySprites.Controls.Add(tbCurrentBodySprite);
+			gbBodySprites.Location = new Point(4, 265);
+			gbBodySprites.Name = "gbBodySprites";
+			gbBodySprites.Size = new Size(256, 104);
+			gbBodySprites.TabIndex = 40;
+			gbBodySprites.TabStop = false;
+			gbBodySprites.Text = "Body Sprites";
+			// 
+			// trbBodySprites
+			// 
+			trbBodySprites.Location = new Point(6, 22);
+			trbBodySprites.Maximum = 3;
+			trbBodySprites.Name = "trbBodySprites";
+			trbBodySprites.Size = new Size(244, 45);
+			trbBodySprites.TabIndex = 29;
+			trbBodySprites.TickStyle = TickStyle.Both;
+			trbBodySprites.Scroll += trbBodySprites_Scroll;
+			// 
+			// btnBodySpritePrevious
+			// 
+			btnBodySpritePrevious.Location = new Point(6, 73);
+			btnBodySpritePrevious.Name = "btnBodySpritePrevious";
+			btnBodySpritePrevious.Size = new Size(23, 23);
+			btnBodySpritePrevious.TabIndex = 32;
+			btnBodySpritePrevious.Text = "<";
+			btnBodySpritePrevious.UseVisualStyleBackColor = true;
+			btnBodySpritePrevious.Click += btnBodySpritePrevious_Click;
+			// 
+			// btnBodySpriteNext
+			// 
+			btnBodySpriteNext.Location = new Point(227, 73);
+			btnBodySpriteNext.Name = "btnBodySpriteNext";
+			btnBodySpriteNext.Size = new Size(23, 23);
+			btnBodySpriteNext.TabIndex = 33;
+			btnBodySpriteNext.Text = ">";
+			btnBodySpriteNext.UseVisualStyleBackColor = true;
+			btnBodySpriteNext.Click += btnBodySpriteNext_Click;
+			// 
+			// tbCurrentBodySprite
+			// 
+			tbCurrentBodySprite.BorderStyle = BorderStyle.FixedSingle;
+			tbCurrentBodySprite.Enabled = false;
+			tbCurrentBodySprite.Location = new Point(37, 74);
+			tbCurrentBodySprite.Name = "tbCurrentBodySprite";
+			tbCurrentBodySprite.Size = new Size(184, 23);
+			tbCurrentBodySprite.TabIndex = 34;
+			tbCurrentBodySprite.Text = "0";
+			tbCurrentBodySprite.TextAlign = HorizontalAlignment.Center;
+			// 
+			// gbTilt
+			// 
+			gbTilt.Controls.Add(trbTilt);
+			gbTilt.Controls.Add(btnTiltDown);
+			gbTilt.Controls.Add(btnTiltUp);
+			gbTilt.Controls.Add(tbTiltValue);
+			gbTilt.Location = new Point(266, 454);
+			gbTilt.Name = "gbTilt";
+			gbTilt.Size = new Size(256, 104);
+			gbTilt.TabIndex = 40;
+			gbTilt.TabStop = false;
+			gbTilt.Text = "Tilt";
+			// 
+			// trbTilt
+			// 
+			trbTilt.Location = new Point(6, 22);
+			trbTilt.Maximum = 5;
+			trbTilt.Name = "trbTilt";
+			trbTilt.Size = new Size(244, 45);
+			trbTilt.TabIndex = 30;
+			trbTilt.TickStyle = TickStyle.Both;
+			trbTilt.Scroll += trbTilt_Scroll;
 			// 
 			// btnTiltDown
 			// 
-			btnTiltDown.Location = new Point(3, 451);
+			btnTiltDown.Location = new Point(6, 73);
 			btnTiltDown.Name = "btnTiltDown";
 			btnTiltDown.Size = new Size(23, 23);
 			btnTiltDown.TabIndex = 35;
@@ -447,29 +575,52 @@ namespace OpenLocoToolGui
 			btnTiltDown.UseVisualStyleBackColor = true;
 			btnTiltDown.Click += btnTiltDown_Click;
 			// 
-			// tbRotateValue
+			// btnTiltUp
 			// 
-			tbRotateValue.Enabled = false;
-			tbRotateValue.Location = new Point(34, 314);
-			tbRotateValue.Name = "tbRotateValue";
-			tbRotateValue.Size = new Size(194, 23);
-			tbRotateValue.TabIndex = 34;
-			tbRotateValue.Text = "0";
-			tbRotateValue.TextAlign = HorizontalAlignment.Center;
+			btnTiltUp.Location = new Point(227, 73);
+			btnTiltUp.Name = "btnTiltUp";
+			btnTiltUp.Size = new Size(23, 23);
+			btnTiltUp.TabIndex = 36;
+			btnTiltUp.Text = ">";
+			btnTiltUp.UseVisualStyleBackColor = true;
+			btnTiltUp.Click += btnTiltUp_Click;
 			// 
-			// btnRotateRight
+			// tbTiltValue
 			// 
-			btnRotateRight.Location = new Point(234, 314);
-			btnRotateRight.Name = "btnRotateRight";
-			btnRotateRight.Size = new Size(23, 23);
-			btnRotateRight.TabIndex = 33;
-			btnRotateRight.Text = ">";
-			btnRotateRight.UseVisualStyleBackColor = true;
-			btnRotateRight.Click += btnRotateRight_Click;
+			tbTiltValue.BorderStyle = BorderStyle.FixedSingle;
+			tbTiltValue.Enabled = false;
+			tbTiltValue.Location = new Point(35, 73);
+			tbTiltValue.Name = "tbTiltValue";
+			tbTiltValue.Size = new Size(186, 23);
+			tbTiltValue.TabIndex = 37;
+			tbTiltValue.Text = "0";
+			tbTiltValue.TextAlign = HorizontalAlignment.Center;
+			// 
+			// gbRotation
+			// 
+			gbRotation.Controls.Add(trbRotate);
+			gbRotation.Controls.Add(btnRotateLeft);
+			gbRotation.Controls.Add(btnRotateRight);
+			gbRotation.Controls.Add(tbRotateValue);
+			gbRotation.Location = new Point(4, 454);
+			gbRotation.Name = "gbRotation";
+			gbRotation.Size = new Size(256, 104);
+			gbRotation.TabIndex = 39;
+			gbRotation.TabStop = false;
+			gbRotation.Text = "Rotation";
+			// 
+			// trbRotate
+			// 
+			trbRotate.Location = new Point(6, 22);
+			trbRotate.Name = "trbRotate";
+			trbRotate.Size = new Size(244, 45);
+			trbRotate.TabIndex = 29;
+			trbRotate.TickStyle = TickStyle.Both;
+			trbRotate.Scroll += trbRotate_Scroll;
 			// 
 			// btnRotateLeft
 			// 
-			btnRotateLeft.Location = new Point(3, 313);
+			btnRotateLeft.Location = new Point(6, 73);
 			btnRotateLeft.Name = "btnRotateLeft";
 			btnRotateLeft.Size = new Size(23, 23);
 			btnRotateLeft.TabIndex = 32;
@@ -477,32 +628,46 @@ namespace OpenLocoToolGui
 			btnRotateLeft.UseVisualStyleBackColor = true;
 			btnRotateLeft.Click += btnRotateLeft_Click;
 			// 
-			// trbTilt
+			// btnRotateRight
 			// 
-			trbTilt.Location = new Point(4, 401);
-			trbTilt.Name = "trbTilt";
-			trbTilt.Size = new Size(253, 45);
-			trbTilt.TabIndex = 30;
-			trbTilt.TickStyle = TickStyle.Both;
+			btnRotateRight.Location = new Point(227, 73);
+			btnRotateRight.Name = "btnRotateRight";
+			btnRotateRight.Size = new Size(23, 23);
+			btnRotateRight.TabIndex = 33;
+			btnRotateRight.Text = ">";
+			btnRotateRight.UseVisualStyleBackColor = true;
+			btnRotateRight.Click += btnRotateRight_Click;
 			// 
-			// trbRotate
+			// tbRotateValue
 			// 
-			trbRotate.Location = new Point(3, 262);
-			trbRotate.Name = "trbRotate";
-			trbRotate.Size = new Size(254, 45);
-			trbRotate.TabIndex = 29;
-			trbRotate.TickStyle = TickStyle.Both;
-			trbRotate.Scroll += trbRotate_Scroll;
+			tbRotateValue.BorderStyle = BorderStyle.FixedSingle;
+			tbRotateValue.Enabled = false;
+			tbRotateValue.Location = new Point(35, 73);
+			tbRotateValue.Name = "tbRotateValue";
+			tbRotateValue.Size = new Size(186, 23);
+			tbRotateValue.TabIndex = 34;
+			tbRotateValue.Text = "0";
+			tbRotateValue.TextAlign = HorizontalAlignment.Center;
 			// 
-			// pbVehiclePreview
+			// pbVehicleBogiePreview
 			// 
-			pbVehiclePreview.BorderStyle = BorderStyle.FixedSingle;
-			pbVehiclePreview.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
-			pbVehiclePreview.Location = new Point(0, 0);
-			pbVehiclePreview.Name = "pbVehiclePreview";
-			pbVehiclePreview.Size = new Size(256, 256);
-			pbVehiclePreview.TabIndex = 28;
-			pbVehiclePreview.TabStop = false;
+			pbVehicleBogiePreview.BorderStyle = BorderStyle.FixedSingle;
+			pbVehicleBogiePreview.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
+			pbVehicleBogiePreview.Location = new Point(266, 3);
+			pbVehicleBogiePreview.Name = "pbVehicleBogiePreview";
+			pbVehicleBogiePreview.Size = new Size(256, 256);
+			pbVehicleBogiePreview.TabIndex = 38;
+			pbVehicleBogiePreview.TabStop = false;
+			// 
+			// pbVehicleBodyPreview
+			// 
+			pbVehicleBodyPreview.BorderStyle = BorderStyle.FixedSingle;
+			pbVehicleBodyPreview.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
+			pbVehicleBodyPreview.Location = new Point(4, 3);
+			pbVehicleBodyPreview.Name = "pbVehicleBodyPreview";
+			pbVehicleBodyPreview.Size = new Size(256, 256);
+			pbVehicleBodyPreview.TabIndex = 28;
+			pbVehicleBodyPreview.TabStop = false;
 			// 
 			// scHeaders
 			// 
@@ -844,10 +1009,20 @@ namespace OpenLocoToolGui
 			tsImageTable.ResumeLayout(false);
 			tsImageTable.PerformLayout();
 			tpObjectPreview.ResumeLayout(false);
-			tpObjectPreview.PerformLayout();
+			gbBogieSprites.ResumeLayout(false);
+			gbBogieSprites.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)trbBogieSprites).EndInit();
+			gbBodySprites.ResumeLayout(false);
+			gbBodySprites.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)trbBodySprites).EndInit();
+			gbTilt.ResumeLayout(false);
+			gbTilt.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)trbTilt).EndInit();
+			gbRotation.ResumeLayout(false);
+			gbRotation.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)trbRotate).EndInit();
-			((System.ComponentModel.ISupportInitialize)pbVehiclePreview).EndInit();
+			((System.ComponentModel.ISupportInitialize)pbVehicleBogiePreview).EndInit();
+			((System.ComponentModel.ISupportInitialize)pbVehicleBodyPreview).EndInit();
 			scHeaders.Panel1.ResumeLayout(false);
 			scHeaders.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scHeaders).EndInit();
@@ -937,7 +1112,7 @@ namespace OpenLocoToolGui
 		private ToolStripLabel tslImageScaling;
 		private Panel pnImagePageControls;
 		private TabPage tpObjectPreview;
-		private PictureBoxWithInterpolationMode pbVehiclePreview;
+		private PictureBoxWithInterpolationMode pbVehicleBodyPreview;
 		private TrackBar trbTilt;
 		private TrackBar trbRotate;
 		private Button btnRotateRight;
@@ -946,5 +1121,20 @@ namespace OpenLocoToolGui
 		private TextBox tbTiltValue;
 		private Button btnTiltUp;
 		private Button btnTiltDown;
+		private PictureBoxWithInterpolationMode pbVehicleBogiePreview;
+		private GroupBox gbTilt;
+		private GroupBox gbRotation;
+		private GroupBox gbBogieSprites;
+		private TrackBar trackBar2;
+		private Button btnBogieSpritePrevious;
+		private Button btnBogieSpriteNext;
+		private TextBox tbCurrentBogieSprite;
+		private GroupBox gbBodySprites;
+		private TrackBar trackBar1;
+		private Button btnBodySpritePrevious;
+		private Button btnBodySpriteNext;
+		private TextBox tbCurrentBodySprite;
+		private TrackBar trbBogieSprites;
+		private TrackBar trbBodySprites;
 	}
 }

@@ -9,14 +9,81 @@ namespace OpenLocoTool.DatFileParsing
 {
 	public static class SawyerStreamWriter
 	{
-		public static void ExportSoundEffectAsWave(string filename, WaveFormatEx header, byte[] pcmData)
+		//public static void ExportSoundEffectAsWave(string filename, WaveFormatEx header, byte[] pcmData)
+		//{
+		//	using (var stream = File.Create(filename))
+		//	{
+		//		stream.Write(ByteWriter.WriteLocoStruct(header));
+		//		stream.Write(pcmData);
+		//		stream.Flush();
+		//		stream.Close();
+		//	}
+		//}
+
+		public static RiffWavHeader WaveFormatExToRiff(WaveFormatEx hdr, int pcmDataLength)
+			=> new(
+				0x46464952, // "RIFF"
+				(uint)(pcmDataLength + 36), // file size
+				0x45564157, // "WAVE"
+				0x20746d66, // "fmt "
+				16, // size of fmt chunk
+				1, // format tag
+				(ushort)hdr.NumberOfChannels,
+				(uint)hdr.SampleRate,
+				(uint)hdr.AverageBytesPerSecond,
+				4, //(ushort)waveFHeader.BlockAlign,
+				16, //(ushort)waveFHeader.BitsPerSample,
+				0x61746164, // "data"
+				(uint)pcmDataLength // data size
+				);
+
+		public static WaveFormatEx RiffToWaveFormatEx(RiffWavHeader hdr)
+			=> new(1, (short)hdr.NumberOfChannels, (int)hdr.SampleRate, (int)hdr.ByteRate, 2, 16, 0);
+		//0x46464952, // "RIFF"
+		//(uint)(pcmDataLength + 36), // file size
+		//0x45564157, // "WAVE"
+		//0x20746d66, // "fmt "
+		//16, // size of fmt chunk
+		//1, // format tag
+		//(ushort)hdr.NumberOfChannels,
+		//(uint)hdr.SampleRate,
+		//(uint)hdr.AverageBytesPerSecond,
+		//4, //(ushort)waveFHeader.BlockAlign,
+		//16, //(ushort)waveFHeader.BitsPerSample,
+		//0x61746164, // "data"
+		//(uint)pcmDataLength // data size
+		//);
+
+		public static byte[] SaveSoundEffectsToCSS(List<(RiffWavHeader header, byte[] data)> sounds)
 		{
-			using (var stream = File.Create(filename))
+			using (var ms = new MemoryStream())
+			using (var br = new BinaryWriter(ms))
 			{
-				stream.Write(ByteWriter.WriteLocoStruct(header));
-				stream.Write(pcmData);
-				stream.Flush();
-				stream.Close();
+				// total sounds
+				br.Write((uint)sounds.Count);
+
+				var currOffset = 4 + (sounds.Count * 4); // 4 for sound count, then 32 sounds each have a 4-byte offset. its always 33 * 4 = 132 to start.
+
+				// sound offsets
+				foreach (var sfx in sounds)
+				{
+					br.Write((uint)currOffset);
+					currOffset += 4 + sfx.data.Length + ObjectAttributes.StructSize<WaveFormatEx>();
+				}
+
+				// pcm data
+				foreach (var sfx in sounds)
+				{
+					var waveHdr = RiffToWaveFormatEx(sfx.header);
+					br.Write((uint)sfx.data.Length);
+					br.Write(ByteWriter.WriteLocoStruct(waveHdr));
+					br.Write(sfx.data);
+				}
+
+				ms.Flush();
+				ms.Close();
+
+				return ms.ToArray();
 			}
 		}
 

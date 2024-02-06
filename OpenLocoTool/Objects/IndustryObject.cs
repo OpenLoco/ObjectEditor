@@ -214,74 +214,75 @@ namespace OpenLocoTool.Objects
 
 		public ReadOnlySpan<byte> Save()
 		{
-			var ms = new MemoryStream();
-
-			// variation heights
-			foreach (var x in BuildingVariationHeights)
+			using (var ms = new MemoryStream())
 			{
-				ms.WriteByte(x);
-			}
+				// variation heights
+				foreach (var x in BuildingVariationHeights)
+				{
+					ms.WriteByte(x);
+				}
 
-			// variation animations
-			foreach (var x in BuildingVariationAnimations)
-			{
-				ms.WriteByte(x.NumFrames);
-				ms.WriteByte(x.AnimationSpeed);
-			}
+				// variation animations
+				foreach (var x in BuildingVariationAnimations)
+				{
+					ms.WriteByte(x.NumFrames);
+					ms.WriteByte(x.AnimationSpeed);
+				}
 
-			// animation sequences
-			foreach (var x in AnimationSequences)
-			{
-				ms.WriteByte((uint8_t)x.Length);
-				ms.Write(x);
-			}
+				// animation sequences
+				foreach (var x in AnimationSequences)
+				{
+					ms.WriteByte((uint8_t)x.Length);
+					ms.Write(x);
+				}
 
-			// unk animation related
-			foreach (var x in UnkIndustry38)
-			{
-				ms.WriteByte(x.var_00);
-				ms.WriteByte(x.var_01);
-			}
+				// unk animation related
+				foreach (var x in UnkIndustry38)
+				{
+					ms.WriteByte(x.var_00);
+					ms.WriteByte(x.var_01);
+				}
 
-			ms.WriteByte(0xFF);
-
-			// variation parts
-			foreach (var x in BuildingVariationParts)
-			{
-				ms.Write(x);
 				ms.WriteByte(0xFF);
+
+				// variation parts
+				foreach (var x in BuildingVariationParts)
+				{
+					ms.Write(x);
+					ms.WriteByte(0xFF);
+				}
+
+				// unk building data
+				ms.Write(Buildings.ToArray());
+
+				// for the next 3 fields, loco industry objects print zeroes for all these headers if they're unused! insane!
+
+				// produced cargo
+				foreach (var obj in ProducedCargo.Fill(MaxProducedCargoType, S5Header.NullHeader))
+				{
+					ms.Write(obj.Write());
+				}
+
+				// required cargo
+				foreach (var obj in RequiredCargo.Fill(MaxRequiredCargoType, S5Header.NullHeader))
+				{
+					ms.Write(obj.Write());
+				}
+
+				// wall types
+				foreach (var obj in WallTypes.Fill(WallTypeCount, S5Header.NullHeader))
+				{
+					ms.Write(obj.Write());
+				}
+
+				// wall type
+				ms.Write(BuildingWall.Write());
+
+				// wall type entrance
+				ms.Write(BuildingWallEntrance.Write());
+
+				return ms.ToArray();
 			}
-
-			// unk building data
-			ms.Write(Buildings.ToArray());
-
-			// for the next 3 fields, loco industry objects print zeroes for all these headers if they're unused! insane!
-
-			// produced cargo
-			foreach (var obj in ProducedCargo.Fill(MaxProducedCargoType, S5Header.NullHeader))
-			{
-				ms.Write(obj.Write());
-			}
-
-			// required cargo
-			foreach (var obj in RequiredCargo.Fill(MaxRequiredCargoType, S5Header.NullHeader))
-			{
-				ms.Write(obj.Write());
-			}
-
-			// wall types
-			foreach (var obj in WallTypes.Fill(WallTypeCount, S5Header.NullHeader))
-			{
-				ms.Write(obj.Write());
-			}
-
-			// wall type
-			ms.Write(BuildingWall.Write());
-
-			// wall type entrance
-			ms.Write(BuildingWallEntrance.Write());
-
-			return ms.ToArray();
 		}
 	}
 }

@@ -11,6 +11,8 @@ namespace OpenLocoToolGui
 
 		public void SetDataBinding(StringTable data)
 		{
+			lbStringSelector.SuspendLayout();
+
 			_data = data;
 			lbStringSelector.DataSource = null;
 
@@ -25,9 +27,10 @@ namespace OpenLocoToolGui
 			// Subscribe to the SelectionChanged event to populate the inner DataGridView.
 			lbStringSelector.SelectedValueChanged += (sender, e) => UpdateDGVSource();
 
+			lbStringSelector.ResumeLayout(true);
+
 			// update the DGV now as well
 			UpdateDGVSource();
-
 		}
 
 		void UpdateDGVSource()

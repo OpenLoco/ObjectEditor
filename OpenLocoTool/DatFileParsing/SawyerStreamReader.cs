@@ -7,7 +7,6 @@ using OpenLocoToolCommon;
 
 namespace OpenLocoTool.DatFileParsing
 {
-
 	public static class SawyerStreamReader
 	{
 		public static List<S5Header> LoadVariableCountS5Headers(ReadOnlySpan<byte> data, int count)
@@ -125,6 +124,12 @@ namespace OpenLocoTool.DatFileParsing
 				logger?.Error(ex, "Error loading graphics table");
 			}
 
+			// some objects have variable-sized data
+			if (loadExtra && locoStruct is ILocoStructPostLoad locoStructPostLoad)
+			{
+				locoStructPostLoad.PostLoad();
+			}
+
 			// add to object manager
 			SObjectManager.Add(newObj);
 
@@ -186,8 +191,13 @@ namespace OpenLocoTool.DatFileParsing
 			return LoadStringTable(data, stringTableStrings);
 		}
 
-		public static G1Dat LoadG1(string filename, ILogger? logger = null)
+		public static G1Dat? LoadG1(string filename, ILogger? logger = null)
 		{
+			if (!File.Exists(filename))
+			{
+				logger?.Debug($"File {filename} does not exist");
+				return null;
+			}
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
 			logger?.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
@@ -368,7 +378,7 @@ namespace OpenLocoTool.DatFileParsing
 			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
 		};
 
-		public static (RiffWavHeader header, byte[] data) LoadMusicTrack(byte[] data)
+		public static (RiffWavHeader header, byte[] data) LoadWavFile(byte[] data)
 		{
 			using (var ms = new MemoryStream(data))
 			using (var br = new BinaryReader(ms))
@@ -391,6 +401,7 @@ namespace OpenLocoTool.DatFileParsing
 			{
 				var numSounds = br.ReadUInt32();
 				var soundOffsets = new uint32_t[numSounds];
+
 				for (var i = 0; i < numSounds; ++i)
 				{
 					soundOffsets[i] = br.ReadUInt32();
@@ -400,10 +411,10 @@ namespace OpenLocoTool.DatFileParsing
 				{
 					br.BaseStream.Position = soundOffsets[i];
 					var pcmLen = br.ReadUInt32();
-					var format = ByteReader.ReadLocoStruct<WaveFormatEx>(br.ReadBytes(ObjectAttributes.StructSize<WaveFormatEx>()));
+					var header = ByteReader.ReadLocoStruct<WaveFormatEx>(br.ReadBytes(ObjectAttributes.StructSize<WaveFormatEx>()));
 
 					var pcmData = br.ReadBytes((int)pcmLen);
-					result.Add((format, pcmData));
+					result.Add((header, pcmData));
 				}
 			}
 

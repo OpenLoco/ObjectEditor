@@ -41,6 +41,11 @@ namespace OpenLocoTool.DatFileParsing
 	public class LocoStringAttribute : Attribute
 	{ }
 
+	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
+	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
+	public class LocoImageIdAttribute : Attribute
+	{ }
+
 	// to mark properties that seemingly have no purpose or use
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
 	public class LocoPropertyMaybeUnused : Attribute

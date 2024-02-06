@@ -62,7 +62,7 @@ namespace OpenLocoToolGui
 
 		public Color[] Palette { get; private set; }
 
-		public G1Dat G1 { get; set; }
+		public G1Dat? G1 { get; set; }
 
 		public Dictionary<string, byte[]> Music { get; set; } = [];
 
@@ -197,7 +197,7 @@ namespace OpenLocoToolGui
 						veh = vo.Type;
 					}
 
-					var indexObjectHeader = new IndexObjectHeader(fileInfo.S5Header.Name, fileInfo.S5Header.ObjectType, veh);
+					var indexObjectHeader = new IndexObjectHeader(fileInfo.S5Header.Name, fileInfo.S5Header.ObjectType, fileInfo.S5Header.Checksum, veh);
 					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 					{
 						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
@@ -213,7 +213,7 @@ namespace OpenLocoToolGui
 					logger.Error($"Failed to load \"{file}\"", ex);
 
 					var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
-					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, null);
+					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, obj.Checksum, null);
 					ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}
 				finally
@@ -249,7 +249,7 @@ namespace OpenLocoToolGui
 		{
 			if (!Directory.Exists(directory))
 			{
-				logger.Warning("Invalid directory");
+				logger.Warning("Invalid directory: doesn't exist");
 				return false;
 			}
 
@@ -259,6 +259,7 @@ namespace OpenLocoToolGui
 
 			void LoadKnownData(HashSet<string> allFilesInDir, HashSet<string> knownFilenames, Dictionary<string, byte[]> dict)
 			{
+				dict.Clear();
 				var expectedMusicFiles = knownFilenames.Select(f => f.ToLower());
 				foreach (var music in expectedMusicFiles)
 				{
@@ -273,7 +274,7 @@ namespace OpenLocoToolGui
 
 			LoadKnownData(allDataFiles, [.. OriginalDataFiles.Music.Keys], Music);
 			LoadKnownData(allDataFiles, [.. OriginalDataFiles.MiscellaneousTracks.Keys], MiscellaneousTracks);
-			LoadKnownData(allDataFiles, [.. OriginalDataFiles.SoundEffects.Keys], SoundEffects);
+			LoadKnownData(allDataFiles, [OriginalDataFiles.SoundEffect], SoundEffects);
 			LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
 
 			MiscFiles = [.. allDataFiles];

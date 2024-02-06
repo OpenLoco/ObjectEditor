@@ -9,11 +9,11 @@ namespace OpenLocoTool.Objects
 	[LocoStructType(ObjectType.Vehicle)]
 	[LocoStringTable("Name")]
 	public record VehicleObject(
-		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name ,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] TransportMode Mode,
 		[property: LocoStructOffset(0x03)] VehicleType Type,
 		[property: LocoStructOffset(0x04)] uint8_t var_04,
-		//[LocoStructOffset(0x05)] object_id TrackType ,
+		[property: LocoStructOffset(0x05), LocoStructVariableLoad, Browsable(false)] object_id TrackTypeId,
 		[property: LocoStructOffset(0x06)] uint8_t NumTrackExtras,
 		[property: LocoStructOffset(0x07)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x08)] int16_t CostFactor,
@@ -25,8 +25,8 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x10), LocoArrayLength(8), LocoStructVariableLoad] List<S5Header> CompatibleVehicles,
 		[property: LocoStructOffset(0x20), LocoArrayLength(4), LocoStructVariableLoad] List<S5Header> RequiredTrackExtras,
 		[property: LocoStructOffset(0x24), LocoArrayLength(4)] VehicleObjectUnk[] var_24,
-		[property: LocoStructOffset(0x3C), LocoArrayLength(VehicleObject.MaxBodySprites), LocoStructVariableLoad] List<BodySprite> BodySprites,
-		[property: LocoStructOffset(0xB4), LocoArrayLength(2), LocoStructVariableLoad] List<BogieSprite> BogieSprites,
+		[property: LocoStructOffset(0x3C), LocoArrayLength(VehicleObject.MaxBodySprites)] BodySprite[] BodySprites,
+		[property: LocoStructOffset(0xB4), LocoArrayLength(VehicleObject.MaxBogieSprites)] BogieSprite[] BogieSprites,
 		[property: LocoStructOffset(0xD8)] uint16_t Power,
 		[property: LocoStructOffset(0xDA)] Speed16 Speed,
 		[property: LocoStructOffset(0xDC)] Speed16 RackSpeed,
@@ -35,7 +35,7 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0xE2), LocoArrayLength(2), LocoStructVariableLoad] List<uint8_t> MaxCargo,
 		[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad, Browsable(false)] List<List<CargoCategory>> CompatibleCargoCategories,
 		[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObject.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets,
-		//[property: LocoStructOffset(0x10C), LocoStructVariableLoad] uint8_t NumSimultaneousCargoTypes,
+		[property: LocoStructOffset(0x10C), LocoStructVariableLoad, Browsable(false)] uint8_t _NumSimultaneousCargoTypes,
 		[property: LocoStructOffset(0x10D), LocoArrayLength(VehicleObject.AnimationCount)] SimpleAnimation[] Animation,
 		[property: LocoStructOffset(0x113)] uint8_t var_113,
 		[property: LocoStructOffset(0x114)] uint16_t Designed,
@@ -54,10 +54,11 @@ namespace OpenLocoTool.Objects
 		[property: LocoStructOffset(0x135), LocoArrayLength(0x15A - 0x135), LocoStructVariableLoad] List<uint8_t> pad_135,
 		[property: LocoStructOffset(0x15A)] uint8_t NumStartSounds,
 		[property: LocoStructOffset(0x15B), LocoArrayLength(3), LocoStructVariableLoad] List<S5Header> StartSounds
-	) : ILocoStruct, ILocoStructVariableData
+	) : ILocoStruct, ILocoStructVariableData, ILocoStructPostLoad
 	{
 		public const int MaxUnionSoundStructLength = 0x1B;
 		public const int MaxBodySprites = 4;
+		public const int MaxBogieSprites = 2;
 		public const int AnimationCount = 2;
 		public const int CompatibleCargoTypesLength = 2;
 		public const int CargoTypeSpriteOffsetsLength = 32;
@@ -334,5 +335,158 @@ namespace OpenLocoTool.Objects
 
 			return ms.ToArray();
 		}
+
+		public void PostLoad()
+		{
+			var offset = 0;
+
+			// setup body sprites
+			foreach (var bodySprite in BodySprites)
+			{
+				if (!bodySprite.Flags.HasFlag(BodySpriteFlags.HasSprites))
+				{
+					continue;
+				}
+
+				var initial = offset;
+				bodySprite.FlatImageId = (uint)offset;
+				var curr = offset;
+				bodySprite.FlatYawAccuracy = getYawAccuracyFlat(bodySprite.NumFlatRotationFrames);
+
+				bodySprite.NumFramesPerRotation = (byte)(bodySprite.NumAnimationFrames * bodySprite.NumCargoFrames * bodySprite.NumRollFrames + (bodySprite.Flags.HasFlag(BodySpriteFlags.HasBrakingLights) ? 1 : 0)); // be careful of overflow here...
+				var numFlatFrames = (byte)(bodySprite.NumFramesPerRotation * bodySprite.NumFlatRotationFrames);
+				offset += numFlatFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+				bodySprite.ImageIds[BodySpriteSlopeType.Flat] = Enumerable.Range(curr, offset - curr).ToList();
+
+				if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasGentleSprites))
+				{
+					bodySprite.GentleImageId = (uint)offset;
+					curr = offset;
+					var numGentleFrames = bodySprite.NumFramesPerRotation * 8;
+					offset += numGentleFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+					bodySprite.ImageIds[BodySpriteSlopeType.Gentle] = Enumerable.Range(curr, offset - curr).ToList();
+
+					bodySprite.SlopedImageId = (uint)offset;
+					curr = offset;
+					bodySprite.SlopedYawAccuracy = getYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
+					var numSlopedFrames = bodySprite.NumFramesPerRotation * bodySprite.NumSlopedRotationFrames * 2;
+					offset += numSlopedFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+					bodySprite.ImageIds[BodySpriteSlopeType.Sloped] = Enumerable.Range(curr, offset - curr).ToList();
+
+					if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasSteepSprites))
+					{
+						bodySprite.SteepImageId = (uint)offset;
+						curr = offset;
+						var numSteepFrames = bodySprite.NumFramesPerRotation * 8;
+						offset += numSteepFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+						bodySprite.ImageIds[BodySpriteSlopeType.Steep] = Enumerable.Range(curr, offset - curr).ToList();
+
+						// TODO: add these two together??
+						bodySprite.UnkImageId1 = (uint)offset;
+						curr = offset;
+						var numUnkFrames = bodySprite.NumSlopedRotationFrames * bodySprite.NumFramesPerRotation * 2;
+						offset += numUnkFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+						bodySprite.ImageIds[BodySpriteSlopeType.Unk1] = Enumerable.Range(curr, offset - curr).ToList();
+					}
+				}
+
+				if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasUnkSprites))
+				{
+					//bodySprite.UnkImageId2 = offset;
+					curr = offset;
+					var numUnkFrames = bodySprite.NumFlatRotationFrames * 3;
+					offset += numUnkFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+					bodySprite.ImageIds[BodySpriteSlopeType.Unk2] = Enumerable.Range(curr, offset).ToList();
+				}
+
+				bodySprite.NumImages = offset - initial; // (int)(offset - bodySprite.FlatImageId);
+
+				//if (bodySprite.FlatImageId + numImages <= ObjectManager::getTotalNumImages())
+				//{
+				//	var extents = Gfx::getImagesMaxExtent(ImageId(bodySprite.FlatImageId), numImages);
+				//	bodySprite.Width = extents.width;
+				//	bodySprite.HeightNegative = extents.heightNegative;
+				//	bodySprite.HeightPositive = extents.heightPositive;
+				//}
+				//else
+				//{
+				//	// This is a bad object! But will keep loading
+				//	Logging::error("Object has too few images for body sprites!");
+				//	bodySprite.flatImageId = ImageId::kIndexUndefined;
+				//	bodySprite.gentleImageId = ImageId::kIndexUndefined;
+				//	bodySprite.steepImageId = ImageId::kIndexUndefined;
+				//	bodySprite.unkImageId = ImageId::kIndexUndefined;
+				//}
+			}
+
+			// setup bogie sprites
+			foreach (var bogieSprite in BogieSprites)
+			{
+				if (!bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSprites))
+				{
+					continue;
+				}
+
+				bogieSprite.NumRollSprites = bogieSprite.RollStates;
+
+				//bogieSprite.FlatImageIds = offset;
+				var initial = offset;
+				var curr = offset;
+
+				var numRollFrames = bogieSprite.NumRollSprites * 32;
+				offset += numRollFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
+
+				if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasGentleSprites))
+				{
+					//bogieSprite.GentleImageIds = offset;
+					curr = offset;
+					var numGentleFrames = bogieSprite.NumRollSprites * 64;
+					offset += numGentleFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
+
+					if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSteepSprites))
+					{
+						//bogieSprite.SteepImageIds = offset;
+						curr = offset;
+						var numSteepFrames = bogieSprite.NumRollSprites * 64;
+						offset += numSteepFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
+					}
+				}
+
+				bogieSprite.NumImages = offset - initial;
+				//if (bogieSprite.flatImageIds + numImages <= ObjectManager::getTotalNumImages())
+				//{
+				//	var extents = Gfx::getImagesMaxExtent(ImageId(bogieSprite.flatImageIds), numImages);
+				//	bogieSprite.width = extents.width;
+				//	bogieSprite.heightNegative = extents.heightNegative;
+				//	bogieSprite.heightPositive = extents.heightPositive;
+				//}
+				//else
+				//{
+				//	// This is a bad object! But we will keep loading anyway!
+				//	Logging::error("Object has too few images for bogie sprites!");
+				//	bogieSprite.flatImageIds = ImageId::kIndexUndefined;
+				//	bogieSprite.gentleImageIds = ImageId::kIndexUndefined;
+				//	bogieSprite.steepImageIds = ImageId::kIndexUndefined;
+				//}
+			}
+		}
+
+		static uint8_t getYawAccuracyFlat(uint8_t numFrames)
+			=> numFrames switch
+			{
+				8 => 1,
+				16 => 2,
+				32 => 3,
+				_ => 4,
+			};
+
+		static uint8_t getYawAccuracySloped(uint8_t numFrames)
+			=> numFrames switch
+			{
+				4 => 0,
+				8 => 1,
+				16 => 2,
+				_ => 3,
+			};
 	}
 }

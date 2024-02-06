@@ -885,7 +885,7 @@ namespace OpenLocoToolGui
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, setPaletteToolStripMenuItem, recreateIndexToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, /*setPaletteToolStripMenuItem, */ recreateIndexToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
@@ -933,7 +933,7 @@ namespace OpenLocoToolGui
 			setPaletteToolStripMenuItem.Name = "setPaletteToolStripMenuItem";
 			setPaletteToolStripMenuItem.Size = new Size(180, 22);
 			setPaletteToolStripMenuItem.Text = "Load Palette Bitmap";
-			setPaletteToolStripMenuItem.Click += setPaletteToolStripMenuItem_Click;
+			//setPaletteToolStripMenuItem.Click += setPaletteToolStripMenuItem_Click;
 			// 
 			// recreateIndexToolStripMenuItem
 			// 

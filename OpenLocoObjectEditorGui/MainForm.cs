@@ -8,6 +8,8 @@ using OpenLocoTool.Types;
 using OpenLocoToolCommon;
 using System.Data;
 using System.Drawing.Imaging;
+using System.Reflection;
+using System.Resources;
 
 namespace OpenLocoToolGui
 {
@@ -84,7 +86,14 @@ namespace OpenLocoToolGui
 				Level = LogLevel.Debug2
 			};
 
-			model = new MainFormModel(logger, SettingsFile);
+			var assembly = Assembly.GetExecutingAssembly();
+			var resourceName = "OpenLocoObjectEditorGui.palette.png";
+			using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+			{
+				var paletteBitmap = (Bitmap)Image.FromStream(stream);
+				var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
+				model = new MainFormModel(logger, SettingsFile, palette);
+			}
 		}
 
 		private void MainForm_Load(object sender, EventArgs e)
@@ -1082,25 +1091,25 @@ namespace OpenLocoToolGui
 			return dstImg;
 		}
 
-		void SelectNewPalette()
-		{
-			using (var openFileDialog = new OpenFileDialog())
-			{
-				openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
-				openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
-				openFileDialog.FilterIndex = 1;
-				openFileDialog.RestoreDirectory = true;
+		//void SelectNewPalette()
+		//{
+		//	using (var openFileDialog = new OpenFileDialog())
+		//	{
+		//		openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+		//		openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
+		//		openFileDialog.FilterIndex = 1;
+		//		openFileDialog.RestoreDirectory = true;
 
-				if (openFileDialog.ShowDialog() == DialogResult.OK)
-				{
-					model.PaletteFile = openFileDialog.FileName;
-					RefreshObjectUI();
-				}
-			}
-		}
+		//		if (openFileDialog.ShowDialog() == DialogResult.OK)
+		//		{
+		//			model.PaletteFile = openFileDialog.FileName;
+		//			RefreshObjectUI();
+		//		}
+		//	}
+		//}
 
-		private void setPaletteToolStripMenuItem_Click(object sender, EventArgs e)
-			=> SelectNewPalette();
+		//private void setPaletteToolStripMenuItem_Click(object sender, EventArgs e)
+		//	=> SelectNewPalette();
 
 		private void RefreshObjectUI()
 		{

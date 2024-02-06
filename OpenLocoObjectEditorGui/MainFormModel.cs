@@ -23,42 +23,42 @@ namespace OpenLocoToolGui
 
 		//public OpenLocoTool.ObjectManager ObjectManager { get; private set; } = new();
 
-		public string PaletteFile
-		{
-			get => Settings.PaletteFile;
-			set
-			{
-				Settings.PaletteFile = value;
-				LoadPalette();
-			}
-		}
+		//public string PaletteFile
+		//{
+		//	get => Settings.PaletteFile;
+		//	set
+		//	{
+		//		Settings.PaletteFile = value;
+		//		LoadPalette();
+		//	}
+		//}
 
-		private void LoadPalette()
-		{
-			//if (G1 == null)
-			{
-				try
-				{
-					var paletteBitmap = new Bitmap(Settings.PaletteFile);
-					Palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
-					SaveSettings();
-					logger.Debug($"Successfully loaded palette file {Settings.PaletteFile}");
-				}
-				catch (ArgumentException ex)
-				{
-					logger.Error(ex);
-				}
-			}
-			//else
-			//{
-			//	var g1PaletteElement = G1.G1Elements[ImageIds.MainPalette];
-			//	Palette = g1PaletteElement.ImageData
-			//		.Take(256 * 3)
-			//		.Chunk(3)
-			//		.Select(x => Color.FromArgb(x[2], x[1], x[0]))
-			//		.ToArray();
-			//}
-		}
+		//private void LoadPalette()
+		//{
+		//	//if (G1 == null)
+		//	{
+		//		try
+		//		{
+		//			var paletteBitmap = new Bitmap(Settings.PaletteFile);
+		//			Palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
+		//			SaveSettings();
+		//			logger.Debug($"Successfully loaded palette file {Settings.PaletteFile}");
+		//		}
+		//		catch (ArgumentException ex)
+		//		{
+		//			logger.Error(ex);
+		//		}
+		//	}
+		//	//else
+		//	//{
+		//	//	var g1PaletteElement = G1.G1Elements[ImageIds.MainPalette];
+		//	//	Palette = g1PaletteElement.ImageData
+		//	//		.Take(256 * 3)
+		//	//		.Chunk(3)
+		//	//		.Select(x => Color.FromArgb(x[2], x[1], x[0]))
+		//	//		.ToArray();
+		//	//}
+		//}
 
 		public Color[] Palette { get; private set; }
 
@@ -74,9 +74,10 @@ namespace OpenLocoToolGui
 
 		public List<string> MiscFiles { get; set; } = [];
 
-		public MainFormModel(ILogger logger, string settingsFile)
+		public MainFormModel(ILogger logger, string settingsFile, Color[] palette)
 		{
 			this.logger = logger;
+			Palette = palette;
 
 			LoadSettings(settingsFile);
 
@@ -132,7 +133,7 @@ namespace OpenLocoToolGui
 				LoadObjDirectory(Settings.ObjDataDirectory, new Progress<float>(), true);
 			}
 
-			LoadPalette();
+			//LoadPalette();
 		}
 
 		static bool ValidateSettings(GuiSettings settings, ILogger logger)
@@ -282,7 +283,7 @@ namespace OpenLocoToolGui
 			// load G1 only for now since we need it for palette
 			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
 
-			LoadPalette(); // update palette from g1
+			//LoadPalette(); // update palette from g1
 
 			SaveSettings();
 

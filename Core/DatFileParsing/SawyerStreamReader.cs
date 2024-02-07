@@ -68,7 +68,15 @@ namespace OpenLocoObjectEditor.DatFileParsing
 			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
 			remainingData = remainingData[ObjectHeader.StructLength..];
 
-			var decodedData = Decode(objectHeader.Encoding, remainingData.ToArray());
+			var decodedData = new byte[0];
+			try
+			{
+				decodedData = Decode(objectHeader.Encoding, remainingData.ToArray());
+			}
+			catch (InvalidDataException ex)
+			{
+
+			}
 			//remainingData = decodedData;
 
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
@@ -88,6 +96,13 @@ namespace OpenLocoObjectEditor.DatFileParsing
 			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
 			var (s5Header, objectHeader, decodedData) = LoadAndDecodeFromFile(filename, logger);
+
+			if (decodedData.Length == 0)
+			{
+				logger?.Warning($"No data was decoded from {filename}, file is malformed.");
+				return new(new DatFileInfo(s5Header, objectHeader), null);
+			}
+
 			ReadOnlySpan<byte> remainingData = decodedData;
 
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);

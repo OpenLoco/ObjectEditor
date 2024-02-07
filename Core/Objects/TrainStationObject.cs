@@ -7,7 +7,7 @@ using OpenLocoObjectEditor.Headers;
 namespace OpenLocoObjectEditor.Objects
 {
 	[Flags]
-	public enum TrainStationFlags : uint8_t
+	public enum TrainStationObjectFlags : uint8_t
 	{
 		None = 0,
 		Recolourable = 1 << 0,
@@ -26,7 +26,7 @@ namespace OpenLocoObjectEditor.Objects
 		int16_t sellCostFactor,
 		uint8_t costIndex,
 		uint8_t var_0B,
-		RoadStationFlags flags,
+		TrainStationObjectFlags flags,
 		uint8_t var_0D,
 		uint8_t numCompatible,
 		uint16_t designedYear,
@@ -41,7 +41,7 @@ namespace OpenLocoObjectEditor.Objects
 		[LocoStructOffset(0x08)] public int16_t SellCostFactor { get; set; } = sellCostFactor;
 		[LocoStructOffset(0x0A)] public uint8_t CostIndex { get; set; } = costIndex;
 		[LocoStructOffset(0x0B)] public uint8_t var_0B { get; set; } = var_0B;
-		[LocoStructOffset(0x0C)] public RoadStationFlags Flags { get; set; } = flags;
+		[LocoStructOffset(0x0C)] public TrainStationObjectFlags Flags { get; set; } = flags;
 		[LocoStructOffset(0x0D)] public uint8_t var_0D { get; set; } = var_0D;
 		//[LocoStructOffset(0x0E)] image_id Image,
 		//[LocoStructOffset(0x12), LocoArrayLength(4)] public uint32_t[] ImageOffsets { get; set; }

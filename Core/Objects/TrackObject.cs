@@ -6,6 +6,7 @@ using OpenLocoObjectEditor.Types;
 
 namespace OpenLocoObjectEditor.Objects
 {
+	[Flags]
 	public enum TrackObjectPieceFlags : uint16_t
 	{
 		None = 0,
@@ -20,6 +21,7 @@ namespace OpenLocoObjectEditor.Objects
 		SlopedCurve = 1 << 8,
 		SBend = 1 << 9,
 		Junction = 1 << 10,
+
 	};
 
 	public enum TrackObjectFlags : uint16_t

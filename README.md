@@ -1,5 +1,5 @@
 # OpenLoco Object Editor
-A modern implementation of 'LocoTool' for Lomotion `dat` file parsing and editing
+A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and editing
 
 # How to use
 

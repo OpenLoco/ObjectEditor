@@ -6,7 +6,7 @@ using OpenLocoObjectEditor.Headers;
 namespace OpenLocoObjectEditor.Objects
 {
 	[Flags]
-	public enum RoadStationFlags : uint8_t
+	public enum RoadStationObjectFlags : uint8_t
 	{
 		None = 0,
 		Recolourable = 1 << 0,
@@ -25,7 +25,7 @@ namespace OpenLocoObjectEditor.Objects
 		int16_t buildCostFactor,
 		int16_t sellCostFactor,
 		uint8_t costIndex,
-		RoadStationFlags flags,
+		RoadStationObjectFlags flags,
 		uint8_t numCompatible,
 		uint16_t designedYear,
 		uint16_t obsoleteYear)
@@ -38,7 +38,7 @@ namespace OpenLocoObjectEditor.Objects
 		[LocoStructOffset(0x06)] public int16_t BuildCostFactor { get; set; } = buildCostFactor;
 		[LocoStructOffset(0x08)] public int16_t SellCostFactor { get; set; } = sellCostFactor;
 		[LocoStructOffset(0x0A)] public uint8_t CostIndex { get; set; } = costIndex;
-		[LocoStructOffset(0x0B)] public RoadStationFlags Flags { get; set; } = flags;
+		[LocoStructOffset(0x0B)] public RoadStationObjectFlags Flags { get; set; } = flags;
 		//[LocoStructOffset(0x0C)] image_id Image,
 		//[LocoStructOffset(0x10), LocoArrayLength(4)] public uint32_t[] ImageOffsets { get; set; }
 		[LocoStructOffset(0x20)] public uint8_t NumCompatible { get; set; } = numCompatible;
@@ -62,7 +62,7 @@ namespace OpenLocoObjectEditor.Objects
 			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
 
 			// cargo
-			if (Flags.HasFlag(RoadStationFlags.Passenger) || Flags.HasFlag(RoadStationFlags.Freight))
+			if (Flags.HasFlag(RoadStationObjectFlags.Passenger) || Flags.HasFlag(RoadStationObjectFlags.Freight))
 			{
 				CargoType = S5Header.Read(remainingData[..S5Header.StructLength]);
 				remainingData = remainingData[(S5Header.StructLength * 1)..];
@@ -105,7 +105,7 @@ namespace OpenLocoObjectEditor.Objects
 				}
 
 				// cargo
-				if (Flags.HasFlag(RoadStationFlags.Passenger) || Flags.HasFlag(RoadStationFlags.Freight))
+				if (Flags.HasFlag(RoadStationObjectFlags.Passenger) || Flags.HasFlag(RoadStationObjectFlags.Freight))
 				{
 					ms.Write(CargoType.Write());
 				}

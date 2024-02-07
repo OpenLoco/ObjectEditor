@@ -430,12 +430,12 @@ namespace OpenLocoObjectEditor.Objects
 
 				bogieSprite.NumRollSprites = bogieSprite.RollStates;
 
-				//bogieSprite.FlatImageIds = offset;
 				var initial = offset;
 				var curr = offset;
 
 				var numRollFrames = bogieSprite.NumRollSprites * 32;
 				offset += numRollFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
+				bogieSprite.ImageIds[BogieSpriteSlopeType.Flat] = Enumerable.Range(curr, offset - curr).ToList();
 
 				if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasGentleSprites))
 				{
@@ -443,6 +443,7 @@ namespace OpenLocoObjectEditor.Objects
 					curr = offset;
 					var numGentleFrames = bogieSprite.NumRollSprites * 64;
 					offset += numGentleFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
+					bogieSprite.ImageIds[BogieSpriteSlopeType.Gentle] = Enumerable.Range(curr, offset - curr).ToList();
 
 					if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSteepSprites))
 					{
@@ -450,6 +451,8 @@ namespace OpenLocoObjectEditor.Objects
 						curr = offset;
 						var numSteepFrames = bogieSprite.NumRollSprites * 64;
 						offset += numSteepFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
+						bogieSprite.ImageIds[BogieSpriteSlopeType.Steep] = Enumerable.Range(curr, offset - curr).ToList();
+
 					}
 				}
 

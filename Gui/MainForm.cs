@@ -1115,34 +1115,39 @@ namespace OpenLocoObjectEditorGui
 				tsImageTable.Enabled = true;
 				tsImageTable.Visible = true;
 
-				if (uiLocoObj.LocoObject.G1Elements != null && uiLocoObj.LocoObject.G1Elements.Count != 0)
-				{
-					if (model.Palette is null)
-					{
-						logger.Error("No palette file loaded - please load one from File -> Load Palette. You can use palette.png in the top level folder of this repo.");
-						return;
-					}
-
-					currentUIObjectImages = CreateImages(uiLocoObj.LocoObject.G1Elements, model.Palette, logger: logger).ToList();
-					RefreshImageControls();
-					RefreshVehiclePreview(uiLocoObj.LocoObject);
-				}
-
-				if (uiLocoObj.LocoObject.Object is SoundObject soundObject)
-				{
-					tsImageTable.Enabled = false;
-					tsImageTable.Visible = false;
-
-					var hdr = soundObject.SoundObjectData.PcmHeader;
-					var text = uiLocoObj.LocoObject.StringTable.Table["Name"][LanguageId.english_uk] ?? "<null>";
-					var pn = CreateSoundUI(new UiSoundObject { Data = soundObject.PcmData, Header = SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), SoundName = text });
-					flpImageTable.Controls.Add(pn);
-				}
-
 				pgS5Header.SelectedObject = uiLocoObj.DatFileInfo.S5Header;
 				pgObjHeader.SelectedObject = uiLocoObj.DatFileInfo.ObjectHeader;
-				pgObject.SelectedObject = uiLocoObj.LocoObject.Object;
-				ucStringTable.SetDataBinding(uiLocoObj.LocoObject.StringTable);
+
+				if (uiLocoObj.LocoObject != null)
+				{
+					if (uiLocoObj.LocoObject.G1Elements != null && uiLocoObj.LocoObject.G1Elements.Count != 0)
+					{
+						//if (model.Palette is null)
+						//{
+						//	logger.Error("No palette file loaded - please load one from File -> Load Palette. You can use palette.png in the top level folder of this repo.");
+						//	return;
+						//}
+
+						currentUIObjectImages = CreateImages(uiLocoObj.LocoObject.G1Elements, model.Palette, logger: logger).ToList();
+						RefreshImageControls();
+						RefreshVehiclePreview(uiLocoObj.LocoObject);
+					}
+
+					if (uiLocoObj.LocoObject.Object is SoundObject soundObject)
+					{
+						tsImageTable.Enabled = false;
+						tsImageTable.Visible = false;
+
+						var hdr = soundObject.SoundObjectData.PcmHeader;
+						var text = uiLocoObj.LocoObject.StringTable.Table["Name"][LanguageId.english_uk] ?? "<null>";
+						var pn = CreateSoundUI(new UiSoundObject { Data = soundObject.PcmData, Header = SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), SoundName = text });
+						flpImageTable.Controls.Add(pn);
+					}
+
+
+					pgObject.SelectedObject = uiLocoObj.LocoObject.Object;
+					ucStringTable.SetDataBinding(uiLocoObj.LocoObject.StringTable);
+				}
 			}
 
 			if (CurrentUIObject is UiSoundObjectList uiSoundObjList)

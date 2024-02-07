@@ -20,9 +20,6 @@ namespace OpenLocoObjectEditor.Objects
 		) : ILocoStruct
 	{
 		public uint8_t NumRollSprites { get; set; }
-		//public uint32_t FlatImageIds { get; set; }
-		//public uint32_t GentleImageIds { get; set; }
-		//public uint32_t SteepImageIds { get; set; }
 
 		public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds = [];
 		public int NumImages { get; set; }

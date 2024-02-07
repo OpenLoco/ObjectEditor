@@ -236,6 +236,11 @@ namespace OpenLocoObjectEditorGui
 
 			logger.Debug($"Time time={sw.Elapsed}");
 
+			if (timePerFile.Count == 0)
+			{
+				timePerFile.TryAdd("<no items>", TimeSpan.Zero);
+			}
+
 			var slowest = timePerFile.MaxBy(x => x.Value.Ticks);
 			logger.Debug($"Slowest file={slowest.Key} Time={slowest.Value}");
 

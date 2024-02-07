@@ -9,6 +9,14 @@ namespace OpenLocoObjectEditor.Tests
 	[TestFixture]
 	public class ObjectSavingTests
 	{
+		[TestCase("AIRPORT1.DAT")]
+		public void LoadSaveAirportObject(string objectName)
+		{
+			var obj = new ObjectLoadingTests();
+			obj.LoadAirportObject(objectName);
+
+		}
+
 		[Test]
 		public void WriteLocoStruct()
 		{

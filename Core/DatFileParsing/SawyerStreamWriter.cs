@@ -102,8 +102,11 @@ namespace OpenLocoObjectEditor.DatFileParsing
 		}
 
 		public static ReadOnlySpan<byte> WriteLocoObject(string objName, ILocoObject obj)
+		 => WriteLocoObjectStream(objName, obj).ToArray();
+
+		public static MemoryStream WriteLocoObjectStream(string objName, ILocoObject obj)
 		{
-			var objStream = new MemoryStream();
+			using var objStream = new MemoryStream();
 
 			// obj
 			var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
@@ -200,7 +203,7 @@ namespace OpenLocoObjectEditor.DatFileParsing
 			headerStream.Close();
 			objStream.Close();
 
-			return headerStream.ToArray();
+			return headerStream;
 		}
 
 		//public static ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data, ILogger? logger = null)

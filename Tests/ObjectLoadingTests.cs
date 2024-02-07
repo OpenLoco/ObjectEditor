@@ -7,7 +7,6 @@ using OpenLocoObjectEditor.DatFileParsing;
 using OpenLocoObjectEditor.Headers;
 using OpenLocoObjectEditor.Objects;
 using OpenLocoObjectEditor.Types;
-using static System.Net.Mime.MediaTypeNames;
 using Logger = OpenLocoObjectEditor.Logging.Logger;
 
 namespace OpenLocoObjectEditor.Tests
@@ -17,8 +16,12 @@ namespace OpenLocoObjectEditor.Tests
 	{
 		const string BaseObjDataPath = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\";
 
-		static (ILocoObject, T) LoadObjectCore<T>(string filename) where T : ILocoStruct
+		// TODO: find a way to not have to hardcode a path here (but this may be impossible as it will depend on a user's PC and Loco install path)
+		// TODO: find a nicer (and more automated) way to check Name+Image fields, StringTable and G1Table
+
+		static (ILocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
 		{
+			filename = Path.Combine(BaseObjDataPath, filename);
 			var fileSize = new FileInfo(filename).Length;
 			var logger = new Logger();
 			var loaded = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: logger);
@@ -28,15 +31,23 @@ namespace OpenLocoObjectEditor.Tests
 			return (loaded.LocoObject, (T)loaded.LocoObject.Object);
 		}
 
-		static (ILocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
-			=> LoadObjectCore<T>(Path.Combine(BaseObjDataPath, filename));
+		static (ILocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
+		{
+			//filename = Path.Combine(BaseObjDataPath, filename);
+			//var fileSize = new FileInfo(filename).Length;
+			var logger = new Logger();
+			var loaded = SawyerStreamReader.LoadFullObjectFromStream(data, logger: logger);
+
+			Assert.That(loaded.DatFileInfo.ObjectHeader.DataLength, Is.EqualTo(data.Length - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
+
+			return (loaded.LocoObject, (T)loaded.LocoObject.Object);
+		}
 
 		[TestCase("AIRPORT1.DAT")]
 		public void LoadAirportObject(string objectName)
 		{
 			var (obj, struc) = LoadObject<AirportObject>(objectName);
-
-			Assert.Multiple(() =>
+			var assert = (ILocoObject obj, AirportObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(256), nameof(struc.BuildCostFactor));
@@ -71,6 +82,11 @@ namespace OpenLocoObjectEditor.Tests
 				Assert.That(struc.pad_B6[2], Is.EqualTo(0), nameof(struc.pad_B6) + "[2]");
 				Assert.That(struc.pad_B6[3], Is.EqualTo(0), nameof(struc.pad_B6) + "[3]");
 			});
+			assert(obj, struc);
+
+			var bytes = SawyerStreamWriter.WriteLocoObject(objectName, obj);
+			var (obj2, struc2) = LoadObject<AirportObject>(bytes);
+			assert(obj2, struc2);
 		}
 
 		[TestCase("BRDGBRCK.DAT")]

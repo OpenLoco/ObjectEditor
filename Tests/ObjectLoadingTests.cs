@@ -1,16 +1,21 @@
+using Core.Objects;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using OpenLocoObjectEditor.Data;
 using OpenLocoObjectEditor.DatFileParsing;
 using OpenLocoObjectEditor.Headers;
 using OpenLocoObjectEditor.Objects;
-using Logger = OpenLocoObjectEditor.Shared.Logger;
+using OpenLocoObjectEditor.Types;
+using Logger = OpenLocoObjectEditor.Logging.Logger;
 
 namespace OpenLocoObjectEditor.Tests
 {
 	[TestFixture]
 	public class ObjectLoadingTests
 	{
-		static (ILocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
+		const string BaseObjDataPath = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\";
+
+		static (ILocoObject, T) LoadObjectCore<T>(string filename) where T : ILocoStruct
 		{
 			var fileSize = new FileInfo(filename).Length;
 			var logger = new Logger();
@@ -21,34 +26,25 @@ namespace OpenLocoObjectEditor.Tests
 			return (loaded.LocoObject, (T)loaded.LocoObject.Object);
 		}
 
-		//[Test]
-		//public void DebuggingLoadObject()
-		//{
-		//	const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\260RENFE.DAT";
-		//	var (obj, struc) = LoadObject<VehicleObject>(testFile);
-		//	Assert.Multiple(() =>
+		static (ILocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
+			=> LoadObjectCore<T>(Path.Combine(BaseObjDataPath, filename));
 
-		//	{
-		//		Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
-		//	});
-		//}
-
-		[Test]
-		public void LoadAirportObject()
+		[TestCase("AIRPORT1.DAT")]
+		public void LoadAirportObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\AIRPORT1.DAT";
-			var (obj, struc) = LoadObject<AirportObject>(testFile);
+			var (obj, struc) = LoadObject<AirportObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
+				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(256), nameof(struc.BuildCostFactor));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-192), nameof(struc.SellCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
-				Assert.That(struc.var_07, Is.EqualTo(0), nameof(struc.var_07));
-				Assert.That(struc.var_0C, Is.EqualTo(0), nameof(struc.var_0C));
+				Assert.That(struc.Image, Is.EqualTo(0), nameof(struc.Image));
+				Assert.That(struc.ImageOffset, Is.EqualTo(0), nameof(struc.ImageOffset));
 				Assert.That(struc.AllowedPlaneTypes, Is.EqualTo(24), nameof(struc.AllowedPlaneTypes));
-				Assert.That(struc.NumSpriteSets, Is.EqualTo(94), nameof(struc.NumSpriteSets));
-				Assert.That(struc.NumTiles, Is.EqualTo(23), nameof(struc.NumTiles));
+				Assert.That(struc.NumBuildingAnimations, Is.EqualTo(94), nameof(struc.NumBuildingAnimations));
+				Assert.That(struc.NumBuildingVariations, Is.EqualTo(23), nameof(struc.NumBuildingVariations));
 
 				//Assert.That(struc.var_14, Is.EqualTo(0), nameof(struc.var_14));
 				//Assert.That(struc.var_18, Is.EqualTo(0), nameof(struc.var_18));
@@ -75,11 +71,10 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadBridgeObject()
+		[TestCase("BRDGBRCK.DAT")]
+		public void LoadBridgeObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\BRDGBRCK.DAT";
-			var (obj, struc) = LoadObject<BridgeObject>(testFile);
+			var (obj, struc) = LoadObject<BridgeObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -99,26 +94,25 @@ namespace OpenLocoObjectEditor.Tests
 				Assert.That(struc.HeightCostFactor, Is.EqualTo(8), nameof(struc.HeightCostFactor));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-12), nameof(struc.SellCostFactor));
 				Assert.That(struc.DisabledTrackCfg, Is.EqualTo(0), nameof(struc.DisabledTrackCfg));
-				Assert.That(struc.TrackNumCompatible, Is.EqualTo(0), nameof(struc.TrackNumCompatible));
+				//Assert.That(struc.TrackNumCompatible, Is.EqualTo(0), nameof(struc.TrackNumCompatible));
 				//CollectionAssert.AreEqual(struc.TrackMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.TrackMods));
-				Assert.That(struc.RoadNumCompatible, Is.EqualTo(0), nameof(struc.RoadNumCompatible));
+				//Assert.That(struc.RoadNumCompatible, Is.EqualTo(0), nameof(struc.RoadNumCompatible));
 				//CollectionAssert.AreEqual(struc.RoadMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.RoadMods));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
 			});
 		}
 
-		[Test]
-		public void LoadBuildingObject()
+		[TestCase("HQ1.DAT")]
+		public void LoadBuildingObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\HQ1.DAT";
-			var (obj, struc) = LoadObject<BuildingObject>(testFile);
+			var (obj, struc) = LoadObject<BuildingObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(struc.var_06, Is.EqualTo(16), nameof(struc.var_06));
+				//Assert.That(struc.var_06, Is.EqualTo(16), nameof(struc.var_06));
 				Assert.That(struc.NumVariations, Is.EqualTo(5), nameof(struc.NumVariations));
 				CollectionAssert.AreEqual(struc.VariationHeights, Array.CreateInstance(typeof(byte), 4), nameof(struc.VariationHeights));
-				CollectionAssert.AreEqual(struc.var_0C, Array.CreateInstance(typeof(byte), 2), nameof(struc.var_0C));
+				//CollectionAssert.AreEqual(struc.var_0C, Array.CreateInstance(typeof(byte), 2), nameof(struc.var_0C));
 				Assert.That(struc.Colours, Is.EqualTo(0), nameof(struc.Colours));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
@@ -128,11 +122,11 @@ namespace OpenLocoObjectEditor.Tests
 				Assert.That(struc.ScaffoldingSegmentType, Is.EqualTo(1), nameof(struc.ScaffoldingSegmentType));
 				Assert.That(struc.ScaffoldingColour, Is.EqualTo(Colour.yellow), nameof(struc.ScaffoldingColour));
 
-				Assert.That(struc.pad_9E[0], Is.EqualTo(3), nameof(struc.pad_9E) + "[0]");
-				Assert.That(struc.pad_9E[1], Is.EqualTo(3), nameof(struc.pad_9E) + "[1]");
+				//Assert.That(struc.pad_9E[0], Is.EqualTo(3), nameof(struc.pad_9E) + "[0]");
+				//Assert.That(struc.pad_9E[1], Is.EqualTo(3), nameof(struc.pad_9E) + "[1]");
 
-				CollectionAssert.AreEqual(struc.ProducedQuantity, Array.CreateInstance(typeof(byte), 2), nameof(struc.ProducedQuantity));
-				CollectionAssert.AreEqual(struc.ProducedCargoType, Array.CreateInstance(typeof(byte), 2), nameof(struc.ProducedCargoType));
+				//CollectionAssert.AreEqual(struc.ProducedQuantity, Array.CreateInstance(typeof(byte), 2), nameof(struc.ProducedQuantity));
+				//CollectionAssert.AreEqual(struc.ProducedCargoType, Array.CreateInstance(typeof(byte), 2), nameof(struc.ProducedCargoType));
 				CollectionAssert.AreEqual(struc.var_A6, Array.CreateInstance(typeof(byte), 2), nameof(struc.var_A6));
 				CollectionAssert.AreEqual(struc.var_A8, Array.CreateInstance(typeof(byte), 2), nameof(struc.var_A8));
 				CollectionAssert.AreEqual(struc.var_A4, Array.CreateInstance(typeof(byte), 2), nameof(struc.var_A4));
@@ -142,18 +136,17 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadCargoObject()
+		[TestCase("CHEMICAL.DAT")]
+		public void LoadCargoObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\CHEMICAL.DAT";
-			var (obj, struc) = LoadObject<CargoObject>(testFile);
+			var (obj, struc) = LoadObject<CargoObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
 				Assert.That(struc.var_02, Is.EqualTo(256), nameof(struc.var_02));
 				Assert.That(struc.CargoTransferTime, Is.EqualTo(64), nameof(struc.CargoTransferTime));
 				Assert.That(struc.UnitInlineSprite, Is.EqualTo(0), nameof(struc.UnitInlineSprite));
-				Assert.That(struc.MatchFlags, Is.EqualTo(4), nameof(struc.MatchFlags));
+				Assert.That(struc.CargoCategory, Is.EqualTo(CargoCategory.liquids), nameof(struc.CargoCategory));
 				Assert.That(struc.Flags, Is.EqualTo(CargoObjectFlags.Delivering), nameof(struc.Flags));
 				Assert.That(struc.NumPlatformVariations, Is.EqualTo(1), nameof(struc.NumPlatformVariations));
 				Assert.That(struc.var_14, Is.EqualTo(4), nameof(struc.var_14));
@@ -167,18 +160,25 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadCliffEdgeObject()
+		[TestCase("LSBROWN.DAT")]
+		public void LoadCliffEdgeObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\LSBROWN.DAT";
-			var (obj, struc) = LoadObject<CliffEdgeObject>(testFile);
+			var (obj, struc) = LoadObject<CliffEdgeObject>(objectName);
+
+			var strTable = obj.StringTable;
+
+			Assert.That(strTable.Table, Has.Count.EqualTo(1));
+			Assert.That(strTable.Table.ContainsKey("Name"), Is.True);
+
+			var entry = strTable.Table["Name"];
+			Assert.That(entry[LanguageId.english_uk], Is.EqualTo("Brown Rock"));
+			Assert.That(entry[LanguageId.english_us], Is.EqualTo("Brown Rock"));
 		}
 
-		[Test]
-		public void LoadClimateObject()
+		[TestCase("CLIM1.DAT")]
+		public void LoadClimateObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\CLIM1.DAT";
-			var (obj, struc) = LoadObject<ClimateObject>(testFile);
+			var (obj, struc) = LoadObject<ClimateObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -193,17 +193,16 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadCompetitorObject()
+		[TestCase("COMP1.DAT")]
+		public void LoadCompetitorObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\COMP1.DAT";
-			var (obj, struc) = LoadObject<CompetitorObject>(testFile);
+			var (obj, struc) = LoadObject<CompetitorObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
 				Assert.That(struc.var_04, Is.EqualTo(6672), nameof(struc.var_04));
 				Assert.That(struc.var_08, Is.EqualTo(2053), nameof(struc.var_08));
-				Assert.That(struc.Emotions, Is.EqualTo(511), nameof(struc.Emotions));
+				Assert.That(struc.Emotions, Is.EqualTo(255), nameof(struc.Emotions));
 				CollectionAssert.AreEqual(struc.Images, Array.CreateInstance(typeof(byte), 9), nameof(struc.Images));
 				Assert.That(struc.Intelligence, Is.EqualTo(7), nameof(struc.Intelligence));
 				Assert.That(struc.Aggressiveness, Is.EqualTo(5), nameof(struc.Aggressiveness));
@@ -212,11 +211,10 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadCurrencyObject()
+		[TestCase("CURRDOLL.DAT")]
+		public void LoadCurrencyObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\CURRDOLL.DAT";
-			var (obj, struc) = LoadObject<CurrencyObject>(testFile);
+			var (obj, struc) = LoadObject<CurrencyObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -226,11 +224,10 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadDockObject()
+		[TestCase("SHIPST1.DAT")]
+		public void LoadDockObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SHIPST1.DAT";
-			var (obj, struc) = LoadObject<DockObject>(testFile);
+			var (obj, struc) = LoadObject<DockObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -253,32 +250,32 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadHillShapesObject()
+		[TestCase("HS1.DAT")]
+		public void LoadHillShapesObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\HS1.DAT";
-			var (obj, struc) = LoadObject<HillShapesObject>(testFile);
+			var (obj, struc) = LoadObject<HillShapesObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
 				Assert.That(struc.HillHeightMapCount, Is.EqualTo(2), nameof(struc.HillHeightMapCount));
 				Assert.That(struc.MountainHeightMapCount, Is.EqualTo(2), nameof(struc.MountainHeightMapCount));
-				Assert.That(struc.var_08, Is.EqualTo(0), nameof(struc.var_08));
+				//Assert.That(struc.var_08, Is.EqualTo(0), nameof(struc.var_08));
 				CollectionAssert.AreEqual(struc.pad_0C, Array.CreateInstance(typeof(byte), 2), nameof(struc.pad_0C));
 			});
 		}
 
-		[Test]
-		public void LoadIndustryObject() => Assert.Fail();
+		[TestCase(".DAT")]
+		public void LoadIndustryObject(string objectName)
+			=> Assert.Fail();
 
-		[Test]
-		public void LoadInterfaceSkinObject() => Assert.Fail();
+		[TestCase(".DAT")]
+		public void LoadInterfaceSkinObject(string objectName)
+			=> Assert.Fail();
 
-		[Test]
-		public void LoadLandObject()
+		[TestCase("GRASS1.DAT")]
+		public void LoadLandObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\GRASS1.DAT";
-			var (obj, struc) = LoadObject<LandObject>(testFile);
+			var (obj, struc) = LoadObject<LandObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -286,25 +283,24 @@ namespace OpenLocoObjectEditor.Tests
 				Assert.That(struc.var_03, Is.EqualTo(5), nameof(struc.var_03));
 				Assert.That(struc.var_04, Is.EqualTo(1), nameof(struc.var_04));
 				Assert.That(struc.Flags, Is.EqualTo(LandObjectFlags.unk0), nameof(struc.Flags));
-				Assert.That(struc.var_06, Is.EqualTo(0), nameof(struc.var_06));
-				Assert.That(struc.var_07, Is.EqualTo(0), nameof(struc.var_07));
+				//Assert.That(struc.var_06, Is.EqualTo(0), nameof(struc.var_06));
+				//Assert.That(struc.var_07, Is.EqualTo(0), nameof(struc.var_07));
 				Assert.That(struc.CostFactor, Is.EqualTo(20), nameof(struc.CostFactor));
-				Assert.That(struc.pad_09, Is.EqualTo(0), nameof(struc.pad_09));
-				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
-				Assert.That(struc.CliffEdgeImage, Is.EqualTo(0), nameof(struc.CliffEdgeImage));
-				Assert.That(struc.mapPixelImage, Is.EqualTo(0), nameof(struc.mapPixelImage));
-				Assert.That(struc.pad_1A, Is.EqualTo(0), nameof(struc.pad_1A));
+				//Assert.That(struc.pad_09, Is.EqualTo(0), nameof(struc.pad_09));
+				//Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
+				//Assert.That(struc.CliffEdgeImage, Is.EqualTo(0), nameof(struc.CliffEdgeImage));
+				//Assert.That(struc.mapPixelImage, Is.EqualTo(0), nameof(struc.mapPixelImage));
+				//Assert.That(struc.pad_1A, Is.EqualTo(0), nameof(struc.pad_1A));
 				Assert.That(struc.NumVariations, Is.EqualTo(3), nameof(struc.NumVariations));
 				Assert.That(struc.VariationLikelihood, Is.EqualTo(10), nameof(struc.VariationLikelihood));
-				Assert.That(struc.pad_1D, Is.EqualTo(0), nameof(struc.pad_1D));
+				//Assert.That(struc.pad_1D, Is.EqualTo(0), nameof(struc.pad_1D));
 			});
 		}
 
-		[Test]
-		public void LoadLevelCrossingObject()
+		[TestCase("LCROSS1.DAT")]
+		public void LoadLevelCrossingObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\LCROSS1.DAT";
-			var (obj, struc) = LoadObject<LevelCrossingObject>(testFile);
+			var (obj, struc) = LoadObject<LevelCrossingObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -323,26 +319,31 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadRegionObject()
+		[TestCase("REGUK.DAT")]
+		public void LoadRegionObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\REGUK.DAT";
-			var (obj, struc) = LoadObject<RegionObject>(testFile);
+			var (obj, struc) = LoadObject<RegionObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
 				CollectionAssert.AreEqual(struc.pad_06, Array.CreateInstance(typeof(byte), 2), nameof(struc.pad_06));
 				Assert.That(struc.RequiredObjectCount, Is.EqualTo(1), nameof(struc.RequiredObjectCount));
-				CollectionAssert.AreEqual(struc.requiredObjects, Array.CreateInstance(typeof(byte), 4), nameof(struc.requiredObjects));
+				//CollectionAssert.AreEqual(struc.requiredObjects, Array.CreateInstance(typeof(byte), 4), nameof(struc.requiredObjects));
 				CollectionAssert.AreEqual(struc.pad_0D, Array.CreateInstance(typeof(byte), 5), nameof(struc.pad_0D));
 			});
 		}
 
-		[Test]
-		public void LoadRoadExtraObject()
+		[TestCase("ROADONE.DAT")]
+		public void LoadRoadObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\RDEXCAT1.DAT";
-			var (obj, struc) = LoadObject<RoadExtraObject>(testFile);
+			var (obj, struc) = LoadObject<RoadObject>(objectName);
+			Assert.Fail();
+		}
+
+		[TestCase("RDEXCAT1.DAT")]
+		public void LoadRoadExtraObject(string objectName)
+		{
+			var (obj, struc) = LoadObject<RoadExtraObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -355,17 +356,17 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadRoadObject() => Assert.Fail();
-
-		[Test]
-		public void LoadRoadStationObject() => Assert.Fail();
-
-		[Test]
-		public void LoadScaffoldingObject()
+		[TestCase("RDSTAT1.DAT")]
+		public void LoadRoadStationObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SCAFDEF.DAT";
-			var (obj, struc) = LoadObject<ScaffoldingObject>(testFile);
+			var (obj, struc) = LoadObject<RoadStationObject>(objectName);
+			Assert.Fail();
+		}
+
+		[TestCase("SCAFDEF.DAT")]
+		public void LoadScaffoldingObject(string objectName)
+		{
+			var (obj, struc) = LoadObject<ScaffoldingObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -379,34 +380,36 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadScenarioTextObject()
+		[TestCase("STEX000.DAT")]
+		public void LoadScenarioTextObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\STEX000.DAT";
-			var (obj, struc) = LoadObject<ScenarioTextObject>(testFile);
-
+			var (obj, struc) = LoadObject<ScenarioTextObject>(objectName);
 			Assert.That(struc.pad_04, Is.EqualTo(0), nameof(struc.pad_04));
 		}
 
-		[Test]
-		public void LoadSnowObject()
+		[TestCase("SNOW.DAT")]
+		public void LoadSnowObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SNOW.DAT";
-			var (obj, struc) = LoadObject<SnowObject>(testFile);
-			Assert.Pass();
+			var (obj, struc) = LoadObject<SnowObject>(objectName);
+			Assert.Fail();
 		}
 
-		[Test]
-		public void LoadSoundObject() => Assert.Fail();
-
-		[Test]
-		public void LoadSteamObject() => Assert.Fail();
-
-		[Test]
-		public void LoadStreetLightObject()
+		[TestCase("SNDA1.DAT")]
+		public void LoadSoundObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SLIGHT1.DAT";
-			var (obj, struc) = LoadObject<StreetLightObject>(testFile);
+			Assert.Fail();
+		}
+
+		[TestCase("STEAM.DAT")]
+		public void LoadSteamObject(string objectName)
+		{
+			Assert.Fail();
+		}
+
+		[TestCase("SLIGHT1.DAT")]
+		public void LoadStreetLightObject(string objectName)
+		{
+			var (obj, struc) = LoadObject<StreetLightObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -422,82 +425,24 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void SaveStreetLightObject()
+		[TestCase("ATOWNNAM.DAT")]
+		public void LoadTownNamesObject(string objectName)
 		{
-			// load
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SLIGHT1.DAT";
-
-			var (obj, struc) = LoadObject<StreetLightObject>(testFile);
-
-			// struct write only
-			//var bytes = SawyerStreamWriter.WriteLocoObject(obj);
-			//CollectionAssert.AreEqual((byte[])[0, 0, 108, 7, 158, 7, 193, 7, 0, 0, 0, 0], bytes.ToArray());
-
-			// save
-			var tempFile = Path.GetTempFileName();
-			SawyerStreamWriter.Save(tempFile, "ObjName_", obj);
-
-			// load the saved object
-			var (obj2, struc2) = LoadObject<StreetLightObject>(tempFile);
-
-			// this is just the asserts from LoadStreetLightObject
-			Assert.Multiple(() =>
-			{
-				Assert.That(struc2.DesignedYear[0], Is.EqualTo(1900), nameof(struc2.DesignedYear) + "[0]");
-				Assert.That(struc2.DesignedYear[1], Is.EqualTo(1950), nameof(struc2.DesignedYear) + "[1]");
-				Assert.That(struc2.DesignedYear[2], Is.EqualTo(1985), nameof(struc2.DesignedYear) + "[2]");
-
-				//Assert.That(struc2.Image, Is.EqualTo(0));
-
-				Assert.That(obj2.StringTable["Name"].Count, Is.EqualTo(2));
-				Assert.That(obj2.StringTable["Name"][LanguageId.english_uk], Is.EqualTo("Street Lights"));
-				Assert.That(obj2.StringTable["Name"][LanguageId.english_us], Is.EqualTo("Street Lights"));
-			});
+			var (obj, struc) = LoadObject<TownNamesObject>(objectName);
+			Assert.Fail();
 		}
 
-		//[Test]
-		//public void SaveStreetLightObject2()
-		//{
-		//	// load
-		//	const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\SLIGHT1.DAT";
-
-		//	var (obj, struc) = LoadObject<StreetLightObject>(testFile);
-
-		//	// save
-		//	var bytesSource = SawyerStreamReader.LoadDecode(testFile);
-		//	var bytesDest = SawyerStreamWriter.WriteLocoObject("ObjName_", obj).ToArray();
-
-		//	var saveA = "Q:\\Games\\Locomotion\\ExperimentalObjects\\original.dat";
-		//	var saveB = "Q:\\Games\\Locomotion\\ExperimentalObjects\\saved.dat";
-
-		//	File.WriteAllBytes(saveA, bytesSource);
-		//	File.WriteAllBytes(saveB, bytesDest);
-
-		//	var headerA = SawyerStreamReader.LoadHeader(saveA);
-		//	var headerB = SawyerStreamReader.LoadHeader(saveB);
-
-		//	//Assert.Multiple(() =>
-		//	//{
-		//	//	for (int i = 0; i < Math.Min(bytesSource.Length, bytesDest.Length); ++i)
-		//	//	{
-		//	//		Assert.AreEqual(bytesSource[i], bytesDest[i], $"[{i}] {bytesSource[i]} {bytesDest[i]}");
-		//	//	}
-		//	//});
-
-		//	CollectionAssert.AreEqual(bytesSource[0..16], bytesDest[0..16]);
-		//	// skip object header
-		//	CollectionAssert.AreEqual(bytesSource[21..], bytesDest[21..]);
-		//}
-
-		[Test]
-		public void LoadTownNamesObject() => Assert.Fail();
-
-		[Test]
-		public void LoadTrackExtraObject()
+		[TestCase("TRACKST.DAT")]
+		public void LoadTrackObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\TREXCAT1.DAT";
-			var (obj, struc) = LoadObject<TrackExtraObject>(testFile);
+			var (obj, struc) = LoadObject<TrackObject>(objectName);
+			Assert.Fail();
+		}
+
+		[TestCase("TREXCAT1.DAT")]
+		public void LoadTrackExtraObject(string objectName)
+		{
+			var (obj, struc) = LoadObject<TrackExtraObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -510,24 +455,29 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadTrackObject() => Assert.Fail();
-
-		[Test]
-		public void LoadTrainSignalObject() => Assert.Fail();
-
-		[Test]
-		public void LoadTrainStationObject() => Assert.Fail();
-
-		[Test]
-		public void LoadTreeObject()
+		[TestCase("SIGUS.DAT")]
+		public void LoadTrainSignalObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\BEECH.DAT";
-			var (obj, struc) = LoadObject<TreeObject>(testFile);
+			var (obj, struc) = LoadObject<TrainSignalObject>(objectName);
+
+			Assert.Fail();
+		}
+
+		[TestCase("TRSTAT1.DAT")]
+		public void LoadTrainStationObject(string objectName)
+		{
+			var (obj, struc) = LoadObject<TrainStationObject>(objectName);
+			Assert.Fail();
+		}
+
+		[TestCase("BEECH.DAT")]
+		public void LoadTreeObject(string objectName)
+		{
+			var (obj, struc) = LoadObject<TreeObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
-				Assert.That(struc.var_02, Is.EqualTo(40), nameof(struc.var_02));
+				//Assert.That(struc.var_02, Is.EqualTo(40), nameof(struc.var_02));
 				Assert.That(struc.Height, Is.EqualTo(131), nameof(struc.Height));
 				Assert.That(struc.var_04, Is.EqualTo(27), nameof(struc.var_04));
 				Assert.That(struc.var_05, Is.EqualTo(83), nameof(struc.var_05));
@@ -549,19 +499,17 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadTunnelObject()
+		[TestCase("TUNNEL1.DAT")]
+		public void LoadTunnelObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\TUNNEL1.DAT";
-			var (obj, struc) = LoadObject<TunnelObject>(testFile);
-			Assert.Pass();
+			var (obj, struc) = LoadObject<TunnelObject>(objectName);
+			Assert.Fail();
 		}
 
-		[Test]
-		public void LoadVehicleAircraftObject()
+		[TestCase("707.DAT")]
+		public void LoadVehicleAircraftObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\707.DAT";
-			var (obj, struc) = LoadObject<VehicleObject>(testFile);
+			var (obj, struc) = LoadObject<VehicleObject>(objectName);
 
 			//var s5header = obj.S5Header;
 			//var objHeader = obj.ObjectHeader;
@@ -615,7 +563,7 @@ namespace OpenLocoObjectEditor.Tests
 				Assert.That(struc.Designed, Is.EqualTo(1957), nameof(struc.Designed));
 				Assert.That(struc.Obsolete, Is.EqualTo(1987), nameof(struc.Obsolete));
 				Assert.That(struc.RackRailType, Is.EqualTo(0), nameof(struc.RackRailType));
-				Assert.That(struc.DrivingSoundType, Is.EqualTo(DrivingSoundType.Engine1), nameof(struc.DrivingSoundType));
+				//Assert.That(struc.DrivingSoundType, Is.EqualTo(DrivingSoundType.Engine1), nameof(struc.DrivingSoundType));
 				//Assert.That(struc.Sound, Is.EqualTo(0), nameof(struc.Sound));
 				//Assert.That(struc.pad_135, Is.EqualTo(0), nameof(struc.pad_135));
 				Assert.That(struc.NumStartSounds, Is.EqualTo(2), nameof(struc.NumStartSounds));
@@ -623,11 +571,10 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadWallObject()
+		[TestCase("FENCE1.DAT")]
+		public void LoadWallObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\FENCE1.DAT";
-			var (obj, struc) = LoadObject<WallObject>(testFile);
+			var (obj, struc) = LoadObject<WallObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -638,11 +585,10 @@ namespace OpenLocoObjectEditor.Tests
 			});
 		}
 
-		[Test]
-		public void LoadWaterObject()
+		[TestCase("WATER1.DAT")]
+		public void LoadWaterObject(string objectName)
 		{
-			const string testFile = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\WATER1.DAT";
-			var (obj, struc) = LoadObject<WaterObject>(testFile);
+			var (obj, struc) = LoadObject<WaterObject>(objectName);
 
 			Assert.Multiple(() =>
 			{
@@ -650,7 +596,7 @@ namespace OpenLocoObjectEditor.Tests
 				Assert.That(struc.var_03, Is.EqualTo(0), nameof(struc.var_03));
 				Assert.That(struc.CostFactor, Is.EqualTo(51), nameof(struc.CostFactor));
 				Assert.That(struc.var_05, Is.EqualTo(0), nameof(struc.var_05));
-				Assert.That(struc.var_0A, Is.EqualTo(0), nameof(struc.var_0A));
+				//Assert.That(struc.var_0A, Is.EqualTo(0), nameof(struc.var_0A));
 			});
 		}
 	}

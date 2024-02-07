@@ -47,8 +47,8 @@ namespace Core.Objects
 		[property: LocoStructOffset(0xAC)] uint8_t NumMovementNodes,
 		[property: LocoStructOffset(0xAD)] uint8_t NumMovementEdges,
 		[property: LocoStructOffset(0xAE), LocoStructVariableLoad] List<MovementNode> MovementNodes,
-		[property: LocoStructOffset(0xB2), LocoStructVariableLoad] List<MovementEdge> MovementEdges
-	//[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
+		[property: LocoStructOffset(0xB2), LocoStructVariableLoad] List<MovementEdge> MovementEdges,
+		[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
 	) : ILocoStruct, ILocoStructVariableData
 	{
 		public const int VariationPartCount = 32;

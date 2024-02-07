@@ -1,7 +1,8 @@
 ﻿using NUnit.Framework;
 using OpenLocoObjectEditor.DatFileParsing;
 using OpenLocoObjectEditor.Headers;
-using OpenLocoObjectEditorCommon;
+using OpenLocoObjectEditor.Logging;
+using OpenLocoObjectEditor.Objects;
 
 namespace OpenLocoObjectEditor.Tests
 {

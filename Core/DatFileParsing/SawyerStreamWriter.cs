@@ -9,17 +9,6 @@ namespace OpenLocoObjectEditor.DatFileParsing
 {
 	public static class SawyerStreamWriter
 	{
-		//public static void ExportSoundEffectAsWave(string filename, WaveFormatEx header, byte[] pcmData)
-		//{
-		//	using (var stream = File.Create(filename))
-		//	{
-		//		stream.Write(ByteWriter.WriteLocoStruct(header));
-		//		stream.Write(pcmData);
-		//		stream.Flush();
-		//		stream.Close();
-		//	}
-		//}
-
 		public static RiffWavHeader WaveFormatExToRiff(WaveFormatEx hdr, int pcmDataLength)
 			=> new(
 				0x46464952, // "RIFF"

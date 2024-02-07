@@ -262,8 +262,6 @@ namespace OpenLocoObjectEditorGui
 			var tutorialsNode = new TreeNode("Tutorials");
 			var miscNode = new TreeNode("Uncategorised");
 
-			//var unknownNode = new TreeNode("Unknown");
-
 			var allDataFiles = Directory.GetFiles(model.Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower());
 
 			// music
@@ -283,7 +281,7 @@ namespace OpenLocoObjectEditorGui
 			// sound effects
 			//foreach (var sfx in model.SoundEffects)
 			{
-				var displayName = OriginalDataFiles.SoundEffect; //$"{OriginalDataFiles.SoundEffect} ({sfx.Key})";
+				var displayName = OriginalDataFiles.SoundEffect;
 				sfxNode.Nodes.Add(displayName, displayName, 1, 1);
 			}
 
@@ -590,40 +588,7 @@ namespace OpenLocoObjectEditorGui
 					if (OriginalDataFiles.Music.ContainsKey(soundNameToUpdate))
 					{
 						logger.Info($"Replacing music track {soundNameToUpdate} with {openFileDialog.FileName}");
-						//CurrentUIObject = new UiSoundObject { Header = header, Data = pcmData, SoundName = ((UiSoundObject)CurrentUIObject).SoundName };
-
-						//var flp = flpImageTable.Controls.OfType<FlowLayoutPanel>().Single();
-						//var pn = flpImageTable.Controls.OfType<Panel>().Single(pn => pn.Tag == soundNameToUpdate);
-						//flp.Controls.Remove(pn);
-						//flp.Controls.Add(CreateSoundUI(pcmData, header, soundNameToUpdate));
 					}
-					//else if (Enum.GetValues<SoundId>().Select(sid => sid.ToString()).Contains(soundNameToUpdate))
-					//{
-					//	logger.Info($"Replacing sound effect {soundNameToUpdate} with {openFileDialog.FileName}");
-					//	var wavHeader = new WaveFormatEx(1, (short)header.NumberOfChannels, (int)header.SampleRate, (int)header.ByteRate, 512, 4096, 0);
-
-					//	var newSoundUi = CreateSoundUI(pcmData, wavHeader, soundNameToUpdate);
-					//	var newFlp = GetNewSoundUIFLP();
-					//	var oldFlp = flpImageTable.Controls.OfType<FlowLayoutPanel>().Single();
-					//	var oldPn = oldFlp.Controls.OfType<Panel>().Single(pn => pn.Tag == soundNameToUpdate);
-					//	var oldIndex = oldFlp.Controls.IndexOf(oldPn);
-
-					//	while (oldFlp.Controls.Count > 0)
-					//	{
-					//		if (newFlp.Controls.Count == oldIndex)
-					//		{
-					//			oldFlp.Controls.RemoveAt(0);
-					//			newFlp.Controls.Add(newSoundUi);
-					//		}
-					//		else
-					//		{
-					//			newFlp.Controls.Add(oldFlp.Controls[0]);
-					//		}
-					//	}
-
-					//	flpImageTable.Controls.Clear();
-					//	flpImageTable.Controls.Add(newFlp);
-					//}
 					else
 					{
 						logger.Warning($"Sound name {soundNameToUpdate} was not recognised - no action will be taken.");
@@ -755,15 +720,13 @@ namespace OpenLocoObjectEditorGui
 			{
 				Size = new Size(64, 64),
 				Text = "Export",
-				//Tag = soundName,
 			};
-			exportButton.Click += (args, sender) => ExportMusic(uiSoundObj); // isRiff ? ExportMusic(pcmData, waveHeader) : ExportSoundEffect(pcmData, waveHeader);
+			exportButton.Click += (args, sender) => ExportMusic(uiSoundObj);
 
 			var importButton = new Button
 			{
 				Size = new Size(64, 64),
 				Text = "Import",
-				//Tag = soundName,
 			};
 			importButton.Click += (args, sender) => ImportWave(uiSoundObj.SoundName);
 
@@ -941,14 +904,18 @@ namespace OpenLocoObjectEditorGui
 				var filename = e.Node.Name;
 				CurrentUIObject = model.LoadAndCacheObject(filename);
 
-				//try
+#if DEBUG
+				LoadDataDump(filename);
+#else
+				try
 				{
 					LoadDataDump(filename);
 				}
-				//catch (Exception ex)
+				catch (Exception ex)
 				{
-					//	logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
+					logger?.Error(ex, $"Unable to annotate file \"{filename}\"");
 				}
+#endif
 			}
 
 			flpImageTable.ResumeLayout(true);
@@ -1133,7 +1100,6 @@ namespace OpenLocoObjectEditorGui
 				}
 
 				var selectedFile = tvFileTree.SelectedNode.Text;
-				MessageBox.Show($"File \"{selectedFile}\" couldn't be loaded. Does it exist? Suggest recreating object index.");
 				logger.Error($"File \"{selectedFile}\" couldn't be loaded. Does it exist? Suggest recreating object index.");
 				return;
 			}
@@ -1152,7 +1118,6 @@ namespace OpenLocoObjectEditorGui
 				{
 					if (model.Palette is null)
 					{
-						MessageBox.Show("No palette file loaded - please load one from File -> Load Palette. You can use palette.png in the top level folder of this repo.");
 						logger.Error("No palette file loaded - please load one from File -> Load Palette. You can use palette.png in the top level folder of this repo.");
 						return;
 					}
@@ -1177,7 +1142,6 @@ namespace OpenLocoObjectEditorGui
 				pgObjHeader.SelectedObject = uiLocoObj.DatFileInfo.ObjectHeader;
 				pgObject.SelectedObject = uiLocoObj.LocoObject.Object;
 				ucStringTable.SetDataBinding(uiLocoObj.LocoObject.StringTable);
-				//pgS5Header.SelectedObject = CurrentUIObject; // done above with flpImageTable
 			}
 
 			if (CurrentUIObject is UiSoundObjectList uiSoundObjList)
@@ -1191,8 +1155,6 @@ namespace OpenLocoObjectEditorGui
 				foreach (var x in uiSoundObjList.Audio)
 				{
 					var pn = CreateSoundUI(x);
-					//flpImageTable.Controls.Add(pn);
-					//var pn = CreateSoundUI(pcmData, header, $"{(SoundId)i++}");
 					flp.Controls.Add(pn);
 				}
 
@@ -1284,7 +1246,8 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		private void cbVanillaObjects_CheckedChanged(object sender, EventArgs e) => InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+		private void cbVanillaObjects_CheckedChanged(object sender, EventArgs e)
+			=> InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 
 		private void lbLogs_DrawItem(object sender, DrawItemEventArgs e)
 		{
@@ -1338,41 +1301,39 @@ namespace OpenLocoObjectEditorGui
 			{
 				var filename = saveFileDialog1.FileName;
 
-				//try
-				//{
-				var exists = File.Exists(filename);
+				try
+				{
+					var exists = File.Exists(filename);
 
-				if (currentUIObject is UiLocoObject obj)
-				{
-					MainFormModel.SaveFile(filename, obj);
-				}
-				else if (currentUIObject is UiSoundObjectList uiSoundObjList)
-				{
-					if (tvObjType.SelectedNode.Name == "css1.dat")
+					if (currentUIObject is UiLocoObject obj)
 					{
-						var rawBytes = SawyerStreamWriter.SaveSoundEffectsToCSS(uiSoundObjList.Audio.Select(uis => (uis.Header, uis.Data)).ToList());
-						File.WriteAllBytes(filename, rawBytes);
-
+						MainFormModel.SaveFile(filename, obj);
 					}
-					else
+					else if (currentUIObject is UiSoundObjectList uiSoundObjList)
 					{
-						// save regular sound
+						if (tvObjType.SelectedNode.Name == "css1.dat")
+						{
+							var rawBytes = SawyerStreamWriter.SaveSoundEffectsToCSS(uiSoundObjList.Audio.Select(uis => (uis.Header, uis.Data)).ToList());
+							File.WriteAllBytes(filename, rawBytes);
+						}
+						else
+						{
+							// save regular sound
+						}
 					}
-				}
 
-				if (!exists)
+					if (!exists)
+					{
+						// we made a new file (as opposed to overwriting an existing one) so lets update the UI to show it
+						InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+					}
+
+					logger.Info($"File \"{filename}\" saved successfully");
+				}
+				catch (Exception ex)
 				{
-					// we made a new file (as opposed to overwriting an existing one) so lets update the UI to show it
-					InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+					logger.Error($"Error saving \"{filename}\": {ex.Message}");
 				}
-
-				logger.Info($"File \"{filename}\" saved successfully");
-				//}
-				//catch (Exception ex)
-				//{
-				//	logger.Error($"Error saving \"{filename}\": {ex.Message}");
-				//	MessageBox.Show($"Error saving \"{filename}\": {ex.Message}");
-				//}
 			}
 		}
 

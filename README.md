@@ -64,4 +64,5 @@ A modern implementation of 'LocoTool' for Lomotion `dat` file parsing and editin
 - Export/convert object to a future modern OpenLoco file format
 - Dark modern
 - Cross-platform support
+- Full unit-testing suite
 - ...many more things

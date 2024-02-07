@@ -92,14 +92,18 @@ namespace OpenLocoObjectEditorGui
 
 			foreach (var dep in HeaderIndex.Where(kvp => dependentObjectTypes.Contains(kvp.Value.ObjectType)))
 			{
-				//try
-				//{
+#if DEBUG
 				SawyerStreamReader.LoadFullObjectFromFile(dep.Key);
-				//}
-				//catch (Exception ex)
-				//{
-				//	logger.Error($"File=\"{dep}\" Message=\"{ex.Message}\"");
-				//}
+#else
+				try
+				{
+					SawyerStreamReader.LoadFullObjectFromFile(dep.Key);
+				}
+				catch (Exception ex)
+				{
+					logger.Error($"File=\"{dep}\" Message=\"{ex.Message}\"");
+				}
+#endif
 			}
 		}
 

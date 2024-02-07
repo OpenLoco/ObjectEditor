@@ -22,7 +22,7 @@ namespace OpenLocoObjectEditor.Objects
 	[LocoStructSize(0x0A)]
 	[LocoStructType(ObjectType.Wall)]
 	[LocoStringTable("Name")]
-	public class WallObject(
+	public record WallObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x06), LocoPropertyMaybeUnused] uint8_t var_06,

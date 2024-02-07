@@ -2,29 +2,8 @@
 using OpenLocoObjectEditor.Data;
 using OpenLocoObjectEditor.DatFileParsing;
 
-namespace OpenLocoObjectEditor.Objects
+namespace Core.Objects.Sound
 {
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[LocoStructSize(0x12)]
-	public record WaveFormatEx(
-		[property: LocoStructOffset(0x00)] int16_t WaveFormatTag,
-		[property: LocoStructOffset(0x02)] int16_t NumberOfChannels,
-		[property: LocoStructOffset(0x04)] int32_t SampleRate,
-		[property: LocoStructOffset(0x08)] int32_t AverageBytesPerSecond,
-		[property: LocoStructOffset(0x0B)] int16_t BlockAlign,
-		[property: LocoStructOffset(0x0D)] int16_t BitsPerSample,
-		[property: LocoStructOffset(0x010)] int16_t CBSize
-		) : ILocoStruct;
-
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[LocoStructSize(0x1E)]
-	public record SoundObjectData(
-		[property: LocoStructOffset(0x00)] int32_t var_00,
-		[property: LocoStructOffset(0x04)] int32_t Offset,
-		[property: LocoStructOffset(0x08)] uint32_t Length,
-		[property: LocoStructOffset(0x0C)] WaveFormatEx PcmHeader
-		) : ILocoStruct;
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0C)]
 	[LocoStructType(ObjectType.Sound)]

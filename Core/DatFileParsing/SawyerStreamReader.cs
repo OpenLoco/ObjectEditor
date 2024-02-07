@@ -5,6 +5,8 @@ using OpenLocoObjectEditor.Objects;
 using OpenLocoObjectEditor.Types;
 using OpenLocoObjectEditor.Logging;
 using OpenLocoObjectEditor.Data;
+using Core.Objects;
+using Core.Objects.Sound;
 
 namespace OpenLocoObjectEditor.DatFileParsing
 {

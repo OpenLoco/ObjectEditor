@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using OpenLocoObjectEditor.Data;
 using OpenLocoObjectEditor.Headers;
@@ -202,7 +203,25 @@ namespace OpenLocoObjectEditor.DatFileParsing
 				if (offset != null)
 				{
 					var location = runningCount + offset!.Offset;
-					annotations.Add(new Annotation(p.Name, root, location, 1));
+
+					var propType = p.PropertyType;
+					if (p.PropertyType.IsArray)
+					{
+						propType = propType.GetElementType();
+					}
+					if (p.PropertyType.IsEnum)
+					{
+						propType = propType.GetEnumUnderlyingType();
+					}
+
+					var length = Marshal.SizeOf(propType);
+					var lengthAttr = p.GetCustomAttribute<LocoArrayLengthAttribute>();
+					if (lengthAttr != null)
+					{
+						length *= lengthAttr.Length;
+					}
+
+					annotations.Add(new Annotation(p.Name, root, location, length));
 				}
 			}
 

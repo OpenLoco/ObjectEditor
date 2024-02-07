@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Core.Objects;
 using OpenLocoObjectEditor.Data;
 using OpenLocoObjectEditor.DatFileParsing;
 using OpenLocoObjectEditor.Headers;

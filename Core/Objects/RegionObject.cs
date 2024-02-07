@@ -1,5 +1,4 @@
-﻿
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using OpenLocoObjectEditor.Data;
 using OpenLocoObjectEditor.DatFileParsing;
 using OpenLocoObjectEditor.Headers;
@@ -10,18 +9,15 @@ namespace OpenLocoObjectEditor.Objects
 	[LocoStructSize(0x12)]
 	[LocoStructType(ObjectType.Region)]
 	[LocoStringTable("Name")]
-	public class RegionObject(
-		uint8_t requiredObjectCount)
-		: ILocoStruct, ILocoStructVariableData
+	public record RegionObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
+		[property: LocoStructOffset(0x06), LocoArrayLength(0x8 - 0x6), Browsable(false)] uint8_t[] pad_06,
+		[property: LocoStructOffset(0x08), Browsable(false)] uint8_t RequiredObjectCount,
+		[property: LocoStructOffset(0x09), LocoArrayLength(4), Browsable(false), LocoStructVariableLoad] object_id[] _RequiredObjects,
+		[property: LocoStructOffset(0x0D), LocoArrayLength(0x12 - 0xD), Browsable(false)] uint8_t[] pad_0D
+		) : ILocoStruct, ILocoStructVariableData
 	{
-
-		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		//[property: LocoStructOffset(0x02)] image_id Image,
-		//[property: LocoStructOffset(0x06), LocoArrayLength(0x8 - 0x6)] uint8_t[] pad_06,
-		[property: LocoStructOffset(0x08)] public uint8_t RequiredObjectCount { get; set; } = requiredObjectCount;
-		//[property: LocoStructOffset(0x09), LocoArrayLength(4)] public object_index[] requiredObjects { get; set; }
-		//[property: LocoStructOffset(0x0D), LocoArrayLength(0x12 - 0xD)] uint8_t[] pad_0D
-
 		public List<S5Header> RequiredObjects { get; set; } = [];
 		public List<S5Header> DependentObjects { get; set; } = [];
 

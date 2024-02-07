@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel;
+using OpenLocoObjectEditor;
 using OpenLocoObjectEditor.Data;
 using OpenLocoObjectEditor.DatFileParsing;
 using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoObjectEditor.Objects
+namespace Core.Objects
 {
 	[Flags]
 	public enum IndustryObjectFlags : uint32_t
@@ -41,46 +42,22 @@ namespace OpenLocoObjectEditor.Objects
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[LocoStructSize(0x02)]
-
-	public record BuildingPartAnimation(
-		[property: LocoStructOffset(0x00)] uint8_t NumFrames,     // Must be a power of 2 (0 = no part animation, could still have animation sequence)
-		[property: LocoStructOffset(0x01)] uint8_t AnimationSpeed // Also encodes in bit 7 if the animation is position modified
-		) : ILocoStruct;
-
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[LocoStructSize(0x02)]
-
-	public record IndustryObjectUnk38(
-		[property: LocoStructOffset(0x00)] uint8_t var_00,
-		[property: LocoStructOffset(0x01)] uint8_t var_01
-		) : ILocoStruct;
-
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[LocoStructSize(0x04)]
-
-	public record IndustryObjectProductionRateRange(
-		[property: LocoStructOffset(0x00)] uint16_t Min,
-		[property: LocoStructOffset(0x02)] uint16_t Max
-		) : ILocoStruct;
-
-	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xF4)]
 	[LocoStructType(ObjectType.Industry)]
 	[LocoStringTable("Name", "var_02", "<unused>", "NameClosingDown", "NameUpProduction", "NameDownProduction", "NameSingular", "NamePlural")]
 	public record IndustryObject(
-		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		//[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id var_02,
-		//[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id _unused,
-		//[property: LocoStructOffset(0x04), LocoString, Browsable(false)] string_id NameClosingDown,
-		//[property: LocoStructOffset(0x06), LocoString, Browsable(false)] string_id NameUpProduction,
-		//[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id NameDownProduction,
-		//[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id NameSingular,
-		//[property: LocoStructOffset(0x0C), LocoString, Browsable(false)] string_id NamePlural,
-		//[property: LocoStructOffset(0x0E)] image_id var_0E, // shadows image id base
-		//[property: LocoStructOffset(0x12)] image_id var_12, // Base image id for building 0
-		//[property: LocoStructOffset(0x16)] image_id var_16,
-		//[property: LocoStructOffset(0x1A)] image_id var_1A,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id var_02,
+		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id _unused,
+		[property: LocoStructOffset(0x04), LocoString, Browsable(false)] string_id NameClosingDown,
+		[property: LocoStructOffset(0x06), LocoString, Browsable(false)] string_id NameUpProduction,
+		[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id NameDownProduction,
+		[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id NameSingular,
+		[property: LocoStructOffset(0x0C), LocoString, Browsable(false)] string_id NamePlural,
+		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E, // shadows image id base
+		[property: LocoStructOffset(0x12), Browsable(false)] image_id var_12, // Base image id for building 0
+		[property: LocoStructOffset(0x16), Browsable(false)] image_id var_16,
+		[property: LocoStructOffset(0x1A), Browsable(false)] image_id var_1A,
 		[property: LocoStructOffset(0x1E)] uint8_t NumBuildingAnimations,
 		[property: LocoStructOffset(0x1F)] uint8_t NumBuildingVariations,
 		[property: LocoStructOffset(0x20), LocoStructVariableLoad] List<uint8_t> BuildingVariationHeights,    // This is the height of a building image

@@ -10,6 +10,7 @@ using System.Data;
 using System.Drawing.Imaging;
 using System.Reflection;
 using OpenLocoObjectEditor.Data;
+using Core.Objects.Sound;
 
 namespace OpenLocoObjectEditorGui
 {

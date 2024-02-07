@@ -1,9 +1,9 @@
 ﻿using System.Text;
 using OpenLocoObjectEditor.Data;
 using OpenLocoObjectEditor.Headers;
-using OpenLocoObjectEditor.Objects;
 using OpenLocoObjectEditor.Types;
 using OpenLocoObjectEditor.Logging;
+using Core.Objects.Sound;
 
 namespace OpenLocoObjectEditor.DatFileParsing
 {

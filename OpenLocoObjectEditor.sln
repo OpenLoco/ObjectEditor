@@ -3,16 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenLocoObjectEditor", "OpenLocoObjectEditor\OpenLocoObjectEditor.csproj", "{95C3FA06-59A8-4A95-8FB7-F722106D6071}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{95C3FA06-59A8-4A95-8FB7-F722106D6071}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenLocoObjectEditorGui", "OpenLocoObjectEditorGui\OpenLocoObjectEditorGui.csproj", "{3AE3C370-4870-48ED-A906-770AE62B00DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gui", "Gui\Gui.csproj", "{3AE3C370-4870-48ED-A906-770AE62B00DE}"
 	ProjectSection(ProjectDependencies) = postProject
 		{95C3FA06-59A8-4A95-8FB7-F722106D6071} = {95C3FA06-59A8-4A95-8FB7-F722106D6071}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenLocoObjectEditorCommon", "OpenLocoObjectEditorCommon\OpenLocoObjectEditorCommon.csproj", "{BCD93536-D322-4C14-B193-1F643D03C788}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{BCD93536-D322-4C14-B193-1F643D03C788}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenLocoObjectEditorTests", "OpenLocoObjectEditorTests\OpenLocoObjectEditorTests.csproj", "{55293DEB-00FA-45AD-814D-CB37383BE0D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{55293DEB-00FA-45AD-814D-CB37383BE0D5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatFileRenamer", "DatFileRenamer\DatFileRenamer.csproj", "{AD079FD2-EC1C-459C-BDE6-8D0C527767AB}"
 EndProject

@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
-using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Headers;
-using OpenLocoTool.Types;
+using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Headers;
+using OpenLocoObjectEditor.Types;
 
-namespace OpenLocoTool.Objects
+namespace OpenLocoObjectEditor.Objects
 {
 	public enum TrackObjectPieceFlags : uint16_t
 	{

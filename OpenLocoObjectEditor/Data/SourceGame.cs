@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.Data
+﻿namespace OpenLocoObjectEditor.Data
 {
 	public enum SourceGame : byte
 	{

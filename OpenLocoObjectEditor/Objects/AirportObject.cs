@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
-using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Headers;
+using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoTool.Objects
+namespace OpenLocoObjectEditor.Objects
 {
 	public enum AirportMovementNodeFlags : uint16_t
 	{

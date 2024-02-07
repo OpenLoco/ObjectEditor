@@ -1,4 +1,4 @@
-﻿namespace OpenLocoToolCommon
+﻿namespace OpenLocoObjectEditorCommon
 {
 	public class LogAddedEventArgs(LogLine log) : EventArgs
 	{

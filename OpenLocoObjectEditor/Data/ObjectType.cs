@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.Headers
+﻿namespace OpenLocoObjectEditor.Headers
 {
 	public enum ObjectType : byte
 	{

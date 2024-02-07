@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
-using OpenLocoTool.Headers;
+using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoTool.DatFileParsing
+namespace OpenLocoObjectEditor.DatFileParsing
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class G1Dat(G1Header g1Header, List<G1Element32> g1Elements)

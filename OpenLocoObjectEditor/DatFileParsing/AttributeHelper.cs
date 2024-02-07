@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using OpenLocoTool.Headers;
+using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoTool.DatFileParsing
+namespace OpenLocoObjectEditor.DatFileParsing
 {
 	public static class AttributeHelper
 	{

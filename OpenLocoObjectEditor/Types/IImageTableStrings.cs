@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.Types
+﻿namespace OpenLocoObjectEditor.Types
 {
 	public interface IImageTableStrings
 	{

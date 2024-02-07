@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool
+﻿namespace OpenLocoObjectEditor
 {
 	public class Annotation
 	{

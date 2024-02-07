@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool
+﻿namespace OpenLocoObjectEditor
 {
 	public enum SoundId : uint16_t
 	{

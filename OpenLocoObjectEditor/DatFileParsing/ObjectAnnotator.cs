@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text;
-using OpenLocoTool.Headers;
+using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoTool.DatFileParsing
+namespace OpenLocoObjectEditor.DatFileParsing
 {
 	public static class ObjectAnnotator
 	{

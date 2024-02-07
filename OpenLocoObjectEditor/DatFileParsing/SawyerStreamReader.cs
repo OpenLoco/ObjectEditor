@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using OpenLocoTool.Headers;
-using OpenLocoTool.Objects;
-using OpenLocoTool.Types;
-using OpenLocoToolCommon;
+using OpenLocoObjectEditor.Headers;
+using OpenLocoObjectEditor.Objects;
+using OpenLocoObjectEditor.Types;
+using OpenLocoObjectEditorCommon;
 
-namespace OpenLocoTool.DatFileParsing
+namespace OpenLocoObjectEditor.DatFileParsing
 {
 	public static class SawyerStreamReader
 	{

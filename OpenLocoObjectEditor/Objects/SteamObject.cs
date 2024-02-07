@@ -1,9 +1,9 @@
 ﻿
 using System.ComponentModel;
-using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Headers;
+using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoTool.Objects
+namespace OpenLocoObjectEditor.Objects
 {
 	[Flags]
 	public enum SteamObjectFlags : uint16_t

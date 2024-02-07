@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.Data
+﻿namespace OpenLocoObjectEditor.Data
 {
 	public enum Colour : uint8_t
 	{

@@ -1,4 +1,4 @@
-﻿namespace OpenLocoToolGui
+﻿namespace OpenLocoObjectEditorGui
 {
 	partial class StringTableUserControl
 	{

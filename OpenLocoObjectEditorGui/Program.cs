@@ -1,4 +1,4 @@
-namespace OpenLocoToolGui
+namespace OpenLocoObjectEditorGui
 {
 	internal static class Program
 	{

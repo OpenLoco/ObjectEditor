@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
-using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Headers;
+using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoTool.Types
+namespace OpenLocoObjectEditor.Types
 {
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

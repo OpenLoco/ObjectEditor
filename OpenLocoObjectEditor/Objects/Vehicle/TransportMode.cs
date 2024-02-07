@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.Objects
+﻿namespace OpenLocoObjectEditor.Objects
 {
 	public enum TransportMode : uint8_t
 	{

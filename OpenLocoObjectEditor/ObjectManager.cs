@@ -1,7 +1,7 @@
-﻿using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Headers;
+﻿using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoTool
+namespace OpenLocoObjectEditor
 {
 	public static class SObjectManager
 	{

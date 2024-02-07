@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
-using OpenLocoTool.Headers;
+using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoTool.DatFileParsing
+namespace OpenLocoObjectEditor.DatFileParsing
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class DatFileInfo(S5Header s5Header, ObjectHeader objectHeader)

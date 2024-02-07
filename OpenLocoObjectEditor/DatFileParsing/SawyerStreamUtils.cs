@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace OpenLocoTool.DatFileParsing
+namespace OpenLocoObjectEditor.DatFileParsing
 {
 	public static class SawyerStreamUtils
 	{

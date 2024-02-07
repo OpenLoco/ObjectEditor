@@ -1,17 +1,17 @@
-﻿global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLocoToolGui.IndexObjectHeader>;
-global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLocoToolGui.UiLocoObject>;
+﻿global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLocoObjectEditorGui.IndexObjectHeader>;
+global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLocoObjectEditorGui.UiLocoObject>;
 
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Objects;
-using OpenLocoToolCommon;
-using OpenLocoTool.Headers;
+using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Objects;
+using OpenLocoObjectEditorCommon;
+using OpenLocoObjectEditor.Headers;
 using System.Diagnostics;
-using OpenLocoTool;
+using OpenLocoObjectEditor;
 
-namespace OpenLocoToolGui
+namespace OpenLocoObjectEditorGui
 {
 	class MainFormModel
 	{
@@ -21,7 +21,7 @@ namespace OpenLocoToolGui
 
 		public ObjectCache ObjectCache { get; private set; } = [];
 
-		//public OpenLocoTool.ObjectManager ObjectManager { get; private set; } = new();
+		//public OpenLocoObjectEditor.ObjectManager ObjectManager { get; private set; } = new();
 
 		//public string PaletteFile
 		//{

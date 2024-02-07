@@ -1,7 +1,7 @@
-﻿using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Types;
+﻿using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Types;
 
-namespace OpenLocoToolGui
+namespace OpenLocoObjectEditorGui
 {
 	public interface IUiObject { }
 

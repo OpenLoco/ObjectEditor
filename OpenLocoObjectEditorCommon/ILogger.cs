@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace OpenLocoToolCommon
+namespace OpenLocoObjectEditorCommon
 {
 	public enum LogLevel { Debug2, Debug, Info, Warning, Error };
 
@@ -11,16 +11,16 @@ namespace OpenLocoToolCommon
 
 		void Debug2(string message, [CallerMemberName] string callerMemberName = "")
 			=> Log(LogLevel.Debug2, message, callerMemberName);
-		
+
 		void Debug(string message, [CallerMemberName] string callerMemberName = "")
 			=> Log(LogLevel.Debug, message, callerMemberName);
-		
+
 		void Info(string message, [CallerMemberName] string callerMemberName = "")
 			=> Log(LogLevel.Info, message, callerMemberName);
-		
+
 		void Warning(string message, [CallerMemberName] string callerMemberName = "")
 			=> Log(LogLevel.Warning, message, callerMemberName);
-		
+
 		void Error(string message, [CallerMemberName] string callerMemberName = "")
 			=> Log(LogLevel.Error, message, callerMemberName);
 

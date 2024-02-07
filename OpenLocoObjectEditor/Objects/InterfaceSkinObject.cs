@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
-using OpenLocoTool.Data;
-using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Headers;
-using OpenLocoTool.Types;
+using OpenLocoObjectEditor.Data;
+using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Headers;
+using OpenLocoObjectEditor.Types;
 
-namespace OpenLocoTool.Objects
+namespace OpenLocoObjectEditor.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x18)]

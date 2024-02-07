@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
-using OpenLocoTool.Data;
-using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Headers;
+using OpenLocoObjectEditor.Data;
+using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoTool.Objects
+namespace OpenLocoObjectEditor.Objects
 {
 	[Flags]
 	public enum IndustryObjectFlags : uint32_t

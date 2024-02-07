@@ -1,4 +1,4 @@
-﻿namespace OpenLocoTool.DatFileParsing
+﻿namespace OpenLocoObjectEditor.DatFileParsing
 {
 	public static class ByteWriter
 	{

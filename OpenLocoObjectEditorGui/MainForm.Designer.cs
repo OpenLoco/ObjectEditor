@@ -1,6 +1,6 @@
-﻿using OpenLocoTool.Types;
+﻿using OpenLocoObjectEditor.Types;
 
-namespace OpenLocoToolGui
+namespace OpenLocoObjectEditorGui
 {
 	partial class MainForm
 	{
@@ -992,7 +992,7 @@ namespace OpenLocoToolGui
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
 			Padding = new Padding(4);
-			Text = "OpenLocoTool";
+			Text = "OpenLoco Object Editor";
 			Load += MainForm_Load;
 			scObjectAndLogs.Panel1.ResumeLayout(false);
 			scObjectAndLogs.Panel1.PerformLayout();

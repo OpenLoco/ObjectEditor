@@ -1,7 +1,7 @@
-﻿using OpenLocoTool.Headers;
-using OpenLocoTool.Objects;
+﻿using OpenLocoObjectEditor.Headers;
+using OpenLocoObjectEditor.Objects;
 
-namespace OpenLocoToolGui
+namespace OpenLocoObjectEditorGui
 {
 	public record IndexObjectHeader(string Name, ObjectType ObjectType, UInt32 Checksum, VehicleType? VehicleType);
 }

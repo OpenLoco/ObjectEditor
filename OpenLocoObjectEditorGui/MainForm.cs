@@ -1,17 +1,17 @@
 using NAudio.Gui;
 using NAudio.Wave;
-using OpenLocoTool;
-using OpenLocoTool.DatFileParsing;
-using OpenLocoTool.Headers;
-using OpenLocoTool.Objects;
-using OpenLocoTool.Types;
-using OpenLocoToolCommon;
+using OpenLocoObjectEditor;
+using OpenLocoObjectEditor.DatFileParsing;
+using OpenLocoObjectEditor.Headers;
+using OpenLocoObjectEditor.Objects;
+using OpenLocoObjectEditor.Types;
+using OpenLocoObjectEditorCommon;
 using System.Data;
 using System.Drawing.Imaging;
 using System.Reflection;
 using System.Resources;
 
-namespace OpenLocoToolGui
+namespace OpenLocoObjectEditorGui
 {
 	public partial class MainForm : Form
 	{

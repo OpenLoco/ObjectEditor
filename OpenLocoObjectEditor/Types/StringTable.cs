@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace OpenLocoTool.Types
+namespace OpenLocoObjectEditor.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class StringTable

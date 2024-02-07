@@ -1,7 +1,7 @@
-﻿using OpenLocoTool;
-using OpenLocoTool.Types;
+﻿using OpenLocoObjectEditor;
+using OpenLocoObjectEditor.Types;
 
-namespace OpenLocoToolGui
+namespace OpenLocoObjectEditorGui
 {
 	public partial class StringTableUserControl : UserControl
 	{

@@ -54,6 +54,7 @@ A modern implementation of 'LocoTool' for Lomotion `dat` file parsing and editin
 - The tool will print a log message if it detects changes in the folder and thinks you need to reindex it
 
 # Future Plans/Features
+- Better flag editing support
 - Validation of object limits/sane values
 - Detection of bugged objects
 - Support/edit tutorials

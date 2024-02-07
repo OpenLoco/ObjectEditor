@@ -16,55 +16,41 @@ namespace OpenLocoObjectEditor.Objects
 	[LocoStructSize(0x28)]
 	[LocoStructType(ObjectType.Dock)]
 	[LocoStringTable("Name")]
-	public class DockObject(
-		int16_t buildCostFactor,
-		int16_t sellCostFactor,
-		uint8_t costIndex,
-		uint8_t var_07,
-		DockObjectFlags flags,
-		uint8_t numAux01,
-		uint8_t numAux02Ent,
-		uint16_t designedYear,
-		uint16_t obsoleteYear,
-		Pos2 boatPosition)
-		: ILocoStruct, ILocoStructVariableData
+	public record DockObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
+		[property: LocoStructOffset(0x04)] int16_t SellCostFactor,
+		[property: LocoStructOffset(0x06)] uint8_t CostIndex,
+		[property: LocoStructOffset(0x07), LocoPropertyMaybeUnused] uint8_t var_07,
+		[property: LocoStructOffset(0x08), Browsable(false)] image_id Image,
+		[property: LocoStructOffset(0x0C), Browsable(false)] image_id UnkImage,
+		[property: LocoStructOffset(0x10)] DockObjectFlags Flags,
+		[property: LocoStructOffset(0x12), LocoPropertyMaybeUnused] uint8_t NumAux01,
+		[property: LocoStructOffset(0x13), LocoPropertyMaybeUnused] uint8_t NumAux02Ent,
+		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> var_14,
+		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<uint16_t> var_18,
+		[property: LocoStructOffset(0x1C), LocoStructVariableLoad] List<uint8_t> var_1C,
+		[property: LocoStructOffset(0x20)]
+		uint16_t DesignedYear,
+		[property: LocoStructOffset(0x22)] uint16_t ObsoleteYear,
+		[property: LocoStructOffset(0x24)] Pos2 BoatPosition
+	) : ILocoStruct, ILocoStructVariableData
 	{
-		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[LocoStructOffset(0x02)] public int16_t BuildCostFactor { get; set; } = buildCostFactor;
-		[LocoStructOffset(0x04)] public int16_t SellCostFactor { get; set; } = sellCostFactor;
-		[LocoStructOffset(0x06)] public uint8_t CostIndex { get; set; } = costIndex;
-		[LocoStructOffset(0x07), LocoPropertyMaybeUnused] public uint8_t var_07 { get; set; } = var_07;
-		//[LocoStructOffset(0x08), Browsable(false)] public image_id Image { get; set; }
-		//[LocoStructOffset(0x0C), Browsable(false)] public image_id UnkImage { get; set; }
-		[LocoStructOffset(0x10)] public DockObjectFlags Flags { get; set; } = flags;
-		[LocoStructOffset(0x12), LocoPropertyMaybeUnused] public uint8_t NumAux01 { get; set; } = numAux01;
-		[LocoStructOffset(0x13), LocoPropertyMaybeUnused] public uint8_t NumAux02Ent { get; set; } = numAux02Ent;
-		//LocoStructOffset(0x14)] const uint8_t* var_14 { get; set; }
-		//LocoStructOffset(0x18)] const uint16_t* var_18 { get; set; }
-		//LocoStructOffset(0x1C)] const uint8_t* var_1C[1] { get; set; } // odd that this is size 1 but that is how its used
-		[LocoStructOffset(0x20)] public uint16_t DesignedYear { get; set; } = designedYear;
-		[LocoStructOffset(0x22)] public uint16_t ObsoleteYear { get; set; } = obsoleteYear;
-		[LocoStructOffset(0x24)] public Pos2 BoatPosition { get; set; } = boatPosition;
-
-		[LocoPropertyMaybeUnused] public List<uint8_t> UnknownAuxData1A { get; set; } = [];
-		[LocoPropertyMaybeUnused] public List<uint16_t> UnknownAuxData1B { get; set; } = [];
-		[LocoPropertyMaybeUnused] public List<uint8_t> UnknownAuxData2 { get; set; } = [];
-
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			UnknownAuxData1A.Clear();
-			UnknownAuxData1B.Clear();
-			UnknownAuxData2.Clear();
+			var_14.Clear();
+			var_18.Clear();
+			var_1C.Clear();
 
 			// var_14 - a list of uint8_t
-			UnknownAuxData1A.AddRange(remainingData[..(NumAux01 * 1)]);
+			var_14.AddRange(remainingData[..(NumAux01 * 1)]);
 			remainingData = remainingData[(NumAux01 * 1)..]; // sizeof(uint8_t)
 
 			// var_18 - a list of uint16_t
 			var bytearr = remainingData[..(NumAux01 * 2)].ToArray();
 			for (var i = 0; i < NumAux01; ++i)
 			{
-				UnknownAuxData1B.Add(BitConverter.ToUInt16(bytearr, i * 2)); // sizeof(uint16_t)
+				var_18.Add(BitConverter.ToUInt16(bytearr, i * 2)); // sizeof(uint16_t)
 			}
 
 			remainingData = remainingData[(NumAux01 * 2)..]; // sizeof(uint16_t)
@@ -75,7 +61,7 @@ namespace OpenLocoObjectEditor.Objects
 				var ptr_1C = 0;
 				while (remainingData[ptr_1C] != 0xFF)
 				{
-					UnknownAuxData2.Add(remainingData[ptr_1C]);
+					var_1C.Add(remainingData[ptr_1C]);
 					ptr_1C++;
 				}
 
@@ -87,9 +73,9 @@ namespace OpenLocoObjectEditor.Objects
 		}
 
 		public ReadOnlySpan<byte> Save()
-			=> UnknownAuxData1A
-			.Concat(UnknownAuxData1B.SelectMany(BitConverter.GetBytes))
-			.Concat(UnknownAuxData2)
+			=> var_14
+			.Concat(var_18.SelectMany(BitConverter.GetBytes))
+			.Concat(var_1C)
 			.Concat(new byte[] { 0xFF })
 			.ToArray();
 	}

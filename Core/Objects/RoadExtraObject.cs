@@ -8,21 +8,14 @@ namespace OpenLocoObjectEditor.Objects
 	[LocoStructSize(0x12)]
 	[LocoStructType(ObjectType.RoadExtra)]
 	[LocoStringTable("Name")]
-	public class RoadExtraObject(
-		uint16_t roadPieces,
-		uint8_t paintStyle,
-		uint8_t costIndex,
-		int16_t buildCostFactor,
-		int16_t sellCostFactor)
-		: ILocoStruct
-	{
-		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[LocoStructOffset(0x02)] public uint16_t RoadPieces { get; set; } = roadPieces;
-		[LocoStructOffset(0x04)] public uint8_t PaintStyle { get; set; } = paintStyle;
-		[LocoStructOffset(0x05)] public uint8_t CostIndex { get; set; } = costIndex;
-		[LocoStructOffset(0x06)] public int16_t BuildCostFactor { get; set; } = buildCostFactor;
-		[LocoStructOffset(0x08)] public int16_t SellCostFactor { get; set; } = sellCostFactor;
-		//[LocoStructOffset(0x0A)] public image_id Image { get; set; }
-		//[LocoStructOffset(0x0E)] public image_id var_0E { get; set; }
-	}
+	public record RoadExtraObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02)] uint16_t RoadPieces,
+		[property: LocoStructOffset(0x04)] uint8_t PaintStyle,
+		[property: LocoStructOffset(0x05)] uint8_t CostIndex,
+		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
+		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
+		[property: LocoStructOffset(0x0A), Browsable(false)] image_id Image,
+		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E
+	) : ILocoStruct;
 }

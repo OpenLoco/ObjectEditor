@@ -205,16 +205,33 @@ namespace OpenLocoObjectEditor.DatFileParsing
 					var location = runningCount + offset!.Offset;
 
 					var propType = p.PropertyType;
-					if (p.PropertyType.IsArray)
+
+					// should probably use recursion
+					while (propType.IsGenericType)
+					{
+						propType = propType.GenericTypeArguments[0];
+					}
+					while (propType.IsArray)
 					{
 						propType = propType.GetElementType();
 					}
-					if (p.PropertyType.IsEnum)
+					if (propType.IsEnum)
 					{
 						propType = propType.GetEnumUnderlyingType();
 					}
 
-					var length = Marshal.SizeOf(propType);
+					var locoSize = propType.GetCustomAttribute<LocoStructSizeAttribute>();
+
+					int length;
+					if (locoSize != null)
+					{
+						length = locoSize.Size;
+					}
+					else
+					{
+						length = Marshal.SizeOf(propType);
+					}
+
 					var lengthAttr = p.GetCustomAttribute<LocoArrayLengthAttribute>();
 					if (lengthAttr != null)
 					{

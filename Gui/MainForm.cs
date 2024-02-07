@@ -997,7 +997,7 @@ namespace OpenLocoObjectEditorGui
 				var currElement = G1Elements[i];
 				if (currElement.ImageData.Length == 0)
 				{
-					logger.Info($"skipped loading g1 element {i} with 0 length");
+					logger?.Info($"skipped loading g1 element {i} with 0 length");
 					continue;
 				}
 
@@ -1123,7 +1123,7 @@ namespace OpenLocoObjectEditorGui
 						return;
 					}
 
-					currentUIObjectImages = CreateImages(uiLocoObj.LocoObject.G1Elements, model.Palette).ToList();
+					currentUIObjectImages = CreateImages(uiLocoObj.LocoObject.G1Elements, model.Palette, logger: logger).ToList();
 					RefreshImageControls();
 					RefreshVehiclePreview(uiLocoObj.LocoObject);
 				}

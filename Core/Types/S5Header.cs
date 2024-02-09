@@ -5,7 +5,6 @@ using Zenith.Core;
 
 namespace OpenLocoObjectEditor.Headers
 {
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[Category("Header")]
 	[LocoStructSize(0x10)]

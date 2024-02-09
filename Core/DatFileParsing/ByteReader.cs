@@ -1,4 +1,6 @@
-﻿namespace OpenLocoObjectEditor.DatFileParsing
+using Zenith.Core;
+
+namespace OpenLocoObjectEditor.DatFileParsing
 {
 	public static class ByteReader
 	{
@@ -41,7 +43,7 @@
 
 			if (t.IsArray)
 			{
-				var elementType = t.GetElementType();
+				var elementType = t.GetElementType() ?? throw new ArgumentNullException(t.Name);
 				var size = ByteHelpers.GetObjectSize(elementType);
 
 				var arr = Array.CreateInstance(elementType, arrLength);
@@ -65,7 +67,7 @@
 
 					foreach (var enumValue in enumValues)
 					{
-						var enumValueInt = Convert.ToInt32(Enum.Parse(t, enumValue.ToString())); // Convert to int
+						var enumValueInt = Convert.ToInt32(Enum.Parse(t, enumValue.ToString()!)); // Convert to int
 						if ((enumValueInt & Convert.ToInt32(underlyingValue)) != 0) // Convert to int
 						{
 							combinedValue |= enumValueInt;
@@ -133,7 +135,9 @@
 					}
 					else
 					{
-						args.Add(Activator.CreateInstance(p.PropertyType));
+						var newInstance = Activator.CreateInstance(p.PropertyType);
+						Verify.NotNull(newInstance, paramName: p.PropertyType.Name);
+						args.Add(newInstance!);
 					}
 
 					continue;

@@ -80,7 +80,11 @@ namespace OpenLocoObjectEditor.Objects
 			for (var i = 0; i < NumVariations; ++i)
 			{
 				var ptr_10 = 0;
-				while (remainingData[++ptr_10] != 0xFF) ;
+				while (remainingData[++ptr_10] != 0xFF)
+				{
+					;
+				}
+
 				VariationParts.Add(remainingData[..ptr_10].ToArray());
 				ptr_10++;
 				remainingData = remainingData[ptr_10..];

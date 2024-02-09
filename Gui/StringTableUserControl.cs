@@ -5,21 +5,22 @@ namespace OpenLocoObjectEditorGui
 {
 	public partial class StringTableUserControl : UserControl
 	{
-		public StringTableUserControl() => InitializeComponent();
+		public StringTableUserControl()
+			=> InitializeComponent();
 
-		StringTable _data { get; set; }
+		StringTable _data { get; set; } = new StringTable();
 
-		public void SetDataBinding(StringTable data)
+		public void SetDataBinding(StringTable? data)
 		{
 			lbStringSelector.SuspendLayout();
-
-			_data = data;
 			lbStringSelector.DataSource = null;
 
 			if (data == null)
 			{
 				return;
 			}
+
+			_data = data;
 
 			// Set up data binding for the outer dictionary DataGridView.
 			lbStringSelector.DataSource = data.Table.Keys.ToList();
@@ -38,7 +39,7 @@ namespace OpenLocoObjectEditorGui
 			flpLanguageStrings.SuspendLayout();
 			flpLanguageStrings.Controls.Clear();
 
-			if (lbStringSelector.SelectedValue is string sel && _data.Table.TryGetValue(sel, out Dictionary<LanguageId, string>? value))
+			if (lbStringSelector.SelectedValue is string sel && _data.Table.TryGetValue(sel, out var value))
 			{
 				foreach (var language in value)
 				{

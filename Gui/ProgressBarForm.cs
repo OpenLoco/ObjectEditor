@@ -9,7 +9,7 @@
 			if (InvokeRequired)
 			{
 				// Update progress bar using Invoke if not on the UI thread
-				Invoke(new Action<int>(SetProgress), value);
+				_ = Invoke(new Action<int>(SetProgress), value);
 			}
 			else
 			{

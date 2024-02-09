@@ -25,29 +25,29 @@ namespace OpenLocoObjectEditor.Tests
 			var fileSize = new FileInfo(filename).Length;
 			var logger = new Logger();
 			var loaded = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: logger);
-
-			Assert.That(loaded.DatFileInfo.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
-
-			return (loaded.LocoObject, (T)loaded.LocoObject.Object);
+			Assert.Multiple(() =>
+			{
+				Assert.That(loaded.LocoObject, Is.Not.Null);
+				Assert.That(loaded.DatFileInfo.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
+			});
+			return (loaded.LocoObject!, (T)loaded.LocoObject!.Object);
 		}
 
 		static (ILocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
 		{
-			//filename = Path.Combine(BaseObjDataPath, filename);
-			//var fileSize = new FileInfo(filename).Length;
 			var logger = new Logger();
 			var loaded = SawyerStreamReader.LoadFullObjectFromStream(data, logger: logger);
 
+			Assert.That(loaded.LocoObject, Is.Not.Null);
 			Assert.That(loaded.DatFileInfo.ObjectHeader.DataLength, Is.EqualTo(data.Length - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 
-			return (loaded.LocoObject, (T)loaded.LocoObject.Object);
+			return (loaded.LocoObject!, (T)loaded.LocoObject!.Object);
 		}
 
 		[TestCase("AIRPORT1.DAT")]
 		public void LoadAirportObject(string objectName)
 		{
-			var (obj, struc) = LoadObject<AirportObject>(objectName);
-			var assert = (ILocoObject obj, AirportObject struc) => Assert.Multiple(() =>
+			void assert(ILocoObject obj, AirportObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(256), nameof(struc.BuildCostFactor));
@@ -82,9 +82,12 @@ namespace OpenLocoObjectEditor.Tests
 				Assert.That(struc.pad_B6[2], Is.EqualTo(0), nameof(struc.pad_B6) + "[2]");
 				Assert.That(struc.pad_B6[3], Is.EqualTo(0), nameof(struc.pad_B6) + "[3]");
 			});
-			assert(obj, struc);
 
-			var bytes = SawyerStreamWriter.WriteLocoObject(objectName, obj);
+			var (obj1, struc1) = LoadObject<AirportObject>(objectName);
+			assert(obj1, struc1);
+
+			var bytes = SawyerStreamWriter.WriteLocoObject(objectName, obj1);
+
 			var (obj2, struc2) = LoadObject<AirportObject>(bytes);
 			assert(obj2, struc2);
 		}
@@ -92,9 +95,7 @@ namespace OpenLocoObjectEditor.Tests
 		[TestCase("BRDGBRCK.DAT")]
 		public void LoadBridgeObject(string objectName)
 		{
-			var (obj, struc) = LoadObject<BridgeObject>(objectName);
-
-			Assert.Multiple(() =>
+			void assert(ILocoObject obj, BridgeObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.NoRoof, Is.EqualTo(0), nameof(struc.NoRoof));
 
@@ -118,6 +119,14 @@ namespace OpenLocoObjectEditor.Tests
 				//CollectionAssert.AreEqual(struc.RoadMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.RoadMods));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
 			});
+
+			var (obj1, struc1) = LoadObject<BridgeObject>(objectName);
+			assert(obj1, struc1);
+
+			var bytes = SawyerStreamWriter.WriteLocoObject(objectName, obj1);
+
+			var (obj2, struc2) = LoadObject<BridgeObject>(bytes);
+			assert(obj2, struc2);
 		}
 
 		[TestCase("HQ1.DAT")]
@@ -192,8 +201,12 @@ namespace OpenLocoObjectEditor.Tests
 			Assert.That(strTable.Table.ContainsKey("Name"), Is.True);
 
 			var entry = strTable.Table["Name"];
-			Assert.That(entry[LanguageId.english_uk], Is.EqualTo("Brown Rock"));
-			Assert.That(entry[LanguageId.english_us], Is.EqualTo("Brown Rock"));
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(entry[LanguageId.english_uk], Is.EqualTo("Brown Rock"));
+				Assert.That(entry[LanguageId.english_us], Is.EqualTo("Brown Rock"));
+			});
 		}
 
 		[TestCase("CLIM1.DAT")]
@@ -504,7 +517,7 @@ namespace OpenLocoObjectEditor.Tests
 		[TestCase("STEX000.DAT")]
 		public void LoadScenarioTextObject(string objectName)
 		{
-			var (obj, struc) = LoadObject<ScenarioTextObject>(objectName);
+			var (_, struc) = LoadObject<ScenarioTextObject>(objectName);
 			Assert.That(struc.pad_04, Is.EqualTo(0), nameof(struc.pad_04));
 		}
 
@@ -518,8 +531,8 @@ namespace OpenLocoObjectEditor.Tests
 				Assert.That(struc.Name, Is.EqualTo(0));
 				Assert.That(struc.Image, Is.EqualTo(0));
 
-				Assert.That(obj.StringTable.Table.Count, Is.EqualTo(1), nameof(obj.StringTable.Table));
-				Assert.That(obj.G1Elements.Count, Is.EqualTo(139), nameof(obj.G1Elements));
+				Assert.That(obj.StringTable.Table, Has.Count.EqualTo(1), nameof(obj.StringTable.Table));
+				Assert.That(obj.G1Elements, Has.Count.EqualTo(139), nameof(obj.G1Elements));
 			});
 		}
 
@@ -535,7 +548,7 @@ namespace OpenLocoObjectEditor.Tests
 				Assert.That(struc.var_06, Is.EqualTo(1), nameof(struc.var_06));
 				Assert.That(struc.Volume, Is.EqualTo(0), nameof(struc.Volume));
 
-				Assert.That(struc.PcmData.Length, Is.EqualTo(119666), nameof(struc.PcmData.Length));
+				Assert.That(struc.PcmData, Has.Length.EqualTo(119666), nameof(struc.PcmData.Length));
 			});
 
 			Assert.Multiple(() =>

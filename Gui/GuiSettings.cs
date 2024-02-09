@@ -1,4 +1,4 @@
-﻿namespace OpenLocoObjectEditorGui
+namespace OpenLocoObjectEditorGui
 {
 	public class GuiSettings
 	{
@@ -8,13 +8,12 @@
 			set
 			{
 				objectDirectory = value;
-				ObjDataDirectories ??= [];
-				ObjDataDirectories.Add(objectDirectory);
+				_ = ObjDataDirectories.Add(objectDirectory);
 			}
 		}
-		string objectDirectory;
+		string objectDirectory = string.Empty;
 
-		public HashSet<string> ObjDataDirectories { get; set; }
+		public HashSet<string> ObjDataDirectories { get; } = [];
 
 		public string DataDirectory
 		{
@@ -22,13 +21,12 @@
 			set
 			{
 				dataDirectory = value;
-				DataDirectories ??= [];
-				DataDirectories.Add(dataDirectory);
+				_ = DataDirectories.Add(dataDirectory);
 			}
 		}
-		string dataDirectory;
+		string dataDirectory = string.Empty;
 
-		public HashSet<string> DataDirectories { get; set; }
+		public HashSet<string> DataDirectories { get; } = [];
 
 		public string PaletteFile { get; set; } = "palette.png";
 

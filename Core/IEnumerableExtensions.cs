@@ -2,7 +2,7 @@
 {
 	public static class IEnumerableExtensions
 	{
-		public static IEnumerable<T> Fill<T>(this IEnumerable<T> source, int minLength, T fillValue = default)
+		public static IEnumerable<T?> Fill<T>(this IEnumerable<T?> source, int minLength, T? fillValue = default)
 		{
 			var i = 0;
 			foreach (var item in source)

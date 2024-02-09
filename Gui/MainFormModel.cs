@@ -1,4 +1,4 @@
-﻿global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLocoObjectEditorGui.IndexObjectHeader>;
+global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLocoObjectEditorGui.IndexObjectHeader>;
 global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLocoObjectEditorGui.UiLocoObject>;
 
 using System.Collections.Concurrent;
@@ -9,6 +9,7 @@ using OpenLocoObjectEditor.Objects;
 using OpenLocoObjectEditor.Logging;
 using System.Diagnostics;
 using OpenLocoObjectEditor.Data;
+using Zenith.Core;
 
 namespace OpenLocoObjectEditorGui
 {
@@ -123,7 +124,10 @@ namespace OpenLocoObjectEditorGui
 			}
 
 			var text = File.ReadAllText(settingsFile);
-			Settings = JsonSerializer.Deserialize<GuiSettings>(text);
+			var settings = JsonSerializer.Deserialize<GuiSettings>(text);
+			Verify.NotNull(settings);
+
+			Settings = settings!;
 
 			if (!ValidateSettings(Settings, logger))
 			{
@@ -135,8 +139,6 @@ namespace OpenLocoObjectEditorGui
 				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
 				LoadObjDirectory(Settings.ObjDataDirectory, new Progress<float>(), true);
 			}
-
-			//LoadPalette();
 		}
 
 		static bool ValidateSettings(GuiSettings settings, ILogger logger)
@@ -183,13 +185,20 @@ namespace OpenLocoObjectEditorGui
 			var sw = new Stopwatch();
 			sw.Start();
 
-			Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (file) =>
+			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (file) =>
 			//foreach (var file in allFiles)
 			{
 				try
 				{
 					var startTime = sw.Elapsed;
 					var (fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(file);
+
+					if (locoObject == null)
+					{
+						logger.Error($"Unable to load {file}. FileInfo={fileInfo}");
+						return;
+					}
+
 					if (!ccObjectCache.TryAdd(file, new UiLocoObject { DatFileInfo = fileInfo, LocoObject = locoObject }))
 					{
 						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
@@ -209,7 +218,7 @@ namespace OpenLocoObjectEditorGui
 					else
 					{
 						var elapsed = sw.Elapsed - startTime;
-						timePerFile.TryAdd(fileInfo.S5Header.Name, elapsed);
+						_ = timePerFile.TryAdd(fileInfo.S5Header.Name, elapsed);
 					}
 				}
 				catch (Exception ex)
@@ -218,11 +227,11 @@ namespace OpenLocoObjectEditorGui
 
 					var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
 					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, obj.Checksum, null);
-					ccHeaderIndex.TryAdd(file, indexObjectHeader);
+					_ = ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}
 				finally
 				{
-					Interlocked.Increment(ref count);
+					_ = Interlocked.Increment(ref count);
 					progress?.Report(count / (float)allFiles.Length);
 				}
 				//}
@@ -236,9 +245,9 @@ namespace OpenLocoObjectEditorGui
 
 			logger.Debug($"Time time={sw.Elapsed}");
 
-			if (timePerFile.Count == 0)
+			if (timePerFile.IsEmpty)
 			{
-				timePerFile.TryAdd("<no items>", TimeSpan.Zero);
+				_ = timePerFile.TryAdd("<no items>", TimeSpan.Zero);
 			}
 
 			var slowest = timePerFile.MaxBy(x => x.Value.Ticks);
@@ -251,8 +260,16 @@ namespace OpenLocoObjectEditorGui
 			logger.Debug($"Median time={median.Value}ms");
 		}
 
-		public static void SaveFile(string path, UiLocoObject obj)
-			=> SawyerStreamWriter.Save(path, obj.DatFileInfo.S5Header.Name, obj.LocoObject);
+		public void SaveFile(string path, UiLocoObject obj)
+		{
+			if (obj.LocoObject == null)
+			{
+				logger.Error($"Cannot save an object with a null loco object - the file would be empty!");
+				return;
+			}
+
+			SawyerStreamWriter.Save(path, obj.DatFileInfo.S5Header.Name, obj.LocoObject);
+		}
 
 		public bool LoadDataDirectory(string directory)
 		{
@@ -276,7 +293,7 @@ namespace OpenLocoObjectEditorGui
 					if (matching.Any())
 					{
 						dict.Add(music, File.ReadAllBytes(Path.Combine(Settings.DataDirectory, music)));
-						allFilesInDir.RemoveWhere(f => f.EndsWith(music));
+						_ = allFilesInDir.RemoveWhere(f => f.EndsWith(music));
 					}
 				}
 			}
@@ -375,7 +392,7 @@ namespace OpenLocoObjectEditorGui
 			{
 				var obj = SawyerStreamReader.LoadFullObjectFromFile(filename);
 				var uiObj = new UiLocoObject { DatFileInfo = obj.DatFileInfo, LocoObject = obj.LocoObject };
-				ObjectCache.TryAdd(filename, uiObj);
+				_ = ObjectCache.TryAdd(filename, uiObj);
 				return uiObj;
 			}
 		}

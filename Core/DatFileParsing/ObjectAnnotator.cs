@@ -1,9 +1,10 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using OpenLocoObjectEditor.Data;
 using OpenLocoObjectEditor.Headers;
+using Zenith.Core;
 
 namespace OpenLocoObjectEditor.DatFileParsing
 {
@@ -40,11 +41,7 @@ namespace OpenLocoObjectEditor.DatFileParsing
 			];
 
 			var locoStruct = SawyerStreamReader.GetLocoStruct(s5Header.ObjectType, fullData.AsSpan()[runningCount..]);
-			if (locoStruct == null)
-			{
-				Debugger.Break();
-				throw new NullReferenceException("loco object was null");
-			}
+			Verify.NotNull(locoStruct);
 
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
 			var locoStructSize = structSize!.Size;
@@ -211,10 +208,12 @@ namespace OpenLocoObjectEditor.DatFileParsing
 					{
 						propType = propType.GenericTypeArguments[0];
 					}
+
 					while (propType.IsArray)
 					{
 						propType = propType.GetElementType();
 					}
+
 					if (propType.IsEnum)
 					{
 						propType = propType.GetEnumUnderlyingType();
@@ -222,15 +221,9 @@ namespace OpenLocoObjectEditor.DatFileParsing
 
 					var locoSize = propType.GetCustomAttribute<LocoStructSizeAttribute>();
 
-					int length;
-					if (locoSize != null)
-					{
-						length = locoSize.Size;
-					}
-					else
-					{
-						length = Marshal.SizeOf(propType);
-					}
+					var length = locoSize != null
+						? locoSize.Size
+						: Marshal.SizeOf(propType);
 
 					var lengthAttr = p.GetCustomAttribute<LocoArrayLengthAttribute>();
 					if (lengthAttr != null)

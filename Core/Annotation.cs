@@ -2,9 +2,9 @@
 {
 	public class Annotation
 	{
-		private int start = 0;
-		private int end = 0;
-		private int length = 0;
+		private int start;
+		private int end;
+		private int length;
 
 		public Annotation(string name, Annotation? parent, int start, int length)
 		{

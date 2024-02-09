@@ -1,4 +1,4 @@
-﻿using OpenLocoObjectEditor.Types;
+using OpenLocoObjectEditor.Types;
 
 namespace OpenLocoObjectEditorGui
 {
@@ -40,7 +40,7 @@ namespace OpenLocoObjectEditorGui
 			flpImageTable = new FlowLayoutPanel();
 			scObjectAndLogs = new SplitContainer();
 			tcObjectOverview = new TabControl();
-			tpObjectView = new TabPage();
+			tpObjectEditor = new TabPage();
 			tcSubObjectView = new TabControl();
 			tpObjectObject = new TabPage();
 			pgObject = new PropertyGrid();
@@ -84,7 +84,7 @@ namespace OpenLocoObjectEditorGui
 			scHeaders = new SplitContainer();
 			pgS5Header = new PropertyGrid();
 			pgObjHeader = new PropertyGrid();
-			tpObjectDump = new TabPage();
+			tpObjectAnnotator = new TabPage();
 			scAnnnotationDump = new SplitContainer();
 			tvDATDumpAnnotations = new TreeView();
 			rtbDATDumpView = new RichTextBox();
@@ -106,8 +106,8 @@ namespace OpenLocoObjectEditorGui
 			dataDirectoriesToolStripMenuItem = new ToolStripMenuItem();
 			setDataDirectoryToolStripMenuItem = new ToolStripMenuItem();
 			toolStripSeparator2 = new ToolStripSeparator();
-			setPaletteToolStripMenuItem = new ToolStripMenuItem();
 			recreateIndexToolStripMenuItem = new ToolStripMenuItem();
+			setPaletteToolStripMenuItem = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
 			goToHeaderInDumpToolStripMenuItem = new ToolStripMenuItem();
@@ -119,7 +119,7 @@ namespace OpenLocoObjectEditorGui
 			scObjectAndLogs.Panel2.SuspendLayout();
 			scObjectAndLogs.SuspendLayout();
 			tcObjectOverview.SuspendLayout();
-			tpObjectView.SuspendLayout();
+			tpObjectEditor.SuspendLayout();
 			tcSubObjectView.SuspendLayout();
 			tpObjectObject.SuspendLayout();
 			tpObjectStringTable.SuspendLayout();
@@ -141,7 +141,7 @@ namespace OpenLocoObjectEditorGui
 			scHeaders.Panel1.SuspendLayout();
 			scHeaders.Panel2.SuspendLayout();
 			scHeaders.SuspendLayout();
-			tpObjectDump.SuspendLayout();
+			tpObjectAnnotator.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)scAnnnotationDump).BeginInit();
 			scAnnnotationDump.Panel1.SuspendLayout();
 			scAnnnotationDump.Panel2.SuspendLayout();
@@ -229,8 +229,8 @@ namespace OpenLocoObjectEditorGui
 			// 
 			// tcObjectOverview
 			// 
-			tcObjectOverview.Controls.Add(tpObjectView);
-			tcObjectOverview.Controls.Add(tpObjectDump);
+			tcObjectOverview.Controls.Add(tpObjectEditor);
+			tcObjectOverview.Controls.Add(tpObjectAnnotator);
 			tcObjectOverview.Dock = DockStyle.Fill;
 			tcObjectOverview.Location = new Point(0, 25);
 			tcObjectOverview.Name = "tcObjectOverview";
@@ -238,26 +238,24 @@ namespace OpenLocoObjectEditorGui
 			tcObjectOverview.Size = new Size(1415, 794);
 			tcObjectOverview.TabIndex = 34;
 			// 
-			// tpObjectView
+			// tpObjectEditor
 			// 
-			tpObjectView.Controls.Add(tcSubObjectView);
-			tpObjectView.Controls.Add(scHeaders);
-			tpObjectView.Location = new Point(4, 24);
-			tpObjectView.Name = "tpObjectView";
-			tpObjectView.Padding = new Padding(3);
-			tpObjectView.Size = new Size(1407, 766);
-			tpObjectView.TabIndex = 0;
-			tpObjectView.Text = "Object View";
-			tpObjectView.UseVisualStyleBackColor = true;
+			tpObjectEditor.Controls.Add(tcSubObjectView);
+			tpObjectEditor.Controls.Add(scHeaders);
+			tpObjectEditor.Location = new Point(4, 24);
+			tpObjectEditor.Name = "tpObjectEditor";
+			tpObjectEditor.Padding = new Padding(3);
+			tpObjectEditor.Size = new Size(1407, 766);
+			tpObjectEditor.TabIndex = 0;
+			tpObjectEditor.Text = "Editor";
+			tpObjectEditor.UseVisualStyleBackColor = true;
 			// 
 			// tcSubObjectView
 			// 
 			tcSubObjectView.Controls.Add(tpObjectObject);
 			tcSubObjectView.Controls.Add(tpObjectStringTable);
 			tcSubObjectView.Controls.Add(tpObjectGraphicsTable);
-#if DEBUG
-			tcSubObjectView.Controls.Add(tpObjectPreview); // whilst its WIP, let's leave this out
-#endif
+			tcSubObjectView.Controls.Add(tpObjectPreview);
 			tcSubObjectView.Dock = DockStyle.Fill;
 			tcSubObjectView.Location = new Point(3, 123);
 			tcSubObjectView.Margin = new Padding(2, 1, 2, 1);
@@ -708,16 +706,16 @@ namespace OpenLocoObjectEditorGui
 			pgObjHeader.TabIndex = 23;
 			pgObjHeader.ToolbarVisible = false;
 			// 
-			// tpObjectDump
+			// tpObjectAnnotator
 			// 
-			tpObjectDump.Controls.Add(scAnnnotationDump);
-			tpObjectDump.Location = new Point(4, 24);
-			tpObjectDump.Name = "tpObjectDump";
-			tpObjectDump.Padding = new Padding(3);
-			tpObjectDump.Size = new Size(1407, 766);
-			tpObjectDump.TabIndex = 1;
-			tpObjectDump.Text = "Object Dump";
-			tpObjectDump.UseVisualStyleBackColor = true;
+			tpObjectAnnotator.Controls.Add(scAnnnotationDump);
+			tpObjectAnnotator.Location = new Point(4, 24);
+			tpObjectAnnotator.Name = "tpObjectAnnotator";
+			tpObjectAnnotator.Padding = new Padding(3);
+			tpObjectAnnotator.Size = new Size(1407, 766);
+			tpObjectAnnotator.TabIndex = 1;
+			tpObjectAnnotator.Text = "Hex Dump Annotator";
+			tpObjectAnnotator.UseVisualStyleBackColor = true;
 			// 
 			// scAnnnotationDump
 			// 
@@ -885,7 +883,7 @@ namespace OpenLocoObjectEditorGui
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, /*setPaletteToolStripMenuItem, */ recreateIndexToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, recreateIndexToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
@@ -894,7 +892,7 @@ namespace OpenLocoObjectEditorGui
 			// 
 			objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, toolStripSeparator1 });
 			objectDirectoriesToolStripMenuItem.Name = "objectDirectoriesToolStripMenuItem";
-			objectDirectoriesToolStripMenuItem.Size = new Size(180, 22);
+			objectDirectoriesToolStripMenuItem.Size = new Size(176, 22);
 			objectDirectoriesToolStripMenuItem.Text = "ObjData Directories";
 			// 
 			// setObjectDirectoryToolStripMenuItem
@@ -913,7 +911,7 @@ namespace OpenLocoObjectEditorGui
 			// 
 			dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setDataDirectoryToolStripMenuItem, toolStripSeparator2 });
 			dataDirectoriesToolStripMenuItem.Name = "dataDirectoriesToolStripMenuItem";
-			dataDirectoriesToolStripMenuItem.Size = new Size(180, 22);
+			dataDirectoriesToolStripMenuItem.Size = new Size(176, 22);
 			dataDirectoriesToolStripMenuItem.Text = "Data Directories";
 			// 
 			// setDataDirectoryToolStripMenuItem
@@ -928,19 +926,18 @@ namespace OpenLocoObjectEditorGui
 			toolStripSeparator2.Name = "toolStripSeparator2";
 			toolStripSeparator2.Size = new Size(120, 6);
 			// 
+			// recreateIndexToolStripMenuItem
+			// 
+			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
+			recreateIndexToolStripMenuItem.Size = new Size(176, 22);
+			recreateIndexToolStripMenuItem.Text = "Recreate Index";
+			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
+			// 
 			// setPaletteToolStripMenuItem
 			// 
 			setPaletteToolStripMenuItem.Name = "setPaletteToolStripMenuItem";
 			setPaletteToolStripMenuItem.Size = new Size(180, 22);
 			setPaletteToolStripMenuItem.Text = "Load Palette Bitmap";
-			//setPaletteToolStripMenuItem.Click += setPaletteToolStripMenuItem_Click;
-			// 
-			// recreateIndexToolStripMenuItem
-			// 
-			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
-			recreateIndexToolStripMenuItem.Size = new Size(180, 22);
-			recreateIndexToolStripMenuItem.Text = "Recreate Index";
-			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
 			// 
 			// imgContextMenu
 			// 
@@ -1000,7 +997,7 @@ namespace OpenLocoObjectEditorGui
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).EndInit();
 			scObjectAndLogs.ResumeLayout(false);
 			tcObjectOverview.ResumeLayout(false);
-			tpObjectView.ResumeLayout(false);
+			tpObjectEditor.ResumeLayout(false);
 			tcSubObjectView.ResumeLayout(false);
 			tpObjectObject.ResumeLayout(false);
 			tpObjectStringTable.ResumeLayout(false);
@@ -1029,7 +1026,7 @@ namespace OpenLocoObjectEditorGui
 			scHeaders.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scHeaders).EndInit();
 			scHeaders.ResumeLayout(false);
-			tpObjectDump.ResumeLayout(false);
+			tpObjectAnnotator.ResumeLayout(false);
 			scAnnnotationDump.Panel1.ResumeLayout(false);
 			scAnnnotationDump.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scAnnnotationDump).EndInit();
@@ -1076,8 +1073,8 @@ namespace OpenLocoObjectEditorGui
 		private CheckBox cbVanillaObjects;
 		private TextBox tbCurrentPage;
 		private TabControl tcObjectOverview;
-		private TabPage tpObjectView;
-		private TabPage tpObjectDump;
+		private TabPage tpObjectEditor;
+		private TabPage tpObjectAnnotator;
 		private TabControl tcFileSelector;
 		private TabPage tpCategory;
 		private TreeView tvObjType;
@@ -1127,12 +1124,10 @@ namespace OpenLocoObjectEditorGui
 		private GroupBox gbTilt;
 		private GroupBox gbRotation;
 		private GroupBox gbBogieSprites;
-		private TrackBar trackBar2;
 		private Button btnBogieSpritePrevious;
 		private Button btnBogieSpriteNext;
 		private TextBox tbCurrentBogieSprite;
 		private GroupBox gbBodySprites;
-		private TrackBar trackBar1;
 		private Button btnBodySpritePrevious;
 		private Button btnBodySpriteNext;
 		private TextBox tbCurrentBodySprite;

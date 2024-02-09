@@ -1,4 +1,6 @@
-﻿namespace OpenLocoObjectEditor.DatFileParsing
+﻿using Zenith.Core;
+
+namespace OpenLocoObjectEditor.DatFileParsing
 {
 	public static class ByteHelpers
 	{
@@ -23,10 +25,7 @@
 				size = sizeAttr.Size;
 			}
 
-			if (size == 0)
-			{
-				throw new ArgumentException("unknown primitive type with no size");
-			}
+			Verify.Positive(size, message: $"type {type.Name} has no size data associated with it");
 
 			return size;
 		}

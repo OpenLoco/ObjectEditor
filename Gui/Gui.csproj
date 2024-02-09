@@ -44,4 +44,8 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <EditorConfigFiles Remove="C:\Users\bigba\source\repos\OpenLocoObjectEditor\Gui\.editorconfig" />
+	</ItemGroup>
+
 </Project>

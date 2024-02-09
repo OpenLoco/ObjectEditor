@@ -15,7 +15,7 @@ namespace OpenLocoObjectEditor.Logging
 		{
 			if (obj == null)
 			{
-				sb.Append("<null>");
+				_ = sb.Append("<null>");
 				return sb;
 			}
 
@@ -30,7 +30,7 @@ namespace OpenLocoObjectEditor.Logging
 			// For primitive types, use their ToString representation directly
 			if (type.IsPrimitive || obj is string)
 			{
-				sb.Append(obj.ToString());
+				_ = sb.Append(obj.ToString());
 				return sb;
 			}
 
@@ -38,11 +38,11 @@ namespace OpenLocoObjectEditor.Logging
 			var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 			var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
 
-			sb.Append(type.Name);
+			_ = sb.Append(type.Name);
 
 			if (properties.Length > 0 || fields.Length > 0)
 			{
-				sb.Append(" { ");
+				_ = sb.Append(" { ");
 
 				for (var i = 0; i < fields.Length; i++)
 				{
@@ -50,13 +50,13 @@ namespace OpenLocoObjectEditor.Logging
 					var fieldName = field.Name;
 					var fieldValue = field.GetValue(obj);
 
-					sb.Append(fieldName);
-					sb.Append('=');
-					sb.Append(ToString(fieldValue));
+					_ = sb.Append(fieldName);
+					_ = sb.Append('=');
+					_ = sb.Append(ToString(fieldValue));
 
 					if (i < fields.Length - 1)
 					{
-						sb.Append(", ");
+						_ = sb.Append(", ");
 					}
 				}
 
@@ -66,17 +66,17 @@ namespace OpenLocoObjectEditor.Logging
 					var propertyName = property.Name;
 					var propertyValue = property.GetValue(obj);
 
-					sb.Append(propertyName);
-					sb.Append('=');
-					sb.Append(ToString(propertyValue));
+					_ = sb.Append(propertyName);
+					_ = sb.Append('=');
+					_ = sb.Append(ToString(propertyValue));
 
 					if (i < properties.Length - 1)
 					{
-						sb.Append(", ");
+						_ = sb.Append(", ");
 					}
 				}
 
-				sb.Append(" } ");
+				_ = sb.Append(" } ");
 			}
 
 			return sb;

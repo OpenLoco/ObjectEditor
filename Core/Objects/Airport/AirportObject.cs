@@ -71,7 +71,11 @@ namespace Core.Objects
 			for (var i = 0; i < NumBuildingVariations; ++i)
 			{
 				var ptr_1C = 0;
-				while (remainingData[++ptr_1C] != 0xFF) ;
+				while (remainingData[++ptr_1C] != 0xFF)
+				{
+					;
+				}
+
 				BuildingVariationParts.Add(remainingData[..ptr_1C].ToArray());
 				ptr_1C++;
 				remainingData = remainingData[ptr_1C..];

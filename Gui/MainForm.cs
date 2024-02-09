@@ -11,6 +11,7 @@ using System.Drawing.Imaging;
 using System.Reflection;
 using OpenLocoObjectEditor.Data;
 using Core.Objects.Sound;
+using Zenith.Core;
 
 namespace OpenLocoObjectEditorGui
 {
@@ -19,7 +20,6 @@ namespace OpenLocoObjectEditorGui
 		readonly MainFormModel model;
 		readonly ILogger logger;
 
-		// could use pgObject.SelectedObjectsChanged event, but we'll just do this for now
 		public IUiObject? CurrentUIObject
 		{
 			get => currentUIObject;
@@ -89,15 +89,15 @@ namespace OpenLocoObjectEditorGui
 
 			var assembly = Assembly.GetExecutingAssembly();
 			var resourceName = "Gui.palette.png";
-			using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+			using (var stream = assembly.GetManifestResourceStream(resourceName))
 			{
-				var paletteBitmap = (Bitmap)Image.FromStream(stream);
+				var paletteBitmap = (Bitmap)Image.FromStream(stream!);
 				var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
 				model = new MainFormModel(logger, SettingsFile, palette);
 			}
 		}
 
-		private void MainForm_Load(object sender, EventArgs e)
+		void MainForm_Load(object sender, EventArgs e)
 		{
 			// pre-add any existing log lines
 			lbLogs.Items.AddRange(((Logger)logger).Logs.ToArray());
@@ -130,7 +130,7 @@ namespace OpenLocoObjectEditorGui
 			// required to load the object type images from g1.dat
 			if (Directory.Exists(model.Settings.DataDirectory))
 			{
-				model.LoadDataDirectory(model.Settings.DataDirectory);
+				_ = model.LoadDataDirectory(model.Settings.DataDirectory);
 			}
 
 			InitFileTreeView(vanillaOnly, filter);
@@ -158,7 +158,7 @@ namespace OpenLocoObjectEditorGui
 					progressForm.CloseForm();
 				});
 				thread.Start();
-				progressForm.ShowDialog();
+				_ = progressForm.ShowDialog();
 			}
 
 			return true;
@@ -177,7 +177,7 @@ namespace OpenLocoObjectEditorGui
 			return bitmap;
 		}
 
-		static ImageList MakeImageList(MainFormModel model, ILogger logger = null)
+		static ImageList MakeImageList(MainFormModel model, ILogger? logger = null)
 		{
 			var imageList = new ImageList();
 			var blankImage = MakeOriginalLocoIcon(false);
@@ -210,7 +210,7 @@ namespace OpenLocoObjectEditorGui
 		}
 
 		static bool IsOriginalFile(string name, uint checksum)
-			=> OriginalObjectFiles.Names.TryGetValue(name.Trim(), out uint expectedChecksum) && expectedChecksum == checksum;
+			=> OriginalObjectFiles.Names.TryGetValue(name.Trim(), out var expectedChecksum) && expectedChecksum == checksum;
 
 		void InitFileTreeView(bool vanillaOnly, string fileFilter)
 		{
@@ -253,7 +253,7 @@ namespace OpenLocoObjectEditorGui
 			tvObjType.ResumeLayout(true);
 		}
 
-		private void InitDataCategoryTree()
+		void InitDataCategoryTree()
 		{
 			var dataNode = new TreeNode("Data");
 
@@ -269,34 +269,34 @@ namespace OpenLocoObjectEditorGui
 			foreach (var music in model.Music)
 			{
 				var displayName = $"{OriginalDataFiles.Music[music.Key]} ({music.Key})";
-				musicNode.Nodes.Add(music.Key, displayName, 1, 1);
+				_ = musicNode.Nodes.Add(music.Key, displayName, 1, 1);
 			}
 
 			//misc tracks
 			foreach (var miscTrack in model.MiscellaneousTracks)
 			{
 				var displayName = $"{OriginalDataFiles.MiscellaneousTracks[miscTrack.Key]} ({miscTrack.Key})";
-				miscTrackNode.Nodes.Add(miscTrack.Key, displayName, 1, 1);
+				_ = miscTrackNode.Nodes.Add(miscTrack.Key, displayName, 1, 1);
 			}
 
 			// sound effects
 			//foreach (var sfx in model.SoundEffects)
 			{
 				var displayName = OriginalDataFiles.SoundEffect;
-				sfxNode.Nodes.Add(displayName, displayName, 1, 1);
+				_ = sfxNode.Nodes.Add(displayName, displayName, 1, 1);
 			}
 
 			// tutorials
 			foreach (var tut in model.Tutorials)
 			{
-				tutorialsNode.Nodes.Add(tut.Key, tut.Key, 1, 1);
+				_ = tutorialsNode.Nodes.Add(tut.Key, tut.Key, 1, 1);
 				tvUniqueLoadValues[tut.Key] = LoadNull;
 			}
 
 			// uncategorised
 			foreach (var misc in model.MiscFiles)
 			{
-				miscNode.Nodes.Add(misc, misc, 1, 1);
+				_ = miscNode.Nodes.Add(misc, misc, 1, 1);
 
 				if (misc == "g1.dat")
 				{
@@ -308,16 +308,16 @@ namespace OpenLocoObjectEditorGui
 				}
 			}
 
-			dataNode.Nodes.Add(musicNode);
-			dataNode.Nodes.Add(miscTrackNode);
-			dataNode.Nodes.Add(sfxNode);
-			dataNode.Nodes.Add(tutorialsNode);
-			dataNode.Nodes.Add(miscNode);
+			_ = dataNode.Nodes.Add(musicNode);
+			_ = dataNode.Nodes.Add(miscTrackNode);
+			_ = dataNode.Nodes.Add(sfxNode);
+			_ = dataNode.Nodes.Add(tutorialsNode);
+			_ = dataNode.Nodes.Add(miscNode);
 
-			tvObjType.Nodes.Add(dataNode);
+			_ = tvObjType.Nodes.Add(dataNode);
 		}
 
-		private void InitObjectCategoryTree(bool vanillaOnly, string fileFilter)
+		void InitObjectCategoryTree(bool vanillaOnly, string fileFilter)
 		{
 			var filteredFiles = string.IsNullOrEmpty(fileFilter)
 				? model.HeaderIndex
@@ -350,7 +350,7 @@ namespace OpenLocoObjectEditorGui
 							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, veh.Value.Checksum, vehicleTypeNode);
 						}
 
-						objTypeNode.Nodes.Add(vehicleTypeNode);
+						_ = objTypeNode.Nodes.Add(vehicleTypeNode);
 					}
 				}
 
@@ -359,7 +359,7 @@ namespace OpenLocoObjectEditorGui
 
 			var objDataNode = new TreeNode("ObjData");
 			objDataNode.Nodes.AddRange([.. nodesToAdd]);
-			tvObjType.Nodes.Add(objDataNode);
+			_ = tvObjType.Nodes.Add(objDataNode);
 			tvObjType.Sort();
 		}
 
@@ -406,7 +406,7 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		private void setObjectDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+		void setObjectDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
@@ -414,7 +414,7 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		private void setObjectDirectoryToolStripMenuItem_ClickCore(string path)
+		void setObjectDirectoryToolStripMenuItem_ClickCore(string path)
 		{
 			if (LoadObjDataDirectory(path, true))
 			{
@@ -422,7 +422,7 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		private void setDataDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+		void setDataDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
@@ -430,7 +430,7 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		private void setDataDirectoryToolStripMenuItem_ClickCore(string path)
+		void setDataDirectoryToolStripMenuItem_ClickCore(string path)
 		{
 			if (model.LoadDataDirectory(path))
 			{
@@ -440,7 +440,7 @@ namespace OpenLocoObjectEditorGui
 
 		IEnumerable<Control> GetPictureBoxesForPage(int page) => CurrentUIImages.Skip(page * imagesPerPage).Take(imagesPerPage);
 
-		private void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
+		void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (LoadObjDataDirectory(model.Settings.ObjDataDirectory, false))
 			{
@@ -453,6 +453,19 @@ namespace OpenLocoObjectEditorGui
 
 		void LoadDataDump(string path, bool isG1 = false)
 		{
+			try
+			{
+				LoadDataDumpCore(path, isG1);
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex);
+			}
+		}
+
+		void LoadDataDumpCore(string path, bool isG1 = false)
+		{
+
 			if (File.Exists(path))
 			{
 				var byteList = File.ReadAllBytes(path);
@@ -492,12 +505,12 @@ namespace OpenLocoObjectEditorGui
 					DATDumpAnnotationIdentifiers[annotationText] = (annotation.Start, annotation.End);
 					if (annotation.Parent == null)
 					{
-						tvDATDumpAnnotations.Nodes.Add(parents[constructAnnotationText(annotation)]);
+						_ = tvDATDumpAnnotations.Nodes.Add(parents[constructAnnotationText(annotation)]);
 					}
 					else if (parents.ContainsKey(constructAnnotationText(annotation.Parent)))
 					{
 						var parentText = constructAnnotationText(annotation.Parent);
-						parents[parentText].Nodes.Add(parents[annotationText]);
+						_ = parents[parentText].Nodes.Add(parents[annotationText]);
 
 						if (annotation.Parent.Name == "Headers")
 						{
@@ -516,9 +529,9 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		static bool MusicIsPlaying { get; set; } = false;
+		static bool MusicIsPlaying { get; set; }
 
-		private void LoadAndPlaySound(byte[] data, string soundName)
+		void LoadAndPlaySound(byte[] data, string soundName)
 		{
 			var (header, pcmData) = SawyerStreamReader.LoadWavFile(data);
 			var uiSoundObj = new UiSoundObject { Data = pcmData, Header = header, SoundName = soundName };
@@ -621,9 +634,7 @@ namespace OpenLocoObjectEditorGui
 		}
 
 		public void RefreshImageControls()
-		{
-			CurrentUIImages = CreateImageControls(currentUIObjectImages).ToList();
-		}
+			=> CurrentUIImages = CreateImageControls(currentUIObjectImages).ToList();
 
 		public void ExportImages()
 		{
@@ -653,7 +664,7 @@ namespace OpenLocoObjectEditorGui
 			{
 				if (uiLocoObj.LocoObject.Object is IImageTableStrings its)
 				{
-					if (!its.TryGetImageName(counter, out string? value) || value == null)
+					if (!its.TryGetImageName(counter, out var value) || value == null)
 					{
 						logger.Warning($"Object \"{uiLocoObj.DatFileInfo.S5Header.Name}\" does not have an image for id {counter}");
 						return $"{uiLocoObj.DatFileInfo.S5Header.Name}-{counter}";
@@ -676,7 +687,7 @@ namespace OpenLocoObjectEditorGui
 				sfDialog.RestoreDirectory = true;
 
 				// suggested filename for the save dialog
-				sfDialog.FileName = OriginalDataFiles.Music.TryGetValue(tvObjType.SelectedNode.Name, out string? value)
+				sfDialog.FileName = OriginalDataFiles.Music.TryGetValue(tvObjType.SelectedNode.Name, out var value)
 					? value
 					: "export.wav";
 
@@ -793,7 +804,7 @@ namespace OpenLocoObjectEditorGui
 							var percentPlayed = progressInBytes / (double)uiSoundObj.Data.Length;
 							var newX = (int)(percentPlayed * waveViewer.Width);
 							var diff = newX - prevX;
-							g.FillRectangle(transparentBrush, new Rectangle(prevX, 0, (int)diff, waveViewer.Height));
+							g.FillRectangle(transparentBrush, new Rectangle(prevX, 0, diff, waveViewer.Height));
 							prevX = newX;
 
 							Thread.Sleep(50);
@@ -893,13 +904,13 @@ namespace OpenLocoObjectEditorGui
 				var misc = model.MiscellaneousTracks[e.Node.Name];
 				LoadAndPlaySound(misc, e.Node.Text);
 			}
-			else if (OriginalDataFiles.SoundEffect.Equals(e.Node.Name, StringComparison.InvariantCultureIgnoreCase))
+			else if (OriginalDataFiles.SoundEffect.Equals(e.Node.Name, StringComparison.OrdinalIgnoreCase))
 			{
 				logger.Debug($"Loading sound effects for {e.Node.Name}");
 				var sfx = model.SoundEffects[e.Node.Name];
 				LoadSoundEffectFile(sfx);
 			}
-			else if (Path.GetExtension(e.Node.Name).Equals(".dat", StringComparison.CurrentCultureIgnoreCase))
+			else if (Path.GetExtension(e.Node.Name).Equals(".dat", StringComparison.OrdinalIgnoreCase))
 			{
 				logger.Debug($"Loading object {e.Node.Name}");
 				var filename = e.Node.Name;
@@ -984,7 +995,7 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		static IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, Color[] palette, bool useTransparency = false, ILogger logger = null)
+		static IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, Color[] palette, bool useTransparency = false, ILogger? logger = null)
 		{
 			if (palette is null)
 			{
@@ -1081,10 +1092,10 @@ namespace OpenLocoObjectEditorGui
 		//	}
 		//}
 
-		//private void setPaletteToolStripMenuItem_Click(object sender, EventArgs e)
+		//void setPaletteToolStripMenuItem_Click(object sender, EventArgs e)
 		//	=> SelectNewPalette();
 
-		private void RefreshObjectUI()
+		void RefreshObjectUI()
 		{
 			MusicIsPlaying = false;
 
@@ -1144,7 +1155,6 @@ namespace OpenLocoObjectEditorGui
 						flpImageTable.Controls.Add(pn);
 					}
 
-
 					pgObject.SelectedObject = uiLocoObj.LocoObject.Object;
 					ucStringTable.SetDataBinding(uiLocoObj.LocoObject.StringTable);
 				}
@@ -1170,7 +1180,7 @@ namespace OpenLocoObjectEditorGui
 			flpImageTable.ResumeLayout(true);
 		}
 
-		private void imgContextMenuSave_Click(object sender, EventArgs e)
+		void imgContextMenuSave_Click(object sender, EventArgs e)
 		{
 			if (imgContextMenu.SourceControl is PictureBox pb)
 			{
@@ -1190,10 +1200,10 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		private void btnPagePrevious_Click(object sender, EventArgs e)
+		void btnPagePrevious_Click(object sender, EventArgs e)
 			=> CurrentUIImagePageNumber = Math.Max(CurrentUIImagePageNumber - 1, 0);
 
-		private void btnPageNext_Click(object sender, EventArgs e)
+		void btnPageNext_Click(object sender, EventArgs e)
 		{
 			if (currentUIImages?.Count > 0)
 			{
@@ -1201,7 +1211,7 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		private void dataDumpAnnotations_AfterSelect(object sender, TreeViewEventArgs e)
+		void dataDumpAnnotations_AfterSelect(object sender, TreeViewEventArgs e)
 		{
 			int dumpPositionToRTBPosition(int position) => rtbDATDumpView.GetFirstCharIndexFromLine(
 				position / bytesPerDumpLine)
@@ -1220,7 +1230,7 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		private void headerToolStripMenuItem_Click(object sender, EventArgs e)
+		void headerToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (imgContextMenu.SourceControl is PictureBox pb)
 			{
@@ -1231,12 +1241,12 @@ namespace OpenLocoObjectEditorGui
 					tcObjectOverview.SelectedIndex = 1;
 					tvDATDumpAnnotations.SelectedNode = value;
 					dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(value));
-					tvDATDumpAnnotations.Focus();
+					_ = tvDATDumpAnnotations.Focus();
 				}
 			}
 		}
 
-		private void pictureDataToolStripMenuItem_Click(object sender, EventArgs e)
+		void pictureDataToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (imgContextMenu.SourceControl is PictureBox pb)
 			{
@@ -1247,20 +1257,22 @@ namespace OpenLocoObjectEditorGui
 					tcObjectOverview.SelectedIndex = 1;
 					tvDATDumpAnnotations.SelectedNode = value;
 					dataDumpAnnotations_AfterSelect(sender, new TreeViewEventArgs(value));
-					tvDATDumpAnnotations.Focus();
+					_ = tvDATDumpAnnotations.Focus();
 				}
 			}
 		}
 
-		private void cbVanillaObjects_CheckedChanged(object sender, EventArgs e)
+		void cbVanillaObjects_CheckedChanged(object sender, EventArgs e)
 			=> InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 
-		private void lbLogs_DrawItem(object sender, DrawItemEventArgs e)
+		void lbLogs_DrawItem(object sender, DrawItemEventArgs e)
 		{
 			e.DrawBackground();
 
 			if (e.Index < 0)
+			{
 				return;
+			}
 
 			var item = (LogLine)lbLogs.Items[e.Index];
 			var backgroundColour = item.Level switch
@@ -1287,12 +1299,15 @@ namespace OpenLocoObjectEditorGui
 				LogLevel.Error => Brushes.Red,
 				_ => throw new NotImplementedException(),
 			};
-			e.Graphics.DrawString(item.ToString(), e.Font, foregroundBrush, e.Bounds.Left, e.Bounds.Y);
+
+			Verify.NotNull(e.Font);
+
+			e.Graphics.DrawString(item.ToString(), e.Font!, foregroundBrush, e.Bounds.Left, e.Bounds.Y);
 
 			//e.DrawFocusRectangle();
 		}
 
-		private void btnSave_Click(object sender, EventArgs e)
+		void btnSave_Click(object sender, EventArgs e)
 		{
 			if (CurrentUIObject is null)
 			{
@@ -1313,7 +1328,7 @@ namespace OpenLocoObjectEditorGui
 
 					if (currentUIObject is UiLocoObject obj)
 					{
-						MainFormModel.SaveFile(filename, obj);
+						model.SaveFile(filename, obj);
 					}
 					else if (currentUIObject is UiSoundObjectList uiSoundObjList)
 					{
@@ -1343,19 +1358,13 @@ namespace OpenLocoObjectEditorGui
 			}
 		}
 
-		private void tsbImportFromDirectory_Click(object sender, EventArgs e)
-		{
-			ImportImages();
-		}
+		void tsbImportFromDirectory_Click(object sender, EventArgs e) => ImportImages();
 
-		private void tsbExportToDirectory_Click(object sender, EventArgs e)
-		{
-			ExportImages();
-		}
+		void tsbExportToDirectory_Click(object sender, EventArgs e) => ExportImages();
 
-		private void tstbImageScaling_TextChanged(object sender, EventArgs e)
+		void tstbImageScaling_TextChanged(object sender, EventArgs e)
 		{
-			var parsed = int.TryParse(tstbImageScaling.Text, out int scale);
+			var parsed = int.TryParse(tstbImageScaling.Text, out var scale);
 			if (parsed)
 			{
 				ImageScale = scale;
@@ -1407,13 +1416,15 @@ namespace OpenLocoObjectEditorGui
 			var veh = (CurrentUIObject as UiLocoObject)?.LocoObject.Object as VehicleObject;
 
 			if (veh == null)
+			{
 				return;
+			}
 
 			var currentBody = veh.BodySprites[CurrentBodySprite];
 
 			var tilt = (BodySpriteSlopeType)trbTilt.Value;
 
-			if (currentBody.NumImages == 0 || !currentBody.ImageIds.TryGetValue(tilt, out List<int>? value) || value == null)
+			if (currentBody.NumImages == 0 || !currentBody.ImageIds.TryGetValue(tilt, out var value) || value == null)
 			{
 				pbVehicleBodyPreview.Image = null;
 				return;
@@ -1461,10 +1472,14 @@ namespace OpenLocoObjectEditorGui
 			set
 			{
 				if (value < 0)
+				{
 					value = 0;
+				}
 
 				if (value > trbBodySprites.Maximum)
+				{
 					value = trbBodySprites.Maximum;
+				}
 
 				currentBodySprite = value;
 
@@ -1476,22 +1491,13 @@ namespace OpenLocoObjectEditorGui
 				SetBodyAndBogieImages();
 			}
 		}
-		public int currentBodySprite = 0;
+		public int currentBodySprite;
 
-		private void trbBodySprites_Scroll(object sender, EventArgs e)
-		{
-			CurrentBodySprite = trbBodySprites.Value;
-		}
+		void trbBodySprites_Scroll(object sender, EventArgs e) => CurrentBodySprite = trbBodySprites.Value;
 
-		private void btnBodySpriteNext_Click(object sender, EventArgs e)
-		{
-			CurrentBodySprite++;
-		}
+		void btnBodySpriteNext_Click(object sender, EventArgs e) => CurrentBodySprite++;
 
-		private void btnBodySpritePrevious_Click(object sender, EventArgs e)
-		{
-			CurrentBodySprite--;
-		}
+		void btnBodySpritePrevious_Click(object sender, EventArgs e) => CurrentBodySprite--;
 
 		#endregion
 
@@ -1503,10 +1509,14 @@ namespace OpenLocoObjectEditorGui
 			set
 			{
 				if (value < 0)
+				{
 					value = 0;
+				}
 
 				if (value > trbBogieSprites.Maximum)
+				{
 					value = trbBogieSprites.Maximum;
+				}
 
 				currentBogieSprite = value;
 
@@ -1515,22 +1525,13 @@ namespace OpenLocoObjectEditorGui
 				SetBodyAndBogieImages();
 			}
 		}
-		public int currentBogieSprite = 0;
+		public int currentBogieSprite;
 
-		private void trbBogieSprites_Scroll(object sender, EventArgs e)
-		{
-			CurrentBogieSprite = trbBogieSprites.Value;
-		}
+		void trbBogieSprites_Scroll(object sender, EventArgs e) => CurrentBogieSprite = trbBogieSprites.Value;
 
-		private void btnBogieSpriteNext_Click(object sender, EventArgs e)
-		{
-			CurrentBogieSprite++;
-		}
+		void btnBogieSpriteNext_Click(object sender, EventArgs e) => CurrentBogieSprite++;
 
-		private void btnBogieSpritePrevious_Click(object sender, EventArgs e)
-		{
-			CurrentBogieSprite--;
-		}
+		void btnBogieSpritePrevious_Click(object sender, EventArgs e) => CurrentBogieSprite--;
 
 		#endregion
 
@@ -1542,10 +1543,14 @@ namespace OpenLocoObjectEditorGui
 			set
 			{
 				if (value > trbRotate.Maximum)
+				{
 					value = trbRotate.Maximum;
+				}
 
 				if (value < 0)
+				{
 					value = 0;
+				}
 
 				vehicleRotateIndex = value;
 
@@ -1555,21 +1560,12 @@ namespace OpenLocoObjectEditorGui
 				SetBodyAndBogieImages();
 			}
 		}
-		public int vehicleRotateIndex = 0;
+		public int vehicleRotateIndex;
 
-		private void trbRotate_Scroll(object sender, EventArgs e)
-		{
-			VehicleRotateIndex = trbRotate.Value;
-		}
+		void trbRotate_Scroll(object sender, EventArgs e) => VehicleRotateIndex = trbRotate.Value;
 
-		private void btnRotateRight_Click(object sender, EventArgs e)
-		{
-			VehicleRotateIndex++;
-		}
-		private void btnRotateLeft_Click(object sender, EventArgs e)
-		{
-			VehicleRotateIndex--;
-		}
+		void btnRotateRight_Click(object sender, EventArgs e) => VehicleRotateIndex++;
+		void btnRotateLeft_Click(object sender, EventArgs e) => VehicleRotateIndex--;
 
 		#endregion
 
@@ -1581,10 +1577,14 @@ namespace OpenLocoObjectEditorGui
 			set
 			{
 				if (value < 0)
+				{
 					value = 0;
+				}
 
 				if (value > trbTilt.Maximum)
+				{
 					value = trbTilt.Maximum;
+				}
 
 				vehicleTiltIndex = value;
 
@@ -1604,22 +1604,13 @@ namespace OpenLocoObjectEditorGui
 				SetBodyAndBogieImages();
 			}
 		}
-		public int vehicleTiltIndex = 0;
+		public int vehicleTiltIndex;
 
-		private void trbTilt_Scroll(object sender, EventArgs e)
-		{
-			VehicleTiltIndex = trbTilt.Value;
-		}
+		void trbTilt_Scroll(object sender, EventArgs e) => VehicleTiltIndex = trbTilt.Value;
 
-		private void btnTiltUp_Click(object sender, EventArgs e)
-		{
-			VehicleTiltIndex++;
-		}
+		void btnTiltUp_Click(object sender, EventArgs e) => VehicleTiltIndex++;
 
-		private void btnTiltDown_Click(object sender, EventArgs e)
-		{
-			VehicleTiltIndex--;
-		}
+		void btnTiltDown_Click(object sender, EventArgs e) => VehicleTiltIndex--;
 
 		#endregion
 

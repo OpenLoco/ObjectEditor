@@ -1,4 +1,6 @@
-﻿namespace OpenLocoObjectEditor.DatFileParsing
+﻿using Zenith.Core;
+
+namespace OpenLocoObjectEditor.DatFileParsing
 {
 	public static class ByteWriter
 	{
@@ -36,13 +38,13 @@
 			}
 			else if (t.IsArray)
 			{
-				var elementType = t.GetElementType() ?? throw new NullReferenceException();
+				var elementType = t.GetElementType() ?? throw new ArgumentNullException(t.Name);
 				var size = ByteHelpers.GetObjectSize(elementType);
 				var arr = (Array)val;
 
 				for (var i = 0; i < arr.Length; i++)
 				{
-					var value = arr.GetValue(i) ?? throw new NullReferenceException();
+					var value = arr.GetValue(i) ?? throw new ArgumentNullException($"{t.Name}[{i}]");
 					WriteT(data, elementType, offset + (i * size), value);
 				}
 			}
@@ -72,10 +74,7 @@
 
 		public static ReadOnlySpan<byte> WriteLocoStruct(ILocoStruct obj)
 		{
-			if (obj == null)
-			{
-				throw new NullReferenceException();
-			}
+			Verify.NotNull(obj);
 
 			var t = obj.GetType();
 			var objSize = ByteHelpers.GetObjectSize(t);
@@ -113,7 +112,7 @@
 					arrLength = arrLengthAttr.Length;
 				}
 
-				var propVal = p.GetValue(obj) ?? throw new NullReferenceException();
+				var propVal = p.GetValue(obj) ?? throw new ArgumentNullException($"{p.Name} for {obj} was null");
 				WriteT(buf, p.PropertyType, offsetAttr.Offset, propVal);
 			}
 

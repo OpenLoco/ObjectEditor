@@ -86,11 +86,6 @@ namespace OpenLocoObjectEditor.Objects
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			Compatible.Clear();
-			Mods.Clear();
-			Bridges.Clear();
-			Stations.Clear();
-
 			// compatible roads/tracks
 			Compatible = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
 			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 using OpenLocoObjectEditor.Headers;
 using OpenLocoObjectEditor.Objects;
 using OpenLocoObjectEditor.Types;
@@ -7,6 +6,7 @@ using OpenLocoObjectEditor.Logging;
 using OpenLocoObjectEditor.Data;
 using Core.Objects;
 using Core.Objects.Sound;
+using Zenith.Core;
 
 namespace OpenLocoObjectEditor.DatFileParsing
 {
@@ -76,7 +76,8 @@ namespace OpenLocoObjectEditor.DatFileParsing
 			}
 			catch (InvalidDataException ex)
 			{
-
+				logger?.Error(ex);
+				return (s5Header, objectHeader, []);
 			}
 			//remainingData = decodedData;
 
@@ -92,10 +93,10 @@ namespace OpenLocoObjectEditor.DatFileParsing
 		}
 
 		// load file
-		public static (DatFileInfo DatFileInfo, ILocoObject LocoObject) LoadFullObjectFromFile(string filename, bool loadExtra = true, ILogger? logger = null)
+		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject) LoadFullObjectFromFile(string filename, bool loadExtra = true, ILogger? logger = null)
 			=> LoadFullObjectFromStream(File.ReadAllBytes(filename), filename, loadExtra, logger);
 
-		public static (DatFileInfo DatFileInfo, ILocoObject LocoObject) LoadFullObjectFromStream(ReadOnlySpan<byte> data, string filename = null, bool loadExtra = true, ILogger? logger = null)
+		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject) LoadFullObjectFromStream(ReadOnlySpan<byte> data, string filename = "<in-memory>", bool loadExtra = true, ILogger? logger = null)
 		{
 			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
@@ -110,12 +111,7 @@ namespace OpenLocoObjectEditor.DatFileParsing
 			ReadOnlySpan<byte> remainingData = decodedData;
 
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
-
-			if (locoStruct == null)
-			{
-				Debugger.Break();
-				throw new NullReferenceException($"{filename} was unable to be decoded");
-			}
+			Verify.NotNull(locoStruct, paramName: filename);
 
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
 			var locoStructSize = structSize!.Size;
@@ -185,7 +181,10 @@ namespace OpenLocoObjectEditor.DatFileParsing
 					var lang = (LanguageId)data[ptr++];
 					var ini = ptr;
 
-					while (data[ptr++] != '\0') ;
+					while (data[ptr++] != '\0')
+					{
+						;
+					}
 
 					var str = Encoding.Latin1.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
 
@@ -411,7 +410,7 @@ namespace OpenLocoObjectEditor.DatFileParsing
 				var header = ByteReader.ReadLocoStruct<RiffWavHeader>(headerBytes);
 
 				var pcmData = new byte[header.DataLength];
-				br.Read(pcmData);
+				_ = br.Read(pcmData);
 				return (header, pcmData);
 			}
 		}

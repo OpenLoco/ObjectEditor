@@ -20,34 +20,27 @@ namespace OpenLocoObjectEditor.Objects
 	[LocoStructSize(0x1E)]
 	[LocoStructType(ObjectType.Land)]
 	[LocoStringTable("Name")]
-	public class LandObject(
-		uint8_t costIndex,
-		uint8_t var_03,
-		uint8_t var_04,
-		LandObjectFlags flags,
-		int8_t costFactor,
-		uint8_t numVariations,
-		uint8_t variationLikelihood) : ILocoStruct, ILocoStructVariableData
+	public record LandObject(
+		[property: LocoStructOffset(0x02)] uint8_t CostIndex,
+		[property: LocoStructOffset(0x03)] uint8_t var_03,
+		[property: LocoStructOffset(0x04), LocoPropertyMaybeUnused] uint8_t var_04,
+		[property: LocoStructOffset(0x05)] LandObjectFlags Flags,
+		[property: LocoStructOffset(0x06), Browsable(false)] object_id CliffEdgeHeader1,
+		[property: LocoStructOffset(0x07), Browsable(false), LocoPropertyMaybeUnused] object_id CliffEdgeHeader2,
+		[property: LocoStructOffset(0x08)] int8_t CostFactor,
+		[property: LocoStructOffset(0x09), Browsable(false)] uint8_t pad_09,
+		[property: LocoStructOffset(0x0A), Browsable(false)] image_id Image,
+		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E,
+		[property: LocoStructOffset(0x12), Browsable(false)] image_id CliffEdgeImage,
+		[property: LocoStructOffset(0x16), Browsable(false)] image_id MapPixelImage,
+		[property: LocoStructOffset(0x1A), Browsable(false)] uint8_t pad_1A,
+		[property: LocoStructOffset(0x1B)] uint8_t NumVariations,
+		[property: LocoStructOffset(0x1C)] uint8_t VariationLikelihood,
+		[property: LocoStructOffset(0x1D), Browsable(false)] uint8_t pad_1D
+		) : ILocoStruct, ILocoStructVariableData
 	{
-		[LocoStructOffset(0x02)] public uint8_t CostIndex { get; set; } = costIndex;
-		[LocoStructOffset(0x03)] public uint8_t var_03 { get; set; } = var_03;
-		[LocoStructOffset(0x04), LocoPropertyMaybeUnused] public uint8_t var_04 { get; set; } = var_04;
-		[LocoStructOffset(0x05)] public LandObjectFlags Flags { get; set; } = flags;
-		//[LocoStructOffset(0x06)] public object_index CliffEdgeHeader1 { get; set; }
-		//[LocoStructOffset(0x07)] public object_index CliffEdgeHeader2 { get; set; } // unused
-		[LocoStructOffset(0x08)] public int8_t CostFactor { get; set; } = costFactor;
-		//[LocoStructOffset(0x09)] public uint8_t pad_09 { get; set; }
-		//[LocoStructOffset(0x0A)] public image_id Image { get; set; }
-		//[LocoStructOffset(0x0E)] public image_id var_0E { get; set; }
-		//[LocoStructOffset(0x12)] public image_id CliffEdgeImage { get; set; }
-		//[LocoStructOffset(0x16)] public image_id MapPixelImage { get; set; }
-		//[LocoStructOffset(0x1A)] public uint8_t pad_1A { get; set; }
-		[LocoStructOffset(0x1B)] public uint8_t NumVariations { get; set; } = numVariations;
-		[LocoStructOffset(0x1C)] public uint8_t VariationLikelihood { get; set; } = variationLikelihood;
-		//[LocoStructOffset(0x1D)] public uint8_t pad_1D { get; set; }
-
-		public S5Header? CliffEdgeHeader { get; set; }
-		public S5Header? UnkObjHeader { get; set; }
+		public S5Header CliffEdgeHeader { get; set; }
+		public S5Header UnkObjHeader { get; set; }
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{

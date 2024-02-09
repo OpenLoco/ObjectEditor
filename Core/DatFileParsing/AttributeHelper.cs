@@ -7,8 +7,8 @@ namespace OpenLocoObjectEditor.DatFileParsing
 	{
 		public static T? Get<T>(PropertyInfo p) where T : Attribute
 		{
-			var attrs = p.GetCustomAttributes(typeof(T), inherit: false);
-			return attrs.Length == 1 ? attrs[0] as T : null;
+			var attributes = p.GetCustomAttributes(typeof(T), inherit: false);
+			return attributes.Length == 1 ? attributes[0] as T : null;
 		}
 
 		public static T? Get<T>(Type t) where T : Attribute

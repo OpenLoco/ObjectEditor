@@ -152,7 +152,11 @@ namespace Core.Objects
 			for (var i = 0; i < NumBuildingVariations; ++i)
 			{
 				var ptr_1F = 0;
-				while (remainingData[++ptr_1F] != 0xFF) ;
+				while (remainingData[++ptr_1F] != 0xFF)
+				{
+					;
+				}
+
 				BuildingVariationParts.Add(remainingData[..ptr_1F].ToArray());
 				ptr_1F++;
 				remainingData = remainingData[ptr_1F..];

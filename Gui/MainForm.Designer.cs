@@ -31,7 +31,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		private void InitializeComponent()
 		{
 			components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+			var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			lbLogs = new ListBox();
 			objectDirBrowser = new FolderBrowserDialog();
 			tbFileFilter = new TextBox();
@@ -58,29 +58,6 @@ namespace OpenLoco.ObjectEditor.Gui
 			toolStripSeparator3 = new ToolStripSeparator();
 			tslImageScaling = new ToolStripLabel();
 			tstbImageScaling = new ToolStripTextBox();
-			tpObjectPreview = new TabPage();
-			gbBogieSprites = new GroupBox();
-			trbBogieSprites = new TrackBar();
-			btnBogieSpritePrevious = new Button();
-			btnBogieSpriteNext = new Button();
-			tbCurrentBogieSprite = new TextBox();
-			gbBodySprites = new GroupBox();
-			trbBodySprites = new TrackBar();
-			btnBodySpritePrevious = new Button();
-			btnBodySpriteNext = new Button();
-			tbCurrentBodySprite = new TextBox();
-			gbTilt = new GroupBox();
-			trbTilt = new TrackBar();
-			btnTiltDown = new Button();
-			btnTiltUp = new Button();
-			tbTiltValue = new TextBox();
-			gbRotation = new GroupBox();
-			trbRotate = new TrackBar();
-			btnRotateLeft = new Button();
-			btnRotateRight = new Button();
-			tbRotateValue = new TextBox();
-			pbVehicleBogiePreview = new PictureBoxWithInterpolationMode();
-			pbVehicleBodyPreview = new PictureBoxWithInterpolationMode();
 			scHeaders = new SplitContainer();
 			pgS5Header = new PropertyGrid();
 			pgObjHeader = new PropertyGrid();
@@ -126,17 +103,6 @@ namespace OpenLoco.ObjectEditor.Gui
 			tpObjectGraphicsTable.SuspendLayout();
 			pnImagePageControls.SuspendLayout();
 			tsImageTable.SuspendLayout();
-			tpObjectPreview.SuspendLayout();
-			gbBogieSprites.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)trbBogieSprites).BeginInit();
-			gbBodySprites.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)trbBodySprites).BeginInit();
-			gbTilt.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)trbTilt).BeginInit();
-			gbRotation.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)trbRotate).BeginInit();
-			((System.ComponentModel.ISupportInitialize)pbVehicleBogiePreview).BeginInit();
-			((System.ComponentModel.ISupportInitialize)pbVehicleBodyPreview).BeginInit();
 			((System.ComponentModel.ISupportInitialize)scHeaders).BeginInit();
 			scHeaders.Panel1.SuspendLayout();
 			scHeaders.Panel2.SuspendLayout();
@@ -255,7 +221,6 @@ namespace OpenLoco.ObjectEditor.Gui
 			tcSubObjectView.Controls.Add(tpObjectObject);
 			tcSubObjectView.Controls.Add(tpObjectStringTable);
 			tcSubObjectView.Controls.Add(tpObjectGraphicsTable);
-			tcSubObjectView.Controls.Add(tpObjectPreview);
 			tcSubObjectView.Dock = DockStyle.Fill;
 			tcSubObjectView.Location = new Point(3, 123);
 			tcSubObjectView.Margin = new Padding(2, 1, 2, 1);
@@ -418,256 +383,6 @@ namespace OpenLoco.ObjectEditor.Gui
 			tstbImageScaling.Text = "1";
 			tstbImageScaling.ToolTipText = "Image Scaling";
 			tstbImageScaling.TextChanged += tstbImageScaling_TextChanged;
-			// 
-			// tpObjectPreview
-			// 
-			tpObjectPreview.Controls.Add(gbBogieSprites);
-			tpObjectPreview.Controls.Add(gbBodySprites);
-			tpObjectPreview.Controls.Add(gbTilt);
-			tpObjectPreview.Controls.Add(gbRotation);
-			tpObjectPreview.Controls.Add(pbVehicleBogiePreview);
-			tpObjectPreview.Controls.Add(pbVehicleBodyPreview);
-			tpObjectPreview.Location = new Point(4, 24);
-			tpObjectPreview.Name = "tpObjectPreview";
-			tpObjectPreview.Size = new Size(1393, 612);
-			tpObjectPreview.TabIndex = 5;
-			tpObjectPreview.Text = "Vehicle Rotator";
-			tpObjectPreview.UseVisualStyleBackColor = true;
-			// 
-			// gbBogieSprites
-			// 
-			gbBogieSprites.Controls.Add(trbBogieSprites);
-			gbBogieSprites.Controls.Add(btnBogieSpritePrevious);
-			gbBogieSprites.Controls.Add(btnBogieSpriteNext);
-			gbBogieSprites.Controls.Add(tbCurrentBogieSprite);
-			gbBogieSprites.Location = new Point(266, 265);
-			gbBogieSprites.Name = "gbBogieSprites";
-			gbBogieSprites.Size = new Size(256, 104);
-			gbBogieSprites.TabIndex = 41;
-			gbBogieSprites.TabStop = false;
-			gbBogieSprites.Text = "Bogie Sprites";
-			// 
-			// trbBogieSprites
-			// 
-			trbBogieSprites.Location = new Point(6, 22);
-			trbBogieSprites.Maximum = 1;
-			trbBogieSprites.Name = "trbBogieSprites";
-			trbBogieSprites.Size = new Size(244, 45);
-			trbBogieSprites.TabIndex = 29;
-			trbBogieSprites.TickStyle = TickStyle.Both;
-			trbBogieSprites.Scroll += trbBogieSprites_Scroll;
-			// 
-			// btnBogieSpritePrevious
-			// 
-			btnBogieSpritePrevious.Location = new Point(6, 72);
-			btnBogieSpritePrevious.Name = "btnBogieSpritePrevious";
-			btnBogieSpritePrevious.Size = new Size(23, 23);
-			btnBogieSpritePrevious.TabIndex = 32;
-			btnBogieSpritePrevious.Text = "<";
-			btnBogieSpritePrevious.UseVisualStyleBackColor = true;
-			btnBogieSpritePrevious.Click += btnBogieSpritePrevious_Click;
-			// 
-			// btnBogieSpriteNext
-			// 
-			btnBogieSpriteNext.Location = new Point(227, 73);
-			btnBogieSpriteNext.Name = "btnBogieSpriteNext";
-			btnBogieSpriteNext.Size = new Size(23, 23);
-			btnBogieSpriteNext.TabIndex = 33;
-			btnBogieSpriteNext.Text = ">";
-			btnBogieSpriteNext.UseVisualStyleBackColor = true;
-			btnBogieSpriteNext.Click += btnBogieSpriteNext_Click;
-			// 
-			// tbCurrentBogieSprite
-			// 
-			tbCurrentBogieSprite.BorderStyle = BorderStyle.FixedSingle;
-			tbCurrentBogieSprite.Enabled = false;
-			tbCurrentBogieSprite.Location = new Point(35, 73);
-			tbCurrentBogieSprite.Name = "tbCurrentBogieSprite";
-			tbCurrentBogieSprite.Size = new Size(186, 23);
-			tbCurrentBogieSprite.TabIndex = 34;
-			tbCurrentBogieSprite.Text = "0";
-			tbCurrentBogieSprite.TextAlign = HorizontalAlignment.Center;
-			// 
-			// gbBodySprites
-			// 
-			gbBodySprites.Controls.Add(trbBodySprites);
-			gbBodySprites.Controls.Add(btnBodySpritePrevious);
-			gbBodySprites.Controls.Add(btnBodySpriteNext);
-			gbBodySprites.Controls.Add(tbCurrentBodySprite);
-			gbBodySprites.Location = new Point(4, 265);
-			gbBodySprites.Name = "gbBodySprites";
-			gbBodySprites.Size = new Size(256, 104);
-			gbBodySprites.TabIndex = 40;
-			gbBodySprites.TabStop = false;
-			gbBodySprites.Text = "Body Sprites";
-			// 
-			// trbBodySprites
-			// 
-			trbBodySprites.Location = new Point(6, 22);
-			trbBodySprites.Maximum = 3;
-			trbBodySprites.Name = "trbBodySprites";
-			trbBodySprites.Size = new Size(244, 45);
-			trbBodySprites.TabIndex = 29;
-			trbBodySprites.TickStyle = TickStyle.Both;
-			trbBodySprites.Scroll += trbBodySprites_Scroll;
-			// 
-			// btnBodySpritePrevious
-			// 
-			btnBodySpritePrevious.Location = new Point(6, 73);
-			btnBodySpritePrevious.Name = "btnBodySpritePrevious";
-			btnBodySpritePrevious.Size = new Size(23, 23);
-			btnBodySpritePrevious.TabIndex = 32;
-			btnBodySpritePrevious.Text = "<";
-			btnBodySpritePrevious.UseVisualStyleBackColor = true;
-			btnBodySpritePrevious.Click += btnBodySpritePrevious_Click;
-			// 
-			// btnBodySpriteNext
-			// 
-			btnBodySpriteNext.Location = new Point(227, 73);
-			btnBodySpriteNext.Name = "btnBodySpriteNext";
-			btnBodySpriteNext.Size = new Size(23, 23);
-			btnBodySpriteNext.TabIndex = 33;
-			btnBodySpriteNext.Text = ">";
-			btnBodySpriteNext.UseVisualStyleBackColor = true;
-			btnBodySpriteNext.Click += btnBodySpriteNext_Click;
-			// 
-			// tbCurrentBodySprite
-			// 
-			tbCurrentBodySprite.BorderStyle = BorderStyle.FixedSingle;
-			tbCurrentBodySprite.Enabled = false;
-			tbCurrentBodySprite.Location = new Point(37, 74);
-			tbCurrentBodySprite.Name = "tbCurrentBodySprite";
-			tbCurrentBodySprite.Size = new Size(184, 23);
-			tbCurrentBodySprite.TabIndex = 34;
-			tbCurrentBodySprite.Text = "0";
-			tbCurrentBodySprite.TextAlign = HorizontalAlignment.Center;
-			// 
-			// gbTilt
-			// 
-			gbTilt.Controls.Add(trbTilt);
-			gbTilt.Controls.Add(btnTiltDown);
-			gbTilt.Controls.Add(btnTiltUp);
-			gbTilt.Controls.Add(tbTiltValue);
-			gbTilt.Location = new Point(266, 454);
-			gbTilt.Name = "gbTilt";
-			gbTilt.Size = new Size(256, 104);
-			gbTilt.TabIndex = 40;
-			gbTilt.TabStop = false;
-			gbTilt.Text = "Tilt";
-			// 
-			// trbTilt
-			// 
-			trbTilt.Location = new Point(6, 22);
-			trbTilt.Maximum = 5;
-			trbTilt.Name = "trbTilt";
-			trbTilt.Size = new Size(244, 45);
-			trbTilt.TabIndex = 30;
-			trbTilt.TickStyle = TickStyle.Both;
-			trbTilt.Scroll += trbTilt_Scroll;
-			// 
-			// btnTiltDown
-			// 
-			btnTiltDown.Location = new Point(6, 73);
-			btnTiltDown.Name = "btnTiltDown";
-			btnTiltDown.Size = new Size(23, 23);
-			btnTiltDown.TabIndex = 35;
-			btnTiltDown.Text = "<";
-			btnTiltDown.UseVisualStyleBackColor = true;
-			btnTiltDown.Click += btnTiltDown_Click;
-			// 
-			// btnTiltUp
-			// 
-			btnTiltUp.Location = new Point(227, 73);
-			btnTiltUp.Name = "btnTiltUp";
-			btnTiltUp.Size = new Size(23, 23);
-			btnTiltUp.TabIndex = 36;
-			btnTiltUp.Text = ">";
-			btnTiltUp.UseVisualStyleBackColor = true;
-			btnTiltUp.Click += btnTiltUp_Click;
-			// 
-			// tbTiltValue
-			// 
-			tbTiltValue.BorderStyle = BorderStyle.FixedSingle;
-			tbTiltValue.Enabled = false;
-			tbTiltValue.Location = new Point(35, 73);
-			tbTiltValue.Name = "tbTiltValue";
-			tbTiltValue.Size = new Size(186, 23);
-			tbTiltValue.TabIndex = 37;
-			tbTiltValue.Text = "0";
-			tbTiltValue.TextAlign = HorizontalAlignment.Center;
-			// 
-			// gbRotation
-			// 
-			gbRotation.Controls.Add(trbRotate);
-			gbRotation.Controls.Add(btnRotateLeft);
-			gbRotation.Controls.Add(btnRotateRight);
-			gbRotation.Controls.Add(tbRotateValue);
-			gbRotation.Location = new Point(4, 454);
-			gbRotation.Name = "gbRotation";
-			gbRotation.Size = new Size(256, 104);
-			gbRotation.TabIndex = 39;
-			gbRotation.TabStop = false;
-			gbRotation.Text = "Rotation";
-			// 
-			// trbRotate
-			// 
-			trbRotate.Location = new Point(6, 22);
-			trbRotate.Name = "trbRotate";
-			trbRotate.Size = new Size(244, 45);
-			trbRotate.TabIndex = 29;
-			trbRotate.TickStyle = TickStyle.Both;
-			trbRotate.Scroll += trbRotate_Scroll;
-			// 
-			// btnRotateLeft
-			// 
-			btnRotateLeft.Location = new Point(6, 73);
-			btnRotateLeft.Name = "btnRotateLeft";
-			btnRotateLeft.Size = new Size(23, 23);
-			btnRotateLeft.TabIndex = 32;
-			btnRotateLeft.Text = "<";
-			btnRotateLeft.UseVisualStyleBackColor = true;
-			btnRotateLeft.Click += btnRotateLeft_Click;
-			// 
-			// btnRotateRight
-			// 
-			btnRotateRight.Location = new Point(227, 73);
-			btnRotateRight.Name = "btnRotateRight";
-			btnRotateRight.Size = new Size(23, 23);
-			btnRotateRight.TabIndex = 33;
-			btnRotateRight.Text = ">";
-			btnRotateRight.UseVisualStyleBackColor = true;
-			btnRotateRight.Click += btnRotateRight_Click;
-			// 
-			// tbRotateValue
-			// 
-			tbRotateValue.BorderStyle = BorderStyle.FixedSingle;
-			tbRotateValue.Enabled = false;
-			tbRotateValue.Location = new Point(35, 73);
-			tbRotateValue.Name = "tbRotateValue";
-			tbRotateValue.Size = new Size(186, 23);
-			tbRotateValue.TabIndex = 34;
-			tbRotateValue.Text = "0";
-			tbRotateValue.TextAlign = HorizontalAlignment.Center;
-			// 
-			// pbVehicleBogiePreview
-			// 
-			pbVehicleBogiePreview.BorderStyle = BorderStyle.FixedSingle;
-			pbVehicleBogiePreview.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
-			pbVehicleBogiePreview.Location = new Point(266, 3);
-			pbVehicleBogiePreview.Name = "pbVehicleBogiePreview";
-			pbVehicleBogiePreview.Size = new Size(256, 256);
-			pbVehicleBogiePreview.TabIndex = 38;
-			pbVehicleBogiePreview.TabStop = false;
-			// 
-			// pbVehicleBodyPreview
-			// 
-			pbVehicleBodyPreview.BorderStyle = BorderStyle.FixedSingle;
-			pbVehicleBodyPreview.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Default;
-			pbVehicleBodyPreview.Location = new Point(4, 3);
-			pbVehicleBodyPreview.Name = "pbVehicleBodyPreview";
-			pbVehicleBodyPreview.Size = new Size(256, 256);
-			pbVehicleBodyPreview.TabIndex = 28;
-			pbVehicleBodyPreview.TabStop = false;
 			// 
 			// scHeaders
 			// 
@@ -1007,21 +722,6 @@ namespace OpenLoco.ObjectEditor.Gui
 			pnImagePageControls.PerformLayout();
 			tsImageTable.ResumeLayout(false);
 			tsImageTable.PerformLayout();
-			tpObjectPreview.ResumeLayout(false);
-			gbBogieSprites.ResumeLayout(false);
-			gbBogieSprites.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)trbBogieSprites).EndInit();
-			gbBodySprites.ResumeLayout(false);
-			gbBodySprites.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)trbBodySprites).EndInit();
-			gbTilt.ResumeLayout(false);
-			gbTilt.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)trbTilt).EndInit();
-			gbRotation.ResumeLayout(false);
-			gbRotation.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)trbRotate).EndInit();
-			((System.ComponentModel.ISupportInitialize)pbVehicleBogiePreview).EndInit();
-			((System.ComponentModel.ISupportInitialize)pbVehicleBodyPreview).EndInit();
 			scHeaders.Panel1.ResumeLayout(false);
 			scHeaders.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)scHeaders).EndInit();
@@ -1094,7 +794,6 @@ namespace OpenLoco.ObjectEditor.Gui
 		private TabPage tpObjectObject;
 		private TabPage tpObjectStringTable;
 		private TabPage tpObjectGraphicsTable;
-		private TabPage tpObjectPreview;
 		private BindingSource locoObjectBindingSource;
 		private PropertyGrid pgS5Header;
 		private PropertyGrid pgObjHeader;
@@ -1111,27 +810,5 @@ namespace OpenLoco.ObjectEditor.Gui
 		private ToolStripSeparator toolStripSeparator3;
 		private ToolStripLabel tslImageScaling;
 		private Panel pnImagePageControls;
-		private PictureBoxWithInterpolationMode pbVehicleBodyPreview;
-		private TrackBar trbTilt;
-		private TrackBar trbRotate;
-		private Button btnRotateRight;
-		private Button btnRotateLeft;
-		private TextBox tbRotateValue;
-		private TextBox tbTiltValue;
-		private Button btnTiltUp;
-		private Button btnTiltDown;
-		private PictureBoxWithInterpolationMode pbVehicleBogiePreview;
-		private GroupBox gbTilt;
-		private GroupBox gbRotation;
-		private GroupBox gbBogieSprites;
-		private Button btnBogieSpritePrevious;
-		private Button btnBogieSpriteNext;
-		private TextBox tbCurrentBogieSprite;
-		private GroupBox gbBodySprites;
-		private Button btnBodySpritePrevious;
-		private Button btnBodySpriteNext;
-		private TextBox tbCurrentBodySprite;
-		private TrackBar trbBogieSprites;
-		private TrackBar trbBodySprites;
 	}
 }

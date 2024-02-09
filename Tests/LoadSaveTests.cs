@@ -862,10 +862,10 @@ namespace OpenLoco.ObjectEditor.Tests
 		{
 			void assertFunc(ILocoObject obj, WallObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.var_06, Is.EqualTo(15), nameof(struc.var_06));
+				Assert.That(struc.ToolId, Is.EqualTo(15), nameof(struc.ToolId));
 				Assert.That(struc.Flags, Is.EqualTo(WallObjectFlags.None), nameof(struc.Flags));
 				Assert.That(struc.Height, Is.EqualTo(2), nameof(struc.Height));
-				Assert.That(struc.var_09, Is.EqualTo(8), nameof(struc.var_09));
+				Assert.That(struc.Flags2, Is.EqualTo(WallObjectFlags2.Opaque), nameof(struc.Flags2));
 			});
 			LoadSaveGenericTest<WallObject>(objectName, assertFunc);
 		}

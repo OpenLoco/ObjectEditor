@@ -53,6 +53,14 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - On subsequent uses of the tool, the index file will be loaded instead, and this is fast
 - The tool will print a log message if it detects changes in the folder and thinks you need to reindex it
 
+## Unit Testing
+- All object types have a unit test which
+  - Loads a pre-determined object file of that type
+  - Asserts all (or most) of its values are correct
+  - Saves the file to memory
+  - Reloads the just-saved version of the file
+  - Checks that the reloaded file is the same as the originally-loaded file, byte for byte. This is a byte comparison of the *decoded and decompressed* bytes, not the *on-disk* bytes
+
 # Future Plans/Features
 - Better flag editing support
 - Validation of object limits/sane values

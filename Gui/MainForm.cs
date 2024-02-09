@@ -97,7 +97,6 @@ namespace OpenLoco.ObjectEditor.Gui
 				model = new MainFormModel(logger, SettingsFile, palette);
 			}
 
-			var ress = assembly.GetManifestResourceNames();
 			var versionFilename = "Gui.version.txt";
 			using (var stream = assembly.GetManifestResourceStream(versionFilename))
 			{

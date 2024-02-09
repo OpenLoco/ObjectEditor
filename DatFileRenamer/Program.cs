@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 Console.WriteLine("Dat File Renamer v0.1");
 
@@ -6,7 +6,7 @@ Console.WriteLine("Dat File Renamer v0.1");
 var currFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 currFolder = "Q:\\Games\\Locomotion\\ttd russia";
 var datFiles = Directory.GetFiles(currFolder)
-	.Where(f => Path.GetExtension(f).ToLower() == ".dat");
+	.Where(f => Path.GetExtension(f).Equals(".dat", StringComparison.OrdinalIgnoreCase));
 
 var count = datFiles.Count();
 Console.WriteLine($"Checking {count} files in {currFolder}");

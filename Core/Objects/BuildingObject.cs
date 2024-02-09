@@ -131,6 +131,13 @@ namespace OpenLoco.ObjectEditor.Objects
 				ms.WriteByte(x.AnimationSpeed);
 			}
 
+			// variation parts
+			foreach (var x in VariationParts)
+			{
+				ms.Write(x);
+				ms.WriteByte(0xFF);
+			}
+
 			// produced cargo
 			foreach (var obj in ProducedCargo.Fill(MaxProducedCargoType, S5Header.NullHeader))
 			{

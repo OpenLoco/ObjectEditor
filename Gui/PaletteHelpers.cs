@@ -1,4 +1,4 @@
-﻿using System.Drawing.Imaging;
+using System.Drawing.Imaging;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
@@ -21,26 +21,26 @@ namespace OpenLoco.ObjectEditor.Gui
 			return palette;
 		}
 
-		public static byte[] Palettise(Bitmap img)
-		{
-			var pixels = img.Width * img.Height;
-			var bytes = new byte[pixels];
+		//public static byte[] Palettise(Bitmap img)
+		//{
+		//	var pixels = img.Width * img.Height;
+		//	var bytes = new byte[pixels];
 
-			var rect = new Rectangle(0, 0, img.Width, img.Height);
-			var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+		//	var rect = new Rectangle(0, 0, img.Width, img.Height);
+		//	var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
-			for (var y = 0; y < img.Height; ++y)
-			{
-				for (var x = 0; x < img.Width; ++x)
-				{
-					var paletteIndex = (y * img.Width) + x;
-					bytes[paletteIndex] = ColorToPaletteIndex(ImageHelpers.GetPixel(imgData, x, y));
-				}
-			}
+		//	for (var y = 0; y < img.Height; ++y)
+		//	{
+		//		for (var x = 0; x < img.Width; ++x)
+		//		{
+		//			var paletteIndex = (y * img.Width) + x;
+		//			bytes[paletteIndex] = ColorToPaletteIndex(ImageHelpers.GetPixel(imgData, x, y));
+		//		}
+		//	}
 
-			return bytes;
-		}
+		//	return bytes;
+		//}
 
-		static byte ColorToPaletteIndex(Color c) => 0;
+		//static byte ColorToPaletteIndex(Color c) => 0;
 	}
 }

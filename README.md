@@ -74,4 +74,6 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - Dark modern
 - Cross-platform support
 - Full unit-testing suite
+- Blank template objects for object creation from scratch
+- Use a proper C# image library for image creation instead of WinForms
 - ...many more things

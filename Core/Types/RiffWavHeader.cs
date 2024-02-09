@@ -1,6 +1,6 @@
-﻿using OpenLocoObjectEditor.DatFileParsing;
+﻿using OpenLoco.ObjectEditor.DatFileParsing;
 
-namespace OpenLocoObjectEditor.Types
+namespace OpenLoco.ObjectEditor.Types
 {
 	// http://www.topherlee.com/software/pcm-tut-wavformat.html#:~:text=The%20header%20is%20used%20to,well%20as%20its%20overall%20length.&text=Marks%20the%20file%20as%20a,are%20each%201%20byte%20long.&text=Size%20of%20the%20overall%20file,(32%2Dbit%20integer)
 	[LocoStructSize(0x2C)]

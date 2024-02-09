@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
 
-namespace OpenLocoObjectEditor.Objects
+namespace OpenLoco.ObjectEditor.Objects
 {
 	[Flags]
 	public enum TrainSignalObjectFlags : uint16_t

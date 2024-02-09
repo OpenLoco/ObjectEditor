@@ -1,7 +1,7 @@
-﻿using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.Types;
+﻿using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.Types;
 
-namespace OpenLocoObjectEditorGui
+namespace OpenLoco.ObjectEditor.Gui
 {
 	public partial class StringTableUserControl : UserControl
 	{

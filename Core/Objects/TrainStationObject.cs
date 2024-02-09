@@ -1,10 +1,10 @@
 ﻿
 using System.ComponentModel;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
 
-namespace OpenLocoObjectEditor.Objects
+namespace OpenLoco.ObjectEditor.Objects
 {
 	[Flags]
 	public enum TrainStationObjectFlags : uint8_t
@@ -18,44 +18,31 @@ namespace OpenLocoObjectEditor.Objects
 	[LocoStructSize(0xAE)]
 	[LocoStructType(ObjectType.TrainStation)]
 	[LocoStringTable("Name")]
-	public class TrainStationObject(
-		uint8_t paintStyle,
-		uint8_t var_03,
-		uint16_t trackPieces,
-		int16_t buildCostFactor,
-		int16_t sellCostFactor,
-		uint8_t costIndex,
-		uint8_t var_0B,
-		TrainStationObjectFlags flags,
-		uint8_t var_0D,
-		uint8_t numCompatible,
-		uint16_t designedYear,
-		uint16_t obsoleteYear)
-		: ILocoStruct, ILocoStructVariableData
+	public record TrainStationObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
+		[property: LocoStructOffset(0x03)] uint8_t var_03,
+		[property: LocoStructOffset(0x04)] uint16_t TrackPieces,
+		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
+		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
+		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
+		[property: LocoStructOffset(0x0B)] uint8_t var_0B,
+		[property: LocoStructOffset(0x0C)] TrainStationObjectFlags Flags,
+		[property: LocoStructOffset(0x0D)] uint8_t var_0D,
+		[property: LocoStructOffset(0x0E)] image_id Image,
+		[property: LocoStructOffset(0x12), LocoArrayLength(4)] uint32_t[] ImageOffsets,
+		[property: LocoStructOffset(0x22)] uint8_t NumCompatible,
+		[property: LocoStructOffset(0x23), LocoArrayLength(7)] uint8_t[] Mods,
+		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear,
+		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear,
+		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes,
+		[property: LocoStructOffset(0x3E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.ManualPowerLength), Browsable(false)] uint8_t[] _ManualPower
+	) : ILocoStruct, ILocoStructVariableData
 	{
-		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[LocoStructOffset(0x02)] public uint8_t PaintStyle { get; set; } = paintStyle;
-		[LocoStructOffset(0x03)] public uint8_t var_03 { get; set; } = var_03;
-		[LocoStructOffset(0x04)] public uint16_t TrackPieces { get; set; } = trackPieces;
-		[LocoStructOffset(0x06)] public int16_t BuildCostFactor { get; set; } = buildCostFactor;
-		[LocoStructOffset(0x08)] public int16_t SellCostFactor { get; set; } = sellCostFactor;
-		[LocoStructOffset(0x0A)] public uint8_t CostIndex { get; set; } = costIndex;
-		[LocoStructOffset(0x0B)] public uint8_t var_0B { get; set; } = var_0B;
-		[LocoStructOffset(0x0C)] public TrainStationObjectFlags Flags { get; set; } = flags;
-		[LocoStructOffset(0x0D)] public uint8_t var_0D { get; set; } = var_0D;
-		//[LocoStructOffset(0x0E)] image_id Image,
-		//[LocoStructOffset(0x12), LocoArrayLength(4)] public uint32_t[] ImageOffsets { get; set; }
-		[LocoStructOffset(0x22)] public uint8_t NumCompatible { get; set; } = numCompatible;
-		//[LocoStructOffset(0x23), LocoArrayLength(7)] uint8_t[] Mods,
-		[LocoStructOffset(0x2A)] public uint16_t DesignedYear { get; set; } = designedYear;
-		[LocoStructOffset(0x2C)] public uint16_t ObsoleteYear { get; set; } = obsoleteYear;
-		//[LocoStructProperty(0x2E)] const std::byte* CargoOffsetBytes[4][4]
-		//[LocoStructProperty(0x??)] const std::byte* ManualPower[ManualPowerLength]
-
 		public List<S5Header> Compatible { get; set; } = [];
 
 		public const int ManualPowerLength = 16;
-
+		public const int CargoOffsetBytesSize = 16;
 		public uint8_t[][][] CargoOffsetBytes { get; set; }
 
 		public uint8_t[][] ManualPower { get; set; }

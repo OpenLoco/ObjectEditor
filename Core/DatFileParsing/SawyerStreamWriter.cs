@@ -1,11 +1,11 @@
 ﻿using System.Text;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.Headers;
-using OpenLocoObjectEditor.Types;
-using OpenLocoObjectEditor.Logging;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Types;
+using OpenLoco.ObjectEditor.Logging;
 using Core.Objects.Sound;
 
-namespace OpenLocoObjectEditor.DatFileParsing
+namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	public static class SawyerStreamWriter
 	{
@@ -138,8 +138,8 @@ namespace OpenLocoObjectEditor.DatFileParsing
 			if (obj.G1Elements != null && obj.G1Elements.Count != 0)
 			{
 				// write G1Header
-				objStream.Write(BitConverter.GetBytes(obj.G1Elements.Count));
-				objStream.Write(BitConverter.GetBytes(obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
+				objStream.Write(BitConverter.GetBytes((uint32_t)obj.G1Elements.Count));
+				objStream.Write(BitConverter.GetBytes((uint32_t)obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
 
 				var offsetBytesIntoImageData = 0;
 				// write G1Element headers
@@ -194,7 +194,7 @@ namespace OpenLocoObjectEditor.DatFileParsing
 			// obj header
 			headerStream.Write(objHeader.Write());
 
-			// loco object itself
+			// loco object itself, including string and graphics table
 			headerStream.Write(objStream.ToArray());
 
 			// stream cleanup

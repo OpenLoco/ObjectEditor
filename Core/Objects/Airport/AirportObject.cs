@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Objects
 {

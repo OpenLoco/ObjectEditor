@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
-namespace OpenLocoObjectEditor.Objects
+namespace OpenLoco.ObjectEditor.Objects
 {
 	public enum BogieSpriteSlopeType { Flat, Gentle, Steep }
 

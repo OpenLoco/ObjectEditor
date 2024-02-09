@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
 
-namespace OpenLocoObjectEditor.Objects
+namespace OpenLoco.ObjectEditor.Objects
 {
 	[Flags]
 	public enum SteamObjectFlags : uint16_t
@@ -17,14 +17,11 @@ namespace OpenLocoObjectEditor.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x02)]
-	public class ImageAndHeight(
-		uint8_t imageOffset,
-		uint8_t height)
-		: ILocoStruct
+	public record ImageAndHeight(
+		[property: LocoStructOffset(0x00)] uint8_t ImageOffset,
+		[property: LocoStructOffset(0x01)] uint8_t Height
+	) : ILocoStruct
 	{
-		[LocoStructOffset(0x00)] public uint8_t ImageOffset { get; set; } = imageOffset;
-		[LocoStructOffset(0x01)] public uint8_t Height { get; set; } = height;
-
 		public static ImageAndHeight Read(ReadOnlySpan<byte> data)
 			=> new(data[0], data[1]);
 	}
@@ -33,29 +30,25 @@ namespace OpenLocoObjectEditor.Objects
 	[LocoStructSize(0x28)]
 	[LocoStructType(ObjectType.Steam)]
 	[LocoStringTable("Name")]
-	public class SteamObject(
-		uint16_t numImages,
-		uint8_t numStationaryTicks,
-		SteamObjectFlags flags,
-		uint32_t var_0A,
-		uint8_t numSoundEffects)
-		: ILocoStruct, ILocoStructVariableData
+	public record SteamObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02), LocoPropertyMaybeUnused] uint16_t NumImages, // this is simply the count of images in the graphics table
+		[property: LocoStructOffset(0x04)] uint8_t NumStationaryTicks,
+		[property: LocoStructOffset(0x05), LocoStructVariableLoad, Browsable(false)] uint8_t SpriteWidth,
+		[property: LocoStructOffset(0x06), LocoStructVariableLoad, Browsable(false)] uint8_t SpriteHeightNegative,
+		[property: LocoStructOffset(0x07), LocoStructVariableLoad, Browsable(false)] uint8_t SpriteHeightPositive,
+		[property: LocoStructOffset(0x08)] SteamObjectFlags Flags,
+		[property: LocoStructOffset(0x0A)] uint32_t var_0A,
+		[property: LocoStructOffset(0x0E), Browsable(false)] image_id BaseImageId,
+		[property: LocoStructOffset(0x12), LocoStructVariableLoad, Browsable(false)] uint16_t _TotalNumFramesType0,
+		[property: LocoStructOffset(0x14), LocoStructVariableLoad, Browsable(false)] uint16_t _TotalNumFramesType1,
+		[property: LocoStructOffset(0x16)] uint32_t _FrameInfoType0Ptr,
+		[property: LocoStructOffset(0x1A)] uint32_t _FrameInfoType1Ptr,
+		[property: LocoStructOffset(0x1E)] uint8_t NumSoundEffects,
+		[property: LocoStructOffset(0x01F), LocoArrayLength(SteamObject.MaxSoundEffects), LocoStructVariableLoad, Browsable(false)] object_id[] _SoundEffects
+	) : ILocoStruct, ILocoStructVariableData
 	{
-		//[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[LocoStructOffset(0x02), LocoPropertyMaybeUnused] public uint16_t NumImages { get; set; } = numImages; // this is simply the count of images in the graphics table
-		[LocoStructOffset(0x04)] public uint8_t NumStationaryTicks { get; set; } = numStationaryTicks;
-		//[LocoStructOffset(0x05)] public uint8_t SpriteWidth { get; set; } = spriteWidth;
-		//[LocoStructOffset(0x06)] public uint8_t SpriteHeightNegative { get; set; } = spriteHeightNegative;
-		//[LocoStructOffset(0x07)] public uint8_t SpriteHeightPositive { get; set; } = spriteHeightPositive;
-		[LocoStructOffset(0x08)] public SteamObjectFlags Flags { get; set; } = flags;
-		[LocoStructOffset(0x0A)] public uint32_t var_0A { get; set; } = var_0A;
-		//[LocoStructOffset(0x0E)] public image_id BaseImageId,
-		[LocoStructOffset(0x12), LocoStructSkipRead] public uint16_t TotalNumFramesType0 => (uint16_t)FrameInfoType0.Count;
-		[LocoStructOffset(0x14), LocoStructSkipRead] public uint16_t TotalNumFramesType1 => (uint16_t)FrameInfoType1.Count;
-		//[property: LocoStructProperty(0x16)] public const ImageAndHeight* FrameInfoType0,
-		//[property: LocoStructProperty(0x1A)] public const ImageAndHeight* FrameInfoType1,
-		[LocoStructOffset(0x1E)] public uint8_t NumSoundEffects { get; set; } = numSoundEffects;
-		//[LocoStructOffset(0x01F), LocoArrayLength(9)] public object_index[] SoundEffects { get; set; } = soundEffects;
+		public const int MaxSoundEffects = 9;
 
 		public List<ImageAndHeight> FrameInfoType0 { get; set; } = [];
 		public List<ImageAndHeight> FrameInfoType1 { get; set; } = [];

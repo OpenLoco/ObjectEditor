@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace OpenLocoObjectEditor.Logging
+namespace OpenLoco.ObjectEditor.Logging
 {
 	public enum LogLevel { Debug2, Debug, Info, Warning, Error };
 

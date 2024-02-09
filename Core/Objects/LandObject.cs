@@ -1,10 +1,10 @@
-﻿
-using System.ComponentModel;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
 
-namespace OpenLocoObjectEditor.Objects
+using System.ComponentModel;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
+
+namespace OpenLoco.ObjectEditor.Objects
 {
 	[Flags]
 	public enum LandObjectFlags : uint8_t

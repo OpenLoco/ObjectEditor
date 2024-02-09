@@ -1,4 +1,4 @@
-﻿namespace OpenLocoObjectEditorGui
+﻿namespace OpenLoco.ObjectEditor.Gui
 {
 	public partial class ProgressBarForm : Form
 	{

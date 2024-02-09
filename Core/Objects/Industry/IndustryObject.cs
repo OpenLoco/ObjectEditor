@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
+using OpenLoco.ObjectEditor;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
 
 namespace Core.Objects
 {

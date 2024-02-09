@@ -1,4 +1,4 @@
-﻿namespace OpenLocoObjectEditor.Objects
+﻿namespace OpenLoco.ObjectEditor.Objects
 {
 	[Flags]
 	public enum VehicleObjectFlags : uint16_t

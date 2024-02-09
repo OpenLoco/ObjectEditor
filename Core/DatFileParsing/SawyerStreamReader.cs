@@ -1,14 +1,14 @@
 ﻿using System.Text;
-using OpenLocoObjectEditor.Headers;
-using OpenLocoObjectEditor.Objects;
-using OpenLocoObjectEditor.Types;
-using OpenLocoObjectEditor.Logging;
-using OpenLocoObjectEditor.Data;
+using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Objects;
+using OpenLoco.ObjectEditor.Types;
+using OpenLoco.ObjectEditor.Logging;
+using OpenLoco.ObjectEditor.Data;
 using Core.Objects;
 using Core.Objects.Sound;
 using Zenith.Core;
 
-namespace OpenLocoObjectEditor.DatFileParsing
+namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	public static class SawyerStreamReader
 	{
@@ -132,7 +132,7 @@ namespace OpenLocoObjectEditor.DatFileParsing
 			{
 				// some objects have graphics data
 				var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-				logger?.Info($"FileLength={new FileInfo(filename).Length} HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+				logger?.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
 				newObj = new LocoObject(locoStruct, stringTable, imageTable);
 			}
@@ -267,7 +267,7 @@ namespace OpenLocoObjectEditor.DatFileParsing
 				}
 			}
 
-			return (g1Header, g1Element32s, g1ElementHeaders.Length + imageData.Length);
+			return (g1Header, g1Element32s, G1Header.StructLength + g1ElementHeaders.Length + imageData.Length);
 		}
 
 		public static byte[] DecodeRLEImageData(G1Element32 img)

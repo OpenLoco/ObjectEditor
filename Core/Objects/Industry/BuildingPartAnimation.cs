@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Objects
 {

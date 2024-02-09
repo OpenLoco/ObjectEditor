@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
-using OpenLocoObjectEditor.Types;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Types;
 
-namespace OpenLocoObjectEditor.Objects
+namespace OpenLoco.ObjectEditor.Objects
 {
 	[Flags]
 	public enum TrackObjectPieceFlags : uint16_t
@@ -44,10 +44,10 @@ namespace OpenLocoObjectEditor.Objects
 		[property: LocoStructOffset(0x07)] uint8_t NumCompatible,
 		[property: LocoStructOffset(0x08)] uint8_t NumMods,
 		[property: LocoStructOffset(0x09)] uint8_t NumSignals,
-		[property: LocoStructOffset(0x0A), LocoArrayLength(4), LocoStructVariableLoad, Browsable(false)] object_id[] _Mods,
+		[property: LocoStructOffset(0x0A), LocoArrayLength(TrackObject.MaxMods), LocoStructVariableLoad, Browsable(false)] object_id[] _Mods,
 		[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)] uint16_t _Signals, // bitset
-		[property: LocoStructOffset(0x10)] uint16_t CompatibleTracks, // bitset
-		[property: LocoStructOffset(0x12)] uint16_t CompatibleRoads, // bitset
+		[property: LocoStructOffset(0x10), Browsable(false)] uint16_t _CompatibleTracks, // bitset
+		[property: LocoStructOffset(0x12), Browsable(false)] uint16_t _CompatibleRoads, // bitset
 		[property: LocoStructOffset(0x14)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x16)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x18)] int16_t TunnelCostFactor,
@@ -57,9 +57,9 @@ namespace OpenLocoObjectEditor.Objects
 		[property: LocoStructOffset(0x1E), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x22)] TrackObjectFlags Flags,
 		[property: LocoStructOffset(0x24)] uint8_t NumBridges,
-		[property: LocoStructOffset(0x25), LocoArrayLength(7), Browsable(false)] object_id[] _Bridges,       // 0x25
+		[property: LocoStructOffset(0x25), LocoArrayLength(TrackObject.MaxBridges), Browsable(false)] object_id[] _Bridges,       // 0x25
 		[property: LocoStructOffset(0x2C)] uint8_t NumStations,
-		[property: LocoStructOffset(0x2D), LocoArrayLength(7), Browsable(false)] object_id[] _Stations,       // 0x2D
+		[property: LocoStructOffset(0x2D), LocoArrayLength(TrackObject.MaxStations), Browsable(false)] object_id[] _Stations,       // 0x2D
 		[property: LocoStructOffset(0x34)] uint8_t DisplayOffset,
 		[property: LocoStructOffset(0x35), Browsable(false)] uint8_t pad_35
 		) : ILocoStruct, ILocoStructVariableData, IImageTableStrings
@@ -71,16 +71,13 @@ namespace OpenLocoObjectEditor.Objects
 		public List<S5Header> Bridges { get; set; } = [];
 		public List<S5Header> Stations { get; set; } = [];
 
-		public const int NumTunnels = 1;
+		public const int MaxTunnels = 1;
+		public const int MaxBridges = 7;
+		public const int MaxStations = 7;
+		public const int MaxMods = 4;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			Compatible.Clear();
-			Mods.Clear();
-			Signals.Clear();
-			Bridges.Clear();
-			Stations.Clear();
-
 			// compatible roads/tracks
 			Compatible = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
 			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
@@ -94,8 +91,8 @@ namespace OpenLocoObjectEditor.Objects
 			remainingData = remainingData[(S5Header.StructLength * NumSignals)..];
 
 			// tunnel
-			Tunnel = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumTunnels)[0];
-			remainingData = remainingData[(S5Header.StructLength * NumTunnels)..];
+			Tunnel = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxTunnels)[0];
+			remainingData = remainingData[(S5Header.StructLength * MaxTunnels)..];
 
 			// bridges
 			Bridges = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumBridges);
@@ -105,6 +102,9 @@ namespace OpenLocoObjectEditor.Objects
 			Stations = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumStations);
 			remainingData = remainingData[(S5Header.StructLength * NumStations)..];
 
+			// set _CompatibleRoads?
+			// set _CompatibleTracks?
+
 			return remainingData;
 		}
 
@@ -112,6 +112,7 @@ namespace OpenLocoObjectEditor.Objects
 		{
 			var headers = Compatible
 				.Concat(Mods)
+				.Concat(Signals)
 				.Concat(Enumerable.Repeat(Tunnel, 1))
 				.Concat(Bridges)
 				.Concat(Stations);

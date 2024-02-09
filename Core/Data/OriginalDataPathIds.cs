@@ -1,4 +1,4 @@
-﻿namespace OpenLocoObjectEditor.Data
+﻿namespace OpenLoco.ObjectEditor.Data
 {
 	// these are indexed to the strings in OriginalDateFiles.cs
 	public enum OriginalDataPathIds : uint8_t

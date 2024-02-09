@@ -1,6 +1,6 @@
 using Zenith.Core;
 
-namespace OpenLocoObjectEditor.DatFileParsing
+namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	public static class ByteReader
 	{
@@ -129,9 +129,33 @@ namespace OpenLocoObjectEditor.DatFileParsing
 				var variableAttr = AttributeHelper.Get<LocoStructVariableLoadAttribute>(p);
 				if (variableAttr != null)
 				{
-					if (p.PropertyType.IsArray && p.PropertyType.GetElementType() == typeof(uint8_t))
+					if (p.PropertyType.IsArray)
 					{
-						args.Add(new uint8_t[arrLength]);
+						// todo: find a generic way to do this
+						if (p.PropertyType.GetElementType() == typeof(uint8_t))
+						{
+							args.Add(new uint8_t[arrLength]);
+						}
+						else if (p.PropertyType.GetElementType() == typeof(int8_t))
+						{
+							args.Add(new int8_t[arrLength]);
+						}
+						else if (p.PropertyType.GetElementType() == typeof(uint16_t))
+						{
+							args.Add(new uint16_t[arrLength]);
+						}
+						else if (p.PropertyType.GetElementType() == typeof(int16_t))
+						{
+							args.Add(new int16_t[arrLength]);
+						}
+						else if (p.PropertyType.GetElementType() == typeof(uint32_t))
+						{
+							args.Add(new uint32_t[arrLength]);
+						}
+						else if (p.PropertyType.GetElementType() == typeof(int32_t))
+						{
+							args.Add(new int32_t[arrLength]);
+						}
 					}
 					else
 					{

@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
 
-namespace OpenLocoObjectEditor.Objects
+namespace OpenLoco.ObjectEditor.Objects
 {
 	[Flags]
 	public enum RoadStationObjectFlags : uint8_t
@@ -19,36 +19,29 @@ namespace OpenLocoObjectEditor.Objects
 	[LocoStructSize(0x6E)]
 	[LocoStructType(ObjectType.RoadStation)]
 	[LocoStringTable("Name")]
-	public class RoadStationObject(
-		uint8_t paintStyle,
-		uint16_t roadPieces,
-		int16_t buildCostFactor,
-		int16_t sellCostFactor,
-		uint8_t costIndex,
-		RoadStationObjectFlags flags,
-		uint8_t numCompatible,
-		uint16_t designedYear,
-		uint16_t obsoleteYear)
-		: ILocoStruct, ILocoStructVariableData
+	public record RoadStationObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
+		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
+		[property: LocoStructOffset(0x03)] uint8_t pad_03,
+		[property: LocoStructOffset(0x04)] uint16_t RoadPieces,
+		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
+		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
+		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
+		[property: LocoStructOffset(0x0B)] RoadStationObjectFlags Flags,
+		[property: LocoStructOffset(0x0C), LocoStructVariableLoad, Browsable(false)] image_id Image,
+		[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxImageOffsets)] uint32_t[] ImageOffsets,
+		[property: LocoStructOffset(0x20)] uint8_t NumCompatible,
+		[property: LocoStructOffset(0x21), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxNumMods)] uint8_t[] _Mods,
+		[property: LocoStructOffset(0x28)] uint16_t DesignedYear,
+		[property: LocoStructOffset(0x2A)] uint16_t ObsoleteYear,
+		[property: LocoStructOffset(0x2C), LocoStructVariableLoad, Browsable(false)] object_id _CargoTypeId,
+		[property: LocoStructOffset(0x2D)] uint8_t pad_2D,
+		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes
+	) : ILocoStruct, ILocoStructVariableData
 	{
-		//[LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[LocoStructOffset(0x02)] public uint8_t PaintStyle { get; set; } = paintStyle;
-		//[LocoStructOffset(0x03)] uint8_t pad_03,
-		[LocoStructOffset(0x04)] public uint16_t RoadPieces { get; set; } = roadPieces;
-		[LocoStructOffset(0x06)] public int16_t BuildCostFactor { get; set; } = buildCostFactor;
-		[LocoStructOffset(0x08)] public int16_t SellCostFactor { get; set; } = sellCostFactor;
-		[LocoStructOffset(0x0A)] public uint8_t CostIndex { get; set; } = costIndex;
-		[LocoStructOffset(0x0B)] public RoadStationObjectFlags Flags { get; set; } = flags;
-		//[LocoStructOffset(0x0C)] image_id Image,
-		//[LocoStructOffset(0x10), LocoArrayLength(4)] public uint32_t[] ImageOffsets { get; set; }
-		[LocoStructOffset(0x20)] public uint8_t NumCompatible { get; set; } = numCompatible;
-		//[LocoStructOffset(0x21), LocoArrayLength(7)] uint8_t[] Mods,
-		[LocoStructOffset(0x28)] public uint16_t DesignedYear { get; set; } = designedYear;
-		[LocoStructOffset(0x2A)] public uint16_t ObsoleteYear { get; set; } = obsoleteYear;
-		//[LocoStructOffset(0x2C)] object_index CargoType
-		//[LocoStructOffset(0x2D)] uint8_t pad_2D
-		//[LocoStructProperty(0x2E)] uint8_t CargoOffsetBytes[4][4]
-
+		public const int MaxImageOffsets = 4;
+		public const int MaxNumMods = 7;
+		public const int CargoOffsetBytesSize = 16;
 		public List<S5Header> Compatible { get; set; } = [];
 
 		public S5Header CargoType { get; set; }

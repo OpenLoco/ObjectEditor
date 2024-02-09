@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Headers;
 
-namespace OpenLocoObjectEditor.DatFileParsing
+namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[Category("Header")]

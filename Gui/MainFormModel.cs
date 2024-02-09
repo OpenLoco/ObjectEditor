@@ -1,17 +1,17 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLocoObjectEditorGui.IndexObjectHeader>;
-global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLocoObjectEditorGui.UiLocoObject>;
+global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.Gui.IndexObjectHeader>;
+global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.Gui.UiLocoObject>;
 
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Objects;
-using OpenLocoObjectEditor.Logging;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Objects;
+using OpenLoco.ObjectEditor.Logging;
 using System.Diagnostics;
-using OpenLocoObjectEditor.Data;
+using OpenLoco.ObjectEditor.Data;
 using Zenith.Core;
 
-namespace OpenLocoObjectEditorGui
+namespace OpenLoco.ObjectEditor.Gui
 {
 	class MainFormModel
 	{
@@ -359,18 +359,21 @@ namespace OpenLocoObjectEditorGui
 		private static JsonSerializerOptions GetOptions()
 			=> new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
 
-		static void SerialiseHeaderIndexToFile(string filename, HeaderIndex headerIndex, JsonSerializerOptions options)
+		static void SerialiseHeaderIndexToFile(string filename, HeaderIndex headerIndex, JsonSerializerOptions options, ILogger? logger = null)
 		{
+			logger?.Info($"Saved settings to {filename}");
 			var json = JsonSerializer.Serialize(headerIndex, options);
 			File.WriteAllText(filename, json);
 		}
 
-		static HeaderIndex? DeserialiseHeaderIndexFromFile(string filename)
+		static HeaderIndex? DeserialiseHeaderIndexFromFile(string filename, ILogger? logger = null)
 		{
 			if (!File.Exists(filename))
 			{
+				logger?.Info($"Settings file {filename} does not exist");
 				return null;
 			}
+			logger?.Info($"Loading settings from {filename}");
 
 			var json = File.ReadAllText(filename);
 

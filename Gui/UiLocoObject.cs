@@ -1,8 +1,8 @@
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Types;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Types;
 using System.ComponentModel;
 
-namespace OpenLocoObjectEditorGui
+namespace OpenLoco.ObjectEditor.Gui
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public interface IUiObject { }

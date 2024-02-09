@@ -1,7 +1,7 @@
-﻿using OpenLocoObjectEditor.Data;
+﻿using OpenLoco.ObjectEditor.Data;
 using System.ComponentModel;
 
-namespace OpenLocoObjectEditor.Types
+namespace OpenLoco.ObjectEditor.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class StringTable

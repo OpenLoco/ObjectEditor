@@ -1,19 +1,19 @@
 using NAudio.Gui;
 using NAudio.Wave;
-using OpenLocoObjectEditor;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
-using OpenLocoObjectEditor.Objects;
-using OpenLocoObjectEditor.Types;
-using OpenLocoObjectEditor.Logging;
+using OpenLoco.ObjectEditor;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Objects;
+using OpenLoco.ObjectEditor.Types;
+using OpenLoco.ObjectEditor.Logging;
 using System.Data;
 using System.Drawing.Imaging;
 using System.Reflection;
-using OpenLocoObjectEditor.Data;
+using OpenLoco.ObjectEditor.Data;
 using Core.Objects.Sound;
 using Zenith.Core;
 
-namespace OpenLocoObjectEditorGui
+namespace OpenLoco.ObjectEditor.Gui
 {
 	public partial class MainForm : Form
 	{

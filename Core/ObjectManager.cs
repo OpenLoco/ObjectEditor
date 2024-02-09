@@ -1,7 +1,7 @@
-﻿using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
+﻿using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
-namespace OpenLocoObjectEditor
+namespace OpenLoco.ObjectEditor
 {
 	public static class SObjectManager
 	{

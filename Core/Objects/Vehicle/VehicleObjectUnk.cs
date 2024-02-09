@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
-namespace OpenLocoObjectEditor.Objects
+namespace OpenLoco.ObjectEditor.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x06)]

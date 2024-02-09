@@ -1,4 +1,4 @@
-﻿namespace OpenLocoObjectEditor.Logging
+﻿namespace OpenLoco.ObjectEditor.Logging
 {
 	public class LogAddedEventArgs(LogLine log) : EventArgs
 	{

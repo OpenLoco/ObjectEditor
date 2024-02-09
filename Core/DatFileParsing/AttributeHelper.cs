@@ -1,7 +1,7 @@
-﻿using OpenLocoObjectEditor.Data;
+﻿using OpenLoco.ObjectEditor.Data;
 using System.Reflection;
 
-namespace OpenLocoObjectEditor.DatFileParsing
+namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	public static class AttributeHelper
 	{

@@ -1,4 +1,4 @@
-﻿namespace OpenLocoObjectEditor.Data
+﻿namespace OpenLoco.ObjectEditor.Data
 {
 	public enum LanguageId : uint8_t
 	{

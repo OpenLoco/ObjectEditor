@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace OpenLocoObjectEditor.DatFileParsing
+namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public interface ILocoStructVariableData

@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
 using Zenith.Core;
 
-namespace OpenLocoObjectEditor.Headers
+namespace OpenLoco.ObjectEditor.Headers
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[Category("Header")]

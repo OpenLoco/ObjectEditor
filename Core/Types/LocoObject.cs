@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
 
-namespace OpenLocoObjectEditor.Types
+namespace OpenLoco.ObjectEditor.Types
 {
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

@@ -1,6 +1,6 @@
 ﻿using System.Drawing.Imaging;
 
-namespace OpenLocoObjectEditorGui
+namespace OpenLoco.ObjectEditor.Gui
 {
 	public static class PaletteHelpers
 	{

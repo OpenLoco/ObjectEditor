@@ -1,4 +1,4 @@
-﻿namespace OpenLocoObjectEditor
+﻿namespace OpenLoco.ObjectEditor
 {
 	public class Annotation
 	{

@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
-using OpenLocoObjectEditor.Data;
-using OpenLocoObjectEditor.DatFileParsing;
-using OpenLocoObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Headers;
 
-namespace OpenLocoObjectEditor.Objects
+namespace OpenLoco.ObjectEditor.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]
@@ -14,10 +14,11 @@ namespace OpenLocoObjectEditor.Objects
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x06), LocoArrayLength(0x8 - 0x6), Browsable(false)] uint8_t[] pad_06,
 		[property: LocoStructOffset(0x08), Browsable(false)] uint8_t RequiredObjectCount,
-		[property: LocoStructOffset(0x09), LocoArrayLength(4), Browsable(false), LocoStructVariableLoad] object_id[] _RequiredObjects,
+		[property: LocoStructOffset(0x09), LocoArrayLength(RegionObject.MaxRequiredObjects), LocoStructVariableLoad, Browsable(false)] object_id[] _RequiredObjects,
 		[property: LocoStructOffset(0x0D), LocoArrayLength(0x12 - 0xD), Browsable(false)] uint8_t[] pad_0D
 		) : ILocoStruct, ILocoStructVariableData
 	{
+		public const int MaxRequiredObjects = 4;
 		public List<S5Header> RequiredObjects { get; set; } = [];
 		public List<S5Header> DependentObjects { get; set; } = [];
 

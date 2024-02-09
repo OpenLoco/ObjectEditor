@@ -12,6 +12,7 @@ using System.Reflection;
 using OpenLoco.ObjectEditor.Data;
 using Core.Objects.Sound;
 using Zenith.Core;
+using System.Text;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
@@ -88,12 +89,21 @@ namespace OpenLoco.ObjectEditor.Gui
 			};
 
 			var assembly = Assembly.GetExecutingAssembly();
-			var resourceName = "Gui.palette.png";
-			using (var stream = assembly.GetManifestResourceStream(resourceName))
+			var paletteFilename = "Gui.palette.png";
+			using (var stream = assembly.GetManifestResourceStream(paletteFilename))
 			{
 				var paletteBitmap = (Bitmap)Image.FromStream(stream!);
 				var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
 				model = new MainFormModel(logger, SettingsFile, palette);
+			}
+
+			var ress = assembly.GetManifestResourceNames();
+			var versionFilename = "Gui.version.txt";
+			using (var stream = assembly.GetManifestResourceStream(versionFilename))
+			{
+				var buf = new byte[5];
+				var arr = stream!.Read(buf);
+				Text = $"OpenLoco Object Editor - {Encoding.ASCII.GetString(buf)}";
 			}
 		}
 

@@ -21,8 +21,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		dat-object-layout.md = dat-object-layout.md
+		loco_icon.ico = loco_icon.ico
 		palette.png = palette.png
 		README.md = README.md
+		version.txt = version.txt
 	EndProjectSection
 EndProject
 Global

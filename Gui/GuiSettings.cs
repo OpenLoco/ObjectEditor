@@ -1,3 +1,6 @@
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+
 namespace OpenLoco.ObjectEditor.Gui
 {
 	public class GuiSettings
@@ -8,12 +11,13 @@ namespace OpenLoco.ObjectEditor.Gui
 			set
 			{
 				objectDirectory = value;
-				_ = ObjDataDirectories.Add(objectDirectory);
+				ObjDataDirectories ??= [];
+				ObjDataDirectories.Add(objectDirectory);
 			}
 		}
-		string objectDirectory = string.Empty;
+		string objectDirectory;
 
-		public HashSet<string> ObjDataDirectories { get; } = [];
+		public HashSet<string> ObjDataDirectories { get; set; }
 
 		public string DataDirectory
 		{
@@ -21,19 +25,18 @@ namespace OpenLoco.ObjectEditor.Gui
 			set
 			{
 				dataDirectory = value;
-				_ = DataDirectories.Add(dataDirectory);
+				DataDirectories ??= [];
+				DataDirectories.Add(dataDirectory);
 			}
 		}
-		string dataDirectory = string.Empty;
+		string dataDirectory;
 
-		public HashSet<string> DataDirectories { get; } = [];
+		public HashSet<string> DataDirectories { get; set; }
 
 		public string PaletteFile { get; set; } = "palette.png";
 
 		public string IndexFileName { get; set; } = "objectIndex.json";
-
 		public string G1DatFileName { get; set; } = "g1.DAT";
-
 		public string GetObjDataFullPath(string fileName) => Path.Combine(ObjDataDirectory, fileName);
 		public string GetDataFullPath(string fileName) => Path.Combine(DataDirectory, fileName);
 	}

@@ -166,9 +166,13 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		public void SaveSettings()
 		{
-			var options = GetOptions();
-			var text = JsonSerializer.Serialize(Settings, options);
-			File.WriteAllText(SettingsFile, text);
+			//if (Settings.HasChanges)
+			{
+				var options = GetOptions();
+				var text = JsonSerializer.Serialize(Settings, options);
+				File.WriteAllText(SettingsFile, text);
+				//Settings.HasChanges = false;
+			}
 		}
 
 		// this method loads every single object entirely. it takes a long time to run

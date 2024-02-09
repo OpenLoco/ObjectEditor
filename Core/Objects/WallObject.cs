@@ -26,7 +26,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		NoSelectPrimaryColour = 1 << 0,
 		DoorSoundMask = 1 << 1,  // unused? only for rct2?
 		DoorSoundShift = 1 << 2, // unused? only for rct2?
-		IsOpaque = 1 << 3, // unused? only for rct2?
+		Opaque = 1 << 3, // unused? only for rct2?
 		Animated = 1 << 4, // unused? only for rct2?
 	};
 

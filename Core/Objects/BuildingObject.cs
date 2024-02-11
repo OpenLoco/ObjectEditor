@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Core.Objects;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
@@ -38,15 +38,15 @@ namespace OpenLoco.ObjectEditor.Objects
 			[property: LocoStructOffset(0x9D)] Colour ScaffoldingColour,
 			[property: LocoStructOffset(0x9E)] uint8_t GeneratorFunction,
 			[property: LocoStructOffset(0x9F)] uint8_t var_9F,
-			//[property: LocoStructOffset(0xA0), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> ProducedQuantity,
-			//[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(MaxProducedCargoType)] List<uint8_t> ProducedCargoType,
-			//[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(MaxRequiredCargoType)] List<uint8_t> RequiredCargoType,
+			[property: LocoStructOffset(0xA0), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> _ProducedQuantity,
+			[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxProducedCargoType), Browsable(false)] List<object_id> _ProducedCargoType,
+			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxRequiredCargoType), Browsable(false)] List<object_id> _RequiredCargoType,
 			[property: LocoStructOffset(0xA6), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A6,
 			[property: LocoStructOffset(0xA8), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A8,
 			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A4, // Some type of Cargo
 			[property: LocoStructOffset(0xAA)] int16_t DemolishRatingReduction,
 			[property: LocoStructOffset(0xAC)] uint8_t var_AC,
-			[property: LocoStructOffset(0xAD)] uint8_t var_AD
+			[property: LocoStructOffset(0xAD)] uint8_t NumAnimationSequences
 		//[property: LocoStructOffset(0xAE), LocoStructVariableLoad, LocoArrayLength(4)] uint8_t[][] var_AE // 0xAE ->0xB2->0xB6->0xBA->0xBE (4 byte pointers)
 		) : ILocoStruct, ILocoStructVariableData
 	{
@@ -57,7 +57,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		public List<S5Header> ProducedCargo { get; set; } = [];
 		public List<S5Header> RequiredCargo { get; set; } = [];
 
-		public List<uint8_t[]> var_AE { get; set; } = [];
+		public List<uint8_t[]> AnimationSequences { get; set; } = [];
 
 		// known issues:
 		// HOSPITL1.dat - loads without error but graphics are bugged
@@ -100,14 +100,14 @@ namespace OpenLoco.ObjectEditor.Objects
 			RequiredCargo = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxRequiredCargoType);
 			remainingData = remainingData[(S5Header.StructLength * MaxRequiredCargoType)..];
 
-			// load ??
-			var_AE.Clear();
-			for (var i = 0; i < var_AD; ++i)
+			// animation sequences
+			AnimationSequences.Clear();
+			for (var i = 0; i < NumAnimationSequences; ++i)
 			{
 				var size = BitConverter.ToUInt16(remainingData[..2]);
 				remainingData = remainingData[2..];
 
-				var_AE.Add(remainingData[..size].ToArray());
+				AnimationSequences.Add(remainingData[..size].ToArray());
 				remainingData = remainingData[size..];
 			}
 
@@ -150,7 +150,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				ms.Write(obj.Write());
 			}
 
-			foreach (var unk in var_AE)
+			foreach (var unk in AnimationSequences)
 			{
 				ms.Write(BitConverter.GetBytes((uint16_t)unk.Length));
 				foreach (var x in unk)

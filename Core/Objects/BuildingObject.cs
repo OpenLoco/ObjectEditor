@@ -46,7 +46,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A4, // Some type of Cargo
 			[property: LocoStructOffset(0xAA)] int16_t DemolishRatingReduction,
 			[property: LocoStructOffset(0xAC)] uint8_t var_AC,
-			[property: LocoStructOffset(0xAD)] uint8_t NumAnimationSequences
+			[property: LocoStructOffset(0xAD)] uint8_t NumAnimatedElevators
 		//[property: LocoStructOffset(0xAE), LocoStructVariableLoad, LocoArrayLength(4)] uint8_t[][] var_AE // 0xAE ->0xB2->0xB6->0xBA->0xBE (4 byte pointers)
 		) : ILocoStruct, ILocoStructVariableData
 	{
@@ -57,7 +57,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		public List<S5Header> ProducedCargo { get; set; } = [];
 		public List<S5Header> RequiredCargo { get; set; } = [];
 
-		public List<uint8_t[]> AnimationSequences { get; set; } = [];
+		public List<uint8_t[]> ElevatorAnimationHeights { get; set; } = [];
 
 		// known issues:
 		// HOSPITL1.dat - loads without error but graphics are bugged
@@ -101,13 +101,13 @@ namespace OpenLoco.ObjectEditor.Objects
 			remainingData = remainingData[(S5Header.StructLength * MaxRequiredCargoType)..];
 
 			// animation sequences
-			AnimationSequences.Clear();
-			for (var i = 0; i < NumAnimationSequences; ++i)
+			ElevatorAnimationHeights.Clear();
+			for (var i = 0; i < NumAnimatedElevators; ++i)
 			{
 				var size = BitConverter.ToUInt16(remainingData[..2]);
 				remainingData = remainingData[2..];
 
-				AnimationSequences.Add(remainingData[..size].ToArray());
+				ElevatorAnimationHeights.Add(remainingData[..size].ToArray());
 				remainingData = remainingData[size..];
 			}
 
@@ -150,7 +150,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				ms.Write(obj.Write());
 			}
 
-			foreach (var unk in AnimationSequences)
+			foreach (var unk in ElevatorAnimationHeights)
 			{
 				ms.Write(BitConverter.GetBytes((uint16_t)unk.Length));
 				foreach (var x in unk)

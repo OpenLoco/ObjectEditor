@@ -179,7 +179,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				// CollectionAssert.AreEqual(struc.var_A4, Array.CreateInstance(typeof(byte), 2), nameof(struc.var_A4));
 				Assert.That(struc.DemolishRatingReduction, Is.EqualTo(0), nameof(struc.DemolishRatingReduction));
 				Assert.That(struc.var_AC, Is.EqualTo(255), nameof(struc.var_AC));
-				Assert.That(struc.NumAnimationSequences, Is.EqualTo(0), nameof(struc.NumAnimationSequences));
+				Assert.That(struc.NumAnimatedElevators, Is.EqualTo(0), nameof(struc.NumAnimatedElevators));
 			});
 			LoadSaveGenericTest<BuildingObject>(objectName, assertFunc);
 		}

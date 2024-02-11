@@ -337,17 +337,17 @@ namespace OpenLoco.ObjectEditor.Gui
 				if (a.Any() || b.Any())
 				{
 					logger.Warning("Selected directory had an index file but it was outdated; suggest recreating it when you have a moment");
-					logger.Warning("Files in index that weren't in the directory:");
-					foreach (var aa in a)
-					{
-						logger.Warning($"  {aa}");
-					}
+					//logger.Warning("Files in index that weren't in the directory:");
+					//foreach (var aa in a)
+					//{
+					//	logger.Warning($"  {aa}");
+					//}
 
-					logger.Warning("Files in directory that weren't in the index:");
-					foreach (var bb in b)
-					{
-						logger.Warning($"  {bb}");
-					}
+					//logger.Warning("Files in directory that weren't in the index:");
+					//foreach (var bb in b)
+					//{
+					//	logger.Warning($"  {bb}");
+					//}
 				}
 			}
 			else

@@ -28,4 +28,10 @@ namespace OpenLoco.ObjectEditor.Gui
 		public string FileName { get; set; }
 		public List<UiSoundObject> Audio { get; set; } = [];
 	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public class UiG1 : IUiObject
+	{
+		public G1Dat G1 { get; set; }
+	}
 }

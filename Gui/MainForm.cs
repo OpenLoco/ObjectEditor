@@ -56,7 +56,7 @@ namespace OpenLoco.ObjectEditor.Gui
 				flpImageTable.Controls.Clear();
 
 				flpImageTable.Controls.AddRange(controls.ToArray());
-				var pages = (CurrentUIImages.Count / imagesPerPage) + 1;
+				var pages = (CurrentUIImages.Count / ImagesPerPage) + 1;
 				tbCurrentPage.Text = $"Page ({currentUIImagePageNumber + 1} / {pages}) ";
 				flpImageTable.ResumeLayout(true);
 			}
@@ -75,7 +75,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		readonly Dictionary<string, Action<string>> tvUniqueLoadValues = [];
 		// End DAT Dump viewer fields
 
-		const int imagesPerPage = 50;
+		const int ImagesPerPage = 50;
 
 		const string SettingsFile = "./settings.json";
 
@@ -447,7 +447,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 		}
 
-		IEnumerable<Control> GetPictureBoxesForPage(int page) => CurrentUIImages.Skip(page * imagesPerPage).Take(imagesPerPage);
+		IEnumerable<Control> GetPictureBoxesForPage(int page) => CurrentUIImages.Skip(page * ImagesPerPage).Take(ImagesPerPage);
 
 		void recreateIndexToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -669,21 +669,33 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		public string GetImageName(IUiObject? uiObj, int counter)
 		{
-			if (uiObj is UiLocoObject uiLocoObj)
-			{
-				if (uiLocoObj.LocoObject.Object is IImageTableStrings its)
-				{
-					if (!its.TryGetImageName(counter, out var value) || value == null)
-					{
-						logger.Warning($"Object \"{uiLocoObj.DatFileInfo.S5Header.Name}\" does not have an image for id {counter}");
-						return $"{uiLocoObj.DatFileInfo.S5Header.Name}-{counter}";
-					}
+			IImageTableStrings? its = null;
+			var objectName = string.Empty;
 
-					return value;
-				}
+			if (uiObj is UiLocoObject uiLocoObj && uiLocoObj.LocoObject != null && uiLocoObj.LocoObject.Object is IImageTableStrings itss)
+			{
+				its = itss;
+				objectName = uiLocoObj.DatFileInfo.S5Header.Name;
+			}
+			else if (uiObj is UiG1 uiG1 && uiG1.G1 is IImageTableStrings itsg)
+			{
+				its = itsg;
+				objectName = "g1.dat";
 			}
 
-			return $"image{counter}";
+			if (its != null)
+			{
+				if (!its.TryGetImageName(counter, out var value) || value == null)
+				{
+					logger.Warning($"Object {objectName} does not have an image for id {counter}");
+					return $"{counter}-{objectName}";
+				}
+
+				return $"{counter}-{value}";
+
+			}
+
+			return $"{counter}-image";
 		}
 
 		public void ExportMusic(UiSoundObject uiSoundObj)
@@ -877,11 +889,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		void LoadG1(string filename)
 		{
-			pgS5Header.SelectedObject = model.G1;
-
-			currentUIObjectImages = CreateImages(model.G1.G1Elements, model.Palette).ToList();
-			RefreshImageControls();
-
+			CurrentUIObject = new UiG1 { G1 = model.G1 };
 			LoadDataDump(filename, true);
 		}
 
@@ -1185,6 +1193,13 @@ namespace OpenLoco.ObjectEditor.Gui
 				flpImageTable.Controls.Add(flp);
 			}
 
+			if (CurrentUIObject is UiG1 uiG1)
+			{
+				pgS5Header.SelectedObject = uiG1.G1.G1Header;
+				currentUIObjectImages = CreateImages(uiG1.G1.G1Elements, model.Palette).ToList();
+				RefreshImageControls();
+			}
+
 			flpImageTable.ResumeLayout(true);
 		}
 
@@ -1208,6 +1223,9 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 		}
 
+		void btnPageFirst_Click(object sender, EventArgs e)
+			=> CurrentUIImagePageNumber = 0;
+
 		void btnPagePrevious_Click(object sender, EventArgs e)
 			=> CurrentUIImagePageNumber = Math.Max(CurrentUIImagePageNumber - 1, 0);
 
@@ -1215,9 +1233,12 @@ namespace OpenLoco.ObjectEditor.Gui
 		{
 			if (currentUIImages?.Count > 0)
 			{
-				CurrentUIImagePageNumber = Math.Min(CurrentUIImagePageNumber + 1, CurrentUIImages.Count / imagesPerPage);
+				CurrentUIImagePageNumber = Math.Min(CurrentUIImagePageNumber + 1, CurrentUIImages.Count / ImagesPerPage);
 			}
 		}
+
+		void btnPageLast_Click(object sender, EventArgs e)
+			=> CurrentUIImagePageNumber = (CurrentUIImages.Count / ImagesPerPage);
 
 		void dataDumpAnnotations_AfterSelect(object sender, TreeViewEventArgs e)
 		{

@@ -91,6 +91,8 @@ namespace OpenLoco.ObjectEditor.Gui
 			headerToolStripMenuItem = new ToolStripMenuItem();
 			pictureDataToolStripMenuItem = new ToolStripMenuItem();
 			locoObjectBindingSource = new BindingSource(components);
+			btnPageEnd = new Button();
+			btnPageStart = new Button();
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).BeginInit();
 			scObjectAndLogs.Panel1.SuspendLayout();
 			scObjectAndLogs.Panel2.SuspendLayout();
@@ -289,8 +291,10 @@ namespace OpenLoco.ObjectEditor.Gui
 			// pnImagePageControls
 			// 
 			pnImagePageControls.Controls.Add(tbCurrentPage);
-			pnImagePageControls.Controls.Add(btnPagePrevious);
 			pnImagePageControls.Controls.Add(btnPageNext);
+			pnImagePageControls.Controls.Add(btnPageEnd);
+			pnImagePageControls.Controls.Add(btnPagePrevious);
+			pnImagePageControls.Controls.Add(btnPageStart);
 			pnImagePageControls.Dock = DockStyle.Bottom;
 			pnImagePageControls.Location = new Point(2, 588);
 			pnImagePageControls.Name = "pnImagePageControls";
@@ -302,18 +306,18 @@ namespace OpenLoco.ObjectEditor.Gui
 			tbCurrentPage.BorderStyle = BorderStyle.FixedSingle;
 			tbCurrentPage.Dock = DockStyle.Bottom;
 			tbCurrentPage.Enabled = false;
-			tbCurrentPage.Location = new Point(253, 0);
+			tbCurrentPage.Location = new Point(256, 0);
 			tbCurrentPage.Name = "tbCurrentPage";
-			tbCurrentPage.Size = new Size(908, 23);
+			tbCurrentPage.Size = new Size(877, 23);
 			tbCurrentPage.TabIndex = 33;
 			tbCurrentPage.TextAlign = HorizontalAlignment.Center;
 			// 
 			// btnPagePrevious
 			// 
 			btnPagePrevious.Dock = DockStyle.Left;
-			btnPagePrevious.Location = new Point(0, 0);
+			btnPagePrevious.Location = new Point(128, 0);
 			btnPagePrevious.Name = "btnPagePrevious";
-			btnPagePrevious.Size = new Size(253, 23);
+			btnPagePrevious.Size = new Size(128, 23);
 			btnPagePrevious.TabIndex = 0;
 			btnPagePrevious.Text = "← Previous Page";
 			btnPagePrevious.UseVisualStyleBackColor = true;
@@ -322,9 +326,9 @@ namespace OpenLoco.ObjectEditor.Gui
 			// btnPageNext
 			// 
 			btnPageNext.Dock = DockStyle.Right;
-			btnPageNext.Location = new Point(1161, 0);
+			btnPageNext.Location = new Point(1133, 0);
 			btnPageNext.Name = "btnPageNext";
-			btnPageNext.Size = new Size(228, 23);
+			btnPageNext.Size = new Size(128, 23);
 			btnPageNext.TabIndex = 31;
 			btnPageNext.Text = "Next Page →";
 			btnPageNext.UseVisualStyleBackColor = true;
@@ -693,6 +697,28 @@ namespace OpenLoco.ObjectEditor.Gui
 			// 
 			locoObjectBindingSource.DataSource = typeof(LocoObject);
 			// 
+			// btnPageEnd
+			// 
+			btnPageEnd.Dock = DockStyle.Right;
+			btnPageEnd.Location = new Point(1261, 0);
+			btnPageEnd.Name = "btnPageEnd";
+			btnPageEnd.Size = new Size(128, 23);
+			btnPageEnd.TabIndex = 34;
+			btnPageEnd.Text = "Last Page →→";
+			btnPageEnd.UseVisualStyleBackColor = true;
+			btnPageEnd.Click += btnPageLast_Click;
+			// 
+			// btnPageStart
+			// 
+			btnPageStart.Dock = DockStyle.Left;
+			btnPageStart.Location = new Point(0, 0);
+			btnPageStart.Name = "btnPageStart";
+			btnPageStart.Size = new Size(128, 23);
+			btnPageStart.TabIndex = 35;
+			btnPageStart.Text = "←← First Page";
+			btnPageStart.UseVisualStyleBackColor = true;
+			btnPageStart.Click += btnPageFirst_Click;
+			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -810,5 +836,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		private ToolStripSeparator toolStripSeparator3;
 		private ToolStripLabel tslImageScaling;
 		private Panel pnImagePageControls;
+		private Button btnPageEnd;
+		private Button btnPageStart;
 	}
 }

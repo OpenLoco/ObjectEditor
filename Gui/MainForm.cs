@@ -1,9 +1,7 @@
 using NAudio.Gui;
 using NAudio.Wave;
-using OpenLoco.ObjectEditor;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
-using OpenLoco.ObjectEditor.Objects;
 using OpenLoco.ObjectEditor.Types;
 using OpenLoco.ObjectEditor.Logging;
 using System.Data;
@@ -1071,17 +1069,18 @@ namespace OpenLoco.ObjectEditor.Gui
 				{
 					var paletteIndex = imageData[(y * currElement.Width) + x];
 
-					// the issue with greyscale here is it isn't normalised so all heightmaps are really dark and hard to see
-					//var colour = obj.Object is HillShapesObject
-					//	? Color.FromArgb(paletteIndex, paletteIndex, paletteIndex) // for hillshapes, its just a heightmap so lets put it in greyscale
-					//	: palette[paletteIndex];
-
 					if (paletteIndex == 0 && useTransparency)
 					{
+						// transparent pixel - no need to set anything as that's the default pixel value
 						//ImageHelpers.SetPixel(dstImgData, x, y, colour);
+						//Debugger.Break();
 					}
 					else
 					{
+						//if (paletteIndex >= 154 && paletteIndex <= 165)
+						//{
+						//	//Debugger.Break();
+						//}
 						var colour = palette[paletteIndex];
 						ImageHelpers.SetPixel(dstImgData, x, y, colour);
 					}

@@ -352,6 +352,8 @@ namespace OpenLoco.ObjectEditor.Gui
 			tsbImportFromDirectory.Size = new Size(142, 22);
 			tsbImportFromDirectory.Text = "📥 Import from Directory";
 			tsbImportFromDirectory.Click += tsbImportFromDirectory_Click;
+			tsbImportFromDirectory.Enabled = false;
+			tsbImportFromDirectory.ToolTipText = "Implementation currently broken; this is disabled for now";
 			// 
 			// toolStripSeparator4
 			// 

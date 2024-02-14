@@ -73,7 +73,7 @@ namespace OpenLoco.ObjectEditor.Tests
 			{
 				Assert.That(bytes2S5Header, Is.EqualTo(bytes1S5Header));
 				Assert.That(bytes2ObjHeader, Is.EqualTo(bytes1ObjHeader));
-				CollectionAssert.AreEqual(bytes1ObjArr.ToArray(), bytes2ObjArr.ToArray());
+				Assert.That(bytes1ObjArr.ToArray(), Is.EquivalentTo(bytes2ObjArr.ToArray()));
 			});
 		}
 
@@ -250,7 +250,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.var_04, Is.EqualTo(6672), nameof(struc.var_04));
 				Assert.That(struc.var_08, Is.EqualTo(2053), nameof(struc.var_08));
 				Assert.That(struc.Emotions, Is.EqualTo(255), nameof(struc.Emotions));
-				CollectionAssert.AreEqual(struc.Images, Array.CreateInstance(typeof(byte), 9), nameof(struc.Images));
+				Assert.That(struc.Images, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 9)), nameof(struc.Images));
 				Assert.That(struc.Intelligence, Is.EqualTo(7), nameof(struc.Intelligence));
 				Assert.That(struc.Aggressiveness, Is.EqualTo(5), nameof(struc.Aggressiveness));
 				Assert.That(struc.Competitiveness, Is.EqualTo(6), nameof(struc.Competitiveness));
@@ -304,7 +304,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.HillHeightMapCount, Is.EqualTo(2), nameof(struc.HillHeightMapCount));
 				Assert.That(struc.MountainHeightMapCount, Is.EqualTo(2), nameof(struc.MountainHeightMapCount));
 				//Assert.That(struc.var_08, Is.EqualTo(0), nameof(struc.var_08));
-				CollectionAssert.AreEqual(struc.pad_0C, Array.CreateInstance(typeof(byte), 2), nameof(struc.pad_0C));
+				Assert.That(struc.pad_0C, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 2)), nameof(struc.pad_0C));
 			});
 			LoadSaveGenericTest<HillShapesObject>(objectName, assertFunc);
 		}
@@ -433,10 +433,10 @@ namespace OpenLoco.ObjectEditor.Tests
 		{
 			void assertFunc(ILocoObject obj, RegionObject struc) => Assert.Multiple(() =>
 			{
-				CollectionAssert.AreEqual(struc.pad_06, Array.CreateInstance(typeof(byte), 2), nameof(struc.pad_06));
+				Assert.That(struc.pad_06, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 2)), nameof(struc.pad_06));
 				Assert.That(struc.RequiredObjectCount, Is.EqualTo(1), nameof(struc.RequiredObjectCount));
 				//CollectionAssert.AreEqual(struc.requiredObjects, Array.CreateInstance(typeof(byte), 4), nameof(struc.requiredObjects));
-				CollectionAssert.AreEqual(struc.pad_0D, Array.CreateInstance(typeof(byte), 5), nameof(struc.pad_0D));
+				Assert.That(struc.pad_0D, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 5)), nameof(struc.pad_0D));
 			});
 			LoadSaveGenericTest<RegionObject>(objectName, assertFunc);
 		}
@@ -759,8 +759,8 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.NumRotations, Is.EqualTo(1), nameof(struc.NumRotations));
 				Assert.That(struc.Growth, Is.EqualTo(4), nameof(struc.Growth));
 				Assert.That(struc.Flags, Is.EqualTo(TreeObjectFlags.HighAltitude | TreeObjectFlags.RequiresWater | TreeObjectFlags.HasShadow), nameof(struc.Flags));
-				CollectionAssert.AreEqual(struc.Sprites, Array.CreateInstance(typeof(byte), 6), nameof(struc.Sprites));
-				CollectionAssert.AreEqual(struc.SnowSprites, Array.CreateInstance(typeof(byte), 6), nameof(struc.SnowSprites));
+				Assert.That(struc.Sprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.Sprites));
+				Assert.That(struc.SnowSprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.SnowSprites));
 				Assert.That(struc.ShadowImageOffset, Is.EqualTo(0), nameof(struc.ShadowImageOffset));
 				Assert.That(struc.var_3C, Is.EqualTo(15), nameof(struc.var_3C));
 				Assert.That(struc.SeasonState, Is.EqualTo(3), nameof(struc.SeasonState));

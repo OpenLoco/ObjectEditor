@@ -1,23 +1,39 @@
-using System.Drawing.Imaging;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
 	public static class PaletteHelpers
 	{
-		public static Color[] PaletteFromBitmap(Bitmap img)
+		//public static System.Drawing.Color[] PaletteFromBitmap(Bitmap img)
+		//{
+		//	var palette = new System.Drawing.Color[256];
+		//	var rect = new System.Drawing.Rectangle(0, 0, img.Width, img.Height);
+		//	var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+		//	for (var y = 0; y < img.Width; ++y)
+		//	{
+		//		for (var x = 0; x < img.Height; ++x)
+		//		{
+		//			palette[(y * img.Height) + x] = ImageHelpers.GetPixel(imgData, x, y);
+		//		}
+		//	}
+
+		//	img.UnlockBits(imgData);
+		//	return palette;
+		//}
+
+		public static SixLabors.ImageSharp.Color[] PaletteFromBitmapIS(Image<Rgb24> img)
 		{
-			var palette = new Color[256];
-			var rect = new Rectangle(0, 0, img.Width, img.Height);
-			var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-			for (var y = 0; y < img.Width; ++y)
+			var palette = new SixLabors.ImageSharp.Color[256];
+
+			for (var y = 0; y < img.Height; ++y)
 			{
-				for (var x = 0; x < img.Height; ++x)
+				for (var x = 0; x < img.Width; ++x)
 				{
-					palette[(y * img.Height) + x] = ImageHelpers.GetPixel(imgData, x, y);
+					palette[(y * img.Height) + x] = img[x, y];
 				}
 			}
 
-			img.UnlockBits(imgData);
 			return palette;
 		}
 

@@ -11,6 +11,7 @@ using OpenLoco.ObjectEditor.Data;
 using Core.Objects.Sound;
 using Zenith.Core;
 using System.Text;
+using System.IO;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
@@ -1091,25 +1092,28 @@ namespace OpenLoco.ObjectEditor.Gui
 			return dstImg;
 		}
 
-		//void SelectNewPalette()
-		//{
-		//	using (var openFileDialog = new OpenFileDialog())
-		//	{
-		//		openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
-		//		openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
-		//		openFileDialog.FilterIndex = 1;
-		//		openFileDialog.RestoreDirectory = true;
+		void SelectNewPalette()
+		{
+			using (var openFileDialog = new OpenFileDialog())
+			{
+				openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+				openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
+				openFileDialog.FilterIndex = 1;
+				openFileDialog.RestoreDirectory = true;
 
-		//		if (openFileDialog.ShowDialog() == DialogResult.OK)
-		//		{
-		//			model.PaletteFile = openFileDialog.FileName;
-		//			RefreshObjectUI();
-		//		}
-		//	}
-		//}
+				if (openFileDialog.ShowDialog() == DialogResult.OK && File.Exists(openFileDialog.FileName))
+				{
+					//model.PaletteFile = openFileDialog.FileName;
+					var paletteBitmap = (Bitmap)Image.FromFile(openFileDialog.FileName);
+					model.Palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
 
-		//void setPaletteToolStripMenuItem_Click(object sender, EventArgs e)
-		//	=> SelectNewPalette();
+					RefreshObjectUI();
+				}
+			}
+		}
+
+		void loadPaletteToolStripMenuItem_Click(object sender, EventArgs e)
+			=> SelectNewPalette();
 
 		void RefreshObjectUI()
 		{

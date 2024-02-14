@@ -9,9 +9,9 @@ namespace OpenLoco.ObjectEditor.Gui
 			var palette = new Color[256];
 			var rect = new Rectangle(0, 0, img.Width, img.Height);
 			var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-			for (var y = 0; y < img.Width; ++y)
+			for (var y = 0; y < img.Height; ++y)
 			{
-				for (var x = 0; x < img.Height; ++x)
+				for (var x = 0; x < img.Width; ++x)
 				{
 					palette[(y * img.Height) + x] = ImageHelpers.GetPixel(imgData, x, y);
 				}

@@ -60,7 +60,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		//	//}
 		//}
 
-		public Color[] Palette { get; private set; }
+		public Color[] Palette { get; set; }
 
 		public G1Dat? G1 { get; set; }
 

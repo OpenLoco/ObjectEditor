@@ -49,8 +49,10 @@ namespace OpenLoco.ObjectEditor.Gui
 			tpObjectGraphicsTable = new TabPage();
 			pnImagePageControls = new Panel();
 			tbCurrentPage = new TextBox();
-			btnPagePrevious = new Button();
 			btnPageNext = new Button();
+			btnPageEnd = new Button();
+			btnPagePrevious = new Button();
+			btnPageStart = new Button();
 			tsImageTable = new ToolStrip();
 			tsbImportFromDirectory = new ToolStripButton();
 			toolStripSeparator4 = new ToolStripSeparator();
@@ -91,8 +93,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			headerToolStripMenuItem = new ToolStripMenuItem();
 			pictureDataToolStripMenuItem = new ToolStripMenuItem();
 			locoObjectBindingSource = new BindingSource(components);
-			btnPageEnd = new Button();
-			btnPageStart = new Button();
+			loadPaletteToolStripMenuItem = new ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).BeginInit();
 			scObjectAndLogs.Panel1.SuspendLayout();
 			scObjectAndLogs.Panel2.SuspendLayout();
@@ -312,6 +313,28 @@ namespace OpenLoco.ObjectEditor.Gui
 			tbCurrentPage.TabIndex = 33;
 			tbCurrentPage.TextAlign = HorizontalAlignment.Center;
 			// 
+			// btnPageNext
+			// 
+			btnPageNext.Dock = DockStyle.Right;
+			btnPageNext.Location = new Point(1133, 0);
+			btnPageNext.Name = "btnPageNext";
+			btnPageNext.Size = new Size(128, 23);
+			btnPageNext.TabIndex = 31;
+			btnPageNext.Text = "Next Page →";
+			btnPageNext.UseVisualStyleBackColor = true;
+			btnPageNext.Click += btnPageNext_Click;
+			// 
+			// btnPageEnd
+			// 
+			btnPageEnd.Dock = DockStyle.Right;
+			btnPageEnd.Location = new Point(1261, 0);
+			btnPageEnd.Name = "btnPageEnd";
+			btnPageEnd.Size = new Size(128, 23);
+			btnPageEnd.TabIndex = 34;
+			btnPageEnd.Text = "Last Page →→";
+			btnPageEnd.UseVisualStyleBackColor = true;
+			btnPageEnd.Click += btnPageLast_Click;
+			// 
 			// btnPagePrevious
 			// 
 			btnPagePrevious.Dock = DockStyle.Left;
@@ -323,16 +346,16 @@ namespace OpenLoco.ObjectEditor.Gui
 			btnPagePrevious.UseVisualStyleBackColor = true;
 			btnPagePrevious.Click += btnPagePrevious_Click;
 			// 
-			// btnPageNext
+			// btnPageStart
 			// 
-			btnPageNext.Dock = DockStyle.Right;
-			btnPageNext.Location = new Point(1133, 0);
-			btnPageNext.Name = "btnPageNext";
-			btnPageNext.Size = new Size(128, 23);
-			btnPageNext.TabIndex = 31;
-			btnPageNext.Text = "Next Page →";
-			btnPageNext.UseVisualStyleBackColor = true;
-			btnPageNext.Click += btnPageNext_Click;
+			btnPageStart.Dock = DockStyle.Left;
+			btnPageStart.Location = new Point(0, 0);
+			btnPageStart.Name = "btnPageStart";
+			btnPageStart.Size = new Size(128, 23);
+			btnPageStart.TabIndex = 35;
+			btnPageStart.Text = "←← First Page";
+			btnPageStart.UseVisualStyleBackColor = true;
+			btnPageStart.Click += btnPageFirst_Click;
 			// 
 			// tsImageTable
 			// 
@@ -346,14 +369,14 @@ namespace OpenLoco.ObjectEditor.Gui
 			// tsbImportFromDirectory
 			// 
 			tsbImportFromDirectory.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			tsbImportFromDirectory.Enabled = false;
 			tsbImportFromDirectory.Image = (Image)resources.GetObject("tsbImportFromDirectory.Image");
 			tsbImportFromDirectory.ImageTransparentColor = Color.Magenta;
 			tsbImportFromDirectory.Name = "tsbImportFromDirectory";
 			tsbImportFromDirectory.Size = new Size(142, 22);
 			tsbImportFromDirectory.Text = "📥 Import from Directory";
-			tsbImportFromDirectory.Click += tsbImportFromDirectory_Click;
-			tsbImportFromDirectory.Enabled = false;
 			tsbImportFromDirectory.ToolTipText = "Implementation currently broken; this is disabled for now";
+			tsbImportFromDirectory.Click += tsbImportFromDirectory_Click;
 			// 
 			// toolStripSeparator4
 			// 
@@ -604,7 +627,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, recreateIndexToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, recreateIndexToolStripMenuItem, loadPaletteToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
@@ -613,7 +636,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			// 
 			objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, toolStripSeparator1 });
 			objectDirectoriesToolStripMenuItem.Name = "objectDirectoriesToolStripMenuItem";
-			objectDirectoriesToolStripMenuItem.Size = new Size(176, 22);
+			objectDirectoriesToolStripMenuItem.Size = new Size(180, 22);
 			objectDirectoriesToolStripMenuItem.Text = "ObjData Directories";
 			// 
 			// setObjectDirectoryToolStripMenuItem
@@ -632,7 +655,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			// 
 			dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setDataDirectoryToolStripMenuItem, toolStripSeparator2 });
 			dataDirectoriesToolStripMenuItem.Name = "dataDirectoriesToolStripMenuItem";
-			dataDirectoriesToolStripMenuItem.Size = new Size(176, 22);
+			dataDirectoriesToolStripMenuItem.Size = new Size(180, 22);
 			dataDirectoriesToolStripMenuItem.Text = "Data Directories";
 			// 
 			// setDataDirectoryToolStripMenuItem
@@ -650,7 +673,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			// recreateIndexToolStripMenuItem
 			// 
 			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
-			recreateIndexToolStripMenuItem.Size = new Size(176, 22);
+			recreateIndexToolStripMenuItem.Size = new Size(180, 22);
 			recreateIndexToolStripMenuItem.Text = "Recreate Index";
 			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
 			// 
@@ -699,27 +722,12 @@ namespace OpenLoco.ObjectEditor.Gui
 			// 
 			locoObjectBindingSource.DataSource = typeof(LocoObject);
 			// 
-			// btnPageEnd
+			// loadPaletteToolStripMenuItem
 			// 
-			btnPageEnd.Dock = DockStyle.Right;
-			btnPageEnd.Location = new Point(1261, 0);
-			btnPageEnd.Name = "btnPageEnd";
-			btnPageEnd.Size = new Size(128, 23);
-			btnPageEnd.TabIndex = 34;
-			btnPageEnd.Text = "Last Page →→";
-			btnPageEnd.UseVisualStyleBackColor = true;
-			btnPageEnd.Click += btnPageLast_Click;
-			// 
-			// btnPageStart
-			// 
-			btnPageStart.Dock = DockStyle.Left;
-			btnPageStart.Location = new Point(0, 0);
-			btnPageStart.Name = "btnPageStart";
-			btnPageStart.Size = new Size(128, 23);
-			btnPageStart.TabIndex = 35;
-			btnPageStart.Text = "←← First Page";
-			btnPageStart.UseVisualStyleBackColor = true;
-			btnPageStart.Click += btnPageFirst_Click;
+			loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
+			loadPaletteToolStripMenuItem.Size = new Size(180, 22);
+			loadPaletteToolStripMenuItem.Text = "Load Palette";
+			loadPaletteToolStripMenuItem.Click += loadPaletteToolStripMenuItem_Click;
 			// 
 			// MainForm
 			// 
@@ -840,5 +848,6 @@ namespace OpenLoco.ObjectEditor.Gui
 		private Panel pnImagePageControls;
 		private Button btnPageEnd;
 		private Button btnPageStart;
+		private ToolStripMenuItem loadPaletteToolStripMenuItem;
 	}
 }

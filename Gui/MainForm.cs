@@ -98,7 +98,7 @@ namespace OpenLoco.ObjectEditor.Gui
 				//model = new MainFormModel(logger, SettingsFile, palette);
 
 				var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgb24>(stream!);
-				var palette = PaletteHelpers.PaletteFromBitmapIS(paletteBitmap);
+				var palette = new PaletteMap(paletteBitmap);
 				model = new MainFormModel(logger, SettingsFile, palette);
 			}
 
@@ -204,7 +204,7 @@ namespace OpenLoco.ObjectEditor.Gui
 				var objectTypes = Enum.GetValues<ObjectType>().Length;
 				var g1TabElements = model.G1.G1Elements.Skip(Constants.G1ObjectTabsOffset).Take(objectTypes).ToList();
 
-				var images = CreateImages(g1TabElements, model.Palette, true, logger).ToArray();
+				var images = CreateImages(g1TabElements, model.PaletteMap, true, logger).ToArray();
 				imageList.Images.AddRange(images);
 			}
 
@@ -633,16 +633,32 @@ namespace OpenLoco.ObjectEditor.Gui
 
 				if (fbDialog.ShowDialog() == DialogResult.OK)
 				{
-					currentUIObjectImages.Clear();
 					var files = Directory.GetFiles(fbDialog.SelectedPath);
-					var sorted = files.OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f)[5..]));
-					foreach (var file in sorted)
+					var sorted = files.OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f).Split('-')[0]));
+
+					if (CurrentUIObject is IUiObjectWithGraphics uiObjHasGraphics)
 					{
-						var img = (Bitmap)Image.FromFile(file);
-						currentUIObjectImages.Add(img);
+						//var g1Elements = new List<G1Element32>();
+						var i = 0;
+						foreach (var file in sorted)
+						{
+							var img = SixLabors.ImageSharp.Image.Load<Rgb24>(file);
+							var data = model.PaletteMap.ConvertRgb24ImageToG1Data(img);
+							var hasTransparency = data.Any(b => b == 0);
+							var oldImage = uiObjHasGraphics.G1Elements[i++];
+							oldImage.ImageData = model.PaletteMap.ConvertRgb24ImageToG1Data(img);
+							//var g1Element = new G1Element32(0, (short)img.Width, (short)img.Height, oldImage.XOffset, oldImage.YOffset, hasTransparency ? G1ElementFlags.HasTransparency : G1ElementFlags.None, oldImage.ZoomOffset)
+							//{
+							//	ImageData = model.PaletteMap.ConvertRgb24ImageToG1Data(img)
+							//};
+							//g1Elements.Add(g1Element);
+						}
+
+						//uiObjHasGraphics.G1Elements = g1Elements;
+						currentUIObjectImages = CreateImages(uiObjHasGraphics.G1Elements, model.PaletteMap).ToList();
+						RefreshImageControls();
 					}
 
-					RefreshImageControls();
 				}
 			}
 		}
@@ -979,8 +995,12 @@ namespace OpenLoco.ObjectEditor.Gui
 			// todo: on these controls we could add a right_click handler to replace image with user-created one
 			var count = 0;
 
+			var uiObjHasGraphics = CurrentUIObject as IUiObjectWithGraphics;
+
+			int counter = 0;
 			foreach (var img in images)
 			{
+				var ele = uiObjHasGraphics.G1Elements[counter++];
 				var panel = new FlowLayoutPanel
 				{
 					AutoSize = true,
@@ -1002,8 +1022,8 @@ namespace OpenLoco.ObjectEditor.Gui
 				var text = GetImageName(CurrentUIObject, count);
 				var tb = new TextBox
 				{
-					Text = GetImageName(CurrentUIObject, count),
-					Dock = DockStyle.Top
+					Text = GetImageName(CurrentUIObject, count) + $" - {ele}",
+					Dock = DockStyle.Top,
 				};
 				var size = TextRenderer.MeasureText(text, tb.Font);
 				tb.MinimumSize = new Size(size.Width, 16);
@@ -1017,11 +1037,11 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 		}
 
-		static IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, SixLabors.ImageSharp.Color[] palette, bool useTransparency = false, ILogger? logger = null)
+		static IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, PaletteMap paletteMap, bool useTransparency = false, ILogger? logger = null)
 		{
-			if (palette is null)
+			if (paletteMap is null)
 			{
-				logger.Error("Palette was empty; please load a valid palette file");
+				logger?.Error("Palette was empty; please load a valid palette file");
 				yield break;
 			}
 
@@ -1036,35 +1056,38 @@ namespace OpenLoco.ObjectEditor.Gui
 
 				if (currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
 				{
-					var imageData = currElement.ImageData;
-					var dstImg = new Bitmap(currElement.Width, currElement.Height);
-					var rect = new Rectangle(0, 0, currElement.Width, currElement.Height);
-					var dstImgData = dstImg.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-					var k = 0;
-					for (var j = 0; j < currElement.Width; ++j) // += 4 for a 32-bit ptr++
-					{
-						var b = imageData[k++];
-						var g = imageData[k++];
-						var r = imageData[k++];
-						ImageHelpers.SetPixel(dstImgData, j, 1, Color.FromArgb(r, g, b));
-					}
-
-					dstImg.UnlockBits(dstImgData);
-					yield return dstImg;
+					var bmp = G1RGBToBitmap(currElement);
+					yield return bmp;
 				}
 				else
 				{
-					var bmp = G1ElementToBitmap(currElement, palette, useTransparency);
-					if (bmp != null)
-					{
-						yield return bmp;
-					}
+					var bmp = G1IndexedToBitmap(currElement, paletteMap, useTransparency);
+					yield return bmp;
 				}
 			}
 		}
 
-		static Bitmap? G1ElementToBitmap(G1Element32 currElement, SixLabors.ImageSharp.Color[] palette, bool useTransparency = false)
+		static Bitmap G1RGBToBitmap(G1Element32 currElement)
+		{
+			var imageData = currElement.ImageData;
+			var bmp = new Bitmap(currElement.Width, currElement.Height);
+			var rect = new Rectangle(0, 0, currElement.Width, currElement.Height);
+			var dstImgData = bmp.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+			var k = 0;
+			for (var j = 0; j < currElement.Width; ++j) // += 4 for a 32-bit ptr++
+			{
+				var b = imageData[k++];
+				var g = imageData[k++];
+				var r = imageData[k++];
+				ImageHelpers.SetPixel(dstImgData, j, 1, Color.FromArgb(r, g, b));
+			}
+
+			bmp.UnlockBits(dstImgData);
+			return bmp;
+		}
+
+		static Bitmap G1IndexedToBitmap(G1Element32 currElement, PaletteMap paletteMap, bool useTransparency = false)
 		{
 			var imageData = currElement.ImageData;
 			var dstImg = new Bitmap(currElement.Width, currElement.Height);
@@ -1088,7 +1111,7 @@ namespace OpenLoco.ObjectEditor.Gui
 						//{
 						//	//Debugger.Break();
 						//}
-						var colour = palette[paletteIndex];
+						var colour = paletteMap.Palette[paletteIndex].Color;
 						var pixel = colour.ToPixel<Rgb24>();
 						ImageHelpers.SetPixel(dstImgData, x, y, Color.FromArgb(pixel.R, pixel.G, pixel.B));
 					}
@@ -1099,11 +1122,13 @@ namespace OpenLoco.ObjectEditor.Gui
 			return dstImg;
 		}
 
+		string lastPaletteDirectory = Directory.GetCurrentDirectory();
+
 		void SelectNewPalette()
 		{
 			using (var openFileDialog = new OpenFileDialog())
 			{
-				openFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+				openFileDialog.InitialDirectory = lastPaletteDirectory;
 				openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
 				openFileDialog.FilterIndex = 1;
 				openFileDialog.RestoreDirectory = true;
@@ -1111,10 +1136,11 @@ namespace OpenLoco.ObjectEditor.Gui
 				if (openFileDialog.ShowDialog() == DialogResult.OK && File.Exists(openFileDialog.FileName))
 				{
 					//model.PaletteFile = openFileDialog.FileName;
-					var paletteBitmap = (Bitmap)Image.FromFile(openFileDialog.FileName);
-					model.Palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
+					var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgb24>(openFileDialog.FileName);
+					model.PaletteMap = new PaletteMap(paletteBitmap);
 
 					RefreshObjectUI();
+					lastPaletteDirectory = Path.GetDirectoryName(openFileDialog.FileName) ?? lastPaletteDirectory;
 				}
 			}
 		}
@@ -1166,7 +1192,7 @@ namespace OpenLoco.ObjectEditor.Gui
 						//	return;
 						//}
 
-						currentUIObjectImages = CreateImages(uiLocoObj.LocoObject.G1Elements, model.Palette, logger: logger).ToList();
+						currentUIObjectImages = CreateImages(uiLocoObj.LocoObject.G1Elements, model.PaletteMap, logger: logger).ToList();
 						RefreshImageControls();
 					}
 
@@ -1206,7 +1232,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			if (CurrentUIObject is UiG1 uiG1)
 			{
 				pgS5Header.SelectedObject = uiG1.G1.G1Header;
-				currentUIObjectImages = CreateImages(uiG1.G1.G1Elements, model.Palette).ToList();
+				currentUIObjectImages = CreateImages(uiG1.G1.G1Elements, model.PaletteMap).ToList();
 				RefreshImageControls();
 			}
 

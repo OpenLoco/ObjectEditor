@@ -369,13 +369,11 @@ namespace OpenLoco.ObjectEditor.Gui
 			// tsbImportFromDirectory
 			// 
 			tsbImportFromDirectory.DisplayStyle = ToolStripItemDisplayStyle.Text;
-			tsbImportFromDirectory.Enabled = false;
 			tsbImportFromDirectory.Image = (Image)resources.GetObject("tsbImportFromDirectory.Image");
 			tsbImportFromDirectory.ImageTransparentColor = Color.Magenta;
 			tsbImportFromDirectory.Name = "tsbImportFromDirectory";
 			tsbImportFromDirectory.Size = new Size(142, 22);
 			tsbImportFromDirectory.Text = "📥 Import from Directory";
-			tsbImportFromDirectory.ToolTipText = "Implementation currently broken; this is disabled for now";
 			tsbImportFromDirectory.Click += tsbImportFromDirectory_Click;
 			// 
 			// toolStripSeparator4

@@ -5,58 +5,41 @@ namespace OpenLoco.ObjectEditor.Gui
 {
 	public static class PaletteHelpers
 	{
-		//public static System.Drawing.Color[] PaletteFromBitmap(Bitmap img)
-		//{
-		//	var palette = new System.Drawing.Color[256];
-		//	var rect = new System.Drawing.Rectangle(0, 0, img.Width, img.Height);
-		//	var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-		//	for (var y = 0; y < img.Width; ++y)
-		//	{
-		//		for (var x = 0; x < img.Height; ++x)
-		//		{
-		//			palette[(y * img.Height) + x] = ImageHelpers.GetPixel(imgData, x, y);
-		//		}
-		//	}
-
-		//	img.UnlockBits(imgData);
-		//	return palette;
-		//}
-
-		public static SixLabors.ImageSharp.Color[] PaletteFromBitmapIS(Image<Rgb24> img)
+		public static byte[] ConvertRgb24ImageToG1Data(this PaletteMap paletteMap, Image<Rgb24> img)
 		{
-			var palette = new SixLabors.ImageSharp.Color[256];
+			var pixels = img.Width * img.Height;
+			var bytes = new byte[pixels];
 
 			for (var y = 0; y < img.Height; ++y)
 			{
 				for (var x = 0; x < img.Width; ++x)
 				{
-					palette[(y * img.Height) + x] = img[x, y];
+					var dstIndex = (y * img.Width) + x;
+					bytes[dstIndex] = paletteMap.ColorToPaletteIndex(img[x, y]);
 				}
 			}
 
-			return palette;
+			return bytes;
 		}
 
-		//public static byte[] Palettise(Bitmap img)
-		//{
-		//	var pixels = img.Width * img.Height;
-		//	var bytes = new byte[pixels];
+		static byte ColorToPaletteIndex(this PaletteMap paletteMap, SixLabors.ImageSharp.Color c)
+		{
+			var reserved = paletteMap.ReservedColours.Where(cc => cc.Color == c);
+			if (reserved.Any())
+			{
+				return reserved.Single().Index;
+			}
 
-		//	var rect = new Rectangle(0, 0, img.Width, img.Height);
-		//	var imgData = img.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+			return paletteMap.ValidColours.MinBy(vc => DistanceSquared(c, vc.Color)).Index;
+		}
 
-		//	for (var y = 0; y < img.Height; ++y)
-		//	{
-		//		for (var x = 0; x < img.Width; ++x)
-		//		{
-		//			var paletteIndex = (y * img.Width) + x;
-		//			bytes[paletteIndex] = ColorToPaletteIndex(ImageHelpers.GetPixel(imgData, x, y));
-		//		}
-		//	}
+		static int DistanceSquared(SixLabors.ImageSharp.Color c1, SixLabors.ImageSharp.Color c2)
+		{
+			var rr = c2.ToPixel<Rgb24>().R - c1.ToPixel<Rgb24>().R;
+			var gg = c2.ToPixel<Rgb24>().G - c1.ToPixel<Rgb24>().G;
+			var bb = c2.ToPixel<Rgb24>().B - c1.ToPixel<Rgb24>().B;
 
-		//	return bytes;
-		//}
-
-		//static byte ColorToPaletteIndex(Color c) => 0;
+			return (rr * rr) + (gg * gg) + (bb * bb);
+		}
 	}
 }

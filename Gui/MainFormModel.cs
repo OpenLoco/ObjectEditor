@@ -60,7 +60,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		//	//}
 		//}
 
-		public SixLabors.ImageSharp.Color[] Palette { get; private set; }
+		public PaletteMap PaletteMap { get; set; }
 
 		public G1Dat? G1 { get; set; }
 
@@ -74,10 +74,10 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		public List<string> MiscFiles { get; set; } = [];
 
-		public MainFormModel(ILogger logger, string settingsFile, SixLabors.ImageSharp.Color[] palette)
+		public MainFormModel(ILogger logger, string settingsFile, PaletteMap paletteMap)
 		{
 			this.logger = logger;
-			Palette = palette;
+			PaletteMap = paletteMap;
 
 			LoadSettings(settingsFile);
 

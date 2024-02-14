@@ -1,4 +1,4 @@
-﻿
+
 using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
@@ -11,7 +11,7 @@ namespace OpenLoco.ObjectEditor.Objects
 	{
 		None = 0,
 		Recolourable = 1 << 0,
-		unk1 = 1 << 1, // Has no canopy??
+		NoGlass = 1 << 1,
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

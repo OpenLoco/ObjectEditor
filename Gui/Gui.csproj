@@ -11,7 +11,7 @@
     <StartupObject>OpenLoco.ObjectEditor.Gui.Program</StartupObject>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <AssemblyVersion>1.0.2</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <AssemblyName>ObjectEditor</AssemblyName>
     <Authors>LeftofZen</Authors>

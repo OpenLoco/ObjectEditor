@@ -1,6 +1,3 @@
-using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-
 namespace OpenLoco.ObjectEditor.Gui
 {
 	public class GuiSettings

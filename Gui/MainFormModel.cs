@@ -23,43 +23,6 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		//public OpenLocoObjectEditor.ObjectManager ObjectManager { get; private set; } = new();
 
-		//public string PaletteFile
-		//{
-		//	get => Settings.PaletteFile;
-		//	set
-		//	{
-		//		Settings.PaletteFile = value;
-		//		LoadPalette();
-		//	}
-		//}
-
-		//private void LoadPalette()
-		//{
-		//	//if (G1 == null)
-		//	{
-		//		try
-		//		{
-		//			var paletteBitmap = new Bitmap(Settings.PaletteFile);
-		//			Palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
-		//			SaveSettings();
-		//			logger.Debug($"Successfully loaded palette file {Settings.PaletteFile}");
-		//		}
-		//		catch (ArgumentException ex)
-		//		{
-		//			logger.Error(ex);
-		//		}
-		//	}
-		//	//else
-		//	//{
-		//	//	var g1PaletteElement = G1.G1Elements[ImageIds.MainPalette];
-		//	//	Palette = g1PaletteElement.ImageData
-		//	//		.Take(256 * 3)
-		//	//		.Chunk(3)
-		//	//		.Select(x => Color.FromArgb(x[2], x[1], x[0]))
-		//	//		.ToArray();
-		//	//}
-		//}
-
 		public PaletteMap PaletteMap { get; set; }
 
 		public G1Dat? G1 { get; set; }
@@ -166,13 +129,16 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		public void SaveSettings()
 		{
-			//if (Settings.HasChanges)
+			var options = GetOptions();
+			var text = JsonSerializer.Serialize(Settings, options);
+
+			var parentDir = Path.GetDirectoryName(SettingsFile);
+			if (!Directory.Exists(parentDir))
 			{
-				var options = GetOptions();
-				var text = JsonSerializer.Serialize(Settings, options);
-				File.WriteAllText(SettingsFile, text);
-				//Settings.HasChanges = false;
+				_ = Directory.CreateDirectory(parentDir);
 			}
+
+			File.WriteAllText(SettingsFile, text);
 		}
 
 		// this method loads every single object entirely. it takes a long time to run

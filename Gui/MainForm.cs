@@ -78,7 +78,9 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		const int ImagesPerPage = 50;
 
-		const string SettingsFile = "./settings.json";
+		const string ApplicationName = "OpenLoco Object Editor";
+		string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
+		string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
 		public MainForm()
 		{
@@ -107,7 +109,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			{
 				var buf = new byte[5];
 				var arr = stream!.Read(buf);
-				Text = $"OpenLoco Object Editor - {Encoding.ASCII.GetString(buf)}";
+				Text = $"{ApplicationName} - {Encoding.ASCII.GetString(buf)}";
 			}
 		}
 

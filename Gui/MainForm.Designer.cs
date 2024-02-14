@@ -738,7 +738,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
 			Padding = new Padding(4);
-			Text = "OpenLoco Object Editor";
+			Text = ApplicationName;
 			Load += MainForm_Load;
 			scObjectAndLogs.Panel1.ResumeLayout(false);
 			scObjectAndLogs.Panel1.PerformLayout();

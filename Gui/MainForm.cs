@@ -11,6 +11,8 @@ using OpenLoco.ObjectEditor.Data;
 using Core.Objects.Sound;
 using Zenith.Core;
 using System.Text;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Formats;
 using System.IO;
 
 namespace OpenLoco.ObjectEditor.Gui
@@ -91,8 +93,12 @@ namespace OpenLoco.ObjectEditor.Gui
 			var paletteFilename = "Gui.palette.png";
 			using (var stream = assembly.GetManifestResourceStream(paletteFilename))
 			{
-				var paletteBitmap = (Bitmap)Image.FromStream(stream!);
-				var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
+				//var paletteBitmap = (Bitmap)Image.FromStream(stream!);
+				//var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
+				//model = new MainFormModel(logger, SettingsFile, palette);
+
+				var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgb24>(stream!);
+				var palette = PaletteHelpers.PaletteFromBitmapIS(paletteBitmap);
 				model = new MainFormModel(logger, SettingsFile, palette);
 			}
 
@@ -1011,7 +1017,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 		}
 
-		static IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, Color[] palette, bool useTransparency = false, ILogger? logger = null)
+		static IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, SixLabors.ImageSharp.Color[] palette, bool useTransparency = false, ILogger? logger = null)
 		{
 			if (palette is null)
 			{
@@ -1058,7 +1064,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 		}
 
-		static Bitmap? G1ElementToBitmap(G1Element32 currElement, Color[] palette, bool useTransparency = false)
+		static Bitmap? G1ElementToBitmap(G1Element32 currElement, SixLabors.ImageSharp.Color[] palette, bool useTransparency = false)
 		{
 			var imageData = currElement.ImageData;
 			var dstImg = new Bitmap(currElement.Width, currElement.Height);
@@ -1083,7 +1089,8 @@ namespace OpenLoco.ObjectEditor.Gui
 						//	//Debugger.Break();
 						//}
 						var colour = palette[paletteIndex];
-						ImageHelpers.SetPixel(dstImgData, x, y, colour);
+						var pixel = colour.ToPixel<Rgb24>();
+						ImageHelpers.SetPixel(dstImgData, x, y, Color.FromArgb(pixel.R, pixel.G, pixel.B));
 					}
 				}
 			}

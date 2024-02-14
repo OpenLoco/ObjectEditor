@@ -44,7 +44,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 # Misc
 
 ## Settings
-- The program settings file, `settings.json` will be created on first startup in %APPDATA\\Roaming\\OpenLoco Object Editor\\
+- The program settings file, `settings.json` will be created on first startup in `%APPDATA%\\Roaming\\OpenLoco Object Editor\\`
 - This is where the users' object folder paths are saved, and other program data
 
 ## Indexing

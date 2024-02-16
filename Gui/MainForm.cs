@@ -14,6 +14,8 @@ using System.Text;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Formats;
 using System.IO;
+using Gui;
+using System.ComponentModel;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
@@ -65,7 +67,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		int currentUIImagePageNumber;
 
 		// DAT Dump viewer fields
-		IList<Annotation> DATDumpAnnotations;
+		IList<Annotation> DATDumpAnnotations = [];
 		readonly Dictionary<string, (int, int)> DATDumpAnnotationIdentifiers = [];
 		readonly Dictionary<string, TreeNode> imageHeaderIndexToNode = [];
 		readonly Dictionary<string, TreeNode> imageDataIndexToNode = [];
@@ -84,6 +86,13 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		public MainForm()
 		{
+			foreach (var enu in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsEnum && t.GetCustomAttributes<FlagsAttribute>().Any()))
+			{
+				_ = TypeDescriptor.AddAttributes(
+					enu.GetType(),
+					[new EditorAttribute(typeof(Gui.FlagEnumUIEditor), typeof(System.Drawing.Design.UITypeEditor))]);
+			}
+
 			InitializeComponent();
 
 			logger = new Logger

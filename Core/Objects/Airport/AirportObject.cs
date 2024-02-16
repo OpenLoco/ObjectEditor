@@ -1,9 +1,10 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Objects
 {
+	[Flags]
 	public enum AirportMovementNodeFlags : uint16_t
 	{
 		None = 0,

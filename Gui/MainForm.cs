@@ -16,6 +16,7 @@ using SixLabors.ImageSharp.Formats;
 using System.IO;
 using Gui;
 using System.ComponentModel;
+using Core.Objects;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
@@ -86,7 +87,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		public MainForm()
 		{
-			foreach (var enu in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsEnum && t.GetCustomAttributes<FlagsAttribute>().Any()))
+			foreach (var enu in Assembly.GetAssembly(typeof(AirportObject)).GetTypes().Where(t => t.IsEnum && t.GetCustomAttributes<FlagsAttribute>().Any()))
 			{
 				_ = TypeDescriptor.AddAttributes(
 					enu.GetType(),

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
@@ -24,6 +24,7 @@ namespace OpenLoco.ObjectEditor.Objects
 
 	};
 
+	[Flags]
 	public enum TrackObjectFlags : uint16_t
 	{
 		None = 0,

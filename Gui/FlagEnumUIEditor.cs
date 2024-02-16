@@ -241,7 +241,6 @@ namespace OpenLoco.ObjectEditor.Gui
 		public string caption;
 	}
 
-
 	// UITypeEditor for flag enums
 	public class FlagEnumUIEditor : UITypeEditor
 	{
@@ -280,8 +279,37 @@ namespace OpenLoco.ObjectEditor.Gui
 		{
 			return UITypeEditorEditStyle.DropDown;
 		}
+	}
 
+	public class MyCustomTypeDescriptor : CustomTypeDescriptor
+	{
+		private ICustomTypeDescriptor baseDescriptor;
 
+		public MyCustomTypeDescriptor(ICustomTypeDescriptor baseDescriptor)
+		{
+			this.baseDescriptor = baseDescriptor;
+		}
+
+		public override PropertyDescriptorCollection GetProperties()
+		{
+			PropertyDescriptorCollection properties = baseDescriptor.GetProperties();
+			// Find the property you want to modify and replace its descriptor
+			foreach (PropertyDescriptor property in properties)
+			{
+				if (property.Name == "PropertyNameToModify")
+				{
+					PropertyDescriptor customProperty = TypeDescriptor.CreateProperty(
+						baseDescriptor.GetType(), property,
+						new CategoryAttribute("Custom Category"),
+						new DisplayNameAttribute("Custom Display Name")
+					);
+					properties.Remove(property);
+					properties.Add(customProperty);
+					break;
+				}
+			}
+			return properties;
+		}
 	}
 
 }

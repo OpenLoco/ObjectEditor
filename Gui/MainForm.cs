@@ -87,19 +87,35 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		public MainForm()
 		{
-			foreach (var enu in Assembly.GetAssembly(typeof(AirportObject)).GetTypes().Where(t => t.IsEnum && t.GetCustomAttributes<FlagsAttribute>().Any()))
-			{
-				_ = TypeDescriptor.AddAttributes(
-					enu.GetType(),
-					[new EditorAttribute(typeof(Gui.FlagEnumUIEditor), typeof(System.Drawing.Design.UITypeEditor))]);
-			}
-
-			InitializeComponent();
-
 			logger = new Logger
 			{
 				Level = LogLevel.Debug2
 			};
+
+			//foreach (var enu in Assembly.GetAssembly(typeof(AirportObject)).GetTypes().Where(t => t.IsEnum && t.GetCustomAttributes<FlagsAttribute>().Any()))
+			//{
+			//	_ = TypeDescriptor.AddAttributes(
+			//		enu.GetType(),
+			//		[new EditorAttribute(typeof(FlagEnumUIEditor), typeof(System.Drawing.Design.UITypeEditor))]);
+			//}
+
+			//var objectTypes = Assembly.GetAssembly(typeof(AirportObject)).GetTypes().Where(t => t.GetInterfaces().Contains(typeof(ILocoStruct)));
+			//foreach (var objectType in objectTypes)
+			//{
+			//	var props = objectType.GetProperties().Where(p => p.PropertyType.IsEnum && p.PropertyType.GetCustomAttributes<FlagsAttribute>().Any());
+			//	foreach (var prop in props)
+			//	{
+			//		// add the flagenumuiprop to the list of this properties attributes
+			//		//prop.A
+
+			//		logger.Debug2(prop.Name);
+			//		_ = TypeDescriptor.AddAttributes(
+			//			prop.PropertyType.GetType(),
+			//			[new EditorAttribute(typeof(FlagEnumUIEditor), typeof(System.Drawing.Design.UITypeEditor))]);
+			//	}
+			//}
+
+			InitializeComponent();
 
 			var assembly = Assembly.GetExecutingAssembly();
 			var paletteFilename = "Gui.palette.png";

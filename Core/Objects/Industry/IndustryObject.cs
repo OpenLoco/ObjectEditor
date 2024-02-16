@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
@@ -69,7 +69,7 @@ namespace Core.Objects
 		[property: LocoStructOffset(0xBD)] uint8_t MaxNumBuildings,
 		[property: LocoStructOffset(0xBE), LocoStructVariableLoad] List<uint8_t> Buildings,
 		[property: LocoStructOffset(0xC2)] uint32_t AvailableColours,  // bitset
-		[property: LocoStructOffset(0xC6)] uint32_t BuildingSizeFlags, // flags indicating the building types size 1:large4x4, 0:small1x1
+		[property: LocoStructOffset(0xC6)] uint32_t BuildingSize, // flags indicating the building types size 1:large4x4, 0:small1x1
 		[property: LocoStructOffset(0xCA)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0xCC)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0xCE)] uint8_t TotalOfTypeInScenario, // Total industries of this type that can be created in a scenario Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.

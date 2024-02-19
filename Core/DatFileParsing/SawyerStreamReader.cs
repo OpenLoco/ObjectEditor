@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using OpenLoco.ObjectEditor.Headers;
 using OpenLoco.ObjectEditor.Objects;
 using OpenLoco.ObjectEditor.Types;
@@ -154,12 +154,30 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			return new(new DatFileInfo(s5Header, objectHeader), newObj);
 		}
 
+		public static string CStringToString(ReadOnlySpan<byte> data, Encoding enc)
+		{
+			var ptr = 0;
+			while (data[ptr++] != '\0') ;
+			return enc.GetString(data[0..(ptr - 1)]); // do -1 to exclude the \0
+		}
+
+		static Dictionary<LanguageId, string> GetNewLanguageDictionary()
+		{
+			var languageDict = new Dictionary<LanguageId, string>();
+			foreach (var language in Enum.GetValues<LanguageId>())
+			{
+				languageDict.Add(language, string.Empty);
+			}
+			return languageDict;
+		}
+
 		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames, ILogger? logger = null)
 		{
 			var stringTable = new StringTable();
 
 			if (data.Length == 0 || stringNames.Length == 0)
 			{
+				logger?.Warning($"No data for language table");
 				return (stringTable, 0);
 			}
 
@@ -167,37 +185,22 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 
 			foreach (var locoString in stringNames)
 			{
-				stringTable.Table.Add(locoString, []);
+				// init language table
+				stringTable.Table.Add(locoString, GetNewLanguageDictionary());
 				var languageDict = stringTable[locoString];
 
-				// add empty strings for every single language
-				foreach (var language in Enum.GetValues<LanguageId>())
-				{
-					languageDict.Add(language, string.Empty);
-				}
-
-				for (; ptr < data.Length && data[ptr] != 0xFF;)
+				// read string
+				for (; ptr < data.Length && data[ptr] != 0xFF; ++ptr)
 				{
 					var lang = (LanguageId)data[ptr++];
-					var ini = ptr;
-
-					while (data[ptr++] != '\0')
-					{
-						;
-					}
-
-					var str = Encoding.Latin1.GetString(data[ini..(ptr - 1)]); // do -1 to exclude the \0
-
-					if (!languageDict.ContainsKey(lang))
-					{
-						logger?.Error($"Skipping unknown language: \"{lang}\"");
-						break;
-					}
-
-					languageDict[lang] = str;
+					languageDict[lang] = CStringToString(data[ptr..], Encoding.Latin1);
+					ptr += languageDict[lang].Length;
 				}
 
 				ptr++; // add one because we skipped the 0xFF byte at the end
+
+				//data = data[ptr..];
+				//ptr = 0;
 			}
 
 			return (stringTable, ptr);

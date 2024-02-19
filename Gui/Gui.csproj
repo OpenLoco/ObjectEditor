@@ -17,6 +17,7 @@
     <Authors>LeftofZen</Authors>
     <Product>$(AssemblyName) $(AssemblyVersion)</Product>
     <Version>$(AssemblyVersion)</Version>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,8 +46,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

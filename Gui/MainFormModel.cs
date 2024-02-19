@@ -363,7 +363,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 			else
 			{
-				var obj = SawyerStreamReader.LoadFullObjectFromFile(filename);
+				var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: logger);
 				var uiObj = new UiLocoObject { DatFileInfo = obj.DatFileInfo, LocoObject = obj.LocoObject };
 				_ = ObjectCache.TryAdd(filename, uiObj);
 				return uiObj;

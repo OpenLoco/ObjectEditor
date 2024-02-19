@@ -148,26 +148,31 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				locoStructPostLoad.PostLoad();
 			}
 
-			try
-			{
-				if (!locoStruct.Validate())
-				{
-					logger?.Warning($"{s5Header.Name} failed validation");
-				}
-				else
-				{
-					logger?.Info($"{s5Header.Name} validated successfully");
-				}
-			}
-			catch (NotImplementedException ex)
-			{
-				logger?.Debug2($"{s5Header.ObjectType} object type is missing validation function");
-			}
+			ValidateLocoStruct(s5Header, locoStruct, logger);
 
 			// add to object manager
 			SObjectManager.Add(newObj);
 
 			return new(new DatFileInfo(s5Header, objectHeader), newObj);
+		}
+
+		static void ValidateLocoStruct(S5Header s5Header, ILocoStruct locoStruct, ILogger? logger)
+		{
+			try
+			{
+				if (!locoStruct.Validate())
+				{
+					logger?.Warning($"\"{s5Header.Name}\" failed validation");
+				}
+				else
+				{
+					logger?.Info($"\"{s5Header.Name}\" validated successfully");
+				}
+			}
+			catch (NotImplementedException)
+			{
+				logger?.Debug2($"{s5Header.ObjectType} object type is missing validation function");
+			}
 		}
 
 		static string CStringToString(ReadOnlySpan<byte> data, Encoding enc)

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
@@ -492,6 +492,127 @@ namespace OpenLoco.ObjectEditor.Objects
 				16 => 2,
 				_ => 3,
 			};
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+		{
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+			if (RunCostIndex > 32)
+			{
+				return false;
+			}
+
+			if (CostFactor <= 0)
+			{
+				return false;
+			}
+			if (RunCostFactor < 0)
+			{
+				return false;
+			}
+
+			if (Flags.HasFlag(VehicleObjectFlags.unk_09))
+			{
+				if (NumTrackExtras != 0)
+				{
+					return false;
+				}
+				if (Flags.HasFlag(VehicleObjectFlags.RackRail))
+				{
+					return false;
+				}
+			}
+
+			if (NumTrackExtras > 4)
+			{
+				return false;
+			}
+
+			if (NumSimultaneousCargoTypes > 2)
+			{
+				return false;
+			}
+
+			if (NumCompatibleVehicles > 8)
+			{
+				return false;
+			}
+
+			if (RackSpeed > Speed)
+			{
+				return false;
+			}
+
+			foreach (var bodySprite in BodySprites)
+			{
+				if (!bodySprite.Flags.HasFlag(BodySpriteFlags.HasSprites))
+				{
+					continue;
+				}
+
+				switch (bodySprite.NumFlatRotationFrames)
+				{
+					case 8:
+					case 16:
+					case 32:
+					case 64:
+					case 128:
+						break;
+					default:
+						return false;
+				}
+				switch (bodySprite.NumSlopedRotationFrames)
+				{
+					case 4:
+					case 8:
+					case 16:
+					case 32:
+						break;
+					default:
+						return false;
+				}
+				switch (bodySprite.NumAnimationFrames)
+				{
+					case 1:
+					case 2:
+					case 4:
+						break;
+					default:
+						return false;
+				}
+				if (bodySprite.NumCargoLoadFrames < 1 || bodySprite.NumCargoLoadFrames > 5)
+				{
+					return false;
+				}
+				switch (bodySprite.NumRollFrames)
+				{
+					case 1:
+					case 3:
+						break;
+					default:
+						return false;
+				}
+			}
+
+			foreach (var bogieSprite in BogieSprites)
+			{
+				if (!bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSprites))
+				{
+					continue;
+				}
+
+				switch (bogieSprite.RollStates)
+				{
+					case 1:
+					case 2:
+					case 4:
+						break;
+					default:
+						return false;
+				}
+			}
+			return true;
+		}
 	}
 }

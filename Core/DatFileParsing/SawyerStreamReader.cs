@@ -154,7 +154,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			return new(new DatFileInfo(s5Header, objectHeader), newObj);
 		}
 
-		public static string CStringToString(ReadOnlySpan<byte> data, Encoding enc)
+		static string CStringToString(ReadOnlySpan<byte> data, Encoding enc)
 		{
 			var ptr = 0;
 			while (data[ptr++] != '\0') ;

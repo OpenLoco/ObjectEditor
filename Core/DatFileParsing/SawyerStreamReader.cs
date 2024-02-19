@@ -198,9 +198,6 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				}
 
 				ptr++; // add one because we skipped the 0xFF byte at the end
-
-				//data = data[ptr..];
-				//ptr = 0;
 			}
 
 			return (stringTable, ptr);

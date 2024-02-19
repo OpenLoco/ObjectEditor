@@ -17,6 +17,7 @@
     <Authors>LeftofZen</Authors>
     <Product>$(AssemblyName) $(AssemblyVersion)</Product>
     <Version>$(AssemblyVersion)</Version>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>

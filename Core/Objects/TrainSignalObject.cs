@@ -1,7 +1,8 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Types;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
@@ -33,7 +34,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x13), LocoArrayLength(TrainSignalObject.ModsLength), Browsable(false)] object_id[] ModHeaderIds,
 		[property: LocoStructOffset(0x1A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x1C)] uint16_t ObsoleteYear
-	) : ILocoStruct, ILocoStructVariableData
+	) : ILocoStruct, ILocoStructVariableData, IImageTableStrings
 	{
 		public const int ModsLength = 7;
 
@@ -49,5 +50,16 @@ namespace OpenLoco.ObjectEditor.Objects
 			=> Mods
 			.SelectMany(mod => mod.Write().ToArray())
 			.ToArray();
+
+		public bool TryGetImageName(int id, out string? value)
+			=> ImageIdNameMap.TryGetValue(id, out value);
+
+		public static Dictionary<int, string> ImageIdNameMap = new()
+		{
+			{ 80, "redLights" },
+			{ 88, "redLights2" },
+			{ 96, "greenLights" },
+			{ 104, "greenLights2" },
+		};
 	}
 }

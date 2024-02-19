@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.ObjectEditor.Data
+namespace OpenLoco.ObjectEditor.Data
 {
 	public enum LanguageId : uint8_t
 	{
@@ -16,7 +16,7 @@
 		chinese_traditional,
 		id_12,
 		portuguese,
-		blank = 254,
-		end = 255
+		//blank = 254,
+		//end = 255
 	};
 }

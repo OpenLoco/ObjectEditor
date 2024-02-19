@@ -34,7 +34,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x13), LocoArrayLength(TrainSignalObject.ModsLength), Browsable(false)] object_id[] ModHeaderIds,
 		[property: LocoStructOffset(0x1A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x1C)] uint16_t ObsoleteYear
-	) : ILocoStruct, ILocoStructVariableData, IImageTableStrings
+	) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
 	{
 		public const int ModsLength = 7;
 
@@ -61,5 +61,47 @@ namespace OpenLoco.ObjectEditor.Objects
 			{ 96, "greenLights" },
 			{ 104, "greenLights2" },
 		};
+
+		public bool Validate()
+		{
+			// animationSpeed must be 1 less than a power of 2 (its a mask)
+			switch (AnimationSpeed)
+			{
+				case 0:
+				case 1:
+				case 3:
+				case 7:
+				case 15:
+					break;
+				default:
+					return false;
+			}
+
+			switch (NumFrames)
+			{
+				case 4:
+				case 7:
+				case 10:
+					break;
+				default:
+					return false;
+			}
+
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+
+			if (-SellCostFactor > CostFactor)
+			{
+				return false;
+			}
+
+			if (NumCompatible > 7)
+			{
+				return false;
+			}
+			return true;
+		}
 	}
 }

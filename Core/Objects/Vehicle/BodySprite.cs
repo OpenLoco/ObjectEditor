@@ -49,5 +49,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		public Dictionary<BodySpriteSlopeType, List<int>> ImageIds = [];
 
 		public int NumImages { get; set; }
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

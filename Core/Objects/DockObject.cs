@@ -78,5 +78,6 @@ namespace OpenLoco.ObjectEditor.Objects
 			.Concat(var_1C)
 			.Concat(new byte[] { 0xFF })
 			.ToArray();
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

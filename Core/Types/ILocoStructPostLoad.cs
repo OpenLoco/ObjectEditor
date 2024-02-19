@@ -1,10 +1,10 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public interface ILocoStruct
+	public interface ILocoStructPostLoad
 	{
-		bool Validate();
+		void PostLoad();
 	}
 }

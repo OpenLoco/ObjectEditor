@@ -14,5 +14,7 @@ namespace OpenLoco.ObjectEditor.Objects
 	) : ILocoStruct
 	{
 		public const int DesignedYearLength = 3;
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

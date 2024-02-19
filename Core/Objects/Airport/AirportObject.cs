@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -164,5 +164,7 @@ namespace Core.Objects
 
 			return ms.ToArray();
 		}
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

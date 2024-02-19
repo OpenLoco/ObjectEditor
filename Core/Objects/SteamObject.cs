@@ -24,6 +24,7 @@ namespace OpenLoco.ObjectEditor.Objects
 	{
 		public static ImageAndHeight Read(ReadOnlySpan<byte> data)
 			=> new(data[0], data[1]);
+		public bool Validate() => throw new NotImplementedException();
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -96,5 +97,6 @@ namespace OpenLoco.ObjectEditor.Objects
 			.Concat(new byte[] { 0xFF })
 			.Concat(SoundEffects.SelectMany(sfx => sfx.Write().ToArray()))
 			.ToArray();
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

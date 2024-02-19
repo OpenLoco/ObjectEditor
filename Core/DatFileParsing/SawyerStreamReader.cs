@@ -148,6 +148,22 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				locoStructPostLoad.PostLoad();
 			}
 
+			try
+			{
+				if (!locoStruct.Validate())
+				{
+					logger?.Warning($"{s5Header.Name} failed validation");
+				}
+				else
+				{
+					logger?.Info($"{s5Header.Name} validated successfully");
+				}
+			}
+			catch (NotImplementedException ex)
+			{
+				logger?.Debug2($"{s5Header.ObjectType} object type is missing validation function");
+			}
+
 			// add to object manager
 			SObjectManager.Add(newObj);
 

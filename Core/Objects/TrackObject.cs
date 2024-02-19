@@ -62,7 +62,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x2D), LocoArrayLength(TrackObject.MaxStations), Browsable(false)] object_id[] _Stations,       // 0x2D
 		[property: LocoStructOffset(0x34)] uint8_t DisplayOffset,
 		[property: LocoStructOffset(0x35), Browsable(false)] uint8_t pad_35
-		) : ILocoStruct, ILocoStructVariableData, IImageTableStrings
+		) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
 	{
 		public List<S5Header> Compatible { get; set; } = [];
 		public List<S5Header> Mods { get; set; } = [];
@@ -540,6 +540,8 @@ namespace OpenLoco.ObjectEditor.Objects
 			{ 410, "rightCurveVerySmall0RailSW" },
 			{ 411, "rightCurveVerySmall0RailNW" },
 		};
+
+		public bool Validate() => throw new NotImplementedException();
 
 		// ai generated - nice idea, maybe implement?
 		//public static TrackObject FromDatFile(DatFile datFile, int index)

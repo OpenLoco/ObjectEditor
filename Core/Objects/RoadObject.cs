@@ -114,5 +114,7 @@ namespace OpenLoco.ObjectEditor.Objects
 
 			return headers.SelectMany(h => h.Write().ToArray()).ToArray();
 		}
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

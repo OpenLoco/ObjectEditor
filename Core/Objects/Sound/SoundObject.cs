@@ -64,5 +64,7 @@ namespace Core.Objects.Sound
 				return ms.ToArray();
 			}
 		}
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

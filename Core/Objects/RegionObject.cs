@@ -60,5 +60,7 @@ namespace OpenLoco.ObjectEditor.Objects
 
 			return data;
 		}
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

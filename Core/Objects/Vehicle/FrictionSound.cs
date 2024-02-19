@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace OpenLoco.ObjectEditor.Objects
@@ -13,5 +13,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x08)] uint8_t SpeedVolumeFactor,
 		[property: LocoStructOffset(0x09)] uint8_t BaseVolume,
 		[property: LocoStructOffset(0x0A)] uint8_t MaxVolume
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 }

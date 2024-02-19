@@ -30,7 +30,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x15)] Colour Colour_15,
 		[property: LocoStructOffset(0x16)] Colour Colour_16,
 		[property: LocoStructOffset(0x17)] Colour Colour_17
-		) : ILocoStruct, IImageTableStrings
+		) : ILocoStruct, ILocoImageTableNames
 	{
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id, out value);
@@ -508,5 +508,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			{ 468, "toolbar_menu_map_south" },
 			{ 469, "toolbar_menu_map_east" },
 		};
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

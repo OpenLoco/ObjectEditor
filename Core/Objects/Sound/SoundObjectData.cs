@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Objects.Sound
@@ -10,5 +10,8 @@ namespace Core.Objects.Sound
 		[property: LocoStructOffset(0x04)] int32_t Offset,
 		[property: LocoStructOffset(0x08)] uint32_t Length,
 		[property: LocoStructOffset(0x0C)] WaveFormatEx PcmHeader
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 }

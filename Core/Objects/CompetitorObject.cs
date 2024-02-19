@@ -22,5 +22,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		) : ILocoStruct
 	{
 		public const int ImagesLength = 9;
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

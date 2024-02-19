@@ -18,5 +18,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		) : ILocoStruct
 	{
 		public const int Seasons = 4;
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

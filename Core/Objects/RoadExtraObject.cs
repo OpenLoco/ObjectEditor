@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -17,5 +17,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E
-	) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 }

@@ -1,4 +1,4 @@
-﻿global using uint8_t = System.Byte;
+global using uint8_t = System.Byte;
 global using int8_t = System.SByte;
 global using uint16_t = System.UInt16;
 global using int16_t = System.Int16;
@@ -21,5 +21,8 @@ namespace OpenLoco.ObjectEditor.Types
 	public record Pos2(
 		[property: LocoStructOffset(0x00)] int16_t X,
 		[property: LocoStructOffset(0x02)] int16_t Y
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 }

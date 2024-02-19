@@ -1,4 +1,4 @@
-﻿
+
 using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
@@ -11,7 +11,10 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x00)] uint8_t Count,
 		[property: LocoStructOffset(0x01)] uint8_t Fill,
 		[property: LocoStructOffset(0x02)] uint16_t Offset
-	) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1A)]
@@ -36,5 +39,6 @@ namespace OpenLoco.ObjectEditor.Objects
 
 		public ReadOnlySpan<byte> Save()
 			=> tempUnkVariableData;
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

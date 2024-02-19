@@ -1,4 +1,4 @@
-﻿
+
 using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
@@ -20,5 +20,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0A), LocoArrayLength(0x0C - 0x0A)] uint8_t[] pad_0A,
 		[property: LocoStructOffset(0x0C)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id Image
-	) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 }

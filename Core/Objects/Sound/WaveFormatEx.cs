@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Objects.Sound
@@ -13,5 +13,8 @@ namespace Core.Objects.Sound
 		[property: LocoStructOffset(0x0B)] int16_t BlockAlign,
 		[property: LocoStructOffset(0x0D)] int16_t BitsPerSample,
 		[property: LocoStructOffset(0x010)] int16_t CBSize
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -15,5 +15,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x06), Browsable(false)] image_id ObjectIcon,
 		[property: LocoStructOffset(0x0A)] uint8_t Separator,
 		[property: LocoStructOffset(0x0B)] uint8_t Factor
-	) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 }

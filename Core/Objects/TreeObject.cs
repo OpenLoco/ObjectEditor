@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -43,5 +43,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x44)] uint32_t Colours,
 		[property: LocoStructOffset(0x48)] int16_t Rating,
 		[property: LocoStructOffset(0x4A)] int16_t DemolishRatingReduction
-	) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 }

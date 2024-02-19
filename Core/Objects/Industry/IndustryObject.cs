@@ -265,5 +265,7 @@ namespace Core.Objects
 				return ms.ToArray();
 			}
 		}
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

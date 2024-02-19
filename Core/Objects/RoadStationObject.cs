@@ -115,5 +115,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				return ms.ToArray();
 			}
 		}
+
+		public bool Validate() => throw new NotImplementedException();
 	}
 }

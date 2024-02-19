@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Objects
@@ -10,5 +10,8 @@ namespace Core.Objects
 		[property: LocoStructOffset(0x02)] int16_t Y,
 		[property: LocoStructOffset(0x04)] int16_t Z,
 		[property: LocoStructOffset(0x06)] AirportMovementNodeFlags Flags
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => throw new NotImplementedException();
+	}
 }

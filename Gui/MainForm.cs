@@ -12,8 +12,9 @@ using Core.Objects.Sound;
 using Zenith.Core;
 using System.Text;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Formats;
-using System.IO;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Diagnostics;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
@@ -79,8 +80,15 @@ namespace OpenLoco.ObjectEditor.Gui
 		const int ImagesPerPage = 50;
 
 		const string ApplicationName = "OpenLoco Object Editor";
+
+		const string GithubApplicationName = "ObjectEditor";
+		const string GithubLatestReleaseDownloadPage = @"https://github.com/OpenLoco/ObjectEditor/releases";
+		const string GithubLatestReleaseAPI = @"https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
+
 		string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 		string SettingsFile => Path.Combine(SettingsPath, "settings.json");
+
+		Version ApplicationVersion;
 
 		public MainForm()
 		{
@@ -104,14 +112,60 @@ namespace OpenLoco.ObjectEditor.Gui
 				model = new MainFormModel(logger, SettingsFile, palette);
 			}
 
+			// grab current appl version from assembly
 			var versionFilename = "Gui.version.txt";
 			using (var stream = assembly.GetManifestResourceStream(versionFilename))
 			{
 				var buf = new byte[5];
 				var arr = stream!.Read(buf);
-				Text = $"{ApplicationName} - {Encoding.ASCII.GetString(buf)}";
+				ApplicationVersion = Version.Parse(Encoding.ASCII.GetString(buf));
 			}
+
+			var latestVersionText = "up-to-date";
+
+			// check for new version
+			var latestVersion = GetLatestVersion();
+			if (latestVersion > ApplicationVersion)
+			{
+				_ = MessageBox.Show($"Current Version: {ApplicationVersion}{System.Environment.NewLine}Latest version: {latestVersion}{System.Environment.NewLine}Taking you to the downloads page now ");
+				_ = Process.Start(new ProcessStartInfo { FileName = GithubLatestReleaseDownloadPage, UseShellExecute = true });
+				latestVersionText = $"newer version exists: {latestVersion}";
+			}
+
+			Text = $"{ApplicationName} - {ApplicationVersion} ({latestVersionText})";
 		}
+
+		// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
+		Version GetLatestVersion()
+		{
+			var client = new HttpClient();
+			client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(GithubApplicationName, ApplicationVersion.ToString()));
+			var response = client.GetAsync(GithubLatestReleaseAPI).Result;
+			if (response.IsSuccessStatusCode)
+			{
+				var jsonResponse = response.Content.ReadAsStringAsync().Result;
+				var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
+				var tagName = body?.tag_name;
+				var version = Version.Parse(tagName);
+				return version;
+			}
+			throw new Exception("Unable to get latest version");
+		}
+		//async Task<Version> GetLatestVersionAsync()
+		//{
+		//	var client = new HttpClient();
+		//	client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("ObjectEditor", ApplicationVersion.ToString()));
+		//	var response = await client.GetAsync("https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest");
+		//	if (response.IsSuccessStatusCode)
+		//	{
+		//		var jsonResponse = await response.Content.ReadAsStringAsync();
+		//		var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
+		//		var tagName = body?.tag_name;
+		//		var version = Version.Parse(tagName);
+		//		return version;
+		//	}
+		//	throw new Exception("Unable to get latest version");
+		//}
 
 		void MainForm_Load(object sender, EventArgs e)
 		{
@@ -1437,5 +1491,10 @@ namespace OpenLoco.ObjectEditor.Gui
 				ImageScale = scale;
 			}
 		}
+	}
+
+	public class VersionCheckBody
+	{
+		public string tag_name { get; set; }
 	}
 }

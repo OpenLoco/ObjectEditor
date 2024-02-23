@@ -14,6 +14,6 @@ namespace Core.Objects
 		[property: LocoStructOffset(0x08)] uint32_t AtLeastOneClearEdges // Which edges must have at least one clear to use transition edge. should probably be some kind of flags?
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

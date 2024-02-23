@@ -11,6 +11,6 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x02)] SimpleAnimationType Type
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

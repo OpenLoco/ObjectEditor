@@ -162,6 +162,8 @@ namespace OpenLoco.ObjectEditor.Objects
 			return ms.ToArray();
 		}
 
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+			=> NumAnimations is not 0 and not > 63
+			&& NumVariations is not 0 and <= 31;
 	}
 }

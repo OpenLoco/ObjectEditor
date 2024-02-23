@@ -19,6 +19,17 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id MapPixelImage
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+		{
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+			if (CostFactor <= 0)
+			{
+				return false;
+			}
+			return true;
+		}
 	}
 }

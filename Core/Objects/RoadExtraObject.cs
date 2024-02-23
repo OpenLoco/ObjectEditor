@@ -19,6 +19,24 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+		{
+			if (PaintStyle >= 2)
+			{
+				return false;
+			}
+
+			// This check missing from vanilla
+			if (CostIndex >= 32)
+			{
+				return false;
+			}
+
+			if (-SellCostFactor > BuildCostFactor)
+			{
+				return false;
+			}
+			return BuildCostFactor > 0;
+		}
 	}
 }

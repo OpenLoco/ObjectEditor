@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Types;
@@ -22,6 +22,26 @@ namespace OpenLoco.ObjectEditor.Objects
 	{
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id - 8, out value);
+
+		public bool Validate()
+		{
+			if (PaintStyle >= 2)
+			{
+				return false;
+			}
+
+			// This check missing from vanilla
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+
+			if (-SellCostFactor > BuildCostFactor)
+			{
+				return false;
+			}
+			return BuildCostFactor > 0;
+		}
 
 		// taken from OpenLoco TrackExtraObject.h
 		public static Dictionary<int, string> ImageIdNameMap = new()
@@ -243,7 +263,5 @@ namespace OpenLoco.ObjectEditor.Objects
 			{ 206, "kRightCurveVerySmall0SW" },
 			{ 207, "kRightCurveVerySmall0NW" },
 		};
-
-		public bool Validate() => throw new NotImplementedException();
 	}
 }

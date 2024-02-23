@@ -17,6 +17,6 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0C), LocoArrayLength(0x0E - 0x0C), Browsable(false)] uint8_t[] pad_0C
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

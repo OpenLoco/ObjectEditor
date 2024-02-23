@@ -12,6 +12,9 @@ namespace Core.Objects.Sound
 		[property: LocoStructOffset(0x0C)] WaveFormatEx PcmHeader
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+		{
+			return Offset >= 0;
+		}
 	}
 }

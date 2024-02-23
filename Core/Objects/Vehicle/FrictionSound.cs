@@ -15,6 +15,6 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0A)] uint8_t MaxVolume
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

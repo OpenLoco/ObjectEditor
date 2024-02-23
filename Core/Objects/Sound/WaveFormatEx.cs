@@ -15,6 +15,6 @@ namespace Core.Objects.Sound
 		[property: LocoStructOffset(0x010)] int16_t CBSize
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

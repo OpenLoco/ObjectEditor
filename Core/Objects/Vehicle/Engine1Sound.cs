@@ -20,6 +20,6 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x10)] uint8_t SpeedFreqFactor
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

@@ -15,7 +15,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0C), LocoArrayLength(3)] uint16_t[] RoofHeights
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 
 }

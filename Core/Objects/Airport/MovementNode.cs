@@ -12,6 +12,6 @@ namespace Core.Objects
 		[property: LocoStructOffset(0x06)] AirportMovementNodeFlags Flags
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

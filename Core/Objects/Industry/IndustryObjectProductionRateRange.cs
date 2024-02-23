@@ -11,6 +11,6 @@ namespace Core.Objects
 		[property: LocoStructOffset(0x02)] uint16_t Max
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

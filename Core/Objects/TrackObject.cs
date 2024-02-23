@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
@@ -122,6 +122,43 @@ namespace OpenLoco.ObjectEditor.Objects
 
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id, out value);
+
+		public bool Validate()
+		{
+			if (var_06 >= 3)
+			{
+				return false;
+			}
+
+			// vanilla missed this check
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+
+			if (-SellCostFactor > BuildCostFactor)
+			{
+				return false;
+			}
+			if (BuildCostFactor <= 0)
+			{
+				return false;
+			}
+			if (TunnelCostFactor <= 0)
+			{
+				return false;
+			}
+			if (TrackPieces.HasFlag(TrackObjectPieceFlags.Diagonal | TrackObjectPieceFlags.LargeCurve)
+				&& TrackPieces.HasFlag(TrackObjectPieceFlags.OneSided | TrackObjectPieceFlags.VerySmallCurve))
+			{
+				return false;
+			}
+			if (NumBridges > 7)
+			{
+				return false;
+			}
+			return NumStations <= 7;
+		}
 
 		// taken from OpenLoco TrackObject.h
 		public static Dictionary<int, string> ImageIdNameMap = new()
@@ -541,7 +578,6 @@ namespace OpenLoco.ObjectEditor.Objects
 			{ 411, "rightCurveVerySmall0RailNW" },
 		};
 
-		public bool Validate() => throw new NotImplementedException();
 
 		// ai generated - nice idea, maybe implement?
 		//public static TrackObject FromDatFile(DatFile datFile, int index)

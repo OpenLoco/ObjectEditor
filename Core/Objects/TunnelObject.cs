@@ -14,6 +14,6 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

@@ -525,7 +525,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		{
 			try
 			{
-				LoadDataDumpCore(path, isG1);
+				//LoadDataDumpCore(path, isG1);
 			}
 			catch (Exception ex)
 			{

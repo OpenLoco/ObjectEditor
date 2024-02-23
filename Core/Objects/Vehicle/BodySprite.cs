@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace OpenLoco.ObjectEditor.Objects
@@ -50,6 +50,6 @@ namespace OpenLoco.ObjectEditor.Objects
 
 		public int NumImages { get; set; }
 
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

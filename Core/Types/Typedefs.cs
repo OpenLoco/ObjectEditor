@@ -23,6 +23,6 @@ namespace OpenLoco.ObjectEditor.Types
 		[property: LocoStructOffset(0x02)] int16_t Y
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

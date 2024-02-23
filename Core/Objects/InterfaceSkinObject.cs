@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Types;
@@ -34,6 +34,7 @@ namespace OpenLoco.ObjectEditor.Objects
 	{
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id, out value);
+		public bool Validate() => true;
 
 		public static Dictionary<int, string> ImageIdNameMap = new()
 		{
@@ -509,6 +510,5 @@ namespace OpenLoco.ObjectEditor.Objects
 			{ 469, "toolbar_menu_map_east" },
 		};
 
-		public bool Validate() => throw new NotImplementedException();
 	}
 }

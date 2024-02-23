@@ -14,6 +14,6 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x05)] uint8_t var_05
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

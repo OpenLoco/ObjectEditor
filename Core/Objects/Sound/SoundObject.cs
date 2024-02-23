@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -65,6 +65,6 @@ namespace Core.Objects.Sound
 			}
 		}
 
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

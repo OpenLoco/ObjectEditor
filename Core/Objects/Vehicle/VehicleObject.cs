@@ -492,6 +492,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				16 => 2,
 				_ => 3,
 			};
+
 		public bool Validate()
 		{
 			if (CostIndex > 32)

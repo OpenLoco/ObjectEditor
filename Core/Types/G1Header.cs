@@ -14,6 +14,6 @@ namespace OpenLoco.ObjectEditor.Headers
 		public static int StructLength => 0x08;
 		public byte[] ImageData = [];
 
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

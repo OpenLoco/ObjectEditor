@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using Zenith.Core;
@@ -55,6 +55,6 @@ namespace OpenLoco.ObjectEditor.Headers
 			return span;
 		}
 
-		public static S5Header NullHeader = new(0, string.Empty, 0);
+		public static S5Header NullHeader = new(0xFFFFFFFF, "        ", 0);
 	}
 }

@@ -73,6 +73,26 @@ namespace OpenLoco.ObjectEditor.Objects
 			return data;
 		}
 
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+		{
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+			if (CostFactor <= 0)
+			{
+				return false;
+			}
+			if (var_03 < 1)
+			{
+				return false;
+			}
+			if (var_03 > 8)
+			{
+				return false;
+			}
+
+			return (var_04 == 1 || var_04 == 2 || var_04 == 4);
+		}
 	}
 }

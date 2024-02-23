@@ -17,6 +17,17 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0B)] uint8_t Factor
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+		{
+			if (Separator > 4)
+			{
+				return false;
+			}
+			if (Factor > 3)
+			{
+				return false;
+			}
+			return true;
+		}
 	}
 }

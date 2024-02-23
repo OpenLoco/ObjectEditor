@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
@@ -115,6 +115,38 @@ namespace OpenLoco.ObjectEditor.Objects
 			return headers.SelectMany(h => h.Write().ToArray()).ToArray();
 		}
 
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+		{
+			// check missing in vanilla
+			if (CostIndex >= 32)
+			{
+				return false;
+			}
+			if (-SellCostFactor > BuildCostFactor)
+			{
+				return false;
+			}
+			if (BuildCostFactor <= 0)
+			{
+				return false;
+			}
+			if (TunnelCostFactor <= 0)
+			{
+				return false;
+			}
+			if (NumBridges > 7)
+			{
+				return false;
+			}
+			if (NumMods > 2)
+			{
+				return false;
+			}
+			if (Flags.HasFlag(RoadObjectFlags.unk_03))
+			{
+				return NumMods == 0;
+			}
+			return true;
+		}
 	}
 }

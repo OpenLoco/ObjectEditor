@@ -13,7 +13,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x02)] uint16_t Offset
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -39,6 +39,6 @@ namespace OpenLoco.ObjectEditor.Objects
 
 		public ReadOnlySpan<byte> Save()
 			=> tempUnkVariableData;
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

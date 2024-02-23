@@ -55,6 +55,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x1E)] uint8_t UnitSize
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+			=> var_02 <= 3840
+			&& CargoTransferTime != 0;
 	}
 }

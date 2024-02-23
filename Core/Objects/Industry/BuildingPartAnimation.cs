@@ -11,6 +11,10 @@ namespace Core.Objects
 		[property: LocoStructOffset(0x01)] uint8_t AnimationSpeed // Also encodes in bit 7 if the animation is position modified
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+			=> IsPowerOfTwo(NumFrames);
+
+		static bool IsPowerOfTwo(uint8_t x)
+			=> (x & (x - 1)) == 0 && x > 0;
 	}
 }

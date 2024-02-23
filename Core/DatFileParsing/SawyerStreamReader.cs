@@ -12,15 +12,18 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	public static class SawyerStreamReader
 	{
-		public static List<S5Header> LoadVariableCountS5Headers(ReadOnlySpan<byte> data, int count)
+		public static List<S5Header> LoadVariableCountS5Headers(ReadOnlySpan<byte> data, int max)
 		{
 			List<S5Header> result = [];
-			for (var i = 0; i < count; ++i)
+			for (var i = 0; i < max; ++i)
 			{
-				var header = S5Header.Read(data[..S5Header.StructLength]);
-				if (header.Checksum != 0 || header.Flags != 255)
+				if (data[0] != 0xFF)
 				{
-					result.Add(header);
+					var header = S5Header.Read(data[..S5Header.StructLength]);
+					if (header.Checksum != 0 || header.Flags != 255)
+					{
+						result.Add(header);
+					}
 				}
 
 				data = data[S5Header.StructLength..];

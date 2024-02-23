@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -15,6 +15,6 @@ namespace OpenLoco.ObjectEditor.Objects
 	{
 		public const int DesignedYearLength = 3;
 
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate() => true;
 	}
 }

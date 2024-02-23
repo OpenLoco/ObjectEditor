@@ -22,6 +22,22 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id Image
 		) : ILocoStruct
 	{
-		public bool Validate() => throw new NotImplementedException();
+		public bool Validate()
+		{
+			if (-SellCostFactor > CostFactor)
+			{
+				return false;
+			}
+			if (CostFactor <= 0)
+			{
+				return false;
+			}
+
+			return ClosingFrames switch
+			{
+				1 or 2 or 4 or 8 or 16 or 32 => true,
+				_ => false,
+			};
+		}
 	}
 }

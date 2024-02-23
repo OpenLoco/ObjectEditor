@@ -1436,6 +1436,16 @@ namespace OpenLoco.ObjectEditor.Gui
 				return;
 			}
 
+			if (currentUIObject is UiLocoObject obji && obji.LocoObject != null)
+			{
+				var validation = obji.LocoObject.Object.Validate();
+				if (!validation)
+				{
+					logger.Error($"Object failed validation checks; cannot save");
+					return;
+				}
+			}
+
 			saveFileDialog1.InitialDirectory = model.Settings.ObjDataDirectory;
 			saveFileDialog1.DefaultExt = "dat";
 			saveFileDialog1.Filter = "Locomotion DAT files (.dat)|*.dat";

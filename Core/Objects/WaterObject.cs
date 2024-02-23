@@ -1,4 +1,4 @@
-﻿
+
 using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
@@ -17,5 +17,19 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x05), LocoPropertyMaybeUnused] uint8_t var_05,
 		[property: LocoStructOffset(0x06), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id MapPixelImage
-	) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate()
+		{
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+			if (CostFactor <= 0)
+			{
+				return false;
+			}
+			return true;
+		}
+	}
 }

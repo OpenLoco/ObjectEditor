@@ -249,7 +249,7 @@ namespace OpenLoco.ObjectEditor.Tests
 			{
 				Assert.That(struc.var_04, Is.EqualTo(6672), nameof(struc.var_04));
 				Assert.That(struc.var_08, Is.EqualTo(2053), nameof(struc.var_08));
-				Assert.That(struc.Emotions, Is.EqualTo(255), nameof(struc.Emotions));
+				Assert.That(struc.Emotions, Is.EqualTo(511), nameof(struc.Emotions));
 				Assert.That(struc.Images, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 9)), nameof(struc.Images));
 				Assert.That(struc.Intelligence, Is.EqualTo(7), nameof(struc.Intelligence));
 				Assert.That(struc.Aggressiveness, Is.EqualTo(5), nameof(struc.Aggressiveness));
@@ -309,46 +309,103 @@ namespace OpenLoco.ObjectEditor.Tests
 			LoadSaveGenericTest<HillShapesObject>(objectName, assertFunc);
 		}
 
-		[TestCase("BREWERY.DAT")]
+		[TestCase("CHEMWORK.DAT")]
 		public void IndustryObject(string objectName)
 		{
 			void assertFunc(ILocoObject obj, IndustryObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
 
-				// AnimationSequences
+				Assert.That(struc.AnimationSequences, Is.All.EqualTo(new byte[0]));
 				Assert.That(struc.AvailableColours, Is.EqualTo(4), nameof(struc.AvailableColours));
 				// Buildings
-				Assert.That(struc.BuildingSizeFlags, Is.EqualTo(1), nameof(struc.BuildingSizeFlags));
+				Assert.That(struc.BuildingSizeFlags, Is.EqualTo(7), nameof(struc.BuildingSizeFlags));
 				Assert.That(struc._BuildingWall, Is.EqualTo(0), nameof(struc._BuildingWall));
 				Assert.That(struc._BuildingWallEntrance, Is.EqualTo(0), nameof(struc._BuildingWallEntrance));
-				// BuildingVariationAnimations
-				// BuildingVariationHeights
-				// BuildingVariationParts
+				// BuildingPartHeights
+				Assert.That(struc.BuildingPartHeights, Is.EqualTo(new List<byte>() { 0, 56, 0, 66, 0, 122, 0, 48, 0, 36 }));
+				// BuildingPartAnimations
+				Assert.That(struc.BuildingPartAnimations, Has.Count.EqualTo(10));
+				Assert.That(struc.BuildingPartAnimations[0].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[0].AnimationSpeed, Is.EqualTo(0));
+				Assert.That(struc.BuildingPartAnimations[1].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[1].AnimationSpeed, Is.EqualTo(0));
+				Assert.That(struc.BuildingPartAnimations[2].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[2].AnimationSpeed, Is.EqualTo(0));
+				Assert.That(struc.BuildingPartAnimations[3].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[3].AnimationSpeed, Is.EqualTo(0));
+				Assert.That(struc.BuildingPartAnimations[4].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[4].AnimationSpeed, Is.EqualTo(0));
+				Assert.That(struc.BuildingPartAnimations[5].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[5].AnimationSpeed, Is.EqualTo(0));
+				Assert.That(struc.BuildingPartAnimations[6].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[6].AnimationSpeed, Is.EqualTo(0));
+				Assert.That(struc.BuildingPartAnimations[7].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[7].AnimationSpeed, Is.EqualTo(0));
+				Assert.That(struc.BuildingPartAnimations[8].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[8].AnimationSpeed, Is.EqualTo(0));
+				Assert.That(struc.BuildingPartAnimations[9].NumFrames, Is.EqualTo(1));
+				Assert.That(struc.BuildingPartAnimations[9].AnimationSpeed, Is.EqualTo(0));
+				// BuildingParts
+				Assert.That(struc.BuildingParts, Has.Count.EqualTo(5));
+				Assert.That(struc.BuildingParts[0], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingParts[0][0], Is.EqualTo(0));
+				Assert.That(struc.BuildingParts[0][1], Is.EqualTo(1));
+				Assert.That(struc.BuildingParts[1], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingParts[1][0], Is.EqualTo(2));
+				Assert.That(struc.BuildingParts[1][1], Is.EqualTo(3));
+				Assert.That(struc.BuildingParts[2], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingParts[2][0], Is.EqualTo(4));
+				Assert.That(struc.BuildingParts[2][1], Is.EqualTo(5));
+				Assert.That(struc.BuildingParts[3], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingParts[3][0], Is.EqualTo(6));
+				Assert.That(struc.BuildingParts[3][1], Is.EqualTo(7));
+				Assert.That(struc.BuildingParts[4], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingParts[4][0], Is.EqualTo(8));
+				Assert.That(struc.BuildingParts[4][1], Is.EqualTo(9));
+				// Rest of object
 				Assert.That(struc.ClearCostFactor, Is.EqualTo(240), nameof(struc.ClearCostFactor));
-				Assert.That(struc.CostFactor, Is.EqualTo(320), nameof(struc.CostFactor));
+				Assert.That(struc.CostFactor, Is.EqualTo(400), nameof(struc.CostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
-				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltNearWater | IndustryObjectFlags.BuiltNearTown | IndustryObjectFlags.CanBeFoundedByPlayer | IndustryObjectFlags.BuiltNearDesert), nameof(struc.Flags));
-				//Assert.That(struc.InitialProductionRate, Is.EqualTo(1), nameof(struc.InitialProductionRate));
-				Assert.That(struc.MaxNumBuildings, Is.EqualTo(8), nameof(struc.MaxNumBuildings));
-				Assert.That(struc.MinNumBuildings, Is.EqualTo(4), nameof(struc.MinNumBuildings));
-				Assert.That(struc.NumBuildingAnimations, Is.EqualTo(4), nameof(struc.NumBuildingAnimations));
-				Assert.That(struc.NumBuildingVariations, Is.EqualTo(2), nameof(struc.NumBuildingVariations));
+				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltAwayFromTown | IndustryObjectFlags.unk18 | IndustryObjectFlags.unk19), nameof(struc.Flags));
+				Assert.That(struc.InitialProductionRate[0].Min, Is.EqualTo(8));
+				Assert.That(struc.InitialProductionRate[0].Max, Is.EqualTo(12));
+				Assert.That(struc.InitialProductionRate[1].Min, Is.EqualTo(0));
+				Assert.That(struc.InitialProductionRate[1].Max, Is.EqualTo(0));
+				Assert.That(struc.MaxNumBuildings, Is.EqualTo(11), nameof(struc.MaxNumBuildings));
+				Assert.That(struc.MinNumBuildings, Is.EqualTo(9), nameof(struc.MinNumBuildings));
+				Assert.That(struc.var_1E, Is.EqualTo(10), nameof(struc.var_1E));
+				Assert.That(struc.var_1F, Is.EqualTo(5), nameof(struc.var_1F));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
-				Assert.That(struc.pad_E3, Is.EqualTo(4), nameof(struc.pad_E3));
+				Assert.That(struc.pad_E3, Is.EqualTo(16), nameof(struc.pad_E3));
 				// ProducedCargo
+				Assert.That(struc.ProducedCargo, Has.Count.EqualTo(1));
+				Assert.That(struc.ProducedCargo[0].Name, Is.EqualTo("CHEMICAL"));
+				Assert.That(struc.ProducedCargo[0].ObjectType, Is.EqualTo(ObjectType.Cargo));
 				// RequiredCargo
+				Assert.That(struc.RequiredCargo, Has.Count.EqualTo(0));
+				// Rest of object
 				Assert.That(struc.ScaffoldingColour, Is.EqualTo(Colour.grey), nameof(struc.ScaffoldingColour));
-				Assert.That(struc.ScaffoldingSegmentType, Is.EqualTo(0), nameof(struc.ScaffoldingSegmentType));
-				Assert.That(struc.TotalOfTypeInScenario, Is.EqualTo(2), nameof(struc.TotalOfTypeInScenario));
+				Assert.That(struc.ScaffoldingSegmentType, Is.EqualTo(2), nameof(struc.ScaffoldingSegmentType));
+				Assert.That(struc.TotalOfTypeInScenario, Is.EqualTo(3), nameof(struc.TotalOfTypeInScenario));
+				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
+				Assert.That(struc.var_12, Is.EqualTo(0), nameof(struc.var_12));
+				Assert.That(struc.var_16, Is.EqualTo(40), nameof(struc.var_16));
+				Assert.That(struc.var_1A, Is.EqualTo(21), nameof(struc.var_1A));
 				Assert.That(struc.var_E8, Is.EqualTo(1), nameof(struc.var_E8));
 				Assert.That(struc.var_E9, Is.EqualTo(1), nameof(struc.var_E9));
 				Assert.That(struc.var_EA, Is.EqualTo(0), nameof(struc.var_EA));
 				Assert.That(struc.var_EB, Is.EqualTo(0), nameof(struc.var_EB));
 				Assert.That(struc.var_EC, Is.EqualTo(0), nameof(struc.var_EC));
 				Assert.That(struc.var_F3, Is.EqualTo(1), nameof(struc.var_F3));
+				// Walls
+				Assert.That(struc.WallTypes, Has.Count.EqualTo(0));
 				// WallTypes
+				Assert.That(struc.BuildingWall.Name, Is.EqualTo("SECFENCE"));
+				Assert.That(struc.BuildingWall.ObjectType, Is.EqualTo(ObjectType.Wall));
+				Assert.That(struc.BuildingWallEntrance.Name, Is.EqualTo("SECFENCG"));
+				Assert.That(struc.BuildingWallEntrance.ObjectType, Is.EqualTo(ObjectType.Wall));
 			});
 			LoadSaveGenericTest<IndustryObject>(objectName, assertFunc);
 		}
@@ -733,14 +790,14 @@ namespace OpenLoco.ObjectEditor.Tests
 				// Compatible
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(1960), nameof(struc.DesignedYear));
+				Assert.That(struc.DrawStyle, Is.EqualTo(0), nameof(struc.DrawStyle));
 				Assert.That(struc.Flags, Is.EqualTo(TrainStationObjectFlags.None), nameof(struc.Flags));
 				// ManualPower
+				Assert.That(struc.Height, Is.EqualTo(0), nameof(struc.Height));
 				Assert.That(struc.NumCompatible, Is.EqualTo(0), nameof(struc.NumCompatible));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
-				Assert.That(struc.PaintStyle, Is.EqualTo(0), nameof(struc.PaintStyle));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-7), nameof(struc.SellCostFactor));
 				Assert.That(struc.TrackPieces, Is.EqualTo(0), nameof(struc.TrackPieces));
-				Assert.That(struc.var_03, Is.EqualTo(0), nameof(struc.var_03));
 				Assert.That(struc.var_0B, Is.EqualTo(2), nameof(struc.var_0B));
 				Assert.That(struc.var_0D, Is.EqualTo(0), nameof(struc.var_0D));
 			});

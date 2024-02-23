@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace OpenLoco.ObjectEditor.Objects
@@ -18,5 +18,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0E)] uint8_t VolumeIncreaseStep,
 		[property: LocoStructOffset(0x0F)] uint8_t VolumeDecreaseStep,
 		[property: LocoStructOffset(0x10)] uint8_t SpeedFreqFactor
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => true;
+	}
 }

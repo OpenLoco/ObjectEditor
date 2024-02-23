@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
@@ -60,5 +60,7 @@ namespace OpenLoco.ObjectEditor.Objects
 
 			return data;
 		}
+
+		public bool Validate() => true;
 	}
 }

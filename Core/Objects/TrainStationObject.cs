@@ -20,8 +20,8 @@ namespace OpenLoco.ObjectEditor.Objects
 	[LocoStringTable("Name")]
 	public record TrainStationObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
-		[property: LocoStructOffset(0x03)] uint8_t var_03,
+		[property: LocoStructOffset(0x02)] uint8_t DrawStyle,
+		[property: LocoStructOffset(0x03)] uint8_t Height,
 		[property: LocoStructOffset(0x04)] uint16_t TrackPieces,
 		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
@@ -125,6 +125,27 @@ namespace OpenLoco.ObjectEditor.Objects
 
 				return ms.ToArray();
 			}
+		}
+
+		public bool Validate()
+		{
+			if (CostIndex >= 32)
+			{
+				return false;
+			}
+			if (-SellCostFactor > BuildCostFactor)
+			{
+				return false;
+			}
+			if (BuildCostFactor <= 0)
+			{
+				return false;
+			}
+			if (DrawStyle >= 1)
+			{
+				return false;
+			}
+			return NumCompatible <= 7;
 		}
 	}
 }

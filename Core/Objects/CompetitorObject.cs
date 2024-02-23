@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -13,7 +13,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id LastName,
 			[property: LocoStructOffset(0x04)] uint32_t var_04,
 			[property: LocoStructOffset(0x08)] uint32_t var_08,
-			[property: LocoStructOffset(0x0C)] uint8_t Emotions,
+			[property: LocoStructOffset(0x0C)] uint32_t Emotions,
 			[property: LocoStructOffset(0x10), Browsable(false), LocoArrayLength(CompetitorObject.ImagesLength)] image_id[] Images,
 			[property: LocoStructOffset(0x34)] uint8_t Intelligence,
 			[property: LocoStructOffset(0x35)] uint8_t Aggressiveness,
@@ -22,5 +22,22 @@ namespace OpenLoco.ObjectEditor.Objects
 		) : ILocoStruct
 	{
 		public const int ImagesLength = 9;
+
+		public bool Validate()
+		{
+			if ((Emotions & (1 << 0)) == 0)
+			{
+				return false;
+			}
+			if (Intelligence < 1 || Intelligence > 9)
+			{
+				return false;
+			}
+			if (Aggressiveness < 1 || Aggressiveness > 9)
+			{
+				return false;
+			}
+			return Competitiveness >= 1 && Competitiveness <= 9;
+		}
 	}
 }

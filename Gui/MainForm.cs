@@ -525,7 +525,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		{
 			try
 			{
-				LoadDataDumpCore(path, isG1);
+				//LoadDataDumpCore(path, isG1);
 			}
 			catch (Exception ex)
 			{
@@ -746,15 +746,15 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		public string GetImageName(IUiObject? uiObj, int counter)
 		{
-			IImageTableStrings? its = null;
+			ILocoImageTableNames? its = null;
 			var objectName = string.Empty;
 
-			if (uiObj is UiLocoObject uiLocoObj && uiLocoObj.LocoObject != null && uiLocoObj.LocoObject.Object is IImageTableStrings itss)
+			if (uiObj is UiLocoObject uiLocoObj && uiLocoObj.LocoObject != null && uiLocoObj.LocoObject.Object is ILocoImageTableNames itss)
 			{
 				its = itss;
 				objectName = uiLocoObj.DatFileInfo.S5Header.Name;
 			}
-			else if (uiObj is UiG1 uiG1 && uiG1.G1 is IImageTableStrings itsg)
+			else if (uiObj is UiG1 uiG1 && uiG1.G1 is ILocoImageTableNames itsg)
 			{
 				its = itsg;
 				objectName = "g1.dat";
@@ -764,7 +764,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			{
 				if (!its.TryGetImageName(counter, out var value) || value == null)
 				{
-					logger.Warning($"Object {objectName} does not have an image for id {counter}");
+					logger.Debug($"Object {objectName} does not have an image for id {counter}");
 					return $"{counter}-{objectName}";
 				}
 
@@ -1434,6 +1434,16 @@ namespace OpenLoco.ObjectEditor.Gui
 			{
 				logger.Warning("Current UI object is null");
 				return;
+			}
+
+			if (currentUIObject is UiLocoObject obji && obji.LocoObject != null)
+			{
+				var validation = obji.LocoObject.Object.Validate();
+				if (!validation)
+				{
+					logger.Error($"Object failed validation checks; cannot save");
+					return;
+				}
 			}
 
 			saveFileDialog1.InitialDirectory = model.Settings.ObjDataDirectory;

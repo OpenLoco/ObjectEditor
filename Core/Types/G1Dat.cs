@@ -7,7 +7,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record G1Dat(
 		G1Header G1Header,
-		List<G1Element32> G1Elements) : IImageTableStrings
+		List<G1Element32> G1Elements) : ILocoImageTableNames
 	{
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id, out value);

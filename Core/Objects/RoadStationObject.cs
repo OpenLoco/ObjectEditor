@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
@@ -114,6 +114,35 @@ namespace OpenLoco.ObjectEditor.Objects
 
 				return ms.ToArray();
 			}
+		}
+
+		public bool Validate()
+		{
+			if (CostIndex >= 32)
+			{
+				return false;
+			}
+			if (-SellCostFactor > BuildCostFactor)
+			{
+				return false;
+			}
+			if (BuildCostFactor <= 0)
+			{
+				return false;
+			}
+			if (PaintStyle >= 1)
+			{
+				return false;
+			}
+			if (NumCompatible > 7)
+			{
+				return false;
+			}
+			if (Flags.HasFlag(RoadStationObjectFlags.Passenger) && Flags.HasFlag(RoadStationObjectFlags.Freight))
+			{
+				return false;
+			}
+			return true;
 		}
 	}
 }

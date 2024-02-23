@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -163,6 +163,21 @@ namespace Core.Objects
 			}
 
 			return ms.ToArray();
+		}
+
+		public bool Validate()
+		{
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+
+			if (-SellCostFactor > BuildCostFactor)
+			{
+				return false;
+			}
+
+			return BuildCostFactor > 0;
 		}
 	}
 }

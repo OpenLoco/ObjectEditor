@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace OpenLoco.ObjectEditor.Objects
@@ -12,5 +12,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x03)] uint8_t BackBogieSpriteInd, // index of a bogieSprites struct
 		[property: LocoStructOffset(0x04)] uint8_t BodySpriteInd, // index of a bogieSprites struct
 		[property: LocoStructOffset(0x05)] uint8_t var_05
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => true;
+	}
 }

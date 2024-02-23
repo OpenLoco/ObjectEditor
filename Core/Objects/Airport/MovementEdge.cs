@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Objects
@@ -12,5 +12,8 @@ namespace Core.Objects
 		[property: LocoStructOffset(0x03)] uint8_t var_03,
 		[property: LocoStructOffset(0x04)] uint32_t MustBeClearEdges,    // Which edges must be clear to use the transition edge. should probably be some kind of flags?
 		[property: LocoStructOffset(0x08)] uint32_t AtLeastOneClearEdges // Which edges must have at least one clear to use transition edge. should probably be some kind of flags?
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => true;
+	}
 }

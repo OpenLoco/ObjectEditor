@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -11,5 +11,8 @@ namespace OpenLoco.ObjectEditor.Objects
 	public record CliffEdgeObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] image_id Image
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => true;
+	}
 }

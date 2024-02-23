@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace OpenLoco.ObjectEditor.Objects
@@ -9,5 +9,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x00), Browsable(false)] object_id ObjectId,
 		[property: LocoStructOffset(0x01)] uint8_t Height,
 		[property: LocoStructOffset(0x02)] SimpleAnimationType Type
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => true;
+	}
 }

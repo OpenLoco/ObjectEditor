@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -43,5 +43,41 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x44)] uint32_t Colours,
 		[property: LocoStructOffset(0x48)] int16_t Rating,
 		[property: LocoStructOffset(0x4A)] int16_t DemolishRatingReduction
-	) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate()
+		{
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+
+			// 230/256 = ~90%
+			if (-ClearCostFactor > BuildCostFactor * 230 / 256)
+			{
+				return false;
+			}
+
+			switch (NumRotations)
+			{
+				default:
+					return false;
+				case 1:
+				case 2:
+				case 4:
+					break;
+			}
+			if (Growth < 1 || Growth > 8)
+			{
+				return false;
+			}
+
+			if (Height < Clearance)
+			{
+				return false;
+			}
+
+			return var_05 >= var_04;
+		}
+	}
 }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Types;
@@ -18,10 +18,30 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E)
-	: ILocoStruct, IImageTableStrings
+	: ILocoStruct, ILocoImageTableNames
 	{
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id - 8, out value);
+
+		public bool Validate()
+		{
+			if (PaintStyle >= 2)
+			{
+				return false;
+			}
+
+			// This check missing from vanilla
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+
+			if (-SellCostFactor > BuildCostFactor)
+			{
+				return false;
+			}
+			return BuildCostFactor > 0;
+		}
 
 		// taken from OpenLoco TrackExtraObject.h
 		public static Dictionary<int, string> ImageIdNameMap = new()

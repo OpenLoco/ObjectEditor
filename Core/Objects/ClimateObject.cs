@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -18,5 +18,9 @@ namespace OpenLoco.ObjectEditor.Objects
 		) : ILocoStruct
 	{
 		public const int Seasons = 4;
+
+		public bool Validate()
+			=> WinterSnowLine <= SummerSnowLine
+			&& FirstSeason < 4;
 	}
 }

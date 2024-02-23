@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Types;
@@ -78,5 +78,19 @@ namespace OpenLoco.ObjectEditor.Objects
 			.Concat(var_1C)
 			.Concat(new byte[] { 0xFF })
 			.ToArray();
+		public bool Validate()
+		{
+			if (CostIndex > 32)
+			{
+				return false;
+			}
+
+			if (-SellCostFactor > BuildCostFactor)
+			{
+				return false;
+			}
+
+			return BuildCostFactor > 0;
+		}
 	}
 }

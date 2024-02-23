@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -14,5 +14,7 @@ namespace OpenLoco.ObjectEditor.Objects
 	) : ILocoStruct
 	{
 		public const int DesignedYearLength = 3;
+
+		public bool Validate() => true;
 	}
 }

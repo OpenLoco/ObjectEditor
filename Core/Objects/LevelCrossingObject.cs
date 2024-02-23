@@ -1,4 +1,4 @@
-﻿
+
 using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
@@ -20,5 +20,24 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0A), LocoArrayLength(0x0C - 0x0A)] uint8_t[] pad_0A,
 		[property: LocoStructOffset(0x0C)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id Image
-	) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate()
+		{
+			if (-SellCostFactor > CostFactor)
+			{
+				return false;
+			}
+			if (CostFactor <= 0)
+			{
+				return false;
+			}
+
+			return ClosingFrames switch
+			{
+				1 or 2 or 4 or 8 or 16 or 32 => true,
+				_ => false,
+			};
+		}
+	}
 }

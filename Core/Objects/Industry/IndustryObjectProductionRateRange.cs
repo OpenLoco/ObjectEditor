@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Objects
@@ -9,5 +9,8 @@ namespace Core.Objects
 	public record IndustryObjectProductionRateRange(
 		[property: LocoStructOffset(0x00)] uint16_t Min,
 		[property: LocoStructOffset(0x02)] uint16_t Max
-		) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate() => true;
+	}
 }

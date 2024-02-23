@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -53,5 +53,10 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x1B)] uint16_t PaymentFactor,
 		[property: LocoStructOffset(0x1D)] uint8_t PaymentIndex,
 		[property: LocoStructOffset(0x1E)] uint8_t UnitSize
-	) : ILocoStruct;
+		) : ILocoStruct
+	{
+		public bool Validate()
+			=> var_02 <= 3840
+			&& CargoTransferTime != 0;
+	}
 }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
@@ -64,5 +64,7 @@ namespace Core.Objects.Sound
 				return ms.ToArray();
 			}
 		}
+
+		public bool Validate() => true;
 	}
 }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
@@ -54,17 +54,17 @@ namespace Core.Objects
 		[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id NameDownProduction,
 		[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id NameSingular,
 		[property: LocoStructOffset(0x0C), LocoString, Browsable(false)] string_id NamePlural,
-		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E, // shadows image id base
-		[property: LocoStructOffset(0x12), Browsable(false)] image_id var_12, // Base image id for building 0
-		[property: LocoStructOffset(0x16), Browsable(false)] image_id var_16,
-		[property: LocoStructOffset(0x1A), Browsable(false)] image_id var_1A,
-		[property: LocoStructOffset(0x1E)] uint8_t NumBuildingAnimations,
-		[property: LocoStructOffset(0x1F)] uint8_t NumBuildingVariations,
-		[property: LocoStructOffset(0x20), LocoStructVariableLoad] List<uint8_t> BuildingVariationHeights,    // This is the height of a building image
-		[property: LocoStructOffset(0x24), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingVariationAnimations,
+		[property: LocoStructOffset(0x0E), Browsable(false)] image_id _var_0E, // shadows image id base
+		[property: LocoStructOffset(0x12), Browsable(false)] image_id _var_12, // Base image id for building 0
+		[property: LocoStructOffset(0x16), Browsable(false)] image_id _var_16,
+		[property: LocoStructOffset(0x1A), Browsable(false)] image_id _var_1A,
+		[property: LocoStructOffset(0x1E)] uint8_t var_1E,
+		[property: LocoStructOffset(0x1F)] uint8_t var_1F,
+		[property: LocoStructOffset(0x20), LocoStructVariableLoad] List<uint8_t> BuildingPartHeights,    // This is the height of a building image
+		[property: LocoStructOffset(0x24), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingPartAnimations,
 		[property: LocoStructOffset(0x28), LocoStructVariableLoad, LocoArrayLength(IndustryObject.AnimationSequencesCount)] List<uint8_t[]> AnimationSequences, // Access with getAnimationSequence helper method
 		[property: LocoStructOffset(0x38), LocoStructVariableLoad] List<IndustryObjectUnk38> var_38,    // Access with getUnk38 helper method
-		[property: LocoStructOffset(0x3C), LocoStructVariableLoad, LocoArrayLength(IndustryObject.VariationPartCount)] List<uint8_t[]> BuildingVariationParts,  // Access with getBuildingParts helper method
+		[property: LocoStructOffset(0x3C), LocoStructVariableLoad, LocoArrayLength(IndustryObject.VariationPartCount)] List<uint8_t[]> BuildingParts,  // Access with getBuildingParts helper method
 		[property: LocoStructOffset(0xBC)] uint8_t MinNumBuildings,
 		[property: LocoStructOffset(0xBD)] uint8_t MaxNumBuildings,
 		[property: LocoStructOffset(0xBE), LocoStructVariableLoad] List<uint8_t> Buildings,
@@ -107,19 +107,24 @@ namespace Core.Objects
 
 		public S5Header BuildingWallEntrance { get; set; }
 
+		public image_id var_0E { get; private set; } // shadows image id base
+		public image_id var_12 { get; private set; } // Base image id for building 0
+		public image_id var_16 { get; private set; }
+		public image_id var_1A { get; private set; }
+
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			// variation heights
-			BuildingVariationHeights.Clear();
-			BuildingVariationHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingAnimations * 1)], NumBuildingAnimations));
-			remainingData = remainingData[(NumBuildingAnimations * 1)..]; // uint8_t*
+			// part heights
+			BuildingPartHeights.Clear();
+			BuildingPartHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(var_1E * 1)], var_1E));
+			remainingData = remainingData[(var_1E * 1)..]; // uint8_t*
 
-			// variation animations
-			BuildingVariationAnimations.Clear();
+			// part animations
+			BuildingPartAnimations.Clear();
 			var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
-			BuildingVariationAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingAnimations * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingAnimations, buildingAnimationSize)
+			BuildingPartAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(var_1E * buildingAnimationSize)], typeof(BuildingPartAnimation), var_1E, buildingAnimationSize)
 				.Cast<BuildingPartAnimation>());
-			remainingData = remainingData[(NumBuildingAnimations * 2)..]; // uint16_t*
+			remainingData = remainingData[(var_1E * 2)..]; // uint16_t*
 
 			// animation sequences
 			AnimationSequences.Clear();
@@ -148,8 +153,8 @@ namespace Core.Objects
 			remainingData = remainingData[1..]; // skip final 0xFF byte
 
 			// variation parts
-			BuildingVariationParts.Clear();
-			for (var i = 0; i < NumBuildingVariations; ++i)
+			BuildingParts.Clear();
+			for (var i = 0; i < var_1F; ++i)
 			{
 				var ptr_1F = 0;
 				while (remainingData[++ptr_1F] != 0xFF)
@@ -157,7 +162,7 @@ namespace Core.Objects
 					;
 				}
 
-				BuildingVariationParts.Add(remainingData[..ptr_1F].ToArray());
+				BuildingParts.Add(remainingData[..ptr_1F].ToArray());
 				ptr_1F++;
 				remainingData = remainingData[ptr_1F..];
 			}
@@ -183,12 +188,28 @@ namespace Core.Objects
 			remainingData = remainingData[(S5Header.StructLength * WallTypeCount)..];
 
 			// wall type
-			BuildingWall = S5Header.Read(remainingData[..S5Header.StructLength]);
-			remainingData = remainingData[S5Header.StructLength..];
+			if (remainingData[0] != 0xFF)
+			{
+				BuildingWall = S5Header.Read(remainingData[..S5Header.StructLength]);
+				remainingData = remainingData[S5Header.StructLength..];
+			}
 
 			// wall type entrance
-			BuildingWallEntrance = S5Header.Read(remainingData[..S5Header.StructLength]);
-			remainingData = remainingData[S5Header.StructLength..];
+			if (remainingData[0] != 0xFF)
+			{
+				BuildingWallEntrance = S5Header.Read(remainingData[..S5Header.StructLength]);
+				remainingData = remainingData[S5Header.StructLength..];
+			}
+
+			// image stuff, in openloco it happens after image table load, but only to get image offsets, which we can just set to 0 here
+			var_0E = 0;
+			var_12 = var_0E;
+			if (Flags.HasFlag(IndustryObjectFlags.HasShadows))
+			{
+				var_12 += var_1F * 4u;
+			}
+			var_16 = (var_1E * 4u) + var_12;
+			var_1A = var_E9 * 21u;
 
 			return remainingData;
 		}
@@ -197,14 +218,14 @@ namespace Core.Objects
 		{
 			using (var ms = new MemoryStream())
 			{
-				// variation heights
-				foreach (var x in BuildingVariationHeights)
+				// part heights
+				foreach (var x in BuildingPartHeights)
 				{
 					ms.WriteByte(x);
 				}
 
-				// variation animations
-				foreach (var x in BuildingVariationAnimations)
+				// part animations
+				foreach (var x in BuildingPartAnimations)
 				{
 					ms.WriteByte(x.NumFrames);
 					ms.WriteByte(x.AnimationSpeed);
@@ -227,7 +248,7 @@ namespace Core.Objects
 				ms.WriteByte(0xFF);
 
 				// variation parts
-				foreach (var x in BuildingVariationParts)
+				foreach (var x in BuildingParts)
 				{
 					ms.Write(x);
 					ms.WriteByte(0xFF);
@@ -264,6 +285,64 @@ namespace Core.Objects
 
 				return ms.ToArray();
 			}
+		}
+
+		public bool Validate()
+		{
+			if (var_1E == 0)
+			{
+				return false;
+			}
+			if (var_1F == 0 || var_1F > 31)
+			{
+				return false;
+			}
+
+			if (MaxNumBuildings < MinNumBuildings)
+			{
+				return false;
+			}
+
+			if (TotalOfTypeInScenario == 0 || TotalOfTypeInScenario > 32)
+			{
+				return false;
+			}
+
+			// 230/256 = ~90%
+			if (-ClearCostFactor > CostFactor * 230 / 256)
+			{
+				return false;
+			}
+
+			if (var_E8 > 8)
+			{
+				return false;
+			}
+			switch (var_E9)
+			{
+				case 1:
+				case 2:
+				case 4:
+					break;
+				default:
+					return false;
+			}
+
+			if (var_EA != 0xFF && var_EA > 7)
+			{
+				return false;
+			}
+
+			if (var_EC > 8)
+			{
+				return false;
+			}
+
+			if (InitialProductionRate[0].Min > 100)
+			{
+				return false;
+			}
+			return InitialProductionRate[1].Min <= 100;
 		}
 	}
 }

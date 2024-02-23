@@ -56,5 +56,7 @@ namespace OpenLoco.ObjectEditor.Headers
 
 			return span;
 		}
+
+		public bool Validate() => true;
 	}
 }

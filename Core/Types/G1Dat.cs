@@ -9,10 +9,15 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 		G1Header G1Header,
 		List<G1Element32> G1Elements) : ILocoImageTableNames
 	{
-		public bool TryGetImageName(int id, out string? value)
-			=> ImageIdNameMap.TryGetValue(id, out value);
+		public bool IsSteamG1
+			=> G1Elements.Count == 3896;
 
-		public static Dictionary<int, string> ImageIdNameMap = new()
+		public bool TryGetImageName(int id, out string? value)
+			=> id < 3550
+				? BaseImageIdNameMap.TryGetValue(id, out value)
+				: (IsSteamG1 ? SteamImageIdNameMap : OtherImageIdNameMap).TryGetValue(id, out value);
+
+		public static Dictionary<int, string> BaseImageIdNameMap = new()
 		{
 			{ 304, "default_palette" },
 
@@ -2140,8 +2145,96 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			{ 3547, "title_menu_sparkle" },
 			{ 3548, "title_menu_save" },
 			{ 3549, "title_menu_lesson_l" },
+		};
+
+		public static Dictionary<int, string> SteamImageIdNameMap = new()
+		{
+			{ 3550, "title_menu_globe_spin_0" },
+			{ 3551, "title_menu_globe_spin_1" },
+			{ 3552, "title_menu_globe_spin_2" },
+			{ 3553, "title_menu_globe_spin_3" },
+			{ 3554, "title_menu_globe_spin_4" },
+			{ 3555, "title_menu_globe_spin_5" },
+			{ 3556, "title_menu_globe_spin_6" },
+			{ 3557, "title_menu_globe_spin_7" },
+			{ 3558, "title_menu_globe_spin_8" },
+			{ 3559, "title_menu_globe_spin_9" },
+			{ 3560, "title_menu_globe_spin_10" },
+			{ 3561, "title_menu_globe_spin_11" },
+			{ 3562, "title_menu_globe_spin_12" },
+			{ 3563, "title_menu_globe_spin_13" },
+			{ 3564, "title_menu_globe_spin_14" },
+			{ 3565, "title_menu_globe_spin_15" },
+			{ 3566, "title_menu_globe_spin_16" },
+			{ 3567, "title_menu_globe_spin_17" },
+			{ 3568, "title_menu_globe_spin_18" },
+			{ 3569, "title_menu_globe_spin_19" },
+			{ 3570, "title_menu_globe_spin_20" },
+			{ 3571, "title_menu_globe_spin_21" },
+			{ 3572, "title_menu_globe_spin_22" },
+			{ 3573, "title_menu_globe_spin_23" },
+			{ 3574, "title_menu_globe_spin_24" },
+			{ 3575, "title_menu_globe_spin_25" },
+			{ 3576, "title_menu_globe_spin_26" },
+			{ 3577, "title_menu_globe_spin_27" },
+			{ 3578, "title_menu_globe_spin_28" },
+			{ 3579, "title_menu_globe_spin_29" },
+			{ 3580, "title_menu_globe_spin_30" },
+			{ 3581, "title_menu_globe_spin_31" },
+			{ 3582, "title_menu_globe_construct_0" },
+			{ 3583, "title_menu_globe_construct_1" },
+			{ 3584, "title_menu_globe_construct_2" },
+			{ 3585, "title_menu_globe_construct_3" },
+			{ 3586, "title_menu_globe_construct_4" },
+			{ 3587, "title_menu_globe_construct_5" },
+			{ 3588, "title_menu_globe_construct_6" },
+			{ 3589, "title_menu_globe_construct_7" },
+			{ 3590, "title_menu_globe_construct_8" },
+			{ 3591, "title_menu_globe_construct_9" },
+			{ 3592, "title_menu_globe_construct_10" },
+			{ 3593, "title_menu_globe_construct_11" },
+			{ 3594, "title_menu_globe_construct_12" },
+			{ 3595, "title_menu_globe_construct_13" },
+			{ 3596, "title_menu_globe_construct_14" },
+			{ 3597, "title_menu_globe_construct_15" },
+			{ 3598, "title_menu_globe_construct_16" },
+			{ 3599, "title_menu_globe_construct_17" },
+			{ 3600, "title_menu_globe_construct_18" },
+			{ 3601, "title_menu_globe_construct_19" },
+			{ 3602, "title_menu_globe_construct_20" },
+			{ 3603, "title_menu_globe_construct_21" },
+			{ 3604, "title_menu_globe_construct_22" },
+			{ 3605, "title_menu_globe_construct_23" },
+			{ 3606, "title_menu_globe_construct_24" },
+			{ 3607, "title_menu_globe_construct_25" },
+			{ 3608, "title_menu_globe_construct_26" },
+			{ 3609, "title_menu_globe_construct_27" },
+			{ 3610, "title_menu_globe_construct_28" },
+			{ 3611, "title_menu_globe_construct_29" },
+			{ 3612, "title_menu_globe_construct_30" },
+			{ 3613, "title_menu_globe_construct_31" },
+			{ 3614, "chris_sawyer_logo_small" },
+			{ 3615, "chris_sawyer_logo_intro_left" },
+			{ 3616, "chris_sawyer_logo_intro_right" },
+
+			{ 3618, "atari_logo_intro_left" },
+			{ 3619, "atari_logo_intro_right" },
+
+			{ 3621, "atari_logo_small" },
+			{ 3622, "locomotion_logo" },
+			{ 3623, "wide_tab" },
+
+			{ 3627, "scenario_completed_tick" },
+			{ 3628, "owner_jailed" },
+		};
+
+		public static Dictionary<int, string> OtherImageIdNameMap = new()
+		{
+			// steam G1.dat doesn't have these 2
 			{ 3550, "title_menu_lesson_a" },
 			{ 3551, "title_menu_lesson_p" },
+			//
+
 			{ 3552, "title_menu_globe_spin_0" },
 			{ 3553, "title_menu_globe_spin_1" },
 			{ 3554, "title_menu_globe_spin_2" },

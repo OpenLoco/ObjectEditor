@@ -18,34 +18,25 @@ namespace VelgridGui
 	{
 		private Sdl2Window _window;
 		private GraphicsDevice _gd;
-		private Scene _scene;
+		//private Scene _scene;
 		private readonly ImGuiRenderable _igRenderable;
-		private readonly SceneContext _sc = new SceneContext();
+		//private readonly SceneContext _sc = new SceneContext();
 		private bool _windowResized;
-		private RenderOrderKeyComparer _renderOrderKeyComparer = new RenderOrderKeyComparer();
+		//private RenderOrderKeyComparer _renderOrderKeyComparer = new RenderOrderKeyComparer();
 		private bool _recreateWindow = true;
 
 		private static double _desiredFrameLengthSeconds = 1.0 / 60.0;
 		private static bool _limitFrameRate = false;
-		private static FrameTimeAverager _fta = new FrameTimeAverager(0.666);
+		//private static FrameTimeAverager _fta = new FrameTimeAverager(0.666);
 		private CommandList _frameCommands;
 
 		private event Action<int, int> _resizeHandled;
 
-		private readonly string[] _msaaOptions = new string[] { "Off", "2x", "4x", "8x", "16x", "32x" };
-		private int _msaaOption = 0;
-		private bool _colorRedMask = true;
-		private bool _colorGreenMask = true;
-		private bool _colorBlueMask = true;
-		private bool _colorAlphaMask = true;
-		private TextureSampleCount? _newSampleCount;
-		private ColorWriteMask? _newMask;
-
 		private readonly Dictionary<string, ImageSharpTexture> _textures = new Dictionary<string, ImageSharpTexture>();
-		private Sdl2ControllerTracker _controllerTracker;
+		//private Sdl2ControllerTracker _controllerTracker;
 		private bool _colorSrgb = true;
-		private FullScreenQuad _fsq;
-		public static RenderDoc _renderDoc;
+		//private FullScreenQuad _fsq;
+		//public static RenderDoc _renderDoc;
 		private bool _controllerDebugMenu;
 		private bool _showImguiDemo;
 
@@ -85,7 +76,7 @@ namespace VelgridGui
 				InputSnapshot snapshot = null;
 				Sdl2Events.ProcessEvents();
 				snapshot = _window.PumpEvents();
-				InputTracker.UpdateFrameInput(snapshot, _window);
+				//InputTracker.UpdateFrameInput(snapshot, _window);
 				//Update((float)deltaSeconds);
 				if (!_window.Exists)
 				{
@@ -103,10 +94,10 @@ namespace VelgridGui
 		{
 			_gd.WaitForIdle();
 			_frameCommands.Dispose();
-			_sc.DestroyDeviceObjects();
-			_scene.DestroyAllDeviceObjects();
-			CommonMaterials.DestroyAllDeviceObjects();
-			StaticResourceCache.DestroyAllDeviceObjects();
+			//_sc.DestroyDeviceObjects();
+			//_scene.DestroyAllDeviceObjects();
+			//CommonMaterials.DestroyAllDeviceObjects();
+			//StaticResourceCache.DestroyAllDeviceObjects();
 			_gd.WaitForIdle();
 		}
 	}

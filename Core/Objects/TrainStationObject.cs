@@ -3,6 +3,7 @@ using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Types;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
@@ -37,7 +38,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes,
 		[property: LocoStructOffset(0x3E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.ManualPowerLength), Browsable(false)] uint8_t[] _ManualPower
-	) : ILocoStruct, ILocoStructVariableData
+	) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
 	{
 		public List<S5Header> Compatible { get; set; } = [];
 
@@ -147,5 +148,43 @@ namespace OpenLoco.ObjectEditor.Objects
 			}
 			return NumCompatible <= 7;
 		}
+
+		public bool TryGetImageName(int id, out string? value)
+			=> ImageIdNameMap.TryGetValue(id, out value);
+
+		public static Dictionary<int, string> ImageIdNameMap = new()
+		{
+			{ 0, "preview_image" },
+			{ 1, "preview_image_windows" },
+			{ 2, "totalPreviewImages" },
+		};
+
+		// These are relative to ImageOffsets
+		// ImageOffsets is the imageIds per sequenceIndex (for start/middle/end of the platform)
+		//namespace Style0
+		//{
+		//    constexpr uint32_t straightBackNE = 0;
+		//    constexpr uint32_t straightFrontNE = 1;
+		//    constexpr uint32_t straightCanopyNE = 2;
+		//    constexpr uint32_t straightCanopyTranslucentNE = 3;
+		//    constexpr uint32_t straightBackSE = 4;
+		//    constexpr uint32_t straightFrontSE = 5;
+		//    constexpr uint32_t straightCanopySE = 6;
+		//    constexpr uint32_t straightCanopyTranslucentSE = 7;
+		//    constexpr uint32_t diagonalNE0 = 8;
+		//    constexpr uint32_t diagonalNE3 = 9;
+		//    constexpr uint32_t diagonalNE1 = 10;
+		//    constexpr uint32_t diagonalCanopyNE1 = 11;
+		//    constexpr uint32_t diagonalCanopyTranslucentNE1 = 12;
+		//    constexpr uint32_t diagonalSE1 = 13;
+		//    constexpr uint32_t diagonalSE2 = 14;
+		//    constexpr uint32_t diagonalSE3 = 15;
+		//    constexpr uint32_t diagonalCanopyTranslucentSE3 = 16;
+		//    constexpr uint32_t totalNumImages = 17;
+		//}
+		//namespace Style1
+		//{
+		//    constexpr uint32_t totalNumImages = 8;
+		//}
 	}
 }

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Types;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
@@ -17,7 +18,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x05), LocoPropertyMaybeUnused] uint8_t var_05,
 		[property: LocoStructOffset(0x06), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id MapPixelImage
-		) : ILocoStruct
+		) : ILocoStruct, ILocoImageTableNames
 	{
 		public bool Validate()
 		{
@@ -31,5 +32,13 @@ namespace OpenLoco.ObjectEditor.Objects
 			}
 			return true;
 		}
+
+		public bool TryGetImageName(int id, out string? value)
+			=> ImageIdNameMap.TryGetValue(id, out value);
+
+		public static Dictionary<int, string> ImageIdNameMap = new()
+		{
+			{ 42, "kToolbarTerraformWater" },
+		};
 	}
 }

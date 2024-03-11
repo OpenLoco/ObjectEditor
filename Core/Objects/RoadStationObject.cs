@@ -2,6 +2,7 @@ using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Types;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
@@ -37,7 +38,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x2C), LocoStructVariableLoad, Browsable(false)] object_id _CargoTypeId,
 		[property: LocoStructOffset(0x2D)] uint8_t pad_2D,
 		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes
-	) : ILocoStruct, ILocoStructVariableData
+	) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
 	{
 		public const int MaxImageOffsets = 4;
 		public const int MaxNumMods = 7;
@@ -144,5 +145,22 @@ namespace OpenLoco.ObjectEditor.Objects
 			}
 			return true;
 		}
+
+		public bool TryGetImageName(int id, out string? value)
+			=> ImageIdNameMap.TryGetValue(id, out value);
+
+		public static Dictionary<int, string> ImageIdNameMap = new()
+		{
+			{ 0, "preview_image" },
+			{ 1, "preview_image_windows" },
+			{ 2, "totalPreviewImages" },
+
+			// These are relative to ImageOffsets
+			// ImageOffsets is the imageIds per sequenceIndex (for start/middle/end of the platform)
+			//namespace Style0
+			//{
+			//	constexpr uint32_t totalNumImages = 8;
+			//}
+};
 	}
 }

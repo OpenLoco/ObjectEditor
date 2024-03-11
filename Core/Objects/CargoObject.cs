@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Types;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
@@ -53,10 +54,20 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x1B)] uint16_t PaymentFactor,
 		[property: LocoStructOffset(0x1D)] uint8_t PaymentIndex,
 		[property: LocoStructOffset(0x1E)] uint8_t UnitSize
-		) : ILocoStruct
+		) : ILocoStruct, ILocoImageTableNames
 	{
 		public bool Validate()
 			=> var_02 <= 3840
 			&& CargoTransferTime != 0;
+
+		public bool TryGetImageName(int id, out string? value)
+			=> ImageIdNameMap.TryGetValue(id, out value);
+
+		public static Dictionary<int, string> ImageIdNameMap = new()
+		{
+			{ 0, "kInlineSprite" },
+			// There are NumPlatformVariations sprites after this one
+			{ 1, "kStationPlatformBegin" },
+		};
 	}
 }

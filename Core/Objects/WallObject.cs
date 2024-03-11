@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Types;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
@@ -41,8 +42,27 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x07)] WallObjectFlags Flags,
 		[property: LocoStructOffset(0x08)] uint8_t Height,
 		[property: LocoStructOffset(0x09), LocoPropertyMaybeUnused] WallObjectFlags2 Flags2
-		) : ILocoStruct
+		) : ILocoStruct, ILocoImageTableNames
 	{
 		public bool Validate() => true;
+
+		public bool TryGetImageName(int id, out string? value)
+			=> ImageIdNameMap.TryGetValue(id, out value);
+
+		public static Dictionary<int, string> ImageIdNameMap = new()
+		{
+			{ 0, "kFlatSE" },
+			{ 1, "kFlatNE" },
+			{ 2, "SlopedSE" },
+			{ 3, "SlopedNE" },
+			{ 4, "SlopedNW" },
+			{ 5, "SlopedSW" },
+			{ 6, "kGlassFlatSE" },
+			{ 7, "kGlassFlatNE" },
+			{ 8, "kGlassSlopedSE" },
+			{ 9, "kGlassSlopedNE" },
+			{ 10, "kGlassSlopedNW" },
+			{ 11, "kGlassSlopedSW" },
+		};
 	}
 }

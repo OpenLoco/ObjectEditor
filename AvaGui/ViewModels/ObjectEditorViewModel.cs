@@ -8,6 +8,7 @@ using System;
 using Avalonia;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
 
 namespace AvaGui.ViewModels
 {
@@ -19,17 +20,17 @@ namespace AvaGui.ViewModels
 			//this.WhenAnyValue(o => o.Name).Subscribe(o => this.RaisePropertyChanged(nameof(Greeting)));
 
 			// Use "Subscribe" with an anonymous class implementing IObserver<string>
-			_ = this.WhenAnyValue(o => o.Name)
-				.Subscribe(new AnonymousObserver<string>(
-					onNext: value => this.RaisePropertyChanged(nameof(Greeting)),
-					onError: error => { /* Handle error */ },
-					onCompleted: () => { /* Perform actions on completion (optional) */ }));
+			//_ = this.WhenAnyValue(o => o.Name)
+			//	.Subscribe(new AnonymousObserver<string>(
+			//		onNext: value => this.RaisePropertyChanged(nameof(Greeting)),
+			//		onError: error => { /* Handle error */ },
+			//		onCompleted: () => { /* Perform actions on completion (optional) */ }));
 
-			_ = this.WhenAnyValue(o => o.CurrentDirectory)
-				.Subscribe(new AnonymousObserver<string>(
-					onNext: value => this.RaisePropertyChanged(nameof(Files)),
-					onError: error => { /* Handle error */ },
-					onCompleted: () => { /* Perform actions on completion (optional) */ }));
+			//_ = this.WhenAnyValue(o => o.CurrentDirectory)
+			//	.Subscribe(new AnonymousObserver<string>(
+			//		onNext: value => this.RaisePropertyChanged(nameof(Files)),
+			//		onError: error => { /* Handle error */ },
+			//		onCompleted: () => { /* Perform actions on completion (optional) */ }));
 		}
 
 		string _Name = string.Empty;
@@ -56,6 +57,7 @@ namespace AvaGui.ViewModels
 				}
 			}
 		}
+
 
 		//IStorageProvider? GetProvider()
 		//{

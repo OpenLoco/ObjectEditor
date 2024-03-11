@@ -15,17 +15,16 @@
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 
-	<StackPanel DataContext="{Binding ObjectEditorViewModel}" Spacing="10">
-		<TextBlock>Enter your Name:</TextBlock>
-		<TextBox Text="{Binding Name}" />
-		<TextBox Text="{Binding Greeting, Mode=OneWay}"
-				 IsReadOnly="True"
-				 FontWeight="Bold" />
-		<TextBox Text="{Binding CurrentDirectory, Mode=OneWay}"
-				 IsReadOnly="True"/>
-		<ListBox Name="datFiles" DataContext="{Binding Files}">
-
-		</ListBox>
+	<StackPanel Spacing="10">
+		<TextBox Text="{Binding FolderPath}"/>
+		<Button Content="Browse" Command="{Binding LoadFolderCommand}"/>
+		<TreeView ItemsSource="{Binding HierarchyItems}">
+			<TreeView.ItemTemplate>
+				<DataTemplate >
+					<TextBlock Text="{Binding Name}" />
+				</DataTemplate >
+			</TreeView.ItemTemplate>
+		</TreeView>
 	</StackPanel>
 
 </Window>

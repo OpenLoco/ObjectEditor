@@ -15,18 +15,18 @@ namespace OpenLoco.ObjectEditor.Objects
 
 	public enum CargoCategory : uint16_t
 	{
-		grain = 1,
-		coal,
-		ironOre,
-		liquids,
-		paper,
-		steel,
-		timber,
-		goods,
-		foods,
-		livestock = 11,
-		passengers,
-		mail,
+		Grain = 1,
+		Coal,
+		IronOre,
+		Liquids,
+		Paper,
+		Steel,
+		Timber,
+		Goods,
+		Foods,
+		Livestock = 11,
+		Passengers,
+		Mail,
 		// Note: Mods may (and do) use other numbers not covered by this list
 		NULL = (uint16_t)0xFFFFU,
 	};

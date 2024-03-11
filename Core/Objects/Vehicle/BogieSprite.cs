@@ -3,7 +3,12 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
-	public enum BogieSpriteSlopeType { Flat, Gentle, Steep }
+	public enum BogieSpriteSlopeType
+	{
+		Flat,
+		Gentle,
+		Steep
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]

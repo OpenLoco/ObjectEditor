@@ -168,7 +168,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.ClearCostIndex, Is.EqualTo(1), nameof(struc.ClearCostIndex));
 				Assert.That(struc.ClearCostFactor, Is.EqualTo(0), nameof(struc.ClearCostFactor));
 				Assert.That(struc.ScaffoldingSegmentType, Is.EqualTo(1), nameof(struc.ScaffoldingSegmentType));
-				Assert.That(struc.ScaffoldingColour, Is.EqualTo(Colour.yellow), nameof(struc.ScaffoldingColour));
+				Assert.That(struc.ScaffoldingColour, Is.EqualTo(Colour.Yellow), nameof(struc.ScaffoldingColour));
 				Assert.That(struc.GeneratorFunction, Is.EqualTo(3), nameof(struc.GeneratorFunction));
 				Assert.That(struc.var_9F, Is.EqualTo(3), nameof(struc.var_9F));
 				// ProducedQuantity
@@ -192,7 +192,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.var_02, Is.EqualTo(256), nameof(struc.var_02));
 				Assert.That(struc.CargoTransferTime, Is.EqualTo(64), nameof(struc.CargoTransferTime));
 				Assert.That(struc.UnitInlineSprite, Is.EqualTo(0), nameof(struc.UnitInlineSprite));
-				Assert.That(struc.CargoCategory, Is.EqualTo(CargoCategory.liquids), nameof(struc.CargoCategory));
+				Assert.That(struc.CargoCategory, Is.EqualTo(CargoCategory.Liquids), nameof(struc.CargoCategory));
 				Assert.That(struc.Flags, Is.EqualTo(CargoObjectFlags.Delivering), nameof(struc.Flags));
 				Assert.That(struc.NumPlatformVariations, Is.EqualTo(1), nameof(struc.NumPlatformVariations));
 				Assert.That(struc.var_14, Is.EqualTo(4), nameof(struc.var_14));
@@ -219,8 +219,8 @@ namespace OpenLoco.ObjectEditor.Tests
 
 				var entry = strTable.Table["Name"];
 
-				Assert.That(entry[LanguageId.english_uk], Is.EqualTo("Brown Rock"));
-				Assert.That(entry[LanguageId.english_us], Is.EqualTo("Brown Rock"));
+				Assert.That(entry[LanguageId.English_UK], Is.EqualTo("Brown Rock"));
+				Assert.That(entry[LanguageId.English_US], Is.EqualTo("Brown Rock"));
 			});
 			LoadSaveGenericTest<CliffEdgeObject>(objectName, assertFunc);
 		}
@@ -386,7 +386,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				// RequiredCargo
 				Assert.That(struc.RequiredCargo, Has.Count.EqualTo(0));
 				// Rest of object
-				Assert.That(struc.ScaffoldingColour, Is.EqualTo(Colour.grey), nameof(struc.ScaffoldingColour));
+				Assert.That(struc.ScaffoldingColour, Is.EqualTo(Colour.Grey), nameof(struc.ScaffoldingColour));
 				Assert.That(struc.ScaffoldingSegmentType, Is.EqualTo(2), nameof(struc.ScaffoldingSegmentType));
 				Assert.That(struc.TotalOfTypeInScenario, Is.EqualTo(3), nameof(struc.TotalOfTypeInScenario));
 				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
@@ -418,24 +418,24 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
 				Assert.That(struc.Image, Is.EqualTo(0), nameof(struc.Image));
 
-				Assert.That(struc.Colour_06, Is.EqualTo(Colour.orange), nameof(struc.Colour_06));
-				Assert.That(struc.Colour_07, Is.EqualTo(Colour.darkOrange), nameof(struc.Colour_07));
-				Assert.That(struc.TooltipColour, Is.EqualTo(Colour.orange), nameof(struc.TooltipColour));
-				Assert.That(struc.ErrorColour, Is.EqualTo(Colour.darkRed), nameof(struc.ErrorColour));
-				Assert.That(struc.Colour_0A, Is.EqualTo(Colour.grey), nameof(struc.Colour_0A));
-				Assert.That(struc.Colour_0B, Is.EqualTo(Colour.black), nameof(struc.Colour_0B));
-				Assert.That(struc.Colour_0C, Is.EqualTo(Colour.grey), nameof(struc.Colour_0C));
-				Assert.That(struc.Colour_0D, Is.EqualTo(Colour.brown), nameof(struc.Colour_0D));
-				Assert.That(struc.Colour_0E, Is.EqualTo(Colour.brown), nameof(struc.Colour_0E));
-				Assert.That(struc.Colour_0F, Is.EqualTo(Colour.mutedSeaGreen), nameof(struc.Colour_0F));
-				Assert.That(struc.Colour_10, Is.EqualTo(Colour.blue), nameof(struc.Colour_10));
-				Assert.That(struc.Colour_11, Is.EqualTo(Colour.black), nameof(struc.Colour_11));
-				Assert.That(struc.Colour_12, Is.EqualTo(Colour.blue), nameof(struc.Colour_12));
-				Assert.That(struc.Colour_13, Is.EqualTo(Colour.mutedSeaGreen), nameof(struc.Colour_13));
-				Assert.That(struc.Colour_14, Is.EqualTo(Colour.brown), nameof(struc.Colour_14));
-				Assert.That(struc.Colour_15, Is.EqualTo(Colour.grey), nameof(struc.Colour_15));
-				Assert.That(struc.Colour_16, Is.EqualTo(Colour.grey), nameof(struc.Colour_16));
-				Assert.That(struc.Colour_17, Is.EqualTo(Colour.grey), nameof(struc.Colour_17));
+				Assert.That(struc.Colour_06, Is.EqualTo(Colour.Orange), nameof(struc.Colour_06));
+				Assert.That(struc.Colour_07, Is.EqualTo(Colour.DarkOrange), nameof(struc.Colour_07));
+				Assert.That(struc.TooltipColour, Is.EqualTo(Colour.Orange), nameof(struc.TooltipColour));
+				Assert.That(struc.ErrorColour, Is.EqualTo(Colour.DarkRed), nameof(struc.ErrorColour));
+				Assert.That(struc.Colour_0A, Is.EqualTo(Colour.Grey), nameof(struc.Colour_0A));
+				Assert.That(struc.Colour_0B, Is.EqualTo(Colour.Black), nameof(struc.Colour_0B));
+				Assert.That(struc.Colour_0C, Is.EqualTo(Colour.Grey), nameof(struc.Colour_0C));
+				Assert.That(struc.Colour_0D, Is.EqualTo(Colour.Brown), nameof(struc.Colour_0D));
+				Assert.That(struc.Colour_0E, Is.EqualTo(Colour.Brown), nameof(struc.Colour_0E));
+				Assert.That(struc.Colour_0F, Is.EqualTo(Colour.MutedSeaGreen), nameof(struc.Colour_0F));
+				Assert.That(struc.Colour_10, Is.EqualTo(Colour.Blue), nameof(struc.Colour_10));
+				Assert.That(struc.Colour_11, Is.EqualTo(Colour.Black), nameof(struc.Colour_11));
+				Assert.That(struc.Colour_12, Is.EqualTo(Colour.Blue), nameof(struc.Colour_12));
+				Assert.That(struc.Colour_13, Is.EqualTo(Colour.MutedSeaGreen), nameof(struc.Colour_13));
+				Assert.That(struc.Colour_14, Is.EqualTo(Colour.Brown), nameof(struc.Colour_14));
+				Assert.That(struc.Colour_15, Is.EqualTo(Colour.Grey), nameof(struc.Colour_15));
+				Assert.That(struc.Colour_16, Is.EqualTo(Colour.Grey), nameof(struc.Colour_16));
+				Assert.That(struc.Colour_17, Is.EqualTo(Colour.Grey), nameof(struc.Colour_17));
 			});
 			LoadSaveGenericTest<InterfaceSkinObject>(objectName, assertFunc);
 		}
@@ -666,8 +666,8 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.DesignedYear[1], Is.EqualTo(1950), nameof(struc.DesignedYear) + "[1]");
 				Assert.That(struc.DesignedYear[2], Is.EqualTo(1985), nameof(struc.DesignedYear) + "[2]");
 
-				Assert.That(obj.StringTable["Name"][LanguageId.english_uk], Is.EqualTo("Street Lights"));
-				Assert.That(obj.StringTable["Name"][LanguageId.english_us], Is.EqualTo("Street Lights"));
+				Assert.That(obj.StringTable["Name"][LanguageId.English_UK], Is.EqualTo("Street Lights"));
+				Assert.That(obj.StringTable["Name"][LanguageId.English_US], Is.EqualTo("Street Lights"));
 			});
 			LoadSaveGenericTest<StreetLightObject>(objectName, assertFunc);
 		}
@@ -701,8 +701,8 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.UnknownTownNameStructs[5].Fill, Is.EqualTo(20), nameof(struc.UnknownTownNameStructs) + "[5] Fill");
 				Assert.That(struc.UnknownTownNameStructs[5].Offset, Is.EqualTo(1071), nameof(struc.UnknownTownNameStructs) + "[5] Offset");
 
-				Assert.That(obj.StringTable["Name"][LanguageId.english_uk], Is.EqualTo("North-American style town names"));
-				Assert.That(obj.StringTable["Name"][LanguageId.english_us], Is.EqualTo("North-American style town names"));
+				Assert.That(obj.StringTable["Name"][LanguageId.English_UK], Is.EqualTo("North-American style town names"));
+				Assert.That(obj.StringTable["Name"][LanguageId.English_US], Is.EqualTo("North-American style town names"));
 			});
 			LoadSaveGenericTest<TownNamesObject>(objectName, assertFunc);
 		}

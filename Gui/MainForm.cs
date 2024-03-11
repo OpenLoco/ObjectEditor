@@ -1258,7 +1258,7 @@ namespace OpenLoco.ObjectEditor.Gui
 						tsImageTable.Visible = false;
 
 						var hdr = soundObject.SoundObjectData.PcmHeader;
-						var text = uiLocoObj.LocoObject.StringTable.Table["Name"][LanguageId.english_uk] ?? "<null>";
+						var text = uiLocoObj.LocoObject.StringTable.Table["Name"][LanguageId.English_UK] ?? "<null>";
 						var pn = CreateSoundUI(new UiSoundObject { Data = soundObject.PcmData, Header = SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), SoundName = text });
 						flpImageTable.Controls.Add(pn);
 					}

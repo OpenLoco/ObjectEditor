@@ -1,77 +1,77 @@
-﻿namespace OpenLoco.ObjectEditor.Data
+namespace OpenLoco.ObjectEditor.Data
 {
 	public enum Colour : uint8_t
 	{
-		black = 0,
-		grey = 1,
-		white = 2,
-		mutedDarkPurple = 3,
-		mutedPurple = 4,
-		purple = 5,
-		darkBlue = 6,
-		blue = 7,
-		mutedDarkTeal = 8,
-		mutedTeal = 9,
-		darkGreen = 10,
-		mutedSeaGreen = 11,
-		mutedGrassGreen = 12,
-		green = 13,
-		mutedAvocadoGreen = 14,
-		mutedOliveGreen = 15,
-		yellow = 16,
-		darkYellow = 17,
-		orange = 18,
-		amber = 19,
-		darkOrange = 20,
-		mutedDarkYellow = 21,
-		mutedYellow = 22,
-		brown = 23,
-		mutedOrange = 24,
-		mutedDarkRed = 25,
-		darkRed = 26,
-		red = 27,
-		darkPink = 28,
-		pink = 29,
-		mutedRed = 30,
-		max,
+		Black = 0,
+		Grey = 1,
+		White = 2,
+		MutedDarkPurple = 3,
+		MutedPurple = 4,
+		Purple = 5,
+		DarkBlue = 6,
+		Blue = 7,
+		MutedDarkTeal = 8,
+		MutedTeal = 9,
+		DarkGreen = 10,
+		MutedSeaGreen = 11,
+		MutedGrassGreen = 12,
+		Green = 13,
+		MutedAvocadoGreen = 14,
+		MutedOliveGreen = 15,
+		Yellow = 16,
+		DarkYellow = 17,
+		Orange = 18,
+		Amber = 19,
+		DarkOrange = 20,
+		MutedDarkYellow = 21,
+		MutedYellow = 22,
+		Brown = 23,
+		MutedOrange = 24,
+		MutedDarkRed = 25,
+		DarkRed = 26,
+		Red = 27,
+		DarkPink = 28,
+		Pink = 29,
+		MutedRed = 30,
+		MAX,
 	};
 
 	public enum ExtColour : uint8_t
 	{
-		black = 0,
-		grey = 1,
-		white = 2,
-		mutedDarkPurple = 3,
-		mutedPurple = 4,
-		purple = 5,
-		darkBlue = 6,
-		blue = 7,
-		mutedDarkTeal = 8,
-		mutedTeal = 9,
-		darkGreen = 10,
-		mutedSeaGreen = 11,
-		mutedGrassGreen = 12,
-		green = 13,
-		mutedAvocadoGreen = 14,
-		mutedOliveGreen = 15,
-		yellow = 16,
-		darkYellow = 17,
-		orange = 18,
-		amber = 19,
-		darkOrange = 20,
-		mutedDarkYellow = 21,
-		mutedYellow = 22,
-		brown = 23,
-		mutedOrange = 24,
-		mutedDarkRed = 25,
-		darkRed = 26,
-		red = 27,
-		darkPink = 28,
-		pink = 29,
-		mutedRed = 30,
+		Black = 0,
+		Grey = 1,
+		White = 2,
+		MutedDarkPurple = 3,
+		MutedPurple = 4,
+		Purple = 5,
+		DarkBlue = 6,
+		Blue = 7,
+		MutedDarkTeal = 8,
+		MutedTeal = 9,
+		DarkGreen = 10,
+		MutedSeaGreen = 11,
+		MutedGrassGreen = 12,
+		Green = 13,
+		MutedAvocadoGreen = 14,
+		MutedOliveGreen = 15,
+		Yellow = 16,
+		DarkYellow = 17,
+		Orange = 18,
+		Amber = 19,
+		DarkOrange = 20,
+		MutedDarkYellow = 21,
+		MutedYellow = 22,
+		Brown = 23,
+		MutedOrange = 24,
+		MutedDarkRed = 25,
+		DarkRed = 26,
+		Red = 27,
+		DarkPink = 28,
+		Pink = 29,
+		MutedRed = 30,
 		// First 30 are inherited from Colour
 		clear = 31, // No colour
-		@null = 32,  // Does not represent any palette
+		NULL = 32,  // Does not represent any palette
 		unk21,
 		unk22,
 		unk23,
@@ -92,69 +92,69 @@
 		unk32, // shadow
 		unk33,
 		unk34,
-		translucentGrey1, // 0-1 black, grey
-		translucentGrey2,
-		translucentGrey0,
-		translucentBlue1, // 6-7 darkBlue, blue
-		translucentBlue2,
-		translucentBlue0,
-		translucentMutedDarkRed1, // 25 mutedDarkRed
-		translucentMutedDarkRed2,
-		translucentMutedDarkRed0,
-		translucentMutedSeaGreen1, // 11 mutedSeaGreen
-		translucentMutedSeaGreen2,
-		translucentMutedSeaGreen0,
-		translucentMutedPurple1, // 3-4 mutedDarkPurple, mutedPurple
-		translucentMutedPurple2,
-		translucentMutedPurple0,
-		translucentMutedOliveGreen1, // 15 mutedOliveGreen
-		translucentMutedOliveGreen2,
-		translucentMutedOliveGreen0,
-		translucentMutedYellow1, // 21-22 mutedDarkYellow, mutedYellow
-		translucentMutedYellow2,
-		translucentMutedYellow0,
-		translucentYellow1, // 16-17 yellow, darkYellow
-		translucentYellow2,
-		translucentYellow0,
-		translucentMutedGrassGreen1, // 12 mutedGrassGreen
-		translucentMutedGrassGreen2,
-		translucentMutedGrassGreen0,
-		translucentMutedAvocadoGreen1, // 14 mutedAvocadoGreen
-		translucentMutedAvocadoGreen2,
-		translucentMutedAvocadoGreen0,
-		translucentGreen1, // 10, 13 darkGreen, green
-		translucentGreen2,
-		translucentGreen0,
-		translucentMutedOrange1, // 24 mutedOrange
-		translucentMutedOrange2,
-		translucentMutedOrange0,
-		translucentPurple1, // 5 purple
-		translucentPurple2,
-		translucentPurple0,
-		translucentRed1, // 26-27 darkRed, red
-		translucentRed2,
-		translucentRed0,
-		translucentOrange1, // 18, 20 orange, darkOrange
-		translucentOrange2,
-		translucentOrange0,
-		translucentMutedTeal1, // 8-9 mutedDarkTeal, mutedTeal
-		translucentMutedTeal2,
-		translucentMutedTeal0,
-		translucentPink1, // 28-29 pink, darkPink
-		translucentPink2,
-		translucentPink0,
-		translucentBrown1, // 23 brown
-		translucentBrown2,
-		translucentBrown0,
-		translucentMutedRed1, // 30 mutedRed
-		translucentMutedRed2,
-		translucentMutedRed0,
-		translucentWhite1, // 2 white
-		translucentWhite2,
-		translucentWhite0,
-		translucentAmber1, // 19 amber
-		translucentAmber2,
-		translucentAmber0,
+		TranslucentGrey1, // 0-1 black, grey
+		TranslucentGrey2,
+		TranslucentGrey0,
+		TranslucentBlue1, // 6-7 darkBlue, blue
+		TranslucentBlue2,
+		TranslucentBlue0,
+		TranslucentMutedDarkRed1, // 25 mutedDarkRed
+		TranslucentMutedDarkRed2,
+		TranslucentMutedDarkRed0,
+		TranslucentMutedSeaGreen1, // 11 mutedSeaGreen
+		TranslucentMutedSeaGreen2,
+		TranslucentMutedSeaGreen0,
+		TranslucentMutedPurple1, // 3-4 mutedDarkPurple, mutedPurple
+		TranslucentMutedPurple2,
+		TranslucentMutedPurple0,
+		TranslucentMutedOliveGreen1, // 15 mutedOliveGreen
+		TranslucentMutedOliveGreen2,
+		TranslucentMutedOliveGreen0,
+		TranslucentMutedYellow1, // 21-22 mutedDarkYellow, mutedYellow
+		TranslucentMutedYellow2,
+		TranslucentMutedYellow0,
+		TranslucentYellow1, // 16-17 yellow, darkYellow
+		TranslucentYellow2,
+		TranslucentYellow0,
+		TranslucentMutedGrassGreen1, // 12 mutedGrassGreen
+		TranslucentMutedGrassGreen2,
+		TranslucentMutedGrassGreen0,
+		TranslucentMutedAvocadoGreen1, // 14 mutedAvocadoGreen
+		TranslucentMutedAvocadoGreen2,
+		TranslucentMutedAvocadoGreen0,
+		TranslucentGreen1, // 10, 13 darkGreen, green
+		TranslucentGreen2,
+		TranslucentGreen0,
+		TranslucentMutedOrange1, // 24 mutedOrange
+		TranslucentMutedOrange2,
+		TranslucentMutedOrange0,
+		TranslucentPurple1, // 5 purple
+		TranslucentPurple2,
+		TranslucentPurple0,
+		TranslucentRed1, // 26-27 darkRed, red
+		TranslucentRed2,
+		TranslucentRed0,
+		TranslucentOrange1, // 18, 20 orange, darkOrange
+		TranslucentOrange2,
+		TranslucentOrange0,
+		TranslucentMutedTeal1, // 8-9 mutedDarkTeal, mutedTeal
+		TranslucentMutedTeal2,
+		TranslucentMutedTeal0,
+		TranslucentPink1, // 28-29 pink, darkPink
+		TranslucentPink2,
+		TranslucentPink0,
+		TranslucentBrown1, // 23 brown
+		TranslucentBrown2,
+		TranslucentBrown0,
+		TranslucentMutedRed1, // 30 mutedRed
+		TranslucentMutedRed2,
+		TranslucentMutedRed0,
+		TranslucentWhite1, // 2 white
+		TranslucentWhite2,
+		TranslucentWhite0,
+		TranslucentAmber1, // 19 amber
+		TranslucentAmber2,
+		TranslucentAmber0,
 		unk74,
 		unk75,
 		unk76,
@@ -186,6 +186,6 @@
 		unk90,
 		unk91,
 		unk92,
-		max,
+		MAX,
 	};
 }

@@ -151,7 +151,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// track type
-			if (!Flags.HasFlag(VehicleObjectFlags.unk_09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
+			if (!Flags.HasFlag(VehicleObjectFlags.unk09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
 			{
 				TrackType = S5Header.Read(remainingData[..S5Header.StructLength]);
 				remainingData = remainingData[S5Header.StructLength..];
@@ -273,7 +273,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			var ms = new MemoryStream();
 
 			// track type
-			if (!Flags.HasFlag(VehicleObjectFlags.unk_09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
+			if (!Flags.HasFlag(VehicleObjectFlags.unk09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
 			{
 				ms.Write(TrackType!.Write());
 			}
@@ -387,7 +387,7 @@ namespace OpenLoco.ObjectEditor.Objects
 						curr = offset;
 						var numUnkFrames = bodySprite.NumSlopedRotationFrames * bodySprite.NumFramesPerRotation * 2;
 						offset += numUnkFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-						bodySprite.ImageIds[BodySpriteSlopeType.Unk1] = Enumerable.Range(curr, offset - curr).ToList();
+						bodySprite.ImageIds[BodySpriteSlopeType.unk1] = Enumerable.Range(curr, offset - curr).ToList();
 					}
 				}
 
@@ -397,7 +397,7 @@ namespace OpenLoco.ObjectEditor.Objects
 					curr = offset;
 					var numUnkFrames = bodySprite.NumFlatRotationFrames * 3;
 					offset += numUnkFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-					bodySprite.ImageIds[BodySpriteSlopeType.Unk2] = Enumerable.Range(curr, offset).ToList();
+					bodySprite.ImageIds[BodySpriteSlopeType.unk2] = Enumerable.Range(curr, offset).ToList();
 				}
 
 				bodySprite.NumImages = offset - initial; // (int)(offset - bodySprite.FlatImageId);
@@ -513,7 +513,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				return false;
 			}
 
-			if (Flags.HasFlag(VehicleObjectFlags.unk_09))
+			if (Flags.HasFlag(VehicleObjectFlags.unk09))
 			{
 				if (NumTrackExtras != 0)
 				{

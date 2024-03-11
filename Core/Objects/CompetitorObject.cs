@@ -1,9 +1,23 @@
 using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Types;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
+	public enum Emotion
+	{
+		Neutral,
+		Happy,
+		Worried,
+		Thinking,
+		Dejected,
+		Surprised,
+		Scared,
+		Angry,
+		Disgusted,
+	}
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x38)]
 	[LocoStructType(ObjectType.Competitor)]
@@ -19,7 +33,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			[property: LocoStructOffset(0x35)] uint8_t Aggressiveness,
 			[property: LocoStructOffset(0x36)] uint8_t Competitiveness,
 			[property: LocoStructOffset(0x37)] uint8_t var_37
-		) : ILocoStruct
+		) : ILocoStruct, ILocoImageTableNames
 	{
 		public const int ImagesLength = 9;
 
@@ -39,5 +53,30 @@ namespace OpenLoco.ObjectEditor.Objects
 			}
 			return Competitiveness >= 1 && Competitiveness <= 9;
 		}
+
+		public bool TryGetImageName(int id, out string? value)
+			=> ImageIdNameMap.TryGetValue(id, out value);
+
+		public static Dictionary<int, string> ImageIdNameMap = new()
+		{
+			{ 0, "smallNeutral" },
+			{ 1, "largeNeutral" },
+			{ 2, "smallHappy" },
+			{ 3, "largeHappy" },
+			{ 4, "smallWorried" },
+			{ 5, "largeWorried" },
+			{ 6, "smallThinking" },
+			{ 7, "largeThinking" },
+			{ 8, "smallDejected" },
+			{ 9, "largeDejected" },
+			{ 10, "smallSurprised" },
+			{ 11, "largeSurprised" },
+			{ 12, "smallScared" },
+			{ 13, "largeScared" },
+			{ 14, "smallAngry" },
+			{ 15, "largeAngry" },
+			{ 16, "smallDisgusted" },
+			{ 17, "largeDisgusted" },
+		};
 	}
 }

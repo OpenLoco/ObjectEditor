@@ -3,7 +3,15 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
-	public enum BodySpriteSlopeType { Flat, Gentle, Sloped, Steep, Unk1, Unk2 }
+	public enum BodySpriteSlopeType
+	{
+		Flat,
+		Gentle,
+		Sloped,
+		Steep,
+		unk1,
+		unk2
+	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]

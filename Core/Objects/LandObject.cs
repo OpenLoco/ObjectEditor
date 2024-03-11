@@ -3,6 +3,7 @@ using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.ObjectEditor.Types;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
@@ -37,7 +38,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x1B)] uint8_t NumVariations,
 		[property: LocoStructOffset(0x1C)] uint8_t VariationLikelihood,
 		[property: LocoStructOffset(0x1D), Browsable(false)] uint8_t pad_1D
-		) : ILocoStruct, ILocoStructVariableData
+		) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
 	{
 		public S5Header CliffEdgeHeader { get; set; }
 		public S5Header UnkObjHeader { get; set; }
@@ -94,5 +95,14 @@ namespace OpenLoco.ObjectEditor.Objects
 
 			return (var_04 == 1 || var_04 == 2 || var_04 == 4);
 		}
+
+		public bool TryGetImageName(int id, out string? value)
+			=> ImageIdNameMap.TryGetValue(id, out value);
+
+		public static Dictionary<int, string> ImageIdNameMap = new()
+		{
+			{ 0, "kFlatSE" },
+			{ 1, "toolbar_terraform_land" },
+		};
 	}
 }

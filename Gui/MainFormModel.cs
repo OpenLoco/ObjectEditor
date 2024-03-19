@@ -10,6 +10,7 @@ using OpenLoco.ObjectEditor.Logging;
 using System.Diagnostics;
 using OpenLoco.ObjectEditor.Data;
 using Zenith.Core;
+using OpenLoco.ObjectEditor.Settings;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
@@ -71,7 +72,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 		}
 
-		public GuiSettings Settings { get; private set; }
+		public EditorSettings Settings { get; private set; }
 
 		public string SettingsFile { get; set; }
 
@@ -87,7 +88,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 
 			var text = File.ReadAllText(settingsFile);
-			var settings = JsonSerializer.Deserialize<GuiSettings>(text);
+			var settings = JsonSerializer.Deserialize<EditorSettings>(text);
 			Verify.NotNull(settings);
 
 			Settings = settings!;
@@ -104,7 +105,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 		}
 
-		static bool ValidateSettings(GuiSettings settings, ILogger logger)
+		static bool ValidateSettings(EditorSettings settings, ILogger logger)
 		{
 			if (settings == null)
 			{

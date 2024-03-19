@@ -1,6 +1,6 @@
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.ObjectEditor.Settings
 {
-	public class GuiSettings
+	public class EditorSettings
 	{
 		public string ObjDataDirectory
 		{

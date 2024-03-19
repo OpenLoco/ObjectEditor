@@ -1,7 +1,8 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using Color = SixLabors.ImageSharp.Color;
 
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.ObjectEditor
 {
 	public static class PaletteHelpers
 	{
@@ -22,7 +23,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			return bytes;
 		}
 
-		static byte ColorToPaletteIndex(this PaletteMap paletteMap, SixLabors.ImageSharp.Color c)
+		static byte ColorToPaletteIndex(this PaletteMap paletteMap, Color c)
 		{
 			var reserved = paletteMap.ReservedColours.Where(cc => cc.Color == c);
 			if (reserved.Any())
@@ -33,7 +34,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			return paletteMap.ValidColours.MinBy(vc => DistanceSquared(c, vc.Color)).Index;
 		}
 
-		static int DistanceSquared(SixLabors.ImageSharp.Color c1, SixLabors.ImageSharp.Color c2)
+		static int DistanceSquared(Color c1, Color c2)
 		{
 			var rr = c2.ToPixel<Rgb24>().R - c1.ToPixel<Rgb24>().R;
 			var gg = c2.ToPixel<Rgb24>().G - c1.ToPixel<Rgb24>().G;

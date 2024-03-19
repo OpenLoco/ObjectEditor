@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:AvaGui.ViewModels"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="AvaGui.Views.FolderTreeView"
+			 x:DataType="vm:FolderTreeViewModel">
+	<StackPanel Spacing="10">
+		<Button Command="{Binding LoadButton}">Load Dir</Button>
+		<TextBox Text="{Binding CurrentDirectory}"/>
+		<TreeView ItemsSource="{Binding DirectoryItems}">
+			<TreeView.ItemTemplate>
+				<DataTemplate >
+					<TextBlock Text="{Binding Name}" />
+				</DataTemplate >
+			</TreeView.ItemTemplate>
+		</TreeView>
+	</StackPanel>
+</UserControl>

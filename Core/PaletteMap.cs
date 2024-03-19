@@ -3,7 +3,7 @@ using SixLabors.ImageSharp;
 using Zenith.Core;
 using Color = SixLabors.ImageSharp.Color;
 
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.ObjectEditor
 {
 	public class PaletteMap
 	{

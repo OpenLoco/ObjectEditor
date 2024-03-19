@@ -5,6 +5,24 @@ using OpenLoco.ObjectEditor.Headers;
 
 namespace OpenLoco.ObjectEditor.Objects
 {
+	[Flags]
+	public enum BridgeDisabledTrackFlags : uint16_t
+	{
+		None = 0,
+		Slope = 1 << 0,
+		SteepSlope = 1 << 1,
+		CurveSlope = 1 << 2,
+		Diagonal = 1 << 3,
+		VerySmallCurve = 1 << 4,
+		SmallCurve = 1 << 5,
+		Curve = 1 << 6,
+		LargeCurve = 1 << 7,
+		SBendCurve = 1 << 8,
+		OneSided = 1 << 9,
+		StartsAtHalfHeight = 1 << 10, // Not used. From RCT2
+		Junction = 1 << 11,
+	}
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x2C)]
 	[LocoStructType(ObjectType.Bridge)]
@@ -22,7 +40,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0E)] int16_t BaseCostFactor,
 		[property: LocoStructOffset(0x10)] int16_t HeightCostFactor,
 		[property: LocoStructOffset(0x12)] int16_t SellCostFactor,
-		[property: LocoStructOffset(0x14)] uint16_t DisabledTrackCfg,
+		[property: LocoStructOffset(0x14)] BridgeDisabledTrackFlags DisabledTrackFlags,
 		[property: LocoStructOffset(0x16), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x1A), LocoPropertyMaybeUnused] uint8_t NumCompatibleTrackMods,
 		[property: LocoStructOffset(0x1B), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumTrackMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] TrackModHeaderIds,

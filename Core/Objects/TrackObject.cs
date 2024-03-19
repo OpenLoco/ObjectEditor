@@ -21,8 +21,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		SlopedCurve = 1 << 8,
 		SBend = 1 << 9,
 		Junction = 1 << 10,
-
-	};
+	}
 
 	public enum TrackObjectFlags : uint16_t
 	{
@@ -30,7 +29,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		unk_00 = 1 << 0,
 		unk_01 = 1 << 1,
 		unk_02 = 1 << 2,
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x36)]
@@ -39,7 +38,7 @@ namespace OpenLoco.ObjectEditor.Objects
 	public record TrackObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] TrackObjectPieceFlags TrackPieces,
-		[property: LocoStructOffset(0x04)] uint16_t StationTrackPieces,
+		[property: LocoStructOffset(0x04)] TrackObjectPieceFlags StationTrackPieces,
 		[property: LocoStructOffset(0x06)] uint8_t var_06,
 		[property: LocoStructOffset(0x07)] uint8_t NumCompatible,
 		[property: LocoStructOffset(0x08)] uint8_t NumMods,

@@ -1,5 +1,6 @@
 using Core.Objects;
 using Core.Objects.Sound;
+using Microsoft.VisualBasic;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using OpenLoco.ObjectEditor.Data;
@@ -7,6 +8,7 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
 using OpenLoco.ObjectEditor.Objects;
 using OpenLoco.ObjectEditor.Types;
+using static System.Formats.Asn1.AsnWriter;
 using Logger = OpenLoco.ObjectEditor.Logging.Logger;
 
 namespace OpenLoco.ObjectEditor.Tests
@@ -531,7 +533,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(4), nameof(struc.BuildCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.PaintStyle, Is.EqualTo(1), nameof(struc.PaintStyle));
-				Assert.That(struc.RoadPieces, Is.EqualTo(127), nameof(struc.RoadPieces));
+				Assert.That(struc.RoadPieces, Is.EqualTo(RoadObjectPieceFlags.OneWay | RoadObjectPieceFlags.Track | RoadObjectPieceFlags.Slope | RoadObjectPieceFlags.SteepSlope | RoadObjectPieceFlags.Intersection | RoadObjectPieceFlags.OneSided | RoadObjectPieceFlags.Overtake), nameof(struc.RoadPieces));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-3), nameof(struc.SellCostFactor));
 				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
 			});

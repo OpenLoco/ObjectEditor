@@ -138,7 +138,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.BaseCostFactor, Is.EqualTo(16), nameof(struc.BaseCostFactor));
 				Assert.That(struc.HeightCostFactor, Is.EqualTo(8), nameof(struc.HeightCostFactor));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-12), nameof(struc.SellCostFactor));
-				Assert.That(struc.DisabledTrackCfg, Is.EqualTo(0), nameof(struc.DisabledTrackCfg));
+				Assert.That(struc.DisabledTrackFlags, Is.EqualTo(BridgeDisabledTrackFlags.None), nameof(struc.DisabledTrackFlags));
 				//Assert.That(struc.TrackNumCompatible, Is.EqualTo(0), nameof(struc.TrackNumCompatible));
 				//CollectionAssert.AreEqual(struc.TrackMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.TrackMods));
 				//Assert.That(struc.RoadNumCompatible, Is.EqualTo(0), nameof(struc.RoadNumCompatible));
@@ -170,7 +170,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.ScaffoldingSegmentType, Is.EqualTo(1), nameof(struc.ScaffoldingSegmentType));
 				Assert.That(struc.ScaffoldingColour, Is.EqualTo(Colour.Yellow), nameof(struc.ScaffoldingColour));
 				Assert.That(struc.GeneratorFunction, Is.EqualTo(3), nameof(struc.GeneratorFunction));
-				Assert.That(struc.var_9F, Is.EqualTo(3), nameof(struc.var_9F));
+				Assert.That(struc.AverageNumberOnMap, Is.EqualTo(3), nameof(struc.AverageNumberOnMap));
 				// ProducedQuantity
 				// ProducedCargoType
 				// RequiredCargoType
@@ -730,7 +730,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-10), nameof(struc.SellCostFactor));
 				// Signals
 				// Stations
-				Assert.That(struc.StationTrackPieces, Is.EqualTo(525), nameof(struc.StationTrackPieces));
+				Assert.That(struc.StationTrackPieces, Is.EqualTo(TrackObjectPieceFlags.Diagonal | TrackObjectPieceFlags.NormalCurve | TrackObjectPieceFlags.SmallCurve | TrackObjectPieceFlags.SBend), nameof(struc.StationTrackPieces));
 				Assert.That(struc.TrackPieces, Is.EqualTo(TrackObjectPieceFlags.Diagonal | TrackObjectPieceFlags.LargeCurve | TrackObjectPieceFlags.NormalCurve | TrackObjectPieceFlags.SmallCurve | TrackObjectPieceFlags.Slope | TrackObjectPieceFlags.SlopedCurve | TrackObjectPieceFlags.SBend | TrackObjectPieceFlags.Junction), nameof(struc.TrackPieces));
 				Assert.That(struc.TunnelCostFactor, Is.EqualTo(24), nameof(struc.TunnelCostFactor));
 				Assert.That(struc.var_06, Is.EqualTo(0), nameof(struc.var_06));
@@ -747,7 +747,7 @@ namespace OpenLoco.ObjectEditor.Tests
 		{
 			void assertFunc(ILocoObject obj, TrackExtraObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.TrackPieces, Is.EqualTo(1023), nameof(struc.TrackPieces));
+				Assert.That(struc.TrackPieces, Is.EqualTo(TrackObjectPieceFlags.Diagonal | TrackObjectPieceFlags.LargeCurve | TrackObjectPieceFlags.NormalCurve | TrackObjectPieceFlags.SmallCurve | TrackObjectPieceFlags.VerySmallCurve | TrackObjectPieceFlags.Slope | TrackObjectPieceFlags.SteepSlope | TrackObjectPieceFlags.OneSided | TrackObjectPieceFlags.SlopedCurve | TrackObjectPieceFlags.SBend), nameof(struc.TrackPieces));
 				Assert.That(struc.PaintStyle, Is.EqualTo(1), nameof(struc.PaintStyle));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(2), nameof(struc.BuildCostFactor));
@@ -797,7 +797,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.NumCompatible, Is.EqualTo(0), nameof(struc.NumCompatible));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-7), nameof(struc.SellCostFactor));
-				Assert.That(struc.TrackPieces, Is.EqualTo(0), nameof(struc.TrackPieces));
+				Assert.That(struc.TrackPieces, Is.EqualTo(TrackObjectPieceFlags.None), nameof(struc.TrackPieces));
 				Assert.That(struc.var_0B, Is.EqualTo(2), nameof(struc.var_0B));
 				Assert.That(struc.var_0D, Is.EqualTo(0), nameof(struc.var_0D));
 			});

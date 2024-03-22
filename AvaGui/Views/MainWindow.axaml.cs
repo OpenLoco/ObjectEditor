@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using OpenLoco.ObjectEditor.AvaGui.Models;
 
 namespace AvaGui.Views
 {
@@ -7,6 +8,7 @@ namespace AvaGui.Views
 		public MainWindow()
 		{
 			InitializeComponent();
+			Title = ObjectEditorModel.ApplicationName;
 		}
 	}
 }

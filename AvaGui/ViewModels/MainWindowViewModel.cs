@@ -1,12 +1,10 @@
 global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.AvaGui.Models.IndexObjectHeader>;
 global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.AvaGui.Models.UiLocoObject>;
 using Avalonia;
-using Avalonia.Interactivity;
 using OpenLoco.ObjectEditor.AvaGui.Models;
 using ReactiveUI;
 using System;
 using System.Reactive;
-using System.Windows.Input;
 
 namespace AvaGui.ViewModels
 {
@@ -24,26 +22,18 @@ namespace AvaGui.ViewModels
 			FolderTreeViewModel = new FolderTreeViewModel(Model);
 			ObjectEditorViewModel = new ObjectEditorViewModel(Model);
 
-			FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
+			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(o => ObjectEditorViewModel.CurrentlySelectedObject = o);
-
-			ToggleThemeCommand = ReactiveCommand.Create(ToggleTheme);
-			//themeToggle.Click += ToggleTheme;
-			//RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light;
 		}
 
 		public ReactiveCommand<Unit, Unit> ToggleThemeCommand { get; }
 
-		private void ToggleTheme()
+		public bool IsDarkTheme
 		{
-			if (Application.Current.RequestedThemeVariant == Avalonia.Styling.ThemeVariant.Dark)
-			{
-				Application.Current.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light;
-			}
-			else
-			{
-				Application.Current.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
-			}
+			get => Application.Current.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
+			set => Application.Current.RequestedThemeVariant = Application.Current.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark
+				? Avalonia.Styling.ThemeVariant.Light
+				: Avalonia.Styling.ThemeVariant.Dark;
 		}
 	}
 }

@@ -1,6 +1,5 @@
 using Core.Objects;
 using Core.Objects.Sound;
-using Microsoft.VisualBasic;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using OpenLoco.ObjectEditor.Data;
@@ -8,7 +7,6 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
 using OpenLoco.ObjectEditor.Objects;
 using OpenLoco.ObjectEditor.Types;
-using static System.Formats.Asn1.AsnWriter;
 using Logger = OpenLoco.ObjectEditor.Logging.Logger;
 
 namespace OpenLoco.ObjectEditor.Tests

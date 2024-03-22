@@ -29,8 +29,6 @@ namespace OpenLoco.ObjectEditor.AvaGui.Models
 
 		public ObjectCache ObjectCache { get; private set; } = [];
 
-		//public OpenLocoObjectEditor.ObjectManager ObjectManager { get; private set; } = new();
-
 		public PaletteMap PaletteMap { get; set; }
 
 		public G1Dat? G1 { get; set; }
@@ -48,20 +46,14 @@ namespace OpenLoco.ObjectEditor.AvaGui.Models
 		const string GithubApplicationName = "ObjectEditor";
 		const string GithubLatestReleaseDownloadPage = @"https://github.com/OpenLoco/ObjectEditor/releases";
 		const string GithubLatestReleaseAPI = @"https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
-		const string ApplicationName = "OpenLoco Object Editor";
+		public const string ApplicationName = "OpenLoco Object Editor";
 
 		string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 		string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
-		//public ObjectEditorViewModel ObjectEditorViewModel { get; }
-		//public FolderTreeViewModel FolderTreeViewModel { get; }
-
 		public ObjectEditorModel()
 		{
 			LoadSettings(SettingsFile, logger);
-
-			//ObjectEditorViewModel = new ObjectEditorViewModel();
-			//FolderTreeViewModel = new FolderTreeViewModel(Settings);
 		}
 
 		public void LoadSettings(string settingsFile, ILogger? logger)
@@ -331,6 +323,7 @@ namespace OpenLoco.ObjectEditor.AvaGui.Models
 				logger?.Info($"Settings file {filename} does not exist");
 				return null;
 			}
+
 			logger?.Info($"Loading settings from {filename}");
 
 			var json = File.ReadAllText(filename);

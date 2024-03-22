@@ -20,7 +20,7 @@
 			<Menu>
 				<MenuItem Header="_File"></MenuItem>
 			</Menu>
-			<ToggleSwitch HorizontalAlignment="Right" Command="{Binding ToggleThemeCommand}" OnContent="🌒︎" OffContent="🌔︎" />
+			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
 		</DockPanel>
 		<Grid DataContext="{Binding FolderTreeViewModel}" Margin="10">
 			<Grid.RowDefinitions>
@@ -29,14 +29,15 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
-			<TextBlock Grid.Row="0">Enter a directory:</TextBlock>
+			<TextBlock Grid.Row="0" FontWeight="Bold">Enter a directory:</TextBlock>
 			<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" />
-			<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount, Mode=OneWay}" IsReadOnly="True" FontWeight="Bold" />
+			<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount, Mode=OneWay}" IsReadOnly="True"/>
 			<ListBox Grid.Row="3" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
 				<ListBox.ItemTemplate>
 					<DataTemplate x:DataType="mo:FileSystemItem">
 						<!--<Border BorderBrush="Blue" BorderThickness="1" CornerRadius="4" Padding="4">-->
 						<StackPanel>
+							<TextBlock Text="{Binding Path}"/>
 							<TextBlock Text="{Binding Name}"/>
 							<TextBlock Text="{Binding ObjectType}"/>
 						</StackPanel>
@@ -46,8 +47,35 @@
 			</ListBox>
 		</Grid>
 		<StackPanel DataContext="{Binding ObjectEditorViewModel}" Spacing="10" Margin="10">
-			<TextBlock>Current object:</TextBlock>
-			<TextBox Text="{Binding CurrentlySelectedObject, Mode=OneWay}" IsReadOnly="True" FontWeight="Bold" />
+			<TextBlock FontWeight="Bold">Current object:</TextBlock>
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+
+				<TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" >Name</TextBlock>
+				<TextBox Grid.Column="1" Grid.Row="0"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.S5Header.Name, Mode=OneWay}" IsReadOnly="True"/>
+
+				<TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" >Checksum</TextBlock>
+				<TextBox Grid.Column="1" Grid.Row="1"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.S5Header.Checksum, Mode=OneWay}" IsReadOnly="True"/>
+
+				<TextBlock Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" >Flags</TextBlock>
+				<TextBox Grid.Column="1" Grid.Row="2"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.S5Header.Flags, Mode=OneWay}" IsReadOnly="True"/>
+
+				<TextBlock Grid.Column="0" Grid.Row="3" VerticalAlignment="Center" >Encoding</TextBlock>
+				<TextBox Grid.Column="1" Grid.Row="3"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.ObjectHeader.Encoding, Mode=OneWay}" IsReadOnly="True"/>
+
+				<TextBlock Grid.Column="0" Grid.Row="4" VerticalAlignment="Center" >DataLength</TextBlock>
+				<TextBox Grid.Column="1" Grid.Row="4"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.ObjectHeader.DataLength, Mode=OneWay}" IsReadOnly="True"/>
+			</Grid>
 		</StackPanel>
 	</DockPanel>
 

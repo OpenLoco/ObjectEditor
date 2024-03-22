@@ -1,23 +1,54 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:AvaGui.ViewModels"
-		xmlns:cc="using:AvaGui.Views"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="AvaGui.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/loco_icon.ico"
-        Title="AvaGui">
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:AvaGui.ViewModels"
+		xmlns:vi="using:AvaGui.Views"
+		xmlns:mo="using:AvaGui.Models"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		x:Class="AvaGui.Views.MainWindow"
+		x:DataType="vm:MainWindowViewModel"
+		Icon="/Assets/loco_icon.ico"
+		Title="AvaGui">
 
 	<Design.DataContext>
-		<!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 
-	<StackPanel Spacing="10">
-		<cc:FolderTreeView DataContext="vm:FolderTreeViewModel"/>
-	</StackPanel>
+	<DockPanel>
+		<DockPanel DockPanel.Dock="Top">
+			<Menu>
+				<MenuItem Header="_File"></MenuItem>
+			</Menu>
+			<ToggleSwitch HorizontalAlignment="Right" Command="{Binding ToggleThemeCommand}" OnContent="🌒︎" OffContent="🌔︎" />
+		</DockPanel>
+		<Grid DataContext="{Binding FolderTreeViewModel}" Margin="10">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+			<TextBlock Grid.Row="0">Enter a directory:</TextBlock>
+			<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" />
+			<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount, Mode=OneWay}" IsReadOnly="True" FontWeight="Bold" />
+			<ListBox Grid.Row="3" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
+				<ListBox.ItemTemplate>
+					<DataTemplate x:DataType="mo:FileSystemItem">
+						<!--<Border BorderBrush="Blue" BorderThickness="1" CornerRadius="4" Padding="4">-->
+						<StackPanel>
+							<TextBlock Text="{Binding Name}"/>
+							<TextBlock Text="{Binding ObjectType}"/>
+						</StackPanel>
+						<!--</Border>-->
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</Grid>
+		<StackPanel DataContext="{Binding ObjectEditorViewModel}" Spacing="10" Margin="10">
+			<TextBlock>Current object:</TextBlock>
+			<TextBox Text="{Binding CurrentlySelectedObject, Mode=OneWay}" IsReadOnly="True" FontWeight="Bold" />
+		</StackPanel>
+	</DockPanel>
 
 </Window>

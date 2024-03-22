@@ -1,45 +1,30 @@
 using AvaGui.Models;
-using Avalonia.Reactive;
 using OpenLoco.ObjectEditor.Settings;
 using ReactiveUI;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Reactive;
+using System;
+using OpenLoco.ObjectEditor.AvaGui.Models;
+using Avalonia.Controls;
 
 namespace AvaGui.ViewModels
 {
 	public class FolderTreeViewModel : ReactiveObject
 	{
-		EditorSettings Settings;
+		ObjectEditorModel Model { get; }
 
-		public FolderTreeViewModel(EditorSettings settings)
+		public FolderTreeViewModel(ObjectEditorModel model)
 		{
-			Settings = settings;
+			Model = model;
 
-			_ = this.WhenAnyValue(o => o.CurrentDirectory)
-				.Subscribe(new Avalonia.Reactive.AnonymousObserver<string>(
-					onNext: value => DirectoryItems = LoadDirectory(value),
-					onError: error => { /* Handle error */ },
-					onCompleted: () => { /* Perform actions on completion (optional) */ }));
+			this.WhenAnyValue(o => o.CurrentDirectory)
+				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
 
-			//LoadDirectory();
+			this.WhenAnyValue(o => o.CurrentDirectory)
+				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
 
-			//LoadFolderCommand = ReactiveCommand.CreateFromTask(async () =>
-			//{
-			//	// Logic to load directory structure will go here
-			//	try
-			//	{
-			//		LoadDirectory();
-			//	}
-			//	catch (Exception ex)
-			//	{
-			//		// Handle errors (e.g., invalid path) 
-			//	}
-			//});
+			CurrentDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
 		}
 
 		public void LoadButton()
@@ -47,28 +32,34 @@ namespace AvaGui.ViewModels
 			//CurrentDirectory = Settings.ObjDataDirectory;
 		}
 
-		private static ObservableCollection<FileSystemItem> LoadDirectory(string newDir)
+		private ObservableCollection<FileSystemItem> LoadDirectory(string newDir)
 			=> new ObservableCollection<FileSystemItem>(_LoadDirectory(newDir));
 
-		private static IEnumerable<FileSystemItem> _LoadDirectory(string newDir)
+		private IEnumerable<FileSystemItem> _LoadDirectory(string newDir)
 		{
+			// ToDo: get Model to do this, it will give us nice infos
 			if (newDir == null)
 			{
 				yield break;
 			}
 
 			var dirInfo = new DirectoryInfo(newDir);
+
+			if (!dirInfo.Exists)
+			{
+				yield break;
+			}
+
 			var files = dirInfo.GetFiles();
 			var subDirs = dirInfo.GetDirectories();
 
-			foreach (var file in files)
-			{
-				yield return new FileSystemItem(file.Name, true);
-			}
+			Model.LoadObjDirectory(CurrentDirectory, null, false);
 
-			foreach (var dir in subDirs)
+			foreach (var file in Model.ObjectCache)
 			{
-				yield return new FileSystemItem(dir.Name, false);
+				yield return new FileSystemItem(
+					file.Value.DatFileInfo.S5Header.Name,
+					file.Value.DatFileInfo.S5Header.ObjectType.ToString());
 			}
 		}
 
@@ -79,13 +70,25 @@ namespace AvaGui.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _currentDirectory, value);
 		}
 
-		//public ReactiveCommand<Unit, Unit> LoadFolderCommand { get; }
-
-		private ObservableCollection<FileSystemItem> _directoryItems;
+		//private ObservableCollection<FileSystemItem> _directoryItems;
 		public ObservableCollection<FileSystemItem> DirectoryItems
 		{
-			get => _directoryItems;
-			set => this.RaiseAndSetIfChanged(ref _directoryItems, value);
+			get
+			{
+				//_directoryItems = LoadDirectory(CurrentDirectory);
+				return LoadDirectory(CurrentDirectory);
+			}
+			//set => this.RaiseAndSetIfChanged(ref _directoryItems, value);
+		}
+
+		public string DirectoryFileCount
+			=> $"Files in dir: {DirectoryItems.Count}";
+
+		public FileSystemItem _currentlySelectedObject;
+		public FileSystemItem CurrentlySelectedObject
+		{
+			get => _currentlySelectedObject;
+			set => this.RaiseAndSetIfChanged(ref _currentlySelectedObject, value);
 		}
 	}
 }

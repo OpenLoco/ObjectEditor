@@ -7,7 +7,7 @@
 			 x:Class="AvaGui.Views.FolderTreeView"
 			 x:DataType="vm:FolderTreeViewModel">
 	<StackPanel Spacing="10">
-		<Button Command="{Binding LoadButton}">Load Dir</Button>
+		<Button Command="{Binding LoadButton}">Load Directory</Button>
 		<TextBox Text="{Binding CurrentDirectory}"/>
 		<TreeView ItemsSource="{Binding DirectoryItems}">
 			<TreeView.ItemTemplate>

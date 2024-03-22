@@ -1,20 +1,24 @@
-using Avalonia.Reactive;
 using ReactiveUI;
 using Avalonia.Interactivity;
-using Avalonia.Platform.Storage;
-using System.IO;
-using Avalonia.Controls.ApplicationLifetimes;
-using System;
-using Avalonia;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reactive;
+using OpenLoco.ObjectEditor.AvaGui.Models;
+using System.IO;
+using AvaGui.Models;
 
 namespace AvaGui.ViewModels
 {
 	public class ObjectEditorViewModel : ReactiveObject
 	{
-		public ObjectEditorViewModel()
+		ObjectEditorModel Model { get; }
+
+		public FileSystemItem _currentlySelectedObject;
+		public FileSystemItem CurrentlySelectedObject
+		{
+			get => _currentlySelectedObject;
+			set => this.RaiseAndSetIfChanged(ref _currentlySelectedObject, value);
+		}
+
+		public ObjectEditorViewModel(ObjectEditorModel model)
 		{
 			// We can listen to any property changes with "WhenAnyValue" and do whatever we want in "Subscribe".
 			//this.WhenAnyValue(o => o.Name).Subscribe(o => this.RaisePropertyChanged(nameof(Greeting)));

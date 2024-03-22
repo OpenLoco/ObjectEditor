@@ -37,7 +37,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			[property: LocoStructOffset(0x9C)] uint8_t ScaffoldingSegmentType,
 			[property: LocoStructOffset(0x9D)] Colour ScaffoldingColour,
 			[property: LocoStructOffset(0x9E)] uint8_t GeneratorFunction,
-			[property: LocoStructOffset(0x9F)] uint8_t var_9F,
+			[property: LocoStructOffset(0x9F)] uint8_t AverageNumberOnMap,
 			[property: LocoStructOffset(0xA0), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> _ProducedQuantity,
 			[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxProducedCargoType), Browsable(false)] List<object_id> _ProducedCargoType,
 			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxRequiredCargoType), Browsable(false)] List<object_id> _RequiredCargoType,

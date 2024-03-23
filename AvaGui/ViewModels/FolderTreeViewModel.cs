@@ -4,11 +4,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System;
-using AvaGui.Models;
 using System.Linq;
 using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Objects;
-using DynamicData;
 
 namespace AvaGui.ViewModels
 {
@@ -59,6 +57,7 @@ namespace AvaGui.ViewModels
 				if (objGroup.Key == OpenLoco.ObjectEditor.Data.ObjectType.Vehicle)
 				{
 					subNodes = [];
+					var vCount = 0;
 					foreach (var vg in objGroup.GroupBy(o => (o.Value.LocoObject.Object as VehicleObject)!.Type).OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
@@ -66,7 +65,7 @@ namespace AvaGui.ViewModels
 							string.Empty,
 							vg.Key,
 							vehicleSubNodes,
-							0));
+							vCount++));
 					}
 				}
 				else
@@ -78,11 +77,9 @@ namespace AvaGui.ViewModels
 					string.Empty,
 					objGroup.Key,
 					subNodes,
-					count);
+					count++);
 
 				yield return fsg;
-
-				count++;
 			}
 		}
 

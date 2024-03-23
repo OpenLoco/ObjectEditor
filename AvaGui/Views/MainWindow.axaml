@@ -41,7 +41,7 @@
 		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
 		<DataTemplate DataType="mo:FileSystemItemGroup">
 			<StackPanel Orientation="Horizontal">
-				<Image Width="32" Height="32" Margin="1">
+				<Image Width="32" Height="32">
 					<Image.Source>
 						<CroppedBitmap Source="avares://AvaGui/Assets/loco_object_types_combined.png" SourceRect="{Binding SourceRect}">
 						</CroppedBitmap>
@@ -52,7 +52,15 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemVehicleGroup">
-			<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			<StackPanel Orientation="Horizontal">
+				<Image Width="32" Height="32">
+					<Image.Source>
+						<CroppedBitmap Source="avares://AvaGui/Assets/loco_vehicle_types_combined.png" SourceRect="{Binding SourceRect}">
+						</CroppedBitmap>
+					</Image.Source>
+				</Image>
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			</StackPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemItem">
@@ -80,7 +88,7 @@
 			<TreeView Grid.Row="3" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
 				<TreeView.ItemTemplate>
 					<TreeDataTemplate ItemsSource="{Binding SubNodes}">
-						<ContentControl Content="{Binding}"/>
+						<ContentControl Content="{Binding}" />
 					</TreeDataTemplate>
 				</TreeView.ItemTemplate>
 			</TreeView>

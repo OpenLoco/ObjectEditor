@@ -15,6 +15,52 @@
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 
+	<!--<Window.Resources>
+		<DataTemplate x:Key="FileSystemItemGroup" x:DataType="mo:FileSystemItemGroup">
+			<StackPanel Orientation="Horizontal">
+				<Image Width="32" Height="32" Margin="1">
+					<Image.Source>
+						<CroppedBitmap Source="avares://AvaGui/Assets/loco_object_types_combined.png" SourceRect="{Binding SourceRect}">
+						</CroppedBitmap>
+					</Image.Source>
+				</Image>
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			</StackPanel>
+		</DataTemplate>
+
+		<DataTemplate x:Key="FileSystemVehicleGroup" x:DataType="mo:FileSystemVehicleGroup">
+			<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+		</DataTemplate>
+
+		<DataTemplate x:Key="FileSystemItem" x:DataType="mo:FileSystemItem">
+			<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+		</DataTemplate>
+	</Window.Resources>-->
+
+	<Window.DataTemplates>
+		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
+		<DataTemplate DataType="mo:FileSystemItemGroup">
+			<StackPanel Orientation="Horizontal">
+				<Image Width="32" Height="32" Margin="1">
+					<Image.Source>
+						<CroppedBitmap Source="avares://AvaGui/Assets/loco_object_types_combined.png" SourceRect="{Binding SourceRect}">
+						</CroppedBitmap>
+					</Image.Source>
+				</Image>
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			</StackPanel>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:FileSystemVehicleGroup">
+			<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:FileSystemItem">
+			<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+		</DataTemplate>
+
+	</Window.DataTemplates>
+
 	<DockPanel>
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
@@ -33,8 +79,8 @@
 			<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount, Mode=OneWay}" IsReadOnly="True"/>
 			<TreeView Grid.Row="3" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
 				<TreeView.ItemTemplate>
-					<TreeDataTemplate ItemsSource="{Binding SubNodes}" x:DataType="mo:FileSystemItemBase">
-						<TextBlock Text="{Binding NameComputed}"/>
+					<TreeDataTemplate ItemsSource="{Binding SubNodes}">
+						<ContentControl Content="{Binding}"/>
 					</TreeDataTemplate>
 				</TreeView.ItemTemplate>
 			</TreeView>

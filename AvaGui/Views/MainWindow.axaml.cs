@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using OpenLoco.ObjectEditor.AvaGui.Models;
+using AvaGui.Models;
 
 namespace AvaGui.Views
 {

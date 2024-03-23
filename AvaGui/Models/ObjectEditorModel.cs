@@ -14,8 +14,9 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Objects;
 using System.Threading;
 using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor;
 
-namespace OpenLoco.ObjectEditor.AvaGui.Models
+namespace AvaGui.Models
 {
 	public class ObjectEditorModel
 	{

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace OpenLoco.ObjectEditor.AvaGui.Models
+namespace AvaGui.Models
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public interface IUiObject { }

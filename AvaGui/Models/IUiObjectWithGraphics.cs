@@ -1,7 +1,7 @@
 using OpenLoco.ObjectEditor.Headers;
 using System.Collections.Generic;
 
-namespace OpenLoco.ObjectEditor.AvaGui.Models
+namespace AvaGui.Models
 {
 	public interface IUiObjectWithGraphics
 	{

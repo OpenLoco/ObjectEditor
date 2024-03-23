@@ -1,5 +1,4 @@
 using ReactiveUI;
-using OpenLoco.ObjectEditor.AvaGui.Models;
 using AvaGui.Models;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using System;
@@ -22,7 +21,7 @@ namespace AvaGui.ViewModels
 		{
 			get
 			{
-				if (CurrentlySelectedObject == null || CurrentlySelectedObject is FileSystemItemGroup)
+				if (CurrentlySelectedObject == null || CurrentlySelectedObject is not FileSystemItem)
 				{
 					return new(null, null);
 				}

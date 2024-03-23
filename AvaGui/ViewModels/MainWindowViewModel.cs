@@ -1,7 +1,7 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.AvaGui.Models.IndexObjectHeader>;
-global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.AvaGui.Models.UiLocoObject>;
+global using HeaderIndex = System.Collections.Generic.Dictionary<string, AvaGui.Models.IndexObjectHeader>;
+global using ObjectCache = System.Collections.Generic.Dictionary<string, AvaGui.Models.UiLocoObject>;
 using Avalonia;
-using OpenLoco.ObjectEditor.AvaGui.Models;
+using AvaGui.Models;
 using ReactiveUI;
 using System;
 using System.Reactive;

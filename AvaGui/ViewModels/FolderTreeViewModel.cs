@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System;
-using OpenLoco.ObjectEditor.AvaGui.Models;
+using AvaGui.Models;
 using System.Linq;
 using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Objects;
+using DynamicData;
 
 namespace AvaGui.ViewModels
 {
@@ -51,6 +52,7 @@ namespace AvaGui.ViewModels
 			Model.LoadObjDirectory(CurrentDirectory, null, false);
 
 			var groupedObjects = Model.ObjectCache.GroupBy(o => o.Value.DatFileInfo.S5Header.ObjectType).OrderBy(fsg => fsg.Key.ToString());
+			var count = 0;
 			foreach (var objGroup in groupedObjects)
 			{
 				ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
@@ -59,24 +61,28 @@ namespace AvaGui.ViewModels
 					subNodes = [];
 					foreach (var vg in objGroup.GroupBy(o => (o.Value.LocoObject.Object as VehicleObject)!.Type).OrderBy(vg => vg.Key.ToString()))
 					{
-						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
-						subNodes.Add(new FileSystemItemGroup(
+						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
+						subNodes.Add(new FileSystemVehicleGroup(
 							string.Empty,
-							vg.Key.ToString(),
-							vehicleSubNodes));
+							vg.Key,
+							vehicleSubNodes,
+							0));
 					}
 				}
 				else
 				{
-					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
+					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
 				}
 
 				var fsg = new FileSystemItemGroup(
 					string.Empty,
-					objGroup.Key.ToString(),
-					subNodes);
+					objGroup.Key,
+					subNodes,
+					count);
 
 				yield return fsg;
+
+				count++;
 			}
 		}
 

@@ -1,7 +1,7 @@
 using OpenLoco.ObjectEditor.Types;
 using System.ComponentModel;
 
-namespace OpenLoco.ObjectEditor.AvaGui.Models
+namespace AvaGui.Models
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class UiSoundObject

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace OpenLoco.ObjectEditor.AvaGui.Models
+namespace AvaGui.Models
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class UiSoundObjectList : IUiObject

@@ -10,8 +10,8 @@ namespace AvaGui.ViewModels
 	{
 		ObjectEditorModel Model { get; }
 
-		public FileSystemItem _currentlySelectedObject;
-		public FileSystemItem CurrentlySelectedObject
+		public FileSystemItemBase _currentlySelectedObject;
+		public FileSystemItemBase CurrentlySelectedObject
 		{
 			get => _currentlySelectedObject;
 			set => this.RaiseAndSetIfChanged(ref _currentlySelectedObject, value);
@@ -22,7 +22,7 @@ namespace AvaGui.ViewModels
 		{
 			get
 			{
-				if (CurrentlySelectedObject == null)
+				if (CurrentlySelectedObject == null || CurrentlySelectedObject is FileSystemItemGroup)
 				{
 					return new(null, null);
 				}

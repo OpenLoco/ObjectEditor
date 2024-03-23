@@ -5,6 +5,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System;
 using OpenLoco.ObjectEditor.AvaGui.Models;
+using System.Linq;
+using System.Reactive.Linq;
+using OpenLoco.ObjectEditor.Objects;
 
 namespace AvaGui.ViewModels
 {
@@ -25,12 +28,11 @@ namespace AvaGui.ViewModels
 			CurrentDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
 		}
 
-		private ObservableCollection<FileSystemItem> LoadDirectory(string newDir)
+		private ObservableCollection<FileSystemItemBase> LoadDirectory(string newDir)
 			=> new(_LoadDirectory(newDir));
 
-		private IEnumerable<FileSystemItem> _LoadDirectory(string newDir)
+		private IEnumerable<FileSystemItemBase> _LoadDirectory(string newDir)
 		{
-			// ToDo: get Model to do this, it will give us nice infos
 			if (newDir == null)
 			{
 				yield break;
@@ -48,12 +50,33 @@ namespace AvaGui.ViewModels
 
 			Model.LoadObjDirectory(CurrentDirectory, null, false);
 
-			foreach (var file in Model.ObjectCache)
+			var groupedObjects = Model.ObjectCache.GroupBy(o => o.Value.DatFileInfo.S5Header.ObjectType).OrderBy(fsg => fsg.Key.ToString());
+			foreach (var objGroup in groupedObjects)
 			{
-				yield return new FileSystemItem(
-					file.Key,
-					file.Value.DatFileInfo.S5Header.Name,
-					file.Value.DatFileInfo.S5Header.ObjectType.ToString());
+				ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
+				if (objGroup.Key == OpenLoco.ObjectEditor.Data.ObjectType.Vehicle)
+				{
+					subNodes = [];
+					foreach (var vg in objGroup.GroupBy(o => (o.Value.LocoObject.Object as VehicleObject)!.Type).OrderBy(vg => vg.Key.ToString()))
+					{
+						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
+						subNodes.Add(new FileSystemItemGroup(
+							string.Empty,
+							vg.Key.ToString(),
+							vehicleSubNodes));
+					}
+				}
+				else
+				{
+					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
+				}
+
+				var fsg = new FileSystemItemGroup(
+					string.Empty,
+					objGroup.Key.ToString(),
+					subNodes);
+
+				yield return fsg;
 			}
 		}
 
@@ -64,14 +87,14 @@ namespace AvaGui.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _currentDirectory, value);
 		}
 
-		public ObservableCollection<FileSystemItem> DirectoryItems
+		public ObservableCollection<FileSystemItemBase> DirectoryItems
 			=> LoadDirectory(CurrentDirectory);
 
 		public string DirectoryFileCount
-			=> $"Files in dir: {DirectoryItems.Count}";
+			=> $"Files in dir: {new DirectoryInfo(CurrentDirectory).GetFiles().Length}";
 
-		public FileSystemItem _currentlySelectedObject;
-		public FileSystemItem CurrentlySelectedObject
+		public FileSystemItemBase _currentlySelectedObject;
+		public FileSystemItemBase CurrentlySelectedObject
 		{
 			get => _currentlySelectedObject;
 			set => this.RaiseAndSetIfChanged(ref _currentlySelectedObject, value);

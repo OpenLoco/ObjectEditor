@@ -29,22 +29,15 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
-			<TextBlock Grid.Row="0" FontWeight="Bold">Enter a directory:</TextBlock>
-			<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" />
+			<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" Watermark="Enter a directory" />
 			<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount, Mode=OneWay}" IsReadOnly="True"/>
-			<ListBox Grid.Row="3" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
-				<ListBox.ItemTemplate>
-					<DataTemplate x:DataType="mo:FileSystemItem">
-						<!--<Border BorderBrush="Blue" BorderThickness="1" CornerRadius="4" Padding="4">-->
-						<StackPanel>
-							<TextBlock Text="{Binding Path}"/>
-							<TextBlock Text="{Binding Name}"/>
-							<TextBlock Text="{Binding ObjectType}"/>
-						</StackPanel>
-						<!--</Border>-->
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox>
+			<TreeView Grid.Row="3" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
+				<TreeView.ItemTemplate>
+					<TreeDataTemplate ItemsSource="{Binding SubNodes}" x:DataType="mo:FileSystemItemBase">
+						<TextBlock Text="{Binding NameComputed}"/>
+					</TreeDataTemplate>
+				</TreeView.ItemTemplate>
+			</TreeView>
 		</Grid>
 		<StackPanel DataContext="{Binding ObjectEditorViewModel}" Spacing="10" Margin="10">
 			<TextBlock FontWeight="Bold">Current object:</TextBlock>

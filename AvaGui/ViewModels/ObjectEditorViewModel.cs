@@ -10,7 +10,20 @@ namespace AvaGui.ViewModels
 	public class ObjectEditorViewModel : ReactiveObject
 	{
 		ObjectEditorModel Model { get; }
-		UiLocoObject CurrentObject => Model.ObjectCache[CurrentlySelectedObject.Path];
+
+		public UiLocoObject _currentObject;
+		public UiLocoObject CurrentObject
+		{
+			get
+			{
+				if (CurrentlySelectedObject == null || !Model.ObjectCache.ContainsKey(CurrentlySelectedObject.Path))
+				{
+					return null;
+				}
+				return Model.ObjectCache[CurrentlySelectedObject.Path];
+			}
+			set => Model.ObjectCache[CurrentlySelectedObject.Path] = value;
+		}
 
 		public FileSystemItemBase _currentlySelectedObject;
 		public FileSystemItemBase CurrentlySelectedObject
@@ -93,6 +106,8 @@ namespace AvaGui.ViewModels
 				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentlySelectedUiObjectDatInfo)));
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentObjectViewModel)));
+			_ = this.WhenAnyValue(o => o.CurrentlySelectedObject)
+				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentObject)));
 		}
 	}
 }

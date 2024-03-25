@@ -14,7 +14,9 @@
 		<vm:VehicleViewModel/>
 	</Design.DataContext>
 
-	<TextBlock Text="Transport mode"/>
-	<TextBlock Text="{Binding Object.Mode}"/>
+	<StackPanel>
+		<TextBlock Text="Transport mode"/>
+		<TextBlock Text="{Binding Object.Mode}"/>
+	</StackPanel>
 
 </UserControl>

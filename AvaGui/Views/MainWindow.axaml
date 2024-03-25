@@ -1,10 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:vm="using:AvaGui.ViewModels"
 		xmlns:vi="using:AvaGui.Views"
 		xmlns:mo="using:AvaGui.Models"
-		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
@@ -93,9 +93,8 @@
 				</TreeView.ItemTemplate>
 			</TreeView>
 		</Grid>
-		<StackPanel DataContext="{Binding ObjectEditorViewModel}" Spacing="10" Margin="10">
-			<TextBlock FontWeight="Bold">Current object:</TextBlock>
-			<Grid>
+		<DockPanel DataContext="{Binding ObjectEditorViewModel}" Margin="10">
+			<Grid DockPanel.Dock="Top">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
@@ -109,21 +108,21 @@
 				</Grid.ColumnDefinitions>
 
 				<TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" >Name</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="0"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.S5Header.Name, Mode=OneWay}" IsReadOnly="True"/>
+				<TextBox Grid.Column="1" Grid.Row="0"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.S5Header.Name, Mode=OneWay}" IsReadOnly="True"/>
 
 				<TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" >Checksum</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="1"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.S5Header.Checksum, Mode=OneWay}" IsReadOnly="True"/>
+				<TextBox Grid.Column="1" Grid.Row="1"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.S5Header.Checksum, Mode=OneWay}" IsReadOnly="True"/>
 
 				<TextBlock Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" >Flags</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="2"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.S5Header.Flags, Mode=OneWay}" IsReadOnly="True"/>
+				<TextBox Grid.Column="1" Grid.Row="2"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.S5Header.Flags, Mode=OneWay}" IsReadOnly="True"/>
 
 				<TextBlock Grid.Column="0" Grid.Row="3" VerticalAlignment="Center" >Encoding</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="3"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.ObjectHeader.Encoding, Mode=OneWay}" IsReadOnly="True"/>
+				<TextBox Grid.Column="1" Grid.Row="3"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.ObjectHeader.Encoding, Mode=OneWay}" IsReadOnly="True"/>
 
 				<TextBlock Grid.Column="0" Grid.Row="4" VerticalAlignment="Center" >DataLength</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="4"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObject.ObjectHeader.DataLength, Mode=OneWay}" IsReadOnly="True"/>
+				<TextBox Grid.Column="1" Grid.Row="4"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.ObjectHeader.DataLength, Mode=OneWay}" IsReadOnly="True"/>
 			</Grid>
-		</StackPanel>
+			<TransitioningContentControl Content="{Binding CurrentObjectViewModel}" />
+		</DockPanel>
 	</DockPanel>
-
 </Window>

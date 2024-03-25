@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace AvaGui.Views
 {
-	public partial class FolderTreeView : UserControl
+	public partial class VehicleView : UserControl
 	{
-		public FolderTreeView()
+		public VehicleView()
 		{
 			InitializeComponent();
 		}

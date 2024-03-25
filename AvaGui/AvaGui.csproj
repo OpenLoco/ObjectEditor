@@ -32,8 +32,8 @@
 
 
   <ItemGroup>
-    <Compile Update="Views\FolderTreeView.axaml.cs">
-      <DependentUpon>FolderTreeView.axaml</DependentUpon>
+    <Compile Update="Views\VehicleView.axaml.cs">
+      <DependentUpon>VehicleView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

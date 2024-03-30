@@ -7,6 +7,7 @@ using OpenLoco.ObjectEditor.Data;
 using Core.Objects;
 using Core.Objects.Sound;
 using Zenith.Core;
+using System.ComponentModel;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {
@@ -251,9 +252,9 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			return new G1Dat(g1Header, imageTable);
 		}
 
-		public static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+		public static (G1Header header, BindingList<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 		{
-			var g1Element32s = new List<G1Element32>();
+			var g1Element32s = new BindingList<G1Element32>();
 
 			if (data.Length < ObjectAttributes.StructSize<G1Header>())
 			{

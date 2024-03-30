@@ -15,6 +15,7 @@ using OpenLoco.ObjectEditor.Objects;
 using System.Threading;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor;
+using OpenLoco.ObjectEditor.Types;
 
 namespace AvaGui.Models
 {
@@ -127,7 +128,7 @@ namespace AvaGui.Models
 		void CreateIndex(string[] allFiles, IProgress<float>? progress)
 		{
 			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
-			ConcurrentDictionary<string, UiLocoObject> ccObjectCache = new(); // key is full path/filename
+			ConcurrentDictionary<string, UiLocoFile> ccObjectCache = new(); // key is full path/filename
 
 			var count = 0;
 
@@ -151,7 +152,7 @@ namespace AvaGui.Models
 						return;
 					}
 
-					if (!ccObjectCache.TryAdd(file, new UiLocoObject { DatFileInfo = fileInfo, LocoObject = locoObject }))
+					if (!ccObjectCache.TryAdd(file, new UiLocoFile { DatFileInfo = fileInfo, LocoObject = locoObject }))
 					{
 						logger?.Warning($"Didn't add file {file} to cache - already exists (how???)");
 					}
@@ -211,9 +212,9 @@ namespace AvaGui.Models
 			logger?.Debug($"Median time={median.Value}ms");
 		}
 
-		public void SaveFile(string path, UiLocoObject obj)
+		public void SaveFile(string path, UiLocoFile obj)
 		{
-			if (obj.LocoObject == null)
+			if (obj == null)
 			{
 				logger?.Error($"Cannot save an object with a null loco object - the file would be empty!");
 				return;
@@ -332,7 +333,7 @@ namespace AvaGui.Models
 			return JsonSerializer.Deserialize<HeaderIndex>(json, GetOptions()) ?? [];
 		}
 
-		public UiLocoObject? LoadAndCacheObject(string filename)
+		public UiLocoFile? LoadAndCacheObject(string filename)
 		{
 			if (string.IsNullOrEmpty(filename) || !filename.EndsWith(".dat", StringComparison.InvariantCultureIgnoreCase) || !File.Exists(filename))
 			{
@@ -346,7 +347,7 @@ namespace AvaGui.Models
 			else
 			{
 				var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: logger);
-				var uiObj = new UiLocoObject { DatFileInfo = obj.DatFileInfo, LocoObject = obj.LocoObject };
+				var uiObj = new UiLocoFile { DatFileInfo = obj.DatFileInfo, LocoObject = obj.LocoObject };
 				_ = ObjectCache.TryAdd(filename, uiObj);
 				return uiObj;
 			}

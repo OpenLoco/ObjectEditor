@@ -15,6 +15,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
@@ -258,7 +259,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			if (model.G1 != null)
 			{
 				var objectTypes = Enum.GetValues<ObjectType>().Length;
-				var g1TabElements = model.G1.G1Elements.Skip(Constants.G1ObjectTabsOffset).Take(objectTypes).ToList();
+				var g1TabElements = new BindingList<G1Element32>(model.G1.G1Elements.Skip(Constants.G1ObjectTabsOffset).Take(objectTypes).ToList());
 
 				var images = CreateImages(g1TabElements, model.PaletteMap, true, logger).ToArray();
 				imageList.Images.AddRange(images);
@@ -1093,7 +1094,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 		}
 
-		static IEnumerable<Bitmap> CreateImages(List<G1Element32> G1Elements, PaletteMap paletteMap, bool useTransparency = false, ILogger? logger = null)
+		static IEnumerable<Bitmap> CreateImages(BindingList<G1Element32> G1Elements, PaletteMap paletteMap, bool useTransparency = false, ILogger? logger = null)
 		{
 			if (paletteMap is null)
 			{

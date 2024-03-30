@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -34,6 +34,9 @@
 
 
   <ItemGroup>
+    <Compile Update="Views\StringTableView.axaml.cs">
+      <DependentUpon>StringTableView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\VehicleView.axaml.cs">
       <DependentUpon>VehicleView.axaml</DependentUpon>
     </Compile>

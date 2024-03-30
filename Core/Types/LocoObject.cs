@@ -8,7 +8,7 @@ namespace OpenLoco.ObjectEditor.Types
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class LocoObject : ILocoObject
 	{
-		public LocoObject(ILocoStruct obj, StringTable stringTable, List<G1Element32>? g1Elements)
+		public LocoObject(ILocoStruct obj, StringTable stringTable, BindingList<G1Element32> g1Elements)
 		{
 			Object = obj;
 			StringTable = stringTable;
@@ -23,6 +23,6 @@ namespace OpenLoco.ObjectEditor.Types
 
 		public ILocoStruct Object { get; set; }
 		public StringTable StringTable { get; set; }
-		public List<G1Element32>? G1Elements { get; set; }
+		public BindingList<G1Element32> G1Elements { get; set; }
 	}
 }

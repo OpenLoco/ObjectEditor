@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace OpenLoco.ObjectEditor.Headers
@@ -17,7 +17,6 @@ namespace OpenLoco.ObjectEditor.Headers
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[Category("Header")]
 	[LocoStructSize(0x10)]
 	public record G1Element32(
 		[property: LocoStructOffset(0x00)] uint32_t Offset,

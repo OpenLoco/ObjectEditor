@@ -4,15 +4,20 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 using System;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.Objects;
+using System.Linq;
+using System.ComponentModel;
+using System.Collections.Generic;
 
 namespace AvaGui.ViewModels
 {
 	public class ObjectEditorViewModel : ReactiveObject
 	{
+		//public StringTableViewModel StringTableViewModel { get; set; }
+
 		ObjectEditorModel Model { get; }
 
-		public UiLocoObject _currentObject;
-		public UiLocoObject CurrentObject
+		public UiLocoFile _currentObject;
+		public UiLocoFile CurrentObject
 		{
 			get
 			{
@@ -45,6 +50,43 @@ namespace AvaGui.ViewModels
 				return _currentlySelectedUiObjectDatInfo;
 			}
 			set => this.RaiseAndSetIfChanged(ref _currentlySelectedUiObjectDatInfo, value);
+		}
+
+		public BindingList<string> _stringTableKeys;
+		public BindingList<string> StringTableKeys
+		{
+			get
+			{
+				if (CurrentObject != null)
+				{
+					return new BindingList<string>(CurrentObject.LocoObject.StringTable.Table.Keys.ToList());
+				}
+				return null;
+			}
+			set => this.RaiseAndSetIfChanged(ref _stringTableKeys, value);
+		}
+
+		public string _currentlySelectedStringTableKey;
+		public string CurrentlySelectedStringTableKey
+		{
+			get => _currentlySelectedStringTableKey;
+			set => this.RaiseAndSetIfChanged(ref _currentlySelectedStringTableKey, value);
+		}
+
+		public BindingList<KeyValuePair<LanguageId, string>> _stringTableStringKeys;
+		public BindingList<KeyValuePair<LanguageId, string>> StringTableStringKeys
+		{
+			get
+			{
+				if (CurrentObject != null && CurrentlySelectedStringTableKey != null && CurrentObject.LocoObject.StringTable.Table.ContainsKey(CurrentlySelectedStringTableKey))
+				{
+					return new BindingList<KeyValuePair<LanguageId, string>>(CurrentObject.LocoObject.StringTable.Table[CurrentlySelectedStringTableKey].ToList());
+					//.Select(kvp => new(kvp.Key.ToString(), kvp.Value))
+					//.ToList());
+				}
+				return null;
+			}
+			set => this.RaiseAndSetIfChanged(ref _stringTableStringKeys, value);
 		}
 
 		IObjectViewModel _currentObjectViewModel;
@@ -101,6 +143,7 @@ namespace AvaGui.ViewModels
 		public ObjectEditorViewModel(ObjectEditorModel model)
 		{
 			Model = model;
+			//StringTableViewModel = new(new OpenLoco.ObjectEditor.Types.StringTable());
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentlySelectedUiObjectDatInfo)));
@@ -108,6 +151,10 @@ namespace AvaGui.ViewModels
 				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentObjectViewModel)));
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentObject)));
+			_ = this.WhenAnyValue(o => o.CurrentObject)
+				.Subscribe(o => this.RaisePropertyChanged(nameof(StringTableKeys)));
+			_ = this.WhenAnyValue(o => o.CurrentlySelectedStringTableKey)
+				.Subscribe(o => this.RaisePropertyChanged(nameof(StringTableStringKeys)));
 		}
 	}
 }

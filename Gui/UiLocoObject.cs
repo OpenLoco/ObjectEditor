@@ -10,17 +10,17 @@ namespace OpenLoco.ObjectEditor.Gui
 
 	public interface IUiObjectWithGraphics
 	{
-		public List<G1Element32> G1Elements { get; set; }
+		public BindingList<G1Element32> G1Elements { get; set; }
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class UiLocoObject : IUiObject, IUiObjectWithGraphics
 	{
 		public DatFileInfo DatFileInfo { get; set; }
-		public ILocoObject? LocoObject { get; set; }
-		public List<G1Element32> G1Elements
+		public ILocoObject LocoObject { get; set; }
+		public BindingList<G1Element32> G1Elements
 		{
-			get => LocoObject?.G1Elements;
+			get => LocoObject.G1Elements;
 			set => LocoObject.G1Elements = value;
 		}
 	}
@@ -37,7 +37,7 @@ namespace OpenLoco.ObjectEditor.Gui
 	public class UiSoundObjectList : IUiObject
 	{
 		public string FileName { get; set; }
-		public List<UiSoundObject> Audio { get; set; } = [];
+		public BindingList<UiSoundObject> Audio { get; set; } = [];
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -45,13 +45,16 @@ namespace OpenLoco.ObjectEditor.Gui
 	{
 		public G1Dat G1 { get; set; }
 
-		public List<G1Element32> G1Elements
+		public BindingList<G1Element32> G1Elements
 		{
-			get => G1?.G1Elements;
+			get => G1.G1Elements;
 			set
 			{
 				G1.G1Elements.Clear();
-				G1.G1Elements.AddRange(value);
+				foreach (var x in value)
+				{
+					G1.G1Elements.Add(x);
+				}
 			}
 		}
 	}

@@ -6,12 +6,13 @@
 		xmlns:vi="using:AvaGui.Views"
 		xmlns:mo="using:AvaGui.Models"
 		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+		xmlns:sys="clr-namespace:System;assembly=mscorlib"
+		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
 		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
 		Icon="/Assets/loco_icon.ico"
-		Title="AvaGui"
-		>
+		Title="AvaGui">
 
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>
@@ -97,6 +98,41 @@
 		</Grid>
 		<ScrollViewer>
 			<StackPanel DataContext="{Binding ObjectEditorViewModel}" Margin="10" Background="LightSlateGray">
+				<TabControl>
+					<TabItem Header="Headers">
+						<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</TabItem>
+					<TabItem Header="Object">
+						<pgc:PropertyGrid x:Name="propertyGrid_1" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</TabItem>
+					<TabItem Header="String Table">
+						<!--<vi:StringTableView DataContext="{Binding CurrentObject.LocoObject.StringTable}"/>-->
+						<DockPanel>
+							<ListBox ItemsSource="{Binding StringTableKeys}" SelectedItem="{Binding CurrentlySelectedStringTableKey}" DockPanel.Dock="Left" x:Name="StringTableKeysListBox">
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock FontWeight="Bold" Text="{Binding}"/>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+							<ListBox ItemsSource="{Binding StringTableStringKeys}">
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<StackPanel Orientation="Horizontal">
+											<TextBlock FontWeight="Bold" Text="{Binding Key}" Width="200"/>
+											<TextBox Text="{Binding Value}"/>
+										</StackPanel>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+						</DockPanel>
+
+						<!--<pgc:PropertyGrid x:Name="propertyGrid_2" Margin="2" DataContext="{Binding CurrentObject.LocoObject.StringTable.Table}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
+					</TabItem>
+					<TabItem Header="Image Table">
+						<pgc:PropertyGrid x:Name="propertyGrid_3" Margin="2" DataContext="{Binding CurrentObject.LocoObject.G1Elements}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</TabItem>
+				</TabControl>
 				<!--<Grid DockPanel.Dock="Top">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -126,8 +162,6 @@
 				<TextBox Grid.Column="1" Grid.Row="4"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.ObjectHeader.DataLength, Mode=OneWay}" IsReadOnly="True"/>
 			</Grid>-->
 				<!--<TransitioningContentControl Content="{Binding CurrentObjectViewModel}" />-->
-				<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top"></pgc:PropertyGrid>
-				<pgc:PropertyGrid x:Name="propertyGrid_1" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}"></pgc:PropertyGrid>
 				<!--<ListBox Margin="2" DataContext="{Binding CurrentObject.LocoObject.G1Elements}">
 				<ListBox.ItemTemplate>
 					<DataTemplate x:DataType="">

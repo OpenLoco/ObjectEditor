@@ -1,0 +1,35 @@
+<UserControl
+		xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:sys="clr-namespace:System;assembly=mscorlib"
+		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
+		xmlns:vm="using:AvaGui.ViewModels"
+		xmlns:vi="using:AvaGui.Views"
+		xmlns:mo="using:AvaGui.Models"
+		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		x:Class="AvaGui.Views.StringTableView"
+		x:DataType="vm:StringTableViewModel">
+
+	<Design.DataContext>
+		<vm:DesignStringTableViewModel/>
+	</Design.DataContext>
+
+	<StackPanel Orientation="Horizontal">
+		<Border Background="LightBlue" BorderBrush="Aqua">
+			<ListBox ItemsSource="{Binding Keys} SelectedItem={Binding CurrentlySelectedKey}">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<StackPanel>
+							<TextBlock Text="{Binding}"/>
+						</StackPanel>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</Border>
+		<TextBlock Text="{Binding CurrentlySelectedKey}"/>
+		<TextBlock Text="Bob"/>
+	</StackPanel>
+
+</UserControl>

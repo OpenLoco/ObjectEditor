@@ -6,7 +6,6 @@ using Zenith.Core;
 namespace OpenLoco.ObjectEditor.Headers
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[Category("Header")]
 	[LocoStructSize(0x10)]
 	public record S5Header(string Name, uint32_t Checksum)
 	{

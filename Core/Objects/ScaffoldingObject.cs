@@ -61,5 +61,4 @@ namespace OpenLoco.ObjectEditor.Objects
 			{ 35, "type22x2RoofNW" },
 		};
 	}
-
 }

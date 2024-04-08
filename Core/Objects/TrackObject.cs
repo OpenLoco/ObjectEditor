@@ -577,7 +577,6 @@ namespace OpenLoco.ObjectEditor.Objects
 			{ 411, "rightCurveVerySmall0RailNW" },
 		};
 
-
 		// ai generated - nice idea, maybe implement?
 		//public static TrackObject FromDatFile(DatFile datFile, int index)
 		//{

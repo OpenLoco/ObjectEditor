@@ -509,6 +509,5 @@ namespace OpenLoco.ObjectEditor.Objects
 			{ 468, "toolbar_menu_map_south" },
 			{ 469, "toolbar_menu_map_east" },
 		};
-
 	}
 }

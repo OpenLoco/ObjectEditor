@@ -62,7 +62,6 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x2F)] uint8_t pad_2F
 		) : ILocoStruct, ILocoStructVariableData
 	{
-
 		public List<S5Header> Compatible { get; set; } = [];
 		public List<S5Header> Mods { get; set; } = [];
 		public S5Header Tunnel { get; set; }

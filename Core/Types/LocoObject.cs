@@ -4,7 +4,6 @@ using OpenLoco.ObjectEditor.Headers;
 
 namespace OpenLoco.ObjectEditor.Types
 {
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class LocoObject : ILocoObject
 	{

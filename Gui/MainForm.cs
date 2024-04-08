@@ -82,8 +82,8 @@ namespace OpenLoco.ObjectEditor.Gui
 		const string ApplicationName = "OpenLoco Object Editor";
 
 		const string GithubApplicationName = "ObjectEditor";
-		const string GithubLatestReleaseDownloadPage = @"https://github.com/OpenLoco/ObjectEditor/releases";
-		const string GithubLatestReleaseAPI = @"https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
+		const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
+		const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 
 		string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 		string SettingsFile => Path.Combine(SettingsPath, "settings.json");
@@ -535,7 +535,6 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		void LoadDataDumpCore(string path, bool isG1 = false)
 		{
-
 			if (File.Exists(path))
 			{
 				var byteList = File.ReadAllBytes(path);
@@ -612,7 +611,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			if (!header.Validate())
 			{
 				// invalid file
-				logger?.Warning($"Invalid music track");
+				logger?.Warning("Invalid music track");
 				return;
 			}
 		}
@@ -714,7 +713,6 @@ namespace OpenLoco.ObjectEditor.Gui
 						currentUIObjectImages = CreateImages(uiObjHasGraphics.G1Elements, model.PaletteMap).ToList();
 						RefreshImageControls();
 					}
-
 				}
 			}
 		}
@@ -749,7 +747,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			ILocoImageTableNames? its = null;
 			var objectName = string.Empty;
 
-			if (uiObj is UiLocoObject uiLocoObj && uiLocoObj.LocoObject != null && uiLocoObj.LocoObject.Object is ILocoImageTableNames itss)
+			if (uiObj is UiLocoObject uiLocoObj && uiLocoObj?.LocoObject != null && uiLocoObj.LocoObject.Object is ILocoImageTableNames itss)
 			{
 				its = itss;
 				objectName = uiLocoObj.DatFileInfo.S5Header.Name;
@@ -769,7 +767,6 @@ namespace OpenLoco.ObjectEditor.Gui
 				}
 
 				return $"{counter}-{value}";
-
 			}
 
 			return $"{counter}-image";
@@ -793,7 +790,6 @@ namespace OpenLoco.ObjectEditor.Gui
 				{
 					SawyerStreamWriter.ExportMusicAsWave(sfDialog.FileName, uiSoundObj.Header, uiSoundObj.Data);
 					logger.Info($"Saved music to {sfDialog.FileName}");
-
 				}
 			}
 		}
@@ -1053,7 +1049,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 			var uiObjHasGraphics = CurrentUIObject as IUiObjectWithGraphics;
 
-			int counter = 0;
+			var counter = 0;
 			foreach (var img in images)
 			{
 				var ele = uiObjHasGraphics.G1Elements[counter++];
@@ -1330,7 +1326,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		}
 
 		void btnPageLast_Click(object sender, EventArgs e)
-			=> CurrentUIImagePageNumber = (CurrentUIImages.Count / ImagesPerPage);
+			=> CurrentUIImagePageNumber = CurrentUIImages.Count / ImagesPerPage;
 
 		void dataDumpAnnotations_AfterSelect(object sender, TreeViewEventArgs e)
 		{
@@ -1441,7 +1437,7 @@ namespace OpenLoco.ObjectEditor.Gui
 				var validation = obji.LocoObject.Object.Validate();
 				if (!validation)
 				{
-					logger.Error($"Object failed validation checks; cannot save");
+					logger.Error("Object failed validation checks; cannot save");
 					return;
 				}
 			}
@@ -1465,7 +1461,7 @@ namespace OpenLoco.ObjectEditor.Gui
 					{
 						if (tvObjType.SelectedNode.Name == "css1.dat")
 						{
-							var rawBytes = SawyerStreamWriter.SaveSoundEffectsToCSS(uiSoundObjList.Audio.Select(uis => (uis.Header, uis.Data)).ToList());
+							var rawBytes = SawyerStreamWriter.SaveSoundEffectsToCSS(uiSoundObjList.Audio.ConvertAll(uis => (uis.Header, uis.Data)));
 							File.WriteAllBytes(filename, rawBytes);
 						}
 						else

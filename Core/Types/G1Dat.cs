@@ -2302,10 +2302,11 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			{ 3616, "chris_sawyer_logo_small" },
 			{ 3617, "chris_sawyer_logo_intro_left" },
 			{ 3618, "chris_sawyer_logo_intro_right" },
-
+			{ 3619, "chris_sawyer_intro_palette" },
 			{ 3620, "atari_logo_intro_left" },
 			{ 3621, "atari_logo_intro_right" },
-			{ 3623, "atari_logo_small" },
+			{ 3622, "atari_logo_intro_right" },
+			{ 3623, "atari_intro_palette" },
 			{ 3624, "locomotion_logo" },
 			{ 3625, "wide_tab" },
 

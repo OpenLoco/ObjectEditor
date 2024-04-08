@@ -169,7 +169,7 @@ namespace OpenLoco.ObjectEditor.Gui
 						return;
 					}
 
-					if (!ccObjectCache.TryAdd(file, new UiLocoObject { DatFileInfo = fileInfo, LocoObject = locoObject }))
+					if (!ccObjectCache.TryAdd(file, new UiLocoObject(fileInfo, locoObject)))
 					{
 						logger.Warning($"Didn't add file {file} to cache - already exists (how???)");
 					}
@@ -364,7 +364,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			else
 			{
 				var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: logger);
-				var uiObj = new UiLocoObject { DatFileInfo = obj.DatFileInfo, LocoObject = obj.LocoObject };
+				var uiObj = new UiLocoObject(obj.DatFileInfo, obj.LocoObject);
 				_ = ObjectCache.TryAdd(filename, uiObj);
 				return uiObj;
 			}

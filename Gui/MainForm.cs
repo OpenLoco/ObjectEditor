@@ -595,8 +595,8 @@ namespace OpenLoco.ObjectEditor.Gui
 		void LoadAndPlaySound(byte[] data, string soundName)
 		{
 			var (header, pcmData) = SawyerStreamReader.LoadWavFile(data);
-			var uiSoundObj = new UiSoundObject { Data = pcmData, Header = header, SoundName = soundName };
-			var uiSoundObjectList = new UiSoundObjectList();
+			var uiSoundObj = new UiSoundObject(soundName, header, pcmData);
+			var uiSoundObjectList = new UiSoundObjectList(soundName);
 			uiSoundObjectList.Audio.Add(uiSoundObj);
 			CurrentUIObject = uiSoundObjectList;
 
@@ -608,16 +608,16 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 		}
 
-		void LoadSoundEffectFile(byte[] data)
+		void LoadSoundEffectFile(byte[] data, string soundName)
 		{
 			var sfxs = SawyerStreamReader.LoadSoundEffectsFromCSS(data);
 
 			var i = 0;
-			var uiSoundObjectList = new UiSoundObjectList();
+			var uiSoundObjectList = new UiSoundObjectList(soundName);
 
 			foreach (var (header, pcmData) in sfxs)
 			{
-				var uiSoundObj = new UiSoundObject { Data = pcmData, Header = SawyerStreamWriter.WaveFormatExToRiff(header, pcmData.Length), SoundName = Enum.GetValues<SoundId>().ToList()[i++].ToString() };
+				var uiSoundObj = new UiSoundObject(Enum.GetValues<SoundId>().ToList()[i++].ToString(), SawyerStreamWriter.WaveFormatExToRiff(header, pcmData.Length), pcmData);
 				uiSoundObjectList.Audio.Add(uiSoundObj);
 			}
 
@@ -654,6 +654,7 @@ namespace OpenLoco.ObjectEditor.Gui
 					if (currentUIObject is UiSoundObjectList uiSoundObjList)
 					{
 						var soundObj = uiSoundObjList.Audio.Single(s => s.SoundName == soundNameToUpdate);
+						//soundObj = new UiSoundObject(soundNameToUpdate, header, pcmData);
 						soundObj.Header = header;
 						soundObj.Data = pcmData;
 						RefreshObjectUI();
@@ -664,10 +665,10 @@ namespace OpenLoco.ObjectEditor.Gui
 					{
 						logger.Info($"Replacing music track {soundNameToUpdate} with {openFileDialog.FileName}");
 					}
-					else
-					{
-						logger.Warning($"Sound name {soundNameToUpdate} was not recognised - no action will be taken.");
-					}
+					//else // commenting out because this falsely triggers for cs1.dat for sound effect names
+					//{
+					//	logger.Warning($"Sound name {soundNameToUpdate} was not recognised - no action will be taken.");
+					//}
 				}
 			}
 		}
@@ -954,7 +955,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		void LoadG1(string filename)
 		{
-			CurrentUIObject = new UiG1 { G1 = model.G1 };
+			CurrentUIObject = new UiG1(model.G1);
 			LoadDataDump(filename, true);
 		}
 
@@ -990,7 +991,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			{
 				logger.Debug($"Loading sound effects for {e.Node.Name}");
 				var sfx = model.SoundEffects[e.Node.Name];
-				LoadSoundEffectFile(sfx);
+				LoadSoundEffectFile(sfx, e.Node.Text);
 			}
 			else if (Path.GetExtension(e.Node.Name).Equals(".dat", StringComparison.OrdinalIgnoreCase))
 			{
@@ -1247,7 +1248,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 						var hdr = soundObject.SoundObjectData.PcmHeader;
 						var text = uiLocoObj.LocoObject.StringTable.Table["Name"][LanguageId.English_UK] ?? "<null>";
-						var pn = CreateSoundUI(new UiSoundObject { Data = soundObject.PcmData, Header = SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), SoundName = text });
+						var pn = CreateSoundUI(new UiSoundObject(text, SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), soundObject.PcmData));
 						flpImageTable.Controls.Add(pn);
 					}
 

@@ -1,4 +1,10 @@
-﻿namespace OpenLoco.ObjectEditor.Gui
+using System.Text.Json.Serialization;
+
+namespace OpenLoco.ObjectEditor.Gui
 {
-	public record VersionCheckBody(string TagName);
+	public class VersionCheckBody
+	{
+		[JsonPropertyName("tag_name")]
+		public string TagName { get; set; }
+	}
 }

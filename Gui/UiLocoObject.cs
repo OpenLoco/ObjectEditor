@@ -14,40 +14,46 @@ namespace OpenLoco.ObjectEditor.Gui
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiLocoObject : IUiObject, IUiObjectWithGraphics
+	public record UiLocoObject(DatFileInfo DatFileInfo, ILocoObject? LocoObject) : IUiObject, IUiObjectWithGraphics
 	{
-		public DatFileInfo DatFileInfo { get; set; }
-		public ILocoObject? LocoObject { get; set; }
 		public List<G1Element32> G1Elements
 		{
-			get => LocoObject?.G1Elements;
-			set => LocoObject.G1Elements = value;
+			get => LocoObject?.G1Elements ?? Enumerable.Empty<G1Element32>().ToList();
+			set
+			{
+				if (LocoObject != null)
+				{
+					LocoObject.G1Elements = value;
+				}
+			}
 		}
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiSoundObject
+	public record UiSoundObject(string SoundName)
 	{
-		public string SoundName { get; set; }
+		public UiSoundObject(string soundName, RiffWavHeader header, byte[] data) : this(soundName)
+		{
+			Header = header;
+			Data = data;
+		}
+
 		public RiffWavHeader Header { get; set; }
 		public byte[] Data { get; set; }
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiSoundObjectList : IUiObject
+	public record UiSoundObjectList(string FileName) : IUiObject
 	{
-		public string FileName { get; set; }
 		public List<UiSoundObject> Audio { get; set; } = [];
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiG1 : IUiObject, IUiObjectWithGraphics
+	public record UiG1(G1Dat G1) : IUiObject, IUiObjectWithGraphics
 	{
-		public G1Dat G1 { get; set; }
-
 		public List<G1Element32> G1Elements
 		{
-			get => G1?.G1Elements;
+			get => G1?.G1Elements ?? Enumerable.Empty<G1Element32>().ToList();
 			set
 			{
 				G1.G1Elements.Clear();

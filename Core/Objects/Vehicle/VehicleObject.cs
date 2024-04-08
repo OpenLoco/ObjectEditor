@@ -256,7 +256,7 @@ namespace OpenLoco.ObjectEditor.Objects
 
 			// driving/start sounds
 			StartSounds.Clear();
-			var mask = 127;
+			const int mask = 127;
 			var count = NumStartSounds & mask;
 			for (var i = 0; i < count; ++i)
 			{

@@ -21,7 +21,9 @@ namespace OpenLoco.ObjectEditor.Gui
 	public partial class MainForm : Form
 	{
 		readonly MainFormModel model;
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
 		readonly ILogger logger;
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
 
 		public IUiObject? CurrentUIObject
 		{
@@ -85,10 +87,10 @@ namespace OpenLoco.ObjectEditor.Gui
 		const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
 		const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 
-		string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
-		string SettingsFile => Path.Combine(SettingsPath, "settings.json");
+		static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
+		static string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
-		Version ApplicationVersion;
+		readonly Version ApplicationVersion;
 
 		public MainForm()
 		{
@@ -100,7 +102,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			};
 
 			var assembly = Assembly.GetExecutingAssembly();
-			var paletteFilename = "Gui.palette.png";
+			const string paletteFilename = "Gui.palette.png";
 			using (var stream = assembly.GetManifestResourceStream(paletteFilename))
 			{
 				//var paletteBitmap = (Bitmap)Image.FromStream(stream!);
@@ -113,7 +115,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 
 			// grab current appl version from assembly
-			var versionFilename = "Gui.version.txt";
+			const string versionFilename = "Gui.version.txt";
 			using (var stream = assembly.GetManifestResourceStream(versionFilename))
 			{
 				var buf = new byte[5];
@@ -145,27 +147,17 @@ namespace OpenLoco.ObjectEditor.Gui
 			{
 				var jsonResponse = response.Content.ReadAsStringAsync().Result;
 				var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
-				var tagName = body?.tag_name;
-				var version = Version.Parse(tagName);
-				return version;
+				var tagName = body?.TagName;
+				if (tagName != null)
+				{
+					return Version.Parse(tagName);
+				}
 			}
+
+#pragma warning disable CA2201 // Do not raise reserved exception types
 			throw new Exception("Unable to get latest version");
+#pragma warning restore CA2201 // Do not raise reserved exception types
 		}
-		//async Task<Version> GetLatestVersionAsync()
-		//{
-		//	var client = new HttpClient();
-		//	client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("ObjectEditor", ApplicationVersion.ToString()));
-		//	var response = await client.GetAsync("https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest");
-		//	if (response.IsSuccessStatusCode)
-		//	{
-		//		var jsonResponse = await response.Content.ReadAsStringAsync();
-		//		var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
-		//		var tagName = body?.tag_name;
-		//		var version = Version.Parse(tagName);
-		//		return version;
-		//	}
-		//	throw new Exception("Unable to get latest version");
-		//}
 
 		void MainForm_Load(object sender, EventArgs e)
 		{
@@ -352,7 +344,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			// sound effects
 			//foreach (var sfx in model.SoundEffects)
 			{
-				var displayName = OriginalDataFiles.SoundEffect;
+				const string displayName = OriginalDataFiles.SoundEffect;
 				_ = sfxNode.Nodes.Add(displayName, displayName, 1, 1);
 			}
 
@@ -1497,10 +1489,5 @@ namespace OpenLoco.ObjectEditor.Gui
 				ImageScale = scale;
 			}
 		}
-	}
-
-	public class VersionCheckBody
-	{
-		public string tag_name { get; set; }
 	}
 }

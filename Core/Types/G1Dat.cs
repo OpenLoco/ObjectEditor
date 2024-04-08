@@ -17,7 +17,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				? BaseImageIdNameMap.TryGetValue(id, out value)
 				: (IsSteamG1 ? SteamImageIdNameMap : OtherImageIdNameMap).TryGetValue(id, out value);
 
-		public static Dictionary<int, string> BaseImageIdNameMap = new()
+		static readonly Dictionary<int, string> BaseImageIdNameMap = new()
 		{
 			{ 304, "default_palette" },
 
@@ -2147,7 +2147,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			{ 3549, "title_menu_lesson_l" },
 		};
 
-		public static Dictionary<int, string> SteamImageIdNameMap = new()
+		static readonly Dictionary<int, string> SteamImageIdNameMap = new()
 		{
 			{ 3550, "title_menu_globe_spin_0" },
 			{ 3551, "title_menu_globe_spin_1" },
@@ -2228,7 +2228,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			{ 3628, "owner_jailed" },
 		};
 
-		public static Dictionary<int, string> OtherImageIdNameMap = new()
+		static readonly Dictionary<int, string> OtherImageIdNameMap = new()
 		{
 			// steam G1.dat doesn't have these 2
 			{ 3550, "title_menu_lesson_a" },

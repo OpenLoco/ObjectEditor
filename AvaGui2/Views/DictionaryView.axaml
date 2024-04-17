@@ -17,12 +17,20 @@
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 		</ListBox>
-		<ListBox ItemsSource="{Binding SelectedTranslations}" SelectedItem="{Binding SelectedTranslation}">
+		<ListBox ItemsSource="{Binding SelectedLanguages}" SelectedItem="{Binding SelectedLanguage}">
 			<ListBox.ItemTemplate>
 				<DataTemplate>
 					<StackPanel Orientation="Horizontal">
-						<TextBlock Text="{Binding Language}" VerticalAlignment="Center"/>
-						<TextBox Text="{Binding Translation, Mode=TwoWay}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+						<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+					</StackPanel>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+		<ListBox ItemsSource="{Binding SelectedTexts}" SelectedItem="{Binding SelectedText}">
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<StackPanel Orientation="Horizontal">
+						<TextBox Text="{Binding, Mode=TwoWay}" Margin="0,0,10,0" VerticalAlignment="Center"/>
 					</StackPanel>
 				</DataTemplate>
 			</ListBox.ItemTemplate>

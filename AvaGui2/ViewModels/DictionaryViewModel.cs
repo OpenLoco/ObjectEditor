@@ -45,6 +45,7 @@ namespace AvaGui2.ViewModels
 			get => _strings;
 			set => this.RaiseAndSetIfChanged(ref _strings, value);
 		}
+
 		private string? _selectedString;
 		public string? SelectedString
 		{
@@ -52,18 +53,32 @@ namespace AvaGui2.ViewModels
 			set => _ = this.RaiseAndSetIfChanged(ref _selectedString, value);
 		}
 
-		ObservableCollection<LanguageRow> _selectedTranslations;
-		public ObservableCollection<LanguageRow> SelectedTranslations
+		private string? _selectedlanguage;
+		public string? SelectedLanguage
 		{
-			get => _selectedTranslations;
-			set => this.RaiseAndSetIfChanged(ref _selectedTranslations, value);
+			get => _selectedlanguage;
+			set => _ = this.RaiseAndSetIfChanged(ref _selectedlanguage, value);
 		}
 
-		private LanguageRow? _selectedTranslation;
-		public LanguageRow? SelectedTranslation
+		ObservableCollection<string> _selectedLanguages;
+		public ObservableCollection<string> SelectedLanguages
 		{
-			get => _selectedTranslation;
-			set => _ = this.RaiseAndSetIfChanged(ref _selectedTranslation, value);
+			get => _selectedLanguages;
+			set => this.RaiseAndSetIfChanged(ref _selectedLanguages, value);
+		}
+
+		ObservableCollection<string> _selectedTexts;
+		public ObservableCollection<string> SelectedTexts
+		{
+			get => _selectedTexts;
+			set => this.RaiseAndSetIfChanged(ref _selectedTexts, value);
+		}
+
+		private string? _selectedText;
+		public string? SelectedText
+		{
+			get => _selectedText;
+			set => _ = this.RaiseAndSetIfChanged(ref _selectedText, value);
 		}
 
 		public StringTable Table { get; set; }
@@ -72,24 +87,26 @@ namespace AvaGui2.ViewModels
 		{
 			if (SelectedString != null && Table.Table.ContainsKey(SelectedString))
 			{
-				SelectedTranslations = new ObservableCollection<LanguageRow>();
+				SelectedLanguages = new ObservableCollection<string>();
+				SelectedTexts = new ObservableCollection<string>();
 				foreach (var x in Table.Table[SelectedString])
 				{
-					var newRow = new LanguageRow(x.Key, x.Value);
-					_ = newRow.WhenAnyValue(o => o.Translation)
-						.Subscribe(o => UpdateTranslation());
-					SelectedTranslations.Add(newRow);
+					SelectedLanguages.Add(x.Key.ToString());
+					SelectedTexts.Add(x.Value);
 				}
 			}
 		}
 		public void UpdateTranslation()
 		{
+
 			if (SelectedString != null
-				&& SelectedTranslation != null
-				&& Table.Table.ContainsKey(SelectedString)
-				&& Table.Table[SelectedString].ContainsKey(SelectedTranslation.Language))
+				&& SelectedLanguage != null
+				&& Table.Table.ContainsKey(SelectedString))
 			{
-				Table.Table[SelectedString][SelectedTranslation.Language] = SelectedTranslation.Translation;
+				if (Enum.TryParse<LanguageId>(SelectedLanguage, out var lang) && Table.Table[SelectedString].ContainsKey(lang))
+				{
+					Table.Table[SelectedString][lang] = SelectedText;
+				}
 			}
 		}
 
@@ -98,13 +115,12 @@ namespace AvaGui2.ViewModels
 			_ = this.WhenAnyValue(o => o.SelectedString)
 				.Subscribe(o => SelectedStringChanged());
 
-			_ = this.WhenAnyValue(o => o.SelectedTranslation)
+			_ = this.WhenAnyValue(o => o.SelectedText)
 				.Subscribe(o => UpdateTranslation());
 
 			Table = new StringTable();
 			Table.Table.Add("Name", new Dictionary<LanguageId, string>() { { LanguageId.English_UK, "John Doe" }, { LanguageId.German, "Jane Doe" } });
 			Table.Table.Add("Cargo", new Dictionary<LanguageId, string>() { { LanguageId.English_UK, "Water" }, { LanguageId.German, "Beer" } });
-
 
 			//AddItemCommand = ReactiveCommand.Create(AddNewListItem);
 			//RemoveItemCommand = ReactiveCommand.Create(RemoveSelectedListItem);

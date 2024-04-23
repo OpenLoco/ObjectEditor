@@ -96,6 +96,7 @@ namespace AvaGui2.ViewModels
 				}
 			}
 		}
+
 		public void UpdateTranslation()
 		{
 

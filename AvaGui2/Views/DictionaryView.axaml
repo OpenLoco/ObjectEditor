@@ -8,6 +8,7 @@
              x:Class="AvaGui2.Views.DictionaryView"
 			 x:DataType="vm:DictionaryViewModel">
 	<StackPanel Orientation="Horizontal">
+
 		<ListBox ItemsSource="{Binding Strings}" SelectedItem="{Binding SelectedString}">
 			<ListBox.ItemTemplate>
 				<DataTemplate>

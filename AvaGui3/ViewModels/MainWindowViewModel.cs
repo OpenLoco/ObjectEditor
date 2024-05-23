@@ -7,30 +7,6 @@ using System;
 
 namespace AvaGui3.ViewModels
 {
-	public class LanguageTranslation : ReactiveObject
-	{
-		public LanguageTranslation(LanguageId language, string translation)
-		{
-			_language = language;
-			_translation = translation;
-		}
-
-		private LanguageId _language;
-		public LanguageId Language
-		{
-			get => _language;
-			set => _ = this.RaiseAndSetIfChanged(ref _language, value);
-		}
-
-		private string _translation;
-
-		public string Translation
-		{
-			get => _translation;
-			set => _ = this.RaiseAndSetIfChanged(ref _translation, value);
-		}
-	}
-
 	public class MainWindowViewModel : ViewModelBase
 	{
 		private string? _selectedString;
@@ -40,7 +16,12 @@ namespace AvaGui3.ViewModels
 			set => _ = this.RaiseAndSetIfChanged(ref _selectedString, value);
 		}
 
-		public ObservableCollection<string> Strings { get; }
+		ObservableCollection<string> _strings;
+		public ObservableCollection<string> Strings
+		{
+			get => _strings;
+			set => this.RaiseAndSetIfChanged(ref _strings, value);
+		}
 
 		ObservableCollection<LanguageTranslation> _translationTable;
 		public ObservableCollection<LanguageTranslation> TranslationTable
@@ -64,11 +45,13 @@ namespace AvaGui3.ViewModels
 			}
 		}
 
+		Dictionary<string, Dictionary<LanguageId, string>> _table1;
+		Dictionary<string, Dictionary<LanguageId, string>> _table2;
 		Dictionary<string, Dictionary<LanguageId, string>> Table;
 
 		public MainWindowViewModel()
 		{
-			Table = new Dictionary<string, Dictionary<LanguageId, string>>
+			_table1 = new Dictionary<string, Dictionary<LanguageId, string>>
 			{
 				{
 					"Name",
@@ -90,10 +73,36 @@ namespace AvaGui3.ViewModels
 				},
 			};
 
+			_table2 = new Dictionary<string, Dictionary<LanguageId, string>>
+			{
+				{
+					"Name2",
+					new Dictionary<LanguageId, string>
+					{
+						{ LanguageId.English_UK, "Dollar2" },
+						{ LanguageId.English_US, "Dollar2" },
+						{ LanguageId.German, "Deutschmark2" }
+					}
+				},
+				{
+					"Text2",
+					new Dictionary<LanguageId, string>
+					{
+						{ LanguageId.English_UK, "K2" },
+						{ LanguageId.English_US, "N2" },
+						{ LanguageId.German, "L2" }
+					}
+				},
+			};
+
+			Table = _table1;
+
+			_ = this.WhenAnyValue(o => o.Table)
+				.Subscribe(_ => Strings = new ObservableCollection<string>(Table.Keys));
+
 			_ = this.WhenAnyValue(o => o.SelectedString)
 				.Subscribe(_ => SelectedStringChanged());
 
-			Strings = new ObservableCollection<string>(Table.Keys);
 		}
 	}
 }

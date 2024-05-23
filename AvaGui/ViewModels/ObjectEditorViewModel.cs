@@ -7,6 +7,7 @@ using OpenLoco.ObjectEditor.Objects;
 using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace AvaGui.ViewModels
 {
@@ -52,42 +53,52 @@ namespace AvaGui.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _currentlySelectedUiObjectDatInfo, value);
 		}
 
-		public BindingList<string> _stringTableKeys;
-		public BindingList<string> StringTableKeys
+		#region StringTable
+
+		ObservableCollection<string> _strings;
+		public ObservableCollection<string> Strings
 		{
-			get
-			{
-				if (CurrentObject != null)
-				{
-					return new BindingList<string>(CurrentObject.LocoObject.StringTable.Table.Keys.ToList());
-				}
-				return null;
-			}
-			set => this.RaiseAndSetIfChanged(ref _stringTableKeys, value);
+			get => _strings;
+			set => this.RaiseAndSetIfChanged(ref _strings, value);
 		}
 
-		public string _currentlySelectedStringTableKey;
-		public string CurrentlySelectedStringTableKey
+		public string _selectedString;
+		public string SelectedString
 		{
-			get => _currentlySelectedStringTableKey;
-			set => this.RaiseAndSetIfChanged(ref _currentlySelectedStringTableKey, value);
+			get => _selectedString;
+			set => this.RaiseAndSetIfChanged(ref _selectedString, value);
 		}
 
-		public BindingList<KeyValuePair<LanguageId, string>> _stringTableStringKeys;
-		public BindingList<KeyValuePair<LanguageId, string>> StringTableStringKeys
+		ObservableCollection<LanguageTranslation> _translationTable;
+		public ObservableCollection<LanguageTranslation> TranslationTable
 		{
-			get
-			{
-				if (CurrentObject != null && CurrentlySelectedStringTableKey != null && CurrentObject.LocoObject.StringTable.Table.ContainsKey(CurrentlySelectedStringTableKey))
-				{
-					return new BindingList<KeyValuePair<LanguageId, string>>(CurrentObject.LocoObject.StringTable.Table[CurrentlySelectedStringTableKey].ToList());
-					//.Select(kvp => new(kvp.Key.ToString(), kvp.Value))
-					//.ToList());
-				}
-				return null;
-			}
-			set => this.RaiseAndSetIfChanged(ref _stringTableStringKeys, value);
+			get => _translationTable;
+			set => this.RaiseAndSetIfChanged(ref _translationTable, value);
 		}
+
+		public void SelectedObjectChanged()
+		{
+			if (CurrentObject?.LocoObject != null)
+				Strings = new ObservableCollection<string>(CurrentObject.LocoObject.StringTable.Table.Keys);
+			else
+				Strings = new ObservableCollection<string>();
+		}
+
+		public void SelectedStringChanged()
+		{
+			if (CurrentObject?.LocoObject != null && SelectedString != null && CurrentObject.LocoObject.StringTable.Table.TryGetValue(SelectedString, out var value))
+			{
+				TranslationTable = new ObservableCollection<LanguageTranslation>(value.Select(kvp => new LanguageTranslation(kvp.Key, kvp.Value)));
+
+				foreach (var kvp in TranslationTable)
+				{
+					_ = kvp.WhenAnyValue(o => o.Translation)
+						.Subscribe(_ => CurrentObject.LocoObject.StringTable.Table[SelectedString][kvp.Language] = kvp.Translation);
+				}
+			}
+		}
+
+		#endregion StringTable
 
 		IObjectViewModel _currentObjectViewModel;
 		public IObjectViewModel CurrentObjectViewModel
@@ -152,9 +163,15 @@ namespace AvaGui.ViewModels
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentObject)));
 			_ = this.WhenAnyValue(o => o.CurrentObject)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(StringTableKeys)));
-			_ = this.WhenAnyValue(o => o.CurrentlySelectedStringTableKey)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(StringTableStringKeys)));
+				.Subscribe(o => this.RaisePropertyChanged(nameof(Strings)));
+			_ = this.WhenAnyValue(o => o.CurrentObject)
+				.Subscribe(_ => SelectedObjectChanged());
+			_ = this.WhenAnyValue(o => o.Strings)
+				.Subscribe(o => this.RaisePropertyChanged(nameof(TranslationTable)));
+			_ = this.WhenAnyValue(o => o.SelectedString)
+				.Subscribe(_ => SelectedStringChanged());
+			_ = this.WhenAnyValue(o => o.SelectedString)
+				.Subscribe(o => this.RaisePropertyChanged(nameof(TranslationTable)));
 		}
 	}
 }

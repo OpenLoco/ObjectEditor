@@ -97,7 +97,7 @@
 			</TreeView>
 		</Grid>
 		<ScrollViewer>
-			<StackPanel DataContext="{Binding ObjectEditorViewModel}" Margin="10" Background="LightSlateGray">
+			<StackPanel DataContext="{Binding ObjectEditorViewModel}" Margin="10">
 				<TabControl>
 					<TabItem Header="Headers">
 						<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
@@ -107,25 +107,26 @@
 					</TabItem>
 					<TabItem Header="String Table">
 						<!--<vi:StringTableView DataContext="{Binding CurrentObject.LocoObject.StringTable}"/>-->
-						<DockPanel>
-							<ListBox ItemsSource="{Binding StringTableKeys}" SelectedItem="{Binding CurrentlySelectedStringTableKey}" DockPanel.Dock="Left" x:Name="StringTableKeysListBox">
+						<StackPanel Orientation="Horizontal">
+							<ListBox ItemsSource="{Binding Strings}" SelectedItem="{Binding SelectedString}" DockPanel.Dock="Left" x:Name="StringTableKeysListBox">
 								<ListBox.ItemTemplate>
 									<DataTemplate>
 										<TextBlock FontWeight="Bold" Text="{Binding}"/>
 									</DataTemplate>
 								</ListBox.ItemTemplate>
 							</ListBox>
-							<ListBox ItemsSource="{Binding StringTableStringKeys}">
-								<ListBox.ItemTemplate>
-									<DataTemplate>
-										<StackPanel Orientation="Horizontal">
-											<TextBlock FontWeight="Bold" Text="{Binding Key}" Width="200"/>
-											<TextBox Text="{Binding Value}"/>
-										</StackPanel>
-									</DataTemplate>
-								</ListBox.ItemTemplate>
-							</ListBox>
-						</DockPanel>
+							<DataGrid Margin="20" ItemsSource="{Binding TranslationTable}"
+								GridLinesVisibility="All"
+								BorderThickness="1" BorderBrush="Gray"
+								CanUserResizeColumns="True"
+								CanUserSortColumns="False">
+								<DataGrid.Columns>
+									<DataGridTextColumn Header="Language" Binding="{Binding Language}" IsReadOnly="True"/>
+									<DataGridTextColumn Header="Translation" Binding="{Binding Translation}" />
+								</DataGrid.Columns>
+							</DataGrid>
+							<TextBlock Text="{Binding SelectedString}"/>
+						</StackPanel>
 
 						<!--<pgc:PropertyGrid x:Name="propertyGrid_2" Margin="2" DataContext="{Binding CurrentObject.LocoObject.StringTable.Table}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
 					</TabItem>

@@ -1,5 +1,4 @@
 using ReactiveUI;
-using Avalonia.Collections;
 using System;
 using OpenLoco.ObjectEditor.Types;
 using OpenLoco.ObjectEditor.Data;

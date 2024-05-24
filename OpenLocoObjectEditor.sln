@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaGui2", "AvaGui2\AvaGui2.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaGui3", "AvaGui3\AvaGui3.csproj", "{A6B84588-F8A0-4591-B504-CF185DB1700D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiApp1", "MauiApp1\MauiApp1.csproj", "{16E62817-E8C8-41E7-A147-AE8A1358221A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -139,6 +141,24 @@ Global
 		{A6B84588-F8A0-4591-B504-CF185DB1700D}.Release|x64.Build.0 = Release|Any CPU
 		{A6B84588-F8A0-4591-B504-CF185DB1700D}.Release|x86.ActiveCfg = Release|Any CPU
 		{A6B84588-F8A0-4591-B504-CF185DB1700D}.Release|x86.Build.0 = Release|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Debug|x64.Build.0 = Debug|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Debug|x86.Build.0 = Debug|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Release|x64.ActiveCfg = Release|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Release|x64.Build.0 = Release|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Release|x64.Deploy.0 = Release|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Release|x86.ActiveCfg = Release|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Release|x86.Build.0 = Release|Any CPU
+		{16E62817-E8C8-41E7-A147-AE8A1358221A}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

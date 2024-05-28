@@ -9,6 +9,10 @@ namespace AvaGui.Views
 		{
 			InitializeComponent();
 			Title = ObjectEditorModel.ApplicationName;
+
+			//var vm = new MainWindowViewModel();
+			//vm.Menu
+			//DataContext = vm;
 		}
 	}
 }

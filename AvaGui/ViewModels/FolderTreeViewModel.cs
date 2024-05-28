@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using AvaGui.Models;
 using ReactiveUI;
 using System.Collections.Generic;
@@ -48,9 +49,9 @@ namespace AvaGui.ViewModels
 		}
 
 		private ObservableCollection<FileSystemItemBase> LoadDirectory(string newDir)
-			=> new(_LoadDirectory(newDir, DisplayVanillaOnly));
+			=> new(_LoadDirectory(newDir));
 
-		private IEnumerable<FileSystemItemBase> _LoadDirectory(string newDir, bool vanillaOnly)
+		private IEnumerable<FileSystemItemBase> _LoadDirectory(string newDir)
 		{
 			if (newDir == null)
 			{
@@ -63,9 +64,6 @@ namespace AvaGui.ViewModels
 			{
 				yield break;
 			}
-
-			//var files = dirInfo.GetFiles();
-			//var subDirs = dirInfo.GetDirectories();
 
 			Model.LoadObjDirectory(CurrentDirectory, null, false);
 

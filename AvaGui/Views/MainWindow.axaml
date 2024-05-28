@@ -61,70 +61,96 @@
 	<DockPanel>
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
-				<MenuItem Header="_File"></MenuItem>
+				<MenuItem Header="_File">
+					<MenuItem Header="ObjData Directories" ItemsSource="{Binding ObjDataItems}">
+						<MenuItem.ItemTemplate>
+							<DataTemplate>
+								<MenuItem Header="{Binding Name}" Command="{Binding Command}" IsEnabled="True" VerticalAlignment="Center"/>
+							</DataTemplate>
+						</MenuItem.ItemTemplate>
+					</MenuItem>
+					<MenuItem Header="Data Directories" ItemsSource="{Binding DataItems}">
+						<MenuItem.ItemTemplate>
+							<DataTemplate>
+								<MenuItem Header="{Binding Name}" Command="{Binding Command}" CommandParameter="{Binding Name}" VerticalAlignment="Center"/>
+							</DataTemplate>
+						</MenuItem.ItemTemplate>
+					</MenuItem>
+					<!--<MenuItem Header="Recreate Index" Command="RecreateIndex"/>
+					<MenuItem Header="Load Palette" Command="LoadPalette"/>-->
+				</MenuItem>
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
 		</DockPanel>
-		<Grid DataContext="{Binding FolderTreeViewModel}" Margin="10">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="*"/>
-			</Grid.RowDefinitions>
-			<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" Watermark="Enter a directory" />
-			<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount, Mode=OneWay}" IsReadOnly="True"/>
-			<TextBox Grid.Row="3" Text="{Binding FilenameFilter}" Watermark="Filename filter" />
-			<CheckBox Grid.Row="4" IsChecked="{Binding DisplayVanillaOnly}"/>
-			<TreeView Grid.Row="5" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
-				<TreeView.ItemTemplate>
-					<TreeDataTemplate ItemsSource="{Binding SubNodes}">
-						<ContentControl Content="{Binding}" />
-					</TreeDataTemplate>
-				</TreeView.ItemTemplate>
-			</TreeView>
-		</Grid>
-		<ScrollViewer>
-			<StackPanel DataContext="{Binding ObjectEditorViewModel}" Margin="10">
-				<TabControl>
-					<TabItem Header="Headers">
-						<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-					</TabItem>
-					<TabItem Header="Object">
-						<pgc:PropertyGrid x:Name="propertyGrid_1" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-					</TabItem>
-					<TabItem Header="String Table">
-						<!--<vi:StringTableView DataContext="{Binding CurrentObject.LocoObject.StringTable}"/>-->
-						<StackPanel Orientation="Horizontal">
-							<ListBox ItemsSource="{Binding Strings}" SelectedItem="{Binding SelectedString}" DockPanel.Dock="Left" x:Name="StringTableKeysListBox">
-								<ListBox.ItemTemplate>
-									<DataTemplate>
-										<TextBlock FontWeight="Bold" Text="{Binding}"/>
-									</DataTemplate>
-								</ListBox.ItemTemplate>
-							</ListBox>
-							<DataGrid Margin="20" ItemsSource="{Binding TranslationTable}"
-								GridLinesVisibility="All"
-								BorderThickness="1" BorderBrush="Gray"
-								CanUserResizeColumns="True"
-								CanUserSortColumns="False">
-								<DataGrid.Columns>
-									<DataGridTextColumn Header="Language" Binding="{Binding Language}" IsReadOnly="True"/>
-									<DataGridTextColumn Header="Translation" Binding="{Binding Translation}" />
-								</DataGrid.Columns>
-							</DataGrid>
-							<TextBlock Text="{Binding SelectedString}"/>
-						</StackPanel>
+		<Border BorderThickness="2" BorderBrush="Gray" CornerRadius="3">
+			<Grid DataContext="{Binding FolderTreeViewModel}" Margin="10">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="*"/>
+				</Grid.RowDefinitions>
+				<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" Watermark="Enter a directory" />
+				<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount, Mode=OneWay}" IsReadOnly="True"/>
+				<Separator Grid.Row="3" Height="4"></Separator>
+				<TextBox Grid.Row="4" Text="{Binding FilenameFilter}" Watermark="Filename filter" />
+				<StackPanel Grid.Row="5" Orientation="Horizontal">
+					<CheckBox IsChecked="{Binding DisplayVanillaOnly}"/>
+					<TextBlock VerticalAlignment="Center">Display vanilla objects only</TextBlock>
+				</StackPanel>
+				<TreeView Grid.Row="6" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
+					<TreeView.ItemTemplate>
+						<TreeDataTemplate ItemsSource="{Binding SubNodes}">
+							<ContentControl Content="{Binding}" />
+						</TreeDataTemplate>
+					</TreeView.ItemTemplate>
+				</TreeView>
+			</Grid>
+		</Border>
+		<Border BorderThickness="2" BorderBrush="Gray" CornerRadius="3">
+			<ScrollViewer>
+				<StackPanel DataContext="{Binding ObjectEditorViewModel}" Margin="10">
+					<TabControl>
+						<TabItem Header="Headers">
+							<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						</TabItem>
+						<TabItem Header="Object">
+							<pgc:PropertyGrid x:Name="propertyGrid_1" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						</TabItem>
+						<TabItem Header="String Table">
+							<!--<vi:StringTableView DataContext="{Binding CurrentObject.LocoObject.StringTable}"/>-->
+							<StackPanel Orientation="Horizontal">
+								<ListBox ItemsSource="{Binding Strings}" SelectedItem="{Binding SelectedString}" DockPanel.Dock="Left" x:Name="StringTableKeysListBox">
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<TextBlock FontWeight="Bold" Text="{Binding}"/>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
+								<DataGrid Margin="20" ItemsSource="{Binding TranslationTable}"
+									GridLinesVisibility="All"
+									BorderThickness="1" BorderBrush="Gray"
+									CanUserResizeColumns="True"
+									CanUserSortColumns="False">
+									<DataGrid.Columns>
+										<DataGridTextColumn Header="Language" Binding="{Binding Language}" IsReadOnly="True"/>
+										<DataGridTextColumn Header="Translation" Binding="{Binding Translation}" />
+									</DataGrid.Columns>
+								</DataGrid>
+								<TextBlock Text="{Binding SelectedString}"/>
+							</StackPanel>
 
-						<!--<pgc:PropertyGrid x:Name="propertyGrid_2" Margin="2" DataContext="{Binding CurrentObject.LocoObject.StringTable.Table}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
-					</TabItem>
-					<TabItem Header="Image Table">
-						<pgc:PropertyGrid x:Name="propertyGrid_3" Margin="2" DataContext="{Binding CurrentObject.LocoObject.G1Elements}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-					</TabItem>
-				</TabControl>
-			</StackPanel>
-		</ScrollViewer>
+							<!--<pgc:PropertyGrid x:Name="propertyGrid_2" Margin="2" DataContext="{Binding CurrentObject.LocoObject.StringTable.Table}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
+						</TabItem>
+						<TabItem Header="Image Table">
+							<pgc:PropertyGrid x:Name="propertyGrid_3" Margin="2" DataContext="{Binding CurrentObject.LocoObject.G1Elements}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						</TabItem>
+					</TabControl>
+				</StackPanel>
+			</ScrollViewer>
+		</Border>
 	</DockPanel>
 </Window>

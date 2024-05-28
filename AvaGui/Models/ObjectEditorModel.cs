@@ -267,6 +267,15 @@ namespace AvaGui.Models
 			return true;
 		}
 
+		public async Task LoadObjDirectoryAsync(string directory, IProgress<float>? progress, bool useExistingIndex)
+		{
+			await Task.Run(() => LoadObjDirectory(directory, progress, useExistingIndex));
+			await Task.Run(() => SaveSettings());
+		}
+
+		public void LoadObjDirectory(string directory)
+			=> LoadObjDirectory(directory, null, true);
+
 		public void LoadObjDirectory(string directory, IProgress<float>? progress, bool useExistingIndex)
 		{
 			if (!Directory.Exists(directory))

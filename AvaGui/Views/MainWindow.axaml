@@ -18,28 +18,6 @@
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
 
-	<!--<Window.Resources>
-		<DataTemplate x:Key="FileSystemItemGroup" x:DataType="mo:FileSystemItemGroup">
-			<StackPanel Orientation="Horizontal">
-				<Image Width="32" Height="32" Margin="1">
-					<Image.Source>
-						<CroppedBitmap Source="avares://AvaGui/Assets/loco_object_types_combined.png" SourceRect="{Binding SourceRect}">
-						</CroppedBitmap>
-					</Image.Source>
-				</Image>
-				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-			</StackPanel>
-		</DataTemplate>
-
-		<DataTemplate x:Key="FileSystemVehicleGroup" x:DataType="mo:FileSystemVehicleGroup">
-			<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-		</DataTemplate>
-
-		<DataTemplate x:Key="FileSystemItem" x:DataType="mo:FileSystemItem">
-			<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-		</DataTemplate>
-	</Window.Resources>-->
-
 	<Window.DataTemplates>
 		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
 		<DataTemplate DataType="mo:FileSystemItemGroup">
@@ -67,7 +45,15 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemItem">
-			<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			<StackPanel Orientation="Horizontal">
+				<Image Width="16" Height="16">
+					<Image.Source>
+						<CroppedBitmap Source="avares://AvaGui/Assets/vanilla.png" SourceRect="{Binding SourceRect}">
+						</CroppedBitmap>
+					</Image.Source>
+				</Image>
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			</StackPanel>
 		</DataTemplate>
 
 	</Window.DataTemplates>
@@ -84,11 +70,15 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
 			<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" Watermark="Enter a directory" />
 			<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount, Mode=OneWay}" IsReadOnly="True"/>
-			<TreeView Grid.Row="3" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
+			<TextBox Grid.Row="3" Text="{Binding FilenameFilter}" Watermark="Filename filter" />
+			<CheckBox Grid.Row="4" IsChecked="{Binding DisplayVanillaOnly}"/>
+			<TreeView Grid.Row="5" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
 				<TreeView.ItemTemplate>
 					<TreeDataTemplate ItemsSource="{Binding SubNodes}">
 						<ContentControl Content="{Binding}" />
@@ -134,46 +124,6 @@
 						<pgc:PropertyGrid x:Name="propertyGrid_3" Margin="2" DataContext="{Binding CurrentObject.LocoObject.G1Elements}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 					</TabItem>
 				</TabControl>
-				<!--<Grid DockPanel.Dock="Top">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="Auto"/>
-				</Grid.ColumnDefinitions>
-
-				<TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" >Name</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="0"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.S5Header.Name, Mode=OneWay}" IsReadOnly="True"/>
-
-				<TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" >Checksum</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="1"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.S5Header.Checksum, Mode=OneWay}" IsReadOnly="True"/>
-
-				<TextBlock Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" >Flags</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="2"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.S5Header.Flags, Mode=OneWay}" IsReadOnly="True"/>
-
-				<TextBlock Grid.Column="0" Grid.Row="3" VerticalAlignment="Center" >Encoding</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="3"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.ObjectHeader.Encoding, Mode=OneWay}" IsReadOnly="True"/>
-
-				<TextBlock Grid.Column="0" Grid.Row="4" VerticalAlignment="Center" >DataLength</TextBlock>
-				<TextBox Grid.Column="1" Grid.Row="4"  VerticalAlignment="Center" Text="{Binding CurrentlySelectedUiObjectDatInfo.ObjectHeader.DataLength, Mode=OneWay}" IsReadOnly="True"/>
-			</Grid>-->
-				<!--<TransitioningContentControl Content="{Binding CurrentObjectViewModel}" />-->
-				<!--<ListBox Margin="2" DataContext="{Binding CurrentObject.LocoObject.G1Elements}">
-				<ListBox.ItemTemplate>
-					<DataTemplate x:DataType="">
-						<Border BorderBrush="Blue" BorderThickness="1"
-								CornerRadius="4" Padding="4">
-							<TextBlock Text="{Binding Offset}"/>
-						</Border>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox>-->
-
 			</StackPanel>
 		</ScrollViewer>
 	</DockPanel>

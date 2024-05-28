@@ -19,7 +19,8 @@ namespace AvaGui.ViewModels
 		public MainWindowViewModel()
 		{
 			Model = new();
-			FolderTreeViewModel = new FolderTreeViewModel(Model);
+			FolderTreeViewModel = new
+				FolderTreeViewModel(Model);
 			ObjectEditorViewModel = new ObjectEditorViewModel(Model);
 
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)

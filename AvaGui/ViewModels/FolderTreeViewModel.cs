@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Objects;
+using OpenLoco.ObjectEditor.Data;
 
 namespace AvaGui.ViewModels
 {
@@ -23,14 +24,33 @@ namespace AvaGui.ViewModels
 
 			_ = this.WhenAnyValue(o => o.CurrentDirectory)
 				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
+			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
+				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
+			_ = this.WhenAnyValue(o => o.FilenameFilter)
+				.Throttle(TimeSpan.FromMilliseconds(500))
+				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
 
 			CurrentDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
 		}
 
-		private ObservableCollection<FileSystemItemBase> LoadDirectory(string newDir)
-			=> new(_LoadDirectory(newDir));
+		string _filenameFilter;
+		public string FilenameFilter
+		{
+			get => _filenameFilter;
+			set => this.RaiseAndSetIfChanged(ref _filenameFilter, value);
+		}
 
-		private IEnumerable<FileSystemItemBase> _LoadDirectory(string newDir)
+		bool _displayVanillaOnly;
+		public bool DisplayVanillaOnly
+		{
+			get => _displayVanillaOnly;
+			set => this.RaiseAndSetIfChanged(ref _displayVanillaOnly, value);
+		}
+
+		private ObservableCollection<FileSystemItemBase> LoadDirectory(string newDir)
+			=> new(_LoadDirectory(newDir, DisplayVanillaOnly));
+
+		private IEnumerable<FileSystemItemBase> _LoadDirectory(string newDir, bool vanillaOnly)
 		{
 			if (newDir == null)
 			{
@@ -49,18 +69,24 @@ namespace AvaGui.ViewModels
 
 			Model.LoadObjDirectory(CurrentDirectory, null, false);
 
-			var groupedObjects = Model.ObjectCache.GroupBy(o => o.Value.DatFileInfo.S5Header.ObjectType).OrderBy(fsg => fsg.Key.ToString());
+			var groupedObjects = Model.ObjectCache
+				.Where(o => string.IsNullOrEmpty(FilenameFilter) || o.Value.DatFileInfo.S5Header.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase))
+				.GroupBy(o => o.Value.DatFileInfo.S5Header.ObjectType)
+				.OrderBy(fsg => fsg.Key.ToString());
+
 			var count = 0;
 			foreach (var objGroup in groupedObjects)
 			{
 				ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
-				if (objGroup.Key == OpenLoco.ObjectEditor.Data.ObjectType.Vehicle)
+				if (objGroup.Key == ObjectType.Vehicle)
 				{
 					subNodes = [];
 					var vCount = 0;
-					foreach (var vg in objGroup.GroupBy(o => (o.Value.LocoObject.Object as VehicleObject)!.Type).OrderBy(vg => vg.Key.ToString()))
+					foreach (var vg in objGroup
+						.GroupBy(o => (o.Value.LocoObject.Object as VehicleObject)!.Type)
+						.OrderBy(vg => vg.Key.ToString()))
 					{
-						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
+						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim(), o.Value.DatFileInfo.S5Header.SourceGame)));
 						subNodes.Add(new FileSystemVehicleGroup(
 							string.Empty,
 							vg.Key,
@@ -70,16 +96,19 @@ namespace AvaGui.ViewModels
 				}
 				else
 				{
-					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
+					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim(), o.Value.DatFileInfo.S5Header.SourceGame)));
 				}
 
-				var fsg = new FileSystemItemGroup(
+				if (DisplayVanillaOnly)
+				{
+					subNodes = new ObservableCollection<FileSystemItemBase>(subNodes.Where(o => o is FileSystemItem item && item.SourceGame == SourceGame.Vanilla));
+				}
+
+				yield return new FileSystemItemGroup(
 					string.Empty,
 					objGroup.Key,
 					subNodes,
 					count++);
-
-				yield return fsg;
 			}
 		}
 

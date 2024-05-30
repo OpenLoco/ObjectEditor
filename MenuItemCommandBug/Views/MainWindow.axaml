@@ -3,19 +3,20 @@
 		xmlns:vm="using:MenuItemCommandBug.ViewModels"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		mc:Ignorable="d" d:DesignWidth="256" d:DesignHeight="128"
 		x:Class="MenuItemCommandBug.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
 		Icon="/Assets/avalonia-logo.ico"
 Title="MenuItemCommandBug">
 
 	<Menu>
-		<MenuItem Header="Items" ItemsSource="{Binding Items}" >
-			<MenuItem.ItemTemplate>
-				<DataTemplate>
-					<MenuItem Header="{Binding Name}" Command="{Binding MenuCommand}" IsEnabled="True" Focusable="True"/>
-				</DataTemplate>
-			</MenuItem.ItemTemplate>
+		<MenuItem Header="Items" ItemsSource="{Binding Items}" Classes="SubItems">
+			<MenuItem.Styles>
+				<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemModel">
+					<Setter Property="Header" Value="{Binding Name}"/>
+					<Setter Property="Command" Value="{Binding MenuCommand}"/>
+				</Style>
+			</MenuItem.Styles>
 		</MenuItem>
 	</Menu>
 </Window>

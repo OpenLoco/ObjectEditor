@@ -5,9 +5,8 @@ using System;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.Objects;
 using System.Linq;
-using System.ComponentModel;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using ReactiveUI.Fody.Helpers;
 
 namespace AvaGui.ViewModels
 {
@@ -31,12 +30,7 @@ namespace AvaGui.ViewModels
 			set => Model.ObjectCache[CurrentlySelectedObject.Path] = value;
 		}
 
-		public FileSystemItemBase _currentlySelectedObject;
-		public FileSystemItemBase CurrentlySelectedObject
-		{
-			get => _currentlySelectedObject;
-			set => this.RaiseAndSetIfChanged(ref _currentlySelectedObject, value);
-		}
+		[Reactive] public FileSystemItemBase CurrentlySelectedObject { get; set; }
 
 		DatFileInfo _currentlySelectedUiObjectDatInfo;
 		public DatFileInfo CurrentlySelectedUiObjectDatInfo
@@ -55,26 +49,11 @@ namespace AvaGui.ViewModels
 
 		#region StringTable
 
-		ObservableCollection<string> _strings;
-		public ObservableCollection<string> Strings
-		{
-			get => _strings;
-			set => this.RaiseAndSetIfChanged(ref _strings, value);
-		}
+		[Reactive] public ObservableCollection<string> Strings { get; set; }
 
-		public string _selectedString;
-		public string SelectedString
-		{
-			get => _selectedString;
-			set => this.RaiseAndSetIfChanged(ref _selectedString, value);
-		}
+		[Reactive] public string SelectedString { get; set; }
 
-		ObservableCollection<LanguageTranslation> _translationTable;
-		public ObservableCollection<LanguageTranslation> TranslationTable
-		{
-			get => _translationTable;
-			set => this.RaiseAndSetIfChanged(ref _translationTable, value);
-		}
+		[Reactive] public ObservableCollection<LanguageTranslation> TranslationTable { get; set; }
 
 		public void SelectedObjectChanged()
 		{

@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using AvaGui.Models;
 using ReactiveUI;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Objects;
 using OpenLoco.ObjectEditor.Data;
+using ReactiveUI.Fody.Helpers;
 
 namespace AvaGui.ViewModels
 {
@@ -34,19 +34,9 @@ namespace AvaGui.ViewModels
 			CurrentDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
 		}
 
-		string _filenameFilter;
-		public string FilenameFilter
-		{
-			get => _filenameFilter;
-			set => this.RaiseAndSetIfChanged(ref _filenameFilter, value);
-		}
+		[Reactive] public string FilenameFilter { get; set; }
 
-		bool _displayVanillaOnly;
-		public bool DisplayVanillaOnly
-		{
-			get => _displayVanillaOnly;
-			set => this.RaiseAndSetIfChanged(ref _displayVanillaOnly, value);
-		}
+		[Reactive] public bool DisplayVanillaOnly { get; set; }
 
 		private ObservableCollection<FileSystemItemBase> LoadDirectory(string newDir)
 			=> new(_LoadDirectory(newDir));
@@ -110,12 +100,7 @@ namespace AvaGui.ViewModels
 			}
 		}
 
-		string _currentDirectory;
-		public string CurrentDirectory
-		{
-			get => _currentDirectory;
-			set => this.RaiseAndSetIfChanged(ref _currentDirectory, value);
-		}
+		[Reactive] public string CurrentDirectory { get; set; }
 
 		public ObservableCollection<FileSystemItemBase> DirectoryItems
 			=> LoadDirectory(CurrentDirectory);
@@ -123,11 +108,7 @@ namespace AvaGui.ViewModels
 		public string DirectoryFileCount
 			=> $"Files in dir: {new DirectoryInfo(CurrentDirectory).GetFiles().Length}";
 
-		public FileSystemItemBase _currentlySelectedObject;
-		public FileSystemItemBase CurrentlySelectedObject
-		{
-			get => _currentlySelectedObject;
-			set => this.RaiseAndSetIfChanged(ref _currentlySelectedObject, value);
-		}
+		[Reactive] public FileSystemItemBase CurrentlySelectedObject { get; set; }
+
 	}
 }

@@ -63,19 +63,21 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<MenuItem Header="ObjData Directories" ItemsSource="{Binding ObjDataItems}" >
-						<MenuItem.ItemTemplate>
-							<DataTemplate>
-								<MenuItem Header="{Binding Name}"  Command="{Binding MenuCommand}" CommandParameter="{Binding Name}" IsEnabled="True" Focusable="True" VerticalAlignment="Center"/>
-							</DataTemplate>
-						</MenuItem.ItemTemplate>
+					<MenuItem Header="ObjData Directories" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
+						<MenuItem.Styles>
+							<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemModel">
+								<Setter Property="Header" Value="{Binding Name}"/>
+								<Setter Property="Command" Value="{Binding MenuCommand}"/>
+							</Style>
+						</MenuItem.Styles>
 					</MenuItem>
 					<MenuItem Header="Data Directories" ItemsSource="{Binding DataItems}">
-						<MenuItem.ItemTemplate>
-							<DataTemplate>
-								<MenuItem Header="{Binding Name}" Command="{Binding MenuCommand}" CommandParameter="{Binding Name}"  IsEnabled="True" Focusable="True" VerticalAlignment="Center"/>
-							</DataTemplate>
-						</MenuItem.ItemTemplate>
+						<MenuItem.Styles>
+							<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemModel">
+								<Setter Property="Header" Value="{Binding Name}"/>
+								<Setter Property="Command" Value="{Binding MenuCommand}"/>
+							</Style>
+						</MenuItem.Styles>
 					</MenuItem>
 					<MenuItem Header="Recreate Index" Command="{Binding RecreateIndex}" />
 					<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />

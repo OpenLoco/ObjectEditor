@@ -12,6 +12,9 @@ using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Diagnostics;
+using OpenLoco.ObjectEditor;
+using SixLabors.ImageSharp.PixelFormats;
+using OpenLoco.ObjectEditor.Logging;
 
 namespace AvaGui.ViewModels
 {
@@ -35,15 +38,16 @@ namespace AvaGui.ViewModels
 
 		public ObjectEditorViewModel ObjectEditorViewModel { get; }
 
-		[Reactive] public ObservableCollection<MenuItemModel> ObjDataItems { get; set; }
+		public ObservableCollection<MenuItemModel> ObjDataItems { get; init; }
 
-		[Reactive] public ObservableCollection<MenuItemModel> DataItems { get; set; }
+		public ObservableCollection<MenuItemModel> DataItems { get; init; }
+
+		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
 		public MainWindowViewModel()
 		{
 			Model = new();
-			FolderTreeViewModel = new
-				FolderTreeViewModel(Model);
+			FolderTreeViewModel = new FolderTreeViewModel(Model);
 			ObjectEditorViewModel = new ObjectEditorViewModel(Model);
 
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
@@ -54,29 +58,39 @@ namespace AvaGui.ViewModels
 					x,
 					ReactiveCommand.Create<string>(Model.LoadObjDirectory))));
 
-			//DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
-			//	.Select(x => new MenuItemModel(
-			//		x,
-			//		ReactiveCommand.Create<string, bool>(Model.LoadDataDirectory))));
+			DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
+				.Select(x => new MenuItemModel(
+					x,
+					ReactiveCommand.Create<string, bool>(Model.LoadDataDirectory))));
 
-			RecreateIndex = ReactiveCommand.Create<string>((x) =>
-			{
-				Debug.WriteLine($"RecreateIndex {x} command was run.");
-				Model.LoadObjDirectory(Model.Settings.ObjDataDirectory);
-			});
-
-			LoadPalette = ReactiveCommand.Create(() => Debug.WriteLine("LoadPalette command was run."));
-
-			//LoadPalette = ReactiveCommand.CreateFromTask(...); // nothing for now
-			//RecreateIndex = ReactiveCommand.CreateFromTask(async () => await Model.LoadObjDirectoryAsync(Model.Settings.ObjDataDirectory, null, false));
+			LoadPalette = ReactiveCommand.Create(LoadPaletteFunc);
+			RecreateIndex = ReactiveCommand.Create(() => Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false));
 		}
 
-		//public ReactiveCommand<Unit, Unit> ToggleThemeCommand { get; }
-		//public ReactiveCommand<Unit, Unit> GenerateObjDataMenu { get; }
-		//public ReactiveCommand<Unit, Unit> GenerateDataMenu { get; }
-
 		public ReactiveCommand<Unit, Unit> LoadPalette { get; }
-		public ReactiveCommand<string, Unit> RecreateIndex { get; }
+
+		public void LoadPaletteFunc()
+		{
+			//using (var openFileDialog = new OpenFileDialog())
+			{
+				//openFileDialog.InitialDirectory = lastPaletteDirectory;
+				//openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
+				//openFileDialog.FilterIndex = 1;
+				//openFileDialog.RestoreDirectory = true;
+
+				//if (openFileDialog.ShowDialog() == DialogResult.OK && File.Exists(openFileDialog.FileName))
+				{
+					//model.PaletteFile = openFileDialog.FileName;
+					//var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgb24>(openFileDialog.FileName);
+					//Model.PaletteMap = new PaletteMap(paletteBitmap);
+
+					//RefreshObjectUI();
+					//lastPaletteDirectory = Path.GetDirectoryName(openFileDialog.FileName) ?? lastPaletteDirectory;
+				}
+			}
+		}
+
+		public ReactiveCommand<Unit, Unit> RecreateIndex { get; }
 
 		public bool IsDarkTheme
 		{

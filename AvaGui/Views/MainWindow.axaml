@@ -5,10 +5,11 @@
 		xmlns:vm="using:AvaGui.ViewModels"
 		xmlns:vi="using:AvaGui.Views"
 		xmlns:mo="using:AvaGui.Models"
+		xmlns:ol="using:OpenLoco.ObjectEditor.Logging"
 		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
-		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
 		Icon="/Assets/loco_icon.ico"
@@ -62,27 +63,49 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<MenuItem Header="ObjData Directories" ItemsSource="{Binding ObjDataItems}">
+					<MenuItem Header="ObjData Directories" ItemsSource="{Binding ObjDataItems}" >
 						<MenuItem.ItemTemplate>
 							<DataTemplate>
-								<MenuItem Header="{Binding Name}" IsEnabled="True" Focusable="True" VerticalAlignment="Center"/>
+								<MenuItem Header="{Binding Name}"  Command="{Binding MenuCommand}" CommandParameter="{Binding Name}" IsEnabled="True" Focusable="True" VerticalAlignment="Center"/>
 							</DataTemplate>
 						</MenuItem.ItemTemplate>
 					</MenuItem>
 					<MenuItem Header="Data Directories" ItemsSource="{Binding DataItems}">
 						<MenuItem.ItemTemplate>
 							<DataTemplate>
-								<MenuItem Header="{Binding Name}" Command="{Binding MenuCommand}" CommandParameter="{Binding Name}" VerticalAlignment="Center"/>
+								<MenuItem Header="{Binding Name}" Command="{Binding MenuCommand}" CommandParameter="{Binding Name}"  IsEnabled="True" Focusable="True" VerticalAlignment="Center"/>
 							</DataTemplate>
 						</MenuItem.ItemTemplate>
 					</MenuItem>
 					<MenuItem Header="Recreate Index" Command="{Binding RecreateIndex}" />
-					<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" CommandParameter="axaml" />
+					<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />
 				</MenuItem>
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
 		</DockPanel>
-		<Border BorderThickness="2" BorderBrush="Gray" CornerRadius="3">
+		<Border DockPanel.Dock="Bottom" BorderThickness="1" BorderBrush="Gray">
+			<ScrollViewer DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+				<ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Logs}" MaxHeight="256">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid DataContext="{Binding}">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="192"/>
+									<ColumnDefinition Width="96"/>
+									<ColumnDefinition Width="128"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Grid.Column="0" Text="{Binding Time}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8, 0, 2, 0"/>
+								<TextBlock Grid.Column="1" Text="{Binding Level}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8, 0, 2, 0"/>
+								<TextBlock Grid.Column="2" Text="{Binding Caller}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8, 0, 2, 0"/>
+								<TextBlock Grid.Column="3" Text="{Binding Message}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8, 0, 2, 0"/>
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</ScrollViewer>
+		</Border>
+		<Border BorderThickness="1" BorderBrush="Gray">
 			<Grid DataContext="{Binding FolderTreeViewModel}" Margin="10">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -110,7 +133,7 @@
 				</TreeView>
 			</Grid>
 		</Border>
-		<Border BorderThickness="2" BorderBrush="Gray" CornerRadius="3">
+		<Border BorderThickness="1" BorderBrush="Gray">
 			<ScrollViewer>
 				<StackPanel DataContext="{Binding ObjectEditorViewModel}" Margin="10">
 					<TabControl>
@@ -152,5 +175,6 @@
 				</StackPanel>
 			</ScrollViewer>
 		</Border>
+
 	</DockPanel>
 </Window>

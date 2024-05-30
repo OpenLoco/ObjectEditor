@@ -6,7 +6,6 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <StartupObject>AvaGui2.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,18 +22,5 @@
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.10" />
-    <PackageReference Include="ReactiveUI.Validation" Version="4.0.9" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <Compile Update="Views\DictionaryView.axaml.cs">
-      <DependentUpon>DictionaryView.axaml</DependentUpon>
-    </Compile>
   </ItemGroup>
 </Project>

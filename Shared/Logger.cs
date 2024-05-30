@@ -1,4 +1,6 @@
-﻿namespace OpenLoco.ObjectEditor.Logging
+using System.Collections.ObjectModel;
+
+namespace OpenLoco.ObjectEditor.Logging
 {
 	public class LogAddedEventArgs(LogLine log) : EventArgs
 	{
@@ -13,7 +15,7 @@
 
 	public class Logger : ILogger
 	{
-		public readonly List<LogLine> Logs = [];
+		public readonly ObservableCollection<LogLine> Logs = [];
 		public LogLevel Level = LogLevel.Info;
 
 		public event EventHandler<LogAddedEventArgs>? LogAdded;

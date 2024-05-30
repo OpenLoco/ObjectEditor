@@ -15,7 +15,7 @@ using OpenLoco.ObjectEditor.Objects;
 using System.Threading;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor;
-using OpenLoco.ObjectEditor.Types;
+using System.Collections.ObjectModel;
 
 namespace AvaGui.Models
 {
@@ -53,8 +53,11 @@ namespace AvaGui.Models
 		string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 		string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
+		public ObservableCollection<LogLine> LoggerObservableLogs => ((Logger)logger).Logs;
+
 		public ObjectEditorModel()
 		{
+			logger = new Logger();
 			LoadSettings(SettingsFile, logger);
 		}
 
@@ -270,7 +273,7 @@ namespace AvaGui.Models
 		public async Task LoadObjDirectoryAsync(string directory, IProgress<float>? progress, bool useExistingIndex)
 		{
 			await Task.Run(() => LoadObjDirectory(directory, progress, useExistingIndex));
-			await Task.Run(() => SaveSettings());
+			await Task.Run(SaveSettings);
 		}
 
 		public void LoadObjDirectory(string directory)

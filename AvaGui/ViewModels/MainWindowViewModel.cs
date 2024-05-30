@@ -10,19 +10,21 @@ using System.Linq;
 using System.Windows.Input;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
+using System.Reactive.Linq;
+using System.Diagnostics;
 
 namespace AvaGui.ViewModels
 {
 	public class MenuItemModel : ReactiveObject
 	{
-		public MenuItemModel(string name, ICommand command)
+		public MenuItemModel(string name, ICommand menuCommand)
 		{
 			Name = name;
-			Command = command;
+			MenuCommand = menuCommand;
 		}
 
 		[Reactive] public string Name { get; set; }
-		[Reactive] public ICommand Command { get; set; }
+		[Reactive] public ICommand MenuCommand { get; set; }
 	}
 
 	public class MainWindowViewModel : ViewModelBase
@@ -33,9 +35,9 @@ namespace AvaGui.ViewModels
 
 		public ObjectEditorViewModel ObjectEditorViewModel { get; }
 
-		public ObservableCollection<MenuItemModel> ObjDataItems { get; set; }
+		[Reactive] public ObservableCollection<MenuItemModel> ObjDataItems { get; set; }
 
-		public ObservableCollection<MenuItemModel> DataItems { get; set; }
+		[Reactive] public ObservableCollection<MenuItemModel> DataItems { get; set; }
 
 		public MainWindowViewModel()
 		{
@@ -52,14 +54,21 @@ namespace AvaGui.ViewModels
 					x,
 					ReactiveCommand.Create<string>(Model.LoadObjDirectory))));
 
-			DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
-				.Select(x => new MenuItemModel(
-					x,
-					ReactiveCommand.Create<string, bool>(Model.LoadDataDirectory))));
+			//DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
+			//	.Select(x => new MenuItemModel(
+			//		x,
+			//		ReactiveCommand.Create<string, bool>(Model.LoadDataDirectory))));
 
-			//GenerateDataMenu = ReactiveCommand.CreateFromTask(...);
+			RecreateIndex = ReactiveCommand.Create<string>((x) =>
+			{
+				Debug.WriteLine($"RecreateIndex {x} command was run.");
+				Model.LoadObjDirectory(Model.Settings.ObjDataDirectory);
+			});
+
+			LoadPalette = ReactiveCommand.Create(() => Debug.WriteLine("LoadPalette command was run."));
+
 			//LoadPalette = ReactiveCommand.CreateFromTask(...); // nothing for now
-			RecreateIndex = ReactiveCommand.CreateFromTask(async () => await Model.LoadObjDirectoryAsync(Model.Settings.ObjDataDirectory, null, false));
+			//RecreateIndex = ReactiveCommand.CreateFromTask(async () => await Model.LoadObjDirectoryAsync(Model.Settings.ObjDataDirectory, null, false));
 		}
 
 		//public ReactiveCommand<Unit, Unit> ToggleThemeCommand { get; }
@@ -67,7 +76,7 @@ namespace AvaGui.ViewModels
 		//public ReactiveCommand<Unit, Unit> GenerateDataMenu { get; }
 
 		public ReactiveCommand<Unit, Unit> LoadPalette { get; }
-		public ReactiveCommand<Unit, Unit> RecreateIndex { get; }
+		public ReactiveCommand<string, Unit> RecreateIndex { get; }
 
 		public bool IsDarkTheme
 		{

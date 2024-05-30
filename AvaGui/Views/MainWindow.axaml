@@ -65,19 +65,19 @@
 					<MenuItem Header="ObjData Directories" ItemsSource="{Binding ObjDataItems}">
 						<MenuItem.ItemTemplate>
 							<DataTemplate>
-								<MenuItem Header="{Binding Name}" Command="{Binding Command}" IsEnabled="True" VerticalAlignment="Center"/>
+								<MenuItem Header="{Binding Name}" IsEnabled="True" Focusable="True" VerticalAlignment="Center"/>
 							</DataTemplate>
 						</MenuItem.ItemTemplate>
 					</MenuItem>
 					<MenuItem Header="Data Directories" ItemsSource="{Binding DataItems}">
 						<MenuItem.ItemTemplate>
 							<DataTemplate>
-								<MenuItem Header="{Binding Name}" Command="{Binding Command}" CommandParameter="{Binding Name}" VerticalAlignment="Center"/>
+								<MenuItem Header="{Binding Name}" Command="{Binding MenuCommand}" CommandParameter="{Binding Name}" VerticalAlignment="Center"/>
 							</DataTemplate>
 						</MenuItem.ItemTemplate>
 					</MenuItem>
-					<!--<MenuItem Header="Recreate Index" Command="RecreateIndex"/>
-					<MenuItem Header="Load Palette" Command="LoadPalette"/>-->
+					<MenuItem Header="Recreate Index" Command="{Binding RecreateIndex}" />
+					<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" CommandParameter="axaml" />
 				</MenuItem>
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />

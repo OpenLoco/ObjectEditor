@@ -1,5 +1,6 @@
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace AvaGui.Models
@@ -9,7 +10,7 @@ namespace AvaGui.Models
 	{
 		public G1Dat G1 { get; set; }
 
-		public BindingList<G1Element32> G1Elements
+		public List<G1Element32> G1Elements
 		{
 			get => G1.G1Elements;
 			set

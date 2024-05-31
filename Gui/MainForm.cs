@@ -15,7 +15,6 @@ using SixLabors.ImageSharp.PixelFormats;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Diagnostics;
-using System.ComponentModel;
 
 namespace OpenLoco.ObjectEditor.Gui
 {

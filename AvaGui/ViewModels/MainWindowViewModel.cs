@@ -15,6 +15,11 @@ using System.Diagnostics;
 using OpenLoco.ObjectEditor;
 using SixLabors.ImageSharp.PixelFormats;
 using OpenLoco.ObjectEditor.Logging;
+using System.IO;
+using Avalonia.Platform;
+using Avalonia.Media.Imaging;
+using SixLabors.ImageSharp;
+using SkiaSharp;
 
 namespace AvaGui.ViewModels
 {
@@ -46,7 +51,12 @@ namespace AvaGui.ViewModels
 
 		public MainWindowViewModel()
 		{
+			var paletteUri = new Uri("avares://AvaGui/Assets/palette.png");
+			var palette = Image.Load<Rgb24>(AssetLoader.Open(paletteUri));
+
 			Model = new();
+			Model.PaletteMap = new PaletteMap(palette);
+
 			FolderTreeViewModel = new FolderTreeViewModel(Model);
 			ObjectEditorViewModel = new ObjectEditorViewModel(Model);
 

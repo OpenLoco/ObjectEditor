@@ -171,7 +171,20 @@
 							<!--<pgc:PropertyGrid x:Name="propertyGrid_2" Margin="2" DataContext="{Binding CurrentObject.LocoObject.StringTable.Table}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
 						</TabItem>
 						<TabItem Header="Image Table">
-							<pgc:PropertyGrid x:Name="propertyGrid_3" Margin="2" DataContext="{Binding CurrentObject.LocoObject.G1Elements}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+							<ItemsControl ItemsSource="{Binding ImageTableViewModel.Images, Mode=OneWay}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel />
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Border BorderThickness="1" Background="Blue">
+											<Image Source="{Binding}" Stretch="None" />
+										</Border>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
 						</TabItem>
 					</TabControl>
 				</StackPanel>

@@ -9,7 +9,6 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 	{
 		ILocoStruct Object { get; set; }
 		StringTable StringTable { get; set; }
-		[TypeConverter(typeof(TypeListConverter))]
-		BindingList<G1Element32> G1Elements { get; set; }
+		List<G1Element32> G1Elements { get; set; }
 	}
 }

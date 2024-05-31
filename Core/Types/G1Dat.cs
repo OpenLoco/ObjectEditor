@@ -7,7 +7,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record G1Dat(
 		G1Header G1Header,
-		BindingList<G1Element32> G1Elements) : ILocoImageTableNames
+		List<G1Element32> G1Elements) : ILocoImageTableNames
 	{
 		public bool IsSteamG1
 			=> G1Elements.Count == 3896;

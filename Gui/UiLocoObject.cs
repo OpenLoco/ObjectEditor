@@ -10,17 +10,15 @@ namespace OpenLoco.ObjectEditor.Gui
 
 	public interface IUiObjectWithGraphics
 	{
-		public BindingList<G1Element32> G1Elements { get; set; }
+		public List<G1Element32> G1Elements { get; set; }
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record UiLocoObject(DatFileInfo DatFileInfo, ILocoObject? LocoObject) : IUiObject, IUiObjectWithGraphics
 	{
-		public DatFileInfo DatFileInfo { get; set; }
-		public ILocoObject LocoObject { get; set; }
-		public BindingList<G1Element32> G1Elements
+		public List<G1Element32> G1Elements
 		{
-			get => LocoObject.G1Elements;
+			get => LocoObject?.G1Elements ?? Enumerable.Empty<G1Element32>().ToList();
 			set => LocoObject.G1Elements = value;
 		}
 	}
@@ -41,16 +39,13 @@ namespace OpenLoco.ObjectEditor.Gui
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record UiSoundObjectList(string FileName) : IUiObject
 	{
-		public string FileName { get; set; }
-		public BindingList<UiSoundObject> Audio { get; set; } = [];
+		public List<UiSoundObject> Audio { get; set; } = [];
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public record UiG1(G1Dat G1) : IUiObject, IUiObjectWithGraphics
 	{
-		public G1Dat G1 { get; set; }
-
-		public BindingList<G1Element32> G1Elements
+		public List<G1Element32> G1Elements
 		{
 			get => G1.G1Elements;
 			set

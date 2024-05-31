@@ -256,7 +256,7 @@ namespace OpenLoco.ObjectEditor.Objects
 
 			// driving/start sounds
 			StartSounds.Clear();
-			var mask = 127;
+			const int mask = 127;
 			var count = NumStartSounds & mask;
 			for (var i = 0; i < count; ++i)
 			{
@@ -452,7 +452,6 @@ namespace OpenLoco.ObjectEditor.Objects
 						var numSteepFrames = bogieSprite.NumRollSprites * 64;
 						offset += numSteepFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
 						bogieSprite.ImageIds[BogieSpriteSlopeType.Steep] = Enumerable.Range(curr, offset - curr).ToList();
-
 					}
 				}
 

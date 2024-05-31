@@ -14,7 +14,7 @@ namespace OpenLoco.ObjectEditor.Gui
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiLocoObject : IUiObject, IUiObjectWithGraphics
+	public record UiLocoObject(DatFileInfo DatFileInfo, ILocoObject? LocoObject) : IUiObject, IUiObjectWithGraphics
 	{
 		public DatFileInfo DatFileInfo { get; set; }
 		public ILocoObject LocoObject { get; set; }
@@ -26,22 +26,27 @@ namespace OpenLoco.ObjectEditor.Gui
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiSoundObject
+	public record UiSoundObject(string SoundName)
 	{
-		public string SoundName { get; set; }
+		public UiSoundObject(string soundName, RiffWavHeader header, byte[] data) : this(soundName)
+		{
+			Header = header;
+			Data = data;
+		}
+
 		public RiffWavHeader Header { get; set; }
 		public byte[] Data { get; set; }
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiSoundObjectList : IUiObject
+	public record UiSoundObjectList(string FileName) : IUiObject
 	{
 		public string FileName { get; set; }
 		public BindingList<UiSoundObject> Audio { get; set; } = [];
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiG1 : IUiObject, IUiObjectWithGraphics
+	public record UiG1(G1Dat G1) : IUiObject, IUiObjectWithGraphics
 	{
 		public G1Dat G1 { get; set; }
 

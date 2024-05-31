@@ -22,7 +22,9 @@ namespace OpenLoco.ObjectEditor.Gui
 	public partial class MainForm : Form
 	{
 		readonly MainFormModel model;
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
 		readonly ILogger logger;
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
 
 		public IUiObject? CurrentUIObject
 		{
@@ -83,13 +85,13 @@ namespace OpenLoco.ObjectEditor.Gui
 		const string ApplicationName = "OpenLoco Object Editor";
 
 		const string GithubApplicationName = "ObjectEditor";
-		const string GithubLatestReleaseDownloadPage = @"https://github.com/OpenLoco/ObjectEditor/releases";
-		const string GithubLatestReleaseAPI = @"https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
+		const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
+		const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 
-		string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
-		string SettingsFile => Path.Combine(SettingsPath, "settings.json");
+		static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
+		static string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
-		Version ApplicationVersion;
+		readonly Version ApplicationVersion;
 
 		public MainForm()
 		{
@@ -101,7 +103,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			};
 
 			var assembly = Assembly.GetExecutingAssembly();
-			var paletteFilename = "Gui.palette.png";
+			const string paletteFilename = "Gui.palette.png";
 			using (var stream = assembly.GetManifestResourceStream(paletteFilename))
 			{
 				//var paletteBitmap = (Bitmap)Image.FromStream(stream!);
@@ -114,7 +116,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 
 			// grab current appl version from assembly
-			var versionFilename = "Gui.version.txt";
+			const string versionFilename = "Gui.version.txt";
 			using (var stream = assembly.GetManifestResourceStream(versionFilename))
 			{
 				var buf = new byte[5];
@@ -146,27 +148,17 @@ namespace OpenLoco.ObjectEditor.Gui
 			{
 				var jsonResponse = response.Content.ReadAsStringAsync().Result;
 				var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
-				var tagName = body?.tag_name;
-				var version = Version.Parse(tagName);
-				return version;
+				var tagName = body?.TagName;
+				if (tagName != null)
+				{
+					return Version.Parse(tagName);
+				}
 			}
+
+#pragma warning disable CA2201 // Do not raise reserved exception types
 			throw new Exception("Unable to get latest version");
+#pragma warning restore CA2201 // Do not raise reserved exception types
 		}
-		//async Task<Version> GetLatestVersionAsync()
-		//{
-		//	var client = new HttpClient();
-		//	client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("ObjectEditor", ApplicationVersion.ToString()));
-		//	var response = await client.GetAsync("https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest");
-		//	if (response.IsSuccessStatusCode)
-		//	{
-		//		var jsonResponse = await response.Content.ReadAsStringAsync();
-		//		var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
-		//		var tagName = body?.tag_name;
-		//		var version = Version.Parse(tagName);
-		//		return version;
-		//	}
-		//	throw new Exception("Unable to get latest version");
-		//}
 
 		void MainForm_Load(object sender, EventArgs e)
 		{
@@ -353,7 +345,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			// sound effects
 			//foreach (var sfx in model.SoundEffects)
 			{
-				var displayName = OriginalDataFiles.SoundEffect;
+				const string displayName = OriginalDataFiles.SoundEffect;
 				_ = sfxNode.Nodes.Add(displayName, displayName, 1, 1);
 			}
 
@@ -526,7 +518,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		{
 			try
 			{
-				//LoadDataDumpCore(path, isG1);
+				LoadDataDumpCore(path, isG1);
 			}
 			catch (Exception ex)
 			{
@@ -536,7 +528,6 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		void LoadDataDumpCore(string path, bool isG1 = false)
 		{
-
 			if (File.Exists(path))
 			{
 				var byteList = File.ReadAllBytes(path);
@@ -605,29 +596,29 @@ namespace OpenLoco.ObjectEditor.Gui
 		void LoadAndPlaySound(byte[] data, string soundName)
 		{
 			var (header, pcmData) = SawyerStreamReader.LoadWavFile(data);
-			var uiSoundObj = new UiSoundObject { Data = pcmData, Header = header, SoundName = soundName };
-			var uiSoundObjectList = new UiSoundObjectList();
+			var uiSoundObj = new UiSoundObject(soundName, header, pcmData);
+			var uiSoundObjectList = new UiSoundObjectList(soundName);
 			uiSoundObjectList.Audio.Add(uiSoundObj);
 			CurrentUIObject = uiSoundObjectList;
 
 			if (!header.Validate())
 			{
 				// invalid file
-				logger?.Warning($"Invalid music track");
+				logger?.Warning("Invalid music track");
 				return;
 			}
 		}
 
-		void LoadSoundEffectFile(byte[] data)
+		void LoadSoundEffectFile(byte[] data, string soundName)
 		{
 			var sfxs = SawyerStreamReader.LoadSoundEffectsFromCSS(data);
 
 			var i = 0;
-			var uiSoundObjectList = new UiSoundObjectList();
+			var uiSoundObjectList = new UiSoundObjectList(soundName);
 
 			foreach (var (header, pcmData) in sfxs)
 			{
-				var uiSoundObj = new UiSoundObject { Data = pcmData, Header = SawyerStreamWriter.WaveFormatExToRiff(header, pcmData.Length), SoundName = Enum.GetValues<SoundId>().ToList()[i++].ToString() };
+				var uiSoundObj = new UiSoundObject(Enum.GetValues<SoundId>().ToList()[i++].ToString(), SawyerStreamWriter.WaveFormatExToRiff(header, pcmData.Length), pcmData);
 				uiSoundObjectList.Audio.Add(uiSoundObj);
 			}
 
@@ -664,6 +655,7 @@ namespace OpenLoco.ObjectEditor.Gui
 					if (currentUIObject is UiSoundObjectList uiSoundObjList)
 					{
 						var soundObj = uiSoundObjList.Audio.Single(s => s.SoundName == soundNameToUpdate);
+						//soundObj = new UiSoundObject(soundNameToUpdate, header, pcmData);
 						soundObj.Header = header;
 						soundObj.Data = pcmData;
 						RefreshObjectUI();
@@ -674,10 +666,10 @@ namespace OpenLoco.ObjectEditor.Gui
 					{
 						logger.Info($"Replacing music track {soundNameToUpdate} with {openFileDialog.FileName}");
 					}
-					else
-					{
-						logger.Warning($"Sound name {soundNameToUpdate} was not recognised - no action will be taken.");
-					}
+					//else // commenting out because this falsely triggers for cs1.dat for sound effect names
+					//{
+					//	logger.Warning($"Sound name {soundNameToUpdate} was not recognised - no action will be taken.");
+					//}
 				}
 			}
 		}
@@ -715,7 +707,6 @@ namespace OpenLoco.ObjectEditor.Gui
 						currentUIObjectImages = CreateImages(uiObjHasGraphics.G1Elements, model.PaletteMap).ToList();
 						RefreshImageControls();
 					}
-
 				}
 			}
 		}
@@ -750,7 +741,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			ILocoImageTableNames? its = null;
 			var objectName = string.Empty;
 
-			if (uiObj is UiLocoObject uiLocoObj && uiLocoObj.LocoObject != null && uiLocoObj.LocoObject.Object is ILocoImageTableNames itss)
+			if (uiObj is UiLocoObject uiLocoObj && uiLocoObj?.LocoObject != null && uiLocoObj.LocoObject.Object is ILocoImageTableNames itss)
 			{
 				its = itss;
 				objectName = uiLocoObj.DatFileInfo.S5Header.Name;
@@ -770,7 +761,6 @@ namespace OpenLoco.ObjectEditor.Gui
 				}
 
 				return $"{counter}-{value}";
-
 			}
 
 			return $"{counter}-image";
@@ -794,7 +784,6 @@ namespace OpenLoco.ObjectEditor.Gui
 				{
 					SawyerStreamWriter.ExportMusicAsWave(sfDialog.FileName, uiSoundObj.Header, uiSoundObj.Data);
 					logger.Info($"Saved music to {sfDialog.FileName}");
-
 				}
 			}
 		}
@@ -967,7 +956,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		void LoadG1(string filename)
 		{
-			CurrentUIObject = new UiG1 { G1 = model.G1 };
+			CurrentUIObject = new UiG1(model.G1);
 			LoadDataDump(filename, true);
 		}
 
@@ -1003,7 +992,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			{
 				logger.Debug($"Loading sound effects for {e.Node.Name}");
 				var sfx = model.SoundEffects[e.Node.Name];
-				LoadSoundEffectFile(sfx);
+				LoadSoundEffectFile(sfx, e.Node.Text);
 			}
 			else if (Path.GetExtension(e.Node.Name).Equals(".dat", StringComparison.OrdinalIgnoreCase))
 			{
@@ -1054,7 +1043,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 			var uiObjHasGraphics = CurrentUIObject as IUiObjectWithGraphics;
 
-			int counter = 0;
+			var counter = 0;
 			foreach (var img in images)
 			{
 				var ele = uiObjHasGraphics.G1Elements[counter++];
@@ -1260,7 +1249,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 						var hdr = soundObject.SoundObjectData.PcmHeader;
 						var text = uiLocoObj.LocoObject.StringTable.Table["Name"][LanguageId.English_UK] ?? "<null>";
-						var pn = CreateSoundUI(new UiSoundObject { Data = soundObject.PcmData, Header = SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), SoundName = text });
+						var pn = CreateSoundUI(new UiSoundObject(text, SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), soundObject.PcmData));
 						flpImageTable.Controls.Add(pn);
 					}
 
@@ -1331,7 +1320,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		}
 
 		void btnPageLast_Click(object sender, EventArgs e)
-			=> CurrentUIImagePageNumber = (CurrentUIImages.Count / ImagesPerPage);
+			=> CurrentUIImagePageNumber = CurrentUIImages.Count / ImagesPerPage;
 
 		void dataDumpAnnotations_AfterSelect(object sender, TreeViewEventArgs e)
 		{
@@ -1442,7 +1431,7 @@ namespace OpenLoco.ObjectEditor.Gui
 				var validation = obji.LocoObject.Object.Validate();
 				if (!validation)
 				{
-					logger.Error($"Object failed validation checks; cannot save");
+					logger.Error("Object failed validation checks; cannot save");
 					return;
 				}
 			}
@@ -1466,7 +1455,7 @@ namespace OpenLoco.ObjectEditor.Gui
 					{
 						if (tvObjType.SelectedNode.Name == "css1.dat")
 						{
-							var rawBytes = SawyerStreamWriter.SaveSoundEffectsToCSS(uiSoundObjList.Audio.Select(uis => (uis.Header, uis.Data)).ToList());
+							var rawBytes = SawyerStreamWriter.SaveSoundEffectsToCSS(uiSoundObjList.Audio.ConvertAll(uis => (uis.Header, uis.Data)));
 							File.WriteAllBytes(filename, rawBytes);
 						}
 						else
@@ -1502,10 +1491,5 @@ namespace OpenLoco.ObjectEditor.Gui
 				ImageScale = scale;
 			}
 		}
-	}
-
-	public class VersionCheckBody
-	{
-		public string tag_name { get; set; }
 	}
 }

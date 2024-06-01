@@ -20,19 +20,21 @@ namespace AvaGui.ViewModels
 		{
 			Model = model;
 
-			_ = this.WhenAnyValue(o => o.CurrentDirectory)
+			_ = this.WhenAnyValue(o => o.Model.Settings.ObjDataDirectory)
 				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
-
-			_ = this.WhenAnyValue(o => o.CurrentDirectory)
+			_ = this.WhenAnyValue(o => o.Model.Settings.ObjDataDirectory)
 				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
+
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
 				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
 				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
 
-			CurrentDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
+			//CurrentDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
 		}
+
+		public string CurrentDirectory => Model.Settings.ObjDataDirectory;
 
 		[Reactive] public string FilenameFilter { get; set; }
 
@@ -55,10 +57,11 @@ namespace AvaGui.ViewModels
 				yield break;
 			}
 
-			Model.LoadObjDirectory(CurrentDirectory, null, false);
+			Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false);
 
 			var groupedObjects = Model.ObjectCache
 				.Where(o => string.IsNullOrEmpty(FilenameFilter) || o.Value.DatFileInfo.S5Header.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase))
+				.Where(o => !DisplayVanillaOnly || o.Value.DatFileInfo.S5Header.SourceGame == SourceGame.Vanilla)
 				.GroupBy(o => o.Value.DatFileInfo.S5Header.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 
@@ -75,6 +78,7 @@ namespace AvaGui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim(), o.Value.DatFileInfo.S5Header.SourceGame)));
+
 						subNodes.Add(new FileSystemVehicleGroup(
 							string.Empty,
 							vg.Key,
@@ -84,12 +88,8 @@ namespace AvaGui.ViewModels
 				}
 				else
 				{
-					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim(), o.Value.DatFileInfo.S5Header.SourceGame)));
-				}
-
-				if (DisplayVanillaOnly)
-				{
-					subNodes = new ObservableCollection<FileSystemItemBase>(subNodes.Where(o => o is FileSystemItem item && item.SourceGame == SourceGame.Vanilla));
+					subNodes = new ObservableCollection<FileSystemItemBase>(
+						objGroup.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim(), o.Value.DatFileInfo.S5Header.SourceGame)));
 				}
 
 				yield return new FileSystemItemGroup(
@@ -100,13 +100,13 @@ namespace AvaGui.ViewModels
 			}
 		}
 
-		[Reactive] public string CurrentDirectory { get; set; }
+		//[Reactive] public string CurrentDirectory { get; set; }
 
 		public ObservableCollection<FileSystemItemBase> DirectoryItems
-			=> LoadDirectory(CurrentDirectory);
+			=> LoadDirectory(Model.Settings.ObjDataDirectory);
 
 		public string DirectoryFileCount
-			=> $"Files in dir: {new DirectoryInfo(CurrentDirectory).GetFiles().Length}";
+			=> $"Files in dir: {new DirectoryInfo(Model.Settings.ObjDataDirectory).GetFiles().Length}";
 
 		[Reactive] public FileSystemItemBase CurrentlySelectedObject { get; set; }
 

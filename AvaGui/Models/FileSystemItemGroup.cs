@@ -11,7 +11,7 @@ namespace AvaGui.Models
 			=> $"{Name}{(SubNodes == null ? string.Empty : $" ({SubNodes.Count})")}"; // nested interpolated string...what have i become
 	}
 
-	public record FileSystemItem(string Path, string Name, SourceGame SourceGame) : FileSystemItemBase(Path, Name, null, new PixelRect(((int)SourceGame * 16), 0, 16, 16));
+	public record FileSystemItem(string Path, string Name, SourceGame SourceGame) : FileSystemItemBase(Path, Name, null, new PixelRect((int)SourceGame * 16, 0, 16, 16));
 
 	public record FileSystemItemGroup(string Path, ObjectType ObjectType, ObservableCollection<FileSystemItemBase> SubNodes, int SpriteOffsetIndex)
 		: FileSystemItemBase(Path, ObjectType.ToString(), SubNodes, new PixelRect(32 * SpriteOffsetIndex, 0, 32, 32));

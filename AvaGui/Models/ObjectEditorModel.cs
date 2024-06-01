@@ -219,7 +219,7 @@ namespace AvaGui.Models
 		{
 			if (obj == null)
 			{
-				logger?.Error($"Cannot save an object with a null loco object - the file would be empty!");
+				logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
 				return;
 			}
 

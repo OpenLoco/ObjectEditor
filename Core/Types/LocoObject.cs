@@ -17,7 +17,7 @@ namespace OpenLoco.ObjectEditor.Types
 		{
 			Object = obj;
 			StringTable = stringTable;
-			G1Elements = null;
+			G1Elements = [];
 		}
 
 		public ILocoStruct Object { get; set; }

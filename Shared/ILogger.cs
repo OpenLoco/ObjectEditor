@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace OpenLoco.ObjectEditor.Logging
 {
@@ -6,6 +6,8 @@ namespace OpenLoco.ObjectEditor.Logging
 
 	public interface ILogger
 	{
+		public event EventHandler<LogAddedEventArgs>? LogAdded;
+
 		// should be 'private'
 		void Log(LogLevel level, string message, string callerMemberName);
 

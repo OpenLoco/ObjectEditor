@@ -91,14 +91,33 @@ namespace OpenLoco.ObjectEditor.Gui
 		static string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
 		readonly Version ApplicationVersion;
+		StreamWriter logToFile;
 
 		public MainForm()
 		{
 			InitializeComponent();
 
+			var startupTime = DateTime.Now.ToString("yyyy-dd-mm_hh-mm-ss");
+			var file = File.Create($"object-editor-{startupTime}.txt");
+			logToFile = new StreamWriter(file);
+			this.FormClosed += (_, _) =>
+			{
+				logToFile.Close();
+				file.Close();
+
+				logToFile.Dispose();
+				file.Dispose();
+			};
+
 			logger = new Logger
 			{
 				Level = LogLevel.Debug2
+			};
+
+			logger.LogAdded += (object sender, LogAddedEventArgs log) =>
+			{
+				logToFile.WriteLine(log.Log);
+				logToFile.Flush();
 			};
 
 			var assembly = Assembly.GetExecutingAssembly();
@@ -1099,16 +1118,9 @@ namespace OpenLoco.ObjectEditor.Gui
 					continue;
 				}
 
-				if (currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette))
-				{
-					var bmp = G1RGBToBitmap(currElement);
-					yield return bmp;
-				}
-				else
-				{
-					var bmp = G1IndexedToBitmap(currElement, paletteMap, useTransparency);
-					yield return bmp;
-				}
+				yield return currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette)
+					? G1RGBToBitmap(currElement)
+					: G1IndexedToBitmap(currElement, paletteMap, useTransparency);
 			}
 		}
 

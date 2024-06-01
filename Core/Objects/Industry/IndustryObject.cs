@@ -157,10 +157,7 @@ namespace Core.Objects
 			for (var i = 0; i < var_1F; ++i)
 			{
 				var ptr_1F = 0;
-				while (remainingData[++ptr_1F] != 0xFF)
-				{
-					;
-				}
+				while (remainingData[++ptr_1F] != 0xFF) ;
 
 				BuildingParts.Add(remainingData[..ptr_1F].ToArray());
 				ptr_1F++;
@@ -278,10 +275,16 @@ namespace Core.Objects
 				}
 
 				// wall type
-				ms.Write(BuildingWall.Write());
+				if (BuildingWall != null)
+				{
+					ms.Write(BuildingWall.Write());
+				}
 
 				// wall type entrance
-				ms.Write(BuildingWallEntrance.Write());
+				if (BuildingWallEntrance != null)
+				{
+					ms.Write(BuildingWallEntrance.Write());
+				}
 
 				return ms.ToArray();
 			}

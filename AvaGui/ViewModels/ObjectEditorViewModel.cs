@@ -19,16 +19,11 @@ namespace AvaGui.ViewModels
 		ObjectEditorModel Model { get; }
 
 		public UiLocoFile _currentObject;
-		public UiLocoFile CurrentObject
+		public UiLocoFile? CurrentObject
 		{
-			get
-			{
-				if (CurrentlySelectedObject == null || !Model.ObjectCache.ContainsKey(CurrentlySelectedObject.Path))
-				{
-					return null;
-				}
-				return Model.ObjectCache[CurrentlySelectedObject.Path];
-			}
+			get => CurrentlySelectedObject == null || !Model.ObjectCache.TryGetValue(CurrentlySelectedObject.Path, out var value)
+				? null
+				: value;
 			set => Model.ObjectCache[CurrentlySelectedObject.Path] = value;
 		}
 
@@ -39,7 +34,7 @@ namespace AvaGui.ViewModels
 		{
 			get
 			{
-				if (CurrentlySelectedObject == null || CurrentlySelectedObject is not FileSystemItem)
+				if (CurrentlySelectedObject is null or not FileSystemItem)
 				{
 					return new(null, null);
 				}
@@ -144,23 +139,23 @@ namespace AvaGui.ViewModels
 			//StringTableViewModel = new(new OpenLoco.ObjectEditor.Types.StringTable());
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedObject)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentlySelectedUiObjectDatInfo)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentlySelectedUiObjectDatInfo)));
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedObject)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentObjectViewModel)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentObjectViewModel)));
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedObject)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(CurrentObject)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentObject)));
 			_ = this.WhenAnyValue(o => o.CurrentObject)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(Strings)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Strings)));
 			_ = this.WhenAnyValue(o => o.CurrentObject)
 				.Subscribe(_ => SelectedObjectChanged());
 			//_ = this.WhenAnyValue(o => o.CurrentObject)
 			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageTableViewModel)));
 			_ = this.WhenAnyValue(o => o.Strings)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(TranslationTable)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(TranslationTable)));
 			_ = this.WhenAnyValue(o => o.SelectedString)
 				.Subscribe(_ => SelectedStringChanged());
 			_ = this.WhenAnyValue(o => o.SelectedString)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(TranslationTable)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(TranslationTable)));
 		}
 	}
 }

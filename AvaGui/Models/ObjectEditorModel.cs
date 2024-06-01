@@ -119,7 +119,7 @@ namespace AvaGui.Models
 			var text = JsonSerializer.Serialize(Settings, options);
 
 			var parentDir = Path.GetDirectoryName(SettingsFilePath);
-			if (!Directory.Exists(parentDir))
+			if (parentDir != null && !Directory.Exists(parentDir))
 			{
 				_ = Directory.CreateDirectory(parentDir);
 			}

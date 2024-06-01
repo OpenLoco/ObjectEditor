@@ -12,18 +12,13 @@ using Avalonia.Platform;
 
 namespace AvaGui.ViewModels
 {
-	public class ImageTableViewModel : ReactiveObject
+	public class ImageTableViewModel(ILocoObject parent, PaletteMap paletteMap) : ReactiveObject
 	{
-		public ImageTableViewModel(ILocoObject parent, PaletteMap paletteMap)
-		{
-			Parent = parent;
-			PaletteMap = paletteMap;
-		}
-		ILocoObject Parent;
+		ILocoObject Parent = parent;
 
-		[Reactive] public PaletteMap PaletteMap { get; set; }
+		[Reactive] public PaletteMap PaletteMap { get; set; } = paletteMap;
 
-		public Bitmap FirstImage { get => Images.FirstOrDefault(); }
+		public Bitmap FirstImage => Images.FirstOrDefault();
 
 		public IEnumerable<Bitmap> Images
 		{

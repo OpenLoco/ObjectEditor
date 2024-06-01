@@ -7,7 +7,6 @@ using OpenLoco.ObjectEditor.Data;
 using Core.Objects;
 using Core.Objects.Sound;
 using Zenith.Core;
-using System.ComponentModel;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {
@@ -73,7 +72,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
 			remainingData = remainingData[ObjectHeader.StructLength..];
 
-			var decodedData = new byte[0];
+			byte[] decodedData;
 			try
 			{
 				decodedData = Decode(objectHeader.Encoding, remainingData.ToArray());
@@ -202,7 +201,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 
 			if (data.Length == 0 || stringNames.Length == 0)
 			{
-				logger?.Warning($"No data for language table");
+				logger?.Warning("No data for language table");
 				return (stringTable, 0);
 			}
 

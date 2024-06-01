@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using ReactiveUI;
 
 namespace AvaGui2.Views;
 

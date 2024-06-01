@@ -21,15 +21,15 @@ namespace AvaGui.ViewModels
 			Model = model;
 
 			_ = this.WhenAnyValue(o => o.Model.Settings.ObjDataDirectory)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
 			_ = this.WhenAnyValue(o => o.Model.Settings.ObjDataDirectory)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
 
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
-				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
-				.Subscribe(o => this.RaisePropertyChanged(nameof(DirectoryItems)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
 
 			//CurrentDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
 		}
@@ -109,6 +109,5 @@ namespace AvaGui.ViewModels
 			=> $"Files in dir: {new DirectoryInfo(Model.Settings.ObjDataDirectory).GetFiles().Length}";
 
 		[Reactive] public FileSystemItemBase CurrentlySelectedObject { get; set; }
-
 	}
 }

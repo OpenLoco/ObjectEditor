@@ -5,34 +5,23 @@ using AvaGui.Models;
 using ReactiveUI;
 using System;
 using System.Reactive;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
-using System.Diagnostics;
 using OpenLoco.ObjectEditor;
 using SixLabors.ImageSharp.PixelFormats;
 using OpenLoco.ObjectEditor.Logging;
-using System.IO;
 using Avalonia.Platform;
-using Avalonia.Media.Imaging;
 using SixLabors.ImageSharp;
-using SkiaSharp;
 
 namespace AvaGui.ViewModels
 {
-	public class MenuItemModel : ReactiveObject
+	public class MenuItemModel(string name, ICommand menuCommand) : ReactiveObject
 	{
-		public MenuItemModel(string name, ICommand menuCommand)
-		{
-			Name = name;
-			MenuCommand = menuCommand;
-		}
-
-		[Reactive] public string Name { get; set; }
-		[Reactive] public ICommand MenuCommand { get; set; }
+		[Reactive] public string Name { get; set; } = name;
+		[Reactive] public ICommand MenuCommand { get; set; } = menuCommand;
 	}
 
 	public class MainWindowViewModel : ViewModelBase

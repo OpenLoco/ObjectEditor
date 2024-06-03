@@ -1,5 +1,6 @@
 using OpenLoco.ObjectEditor.Data;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,26 +10,9 @@ namespace AvaGui3.ViewModels
 {
 	public class MainWindowViewModel : ViewModelBase
 	{
-		private string? _selectedString;
-		public string? SelectedString
-		{
-			get => _selectedString;
-			set => _ = this.RaiseAndSetIfChanged(ref _selectedString, value);
-		}
-
-		ObservableCollection<string> _strings;
-		public ObservableCollection<string> Strings
-		{
-			get => _strings;
-			set => this.RaiseAndSetIfChanged(ref _strings, value);
-		}
-
-		ObservableCollection<LanguageTranslation> _translationTable;
-		public ObservableCollection<LanguageTranslation> TranslationTable
-		{
-			get => _translationTable;
-			set => this.RaiseAndSetIfChanged(ref _translationTable, value);
-		}
+		[Reactive] public string? SelectedString { get; set; }
+		[Reactive] public ObservableCollection<string> Strings { get; set; }
+		[Reactive] public ObservableCollection<LanguageTranslation> TranslationTable { get; set; }
 
 		public void SelectedStringChanged()
 		{

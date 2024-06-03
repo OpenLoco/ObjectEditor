@@ -191,15 +191,15 @@ namespace Core.Objects
 			if (remainingData[0] != 0xFF)
 			{
 				BuildingWall = S5Header.Read(remainingData[..S5Header.StructLength]);
-				remainingData = remainingData[S5Header.StructLength..];
 			}
+			remainingData = remainingData[S5Header.StructLength..]; // there's always a struct, its just whether its zeroed out or not
 
 			// wall type entrance
 			if (remainingData[0] != 0xFF)
 			{
 				BuildingWallEntrance = S5Header.Read(remainingData[..S5Header.StructLength]);
-				remainingData = remainingData[S5Header.StructLength..];
 			}
+			remainingData = remainingData[S5Header.StructLength..]; // there's always a struct, its just whether its zeroed out or not
 
 			// image stuff, in openloco it happens after image table load, but only to get image offsets, which we can just set to 0 here
 			var_0E = 0;

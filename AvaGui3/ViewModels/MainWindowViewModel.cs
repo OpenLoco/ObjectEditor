@@ -29,13 +29,11 @@ namespace AvaGui3.ViewModels
 			}
 		}
 
-		Dictionary<string, Dictionary<LanguageId, string>> _table1;
-		Dictionary<string, Dictionary<LanguageId, string>> _table2;
 		Dictionary<string, Dictionary<LanguageId, string>> Table;
 
 		public MainWindowViewModel()
 		{
-			_table1 = new Dictionary<string, Dictionary<LanguageId, string>>
+			Table = new Dictionary<string, Dictionary<LanguageId, string>>
 			{
 				{
 					"Name",
@@ -56,30 +54,6 @@ namespace AvaGui3.ViewModels
 					}
 				},
 			};
-
-			_table2 = new Dictionary<string, Dictionary<LanguageId, string>>
-			{
-				{
-					"Name2",
-					new Dictionary<LanguageId, string>
-					{
-						{ LanguageId.English_UK, "Dollar2" },
-						{ LanguageId.English_US, "Dollar2" },
-						{ LanguageId.German, "Deutschmark2" }
-					}
-				},
-				{
-					"Text2",
-					new Dictionary<LanguageId, string>
-					{
-						{ LanguageId.English_UK, "K2" },
-						{ LanguageId.English_US, "N2" },
-						{ LanguageId.German, "L2" }
-					}
-				},
-			};
-
-			Table = _table1;
 
 			_ = this.WhenAnyValue(o => o.Table)
 				.Subscribe(_ => Strings = new ObservableCollection<string>(Table.Keys));

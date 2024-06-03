@@ -146,29 +146,25 @@
 							<pgc:PropertyGrid x:Name="propertyGrid_1" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 						</TabItem>
 						<TabItem Header="String Table">
-							<!--<vi:StringTableView DataContext="{Binding CurrentObject.LocoObject.StringTable}"/>-->
 							<StackPanel Orientation="Horizontal">
-								<ListBox ItemsSource="{Binding Strings}" SelectedItem="{Binding SelectedString}" DockPanel.Dock="Left" x:Name="StringTableKeysListBox">
+								<ListBox ItemsSource="{Binding StringTableViewModel.Keys}" SelectedItem="{Binding StringTableViewModel.SelectedKey}">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
-											<TextBlock FontWeight="Bold" Text="{Binding}"/>
+											<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
-								<DataGrid Margin="20" ItemsSource="{Binding TranslationTable}"
-									GridLinesVisibility="All"
-									BorderThickness="1" BorderBrush="Gray"
-									CanUserResizeColumns="True"
-									CanUserSortColumns="False">
-									<DataGrid.Columns>
-										<DataGridTextColumn Header="Language" Binding="{Binding Language}" IsReadOnly="True"/>
-										<DataGridTextColumn Header="Translation" Binding="{Binding Translation}" />
-									</DataGrid.Columns>
-								</DataGrid>
-								<TextBlock Text="{Binding SelectedString}"/>
+								<ListBox ItemsSource="{Binding StringTableViewModel.TranslationTable}">
+									<ListBox.ItemTemplate>
+										<DataTemplate>
+											<StackPanel Orientation="Horizontal">
+												<TextBlock Text="{Binding Language}" Margin="4"></TextBlock>
+												<TextBox Text="{Binding Translation}" HorizontalAlignment="Right"></TextBox>
+											</StackPanel>
+										</DataTemplate>
+									</ListBox.ItemTemplate>
+								</ListBox>
 							</StackPanel>
-
-							<!--<pgc:PropertyGrid x:Name="propertyGrid_2" Margin="2" DataContext="{Binding CurrentObject.LocoObject.StringTable.Table}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
 						</TabItem>
 						<TabItem Header="Image Table">
 							<ItemsControl ItemsSource="{Binding ImageTableViewModel.Images, Mode=OneWay}">

@@ -4,15 +4,14 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 using System;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.Objects;
-using System.Linq;
-using System.Collections.ObjectModel;
 using ReactiveUI.Fody.Helpers;
+using OpenLoco.ObjectEditor.Types;
 
 namespace AvaGui.ViewModels
 {
 	public class ObjectEditorViewModel : ReactiveObject
 	{
-		//public StringTableViewModel StringTableViewModel { get; set; }
+		[Reactive] public StringTableViewModel StringTableViewModel { get; set; }
 
 		[Reactive] public ImageTableViewModel ImageTableViewModel { get; set; }
 
@@ -46,37 +45,17 @@ namespace AvaGui.ViewModels
 
 		#region StringTable
 
-		[Reactive] public ObservableCollection<string> Strings { get; set; }
-
-		[Reactive] public string SelectedString { get; set; }
-
-		[Reactive] public ObservableCollection<LanguageTranslation> TranslationTable { get; set; }
-
 		public void SelectedObjectChanged()
 		{
 			if (CurrentObject?.LocoObject != null)
 			{
-				Strings = new ObservableCollection<string>(CurrentObject.LocoObject.StringTable.Table.Keys);
+				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 				ImageTableViewModel = new(CurrentObject.LocoObject, Model.PaletteMap);
 			}
 			else
 			{
-				Strings = new ObservableCollection<string>();
+				StringTableViewModel = null;
 				ImageTableViewModel = null;
-			}
-		}
-
-		public void SelectedStringChanged()
-		{
-			if (CurrentObject?.LocoObject != null && SelectedString != null && CurrentObject.LocoObject.StringTable.Table.TryGetValue(SelectedString, out var value))
-			{
-				TranslationTable = new ObservableCollection<LanguageTranslation>(value.Select(kvp => new LanguageTranslation(kvp.Key, kvp.Value)));
-
-				foreach (var kvp in TranslationTable)
-				{
-					_ = kvp.WhenAnyValue(o => o.Translation)
-						.Subscribe(_ => CurrentObject.LocoObject.StringTable.Table[SelectedString][kvp.Language] = kvp.Translation);
-				}
 			}
 		}
 
@@ -145,17 +124,17 @@ namespace AvaGui.ViewModels
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentObject)));
 			_ = this.WhenAnyValue(o => o.CurrentObject)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Strings)));
-			_ = this.WhenAnyValue(o => o.CurrentObject)
 				.Subscribe(_ => SelectedObjectChanged());
 			//_ = this.WhenAnyValue(o => o.CurrentObject)
-			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageTableViewModel)));
-			_ = this.WhenAnyValue(o => o.Strings)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(TranslationTable)));
-			_ = this.WhenAnyValue(o => o.SelectedString)
-				.Subscribe(_ => SelectedStringChanged());
-			_ = this.WhenAnyValue(o => o.SelectedString)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(TranslationTable)));
+			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(StringTableViewModel))); // done in SelectedObjectChanged()
+			//_ = this.WhenAnyValue(o => o.CurrentObject)
+			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageTableViewModel))); // done in SelectedObjectChanged()
+			//_ = this.WhenAnyValue(o => o.Strings)
+			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(TranslationTable)));
+			//_ = this.WhenAnyValue(o => o.SelectedString)
+			//	.Subscribe(_ => SelectedStringChanged());
+			//_ = this.WhenAnyValue(o => o.SelectedString)
+			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(TranslationTable)));
 		}
 	}
 }

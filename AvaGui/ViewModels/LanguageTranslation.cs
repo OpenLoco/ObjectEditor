@@ -2,7 +2,7 @@ using OpenLoco.ObjectEditor.Data;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace AvaGui3.ViewModels
+namespace AvaGui.ViewModels
 {
 	public class LanguageTranslation(LanguageId language, string translation) : ReactiveObject
 	{

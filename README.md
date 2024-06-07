@@ -39,7 +39,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
   - Unsupported
     - Tutorial files, eg `tut1024_1.dat`
     - Extra language files, eg `kanji.dat`
-    - Map loading, eg `title.dat`, or any other save gave
+    - Map loading, eg `title.dat`, or any other save game
 
 # Misc
 

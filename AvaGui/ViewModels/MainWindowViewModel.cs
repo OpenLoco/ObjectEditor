@@ -38,6 +38,19 @@ namespace AvaGui.ViewModels
 
 		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
+//		//
+//		FileViewModel
+//- S5HeaderViewModel
+//- ObjectViewModel
+//- etc
+
+//ObectViewModel
+//- ObjectData
+//- StringTableViewModel
+//- ImageTableViewModel
+
+//ObjectSelectorViewModel
+
 		public MainWindowViewModel()
 		{
 			var paletteUri = new Uri("avares://AvaGui/Assets/palette.png");
@@ -57,10 +70,16 @@ namespace AvaGui.ViewModels
 					x,
 					ReactiveCommand.Create<string>(Model.LoadObjDirectory))));
 
+			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(() => { })));
+			ObjDataItems.Insert(1, new MenuItemModel("--------", ReactiveCommand.Create(() => { })));
+
 			DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
 				.Select(x => new MenuItemModel(
 					x,
 					ReactiveCommand.Create<string, bool>(Model.LoadDataDirectory))));
+
+			DataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(() => { })));
+			DataItems.Insert(1, new MenuItemModel("--------", ReactiveCommand.Create(() => { })));
 
 			LoadPalette = ReactiveCommand.Create(LoadPaletteFunc);
 			RecreateIndex = ReactiveCommand.Create(() => Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false));

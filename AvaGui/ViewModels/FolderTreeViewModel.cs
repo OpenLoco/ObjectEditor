@@ -106,7 +106,7 @@ namespace AvaGui.ViewModels
 			=> LoadDirectory(Model.Settings.ObjDataDirectory);
 
 		public string DirectoryFileCount
-			=> $"Files in dir: {new DirectoryInfo(Model.Settings.ObjDataDirectory).GetFiles().Length}";
+			=> $"Files in dir: {(Model.Settings.ObjDataDirectory == null ? 0 : new DirectoryInfo(Model.Settings.ObjDataDirectory).GetFiles().Length)}";
 
 		[Reactive] public FileSystemItemBase CurrentlySelectedObject { get; set; }
 	}

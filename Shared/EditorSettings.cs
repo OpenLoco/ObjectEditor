@@ -14,7 +14,12 @@ namespace OpenLoco.ObjectEditor.Settings
 		}
 		string objectDirectory;
 
-		public HashSet<string> ObjDataDirectories { get; set; }
+		public HashSet<string> ObjDataDirectories
+		{
+			get => objDataDirectories ??= [];
+			set => objDataDirectories = value;
+		}
+		HashSet<string> objDataDirectories;
 
 		public string DataDirectory
 		{
@@ -28,7 +33,12 @@ namespace OpenLoco.ObjectEditor.Settings
 		}
 		string dataDirectory;
 
-		public HashSet<string> DataDirectories { get; set; }
+		public HashSet<string> DataDirectories
+		{
+			get => dataDirectories ??= [];
+			set => dataDirectories = value;
+		}
+		HashSet<string> dataDirectories;
 
 		public string PaletteFile { get; set; } = "palette.png";
 

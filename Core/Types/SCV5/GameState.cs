@@ -1,255 +1,8 @@
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Headers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Core.Types
+namespace Core.Types.SCV5
 {
-	enum S5Type : uint8_t
-	{
-		SavedGame = 0,
-		Scenario = 1,
-		Objects = 2,
-		Kandscape = 3,
-	}
-
-	[Flags]
-	enum HeaderFlags : uint8_t
-	{
-		None = (byte)0U,
-		IsRaw = (byte)1U << 0,
-		IsDump = (byte)1U << 1,
-		IsTitleSequence = (byte)1U << 2,
-		HasSaveDetails = (byte)1U << 3,
-	}
-
-	[LocoStructSize(0x20)]
-	class Header
-	{
-		[LocoStructOffset(0x00)] public S5Type Type { get; set; }
-		[LocoStructOffset(0x01)] public HeaderFlags Flags { get; set; }
-		[LocoStructOffset(0x02)] public uint16_t NumPackedObjects { get; set; }
-		[LocoStructOffset(0x04)] public uint32_t Version { get; set; }
-		[LocoStructOffset(0x08)] public uint32_t Magic { get; set; }
-		[LocoStructOffset(0x0C), LocoArrayLength(20)] public byte[] Padding { get; set; }
-	}
-
-	enum TopographyStyle : uint8_t
-	{
-		FlatLand,
-		SmallHills,
-		Mountains,
-		HalfMountainsHills,
-		HalfMountainsFlat,
-	}
-
-	enum LandGeneratorType : uint8_t
-	{
-		Original,
-		Simplex,
-		PngHeightMap,
-	}
-
-	enum LandDistributionPattern : uint8_t
-	{
-		Everywhere,
-		Nowhere,
-		FarFromWater,
-		NearWater,
-		OnMountains,
-		FarFromMountains,
-		InSmallRandomAreas,
-		InLargeRandomAreas,
-		AroundCliffs,
-	}
-
-	enum EditorControllerStep : int8_t
-	{
-		Null = -1,
-		ObjectSelection = 0,
-		LandscapeEditor = 1,
-		ScenarioOptions = 2,
-		SaveScenario = 3,
-	}
-
-	[Flags]
-	enum ObjectiveFlags : uint8_t
-	{
-		None = (byte)0U,
-		BeTopCompany = (byte)(1U << 0),
-		BeWithinTopThreeCompanies = (byte)(1U << 1),
-		WithinTimeLimit = (byte)(1U << 2),
-		Flag_3 = (byte)(1U << 3),
-		Flag_4 = (byte)(1U << 4),
-	}
-
-	enum ObjectiveType : uint8_t
-	{
-		CompanyValue,
-		VehicleProfit,
-		PerformanceIndex,
-		CargoDelivery,
-	}
-
-	[LocoStructSize(0x11)]
-	class ScenarioObjective
-	{
-		[LocoStructOffset(0x00)] public ObjectiveType type { get; set; }   // 0x000418 (0x00526230)
-		[LocoStructOffset(0x01)] public ObjectiveFlags flags { get; set; } // 0x000419 (0x00526231)
-		[LocoStructOffset(0x02)] public uint32_t companyValue { get; set; }          // 0x00041A (0x00526232)
-		[LocoStructOffset(0x06)] public uint32_t monthlyVehicleProfit { get; set; }  // 0x00041E (0x00526236)
-		[LocoStructOffset(0x0A)] public uint8_t performanceIndex { get; set; }       // 0x000422 (0x0052623A)
-		[LocoStructOffset(0x0B)] public uint8_t deliveredCargoType { get; set; }     // 0x000423 (0x0052623B)
-		[LocoStructOffset(0x0C)] public uint32_t deliveredCargoAmount { get; set; }  // 0x000424 (0x0052623C)
-		[LocoStructOffset(0x10)] public uint8_t timeLimitYears { get; set; }         // 0x000428 (0x00526240)
-	}
-
-	[Flags]
-	enum ScenarioFlags : uint16_t
-	{
-		None = (byte)0U,
-		LandscapeGenerationDone = (byte)(1U << 0),
-		HillsEdgeOfMap = (byte)(1U << 1),
-	}
-
-	[LocoStructSize(0x431A)]
-	class Options
-	{
-		[LocoStructOffset(0x00)] public EditorControllerStep EditorStep { get; set; }
-		[LocoStructOffset(0x01)] public uint8_t Difficulty { get; set; }
-		[LocoStructOffset(0x02)] public uint16_t ScevnarioStartYear { get; set; }
-		[LocoStructOffset(0x04), LocoArrayLength(2)] public uint8_t[] pad_4 { get; set; }
-		[LocoStructOffset(0x06)] public ScenarioFlags ScenarioFlags { get; set; }
-		[LocoStructOffset(0x08)] public uint8_t MadeAnyChanges { get; set; }
-		[LocoStructOffset(0x09)] public uint8_t pad_9 { get; set; }
-		[LocoStructOffset(0x0A), LocoArrayLength(32)] public LandDistributionPattern LandDistributionPatterns { get; set; }
-		[LocoStructOffset(0x2A), LocoArrayLength(64)] public char[] ScenarioName { get; set; }
-		[LocoStructOffset(0x6A), LocoArrayLength(256)] public char[] ScenarioDetails { get; set; }
-		[LocoStructOffset(0x16A)] public ObjectHeader ScenarioText { get; set; }
-		[LocoStructOffset(0x17A)] public uint16_t NumberOfForests { get; set; }
-		[LocoStructOffset(0x17C)] public uint8_t MinForestRadius { get; set; }
-		[LocoStructOffset(0x17D)] public uint8_t MaxForestRadius { get; set; }
-		[LocoStructOffset(0x17E)] public uint8_t MinForestDensity { get; set; }
-		[LocoStructOffset(0x17F)] public uint8_t MaxForestDensity { get; set; }
-		[LocoStructOffset(0x180)] public uint16_t NumberRandomTrees { get; set; }
-		[LocoStructOffset(0x182)] public uint8_t MinAltitudeForTrees { get; set; }
-		[LocoStructOffset(0x183)] public uint8_t MaxAltitudeForTrees { get; set; }
-		[LocoStructOffset(0x184)] public uint8_t MinLandHeight { get; set; }
-		[LocoStructOffset(0x185)] public TopographyStyle TopographyStyle { get; set; }
-		[LocoStructOffset(0x186)] public uint8_t HillDensity { get; set; }
-		[LocoStructOffset(0x187)] public uint8_t NumberOfTowns { get; set; }
-		[LocoStructOffset(0x188)] public uint8_t MaxTownSize { get; set; }
-		[LocoStructOffset(0x189)] public uint8_t NumberOfIndustries { get; set; }
-		[LocoStructOffset(0x18A), LocoArrayLength(128 * 128)] public uint8_t[] Preview { get; set; } // this is a 2D array
-		[LocoStructOffset(0x418A)] public uint8_t MaxCompetingCompanies { get; set; }
-		[LocoStructOffset(0x418B)] public uint8_t CompetitorStartDelay { get; set; }
-		[LocoStructOffset(0x418C)] public ScenarioObjective Objective { get; set; }
-		[LocoStructOffset(0x419D)] public ObjectHeader ObjectiveDeliveredCargo { get; set; }
-		[LocoStructOffset(0x41AD)] public ObjectHeader Currency { get; set; }
-
-		// new fields:
-		[LocoStructOffset(0x41B2)] public LandGeneratorType Generator { get; set; }
-		[LocoStructOffset(0x41B3)] public uint8_t NumTerrainSmoothingPasses { get; set; }
-		[LocoStructOffset(0x41B4), LocoArrayLength(347)] public byte[] pad_41BD { get; set; }
-	}
-
-	[Flags]
-	enum CompanyFlags : uint32_t
-	{
-		None = 0U,
-		Unk0 = 1U << 0,                      // 0x01
-		Unk1 = 1U << 1,                      // 0x02
-		Unk2 = 1U << 2,                      // 0x04
-		Sorted = 1U << 3,                    // 0x08
-		IncreasedPerformance = 1U << 4,      // 0x10
-		DecreasedPerformance = 1U << 5,      // 0x20
-		ChallengeCompleted = 1U << 6,        // 0x40
-		ChallengeFailed = 1U << 7,           // 0x80
-		ChallengeBeatenByOpponent = 1U << 8, // 0x100
-		Bankrupt = 1U << 9,                  // 0x200
-		AutopayLoan = 1U << 31,              // 0x80000000 new for OpenLoco
-	}
-
-	class SaveDetails
-	{
-		[LocoArrayLength(256)]
-		char[] Company { get; set; }                   // 0x000
-		[LocoArrayLength(256)]
-		char[] Owner { get; set; }                     // 0x100
-		uint32_t Date;                       // 0x200
-		uint16_t PerformanceIndex;           // 0x204 (from [company.performance_index)
-		[LocoArrayLength(0x40)]
-		char[] Scenario { get; set; }                 // 0x206
-		uint8_t ChallengeProgress;           // 0x246
-		byte pad_247;                   // 0x247
-		[LocoArrayLength(250 * 200)]
-		uint8_t[] Image { get; set; }            // 0x248
-		CompanyFlags ChallengeFlags;         // 0xC598 (from [company.challenge_flags])
-		[LocoArrayLength(0xC618 - 0xC59C)] // 0x7C, 124
-		byte[] pad_C59C { get; set; } // 0xC59C
-	}
-
-	[Flags]
-	enum S5FixFlags : uint16_t
-	{
-		none = (uint16_t)0U,
-		fixFlag0 = (uint16_t)1U << 0,
-		fixFlag1 = (uint16_t)1U << 1,
-	};
-
-	[LocoStructSize(0x8FA8)]
-	class Company
-	{
-		public uint16_t Name { get; set; }                 // 0x0000
-		public uint16_t OwnerName { get; set; }            // 0x0002
-		public CompanyFlags ChallengeFlags { get; set; }   // 0x0004
-		[LocoArrayLength(6)] uint8_t[] Cash { get; set; }               // 0x0008
-		public uint32_t CurrentLoan { get; set; }          // 0x000E
-		public uint32_t UpdateCounter { get; set; }        // 0x0012
-		public int16_t PerformanceIndex { get; set; }      // 0x0016
-		[LocoArrayLength(0x8C4E - 0x18)] public uint8_t[] pad_18 { get; set; } // 0x0018
-		public uint8_t ChallengeProgress { get; set; }     // 0x8C4E
-		[LocoArrayLength(0x8FA8 - 0x8C4F)] public uint8_t[] pad_8C4F { get; set; }
-	}
-
-	class Town
-	{
-		[LocoArrayLength(0x270)] public uint8_t[] pad_0 { get; set; }
-	};
-
-	class Industry
-	{
-		[LocoArrayLength(0x453)] public uint8_t[] pad_0 { get; set; }
-	};
-
-	class Station
-	{
-		[LocoArrayLength(0x3D2)] public uint8_t[] pad_0 { get; set; }
-	};
-
-	class Entity
-	{
-		[LocoArrayLength(0x80)] public uint8_t[] pad_0 { get; set; }
-	};
-
-	class Animation
-	{
-		[LocoArrayLength(0x06)] public uint8_t[] pad_0 { get; set; }
-	};
-
-	class Wave
-	{
-		[LocoArrayLength(0x06)] public uint8_t[] pad_0 { get; set; }
-	};
-
-	class Message
-	{
-		[LocoArrayLength(0xD4)] public uint8_t[] pad_0 { get; set; }
-	};
-
 	[LocoStructSize(0x4A0644)] // 4,851,268
 	class GameState
 	{
@@ -266,8 +19,8 @@ namespace Core.Types
 		uint8_t savedViewZoom { get; set; }                                                           // 0x000022
 		uint8_t savedViewRotation { get; set; }                                                       // 0x000023
 		[LocoArrayLength(2)] uint8_t[] playerCompanies { get; set; }                                                      // 0x000024 (0x00525E3C)
-		[LocoArrayLength(Limits.kNumEntityLists)] uint16_t[] entityListHeads { get; set; }                               // 0x000026 (0x00525E3E)
-		[LocoArrayLength(Limits.kNumEntityLists)] uint16_t[] entityListCounts { get; set; }                              // 0x000034 (0x00525E4C)
+		[LocoArrayLength((int)Limits.kNumEntityLists)] uint16_t[] entityListHeads { get; set; }                               // 0x000026 (0x00525E3E)
+		[LocoArrayLength((int)Limits.kNumEntityLists)] uint16_t[] entityListCounts { get; set; }                              // 0x000034 (0x00525E4C)
 		[LocoArrayLength(0x046 - 0x042)] uint8_t[] pad_0042 { get; set; }                                                 // 0x000042
 		[LocoArrayLength(32)] uint32_t[] currencyMultiplicationFactor { get; set; }                                       // 0x000046 (0x00525E5E)
 		[LocoArrayLength(32)] uint32_t[] unusedCurrencyMultiplicationFactor { get; set; }                                 // 0x0000C6 (0x00525EDE)
@@ -359,7 +112,7 @@ namespace Core.Types
 		[LocoArrayLength(0x13B6 - 0x47C)] uint8_t[] pad_047C { get; set; }                                                // 0x00047C
 		uint16_t numMessages { get; set; }                                                            // 0x0013B6 (0x005271CE)
 		uint16_t activeMessageIndex { get; set; }                                                     // 0x0013B8 (0x005271D0)
-		[LocoArrayLength(Limits.kMaxMessages)] Message[] messages { get; set; }                                      // 0x0013BA (0x005271D2)
+		[LocoArrayLength((int)Limits.kMaxMessages)] Message[] messages { get; set; }                                      // 0x0013BA (0x005271D2)
 		[LocoArrayLength(0xB94C - 0xB886)] uint8_t[] pad_B886 { get; set; }                                               // 0x00B886
 		uint8_t var_B94C { get; set; }                                                                // 0x00B94C (0x00531774)
 		[LocoArrayLength(0xB950 - 0xB94D)] uint8_t[] pad_B94D { get; set; }                                               // 0x00B94D
@@ -373,66 +126,15 @@ namespace Core.Types
 		[LocoArrayLength(0xB968 - 0xB957)] uint8_t[] pad_B957 { get; set; }                                               // 0x00B957
 		uint8_t currentRainLevel { get; set; }                                                        // 0x00B968 (0x00531780)
 		[LocoArrayLength(0xB96C - 0xB969)] uint8_t[] pad_B969 { get; set; }                                               // 0x00B969
-		[LocoArrayLength(Limits.kMaxCompanies)] Company[] Companies { get; set; }                                    // 0x00B96C (0x00531784)
-		[LocoArrayLength(Limits.kMaxTowns)] Town[] Towns { get; set; }                                               // 0x092444 (0x005B825C)
-		[LocoArrayLength(Limits.kMaxIndustries)] Industry[] Industries { get; set; }                                 // 0x09E744 (0x005C455C)
-		[LocoArrayLength(Limits.kMaxStations)] Station[] Stations { get; set; }                                      // 0x0C10C4 (0x005E6EDC)
-		[LocoArrayLength(Limits.kMaxEntities)] Entity[] Entities { get; set; }                                       // 0x1B58C4 (0x006DB6DC)
-		[LocoArrayLength(Limits.kMaxAnimations)] Animation[] Animations { get; set; }                                // 0x4268C4 (0x0094C6DC)
-		[LocoArrayLength(Limits.kMaxWaves)] Wave[] Waves { get; set; }                                               // 0x4328C4 (0x009586DC)
-																													 //[LocoArrayLength(Limits.kMaxUserStrings)] char[] UserStrings[32] { get; set; }                               // 0x432A44 (0x0095885C)
-																													 //[LocoArrayLength(Limits.kMaxVehicles)] uint16_t[] Routings[Limits.kMaxRoutingsPerVehicle] { get; set; } // 0x442A44 (0x0096885C)
-		[LocoArrayLength(Limits.kMaxOrders)] uint8_t[] Orders { get; set; }                                          // 0x461E44 (0x00987C5C)
-	}
-
-	[LocoStructSize(0x08)]
-	class TileElement
-	{
-		public const uint8_t FLAG_GHOST = 1 << 4;
-		public const uint8_t FLAG_LAST = 1 << 7;
-
-		public uint8_t Type { get; set; }
-		public uint8_t Flags { get; set; }
-		public uint8_t BaseZ { get; set; }
-		public uint8_t ClearZ { get; set; }
-		[LocoArrayLength(4)]
-		public uint8_t[] pad_4 { get; set; }
-
-		void SetLast(bool value)
-		{
-			if (value)
-				Flags |= FLAG_LAST;
-			else
-			{
-				unchecked
-				{
-					Flags &= (byte)~FLAG_LAST;
-				}
-			}
-		}
-
-		bool IsGhost()
-		{
-			return (Flags & FLAG_GHOST) == FLAG_GHOST;
-		}
-
-		bool IsLast()
-		{
-			return (Flags & FLAG_LAST) == FLAG_LAST;
-		}
-	}
-
-	class S5File
-	{
-		[LocoStructOffset(0x00)] public Header Header { get; set; }
-		[LocoStructOffset(0x20)] public Options? LandscapeOptions { get; set; }
-		public SaveDetails? SaveDetails { get; set; }
-
-		// todo: make a list? is this harcoded?
-		[LocoArrayLength(859)]
-		public ObjectHeader[] RequiredObjects { get; set; }
-		public GameState GameState { get; set; }
-		public List<TileElement> TileElements { get; set; }
-		public List<(ObjectHeader, byte[])> PackedObjects { get; set; }
+		[LocoArrayLength((int)Limits.kMaxCompanies)] Company[] Companies { get; set; }                                    // 0x00B96C (0x00531784)
+		[LocoArrayLength((int)Limits.kMaxTowns)] Town[] Towns { get; set; }                                               // 0x092444 (0x005B825C)
+		[LocoArrayLength((int)Limits.kMaxIndustries)] Industry[] Industries { get; set; }                                 // 0x09E744 (0x005C455C)
+		[LocoArrayLength((int)Limits.kMaxStations)] Station[] Stations { get; set; }                                      // 0x0C10C4 (0x005E6EDC)
+		[LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities { get; set; }                                       // 0x1B58C4 (0x006DB6DC)
+		[LocoArrayLength((int)Limits.kMaxAnimations)] Animation[] Animations { get; set; }                                // 0x4268C4 (0x0094C6DC)
+		[LocoArrayLength((int)Limits.kMaxWaves)] Wave[] Waves { get; set; }                                               // 0x4328C4 (0x009586DC)
+																														  //[LocoArrayLength(Limits.kMaxUserStrings)] char[] UserStrings[32] { get; set; }                               // 0x432A44 (0x0095885C)
+																														  //[LocoArrayLength(Limits.kMaxVehicles)] uint16_t[] Routings[Limits.kMaxRoutingsPerVehicle] { get; set; } // 0x442A44 (0x0096885C)
+		[LocoArrayLength((int)Limits.kMaxOrders)] uint8_t[] Orders { get; set; }                                          // 0x461E44 (0x00987C5C)
 	}
 }

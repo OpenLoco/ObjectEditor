@@ -3,21 +3,21 @@ using OpenLoco.ObjectEditor.Data;
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
-	public class LocoArrayLengthAttribute(uint length) : Attribute
+	public class LocoArrayLengthAttribute(int length) : Attribute
 	{
-		public uint Length => length;
+		public int Length => length;
 	}
 
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
-	public class LocoStructOffsetAttribute(uint offset) : Attribute
+	public class LocoStructOffsetAttribute(int offset) : Attribute
 	{
-		public uint Offset => offset;
+		public int Offset => offset;
 	}
 
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
-	public class LocoStructSizeAttribute(uint size) : Attribute
+	public class LocoStructSizeAttribute(int size) : Attribute
 	{
-		public uint Size => size;
+		public int Size => size;
 	}
 
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]

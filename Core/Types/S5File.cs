@@ -29,13 +29,12 @@ namespace Core.Types
 	[LocoStructSize(0x20)]
 	class Header
 	{
-		S5Type Type { get; set; }
-		HeaderFlags Flags { get; set; }
-		uint16_t NumPackedObjects { get; set; }
-		uint32_t Version { get; set; }
-		uint32_t Magic { get; set; }
-		[LocoArrayLength(20)]
-		byte[] Padding { get; set; }
+		[LocoStructOffset(0x00)] public S5Type Type { get; set; }
+		[LocoStructOffset(0x01)] public HeaderFlags Flags { get; set; }
+		[LocoStructOffset(0x02)] public uint16_t NumPackedObjects { get; set; }
+		[LocoStructOffset(0x04)] public uint32_t Version { get; set; }
+		[LocoStructOffset(0x08)] public uint32_t Magic { get; set; }
+		[LocoStructOffset(0x0C), LocoArrayLength(20)] public byte[] Padding { get; set; }
 	}
 
 	enum TopographyStyle : uint8_t
@@ -95,16 +94,17 @@ namespace Core.Types
 		CargoDelivery,
 	}
 
+	[LocoStructSize(0x11)]
 	class ScenarioObjective
 	{
-		public ObjectiveType type { get; set; }   // 0x000418 (0x00526230)
-		public ObjectiveFlags flags { get; set; } // 0x000419 (0x00526231)
-		public uint32_t companyValue { get; set; }          // 0x00041A (0x00526232)
-		public uint32_t monthlyVehicleProfit { get; set; }  // 0x00041E (0x00526236)
-		public uint8_t performanceIndex { get; set; }       // 0x000422 (0x0052623A)
-		public uint8_t deliveredCargoType { get; set; }     // 0x000423 (0x0052623B)
-		public uint32_t deliveredCargoAmount { get; set; }  // 0x000424 (0x0052623C)
-		public uint8_t timeLimitYears { get; set; }         // 0x000428 (0x00526240)
+		[LocoStructOffset(0x00)] public ObjectiveType type { get; set; }   // 0x000418 (0x00526230)
+		[LocoStructOffset(0x01)] public ObjectiveFlags flags { get; set; } // 0x000419 (0x00526231)
+		[LocoStructOffset(0x02)] public uint32_t companyValue { get; set; }          // 0x00041A (0x00526232)
+		[LocoStructOffset(0x06)] public uint32_t monthlyVehicleProfit { get; set; }  // 0x00041E (0x00526236)
+		[LocoStructOffset(0x0A)] public uint8_t performanceIndex { get; set; }       // 0x000422 (0x0052623A)
+		[LocoStructOffset(0x0B)] public uint8_t deliveredCargoType { get; set; }     // 0x000423 (0x0052623B)
+		[LocoStructOffset(0x0C)] public uint32_t deliveredCargoAmount { get; set; }  // 0x000424 (0x0052623C)
+		[LocoStructOffset(0x10)] public uint8_t timeLimitYears { get; set; }         // 0x000428 (0x00526240)
 	}
 
 	[Flags]
@@ -118,48 +118,42 @@ namespace Core.Types
 	[LocoStructSize(0x431A)]
 	class Options
 	{
-		public EditorControllerStep EditorStep { get; set; }                      // 0x00
-		public uint8_t Difficulty { get; set; }                                   // 0x01
-		public uint16_t ScenarioStartYear { get; set; }                           // 0x02
-		[LocoArrayLength(2)]
-		public uint8_t[] pad_4 { get; set; }                                     // 0x04
-		public ScenarioFlags ScenarioFlags { get; set; }                          // 0x06
-		public uint8_t MadeAnyChanges { get; set; }                               // 0x08
-		public uint8_t pad_9 { get; set; }                                     // 0x09
-		[LocoArrayLength(32)]
-		public LandDistributionPattern LandDistributionPatterns { get; set; } // 0x0A
-		[LocoArrayLength(64)]
-		public char[] ScenarioName { get; set; }                                // 0x2A
-		[LocoArrayLength(256)]
-		public char[] ScenarioDetails { get; set; }                            // 0x6A
-		public ObjectHeader ScenarioText { get; set; }                            // 0x16A
-		public uint16_t NumberOfForests { get; set; }                             // 0x17a
-		public uint8_t MinForestRadius { get; set; }                              // 0x17C
-		public uint8_t MaxForestRadius { get; set; }                              // 0x17D
-		public uint8_t MinForestDensity { get; set; }                             // 0x17E
-		public uint8_t MaxForestDensity { get; set; }                             // 0x17F
-		public uint16_t NumberRandomTrees { get; set; }                           // 0x180
-		public uint8_t MinAltitudeForTrees { get; set; }                          // 0x182
-		public uint8_t MaxAltitudeForTrees { get; set; }                          // 0x183
-		public uint8_t MinLandHeight { get; set; }                                // 0x184
-		public TopographyStyle TopographyStyle { get; set; }                      // 0x185
-		public uint8_t HillDensity { get; set; }                                  // 0x186
-		public uint8_t NumberOfTowns { get; set; }                                // 0x187
-		public uint8_t MaxTownSize { get; set; }                                  // 0x188
-		public uint8_t NumberOfIndustries { get; set; }                           // 0x189
-		[LocoArrayLength(128 * 128)] // this is a 2d array
-		public uint8_t[] Preview { get; set; }                            // 0x18A
-		public uint8_t MaxCompetingCompanies { get; set; }                        // 0x418A
-		public uint8_t CompetitorStartDelay { get; set; }                         // 0x418B
-		public ScenarioObjective Objective { get; set; }                        // 0x418C
-		public ObjectHeader ObjectiveDeliveredCargo { get; set; }                 // 0x419D
-		public ObjectHeader Currency { get; set; }                                // 0x41AD
+		[LocoStructOffset(0x00)] public EditorControllerStep EditorStep { get; set; }
+		[LocoStructOffset(0x01)] public uint8_t Difficulty { get; set; }
+		[LocoStructOffset(0x02)] public uint16_t ScevnarioStartYear { get; set; }
+		[LocoStructOffset(0x04), LocoArrayLength(2)] public uint8_t[] pad_4 { get; set; }
+		[LocoStructOffset(0x06)] public ScenarioFlags ScenarioFlags { get; set; }
+		[LocoStructOffset(0x08)] public uint8_t MadeAnyChanges { get; set; }
+		[LocoStructOffset(0x09)] public uint8_t pad_9 { get; set; }
+		[LocoStructOffset(0x0A), LocoArrayLength(32)] public LandDistributionPattern LandDistributionPatterns { get; set; }
+		[LocoStructOffset(0x2A), LocoArrayLength(64)] public char[] ScenarioName { get; set; }
+		[LocoStructOffset(0x6A), LocoArrayLength(256)] public char[] ScenarioDetails { get; set; }
+		[LocoStructOffset(0x16A)] public ObjectHeader ScenarioText { get; set; }
+		[LocoStructOffset(0x17A)] public uint16_t NumberOfForests { get; set; }
+		[LocoStructOffset(0x17C)] public uint8_t MinForestRadius { get; set; }
+		[LocoStructOffset(0x17D)] public uint8_t MaxForestRadius { get; set; }
+		[LocoStructOffset(0x17E)] public uint8_t MinForestDensity { get; set; }
+		[LocoStructOffset(0x17F)] public uint8_t MaxForestDensity { get; set; }
+		[LocoStructOffset(0x180)] public uint16_t NumberRandomTrees { get; set; }
+		[LocoStructOffset(0x182)] public uint8_t MinAltitudeForTrees { get; set; }
+		[LocoStructOffset(0x183)] public uint8_t MaxAltitudeForTrees { get; set; }
+		[LocoStructOffset(0x184)] public uint8_t MinLandHeight { get; set; }
+		[LocoStructOffset(0x185)] public TopographyStyle TopographyStyle { get; set; }
+		[LocoStructOffset(0x186)] public uint8_t HillDensity { get; set; }
+		[LocoStructOffset(0x187)] public uint8_t NumberOfTowns { get; set; }
+		[LocoStructOffset(0x188)] public uint8_t MaxTownSize { get; set; }
+		[LocoStructOffset(0x189)] public uint8_t NumberOfIndustries { get; set; }
+		[LocoStructOffset(0x18A), LocoArrayLength(128 * 128)] public uint8_t[] Preview { get; set; } // this is a 2D array
+		[LocoStructOffset(0x418A)] public uint8_t MaxCompetingCompanies { get; set; }
+		[LocoStructOffset(0x418B)] public uint8_t CompetitorStartDelay { get; set; }
+		[LocoStructOffset(0x418C)] public ScenarioObjective Objective { get; set; }
+		[LocoStructOffset(0x419D)] public ObjectHeader ObjectiveDeliveredCargo { get; set; }
+		[LocoStructOffset(0x41AD)] public ObjectHeader Currency { get; set; }
 
 		// new fields:
-		public LandGeneratorType Generator { get; set; }
-		public uint8_t NumTerrainSmoothingPasses;
-		[LocoArrayLength(347)]
-		public byte[] pad_41BD { get; set; }
+		[LocoStructOffset(0x41B2)] public LandGeneratorType Generator { get; set; }
+		[LocoStructOffset(0x41B3)] public uint8_t NumTerrainSmoothingPasses { get; set; }
+		[LocoStructOffset(0x41B4), LocoArrayLength(347)] public byte[] pad_41BD { get; set; }
 	}
 
 	[Flags]
@@ -209,51 +203,51 @@ namespace Core.Types
 	[LocoStructSize(0x8FA8)]
 	class Company
 	{
-		uint16_t Name;                 // 0x0000
-		uint16_t OwnerName;            // 0x0002
-		CompanyFlags ChallengeFlags;   // 0x0004
-		[LocoArrayLength(6)] uint8_t[] Cash;               // 0x0008
-		uint32_t CurrentLoan;          // 0x000E
-		uint32_t UpdateCounter;        // 0x0012
-		int16_t PerformanceIndex;      // 0x0016
-		[LocoArrayLength(0x8C4E - 0x18)] uint8_t[] pad_18; // 0x0018
-		uint8_t ChallengeProgress;     // 0x8C4E
-		[LocoArrayLength(0x8FA8 - 0x8C4F)] uint8_t[] pad_8C4F;
+		public uint16_t Name { get; set; }                 // 0x0000
+		public uint16_t OwnerName { get; set; }            // 0x0002
+		public CompanyFlags ChallengeFlags { get; set; }   // 0x0004
+		[LocoArrayLength(6)] uint8_t[] Cash { get; set; }               // 0x0008
+		public uint32_t CurrentLoan { get; set; }          // 0x000E
+		public uint32_t UpdateCounter { get; set; }        // 0x0012
+		public int16_t PerformanceIndex { get; set; }      // 0x0016
+		[LocoArrayLength(0x8C4E - 0x18)] public uint8_t[] pad_18 { get; set; } // 0x0018
+		public uint8_t ChallengeProgress { get; set; }     // 0x8C4E
+		[LocoArrayLength(0x8FA8 - 0x8C4F)] public uint8_t[] pad_8C4F { get; set; }
 	}
 
-	struct Town
+	class Town
 	{
-		[LocoArrayLength(0x270)] uint8_t[] pad_000;
+		[LocoArrayLength(0x270)] public uint8_t[] pad_0 { get; set; }
 	};
 
-	struct Industry
+	class Industry
 	{
-		[LocoArrayLength(0x453)] uint8_t[] pad_000;
+		[LocoArrayLength(0x453)] public uint8_t[] pad_0 { get; set; }
 	};
 
-	struct Station
+	class Station
 	{
-		[LocoArrayLength(0x3D2)] uint8_t[] pad_000;
+		[LocoArrayLength(0x3D2)] public uint8_t[] pad_0 { get; set; }
 	};
 
-	struct Entity
+	class Entity
 	{
-		[LocoArrayLength(0x80)] uint8_t[] pad_00;
+		[LocoArrayLength(0x80)] public uint8_t[] pad_0 { get; set; }
 	};
 
-	struct Animation
+	class Animation
 	{
-		[LocoArrayLength(0x06)] uint8_t[] pad_0;
+		[LocoArrayLength(0x06)] public uint8_t[] pad_0 { get; set; }
 	};
 
-	struct Wave
+	class Wave
 	{
-		uint8_t pad_0[0x6];
+		[LocoArrayLength(0x06)] public uint8_t[] pad_0 { get; set; }
 	};
 
-	struct Message
+	class Message
 	{
-		uint8_t pad_0[0xD4];
+		[LocoArrayLength(0xD4)] public uint8_t[] pad_0 { get; set; }
 	};
 
 	[LocoStructSize(0x4A0644)] // 4,851,268
@@ -386,8 +380,8 @@ namespace Core.Types
 		[LocoArrayLength(Limits.kMaxEntities)] Entity[] Entities { get; set; }                                       // 0x1B58C4 (0x006DB6DC)
 		[LocoArrayLength(Limits.kMaxAnimations)] Animation[] Animations { get; set; }                                // 0x4268C4 (0x0094C6DC)
 		[LocoArrayLength(Limits.kMaxWaves)] Wave[] Waves { get; set; }                                               // 0x4328C4 (0x009586DC)
-		[LocoArrayLength(Limits.kMaxUserStrings)] char[] UserStrings[32] { get; set; }                               // 0x432A44 (0x0095885C)
-		[LocoArrayLength(Limits.kMaxVehicles)] uint16_t[] Routings[Limits.kMaxRoutingsPerVehicle] { get; set; } // 0x442A44 (0x0096885C)
+																													 //[LocoArrayLength(Limits.kMaxUserStrings)] char[] UserStrings[32] { get; set; }                               // 0x432A44 (0x0095885C)
+																													 //[LocoArrayLength(Limits.kMaxVehicles)] uint16_t[] Routings[Limits.kMaxRoutingsPerVehicle] { get; set; } // 0x442A44 (0x0096885C)
 		[LocoArrayLength(Limits.kMaxOrders)] uint8_t[] Orders { get; set; }                                          // 0x461E44 (0x00987C5C)
 	}
 
@@ -430,8 +424,8 @@ namespace Core.Types
 
 	class S5File
 	{
-		public Header Header { get; set; }
-		public Options? LandscapeOptions { get; set; }
+		[LocoStructOffset(0x00)] public Header Header { get; set; }
+		[LocoStructOffset(0x20)] public Options? LandscapeOptions { get; set; }
 		public SaveDetails? SaveDetails { get; set; }
 
 		// todo: make a list? is this harcoded?

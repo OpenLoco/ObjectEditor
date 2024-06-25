@@ -40,6 +40,25 @@ namespace OpenLoco.ObjectEditor.Settings
 		}
 		HashSet<string> dataDirectories;
 
+		public string SCV5Directory
+		{
+			get => scv5Directory;
+			set
+			{
+				scv5Directory = value;
+				SCV5Directories ??= [];
+				SCV5Directories.Add(scv5Directory);
+			}
+		}
+		string scv5Directory;
+
+		public HashSet<string> SCV5Directories
+		{
+			get => scv5Directories ??= [];
+			set => scv5Directories = value;
+		}
+		HashSet<string> scv5Directories;
+
 		public string PaletteFile { get; set; } = "palette.png";
 
 		public string IndexFileName { get; set; } = "objectIndex.json";

@@ -1,17 +1,19 @@
-﻿using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Types.SCV5
 {
 	[LocoStructSize(0x11)]
-	class ScenarioObjective
+	public record ScenarioObjective(
+		[property: LocoStructOffset(0x00)] ObjectiveType Type,
+		[property: LocoStructOffset(0x01)] ObjectiveFlags Flags,
+		[property: LocoStructOffset(0x02)] uint32_t CompanyValue,
+		[property: LocoStructOffset(0x06)] uint32_t MonthlyVehicleProfit,
+		[property: LocoStructOffset(0x0A)] uint8_t PerformanceIndex,
+		[property: LocoStructOffset(0x0B)] uint8_t DeliveredCargoType,
+		[property: LocoStructOffset(0x0C)] uint32_t DeliveredCargoAmount,
+		[property: LocoStructOffset(0x10)] uint8_t TimeLimitYears)
+		: ILocoStruct
 	{
-		[LocoStructOffset(0x00)] public ObjectiveType type { get; set; }   // 0x000418 (0x00526230)
-		[LocoStructOffset(0x01)] public ObjectiveFlags flags { get; set; } // 0x000419 (0x00526231)
-		[LocoStructOffset(0x02)] public uint32_t companyValue { get; set; }          // 0x00041A (0x00526232)
-		[LocoStructOffset(0x06)] public uint32_t monthlyVehicleProfit { get; set; }  // 0x00041E (0x00526236)
-		[LocoStructOffset(0x0A)] public uint8_t performanceIndex { get; set; }       // 0x000422 (0x0052623A)
-		[LocoStructOffset(0x0B)] public uint8_t deliveredCargoType { get; set; }     // 0x000423 (0x0052623B)
-		[LocoStructOffset(0x0C)] public uint32_t deliveredCargoAmount { get; set; }  // 0x000424 (0x0052623C)
-		[LocoStructOffset(0x10)] public uint8_t timeLimitYears { get; set; }         // 0x000428 (0x00526240)
+		public bool Validate() => true;
 	}
 }

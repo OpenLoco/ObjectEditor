@@ -1,6 +1,6 @@
-﻿namespace Core.Types.SCV5
+namespace Core.Types.SCV5
 {
-	enum ObjectiveType : uint8_t
+	public enum ObjectiveType : uint8_t
 	{
 		CompanyValue,
 		VehicleProfit,

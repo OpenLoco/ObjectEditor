@@ -1,8 +1,8 @@
-﻿using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Types.SCV5
 {
-	class Wave
+	public class Wave
 	{
 		[LocoArrayLength(0x06)] public uint8_t[] pad_0 { get; set; }
 	};

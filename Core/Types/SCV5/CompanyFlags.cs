@@ -1,7 +1,7 @@
-﻿namespace Core.Types.SCV5
+namespace Core.Types.SCV5
 {
 	[Flags]
-	enum CompanyFlags : uint32_t
+	public enum CompanyFlags : uint32_t
 	{
 		None = 0U,
 		Unk0 = 1U << 0,                      // 0x01

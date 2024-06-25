@@ -1,3 +1,4 @@
+using OpenLoco.ObjectEditor.Headers;
 using Zenith.Core;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
@@ -60,32 +61,54 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				var underlyingType = t.GetEnumUnderlyingType();
 				var underlyingValue = ReadT(data, underlyingType, offset);
 
-				if (t.IsDefined(typeof(FlagsAttribute), inherit: false))
+				if (!t.IsDefined(typeof(FlagsAttribute), inherit: false))
 				{
-					var enumValues = Enum.GetValues(t);
-					var combinedValue = 0;
+					return Enum.ToObject(t, underlyingValue);
+				}
 
+				var enumValues = Enum.GetValues(t);
+
+				if (underlyingType == typeof(int8_t) || underlyingType == typeof(int16_t) || underlyingType == typeof(int32_t))
+				{
+					var combinedValue = 0;
 					foreach (var enumValue in enumValues)
 					{
-						var enumValueInt = Convert.ToInt32(Enum.Parse(t, enumValue.ToString()!)); // Convert to int
+						var parsed = Enum.Parse(t, enumValue.ToString()!);
+						var enumValueInt = Convert.ToInt32(parsed); // Convert to int
 						if ((enumValueInt & Convert.ToInt32(underlyingValue)) != 0) // Convert to int
 						{
 							combinedValue |= enumValueInt;
 						}
 					}
-
-					var enu = Enum.ToObject(t, combinedValue);
-					return enu;
+					return Enum.ToObject(t, combinedValue);
+				}
+				else if (underlyingType == typeof(uint8_t) || underlyingType == typeof(uint16_t) || underlyingType == typeof(uint32_t))
+				{
+					var combinedValue = 0U;
+					foreach (var enumValue in enumValues)
+					{
+						var parsed = Enum.Parse(t, enumValue.ToString()!);
+						var enumValueInt = Convert.ToUInt32(parsed); // Convert to int
+						if ((enumValueInt & Convert.ToUInt32(underlyingValue)) != 0) // Convert to int
+						{
+							combinedValue |= enumValueInt;
+						}
+					}
+					return Enum.ToObject(t, combinedValue);
 				}
 				else
 				{
-					var enu = Enum.ToObject(t, underlyingValue);
-					return enu;
+					throw new Exception("unrecognised type");
 				}
 			}
 
 			if (t.IsClass)
 			{
+				if (t.Name == "ObjectHeader")
+				{
+					return ObjectHeader.Read(data[..ObjectHeader.StructLength]);
+				}
+
 				var objectSize = ByteHelpers.GetObjectSize(t);
 				return ReadLocoStruct(data[offset..(offset + objectSize)], t);
 			}

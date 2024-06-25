@@ -1,6 +1,6 @@
-﻿namespace Core.Types.SCV5
+namespace Core.Types.SCV5
 {
-	enum EditorControllerStep : int8_t
+	public enum EditorControllerStep : int8_t
 	{
 		Null = -1,
 		ObjectSelection = 0,

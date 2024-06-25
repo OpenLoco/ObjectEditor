@@ -15,6 +15,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Diagnostics;
+using Core.Types.SCV5;
 
 namespace OpenLoco.ObjectEditor.Gui
 {
@@ -321,17 +322,68 @@ namespace OpenLoco.ObjectEditor.Gui
 			tvObjType.SuspendLayout();
 			tvObjType.Nodes.Clear();
 
-			if (Directory.Exists(model.Settings.DataDirectory))
-			{
-				InitDataCategoryTree();
-			}
-
 			if (Directory.Exists(model.Settings.ObjDataDirectory))
 			{
 				InitObjectCategoryTree(vanillaOnly, fileFilter);
 			}
 
+			if (Directory.Exists(model.Settings.DataDirectory))
+			{
+				InitDataCategoryTree();
+			}
+
+			if (Directory.Exists(model.Settings.SCV5Directory))
+			{
+				InitSCV5CategoryView();
+			}
+
 			tvObjType.ResumeLayout(true);
+		}
+
+		void InitObjectCategoryTree(bool vanillaOnly, string fileFilter)
+		{
+			var filteredFiles = string.IsNullOrEmpty(fileFilter)
+				? model.HeaderIndex
+				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.Name, f.Value.Checksum));
+
+			tvObjType.ImageList = MakeImageList(model);
+
+			var nodesToAdd = new List<TreeNode>();
+			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
+			{
+				var imageListOffset = model.G1 == null ? 0 : ((int)group.Key) + 2; // + 2 because we have a vanilla+custom image first
+				var objTypeNode = new TreeNode(group.Key.ToString(), imageListOffset, imageListOffset);
+				if (group.Key != ObjectType.Vehicle)
+				{
+					foreach (var obj in group)
+					{
+						AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, obj.Value.Checksum, objTypeNode);
+					}
+				}
+				else
+				{
+					var vehicleGroup = group.GroupBy(o => o.Value.VehicleType);
+					foreach (var vehicleType in vehicleGroup)
+					{
+						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
+						foreach (var veh in vehicleType)
+						{
+							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, veh.Value.Checksum, vehicleTypeNode);
+						}
+
+						_ = objTypeNode.Nodes.Add(vehicleTypeNode);
+					}
+				}
+
+				nodesToAdd.Add(objTypeNode);
+			}
+
+			var objDataNode = new TreeNode("ObjData");
+			objDataNode.Nodes.AddRange([.. nodesToAdd]);
+			_ = tvObjType.Nodes.Add(objDataNode);
+			tvObjType.Sort();
 		}
 
 		void InitDataCategoryTree()
@@ -344,7 +396,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			var tutorialsNode = new TreeNode("Tutorials");
 			var miscNode = new TreeNode("Uncategorised");
 
-			var allDataFiles = Directory.GetFiles(model.Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower());
+			var allDirFiles = Directory.GetFiles(model.Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower());
 
 			// music
 			foreach (var music in model.Music)
@@ -398,50 +450,31 @@ namespace OpenLoco.ObjectEditor.Gui
 			_ = tvObjType.Nodes.Add(dataNode);
 		}
 
-		void InitObjectCategoryTree(bool vanillaOnly, string fileFilter)
+		void InitSCV5CategoryView()
 		{
-			var filteredFiles = string.IsNullOrEmpty(fileFilter)
-				? model.HeaderIndex
-				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+			// todo:
+			var scv5Node = new TreeNode("SCV5");
+			var sc5Node = new TreeNode("SC5");
+			var sv5Node = new TreeNode("SV5");
 
-			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.Name, f.Value.Checksum));
-
-			tvObjType.ImageList = MakeImageList(model);
-
-			var nodesToAdd = new List<TreeNode>();
-			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
+			var allDirFiles = Directory.GetFiles(model.Settings.SCV5Directory).Select(f => Path.GetFileName(f).ToLower());
+			foreach (var file in allDirFiles)
 			{
-				var imageListOffset = model.G1 == null ? 0 : ((int)group.Key) + 2; // + 2 because we have a vanilla+custom image first
-				var objTypeNode = new TreeNode(group.Key.ToString(), imageListOffset, imageListOffset);
-				if (group.Key != ObjectType.Vehicle)
+				if (Path.GetExtension(file) == ".sc5")
 				{
-					foreach (var obj in group)
-					{
-						AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, obj.Value.Checksum, objTypeNode);
-					}
+					sc5Node.Nodes.Add(file, Path.GetFileName(file));
 				}
-				else
+				if (Path.GetExtension(file) == ".sv5")
 				{
-					var vehicleGroup = group.GroupBy(o => o.Value.VehicleType);
-					foreach (var vehicleType in vehicleGroup)
-					{
-						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
-						foreach (var veh in vehicleType)
-						{
-							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, veh.Value.Checksum, vehicleTypeNode);
-						}
-
-						_ = objTypeNode.Nodes.Add(vehicleTypeNode);
-					}
+					sv5Node.Nodes.Add(file, Path.GetFileName(file));
 				}
-
-				nodesToAdd.Add(objTypeNode);
 			}
 
-			var objDataNode = new TreeNode("ObjData");
-			objDataNode.Nodes.AddRange([.. nodesToAdd]);
-			_ = tvObjType.Nodes.Add(objDataNode);
-			tvObjType.Sort();
+			scv5Node.Nodes.Add(sc5Node);
+			scv5Node.Nodes.Add(sv5Node);
+
+			_ = tvObjType.Nodes.Add(scv5Node);
+
 		}
 
 		void InitToolStripMenuItems()
@@ -485,13 +518,33 @@ namespace OpenLoco.ObjectEditor.Gui
 
 				dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(newDataDirs.ToArray());
 			}
+
+			// clear dynamic items
+			while (scv5ToolStripMenuItem.DropDownItems.Count > 2)
+			{
+				scv5ToolStripMenuItem.DropDownItems.RemoveAt(2);
+			}
+
+			if (model.Settings.SCV5Directories != null)
+			{
+				// regenerate them
+				List<ToolStripMenuItem> newDataDirs = [];
+				foreach (var dataDir in model.Settings.SCV5Directories)
+				{
+					var tsmi = new ToolStripMenuItem(dataDir + (model.Settings.SCV5Directory == dataDir ? " (Current)" : string.Empty));
+					tsmi.Click += (sender, e) => setscv5DirectoryToolStripMenuItem_ClickCore(dataDir);
+					newDataDirs.Add(tsmi);
+				}
+
+				scv5ToolStripMenuItem.DropDownItems.AddRange(newDataDirs.ToArray());
+			}
 		}
 
 		void setObjectDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
+			if (dirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
-				setObjectDirectoryToolStripMenuItem_ClickCore(objectDirBrowser.SelectedPath);
+				setObjectDirectoryToolStripMenuItem_ClickCore(dirBrowser.SelectedPath);
 			}
 		}
 
@@ -505,15 +558,31 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		void setDataDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (objectDirBrowser.ShowDialog(this) == DialogResult.OK)
+			if (dirBrowser.ShowDialog(this) == DialogResult.OK)
 			{
-				setDataDirectoryToolStripMenuItem_ClickCore(objectDirBrowser.SelectedPath);
+				setDataDirectoryToolStripMenuItem_ClickCore(dirBrowser.SelectedPath);
 			}
 		}
 
 		void setDataDirectoryToolStripMenuItem_ClickCore(string path)
 		{
 			if (model.LoadDataDirectory(path))
+			{
+				InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+			}
+		}
+
+		void setscv5DirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (dirBrowser.ShowDialog(this) == DialogResult.OK)
+			{
+				setscv5DirectoryToolStripMenuItem_ClickCore(dirBrowser.SelectedPath);
+			}
+		}
+
+		void setscv5DirectoryToolStripMenuItem_ClickCore(string path)
+		{
+			if (model.LoadSCV5Directory(path))
 			{
 				InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
 			}
@@ -607,6 +676,20 @@ namespace OpenLoco.ObjectEditor.Gui
 				tvDATDumpAnnotations.ResumeLayout();
 				rtbDATDumpView.Text = string.Join("\n", dumpLines);
 			}
+		}
+
+		void LoadSCV5File(string filename)
+		{
+			var fullFile = Path.Join(model.Settings.SCV5Directory, filename);
+			var ex = Path.Exists(fullFile);
+			var bytes = SawyerStreamReader.LoadBytesFromFile(fullFile);
+
+			// read file
+			var s5File = ByteReader.ReadLocoStruct<S5File>(bytes);
+			pgObject.SelectedObject = s5File; // todo: use CurrentUIObject, not assign directly here
+
+			//var S5File = ByteReader.ReadLocoStruct<S5File>(bytes);
+			//pgObject.DataContext = S5File;
 		}
 
 		static bool MusicIsPlaying { get; set; }
@@ -1011,6 +1094,16 @@ namespace OpenLoco.ObjectEditor.Gui
 				logger.Debug($"Loading sound effects for {e.Node.Name}");
 				var sfx = model.SoundEffects[e.Node.Name];
 				LoadSoundEffectFile(sfx, e.Node.Text);
+			}
+			else if (Path.GetExtension(e.Node.Name).Equals(".sc5", StringComparison.OrdinalIgnoreCase))
+			{
+				var filename = e.Node.Name;
+				LoadSCV5File(filename);
+			}
+			else if (Path.GetExtension(e.Node.Name).Equals(".sv5", StringComparison.OrdinalIgnoreCase))
+			{
+				var filename = e.Node.Name;
+				LoadSCV5File(filename);
 			}
 			else if (Path.GetExtension(e.Node.Name).Equals(".dat", StringComparison.OrdinalIgnoreCase))
 			{

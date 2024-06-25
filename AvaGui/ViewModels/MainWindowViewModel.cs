@@ -31,6 +31,7 @@ namespace AvaGui.ViewModels
 		public FolderTreeViewModel FolderTreeViewModel { get; }
 
 		public ObjectEditorViewModel ObjectEditorViewModel { get; }
+		public SCV5ViewModel SCV5ViewModel { get; }
 
 		public ObservableCollection<MenuItemModel> ObjDataItems { get; init; }
 
@@ -38,18 +39,18 @@ namespace AvaGui.ViewModels
 
 		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
-//		//
-//		FileViewModel
-//- S5HeaderViewModel
-//- ObjectViewModel
-//- etc
 
-//ObectViewModel
-//- ObjectData
-//- StringTableViewModel
-//- ImageTableViewModel
+		//FileViewModel
+		//- S5HeaderViewModel
+		//- ObjectViewModel
+		//- etc
 
-//ObjectSelectorViewModel
+		//ObjectViewModel
+		//- ObjectData
+		//- StringTableViewModel
+		//- ImageTableViewModel
+
+		//ObjectSelectorViewModel
 
 		public MainWindowViewModel()
 		{
@@ -61,6 +62,7 @@ namespace AvaGui.ViewModels
 
 			FolderTreeViewModel = new FolderTreeViewModel(Model);
 			ObjectEditorViewModel = new ObjectEditorViewModel(Model);
+			SCV5ViewModel = new SCV5ViewModel();
 
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(o => ObjectEditorViewModel.CurrentlySelectedObject = o);

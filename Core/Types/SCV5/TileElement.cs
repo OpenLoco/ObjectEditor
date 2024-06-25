@@ -1,9 +1,9 @@
-﻿using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Types.SCV5
 {
 	[LocoStructSize(0x08)]
-	class TileElement
+	public class TileElement
 	{
 		public const uint8_t FLAG_GHOST = 1 << 4;
 		public const uint8_t FLAG_LAST = 1 << 7;

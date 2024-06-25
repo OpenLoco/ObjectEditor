@@ -1,6 +1,6 @@
-﻿namespace Core.Types.SCV5
+namespace Core.Types.SCV5
 {
-	enum TopographyStyle : uint8_t
+	public enum TopographyStyle : uint8_t
 	{
 		FlatLand,
 		SmallHills,

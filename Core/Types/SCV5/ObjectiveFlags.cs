@@ -1,7 +1,7 @@
-﻿namespace Core.Types.SCV5
+namespace Core.Types.SCV5
 {
 	[Flags]
-	enum ObjectiveFlags : uint8_t
+	public enum ObjectiveFlags : uint8_t
 	{
 		None = (byte)0U,
 		BeTopCompany = (byte)(1U << 0),

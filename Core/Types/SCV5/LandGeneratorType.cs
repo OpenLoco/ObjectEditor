@@ -1,6 +1,6 @@
-﻿namespace Core.Types.SCV5
+namespace Core.Types.SCV5
 {
-	enum LandGeneratorType : uint8_t
+	public enum LandGeneratorType : uint8_t
 	{
 		Original,
 		Simplex,

@@ -1,9 +1,9 @@
-﻿using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Types.SCV5
 {
 	[LocoStructSize(0x8FA8)]
-	class Company
+	public class Company
 	{
 		public uint16_t Name { get; set; }                 // 0x0000
 		public uint16_t OwnerName { get; set; }            // 0x0002

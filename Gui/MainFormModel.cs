@@ -242,50 +242,6 @@ namespace OpenLoco.ObjectEditor.Gui
 			SawyerStreamWriter.Save(path, obj.DatFileInfo.S5Header.Name, obj.LocoObject);
 		}
 
-		public bool LoadDataDirectory(string directory)
-		{
-			if (!Directory.Exists(directory))
-			{
-				logger.Warning("Invalid directory: doesn't exist");
-				return false;
-			}
-
-			Settings.DataDirectory = directory;
-
-			var allDataFiles = Directory.GetFiles(Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower()).ToHashSet();
-
-			void LoadKnownData(HashSet<string> allFilesInDir, HashSet<string> knownFilenames, Dictionary<string, byte[]> dict)
-			{
-				dict.Clear();
-				var expectedMusicFiles = knownFilenames.Select(f => f.ToLower());
-				foreach (var music in expectedMusicFiles)
-				{
-					var matching = allFilesInDir.Where(f => f.EndsWith(music));
-					if (matching.Any())
-					{
-						dict.Add(music, File.ReadAllBytes(Path.Combine(Settings.DataDirectory, music)));
-						_ = allFilesInDir.RemoveWhere(f => f.EndsWith(music));
-					}
-				}
-			}
-
-			LoadKnownData(allDataFiles, [.. OriginalDataFiles.Music.Keys], Music);
-			LoadKnownData(allDataFiles, [.. OriginalDataFiles.MiscellaneousTracks.Keys], MiscellaneousTracks);
-			LoadKnownData(allDataFiles, [OriginalDataFiles.SoundEffect], SoundEffects);
-			LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
-
-			MiscFiles = [.. allDataFiles];
-
-			// load G1 only for now since we need it for palette
-			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
-
-			//LoadPalette(); // update palette from g1
-
-			SaveSettings();
-
-			return true;
-		}
-
 		public void LoadObjDirectory(string directory, IProgress<float>? progress, bool useExistingIndex)
 		{
 			if (!Directory.Exists(directory))
@@ -325,6 +281,63 @@ namespace OpenLoco.ObjectEditor.Gui
 			}
 
 			SaveSettings();
+		}
+
+		public bool LoadDataDirectory(string directory)
+		{
+			if (!Directory.Exists(directory))
+			{
+				logger.Warning("Invalid directory: doesn't exist");
+				return false;
+			}
+
+			Settings.DataDirectory = directory;
+
+			var allDataFiles = Directory.GetFiles(Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower()).ToHashSet();
+
+			void LoadKnownData(HashSet<string> allFilesInDir, HashSet<string> knownFilenames, Dictionary<string, byte[]> dict)
+			{
+				dict.Clear();
+				foreach (var music in knownFilenames.Select(f => f.ToLower()))
+				{
+					var matching = allFilesInDir.Where(f => f.EndsWith(music));
+					if (matching.Any())
+					{
+						dict.Add(music, File.ReadAllBytes(Path.Combine(Settings.DataDirectory, music)));
+						_ = allFilesInDir.RemoveWhere(f => f.EndsWith(music));
+					}
+				}
+			}
+
+			LoadKnownData(allDataFiles, [.. OriginalDataFiles.Music.Keys], Music);
+			LoadKnownData(allDataFiles, [.. OriginalDataFiles.MiscellaneousTracks.Keys], MiscellaneousTracks);
+			LoadKnownData(allDataFiles, [OriginalDataFiles.SoundEffect], SoundEffects);
+			LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
+
+			MiscFiles = [.. allDataFiles];
+
+			// load G1 only for now since we need it for palette
+			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
+
+			//LoadPalette(); // update palette from g1
+
+			SaveSettings();
+
+			return true;
+		}
+
+		public bool LoadSCV5Directory(string directory)
+		{
+			if (!Directory.Exists(directory))
+			{
+				logger.Warning("Invalid directory: doesn't exist");
+				return false;
+			}
+
+			Settings.SCV5Directory = directory;
+			SaveSettings();
+
+			return true;
 		}
 
 		private static JsonSerializerOptions GetOptions()

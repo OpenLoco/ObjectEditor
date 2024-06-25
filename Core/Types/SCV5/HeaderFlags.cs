@@ -1,7 +1,7 @@
-﻿namespace Core.Types.SCV5
+namespace Core.Types.SCV5
 {
 	[Flags]
-	enum HeaderFlags : uint8_t
+	public enum HeaderFlags : uint8_t
 	{
 		None = (byte)0U,
 		IsRaw = (byte)1U << 0,

@@ -1,6 +1,6 @@
-﻿namespace Core.Types.SCV5
+namespace Core.Types.SCV5
 {
-	enum LandDistributionPattern : uint8_t
+	public enum LandDistributionPattern : uint8_t
 	{
 		Everywhere,
 		Nowhere,

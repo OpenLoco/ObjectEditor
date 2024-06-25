@@ -1,7 +1,7 @@
-﻿namespace Core.Types.SCV5
+namespace Core.Types.SCV5
 {
 	[Flags]
-	enum ScenarioFlags : uint16_t
+	public enum ScenarioFlags : uint16_t
 	{
 		None = (byte)0U,
 		LandscapeGenerationDone = (byte)(1U << 0),

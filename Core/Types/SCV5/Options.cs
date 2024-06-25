@@ -1,46 +1,45 @@
-﻿using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
 
 namespace Core.Types.SCV5
 {
 	[LocoStructSize(0x431A)]
-	class Options
+	public record Options(
+		[property: LocoStructOffset(0x00)] EditorControllerStep EditorStep,
+		[property: LocoStructOffset(0x01)] uint8_t Difficulty,
+		[property: LocoStructOffset(0x02)] uint16_t ScevnarioStartYear,
+		[property: LocoStructOffset(0x04), LocoArrayLength(2)] uint8_t[] pad_4,
+		[property: LocoStructOffset(0x06)] ScenarioFlags ScenarioFlags,
+		[property: LocoStructOffset(0x08)] uint8_t MadeAnyChanges,
+		[property: LocoStructOffset(0x09)] uint8_t pad_9,
+		[property: LocoStructOffset(0x0A), LocoArrayLength(32)] LandDistributionPattern LandDistributionPatterns,
+		[property: LocoStructOffset(0x2A), LocoArrayLength(64)] char_t[] ScenarioName, // this is a string
+		[property: LocoStructOffset(0x6A), LocoArrayLength(256)] char_t[] ScenarioDetails, // this is a string
+		[property: LocoStructOffset(0x16A)] ObjectHeader ScenarioText,
+		[property: LocoStructOffset(0x17A)] uint16_t NumberOfForests,
+		[property: LocoStructOffset(0x17C)] uint8_t MinForestRadius,
+		[property: LocoStructOffset(0x17D)] uint8_t MaxForestRadius,
+		[property: LocoStructOffset(0x17E)] uint8_t MinForestDensity,
+		[property: LocoStructOffset(0x17F)] uint8_t MaxForestDensity,
+		[property: LocoStructOffset(0x180)] uint16_t NumberRandomTrees,
+		[property: LocoStructOffset(0x182)] uint8_t MinAltitudeForTrees,
+		[property: LocoStructOffset(0x183)] uint8_t MaxAltitudeForTrees,
+		[property: LocoStructOffset(0x184)] uint8_t MinLandHeight,
+		[property: LocoStructOffset(0x185)] TopographyStyle TopographyStyle,
+		[property: LocoStructOffset(0x186)] uint8_t HillDensity,
+		[property: LocoStructOffset(0x187)] uint8_t NumberOfTowns,
+		[property: LocoStructOffset(0x188)] uint8_t MaxTownSize,
+		[property: LocoStructOffset(0x189)] uint8_t NumberOfIndustries,
+		[property: LocoStructOffset(0x18A), LocoArrayLength(128 * 128)] uint8_t[] Preview,
+		[property: LocoStructOffset(0x418A)] uint8_t MaxCompetingCompanies,
+		[property: LocoStructOffset(0x418B)] uint8_t CompetitorStartDelay,
+		[property: LocoStructOffset(0x418C)] ScenarioObjective Objective,
+		[property: LocoStructOffset(0x419D)] ObjectHeader ObjectiveDeliveredCargo,
+		[property: LocoStructOffset(0x41AD)] ObjectHeader Currency,
+		[property: LocoStructOffset(0x41B2)] LandGeneratorType Generator,
+		[property: LocoStructOffset(0x41B3)] uint8_t NumTerrainSmoothingPasses,
+		[property: LocoStructOffset(0x41B4), LocoArrayLength(347)] byte[] pad_41BD) : ILocoStruct
 	{
-		[LocoStructOffset(0x00)] public EditorControllerStep EditorStep { get; set; }
-		[LocoStructOffset(0x01)] public uint8_t Difficulty { get; set; }
-		[LocoStructOffset(0x02)] public uint16_t ScevnarioStartYear { get; set; }
-		[LocoStructOffset(0x04), LocoArrayLength(2)] public uint8_t[] pad_4 { get; set; }
-		[LocoStructOffset(0x06)] public ScenarioFlags ScenarioFlags { get; set; }
-		[LocoStructOffset(0x08)] public uint8_t MadeAnyChanges { get; set; }
-		[LocoStructOffset(0x09)] public uint8_t pad_9 { get; set; }
-		[LocoStructOffset(0x0A), LocoArrayLength(32)] public LandDistributionPattern LandDistributionPatterns { get; set; }
-		[LocoStructOffset(0x2A), LocoArrayLength(64)] public char[] ScenarioName { get; set; }
-		[LocoStructOffset(0x6A), LocoArrayLength(256)] public char[] ScenarioDetails { get; set; }
-		[LocoStructOffset(0x16A)] public ObjectHeader ScenarioText { get; set; }
-		[LocoStructOffset(0x17A)] public uint16_t NumberOfForests { get; set; }
-		[LocoStructOffset(0x17C)] public uint8_t MinForestRadius { get; set; }
-		[LocoStructOffset(0x17D)] public uint8_t MaxForestRadius { get; set; }
-		[LocoStructOffset(0x17E)] public uint8_t MinForestDensity { get; set; }
-		[LocoStructOffset(0x17F)] public uint8_t MaxForestDensity { get; set; }
-		[LocoStructOffset(0x180)] public uint16_t NumberRandomTrees { get; set; }
-		[LocoStructOffset(0x182)] public uint8_t MinAltitudeForTrees { get; set; }
-		[LocoStructOffset(0x183)] public uint8_t MaxAltitudeForTrees { get; set; }
-		[LocoStructOffset(0x184)] public uint8_t MinLandHeight { get; set; }
-		[LocoStructOffset(0x185)] public TopographyStyle TopographyStyle { get; set; }
-		[LocoStructOffset(0x186)] public uint8_t HillDensity { get; set; }
-		[LocoStructOffset(0x187)] public uint8_t NumberOfTowns { get; set; }
-		[LocoStructOffset(0x188)] public uint8_t MaxTownSize { get; set; }
-		[LocoStructOffset(0x189)] public uint8_t NumberOfIndustries { get; set; }
-		[LocoStructOffset(0x18A), LocoArrayLength(128 * 128)] public uint8_t[] Preview { get; set; } // this is a 2D array
-		[LocoStructOffset(0x418A)] public uint8_t MaxCompetingCompanies { get; set; }
-		[LocoStructOffset(0x418B)] public uint8_t CompetitorStartDelay { get; set; }
-		[LocoStructOffset(0x418C)] public ScenarioObjective Objective { get; set; }
-		[LocoStructOffset(0x419D)] public ObjectHeader ObjectiveDeliveredCargo { get; set; }
-		[LocoStructOffset(0x41AD)] public ObjectHeader Currency { get; set; }
-
-		// new fields:
-		[LocoStructOffset(0x41B2)] public LandGeneratorType Generator { get; set; }
-		[LocoStructOffset(0x41B3)] public uint8_t NumTerrainSmoothingPasses { get; set; }
-		[LocoStructOffset(0x41B4), LocoArrayLength(347)] public byte[] pad_41BD { get; set; }
+		public bool Validate() => true;
 	}
 }

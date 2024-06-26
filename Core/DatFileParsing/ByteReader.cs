@@ -42,6 +42,11 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				return ByteReaderT.Read_uint16t(data, offset);
 			}
 
+			if (t == typeof(bool))
+			{
+				return ByteReaderT.Read_bool(data, offset);
+			}
+
 			if (t.IsArray)
 			{
 				var elementType = t.GetElementType() ?? throw new ArgumentNullException(t.Name);
@@ -107,6 +112,10 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				if (t.Name == "ObjectHeader")
 				{
 					return ObjectHeader.Read(data[..ObjectHeader.StructLength]);
+				}
+				else if (t.Name == "S5Header")
+				{
+					return S5Header.Read(data[..S5Header.StructLength]);
 				}
 
 				var objectSize = ByteHelpers.GetObjectSize(t);

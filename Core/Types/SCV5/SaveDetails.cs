@@ -2,7 +2,7 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Types.SCV5
 {
-	[LocoStructSize(0xC618)]
+	[LocoStructSize(StructLength)]
 	public record SaveDetails([property: LocoStructOffset(0x00), LocoArrayLength(256)] char_t[] Company,
 		[property: LocoStructOffset(0x100), LocoArrayLength(256)] char_t[] Owner,
 		[property: LocoStructOffset(0x200)] uint32_t Date,
@@ -15,6 +15,7 @@ namespace Core.Types.SCV5
 		[property: LocoStructOffset(0xC59C), LocoArrayLength(124)] byte[] pad_C59C)
 		: ILocoStruct
 	{
+		public const int StructLength = 0xC618;
 		public bool Validate() => true;
 	}
 }

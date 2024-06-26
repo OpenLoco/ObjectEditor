@@ -6,7 +6,7 @@ using Zenith.Core;
 namespace OpenLoco.ObjectEditor.Headers
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[LocoStructSize(0x10)]
+	[LocoStructSize(StructLength)]
 	public record S5Header(string Name, uint32_t Checksum)
 	{
 		// this is necessary because Flags must be get-set to enable setters for SourceGame and ObjectType

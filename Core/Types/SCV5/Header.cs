@@ -2,7 +2,7 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace Core.Types.SCV5
 {
-	[LocoStructSize(0x20)]
+	[LocoStructSize(StructLength)]
 	public record Header(
 		[property: LocoStructOffset(0x00)] S5Type Type,
 		[property: LocoStructOffset(0x01)] HeaderFlags Flags,
@@ -11,6 +11,7 @@ namespace Core.Types.SCV5
 		[property: LocoStructOffset(0x08)] uint32_t Magic,
 		[property: LocoStructOffset(0x0C), LocoArrayLength(20)] byte[] Padding) : ILocoStruct
 	{
+		public const int StructLength = 0x20;
 		public bool Validate() => true;
 	}
 }

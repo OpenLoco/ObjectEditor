@@ -683,9 +683,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			var fullFile = Path.Join(model.Settings.SCV5Directory, filename);
 			var ex = Path.Exists(fullFile);
 			var bytes = SawyerStreamReader.LoadBytesFromFile(fullFile);
-
-			// read file
-			var s5File = ByteReader.ReadLocoStruct<S5File>(bytes);
+			var s5File = S5File.Read(bytes);
 			pgObject.SelectedObject = s5File; // todo: use CurrentUIObject, not assign directly here
 
 			//var S5File = ByteReader.ReadLocoStruct<S5File>(bytes);

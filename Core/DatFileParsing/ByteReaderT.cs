@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.ObjectEditor.DatFileParsing
+namespace OpenLoco.ObjectEditor.DatFileParsing
 {
 	public static class ByteReaderT
 	{
@@ -25,6 +25,9 @@
 
 		public static int32_t Read_int32t(ReadOnlySpan<byte> data, int offset)
 			=> BitConverter.ToInt32(data[offset..(offset + 4)]);
+
+		public static bool Read_bool(ReadOnlySpan<byte> data, int offset)
+			=> data[offset] != 0;
 
 		public static T Read<T>(ReadOnlySpan<byte> data, int offset) where T : struct
 		{

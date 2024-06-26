@@ -7,6 +7,7 @@ using OpenLoco.ObjectEditor.Data;
 using Core.Objects;
 using Core.Objects.Sound;
 using Zenith.Core;
+using Core.Types.SCV5;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {
@@ -437,6 +438,21 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				_ = br.Read(pcmData);
 				return (header, pcmData);
 			}
+		}
+
+		public static T ReadChunk<T>(ref ReadOnlySpan<byte> data) where T : class
+			=> ByteReader.ReadLocoStruct<T>(ReadChunkCore(ref data));
+
+		public static byte[] ReadChunkCore(ref ReadOnlySpan<byte> data)
+		{
+			// read encoding and length
+			var chunk = ObjectHeader.Read(data[..ObjectHeader.StructLength]);
+			data = data[ObjectHeader.StructLength..];
+
+			// decode bytes
+			var chunkBytes = data[..(int)chunk.DataLength];
+			data = data[(int)chunk.DataLength..];
+			return Decode(chunk.Encoding, chunkBytes.ToArray());
 		}
 
 		public static List<(WaveFormatEx header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)

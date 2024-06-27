@@ -33,6 +33,8 @@ namespace AvaGui.ViewModels
 		public ObjectEditorViewModel ObjectEditorViewModel { get; }
 		public SCV5ViewModel SCV5ViewModel { get; }
 
+		[Reactive] public object CurrentEditorModel { get; set; } // this will either be ObjectEditorViewModel for objects, or SCV5ViewModel for scenarios/landscapes/saves. in future, it'll also be different for g1.dat, tutorials, sfx files, etc
+
 		public ObservableCollection<MenuItemModel> ObjDataItems { get; init; }
 
 		public ObservableCollection<MenuItemModel> DataItems { get; init; }
@@ -63,6 +65,14 @@ namespace AvaGui.ViewModels
 			FolderTreeViewModel = new FolderTreeViewModel(Model);
 			ObjectEditorViewModel = new ObjectEditorViewModel(Model);
 			SCV5ViewModel = new SCV5ViewModel();
+
+			_ = ObjectEditorViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
+				.Subscribe(o => CurrentEditorModel = ObjectEditorViewModel);
+
+			_ = this.WhenAnyValue(o => o.ObjectEditorViewModel)
+				.Subscribe(o => CurrentEditorModel = ObjectEditorViewModel);
+			_ = this.WhenAnyValue(o => o.SCV5ViewModel)
+				.Subscribe(o => CurrentEditorModel = SCV5ViewModel);
 
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(o => ObjectEditorViewModel.CurrentlySelectedObject = o);

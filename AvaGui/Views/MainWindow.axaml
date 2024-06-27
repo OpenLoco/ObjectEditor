@@ -57,6 +57,64 @@
 			</StackPanel>
 		</DataTemplate>
 
+		<DataTemplate DataType="vm:ObjectEditorViewModel">
+			<StackPanel DataContext="{Binding}" Margin="10">
+				<TabControl>
+					<TabItem Header="Headers">
+						<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</TabItem>
+					<TabItem Header="Object">
+						<pgc:PropertyGrid x:Name="propertyGrid_1" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</TabItem>
+					<TabItem Header="String Table">
+						<StackPanel Orientation="Horizontal" Spacing="16">
+							<ListBox ItemsSource="{Binding StringTableViewModel.Keys}" SelectedItem="{Binding StringTableViewModel.SelectedKey}">
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+							<ListBox ItemsSource="{Binding StringTableViewModel.TranslationTable}">
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<StackPanel Orientation="Horizontal">
+											<TextBlock Text="{Binding Language}" Margin="4" Width="128"></TextBlock>
+											<TextBox Text="{Binding Translation}" Width="256"></TextBox>
+										</StackPanel>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+						</StackPanel>
+					</TabItem>
+					<TabItem Header="Image Table">
+						<ItemsControl ItemsSource="{Binding ImageTableViewModel.Images, Mode=OneWay}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<WrapPanel />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Border BorderThickness="1" Background="Blue">
+										<Image Source="{Binding}" Stretch="None" />
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</TabItem>
+				</TabControl>
+			</StackPanel>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:SCV5ViewModel">
+			<StackPanel Orientation="Vertical">
+				<TextBlock Text="{Binding CurrentFileName}"/>
+				<TextBlock Text="{Binding CurrentFile}"/>
+			</StackPanel>
+			<!--<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentFileName}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
+		</DataTemplate>
+
 	</Window.DataTemplates>
 
 	<DockPanel>
@@ -137,53 +195,7 @@
 		</Border>
 		<Border BorderThickness="1" BorderBrush="Gray">
 			<ScrollViewer>
-				<StackPanel DataContext="{Binding ObjectEditorViewModel}" Margin="10">
-					<TabControl>
-						<TabItem Header="Headers">
-							<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-						</TabItem>
-						<TabItem Header="Object">
-							<pgc:PropertyGrid x:Name="propertyGrid_1" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-						</TabItem>
-						<TabItem Header="String Table">
-							<StackPanel Orientation="Horizontal" Spacing="16">
-								<ListBox ItemsSource="{Binding StringTableViewModel.Keys}" SelectedItem="{Binding StringTableViewModel.SelectedKey}">
-									<ListBox.ItemTemplate>
-										<DataTemplate>
-											<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-										</DataTemplate>
-									</ListBox.ItemTemplate>
-								</ListBox>
-								<ListBox ItemsSource="{Binding StringTableViewModel.TranslationTable}">
-									<ListBox.ItemTemplate>
-										<DataTemplate>
-											<StackPanel Orientation="Horizontal">
-												<TextBlock Text="{Binding Language}" Margin="4" Width="128"></TextBlock>
-												<TextBox Text="{Binding Translation}" Width="256"></TextBox>
-											</StackPanel>
-										</DataTemplate>
-									</ListBox.ItemTemplate>
-								</ListBox>
-							</StackPanel>
-						</TabItem>
-						<TabItem Header="Image Table">
-							<ItemsControl ItemsSource="{Binding ImageTableViewModel.Images, Mode=OneWay}">
-								<ItemsControl.ItemsPanel>
-									<ItemsPanelTemplate>
-										<WrapPanel />
-									</ItemsPanelTemplate>
-								</ItemsControl.ItemsPanel>
-								<ItemsControl.ItemTemplate>
-									<DataTemplate>
-										<Border BorderThickness="1" Background="Blue">
-											<Image Source="{Binding}" Stretch="None" />
-										</Border>
-									</DataTemplate>
-								</ItemsControl.ItemTemplate>
-							</ItemsControl>
-						</TabItem>
-					</TabControl>
-				</StackPanel>
+				<ContentControl Content="{Binding CurrentEditorModel}"/>
 			</ScrollViewer>
 		</Border>
 

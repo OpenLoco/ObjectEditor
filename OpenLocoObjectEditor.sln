@@ -27,7 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaGui", "AvaGui\AvaGui.csproj", "{97BB6E13-07B5-4F91-BCB2-AEC1960EACC3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaGuiStringTable", "AvaGui3\AvaGuiStringTable.csproj", "{A6B84588-F8A0-4591-B504-CF185DB1700D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaGuiStringTable", "AvaGuiStringTable\AvaGuiStringTable.csproj", "{A6B84588-F8A0-4591-B504-CF185DB1700D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

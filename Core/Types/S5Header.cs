@@ -30,6 +30,21 @@ namespace OpenLoco.ObjectEditor.Headers
 			set => Flags = (Flags & (~0x3u << 6)) | ((uint)value & 0x3F);
 		}
 
+		public bool Validate()
+		{
+			if (SourceGame is < 0 or >= SourceGame.MAX)
+			{
+				return false;
+			}
+
+			if (ObjectType is < 0 or >= ObjectType.MAX)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
 		public static S5Header Read(ReadOnlySpan<byte> data)
 		{
 			Verify.AreEqual(data.Length, StructLength);

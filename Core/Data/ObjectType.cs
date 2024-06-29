@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.ObjectEditor.Data
+namespace OpenLoco.ObjectEditor.Data
 {
 	public enum ObjectType : byte
 	{
@@ -36,5 +36,6 @@
 		Region,
 		Competitor,
 		ScenarioText,
+		MAX,
 	};
 }

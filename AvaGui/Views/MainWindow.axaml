@@ -129,23 +129,23 @@
 							</Style>
 						</MenuItem.Styles>
 					</MenuItem>
-					<MenuItem Header="Data Directories" ItemsSource="{Binding DataItems}" Classes="SubItems">
+					<!--<MenuItem Header="Data Directories" ItemsSource="{Binding DataItems}" Classes="SubItems">
 						<MenuItem.Styles>
 							<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemModel">
 								<Setter Property="Header" Value="{Binding Name}"/>
 								<Setter Property="Command" Value="{Binding MenuCommand}"/>
 							</Style>
 						</MenuItem.Styles>
-					</MenuItem>
+					</MenuItem>-->
 					<MenuItem Header="Recreate Index" Command="{Binding RecreateIndex}" />
-					<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />
+					<!--<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />-->
 				</MenuItem>
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
 		</DockPanel>
 		<Border DockPanel.Dock="Bottom" BorderThickness="1" BorderBrush="Gray">
 			<ScrollViewer DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-				<ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Logs}" MaxHeight="256">
+				<ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Logs}" MinHeight="128" MaxHeight="256">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
 							<Grid DataContext="{Binding}">

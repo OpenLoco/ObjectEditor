@@ -16,6 +16,7 @@ using System.Threading;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor;
 using System.Collections.ObjectModel;
+using System.Reflection;
 
 namespace AvaGui.Models
 {
@@ -127,6 +128,27 @@ namespace AvaGui.Models
 			File.WriteAllText(SettingsFilePath, text);
 		}
 
+		public bool TryGetObject(string path, out UiLocoFile? uiLocoFile)
+		{
+			if (ObjectCache.TryGetValue(path, out var obj))
+			{
+				uiLocoFile = obj;
+				return true;
+			}
+			else if (File.Exists(path))
+			{
+				var loadResult = LoadSingleObjectFile(path, HeaderIndex, ObjectCache, out var _);
+				if (loadResult)
+				{
+					uiLocoFile = ObjectCache[path];
+					return true;
+				}
+			}
+
+			uiLocoFile = null;
+			return false;
+		}
+
 		// this method loads every single object entirely. it takes a long time to run
 		void CreateIndex(string[] allFiles, IProgress<float>? progress)
 		{
@@ -141,49 +163,25 @@ namespace AvaGui.Models
 			var sw = new Stopwatch();
 			sw.Start();
 
-			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (file) =>
+			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, (file) =>
 			//foreach (var file in allFiles)
 			{
 				try
 				{
 					var startTime = sw.Elapsed;
-					var (fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(file);
+					DatFileInfo fileInfo;
+					LoadSingleObjectFile(file, ccHeaderIndex, ccObjectCache, out fileInfo);
 
-					if (locoObject == null)
-					{
-						logger?.Error($"Unable to load {file}. FileInfo={fileInfo}");
-						return;
-					}
-
-					if (!ccObjectCache.TryAdd(file, new UiLocoFile { DatFileInfo = fileInfo, LocoObject = locoObject }))
-					{
-						logger?.Warning($"Didn't add file {file} to cache - already exists (how???)");
-					}
-
-					VehicleType? veh = null;
-					if (locoObject.Object is VehicleObject vo)
-					{
-						veh = vo.Type;
-					}
-
-					var indexObjectHeader = new IndexObjectHeader(fileInfo.S5Header.Name, fileInfo.S5Header.ObjectType, fileInfo.S5Header.Checksum, veh);
-					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
-					{
-						logger?.Warning($"Didn't add file {file} to index - already exists (how???)");
-					}
-					else
-					{
-						var elapsed = sw.Elapsed - startTime;
-						_ = timePerFile.TryAdd(fileInfo.S5Header.Name, elapsed);
-					}
+					var elapsed = sw.Elapsed - startTime;
+					_ = timePerFile.TryAdd(fileInfo.S5Header.Name, elapsed);
 				}
 				catch (Exception ex)
 				{
 					logger?.Error($"Failed to load \"{file}\"", ex);
 
-					var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
-					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, obj.Checksum, null);
-					_ = ccHeaderIndex.TryAdd(file, indexObjectHeader);
+					//var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
+					//var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, obj.SourceGame, obj.Checksum, null);
+					//_ = ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}
 				finally
 				{
@@ -213,6 +211,30 @@ namespace AvaGui.Models
 
 			var median = timePerFile.OrderBy(x => x.Value).Skip(timePerFile.Count / 2).Take(1).Single();
 			logger?.Debug($"Median time={median.Value}ms");
+		}
+
+		private bool LoadSingleObjectFile(string file, IDictionary<string, IndexObjectHeader> ccHeaderIndex, IDictionary<string, UiLocoFile> ccObjectCache, out DatFileInfo? fileInfo)
+		{
+			(fileInfo, var locoObject) = SawyerStreamReader.LoadFullObjectFromFile(file);
+
+			if (locoObject == null)
+			{
+				logger?.Error($"Unable to load {file}. FileInfo={fileInfo}");
+				return false;
+			}
+
+			_ = ccObjectCache.TryAdd(file, new UiLocoFile { DatFileInfo = fileInfo, LocoObject = locoObject });
+
+			VehicleType? veh = null;
+			if (locoObject.Object is VehicleObject vo)
+			{
+				veh = vo.Type;
+			}
+
+			var indexObjectHeader = new IndexObjectHeader(fileInfo.S5Header.Name, fileInfo.S5Header.ObjectType, fileInfo.S5Header.SourceGame, fileInfo.S5Header.Checksum, veh);
+			_ = ccHeaderIndex.TryAdd(file, indexObjectHeader);
+
+			return true;
 		}
 
 		public void SaveFile(string path, UiLocoFile obj)
@@ -270,6 +292,12 @@ namespace AvaGui.Models
 			return true;
 		}
 
+		// this method will load any supported file type
+		public void LoadDirectory(string directory)
+		{
+			var allFiles = Directory.GetFiles(directory, "*.dat|*.sv5|*.sc5", SearchOption.AllDirectories);
+		}
+
 		public async Task LoadObjDirectoryAsync(string directory, IProgress<float>? progress, bool useExistingIndex)
 		{
 			await Task.Run(() => LoadObjDirectory(directory, progress, useExistingIndex));
@@ -297,17 +325,6 @@ namespace AvaGui.Models
 				if (a.Any() || b.Any())
 				{
 					logger?.Warning("Selected directory had an index file but it was outdated; suggest recreating it when you have a moment");
-					//logger?.Warning("Files in index that weren't in the directory:");
-					//foreach (var aa in a)
-					//{
-					//	logger?.Warning($"  {aa}");
-					//}
-
-					//logger?.Warning("Files in directory that weren't in the index:");
-					//foreach (var bb in b)
-					//{
-					//	logger?.Warning($"  {bb}");
-					//}
 				}
 			}
 			else

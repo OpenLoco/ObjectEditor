@@ -20,7 +20,7 @@ namespace AvaGui.ViewModels
 		public UiLocoFile _currentObject;
 		public UiLocoFile? CurrentObject
 		{
-			get => CurrentlySelectedObject == null || !Model.ObjectCache.TryGetValue(CurrentlySelectedObject.Path, out var value)
+			get => CurrentlySelectedObject == null || !Model.TryGetObject(CurrentlySelectedObject.Path, out var value)
 				? null
 				: value;
 			set => Model.ObjectCache[CurrentlySelectedObject.Path] = value;

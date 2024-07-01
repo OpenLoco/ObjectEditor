@@ -4,5 +4,5 @@ using System;
 
 namespace AvaGui.Models
 {
-	public record IndexObjectHeader(string Name, ObjectType ObjectType, UInt32 Checksum, VehicleType? VehicleType);
+	public record IndexObjectHeader(string Name, ObjectType ObjectType, SourceGame SourceGame, UInt32 Checksum, VehicleType? VehicleType);
 }

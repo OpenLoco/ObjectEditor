@@ -80,7 +80,7 @@ namespace AvaGui.ViewModels
 			ObjDataItems = new ObservableCollection<MenuItemModel>(Model.Settings.ObjDataDirectories
 				.Select(x => new MenuItemModel(
 					x,
-					ReactiveCommand.Create<string>(Model.LoadObjDirectory))));
+					ReactiveCommand.Create<string>(() => FolderTreeViewModel.CurrentDirectory = x))));
 
 			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(() => { })));
 			ObjDataItems.Insert(1, new MenuItemModel("--------", ReactiveCommand.Create(() => { })));

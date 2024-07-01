@@ -9,43 +9,44 @@ using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Objects;
 using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
+using SkiaSharp;
 
 namespace AvaGui.ViewModels
 {
 	public class FolderTreeViewModel : ReactiveObject
 	{
-		ObjectEditorModel Model { get; }
+		ObjectEditorModel Model { get; init; }
 
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
 			Model = model;
 
-			_ = this.WhenAnyValue(o => o.Model.Settings.ObjDataDirectory)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
-			_ = this.WhenAnyValue(o => o.Model.Settings.ObjDataDirectory)
+			_ = this.WhenAnyValue(o => o.CurrentDirectory)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
-
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
-
-			//CurrentDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
+			_ = this.WhenAnyValue(o => o.DirectoryItems)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
 		}
 
-		public string CurrentDirectory => Model.Settings.ObjDataDirectory;
-
+		[Reactive] public string CurrentDirectory { get; set; }
+		[Reactive] public FileSystemItemBase CurrentlySelectedObject { get; set; }
 		[Reactive] public string FilenameFilter { get; set; }
-
 		[Reactive] public bool DisplayVanillaOnly { get; set; }
 
-		private ObservableCollection<FileSystemItemBase> LoadDirectory(string newDir)
-			=> new(_LoadDirectory(newDir));
+		public ObservableCollection<FileSystemItemBase> DirectoryItems
+			=> LoadObjDirectory(CurrentDirectory);
+		private ObservableCollection<FileSystemItemBase> LoadObjDirectory(string newDir)
+			=> new(_LoadObjDirectory(newDir));
 
-		private IEnumerable<FileSystemItemBase> _LoadDirectory(string newDir)
+		string prevDir = string.Empty;
+
+		private IEnumerable<FileSystemItemBase> _LoadObjDirectory(string newDir)
 		{
-			if (newDir == null)
+			if (newDir == null || string.IsNullOrEmpty(newDir))
 			{
 				yield break;
 			}
@@ -57,12 +58,17 @@ namespace AvaGui.ViewModels
 				yield break;
 			}
 
-			Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false);
+			// todo: load each file
+			// check if its object, scenario, save, landscape, g1, sfx, tutorial, etc
 
-			var groupedObjects = Model.ObjectCache
-				.Where(o => string.IsNullOrEmpty(FilenameFilter) || o.Value.DatFileInfo.S5Header.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase))
-				.Where(o => !DisplayVanillaOnly || o.Value.DatFileInfo.S5Header.SourceGame == SourceGame.Vanilla)
-				.GroupBy(o => o.Value.DatFileInfo.S5Header.ObjectType)
+			if (prevDir != newDir)
+			{
+				Model.LoadObjDirectory(newDir, null, true);
+			}
+
+			var groupedObjects = Model.HeaderIndex
+				.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))
+				.GroupBy(o => o.Value.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 
 			var count = 0;
@@ -74,14 +80,21 @@ namespace AvaGui.ViewModels
 					subNodes = [];
 					var vCount = 0;
 					foreach (var vg in objGroup
-						.GroupBy(o => (o.Value.LocoObject.Object as VehicleObject)!.Type)
+						.GroupBy(o => o.Value.VehicleType)
 						.OrderBy(vg => vg.Key.ToString()))
 					{
-						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim(), o.Value.DatFileInfo.S5Header.SourceGame)));
+						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+
+						if (vg.Key == null)
+						{
+							// this should be impossible - object says its a vehicle but doesn't have a vehicle type
+							// todo: move validation into the loading stage or cstr of IndexObjectHeader
+							continue;
+						}
 
 						subNodes.Add(new FileSystemVehicleGroup(
 							string.Empty,
-							vg.Key,
+							vg.Key.Value,
 							vehicleSubNodes,
 							vCount++));
 					}
@@ -89,7 +102,7 @@ namespace AvaGui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(
-						objGroup.Select(o => new FileSystemItem(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim(), o.Value.DatFileInfo.S5Header.SourceGame)));
+						objGroup.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
 				}
 
 				yield return new FileSystemItemGroup(
@@ -97,17 +110,13 @@ namespace AvaGui.ViewModels
 					objGroup.Key,
 					subNodes,
 					count++);
+
+				prevDir = newDir;
 			}
 		}
 
-		//[Reactive] public string CurrentDirectory { get; set; }
-
-		public ObservableCollection<FileSystemItemBase> DirectoryItems
-			=> LoadDirectory(Model.Settings.ObjDataDirectory);
-
 		public string DirectoryFileCount
-			=> $"Files in dir: {(Model.Settings.ObjDataDirectory == null ? 0 : new DirectoryInfo(Model.Settings.ObjDataDirectory).GetFiles().Length)}";
+			=> $"Files in dir: {(CurrentDirectory == null ? 0 : new DirectoryInfo(CurrentDirectory).GetFiles().Length)}";
 
-		[Reactive] public FileSystemItemBase CurrentlySelectedObject { get; set; }
 	}
 }

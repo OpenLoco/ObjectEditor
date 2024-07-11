@@ -121,7 +121,7 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<MenuItem Header="⭮ Recreate index" Command="{Binding RecreateIndex}" />
+					<MenuItem Header="⭮ Recreate current index" Command="{Binding RecreateIndex}" />
 					<!--<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />-->
 					<MenuItem Header="⚙ Open settings folder" Command="{Binding OpenSettingsFolder}" />
 				</MenuItem>
@@ -181,27 +181,10 @@
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
 		</DockPanel>
 		<ScrollViewer DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-			<ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Logs}" MinHeight="128" MaxHeight="256">
-				<ListBox.ItemTemplate>
-					<DataTemplate>
-						<Grid DataContext="{Binding}">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="192"/>
-								<ColumnDefinition Width="96"/>
-								<ColumnDefinition Width="128"/>
-								<ColumnDefinition Width="Auto"/>
-							</Grid.ColumnDefinitions>
-							<TextBlock Grid.Column="0" Text="{Binding Time}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8, 0, 2, 0" />
-							<TextBlock Grid.Column="1" Text="{Binding Level}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8, 0, 2, 0" />
-							<TextBlock Grid.Column="2" Text="{Binding Caller}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8, 0, 2, 0" />
-							<TextBlock Grid.Column="3" Text="{Binding Message}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="8, 0, 2, 0"/>
-						</Grid>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox>
+			<DataGrid MinHeight="128" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False" />
 		</ScrollViewer>
 		<Border BorderThickness="1" BorderBrush="LightGray">
-			<Grid DataContext="{Binding FolderTreeViewModel}" Margin="10">
+			<Grid DataContext="{Binding FolderTreeViewModel}" Margin="10" MinWidth="256">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>
@@ -213,10 +196,7 @@
 				<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" IsReadOnly="True" Focusable="False" IsEnabled="False" FontSize="12" />
 				<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount}" IsReadOnly="True" Focusable="False" IsEnabled="False" FontSize="12"/>
 				<TextBox Grid.Row="3" Text="{Binding FilenameFilter}" Watermark="Filename filter" />
-				<StackPanel Grid.Row="4" Orientation="Horizontal">
-					<CheckBox IsChecked="{Binding DisplayVanillaOnly}"/>
-					<TextBlock VerticalAlignment="Center">Display vanilla objects only</TextBlock>
-				</StackPanel>
+				<ToggleSwitch Grid.Row="4" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Display vanilla only" OffContent="Display all objects" />
 				<TreeView Grid.Row="5" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
 					<TreeView.ItemTemplate>
 						<TreeDataTemplate ItemsSource="{Binding SubNodes}">

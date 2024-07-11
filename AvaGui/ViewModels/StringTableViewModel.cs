@@ -18,7 +18,6 @@ namespace AvaGui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedKey)));
 			_ = this.WhenAnyValue(o => o.SelectedKey)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(TranslationTable)));
-
 		}
 
 		StringTable OriginalTable { get; init; }

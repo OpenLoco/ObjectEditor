@@ -16,7 +16,6 @@ using System.Threading;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor;
 using System.Collections.ObjectModel;
-using System.Reflection;
 
 namespace AvaGui.Models
 {
@@ -44,15 +43,17 @@ namespace AvaGui.Models
 
 		public Dictionary<string, byte[]> Tutorials { get; set; } = [];
 
-		public List<string> MiscFiles { get; set; } = [];
+		public Collection<string> MiscFiles { get; set; } = [];
 
-		const string GithubApplicationName = "ObjectEditor";
-		const string GithubLatestReleaseDownloadPage = @"https://github.com/OpenLoco/ObjectEditor/releases";
-		const string GithubLatestReleaseAPI = @"https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
+		public const string GithubApplicationName = "ObjectEditor";
+		public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
+		public const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
+		public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 		public const string ApplicationName = "OpenLoco Object Editor";
 
-		string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
-		string SettingsFile => Path.Combine(SettingsPath, "settings.json");
+		public static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
+
+		public static string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
 		public ObservableCollection<LogLine> LoggerObservableLogs => ((Logger)logger).Logs;
 
@@ -169,11 +170,13 @@ namespace AvaGui.Models
 				try
 				{
 					var startTime = sw.Elapsed;
-					DatFileInfo fileInfo;
-					LoadSingleObjectFile(file, ccHeaderIndex, ccObjectCache, out fileInfo);
-
+					_ = LoadSingleObjectFile(file, ccHeaderIndex, ccObjectCache, out var fileInfo);
 					var elapsed = sw.Elapsed - startTime;
-					_ = timePerFile.TryAdd(fileInfo.S5Header.Name, elapsed);
+
+					if (fileInfo != null)
+					{
+						_ = timePerFile.TryAdd(fileInfo.S5Header.Name, elapsed);
+					}
 				}
 				catch (Exception ex)
 				{
@@ -293,10 +296,10 @@ namespace AvaGui.Models
 		}
 
 		// this method will load any supported file type
-		public void LoadDirectory(string directory)
-		{
-			var allFiles = Directory.GetFiles(directory, "*.dat|*.sv5|*.sc5", SearchOption.AllDirectories);
-		}
+		//public void LoadDirectory(string directory)
+		//{
+		//	var allFiles = Directory.GetFiles(directory, "*.dat|*.sv5|*.sc5", SearchOption.AllDirectories);
+		//}
 
 		public async Task LoadObjDirectoryAsync(string directory, IProgress<float>? progress, bool useExistingIndex)
 		{

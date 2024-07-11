@@ -15,6 +15,12 @@ using SixLabors.ImageSharp.PixelFormats;
 using OpenLoco.ObjectEditor.Logging;
 using Avalonia.Platform;
 using SixLabors.ImageSharp;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
+using System.IO;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace AvaGui.ViewModels
 {
@@ -33,15 +39,20 @@ namespace AvaGui.ViewModels
 		public ObjectEditorViewModel ObjectEditorViewModel { get; }
 		public SCV5ViewModel SCV5ViewModel { get; }
 
-		[Reactive] public object CurrentEditorModel { get; set; } // this will either be ObjectEditorViewModel for objects, or SCV5ViewModel for scenarios/landscapes/saves. in future, it'll also be different for g1.dat, tutorials, sfx files, etc
+		[Reactive]
+		public object CurrentEditorModel { get; set; } // this will either be ObjectEditorViewModel for objects, or SCV5ViewModel for scenarios/landscapes/saves. in future, it'll also be different for g1.dat, tutorials, sfx files, etc
 
-		public ObservableCollection<MenuItemModel> ObjDataItems { get; init; }
+		public ObservableCollection<MenuItemModel> ObjDataItems { get; set; }
 
 		public ObservableCollection<MenuItemModel> DataItems { get; init; }
 
 		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
+		public ReactiveCommand<Unit, Unit> LoadPalette { get; }
 
+		public ReactiveCommand<Unit, Unit> RecreateIndex { get; }
+
+		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
 		//FileViewModel
 		//- S5HeaderViewModel
 		//- ObjectViewModel
@@ -59,20 +70,22 @@ namespace AvaGui.ViewModels
 			var paletteUri = new Uri("avares://AvaGui/Assets/palette.png");
 			var palette = Image.Load<Rgb24>(AssetLoader.Open(paletteUri));
 
-			Model = new();
-			Model.PaletteMap = new PaletteMap(palette);
+			Model = new()
+			{
+				PaletteMap = new PaletteMap(palette)
+			};
 
 			FolderTreeViewModel = new FolderTreeViewModel(Model);
 			ObjectEditorViewModel = new ObjectEditorViewModel(Model);
 			SCV5ViewModel = new SCV5ViewModel();
 
 			_ = ObjectEditorViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
-				.Subscribe(o => CurrentEditorModel = ObjectEditorViewModel);
+				.Subscribe(_ => CurrentEditorModel = ObjectEditorViewModel);
 
 			_ = this.WhenAnyValue(o => o.ObjectEditorViewModel)
-				.Subscribe(o => CurrentEditorModel = ObjectEditorViewModel);
+				.Subscribe(_ => CurrentEditorModel = ObjectEditorViewModel);
 			_ = this.WhenAnyValue(o => o.SCV5ViewModel)
-				.Subscribe(o => CurrentEditorModel = SCV5ViewModel);
+				.Subscribe(_ => CurrentEditorModel = SCV5ViewModel);
 
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(o => ObjectEditorViewModel.CurrentlySelectedObject = o);
@@ -80,51 +93,116 @@ namespace AvaGui.ViewModels
 			ObjDataItems = new ObservableCollection<MenuItemModel>(Model.Settings.ObjDataDirectories
 				.Select(x => new MenuItemModel(
 					x,
-					ReactiveCommand.Create<string>(() => FolderTreeViewModel.CurrentDirectory = x))));
-
-			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(() => { })));
+					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = x))));
+			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(PickFolder)));
 			ObjDataItems.Insert(1, new MenuItemModel("--------", ReactiveCommand.Create(() => { })));
 
-			DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
-				.Select(x => new MenuItemModel(
-					x,
-					ReactiveCommand.Create<string, bool>(Model.LoadDataDirectory))));
+			//DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
+			//	.Select(x => new MenuItemModel(
+			//		x,
+			//		ReactiveCommand.Create<string, bool>(Model.LoadDataDirectory))));
 
-			DataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(() => { })));
-			DataItems.Insert(1, new MenuItemModel("--------", ReactiveCommand.Create(() => { })));
+			//DataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(() => { })));
+			//DataItems.Insert(1, new MenuItemModel("--------", ReactiveCommand.Create(() => { })));
 
-			LoadPalette = ReactiveCommand.Create(LoadPaletteFunc);
+			//LoadPalette = ReactiveCommand.Create(LoadPaletteFunc);
 			RecreateIndex = ReactiveCommand.Create(() => Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false));
+			OpenSettingsFolder = ReactiveCommand.Create(PlatformSpecificFolderOpen);
 		}
 
-		public ReactiveCommand<Unit, Unit> LoadPalette { get; }
-
-		public void LoadPaletteFunc()
+		private static void PlatformSpecificFolderOpen()
 		{
-			//using (var openFileDialog = new OpenFileDialog())
+			var folderPath = ObjectEditorModel.SettingsPath;
+			if (!Directory.Exists(folderPath))
 			{
-				//openFileDialog.InitialDirectory = lastPaletteDirectory;
-				//openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
-				//openFileDialog.FilterIndex = 1;
-				//openFileDialog.RestoreDirectory = true;
+				throw new ArgumentException("The specified folder does not exist.", nameof(folderPath));
+			}
 
-				//if (openFileDialog.ShowDialog() == DialogResult.OK && File.Exists(openFileDialog.FileName))
-				{
-					//model.PaletteFile = openFileDialog.FileName;
-					//var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgb24>(openFileDialog.FileName);
-					//Model.PaletteMap = new PaletteMap(paletteBitmap);
+			// Platform-specific command construction
+			string command;
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			{
+				command = "explorer.exe"; // Windows File Explorer
+			}
+			else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+			{
+				command = "open"; // macOS Finder
+			}
+			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			{
+				// Note: This assumes the user's desktop environment has a standard file manager
+				command = "xdg-open";
+			}
+			else
+			{
+				throw new PlatformNotSupportedException($"This platform ({RuntimeInformation.OSDescription}) is not currently supported. Please file a Github issue here: {ObjectEditorModel.GithubIssuePage}");
+			}
 
-					//RefreshObjectUI();
-					//lastPaletteDirectory = Path.GetDirectoryName(openFileDialog.FileName) ?? lastPaletteDirectory;
-				}
+			// Process.Start to execute the command and open the folder
+			var processStartInfo = new ProcessStartInfo
+			{
+				FileName = command,
+				Arguments = folderPath,
+				UseShellExecute = true // Use the shell for proper handling on each OS
+			};
+
+			using (Process.Start(processStartInfo))
+			{ } // Start and dispose of the process
+		}
+
+		public async Task PickFolder()
+		{
+			// See IoCFileOps project for an example of how to accomplish this.
+			if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
+				|| desktop.MainWindow?.StorageProvider is not { } provider)
+			{
+				throw new ArgumentNullException("ApplicationLifetime|StorageProvider", "Missing StorageProvider instance.");
+			}
+
+			var folders = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+			{
+				Title = "Select a folder containing objects",
+				AllowMultiple = false
+			});
+			var dir = folders.FirstOrDefault();
+			if (dir == null)
+			{
+				return;
+			}
+
+			var dirPath = dir.Path.LocalPath;
+			if (Directory.Exists(dirPath) && Directory.EnumerateFiles(dirPath).Any() && !Model.Settings.ObjDataDirectories.Contains(dirPath))
+			{
+				await Model.LoadObjDirectoryAsync(dirPath, null, false);
+				ObjDataItems.Add(new MenuItemModel(dirPath, ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = dirPath)));
 			}
 		}
 
-		public ReactiveCommand<Unit, Unit> RecreateIndex { get; }
+		//public void LoadPaletteFunc()
+		//{
+		//	using (var openFileDialog = new OpenFileDialog())
+		//	{
+		//		openFileDialog.InitialDirectory = lastPaletteDirectory;
+		//		openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
+		//		openFileDialog.FilterIndex = 1;
+		//		openFileDialog.RestoreDirectory = true;
 
-		public bool IsDarkTheme
+		//		if (openFileDialog.ShowDialog() == DialogResult.OK && File.Exists(openFileDialog.FileName))
+		//		{
+		//			model.PaletteFile = openFileDialog.FileName;
+		//			var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgb24>(openFileDialog.FileName);
+		//			Model.PaletteMap = new PaletteMap(paletteBitmap);
+
+		//			RefreshObjectUI();
+		//			lastPaletteDirectory = Path.GetDirectoryName(openFileDialog.FileName) ?? lastPaletteDirectory;
+		//		}
+		//	}
+		//}
+
+
+		public static bool IsDarkTheme
 		{
-			get => Application.Current.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
+			get => Application.Current?.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
 			set => Application.Current.RequestedThemeVariant = Application.Current.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark
 				? Avalonia.Styling.ThemeVariant.Light
 				: Avalonia.Styling.ThemeVariant.Dark;

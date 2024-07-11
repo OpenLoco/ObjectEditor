@@ -29,5 +29,7 @@ namespace OpenLoco.ObjectEditor.Headers
 
 			return span;
 		}
+
+		public static readonly ObjectHeader NullHeader = new(SawyerEncoding.Uncompressed, 0);
 	}
 }

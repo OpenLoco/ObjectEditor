@@ -7,7 +7,6 @@ using OpenLoco.ObjectEditor.Data;
 using Core.Objects;
 using Core.Objects.Sound;
 using Zenith.Core;
-using Core.Types.SCV5;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {

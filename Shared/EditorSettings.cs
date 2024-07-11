@@ -9,7 +9,7 @@ namespace OpenLoco.ObjectEditor.Settings
 			{
 				objectDirectory = value;
 				ObjDataDirectories ??= [];
-				ObjDataDirectories.Add(objectDirectory);
+				_ = ObjDataDirectories.Add(objectDirectory);
 			}
 		}
 		string objectDirectory;
@@ -28,7 +28,7 @@ namespace OpenLoco.ObjectEditor.Settings
 			{
 				dataDirectory = value;
 				DataDirectories ??= [];
-				DataDirectories.Add(dataDirectory);
+				_ = DataDirectories.Add(dataDirectory);
 			}
 		}
 		string dataDirectory;
@@ -47,7 +47,7 @@ namespace OpenLoco.ObjectEditor.Settings
 			{
 				scv5Directory = value;
 				SCV5Directories ??= [];
-				SCV5Directories.Add(scv5Directory);
+				_ = SCV5Directories.Add(scv5Directory);
 			}
 		}
 		string scv5Directory;

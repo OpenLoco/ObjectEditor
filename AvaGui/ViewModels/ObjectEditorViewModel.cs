@@ -5,15 +5,17 @@ using System;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.Objects;
 using ReactiveUI.Fody.Helpers;
-using OpenLoco.ObjectEditor.Types;
+using OpenLoco.ObjectEditor.Headers;
 
 namespace AvaGui.ViewModels
 {
 	public class ObjectEditorViewModel : ReactiveObject
 	{
-		[Reactive] public StringTableViewModel StringTableViewModel { get; set; }
+		[Reactive]
+		public StringTableViewModel? StringTableViewModel { get; set; }
 
-		[Reactive] public ImageTableViewModel ImageTableViewModel { get; set; }
+		[Reactive]
+		public ImageTableViewModel? ImageTableViewModel { get; set; }
 
 		ObjectEditorModel Model { get; }
 
@@ -26,16 +28,17 @@ namespace AvaGui.ViewModels
 			set => Model.ObjectCache[CurrentlySelectedObject.Path] = value;
 		}
 
-		[Reactive] public FileSystemItemBase CurrentlySelectedObject { get; set; }
+		[Reactive]
+		public FileSystemItemBase CurrentlySelectedObject { get; set; }
 
 		DatFileInfo _currentlySelectedUiObjectDatInfo;
 		public DatFileInfo CurrentlySelectedUiObjectDatInfo
 		{
 			get
 			{
-				if (CurrentlySelectedObject is null or not FileSystemItem)
+				if (CurrentlySelectedObject is null or not FileSystemItem || CurrentObject is null)
 				{
-					return new(null, null);
+					return new(S5Header.NullHeader, ObjectHeader.NullHeader);
 				}
 				_currentlySelectedUiObjectDatInfo = CurrentObject.DatFileInfo;
 				return _currentlySelectedUiObjectDatInfo;
@@ -62,7 +65,7 @@ namespace AvaGui.ViewModels
 		#endregion StringTable
 
 		IObjectViewModel _currentObjectViewModel;
-		public IObjectViewModel CurrentObjectViewModel
+		public IObjectViewModel? CurrentObjectViewModel
 		{
 			get
 			{

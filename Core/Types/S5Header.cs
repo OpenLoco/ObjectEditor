@@ -31,19 +31,7 @@ namespace OpenLoco.ObjectEditor.Headers
 		}
 
 		public bool Validate()
-		{
-			if (SourceGame is < 0 or >= SourceGame.MAX)
-			{
-				return false;
-			}
-
-			if (ObjectType is < 0 or >= ObjectType.MAX)
-			{
-				return false;
-			}
-
-			return true;
-		}
+			=> !(SourceGame is < 0 or >= SourceGame.MAX) && ObjectType is not < 0 and not >= ObjectType.MAX;
 
 		public static S5Header Read(ReadOnlySpan<byte> data)
 		{
@@ -69,6 +57,6 @@ namespace OpenLoco.ObjectEditor.Headers
 			return span;
 		}
 
-		public static S5Header NullHeader = new(0xFFFFFFFF, "        ", 0);
+		public static readonly S5Header NullHeader = new(0xFFFFFFFF, "        ", 0);
 	}
 }

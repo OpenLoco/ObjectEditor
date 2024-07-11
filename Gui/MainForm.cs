@@ -462,19 +462,18 @@ namespace OpenLoco.ObjectEditor.Gui
 			{
 				if (Path.GetExtension(file) == ".sc5")
 				{
-					sc5Node.Nodes.Add(file, Path.GetFileName(file));
+					_ = sc5Node.Nodes.Add(file, Path.GetFileName(file));
 				}
 				if (Path.GetExtension(file) == ".sv5")
 				{
-					sv5Node.Nodes.Add(file, Path.GetFileName(file));
+					_ = sv5Node.Nodes.Add(file, Path.GetFileName(file));
 				}
 			}
 
-			scv5Node.Nodes.Add(sc5Node);
-			scv5Node.Nodes.Add(sv5Node);
+			_ = scv5Node.Nodes.Add(sc5Node);
+			_ = scv5Node.Nodes.Add(sv5Node);
 
 			_ = tvObjType.Nodes.Add(scv5Node);
-
 		}
 
 		void InitToolStripMenuItems()
@@ -1055,6 +1054,11 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		void LoadG1(string filename)
 		{
+			if (model.G1 == null)
+			{
+				return;
+			}
+
 			CurrentUIObject = new UiG1(model.G1);
 			LoadDataDump(filename, true);
 		}
@@ -1147,15 +1151,16 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		IEnumerable<Control> CreateImageControls(IEnumerable<Bitmap> images)
 		{
+			if (CurrentUIObject is not IUiObjectWithGraphics uiObjHasGraphics)
+			{
+				yield break;
+			}
+
 			// todo: on these controls we could add a right_click handler to replace image with user-created one
 			var count = 0;
-
-			var uiObjHasGraphics = CurrentUIObject as IUiObjectWithGraphics;
-
-			var counter = 0;
 			foreach (var img in images)
 			{
-				var ele = uiObjHasGraphics.G1Elements[counter++];
+				var ele = uiObjHasGraphics.G1Elements[count];
 				var panel = new FlowLayoutPanel
 				{
 					AutoSize = true,

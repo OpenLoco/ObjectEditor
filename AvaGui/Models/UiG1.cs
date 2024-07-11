@@ -20,7 +20,6 @@ namespace AvaGui.Models
 				{
 					G1.G1Elements.Add(x);
 				}
-
 			}
 		}
 	}

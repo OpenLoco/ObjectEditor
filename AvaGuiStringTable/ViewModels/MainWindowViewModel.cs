@@ -60,7 +60,6 @@ namespace AvaGui3.ViewModels
 
 			_ = this.WhenAnyValue(o => o.SelectedString)
 				.Subscribe(_ => SelectedStringChanged());
-
 		}
 	}
 }

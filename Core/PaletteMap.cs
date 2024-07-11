@@ -22,7 +22,7 @@ namespace OpenLoco.ObjectEditor
 
 		public PaletteMap(Color[] _palette)
 		{
-			Verify.Equals(_palette.Length, 255);
+			_ = Verify.Equals(_palette.Length, 255);
 			Palette = new (Color, byte)[256];
 
 			for (var i = 0; i < 256; ++i)

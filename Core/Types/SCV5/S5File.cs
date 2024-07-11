@@ -1,7 +1,5 @@
-using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Headers;
-using Zenith.Core;
 
 namespace Core.Types.SCV5
 {
@@ -74,9 +72,7 @@ namespace Core.Types.SCV5
 			}
 			else
 			{
-
 			}
-
 
 			//List<S5Header> requiredObjects = [];
 			//for (var i = 0; i < 859; ++i)

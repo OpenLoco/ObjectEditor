@@ -139,6 +139,7 @@
 					</MenuItem>-->
 					<MenuItem Header="Recreate Index" Command="{Binding RecreateIndex}" />
 					<!--<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />-->
+					<MenuItem Header="Open settings file" Command="{Binding OpenSettingsFolder}" />
 				</MenuItem>
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />

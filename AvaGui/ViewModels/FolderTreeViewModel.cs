@@ -6,10 +6,8 @@ using System.IO;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
-using OpenLoco.ObjectEditor.Objects;
 using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
-using SkiaSharp;
 
 namespace AvaGui.ViewModels
 {
@@ -30,21 +28,31 @@ namespace AvaGui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
 			_ = this.WhenAnyValue(o => o.DirectoryItems)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
+
+			// loads the last-viewed folder
+			CurrentDirectory = Model.Settings.ObjDataDirectory;
 		}
 
-		[Reactive] public string CurrentDirectory { get; set; }
-		[Reactive] public FileSystemItemBase CurrentlySelectedObject { get; set; }
-		[Reactive] public string FilenameFilter { get; set; }
-		[Reactive] public bool DisplayVanillaOnly { get; set; }
+		[Reactive]
+		public string CurrentDirectory { get; set; } = string.Empty;
+
+		[Reactive]
+		public FileSystemItemBase? CurrentlySelectedObject { get; set; } = null;
+
+		[Reactive]
+		public string FilenameFilter { get; set; } = string.Empty;
+
+		[Reactive]
+		public bool DisplayVanillaOnly { get; set; }
 
 		public ObservableCollection<FileSystemItemBase> DirectoryItems
 			=> LoadObjDirectory(CurrentDirectory);
 		private ObservableCollection<FileSystemItemBase> LoadObjDirectory(string newDir)
-			=> new(_LoadObjDirectory(newDir));
+			=> new(LoadObjDirectoryCore(newDir));
 
 		string prevDir = string.Empty;
 
-		private IEnumerable<FileSystemItemBase> _LoadObjDirectory(string newDir)
+		private IEnumerable<FileSystemItemBase> LoadObjDirectoryCore(string newDir)
 		{
 			if (newDir == null || string.IsNullOrEmpty(newDir))
 			{
@@ -117,6 +125,5 @@ namespace AvaGui.ViewModels
 
 		public string DirectoryFileCount
 			=> $"Files in dir: {(CurrentDirectory == null ? 0 : new DirectoryInfo(CurrentDirectory).GetFiles().Length)}";
-
 	}
 }

@@ -58,7 +58,11 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:ObjectEditorViewModel">
-			<StackPanel DataContext="{Binding}" Margin="10">
+			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
+				<StackPanel Orientation="Horizontal">
+					<Button Content="⭮ Reload" Command="{Binding ReloadObjectCommand}"/>
+					<Button Content="💾 Save" Command="{Binding SaveObjectCommand}"/>
+				</StackPanel>
 				<TabControl>
 					<TabItem Header="Headers">
 						<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>

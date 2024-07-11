@@ -21,7 +21,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Avalonia.Logging;
 using System.Reflection;
 using System.Net.Http.Headers;
 using System.Net.Http;
@@ -30,10 +29,11 @@ using System.Text;
 
 namespace AvaGui.ViewModels
 {
-	public class MenuItemModel(string name, ICommand menuCommand) : ReactiveObject
+	public class MenuItemModel(string name, ICommand menuCommand, ICommand deleteCommand) : ReactiveObject
 	{
 		[Reactive] public string Name { get; set; } = name;
 		[Reactive] public ICommand MenuCommand { get; set; } = menuCommand;
+		[Reactive] public ICommand DeleteCommand { get; set; } = deleteCommand;
 	}
 
 	public class MainWindowViewModel : ViewModelBase
@@ -110,9 +110,10 @@ namespace AvaGui.ViewModels
 			ObjDataItems = new ObservableCollection<MenuItemModel>(Model.Settings.ObjDataDirectories
 				.Select(x => new MenuItemModel(
 					x,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = x))));
-			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(PickFolder)));
-			ObjDataItems.Insert(1, new MenuItemModel("--------", ReactiveCommand.Create(() => { })));
+					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = x),
+					null)));
+			ObjDataItems.Insert(0, new MenuItemModel("📂 Add new folder", ReactiveCommand.Create(PickFolder), null));
+			ObjDataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { }), null));
 
 			//DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
 			//	.Select(x => new MenuItemModel(
@@ -120,7 +121,7 @@ namespace AvaGui.ViewModels
 			//		ReactiveCommand.Create<string, bool>(Model.LoadDataDirectory))));
 
 			//DataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(() => { })));
-			//DataItems.Insert(1, new MenuItemModel("--------", ReactiveCommand.Create(() => { })));
+			//DataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { })));
 
 			//LoadPalette = ReactiveCommand.Create(LoadPaletteFunc);
 			RecreateIndex = ReactiveCommand.Create(() => Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false));
@@ -235,6 +236,7 @@ namespace AvaGui.ViewModels
 				Title = "Select a folder containing objects",
 				AllowMultiple = false
 			});
+
 			var dir = folders.FirstOrDefault();
 			if (dir == null)
 			{
@@ -245,7 +247,16 @@ namespace AvaGui.ViewModels
 			if (Directory.Exists(dirPath) && Directory.EnumerateFiles(dirPath).Any() && !Model.Settings.ObjDataDirectories.Contains(dirPath))
 			{
 				await Model.LoadObjDirectoryAsync(dirPath, null, false);
-				ObjDataItems.Add(new MenuItemModel(dirPath, ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = dirPath)));
+				var menuItem = new MenuItemModel(
+					dirPath,
+					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = dirPath),
+					ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count)));
+				//menuItem.DeleteCommand = ReactiveCommand.Create(() =>
+				//{
+				//	_ = ObjDataItems.Remove(menuItem);
+				//});
+
+				ObjDataItems.Add(menuItem);
 			}
 		}
 

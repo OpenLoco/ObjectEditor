@@ -28,7 +28,7 @@
     <EmbeddedResource Include="..\palette.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\version.txt">
+    <EmbeddedResource Include=".\version.txt">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

@@ -8,7 +8,6 @@ namespace AvaGui.Views
 		public MainWindow()
 		{
 			InitializeComponent();
-			Title = ObjectEditorModel.ApplicationName;
 		}
 	}
 }

@@ -13,7 +13,7 @@
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
 		Icon="/Assets/loco_icon.ico"
-		Title="AvaGui">
+		Title="{Binding WindowTitle}">
 
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>
@@ -139,7 +139,7 @@
 					</MenuItem>-->
 					<MenuItem Header="Recreate Index" Command="{Binding RecreateIndex}" />
 					<!--<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />-->
-					<MenuItem Header="Open settings file" Command="{Binding OpenSettingsFolder}" />
+					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
 				</MenuItem>
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
@@ -177,8 +177,8 @@
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="*"/>
 				</Grid.RowDefinitions>
-				<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" Watermark="Enter a directory" />
-				<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount, Mode=OneWay}" IsReadOnly="True"/>
+				<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" IsReadOnly="True" Focusable="False" IsEnabled="False"/>
+				<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount}" IsReadOnly="True" Focusable="False" IsEnabled="False"/>
 				<Separator Grid.Row="3" Height="4"></Separator>
 				<TextBox Grid.Row="4" Text="{Binding FilenameFilter}" Watermark="Filename filter" />
 				<StackPanel Grid.Row="5" Orientation="Horizontal">

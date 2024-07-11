@@ -21,6 +21,12 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Avalonia.Logging;
+using System.Reflection;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text;
 
 namespace AvaGui.ViewModels
 {
@@ -53,6 +59,17 @@ namespace AvaGui.ViewModels
 		public ReactiveCommand<Unit, Unit> RecreateIndex { get; }
 
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
+
+		public const string GithubApplicationName = "ObjectEditor";
+		public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
+		public const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
+		public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
+
+		public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
+		[Reactive] Version ApplicationVersion { get; set; }
+		[Reactive] string LatestVersionText { get; set; } = "Up-to-date";
+
+
 		//FileViewModel
 		//- S5HeaderViewModel
 		//- ObjectViewModel
@@ -108,6 +125,60 @@ namespace AvaGui.ViewModels
 			//LoadPalette = ReactiveCommand.Create(LoadPaletteFunc);
 			RecreateIndex = ReactiveCommand.Create(() => Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false));
 			OpenSettingsFolder = ReactiveCommand.Create(PlatformSpecificFolderOpen);
+
+			#region Version
+
+			_ = this.WhenAnyValue(o => o.ApplicationVersion)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(WindowTitle)));
+			_ = this.WhenAnyValue(o => o.LatestVersionText)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(WindowTitle)));
+
+			var assembly = Assembly.GetExecutingAssembly();
+			ApplicationVersion = GetCurrentAppVersion(assembly);
+
+			// check for new version
+			var latestVersion = GetLatestAppVersion();
+			if (latestVersion > ApplicationVersion)
+			{
+				//_ = MessageBox.Show($"Current Version: {ApplicationVersion}{Environment.NewLine}Latest version: {latestVersion}{Environment.NewLine}Taking you to the downloads page now ");
+				//_ = Process.Start(new ProcessStartInfo { FileName = GithubLatestReleaseDownloadPage, UseShellExecute = true });
+				LatestVersionText = $"newer version exists: {latestVersion}";
+			}
+			#endregion
+		}
+
+		static Version GetCurrentAppVersion(Assembly assembly)
+		{
+			// grab current appl version from assembly
+			const string versionFilename = "AvaGui.version.txt";
+			using (var stream = assembly.GetManifestResourceStream(versionFilename))
+			{
+				var buf = new byte[5];
+				var arr = stream!.Read(buf);
+				return Version.Parse(Encoding.ASCII.GetString(buf));
+			}
+		}
+
+		// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
+		Version GetLatestAppVersion()
+		{
+			var client = new HttpClient();
+			client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(GithubApplicationName, ApplicationVersion.ToString()));
+			var response = client.GetAsync(GithubLatestReleaseAPI).Result;
+			if (response.IsSuccessStatusCode)
+			{
+				var jsonResponse = response.Content.ReadAsStringAsync().Result;
+				var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
+				var tagName = body?.TagName;
+				if (tagName != null)
+				{
+					return Version.Parse(tagName);
+				}
+			}
+
+#pragma warning disable CA2201 // Do not raise reserved exception types
+			throw new Exception("Unable to get latest version");
+#pragma warning restore CA2201 // Do not raise reserved exception types
 		}
 
 		private static void PlatformSpecificFolderOpen()
@@ -135,7 +206,7 @@ namespace AvaGui.ViewModels
 			}
 			else
 			{
-				throw new PlatformNotSupportedException($"This platform ({RuntimeInformation.OSDescription}) is not currently supported. Please file a Github issue here: {ObjectEditorModel.GithubIssuePage}");
+				throw new PlatformNotSupportedException($"This platform ({RuntimeInformation.OSDescription}) is not currently supported. Please file a Github issue here: {GithubIssuePage}");
 			}
 
 			// Process.Start to execute the command and open the folder

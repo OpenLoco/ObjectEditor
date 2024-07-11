@@ -134,31 +134,38 @@ namespace OpenLoco.ObjectEditor.Gui
 				model = new MainFormModel(logger, SettingsFile, palette);
 			}
 
+			#region Version
+			ApplicationVersion = GetCurrentAppVersion(assembly);
+
+			var latestVersionText = "up-to-date";
+
+			// check for new version
+			var latestVersion = GetLatestAppVersion();
+			if (latestVersion > ApplicationVersion)
+			{
+				_ = MessageBox.Show($"Current Version: {ApplicationVersion}{Environment.NewLine}Latest version: {latestVersion}{Environment.NewLine}Taking you to the downloads page now ");
+				_ = Process.Start(new ProcessStartInfo { FileName = GithubLatestReleaseDownloadPage, UseShellExecute = true });
+				latestVersionText = $"newer version exists: {latestVersion}";
+			}
+			#endregion
+
+			Text = $"{ApplicationName} - {ApplicationVersion} ({latestVersionText})";
+		}
+
+		static Version GetCurrentAppVersion(Assembly assembly)
+		{
 			// grab current appl version from assembly
 			const string versionFilename = "Gui.version.txt";
 			using (var stream = assembly.GetManifestResourceStream(versionFilename))
 			{
 				var buf = new byte[5];
 				var arr = stream!.Read(buf);
-				ApplicationVersion = Version.Parse(Encoding.ASCII.GetString(buf));
+				return Version.Parse(Encoding.ASCII.GetString(buf));
 			}
-
-			var latestVersionText = "up-to-date";
-
-			// check for new version
-			var latestVersion = GetLatestVersion();
-			if (latestVersion > ApplicationVersion)
-			{
-				_ = MessageBox.Show($"Current Version: {ApplicationVersion}{System.Environment.NewLine}Latest version: {latestVersion}{System.Environment.NewLine}Taking you to the downloads page now ");
-				_ = Process.Start(new ProcessStartInfo { FileName = GithubLatestReleaseDownloadPage, UseShellExecute = true });
-				latestVersionText = $"newer version exists: {latestVersion}";
-			}
-
-			Text = $"{ApplicationName} - {ApplicationVersion} ({latestVersionText})";
 		}
 
 		// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
-		Version GetLatestVersion()
+		Version GetLatestAppVersion()
 		{
 			var client = new HttpClient();
 			client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(GithubApplicationName, ApplicationVersion.ToString()));

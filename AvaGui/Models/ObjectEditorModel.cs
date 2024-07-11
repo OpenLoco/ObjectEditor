@@ -16,10 +16,24 @@ using System.Threading;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor;
 using System.Collections.ObjectModel;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Reflection;
+using System.Text;
+using static System.Net.Mime.MediaTypeNames;
+using ReactiveUI.Fody.Helpers;
+using AvaGui.ViewModels;
+using ReactiveUI;
 
 namespace AvaGui.Models
 {
-	public class ObjectEditorModel
+	public class VersionCheckBody
+	{
+		[JsonPropertyName("tag_name")]
+		public string TagName { get; set; }
+	}
+
+	public class ObjectEditorModel : ReactiveObject // todo: only viewmodels should be reactive
 	{
 		public EditorSettings Settings { get; private set; }
 
@@ -45,10 +59,6 @@ namespace AvaGui.Models
 
 		public Collection<string> MiscFiles { get; set; } = [];
 
-		public const string GithubApplicationName = "ObjectEditor";
-		public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
-		public const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
-		public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 		public const string ApplicationName = "OpenLoco Object Editor";
 
 		public static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);

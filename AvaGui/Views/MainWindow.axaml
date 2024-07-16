@@ -184,9 +184,11 @@
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
 		</DockPanel>
-		<ScrollViewer DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-			<DataGrid MinHeight="128" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False" />
-		</ScrollViewer>
+		<Expander Header="Logs" Padding="0" ExpandDirection="Down" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch">
+			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+				<DataGrid MinHeight="128" MaxHeight="512" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False" />
+			</ScrollViewer>
+		</Expander>
 		<Border BorderThickness="1" BorderBrush="LightGray">
 			<Grid DataContext="{Binding FolderTreeViewModel}" Margin="10" MinWidth="256">
 				<Grid.RowDefinitions>

@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using AvaGui.Models;
+using AvaGui.ViewModels;
 
 namespace AvaGui.Views
 {

@@ -92,20 +92,34 @@
 						</StackPanel>
 					</TabItem>
 					<TabItem Header="Image Table">
-						<ItemsControl ItemsSource="{Binding ImageTableViewModel.Images, Mode=OneWay}">
-							<ItemsControl.ItemsPanel>
-								<ItemsPanelTemplate>
-									<WrapPanel />
-								</ItemsPanelTemplate>
-							</ItemsControl.ItemsPanel>
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<Border BorderThickness="1" Background="Blue">
-										<Image Source="{Binding}" Stretch="None" />
-									</Border>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
+						<DockPanel DataContext="{Binding ImageTableViewModel}">
+							<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+								<Button Command="{Binding ImportImages}">📥 Import from Directory</Button>
+								<Button Command="{Binding ExportImages}">📤 Export To Directory</Button>
+								<!--<Label VerticalAlignment="Center">🔍 Image Scaling (1-10):</Label>
+								<NumericUpDown Value="{Binding Zoom}" FormatString="0" Watermark="1" Width="108" Minimum="1" Maximum="10" />-->
+							</StackPanel>
+							<ItemsControl ItemsSource="{Binding Images, Mode=OneWay}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel/>
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<ContentControl Padding="2" >
+											<Border BorderBrush="Gray" Background="Magenta">
+												<Image Source="{Binding}" Stretch="None" Margin="0">
+													<!--<Image.RenderTransform>
+														<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+													</Image.RenderTransform>-->
+												</Image>
+											</Border>
+										</ContentControl>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</DockPanel>
 					</TabItem>
 				</TabControl>
 			</StackPanel>
@@ -125,7 +139,6 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<MenuItem Header="⭮ Recreate current index" Command="{Binding RecreateIndex}" />
 					<!--<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />-->
 					<MenuItem Header="⚙ Open settings folder" Command="{Binding OpenSettingsFolder}" />
 				</MenuItem>
@@ -184,35 +197,36 @@
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
 		</DockPanel>
-		<Expander Header="Logs" Padding="0" ExpandDirection="Down" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch">
+		<Expander Header="Logs" Padding="0" ExpandDirection="Down" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="8">
 			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-				<DataGrid MinHeight="128" MaxHeight="512" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False" />
+				<DataGrid MinHeight="256" MaxHeight="1024" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False" />
 			</ScrollViewer>
 		</Expander>
-		<Border BorderThickness="1" BorderBrush="LightGray">
-			<Grid DataContext="{Binding FolderTreeViewModel}" Margin="10" MinWidth="256">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="*"/>
-				</Grid.RowDefinitions>
-				<TextBox Grid.Row="1" Text="{Binding CurrentDirectory}" IsReadOnly="True" Focusable="False" IsEnabled="False" FontSize="12" />
-				<TextBox Grid.Row="2" Text="{Binding DirectoryFileCount}" IsReadOnly="True" Focusable="False" IsEnabled="False" FontSize="12"/>
-				<TextBox Grid.Row="3" Text="{Binding FilenameFilter}" Watermark="Filename filter" />
-				<ToggleSwitch Grid.Row="4" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Display vanilla only" OffContent="Display all objects" />
-				<TreeView Grid.Row="5" ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
+		<Grid DataContext="{Binding FolderTreeViewModel}" DockPanel.Dock="Left" Margin="8" MinWidth="256">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+			<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" BorderBrush="Gray" Watermark="📁 Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+			<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" BorderBrush="Gray" Watermark="🛢 Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
+			<TextBox Grid.Row="2" Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="🔎 Filename search"  Margin="2"/>
+			<Button Grid.Row="3" Content="⭮ Recreate current index" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2"/>
+			<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
+			<Border Grid.Row="5" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+				<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
 					<TreeView.ItemTemplate>
 						<TreeDataTemplate ItemsSource="{Binding SubNodes}">
 							<ContentControl Content="{Binding}" />
 						</TreeDataTemplate>
 					</TreeView.ItemTemplate>
 				</TreeView>
-			</Grid>
-		</Border>
-		<Border BorderThickness="1" BorderBrush="LightGray">
+			</Border>
+		</Grid>
+		<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Margin="8">
 			<ScrollViewer>
 				<ContentControl Content="{Binding CurrentEditorModel}"/>
 			</ScrollViewer>

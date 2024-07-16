@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
+using System.Reactive;
 
 namespace AvaGui.ViewModels
 {
@@ -18,6 +19,8 @@ namespace AvaGui.ViewModels
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
 			Model = model;
+
+			RecreateIndex = ReactiveCommand.Create(() => Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false));
 
 			_ = this.WhenAnyValue(o => o.CurrentDirectory)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
@@ -32,6 +35,7 @@ namespace AvaGui.ViewModels
 			// loads the last-viewed folder
 			CurrentDirectory = Model.Settings.ObjDataDirectory;
 		}
+		public ReactiveCommand<Unit, Unit> RecreateIndex { get; }
 
 		[Reactive]
 		public string CurrentDirectory { get; set; } = string.Empty;
@@ -123,7 +127,10 @@ namespace AvaGui.ViewModels
 			}
 		}
 
+		//public string DirectoryFileCount
+		//	=> $"Files in dir: {(CurrentDirectory == null ? 0 : new DirectoryInfo(CurrentDirectory).GetFiles().Length)}";
+
 		public string DirectoryFileCount
-			=> $"Files in dir: {(CurrentDirectory == null ? 0 : new DirectoryInfo(CurrentDirectory).GetFiles().Length)}";
+			=> $"Objects: {Model.HeaderIndex.Count}";
 	}
 }

@@ -15,12 +15,8 @@ using SixLabors.ImageSharp.PixelFormats;
 using OpenLoco.ObjectEditor.Logging;
 using Avalonia.Platform;
 using SixLabors.ImageSharp;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform.Storage;
 using System.IO;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Reflection;
 using System.Net.Http.Headers;
 using System.Net.Http;
@@ -56,7 +52,6 @@ namespace AvaGui.ViewModels
 
 		public ReactiveCommand<Unit, Unit> LoadPalette { get; }
 
-		public ReactiveCommand<Unit, Unit> RecreateIndex { get; }
 
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
 
@@ -112,7 +107,7 @@ namespace AvaGui.ViewModels
 					x,
 					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = x),
 					null)));
-			ObjDataItems.Insert(0, new MenuItemModel("📂 Add new folder", ReactiveCommand.Create(PickFolder), null));
+			ObjDataItems.Insert(0, new MenuItemModel("📂 Add new folder", ReactiveCommand.Create(SelectNewFolder), null));
 			ObjDataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { }), null));
 
 			//DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
@@ -124,8 +119,7 @@ namespace AvaGui.ViewModels
 			//DataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { })));
 
 			//LoadPalette = ReactiveCommand.Create(LoadPaletteFunc);
-			RecreateIndex = ReactiveCommand.Create(() => Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false));
-			OpenSettingsFolder = ReactiveCommand.Create(PlatformSpecificFolderOpen);
+			OpenSettingsFolder = ReactiveCommand.Create(PlatformSpecific.FolderOpenInDesktop);
 
 			#region Version
 
@@ -182,61 +176,9 @@ namespace AvaGui.ViewModels
 #pragma warning restore CA2201 // Do not raise reserved exception types
 		}
 
-		private static void PlatformSpecificFolderOpen()
+		public async Task SelectNewFolder()
 		{
-			var folderPath = ObjectEditorModel.SettingsPath;
-			if (!Directory.Exists(folderPath))
-			{
-				throw new ArgumentException("The specified folder does not exist.", nameof(folderPath));
-			}
-
-			// Platform-specific command construction
-			string command;
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-			{
-				command = "explorer.exe"; // Windows File Explorer
-			}
-			else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-			{
-				command = "open"; // macOS Finder
-			}
-			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-			{
-				// Note: This assumes the user's desktop environment has a standard file manager
-				command = "xdg-open";
-			}
-			else
-			{
-				throw new PlatformNotSupportedException($"This platform ({RuntimeInformation.OSDescription}) is not currently supported. Please file a Github issue here: {GithubIssuePage}");
-			}
-
-			// Process.Start to execute the command and open the folder
-			var processStartInfo = new ProcessStartInfo
-			{
-				FileName = command,
-				Arguments = folderPath,
-				UseShellExecute = true // Use the shell for proper handling on each OS
-			};
-
-			using (Process.Start(processStartInfo))
-			{ } // Start and dispose of the process
-		}
-
-		public async Task PickFolder()
-		{
-			// See IoCFileOps project for an example of how to accomplish this.
-			if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
-				|| desktop.MainWindow?.StorageProvider is not { } provider)
-			{
-				throw new ArgumentNullException("ApplicationLifetime|StorageProvider", "Missing StorageProvider instance.");
-			}
-
-			var folders = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
-			{
-				Title = "Select a folder containing objects",
-				AllowMultiple = false
-			});
-
+			var folders = await PlatformSpecific.OpenFolderPicker();
 			var dir = folders.FirstOrDefault();
 			if (dir == null)
 			{

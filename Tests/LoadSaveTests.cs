@@ -56,7 +56,7 @@ namespace OpenLoco.ObjectEditor.Tests
 
 			var bytes2 = SawyerStreamWriter.WriteLocoObject(objectName, obj2);
 
-			// we could just simply combare byte arrays and be done, but i wanted something that makes it easier to diagnose problems
+			// we could just simply compare byte arrays and be done, but i wanted something that makes it easier to diagnose problems
 
 			// grab headers first
 			var bytes1S5Header = S5Header.Read(bytes1[0..S5Header.StructLength]);

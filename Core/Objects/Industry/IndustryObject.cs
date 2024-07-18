@@ -103,9 +103,9 @@ namespace Core.Objects
 
 		//public List<IndustryObjectUnk38> UnkIndustry38 { get; set; } = [];
 
-		public S5Header BuildingWall { get; set; }
+		public S5Header? BuildingWall { get; set; }
 
-		public S5Header BuildingWallEntrance { get; set; }
+		public S5Header? BuildingWallEntrance { get; set; }
 
 		public image_id var_0E { get; private set; } // shadows image id base
 		public image_id var_12 { get; private set; } // Base image id for building 0
@@ -279,11 +279,19 @@ namespace Core.Objects
 				{
 					ms.Write(BuildingWall.Write());
 				}
+				else
+				{
+					ms.Write(S5Header.NullHeader.Write());
+				}
 
 				// wall type entrance
 				if (BuildingWallEntrance != null)
 				{
 					ms.Write(BuildingWallEntrance.Write());
+				}
+				else
+				{
+					ms.Write(S5Header.NullHeader.Write());
 				}
 
 				return ms.ToArray();

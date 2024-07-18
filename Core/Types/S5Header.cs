@@ -57,6 +57,7 @@ namespace OpenLoco.ObjectEditor.Headers
 			return span;
 		}
 
-		public static readonly S5Header NullHeader = new(0xFFFFFFFF, "        ", 0);
+		// Vanilla objects do 0x000000FF but all FF is fine too
+		public static readonly S5Header NullHeader = new(0x000000FF, "        ", 0);
 	}
 }

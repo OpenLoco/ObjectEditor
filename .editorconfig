@@ -9,6 +9,8 @@ charset = utf-8
 end_of_line = crlf
 insert_final_newline = true
 trim_trailing_whitespace = true
+dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
+dotnet_style_namespace_match_folder = true:suggestion
 
 # C# files
 [*.csproj]
@@ -421,18 +423,6 @@ dotnet_diagnostic.SA1602.severity = none
 dotnet_diagnostic.SA1649.severity = none
 dotnet_diagnostic.SA1633.severity = none
 
-dotnet_diagnostic.WTG1001.severity = warning
-dotnet_diagnostic.WTG1002.severity = warning
-dotnet_diagnostic.WTG1011.severity = warning
-dotnet_diagnostic.WTG1009.severity = none
-dotnet_diagnostic.WTG1012.severity = warning
-dotnet_diagnostic.WTG1013.severity = none
-dotnet_diagnostic.WTG3001.severity = warning
-dotnet_diagnostic.WTG3002.severity = warning
-dotnet_diagnostic.WTG3003.severity = warning
-dotnet_diagnostic.WTG3005.severity = warning
-dotnet_diagnostic.WTG3006.severity = warning
-dotnet_diagnostic.WTG3008.severity = warning
-dotnet_diagnostic.WTG3011.severity = warning
+dotnet_diagnostic.RCS1217.severity = none
 
 dotnet_diagnostic.RS0030.severity = error

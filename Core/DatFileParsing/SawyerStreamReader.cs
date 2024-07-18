@@ -72,7 +72,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
 			remainingData = remainingData[ObjectHeader.StructLength..];
 
-			var decodedData = new byte[0];
+			byte[] decodedData;
 			try
 			{
 				decodedData = Decode(objectHeader.Encoding, remainingData.ToArray());
@@ -201,7 +201,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 
 			if (data.Length == 0 || stringNames.Length == 0)
 			{
-				logger?.Warning($"No data for language table");
+				logger?.Warning("No data for language table");
 				return (stringTable, 0);
 			}
 
@@ -437,6 +437,21 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				_ = br.Read(pcmData);
 				return (header, pcmData);
 			}
+		}
+
+		public static T ReadChunk<T>(ref ReadOnlySpan<byte> data) where T : class
+			=> ByteReader.ReadLocoStruct<T>(ReadChunkCore(ref data));
+
+		public static byte[] ReadChunkCore(ref ReadOnlySpan<byte> data)
+		{
+			// read encoding and length
+			var chunk = ObjectHeader.Read(data[..ObjectHeader.StructLength]);
+			data = data[ObjectHeader.StructLength..];
+
+			// decode bytes
+			var chunkBytes = data[..(int)chunk.DataLength];
+			data = data[(int)chunk.DataLength..];
+			return Decode(chunk.Encoding, chunkBytes.ToArray());
 		}
 
 		public static List<(WaveFormatEx header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)

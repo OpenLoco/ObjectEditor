@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.DatFileParsing;
 using Zenith.Core;
@@ -6,7 +6,6 @@ using Zenith.Core;
 namespace OpenLoco.ObjectEditor.Headers
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[Category("Header")]
 	[LocoStructSize(0x05)]
 	public record ObjectHeader(SawyerEncoding Encoding, uint32_t DataLength)
 	{
@@ -30,5 +29,7 @@ namespace OpenLoco.ObjectEditor.Headers
 
 			return span;
 		}
+
+		public static readonly ObjectHeader NullHeader = new(SawyerEncoding.Uncompressed, 0);
 	}
 }

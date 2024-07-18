@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using OpenLoco.ObjectEditor.Headers;
 using OpenLoco.ObjectEditor.Types;
 
@@ -9,6 +9,6 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 	{
 		ILocoStruct Object { get; set; }
 		StringTable StringTable { get; set; }
-		List<G1Element32>? G1Elements { get; set; }
+		List<G1Element32> G1Elements { get; set; }
 	}
 }

@@ -3,7 +3,7 @@ using SixLabors.ImageSharp;
 using Zenith.Core;
 using Color = SixLabors.ImageSharp.Color;
 
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.ObjectEditor
 {
 	public class PaletteMap
 	{
@@ -22,7 +22,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		public PaletteMap(Color[] _palette)
 		{
-			Verify.Equals(_palette.Length, 255);
+			_ = Verify.Equals(_palette.Length, 255);
 			Palette = new (Color, byte)[256];
 
 			for (var i = 0; i < 256; ++i)

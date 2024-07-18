@@ -33,7 +33,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			components = new System.ComponentModel.Container();
 			var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			lbLogs = new ListBox();
-			objectDirBrowser = new FolderBrowserDialog();
+			dirBrowser = new FolderBrowserDialog();
 			tbFileFilter = new TextBox();
 			lblFilenameRegex = new Label();
 			saveFileDialog1 = new SaveFileDialog();
@@ -85,7 +85,11 @@ namespace OpenLoco.ObjectEditor.Gui
 			dataDirectoriesToolStripMenuItem = new ToolStripMenuItem();
 			setDataDirectoryToolStripMenuItem = new ToolStripMenuItem();
 			toolStripSeparator2 = new ToolStripSeparator();
+			scv5ToolStripMenuItem = new ToolStripMenuItem();
+			setscv5DirectoryToolStripMenuItem = new ToolStripMenuItem();
+			toolStripSeparator5 = new ToolStripSeparator();
 			recreateIndexToolStripMenuItem = new ToolStripMenuItem();
+			loadPaletteToolStripMenuItem = new ToolStripMenuItem();
 			setPaletteToolStripMenuItem = new ToolStripMenuItem();
 			imgContextMenu = new ContextMenuStrip(components);
 			imgContextMenuSave = new ToolStripMenuItem();
@@ -93,7 +97,6 @@ namespace OpenLoco.ObjectEditor.Gui
 			headerToolStripMenuItem = new ToolStripMenuItem();
 			pictureDataToolStripMenuItem = new ToolStripMenuItem();
 			locoObjectBindingSource = new BindingSource(components);
-			loadPaletteToolStripMenuItem = new ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)scObjectAndLogs).BeginInit();
 			scObjectAndLogs.Panel1.SuspendLayout();
 			scObjectAndLogs.Panel2.SuspendLayout();
@@ -625,10 +628,10 @@ namespace OpenLoco.ObjectEditor.Gui
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, recreateIndexToolStripMenuItem, loadPaletteToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { objectDirectoriesToolStripMenuItem, dataDirectoriesToolStripMenuItem, scv5ToolStripMenuItem, recreateIndexToolStripMenuItem, loadPaletteToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-			fileToolStripMenuItem.Size = new Size(37, 20);
-			fileToolStripMenuItem.Text = "File";
+			fileToolStripMenuItem.Size = new Size(40, 20);
+			fileToolStripMenuItem.Text = " File";
 			// 
 			// objectDirectoriesToolStripMenuItem
 			// 
@@ -668,12 +671,38 @@ namespace OpenLoco.ObjectEditor.Gui
 			toolStripSeparator2.Name = "toolStripSeparator2";
 			toolStripSeparator2.Size = new Size(120, 6);
 			// 
+			// scv5ToolStripMenuItem
+			// 
+			scv5ToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setscv5DirectoryToolStripMenuItem, toolStripSeparator5 });
+			scv5ToolStripMenuItem.Name = "scv5ToolStripMenuItem";
+			scv5ToolStripMenuItem.Size = new Size(180, 22);
+			scv5ToolStripMenuItem.Text = "SCV5 Directories";
+			// 
+			// setscv5DirectoryToolStripMenuItem
+			// 
+			setscv5DirectoryToolStripMenuItem.Name = "setscv5DirectoryToolStripMenuItem";
+			setscv5DirectoryToolStripMenuItem.Size = new Size(180, 22);
+			setscv5DirectoryToolStripMenuItem.Text = "Add New";
+			setscv5DirectoryToolStripMenuItem.Click += setscv5DirectoryToolStripMenuItem_Click;
+			// 
+			// toolStripSeparator5
+			// 
+			toolStripSeparator5.Name = "toolStripSeparator5";
+			toolStripSeparator5.Size = new Size(177, 6);
+			// 
 			// recreateIndexToolStripMenuItem
 			// 
 			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
 			recreateIndexToolStripMenuItem.Size = new Size(180, 22);
 			recreateIndexToolStripMenuItem.Text = "Recreate Index";
 			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
+			// 
+			// loadPaletteToolStripMenuItem
+			// 
+			loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
+			loadPaletteToolStripMenuItem.Size = new Size(180, 22);
+			loadPaletteToolStripMenuItem.Text = "Load Palette";
+			loadPaletteToolStripMenuItem.Click += loadPaletteToolStripMenuItem_Click;
 			// 
 			// setPaletteToolStripMenuItem
 			// 
@@ -720,13 +749,6 @@ namespace OpenLoco.ObjectEditor.Gui
 			// 
 			locoObjectBindingSource.DataSource = typeof(LocoObject);
 			// 
-			// loadPaletteToolStripMenuItem
-			// 
-			loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
-			loadPaletteToolStripMenuItem.Size = new Size(180, 22);
-			loadPaletteToolStripMenuItem.Text = "Load Palette";
-			loadPaletteToolStripMenuItem.Click += loadPaletteToolStripMenuItem_Click;
-			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -738,7 +760,6 @@ namespace OpenLoco.ObjectEditor.Gui
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
 			Padding = new Padding(4);
-			Text = ApplicationName;
 			Load += MainForm_Load;
 			scObjectAndLogs.Panel1.ResumeLayout(false);
 			scObjectAndLogs.Panel1.PerformLayout();
@@ -786,7 +807,7 @@ namespace OpenLoco.ObjectEditor.Gui
 
 		#endregion
 		private ListBox lbLogs;
-		private FolderBrowserDialog objectDirBrowser;
+		private FolderBrowserDialog dirBrowser;
 		private TextBox tbFileFilter;
 		private Label lblFilenameRegex;
 		private SaveFileDialog saveFileDialog1;
@@ -796,10 +817,8 @@ namespace OpenLoco.ObjectEditor.Gui
 		private Panel pnFileFilter;
 		private MenuStrip menuStrip;
 		private ToolStripMenuItem fileToolStripMenuItem;
-		private ToolStripMenuItem objectDirectoriesToolStripMenuItem;
 		private ToolStripMenuItem recreateIndexToolStripMenuItem;
 		private ToolStripMenuItem setPaletteToolStripMenuItem;
-		private ToolStripMenuItem dataDirectoriesToolStripMenuItem;
 		private ContextMenuStrip imgContextMenu;
 		private ToolStripMenuItem imgContextMenuSave;
 		private Button btnPageNext;
@@ -820,10 +839,17 @@ namespace OpenLoco.ObjectEditor.Gui
 		private ToolStripMenuItem headerToolStripMenuItem;
 		private ToolStripMenuItem pictureDataToolStripMenuItem;
 		private SplitContainer scAnnnotationDump;
+		private ToolStripMenuItem objectDirectoriesToolStripMenuItem;
 		private ToolStripMenuItem setObjectDirectoryToolStripMenuItem;
-		private ToolStripSeparator toolStripSeparator1;
+		private ToolStripMenuItem dataDirectoriesToolStripMenuItem;
 		private ToolStripMenuItem setDataDirectoryToolStripMenuItem;
+		private ToolStripMenuItem scv5ToolStripMenuItem;
+		private ToolStripMenuItem setscv5DirectoryToolStripMenuItem;
+		private ToolStripSeparator toolStripSeparator1;
 		private ToolStripSeparator toolStripSeparator2;
+		private ToolStripSeparator toolStripSeparator3;
+		private ToolStripSeparator toolStripSeparator4;
+		private ToolStripSeparator toolStripSeparator5;
 		private TabControl tcSubObjectView;
 		private TabPage tpObjectObject;
 		private TabPage tpObjectStringTable;
@@ -840,8 +866,6 @@ namespace OpenLoco.ObjectEditor.Gui
 		private ToolStripButton tsbImportFromDirectory;
 		private ToolStripButton tsbExportToDirectory;
 		private ToolStripTextBox tstbImageScaling;
-		private ToolStripSeparator toolStripSeparator4;
-		private ToolStripSeparator toolStripSeparator3;
 		private ToolStripLabel tslImageScaling;
 		private Panel pnImagePageControls;
 		private Button btnPageEnd;

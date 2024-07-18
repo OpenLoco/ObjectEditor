@@ -6,8 +6,7 @@ using Zenith.Core;
 namespace OpenLoco.ObjectEditor.Headers
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[Category("Header")]
-	[LocoStructSize(0x10)]
+	[LocoStructSize(StructLength)]
 	public record S5Header(string Name, uint32_t Checksum)
 	{
 		// this is necessary because Flags must be get-set to enable setters for SourceGame and ObjectType
@@ -30,6 +29,9 @@ namespace OpenLoco.ObjectEditor.Headers
 			get => (ObjectType)(Flags & 0x3F);
 			set => Flags = (Flags & (~0x3u << 6)) | ((uint)value & 0x3F);
 		}
+
+		public bool Validate()
+			=> !(SourceGame is < 0 or >= SourceGame.MAX) && ObjectType is not < 0 and not >= ObjectType.MAX;
 
 		public static S5Header Read(ReadOnlySpan<byte> data)
 		{
@@ -55,6 +57,7 @@ namespace OpenLoco.ObjectEditor.Headers
 			return span;
 		}
 
-		public static S5Header NullHeader = new(0xFFFFFFFF, "        ", 0);
+		// Vanilla objects do 0x000000FF but all FF is fine too
+		public static readonly S5Header NullHeader = new(0x000000FF, "        ", 0);
 	}
 }

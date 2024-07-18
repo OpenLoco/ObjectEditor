@@ -41,7 +41,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x06), LocoPropertyMaybeUnused] uint8_t ToolId,
 		[property: LocoStructOffset(0x07)] WallObjectFlags Flags,
 		[property: LocoStructOffset(0x08)] uint8_t Height,
-		[property: LocoStructOffset(0x09), LocoPropertyMaybeUnused] WallObjectFlags2 Flags2
+		[property: LocoStructOffset(0x09), LocoPropertyMaybeUnused] WallObjectFlags2 Flags2 // none of these are used in Loco
 		) : ILocoStruct, ILocoImageTableNames
 	{
 		public bool Validate() => true;

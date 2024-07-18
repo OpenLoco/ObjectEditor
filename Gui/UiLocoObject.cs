@@ -19,13 +19,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		public List<G1Element32> G1Elements
 		{
 			get => LocoObject?.G1Elements ?? Enumerable.Empty<G1Element32>().ToList();
-			set
-			{
-				if (LocoObject != null)
-				{
-					LocoObject.G1Elements = value;
-				}
-			}
+			set => LocoObject.G1Elements = value;
 		}
 	}
 
@@ -53,11 +47,14 @@ namespace OpenLoco.ObjectEditor.Gui
 	{
 		public List<G1Element32> G1Elements
 		{
-			get => G1?.G1Elements ?? Enumerable.Empty<G1Element32>().ToList();
+			get => G1.G1Elements;
 			set
 			{
 				G1.G1Elements.Clear();
-				G1.G1Elements.AddRange(value);
+				foreach (var x in value)
+				{
+					G1.G1Elements.Add(x);
+				}
 			}
 		}
 	}

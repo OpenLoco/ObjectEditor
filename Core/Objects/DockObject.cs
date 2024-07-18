@@ -26,12 +26,11 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0C), Browsable(false)] image_id UnkImage,
 		[property: LocoStructOffset(0x10)] DockObjectFlags Flags,
 		[property: LocoStructOffset(0x12), LocoPropertyMaybeUnused] uint8_t NumAux01,
-		[property: LocoStructOffset(0x13), LocoPropertyMaybeUnused] uint8_t NumAux02Ent,
+		[property: LocoStructOffset(0x13), LocoPropertyMaybeUnused] uint8_t NumAux02Ent, // must be 1 or 0
 		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> var_14,
-		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<uint16_t> var_18,
-		[property: LocoStructOffset(0x1C), LocoStructVariableLoad] List<uint8_t> var_1C,
-		[property: LocoStructOffset(0x20)]
-		uint16_t DesignedYear,
+		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<uint16_t> BuildingPartAnimations,
+		[property: LocoStructOffset(0x1C), LocoStructVariableLoad] List<uint8_t> BuildingVariationParts,
+		[property: LocoStructOffset(0x20)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x22)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0x24)] Pos2 BoatPosition
 	) : ILocoStruct, ILocoStructVariableData
@@ -39,8 +38,8 @@ namespace OpenLoco.ObjectEditor.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			var_14.Clear();
-			var_18.Clear();
-			var_1C.Clear();
+			BuildingPartAnimations.Clear();
+			BuildingVariationParts.Clear();
 
 			// var_14 - a list of uint8_t
 			var_14.AddRange(remainingData[..(NumAux01 * 1)]);
@@ -50,7 +49,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			var bytearr = remainingData[..(NumAux01 * 2)].ToArray();
 			for (var i = 0; i < NumAux01; ++i)
 			{
-				var_18.Add(BitConverter.ToUInt16(bytearr, i * 2)); // sizeof(uint16_t)
+				BuildingPartAnimations.Add(BitConverter.ToUInt16(bytearr, i * 2)); // sizeof(uint16_t)
 			}
 
 			remainingData = remainingData[(NumAux01 * 2)..]; // sizeof(uint16_t)
@@ -61,7 +60,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				var ptr_1C = 0;
 				while (remainingData[ptr_1C] != 0xFF)
 				{
-					var_1C.Add(remainingData[ptr_1C]);
+					BuildingVariationParts.Add(remainingData[ptr_1C]);
 					ptr_1C++;
 				}
 
@@ -74,8 +73,8 @@ namespace OpenLoco.ObjectEditor.Objects
 
 		public ReadOnlySpan<byte> Save()
 			=> var_14
-			.Concat(var_18.SelectMany(BitConverter.GetBytes))
-			.Concat(var_1C)
+			.Concat(BuildingPartAnimations.SelectMany(BitConverter.GetBytes))
+			.Concat(BuildingVariationParts)
 			.Concat(new byte[] { 0xFF })
 			.ToArray();
 		public bool Validate()

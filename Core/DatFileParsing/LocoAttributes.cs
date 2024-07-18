@@ -1,4 +1,4 @@
-﻿using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.Data;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {

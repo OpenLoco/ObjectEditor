@@ -1,0 +1,235 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:vm="using:AvaGui.ViewModels"
+		xmlns:vi="using:AvaGui.Views"
+		xmlns:mo="using:AvaGui.Models"
+		xmlns:ol="using:OpenLoco.ObjectEditor.Logging"
+		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+		xmlns:sys="clr-namespace:System;assembly=mscorlib"
+		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
+		mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
+		x:Class="AvaGui.Views.MainWindow"
+		x:DataType="vm:MainWindowViewModel"
+		Icon="/Assets/loco_icon.ico"
+		Title="{Binding WindowTitle}">
+
+	<Design.DataContext>
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
+
+	<Window.DataTemplates>
+		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
+		<DataTemplate DataType="mo:FileSystemItemGroup">
+			<StackPanel Orientation="Horizontal">
+				<Image Width="32" Height="32">
+					<Image.Source>
+						<CroppedBitmap Source="avares://AvaGui/Assets/loco_object_types_combined.png" SourceRect="{Binding SourceRect}">
+						</CroppedBitmap>
+					</Image.Source>
+				</Image>
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			</StackPanel>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:FileSystemVehicleGroup">
+			<StackPanel Orientation="Horizontal">
+				<Image Width="32" Height="32">
+					<Image.Source>
+						<CroppedBitmap Source="avares://AvaGui/Assets/loco_vehicle_types_combined.png" SourceRect="{Binding SourceRect}">
+						</CroppedBitmap>
+					</Image.Source>
+				</Image>
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			</StackPanel>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:FileSystemItem">
+			<StackPanel Orientation="Horizontal">
+				<Image Width="16" Height="16">
+					<Image.Source>
+						<CroppedBitmap Source="avares://AvaGui/Assets/vanilla.png" SourceRect="{Binding SourceRect}">
+						</CroppedBitmap>
+					</Image.Source>
+				</Image>
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			</StackPanel>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:ObjectEditorViewModel">
+			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
+				<StackPanel Orientation="Horizontal">
+					<Button Content="⭮ Reload" Command="{Binding ReloadObjectCommand}"/>
+					<Button Content="💾 Save" Command="{Binding SaveObjectCommand}"/>
+				</StackPanel>
+				<TabControl>
+					<TabItem Header="Headers">
+						<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</TabItem>
+					<TabItem Header="Object">
+						<pgc:PropertyGrid x:Name="propertyGrid_1" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</TabItem>
+					<TabItem Header="String Table">
+						<StackPanel Orientation="Horizontal" Spacing="16">
+							<ListBox ItemsSource="{Binding StringTableViewModel.Keys}" SelectedItem="{Binding StringTableViewModel.SelectedKey}">
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+							<ListBox ItemsSource="{Binding StringTableViewModel.TranslationTable}">
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<StackPanel Orientation="Horizontal">
+											<TextBlock Text="{Binding Language}" Margin="4" Width="128"></TextBlock>
+											<TextBox Text="{Binding Translation}" Width="256"></TextBox>
+										</StackPanel>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+						</StackPanel>
+					</TabItem>
+					<TabItem Header="Image Table">
+						<DockPanel DataContext="{Binding ImageTableViewModel}">
+							<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+								<Button Command="{Binding ImportImagesCommand}">📥 Import from Directory</Button>
+								<Button Command="{Binding ExportImagesCommand}">📤 Export To Directory</Button>
+								<!--<Label VerticalAlignment="Center">🔍 Image Scaling (1-10):</Label>
+								<NumericUpDown Value="{Binding Zoom}" FormatString="0" Watermark="1" Width="108" Minimum="1" Maximum="10" />-->
+							</StackPanel>
+							<ItemsControl ItemsSource="{Binding Images, Mode=OneWay}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel/>
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<ContentControl Padding="2" >
+											<Border BorderBrush="Gray" Background="Magenta">
+												<Image Source="{Binding}" Stretch="None" Margin="0">
+													<!--<Image.RenderTransform>
+														<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+													</Image.RenderTransform>-->
+												</Image>
+											</Border>
+										</ContentControl>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</DockPanel>
+					</TabItem>
+				</TabControl>
+			</StackPanel>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:SCV5ViewModel">
+			<StackPanel Orientation="Vertical">
+				<TextBlock Text="{Binding CurrentFileName}"/>
+				<TextBlock Text="{Binding CurrentFile}"/>
+			</StackPanel>
+			<!--<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentFileName}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
+		</DataTemplate>
+
+	</Window.DataTemplates>
+
+	<DockPanel>
+		<DockPanel DockPanel.Dock="Top">
+			<Menu>
+				<MenuItem Header="_File">
+					<!--<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />-->
+					<MenuItem Header="⚙ Open settings folder" Command="{Binding OpenSettingsFolder}" />
+				</MenuItem>
+				<MenuItem Header="_ObjData" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
+					<MenuItem.Styles>
+						<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemModel">
+							<Setter Property="Header" Value="{Binding Name}"/>
+							<Setter Property="Command" Value="{Binding MenuCommand}"/>
+						</Style>
+					</MenuItem.Styles>
+				</MenuItem>
+				<!--<MenuItem Header="_ObjData (New)" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
+					<MenuItem.DataTemplates>
+						<TreeDataTemplate DataType="vm:MenuItemModel">
+							<Grid ColumnDefinitions="*,Auto">
+								-->
+				<!--<ContentPresenter
+								Grid.Column="0"
+								Content="{Binding Name}"
+								RecognizesAccessKey="True"
+								VerticalAlignment="Center"/>-->
+				<!--
+								<Button
+									Grid.Column="0"
+									VerticalAlignment="Center"
+									Content="{Binding Name}"
+									Command="{Binding MenuCommand}"
+									Background="{Binding $parent[Grid].Background}">
+									-->
+				<!--<Button.Styles>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Background" Value="{Binding $parent[Grid].Background}" />
+									</Style>
+								</Button.Styles>-->
+				<!--
+								</Button>
+								<Button
+									Grid.Column="1"
+									VerticalAlignment="Center"
+									Content="🗑️"
+									Command="{Binding DeleteCommand}"
+									IsEnabled="True">
+								</Button>
+							</Grid>
+						</TreeDataTemplate>
+					</MenuItem.DataTemplates>
+				</MenuItem>-->
+				<!--<MenuItem Header="Data Directories" ItemsSource="{Binding DataItems}" Classes="SubItems">
+					<MenuItem.Styles>
+						<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemModel">
+							<Setter Property="Header" Value="{Binding Name}"/>
+							<Setter Property="Command" Value="{Binding MenuCommand}"/>
+						</Style>
+					</MenuItem.Styles>
+				</MenuItem>-->
+			</Menu>
+			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
+		</DockPanel>
+		<Expander Header="Logs" Padding="0" ExpandDirection="Down" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="8">
+			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+				<DataGrid MinHeight="256" MaxHeight="1024" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False" />
+			</ScrollViewer>
+		</Expander>
+		<Grid DataContext="{Binding FolderTreeViewModel}" DockPanel.Dock="Left" Margin="8" MinWidth="256">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+			<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" BorderBrush="Gray" Watermark="📁 Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+			<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" BorderBrush="Gray" Watermark="🛢 Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
+			<TextBox Grid.Row="2" Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="🔎 Filename search"  Margin="2"/>
+			<Button Grid.Row="3" Content="⭮ Recreate current index" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2"/>
+			<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
+			<Border Grid.Row="5" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+				<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
+					<TreeView.ItemTemplate>
+						<TreeDataTemplate ItemsSource="{Binding SubNodes}">
+							<ContentControl Content="{Binding}" />
+						</TreeDataTemplate>
+					</TreeView.ItemTemplate>
+				</TreeView>
+			</Border>
+		</Grid>
+		<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Margin="8">
+			<ScrollViewer>
+				<ContentControl Content="{Binding CurrentEditorModel}"/>
+			</ScrollViewer>
+		</Border>
+	</DockPanel>
+</Window>

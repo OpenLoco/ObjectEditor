@@ -23,10 +23,10 @@ namespace OpenLoco.ObjectEditor.Objects
 	public record BuildingObject(
 			[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 			[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
-			[property: LocoStructOffset(0x06)] uint8_t NumAnimations,
+			[property: LocoStructOffset(0x06)] uint8_t NumParts,
 			[property: LocoStructOffset(0x07)] uint8_t NumVariations,
-			[property: LocoStructOffset(0x08), LocoStructVariableLoad, LocoArrayLength(4)] List<uint8_t> VariationHeights,
-			[property: LocoStructOffset(0x0C), LocoStructVariableLoad, LocoArrayLength(2)] List<BuildingPartAnimation> VariationAnimations,
+			[property: LocoStructOffset(0x08), LocoStructVariableLoad, LocoArrayLength(4)] List<uint8_t> PartHeights,
+			[property: LocoStructOffset(0x0C), LocoStructVariableLoad, LocoArrayLength(2)] List<BuildingPartAnimation> PartAnimations,
 			[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(BuildingObject.VariationPartCount)] List<uint8_t[]> VariationParts,
 			[property: LocoStructOffset(0x90)] uint32_t Colours,
 			[property: LocoStructOffset(0x94)] uint16_t DesignedYear,
@@ -43,7 +43,6 @@ namespace OpenLoco.ObjectEditor.Objects
 			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxRequiredCargoType), Browsable(false)] List<object_id> _RequiredCargoType,
 			[property: LocoStructOffset(0xA6), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A6,
 			[property: LocoStructOffset(0xA8), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A8,
-			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A4, // Some type of Cargo
 			[property: LocoStructOffset(0xAA)] int16_t DemolishRatingReduction,
 			[property: LocoStructOffset(0xAC)] uint8_t var_AC,
 			[property: LocoStructOffset(0xAD)] uint8_t NumAnimatedElevators
@@ -64,16 +63,16 @@ namespace OpenLoco.ObjectEditor.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// variation heights
-			VariationHeights.Clear();
-			VariationHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumAnimations * 1)], NumAnimations));
-			remainingData = remainingData[(NumAnimations * 1)..]; // uint8_t*
+			PartHeights.Clear();
+			PartHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumParts * 1)], NumParts));
+			remainingData = remainingData[(NumParts * 1)..]; // uint8_t*
 
 			// variation animations
-			VariationAnimations.Clear();
+			PartAnimations.Clear();
 			var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
-			VariationAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumAnimations * buildingAnimationSize)], typeof(BuildingPartAnimation), NumAnimations, buildingAnimationSize)
+			PartAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumParts * buildingAnimationSize)], typeof(BuildingPartAnimation), NumParts, buildingAnimationSize)
 				.Cast<BuildingPartAnimation>());
-			remainingData = remainingData[(NumAnimations * 2)..]; // uint16_t*
+			remainingData = remainingData[(NumParts * 2)..]; // uint16_t*
 
 			// variation parts
 			VariationParts.Clear();
@@ -119,13 +118,13 @@ namespace OpenLoco.ObjectEditor.Objects
 			var ms = new MemoryStream();
 
 			// variation heights
-			foreach (var x in VariationHeights)
+			foreach (var x in PartHeights)
 			{
 				ms.WriteByte(x);
 			}
 
 			// variation animations
-			foreach (var x in VariationAnimations)
+			foreach (var x in PartAnimations)
 			{
 				ms.WriteByte(x.NumFrames);
 				ms.WriteByte(x.AnimationSpeed);
@@ -163,7 +162,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		}
 
 		public bool Validate()
-			=> NumAnimations is not 0 and not > 63
+			=> NumParts is not 0 and not > 63
 			&& NumVariations is not 0 and <= 31;
 	}
 }

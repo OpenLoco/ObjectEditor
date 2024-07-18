@@ -32,6 +32,15 @@ namespace OpenLoco.ObjectEditor.Objects
 		StreetLights = 1 << 8,
 	};
 
+	public enum TownSize : uint8_t
+	{
+		Hamlet,
+		Village,
+		Town,
+		City,
+		Metropolis,
+	};
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x30)]
 	[LocoStructType(ObjectType.Road)]
@@ -55,10 +64,10 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x25)] uint8_t NumMods,
 		[property: LocoStructOffset(0x26), LocoArrayLength(RoadObject.MaxMods), Browsable(false)] object_id[] _Mods,
 		[property: LocoStructOffset(0x28)] uint8_t NumCompatible,
-		[property: LocoStructOffset(0x29)] uint8_t pad_29,
+		[property: LocoStructOffset(0x29)] uint8_t DisplayOffset,
 		[property: LocoStructOffset(0x2A), Browsable(false)] uint16_t _CompatibleRoads, // bitset
 		[property: LocoStructOffset(0x2C), Browsable(false)] uint16_t _CompatibleTracks, // bitset
-		[property: LocoStructOffset(0x2E)] uint8_t TargetTownSize,
+		[property: LocoStructOffset(0x2E)] TownSize TargetTownSize,
 		[property: LocoStructOffset(0x2F)] uint8_t pad_2F
 		) : ILocoStruct, ILocoStructVariableData
 	{

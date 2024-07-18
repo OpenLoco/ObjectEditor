@@ -304,7 +304,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.HillHeightMapCount, Is.EqualTo(2), nameof(struc.HillHeightMapCount));
 				Assert.That(struc.MountainHeightMapCount, Is.EqualTo(2), nameof(struc.MountainHeightMapCount));
 				//Assert.That(struc.var_08, Is.EqualTo(0), nameof(struc.var_08));
-				Assert.That(struc.pad_0C, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 2)), nameof(struc.pad_0C));
+				Assert.That(struc.Flags, Is.EqualTo(HillShapeFlags.None), nameof(struc.Flags));
 			});
 			LoadSaveGenericTest<HillShapesObject>(objectName, assertFunc);
 		}
@@ -375,10 +375,10 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.InitialProductionRate[1].Max, Is.EqualTo(0));
 				Assert.That(struc.MaxNumBuildings, Is.EqualTo(11), nameof(struc.MaxNumBuildings));
 				Assert.That(struc.MinNumBuildings, Is.EqualTo(9), nameof(struc.MinNumBuildings));
-				Assert.That(struc.var_1E, Is.EqualTo(10), nameof(struc.var_1E));
-				Assert.That(struc.var_1F, Is.EqualTo(5), nameof(struc.var_1F));
+				Assert.That(struc.NumBuildingParts, Is.EqualTo(10), nameof(struc.NumBuildingParts));
+				Assert.That(struc.NumBuildingVariations, Is.EqualTo(5), nameof(struc.NumBuildingVariations));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
-				Assert.That(struc.pad_E3, Is.EqualTo(16), nameof(struc.pad_E3));
+				Assert.That(struc.MapColour, Is.EqualTo(Colour.Yellow), nameof(struc.MapColour));
 				// ProducedCargo
 				Assert.That(struc.ProducedCargo, Has.Count.EqualTo(1));
 				Assert.That(struc.ProducedCargo[0].Name, Is.EqualTo("CHEMICAL"));
@@ -409,6 +409,7 @@ namespace OpenLoco.ObjectEditor.Tests
 			});
 			LoadSaveGenericTest<IndustryObject>(objectName, assertFunc);
 		}
+
 		[TestCase("BREWERY.DAT")]
 		public void IndustryObject2(string objectName)
 		{
@@ -455,10 +456,10 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.InitialProductionRate[1].Max, Is.EqualTo(0));
 				Assert.That(struc.MaxNumBuildings, Is.EqualTo(8), nameof(struc.MaxNumBuildings));
 				Assert.That(struc.MinNumBuildings, Is.EqualTo(4), nameof(struc.MinNumBuildings));
-				Assert.That(struc.var_1E, Is.EqualTo(4), nameof(struc.var_1E));
-				Assert.That(struc.var_1F, Is.EqualTo(2), nameof(struc.var_1F));
+				Assert.That(struc.NumBuildingParts, Is.EqualTo(4), nameof(struc.NumBuildingParts));
+				Assert.That(struc.NumBuildingVariations, Is.EqualTo(2), nameof(struc.NumBuildingVariations));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
-				Assert.That(struc.pad_E3, Is.EqualTo(4), nameof(struc.pad_E3));
+				Assert.That(struc.MapColour, Is.EqualTo(Colour.MutedPurple), nameof(struc.MapColour));
 				// ProducedCargo
 				Assert.That(struc.ProducedCargo, Has.Count.EqualTo(1));
 				Assert.That(struc.ProducedCargo[0].Name.Trim(), Is.EqualTo("FOOD"));
@@ -536,7 +537,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
 				Assert.That(struc.CliffEdgeImage, Is.EqualTo(0), nameof(struc.CliffEdgeImage));
 				Assert.That(struc.MapPixelImage, Is.EqualTo(0), nameof(struc.MapPixelImage));
-				Assert.That(struc.pad_1A, Is.EqualTo(0), nameof(struc.pad_1A));
+				Assert.That(struc.DistributionPattern, Is.EqualTo(0), nameof(struc.DistributionPattern));
 				Assert.That(struc.NumVariations, Is.EqualTo(3), nameof(struc.NumVariations));
 				Assert.That(struc.VariationLikelihood, Is.EqualTo(10), nameof(struc.VariationLikelihood));
 				Assert.That(struc.pad_1D, Is.EqualTo(0), nameof(struc.pad_1D));
@@ -557,8 +558,8 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.ClosingFrames, Is.EqualTo(4), nameof(struc.ClosingFrames));
 				Assert.That(struc.ClosedFrames, Is.EqualTo(11), nameof(struc.ClosedFrames));
 
-				Assert.That(struc.pad_0A[0], Is.EqualTo(3), nameof(struc.pad_0A) + "[0]");
-				Assert.That(struc.pad_0A[1], Is.EqualTo(0), nameof(struc.pad_0A) + "[1]");
+				Assert.That(struc.var_0A, Is.EqualTo(3), nameof(struc.var_0A));
+				Assert.That(struc.pad_0B, Is.EqualTo(0), nameof(struc.pad_0B));
 
 				Assert.That(struc.DesignedYear, Is.EqualTo(1955), nameof(struc.DesignedYear));
 			});
@@ -597,7 +598,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.RoadPieces, Is.EqualTo(RoadObjectPieceFlags.OneWay | RoadObjectPieceFlags.Track | RoadObjectPieceFlags.Slope | RoadObjectPieceFlags.SteepSlope | RoadObjectPieceFlags.Intersection | RoadObjectPieceFlags.Overtake), nameof(struc.RoadPieces));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-20), nameof(struc.SellCostFactor));
 				// Stations
-				Assert.That(struc.TargetTownSize, Is.EqualTo(2), nameof(struc.TargetTownSize));
+				Assert.That(struc.TargetTownSize, Is.EqualTo(TownSize.Town), nameof(struc.TargetTownSize));
 				Assert.That(struc.TunnelCostFactor, Is.EqualTo(27), nameof(struc.TunnelCostFactor));
 			});
 			LoadSaveGenericTest<RoadObject>(objectName, assertFunc);

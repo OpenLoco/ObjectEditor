@@ -94,8 +94,8 @@
 					<TabItem Header="Image Table">
 						<DockPanel DataContext="{Binding ImageTableViewModel}">
 							<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-								<Button Command="{Binding ImportImages}">📥 Import from Directory</Button>
-								<Button Command="{Binding ExportImages}">📤 Export To Directory</Button>
+								<Button Command="{Binding ImportImagesCommand}">📥 Import from Directory</Button>
+								<Button Command="{Binding ExportImagesCommand}">📤 Export To Directory</Button>
 								<!--<Label VerticalAlignment="Center">🔍 Image Scaling (1-10):</Label>
 								<NumericUpDown Value="{Binding Zoom}" FormatString="0" Watermark="1" Width="108" Minimum="1" Maximum="10" />-->
 							</StackPanel>

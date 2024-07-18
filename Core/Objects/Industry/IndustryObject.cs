@@ -58,8 +58,8 @@ namespace Core.Objects
 		[property: LocoStructOffset(0x12), Browsable(false)] image_id _var_12, // Base image id for building 0
 		[property: LocoStructOffset(0x16), Browsable(false)] image_id _var_16,
 		[property: LocoStructOffset(0x1A), Browsable(false)] image_id _var_1A,
-		[property: LocoStructOffset(0x1E)] uint8_t var_1E,
-		[property: LocoStructOffset(0x1F)] uint8_t var_1F,
+		[property: LocoStructOffset(0x1E)] uint8_t NumBuildingParts,
+		[property: LocoStructOffset(0x1F)] uint8_t NumBuildingVariations,
 		[property: LocoStructOffset(0x20), LocoStructVariableLoad] List<uint8_t> BuildingPartHeights,    // This is the height of a building image
 		[property: LocoStructOffset(0x24), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingPartAnimations,
 		[property: LocoStructOffset(0x28), LocoStructVariableLoad, LocoArrayLength(IndustryObject.AnimationSequencesCount)] List<uint8_t[]> AnimationSequences, // Access with getAnimationSequence helper method
@@ -81,7 +81,7 @@ namespace Core.Objects
 		[property: LocoStructOffset(0xD6), LocoArrayLength(IndustryObject.InitialProductionRateCount)] IndustryObjectProductionRateRange[] InitialProductionRate,
 		[property: LocoStructOffset(0xDE), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxProducedCargoType)] List<S5Header> ProducedCargo,   // (0xFF = null)
 		[property: LocoStructOffset(0xE0), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxRequiredCargoType)] List<S5Header> RequiredCargo, // (0xFF = null)
-		[property: LocoStructOffset(0xE3), Browsable(false)] uint8_t pad_E3,
+		[property: LocoStructOffset(0xE3)] Colour MapColour,
 		[property: LocoStructOffset(0xE4)] IndustryObjectFlags Flags,
 		[property: LocoStructOffset(0xE8)] uint8_t var_E8,
 		[property: LocoStructOffset(0xE9)] uint8_t var_E9,
@@ -116,15 +116,15 @@ namespace Core.Objects
 		{
 			// part heights
 			BuildingPartHeights.Clear();
-			BuildingPartHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(var_1E * 1)], var_1E));
-			remainingData = remainingData[(var_1E * 1)..]; // uint8_t*
+			BuildingPartHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingParts * 1)], NumBuildingParts));
+			remainingData = remainingData[(NumBuildingParts * 1)..]; // uint8_t*
 
 			// part animations
 			BuildingPartAnimations.Clear();
 			var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
-			BuildingPartAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(var_1E * buildingAnimationSize)], typeof(BuildingPartAnimation), var_1E, buildingAnimationSize)
+			BuildingPartAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingParts * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingParts, buildingAnimationSize)
 				.Cast<BuildingPartAnimation>());
-			remainingData = remainingData[(var_1E * 2)..]; // uint16_t*
+			remainingData = remainingData[(NumBuildingParts * 2)..]; // uint16_t*
 
 			// animation sequences
 			AnimationSequences.Clear();
@@ -154,7 +154,7 @@ namespace Core.Objects
 
 			// variation parts
 			BuildingParts.Clear();
-			for (var i = 0; i < var_1F; ++i)
+			for (var i = 0; i < NumBuildingVariations; ++i)
 			{
 				var ptr_1F = 0;
 				while (remainingData[++ptr_1F] != 0xFF) ;
@@ -203,9 +203,9 @@ namespace Core.Objects
 			var_12 = var_0E;
 			if (Flags.HasFlag(IndustryObjectFlags.HasShadows))
 			{
-				var_12 += var_1F * 4u;
+				var_12 += NumBuildingVariations * 4u;
 			}
-			var_16 = (var_1E * 4u) + var_12;
+			var_16 = (NumBuildingParts * 4u) + var_12;
 			var_1A = var_E9 * 21u;
 
 			return remainingData;
@@ -292,11 +292,11 @@ namespace Core.Objects
 
 		public bool Validate()
 		{
-			if (var_1E == 0)
+			if (NumBuildingParts == 0)
 			{
 				return false;
 			}
-			if (var_1F == 0 || var_1F > 31)
+			if (NumBuildingVariations == 0 || NumBuildingVariations > 31)
 			{
 				return false;
 			}

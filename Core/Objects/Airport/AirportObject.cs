@@ -36,7 +36,7 @@ namespace Core.Objects
 		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> BuildingVariationHeights,
 		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingVariationAnimations,
 		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(AirportObject.VariationPartCount)] List<uint8_t[]> BuildingVariationParts,
-		[property: LocoStructOffset(0x9C), LocoStructVariableLoad] List<uint32_t> var_9C,
+		[property: LocoStructOffset(0x9C), LocoStructVariableLoad] List<AirportBuilding> BuildingPositions,
 		[property: LocoStructOffset(0xA0)] uint32_t LargeTiles,
 		[property: LocoStructOffset(0xA4)] int8_t MinX,
 		[property: LocoStructOffset(0xA5)] int8_t MinY,
@@ -72,22 +72,22 @@ namespace Core.Objects
 			{
 				var ptr_1C = 0;
 				while (remainingData[++ptr_1C] != 0xFF)
-				{
-					;
-				}
+				{ }
 
 				BuildingVariationParts.Add(remainingData[..ptr_1C].ToArray());
 				ptr_1C++;
 				remainingData = remainingData[ptr_1C..];
 			}
 
-			// var_9C
+			// building positions
 			var ptr_9C = 0;
-			var_9C.Clear();
+			BuildingPositions.Clear();
+			var airportBuildingSize = ObjectAttributes.StructSize<AirportBuilding>();
 			while (remainingData[ptr_9C] != 0xFF)
 			{
-				var_9C.Add(ByteReaderT.Read_uint32t(remainingData[ptr_9C..(ptr_9C + 4)], 0));
-				ptr_9C += 4;
+				var position = ByteReader.ReadLocoStruct<AirportBuilding>(remainingData[ptr_9C..(ptr_9C + airportBuildingSize)]);
+				BuildingPositions.Add(position);
+				ptr_9C += airportBuildingSize;
 			}
 
 			ptr_9C++;
@@ -135,9 +135,12 @@ namespace Core.Objects
 				ms.WriteByte(0xFF);
 			}
 
-			foreach (var x in var_9C)
+			foreach (var x in BuildingPositions)
 			{
-				ms.Write(BitConverter.GetBytes(x));
+				ms.WriteByte(x.Index);
+				ms.WriteByte(x.Rotation);
+				ms.WriteByte((byte)x.X);
+				ms.WriteByte((byte)x.Y);
 			}
 
 			ms.WriteByte(0xFF);

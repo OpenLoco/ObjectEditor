@@ -13,10 +13,8 @@ using System.Reactive.Linq;
 using System;
 using SkiaSharp;
 using System.IO;
-using System.Reactive;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Diagnostics.Metrics;
 
 namespace AvaGui.ViewModels
 {
@@ -36,11 +34,11 @@ namespace AvaGui.ViewModels
 			_ = this.WhenAnyValue(o => o.Zoom)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 
-			ImportImages = ReactiveCommand.Create(ImportImages_);
-			ExportImages = ReactiveCommand.Create(ExportImages_);
+			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
+			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
 		}
 
-		public async Task ImportImages_()
+		public async Task ImportImages()
 		{
 			var folders = await PlatformSpecific.OpenFolderPicker();
 			var dir = folders.FirstOrDefault();
@@ -70,7 +68,7 @@ namespace AvaGui.ViewModels
 			this.RaisePropertyChanged(nameof(Images));
 		}
 
-		public async Task ExportImages_()
+		public async Task ExportImages()
 		{
 			var folders = await PlatformSpecific.OpenFolderPicker();
 			var dir = folders.FirstOrDefault();
@@ -97,10 +95,10 @@ namespace AvaGui.ViewModels
 		public PaletteMap PaletteMap { get; set; }
 
 		[Reactive]
-		public ICommand ImportImages { get; set; }
+		public ICommand ImportImagesCommand { get; set; }
 
 		[Reactive]
-		public ICommand ExportImages { get; set; }
+		public ICommand ExportImagesCommand { get; set; }
 
 		[Reactive]
 		public int Zoom { get; set; } = 1;

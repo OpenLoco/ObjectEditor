@@ -3,10 +3,9 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 
 # Screenshots
 
-![image](https://github.com/user-attachments/assets/5178ca31-aa9f-4fb7-a026-d24f98dbe65a)
-
-![image](https://github.com/user-attachments/assets/b04b106c-2cce-4d4e-b8da-e655eede5bc1)
-
+Object property editing    |  Graphics viewing
+:-------------------------:|:-------------------------:
+![image](https://github.com/user-attachments/assets/5178ca31-aa9f-4fb7-a026-d24f98dbe65a)  |  ![image](https://github.com/user-attachments/assets/b04b106c-2cce-4d4e-b8da-e655eede5bc1)
 
 # How to use
 

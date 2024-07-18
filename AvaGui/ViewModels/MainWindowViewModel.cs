@@ -79,7 +79,7 @@ namespace AvaGui.ViewModels
 
 		public MainWindowViewModel()
 		{
-			var paletteUri = new Uri("avares://AvaGui/Assets/palette.png");
+			var paletteUri = new Uri("avares://ObjectEditor/Assets/palette.png");
 			var palette = Image.Load<Rgb24>(AssetLoader.Open(paletteUri));
 
 			Model = new()

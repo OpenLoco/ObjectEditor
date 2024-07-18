@@ -8,6 +8,15 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <StartupObject>AvaGui.Program</StartupObject>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
+    <AssemblyVersion>1.0.5</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <AssemblyName>ObjectEditor</AssemblyName>
+    <Product>$(AssemblyName) $(AssemblyVersion)</Product>
+    <Version>$(AssemblyVersion)</Version>
+    <Authors>LeftofZen</Authors>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +30,6 @@
   <ItemGroup>
     <EmbeddedResource Include="version.txt" />
   </ItemGroup>
-
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.11" />
@@ -39,12 +47,10 @@
     <PackageReference Include="Zenith.Core" Version="1.0.20" />
   </ItemGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
-
 
   <ItemGroup>
     <Compile Update="Views\VehicleView.axaml.cs">

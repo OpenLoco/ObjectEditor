@@ -8,6 +8,8 @@ using ReactiveUI.Fody.Helpers;
 using OpenLoco.ObjectEditor.Headers;
 using System.Reactive;
 using OpenLoco.ObjectEditor.Logging;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AvaGui.ViewModels
 {
@@ -15,6 +17,7 @@ namespace AvaGui.ViewModels
 	{
 		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveObjectCommand { get; init; }
+		public ReactiveCommand<Unit, Task> SaveAsObjectCommand { get; init; }
 
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
@@ -33,7 +36,7 @@ namespace AvaGui.ViewModels
 			set
 			{
 				Model.ObjectCache[CurrentlySelectedObject.Path] = value;
-				this.RaiseAndSetIfChanged(ref _currentObject, value);
+				_ = this.RaiseAndSetIfChanged(ref _currentObject, value);
 			}
 		}
 
@@ -132,8 +135,8 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			Logger?.Info($"[DISABLED] Saving {CurrentObject.DatFileInfo.S5Header.Name} to {CurrentlySelectedObject.Path}");
-			//SawyerStreamWriter.Save(CurrentlySelectedObject.Path, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {CurrentlySelectedObject.Path}");
+			SawyerStreamWriter.Save(CurrentlySelectedObject.Path, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		public void ReloadCurrentObject()
@@ -143,6 +146,24 @@ namespace AvaGui.ViewModels
 			{
 				CurrentObject = newObj;
 			}
+		}
+
+		public async Task SaveAsCurrentObject()
+		{
+			var saveFile = await PlatformSpecific.SaveFilePicker();
+			if (saveFile == null)
+			{
+				return;
+			}
+
+			if (CurrentObject?.LocoObject == null)
+			{
+				Logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
+				return;
+			}
+
+			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {saveFile.Path.AbsolutePath}");
+			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		ILogger? Logger => Model.Logger;
@@ -163,6 +184,7 @@ namespace AvaGui.ViewModels
 
 			ReloadObjectCommand = ReactiveCommand.Create(ReloadCurrentObject);
 			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
+			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
 
 			//_ = this.WhenAnyValue(o => o.CurrentObject)
 			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(StringTableViewModel))); // done in SelectedObjectChanged()

@@ -52,8 +52,8 @@ namespace AvaGui.ViewModels
 
 		public ReactiveCommand<Unit, Unit> LoadPalette { get; }
 
-
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
+		public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
 
 		public const string GithubApplicationName = "ObjectEditor";
 		public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
@@ -120,6 +120,7 @@ namespace AvaGui.ViewModels
 
 			//LoadPalette = ReactiveCommand.Create(LoadPaletteFunc);
 			OpenSettingsFolder = ReactiveCommand.Create(PlatformSpecific.FolderOpenInDesktop);
+			OpenSingleObject = ReactiveCommand.Create(LoadSingleObjectToIndex);
 
 			#region Version
 
@@ -140,6 +141,33 @@ namespace AvaGui.ViewModels
 				LatestVersionText = $"newer version exists: {latestVersion}";
 			}
 			#endregion
+		}
+
+		public async Task LoadSingleObjectToIndex()
+		{
+			var openFile = await PlatformSpecific.OpenFilePicker();
+			if (openFile == null)
+			{
+				return;
+			}
+
+			var path = openFile.SingleOrDefault()?.Path.AbsolutePath;
+			if (path == null)
+			{
+				return;
+			}
+
+			//logger?.Info($"Opening {path}");
+			if (Model.TryGetObject(path, out UiLocoFile? uiLocoFile, true))
+			{
+				Model.Logger.Warning($"Successfully loaded {path}");
+				ObjectEditorViewModel.CurrentlySelectedObject = new FileSystemItem(path, uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame);
+				ObjectEditorViewModel.CurrentObject = uiLocoFile;
+			}
+			else
+			{
+				Model.Logger.Warning($"Unable to load {path}");
+			}
 		}
 
 		static Version GetCurrentAppVersion(Assembly assembly)

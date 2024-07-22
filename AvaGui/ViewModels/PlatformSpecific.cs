@@ -63,12 +63,45 @@ namespace AvaGui.ViewModels
 				throw new ArgumentNullException("ApplicationLifetime|StorageProvider", "Missing StorageProvider instance.");
 			}
 
-			var folders = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+			return await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
 			{
 				Title = "Select a folder containing objects",
 				AllowMultiple = false
 			});
-			return folders;
+		}
+
+		public static async Task<IReadOnlyList<IStorageFile>> OpenFilePicker()
+		{
+			// See IoCFileOps project for an example of how to accomplish this.
+			if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
+				|| desktop.MainWindow?.StorageProvider is not { } provider)
+			{
+				throw new ArgumentNullException("ApplicationLifetime|StorageProvider", "Missing StorageProvider instance.");
+			}
+
+			return await provider.OpenFilePickerAsync(new FilePickerOpenOptions()
+			{
+				Title = "Select a Locomotion object file",
+				AllowMultiple = false,
+				FileTypeFilter = [new("Locomotion DAT Files") { Patterns = ["*.dat", "*.DAT"] }]
+			});
+		}
+
+		public static async Task<IStorageFile?> SaveFilePicker()
+		{
+			// See IoCFileOps project for an example of how to accomplish this.
+			if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
+				|| desktop.MainWindow?.StorageProvider is not { } provider)
+			{
+				throw new ArgumentNullException("ApplicationLifetime|StorageProvider", "Missing StorageProvider instance.");
+			}
+
+			return await provider.SaveFilePickerAsync(new FilePickerSaveOptions()
+			{
+				ShowOverwritePrompt = true,
+				DefaultExtension = "dat",
+				Title = "Select a new file name",
+			});
 		}
 	}
 }

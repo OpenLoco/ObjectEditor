@@ -143,9 +143,16 @@ namespace OpenLoco.ObjectEditor.Gui
 			var latestVersion = GetLatestAppVersion();
 			if (latestVersion > ApplicationVersion)
 			{
-				_ = MessageBox.Show($"Current Version: {ApplicationVersion}{Environment.NewLine}Latest version: {latestVersion}{Environment.NewLine}Taking you to the downloads page now ");
-				_ = Process.Start(new ProcessStartInfo { FileName = GithubLatestReleaseDownloadPage, UseShellExecute = true });
-				latestVersionText = $"newer version exists: {latestVersion}";
+				if (latestVersion.Major == 1) // don't conflict versions with new avagui one
+				{
+					var result = MessageBox.Show($"Current Version: {ApplicationVersion}{Environment.NewLine}Latest version: {latestVersion}{Environment.NewLine}Would you like to download it now?", "Newer version available", MessageBoxButtons.YesNo);
+
+					if (result == DialogResult.Yes)
+					{
+						_ = Process.Start(new ProcessStartInfo { FileName = GithubLatestReleaseDownloadPage, UseShellExecute = true });
+					}
+					latestVersionText = $"newer version exists: {latestVersion}";
+				}
 			}
 			#endregion
 

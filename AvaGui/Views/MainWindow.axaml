@@ -198,7 +198,7 @@
 					</MenuItem.Styles>
 				</MenuItem>-->
 			</Menu>
-			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="🌒︎" OffContent="🌔︎" />
+			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}" />
 		</DockPanel>
 		<Expander Header="Logs" Padding="0" ExpandDirection="Down" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="8">
 			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -216,12 +216,17 @@
 			</Grid.RowDefinitions>
 			<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" BorderBrush="Gray" Watermark="📁 Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 			<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" BorderBrush="Gray" Watermark="🛢 Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
-			<TextBox Grid.Row="2" Text="{Binding FilenameFilter}" BorderBrush="Gray" Watermark="🔎 Filename search"  Margin="2"/>
-			<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2">
-				<StackPanel Orientation="Horizontal" Margin="0">
-					<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" />
+
+			<DockPanel Grid.Row="2" Margin="2" >
+				<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
+				<TextBox Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="Filename search" />
+			</DockPanel>
+
+			<Button Grid.Row="3" BorderBrush="Gray" Content="{materialIcons:MaterialIconExt Kind=DatabaseRefresh}" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Recreate index</TextBlock>
-				</StackPanel>
+				</DockPanel>
 			</Button>
 			<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
 			<Border Grid.Row="5" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">

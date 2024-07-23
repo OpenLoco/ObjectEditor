@@ -9,6 +9,7 @@
 		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
+		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
@@ -215,8 +216,13 @@
 			</Grid.RowDefinitions>
 			<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" BorderBrush="Gray" Watermark="📁 Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 			<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" BorderBrush="Gray" Watermark="🛢 Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
-			<TextBox Grid.Row="2" Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="🔎 Filename search"  Margin="2"/>
-			<Button Grid.Row="3" Content="⭮ Recreate current index" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2"/>
+			<TextBox Grid.Row="2" Text="{Binding FilenameFilter}" BorderBrush="Gray" Watermark="🔎 Filename search"  Margin="2"/>
+			<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2">
+				<StackPanel Orientation="Horizontal" Margin="0">
+					<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Recreate index</TextBlock>
+				</StackPanel>
+			</Button>
 			<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
 			<Border Grid.Row="5" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
 				<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">

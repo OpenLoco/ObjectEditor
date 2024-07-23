@@ -334,7 +334,7 @@ namespace AvaGui.Models
 				.GetFiles(directory, "*", SearchOption.AllDirectories); // the searchPattern doesn't support full regex and is not case sensitive on windows but is case sensitive on linux
 
 			allFiles = allFiles
-				.Where(x => Path.GetExtension(x).Equals("dat", StringComparison.OrdinalIgnoreCase))
+				.Where(x => Path.GetExtension(x).Equals(".dat", StringComparison.OrdinalIgnoreCase))
 				.ToArray();
 
 			if (useExistingIndex && File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))

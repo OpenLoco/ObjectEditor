@@ -13,7 +13,7 @@
 		mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
-		Icon="/Assets/loco_icon.ico"
+		Icon="/Assets/loco_icon.png"
 		Title="{Binding WindowTitle}">
 
 	<Design.DataContext>
@@ -54,7 +54,7 @@
 						</CroppedBitmap>
 					</Image.Source>
 				</Image>
-				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Path}"/>
 			</StackPanel>
 		</DataTemplate>
 

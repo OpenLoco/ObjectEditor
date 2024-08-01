@@ -33,7 +33,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E,
 		[property: LocoStructOffset(0x12), Browsable(false)] image_id CliffEdgeImage,
 		[property: LocoStructOffset(0x16), Browsable(false)] image_id MapPixelImage,
-		[property: LocoStructOffset(0x1A), Browsable(false)] uint8_t DistributionPattern,
+		[property: LocoStructOffset(0x1A)] uint8_t DistributionPattern,
 		[property: LocoStructOffset(0x1B)] uint8_t NumVariations,
 		[property: LocoStructOffset(0x1C)] uint8_t VariationLikelihood,
 		[property: LocoStructOffset(0x1D), Browsable(false)] uint8_t pad_1D

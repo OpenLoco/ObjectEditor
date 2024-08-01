@@ -57,6 +57,10 @@
 			</StackPanel>
 		</DataTemplate>
 
+		<DataTemplate DataType="mo:LandObjectModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_LandObjectModel" Margin="2" DataContext="{Binding}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+		</DataTemplate>
+
 		<DataTemplate DataType="vm:ObjectEditorViewModel">
 			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
 				<StackPanel Orientation="Horizontal">

@@ -8,6 +8,7 @@ namespace AvaGui.Models
 {
 	// no encoding - just zip the whole object if necessary
 	// no checksum - its now a json object, not binary
+	// a 'T' example is LandObjectModel
 	public class NewObjectFormat<T>
 	{
 		public string Name { get; set; }

@@ -108,45 +108,8 @@
 							</ListBox>
 						</StackPanel>
 					</TabItem>
-					<TabItem Header="Image Table">
-						<DockPanel DataContext="{Binding ImageTableViewModel}">
-							<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-								<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="FolderUpload" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import from Directory</TextBlock>
-									</DockPanel>
-								</Button>
-								<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ExportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export to Directory">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="FolderDownload" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export to Directory</TextBlock>
-									</DockPanel>
-								</Button>
-								<!--<Label VerticalAlignment="Center">🔍 Image Scaling (1-10):</Label>
-								<NumericUpDown Value="{Binding Zoom}" FormatString="0" Watermark="1" Width="108" Minimum="1" Maximum="10" />-->
-							</StackPanel>
-							<ItemsControl ItemsSource="{Binding Images, Mode=OneWay}">
-								<ItemsControl.ItemsPanel>
-									<ItemsPanelTemplate>
-										<WrapPanel/>
-									</ItemsPanelTemplate>
-								</ItemsControl.ItemsPanel>
-								<ItemsControl.ItemTemplate>
-									<DataTemplate>
-										<ContentControl Padding="2" >
-											<Border BorderBrush="Gray" Background="Magenta">
-												<Image Source="{Binding}" Stretch="None" Margin="0">
-													<!--<Image.RenderTransform>
-														<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
-													</Image.RenderTransform>-->
-												</Image>
-											</Border>
-										</ContentControl>
-									</DataTemplate>
-								</ItemsControl.ItemTemplate>
-							</ItemsControl>
-						</DockPanel>
+					<TabItem Header="Image/Sound Table">
+						<ContentControl Content="{Binding ExtraContentViewModel}"/>
 					</TabItem>
 				</TabControl>
 			</StackPanel>
@@ -158,6 +121,65 @@
 				<TextBlock Text="{Binding CurrentFile}"/>
 			</StackPanel>
 			<!--<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentFileName}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:ImageTableViewModel">
+			<DockPanel>
+				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="FolderUpload" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import from Directory</TextBlock>
+						</DockPanel>
+					</Button>
+					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ExportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export to Directory">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="FolderDownload" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export to Directory</TextBlock>
+						</DockPanel>
+					</Button>
+					<!--<Label VerticalAlignment="Center">🔍 Image Scaling (1-10):</Label>
+								<NumericUpDown Value="{Binding Zoom}" FormatString="0" Watermark="1" Width="108" Minimum="1" Maximum="10" />-->
+				</StackPanel>
+				<ItemsControl ItemsSource="{Binding Images, Mode=OneWay}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<WrapPanel/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<ContentControl Padding="2" >
+								<Border BorderBrush="Gray" Background="Magenta">
+									<Image Source="{Binding}" Stretch="None" Margin="0">
+										<!--<Image.RenderTransform>
+														<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+													</Image.RenderTransform>-->
+									</Image>
+								</Border>
+							</ContentControl>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</DockPanel>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:SoundViewModel">
+			<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+				<StackPanel Orientation="Vertical" >
+					<StackPanel Margin="4" Orientation="Horizontal">
+						<TextBlock Text="{Binding Sound.SoundName}" VerticalAlignment="Center" Margin="4"/>
+						<TextBlock Text="{Binding Sound.Duration}" VerticalAlignment="Center" Margin="4"/>
+					</StackPanel>
+					<StackPanel Orientation="Horizontal" Margin="4">
+						<Button Command="{Binding PlaySoundCommand}">Play</Button>
+						<Button Command="{Binding PauseSoundCommand}">Pause</Button>
+						<Button Command="{Binding StopSoundCommand}">Stop</Button>
+						<!--<Button>Export</Button>
+						<Button>Import</Button>-->
+					</StackPanel>
+				</StackPanel>
+			</Border>
 		</DataTemplate>
 
 	</Window.DataTemplates>

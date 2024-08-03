@@ -10,6 +10,7 @@ using System.Reactive;
 using OpenLoco.ObjectEditor.Logging;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.Objects.Sound;
 
 namespace AvaGui.ViewModels
 {
@@ -23,7 +24,7 @@ namespace AvaGui.ViewModels
 		public StringTableViewModel? StringTableViewModel { get; set; }
 
 		[Reactive]
-		public ImageTableViewModel? ImageTableViewModel { get; set; }
+		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
 
 		ObjectEditorModel Model { get; }
 
@@ -65,12 +66,14 @@ namespace AvaGui.ViewModels
 			if (CurrentObject?.LocoObject != null)
 			{
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
-				ImageTableViewModel = new(CurrentObject.LocoObject, Model.PaletteMap);
+				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
+					? new SoundViewModel(CurrentObject.LocoObject)
+					: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
 			}
 			else
 			{
 				StringTableViewModel = null;
-				ImageTableViewModel = null;
+				ExtraContentViewModel = null;
 			}
 		}
 

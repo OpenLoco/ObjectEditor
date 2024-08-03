@@ -3,6 +3,13 @@
 1. Add, commit, push these changes
 1. `git tag -a 'x.x.x'`, where the x's are the new version number
 1. `git push --tags`
-1. Locally in Visual Studio, create a release build, and zip up the folder created
+1. Locally in Visual Studio, create a release build for each platform
+  1. `dotnet publish AvaGui/AvaGui.csproj -c Release --runtime win-x64`
+  1. `dotnet publish AvaGui/AvaGui.csproj -c Release --runtime linux-x64`
+  1. `dotnet publish AvaGui/AvaGui.csproj -c Release --runtime osx-x64`
+1. Zip up each build appropriately
+  1. Windows - make a ZIP file
+  1. :Linux - `tar -jcvf linux-x64.tar linux-x64`
+  1. OSX (Mac) - `tar -jcvf osx-x64.tar osx-x64`
 1. In GitHub, create a new release from that tag
-1. On that release page, add the zip folder as the build artefact
+1. On that release page, add the zipped files as build artefacts

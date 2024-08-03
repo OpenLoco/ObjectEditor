@@ -3,14 +3,16 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 
 # Screenshots
 
-Object property editing    |  Graphics viewing
-:-------------------------:|:-------------------------:
-![image](https://github.com/user-attachments/assets/5178ca31-aa9f-4fb7-a026-d24f98dbe65a)  |  ![image](https://github.com/user-attachments/assets/b04b106c-2cce-4d4e-b8da-e655eede5bc1)
+| **Object property editing** | **Graphics viewing** |
+|:-----:|:-----:|
+| ![image](https://github.com/user-attachments/assets/1adb4be5-cc8e-46a0-9174-83e0634c2ad2) | ![image](https://github.com/user-attachments/assets/bb0aec69-c3ba-4edf-aba0-1861d99077a2) |
+| **String table editing** | **Light/dark mode** |
+| ![image](https://github.com/user-attachments/assets/dd97a5cd-5208-4c0c-8215-e3692bfbe90e) | ![image](https://github.com/user-attachments/assets/3c7cc173-a001-47e4-8ab7-34ca80b2307a) |
 
 # How to use
 
 ## 1. Load an object folder
-1. Click `File` -> `ObjData Directories` -> `Add New`, which will open a folder browser window
+1. Click `ObjData` -> `Add new folder`, which will open a folder browser window
 2. Navigate to a folder that contains Locomotion object files
 3. Click `Select Folder` to close the folder browser window
 4. The tool will load all objects in that folder and display them in the tree view on the left of the tool
@@ -22,6 +24,20 @@ Object property editing    |  Graphics viewing
 
 # Features
 
+## 2.0.0
+
+- Cross-platform
+- Dark mode
+- Flag editing support
+- Locomotion `ObjData` folder:
+  - Can open and edit all object types
+  - Can save object types back to `dat` file format (albeit with no encoding)
+  - Can display image table and string table of all objects (and sound data for SoundObject), and allow editing of them
+
+## 1.0.5
+
+- Windows-only
+- Property/hex viewer
 - Locomotion `ObjData` folder:
   - Can open and edit all object types
   - Can save object types back to `dat` file format (albeit with no encoding)
@@ -50,8 +66,10 @@ Object property editing    |  Graphics viewing
 # Misc
 
 ## Settings
-- The program settings file, `settings.json` will be created on first startup in `%APPDATA%\\Roaming\\OpenLoco Object Editor\\`
-- This is where the users' object folder paths are saved, and other program data
+- The program settings file, `settings.json` will be created on first startup. It is located at:
+  - Windows: `%APPDATA%\\Roaming\\OpenLoco Object Editor\\`
+  - Linux/macOSX: `/~/<user>/.config/OpenLoco Object Editor`
+- This file is used to store where the users' object folder paths are, and other program data
 
 ## Indexing
 - When the tool first loads an objdata directory it will scan every file to make an index and save that into `objectIndex.json` in that folder
@@ -68,18 +86,19 @@ Object property editing    |  Graphics viewing
   - Checks that the reloaded file is the same as the originally-loaded file, byte for byte. This is a byte comparison of the *decoded and decompressed* bytes, not the *on-disk* bytes
 
 # Future Plans/Features
-- Better flag editing support
-- Validation of object limits/sane values
-- Detection of bugged objects
-- Support/edit tutorials
-- Support/edit maps/savegames/scenarios
-- Support language files
-- Implement vehicle previewer
-- Better G1 support including palette file editing
-- Export/convert object to a future modern OpenLoco file format
-- Dark modern
-- Cross-platform support
-- Full unit-testing suite
-- Blank template objects for object creation from scratch
-- Use a proper C# image library for image creation instead of WinForms
-- ...many more things
+- [ ] Better flag editing support
+- [ ] Validation of object limits/sane values
+- [ ] Detection of bugged objects
+- [ ] Support/edit tutorials
+- [ ] Support/edit maps/savegames/scenarios
+- [ ] Support language files
+- [ ] Implement vehicle previewer
+- [ ] Better G1 support including palette file editing
+- [ ] Export/convert object to a future modern OpenLoco file format
+- [ ]  Dark modern
+- [ ] Cross-platform support
+- [ ] Full unit-testing suite
+- [ ] Blank template objects for object creation from scratch
+- [ ] Use a proper C# image library for image creation instead of WinForms
+
+...many more things

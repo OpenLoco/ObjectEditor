@@ -61,9 +61,24 @@
 		<DataTemplate DataType="vm:ObjectEditorViewModel">
 			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
 				<StackPanel Orientation="Horizontal">
-					<Button Content="⭮ Reload" Command="{Binding ReloadObjectCommand}"/>
-					<Button Content="💾 Save" Command="{Binding SaveObjectCommand}"/>
-					<Button Content="💾 Save As" Command="{Binding SaveAsObjectCommand}"/>
+					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ReloadObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Reload">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Reload</TextBlock>
+						</DockPanel>
+					</Button>
+					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Save">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="ContentSave" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save</TextBlock>
+						</DockPanel>
+					</Button>
+					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveAsObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Save As">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="ContentSavePlus" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save As</TextBlock>
+						</DockPanel>
+					</Button>
 				</StackPanel>
 				<TabControl>
 					<TabItem Header="Headers">
@@ -96,8 +111,18 @@
 					<TabItem Header="Image Table">
 						<DockPanel DataContext="{Binding ImageTableViewModel}">
 							<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-								<Button Command="{Binding ImportImagesCommand}">📥 Import from Directory</Button>
-								<Button Command="{Binding ExportImagesCommand}">📤 Export To Directory</Button>
+								<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="FolderUpload" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import from Directory</TextBlock>
+									</DockPanel>
+								</Button>
+								<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ExportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export to Directory">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="FolderDownload" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export to Directory</TextBlock>
+									</DockPanel>
+								</Button>
 								<!--<Label VerticalAlignment="Center">🔍 Image Scaling (1-10):</Label>
 								<NumericUpDown Value="{Binding Zoom}" FormatString="0" Watermark="1" Width="108" Minimum="1" Maximum="10" />-->
 							</StackPanel>
@@ -142,8 +167,8 @@
 			<Menu>
 				<MenuItem Header="_File">
 					<!--<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />-->
-					<MenuItem Header="⚙ Open settings folder" Command="{Binding OpenSettingsFolder}" />
-					<MenuItem Header="🚉 Open single object" Command="{Binding OpenSingleObject}" />
+					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
+					<MenuItem Header="Open single object" Command="{Binding OpenSingleObject}" />
 				</MenuItem>
 				<MenuItem Header="_ObjData" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
 					<MenuItem.Styles>
@@ -214,15 +239,15 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
-			<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" BorderBrush="Gray" Watermark="📁 Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
-			<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" BorderBrush="Gray" Watermark="🛢 Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
+			<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" BorderBrush="Gray" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+			<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" BorderBrush="Gray" Watermark="Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
 
 			<DockPanel Grid.Row="2" Margin="2" >
 				<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
 				<TextBox Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="Filename search" />
 			</DockPanel>
 
-			<Button Grid.Row="3" BorderBrush="Gray" Content="{materialIcons:MaterialIconExt Kind=DatabaseRefresh}" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
+			<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Recreate index</TextBlock>

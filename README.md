@@ -86,7 +86,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
   - Checks that the reloaded file is the same as the originally-loaded file, byte for byte. This is a byte comparison of the *decoded and decompressed* bytes, not the *on-disk* bytes
 
 # Future Plans/Features
-- [ ] Better flag editing support
+- [x] Better flag editing support
 - [ ] Validation of object limits/sane values
 - [ ] Detection of bugged objects
 - [ ] Support/edit tutorials
@@ -95,10 +95,10 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - [ ] Implement vehicle previewer
 - [ ] Better G1 support including palette file editing
 - [ ] Export/convert object to a future modern OpenLoco file format
-- [ ]  Dark modern
-- [ ] Cross-platform support
-- [ ] Full unit-testing suite
+- [x] Dark mode
+- [x] Cross-platform support
+- [x] Full unit-testing suite
 - [ ] Blank template objects for object creation from scratch
-- [ ] Use a proper C# image library for image creation instead of WinForms
+- [x] Use a proper C# image library for image creation instead of WinForms
 
 ...many more things

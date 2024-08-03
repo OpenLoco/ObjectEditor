@@ -22,6 +22,7 @@ using System.Collections.ObjectModel;
 using OpenLoco.ObjectEditor.Data;
 using NAudio.Wave;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace AvaGui.ViewModels
 {
@@ -70,9 +71,15 @@ namespace AvaGui.ViewModels
 			//ExportSoundCommand = ReactiveCommand.Create(ExportSound);
 		}
 
-
 		public void PlaySound()
 		{
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			{
+				// unfortunately NAudio is not cross-platform! this code just crashes on Linux
+				// so there isn't anything to do here until a cross-platform audio lib is used
+				return;
+			}
+
 			if (CurrentWOEvent != null)
 			{
 				if (CurrentWOEvent.PlaybackState == PlaybackState.Playing)

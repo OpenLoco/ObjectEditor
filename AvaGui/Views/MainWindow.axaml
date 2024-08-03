@@ -126,13 +126,13 @@
 		<DataTemplate DataType="vm:ImageTableViewModel">
 			<DockPanel>
 				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
+					<Button BorderBrush="Gray" Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="FolderUpload" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import from Directory</TextBlock>
 						</DockPanel>
 					</Button>
-					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ExportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export to Directory">
+					<Button BorderBrush="Gray" Command="{Binding ExportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export to Directory">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="FolderDownload" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export to Directory</TextBlock>
@@ -171,13 +171,45 @@
 						<TextBlock Text="{Binding Sound.SoundName}" VerticalAlignment="Center" Margin="4"/>
 						<TextBlock Text="{Binding Sound.Duration}" VerticalAlignment="Center" Margin="4"/>
 					</StackPanel>
-					<StackPanel Orientation="Horizontal" Margin="4">
-						<Button Command="{Binding PlaySoundCommand}">Play</Button>
-						<Button Command="{Binding PauseSoundCommand}">Pause</Button>
-						<Button Command="{Binding StopSoundCommand}">Stop</Button>
-						<!--<Button>Export</Button>
-						<Button>Import</Button>-->
-					</StackPanel>
+					<OnPlatform>
+						<OnPlatform.Windows>
+							<StackPanel Orientation="Horizontal" Margin="4">
+								<Button BorderBrush="Gray" Command="{Binding PlaySoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Play audio">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="Play" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Play</TextBlock>
+									</DockPanel>
+								</Button>
+								<Button BorderBrush="Gray" Command="{Binding PauseSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Pause audio">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="Pause" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Pause</TextBlock>
+									</DockPanel>
+								</Button>
+								<Button BorderBrush="Gray" Command="{Binding StopSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Stop audio">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="Stop" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Stop</TextBlock>
+									</DockPanel>
+								</Button>
+								<!--<Button>Export</Button>
+								<Button>Import</Button>-->
+							</StackPanel>
+						</OnPlatform.Windows>
+						<OnPlatform.Linux>
+							<TextBlock Margin="4">Linux audio not currently supported :(</TextBlock>
+						</OnPlatform.Linux>
+						<OnPlatform.macOS>
+							<TextBlock Margin="4">macOS audio not currently supported :(</TextBlock>
+						</OnPlatform.macOS>
+						<OnPlatform.Android>
+							<TextBlock Margin="4">Android audio not currently supported :(</TextBlock>
+						</OnPlatform.Android>
+						<OnPlatform.iOS>
+							<TextBlock Margin="4">iOS audio not currently supported :(</TextBlock>
+						</OnPlatform.iOS>
+					</OnPlatform>
+
 				</StackPanel>
 			</Border>
 		</DataTemplate>
@@ -266,7 +298,7 @@
 
 			<DockPanel Grid.Row="2" Margin="2" >
 				<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
-				<TextBox Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="Filename search" />
+				<TextBox Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="Filename filter" />
 			</DockPanel>
 
 			<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">

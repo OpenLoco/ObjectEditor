@@ -330,7 +330,13 @@ namespace AvaGui.Models
 			}
 
 			Settings.ObjDataDirectory = directory;
-			var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
+			var allFiles = Directory
+				.GetFiles(directory, "*", SearchOption.AllDirectories); // the searchPattern doesn't support full regex and is not case sensitive on windows but is case sensitive on linux
+
+			allFiles = allFiles
+				.Where(x => Path.GetExtension(x).Equals(".dat", StringComparison.OrdinalIgnoreCase))
+				.ToArray();
+
 			if (useExistingIndex && File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
 			{
 				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.GetObjDataFullPath(Settings.IndexFileName)) ?? HeaderIndex;
@@ -345,7 +351,7 @@ namespace AvaGui.Models
 			else
 			{
 				Logger?.Info("Recreating index file");
-				CreateIndex(allFiles, progress);
+				CreateIndex(allFiles, progress); // do we need the array?
 				SerialiseHeaderIndexToFile(Settings.GetObjDataFullPath(Settings.IndexFileName), HeaderIndex, GetOptions());
 			}
 

@@ -91,7 +91,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 		static string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
-		readonly Version ApplicationVersion;
+		Version ApplicationVersion { get; set; }
 		StreamWriter logToFile;
 
 		public MainForm()
@@ -134,7 +134,11 @@ namespace OpenLoco.ObjectEditor.Gui
 				model = new MainFormModel(logger, SettingsFile, palette);
 			}
 
-			#region Version
+			CheckLatestVersion(assembly);
+		}
+
+		void CheckLatestVersion(Assembly assembly)
+		{
 			ApplicationVersion = GetCurrentAppVersion(assembly);
 
 			var latestVersionText = "up-to-date";
@@ -154,7 +158,6 @@ namespace OpenLoco.ObjectEditor.Gui
 					latestVersionText = $"newer version exists: {latestVersion}";
 				}
 			}
-			#endregion
 
 			Text = $"{ApplicationName} - {ApplicationVersion} ({latestVersionText})";
 		}

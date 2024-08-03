@@ -107,7 +107,7 @@ namespace AvaGui.ViewModels
 					x,
 					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = x),
 					null)));
-			ObjDataItems.Insert(0, new MenuItemModel("📂 Add new folder", ReactiveCommand.Create(SelectNewFolder), null));
+			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(SelectNewFolder), null));
 			ObjDataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { }), null));
 
 			//DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories

@@ -15,187 +15,40 @@ using SkiaSharp;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using OpenLoco.ObjectEditor.Types;
 using System.ComponentModel;
-using Core.Objects.Sound;
 using System.Collections.ObjectModel;
-using OpenLoco.ObjectEditor.Data;
-using NAudio.Wave;
-using System.Threading;
-using System.Runtime.InteropServices;
+using OpenLoco.ObjectEditor.Types;
+using AvaGui.Models;
+using Avalonia.Media;
+using Avalonia.Markup.Xaml.Converters;
+using Avalonia.Data.Converters;
 
 namespace AvaGui.ViewModels
 {
-	public interface IExtraContentViewModel
-	{ }
-
-	public record UiSoundObject(string SoundName)
+	public record UIG1Element32(
+		[Category("Image")] int ImageIndex,
+		[Category("Image")] string ImageName,
+		[Category("G1Element32")] uint32_t Offset,
+		[Category("G1Element32")] int16_t Width,
+		[Category("G1Element32")] int16_t Height,
+		[Category("G1Element32")] int16_t XOffset,
+		[Category("G1Element32")] int16_t YOffset,
+		[Category("G1Element32")] G1ElementFlags Flags,
+		[Category("G1Element32")] int16_t ZoomOffset
+	)
 	{
-		public UiSoundObject(string soundName, RiffWavHeader header, byte[] data) : this(soundName)
-		{
-			Header = header;
-			Data = data;
-			Duration = $"{data.Length / (decimal)header.ByteRate:0.#}s";
-		}
-
-		public string Duration { get; init; }
-
-		public RiffWavHeader Header { get; set; }
-		public byte[] Data { get; set; }
-	}
-
-	public class SoundViewModel : ReactiveObject, IExtraContentViewModel
-	{
-		ILocoObject parent; // currently not needed
-
-		WaveOutEvent? CurrentWOEvent { get; set; }
-
-		public SoundViewModel(ILocoObject parent)
-		{
-			if (parent.Object is not SoundObject soundObject)
-			{
-				return;
-			}
-
-			this.parent = parent;
-
-			var hdr = soundObject.SoundObjectData.PcmHeader;
-			var text = parent.StringTable.Table["Name"][LanguageId.English_UK] ?? "<null>";
-			Sound = new UiSoundObject(text, SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), soundObject.PcmData);
-
-			PlaySoundCommand = ReactiveCommand.Create(PlaySound);
-			PauseSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Pause());
-			StopSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Stop());
-
-			//ImportSoundCommand = ReactiveCommand.Create(ImportSound);
-			//ExportSoundCommand = ReactiveCommand.Create(ExportSound);
-		}
-
-		public void PlaySound()
-		{
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-			{
-				// unfortunately NAudio is not cross-platform! this code just crashes on Linux
-				// so there isn't anything to do here until a cross-platform audio lib is used
-				return;
-			}
-
-			if (CurrentWOEvent != null)
-			{
-				if (CurrentWOEvent.PlaybackState == PlaybackState.Playing)
-				{
-					return;
-				}
-
-				if (CurrentWOEvent.PlaybackState == PlaybackState.Paused)
-				{
-					CurrentWOEvent.Play();
-					return;
-				}
-			}
-
-			// do it asyncly to a) give user ui control and b) allow multiple sounds to play at once
-			_ = Task.Run(() =>
-			{
-				if (CurrentWOEvent?.PlaybackState == PlaybackState.Stopped)
-				{
-					Thread.Sleep(100); // give time to wait until previous sound is disposed
-				}
-
-				CurrentWOEvent?.Dispose();
-
-				using (var ms = new MemoryStream(Sound.Data))
-				using (var rs = new RawSourceWaveStream(ms, new WaveFormat((int)Sound.Header.SampleRate, Sound.Header.BitsPerSample, Sound.Header.NumberOfChannels)))
-				using (CurrentWOEvent = new WaveOutEvent())
-				{
-					CurrentWOEvent.Init(rs);
-					CurrentWOEvent.Play();
-
-					// need to wait for music to finish
-					while (CurrentWOEvent?.PlaybackState != PlaybackState.Stopped)
-					{
-						if (CurrentWOEvent == null)
-						{
-							break;
-						}
-						Thread.Sleep(50);
-					}
-				}
-
-				CurrentWOEvent = null;
-			});
-		}
-
-		[Reactive]
-		public UiSoundObject Sound { get; set; }
-
-		[Reactive]
-		public ICommand PlaySoundCommand { get; set; }
-
-		[Reactive]
-		public ICommand PauseSoundCommand { get; set; }
-
-		[Reactive]
-		public ICommand StopSoundCommand { get; set; }
-
-		//public async Task ImportSound()
-		//{
-		//	var folders = await PlatformSpecific.OpenFolderPicker();
-		//	var dir = folders.FirstOrDefault();
-		//	if (dir == null)
-		//	{
-		//		return;
-		//	}
-
-		//	var dirPath = dir.Path.LocalPath;
-		//	if (Directory.Exists(dirPath) && Directory.EnumerateFiles(dirPath).Any())
-		//	{
-		//		var files = Directory.GetFiles(dirPath);
-		//		var sorted = files.OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f).Split('-')[0]));
-
-		//		var g1Elements = new List<G1Element32>();
-		//		var i = 0;
-		//		//foreach (var file in sorted)
-		//		//{
-		//		//	var img = SixLabors.ImageSharp.Image.Load<Rgb24>(file);
-		//		//	var data = PaletteMap.ConvertRgb24ImageToG1Data(img);
-		//		//	var hasTransparency = data.Any(b => b == 0);
-		//		//	var oldImage = Parent.G1Elements[i++];
-		//		//	oldImage.ImageData = PaletteMap.ConvertRgb24ImageToG1Data(img); // simply overwrite existing pixel data
-		//		//}
-		//	}
-
-		//	//this.RaisePropertyChanged(nameof(Images));
-		//}
-
-		//public async Task ExportSound()
-		//{
-		//	var folders = await PlatformSpecific.OpenFolderPicker();
-		//	var dir = folders.FirstOrDefault();
-		//	if (dir == null)
-		//	{
-		//		return;
-		//	}
-
-		//	var dirPath = dir.Path.LocalPath;
-		//	if (Directory.Exists(dirPath))
-		//	{
-		//		var counter = 0;
-		//		//foreach (var image in Images)
-		//		//{
-		//		//	var imageName = counter++.ToString(); // todo: use GetImageName from winforms project
-		//		//	var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
-		//		//	//logger.Debug($"Saving image to {path}");
-		//		//	image.Save(path);
-		//		//}
-		//	}
-		//}
-
-		//[Reactive]
-		//public ICommand ImportSoundCommand { get; set; }
-
-		//[Reactive]
-		//public ICommand ExportSoundCommand { get; set; }
+		public UIG1Element32(int imageIndex, string imageName, G1Element32 g1Element)
+			: this(
+				imageIndex,
+				imageName,
+				g1Element.Offset,
+				g1Element.Width,
+				g1Element.Height,
+				g1Element.XOffset,
+				g1Element.YOffset,
+				g1Element.Flags,
+				g1Element.ZoomOffset)
+		{ }
 	}
 
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
@@ -213,6 +66,8 @@ namespace AvaGui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.Zoom)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
 
 			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
 			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
@@ -283,8 +138,6 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public int Zoom { get; set; } = 1;
 
-		// public Bitmap FirstImage => Images.FirstOrDefault();
-
 		public List<Bitmap> Images
 		{
 			get
@@ -299,6 +152,40 @@ namespace AvaGui.ViewModels
 			}
 		}
 		List<Bitmap> images;
+
+		[Reactive]
+		public int SelectedImageIndex { get; set; }
+
+		public UIG1Element32? SelectedG1Element
+			=> SelectedImageIndex == -1 || Parent.G1Elements.Count == 0 ? null : new UIG1Element32(SelectedImageIndex, GetImageName(Parent, SelectedImageIndex), Parent.G1Elements[SelectedImageIndex]);
+
+		[Reactive]
+		public Color BackgroundColour { get; set; } = Colors.Magenta;
+
+		public static string GetImageName(ILocoObject locoObj, int counter)
+		{
+			ILocoImageTableNames? its = null;
+			//var objectName = string.Empty;
+
+			if (locoObj.Object is ILocoImageTableNames itss)
+			{
+				its = itss;
+				//objectName = locoObj.DatFileInfo.S5Header.Name;
+			}
+			//else if (uiObj is UiG1 uiG1 && uiG1.G1 is ILocoImageTableNames itsg)
+			//{
+			//	its = itsg;
+			//	objectName = "g1.dat";
+			//}
+
+			if (its != null && its.TryGetImageName(counter, out var value) && value != null)
+			{
+				return $"{value}";
+			}
+
+			return "<unk>";
+		}
+
 
 		public static IEnumerable<Bitmap> CreateImages(IEnumerable<G1Element32> g1Elements, PaletteMap paletteMap, int zoom)
 		{

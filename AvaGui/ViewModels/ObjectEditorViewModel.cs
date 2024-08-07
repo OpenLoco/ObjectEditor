@@ -11,6 +11,8 @@ using OpenLoco.ObjectEditor.Logging;
 using System.Linq;
 using System.Threading.Tasks;
 using Core.Objects.Sound;
+using System.Drawing;
+using Avalonia.Media;
 
 namespace AvaGui.ViewModels
 {
@@ -65,10 +67,16 @@ namespace AvaGui.ViewModels
 		{
 			if (CurrentObject?.LocoObject != null)
 			{
+				var oldImageTableColour = Colors.Magenta;
+				if (ExtraContentViewModel is ImageTableViewModel itvm)
+				{
+					oldImageTableColour = itvm.BackgroundColour;
+				}
+
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 					? new SoundViewModel(CurrentObject.LocoObject)
-					: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
+					: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap) { BackgroundColour = oldImageTableColour };
 			}
 			else
 			{

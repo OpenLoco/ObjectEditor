@@ -3,10 +3,17 @@ using System.ComponentModel;
 
 namespace AvaGui.Models
 {
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiSoundObject
+	public record UiSoundObject(string SoundName)
 	{
-		public string SoundName { get; set; }
+		public UiSoundObject(string soundName, RiffWavHeader header, byte[] data) : this(soundName)
+		{
+			Header = header;
+			Data = data;
+			Duration = $"{data.Length / (decimal)header.ByteRate:0.#}s";
+		}
+
+		public string Duration { get; init; }
+
 		public RiffWavHeader Header { get; set; }
 		public byte[] Data { get; set; }
 	}

@@ -10,6 +10,7 @@
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
 		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+		xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
 		mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
@@ -19,6 +20,10 @@
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>
 	</Design.DataContext>
+
+	<Window.Resources>
+		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+	</Window.Resources>
 
 	<Window.DataTemplates>
 		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
@@ -109,7 +114,9 @@
 						</StackPanel>
 					</TabItem>
 					<TabItem Header="Image/Sound Table">
-						<ContentControl Content="{Binding ExtraContentViewModel}"/>
+						<DockPanel>
+							<ContentControl Content="{Binding ExtraContentViewModel}" />
+						</DockPanel>
 					</TabItem>
 				</TabControl>
 			</StackPanel>
@@ -140,27 +147,41 @@
 					</Button>
 					<!--<Label VerticalAlignment="Center">🔍 Image Scaling (1-10):</Label>
 								<NumericUpDown Value="{Binding Zoom}" FormatString="0" Watermark="1" Width="108" Minimum="1" Maximum="10" />-->
+					<Button BorderBrush="Gray" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select background colour">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Select background colour</TextBlock>
+						</DockPanel>
+						<Button.Flyout >
+							<Flyout>
+								<ColorView IsColorModelVisible="False" IsColorSpectrumVisible="False" IsComponentSliderVisible="False" IsColorComponentsVisible="False" Name="ImageBackgroundColorView" Color="{Binding BackgroundColour}" />
+							</Flyout>
+						</Button.Flyout>
+					</Button>
 				</StackPanel>
-				<ItemsControl ItemsSource="{Binding Images, Mode=OneWay}">
-					<ItemsControl.ItemsPanel>
-						<ItemsPanelTemplate>
-							<WrapPanel/>
-						</ItemsPanelTemplate>
-					</ItemsControl.ItemsPanel>
-					<ItemsControl.ItemTemplate>
-						<DataTemplate>
-							<ContentControl Padding="2" >
-								<Border BorderBrush="Gray" Background="Magenta">
-									<Image Source="{Binding}" Stretch="None" Margin="0">
-										<!--<Image.RenderTransform>
-														<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
-													</Image.RenderTransform>-->
-									</Image>
-								</Border>
-							</ContentControl>
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ItemsControl>
+				<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" DockPanel.Dock="Right">
+					<StackPanel>
+						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" MinWidth="256" Margin="2" IsEnabled="False" DataContext="{Binding SelectedG1Element, Mode=OneWay}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
+					</StackPanel>
+				</Border>
+				<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+					<ListBox ItemsSource="{Binding Images}" SelectedIndex="{Binding SelectedImageIndex}" Background="{Binding BackgroundColour, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<WrapPanel/>
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Image Source="{Binding}" Stretch="None" Margin="0">
+									<!--<Image.RenderTransform>
+										<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+									</Image.RenderTransform>-->
+								</Image>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</Border>
 			</DockPanel>
 		</DataTemplate>
 

@@ -7,7 +7,7 @@ using OpenLoco.ObjectEditor.Types;
 namespace OpenLoco.ObjectEditor.Objects
 {
 	[Flags]
-	public enum TrackObjectPieceFlags : uint16_t
+	public enum TrackTraitFlags : uint16_t
 	{
 		None = 0,
 		Diagonal = 1 << 0,
@@ -37,8 +37,8 @@ namespace OpenLoco.ObjectEditor.Objects
 	[LocoStringTable("Name")]
 	public record TrackObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] TrackObjectPieceFlags TrackPieces,
-		[property: LocoStructOffset(0x04)] TrackObjectPieceFlags StationTrackPieces,
+		[property: LocoStructOffset(0x02)] TrackTraitFlags TrackPieces,
+		[property: LocoStructOffset(0x04)] TrackTraitFlags StationTrackPieces,
 		[property: LocoStructOffset(0x06)] uint8_t var_06,
 		[property: LocoStructOffset(0x07)] uint8_t NumCompatible,
 		[property: LocoStructOffset(0x08)] uint8_t NumMods,
@@ -147,8 +147,8 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
-			if (TrackPieces.HasFlag(TrackObjectPieceFlags.Diagonal | TrackObjectPieceFlags.LargeCurve)
-				&& TrackPieces.HasFlag(TrackObjectPieceFlags.OneSided | TrackObjectPieceFlags.VerySmallCurve))
+			if (TrackPieces.HasFlag(TrackTraitFlags.Diagonal | TrackTraitFlags.LargeCurve)
+				&& TrackPieces.HasFlag(TrackTraitFlags.OneSided | TrackTraitFlags.VerySmallCurve))
 			{
 				return false;
 			}

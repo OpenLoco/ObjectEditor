@@ -16,20 +16,22 @@ namespace OpenLoco.ObjectEditor.Objects
 		unk_04 = 1 << 4,
 		unk_05 = 1 << 5,
 		IsRoad = 1 << 6, // If not set this is tram track
+		unk_07 = 1 << 7,
 	};
 
 	[Flags]
-	public enum RoadObjectPieceFlags : uint16_t
+	public enum RoadTraitFlags : uint16_t
 	{
 		None = 0,
-		OneWay = 1 << 0,
-		Track = 1 << 1,
+		SmallCurve = 1 << 0,
+		VerySmallCurve = 1 << 1,
 		Slope = 1 << 2,
 		SteepSlope = 1 << 3,
-		Intersection = 1 << 4,
-		OneSided = 1 << 5,
-		Overtake = 1 << 6,
-		StreetLights = 1 << 8,
+		unk_04 = 1 << 4, // intersection?
+		Turnaround = 1 << 5,
+		unk_06 = 1 << 6, // overtake?
+		unk_07 = 1 << 7,
+		unk_08 = 1 << 8, // streetlight?
 	};
 
 	public enum TownSize : uint8_t
@@ -47,7 +49,7 @@ namespace OpenLoco.ObjectEditor.Objects
 	[LocoStringTable("Name")]
 	public record RoadObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] RoadObjectPieceFlags RoadPieces,
+		[property: LocoStructOffset(0x02)] RoadTraitFlags RoadPieces,
 		[property: LocoStructOffset(0x04)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x06)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x08)] int16_t TunnelCostFactor,

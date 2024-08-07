@@ -67,16 +67,10 @@ namespace AvaGui.ViewModels
 		{
 			if (CurrentObject?.LocoObject != null)
 			{
-				var oldImageTableColour = Colors.Magenta;
-				if (ExtraContentViewModel is ImageTableViewModel itvm)
-				{
-					oldImageTableColour = itvm.BackgroundColour;
-				}
-
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 					? new SoundViewModel(CurrentObject.LocoObject)
-					: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap) { BackgroundColour = oldImageTableColour };
+					: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
 			}
 			else
 			{

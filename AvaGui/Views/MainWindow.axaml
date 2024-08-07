@@ -154,7 +154,7 @@
 						</DockPanel>
 						<Button.Flyout >
 							<Flyout>
-								<ColorView IsColorModelVisible="False" IsColorSpectrumVisible="False" IsComponentSliderVisible="False" IsColorComponentsVisible="False" Name="ImageBackgroundColorView" Color="{Binding BackgroundColour}" />
+								<ColorView  Name="ImageBackgroundColorView" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
 							</Flyout>
 						</Button.Flyout>
 					</Button>
@@ -165,7 +165,7 @@
 					</StackPanel>
 				</Border>
 				<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
-					<ListBox ItemsSource="{Binding Images}" SelectedIndex="{Binding SelectedImageIndex}" Background="{Binding BackgroundColour, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+					<ListBox ItemsSource="{Binding Images}" SelectedIndex="{Binding SelectedImageIndex}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
 								<WrapPanel/>

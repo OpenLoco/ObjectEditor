@@ -154,13 +154,10 @@ namespace AvaGui.ViewModels
 		List<Bitmap> images;
 
 		[Reactive]
-		public int SelectedImageIndex { get; set; }
+		public int SelectedImageIndex { get; set; } = -1;
 
 		public UIG1Element32? SelectedG1Element
 			=> SelectedImageIndex == -1 || Parent.G1Elements.Count == 0 ? null : new UIG1Element32(SelectedImageIndex, GetImageName(Parent, SelectedImageIndex), Parent.G1Elements[SelectedImageIndex]);
-
-		[Reactive]
-		public Color BackgroundColour { get; set; } = Colors.Magenta;
 
 		public static string GetImageName(ILocoObject locoObj, int counter)
 		{

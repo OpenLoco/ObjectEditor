@@ -595,7 +595,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.NumCompatible, Is.EqualTo(1), nameof(struc.NumCompatible));
 				Assert.That(struc.NumMods, Is.EqualTo(0), nameof(struc.NumMods));
 				Assert.That(struc.PaintStyle, Is.EqualTo(0), nameof(struc.PaintStyle));
-				Assert.That(struc.RoadPieces, Is.EqualTo(RoadObjectPieceFlags.OneWay | RoadObjectPieceFlags.Track | RoadObjectPieceFlags.Slope | RoadObjectPieceFlags.SteepSlope | RoadObjectPieceFlags.Intersection | RoadObjectPieceFlags.Overtake), nameof(struc.RoadPieces));
+				Assert.That(struc.RoadPieces, Is.EqualTo(RoadTraitFlags.SmallCurve | RoadTraitFlags.VerySmallCurve | RoadTraitFlags.Slope | RoadTraitFlags.SteepSlope | RoadTraitFlags.unk_04 | RoadTraitFlags.unk_06), nameof(struc.RoadPieces));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-20), nameof(struc.SellCostFactor));
 				// Stations
 				Assert.That(struc.TargetTownSize, Is.EqualTo(TownSize.Town), nameof(struc.TargetTownSize));
@@ -612,7 +612,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(4), nameof(struc.BuildCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.PaintStyle, Is.EqualTo(1), nameof(struc.PaintStyle));
-				Assert.That(struc.RoadPieces, Is.EqualTo(RoadObjectPieceFlags.OneWay | RoadObjectPieceFlags.Track | RoadObjectPieceFlags.Slope | RoadObjectPieceFlags.SteepSlope | RoadObjectPieceFlags.Intersection | RoadObjectPieceFlags.OneSided | RoadObjectPieceFlags.Overtake), nameof(struc.RoadPieces));
+				Assert.That(struc.RoadPieces, Is.EqualTo(RoadTraitFlags.SmallCurve | RoadTraitFlags.VerySmallCurve | RoadTraitFlags.Slope | RoadTraitFlags.SteepSlope | RoadTraitFlags.unk_04 | RoadTraitFlags.Turnaround | RoadTraitFlags.unk_06), nameof(struc.RoadPieces));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-3), nameof(struc.SellCostFactor));
 				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
 			});
@@ -811,8 +811,8 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-10), nameof(struc.SellCostFactor));
 				// Signals
 				// Stations
-				Assert.That(struc.StationTrackPieces, Is.EqualTo(TrackObjectPieceFlags.Diagonal | TrackObjectPieceFlags.NormalCurve | TrackObjectPieceFlags.SmallCurve | TrackObjectPieceFlags.SBend), nameof(struc.StationTrackPieces));
-				Assert.That(struc.TrackPieces, Is.EqualTo(TrackObjectPieceFlags.Diagonal | TrackObjectPieceFlags.LargeCurve | TrackObjectPieceFlags.NormalCurve | TrackObjectPieceFlags.SmallCurve | TrackObjectPieceFlags.Slope | TrackObjectPieceFlags.SlopedCurve | TrackObjectPieceFlags.SBend | TrackObjectPieceFlags.Junction), nameof(struc.TrackPieces));
+				Assert.That(struc.StationTrackPieces, Is.EqualTo(TrackTraitFlags.Diagonal | TrackTraitFlags.NormalCurve | TrackTraitFlags.SmallCurve | TrackTraitFlags.SBend), nameof(struc.StationTrackPieces));
+				Assert.That(struc.TrackPieces, Is.EqualTo(TrackTraitFlags.Diagonal | TrackTraitFlags.LargeCurve | TrackTraitFlags.NormalCurve | TrackTraitFlags.SmallCurve | TrackTraitFlags.Slope | TrackTraitFlags.SlopedCurve | TrackTraitFlags.SBend | TrackTraitFlags.Junction), nameof(struc.TrackPieces));
 				Assert.That(struc.TunnelCostFactor, Is.EqualTo(24), nameof(struc.TunnelCostFactor));
 				Assert.That(struc.var_06, Is.EqualTo(0), nameof(struc.var_06));
 
@@ -828,7 +828,7 @@ namespace OpenLoco.ObjectEditor.Tests
 		{
 			void assertFunc(ILocoObject obj, TrackExtraObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.TrackPieces, Is.EqualTo(TrackObjectPieceFlags.Diagonal | TrackObjectPieceFlags.LargeCurve | TrackObjectPieceFlags.NormalCurve | TrackObjectPieceFlags.SmallCurve | TrackObjectPieceFlags.VerySmallCurve | TrackObjectPieceFlags.Slope | TrackObjectPieceFlags.SteepSlope | TrackObjectPieceFlags.OneSided | TrackObjectPieceFlags.SlopedCurve | TrackObjectPieceFlags.SBend), nameof(struc.TrackPieces));
+				Assert.That(struc.TrackPieces, Is.EqualTo(TrackTraitFlags.Diagonal | TrackTraitFlags.LargeCurve | TrackTraitFlags.NormalCurve | TrackTraitFlags.SmallCurve | TrackTraitFlags.VerySmallCurve | TrackTraitFlags.Slope | TrackTraitFlags.SteepSlope | TrackTraitFlags.OneSided | TrackTraitFlags.SlopedCurve | TrackTraitFlags.SBend), nameof(struc.TrackPieces));
 				Assert.That(struc.PaintStyle, Is.EqualTo(1), nameof(struc.PaintStyle));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(2), nameof(struc.BuildCostFactor));
@@ -878,7 +878,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.NumCompatible, Is.EqualTo(0), nameof(struc.NumCompatible));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-7), nameof(struc.SellCostFactor));
-				Assert.That(struc.TrackPieces, Is.EqualTo(TrackObjectPieceFlags.None), nameof(struc.TrackPieces));
+				Assert.That(struc.TrackPieces, Is.EqualTo(TrackTraitFlags.None), nameof(struc.TrackPieces));
 				Assert.That(struc.var_0B, Is.EqualTo(2), nameof(struc.var_0B));
 				Assert.That(struc.var_0D, Is.EqualTo(0), nameof(struc.var_0D));
 			});

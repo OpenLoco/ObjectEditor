@@ -23,7 +23,7 @@ namespace OpenLoco.ObjectEditor.Objects
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t DrawStyle,
 		[property: LocoStructOffset(0x03)] uint8_t Height,
-		[property: LocoStructOffset(0x04)] TrackObjectPieceFlags TrackPieces,
+		[property: LocoStructOffset(0x04)] TrackTraitFlags TrackPieces,
 		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,

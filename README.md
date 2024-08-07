@@ -17,8 +17,8 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 3. Click `Select Folder` to close the folder browser window
 4. The tool will load all objects in that folder and display them in the tree view on the left of the tool
 
-## 3. Select an object to view/edit
-1. Expand the tree-view of objects to one you wish to edit
+## 2. Select an object to view/edit
+1. Expand the tree-view of objects to one you wish to view or edit
 2. Click on the object
 3. It will appear in the editor view on the right side of the tool
 

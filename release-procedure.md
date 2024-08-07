@@ -1,6 +1,6 @@
 1. Switch to `master`
 1. Update `version.txt` and the `AssemblyVersion` tag in `Gui.csproj` and/or `AvaGui.csproj`
-1. Add, commit, push these changes
+1. Add, commit, push these changes with the commit message "prepare <x.x.x>"
 1. `git tag -a 'x.x.x'`, where the x's are the new version number
 1. `git push --tags`
 1. Locally in Visual Studio, create a release build for each platform

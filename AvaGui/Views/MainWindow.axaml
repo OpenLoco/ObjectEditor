@@ -23,42 +23,28 @@
 
 	<Window.Resources>
 		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+		<mo:ObjectTypeToMaterialIconConverter x:Key="ObjectTypeToMaterialIconConverter"/>
 	</Window.Resources>
 
 	<Window.DataTemplates>
 		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
 		<DataTemplate DataType="mo:FileSystemItemGroup">
 			<StackPanel Orientation="Horizontal">
-				<Image Width="32" Height="32">
-					<Image.Source>
-						<CroppedBitmap Source="avares://ObjectEditor/Assets/loco_object_types_combined.png" SourceRect="{Binding SourceRect}">
-						</CroppedBitmap>
-					</Image.Source>
-				</Image>
+				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemVehicleGroup">
 			<StackPanel Orientation="Horizontal">
-				<Image Width="32" Height="32">
-					<Image.Source>
-						<CroppedBitmap Source="avares://ObjectEditor/Assets/loco_vehicle_types_combined.png" SourceRect="{Binding SourceRect}">
-						</CroppedBitmap>
-					</Image.Source>
-				</Image>
+				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemItem">
 			<StackPanel Orientation="Horizontal">
-				<Image Width="16" Height="16">
-					<Image.Source>
-						<CroppedBitmap Source="avares://ObjectEditor/Assets/vanilla.png" SourceRect="{Binding SourceRect}">
-						</CroppedBitmap>
-					</Image.Source>
-				</Image>
+				<materialIcons:MaterialIcon Kind="{Binding SourceGame, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Path}"/>
 			</StackPanel>
 		</DataTemplate>

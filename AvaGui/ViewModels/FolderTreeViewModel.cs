@@ -83,14 +83,12 @@ namespace AvaGui.ViewModels
 				.GroupBy(o => o.Value.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 
-			var count = 0;
 			foreach (var objGroup in groupedObjects)
 			{
 				ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
 				if (objGroup.Key == ObjectType.Vehicle)
 				{
 					subNodes = [];
-					var vCount = 0;
 					foreach (var vg in objGroup
 						.GroupBy(o => o.Value.VehicleType)
 						.OrderBy(vg => vg.Key.ToString()))
@@ -107,8 +105,7 @@ namespace AvaGui.ViewModels
 						subNodes.Add(new FileSystemVehicleGroup(
 							string.Empty,
 							vg.Key.Value,
-							vehicleSubNodes,
-							vCount++));
+							vehicleSubNodes));
 					}
 				}
 				else
@@ -120,8 +117,7 @@ namespace AvaGui.ViewModels
 				yield return new FileSystemItemGroup(
 					string.Empty,
 					objGroup.Key,
-					subNodes,
-					count++);
+					subNodes);
 
 				prevDir = newDir;
 			}

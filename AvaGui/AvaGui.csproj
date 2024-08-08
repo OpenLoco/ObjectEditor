@@ -24,6 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaResource Remove="Assets\loco_object_types_combined.png" />
+    <AvaloniaResource Remove="Assets\loco_vehicle_types_combined.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\loco_object_types_combined.png" />
+    <None Remove="Assets\loco_vehicle_types_combined.png" />
     <None Remove="version.txt" />
   </ItemGroup>
 

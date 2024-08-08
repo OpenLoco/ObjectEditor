@@ -62,8 +62,15 @@ namespace AvaGui.ViewModels
 
 		public void SelectedObjectChanged()
 		{
+			// this stops any currently-playing sounds
+			if (ExtraContentViewModel is SoundViewModel svm)
+			{
+				svm.Dispose();
+			}
+
 			if (CurrentObject?.LocoObject != null)
 			{
+
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 					? new SoundViewModel(CurrentObject.LocoObject)

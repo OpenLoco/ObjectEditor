@@ -10,10 +10,11 @@ using NAudio.Wave;
 using System.Threading;
 using System.Runtime.InteropServices;
 using AvaGui.Models;
+using System;
 
 namespace AvaGui.ViewModels
 {
-	public class SoundViewModel : ReactiveObject, IExtraContentViewModel
+	public class SoundViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
 	{
 		ILocoObject parent; // currently not needed
 
@@ -107,63 +108,9 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public ICommand StopSoundCommand { get; set; }
 
-		//public async Task ImportSound()
-		//{
-		//	var folders = await PlatformSpecific.OpenFolderPicker();
-		//	var dir = folders.FirstOrDefault();
-		//	if (dir == null)
-		//	{
-		//		return;
-		//	}
-
-		//	var dirPath = dir.Path.LocalPath;
-		//	if (Directory.Exists(dirPath) && Directory.EnumerateFiles(dirPath).Any())
-		//	{
-		//		var files = Directory.GetFiles(dirPath);
-		//		var sorted = files.OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f).Split('-')[0]));
-
-		//		var g1Elements = new List<G1Element32>();
-		//		var i = 0;
-		//		//foreach (var file in sorted)
-		//		//{
-		//		//	var img = SixLabors.ImageSharp.Image.Load<Rgb24>(file);
-		//		//	var data = PaletteMap.ConvertRgb24ImageToG1Data(img);
-		//		//	var hasTransparency = data.Any(b => b == 0);
-		//		//	var oldImage = Parent.G1Elements[i++];
-		//		//	oldImage.ImageData = PaletteMap.ConvertRgb24ImageToG1Data(img); // simply overwrite existing pixel data
-		//		//}
-		//	}
-
-		//	//this.RaisePropertyChanged(nameof(Images));
-		//}
-
-		//public async Task ExportSound()
-		//{
-		//	var folders = await PlatformSpecific.OpenFolderPicker();
-		//	var dir = folders.FirstOrDefault();
-		//	if (dir == null)
-		//	{
-		//		return;
-		//	}
-
-		//	var dirPath = dir.Path.LocalPath;
-		//	if (Directory.Exists(dirPath))
-		//	{
-		//		var counter = 0;
-		//		//foreach (var image in Images)
-		//		//{
-		//		//	var imageName = counter++.ToString(); // todo: use GetImageName from winforms project
-		//		//	var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
-		//		//	//logger.Debug($"Saving image to {path}");
-		//		//	image.Save(path);
-		//		//}
-		//	}
-		//}
-
-		//[Reactive]
-		//public ICommand ImportSoundCommand { get; set; }
-
-		//[Reactive]
-		//public ICommand ExportSoundCommand { get; set; }
+		public void Dispose()
+		{
+			CurrentWOEvent?.Stop();
+		}
 	}
 }

@@ -221,7 +221,7 @@ namespace AvaGui.Models
 
 		private bool LoadSingleObjectFile(string file, IDictionary<string, IndexObjectHeader> ccHeaderIndex, IDictionary<string, UiLocoFile> ccObjectCache, out DatFileInfo? fileInfo)
 		{
-			(fileInfo, var locoObject) = SawyerStreamReader.LoadFullObjectFromFile(file);
+			(fileInfo, var locoObject) = SawyerStreamReader.LoadFullObjectFromFile(file, logger: Logger);
 
 			if (locoObject == null)
 			{

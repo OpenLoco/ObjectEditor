@@ -161,11 +161,26 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 
 		static void ValidateLocoStruct(S5Header s5Header, ILocoStruct locoStruct, ILogger? logger)
 		{
+			var warnings = new List<string>();
+
 			try
 			{
+				if (s5Header.SourceGame == SourceGame.Vanilla && !OriginalObjectFiles.Names.ContainsKey(s5Header.Name.Trim()))
+				{
+					warnings.Add($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
+				}
+
 				if (!locoStruct.Validate())
 				{
-					logger?.Warning($"\"{s5Header.Name}\" failed validation");
+					warnings.Add($"\"{s5Header.Name}\" failed validation");
+				}
+
+				if (warnings.Count != 0)
+				{
+					foreach (var warning in warnings)
+					{
+						logger?.Warning(warning);
+					}
 				}
 				else
 				{

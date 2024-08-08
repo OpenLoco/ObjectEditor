@@ -16,12 +16,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.ComponentModel;
-using System.Collections.ObjectModel;
 using OpenLoco.ObjectEditor.Types;
-using AvaGui.Models;
-using Avalonia.Media;
-using Avalonia.Markup.Xaml.Converters;
-using Avalonia.Data.Converters;
 
 namespace AvaGui.ViewModels
 {

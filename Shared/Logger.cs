@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+using System.Collections.Concurrent;
 
 namespace OpenLoco.ObjectEditor.Logging
 {
@@ -15,7 +15,7 @@ namespace OpenLoco.ObjectEditor.Logging
 
 	public class Logger : ILogger
 	{
-		public readonly ObservableCollection<LogLine> Logs = [];
+		public readonly ConcurrentQueue<LogLine> Logs = [];
 		public LogLevel Level = LogLevel.Info;
 
 		public event EventHandler<LogAddedEventArgs>? LogAdded;
@@ -23,7 +23,7 @@ namespace OpenLoco.ObjectEditor.Logging
 		public void Log(LogLevel level, string message, string callerMemberName = "")
 		{
 			var log = new LogLine(DateTime.Now, level, callerMemberName, message);
-			Logs.Add(log);
+			Logs.Enqueue(log);
 
 			if (Level <= level)
 			{

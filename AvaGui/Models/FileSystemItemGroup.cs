@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Data.Converters;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.Objects;

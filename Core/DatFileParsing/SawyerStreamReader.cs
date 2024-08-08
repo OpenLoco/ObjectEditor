@@ -165,9 +165,13 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 
 			try
 			{
-				if (s5Header.SourceGame == SourceGame.Vanilla && !OriginalObjectFiles.Names.ContainsKey(s5Header.Name.Trim()))
+				if (s5Header.SourceGame == SourceGame.Vanilla)
 				{
-					warnings.Add($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
+					var s5Name = s5Header.Name.Trim();
+					if (!OriginalObjectFiles.Names.TryGetValue(s5Name, out var value) || s5Header.Checksum != value)
+					{
+						warnings.Add($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
+					}
 				}
 
 				if (!locoStruct.Validate())

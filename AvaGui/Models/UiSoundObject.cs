@@ -1,5 +1,4 @@
 using OpenLoco.ObjectEditor.Types;
-using System.ComponentModel;
 
 namespace AvaGui.Models
 {

@@ -8,11 +8,8 @@ using ReactiveUI.Fody.Helpers;
 using OpenLoco.ObjectEditor.Headers;
 using System.Reactive;
 using OpenLoco.ObjectEditor.Logging;
-using System.Linq;
 using System.Threading.Tasks;
 using Core.Objects.Sound;
-using System.Drawing;
-using Avalonia.Media;
 
 namespace AvaGui.ViewModels
 {

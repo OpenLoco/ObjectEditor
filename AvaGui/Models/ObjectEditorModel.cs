@@ -58,11 +58,13 @@ namespace AvaGui.Models
 
 		public static string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
-		public ObservableCollection<LogLine> LoggerObservableLogs => ((Logger)Logger).Logs;
+		public ObservableCollection<LogLine> LoggerObservableLogs = new();
 
 		public ObjectEditorModel()
 		{
 			Logger = new Logger();
+			LoggerObservableLogs = new ObservableCollection<LogLine>(((Logger)Logger).Logs);
+
 			LoadSettings(SettingsFile, Logger);
 		}
 

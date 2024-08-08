@@ -28,26 +28,19 @@
 
 	<Window.DataTemplates>
 		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
-		<DataTemplate DataType="mo:FileSystemItemGroup">
-			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-			</StackPanel>
-		</DataTemplate>
-
-		<DataTemplate DataType="mo:FileSystemVehicleGroup">
-			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-			</StackPanel>
-		</DataTemplate>
-
 		<DataTemplate DataType="mo:FileSystemItem">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding SourceGame, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Path}"/>
 			</StackPanel>
 		</DataTemplate>
+
+		<!--<DataTemplate DataType="mo:FileSystemItemGroup">
+			<StackPanel Orientation="Horizontal">
+				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			</StackPanel>
+		</DataTemplate>-->
 
 		<DataTemplate DataType="vm:ObjectEditorViewModel">
 			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
@@ -316,13 +309,54 @@
 			</Button>
 			<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
 			<Border Grid.Row="5" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
-				<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
+				<DockPanel>
+					<ListBox DockPanel.Dock="Left" ItemsSource="{Binding ObjectTypes}" SelectedItem="{Binding SelectedObjectType}">
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<StackPanel Orientation="Horizontal">
+									<materialIcons:MaterialIcon Kind="{Binding, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+									<TextBlock VerticalAlignment="Center" Text="{Binding}"/>
+								</StackPanel>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+					<ListBox ItemsSource="{Binding VehicleTypes}" SelectedItem="{Binding SelectedVehicleType}" />
+					<ListBox ItemsSource="{Binding FileSystemItems}" SelectedItem="{Binding CurrentlySelectedObject}" />
+				</DockPanel>
+				<!--<TreeDataGrid Source="{Binding DirectoryItems}">
+					<TreeDataGrid.DataTemplates>
+						<DataTemplate DataType="mo:FileSystemItemGroup">
+							<StackPanel Orientation="Horizontal">
+								<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+							</StackPanel>
+						</DataTemplate>
+						<DataTemplate DataType="mo:FileSystemVehicleGroup">
+							<StackPanel Orientation="Horizontal">
+								<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+							</StackPanel>
+						</DataTemplate>
+						
+					</TreeDataGrid.DataTemplates>
+				</TreeDataGrid>-->
+
+				<!--<DataTemplate x:Key="RegionCell" DataType="m:Country">
+							<TextBlock Text="{Binding Region}"/>
+						</DataTemplate>
+						<DataTemplate x:Key="RegionEditCell" DataType="m:Country">
+							<ComboBox ItemsSource="{x:Static m:Countries.Regions}"
+									  SelectedItem="{Binding Region}"/>
+						</DataTemplate>-->
+
+				<!--<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
 					<TreeView.ItemTemplate>
 						<TreeDataTemplate ItemsSource="{Binding SubNodes}">
 							<ContentControl Content="{Binding}" />
 						</TreeDataTemplate>
 					</TreeView.ItemTemplate>
-				</TreeView>
+				</TreeView>-->
+
 			</Border>
 		</Grid>
 		<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Margin="8">

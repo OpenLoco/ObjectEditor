@@ -17,9 +17,19 @@ namespace AvaGui.Models
 				return objectIcon;
 			}
 
+			if (value is ObjectType objType2 && ObjectMapping.TryGetValue(objType2, out var objectIcon2))
+			{
+				return objectIcon2;
+			}
+
 			if (Enum.TryParse<VehicleType>(value as string, out var vehType) && VehicleMapping.TryGetValue(vehType, out var vehicleIcon))
 			{
 				return vehicleIcon;
+			}
+
+			if (value is VehicleType vehType2 && VehicleMapping.TryGetValue(vehType2, out var vehicleIcon2))
+			{
+				return vehicleIcon2;
 			}
 
 			if (value is SourceGame sourceType && SourceGameMapping.TryGetValue(sourceType, out var sourceIcon))

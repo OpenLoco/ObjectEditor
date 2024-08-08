@@ -9,6 +9,7 @@ using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
+using OpenLoco.ObjectEditor.Objects;
 
 namespace AvaGui.ViewModels
 {
@@ -24,6 +25,7 @@ namespace AvaGui.ViewModels
 
 			_ = this.WhenAnyValue(o => o.CurrentDirectory)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
+
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
@@ -48,6 +50,18 @@ namespace AvaGui.ViewModels
 
 		[Reactive]
 		public bool DisplayVanillaOnly { get; set; }
+
+		[Reactive]
+		public ObjectType? SelectedObjectType { get; set; }
+		public ObservableCollection<ObjectType> ObjectTypes { get; set; }
+
+		[Reactive]
+		public VehicleType? SelectedVehicleType { get; set; }
+		public ObservableCollection<VehicleType>? VehicleTypes { get; set; }
+
+		//[Reactive]
+		//public FileSystemItem? SelectedFileSystemItem { get; set; }
+		public ObservableCollection<FileSystemItem>? FileSystemItems { get; set; }
 
 		public ObservableCollection<FileSystemItemBase> DirectoryItems
 			=> LoadObjDirectory(CurrentDirectory);
@@ -80,19 +94,25 @@ namespace AvaGui.ViewModels
 
 			var groupedObjects = Model.HeaderIndex
 				.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))
-				.GroupBy(o => o.Value.ObjectType)
-				.OrderBy(fsg => fsg.Key.ToString());
+				.GroupBy(o => o.Value.ObjectType);
 
-			foreach (var objGroup in groupedObjects)
+			ObjectTypes = new ObservableCollection<ObjectType>(groupedObjects.Select(x => x.Key).OrderBy(x => x.ToString()));
+
+			// old
+			foreach (var objGroup in groupedObjects.OrderBy(fsg => fsg.Key.ToString()))
 			{
 				ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
 				if (objGroup.Key == ObjectType.Vehicle)
 				{
+					VehicleTypes = new ObservableCollection<VehicleType>(objGroup.GroupBy(o => o.Value.VehicleType).Select(x => x.Key!.Value).OrderBy(x => x.ToString()));
+
 					subNodes = [];
 					foreach (var vg in objGroup
 						.GroupBy(o => o.Value.VehicleType)
 						.OrderBy(vg => vg.Key.ToString()))
 					{
+						FileSystemItems = new ObservableCollection<FileSystemItem>(vg.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
 
 						if (vg.Key == null)
@@ -122,9 +142,6 @@ namespace AvaGui.ViewModels
 				prevDir = newDir;
 			}
 		}
-
-		//public string DirectoryFileCount
-		//	=> $"Files in dir: {(CurrentDirectory == null ? 0 : new DirectoryInfo(CurrentDirectory).GetFiles().Length)}";
 
 		public string DirectoryFileCount
 			=> $"Objects: {Model.HeaderIndex.Count}";

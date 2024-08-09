@@ -20,12 +20,6 @@ using ReactiveUI;
 
 namespace AvaGui.Models
 {
-	public class VersionCheckBody
-	{
-		[JsonPropertyName("tag_name")]
-		public string TagName { get; set; }
-	}
-
 	public class ObjectEditorModel
 	{
 		public EditorSettings Settings { get; private set; }

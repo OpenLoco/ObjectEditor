@@ -26,7 +26,7 @@ namespace AvaGui.Models
 		public string TagName { get; set; }
 	}
 
-	public class ObjectEditorModel : ReactiveObject // todo: only viewmodels should be reactive
+	public class ObjectEditorModel
 	{
 		public EditorSettings Settings { get; private set; }
 
@@ -36,7 +36,7 @@ namespace AvaGui.Models
 
 		public HeaderIndex HeaderIndex { get; private set; } = [];
 
-		public ObjectCache ObjectCache { get; private set; } = [];
+		//public ObjectCache ObjectCache { get; private set; } = [];
 
 		public PaletteMap PaletteMap { get; set; }
 
@@ -134,25 +134,25 @@ namespace AvaGui.Models
 			File.WriteAllText(SettingsFilePath, text);
 		}
 
-		public bool TryGetObject(string path, out UiLocoFile? uiLocoFile, bool reload = false)
+		public bool TryLoadObject(string filename, out UiLocoFile? uiLocoFile)
 		{
-			if (ObjectCache.TryGetValue(path, out var obj) && !reload)
+			if (string.IsNullOrEmpty(filename))
 			{
-				uiLocoFile = obj;
-				return true;
-			}
-			else if (File.Exists(path))
-			{
-				var loadResult = LoadSingleObjectFile(path, HeaderIndex, ObjectCache, out var _);
-				if (loadResult)
-				{
-					uiLocoFile = ObjectCache[path];
-					return true;
-				}
+				uiLocoFile = null;
+				return false;
 			}
 
-			uiLocoFile = null;
-			return false;
+			(var fileInfo, var locoObject) = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
+
+			if (locoObject == null)
+			{
+				Logger?.Error($"Unable to load {filename}. FileInfo={fileInfo}");
+				uiLocoFile = null;
+				return false;
+			}
+
+			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject };
+			return true;
 		}
 
 		// this method loads every single object entirely. it takes a long time to run
@@ -169,23 +169,23 @@ namespace AvaGui.Models
 			var sw = new Stopwatch();
 			sw.Start();
 
-			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, (file) =>
+			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, (filename) =>
 			//foreach (var file in allFiles)
 			{
 				try
 				{
 					var startTime = sw.Elapsed;
-					_ = LoadSingleObjectFile(file, ccHeaderIndex, ccObjectCache, out var fileInfo);
+					_ = TryLoadObject(filename, out var uiLocoFile);
 					var elapsed = sw.Elapsed - startTime;
 
-					if (fileInfo != null)
+					if (uiLocoFile != null)
 					{
-						_ = timePerFile.TryAdd(fileInfo.S5Header.Name, elapsed);
+						_ = timePerFile.TryAdd(uiLocoFile.DatFileInfo.S5Header.Name, elapsed);
 					}
 				}
 				catch (Exception ex)
 				{
-					Logger?.Error($"Failed to load \"{file}\"", ex);
+					Logger?.Error($"Failed to load \"{filename}\"", ex);
 
 					//var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
 					//var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, obj.SourceGame, obj.Checksum, null);
@@ -200,7 +200,7 @@ namespace AvaGui.Models
 			});
 
 			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+			//ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 			sw.Stop();
 			Logger?.Info("Finished creating index");
@@ -219,39 +219,6 @@ namespace AvaGui.Models
 
 			var median = timePerFile.OrderBy(x => x.Value).Skip(timePerFile.Count / 2).Take(1).Single();
 			Logger?.Debug($"Median time={median.Value}ms");
-		}
-
-		private bool LoadSingleObjectFile(string file, IDictionary<string, IndexObjectHeader> ccHeaderIndex, IDictionary<string, UiLocoFile> ccObjectCache, out DatFileInfo? fileInfo)
-		{
-			(fileInfo, var locoObject) = SawyerStreamReader.LoadFullObjectFromFile(file, logger: Logger);
-
-			if (locoObject == null)
-			{
-				Logger?.Error($"Unable to load {file}. FileInfo={fileInfo}");
-				return false;
-			}
-
-			var newUiLocoFile = new UiLocoFile { DatFileInfo = fileInfo, LocoObject = locoObject };
-			if (!ccObjectCache.TryAdd(file, newUiLocoFile))
-			{
-				// replace the old file
-				ccObjectCache[file] = newUiLocoFile;
-			}
-
-			VehicleType? veh = null;
-			if (locoObject.Object is VehicleObject vo)
-			{
-				veh = vo.Type;
-			}
-
-			var indexObjectHeader = new IndexObjectHeader(fileInfo.S5Header.Name, fileInfo.S5Header.ObjectType, fileInfo.S5Header.SourceGame, fileInfo.S5Header.Checksum, veh);
-			if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
-			{
-				// replace the old file
-				ccHeaderIndex[file] = indexObjectHeader;
-			}
-
-			return true;
 		}
 
 		public void SaveFile(string path, UiLocoFile obj)
@@ -385,24 +352,24 @@ namespace AvaGui.Models
 			return JsonSerializer.Deserialize<HeaderIndex>(json, GetOptions()) ?? [];
 		}
 
-		public UiLocoFile? LoadAndCacheObject(string filename)
-		{
-			if (string.IsNullOrEmpty(filename) || !filename.EndsWith(".dat", StringComparison.InvariantCultureIgnoreCase) || !File.Exists(filename))
-			{
-				return null;
-			}
+		//public UiLocoFile? LoadAndCacheObject(string filename)
+		//{
+		//	if (string.IsNullOrEmpty(filename) || !filename.EndsWith(".dat", StringComparison.InvariantCultureIgnoreCase) || !File.Exists(filename))
+		//	{
+		//		return null;
+		//	}
 
-			if (ObjectCache.TryGetValue(filename, out var value))
-			{
-				return value;
-			}
-			else
-			{
-				var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
-				var uiObj = new UiLocoFile { DatFileInfo = obj.DatFileInfo, LocoObject = obj.LocoObject };
-				_ = ObjectCache.TryAdd(filename, uiObj);
-				return uiObj;
-			}
-		}
+		//	if (ObjectCache.TryGetValue(filename, out var value))
+		//	{
+		//		return value;
+		//	}
+		//	else
+		//	{
+		//		var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
+		//		var uiObj = new UiLocoFile { DatFileInfo = obj.DatFileInfo, LocoObject = obj.LocoObject };
+		//		_ = ObjectCache.TryAdd(filename, uiObj);
+		//		return uiObj;
+		//	}
+		//}
 	}
 }

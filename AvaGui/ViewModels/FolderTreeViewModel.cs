@@ -41,7 +41,7 @@ namespace AvaGui.ViewModels
 		public string CurrentDirectory { get; set; } = string.Empty;
 
 		[Reactive]
-		public FileSystemItemBase? CurrentlySelectedObject { get; set; } = null;
+		public FileSystemItemBase? CurrentlySelectedObject { get; set; }
 
 		[Reactive]
 		public string FilenameFilter { get; set; } = string.Empty;

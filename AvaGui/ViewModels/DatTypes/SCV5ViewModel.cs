@@ -5,7 +5,7 @@ using System;
 
 namespace AvaGui.ViewModels
 {
-	public class SCV5ViewModel : ReactiveObject
+	public class SCV5ViewModel : ReactiveObject, ILocoFileViewModel
 	{
 		public SCV5ViewModel()
 		{

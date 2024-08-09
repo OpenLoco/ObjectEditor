@@ -219,7 +219,7 @@ namespace AvaGui.ViewModels
 						for (var x = 0; x < g1Element.Width; x++)
 						{
 							// Calculate pixel index
-							var index = x + (y * g1Element.Width);
+							var index = x + y * g1Element.Width;
 
 							// Set pixel color (example: red)
 							pointer[index] = 0xFFFF0000;
@@ -248,7 +248,7 @@ namespace AvaGui.ViewModels
 					{
 						for (var x = 0; x < g1Element.Width; x++)
 						{
-							var index = x + (y * g1Element.Width);
+							var index = x + y * g1Element.Width;
 							var paletteIndex = g1Element.ImageData[index];
 
 							if (paletteIndex == 0 && useTransparency)
@@ -290,7 +290,7 @@ namespace AvaGui.ViewModels
 				{
 					for (var x = 0; x < g1Element.Width; x++)
 					{
-						var index = x + (y * g1Element.Width);
+						var index = x + y * g1Element.Width;
 						var paletteIndex = g1Element.ImageData[index];
 
 						if (paletteIndex == 0 && useTransparency)

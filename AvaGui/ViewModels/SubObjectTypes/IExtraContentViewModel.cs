@@ -1,4 +1,4 @@
-﻿namespace AvaGui.ViewModels
+namespace AvaGui.ViewModels
 {
 	public interface IExtraContentViewModel
 	{ }

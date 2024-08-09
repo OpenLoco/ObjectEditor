@@ -36,8 +36,6 @@ namespace AvaGui.Models
 
 		public HeaderIndex HeaderIndex { get; private set; } = [];
 
-		//public ObjectCache ObjectCache { get; private set; } = [];
-
 		public PaletteMap PaletteMap { get; set; }
 
 		public G1Dat? G1 { get; set; }
@@ -362,25 +360,5 @@ namespace AvaGui.Models
 
 			return JsonSerializer.Deserialize<HeaderIndex>(json, GetOptions()) ?? [];
 		}
-
-		//public UiLocoFile? LoadAndCacheObject(string filename)
-		//{
-		//	if (string.IsNullOrEmpty(filename) || !filename.EndsWith(".dat", StringComparison.InvariantCultureIgnoreCase) || !File.Exists(filename))
-		//	{
-		//		return null;
-		//	}
-
-		//	if (ObjectCache.TryGetValue(filename, out var value))
-		//	{
-		//		return value;
-		//	}
-		//	else
-		//	{
-		//		var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
-		//		var uiObj = new UiLocoFile { DatFileInfo = obj.DatFileInfo, LocoObject = obj.LocoObject };
-		//		_ = ObjectCache.TryAdd(filename, uiObj);
-		//		return uiObj;
-		//	}
-		//}
 	}
 }

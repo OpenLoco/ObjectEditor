@@ -153,9 +153,6 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 
 			ValidateLocoStruct(s5Header, locoStruct, logger);
 
-			// add to object manager
-			SObjectManager.Add(newObj);
-
 			return new(new DatFileInfo(s5Header, objectHeader), newObj);
 		}
 

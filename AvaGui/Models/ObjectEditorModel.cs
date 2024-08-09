@@ -158,49 +158,33 @@ namespace AvaGui.Models
 		// this method loads every single object entirely. it takes a long time to run
 		void CreateIndex(string[] allFiles, IProgress<float>? progress)
 		{
+			Logger?.Info($"Creating index on {allFiles.Length} files");
+
 			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
-			ConcurrentDictionary<string, UiLocoFile> ccObjectCache = new(); // key is full path/filename
 
 			var count = 0;
-
 			ConcurrentDictionary<string, TimeSpan> timePerFile = new();
 
-			Logger?.Info($"Creating index on {allFiles.Length} files");
 			var sw = new Stopwatch();
 			sw.Start();
 
-			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, (filename) =>
-			//foreach (var file in allFiles)
+			var fileCount = allFiles.Length;
+			var parallelise = false;
+
+			if (parallelise)
 			{
-				try
+				_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, (filename)
+					=> count = LoadAndIndexFile(count, filename));
+			}
+			else
+			{
+				foreach (var filename in allFiles)
 				{
-					var startTime = sw.Elapsed;
-					_ = TryLoadObject(filename, out var uiLocoFile);
-					var elapsed = sw.Elapsed - startTime;
-
-					if (uiLocoFile != null)
-					{
-						_ = timePerFile.TryAdd(uiLocoFile.DatFileInfo.S5Header.Name, elapsed);
-					}
+					count = LoadAndIndexFile(count, filename);
 				}
-				catch (Exception ex)
-				{
-					Logger?.Error($"Failed to load \"{filename}\"", ex);
-
-					//var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
-					//var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, obj.SourceGame, obj.Checksum, null);
-					//_ = ccHeaderIndex.TryAdd(file, indexObjectHeader);
-				}
-				finally
-				{
-					_ = Interlocked.Increment(ref count);
-					progress?.Report(count / (float)allFiles.Length);
-				}
-				//}
-			});
+			}
 
 			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-			//ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 			sw.Stop();
 			Logger?.Info("Finished creating index");
@@ -219,6 +203,33 @@ namespace AvaGui.Models
 
 			var median = timePerFile.OrderBy(x => x.Value).Skip(timePerFile.Count / 2).Take(1).Single();
 			Logger?.Debug($"Median time={median.Value}ms");
+
+			int LoadAndIndexFile(int count, string filename)
+			{
+				var startTime = sw.Elapsed;
+				var loadResult = TryLoadObject(filename, out var uiLocoFile);
+				var elapsed = sw.Elapsed - startTime;
+
+				if (loadResult && uiLocoFile != null)
+				{
+					_ = ccHeaderIndex.TryAdd(filename, new IndexObjectHeader(
+						uiLocoFile.DatFileInfo.S5Header.Name,
+						uiLocoFile.DatFileInfo.S5Header.ObjectType,
+						uiLocoFile.DatFileInfo.S5Header.SourceGame,
+						uiLocoFile.DatFileInfo.S5Header.Checksum,
+						uiLocoFile.LocoObject.Object is VehicleObject veh ? veh.Type : null));
+
+					_ = timePerFile.TryAdd(uiLocoFile.DatFileInfo.S5Header.Name, elapsed);
+				}
+				else
+				{
+					Logger?.Error($"Failed to load \"{filename}\"");
+				}
+
+				_ = Interlocked.Increment(ref count);
+				progress?.Report((float)count / fileCount);
+				return count;
+			}
 		}
 
 		public void SaveFile(string path, UiLocoFile obj)

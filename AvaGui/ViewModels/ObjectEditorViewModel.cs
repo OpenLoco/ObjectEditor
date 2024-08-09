@@ -70,7 +70,6 @@ namespace AvaGui.ViewModels
 
 			if (CurrentObject?.LocoObject != null)
 			{
-
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 					? new SoundViewModel(CurrentObject.LocoObject)

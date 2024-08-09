@@ -140,7 +140,7 @@
 						</DockPanel>
 						<Button.Flyout >
 							<Flyout>
-								<ColorView  Name="ImageBackgroundColorView" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+								<ColorView  Name="ImageBackgroundColorView" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
 							</Flyout>
 						</Button.Flyout>
 					</Button>

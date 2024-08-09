@@ -9,6 +9,7 @@ using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
+using System.Security.Cryptography;
 
 namespace AvaGui.ViewModels
 {
@@ -56,6 +57,12 @@ namespace AvaGui.ViewModels
 		{
 			DirectoryItems = new(LoadObjDirectoryCore(directory, useExistingIndex));
 
+			// really just for debugging - puts all dat file types in the collection, even if they don't have anything in them
+			//foreach (var dat in Enum.GetValues<DatFileType>().Except(DirectoryItems.Select(x => ((FileSystemDatGroup)x).DatFileType)))
+			//{
+			//	DirectoryItems.Add(new FileSystemDatGroup("", dat, new ObservableCollection<FileSystemItemBase>()));
+			//}
+
 			IEnumerable<FileSystemItemBase> LoadObjDirectoryCore(string directory, bool useExistingIndex)
 			{
 				if (string.IsNullOrEmpty(directory))
@@ -75,46 +82,60 @@ namespace AvaGui.ViewModels
 
 				Model.LoadObjDirectory(directory, null, useExistingIndex);
 
-				var groupedObjects = Model.HeaderIndex
+				var groupedDatObjects = Model.HeaderIndex
 					.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))
-					.GroupBy(o => o.Value.ObjectType)
-					.OrderBy(fsg => fsg.Key.ToString());
+					.GroupBy(o => o.Value.DatFileType)
+					.OrderBy(x => x.Key.ToString());
 
-				foreach (var objGroup in groupedObjects)
+				foreach (var datObjGroup in groupedDatObjects)
 				{
-					ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
-					if (objGroup.Key == ObjectType.Vehicle)
+					ObservableCollection<FileSystemItemBase> groups = [];
+
+					var groupedObjects = datObjGroup
+						.GroupBy(x => x.Value.ObjectType)
+						.OrderBy(x => x.Key.ToString());
+
+					foreach (var objGroup in groupedObjects)
 					{
-						subNodes = [];
-						foreach (var vg in objGroup
-							.GroupBy(o => o.Value.VehicleType)
-							.OrderBy(vg => vg.Key.ToString()))
+						ObservableCollection<FileSystemItemBase> subNodes;
+						if (objGroup.Key == ObjectType.Vehicle)
 						{
-							var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
-
-							if (vg.Key == null)
+							subNodes = [];
+							foreach (var vg in objGroup
+								.GroupBy(o => o.Value.VehicleType)
+								.OrderBy(vg => vg.Key.ToString()))
 							{
-								// this should be impossible - object says its a vehicle but doesn't have a vehicle type
-								// todo: move validation into the loading stage or cstr of IndexObjectHeader
-								continue;
+								var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+
+								if (vg.Key == null)
+								{
+									// this should be impossible - object says its a vehicle but doesn't have a vehicle type
+									// todo: move validation into the loading stage or cstr of IndexObjectHeader
+									continue;
+								}
+
+								subNodes.Add(new FileSystemVehicleGroup(
+									string.Empty,
+									vg.Key.Value,
+									vehicleSubNodes));
 							}
-
-							subNodes.Add(new FileSystemVehicleGroup(
-								string.Empty,
-								vg.Key.Value,
-								vehicleSubNodes));
 						}
-					}
-					else
-					{
-						subNodes = new ObservableCollection<FileSystemItemBase>(
-							objGroup.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+						else
+						{
+							subNodes = new ObservableCollection<FileSystemItemBase>(
+								objGroup.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+						}
+
+						groups.Add(new FileSystemItemGroup(
+							string.Empty,
+							objGroup.Key,
+							subNodes));
 					}
 
-					yield return new FileSystemItemGroup(
+					yield return new FileSystemDatGroup(
 						string.Empty,
-						objGroup.Key,
-						subNodes);
+						datObjGroup.Key,
+						groups);
 				}
 			}
 		}

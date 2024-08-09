@@ -28,6 +28,14 @@
 
 	<Window.DataTemplates>
 		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
+
+		<DataTemplate DataType="mo:FileSystemDatGroup">
+			<StackPanel Orientation="Horizontal">
+				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+			</StackPanel>
+		</DataTemplate>
+
 		<DataTemplate DataType="mo:FileSystemItemGroup">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />

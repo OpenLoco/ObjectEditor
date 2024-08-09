@@ -1,4 +1,4 @@
-﻿using Avalonia.Data.Converters;
+using Avalonia.Data.Converters;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.Objects;
 using System;
@@ -11,6 +11,11 @@ namespace AvaGui.Models
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
+			if (Enum.TryParse<DatFileType>(value as string, out var datType) && DatTypeMapping.TryGetValue(datType, out var datIcon))
+			{
+				return datIcon;
+			}
+
 			if (Enum.TryParse<ObjectType>(value as string, out var objType) && ObjectMapping.TryGetValue(objType, out var objectIcon))
 			{
 				return objectIcon;
@@ -85,6 +90,19 @@ namespace AvaGui.Models
 			{ SourceGame.Custom, "AccountEdit" },
 			{ SourceGame.DataFile, "File" },
 			{ SourceGame.Vanilla, "AccountTieHat" },
+		};
+
+		public static Dictionary<DatFileType, string> DatTypeMapping = new Dictionary<DatFileType, string>()
+		{
+			{ DatFileType.Object, "Apps" },
+			{ DatFileType.Scenario, "MapClock" },
+			{ DatFileType.SaveGame, "ContentSave" },
+			{ DatFileType.Tutorial, "School" },
+			{ DatFileType.G1, "ImageAlbum" },
+			{ DatFileType.Music, "Music" },
+			{ DatFileType.SoundEffect, "Bugle" },
+			{ DatFileType.Language, "TranslateVariant" },
+			{ DatFileType.Scores, "Scoreboard" },
 		};
 	}
 }

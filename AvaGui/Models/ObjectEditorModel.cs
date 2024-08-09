@@ -20,6 +20,19 @@ using ReactiveUI;
 
 namespace AvaGui.Models
 {
+	public enum DatFileType
+	{
+		Object,
+		Scenario,
+		SaveGame,
+		Tutorial,
+		G1,
+		Music,
+		SoundEffect, // css*.dat
+		Language,
+		Scores,
+	}
+
 	public class ObjectEditorModel
 	{
 		public EditorSettings Settings { get; private set; }
@@ -206,6 +219,7 @@ namespace AvaGui.Models
 				{
 					_ = ccHeaderIndex.TryAdd(filename, new IndexObjectHeader(
 						uiLocoFile.DatFileInfo.S5Header.Name,
+						DatFileType.Object,
 						uiLocoFile.DatFileInfo.S5Header.ObjectType,
 						uiLocoFile.DatFileInfo.S5Header.SourceGame,
 						uiLocoFile.DatFileInfo.S5Header.Checksum,

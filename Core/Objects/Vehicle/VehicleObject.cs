@@ -169,11 +169,6 @@ namespace OpenLoco.ObjectEditor.Objects
 				CompatibleCargoCategories.Add([]);
 			}
 
-			var cargoCategories = SObjectManager.Get<CargoObject>(ObjectType.Cargo)
-				.Select(c => c.CargoCategory)
-				.Distinct()
-				.OrderBy(cc => (uint16_t)cc);
-
 			CargoTypeSpriteOffsets.Clear();
 
 			MaxCargo.Clear();

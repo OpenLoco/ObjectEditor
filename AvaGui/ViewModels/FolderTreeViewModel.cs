@@ -20,15 +20,15 @@ namespace AvaGui.ViewModels
 		{
 			Model = model;
 
-			RecreateIndex = ReactiveCommand.Create(() => Model.LoadObjDirectory(Model.Settings.ObjDataDirectory, null, false));
+			RecreateIndex = ReactiveCommand.Create(() => LoadObjDirectory(CurrentDirectory, false));
 
 			_ = this.WhenAnyValue(o => o.CurrentDirectory)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
+				.Subscribe(_ => LoadObjDirectory(CurrentDirectory, true));
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
+				.Subscribe(_ => LoadObjDirectory(CurrentDirectory, true));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryItems)));
+				.Subscribe(_ => LoadObjDirectory(CurrentDirectory, true));
 			_ = this.WhenAnyValue(o => o.DirectoryItems)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
 
@@ -41,7 +41,7 @@ namespace AvaGui.ViewModels
 		public string CurrentDirectory { get; set; } = string.Empty;
 
 		[Reactive]
-		public FileSystemItemBase? CurrentlySelectedObject { get; set; } = null;
+		public FileSystemItemBase? CurrentlySelectedObject { get; set; }
 
 		[Reactive]
 		public string FilenameFilter { get; set; } = string.Empty;
@@ -49,82 +49,75 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public bool DisplayVanillaOnly { get; set; }
 
-		public ObservableCollection<FileSystemItemBase> DirectoryItems
-			=> LoadObjDirectory(CurrentDirectory);
-		private ObservableCollection<FileSystemItemBase> LoadObjDirectory(string newDir)
-			=> new(LoadObjDirectoryCore(newDir));
+		[Reactive]
+		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; set; }
 
-		string prevDir = string.Empty;
-
-		private IEnumerable<FileSystemItemBase> LoadObjDirectoryCore(string newDir)
+		private void LoadObjDirectory(string directory, bool useExistingIndex)
 		{
-			if (newDir == null || string.IsNullOrEmpty(newDir))
+			DirectoryItems = new(LoadObjDirectoryCore(directory, useExistingIndex));
+
+			IEnumerable<FileSystemItemBase> LoadObjDirectoryCore(string directory, bool useExistingIndex)
 			{
-				yield break;
-			}
-
-			var dirInfo = new DirectoryInfo(newDir);
-
-			if (!dirInfo.Exists)
-			{
-				yield break;
-			}
-
-			// todo: load each file
-			// check if its object, scenario, save, landscape, g1, sfx, tutorial, etc
-
-			if (prevDir != newDir)
-			{
-				Model.LoadObjDirectory(newDir, null, true);
-			}
-
-			var groupedObjects = Model.HeaderIndex
-				.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))
-				.GroupBy(o => o.Value.ObjectType)
-				.OrderBy(fsg => fsg.Key.ToString());
-
-			foreach (var objGroup in groupedObjects)
-			{
-				ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
-				if (objGroup.Key == ObjectType.Vehicle)
+				if (string.IsNullOrEmpty(directory))
 				{
-					subNodes = [];
-					foreach (var vg in objGroup
-						.GroupBy(o => o.Value.VehicleType)
-						.OrderBy(vg => vg.Key.ToString()))
+					yield break;
+				}
+
+				var dirInfo = new DirectoryInfo(directory);
+
+				if (!dirInfo.Exists)
+				{
+					yield break;
+				}
+
+				// todo: load each file
+				// check if its object, scenario, save, landscape, g1, sfx, tutorial, etc
+
+				Model.LoadObjDirectory(directory, null, useExistingIndex);
+
+				var groupedObjects = Model.HeaderIndex
+					.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))
+					.GroupBy(o => o.Value.ObjectType)
+					.OrderBy(fsg => fsg.Key.ToString());
+
+				foreach (var objGroup in groupedObjects)
+				{
+					ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
+					if (objGroup.Key == ObjectType.Vehicle)
 					{
-						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
-
-						if (vg.Key == null)
+						subNodes = [];
+						foreach (var vg in objGroup
+							.GroupBy(o => o.Value.VehicleType)
+							.OrderBy(vg => vg.Key.ToString()))
 						{
-							// this should be impossible - object says its a vehicle but doesn't have a vehicle type
-							// todo: move validation into the loading stage or cstr of IndexObjectHeader
-							continue;
+							var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+
+							if (vg.Key == null)
+							{
+								// this should be impossible - object says its a vehicle but doesn't have a vehicle type
+								// todo: move validation into the loading stage or cstr of IndexObjectHeader
+								continue;
+							}
+
+							subNodes.Add(new FileSystemVehicleGroup(
+								string.Empty,
+								vg.Key.Value,
+								vehicleSubNodes));
 						}
-
-						subNodes.Add(new FileSystemVehicleGroup(
-							string.Empty,
-							vg.Key.Value,
-							vehicleSubNodes));
 					}
-				}
-				else
-				{
-					subNodes = new ObservableCollection<FileSystemItemBase>(
-						objGroup.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
-				}
+					else
+					{
+						subNodes = new ObservableCollection<FileSystemItemBase>(
+							objGroup.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+					}
 
-				yield return new FileSystemItemGroup(
-					string.Empty,
-					objGroup.Key,
-					subNodes);
-
-				prevDir = newDir;
+					yield return new FileSystemItemGroup(
+						string.Empty,
+						objGroup.Key,
+						subNodes);
+				}
 			}
 		}
-
-		//public string DirectoryFileCount
-		//	=> $"Files in dir: {(CurrentDirectory == null ? 0 : new DirectoryInfo(CurrentDirectory).GetFiles().Length)}";
 
 		public string DirectoryFileCount
 			=> $"Objects: {Model.HeaderIndex.Count}";

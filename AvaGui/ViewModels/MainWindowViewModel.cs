@@ -42,7 +42,7 @@ namespace AvaGui.ViewModels
 		public SCV5ViewModel SCV5ViewModel { get; }
 
 		[Reactive]
-		public object CurrentEditorModel { get; set; } // this will either be ObjectEditorViewModel for objects, or SCV5ViewModel for scenarios/landscapes/saves. in future, it'll also be different for g1.dat, tutorials, sfx files, etc
+		public ILocoFileViewModel CurrentEditorModel { get; set; }
 
 		public ObservableCollection<MenuItemModel> ObjDataItems { get; set; }
 
@@ -64,19 +64,6 @@ namespace AvaGui.ViewModels
 		[Reactive] Version ApplicationVersion { get; set; }
 		[Reactive] string LatestVersionText { get; set; } = "Up-to-date";
 
-
-		//FileViewModel
-		//- S5HeaderViewModel
-		//- ObjectViewModel
-		//- etc
-
-		//ObjectViewModel
-		//- ObjectData
-		//- StringTableViewModel
-		//- ImageTableViewModel
-
-		//ObjectSelectorViewModel
-
 		public MainWindowViewModel()
 		{
 			var paletteUri = new Uri("avares://ObjectEditor/Assets/palette.png");
@@ -89,18 +76,15 @@ namespace AvaGui.ViewModels
 
 			FolderTreeViewModel = new FolderTreeViewModel(Model);
 			ObjectEditorViewModel = new ObjectEditorViewModel(Model);
-			SCV5ViewModel = new SCV5ViewModel();
 
-			_ = ObjectEditorViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
+			_ = ObjectEditorViewModel.WhenAnyValue(o => o.CurrentFile)
 				.Subscribe(_ => CurrentEditorModel = ObjectEditorViewModel);
 
 			_ = this.WhenAnyValue(o => o.ObjectEditorViewModel)
 				.Subscribe(_ => CurrentEditorModel = ObjectEditorViewModel);
-			_ = this.WhenAnyValue(o => o.SCV5ViewModel)
-				.Subscribe(_ => CurrentEditorModel = SCV5ViewModel);
 
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
-				.Subscribe(o => ObjectEditorViewModel.CurrentlySelectedObject = o);
+				.Subscribe(o => ObjectEditorViewModel.CurrentFile = o);
 
 			ObjDataItems = new ObservableCollection<MenuItemModel>(Model.Settings.ObjDataDirectories
 				.Select(x => new MenuItemModel(
@@ -110,15 +94,6 @@ namespace AvaGui.ViewModels
 			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(SelectNewFolder), null));
 			ObjDataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { }), null));
 
-			//DataItems = new ObservableCollection<MenuItemModel>(Model.Settings.DataDirectories
-			//	.Select(x => new MenuItemModel(
-			//		x,
-			//		ReactiveCommand.Create<string, bool>(Model.LoadDataDirectory))));
-
-			//DataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(() => { })));
-			//DataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { })));
-
-			//LoadPalette = ReactiveCommand.Create(LoadPaletteFunc);
 			OpenSettingsFolder = ReactiveCommand.Create(PlatformSpecific.FolderOpenInDesktop);
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObjectToIndex);
 
@@ -136,8 +111,6 @@ namespace AvaGui.ViewModels
 			var latestVersion = GetLatestAppVersion();
 			if (latestVersion > ApplicationVersion)
 			{
-				//_ = MessageBox.Show($"Current Version: {ApplicationVersion}{Environment.NewLine}Latest version: {latestVersion}{Environment.NewLine}Taking you to the downloads page now ");
-				//_ = Process.Start(new ProcessStartInfo { FileName = GithubLatestReleaseDownloadPage, UseShellExecute = true });
 				LatestVersionText = $"newer version exists: {latestVersion}";
 			}
 			#endregion
@@ -158,11 +131,10 @@ namespace AvaGui.ViewModels
 			}
 
 			//logger?.Info($"Opening {path}");
-			if (Model.TryGetObject(path, out UiLocoFile? uiLocoFile, true))
+			if (Model.TryLoadObject(path, out UiLocoFile? uiLocoFile))
 			{
 				Model.Logger.Warning($"Successfully loaded {path}");
-				ObjectEditorViewModel.CurrentlySelectedObject = new FileSystemItem(path, uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame);
-				ObjectEditorViewModel.CurrentObject = uiLocoFile;
+				ObjectEditorViewModel.CurrentFile = new FileSystemItem(path, uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame);
 			}
 			else
 			{
@@ -221,36 +193,10 @@ namespace AvaGui.ViewModels
 					dirPath,
 					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = dirPath),
 					ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count)));
-				//menuItem.DeleteCommand = ReactiveCommand.Create(() =>
-				//{
-				//	_ = ObjDataItems.Remove(menuItem);
-				//});
 
 				ObjDataItems.Add(menuItem);
 			}
 		}
-
-		//public void LoadPaletteFunc()
-		//{
-		//	using (var openFileDialog = new OpenFileDialog())
-		//	{
-		//		openFileDialog.InitialDirectory = lastPaletteDirectory;
-		//		openFileDialog.Filter = "Palette Image Files(*.png)|*.png|All files (*.*)|*.*";
-		//		openFileDialog.FilterIndex = 1;
-		//		openFileDialog.RestoreDirectory = true;
-
-		//		if (openFileDialog.ShowDialog() == DialogResult.OK && File.Exists(openFileDialog.FileName))
-		//		{
-		//			model.PaletteFile = openFileDialog.FileName;
-		//			var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgb24>(openFileDialog.FileName);
-		//			Model.PaletteMap = new PaletteMap(paletteBitmap);
-
-		//			RefreshObjectUI();
-		//			lastPaletteDirectory = Path.GetDirectoryName(openFileDialog.FileName) ?? lastPaletteDirectory;
-		//		}
-		//	}
-		//}
-
 
 		public static bool IsDarkTheme
 		{

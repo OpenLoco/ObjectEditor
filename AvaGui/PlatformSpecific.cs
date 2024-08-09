@@ -9,7 +9,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace AvaGui.ViewModels
+namespace AvaGui
 {
 	public static class PlatformSpecific
 	{

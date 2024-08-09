@@ -207,8 +207,6 @@
 										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Stop</TextBlock>
 									</DockPanel>
 								</Button>
-								<!--<Button>Export</Button>
-								<Button>Import</Button>-->
 							</StackPanel>
 						</OnPlatform.Windows>
 						<OnPlatform.Linux>
@@ -235,7 +233,6 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<!--<MenuItem Header="Load Palette" Command="{Binding LoadPalette}" />-->
 					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
 					<MenuItem Header="Open single object" Command="{Binding OpenSingleObject}" />
 				</MenuItem>
@@ -247,50 +244,6 @@
 						</Style>
 					</MenuItem.Styles>
 				</MenuItem>
-				<!--<MenuItem Header="_ObjData (New)" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
-					<MenuItem.DataTemplates>
-						<TreeDataTemplate DataType="vm:MenuItemModel">
-							<Grid ColumnDefinitions="*,Auto">
-								-->
-				<!--<ContentPresenter
-								Grid.Column="0"
-								Content="{Binding Name}"
-								RecognizesAccessKey="True"
-								VerticalAlignment="Center"/>-->
-				<!--
-								<Button
-									Grid.Column="0"
-									VerticalAlignment="Center"
-									Content="{Binding Name}"
-									Command="{Binding MenuCommand}"
-									Background="{Binding $parent[Grid].Background}">
-									-->
-				<!--<Button.Styles>
-									<Style Selector="Button:pointerover /template/ ContentPresenter">
-										<Setter Property="Background" Value="{Binding $parent[Grid].Background}" />
-									</Style>
-								</Button.Styles>-->
-				<!--
-								</Button>
-								<Button
-									Grid.Column="1"
-									VerticalAlignment="Center"
-									Content="🗑️"
-									Command="{Binding DeleteCommand}"
-									IsEnabled="True">
-								</Button>
-							</Grid>
-						</TreeDataTemplate>
-					</MenuItem.DataTemplates>
-				</MenuItem>-->
-				<!--<MenuItem Header="Data Directories" ItemsSource="{Binding DataItems}" Classes="SubItems">
-					<MenuItem.Styles>
-						<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemModel">
-							<Setter Property="Header" Value="{Binding Name}"/>
-							<Setter Property="Command" Value="{Binding MenuCommand}"/>
-						</Style>
-					</MenuItem.Styles>
-				</MenuItem>-->
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}" />
 		</DockPanel>

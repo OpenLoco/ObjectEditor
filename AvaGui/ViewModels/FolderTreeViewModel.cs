@@ -60,7 +60,7 @@ namespace AvaGui.ViewModels
 			// really just for debugging - puts all dat file types in the collection, even if they don't have anything in them
 			//foreach (var dat in Enum.GetValues<DatFileType>().Except(DirectoryItems.Select(x => ((FileSystemDatGroup)x).DatFileType)))
 			//{
-			//	DirectoryItems.Add(new FileSystemDatGroup("", dat, new ObservableCollection<FileSystemItemBase>()));
+			//	DirectoryItems.Add(new FileSystemDatGroup(string.Empty, dat, new ObservableCollection<FileSystemItemBase>()));
 			//}
 
 			IEnumerable<FileSystemItemBase> LoadObjDirectoryCore(string directory, bool useExistingIndex)
@@ -97,10 +97,9 @@ namespace AvaGui.ViewModels
 
 					foreach (var objGroup in groupedObjects)
 					{
-						ObservableCollection<FileSystemItemBase> subNodes;
+						ObservableCollection<FileSystemItemBase> subNodes = [];
 						if (objGroup.Key == ObjectType.Vehicle)
 						{
-							subNodes = [];
 							foreach (var vg in objGroup
 								.GroupBy(o => o.Value.VehicleType)
 								.OrderBy(vg => vg.Key.ToString()))

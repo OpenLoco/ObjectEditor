@@ -174,7 +174,7 @@ namespace AvaGui.Models
 			sw.Start();
 
 			var fileCount = allFiles.Length;
-			var parallelise = false;
+			var parallelise = true; // todo: remove this or make a user setting
 
 			if (parallelise)
 			{

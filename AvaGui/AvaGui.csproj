@@ -10,7 +10,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
-    <AssemblyVersion>2.1.0</AssemblyVersion>
+    <AssemblyVersion>2.2.0</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <AssemblyName>ObjectEditor</AssemblyName>
     <Product>$(AssemblyName) $(AssemblyVersion)</Product>

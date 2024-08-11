@@ -104,7 +104,10 @@ namespace AvaGui.ViewModels
 								.GroupBy(o => o.Value.VehicleType)
 								.OrderBy(vg => vg.Key.ToString()))
 							{
-								var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+								var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(
+									vg
+									.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame))
+									.OrderBy(o => o.Name));
 
 								if (vg.Key == null)
 								{
@@ -122,7 +125,9 @@ namespace AvaGui.ViewModels
 						else
 						{
 							subNodes = new ObservableCollection<FileSystemItemBase>(
-								objGroup.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+								objGroup
+								.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame))
+								.OrderBy(o => o.Name));
 						}
 
 						groups.Add(new FileSystemItemGroup(

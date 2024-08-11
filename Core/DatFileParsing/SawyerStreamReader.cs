@@ -64,7 +64,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData) LoadAndDecodeFromFile(string filename, ILogger? logger = null)
 			=> LoadAndDecodeFromStream(LoadBytesFromFile(filename), logger);
 
-		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData) LoadAndDecodeFromStream(ReadOnlySpan<byte> fullData, ILogger? logger = null)
+		static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData) LoadAndDecodeFromStream(ReadOnlySpan<byte> fullData, ILogger? logger = null)
 		{
 			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
 			var remainingData = fullData[S5Header.StructLength..];
@@ -102,6 +102,12 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject) LoadFullObjectFromStream(ReadOnlySpan<byte> data, string filename = "<in-memory>", bool loadExtra = true, ILogger? logger = null)
 		{
 			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
+
+			if (data.Length < (S5Header.StructLength + ObjectHeader.StructLength))
+			{
+				logger?.Error($"{filename} didn't have enough data");
+				return new(new DatFileInfo(S5Header.NullHeader, ObjectHeader.NullHeader), null);
+			}
 
 			var (s5Header, objectHeader, decodedData) = LoadAndDecodeFromStream(data, logger);
 

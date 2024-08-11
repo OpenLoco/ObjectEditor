@@ -186,7 +186,7 @@ namespace AvaGui.ViewModels
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			if (Directory.Exists(dirPath) && Directory.EnumerateFiles(dirPath).Any() && !Model.Settings.ObjDataDirectories.Contains(dirPath))
+			if (Directory.Exists(dirPath) && !Model.Settings.ObjDataDirectories.Contains(dirPath))
 			{
 				await Model.LoadObjDirectoryAsync(dirPath, null, false);
 				var menuItem = new MenuItemModel(

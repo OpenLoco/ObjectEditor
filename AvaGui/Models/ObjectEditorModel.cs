@@ -17,6 +17,7 @@ using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor;
 using System.Collections.ObjectModel;
 using ReactiveUI;
+using System.Reflection;
 
 namespace AvaGui.Models
 {
@@ -147,9 +148,21 @@ namespace AvaGui.Models
 				return false;
 			}
 
-			(var fileInfo, var locoObject) = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
+			DatFileInfo? fileInfo;
+			ILocoObject? locoObject;
 
-			if (locoObject == null)
+			try
+			{
+				(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
+			}
+			catch (Exception ex)
+			{
+				Logger?.Error($"Unable to load {filename}", ex);
+				uiLocoFile = null;
+				return false;
+			}
+
+			if (locoObject == null || fileInfo == null)
 			{
 				Logger?.Error($"Unable to load {filename}. FileInfo={fileInfo}");
 				uiLocoFile = null;

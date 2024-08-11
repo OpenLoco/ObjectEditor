@@ -11,7 +11,6 @@ using Avalonia;
 using Avalonia.Platform;
 using System.Reactive.Linq;
 using System;
-using SkiaSharp;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -48,7 +47,7 @@ namespace AvaGui.ViewModels
 
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	{
-		ILocoObject Parent;
+		readonly ILocoObject Parent;
 
 		public ImageTableViewModel(ILocoObject parent, PaletteMap paletteMap)
 		{
@@ -178,7 +177,6 @@ namespace AvaGui.ViewModels
 			return "<unk>";
 		}
 
-
 		public static IEnumerable<Bitmap> CreateImages(IEnumerable<G1Element32> g1Elements, PaletteMap paletteMap, int zoom)
 		{
 			foreach (var g1Element in g1Elements)
@@ -219,7 +217,7 @@ namespace AvaGui.ViewModels
 						for (var x = 0; x < g1Element.Width; x++)
 						{
 							// Calculate pixel index
-							var index = x + y * g1Element.Width;
+							var index = x + (y * g1Element.Width);
 
 							// Set pixel color (example: red)
 							pointer[index] = 0xFFFF0000;
@@ -248,7 +246,7 @@ namespace AvaGui.ViewModels
 					{
 						for (var x = 0; x < g1Element.Width; x++)
 						{
-							var index = x + y * g1Element.Width;
+							var index = x + (y * g1Element.Width);
 							var paletteIndex = g1Element.ImageData[index];
 
 							if (paletteIndex == 0 && useTransparency)
@@ -277,58 +275,58 @@ namespace AvaGui.ViewModels
 			return writeableBitmap;
 		}
 
-		static Bitmap G1IndexedToBitmapScaled(G1Element32 g1Element, PaletteMap paletteMap, bool useTransparency = false, int zoom = 1)
-		{
-			var info = new SKImageInfo(g1Element.Width, g1Element.Height, SKColorType.Rgba8888, SKAlphaType.Opaque);
-			var img = SKImage.Create(info);
-			var bmp = SKBitmap.FromImage(img);
+		//static Bitmap G1IndexedToBitmapScaled(G1Element32 g1Element, PaletteMap paletteMap, bool useTransparency = false, int zoom = 1)
+		//{
+		//	var info = new SKImageInfo(g1Element.Width, g1Element.Height, SKColorType.Rgba8888, SKAlphaType.Opaque);
+		//	var img = SKImage.Create(info);
+		//	var bmp = SKBitmap.FromImage(img);
 
-			unsafe
-			{
-				var ptr = (uint*)bmp.GetPixels();
-				for (var y = 0; y < g1Element.Height; y++)
-				{
-					for (var x = 0; x < g1Element.Width; x++)
-					{
-						var index = x + y * g1Element.Width;
-						var paletteIndex = g1Element.ImageData[index];
+		//	unsafe
+		//	{
+		//		var ptr = (uint*)bmp.GetPixels();
+		//		for (var y = 0; y < g1Element.Height; y++)
+		//		{
+		//			for (var x = 0; x < g1Element.Width; x++)
+		//			{
+		//				var index = x + (y * g1Element.Width);
+		//				var paletteIndex = g1Element.ImageData[index];
 
-						if (paletteIndex == 0 && useTransparency)
-						{
-							ptr += 4;
-						}
-						else
-						{
-							var colour = paletteMap.Palette[paletteIndex].Color;
-							var pixel = colour.ToPixel<Rgb24>();
+		//				if (paletteIndex == 0 && useTransparency)
+		//				{
+		//					ptr += 4;
+		//				}
+		//				else
+		//				{
+		//					var colour = paletteMap.Palette[paletteIndex].Color;
+		//					var pixel = colour.ToPixel<Rgb24>();
 
-							//var ptr = (byte*)pointer;
-							*ptr++ = pixel.R;
-							*ptr++ = pixel.G;
-							*ptr++ = pixel.B;
-							*ptr++ = 255;
-						}
-					}
-				}
-			}
+		//					//var ptr = (byte*)pointer;
+		//					*ptr++ = pixel.R;
+		//					*ptr++ = pixel.G;
+		//					*ptr++ = pixel.B;
+		//					*ptr++ = 255;
+		//				}
+		//			}
+		//		}
+		//	}
 
-			var scaledImage = new SKBitmap(g1Element.Width * zoom, g1Element.Height * zoom, SKColorType.Rgba8888, SKAlphaType.Opaque);
-			_ = bmp.ScalePixels(scaledImage, SKFilterQuality.None);
+		//	var scaledImage = new SKBitmap(g1Element.Width * zoom, g1Element.Height * zoom, SKColorType.Rgba8888, SKAlphaType.Opaque);
+		//	_ = bmp.ScalePixels(scaledImage, SKFilterQuality.None);
 
-			// Encode the SKBitmap into a memory stream (using PNG format for best compatibility)
-			using (var memoryStream = new MemoryStream())
-			{
-				scaledImage.Encode(memoryStream, SKEncodedImageFormat.Png, 100); // 100 is the quality (0-100)
+		//	// Encode the SKBitmap into a memory stream (using PNG format for best compatibility)
+		//	using (var memoryStream = new MemoryStream())
+		//	{
+		//		_ = scaledImage.Encode(memoryStream, SKEncodedImageFormat.Png, 100); // 100 is the quality (0-100)
 
-				// Create an Avalonia Bitmap from the memory stream
-				memoryStream.Position = 0;
-				var avaloniaBitmap = new Bitmap(memoryStream);
-				return avaloniaBitmap;
-			}
-			// bug in avalonia/skiasharp/skia: https://github.com/AvaloniaUI/Avalonia/issues/8444
-			//return writeableBitmap.CreateScaledBitmap(new PixelSize(g1Element.Width * zoom, g1Element.Height * zoom), BitmapInterpolationMode.None);
+		//		// Create an Avalonia Bitmap from the memory stream
+		//		memoryStream.Position = 0;
+		//		var avaloniaBitmap = new Bitmap(memoryStream);
+		//		return avaloniaBitmap;
+		//	}
+		//	// bug in avalonia/skiasharp/skia: https://github.com/AvaloniaUI/Avalonia/issues/8444
+		//	//return writeableBitmap.CreateScaledBitmap(new PixelSize(g1Element.Width * zoom, g1Element.Height * zoom), BitmapInterpolationMode.None);
 
-			//return writeableBitmap;
-		}
+		//	//return writeableBitmap;
+		//}
 	}
 }

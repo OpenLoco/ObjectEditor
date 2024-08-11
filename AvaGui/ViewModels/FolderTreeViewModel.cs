@@ -9,7 +9,6 @@ using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
-using System.Security.Cryptography;
 
 namespace AvaGui.ViewModels
 {
@@ -51,7 +50,7 @@ namespace AvaGui.ViewModels
 		public bool DisplayVanillaOnly { get; set; }
 
 		[Reactive]
-		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; set; }
+		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; }
 
 		private void LoadObjDirectory(string directory, bool useExistingIndex)
 		{

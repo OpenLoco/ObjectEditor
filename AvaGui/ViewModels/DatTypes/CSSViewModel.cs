@@ -2,6 +2,5 @@ using ReactiveUI;
 
 namespace AvaGui.ViewModels
 {
-	public class CSSViewModel : ReactiveObject, ILocoFileViewModel
-	{ }
+	public class CSSViewModel : ReactiveObject, ILocoFileViewModel;
 }

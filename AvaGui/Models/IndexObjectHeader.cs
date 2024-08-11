@@ -1,6 +1,5 @@
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.Objects;
-using System;
 
 namespace AvaGui.Models
 {

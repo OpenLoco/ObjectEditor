@@ -7,6 +7,6 @@ namespace AvaGui.Models
 	public class UiSoundObjectList : IUiObject
 	{
 		public string FileName { get; set; }
-		public List<UiSoundObject> Audio { get; set; } = [];
+		public List<UiSoundObject> Audio { get; } = [];
 	}
 }

@@ -8,12 +8,13 @@ namespace AvaGui.ViewModels
 	public class SCV5ViewModel : ReactiveObject, ILocoFileViewModel
 	{
 		public SCV5ViewModel()
-		{
-			_ = this.WhenAnyValue(o => o.CurrentFileName)
+			=> _ = this.WhenAnyValue(o => o.CurrentFileName)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentFile)));
-		}
 
-		[Reactive] public string CurrentFileName { get; set; }
-		[Reactive] public S5File CurrentFile { get; set; }
+		[Reactive]
+		public string CurrentFileName { get; set; }
+
+		[Reactive]
+		public S5File CurrentFile { get; set; }
 	}
 }

@@ -9,7 +9,7 @@ namespace AvaGui.Models
 {
 	public class ObjectTypeToMaterialIconConverter : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			if (Enum.TryParse<DatFileType>(value as string, out var datType) && DatTypeMapping.TryGetValue(datType, out var datIcon))
 			{
@@ -37,7 +37,7 @@ namespace AvaGui.Models
 		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 			=> throw new NotImplementedException();
 
-		public static Dictionary<ObjectType, string> ObjectMapping = new Dictionary<ObjectType, string>()
+		static readonly Dictionary<ObjectType, string> ObjectMapping = new()
 		{
 			{ ObjectType.InterfaceSkin, "Monitor" },
 			{ ObjectType.Sound, "Speaker" },
@@ -75,7 +75,7 @@ namespace AvaGui.Models
 			{ ObjectType.ScenarioText, "ScriptText" },
 		};
 
-		public static Dictionary<VehicleType, string> VehicleMapping = new Dictionary<VehicleType, string>()
+		static readonly Dictionary<VehicleType, string> VehicleMapping = new()
 		{
 			{ VehicleType.Train, "Train" },
 			{ VehicleType.Bus, "Bus" },
@@ -85,14 +85,14 @@ namespace AvaGui.Models
 			{ VehicleType.Ship, "Sailboat" },
 		};
 
-		public static Dictionary<SourceGame, string> SourceGameMapping = new Dictionary<SourceGame, string>()
+		static readonly Dictionary<SourceGame, string> SourceGameMapping = new()
 		{
 			{ SourceGame.Custom, "AccountEdit" },
 			{ SourceGame.DataFile, "File" },
 			{ SourceGame.Vanilla, "AccountTieHat" },
 		};
 
-		public static Dictionary<DatFileType, string> DatTypeMapping = new Dictionary<DatFileType, string>()
+		static readonly Dictionary<DatFileType, string> DatTypeMapping = new()
 		{
 			{ DatFileType.Object, "Apps" },
 			{ DatFileType.Scenario, "MapClock" },

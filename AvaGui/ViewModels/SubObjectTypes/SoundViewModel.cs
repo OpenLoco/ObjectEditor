@@ -16,8 +16,6 @@ namespace AvaGui.ViewModels
 {
 	public class SoundViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
 	{
-		ILocoObject parent; // currently not needed
-
 		WaveOutEvent? CurrentWOEvent { get; set; }
 
 		public SoundViewModel(ILocoObject parent)
@@ -26,8 +24,6 @@ namespace AvaGui.ViewModels
 			{
 				return;
 			}
-
-			this.parent = parent;
 
 			var hdr = soundObject.SoundObjectData.PcmHeader;
 			var text = parent.StringTable.Table["Name"][LanguageId.English_UK] ?? "<null>";
@@ -88,6 +84,7 @@ namespace AvaGui.ViewModels
 						{
 							break;
 						}
+
 						Thread.Sleep(50);
 					}
 				}
@@ -110,7 +107,30 @@ namespace AvaGui.ViewModels
 
 		public void Dispose()
 		{
-			CurrentWOEvent?.Stop();
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
+		}
+
+		private bool disposed;
+
+		protected virtual void Dispose(bool disposing)
+		{
+			// Check to see if Dispose has already been called.
+			if (!disposed)
+			{
+				// If disposing equals true, dispose all managed
+				// and unmanaged resources.
+				if (disposing)
+				{
+					// Dispose managed resources.
+					CurrentWOEvent?.Stop();
+				}
+
+				CurrentWOEvent = null;
+
+				// Note disposing has been done.
+				disposed = true;
+			}
 		}
 	}
 }

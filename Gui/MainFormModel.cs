@@ -134,7 +134,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			var text = JsonSerializer.Serialize(Settings, options);
 
 			var parentDir = Path.GetDirectoryName(SettingsFile);
-			if (!Directory.Exists(parentDir))
+			if (parentDir != null && !Directory.Exists(parentDir))
 			{
 				_ = Directory.CreateDirectory(parentDir);
 			}

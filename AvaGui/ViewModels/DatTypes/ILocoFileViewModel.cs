@@ -1,5 +1,4 @@
 namespace AvaGui.ViewModels
 {
-	public interface ILocoFileViewModel
-	{ }
+	public interface ILocoFileViewModel;
 }

@@ -101,7 +101,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			var startupTime = DateTime.Now.ToString("yyyy-dd-mm_hh-mm-ss");
 			var file = File.Create($"object-editor-{startupTime}.txt");
 			logToFile = new StreamWriter(file);
-			this.FormClosed += (_, _) =>
+			FormClosed += (_, _) =>
 			{
 				logToFile.Close();
 				file.Close();

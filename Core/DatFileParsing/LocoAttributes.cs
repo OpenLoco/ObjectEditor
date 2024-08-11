@@ -28,28 +28,23 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 
 	// basically a 'skip' attribute to allow deferred loading for variable data
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
-	public class LocoStructVariableLoadAttribute : Attribute
-	{ }
+	public class LocoStructVariableLoadAttribute : Attribute;
 
 	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
-	public class LocoStructSkipReadAttribute : Attribute
-	{ }
+	public class LocoStructSkipReadAttribute : Attribute;
 
 	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
-	public class LocoStringAttribute : Attribute
-	{ }
+	public class LocoStringAttribute : Attribute;
 
 	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
-	public class LocoImageIdAttribute : Attribute
-	{ }
+	public class LocoImageIdAttribute : Attribute;
 
 	// to mark properties that seemingly have no purpose or use
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
-	public class LocoPropertyMaybeUnused : Attribute
-	{ }
+	public class LocoPropertyMaybeUnused : Attribute;
 
 	// basically a 'skip' attribute to allow deferred loading for variable data, and writing of this property will be 0
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]

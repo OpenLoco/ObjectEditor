@@ -85,6 +85,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 							combinedValue |= enumValueInt;
 						}
 					}
+
 					return Enum.ToObject(t, combinedValue);
 				}
 				else if (underlyingType == typeof(uint8_t) || underlyingType == typeof(uint16_t) || underlyingType == typeof(uint32_t))
@@ -99,6 +100,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 							combinedValue |= enumValueInt;
 						}
 					}
+
 					return Enum.ToObject(t, combinedValue);
 				}
 				else

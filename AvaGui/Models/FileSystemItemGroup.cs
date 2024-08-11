@@ -21,5 +21,4 @@ namespace AvaGui.Models
 
 	public record FileSystemVehicleGroup(string Path, VehicleType VehicleType, ObservableCollection<FileSystemItemBase> SubNodes)
 		: FileSystemItemBase(Path, VehicleType.ToString(), SubNodes);
-
 }

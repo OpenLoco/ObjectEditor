@@ -11,6 +11,16 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
 dotnet_style_namespace_match_folder = true:suggestion
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_prefer_auto_properties = true:suggestion
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+dotnet_style_prefer_conditional_expression_over_return = true:suggestion
 
 # C# files
 [*.csproj]
@@ -426,3 +436,4 @@ dotnet_diagnostic.SA1633.severity = none
 dotnet_diagnostic.RCS1217.severity = none
 
 dotnet_diagnostic.RS0030.severity = error
+csharp_style_prefer_primary_constructors = true:suggestion

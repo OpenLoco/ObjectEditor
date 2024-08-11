@@ -25,11 +25,13 @@ namespace OpenLoco.ObjectEditor.Tests
 			var fileSize = new FileInfo(filename).Length;
 			var logger = new Logger();
 			var loaded = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: logger);
+
 			Assert.Multiple(() =>
 			{
 				Assert.That(loaded.LocoObject, Is.Not.Null);
 				Assert.That(loaded.DatFileInfo.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 			});
+
 			return (loaded.LocoObject!, (T)loaded.LocoObject!.Object);
 		}
 
@@ -38,13 +40,15 @@ namespace OpenLoco.ObjectEditor.Tests
 			var logger = new Logger();
 			var loaded = SawyerStreamReader.LoadFullObjectFromStream(data, logger: logger);
 
+#pragma warning disable NUnit2045 // Use Assert.Multiple - cannot use a ReadOnlySpan inside an anonymous method
 			Assert.That(loaded.LocoObject, Is.Not.Null);
+#pragma warning restore NUnit2045 // Use Assert.Multiple
 			Assert.That(loaded.DatFileInfo.ObjectHeader.DataLength, Is.EqualTo(data.Length - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 
 			return (loaded.LocoObject!, (T)loaded.LocoObject!.Object);
 		}
 
-		public void LoadSaveGenericTest<T>(string objectName, Action<ILocoObject, T> assertFunc) where T : ILocoStruct
+		static void LoadSaveGenericTest<T>(string objectName, Action<ILocoObject, T> assertFunc) where T : ILocoStruct
 		{
 			var (obj1, struc1) = LoadObject<T>(objectName);
 			assertFunc(obj1, struc1);
@@ -659,10 +663,7 @@ namespace OpenLoco.ObjectEditor.Tests
 		[TestCase("STEX000.DAT")]
 		public void ScenarioTextObject(string objectName)
 		{
-			void assertFunc(ILocoObject obj, ScenarioTextObject struc) => Assert.Multiple(() =>
-			{
-				Assert.That(struc.pad_04, Is.EqualTo(0), nameof(struc.pad_04));
-			});
+			void assertFunc(ILocoObject obj, ScenarioTextObject struc) => Assert.Multiple(() => Assert.That(struc.pad_04, Is.EqualTo(0), nameof(struc.pad_04)));
 			LoadSaveGenericTest<ScenarioTextObject>(objectName, assertFunc);
 		}
 
@@ -960,7 +961,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.Speed, Is.EqualTo(604), nameof(struc.Speed));
 				Assert.That(struc.RackSpeed, Is.EqualTo(120), nameof(struc.RackSpeed));
 				Assert.That(struc.Weight, Is.EqualTo(141), nameof(struc.Weight));
-				Assert.That(struc.Flags, Is.EqualTo((VehicleObjectFlags)16384), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(VehicleObjectFlags.Refittable), nameof(struc.Flags));
 				// CollectionAssert.AreEqual(struc.MaxCargo, Enumerable.Repeat(0, 2).ToArray(), nameof(struc.MaxCargo)); // this is changed after load from 0 to 24
 				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 2).ToArray(), struc.CompatibleCargoCategories, nameof(struc.CompatibleCargoCategories));
 				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 32).ToArray(), struc.CargoTypeSpriteOffsets, nameof(struc.CargoTypeSpriteOffsets));

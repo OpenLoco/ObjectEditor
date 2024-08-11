@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace OpenLoco.ObjectEditor.Gui
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public interface IUiObject { }
+	public interface IUiObject;
 
 	public interface IUiObjectWithGraphics
 	{

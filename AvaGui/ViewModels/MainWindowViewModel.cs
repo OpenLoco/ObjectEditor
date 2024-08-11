@@ -1,5 +1,4 @@
 global using HeaderIndex = System.Collections.Generic.Dictionary<string, AvaGui.Models.IndexObjectHeader>;
-global using ObjectCache = System.Collections.Generic.Dictionary<string, AvaGui.Models.UiLocoFile>;
 using Avalonia;
 using AvaGui.Models;
 using ReactiveUI;
@@ -25,11 +24,11 @@ using System.Text;
 
 namespace AvaGui.ViewModels
 {
-	public class MenuItemModel(string name, ICommand menuCommand, ICommand deleteCommand) : ReactiveObject
+	public class MenuItemModel(string name, ICommand menuCommand/*, ICommand deleteCommand*/) : ReactiveObject
 	{
 		[Reactive] public string Name { get; set; } = name;
 		[Reactive] public ICommand MenuCommand { get; set; } = menuCommand;
-		[Reactive] public ICommand DeleteCommand { get; set; } = deleteCommand;
+		//[Reactive] public ICommand DeleteCommand { get; set; } = deleteCommand;
 	}
 
 	public class MainWindowViewModel : ViewModelBase
@@ -44,7 +43,7 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public ILocoFileViewModel CurrentEditorModel { get; set; }
 
-		public ObservableCollection<MenuItemModel> ObjDataItems { get; set; }
+		public ObservableCollection<MenuItemModel> ObjDataItems { get; }
 
 		public ObservableCollection<MenuItemModel> DataItems { get; init; }
 
@@ -61,8 +60,12 @@ namespace AvaGui.ViewModels
 		public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 
 		public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
-		[Reactive] Version ApplicationVersion { get; set; }
-		[Reactive] string LatestVersionText { get; set; } = "Up-to-date";
+
+		[Reactive]
+		Version ApplicationVersion { get; }
+
+		[Reactive]
+		string LatestVersionText { get; } = "Up-to-date";
 
 		public MainWindowViewModel()
 		{
@@ -89,10 +92,9 @@ namespace AvaGui.ViewModels
 			ObjDataItems = new ObservableCollection<MenuItemModel>(Model.Settings.ObjDataDirectories
 				.Select(x => new MenuItemModel(
 					x,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = x),
-					null)));
-			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(SelectNewFolder), null));
-			ObjDataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { }), null));
+					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = x))));
+			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
+			ObjDataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { })));
 
 			OpenSettingsFolder = ReactiveCommand.Create(PlatformSpecific.FolderOpenInDesktop);
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObjectToIndex);
@@ -131,10 +133,10 @@ namespace AvaGui.ViewModels
 			}
 
 			//logger?.Info($"Opening {path}");
-			if (Model.TryLoadObject(path, out UiLocoFile? uiLocoFile))
+			if (Model.TryLoadObject(path, out var uiLocoFile))
 			{
 				Model.Logger.Warning($"Successfully loaded {path}");
-				ObjectEditorViewModel.CurrentFile = new FileSystemItem(path, uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame);
+				ObjectEditorViewModel.CurrentFile = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame);
 			}
 			else
 			{
@@ -191,8 +193,8 @@ namespace AvaGui.ViewModels
 				await Model.LoadObjDirectoryAsync(dirPath, null, false);
 				var menuItem = new MenuItemModel(
 					dirPath,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = dirPath),
-					ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count)));
+					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = dirPath)
+					/*ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count))*/);
 
 				ObjDataItems.Add(menuItem);
 			}

@@ -21,8 +21,6 @@ namespace AvaGui
 		}
 
 		public bool Match(object data)
-		{
-			return data is ViewModelBase;
-		}
+			=> data is ViewModelBase;
 	}
 }

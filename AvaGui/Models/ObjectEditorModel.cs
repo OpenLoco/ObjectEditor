@@ -16,24 +16,9 @@ using System.Threading;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor;
 using System.Collections.ObjectModel;
-using ReactiveUI;
-using System.Reflection;
 
 namespace AvaGui.Models
 {
-	public enum DatFileType
-	{
-		Object,
-		Scenario,
-		SaveGame,
-		Tutorial,
-		G1,
-		Music,
-		SoundEffect, // css*.dat
-		Language,
-		Scores,
-	}
-
 	public class ObjectEditorModel
 	{
 		public EditorSettings Settings { get; private set; }
@@ -48,15 +33,15 @@ namespace AvaGui.Models
 
 		public G1Dat? G1 { get; set; }
 
-		public Dictionary<string, byte[]> Music { get; set; } = [];
+		public Dictionary<string, byte[]> Music { get; } = [];
 
-		public Dictionary<string, byte[]> MiscellaneousTracks { get; set; } = [];
+		public Dictionary<string, byte[]> MiscellaneousTracks { get; } = [];
 
-		public Dictionary<string, byte[]> SoundEffects { get; set; } = [];
+		public Dictionary<string, byte[]> SoundEffects { get; } = [];
 
-		public Dictionary<string, byte[]> Tutorials { get; set; } = [];
+		public Dictionary<string, byte[]> Tutorials { get; } = [];
 
-		public Collection<string> MiscFiles { get; set; } = [];
+		public Collection<string> MiscFiles { get; } = [];
 
 		public const string ApplicationName = "OpenLoco Object Editor";
 
@@ -64,7 +49,7 @@ namespace AvaGui.Models
 
 		public static string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
-		public ObservableCollection<LogLine> LoggerObservableLogs = new();
+		public ObservableCollection<LogLine> LoggerObservableLogs = [];
 
 		public ObjectEditorModel()
 		{
@@ -187,20 +172,9 @@ namespace AvaGui.Models
 			sw.Start();
 
 			var fileCount = allFiles.Length;
-			var parallelise = true; // todo: remove this or make a user setting
 
-			if (parallelise)
-			{
-				_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, (filename)
-					=> count = LoadAndIndexFile(count, filename));
-			}
-			else
-			{
-				foreach (var filename in allFiles)
-				{
-					count = LoadAndIndexFile(count, filename);
-				}
-			}
+			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, (filename)
+				=> count = LoadAndIndexFile(count, filename));
 
 			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
@@ -294,7 +268,7 @@ namespace AvaGui.Models
 			LoadKnownData(allDataFiles, [OriginalDataFiles.SoundEffect], SoundEffects);
 			LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
 
-			MiscFiles = [.. allDataFiles];
+			//MiscFiles = [.. allDataFiles];
 
 			// load G1 only for now since we need it for palette
 			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));

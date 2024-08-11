@@ -21,23 +21,13 @@ namespace AvaGui.ViewModels
 		}
 
 		StringTable OriginalTable { get; init; }
-		[Reactive] public string? SelectedKey { get; set; }
+
+		[Reactive]
+		public string? SelectedKey { get; set; }
+
 		public ObservableCollection<string> Keys => new(OriginalTable.Table.Keys);
-		public ObservableCollection<LanguageTranslation> TranslationTable => SelectedKey == null ? null : new(OriginalTable.Table[SelectedKey].Select(kvp => new LanguageTranslation(kvp.Key, kvp.Value)));
 
-		//public void SelectedKeyChanged()
-		//{
-		//	if (SelectedKey != null) // && Table.Table.ContainsKey(SelectedString))
-		//	{
-		//		TranslationTable = new ObservableCollection<LanguageTranslation>(OriginalTable[SelectedKey]
-		//			.Select(kvp => new LanguageTranslation(kvp.Key, kvp.Value)));
-
-		//		foreach (var kvp in TranslationTable)
-		//		{
-		//			_ = kvp.WhenAnyValue(o => o.Translation)
-		//				.Subscribe(_ => OriginalTable[SelectedKey][kvp.Language] = kvp.Translation);
-		//		}
-		//	}
-		//}
+		public ObservableCollection<LanguageTranslation>? TranslationTable
+			=> SelectedKey == null ? null : new(OriginalTable.Table[SelectedKey].Select(kvp => new LanguageTranslation(kvp.Key, kvp.Value)));
 	}
 }

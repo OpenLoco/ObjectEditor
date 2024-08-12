@@ -57,35 +57,33 @@ namespace AvaGui.Models
 			LoggerObservableLogs = [];
 			Logger.LogAdded += (sender, laea) => LoggerObservableLogs.Add(laea.Log);
 
-			_ = Task.Run(() => LoadSettingsAsync(SettingsFile, Logger));
+			LoadSettings(SettingsFile, Logger);
 		}
 
-		public async Task LoadSettingsAsync(string settingsFile, ILogger? logger)
+		public void LoadSettings(string settingsFile, ILogger? logger)
 		{
 			SettingsFilePath = settingsFile;
 
 			if (!File.Exists(settingsFile))
 			{
 				Settings = new();
-				await SaveSettingsAsync();
+				SaveSettings();
 				return;
 			}
 
-			var text = await File.ReadAllTextAsync(settingsFile);
+			var text = File.ReadAllText(settingsFile);
 			var settings = JsonSerializer.Deserialize<EditorSettings>(text);
 			Verify.NotNull(settings);
 
 			Settings = settings!;
 
-			if (!ValidateSettings(Settings, logger))
+			if (ValidateSettings(Settings, logger))
 			{
-				return;
-			}
-
-			if (File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
-			{
-				logger?.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-				await LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true);
+				if (File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
+				{
+					Logger?.Info($"Loading header index from \"{Settings.IndexFileName}\"");
+					LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true).Wait();
+				}
 			}
 		}
 
@@ -112,7 +110,7 @@ namespace AvaGui.Models
 			return true;
 		}
 
-		public async Task SaveSettingsAsync()
+		public void SaveSettings()
 		{
 			var options = GetOptions();
 			var text = JsonSerializer.Serialize(Settings, options);
@@ -123,7 +121,7 @@ namespace AvaGui.Models
 				_ = Directory.CreateDirectory(parentDir);
 			}
 
-			await File.WriteAllTextAsync(SettingsFilePath, text);
+			File.WriteAllText(SettingsFilePath, text);
 		}
 
 		public bool TryLoadObject(string filename, out UiLocoFile? uiLocoFile)
@@ -283,7 +281,7 @@ namespace AvaGui.Models
 				SerialiseHeaderIndexToFile(Settings.GetObjDataFullPath(Settings.IndexFileName), HeaderIndex, GetOptions());
 			}
 
-			await SaveSettingsAsync();
+			SaveSettings();
 		}
 
 		private static JsonSerializerOptions GetOptions()

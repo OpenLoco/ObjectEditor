@@ -10,6 +10,7 @@ using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace AvaGui.ViewModels
 {
@@ -20,6 +21,11 @@ namespace AvaGui.ViewModels
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
 			Model = model;
+			Progress = new();
+			Progress.ProgressChanged += (a, b) =>
+			{
+				IndexingProgress = b;
+			};
 
 			RecreateIndex = ReactiveCommand.Create(async () => await LoadObjDirectoryAsync(CurrentDirectory, false));
 
@@ -53,6 +59,11 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; private set; }
 
+		Progress<float> Progress { get; set; }
+
+		[Reactive]
+		public float IndexingProgress { get; set; }
+
 		private async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
 		{
 			DirectoryItems = new(await LoadObjDirectoryCoreAsync(directory, useExistingIndex));
@@ -82,7 +93,7 @@ namespace AvaGui.ViewModels
 				// todo: load each file
 				// check if its object, scenario, save, landscape, g1, sfx, tutorial, etc
 
-				await Model.LoadObjDirectoryAsync(directory, new Progress<float>(), useExistingIndex);
+				await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
 
 				var groupedDatObjects = Model.HeaderIndex
 					.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))

@@ -50,7 +50,7 @@ namespace AvaGui.ViewModels
 		public bool DisplayVanillaOnly { get; set; }
 
 		[Reactive]
-		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; }
+		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; private set; }
 
 		private void LoadObjDirectory(string directory, bool useExistingIndex)
 		{

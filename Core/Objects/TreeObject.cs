@@ -67,7 +67,8 @@ namespace OpenLoco.ObjectEditor.Objects
 				case 4:
 					break;
 			}
-			if (Growth < 1 || Growth > 8)
+
+			if (Growth is < 1 or > 8)
 			{
 				return false;
 			}

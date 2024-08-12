@@ -9,7 +9,7 @@ namespace AvaGui.Models
 {
 	public class ObjectTypeToMaterialIconConverter : IValueConverter
 	{
-		public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
 			if (Enum.TryParse<DatFileType>(value as string, out var datType) && DatTypeMapping.TryGetValue(datType, out var datIcon))
 			{

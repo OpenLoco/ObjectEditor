@@ -37,7 +37,7 @@ namespace OpenLoco.ObjectEditor
 			=> Palette[0];
 		public (Color Color, byte Index)[] DirectXReserved
 			=> Palette[1..6];
-		public (Color Color, byte Index)[] PrimaryRemapColors
+		public (Color Color, byte Index)[] PrimaryRemapColours
 			=> [.. Palette[7..9], .. Palette[246..254]];
 		public (Color Color, byte Index)[] SecondaryRemapColours
 			=> Palette[202..213];
@@ -50,6 +50,6 @@ namespace OpenLoco.ObjectEditor
 			=> [.. Palette[10..201], .. Palette[214..244]];
 
 		public (Color Color, byte Index)[] ReservedColours
-			=> [Transparent, .. DirectXReserved, .. PrimaryRemapColors, .. SecondaryRemapColours, ChunkedTransparent];
+			=> [Transparent, .. DirectXReserved, .. PrimaryRemapColours, .. SecondaryRemapColours, ChunkedTransparent];
 	}
 }

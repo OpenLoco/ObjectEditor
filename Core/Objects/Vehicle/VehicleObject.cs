@@ -66,12 +66,9 @@ namespace OpenLoco.ObjectEditor.Objects
 
 		public FrictionSound? SoundPropertyFriction
 		{
-			get
-			{
-				return SoundType == DrivingSoundType.Friction
+			get => SoundType == DrivingSoundType.Friction
 					? (FrictionSound)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<FrictionSound>()], typeof(FrictionSound))
 					: null;
-			}
 			set
 			{
 				if (value != null)
@@ -90,12 +87,9 @@ namespace OpenLoco.ObjectEditor.Objects
 
 		public Engine1Sound? SoundPropertyEngine1
 		{
-			get
-			{
-				return SoundType == DrivingSoundType.Engine1
+			get => SoundType == DrivingSoundType.Engine1
 					? (Engine1Sound)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<Engine1Sound>()], typeof(Engine1Sound))
 					: null;
-			}
 			set
 			{
 				if (value != null)
@@ -114,12 +108,9 @@ namespace OpenLoco.ObjectEditor.Objects
 
 		public Engine2Sound? SoundPropertyEngine2
 		{
-			get
-			{
-				return SoundType == DrivingSoundType.Engine2
+			get => SoundType == DrivingSoundType.Engine2
 					? (Engine2Sound)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<Engine2Sound>()], typeof(Engine2Sound))
 					: null;
-			}
 			set
 			{
 				if (value != null)
@@ -347,7 +338,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				var initial = offset;
 				bodySprite.FlatImageId = (uint)offset;
 				var curr = offset;
-				bodySprite.FlatYawAccuracy = getYawAccuracyFlat(bodySprite.NumFlatRotationFrames);
+				bodySprite.FlatYawAccuracy = GetYawAccuracyFlat(bodySprite.NumFlatRotationFrames);
 
 				bodySprite.NumFramesPerRotation = (byte)((bodySprite.NumAnimationFrames * bodySprite.NumCargoFrames * bodySprite.NumRollFrames) + (bodySprite.Flags.HasFlag(BodySpriteFlags.HasBrakingLights) ? 1 : 0)); // be careful of overflow here...
 				var numFlatFrames = (byte)(bodySprite.NumFramesPerRotation * bodySprite.NumFlatRotationFrames);
@@ -364,7 +355,7 @@ namespace OpenLoco.ObjectEditor.Objects
 
 					bodySprite.SlopedImageId = (uint)offset;
 					curr = offset;
-					bodySprite.SlopedYawAccuracy = getYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
+					bodySprite.SlopedYawAccuracy = GetYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
 					var numSlopedFrames = bodySprite.NumFramesPerRotation * bodySprite.NumSlopedRotationFrames * 2;
 					offset += numSlopedFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
 					bodySprite.ImageIds[BodySpriteSlopeType.Sloped] = Enumerable.Range(curr, offset - curr).ToList();
@@ -469,7 +460,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			}
 		}
 
-		static uint8_t getYawAccuracyFlat(uint8_t numFrames)
+		static uint8_t GetYawAccuracyFlat(uint8_t numFrames)
 			=> numFrames switch
 			{
 				8 => 1,
@@ -478,7 +469,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				_ => 4,
 			};
 
-		static uint8_t getYawAccuracySloped(uint8_t numFrames)
+		static uint8_t GetYawAccuracySloped(uint8_t numFrames)
 			=> numFrames switch
 			{
 				4 => 0,
@@ -493,6 +484,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (RunCostIndex > 32)
 			{
 				return false;
@@ -502,6 +494,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (RunCostFactor < 0)
 			{
 				return false;
@@ -513,6 +506,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				{
 					return false;
 				}
+
 				if (Flags.HasFlag(VehicleObjectFlags.RackRail))
 				{
 					return false;
@@ -557,6 +551,7 @@ namespace OpenLoco.ObjectEditor.Objects
 					default:
 						return false;
 				}
+
 				switch (bodySprite.NumSlopedRotationFrames)
 				{
 					case 4:
@@ -567,6 +562,7 @@ namespace OpenLoco.ObjectEditor.Objects
 					default:
 						return false;
 				}
+
 				switch (bodySprite.NumAnimationFrames)
 				{
 					case 1:
@@ -576,10 +572,12 @@ namespace OpenLoco.ObjectEditor.Objects
 					default:
 						return false;
 				}
-				if (bodySprite.NumCargoLoadFrames < 1 || bodySprite.NumCargoLoadFrames > 5)
+
+				if (bodySprite.NumCargoLoadFrames is < 1 or > 5)
 				{
 					return false;
 				}
+
 				switch (bodySprite.NumRollFrames)
 				{
 					case 1:
@@ -607,6 +605,7 @@ namespace OpenLoco.ObjectEditor.Objects
 						return false;
 				}
 			}
+
 			return true;
 		}
 	}

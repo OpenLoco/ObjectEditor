@@ -43,15 +43,18 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
-			if (Intelligence < 1 || Intelligence > 9)
+
+			if (Intelligence is < 1 or > 9)
 			{
 				return false;
 			}
-			if (Aggressiveness < 1 || Aggressiveness > 9)
+
+			if (Aggressiveness is < 1 or > 9)
 			{
 				return false;
 			}
-			return Competitiveness >= 1 && Competitiveness <= 9;
+
+			return Competitiveness is >= 1 and <= 9;
 		}
 
 		public bool TryGetImageName(int id, out string? value)

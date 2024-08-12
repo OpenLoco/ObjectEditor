@@ -31,7 +31,7 @@ namespace OpenLoco.ObjectEditor.Headers
 		}
 
 		public bool Validate()
-			=> !(SourceGame is < 0 or >= SourceGame.MAX) && ObjectType is not < 0 and not >= ObjectType.MAX;
+			=> (int)SourceGame is >= 0 and < 3 && (int)ObjectType is >= 0 and < Limits.kMaxObjectTypes;
 
 		public static S5Header Read(ReadOnlySpan<byte> data)
 		{

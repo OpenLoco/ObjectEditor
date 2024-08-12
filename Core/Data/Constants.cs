@@ -30,5 +30,7 @@ namespace OpenLoco.ObjectEditor.Data
 		public const size_t kMaxNormalEntities = kMaxEntities - kMaxMoneyEntities;
 		// Money is not counted in this limit
 		public const size_t kMaxMiscEntities = 4000;
+
+		public const int kMaxObjectTypes = 34;
 	}
 }

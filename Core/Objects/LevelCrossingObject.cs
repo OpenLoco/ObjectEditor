@@ -29,6 +29,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (CostFactor <= 0)
 			{
 				return false;

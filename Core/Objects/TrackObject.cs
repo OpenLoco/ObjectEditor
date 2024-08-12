@@ -139,23 +139,28 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (BuildCostFactor <= 0)
 			{
 				return false;
 			}
+
 			if (TunnelCostFactor <= 0)
 			{
 				return false;
 			}
+
 			if (TrackPieces.HasFlag(TrackTraitFlags.Diagonal | TrackTraitFlags.LargeCurve)
 				&& TrackPieces.HasFlag(TrackTraitFlags.OneSided | TrackTraitFlags.VerySmallCurve))
 			{
 				return false;
 			}
+
 			if (NumBridges > 7)
 			{
 				return false;
 			}
+
 			return NumStations <= 7;
 		}
 

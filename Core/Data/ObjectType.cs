@@ -36,6 +36,5 @@ namespace OpenLoco.ObjectEditor.Data
 		Region,
 		Competitor,
 		ScenarioText,
-		MAX,
-	};
+	}
 }

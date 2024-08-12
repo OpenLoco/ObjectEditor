@@ -8,12 +8,12 @@ namespace OpenLoco.ObjectEditor.Objects
 		flag_03 = 1 << 3, // rollable? APT Driving carriage
 		RackRail = 1 << 6,
 		unk08 = 1 << 8,
-		unk09 = 1 << 9, // anytrack??
+		unk09 = 1 << 9, // any-track??
 		SpeedControl = 1 << 10,
 		CanCouple = 1 << 11,
-		unk12 = 1 << 12, // dualhead??
+		unk12 = 1 << 12, // dual-head??
 		IsHelicopter = 1 << 13,
 		Refittable = 1 << 14,
-		unk15 = 1 << 15, // noannounce??
+		unk15 = 1 << 15, // no-announce??
 	};
 }

@@ -91,26 +91,32 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (BaseCostFactor <= 0)
 			{
 				return false;
 			}
+
 			if (HeightCostFactor < 0)
 			{
 				return false;
 			}
-			if (var_06 != 16 && var_06 != 32)
+
+			if (var_06 is not 16 and not 32)
 			{
 				return false;
 			}
-			if (SpanLength != 1 && SpanLength != 2 && SpanLength != 4)
+
+			if (SpanLength is not 1 and not 2 and not 4)
 			{
 				return false;
 			}
+
 			if (NumCompatibleTrackMods > 7)
 			{
 				return false;
 			}
+
 			return NumCompatibleRoadMods <= 7;
 		}
 	}

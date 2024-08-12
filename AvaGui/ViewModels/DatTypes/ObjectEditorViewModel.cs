@@ -28,7 +28,7 @@ namespace AvaGui.ViewModels
 		public UiLocoFile? CurrentObject { private set; get; }
 
 		[Reactive]
-		public FileSystemItemBase CurrentFile { get; set; }
+		public FileSystemItemBase? CurrentFile { get; set; }
 
 		public ObjectEditorViewModel(ObjectEditorModel model)
 		{

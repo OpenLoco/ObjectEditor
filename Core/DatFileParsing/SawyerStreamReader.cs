@@ -203,7 +203,9 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 		static string CStringToString(ReadOnlySpan<byte> data, Encoding enc)
 		{
 			var ptr = 0;
-			while (data[ptr++] != '\0') ;
+			while (data[ptr++] != '\0')
+			{ }
+
 			return enc.GetString(data[0..(ptr - 1)]); // do -1 to exclude the \0
 		}
 
@@ -214,6 +216,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			{
 				languageDict.Add(language, string.Empty);
 			}
+
 			return languageDict;
 		}
 

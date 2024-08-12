@@ -1,13 +1,12 @@
-﻿using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace OpenLoco.ObjectEditor.Types
 {
-	// http://www.topherlee.com/software/pcm-tut-wavformat.html#:~:text=The%20header%20is%20used%20to,well%20as%20its%20overall%20length.&text=Marks%20the%20file%20as%20a,are%20each%201%20byte%20long.&text=Size%20of%20the%20overall%20file,(32%2Dbit%20integer)
 	[LocoStructSize(0x2C)]
 	public record RiffWavHeader(
-		[property: LocoStructOffset(0x00)] uint32_t Signature, // ascii, "RIFF"
+		[property: LocoStructOffset(0x00)] uint32_t Signature, // ASCII, "RIFF"
 		[property: LocoStructOffset(0x04)] uint32_t Size,
-		[property: LocoStructOffset(0x08)] uint32_t RiffType, // ascii, eg "WAVE"
+		[property: LocoStructOffset(0x08)] uint32_t RiffType, // ASCII, e.g. "WAVE"
 		[property: LocoStructOffset(0x0C)] uint32_t FormatMarker, // either "fmt" or "fmt\0"
 		[property: LocoStructOffset(0x10)] uint32_t FormatSize,
 		[property: LocoStructOffset(0x14)] uint16_t FormatType, // 1 is PCM
@@ -31,7 +30,7 @@ namespace OpenLoco.ObjectEditor.Types
 				return false;
 			}
 
-			if (FormatMarker != 0x20746d66 && FormatMarker != 0x00746d66) // "fmt\0" or "fmt"
+			if (FormatMarker is not 0x20746d66 and not 0x00746d66) // "fmt\0" or "fmt"
 			{
 				return false;
 			}

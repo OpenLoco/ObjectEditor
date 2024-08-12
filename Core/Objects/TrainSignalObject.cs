@@ -101,6 +101,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			return true;
 		}
 	}

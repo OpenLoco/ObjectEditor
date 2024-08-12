@@ -105,7 +105,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 				}
 				else
 				{
-					throw new Exception("unrecognised type");
+					throw new ArgumentOutOfRangeException(nameof(underlyingType), underlyingType, "unrecognised type");
 				}
 			}
 

@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor.Headers;
 using OpenLoco.ObjectEditor.Types;
@@ -87,15 +87,15 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			}
 		}
 
-		public static void Save(string filepath, string objName, ILocoObject locoObject, ILogger? logger = null)
+		public static void Save(string filename, string objName, ILocoObject locoObject, ILogger? logger = null)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
-			logger?.Info($"Writing \"{objName}\" to {filepath}");
+			logger?.Info($"Writing \"{objName}\" to {filename}");
 
 			var objBytes = WriteLocoObject(objName, locoObject);
 
-			var stream = File.Create(filepath);
+			var stream = File.Create(filename);
 			stream.Write(objBytes);
 			stream.Flush();
 			stream.Close();
@@ -224,9 +224,9 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 		//	}
 		//}
 
-		//public static void WriteToFile(string filepath, ReadOnlySpan<byte> s5Header, ReadOnlySpan<byte> objectHeader, ReadOnlySpan<byte> encodedData)
+		//public static void WriteToFile(string filename, ReadOnlySpan<byte> s5Header, ReadOnlySpan<byte> objectHeader, ReadOnlySpan<byte> encodedData)
 		//{
-		//	var stream = File.Create(filepath);
+		//	var stream = File.Create(filename);
 		//	stream.Write(s5Header);
 		//	stream.Write(objectHeader);
 		//	stream.Write(encodedData);

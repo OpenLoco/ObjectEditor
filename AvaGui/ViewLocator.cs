@@ -7,8 +7,13 @@ namespace AvaGui
 {
 	public class ViewLocator : IDataTemplate
 	{
-		public Control Build(object data)
+		public Control Build(object? data)
 		{
+			if (data == null)
+			{
+				return new TextBlock { Text = "<object passed in was null>" };
+			}
+
 			var name = data.GetType().FullName!.Replace("ViewModel", "View");
 			var type = Type.GetType(name);
 
@@ -20,7 +25,7 @@ namespace AvaGui
 			return new TextBlock { Text = "Not Found: " + name };
 		}
 
-		public bool Match(object data)
+		public bool Match(object? data)
 			=> data is ViewModelBase;
 	}
 }

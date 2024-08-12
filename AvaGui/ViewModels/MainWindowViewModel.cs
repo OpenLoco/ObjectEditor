@@ -1,4 +1,4 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, AvaGui.Models.IndexObjectHeader>;
+global using HeaderIndex = System.Collections.Generic.Dictionary<string, AvaGui.Models.ObjectIndexModel>;
 using Avalonia;
 using AvaGui.Models;
 using ReactiveUI;
@@ -62,10 +62,10 @@ namespace AvaGui.ViewModels
 		public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
 		[Reactive]
-		Version ApplicationVersion { get; }
+		public Version ApplicationVersion { get; set; }
 
 		[Reactive]
-		string LatestVersionText { get; } = "Up-to-date";
+		public string LatestVersionText { get; set; } = "Up-to-date";
 
 		public MainWindowViewModel()
 		{
@@ -190,7 +190,9 @@ namespace AvaGui.ViewModels
 			var dirPath = dir.Path.LocalPath;
 			if (Directory.Exists(dirPath) && !Model.Settings.ObjDataDirectories.Contains(dirPath))
 			{
-				await Model.LoadObjDirectoryAsync(dirPath, null, false);
+				FolderTreeViewModel.CurrentDirectory = dirPath; // this will cause the reindexing
+																//var progress = new Progress<float>();
+																//await Model.LoadObjDirectoryAsync(dirPath, progress, false);
 				var menuItem = new MenuItemModel(
 					dirPath,
 					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = dirPath)

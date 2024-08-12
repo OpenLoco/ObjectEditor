@@ -54,23 +54,24 @@ namespace AvaGui.Models
 		public ObjectEditorModel()
 		{
 			Logger = new Logger();
-			LoggerObservableLogs = new ObservableCollection<LogLine>(((Logger)Logger).Logs);
+			LoggerObservableLogs = [];
+			Logger.LogAdded += (sender, laea) => LoggerObservableLogs.Add(laea.Log);
 
-			LoadSettings(SettingsFile, Logger);
+			_ = Task.Run(() => LoadSettingsAsync(SettingsFile, Logger));
 		}
 
-		public void LoadSettings(string settingsFile, ILogger? logger)
+		public async Task LoadSettingsAsync(string settingsFile, ILogger? logger)
 		{
 			SettingsFilePath = settingsFile;
 
 			if (!File.Exists(settingsFile))
 			{
 				Settings = new();
-				SaveSettings();
+				await SaveSettingsAsync();
 				return;
 			}
 
-			var text = File.ReadAllText(settingsFile);
+			var text = await File.ReadAllTextAsync(settingsFile);
 			var settings = JsonSerializer.Deserialize<EditorSettings>(text);
 			Verify.NotNull(settings);
 
@@ -84,7 +85,7 @@ namespace AvaGui.Models
 			if (File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
 			{
 				logger?.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-				LoadObjDirectory(Settings.ObjDataDirectory, new Progress<float>(), true);
+				await LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true);
 			}
 		}
 
@@ -111,7 +112,7 @@ namespace AvaGui.Models
 			return true;
 		}
 
-		public void SaveSettings()
+		public async Task SaveSettingsAsync()
 		{
 			var options = GetOptions();
 			var text = JsonSerializer.Serialize(Settings, options);
@@ -122,7 +123,7 @@ namespace AvaGui.Models
 				_ = Directory.CreateDirectory(parentDir);
 			}
 
-			File.WriteAllText(SettingsFilePath, text);
+			await File.WriteAllTextAsync(SettingsFilePath, text);
 		}
 
 		public bool TryLoadObject(string filename, out UiLocoFile? uiLocoFile)
@@ -159,70 +160,29 @@ namespace AvaGui.Models
 		}
 
 		// this method loads every single object entirely. it takes a long time to run
-		void CreateIndex(string[] allFiles, IProgress<float>? progress)
+		async Task CreateIndex(string[] allFiles, IProgress<float> progress)
 		{
 			Logger?.Info($"Creating index on {allFiles.Length} files");
-
-			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
-
-			var count = 0;
-			ConcurrentDictionary<string, TimeSpan> timePerFile = new();
 
 			var sw = new Stopwatch();
 			sw.Start();
 
 			var fileCount = allFiles.Length;
+			var index = await SawyerStreamReader.FastIndexAsync(allFiles, progress);
 
-			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 16 }, (filename)
-				=> count = LoadAndIndexFile(count, filename));
-
-			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+			HeaderIndex = index.ToDictionary(
+				x => x.filename,
+				x => new ObjectIndexModel(
+					x.s5.Name,
+					DatFileType.Object,
+					x.s5.ObjectType,
+					x.s5.SourceGame,
+					x.s5.Checksum,
+					x.VehicleType)
+				);
 
 			sw.Stop();
-			Logger?.Info("Finished creating index");
-			Logger?.Debug($"Time time={sw.Elapsed}");
-
-			if (timePerFile.IsEmpty)
-			{
-				_ = timePerFile.TryAdd("<no items>", TimeSpan.Zero);
-			}
-
-			var slowest = timePerFile.MaxBy(x => x.Value.Ticks);
-			Logger?.Debug($"Slowest file={slowest.Key} Time={slowest.Value}");
-
-			var average = timePerFile.Average(x => x.Value.TotalMilliseconds);
-			Logger?.Debug($"Average time={average}ms");
-
-			var median = timePerFile.OrderBy(x => x.Value).Skip(timePerFile.Count / 2).Take(1).Single();
-			Logger?.Debug($"Median time={median.Value}ms");
-
-			int LoadAndIndexFile(int count, string filename)
-			{
-				var startTime = sw.Elapsed;
-				var loadResult = TryLoadObject(filename, out var uiLocoFile);
-				var elapsed = sw.Elapsed - startTime;
-
-				if (loadResult && uiLocoFile != null)
-				{
-					_ = ccHeaderIndex.TryAdd(filename, new IndexObjectHeader(
-						uiLocoFile.DatFileInfo.S5Header.Name,
-						DatFileType.Object,
-						uiLocoFile.DatFileInfo.S5Header.ObjectType,
-						uiLocoFile.DatFileInfo.S5Header.SourceGame,
-						uiLocoFile.DatFileInfo.S5Header.Checksum,
-						uiLocoFile.LocoObject.Object is VehicleObject veh ? veh.Type : null));
-
-					_ = timePerFile.TryAdd(uiLocoFile.DatFileInfo.S5Header.Name, elapsed);
-				}
-				else
-				{
-					Logger?.Error($"Failed to load \"{filename}\"");
-				}
-
-				_ = Interlocked.Increment(ref count);
-				progress?.Report((float)count / fileCount);
-				return count;
-			}
+			Logger?.Info($"Indexed {fileCount} in {sw.Elapsed}");
 		}
 
 		public void SaveFile(string path, UiLocoFile obj)
@@ -275,7 +235,7 @@ namespace AvaGui.Models
 
 			//LoadPalette(); // update palette from g1
 
-			SaveSettings();
+			//await SaveSettings();
 
 			return true;
 		}
@@ -286,19 +246,14 @@ namespace AvaGui.Models
 		//	var allFiles = Directory.GetFiles(directory, "*.dat|*.sv5|*.sc5", SearchOption.AllDirectories);
 		//}
 
-		public async Task LoadObjDirectoryAsync(string directory, IProgress<float>? progress, bool useExistingIndex)
-		{
-			await Task.Run(() => LoadObjDirectory(directory, progress, useExistingIndex));
-			await Task.Run(SaveSettings);
-		}
+		//public void LoadObjDirectory(string directory)
+		//	=> LoadObjDirectory(directory, new Progress<float>(), true);
 
-		public void LoadObjDirectory(string directory)
-			=> LoadObjDirectory(directory, null, true);
-
-		public void LoadObjDirectory(string directory, IProgress<float>? progress, bool useExistingIndex)
+		public async Task LoadObjDirectoryAsync(string directory, IProgress<float> progress, bool useExistingIndex)
 		{
-			if (!Directory.Exists(directory))
+			if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory) || progress == null)
 			{
+				Logger?.Error($"Couldn't start loading obj dir: {directory}");
 				return;
 			}
 
@@ -324,11 +279,11 @@ namespace AvaGui.Models
 			else
 			{
 				Logger?.Info("Recreating index file");
-				CreateIndex(allFiles, progress); // do we need the array?
+				await CreateIndex(allFiles, progress); // do we need the array?
 				SerialiseHeaderIndexToFile(Settings.GetObjDataFullPath(Settings.IndexFileName), HeaderIndex, GetOptions());
 			}
 
-			SaveSettings();
+			await SaveSettingsAsync();
 		}
 
 		private static JsonSerializerOptions GetOptions()

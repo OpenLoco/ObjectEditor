@@ -77,7 +77,7 @@ namespace OpenLoco.ObjectEditor.Objects
 				}
 			}
 
-			// very similar to cargoffsetbytes
+			// very similar to cargo offset bytes
 			ManualPower = new byte[ManualPowerLength][];
 			for (var i = 0; i < ManualPowerLength; ++i)
 			{
@@ -134,25 +134,29 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (-SellCostFactor > BuildCostFactor)
 			{
 				return false;
 			}
+
 			if (BuildCostFactor <= 0)
 			{
 				return false;
 			}
+
 			if (DrawStyle >= 1)
 			{
 				return false;
 			}
+
 			return NumCompatible <= 7;
 		}
 
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id, out value);
 
-		public static Dictionary<int, string> ImageIdNameMap = new()
+		public static readonly Dictionary<int, string> ImageIdNameMap = new()
 		{
 			{ 0, "preview_image" },
 			{ 1, "preview_image_windows" },

@@ -132,30 +132,37 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (-SellCostFactor > BuildCostFactor)
 			{
 				return false;
 			}
+
 			if (BuildCostFactor <= 0)
 			{
 				return false;
 			}
+
 			if (TunnelCostFactor <= 0)
 			{
 				return false;
 			}
+
 			if (NumBridges > 7)
 			{
 				return false;
 			}
+
 			if (NumMods > 2)
 			{
 				return false;
 			}
+
 			if (Flags.HasFlag(RoadObjectFlags.unk_03))
 			{
 				return NumMods == 0;
 			}
+
 			return true;
 		}
 	}

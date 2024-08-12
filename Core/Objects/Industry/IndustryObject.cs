@@ -157,7 +157,8 @@ namespace Core.Objects
 			for (var i = 0; i < NumBuildingVariations; ++i)
 			{
 				var ptr_1F = 0;
-				while (remainingData[++ptr_1F] != 0xFF) ;
+				while (remainingData[++ptr_1F] != 0xFF)
+					;
 
 				BuildingParts.Add(remainingData[..ptr_1F].ToArray());
 				ptr_1F++;
@@ -189,6 +190,7 @@ namespace Core.Objects
 			{
 				BuildingWall = S5Header.Read(remainingData[..S5Header.StructLength]);
 			}
+
 			remainingData = remainingData[S5Header.StructLength..]; // there's always a struct, its just whether its zeroed out or not
 
 			// wall type entrance
@@ -196,6 +198,7 @@ namespace Core.Objects
 			{
 				BuildingWallEntrance = S5Header.Read(remainingData[..S5Header.StructLength]);
 			}
+
 			remainingData = remainingData[S5Header.StructLength..]; // there's always a struct, its just whether its zeroed out or not
 
 			// image stuff, in openloco it happens after image table load, but only to get image offsets, which we can just set to 0 here
@@ -205,6 +208,7 @@ namespace Core.Objects
 			{
 				var_12 += NumBuildingVariations * 4u;
 			}
+
 			var_16 = (NumBuildingParts * 4u) + var_12;
 			var_1A = var_E9 * 21u;
 
@@ -304,7 +308,8 @@ namespace Core.Objects
 			{
 				return false;
 			}
-			if (NumBuildingVariations == 0 || NumBuildingVariations > 31)
+
+			if (NumBuildingVariations is 0 or > 31)
 			{
 				return false;
 			}
@@ -314,7 +319,7 @@ namespace Core.Objects
 				return false;
 			}
 
-			if (TotalOfTypeInScenario == 0 || TotalOfTypeInScenario > 32)
+			if (TotalOfTypeInScenario is 0 or > 32)
 			{
 				return false;
 			}
@@ -329,6 +334,7 @@ namespace Core.Objects
 			{
 				return false;
 			}
+
 			switch (var_E9)
 			{
 				case 1:
@@ -339,7 +345,7 @@ namespace Core.Objects
 					return false;
 			}
 
-			if (var_EA != 0xFF && var_EA > 7)
+			if (var_EA is not 0xFF and > 7)
 			{
 				return false;
 			}
@@ -353,6 +359,7 @@ namespace Core.Objects
 			{
 				return false;
 			}
+
 			return InitialProductionRate[1].Min <= 100;
 		}
 	}

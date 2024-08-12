@@ -1,4 +1,4 @@
-﻿using OpenLoco.ObjectEditor.Data;
+using OpenLoco.ObjectEditor.Data;
 using System.Reflection;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
@@ -26,15 +26,15 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 	public static class ObjectAttributes
 	{
 		public static int StructSize<T>() where T : ILocoStruct
-			=> AttributeHelper.Get<LocoStructSizeAttribute>(typeof(T)).Size;
+			=> AttributeHelper.Get<LocoStructSizeAttribute>(typeof(T))!.Size;
 
 		public static ObjectType ObjectType<T>() // where T : ILocoStruct
-			=> AttributeHelper.Get<LocoStructTypeAttribute>(typeof(T)).ObjectType;
+			=> AttributeHelper.Get<LocoStructTypeAttribute>(typeof(T))!.ObjectType;
 
 		public static ObjectType ObjectType(ILocoStruct str) // where T : ILocoStruct
-			=> AttributeHelper.Get<LocoStructTypeAttribute>(str.GetType()).ObjectType;
+			=> AttributeHelper.Get<LocoStructTypeAttribute>(str.GetType())!.ObjectType;
 
 		public static string[] StringTableNames<T>() // where T : ILocoStruct
-			=> AttributeHelper.Get<LocoStringTableAttribute>(typeof(T)).Strings;
+			=> AttributeHelper.Get<LocoStringTableAttribute>(typeof(T))!.Strings;
 	}
 }

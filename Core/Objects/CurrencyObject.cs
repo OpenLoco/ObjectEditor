@@ -23,10 +23,12 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (Factor > 3)
 			{
 				return false;
 			}
+
 			return true;
 		}
 	}

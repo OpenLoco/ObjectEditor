@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.ObjectEditor
+namespace OpenLoco.ObjectEditor
 {
 	public class Annotation
 	{
@@ -23,8 +23,35 @@
 
 		public string Name { get; set; }
 		public Annotation? Parent { get; set; }
-		public int Start { get => start; set { start = value; Length = length; } }
-		public int End { get => end; set { end = value; length = end - start; } }
-		public int Length { get => length; set { length = value; end = start + length; } }
+
+		public int Start
+		{
+			get => start;
+			set
+			{
+				start = value;
+				Length = length;
+			}
+		}
+
+		public int End
+		{
+			get => end;
+			set
+			{
+				end = value;
+				length = end - start;
+			}
+		}
+
+		public int Length
+		{
+			get => length;
+			set
+			{
+				length = value;
+				end = start + length;
+			}
+		}
 	}
 }

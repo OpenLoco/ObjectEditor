@@ -3,7 +3,7 @@ using OpenLoco.ObjectEditor.Headers;
 
 namespace Core.Types.SCV5
 {
-	// todo: make a list? is this harcoded?
+	// todo: make a list? is this hardcoded?
 	public record S5File(
 		[property: LocoStructOffset(0x00)] Header Header,
 		[property: LocoStructOffset(0x20)] LandscapeDetails? LandscapeOptions,
@@ -41,7 +41,7 @@ namespace Core.Types.SCV5
 				data = data[S5Header.StructLength..];
 
 				var chunkData = SawyerStreamReader.ReadChunkCore(ref data);
-				packedObjects.Add((obj, chunkData));
+				packedObjects.Add((obj, chunkData.ToArray()));
 			}
 
 			// read required objects
@@ -66,13 +66,13 @@ namespace Core.Types.SCV5
 			// load game state
 			var gameState = SawyerStreamReader.ReadChunk<GameState>(ref data);
 
-			if (header.Type == S5Type.Scenario)
-			{
-				//
-			}
-			else
-			{
-			}
+			//if (header.Type == S5Type.Scenario)
+			//{
+			//	//
+			//}
+			//else
+			//{
+			//}
 
 			//List<S5Header> requiredObjects = [];
 			//for (var i = 0; i < 859; ++i)
@@ -88,7 +88,7 @@ namespace Core.Types.SCV5
 			// tile elements
 
 			// packed objects
-			return new S5File(header, landscapeDetails, saveDetails, requiredObjects.ToArray(), gameState);
+			return new S5File(header, landscapeDetails, saveDetails, [.. requiredObjects], gameState);
 		}
 
 		//public ReadOnlySpan<byte> Write()

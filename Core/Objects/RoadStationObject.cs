@@ -123,26 +123,32 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (-SellCostFactor > BuildCostFactor)
 			{
 				return false;
 			}
+
 			if (BuildCostFactor <= 0)
 			{
 				return false;
 			}
+
 			if (PaintStyle >= 1)
 			{
 				return false;
 			}
+
 			if (NumCompatible > 7)
 			{
 				return false;
 			}
+
 			if (Flags.HasFlag(RoadStationObjectFlags.Passenger) && Flags.HasFlag(RoadStationObjectFlags.Freight))
 			{
 				return false;
 			}
+
 			return true;
 		}
 

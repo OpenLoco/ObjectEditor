@@ -79,26 +79,29 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			if (CostFactor <= 0)
 			{
 				return false;
 			}
+
 			if (var_03 < 1)
 			{
 				return false;
 			}
+
 			if (var_03 > 8)
 			{
 				return false;
 			}
 
-			return (var_04 == 1 || var_04 == 2 || var_04 == 4);
+			return var_04 is 1 or 2 or 4;
 		}
 
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id, out value);
 
-		public static Dictionary<int, string> ImageIdNameMap = new()
+		public static readonly Dictionary<int, string> ImageIdNameMap = new()
 		{
 			{ 0, "kFlatSE" },
 			{ 1, "toolbar_terraform_land" },

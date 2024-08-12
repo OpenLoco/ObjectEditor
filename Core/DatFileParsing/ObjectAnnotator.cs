@@ -135,7 +135,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			return annotations;
 		}
 
-		static int AnnotateStringTable(byte[] fullData, int runningCount, ILocoStruct locoStruct, IList<Annotation> annotations)
+		static int AnnotateStringTable(byte[] fullData, int runningCount, ILocoStruct locoStruct, List<Annotation> annotations)
 		{
 			var root = new Annotation("String Table", runningCount, 1);
 			annotations.Add(root);
@@ -208,14 +208,19 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 						propType = propType.GenericTypeArguments[0];
 					}
 
-					while (propType.IsArray)
+					while (propType?.IsArray == true)
 					{
 						propType = propType.GetElementType();
 					}
 
-					if (propType.IsEnum)
+					if (propType?.IsEnum == true)
 					{
 						propType = propType.GetEnumUnderlyingType();
+					}
+
+					if (propType == null)
+					{
+						continue;
 					}
 
 					var locoSize = propType.GetCustomAttribute<LocoStructSizeAttribute>();

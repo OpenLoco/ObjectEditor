@@ -29,16 +29,15 @@ namespace OpenLoco.ObjectEditor.Objects
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			// town names is interesting - loco has not RE'd the the whole object and there are no graphics, so we just
+			// town names is interesting - loco has not RE'd the whole object and there are no graphics, so we just
 			// skip the rest of the data/object
 			tempUnkVariableData = remainingData.ToArray();
-			remainingData = remainingData[remainingData.Length..];
-
-			return remainingData;
+			return remainingData[remainingData.Length..];
 		}
 
 		public ReadOnlySpan<byte> Save()
 			=> tempUnkVariableData;
+
 		public bool Validate() => true;
 	}
 }

@@ -5,6 +5,5 @@ namespace OpenLoco.ObjectEditor.Data
 		Custom = 0,
 		DataFile = 1,
 		Vanilla = 2,
-		MAX,
 	}
 }

@@ -9,6 +9,8 @@ using System.Reactive.Linq;
 using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace AvaGui.ViewModels
 {
@@ -19,23 +21,28 @@ namespace AvaGui.ViewModels
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
 			Model = model;
+			Progress = new();
+			Progress.ProgressChanged += (a, b) =>
+			{
+				IndexingProgress = b;
+			};
 
-			RecreateIndex = ReactiveCommand.Create(() => LoadObjDirectory(CurrentDirectory, false));
+			RecreateIndex = ReactiveCommand.Create(async () => await LoadObjDirectoryAsync(CurrentDirectory, false));
 
 			_ = this.WhenAnyValue(o => o.CurrentDirectory)
-				.Subscribe(_ => LoadObjDirectory(CurrentDirectory, true));
+				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, true));
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
-				.Subscribe(_ => LoadObjDirectory(CurrentDirectory, true));
+				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, true));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
-				.Subscribe(_ => LoadObjDirectory(CurrentDirectory, true));
+				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, true));
 			_ = this.WhenAnyValue(o => o.DirectoryItems)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
 
 			// loads the last-viewed folder
 			CurrentDirectory = Model.Settings.ObjDataDirectory;
 		}
-		public ReactiveCommand<Unit, Unit> RecreateIndex { get; }
+		public ReactiveCommand<Unit, Task> RecreateIndex { get; }
 
 		[Reactive]
 		public string CurrentDirectory { get; set; } = string.Empty;
@@ -50,11 +57,16 @@ namespace AvaGui.ViewModels
 		public bool DisplayVanillaOnly { get; set; }
 
 		[Reactive]
-		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; }
+		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; private set; }
 
-		private void LoadObjDirectory(string directory, bool useExistingIndex)
+		Progress<float> Progress { get; set; }
+
+		[Reactive]
+		public float IndexingProgress { get; set; }
+
+		private async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
 		{
-			DirectoryItems = new(LoadObjDirectoryCore(directory, useExistingIndex));
+			DirectoryItems = new(await LoadObjDirectoryCoreAsync(directory, useExistingIndex));
 
 			// really just for debugging - puts all dat file types in the collection, even if they don't have anything in them
 			//foreach (var dat in Enum.GetValues<DatFileType>().Except(DirectoryItems.Select(x => ((FileSystemDatGroup)x).DatFileType)))
@@ -62,24 +74,26 @@ namespace AvaGui.ViewModels
 			//	DirectoryItems.Add(new FileSystemDatGroup(string.Empty, dat, new ObservableCollection<FileSystemItemBase>()));
 			//}
 
-			IEnumerable<FileSystemItemBase> LoadObjDirectoryCore(string directory, bool useExistingIndex)
+			async Task<List<FileSystemItemBase>> LoadObjDirectoryCoreAsync(string directory, bool useExistingIndex)
 			{
+				var result = new List<FileSystemItemBase>();
+
 				if (string.IsNullOrEmpty(directory))
 				{
-					yield break;
+					return result;
 				}
 
 				var dirInfo = new DirectoryInfo(directory);
 
 				if (!dirInfo.Exists)
 				{
-					yield break;
+					return result;
 				}
 
 				// todo: load each file
 				// check if its object, scenario, save, landscape, g1, sfx, tutorial, etc
 
-				Model.LoadObjDirectory(directory, null, useExistingIndex);
+				await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
 
 				var groupedDatObjects = Model.HeaderIndex
 					.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))
@@ -135,11 +149,13 @@ namespace AvaGui.ViewModels
 							subNodes));
 					}
 
-					yield return new FileSystemDatGroup(
+					result.Add(new FileSystemDatGroup(
 						string.Empty,
 						datObjGroup.Key,
-						groups);
+						groups));
 				}
+
+				return result;
 			}
 		}
 

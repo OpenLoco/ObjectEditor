@@ -40,6 +40,7 @@ namespace OpenLoco.ObjectEditor.Objects
 			{
 				return false;
 			}
+
 			return BuildCostFactor > 0;
 		}
 

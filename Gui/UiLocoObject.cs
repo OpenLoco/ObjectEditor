@@ -51,10 +51,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			set
 			{
 				G1.G1Elements.Clear();
-				foreach (var x in value)
-				{
-					G1.G1Elements.Add(x);
-				}
+				G1.G1Elements.AddRange(value);
 			}
 		}
 	}

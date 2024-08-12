@@ -12,7 +12,7 @@ namespace OpenLoco.ObjectEditor.Types
 		public StringTable(Dictionary<string, Dictionary<LanguageId, string>> table)
 			=> Table = table;
 
-		public Dictionary<string, Dictionary<LanguageId, string>> Table { get; set; } = [];
+		public Dictionary<string, Dictionary<LanguageId, string>> Table { get; } = [];
 
 		public Dictionary<LanguageId, string> this[string key]
 		{

@@ -41,7 +41,7 @@ namespace Core.Types.SCV5
 				data = data[S5Header.StructLength..];
 
 				var chunkData = SawyerStreamReader.ReadChunkCore(ref data);
-				packedObjects.Add((obj, chunkData));
+				packedObjects.Add((obj, chunkData.ToArray()));
 			}
 
 			// read required objects
@@ -49,7 +49,7 @@ namespace Core.Types.SCV5
 			var bytes = SawyerStreamReader.ReadChunkCore(ref data);
 			while (bytes.Length > 0)
 			{
-				var obj = S5Header.Read(bytes.AsSpan()[..S5Header.StructLength]);
+				var obj = S5Header.Read(bytes[..S5Header.StructLength]);
 				requiredObjects.Add(obj);
 				bytes = bytes[S5Header.StructLength..];
 			}

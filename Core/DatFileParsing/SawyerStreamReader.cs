@@ -7,6 +7,7 @@ using OpenLoco.ObjectEditor.Data;
 using Core.Objects;
 using Core.Objects.Sound;
 using Zenith.Core;
+using System;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {
@@ -75,7 +76,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			byte[] decodedData;
 			try
 			{
-				decodedData = Decode(objectHeader.Encoding, remainingData.ToArray());
+				decodedData = Decode(objectHeader.Encoding, remainingData);
 			}
 			catch (InvalidDataException ex)
 			{
@@ -441,10 +442,10 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			};
 
 		// taken from openloco's SawyerStreamReader::readChunk
-		public static byte[] Decode(SawyerEncoding encoding, byte[] data) => encoding switch
+		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue) => encoding switch
 		{
-			SawyerEncoding.Uncompressed => data,
-			SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data),
+			SawyerEncoding.Uncompressed => data.ToArray(),
+			SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data, minDecodedBytes),
 			SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
 			SawyerEncoding.Rotate => DecodeRotate(data),
 			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
@@ -467,16 +468,16 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 		public static T ReadChunk<T>(ref ReadOnlySpan<byte> data) where T : class
 			=> ByteReader.ReadLocoStruct<T>(ReadChunkCore(ref data));
 
-		public static byte[] ReadChunkCore(ref ReadOnlySpan<byte> data)
+		public static ReadOnlySpan<byte> ReadChunkCore(ref ReadOnlySpan<byte> data)
 		{
 			// read encoding and length
 			var chunk = ObjectHeader.Read(data[..ObjectHeader.StructLength]);
 			data = data[ObjectHeader.StructLength..];
 
-			// decode bytes
 			var chunkBytes = data[..(int)chunk.DataLength];
+			// decode bytes
 			data = data[(int)chunk.DataLength..];
-			return Decode(chunk.Encoding, chunkBytes.ToArray());
+			return Decode(chunk.Encoding, chunkBytes);
 		}
 
 		public static List<(WaveFormatEx header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
@@ -509,7 +510,7 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
-		private static byte[] DecodeRunLengthSingle(byte[] data)
+		private static byte[] DecodeRunLengthSingle(ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue)
 		{
 			var ms = new MemoryStream();
 
@@ -539,8 +540,15 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 
 					var copyLen = rleCodeByte + 1;
 
-					ms.Write(data, i + 1, copyLen);
+					ms.Write(data[(i + 1)..(i + 1 + copyLen)]);
 					i += rleCodeByte + 1;
+				}
+
+				// this is an early terminate - only used for indexing since we only need to parse
+				// up to a certain byte position instead of the full object
+				if (ms.Position >= minDecodedBytes)
+				{
+					return ms.ToArray();
 				}
 			}
 

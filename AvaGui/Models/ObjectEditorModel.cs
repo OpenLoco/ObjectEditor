@@ -55,7 +55,7 @@ namespace AvaGui.Models
 		{
 			Logger = new Logger();
 			LoggerObservableLogs = [];
-			Logger.LogAdded += (sender, laea) => LoggerObservableLogs.Add(laea.Log);
+			Logger.LogAdded += (sender, laea) => LoggerObservableLogs.Insert(0, laea.Log);
 
 			LoadSettings(SettingsFile, Logger);
 		}

@@ -4,26 +4,22 @@ using OpenLoco.ObjectEditor.Settings;
 using System.Text.Json;
 using OpenLoco.ObjectEditor.Logging;
 using Zenith.Core;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Objects;
-using System.Threading;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor;
 using System.Collections.ObjectModel;
+using System.Xml.Linq;
 
 namespace AvaGui.Models
 {
 	public class ObjectEditorModel
 	{
 		public EditorSettings Settings { get; private set; }
-
-		public string SettingsFilePath { get; set; }
 
 		public ILogger Logger;
 
@@ -41,6 +37,8 @@ namespace AvaGui.Models
 
 		public Dictionary<string, byte[]> Tutorials { get; } = [];
 
+		public Dictionary<string, ObjectMetadata> Metadata { get; set; } = [];
+
 		public Collection<string> MiscFiles { get; } = [];
 
 		public const string ApplicationName = "OpenLoco Object Editor";
@@ -57,34 +55,71 @@ namespace AvaGui.Models
 			LoggerObservableLogs = [];
 			Logger.LogAdded += (sender, laea) => LoggerObservableLogs.Insert(0, laea.Log);
 
-			LoadSettings(SettingsFile, Logger);
+			LoadSettings();
+			LoadMetadata();
 		}
 
-		public void LoadSettings(string settingsFile, ILogger? logger)
+		public void LoadSettings()
 		{
-			SettingsFilePath = settingsFile;
-
-			if (!File.Exists(settingsFile))
+			if (!File.Exists(SettingsFile))
 			{
 				Settings = new();
 				SaveSettings();
 				return;
 			}
 
-			var text = File.ReadAllText(settingsFile);
+			var text = File.ReadAllText(SettingsFile);
 			var settings = JsonSerializer.Deserialize<EditorSettings>(text);
 			Verify.NotNull(settings);
 
 			Settings = settings!;
 
-			if (ValidateSettings(Settings, logger))
+			if (ValidateSettings(Settings, Logger))
 			{
-				if (File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
+				if (File.Exists(IndexFilename))
 				{
-					Logger?.Info($"Loading header index from \"{Settings.IndexFileName}\"");
+					Logger?.Info($"Loading header index from \"{IndexFilename}\"");
 					LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true).Wait();
 				}
 			}
+		}
+
+		public string IndexFilename
+			=> Settings.GetObjDataFullPath(Settings.IndexFileName);
+
+		public string MetadataFilename
+			=> Settings.GetObjDataFullPath(Settings.MetadataFileName);
+
+		public void LoadMetadata()
+		{
+			if (!File.Exists(MetadataFilename))
+			{
+				Logger?.Info($"Metadata file does not exist: \"{MetadataFilename}\"");
+				Metadata = [];
+				return;
+			}
+
+			Logger?.Info($"Loading metadata from \"{MetadataFilename}\"");
+
+			var text = File.ReadAllText(MetadataFilename);
+			var metadata = JsonSerializer.Deserialize<Dictionary<string, ObjectMetadata>>(text);
+			Verify.NotNull(metadata);
+
+			Metadata = metadata!;
+		}
+
+		public void SaveMetadata()
+		{
+			var options = GetJsonSerializationOptions();
+			var text = JsonSerializer.Serialize(Metadata, options);
+
+			var parentDir = Path.GetDirectoryName(MetadataFilename);
+			if (parentDir != null && !Directory.Exists(parentDir))
+			{
+				_ = Directory.CreateDirectory(parentDir);
+			}
+
+			File.WriteAllText(MetadataFilename, text);
 		}
 
 		static bool ValidateSettings(EditorSettings settings, ILogger? logger)
@@ -112,16 +147,27 @@ namespace AvaGui.Models
 
 		public void SaveSettings()
 		{
-			var options = GetOptions();
+			var options = GetJsonSerializationOptions();
 			var text = JsonSerializer.Serialize(Settings, options);
 
-			var parentDir = Path.GetDirectoryName(SettingsFilePath);
+			var parentDir = Path.GetDirectoryName(SettingsFile);
 			if (parentDir != null && !Directory.Exists(parentDir))
 			{
 				_ = Directory.CreateDirectory(parentDir);
 			}
 
-			File.WriteAllText(SettingsFilePath, text);
+			File.WriteAllText(SettingsFile, text);
+		}
+
+		public ObjectMetadata LoadObjectMetadata(string objectName, uint checksum)
+		{
+			if (!Metadata.TryGetValue(objectName, out var value))
+			{
+				value = new ObjectMetadata(objectName, checksum);
+				Metadata.Add(objectName, value);
+			}
+
+			return value;
 		}
 
 		public bool TryLoadObject(string filename, out UiLocoFile? uiLocoFile)
@@ -181,17 +227,6 @@ namespace AvaGui.Models
 
 			sw.Stop();
 			Logger?.Info($"Indexed {fileCount} in {sw.Elapsed}");
-		}
-
-		public void SaveFile(string path, UiLocoFile obj)
-		{
-			if (obj == null)
-			{
-				Logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
-				return;
-			}
-
-			SawyerStreamWriter.Save(path, obj.DatFileInfo.S5Header.Name, obj.LocoObject);
 		}
 
 		public bool LoadDataDirectory(string directory)
@@ -263,9 +298,9 @@ namespace AvaGui.Models
 				.Where(x => Path.GetExtension(x).Equals(".dat", StringComparison.OrdinalIgnoreCase))
 				.ToArray();
 
-			if (useExistingIndex && File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
+			if (useExistingIndex && File.Exists(IndexFilename))
 			{
-				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.GetObjDataFullPath(Settings.IndexFileName)) ?? HeaderIndex;
+				HeaderIndex = DeserialiseHeaderIndexFromFile(IndexFilename) ?? HeaderIndex;
 
 				var a = HeaderIndex.Keys.Except(allFiles);
 				var b = allFiles.Except(HeaderIndex.Keys);
@@ -278,13 +313,13 @@ namespace AvaGui.Models
 			{
 				Logger?.Info("Recreating index file");
 				await CreateIndex(allFiles, progress); // do we need the array?
-				SerialiseHeaderIndexToFile(Settings.GetObjDataFullPath(Settings.IndexFileName), HeaderIndex, GetOptions());
+				SerialiseHeaderIndexToFile(IndexFilename, HeaderIndex, GetJsonSerializationOptions());
 			}
 
 			SaveSettings();
 		}
 
-		private static JsonSerializerOptions GetOptions()
+		private static JsonSerializerOptions GetJsonSerializationOptions()
 			=> new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
 
 		static void SerialiseHeaderIndexToFile(string filename, HeaderIndex headerIndex, JsonSerializerOptions options, ILogger? logger = null)
@@ -306,7 +341,7 @@ namespace AvaGui.Models
 
 			var json = File.ReadAllText(filename);
 
-			return JsonSerializer.Deserialize<HeaderIndex>(json, GetOptions()) ?? [];
+			return JsonSerializer.Deserialize<HeaderIndex>(json, GetJsonSerializationOptions()) ?? [];
 		}
 	}
 }

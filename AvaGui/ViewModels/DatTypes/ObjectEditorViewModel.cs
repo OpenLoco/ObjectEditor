@@ -6,6 +6,7 @@ using System.Reactive;
 using OpenLoco.ObjectEditor.Logging;
 using System.Threading.Tasks;
 using Core.Objects.Sound;
+using SixLabors.ImageSharp;
 
 namespace AvaGui.ViewModels
 {
@@ -14,6 +15,7 @@ namespace AvaGui.ViewModels
 		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveAsObjectCommand { get; init; }
+		public ReactiveCommand<Unit, Unit> SaveMetadataCommand { get; init; }
 
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
@@ -25,6 +27,9 @@ namespace AvaGui.ViewModels
 
 		[Reactive]
 		public UiLocoFile? CurrentObject { get; private set; }
+
+		[Reactive]
+		public ObjectMetadata CurrentMetadata { get; private set; }
 
 		[Reactive]
 		public FileSystemItemBase CurrentFile { get; init; }
@@ -41,6 +46,7 @@ namespace AvaGui.ViewModels
 			ReloadObjectCommand = ReactiveCommand.Create(LoadObject);
 			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
 			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
+			SaveMetadataCommand = ReactiveCommand.Create(SaveCurrentMetadata);
 		}
 
 		public void LoadObject()
@@ -68,6 +74,9 @@ namespace AvaGui.ViewModels
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
+
+					var name = CurrentObject.DatFileInfo.S5Header.Name.Trim();
+					CurrentMetadata = Model.LoadObjectMetadata(name, CurrentObject.DatFileInfo.S5Header.Checksum);
 				}
 				else
 				{
@@ -110,6 +119,11 @@ namespace AvaGui.ViewModels
 
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {saveFile.Path.AbsolutePath}");
 			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+		}
+
+		public void SaveCurrentMetadata()
+		{
+			Model.SaveMetadata();
 		}
 	}
 }

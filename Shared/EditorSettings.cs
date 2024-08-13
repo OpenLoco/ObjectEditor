@@ -60,7 +60,7 @@ namespace OpenLoco.ObjectEditor.Settings
 		HashSet<string> scv5Directories;
 
 		public string PaletteFile { get; set; } = "palette.png";
-
+		public string MetadataFileName { get; set; } = "objectMetadata.json";
 		public string IndexFileName { get; set; } = "objectIndex.json";
 		public string G1DatFileName { get; set; } = "g1.DAT";
 		public string GetObjDataFullPath(string fileName) => Path.Combine(ObjDataDirectory, fileName);

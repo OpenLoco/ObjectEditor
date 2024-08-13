@@ -60,31 +60,37 @@
 		<DataTemplate DataType="vm:ObjectEditorViewModel">
 			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
 				<StackPanel Orientation="Horizontal">
-					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ReloadObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Reload">
+					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ReloadObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Reload</TextBlock>
 						</DockPanel>
 					</Button>
-					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Save">
+					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="ContentSave" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save</TextBlock>
 						</DockPanel>
 					</Button>
-					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveAsObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Save As">
+					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveAsObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="ContentSavePlus" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save As</TextBlock>
 						</DockPanel>
 					</Button>
+					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="ContentSaveCog" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save Metadata</TextBlock>
+						</DockPanel>
+					</Button>
 				</StackPanel>
 				<TabControl>
 					<TabItem Header="Headers">
-						<pgc:PropertyGrid x:Name="propertyGrid_0" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						<pgc:PropertyGrid x:Name="propertyGrid_Headers" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 					</TabItem>
 					<TabItem Header="Object">
-						<pgc:PropertyGrid x:Name="propertyGrid_1" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 					</TabItem>
 					<TabItem Header="String Table">
 						<StackPanel Orientation="Horizontal" Spacing="16">
@@ -110,6 +116,28 @@
 					<TabItem Header="Image/Sound Table">
 						<DockPanel>
 							<ContentControl Content="{Binding ExtraContentViewModel}" />
+						</DockPanel>
+					</TabItem>
+					<TabItem Header="Metadata">
+						<DockPanel>
+							<pgc:PropertyGrid x:Name="propertyGrid_Metadata" DockPanel.Dock="Top" Margin="2" IsEnabled="False" DataContext="{Binding CurrentMetadata}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+							<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Margin="2">
+								<StackPanel>
+									<TextBlock Margin="4">Tags</TextBlock>
+									<ItemsRepeater ItemsSource="{Binding CurrentMetadata.Tags}" Background="{DynamicResource ExpanderContentBackground}" >
+										<ItemsRepeater.Layout>
+											<WrapLayout />
+										</ItemsRepeater.Layout>
+										<ItemsRepeater.ItemTemplate>
+											<DataTemplate>
+												<Border BorderThickness="4" CornerRadius="8" Margin="2" Background="{DynamicResource ButtonBackground}">
+													<TextBlock Margin="4" Text="{Binding}" />
+												</Border>
+											</DataTemplate>
+										</ItemsRepeater.ItemTemplate>
+									</ItemsRepeater>
+								</StackPanel>
+							</Border>
 						</DockPanel>
 					</TabItem>
 				</TabControl>

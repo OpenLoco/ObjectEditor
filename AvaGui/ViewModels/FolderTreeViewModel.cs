@@ -10,13 +10,34 @@ using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace AvaGui.ViewModels
 {
 	public class FolderTreeViewModel : ReactiveObject
 	{
 		ObjectEditorModel Model { get; init; }
+
+		[Reactive]
+		public string CurrentDirectory { get; set; } = string.Empty;
+
+		[Reactive]
+		public FileSystemItemBase? CurrentlySelectedObject { get; set; }
+
+		[Reactive]
+		public string FilenameFilter { get; set; } = string.Empty;
+
+		[Reactive]
+		public bool DisplayVanillaOnly { get; set; }
+
+		[Reactive]
+		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; private set; }
+
+		[Reactive]
+		public float IndexingProgress { get; set; }
+
+		Progress<float> Progress { get; }
+
+		public ReactiveCommand<Unit, Task> RecreateIndex { get; }
 
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
@@ -39,27 +60,6 @@ namespace AvaGui.ViewModels
 			// loads the last-viewed folder
 			CurrentDirectory = Model.Settings.ObjDataDirectory;
 		}
-		public ReactiveCommand<Unit, Task> RecreateIndex { get; }
-
-		[Reactive]
-		public string CurrentDirectory { get; set; } = string.Empty;
-
-		[Reactive]
-		public FileSystemItemBase? CurrentlySelectedObject { get; set; }
-
-		[Reactive]
-		public string FilenameFilter { get; set; } = string.Empty;
-
-		[Reactive]
-		public bool DisplayVanillaOnly { get; set; }
-
-		[Reactive]
-		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; private set; }
-
-		Progress<float> Progress { get; set; }
-
-		[Reactive]
-		public float IndexingProgress { get; set; }
 
 		private async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
 		{

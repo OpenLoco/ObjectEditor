@@ -56,10 +56,4 @@
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Views\VehicleView.axaml.cs">
-      <DependentUpon>VehicleView.axaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
 </Project>

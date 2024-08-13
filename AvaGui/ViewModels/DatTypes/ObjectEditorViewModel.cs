@@ -14,7 +14,7 @@ namespace AvaGui.ViewModels
 	{
 		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveObjectCommand { get; init; }
-		public ReactiveCommand<Unit, Task> SaveAsObjectCommand { get; init; }
+		public ReactiveCommand<Unit, Unit> SaveAsObjectCommand { get; init; }
 
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
@@ -77,7 +77,13 @@ namespace AvaGui.ViewModels
 			{
 				CurrentObject = newObj;
 			}
+			else
+			{
+				// todo: show warnings here
+				CurrentObject = null;
+			}
 		}
+
 		public void SaveCurrentObject()
 		{
 			if (CurrentObject?.LocoObject == null)
@@ -90,9 +96,9 @@ namespace AvaGui.ViewModels
 			SawyerStreamWriter.Save(CurrentFile.Path, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
-		public async Task SaveAsCurrentObject()
+		public void SaveAsCurrentObject()
 		{
-			var saveFile = await PlatformSpecific.SaveFilePicker();
+			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
 			if (saveFile == null)
 			{
 				return;

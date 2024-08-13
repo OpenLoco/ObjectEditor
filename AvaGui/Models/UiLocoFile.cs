@@ -6,7 +6,7 @@ namespace AvaGui.Models
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class UiLocoFile : IUiObject
 	{
-		public DatFileInfo? DatFileInfo { get; set; }
+		public required DatFileInfo DatFileInfo { get; set; }
 		public ILocoObject? LocoObject { get; set; }
 	}
 }

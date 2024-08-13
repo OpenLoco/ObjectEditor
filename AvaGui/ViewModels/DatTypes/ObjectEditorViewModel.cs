@@ -1,7 +1,6 @@
 using ReactiveUI;
 using AvaGui.Models;
 using OpenLoco.ObjectEditor.DatFileParsing;
-using System;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using OpenLoco.ObjectEditor.Logging;
@@ -22,26 +21,29 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
 
-		ObjectEditorModel Model { get; }
+		ObjectEditorModel Model { get; init; }
 
 		[Reactive]
-		public UiLocoFile? CurrentObject { private set; get; }
+		public UiLocoFile? CurrentObject { get; private set; }
 
 		[Reactive]
-		public FileSystemItemBase? CurrentFile { get; set; }
+		public FileSystemItemBase CurrentFile { get; init; }
 
-		public ObjectEditorViewModel(ObjectEditorModel model)
+		ILogger? Logger => Model.Logger;
+
+		public ObjectEditorViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 		{
+			CurrentFile = currentFile;
 			Model = model;
-			_ = this.WhenAnyValue(o => o.CurrentFile)
-				.Subscribe(_ => SelectedObjectChanged());
 
-			ReloadObjectCommand = ReactiveCommand.Create(ReloadCurrentObject);
+			LoadObject();
+
+			ReloadObjectCommand = ReactiveCommand.Create(LoadObject);
 			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
 			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
 		}
 
-		public void SelectedObjectChanged()
+		public void LoadObject()
 		{
 			// this stops any currently-playing sounds
 			if (ExtraContentViewModel is SoundViewModel svm)
@@ -49,33 +51,29 @@ namespace AvaGui.ViewModels
 				svm.Dispose();
 			}
 
-			ReloadCurrentObject();
-
-			if (CurrentObject?.LocoObject != null)
-			{
-				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
-				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
-					? new SoundViewModel(CurrentObject.LocoObject)
-					: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
-			}
-			else
-			{
-				StringTableViewModel = null;
-				ExtraContentViewModel = null;
-			}
-		}
-
-		public void ReloadCurrentObject()
-		{
 			if (CurrentFile == null)
 			{
 				return;
 			}
 
-			Logger?.Info($"Loading {CurrentObject?.DatFileInfo.S5Header.Name} from {CurrentFile.Path}");
+			Logger?.Info($"Loading {CurrentFile.Name} from {CurrentFile.Path}");
+
 			if (Model.TryLoadObject(CurrentFile.Path, out var newObj))
 			{
 				CurrentObject = newObj;
+
+				if (CurrentObject?.LocoObject != null)
+				{
+					StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
+					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
+						? new SoundViewModel(CurrentObject.LocoObject)
+						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
+				}
+				else
+				{
+					StringTableViewModel = null;
+					ExtraContentViewModel = null;
+				}
 			}
 			else
 			{
@@ -113,7 +111,5 @@ namespace AvaGui.ViewModels
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {saveFile.Path.AbsolutePath}");
 			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
-
-		ILogger? Logger => Model.Logger;
 	}
 }

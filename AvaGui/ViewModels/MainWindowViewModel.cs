@@ -37,7 +37,6 @@ namespace AvaGui.ViewModels
 
 		public FolderTreeViewModel FolderTreeViewModel { get; }
 
-		public ObjectEditorViewModel ObjectEditorViewModel { get; }
 		public SCV5ViewModel SCV5ViewModel { get; }
 
 		[Reactive]
@@ -78,16 +77,9 @@ namespace AvaGui.ViewModels
 			};
 
 			FolderTreeViewModel = new FolderTreeViewModel(Model);
-			ObjectEditorViewModel = new ObjectEditorViewModel(Model);
-
-			_ = ObjectEditorViewModel.WhenAnyValue(o => o.CurrentFile)
-				.Subscribe(_ => CurrentEditorModel = ObjectEditorViewModel);
-
-			_ = this.WhenAnyValue(o => o.ObjectEditorViewModel)
-				.Subscribe(_ => CurrentEditorModel = ObjectEditorViewModel);
 
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
-				.Subscribe(o => ObjectEditorViewModel.CurrentFile = o);
+				.Subscribe(SetObjectViewModel);
 
 			ObjDataItems = new ObservableCollection<MenuItemModel>(Model.Settings.ObjDataDirectories
 				.Select(x => new MenuItemModel(
@@ -118,6 +110,14 @@ namespace AvaGui.ViewModels
 			#endregion
 		}
 
+		void SetObjectViewModel(FileSystemItemBase? file)
+		{
+			if (file != null)
+			{
+				CurrentEditorModel = new ObjectEditorViewModel(file, Model);
+			}
+		}
+
 		public async Task LoadSingleObjectToIndex()
 		{
 			var openFile = await PlatformSpecific.OpenFilePicker();
@@ -136,7 +136,8 @@ namespace AvaGui.ViewModels
 			if (Model.TryLoadObject(path, out var uiLocoFile))
 			{
 				Model.Logger.Warning($"Successfully loaded {path}");
-				ObjectEditorViewModel.CurrentFile = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame);
+				var file = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame);
+				SetObjectViewModel(file);
 			}
 			else
 			{
@@ -191,8 +192,6 @@ namespace AvaGui.ViewModels
 			if (Directory.Exists(dirPath) && !Model.Settings.ObjDataDirectories.Contains(dirPath))
 			{
 				FolderTreeViewModel.CurrentDirectory = dirPath; // this will cause the reindexing
-																//var progress = new Progress<float>();
-																//await Model.LoadObjDirectoryAsync(dirPath, progress, false);
 				var menuItem = new MenuItemModel(
 					dirPath,
 					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = dirPath)

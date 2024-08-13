@@ -22,15 +22,12 @@ namespace AvaGui.ViewModels
 		{
 			Model = model;
 			Progress = new();
-			Progress.ProgressChanged += (a, b) =>
-			{
-				IndexingProgress = b;
-			};
+			Progress.ProgressChanged += (_, progress) => IndexingProgress = progress;
 
 			RecreateIndex = ReactiveCommand.Create(async () => await LoadObjDirectoryAsync(CurrentDirectory, false));
 
 			_ = this.WhenAnyValue(o => o.CurrentDirectory)
-				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, true));
+				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, false));
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
 				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, true));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)

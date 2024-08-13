@@ -21,6 +21,7 @@ namespace AvaGui.Models
 
 		public string OriginalName { get; }
 		public uint OriginalChecksum { get; }
+		public string Description { get; set; }
 		public string Author { get; set; } = "<unknown>";
 		public string Version { get; set; } // author-specified version
 		public DateTimeOffset CreatedTime { get; set; } // creation UTC date is an implicit version

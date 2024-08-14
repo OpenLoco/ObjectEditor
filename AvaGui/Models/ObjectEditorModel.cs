@@ -15,6 +15,8 @@ using OpenLoco.ObjectEditor;
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
 using DynamicData;
+using AvaGui.ViewModels;
+using System.Net.Http;
 
 namespace AvaGui.Models
 {
@@ -82,6 +84,8 @@ namespace AvaGui.Models
 
 		public ObservableCollection<LogLine> LoggerObservableLogs = [];
 
+		public HttpClient WebClient { get; }
+
 		public ObjectEditorModel()
 		{
 			Logger = new Logger();
@@ -90,6 +94,9 @@ namespace AvaGui.Models
 
 			LoadSettings();
 			LoadMetadata();
+
+			// create http client
+			WebClient = new HttpClient() { BaseAddress = new Uri("https://localhost:7230"), };
 		}
 
 		public void LoadSettings()
@@ -216,9 +223,9 @@ namespace AvaGui.Models
 			return value;
 		}
 
-		public bool TryLoadObject(string filename, out UiLocoFile? uiLocoFile)
+		public bool TryLoadObject(FileSystemItemBase filesystemItem, out UiLocoFile? uiLocoFile)
 		{
-			if (string.IsNullOrEmpty(filename))
+			if (string.IsNullOrEmpty(filesystemItem.Path))
 			{
 				uiLocoFile = null;
 				return false;
@@ -229,18 +236,34 @@ namespace AvaGui.Models
 
 			try
 			{
-				(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
+				if (filesystemItem.Path.Equals("<online>", StringComparison.OrdinalIgnoreCase))
+				{
+					using HttpResponseMessage response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Name}")).Result;
+					// wait for request to arrive back
+					if (!response.IsSuccessStatusCode)
+					{
+						// failed
+					}
+
+					var base64obj = Task.Run(response.Content.ReadAsStringAsync).Result;
+					var objdata = Convert.FromBase64String(base64obj);
+					(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(objdata, $"{filesystemItem.Path}/{filesystemItem.Name}", true, Logger);
+				}
+				else
+				{
+					(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(filesystemItem.Path, logger: Logger);
+				}
 			}
 			catch (Exception ex)
 			{
-				Logger?.Error($"Unable to load {filename}", ex);
+				Logger?.Error($"Unable to load {filesystemItem.Path}", ex);
 				uiLocoFile = null;
 				return false;
 			}
 
 			if (locoObject == null || fileInfo == null)
 			{
-				Logger?.Error($"Unable to load {filename}. FileInfo={fileInfo}");
+				Logger?.Error($"Unable to load {filesystemItem.Path}. FileInfo={fileInfo}");
 				uiLocoFile = null;
 				return false;
 			}

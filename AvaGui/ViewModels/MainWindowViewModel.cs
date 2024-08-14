@@ -21,6 +21,8 @@ using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text;
+using System.Net;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace AvaGui.ViewModels
 {
@@ -133,7 +135,8 @@ namespace AvaGui.ViewModels
 			}
 
 			//logger?.Info($"Opening {path}");
-			if (Model.TryLoadObject(path, out var uiLocoFile))
+			// todo: instead of using FileSystemItem.path, add a property IsOnline
+			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), OpenLoco.ObjectEditor.Data.SourceGame.Vanilla), out var uiLocoFile))
 			{
 				Model.Logger.Warning($"Successfully loaded {path}");
 				var file = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame);

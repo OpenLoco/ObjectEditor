@@ -14,12 +14,21 @@
     <FileVersion>$(Version)</FileVersion>
     <AssemblyName>ObjectEditor</AssemblyName>
     <Product>$(AssemblyName) $(Version)</Product>
+    <Version>1.2.3</Version>
     <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="version.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="version.txt" />
   </ItemGroup>
 
   <ItemGroup>

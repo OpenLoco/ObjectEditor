@@ -280,9 +280,9 @@
 		</Expander>
 
 		<DockPanel DataContext="{Binding FolderTreeViewModel}" >
-			<TabControl DockPanel.Dock="Top" >
+			<TabControl DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}">
 				<TabItem Header="Local" FontSize="16"/>
-				<TabItem Header="Online (coming soon)" IsEnabled="False" ToolTip.Tip="Coming soon :)" FontSize="16"/>
+				<TabItem Header="Online" FontSize="16"/>
 			</TabControl>
 			<Grid DockPanel.Dock="Left" Margin="8" MinWidth="256" MaxWidth="512">
 				<Grid.RowDefinitions>

@@ -12,6 +12,7 @@ using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using System.Net.Http;
+using System.Text.Json;
 
 namespace AvaGui.ViewModels
 {
@@ -45,7 +46,8 @@ namespace AvaGui.ViewModels
 
 		public ReactiveCommand<Unit, Task> RecreateIndex { get; }
 
-		HttpClient webClient;
+		[Reactive]
+		public int SelectedTabIndex { get; set; }
 
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
@@ -65,17 +67,16 @@ namespace AvaGui.ViewModels
 			_ = this.WhenAnyValue(o => o.LocalDirectoryItems)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
 
-			// create http client
-			webClient = new HttpClient()
-			{
-				BaseAddress = new Uri(""),
-			};
+			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
+				.Subscribe(_ => DirectoryItems = SelectedTabIndex == 0 ? LocalDirectoryItems : OnlineDirectoryItems);
 
 			// loads the last-viewed folder
 			CurrentDirectory = Model.Settings.ObjDataDirectory;
 
 			// hack for now - in future we should set DirectoryItems to whatever the tab/toggle control is set to
-			DirectoryItems = LocalDirectoryItems;
+			//DirectoryItems = LocalDirectoryItems;
+
+			_ = Task.Run(LoadOnlineDirectoryAsync);
 		}
 
 		async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
@@ -260,7 +261,7 @@ namespace AvaGui.ViewModels
 			}
 
 			// send request to server
-			using HttpResponseMessage response = await webClient.GetAsync("<request for object list>");
+			using HttpResponseMessage response = await Model.WebClient.GetAsync("/objects/list");
 			// wait for request to arrive back
 			if (!response.IsSuccessStatusCode)
 			{
@@ -268,7 +269,8 @@ namespace AvaGui.ViewModels
 			}
 
 			var json = await response.Content.ReadAsStringAsync();
-
+			var data = JsonSerializer.Deserialize<IEnumerable<string>>(json);
+			OnlineDirectoryItems = new ObservableCollection<FileSystemItemBase>(data.Select(x => new FileSystemItem("<online>", x, SourceGame.Vanilla)));
 
 			// parse request
 			// set up tree

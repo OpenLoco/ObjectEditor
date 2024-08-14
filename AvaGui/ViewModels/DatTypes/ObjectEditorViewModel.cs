@@ -64,7 +64,7 @@ namespace AvaGui.ViewModels
 
 			Logger?.Info($"Loading {CurrentFile.Name} from {CurrentFile.Path}");
 
-			if (Model.TryLoadObject(CurrentFile.Path, out var newObj))
+			if (Model.TryLoadObject(CurrentFile, out var newObj))
 			{
 				CurrentObject = newObj;
 

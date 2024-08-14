@@ -102,3 +102,10 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - [x] Use a proper C# image library for image creation instead of WinForms
 
 ...many more things
+
+# Building
+- Open AvaGui/AvaGui.sln in Visual Studio
+  - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer
+
+# Deploying
+See `deploy.sh`

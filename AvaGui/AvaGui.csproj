@@ -10,11 +10,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
-    <AssemblyVersion>2.3.0</AssemblyVersion>
-    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
     <AssemblyName>ObjectEditor</AssemblyName>
-    <Product>$(AssemblyName) $(AssemblyVersion)</Product>
-    <Version>$(AssemblyVersion)</Version>
+    <Product>$(AssemblyName) $(Version)</Product>
     <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>

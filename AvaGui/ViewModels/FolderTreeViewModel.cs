@@ -10,6 +10,8 @@ using OpenLoco.ObjectEditor.Data;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using System.Net.Http;
 
 namespace AvaGui.ViewModels
 {
@@ -29,6 +31,10 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public bool DisplayVanillaOnly { get; set; }
 
+		public ObservableCollection<FileSystemItemBase> LocalDirectoryItems { get; private set; }
+
+		public ObservableCollection<FileSystemItemBase> OnlineDirectoryItems { get; private set; }
+
 		[Reactive]
 		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; private set; }
 
@@ -38,6 +44,8 @@ namespace AvaGui.ViewModels
 		Progress<float> Progress { get; }
 
 		public ReactiveCommand<Unit, Task> RecreateIndex { get; }
+
+		HttpClient webClient;
 
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
@@ -54,16 +62,32 @@ namespace AvaGui.ViewModels
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
 				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, true));
-			_ = this.WhenAnyValue(o => o.DirectoryItems)
+			_ = this.WhenAnyValue(o => o.LocalDirectoryItems)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
+
+			// create http client
+			webClient = new HttpClient()
+			{
+				BaseAddress = new Uri(""),
+			};
 
 			// loads the last-viewed folder
 			CurrentDirectory = Model.Settings.ObjDataDirectory;
+
+			// hack for now - in future we should set DirectoryItems to whatever the tab/toggle control is set to
+			DirectoryItems = LocalDirectoryItems;
 		}
 
 		private async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
 		{
-			DirectoryItems = new(await LoadObjDirectoryCoreAsync(directory, useExistingIndex));
+			// loads the last-viewed folder
+			if (!Design.IsDesignMode)
+			{
+				// DO NOT REINDEX AT DESIGN TIME
+				useExistingIndex = true;
+			}
+
+			LocalDirectoryItems = new(await LoadObjDirectoryCoreAsync(directory, useExistingIndex));
 
 			// really just for debugging - puts all dat file types in the collection, even if they don't have anything in them
 			//foreach (var dat in Enum.GetValues<DatFileType>().Except(DirectoryItems.Select(x => ((FileSystemDatGroup)x).DatFileType)))
@@ -154,6 +178,29 @@ namespace AvaGui.ViewModels
 
 				return result;
 			}
+		}
+
+		private async Task LoadOnlineDirectoryAsync()
+		{
+			if (Design.IsDesignMode)
+			{
+				// DO NOT WEB QUERY AT DESIGN TIME
+				return;
+			}
+
+			// send request to server
+			using HttpResponseMessage response = await webClient.GetAsync("<request for object list>");
+			// wait for request to arrive back
+			if (!response.IsSuccessStatusCode)
+			{
+				// failed
+			}
+
+			var json = await response.Content.ReadAsStringAsync();
+
+
+			// parse request
+			// set up tree
 		}
 
 		public string DirectoryFileCount

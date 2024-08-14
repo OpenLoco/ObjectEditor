@@ -278,39 +278,46 @@
 				<DataGrid MinHeight="256" MaxHeight="1024" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False"/>
 			</ScrollViewer>
 		</Expander>
-		<Grid DataContext="{Binding FolderTreeViewModel}" DockPanel.Dock="Left" Margin="8" MinWidth="256" MaxWidth="512">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="*"/>
-			</Grid.RowDefinitions>
-			<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" BorderBrush="Gray" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
-			<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" BorderBrush="Gray" Watermark="Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
-			<Button Grid.Row="2" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
-				<DockPanel>
-					<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexingProgress}"/>
-					<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
-					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Recreate index</TextBlock>
+
+		<DockPanel DataContext="{Binding FolderTreeViewModel}" >
+			<TabControl DockPanel.Dock="Top" >
+				<TabItem Header="Local" FontSize="16"/>
+				<TabItem Header="Online (coming soon)" IsEnabled="False" ToolTip.Tip="Coming soon :)" FontSize="16"/>
+			</TabControl>
+			<Grid DockPanel.Dock="Left" Margin="8" MinWidth="256" MaxWidth="512">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="*"/>
+				</Grid.RowDefinitions>
+				<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" BorderBrush="Gray" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" BorderBrush="Gray" Watermark="Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
+				<Button Grid.Row="2" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
+					<DockPanel>
+						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexingProgress}"/>
+						<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
+						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Recreate index</TextBlock>
+					</DockPanel>
+				</Button>
+				<DockPanel Grid.Row="3" Margin="2" >
+					<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
+					<TextBox Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="Filename filter" />
 				</DockPanel>
-			</Button>
-			<DockPanel Grid.Row="3" Margin="2" >
-				<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
-				<TextBox Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="Filename filter" />
-			</DockPanel>
-			<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
-			<Border Grid.Row="5" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
-				<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
-					<TreeView.ItemTemplate>
-						<TreeDataTemplate ItemsSource="{Binding SubNodes}">
-							<ContentControl Content="{Binding}" />
-						</TreeDataTemplate>
-					</TreeView.ItemTemplate>
-				</TreeView>
-			</Border>
-		</Grid>
+				<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
+				<Border Grid.Row="5" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+					<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
+						<TreeView.ItemTemplate>
+							<TreeDataTemplate ItemsSource="{Binding SubNodes}">
+								<ContentControl Content="{Binding}" />
+							</TreeDataTemplate>
+						</TreeView.ItemTemplate>
+					</TreeView>
+				</Border>
+			</Grid>
+		</DockPanel>
 		<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Margin="8">
 			<ScrollViewer>
 				<ContentControl Content="{Binding CurrentEditorModel}"/>

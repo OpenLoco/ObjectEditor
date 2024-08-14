@@ -61,7 +61,75 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public float IndexingProgress { get; set; }
 
-		private async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
+		async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
+		{
+			DirectoryItems = new(await LoadObjDirectoryCoreAsync(directory, useExistingIndex));
+
+			async Task<List<FileSystemItemBase>> LoadObjDirectoryCoreAsync(string directory, bool useExistingIndex)
+			{
+				var result = new List<FileSystemItemBase>();
+
+				if (string.IsNullOrEmpty(directory))
+				{
+					return result;
+				}
+
+				var dirInfo = new DirectoryInfo(directory);
+
+				if (!dirInfo.Exists)
+				{
+					return result;
+				}
+
+				await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
+
+				var groupedObjects = Model.HeaderIndex
+					.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))
+					.GroupBy(o => o.Value.ObjectType)
+					.OrderBy(fsg => fsg.Key.ToString());
+
+				foreach (var objGroup in groupedObjects)
+				{
+					ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
+					if (objGroup.Key == ObjectType.Vehicle)
+					{
+						subNodes = [];
+						foreach (var vg in objGroup
+							.GroupBy(o => o.Value.VehicleType)
+							.OrderBy(vg => vg.Key.ToString()))
+						{
+							var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+
+							if (vg.Key == null)
+							{
+								// this should be impossible - object says its a vehicle but doesn't have a vehicle type
+								// todo: move validation into the loading stage or cstr of IndexObjectHeader
+								continue;
+							}
+
+							subNodes.Add(new FileSystemVehicleGroup(
+								string.Empty,
+								vg.Key.Value,
+								vehicleSubNodes));
+						}
+					}
+					else
+					{
+						subNodes = new ObservableCollection<FileSystemItemBase>(
+							objGroup.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame)));
+					}
+
+					result.Add(new FileSystemItemGroup(
+							string.Empty,
+							objGroup.Key,
+							subNodes));
+				}
+
+				return result;
+			}
+		}
+
+		async Task LoadObjDirectoryAsyncNew(string directory, bool useExistingIndex)
 		{
 			DirectoryItems = new(await LoadObjDirectoryCoreAsync(directory, useExistingIndex));
 

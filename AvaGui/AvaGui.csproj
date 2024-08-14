@@ -10,25 +10,16 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
-    <AssemblyVersion>2.2.0</AssemblyVersion>
-    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
     <AssemblyName>ObjectEditor</AssemblyName>
-    <Product>$(AssemblyName) $(AssemblyVersion)</Product>
-    <Version>$(AssemblyVersion)</Version>
+    <Product>$(AssemblyName) $(Version)</Product>
     <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="version.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="version.txt" />
   </ItemGroup>
 
   <ItemGroup>

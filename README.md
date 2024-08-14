@@ -24,7 +24,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 
 # Features
 
-## 2.0.0
+## 2.0.0+
 
 - Cross-platform
 - Dark mode
@@ -33,8 +33,11 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
   - Can open and edit all object types
   - Can save object types back to `dat` file format (albeit with no encoding)
   - Can display image table and string table of all objects (and sound data for SoundObject), and allow editing of them
+  - Can display image properties of images in the image table
+  - Can handle many more objects than the 1.x.x version
+  - Can change background colour of image viewer
 
-## 1.0.5
+## 1.0.5+
 
 - Windows-only
 - Property/hex viewer
@@ -102,3 +105,10 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - [x] Use a proper C# image library for image creation instead of WinForms
 
 ...many more things
+
+# Building
+- Open AvaGui/AvaGui.sln in Visual Studio
+  - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer
+
+# Deploying
+See `deploy.sh`

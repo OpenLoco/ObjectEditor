@@ -24,7 +24,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 
 # Features
 
-## 2.0.0
+## 2.0.0+
 
 - Cross-platform
 - Dark mode
@@ -33,8 +33,11 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
   - Can open and edit all object types
   - Can save object types back to `dat` file format (albeit with no encoding)
   - Can display image table and string table of all objects (and sound data for SoundObject), and allow editing of them
+  - Can display image properties of images in the image table
+  - Can handle many more objects than the 1.x.x version
+  - Can change background colour of image viewer
 
-## 1.0.5
+## 1.0.5+
 
 - Windows-only
 - Property/hex viewer

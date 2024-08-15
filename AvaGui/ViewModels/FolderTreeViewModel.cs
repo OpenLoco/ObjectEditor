@@ -11,8 +11,8 @@ using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using System.Net.Http;
-using System.Text.Json;
+using System.Net.Http.Json;
+using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace AvaGui.ViewModels
 {
@@ -21,7 +21,8 @@ namespace AvaGui.ViewModels
 		ObjectEditorModel Model { get; init; }
 
 		[Reactive]
-		public string CurrentDirectory { get; set; } = string.Empty;
+		public string CurrentLocalDirectory { get; set; } = string.Empty;
+		public string CurrentDirectory => SelectedTabIndex == 0 ? CurrentLocalDirectory : "<online>";
 
 		[Reactive]
 		public FileSystemItemBase? CurrentlySelectedObject { get; set; }
@@ -32,12 +33,14 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public bool DisplayVanillaOnly { get; set; }
 
-		public ObservableCollection<FileSystemItemBase> LocalDirectoryItems { get; private set; }
-
-		public ObservableCollection<FileSystemItemBase> OnlineDirectoryItems { get; private set; }
+		[Reactive]
+		List<FileSystemItemBase> LocalDirectoryItems { get; set; } = [];
 
 		[Reactive]
-		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; private set; }
+		List<FileSystemItemBase> OnlineDirectoryItems { get; set; } = [];
+
+		[Reactive]
+		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; set; }
 
 		[Reactive]
 		public float IndexingProgress { get; set; }
@@ -49,210 +52,156 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public int SelectedTabIndex { get; set; }
 
+		public string RecreateText => SelectedTabIndex == 0 ? "Recreate index" : "Download object list";
+
+		public string DirectoryFileCount
+			=> $"Objects: {DirectoryItems.Sum(CountNodes)}";
+
+		public static int CountNodes(FileSystemItemBase fib)
+		{
+			if (fib.SubNodes == null || fib.SubNodes.Count == 0)
+			{
+				return 0;
+			}
+
+			var count = 0;
+
+			foreach (var node in fib.SubNodes)
+			{
+				if (node is FileSystemItem)
+				{
+					count++;
+				}
+				else
+				{
+					count += CountNodes(node);
+				}
+			}
+
+			return count;
+		}
+
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
 			Model = model;
 			Progress = new();
 			Progress.ProgressChanged += (_, progress) => IndexingProgress = progress;
 
-			RecreateIndex = ReactiveCommand.Create(async () => await LoadObjDirectoryAsync(CurrentDirectory, false));
+			RecreateIndex = ReactiveCommand.Create(() => RefreshDirectoryAsync(false));
 
-			_ = this.WhenAnyValue(o => o.CurrentDirectory)
-				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, false));
+			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
+				.Subscribe(async _ => await RefreshDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
-				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, true));
+				.Subscribe(async _ => await RefreshDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
-				.Subscribe(async _ => await LoadObjDirectoryAsync(CurrentDirectory, true));
-			_ = this.WhenAnyValue(o => o.LocalDirectoryItems)
+				.Subscribe(async _ => await RefreshDirectoryAsync(true));
+
+			_ = this.WhenAnyValue(o => o.DirectoryItems)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
+			_ = this.WhenAnyValue(o => o.DirectoryItems)
+				.Subscribe(_ => CurrentlySelectedObject = null);
 
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
-				.Subscribe(_ => DirectoryItems = SelectedTabIndex == 0 ? LocalDirectoryItems : OnlineDirectoryItems);
+				.Subscribe(_ => UpdateDirectory());
+			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(RecreateText)));
+			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
+			_ = this.WhenAnyValue(o => o.LocalDirectoryItems)
+				.Subscribe(_ => UpdateDirectory());
+			_ = this.WhenAnyValue(o => o.OnlineDirectoryItems)
+				.Subscribe(_ => UpdateDirectory());
 
 			// loads the last-viewed folder
-			CurrentDirectory = Model.Settings.ObjDataDirectory;
+			CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
+		}
 
-			// hack for now - in future we should set DirectoryItems to whatever the tab/toggle control is set to
-			//DirectoryItems = LocalDirectoryItems;
+		void UpdateDirectory()
+			=> DirectoryItems = SelectedTabIndex == 0
+				? new(LocalDirectoryItems)
+				: new(OnlineDirectoryItems);
 
-			_ = Task.Run(LoadOnlineDirectoryAsync);
+		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndex> index, string filenameFilter, bool vanillaOnly, FileLocation fileLocation)
+		{
+			var result = new List<FileSystemItemBase>();
+
+			var groupedObjects = index
+				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!vanillaOnly || o.SourceGame == SourceGame.Vanilla))
+				.GroupBy(o => o.ObjectType)
+				.OrderBy(fsg => fsg.Key.ToString());
+
+			foreach (var objGroup in groupedObjects)
+			{
+				ObservableCollection<FileSystemItemBase> subNodes;
+				if (objGroup.Key == ObjectType.Vehicle)
+				{
+					subNodes = [];
+					foreach (var vg in objGroup
+						.GroupBy(o => o.VehicleType)
+						.OrderBy(vg => vg.Key.ToString()))
+					{
+						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
+							.Select(o => new FileSystemItem(o.Filename, o.ObjectName.Trim(), o.SourceGame, fileLocation))
+							.OrderBy(o => o.Name));
+
+						if (vg.Key == null)
+						{
+							// this should be impossible - object says its a vehicle but doesn't have a vehicle type
+							// todo: move validation into the loading stage or cstr of IndexObjectHeader
+							continue;
+						}
+
+						subNodes.Add(new FileSystemVehicleGroup(
+							string.Empty,
+							vg.Key.Value,
+							vehicleSubNodes));
+					}
+				}
+				else
+				{
+					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
+						.Select(o => new FileSystemItem(o.Filename, o.ObjectName.Trim(), o.SourceGame, fileLocation))
+						.OrderBy(o => o.Name));
+				}
+
+				result.Add(new FileSystemItemGroup(
+						string.Empty,
+						objGroup.Key,
+						subNodes));
+			}
+
+			return result;
+		}
+
+		async Task RefreshDirectoryAsync(bool useExistingIndex)
+		{
+			if (SelectedTabIndex == 0)
+			{
+				// local
+				await LoadObjDirectoryAsync(CurrentLocalDirectory, useExistingIndex);
+			}
+			else // remote
+			{
+				await LoadOnlineDirectoryAsync(useExistingIndex);
+			}
 		}
 
 		async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
 		{
-			DirectoryItems = new(await LoadObjDirectoryCoreAsync(directory, useExistingIndex));
-
-			async Task<List<FileSystemItemBase>> LoadObjDirectoryCoreAsync(string directory, bool useExistingIndex)
+			if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
 			{
-				var result = new List<FileSystemItemBase>();
-
-				if (string.IsNullOrEmpty(directory))
-				{
-					return result;
-				}
-
-				var dirInfo = new DirectoryInfo(directory);
-
-				if (!dirInfo.Exists)
-				{
-					return result;
-				}
-
-				await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
-
-				var groupedObjects = Model.HeaderIndex
-					.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))
-					.GroupBy(o => o.Value.ObjectType)
-					.OrderBy(fsg => fsg.Key.ToString());
-
-				foreach (var objGroup in groupedObjects)
-				{
-					ObservableCollection<FileSystemItemBase> subNodes; //(objGroup.Select(o => new FileSystemItemBase(o.Key, o.Value.DatFileInfo.S5Header.Name.Trim())));
-					if (objGroup.Key == ObjectType.Vehicle)
-					{
-						subNodes = [];
-						foreach (var vg in objGroup
-							.GroupBy(o => o.Value.VehicleType)
-							.OrderBy(vg => vg.Key.ToString()))
-						{
-							var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-								.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame))
-								.OrderBy(o => o.Name));
-
-							if (vg.Key == null)
-							{
-								// this should be impossible - object says its a vehicle but doesn't have a vehicle type
-								// todo: move validation into the loading stage or cstr of IndexObjectHeader
-								continue;
-							}
-
-							subNodes.Add(new FileSystemVehicleGroup(
-								string.Empty,
-								vg.Key.Value,
-								vehicleSubNodes));
-						}
-					}
-					else
-					{
-						subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-							.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame))
-							.OrderBy(o => o.Name));
-					}
-
-					result.Add(new FileSystemItemGroup(
-							string.Empty,
-							objGroup.Key,
-							subNodes));
-				}
-
-				return result;
+				//LocalDirectoryItems = [];
+				return;
 			}
+
+			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
+			LocalDirectoryItems = ConstructTreeView(Model.HeaderIndex.Values, FilenameFilter, DisplayVanillaOnly, FileLocation.Local);
 		}
 
-		async Task LoadObjDirectoryAsyncNew(string directory, bool useExistingIndex)
-		{
-			// loads the last-viewed folder
-			if (!Design.IsDesignMode)
-			{
-				// DO NOT REINDEX AT DESIGN TIME
-				useExistingIndex = true;
-			}
+		List<ObjectIndex>? cachedIndexFromServer;
 
-			LocalDirectoryItems = new(await LoadObjDirectoryCoreAsync(directory, useExistingIndex));
-
-			// really just for debugging - puts all dat file types in the collection, even if they don't have anything in them
-			//foreach (var dat in Enum.GetValues<DatFileType>().Except(DirectoryItems.Select(x => ((FileSystemDatGroup)x).DatFileType)))
-			//{
-			//	DirectoryItems.Add(new FileSystemDatGroup(string.Empty, dat, new ObservableCollection<FileSystemItemBase>()));
-			//}
-
-			async Task<List<FileSystemItemBase>> LoadObjDirectoryCoreAsync(string directory, bool useExistingIndex)
-			{
-				var result = new List<FileSystemItemBase>();
-
-				if (string.IsNullOrEmpty(directory))
-				{
-					return result;
-				}
-
-				var dirInfo = new DirectoryInfo(directory);
-
-				if (!dirInfo.Exists)
-				{
-					return result;
-				}
-
-				// todo: load each file
-				// check if its object, scenario, save, landscape, g1, sfx, tutorial, etc
-
-				await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
-
-				var groupedDatObjects = Model.HeaderIndex
-					.Where(o => (string.IsNullOrEmpty(FilenameFilter) || o.Value.Name.Contains(FilenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!DisplayVanillaOnly || o.Value.SourceGame == SourceGame.Vanilla))
-					.GroupBy(o => o.Value.DatFileType)
-					.OrderBy(x => x.Key.ToString());
-
-				foreach (var datObjGroup in groupedDatObjects)
-				{
-					ObservableCollection<FileSystemItemBase> groups = [];
-
-					var groupedObjects = datObjGroup
-						.GroupBy(x => x.Value.ObjectType)
-						.OrderBy(x => x.Key.ToString());
-
-					foreach (var objGroup in groupedObjects)
-					{
-						ObservableCollection<FileSystemItemBase> subNodes = [];
-						if (objGroup.Key == ObjectType.Vehicle)
-						{
-							foreach (var vg in objGroup
-								.GroupBy(o => o.Value.VehicleType)
-								.OrderBy(vg => vg.Key.ToString()))
-							{
-								var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(
-									vg
-									.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame))
-									.OrderBy(o => o.Name));
-
-								if (vg.Key == null)
-								{
-									// this should be impossible - object says its a vehicle but doesn't have a vehicle type
-									// todo: move validation into the loading stage or cstr of IndexObjectHeader
-									continue;
-								}
-
-								subNodes.Add(new FileSystemVehicleGroup(
-									string.Empty,
-									vg.Key.Value,
-									vehicleSubNodes));
-							}
-						}
-						else
-						{
-							subNodes = new ObservableCollection<FileSystemItemBase>(
-								objGroup
-								.Select(o => new FileSystemItem(o.Key, o.Value.Name.Trim(), o.Value.SourceGame))
-								.OrderBy(o => o.Name));
-						}
-
-						groups.Add(new FileSystemItemGroup(
-							string.Empty,
-							objGroup.Key,
-							subNodes));
-					}
-
-					result.Add(new FileSystemDatGroup(
-						string.Empty,
-						datObjGroup.Key,
-						groups));
-				}
-
-				return result;
-			}
-		}
-
-		private async Task LoadOnlineDirectoryAsync()
+		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 		{
 			if (Design.IsDesignMode)
 			{
@@ -260,23 +209,28 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			// send request to server
-			using HttpResponseMessage response = await Model.WebClient.GetAsync("/objects/list");
-			// wait for request to arrive back
-			if (!response.IsSuccessStatusCode)
+			if (!useExistingIndex || cachedIndexFromServer == null)
 			{
-				// failed
+				using var response = await Model.WebClient.GetAsync("/objects/list");
+				if (!response.IsSuccessStatusCode)
+				{
+					// failed
+					return;
+				}
+
+				var data = await response.Content.ReadFromJsonAsync<List<ObjectIndex>>();
+				if (data == null)
+				{
+					// show warning/error?
+					return;
+				}
+				cachedIndexFromServer = data;
 			}
-
-			var json = await response.Content.ReadAsStringAsync();
-			var data = JsonSerializer.Deserialize<IEnumerable<string>>(json);
-			OnlineDirectoryItems = new ObservableCollection<FileSystemItemBase>(data.Select(x => new FileSystemItem("<online>", x, SourceGame.Vanilla)));
-
-			// parse request
-			// set up tree
+			OnlineDirectoryItems = ConstructTreeView(
+				cachedIndexFromServer,
+				FilenameFilter,
+				DisplayVanillaOnly,
+				FileLocation.Online);
 		}
-
-		public string DirectoryFileCount
-			=> $"Objects: {Model.HeaderIndex.Count}";
 	}
 }

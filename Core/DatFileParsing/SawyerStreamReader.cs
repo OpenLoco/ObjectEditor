@@ -11,8 +11,6 @@ using System.Collections.Concurrent;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {
-	public record ObjectIndex(string filename, S5Header s5, ObjectHeader oh, VehicleType? VehicleType = null);
-
 	public static class SawyerStreamReader
 	{
 		public static List<S5Header> LoadVariableCountS5Headers(ReadOnlySpan<byte> data, int max)
@@ -467,37 +465,11 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			}
 		}
 
-		public static List<ObjectIndex> FastIndex(string[] files, IProgress<float> progress)
-		{
-			ConcurrentQueue<(string, byte[])> pendingFiles = [];
-			ConcurrentQueue<ObjectIndex> pendingIndices = [];
-
-			var producerTask = Task.Run(async () =>
-			{
-				var options = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
-				await Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(f, ct))));
-			});
-
-			var consumerTask = Task.Run(async () =>
-			{
-				while (pendingIndices.Count != files.Length)
-				{
-					if (pendingFiles.TryDequeue(out var content))
-					{
-						pendingIndices.Enqueue(await GetDatFileInfoFromBytes(content));
-						progress.Report((float)pendingIndices.Count / files.Length);
-					}
-				}
-			});
-
-			Task.WaitAll(producerTask, consumerTask);
-			return [.. pendingIndices];
-		}
-
 		public static Task<List<ObjectIndex>> FastIndexAsync(string[] files, IProgress<float> progress)
 		{
-			ConcurrentQueue<(string, byte[])> pendingFiles = [];
+			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
 			ConcurrentQueue<ObjectIndex> pendingIndices = [];
+			ConcurrentBag<string> failedFiles = [];
 
 			var producerTask = Task.Run(async () =>
 			{
@@ -507,12 +479,20 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 
 			var consumerTask = Task.Run(async () =>
 			{
-				while (pendingIndices.Count != files.Length)
+				while ((pendingIndices.Count + failedFiles.Count) != files.Length)
 				{
 					if (pendingFiles.TryDequeue(out var content))
 					{
-						pendingIndices.Enqueue(await GetDatFileInfoFromBytes(content));
-						progress.Report((float)pendingIndices.Count / files.Length);
+						var index = await GetDatFileInfoFromBytes(content);
+						if (index == null)
+						{
+							failedFiles.Add(content.Filename);
+						}
+						else
+						{
+							pendingIndices.Enqueue(index);
+						}
+						progress.Report((pendingIndices.Count + failedFiles.Count) / (float)files.Length);
 					}
 				}
 			});
@@ -524,28 +504,26 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			});
 		}
 
-		static async Task<ObjectIndex> GetDatFileInfoFromBytes((string filename, byte[] data) file)
+		static async Task<ObjectIndex?> GetDatFileInfoFromBytes((string Filename, byte[] Data) file)
 			=> await Task.Run(() =>
 			{
-				ObjectIndex NullObjectIndex = new(file.filename, S5Header.NullHeader, ObjectHeader.NullHeader);
-
-				if (file.data!.Length < (S5Header.StructLength + ObjectHeader.StructLength))
+				if (file.Data!.Length < (S5Header.StructLength + ObjectHeader.StructLength))
 				{
-					return NullObjectIndex;
+					return null;
 				}
 
-				var span = file.data.AsSpan();
+				var span = file.Data.AsSpan();
 				var s5 = S5Header.Read(span[0..S5Header.StructLength]);
 				var oh = ObjectHeader.Read(span[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
 				var remainingData = span[(S5Header.StructLength + ObjectHeader.StructLength)..];
 				if (s5.ObjectType == ObjectType.Vehicle)
 				{
 					var decoded = Decode(oh.Encoding, remainingData, 4); // only need 4 bytes since:
-					return new(file.filename, s5, oh, (VehicleType)decoded[3]); // 4th byte is vehicle type
+					return new ObjectIndex(file.Filename, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, (VehicleType)decoded[3]); // 4th byte is vehicle type
 				}
 				else
 				{
-					return new(file.filename, s5, oh);
+					return new ObjectIndex(file.Filename, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum);
 				}
 			});
 

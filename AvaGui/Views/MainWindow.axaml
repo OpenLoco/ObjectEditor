@@ -27,14 +27,7 @@
 	</Window.Resources>
 
 	<Window.DataTemplates>
-		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
-
-		<DataTemplate DataType="mo:FileSystemDatGroup">
-			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-			</StackPanel>
-		</DataTemplate>
+		<!-- Mind the order of the Templates. Begin with the most specific first. -->
 
 		<DataTemplate DataType="mo:FileSystemItemGroup">
 			<StackPanel Orientation="Horizontal">
@@ -175,7 +168,7 @@
 						</DockPanel>
 						<Button.Flyout >
 							<Flyout>
-								<ColorView  Name="ImageBackgroundColorView" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+								<ColorView Name="ImageBackgroundColorView" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
 							</Flyout>
 						</Button.Flyout>
 					</Button>
@@ -264,7 +257,7 @@
 				</MenuItem>
 				<MenuItem Header="_ObjData" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
 					<MenuItem.Styles>
-						<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemModel">
+						<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemViewModel">
 							<Setter Property="Header" Value="{Binding Name}"/>
 							<Setter Property="Command" Value="{Binding MenuCommand}"/>
 						</Style>
@@ -280,7 +273,7 @@
 		</Expander>
 
 		<DockPanel DataContext="{Binding FolderTreeViewModel}" >
-			<TabControl DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}">
+			<TabControl DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
 				<TabItem Header="Local" FontSize="16"/>
 				<TabItem Header="Online" FontSize="16"/>
 			</TabControl>
@@ -299,14 +292,14 @@
 					<DockPanel>
 						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexingProgress}"/>
 						<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
-						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Recreate index</TextBlock>
+						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding RecreateText}" />
 					</DockPanel>
 				</Button>
 				<DockPanel Grid.Row="3" Margin="2" >
 					<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
-					<TextBox Text="{Binding FilenameFilter}" BorderBrush="Gray"  Watermark="Filename filter" />
+					<TextBox Text="{Binding FilenameFilter}" BorderBrush="Gray" Watermark="Filename filter" />
 				</DockPanel>
-				<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly, Mode=TwoWay}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
+				<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
 				<Border Grid.Row="5" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
 					<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
 						<TreeView.ItemTemplate>

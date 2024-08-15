@@ -141,7 +141,7 @@ namespace AvaGui.ViewModels
 			}
 			set
 			{
-				images = value;
+				//images = value;
 				_ = this.RaiseAndSetIfChanged(ref images, value);
 			}
 		}

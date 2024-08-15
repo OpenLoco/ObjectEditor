@@ -1,5 +1,7 @@
 using Database;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.ObjectEditor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +10,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(LocoDb.GetDbPath()));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddHttpLogging(logging => logging.LoggingFields = HttpLoggingFields.All);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 var app = builder.Build();
+app.UseHttpLogging();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -20,19 +27,16 @@ if (app.Environment.IsDevelopment())
 }
 
 // eg: https://localhost:7230/objects/list
-app.MapGet("/objects/list/", () =>
+_ = app.MapGet("/objects/list/", () =>
 {
 	const string objFolderPath = @"Q:\Games\Locomotion\OriginalObjects";
-	var datFiles = Directory
-		.GetFileSystemEntries(objFolderPath)
-		.Where(x => Path.GetExtension(x.ToLower()).Equals(".dat", StringComparison.OrdinalIgnoreCase))
-		.Select(x => Path.GetFileNameWithoutExtension(x));
-
-	return datFiles;
+	const string objIndex = @"objectIndex.json";
+	var index = ObjectIndexManager.DeserialiseHeaderIndexFromFile(Path.Combine(objFolderPath, objIndex)) ?? []; // todo: currently this loads every time - lets cache it
+	return index.Values.Select(x => x with { Filename = "<online>" }); // make sure we don't expose server filepaths to clients...
 });
 
 // eg: https://localhost:7230/objects/originaldat/114
-app.MapGet("/objects/originaldat/{uniqueObjectId}", (string uniqueObjectId) =>
+_ = app.MapGet("/objects/originaldat/{uniqueObjectId}", (string uniqueObjectId) =>
 {
 	const string objFolderPath = @"Q:\Games\Locomotion\OriginalObjects";
 	var objFilename = Path.Combine(objFolderPath, $"{uniqueObjectId}.dat");
@@ -44,20 +48,20 @@ app.MapGet("/objects/originaldat/{uniqueObjectId}", (string uniqueObjectId) =>
 	return null;
 });
 
-app.MapGet("/objects/newobjectformat/{uniqueObjectId}", (string uniqueObjectId) =>
+_ = app.MapGet("/objects/newobjectformat/{uniqueObjectId}", (string uniqueObjectId) =>
 {
 
 });
 
-app.MapGet("/objects/metadata/{uniqueObjectId}", (string uniqueObjectId) =>
+_ = app.MapGet("/objects/metadata/{uniqueObjectId}", (string uniqueObjectId) =>
 {
 
 });
 
-app.MapGet("/todoitems", async (LocoDb db) =>
+_ = app.MapGet("/todoitems", async (LocoDb db) =>
 	await db.Objects.ToListAsync());
 
-app.MapPost("/todoitems", async (TblLocoObject locoObject, LocoDb db) =>
+_ = app.MapPost("/todoitems", async (TblLocoObject locoObject, LocoDb db) =>
 {
 	db.Objects.Add(locoObject);
 	await db.SaveChangesAsync();

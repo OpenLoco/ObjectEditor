@@ -1,10 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Sqlite.Infrastructure.Internal;
-using Microsoft.Extensions.Options;
 using OpenLoco.ObjectEditor.Data;
-using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Database
 {

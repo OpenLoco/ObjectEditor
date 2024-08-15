@@ -1,11 +1,10 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, AvaGui.Models.ObjectIndexModel>;
+global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.DatFileParsing.ObjectIndex>;
 using Avalonia;
 using AvaGui.Models;
 using ReactiveUI;
 using System;
 using System.Reactive;
 using System.Linq;
-using System.Windows.Input;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
@@ -21,18 +20,9 @@ using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text;
-using System.Net;
-using OpenLoco.ObjectEditor.DatFileParsing;
 
 namespace AvaGui.ViewModels
 {
-	public class MenuItemModel(string name, ICommand menuCommand/*, ICommand deleteCommand*/) : ReactiveObject
-	{
-		[Reactive] public string Name { get; set; } = name;
-		[Reactive] public ICommand MenuCommand { get; set; } = menuCommand;
-		//[Reactive] public ICommand DeleteCommand { get; set; } = deleteCommand;
-	}
-
 	public class MainWindowViewModel : ViewModelBase
 	{
 		public ObjectEditorModel Model { get; }
@@ -44,9 +34,9 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public ILocoFileViewModel CurrentEditorModel { get; set; }
 
-		public ObservableCollection<MenuItemModel> ObjDataItems { get; }
+		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; }
 
-		public ObservableCollection<MenuItemModel> DataItems { get; init; }
+		public ObservableCollection<MenuItemViewModel> DataItems { get; init; }
 
 		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
@@ -83,12 +73,12 @@ namespace AvaGui.ViewModels
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe(SetObjectViewModel);
 
-			ObjDataItems = new ObservableCollection<MenuItemModel>(Model.Settings.ObjDataDirectories
-				.Select(x => new MenuItemModel(
+			ObjDataItems = new ObservableCollection<MenuItemViewModel>(Model.Settings.ObjDataDirectories
+				.Select(x => new MenuItemViewModel(
 					x,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = x))));
-			ObjDataItems.Insert(0, new MenuItemModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
-			ObjDataItems.Insert(1, new MenuItemModel("-", ReactiveCommand.Create(() => { })));
+					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
+			ObjDataItems.Insert(0, new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
+			ObjDataItems.Insert(1, new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
 
 			OpenSettingsFolder = ReactiveCommand.Create(PlatformSpecific.FolderOpenInDesktop);
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObjectToIndex);
@@ -136,10 +126,10 @@ namespace AvaGui.ViewModels
 
 			//logger?.Info($"Opening {path}");
 			// todo: instead of using FileSystemItem.path, add a property IsOnline
-			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), OpenLoco.ObjectEditor.Data.SourceGame.Vanilla), out var uiLocoFile))
+			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), OpenLoco.ObjectEditor.Data.SourceGame.Vanilla, FileLocation.Local), out var uiLocoFile))
 			{
 				Model.Logger.Warning($"Successfully loaded {path}");
-				var file = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame);
+				var file = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame, FileLocation.Local);
 				SetObjectViewModel(file);
 			}
 			else
@@ -194,10 +184,10 @@ namespace AvaGui.ViewModels
 			var dirPath = dir.Path.LocalPath;
 			if (Directory.Exists(dirPath) && !Model.Settings.ObjDataDirectories.Contains(dirPath))
 			{
-				FolderTreeViewModel.CurrentDirectory = dirPath; // this will cause the reindexing
-				var menuItem = new MenuItemModel(
+				FolderTreeViewModel.CurrentLocalDirectory = dirPath; // this will cause the reindexing
+				var menuItem = new MenuItemViewModel(
 					dirPath,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentDirectory = dirPath)
+					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = dirPath)
 					/*ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count))*/);
 
 				ObjDataItems.Add(menuItem);

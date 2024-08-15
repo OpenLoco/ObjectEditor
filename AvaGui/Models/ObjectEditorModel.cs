@@ -13,10 +13,9 @@ using OpenLoco.ObjectEditor.DatFileParsing;
 using OpenLoco.ObjectEditor.Data;
 using OpenLoco.ObjectEditor;
 using System.Collections.ObjectModel;
-using System.Xml.Linq;
 using DynamicData;
-using AvaGui.ViewModels;
 using System.Net.Http;
+using Avalonia.Threading;
 
 namespace AvaGui.Models
 {
@@ -90,7 +89,7 @@ namespace AvaGui.Models
 		{
 			Logger = new Logger();
 			LoggerObservableLogs = [];
-			Logger.LogAdded += (sender, laea) => LoggerObservableLogs.Insert(0, laea.Log);
+			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
 
 			LoadSettings();
 			LoadMetadata();
@@ -114,13 +113,10 @@ namespace AvaGui.Models
 
 			Settings = settings!;
 
-			if (ValidateSettings(Settings, Logger))
+			if (ValidateSettings(Settings, Logger) && File.Exists(IndexFilename))
 			{
-				if (File.Exists(IndexFilename))
-				{
-					Logger?.Info($"Loading header index from \"{IndexFilename}\"");
-					LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true).Wait();
-				}
+				Logger?.Info($"Loading header index from \"{IndexFilename}\"");
+				Task.Run(async () => await LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true)).Wait();
 			}
 		}
 
@@ -150,8 +146,7 @@ namespace AvaGui.Models
 
 		public void SaveMetadata()
 		{
-			var options = GetJsonSerializationOptions();
-			var text = JsonSerializer.Serialize(Metadata, options);
+			var text = JsonSerializer.Serialize(Metadata);
 
 			var parentDir = Path.GetDirectoryName(MetadataFilename);
 			if (parentDir != null && !Directory.Exists(parentDir))
@@ -187,8 +182,7 @@ namespace AvaGui.Models
 
 		public void SaveSettings()
 		{
-			var options = GetJsonSerializationOptions();
-			var text = JsonSerializer.Serialize(Settings, options);
+			var text = JsonSerializer.Serialize(Settings);
 
 			var parentDir = Path.GetDirectoryName(SettingsFile);
 			if (parentDir != null && !Directory.Exists(parentDir))
@@ -283,16 +277,7 @@ namespace AvaGui.Models
 			var fileCount = allFiles.Length;
 			var index = await SawyerStreamReader.FastIndexAsync(allFiles, progress);
 
-			HeaderIndex = index.ToDictionary(
-				x => x.filename,
-				x => new ObjectIndexModel(
-					x.s5.Name,
-					DatFileType.Object,
-					x.s5.ObjectType,
-					x.s5.SourceGame,
-					x.s5.Checksum,
-					x.VehicleType)
-				);
+			HeaderIndex = index.ToDictionary(x => x.Filename, x => x);
 
 			sw.Stop();
 			Logger?.Info($"Indexed {fileCount} in {sw.Elapsed}");
@@ -360,8 +345,11 @@ namespace AvaGui.Models
 			}
 
 			Settings.ObjDataDirectory = directory;
+			SaveSettings();
+
 			var allFiles = Directory
 				.GetFiles(directory, "*", SearchOption.AllDirectories); // the searchPattern doesn't support full regex and is not case sensitive on windows but is case sensitive on linux
+
 
 			allFiles = allFiles
 				.Where(x => Path.GetExtension(x).Equals(".dat", StringComparison.OrdinalIgnoreCase))
@@ -369,48 +357,34 @@ namespace AvaGui.Models
 
 			if (useExistingIndex && File.Exists(IndexFilename))
 			{
-				HeaderIndex = DeserialiseHeaderIndexFromFile(IndexFilename) ?? HeaderIndex;
+				HeaderIndex = ObjectIndexManager.DeserialiseHeaderIndexFromFile(IndexFilename, Logger) ?? HeaderIndex;
 
-				var a = HeaderIndex.Keys.Except(allFiles);
-				var b = allFiles.Except(HeaderIndex.Keys);
-				if (a.Any() || b.Any())
+				if (HeaderIndex == null || HeaderIndex.Any(x => string.IsNullOrEmpty(x.Value.Filename) || string.IsNullOrEmpty(x.Value.ObjectName)))
 				{
-					Logger?.Warning("Selected directory had an index file but it was outdated; suggest recreating it when you have a moment");
+					Logger?.Warning("Index file appears to be malformed - recreating now.");
+					await RecreateIndex(progress, allFiles);
+					return;
+				}
+
+				if (HeaderIndex.Keys.Except(allFiles).Any() || allFiles.Except(HeaderIndex.Keys).Any())
+				{
+					Logger?.Warning("Index file appears to be outdated - recreating now.");
+					await RecreateIndex(progress, allFiles);
+					return;
 				}
 			}
 			else
 			{
+				await RecreateIndex(progress, allFiles);
+				return;
+			}
+
+			async Task RecreateIndex(IProgress<float> progress, string[] allFiles)
+			{
 				Logger?.Info("Recreating index file");
 				await CreateIndex(allFiles, progress); // do we need the array?
-				SerialiseHeaderIndexToFile(IndexFilename, HeaderIndex, GetJsonSerializationOptions());
+				ObjectIndexManager.SerialiseHeaderIndexToFile(IndexFilename, HeaderIndex, Logger);
 			}
-
-			SaveSettings();
-		}
-
-		private static JsonSerializerOptions GetJsonSerializationOptions()
-			=> new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
-
-		static void SerialiseHeaderIndexToFile(string filename, HeaderIndex headerIndex, JsonSerializerOptions options, ILogger? logger = null)
-		{
-			logger?.Info($"Saved settings to {filename}");
-			var json = JsonSerializer.Serialize(headerIndex, options);
-			File.WriteAllText(filename, json);
-		}
-
-		static HeaderIndex? DeserialiseHeaderIndexFromFile(string filename, ILogger? logger = null)
-		{
-			if (!File.Exists(filename))
-			{
-				logger?.Info($"Settings file {filename} does not exist");
-				return null;
-			}
-
-			logger?.Info($"Loading settings from {filename}");
-
-			var json = File.ReadAllText(filename);
-
-			return JsonSerializer.Deserialize<HeaderIndex>(json, GetJsonSerializationOptions()) ?? [];
 		}
 	}
 }

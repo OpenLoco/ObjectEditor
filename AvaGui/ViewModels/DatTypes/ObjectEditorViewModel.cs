@@ -6,7 +6,6 @@ using System.Reactive;
 using OpenLoco.ObjectEditor.Logging;
 using System.Threading.Tasks;
 using Core.Objects.Sound;
-using SixLabors.ImageSharp;
 
 namespace AvaGui.ViewModels
 {

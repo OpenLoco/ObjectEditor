@@ -26,16 +26,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaGui", "AvaGui\AvaGui.csproj", "{97BB6E13-07B5-4F91-BCB2-AEC1960EACC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectService", "ObjectService\ObjectService.csproj", "{9A3C313B-8D72-44C5-879D-0374BB98B9FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectService", "ObjectService\ObjectService.csproj", "{9A3C313B-8D72-44C5-879D-0374BB98B9FD}"
 	ProjectSection(ProjectDependencies) = postProject
 		{95C3FA06-59A8-4A95-8FB7-F722106D6071} = {95C3FA06-59A8-4A95-8FB7-F722106D6071}
 		{D533FEE8-653C-455C-A8A5-3A4B90060891} = {D533FEE8-653C-455C-A8A5-3A4B90060891}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{D533FEE8-653C-455C-A8A5-3A4B90060891}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Database", "Database\Database.csproj", "{D533FEE8-653C-455C-A8A5-3A4B90060891}"
 	ProjectSection(ProjectDependencies) = postProject
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C} = {16B6E331-F893-483A-AECC-A3B4E87CE34C}
 		{95C3FA06-59A8-4A95-8FB7-F722106D6071} = {95C3FA06-59A8-4A95-8FB7-F722106D6071}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Schema", "Schema\Schema.csproj", "{16B6E331-F893-483A-AECC-A3B4E87CE34C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,6 +134,18 @@ Global
 		{D533FEE8-653C-455C-A8A5-3A4B90060891}.Release|x64.Build.0 = Release|Any CPU
 		{D533FEE8-653C-455C-A8A5-3A4B90060891}.Release|x86.ActiveCfg = Release|Any CPU
 		{D533FEE8-653C-455C-A8A5-3A4B90060891}.Release|x86.Build.0 = Release|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Debug|x64.Build.0 = Debug|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Debug|x86.Build.0 = Debug|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Release|x64.ActiveCfg = Release|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Release|x64.Build.0 = Release|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Release|x86.ActiveCfg = Release|Any CPU
+		{16B6E331-F893-483A-AECC-A3B4E87CE34C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

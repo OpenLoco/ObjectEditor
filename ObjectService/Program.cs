@@ -2,6 +2,10 @@ using Database;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.ObjectEditor;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Types;
+using Schema;
+using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,26 +31,12 @@ if (app.Environment.IsDevelopment())
 }
 
 // eg: https://localhost:7230/objects/list
-_ = app.MapGet("/objects/list/", () =>
-{
-	const string objFolderPath = @"Q:\Games\Locomotion\OriginalObjects";
-	const string objIndex = @"objectIndex.json";
-	var index = ObjectIndexManager.DeserialiseHeaderIndexFromFile(Path.Combine(objFolderPath, objIndex)) ?? []; // todo: currently this loads every time - lets cache it
-	return index.Values.Select(x => x with { Filename = "<online>" }); // make sure we don't expose server filepaths to clients...
-});
+_ = app.MapGet("/objects/list/", (LocoDb db)
+	=> db.Objects.Select(x => new ObjectIndex(x.Name, x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)));
 
 // eg: https://localhost:7230/objects/originaldat/114
-_ = app.MapGet("/objects/originaldat/{uniqueObjectId}", (string uniqueObjectId) =>
-{
-	const string objFolderPath = @"Q:\Games\Locomotion\OriginalObjects";
-	var objFilename = Path.Combine(objFolderPath, $"{uniqueObjectId}.dat");
-	if (File.Exists(objFilename))
-	{
-		var bytes = File.ReadAllBytes(objFilename);
-		return Convert.ToBase64String(bytes);
-	}
-	return null;
-});
+_ = app.MapGet("/objects/originaldat/{uniqueObjectId}", async (string uniqueObjectId, LocoDb db)
+	=> await db.Objects.FindAsync(uniqueObjectId));
 
 _ = app.MapGet("/objects/newobjectformat/{uniqueObjectId}", (string uniqueObjectId) =>
 {

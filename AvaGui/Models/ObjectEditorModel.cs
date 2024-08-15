@@ -16,41 +16,12 @@ using System.Collections.ObjectModel;
 using DynamicData;
 using System.Net.Http;
 using Avalonia.Threading;
+using Shared;
+using System.Net.Http.Json;
+using Schema;
 
 namespace AvaGui.Models
 {
-	public class Data
-	{
-		[JsonPropertyName("C00")] public string ObjectName { get; set; }
-		[JsonPropertyName("C01")] public string Image { get; set; }
-		[JsonPropertyName("C02")] public string DescriptionAndFile { get; set; }
-		[JsonPropertyName("C03")] public string ClassNumber { get; set; }
-		[JsonPropertyName("C04")] public string Type { get; set; }
-		[JsonPropertyName("C05")] public string TrackType { get; set; }
-		[JsonPropertyName("C06")] public string Designed { get; set; }
-		[JsonPropertyName("C07")] public string Obsolete { get; set; }
-		[JsonPropertyName("C08")] public string Speed { get; set; }
-		[JsonPropertyName("C09")] public string Power { get; set; }
-		[JsonPropertyName("C10")] public string Weight { get; set; }
-		[JsonPropertyName("C11")] public string Reliability { get; set; }
-		[JsonPropertyName("C12")] public string Length { get; set; }
-		[JsonPropertyName("C13")] public string NumCompat { get; set; }
-		[JsonPropertyName("C14")] public string Sprites { get; set; }
-		[JsonPropertyName("C15")] public string CargoCapacity1 { get; set; }
-		[JsonPropertyName("C16")] public string CargoType1 { get; set; }
-		[JsonPropertyName("C17")] public string CargoCapacity2 { get; set; }
-		[JsonPropertyName("C18")] public string CargoType2 { get; set; }
-		[JsonPropertyName("C19")] public string Creator { get; set; }
-		[JsonPropertyName("C20")] public string _Tags { get; set; }
-
-		public string[] Tags => _Tags.Split(" ");
-	}
-
-	public class GlenDBSchema
-	{
-		public IList<Data> data { get; set; }
-	}
-
 	public class ObjectEditorModel
 	{
 		public EditorSettings Settings { get; private set; }
@@ -92,7 +63,8 @@ namespace AvaGui.Models
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
 
 			LoadSettings();
-			LoadMetadata();
+			//Metadata = Utils.LoadMetadata(MetadataFilename);
+			Metadata = Utils.LoadMetadata("G:\\My Drive\\Locomotion\\Objects\\dataBase.json");
 
 			// create http client
 			WebClient = new HttpClient() { BaseAddress = new Uri("https://localhost:7230"), };
@@ -125,37 +97,6 @@ namespace AvaGui.Models
 
 		public string MetadataFilename
 			=> Settings.GetObjDataFullPath(Settings.MetadataFileName);
-
-		public void LoadMetadata()
-		{
-			if (!File.Exists(MetadataFilename))
-			{
-				Logger?.Info($"Metadata file does not exist: \"{MetadataFilename}\"");
-				Metadata = [];
-				return;
-			}
-
-			Logger?.Info($"Loading metadata from \"{MetadataFilename}\"");
-
-			var text = File.ReadAllText(MetadataFilename);
-			var metadata = JsonSerializer.Deserialize<Dictionary<string, ObjectMetadata>>(text);
-			Verify.NotNull(metadata);
-
-			Metadata = metadata!;
-		}
-
-		public void SaveMetadata()
-		{
-			var text = JsonSerializer.Serialize(Metadata);
-
-			var parentDir = Path.GetDirectoryName(MetadataFilename);
-			if (parentDir != null && !Directory.Exists(parentDir))
-			{
-				_ = Directory.CreateDirectory(parentDir);
-			}
-
-			File.WriteAllText(MetadataFilename, text);
-		}
 
 		static bool ValidateSettings(EditorSettings settings, ILogger? logger)
 		{
@@ -193,31 +134,7 @@ namespace AvaGui.Models
 			File.WriteAllText(SettingsFile, text);
 		}
 
-		public ObjectMetadata LoadObjectMetadata(string objectName, uint checksum)
-		{
-			if (!Metadata.TryGetValue(objectName, out var value))
-			{
-				var text = File.ReadAllText(@"G:\\My Drive\\Locomotion\\Objects\\dataBase.json");
-				var data = JsonSerializer.Deserialize<GlenDBSchema>(text); // this loads and deserialises the entire thing every time, rip
-				var matching = data!.data.Where(x => x.ObjectName == objectName);
-				var first = matching.FirstOrDefault();
-
-				value = new ObjectMetadata(objectName, checksum);
-
-				if (first != null)
-				{
-					value.Description = first.DescriptionAndFile;
-					value.Author = first.Creator;
-					value.Tags.AddRange(first.Tags);
-
-				}
-				Metadata.Add(objectName, value);
-			}
-
-			return value;
-		}
-
-		public bool TryLoadObject(FileSystemItemBase filesystemItem, out UiLocoFile? uiLocoFile)
+		public bool TryLoadObject(FileSystemItem filesystemItem, out UiLocoFile? uiLocoFile)
 		{
 			if (string.IsNullOrEmpty(filesystemItem.Path))
 			{
@@ -225,23 +142,30 @@ namespace AvaGui.Models
 				return false;
 			}
 
-			DatFileInfo? fileInfo;
-			ILocoObject? locoObject;
+			DatFileInfo? fileInfo = null;
+			ILocoObject? locoObject = null;
 
 			try
 			{
-				if (filesystemItem.Path.Equals("<online>", StringComparison.OrdinalIgnoreCase))
+				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					using HttpResponseMessage response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Name}")).Result;
+					using HttpResponseMessage response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
 					// wait for request to arrive back
 					if (!response.IsSuccessStatusCode)
 					{
 						// failed
 					}
 
-					var base64obj = Task.Run(response.Content.ReadAsStringAsync).Result;
-					var objdata = Convert.FromBase64String(base64obj);
-					(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(objdata, $"{filesystemItem.Path}/{filesystemItem.Name}", true, Logger);
+					var locoObj = response.Content.ReadFromJsonAsync<TblLocoObject>().Result;
+
+					if (locoObj == null || locoObj.OriginalBytes.Length == 0)
+					{
+						Logger?.Error($"Unable to load {filesystemItem.Path} from online");
+					}
+					else
+					{
+						(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(locoObj.OriginalBytes, $"{filesystemItem.Path}/{filesystemItem.Name}", true, Logger);
+					}
 				}
 				else
 				{
@@ -346,14 +270,7 @@ namespace AvaGui.Models
 
 			Settings.ObjDataDirectory = directory;
 			SaveSettings();
-
-			var allFiles = Directory
-				.GetFiles(directory, "*", SearchOption.AllDirectories); // the searchPattern doesn't support full regex and is not case sensitive on windows but is case sensitive on linux
-
-
-			allFiles = allFiles
-				.Where(x => Path.GetExtension(x).Equals(".dat", StringComparison.OrdinalIgnoreCase))
-				.ToArray();
+			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 
 			if (useExistingIndex && File.Exists(IndexFilename))
 			{

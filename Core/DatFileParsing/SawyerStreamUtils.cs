@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 
 namespace OpenLoco.ObjectEditor.DatFileParsing
 {
@@ -23,5 +23,10 @@ namespace OpenLoco.ObjectEditor.DatFileParsing
 			checksum = ComputeChecksum(data, checksum);
 			return checksum;
 		}
+
+		public static IEnumerable<string> GetDatFilesInDirectory(string directory)
+			=> Directory
+				.GetFiles(directory, "*", SearchOption.AllDirectories)
+				.Where(x => Path.GetExtension(x).Equals(".dat", StringComparison.OrdinalIgnoreCase));
 	}
 }

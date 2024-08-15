@@ -17,7 +17,7 @@ namespace Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
-            modelBuilder.Entity("Database.TblAuthor", b =>
+            modelBuilder.Entity("Schema.TblAuthor", b =>
                 {
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
@@ -27,7 +27,7 @@ namespace Database.Migrations
                     b.ToTable("Authors");
                 });
 
-            modelBuilder.Entity("Database.TblLocoObject", b =>
+            modelBuilder.Entity("Schema.TblLocoObject", b =>
                 {
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
@@ -44,6 +44,9 @@ namespace Database.Migrations
                     b.Property<DateTime?>("LastEditDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<byte>("ObjectType")
+                        .HasColumnType("INTEGER");
+
                     b.Property<byte[]>("OriginalBytes")
                         .IsRequired()
                         .HasColumnType("BLOB");
@@ -55,10 +58,10 @@ namespace Database.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<byte>("OriginalObjectType")
+                    b.Property<byte>("SourceGame")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte>("OriginalSourceGame")
+                    b.Property<byte?>("VehicleType")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Name");
@@ -68,7 +71,7 @@ namespace Database.Migrations
                     b.ToTable("Objects");
                 });
 
-            modelBuilder.Entity("Database.TblTag", b =>
+            modelBuilder.Entity("Schema.TblTag", b =>
                 {
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
@@ -78,9 +81,9 @@ namespace Database.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("Database.TblLocoObject", b =>
+            modelBuilder.Entity("Schema.TblLocoObject", b =>
                 {
-                    b.HasOne("Database.TblAuthor", "Author")
+                    b.HasOne("Schema.TblAuthor", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorName");
 

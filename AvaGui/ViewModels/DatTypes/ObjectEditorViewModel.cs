@@ -6,6 +6,7 @@ using System.Reactive;
 using OpenLoco.ObjectEditor.Logging;
 using System.Threading.Tasks;
 using Core.Objects.Sound;
+using Shared;
 
 namespace AvaGui.ViewModels
 {
@@ -56,14 +57,14 @@ namespace AvaGui.ViewModels
 				svm.Dispose();
 			}
 
-			if (CurrentFile == null)
+			if (CurrentFile is not FileSystemItem cf)
 			{
 				return;
 			}
 
-			Logger?.Info($"Loading {CurrentFile.Name} from {CurrentFile.Path}");
+			Logger?.Info($"Loading {cf.Name} from {cf.Path}");
 
-			if (Model.TryLoadObject(CurrentFile, out var newObj))
+			if (Model.TryLoadObject(cf, out var newObj))
 			{
 				CurrentObject = newObj;
 
@@ -75,7 +76,7 @@ namespace AvaGui.ViewModels
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
 
 					var name = CurrentObject.DatFileInfo.S5Header.Name.Trim();
-					CurrentMetadata = Model.LoadObjectMetadata(name, CurrentObject.DatFileInfo.S5Header.Checksum);
+					CurrentMetadata = Utils.LoadObjectMetadata(name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata);
 				}
 				else
 				{
@@ -122,7 +123,7 @@ namespace AvaGui.ViewModels
 
 		public void SaveCurrentMetadata()
 		{
-			Model.SaveMetadata();
+			Utils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
 		}
 	}
 }

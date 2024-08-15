@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.ObjectEditor.Data;
+using Schema;
 
 namespace Database
 {
@@ -57,59 +58,5 @@ namespace Database
 
 			return path;
 		}
-	}
-
-	//public class TblObjectTagLink
-	//{
-	//	public int ObjectId { get; set; }
-	//	public TblLocoObject Object { get; set; }
-	//	public int TagId { get; set; }
-	//	public TblTag Tag { get; set; }
-	//}
-
-	[PrimaryKey("Name")]
-	public class TblAuthor
-	{
-		public string Name { get; set; }
-	}
-
-	[PrimaryKey("Name")]
-	public class TblTag
-	{
-		public string Name { get; set; }
-	}
-
-	[PrimaryKey("Name")]
-	public class TblLocoObject
-	{
-		public string Name { get; set; }
-
-		#region OriginalDatdata
-
-		public string OriginalName { get; set; }
-
-		public uint OriginalChecksum { get; set; }
-
-		public SourceGame OriginalSourceGame { get; set; }
-
-		public ObjectType OriginalObjectType { get; set; }
-
-		public byte[] OriginalBytes { get; set; }
-
-		#endregion
-
-		#region Metadata
-
-		public string? Description { get; set; }
-
-		public TblAuthor? Author { get; set; }
-
-		public DateTime? CreationDate { get; set; }
-
-		public DateTime? LastEditDate { get; set; }
-
-		//public List<TblObjectTagLink>? Tags { get; } = [];
-
-		#endregion
 	}
 }

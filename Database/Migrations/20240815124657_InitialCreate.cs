@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Database.Migrations
 {
-	/// <inheritdoc />
-	public partial class InitialCreate : Migration
+    /// <inheritdoc />
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -39,9 +40,10 @@ namespace Database.Migrations
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     OriginalName = table.Column<string>(type: "TEXT", nullable: false),
                     OriginalChecksum = table.Column<uint>(type: "INTEGER", nullable: false),
-                    OriginalSourceGame = table.Column<byte>(type: "INTEGER", nullable: false),
-                    OriginalObjectType = table.Column<byte>(type: "INTEGER", nullable: false),
                     OriginalBytes = table.Column<byte[]>(type: "BLOB", nullable: false),
+                    SourceGame = table.Column<byte>(type: "INTEGER", nullable: false),
+                    ObjectType = table.Column<byte>(type: "INTEGER", nullable: false),
+                    VehicleType = table.Column<byte>(type: "INTEGER", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     AuthorName = table.Column<string>(type: "TEXT", nullable: true),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: true),

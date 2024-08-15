@@ -1,96 +1,127 @@
 using Database;
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.ObjectEditor.Objects;
+using Schema;
+using Shared;
 
 var builder = new DbContextOptionsBuilder<LocoDb>();
 builder.UseSqlite(LocoDb.GetDbPath());
 using var db = new LocoDb(builder.Options);
 
-// Note: This sample requires the database to be created before running.
+// Note: The database must exist before this script works
 Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
+bool seed = true;
 
-// Create
-Console.WriteLine("Seeding");
-
-if (!db.Tags.Any())
+if (seed)
 {
-	var t1 = new TblTag() { Name = "Engine" };
-	var t2 = new TblTag() { Name = "Tree" };
-
-	db.Add(t1);
-	db.Add(t2);
+	Console.WriteLine("Clearing database");
+	// clear
+	db.Authors.ExecuteDelete();
+	db.Tags.ExecuteDelete();
+	db.Objects.ExecuteDelete();
 	db.SaveChanges();
-}
 
-if (!db.Authors.Any())
-{
-	var a1 = new TblAuthor() { Name = "Bob" };
-	var a2 = new TblAuthor() { Name = "Jane" };
+	// Load data
 
-	db.Add(a1);
-	db.Add(a2);
-	db.SaveChanges();
-}
+	var objDirectory = @"Q:\Games\Locomotion\OriginalObjects";
+	var datFiles = SawyerStreamUtils.GetDatFilesInDirectory(objDirectory);
 
-//db.Objects.ExecuteDelete();
-//db.SaveChanges();
+	Console.WriteLine("Loading metadata data file");
+	var metadata = Utils.LoadMetadata("G:\\My Drive\\Locomotion\\Objects\\dataBase.json");
 
-if (!db.Objects.Any())
-{
-	var o1 = new TblLocoObject()
+	// Seed
+
+	if (!db.Authors.Any())
 	{
-		Name = "bob1",
-		Author = db.Authors.First(),
-		OriginalName = "bob1.dat",
-		OriginalChecksum = 12345,
-		OriginalBytes = [],
-		OriginalObjectType = OpenLoco.ObjectEditor.Data.ObjectType.InterfaceSkin,
-		OriginalSourceGame = OpenLoco.ObjectEditor.Data.SourceGame.Custom,
-	};
+		Console.WriteLine("Seeding Authors");
+		var authors = metadata.Values.Select(x => x.Author).Distinct();
+		foreach (var author in authors)
+		{
+			db.Add(new TblAuthor() { Name = author });
+		}
+		db.SaveChanges();
+	}
 
-	db.Add(o1);
-	db.SaveChanges();
+	// ...
 
-	//if (!db.ObjectTagLinks.Any())
-	//{
-	//	//var otl1 = new TblObjectTagLink() { Object = o1, Tag = db.Tags.Single(x => x.Name == "Engine") };
-	//	//var otl2 = new TblObjectTagLink() { Object = o1, Tag = db.Tags.Single(x => x.Name == "Tree") };
+	if (!db.Tags.Any())
+	{
+		Console.WriteLine("Seeding Tags");
+		var tags = metadata.Values.Select(x => x.Tags).SelectMany(x => x).Distinct();
+		foreach (var tag in tags.Where(x => !string.IsNullOrEmpty(x)))
+		{
+			db.Add(new TblTag() { Name = tag });
+		}
+		db.SaveChanges();
+	}
 
-	//	db.Add(otl1);
-	//	db.Add(otl2);
-	//	db.SaveChanges();
+	// ...
 
+	if (!db.Objects.Any())
+	{
+		Console.WriteLine("Seeding Objects");
+		foreach (var datFile in datFiles)
+		{
+			var bytes = File.ReadAllBytes(datFile);
+			var (fileInfo, locoObj) = SawyerStreamReader.LoadFullObjectFromStream(bytes, filename: datFile, loadExtra: false); // currently don't need to load extra
 
-	//	//o1.Tags.Add(db.ObjectTagLinks.OrderBy(x => x.Tag.Name).First());
-	//	//o1.Tags.Add(db.ObjectTagLinks.OrderBy(x => x.Tag.Name).Last());
-	//	db.SaveChanges();
-	//}
+			var tblLocoObject = new TblLocoObject()
+			{
+				Name = Utils.GetDatCompositeKey(fileInfo.S5Header.Name, fileInfo.S5Header.Checksum),
+				OriginalName = fileInfo.S5Header.Name.Trim(),
+				OriginalChecksum = fileInfo.S5Header.Checksum,
+				OriginalBytes = bytes,
+				SourceGame = fileInfo.S5Header.SourceGame,
+				ObjectType = fileInfo.S5Header.ObjectType,
+				VehicleType = (locoObj?.Object is VehicleObject veh) ? veh.Type : null,
+				Description = "<unk>", // todo: load from Glen's DB
+				Author = null, // todo: load from Glen's DB
+				CreationDate = null,
+				LastEditDate = null,
+			};
 
+			db.Add(tblLocoObject);
+		}
+		db.SaveChanges();
+	}
+
+	Console.WriteLine("Finished seeding");
 }
 
 // Read
 Console.WriteLine("Querying for an Author");
-var author = db.Authors
+var _author = db.Authors
 	.OrderBy(b => b.Name)
 	.First();
-Console.WriteLine(author.Name);
+Console.WriteLine(_author.Name);
 
 Console.WriteLine("Querying for a Tag");
-var tag = db.Tags
+var _tag = db.Tags
 	.OrderBy(b => b.Name)
 	.First();
-Console.WriteLine(tag.Name);
+Console.WriteLine(_tag.Name);
 
 Console.WriteLine("Querying for an Object");
 var obj = db.Objects
 	.OrderBy(b => b.Name)
 	.First();
-Console.WriteLine(obj.Name);
+Console.WriteLine(obj.OriginalName);
+Console.WriteLine(obj.Description);
+Console.WriteLine(obj.ObjectType);
 Console.WriteLine(obj.Author?.Name);
 //Console.WriteLine(obj.Tags.Count);
 //foreach (var t in obj.Tags)
 //{
 //	Console.WriteLine(t.Tag.Name);
 //}
+
+// clear
+//db.Authors.ExecuteDelete();
+//db.Tags.ExecuteDelete();
+//db.Objects.ExecuteDelete();
+//db.SaveChanges();
+
 
 Console.WriteLine("done");
 Console.ReadLine();

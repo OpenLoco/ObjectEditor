@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using System.Net.Http.Json;
 using OpenLoco.Dat.FileParsing;
+using System.Net.Http;
 
 namespace AvaGui.ViewModels
 {
@@ -203,6 +204,7 @@ namespace AvaGui.ViewModels
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 		{
+			Model.Logger.Info("Trying to query main server");
 			if (Design.IsDesignMode)
 			{
 				// DO NOT WEB QUERY AT DESIGN TIME
@@ -211,20 +213,40 @@ namespace AvaGui.ViewModels
 
 			if (!useExistingIndex || cachedIndexFromServer == null)
 			{
-				using var response = await Model.WebClient.GetAsync("/objects/list");
-				if (!response.IsSuccessStatusCode)
+				try
 				{
-					// failed
-					return;
-				}
+					using var response = await Model.WebClient.GetAsync("/objects/list");
 
-				var data = await response.Content.ReadFromJsonAsync<List<ObjectIndex>>();
-				if (data == null)
+					if (!response.IsSuccessStatusCode)
+					{
+						Model.Logger.Error($"Request failed: {response}");
+						return;
+					}
+					else
+					{
+						Model.Logger.Info("Main server queried successfully");
+					}
+
+					var data = await response.Content.ReadFromJsonAsync<List<ObjectIndex>>();
+					if (data == null)
+					{
+						Model.Logger.Error($"Received data but couldn't parse it: {response}");
+						return;
+					}
+					cachedIndexFromServer = data;
+				}
+				catch (HttpRequestException ex)
 				{
-					// show warning/error?
+					if (ex.HttpRequestError == HttpRequestError.ConnectionError)
+					{
+						Model.Logger.Error("Request failed: unable to connect to the main server; it may be down.");
+					}
+					else
+					{
+						Model.Logger.Error("Request failed", ex);
+					}
 					return;
 				}
-				cachedIndexFromServer = data;
 			}
 			OnlineDirectoryItems = ConstructTreeView(
 				cachedIndexFromServer,

@@ -3,8 +3,7 @@ using OpenLoco.Dat.Types;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Logging;
 using OpenLoco.Dat.Data;
-using Core.Objects;
-using Core.Objects.Sound;
+using OpenLoco.Dat.Objects.Sound;
 using Zenith.Core;
 using System.Collections.Concurrent;
 
@@ -491,6 +490,7 @@ namespace OpenLoco.Dat.FileParsing
 						{
 							pendingIndices.Enqueue(index);
 						}
+
 						progress.Report((pendingIndices.Count + failedFiles.Count) / (float)files.Length);
 					}
 				}

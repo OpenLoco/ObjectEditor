@@ -5,8 +5,8 @@ using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using OpenLoco.Dat.Logging;
 using System.Threading.Tasks;
-using Core.Objects.Sound;
 using OpenLoco.Shared;
+using OpenLoco.Dat.Objects.Sound;
 
 namespace AvaGui.ViewModels
 {

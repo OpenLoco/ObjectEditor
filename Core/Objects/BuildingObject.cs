@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Core.Objects;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;

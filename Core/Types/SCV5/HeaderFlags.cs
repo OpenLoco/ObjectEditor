@@ -1,4 +1,4 @@
-namespace Core.Types.SCV5
+namespace OpenLoco.Dat.Types.SCV5
 {
 	[Flags]
 	public enum HeaderFlags : uint8_t

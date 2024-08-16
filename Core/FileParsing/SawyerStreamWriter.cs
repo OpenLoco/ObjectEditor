@@ -2,7 +2,7 @@ using System.Text;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Types;
 using OpenLoco.Dat.Logging;
-using Core.Objects.Sound;
+using OpenLoco.Dat.Objects.Sound;
 
 namespace OpenLoco.Dat.FileParsing
 {

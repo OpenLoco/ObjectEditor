@@ -1,7 +1,7 @@
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 
-namespace Core.Types.SCV5
+namespace OpenLoco.Dat.Types.SCV5
 {
 	[LocoStructSize(0x11)]
 	public record ScenarioObjective(

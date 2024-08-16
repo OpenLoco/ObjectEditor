@@ -1,10 +1,9 @@
 using System.ComponentModel;
-using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 
-namespace Core.Objects
+namespace OpenLoco.Dat.Objects
 {
 	[Flags]
 	public enum IndustryObjectFlags : uint32_t

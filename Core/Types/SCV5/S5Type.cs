@@ -1,4 +1,4 @@
-namespace Core.Types.SCV5
+namespace OpenLoco.Dat.Types.SCV5
 {
 	public enum S5Type : uint8_t
 	{

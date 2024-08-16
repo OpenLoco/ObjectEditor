@@ -1,6 +1,6 @@
 using OpenLoco.Dat.FileParsing;
 
-namespace Core.Types.SCV5
+namespace OpenLoco.Dat.Types.SCV5
 {
 	public class Wave
 	{

@@ -7,16 +7,16 @@ using System.Data;
 using System.Drawing.Imaging;
 using System.Reflection;
 using OpenLoco.Dat.Data;
-using Core.Objects.Sound;
 using Zenith.Core;
 using System.Text;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Diagnostics;
-using Core.Types.SCV5;
 using OpenLoco.Dat;
 using OpenLoco.Shared;
+using OpenLoco.Dat.Objects.Sound;
+using OpenLoco.Dat.Types.SCV5;
 
 namespace OpenLoco.WinGui
 {
@@ -93,7 +93,7 @@ namespace OpenLoco.WinGui
 		static string SettingsFile => Path.Combine(SettingsPath, "settings.json");
 
 		Version ApplicationVersion { get; set; }
-		StreamWriter logToFile;
+		readonly StreamWriter logToFile;
 
 		public MainForm()
 		{
@@ -156,6 +156,7 @@ namespace OpenLoco.WinGui
 					{
 						_ = Process.Start(new ProcessStartInfo { FileName = GithubLatestReleaseDownloadPage, UseShellExecute = true });
 					}
+
 					latestVersionText = $"newer version exists: {latestVersion}";
 				}
 			}
@@ -200,7 +201,7 @@ namespace OpenLoco.WinGui
 		void MainForm_Load(object sender, EventArgs e)
 		{
 			// pre-add any existing log lines
-			lbLogs.Items.AddRange(((Logger)logger).Logs.ToArray());
+			lbLogs.Items.AddRange([.. ((Logger)logger).Logs]);
 			// can only do this after window handle has been created (so can't do in constructor)
 			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log));
 
@@ -464,6 +465,7 @@ namespace OpenLoco.WinGui
 				{
 					_ = sc5Node.Nodes.Add(file, Path.GetFileName(file));
 				}
+
 				if (Path.GetExtension(file) == ".sv5")
 				{
 					_ = sv5Node.Nodes.Add(file, Path.GetFileName(file));
@@ -495,7 +497,7 @@ namespace OpenLoco.WinGui
 					newObjDirs.Add(tsmi);
 				}
 
-				objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(newObjDirs.ToArray());
+				objectDirectoriesToolStripMenuItem.DropDownItems.AddRange([.. newObjDirs]);
 			}
 
 			// clear dynamic items
@@ -515,7 +517,7 @@ namespace OpenLoco.WinGui
 					newDataDirs.Add(tsmi);
 				}
 
-				dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(newDataDirs.ToArray());
+				dataDirectoriesToolStripMenuItem.DropDownItems.AddRange([.. newDataDirs]);
 			}
 
 			// clear dynamic items
@@ -535,7 +537,7 @@ namespace OpenLoco.WinGui
 					newDataDirs.Add(tsmi);
 				}
 
-				scv5ToolStripMenuItem.DropDownItems.AddRange(newDataDirs.ToArray());
+				scv5ToolStripMenuItem.DropDownItems.AddRange([.. newDataDirs]);
 			}
 		}
 
@@ -680,13 +682,11 @@ namespace OpenLoco.WinGui
 		void LoadSCV5File(string filename)
 		{
 			var fullFile = Path.Join(model.Settings.SCV5Directory, filename);
-			var ex = Path.Exists(fullFile);
-			var bytes = SawyerStreamReader.LoadBytesFromFile(fullFile);
-			var s5File = S5File.Read(bytes);
-			pgObject.SelectedObject = s5File; // todo: use CurrentUIObject, not assign directly here
-
-			//var S5File = ByteReader.ReadLocoStruct<S5File>(bytes);
-			//pgObject.DataContext = S5File;
+			if (Path.Exists(fullFile))
+			{
+				var bytes = SawyerStreamReader.LoadBytesFromFile(fullFile);
+				pgObject.SelectedObject = S5File.Read(bytes); // todo: use CurrentUIObject, not assign directly here
+			}
 		}
 
 		static bool MusicIsPlaying { get; set; }

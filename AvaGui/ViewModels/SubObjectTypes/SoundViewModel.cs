@@ -4,7 +4,6 @@ using ReactiveUI.Fody.Helpers;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Core.Objects.Sound;
 using OpenLoco.Dat.Data;
 using NAudio.Wave;
 using System.Threading;
@@ -12,6 +11,7 @@ using System.Runtime.InteropServices;
 using AvaGui.Models;
 using System;
 using OpenLoco.Dat.Types;
+using OpenLoco.Dat.Objects.Sound;
 
 namespace AvaGui.ViewModels
 {

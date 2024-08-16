@@ -2,7 +2,7 @@ using System.ComponentModel;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 
-namespace Core.Objects.Sound
+namespace OpenLoco.Dat.Objects.Sound
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]

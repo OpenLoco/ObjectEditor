@@ -2,7 +2,7 @@ using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 
-namespace Core.Types.SCV5
+namespace OpenLoco.Dat.Types.SCV5
 {
 	//[LocoStructOffset(0x13BA), LocoArrayLength((int)Limits.kMaxMessages)] public Message[] Messages { get; set; }
 	[LocoStructSize(StructLength)] // 4,851,268

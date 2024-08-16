@@ -2,10 +2,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenLoco.Db.Schema
 {
-
-	[PrimaryKey("Name")]
 	public class TblAuthor
 	{
+		public int TblAuthorId { get; set; }
 		public string Name { get; set; }
 	}
 }

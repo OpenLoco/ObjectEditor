@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Database\DatabaseSeeder.csproj" />
+    <ProjectReference Include="..\DatabaseSeeder\DatabaseSeeder.csproj" />
   </ItemGroup>
 
 </Project>

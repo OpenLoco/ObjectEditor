@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Dat.csproj" />
-    <ProjectReference Include="..\Schema\DatabaseSchema.csproj" />
+    <ProjectReference Include="..\Dat\Dat.csproj" />
+    <ProjectReference Include="..\DatabaseSchema\DatabaseSchema.csproj" />
   </ItemGroup>
 
 </Project>

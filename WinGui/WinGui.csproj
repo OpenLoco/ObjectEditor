@@ -46,8 +46,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Common.csproj" />
-    <ProjectReference Include="..\Core\Dat.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Dat\Dat.csproj" />
   </ItemGroup>
 
   <ItemGroup>

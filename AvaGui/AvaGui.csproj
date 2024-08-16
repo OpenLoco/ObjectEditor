@@ -53,8 +53,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Dat.csproj" />
-    <ProjectReference Include="..\Schema\DatabaseSchema.csproj" />
-    <ProjectReference Include="..\Shared\Common.csproj" />
+    <ProjectReference Include="..\Dat\Dat.csproj" />
+    <ProjectReference Include="..\DatabaseSchema\DatabaseSchema.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 </Project>

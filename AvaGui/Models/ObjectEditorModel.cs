@@ -144,19 +144,37 @@ namespace AvaGui.Models
 
 			DatFileInfo? fileInfo = null;
 			ILocoObject? locoObject = null;
+			uiLocoFile = null;
 
 			try
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					using HttpResponseMessage response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
-					// wait for request to arrive back
-					if (!response.IsSuccessStatusCode)
+					TblLocoObject? locoObj = null;
+					try
 					{
-						// failed
-					}
+						using HttpResponseMessage response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
+						// wait for request to arrive back
+						if (!response.IsSuccessStatusCode)
+						{
+							Logger.Error($"Request failed: {response.ReasonPhrase}");
+							return false;
+						}
 
-					var locoObj = response.Content.ReadFromJsonAsync<TblLocoObject>().Result;
+						locoObj = response.Content.ReadFromJsonAsync<TblLocoObject>().Result;
+					}
+					catch (HttpRequestException ex)
+					{
+						if (ex.HttpRequestError == HttpRequestError.ConnectionError)
+						{
+							Logger.Error("Request failed: unable to connect to the main server; it may be down.");
+						}
+						else
+						{
+							Logger.Error("Request failed", ex);
+						}
+						return false;
+					}
 
 					if (locoObj == null || locoObj.OriginalBytes.Length == 0)
 					{

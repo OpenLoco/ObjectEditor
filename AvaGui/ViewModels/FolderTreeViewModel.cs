@@ -255,4 +255,20 @@ namespace AvaGui.ViewModels
 				FileLocation.Online);
 		}
 	}
+
+	public enum LeaveEngineErrorCode
+	{
+		NoSignificantDates,
+		BadData,
+		SomeCalculationError,
+		// etc
+	}
+
+	public class LeaveEngineException : Exception
+	{
+		public readonly LeaveEngineErrorCode ErrorCode;
+
+		public LeaveEngineException(LeaveEngineErrorCode ec)
+			=> ErrorCode = ec;
+	}
 }

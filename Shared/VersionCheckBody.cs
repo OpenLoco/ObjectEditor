@@ -1,6 +1,6 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.Shared
 {
 	public class VersionCheckBody
 	{

@@ -2,7 +2,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Color = SixLabors.ImageSharp.Color;
 
-namespace OpenLoco.ObjectEditor
+namespace OpenLoco.Dat
 {
 	public static class PaletteHelpers
 	{

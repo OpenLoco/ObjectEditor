@@ -1,4 +1,4 @@
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.Types;
 using System.ComponentModel;
 
 namespace AvaGui.Models

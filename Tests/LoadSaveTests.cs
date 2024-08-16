@@ -2,14 +2,13 @@ using Core.Objects;
 using Core.Objects.Sound;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Headers;
-using OpenLoco.ObjectEditor.Objects;
-using OpenLoco.ObjectEditor.Types;
-using Logger = OpenLoco.ObjectEditor.Logging.Logger;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Types;
+using OpenLoco.Dat.Objects;
+using Logger = OpenLoco.Dat.Logging.Logger;
 
-namespace OpenLoco.ObjectEditor.Tests
+namespace OpenLoco.Dat.Tests
 {
 	[TestFixture]
 	public class LoadSaveTests

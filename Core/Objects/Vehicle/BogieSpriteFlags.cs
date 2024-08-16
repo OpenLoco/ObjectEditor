@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.ObjectEditor.Objects
+﻿namespace OpenLoco.Dat.Objects
 {
 	[Flags]
 	public enum BogieSpriteFlags : uint8_t

@@ -1,6 +1,6 @@
-﻿using System.Drawing.Imaging;
+using System.Drawing.Imaging;
 
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.WinGui
 {
 	public static class ImageHelpers
 	{

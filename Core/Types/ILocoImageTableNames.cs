@@ -1,4 +1,4 @@
-namespace OpenLoco.ObjectEditor.Types
+namespace OpenLoco.Dat.Types
 {
 	public interface ILocoImageTableNames
 	{

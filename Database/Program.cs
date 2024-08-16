@@ -1,9 +1,8 @@
-using Database;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Objects;
-using Schema;
-using Shared;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects;
+using OpenLoco.Db.Schema;
+using OpenLoco.Shared;
 
 var builder = new DbContextOptionsBuilder<LocoDb>();
 builder.UseSqlite(LocoDb.GetDbPath());

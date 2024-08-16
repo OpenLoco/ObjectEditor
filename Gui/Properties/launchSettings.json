@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "WinGui": {
+      "commandName": "Project"
+    }
+  }
+}

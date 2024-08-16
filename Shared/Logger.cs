@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace OpenLoco.ObjectEditor.Logging
+namespace OpenLoco.Dat.Logging
 {
 	public class LogAddedEventArgs(LogLine log) : EventArgs
 	{

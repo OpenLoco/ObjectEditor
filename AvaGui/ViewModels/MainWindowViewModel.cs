@@ -1,4 +1,4 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.DatFileParsing.ObjectIndex>;
+global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.Dat.FileParsing.ObjectIndex>;
 using Avalonia;
 using AvaGui.Models;
 using ReactiveUI;
@@ -8,9 +8,9 @@ using System.Linq;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
-using OpenLoco.ObjectEditor;
+using OpenLoco.Dat;
 using SixLabors.ImageSharp.PixelFormats;
-using OpenLoco.ObjectEditor.Logging;
+using OpenLoco.Dat.Logging;
 using Avalonia.Platform;
 using SixLabors.ImageSharp;
 using System.IO;
@@ -20,6 +20,7 @@ using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text;
+using OpenLoco.Shared;
 
 namespace AvaGui.ViewModels
 {
@@ -126,7 +127,7 @@ namespace AvaGui.ViewModels
 
 			//logger?.Info($"Opening {path}");
 			// todo: instead of using FileSystemItem.path, add a property IsOnline
-			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), OpenLoco.ObjectEditor.Data.SourceGame.Vanilla, FileLocation.Local), out var uiLocoFile))
+			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), OpenLoco.Dat.Data.SourceGame.Vanilla, FileLocation.Local), out var uiLocoFile))
 			{
 				Model.Logger.Warning($"Successfully loaded {path}");
 				var file = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame, FileLocation.Local);

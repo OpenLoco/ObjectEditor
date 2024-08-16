@@ -1,4 +1,5 @@
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Types;
 
 namespace Core.Types.SCV5
 {
@@ -9,7 +10,8 @@ namespace Core.Types.SCV5
 		[property: LocoStructOffset(0x02)] uint16_t NumPackedObjects,
 		[property: LocoStructOffset(0x04)] uint32_t Version,
 		[property: LocoStructOffset(0x08)] uint32_t Magic,
-		[property: LocoStructOffset(0x0C), LocoArrayLength(20)] byte[] Padding) : ILocoStruct
+		[property: LocoStructOffset(0x0C), LocoArrayLength(20)] byte[] Padding)
+		: ILocoStruct
 	{
 		public const int StructLength = 0x20;
 		public bool Validate() => true;

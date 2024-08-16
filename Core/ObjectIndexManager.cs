@@ -1,9 +1,9 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.DatFileParsing.ObjectIndex>;
-using OpenLoco.ObjectEditor.Logging;
+global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.Dat.FileParsing.ObjectIndex>;
+using OpenLoco.Dat.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.ObjectEditor
+namespace OpenLoco.Dat
 {
 	public static class ObjectIndexManager
 	{

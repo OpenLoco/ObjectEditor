@@ -1,7 +1,7 @@
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.Objects;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Objects;
 
-namespace OpenLoco.ObjectEditor.DatFileParsing
+namespace OpenLoco.Dat.FileParsing
 {
 	public record ObjectIndex(string Filename, string ObjectName, ObjectType ObjectType, SourceGame SourceGame, uint32_t Checksum, VehicleType? VehicleType = null);
 }

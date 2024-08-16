@@ -1,7 +1,8 @@
 using System.ComponentModel;
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Types;
 
-namespace OpenLoco.ObjectEditor.Objects
+namespace OpenLoco.Dat.Objects
 {
 	public enum BodySpriteSlopeType
 	{

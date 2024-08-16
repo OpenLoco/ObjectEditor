@@ -1,12 +1,12 @@
 using ReactiveUI;
 using AvaGui.Models;
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.FileParsing;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
-using OpenLoco.ObjectEditor.Logging;
+using OpenLoco.Dat.Logging;
 using System.Threading.Tasks;
 using Core.Objects.Sound;
-using Shared;
+using OpenLoco.Shared;
 
 namespace AvaGui.ViewModels
 {

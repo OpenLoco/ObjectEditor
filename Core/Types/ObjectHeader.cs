@@ -1,9 +1,9 @@
 using System.ComponentModel;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
 using Zenith.Core;
 
-namespace OpenLoco.ObjectEditor.Headers
+namespace OpenLoco.Dat.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x05)]

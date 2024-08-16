@@ -1,4 +1,4 @@
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.FileParsing;
 
 namespace Core.Types.SCV5
 {

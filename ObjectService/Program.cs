@@ -1,11 +1,7 @@
-using Database;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.ObjectEditor;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Types;
-using Schema;
-using Shared;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Db.Schema;
 
 var builder = WebApplication.CreateBuilder(args);
 

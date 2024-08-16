@@ -1,13 +1,12 @@
 using NAudio.Gui;
 using NAudio.Wave;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Headers;
-using OpenLoco.ObjectEditor.Types;
-using OpenLoco.ObjectEditor.Logging;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Types;
+using OpenLoco.Dat.Logging;
 using System.Data;
 using System.Drawing.Imaging;
 using System.Reflection;
-using OpenLoco.ObjectEditor.Data;
+using OpenLoco.Dat.Data;
 using Core.Objects.Sound;
 using Zenith.Core;
 using System.Text;
@@ -16,8 +15,10 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Diagnostics;
 using Core.Types.SCV5;
+using OpenLoco.Dat;
+using OpenLoco.Shared;
 
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.WinGui
 {
 	public partial class MainForm : Form
 	{
@@ -122,7 +123,7 @@ namespace OpenLoco.ObjectEditor.Gui
 			};
 
 			var assembly = Assembly.GetExecutingAssembly();
-			const string paletteFilename = "Gui.palette.png";
+			const string paletteFilename = "WinGui.palette.png";
 			using (var stream = assembly.GetManifestResourceStream(paletteFilename))
 			{
 				//var paletteBitmap = (Bitmap)Image.FromStream(stream!);
@@ -165,7 +166,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		static Version GetCurrentAppVersion(Assembly assembly)
 		{
 			// grab current appl version from assembly
-			const string versionFilename = "Gui.version.txt";
+			const string versionFilename = "WinGui.version.txt";
 			using (var stream = assembly.GetManifestResourceStream(versionFilename))
 			{
 				var buf = new byte[5];
@@ -203,34 +204,16 @@ namespace OpenLoco.ObjectEditor.Gui
 			// can only do this after window handle has been created (so can't do in constructor)
 			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log));
 
-			// setup dark mode???
-			//DarkModify(this);
-
 			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
-		}
-
-		readonly Color DarkModeBackColor = Color.FromArgb(31, 31, 31);
-		readonly Color DarkModeForeColor = Color.White;
-
-		// poor-mans dark mode
-		void DarkModify(Control control)
-		{
-			foreach (Control c in control.Controls)
-			{
-				c.BackColor = DarkModeBackColor;
-				c.ForeColor = DarkModeForeColor;
-
-				DarkModify(c);
-			}
 		}
 
 		void InitUI(bool vanillaOnly, string filter)
 		{
 			// required to load the object type images from g1.dat
-			if (Directory.Exists(model.Settings.DataDirectory))
-			{
-				_ = model.LoadDataDirectory(model.Settings.DataDirectory);
-			}
+			//if (Directory.Exists(model.Settings.DataDirectory))
+			//{
+			//	_ = model.LoadDataDirectory(model.Settings.DataDirectory);
+			//}
 
 			InitFileTreeView(vanillaOnly, filter);
 			InitCategoryTreeView(vanillaOnly, filter);
@@ -320,14 +303,14 @@ namespace OpenLoco.ObjectEditor.Gui
 				? model.HeaderIndex
 				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
-			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.Name, f.Value.Checksum));
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.ObjectName, f.Value.Checksum));
 
 			tvFileTree.ImageList = MakeImageList(model);
 
 			foreach (var obj in filteredFiles)
 			{
 				var relative = Path.GetRelativePath(model.Settings.ObjDataDirectory, obj.Key);
-				AddObjectNode(obj.Key, relative, obj.Value.Name, obj.Value.Checksum, tvFileTree);
+				AddObjectNode(obj.Key, relative, obj.Value.ObjectName, obj.Value.Checksum, tvFileTree);
 			}
 
 			tvFileTree.Sort();
@@ -363,7 +346,7 @@ namespace OpenLoco.ObjectEditor.Gui
 				? model.HeaderIndex
 				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
-			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.Name, f.Value.Checksum));
+			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.ObjectName, f.Value.Checksum));
 
 			tvObjType.ImageList = MakeImageList(model);
 
@@ -376,7 +359,7 @@ namespace OpenLoco.ObjectEditor.Gui
 				{
 					foreach (var obj in group)
 					{
-						AddObjectNode(obj.Key, obj.Value.Name, obj.Value.Name, obj.Value.Checksum, objTypeNode);
+						AddObjectNode(obj.Key, obj.Value.ObjectName, obj.Value.ObjectName, obj.Value.Checksum, objTypeNode);
 					}
 				}
 				else
@@ -387,7 +370,7 @@ namespace OpenLoco.ObjectEditor.Gui
 						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
 						foreach (var veh in vehicleType)
 						{
-							AddObjectNode(veh.Key, veh.Value.Name, veh.Value.Name, veh.Value.Checksum, vehicleTypeNode);
+							AddObjectNode(veh.Key, veh.Value.ObjectName, veh.Value.ObjectName, veh.Value.Checksum, vehicleTypeNode);
 						}
 
 						_ = objTypeNode.Nodes.Add(vehicleTypeNode);

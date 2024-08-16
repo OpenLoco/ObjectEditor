@@ -1,4 +1,4 @@
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.WinGui
 {
 	internal static class Program
 	{

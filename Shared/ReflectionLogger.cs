@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using System.Text;
 
-namespace OpenLoco.ObjectEditor.Logging
+namespace OpenLoco.Dat.Logging
 {
 	public static class ReflectionLogger
 	{

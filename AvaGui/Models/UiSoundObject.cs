@@ -1,4 +1,4 @@
-using OpenLoco.ObjectEditor.Types;
+using OpenLoco.Dat.Types;
 
 namespace AvaGui.Models
 {

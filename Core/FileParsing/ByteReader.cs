@@ -1,7 +1,7 @@
-using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.Dat.Types;
 using Zenith.Core;
 
-namespace OpenLoco.ObjectEditor.DatFileParsing
+namespace OpenLoco.Dat.FileParsing
 {
 	public static class ByteReader
 	{

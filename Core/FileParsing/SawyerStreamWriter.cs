@@ -1,11 +1,10 @@
 using System.Text;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.Headers;
-using OpenLoco.ObjectEditor.Types;
-using OpenLoco.ObjectEditor.Logging;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Types;
+using OpenLoco.Dat.Logging;
 using Core.Objects.Sound;
 
-namespace OpenLoco.ObjectEditor.DatFileParsing
+namespace OpenLoco.Dat.FileParsing
 {
 	public static class SawyerStreamWriter
 	{

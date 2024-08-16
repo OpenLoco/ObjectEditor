@@ -1,15 +1,6 @@
-using OpenLoco.ObjectEditor.Logging;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace Shared
+namespace OpenLoco.Shared
 {
 	public static class Utils
 	{
@@ -24,10 +15,10 @@ namespace Shared
 			var metadata = JsonSerializer.Deserialize<GlenDBSchema>(text);
 
 			return metadata.data
-				.DistinctBy(x => x.ObjectName) // this skips duplicates - todo - cleanup data instead
+				.DistinctBy(x => x.ObjectName) // todo: this skips duplicates, which may actually be valid - cleanup data instead with unique keys
 				.ToDictionary(
 					x => x.ObjectName,
-					x => new ObjectMetadata(x.ObjectName, 123) { Author = x.Creator, Description = x.DescriptionAndFile, Tags = x.Tags.ToList() });
+					x => new ObjectMetadata(x.ObjectName, 123) { Author = x.Creator, Description = x.DescriptionAndFile, Tags = [.. x.Tags] });
 		}
 
 		public static ObjectMetadata LoadObjectMetadata(string objectName, uint checksum, Dictionary<string, ObjectMetadata> metadata)
@@ -48,6 +39,7 @@ namespace Shared
 					//value.Tags.AddRange(first.Tags);
 
 				}
+
 				metadata.Add(objectName, value);
 			}
 
@@ -69,57 +61,5 @@ namespace Shared
 
 			File.WriteAllText(filename, text);
 		}
-	}
-
-	public class ObjectMetadata
-	{
-		public ObjectMetadata(string originalName, uint originalChecksum)
-		{
-			OriginalName = originalName;
-			OriginalChecksum = originalChecksum;
-		}
-
-		public string OriginalName { get; }
-		public uint OriginalChecksum { get; }
-		public string Description { get; set; }
-		public string Author { get; set; } = "<unknown>";
-		public string Version { get; set; } // author-specified version
-		public DateTimeOffset CreatedTime { get; set; } // creation UTC date is an implicit version
-		public DateTimeOffset LastEditTime { get; set; } // last-edited UTC date is an implicit version
-
-		[Browsable(false)]
-		public List<string> Tags { get; set; } = [];
-	}
-
-	public class Data
-	{
-		[JsonPropertyName("C00")] public string ObjectName { get; set; }
-		[JsonPropertyName("C01")] public string Image { get; set; }
-		[JsonPropertyName("C02")] public string DescriptionAndFile { get; set; }
-		[JsonPropertyName("C03")] public string ClassNumber { get; set; }
-		[JsonPropertyName("C04")] public string Type { get; set; }
-		[JsonPropertyName("C05")] public string TrackType { get; set; }
-		[JsonPropertyName("C06")] public string Designed { get; set; }
-		[JsonPropertyName("C07")] public string Obsolete { get; set; }
-		[JsonPropertyName("C08")] public string Speed { get; set; }
-		[JsonPropertyName("C09")] public string Power { get; set; }
-		[JsonPropertyName("C10")] public string Weight { get; set; }
-		[JsonPropertyName("C11")] public string Reliability { get; set; }
-		[JsonPropertyName("C12")] public string Length { get; set; }
-		[JsonPropertyName("C13")] public string NumCompat { get; set; }
-		[JsonPropertyName("C14")] public string Sprites { get; set; }
-		[JsonPropertyName("C15")] public string CargoCapacity1 { get; set; }
-		[JsonPropertyName("C16")] public string CargoType1 { get; set; }
-		[JsonPropertyName("C17")] public string CargoCapacity2 { get; set; }
-		[JsonPropertyName("C18")] public string CargoType2 { get; set; }
-		[JsonPropertyName("C19")] public string Creator { get; set; }
-		[JsonPropertyName("C20")] public string _Tags { get; set; }
-
-		public string[] Tags => _Tags.Split(" ");
-	}
-
-	public class GlenDBSchema
-	{
-		public IList<Data> data { get; set; }
 	}
 }

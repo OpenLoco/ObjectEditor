@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.Objects;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Objects;
 
-namespace Schema
+namespace OpenLoco.Db.Schema
 {
 	[PrimaryKey("Name")]
 	public class TblLocoObject

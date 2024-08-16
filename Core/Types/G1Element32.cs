@@ -1,7 +1,7 @@
 using System.ComponentModel;
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.FileParsing;
 
-namespace OpenLoco.ObjectEditor.Headers
+namespace OpenLoco.Dat.Types
 {
 	[Flags]
 	public enum G1ElementFlags : uint16_t

@@ -1,6 +1,6 @@
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.FileParsing;
 
-namespace OpenLoco.ObjectEditor.Types
+namespace OpenLoco.Dat.Types
 {
 	[LocoStructSize(0x2C)]
 	public record RiffWavHeader(

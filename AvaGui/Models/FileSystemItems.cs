@@ -1,5 +1,5 @@
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.Objects;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Objects;
 using System;
 using System.Collections.ObjectModel;
 

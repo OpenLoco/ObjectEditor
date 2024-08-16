@@ -1,6 +1,6 @@
-﻿using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D;
 
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.WinGui
 {
 	// https://stackoverflow.com/questions/29157/how-do-i-make-a-picturebox-use-nearest-neighbor-resampling
 	public class PictureBoxWithInterpolationMode : PictureBox

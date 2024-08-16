@@ -1,24 +1,24 @@
 using System.IO;
 using System;
-using OpenLoco.ObjectEditor.Settings;
+using OpenLoco.Dat.Settings;
 using System.Text.Json;
-using OpenLoco.ObjectEditor.Logging;
+using OpenLoco.Dat.Logging;
 using Zenith.Core;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat;
 using System.Collections.ObjectModel;
 using DynamicData;
 using System.Net.Http;
 using Avalonia.Threading;
-using Shared;
+using OpenLoco.Shared;
 using System.Net.Http.Json;
-using Schema;
+using OpenLoco.Dat.Types;
+using OpenLoco.Db.Schema;
 
 namespace AvaGui.Models
 {

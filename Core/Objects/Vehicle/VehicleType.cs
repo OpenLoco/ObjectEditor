@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.ObjectEditor.Objects
+﻿namespace OpenLoco.Dat.Objects
 {
 	public enum VehicleType : uint8_t
 	{

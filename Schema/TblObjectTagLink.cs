@@ -1,4 +1,4 @@
-namespace Schema
+namespace OpenLoco.Db.Schema
 {
 	public class TblObjectTagLink
 	{

@@ -1,9 +1,9 @@
 using System.ComponentModel;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Types;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Types;
 
-namespace OpenLoco.ObjectEditor.Objects
+namespace OpenLoco.Dat.Objects
 {
 	public enum Emotion
 	{

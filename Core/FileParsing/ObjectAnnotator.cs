@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Types;
 using Zenith.Core;
 
-namespace OpenLoco.ObjectEditor.DatFileParsing
+namespace OpenLoco.Dat.FileParsing
 {
 	public static class ObjectAnnotator
 	{

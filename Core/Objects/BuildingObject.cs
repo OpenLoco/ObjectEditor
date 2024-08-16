@@ -1,10 +1,10 @@
 using System.ComponentModel;
 using Core.Objects;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Types;
 
-namespace OpenLoco.ObjectEditor.Objects
+namespace OpenLoco.Dat.Objects
 {
 	[Flags]
 	public enum BuildingObjectFlags : uint8_t

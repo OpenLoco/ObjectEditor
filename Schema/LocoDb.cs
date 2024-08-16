@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.ObjectEditor.Data;
-using Schema;
 
-namespace Database
+namespace OpenLoco.Db.Schema
 {
 	public class LocoDb : DbContext
 	{
@@ -50,13 +48,9 @@ namespace Database
 		//}
 
 		public static string GetDbPath()
-		{
-			var path = Path.Join(
+			=> Path.Join(
 				Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
 				"OpenLoco Object Editor",
 				"loco.db");
-
-			return path;
-		}
 	}
 }

@@ -6,13 +6,13 @@ using System.IO;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
-using OpenLoco.ObjectEditor.Data;
+using OpenLoco.Dat.Data;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using System.Net.Http.Json;
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.FileParsing;
 
 namespace AvaGui.ViewModels
 {

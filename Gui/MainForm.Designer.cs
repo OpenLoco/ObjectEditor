@@ -1,6 +1,7 @@
-using OpenLoco.ObjectEditor.Types;
+using OpenLoco.WinGui;
+using OpenLoco.Dat.Types;
 
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.WinGui
 {
 	partial class MainForm
 	{

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Schema
+namespace OpenLoco.Db.Schema
 {
 
 	[PrimaryKey("Name")]

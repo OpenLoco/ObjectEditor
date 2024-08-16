@@ -1,18 +1,20 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.Gui.IndexObjectHeader>;
-global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.ObjectEditor.Gui.UiLocoObject>;
+global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.Dat.FileParsing.ObjectIndex>;
+global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.WinGui.UiLocoObject>;
 
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Objects;
-using OpenLoco.ObjectEditor.Logging;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Logging;
 using System.Diagnostics;
-using OpenLoco.ObjectEditor.Data;
+using OpenLoco.Dat.Data;
 using Zenith.Core;
-using OpenLoco.ObjectEditor.Settings;
+using OpenLoco.Dat.Settings;
+using OpenLoco.Dat.Types;
+using OpenLoco.Dat;
 
-namespace OpenLoco.ObjectEditor.Gui
+namespace OpenLoco.WinGui
 {
 	class MainFormModel
 	{
@@ -145,7 +147,7 @@ namespace OpenLoco.ObjectEditor.Gui
 		// this method loads every single object entirely. it takes a long time to run
 		void CreateIndex(string[] allFiles, IProgress<float>? progress)
 		{
-			ConcurrentDictionary<string, IndexObjectHeader> ccHeaderIndex = new(); // key is full path/filename
+			ConcurrentDictionary<string, ObjectIndex> ccHeaderIndex = new(); // key is full path/filename
 			ConcurrentDictionary<string, UiLocoObject> ccObjectCache = new(); // key is full path/filename
 
 			var count = 0;
@@ -181,7 +183,8 @@ namespace OpenLoco.ObjectEditor.Gui
 						veh = vo.Type;
 					}
 
-					var indexObjectHeader = new IndexObjectHeader(fileInfo.S5Header.Name, fileInfo.S5Header.ObjectType, fileInfo.S5Header.Checksum, veh);
+					var s5 = fileInfo.S5Header;
+					var indexObjectHeader = new ObjectIndex(file, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, veh);
 					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 					{
 						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
@@ -196,8 +199,8 @@ namespace OpenLoco.ObjectEditor.Gui
 				{
 					logger.Error($"Failed to load \"{file}\"", ex);
 
-					var obj = SawyerStreamReader.LoadS5HeaderFromFile(file);
-					var indexObjectHeader = new IndexObjectHeader(obj.Name, obj.ObjectType, obj.Checksum, null);
+					var s5 = SawyerStreamReader.LoadS5HeaderFromFile(file);
+					var indexObjectHeader = new ObjectIndex(file, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, null);
 					_ = ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}
 				finally

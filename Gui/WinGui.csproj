@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationIcon>..\loco_icon.ico</ApplicationIcon>
-    <StartupObject>OpenLoco.ObjectEditor.Gui.Program</StartupObject>
+    <StartupObject>OpenLoco.WinGui.Program</StartupObject>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
     <AssemblyVersion>1.0.5</AssemblyVersion>
@@ -46,8 +46,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
-    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Shared\Common.csproj" />
+    <ProjectReference Include="..\Core\Dat.csproj" />
   </ItemGroup>
 
   <ItemGroup>

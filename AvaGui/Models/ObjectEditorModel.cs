@@ -64,7 +64,7 @@ namespace AvaGui.Models
 
 			LoadSettings();
 			//Metadata = Utils.LoadMetadata(MetadataFilename);
-			Metadata = Utils.LoadMetadata("G:\\My Drive\\Locomotion\\Objects\\dataBase.json");
+			Metadata = Utils.LoadMetadata("Q:\\Games\\Locomotion\\LocoVault\\dataBase.json");
 
 			// create http client
 			WebClient = new HttpClient() { BaseAddress = new Uri("https://localhost:7230"), };

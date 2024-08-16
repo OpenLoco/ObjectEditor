@@ -4,9 +4,10 @@ using OpenLoco.Dat.Objects;
 
 namespace OpenLoco.Db.Schema
 {
-	[PrimaryKey("Name")]
 	public class TblLocoObject
 	{
+		public int TblLocoObjectId { get; set; }
+
 		public string Name { get; set; }
 
 		#region OriginalDatdata
@@ -35,8 +36,9 @@ namespace OpenLoco.Db.Schema
 
 		public DateTime? LastEditDate { get; set; }
 
-		//public List<TblObjectTagLink>? Tags { get; } = [];
+		public ICollection<TblObjectTagLink> TagLinks { get; set; }
 
+		//public List<TblPackTagLink>? PackTags { get; } = [];
 		#endregion
 	}
 }

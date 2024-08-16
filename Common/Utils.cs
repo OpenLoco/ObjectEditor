@@ -4,6 +4,21 @@ namespace OpenLoco.Shared
 {
 	public static class Utils
 	{
+		public static List<ObjectMetadata> LoadMetadataList(string filename)
+		{
+			if (!File.Exists(filename))
+			{
+				return [];
+			}
+
+			var text = File.ReadAllText(filename);
+			var metadata = JsonSerializer.Deserialize<GlenDBSchema>(text);
+
+			return metadata.data
+				.Select(x => new ObjectMetadata(x.ObjectName, 123) { Author = x.Creator, Description = x.DescriptionAndFile, Tags = [.. x.Tags] })
+				.ToList();
+		}
+
 		public static Dictionary<string, ObjectMetadata> LoadMetadata(string filename)
 		{
 			if (!File.Exists(filename))
@@ -25,7 +40,7 @@ namespace OpenLoco.Shared
 		{
 			if (!metadata.TryGetValue(objectName, out var value))
 			{
-				var text = File.ReadAllText(@"G:\\My Drive\\Locomotion\\Objects\\dataBase.json");
+				var text = File.ReadAllText("Q:\\Games\\Locomotion\\LocoVault\\dataBase.json");
 				var data = JsonSerializer.Deserialize<GlenDBSchema>(text); // this loads and deserialises the entire thing every time, rip
 				var matching = data!.data.Where(x => x.ObjectName == objectName);
 				var first = matching.FirstOrDefault();

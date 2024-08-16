@@ -21,31 +21,29 @@ namespace OpenLoco.Db.Schema
 		public DbSet<TblTag> Tags => Set<TblTag>();
 		public DbSet<TblLocoObject> Objects => Set<TblLocoObject>();
 
-		//public DbSet<TblObjectTagLink> ObjectTagLinks => Set<TblObjectTagLink>();
+		public DbSet<TblObjectTagLink> ObjectTagLinks => Set<TblObjectTagLink>();
 
 		public string DbPath { get; }
 
 		protected override void OnConfiguring(DbContextOptionsBuilder options)
 			=> options.UseSqlite($"Data Source={DbPath}");
 
-		//protected override void OnModelCreating(ModelBuilder modelBuilder)
-		//{
-		//	// Configure the many-to-many relationship
-		//	modelBuilder.Entity<TblObjectTagLink>()
-		//		.HasKey(ft => new { ft.ObjectId, ft.TagId });
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			modelBuilder.Entity<TblObjectTagLink>()
+				.HasKey(ba => new { ba.TblLocoObjectId, ba.TblTagId });
 
-		//	modelBuilder.Entity<TblObjectTagLink>()
-		//		.HasOne(ft => ft.Object)
-		//		.WithMany(f => f.Tags)
-		//		.HasForeignKey(ft => ft.ObjectId);
+			modelBuilder.Entity<TblObjectTagLink>()
 
-		//	modelBuilder.Entity<TblObjectTagLink>()
-		//		.HasOne(ft => ft.Tag)
-		//		.WithMany() // No navigation property on Tag to Foo
-		//		.HasForeignKey(ft => ft.TagId);
+				.HasOne(ba => ba.Object)
+				.WithMany(b => b.TagLinks)
+				.HasForeignKey(ba => ba.TblLocoObjectId);
 
-		//	base.OnModelCreating(modelBuilder);
-		//}
+			modelBuilder.Entity<TblObjectTagLink>()
+				.HasOne(ba => ba.Tag)
+				.WithMany(a => a.TagLinks)
+				.HasForeignKey(ba => ba.TblTagId);
+		}
 
 		public static string GetDbPath()
 			=> Path.Join(

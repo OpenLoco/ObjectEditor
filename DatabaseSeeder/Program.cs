@@ -3,16 +3,25 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Db.Schema;
 using OpenLoco.Shared;
+using System.Text.Json;
 
-var builder = new DbContextOptionsBuilder<LocoDb>();
-builder.UseSqlite(LocoDb.GetDbPath());
-using var db = new LocoDb(builder.Options);
+var filename = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
+var text = File.ReadAllText(filename);
+var metadata = JsonSerializer.Deserialize<GlenDBSchema>(text).data;
+var distinct = metadata.DistinctBy(x => x.ObjectName);
+var dupes = metadata.Except(distinct);
 
-// Note: The database must exist before this script works
-Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
-bool seed = true;
+foreach (var x in dupes) //.OrderBy(x => x.ObjectName))
+{
+	Console.WriteLine($"{x.ObjectName} - {x.DescriptionAndFile}");
+}
 
-if (seed)
+//using var db = ExampleRun();
+
+Console.WriteLine("done");
+Console.ReadLine();
+
+static void SeedDb(LocoDb db)
 {
 	Console.WriteLine("Clearing database");
 	// clear
@@ -23,11 +32,11 @@ if (seed)
 
 	// Load data
 
-	var objDirectory = @"Q:\Games\Locomotion\OriginalObjects";
+	var objDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
 	var datFiles = SawyerStreamUtils.GetDatFilesInDirectory(objDirectory);
 
 	Console.WriteLine("Loading metadata data file");
-	var metadata = Utils.LoadMetadata("G:\\My Drive\\Locomotion\\Objects\\dataBase.json");
+	var metadata = Utils.LoadMetadata("Q:\\Games\\Locomotion\\LocoVault\\dataBase.json");
 
 	// Seed
 
@@ -88,42 +97,55 @@ if (seed)
 	Console.WriteLine("Finished seeding");
 }
 
-// Read
-Console.WriteLine("Querying for an Author");
-var _author = db.Authors
-	.OrderBy(b => b.Name)
-	.First();
-Console.WriteLine(_author.Name);
+static LocoDb ExampleRun()
+{
+	var builder = new DbContextOptionsBuilder<LocoDb>();
+	builder.UseSqlite(LocoDb.GetDbPath());
+	var db = new LocoDb(builder.Options);
 
-Console.WriteLine("Querying for a Tag");
-var _tag = db.Tags
-	.OrderBy(b => b.Name)
-	.First();
-Console.WriteLine(_tag.Name);
+	// Note: The database must exist before this script works
+	Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
 
-Console.WriteLine("Querying for an Object");
-var obj = db.Objects
-	.OrderBy(b => b.Name)
-	.First();
-Console.WriteLine(obj.OriginalName);
-Console.WriteLine(obj.Description);
-Console.WriteLine(obj.ObjectType);
-Console.WriteLine(obj.Author?.Name);
-//Console.WriteLine(obj.Tags.Count);
-//foreach (var t in obj.Tags)
-//{
-//	Console.WriteLine(t.Tag.Name);
-//}
+	bool seed = true;
+	if (seed)
+	{
+		SeedDb(db);
+	}
 
-// clear
-//db.Authors.ExecuteDelete();
-//db.Tags.ExecuteDelete();
-//db.Objects.ExecuteDelete();
-//db.SaveChanges();
+	// Read
+	Console.WriteLine("Querying for an Author");
+	var _author = db.Authors
+		.OrderBy(b => b.Name)
+		.First();
+	Console.WriteLine(_author.Name);
 
+	Console.WriteLine("Querying for a Tag");
+	var _tag = db.Tags
+		.OrderBy(b => b.Name)
+		.First();
+	Console.WriteLine(_tag.Name);
 
-Console.WriteLine("done");
-Console.ReadLine();
+	Console.WriteLine("Querying for an Object");
+	var obj = db.Objects
+		.OrderBy(b => b.Name)
+		.First();
+	Console.WriteLine(obj.OriginalName);
+	Console.WriteLine(obj.Description);
+	Console.WriteLine(obj.ObjectType);
+	Console.WriteLine(obj.Author?.Name);
+	//Console.WriteLine(obj.Tags.Count);
+	//foreach (var t in obj.Tags)
+	//{
+	//	Console.WriteLine(t.Tag.Name);
+	//}
+
+	// clear
+	//db.Authors.ExecuteDelete();
+	//db.Tags.ExecuteDelete();
+	//db.Objects.ExecuteDelete();
+	//db.SaveChanges();
+	return db;
+}
 
 // Update
 //Console.WriteLine("Updating the blog and adding a post");

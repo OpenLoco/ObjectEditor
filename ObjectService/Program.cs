@@ -59,7 +59,7 @@ if (app.Environment.IsDevelopment())
 
 // eg: https://localhost:7230/objects/list
 _ = app.MapGet("/objects/list/", (LocoDb db)
-	=> db.Objects.Select(x => new ObjectIndex(x.Name, x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)));
+	=> db.Objects.Select(x => new ObjectIndexEntry(x.Name, x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)));
 
 // eg: https://localhost:7230/objects/originaldat/114
 _ = app.MapGet("/objects/originaldat/{uniqueObjectId}", async (string uniqueObjectId, LocoDb db)

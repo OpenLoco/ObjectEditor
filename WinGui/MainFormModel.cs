@@ -1,4 +1,4 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.Dat.FileParsing.ObjectIndex>;
+global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.Dat.FileParsing.ObjectIndexEntryBase>;
 global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.WinGui.UiLocoObject>;
 
 using System.Collections.Concurrent;
@@ -57,7 +57,7 @@ namespace OpenLoco.WinGui
 				logger.Debug($"Preloading dependent {depObjectType} objects");
 			}
 
-			foreach (var dep in HeaderIndex.Where(kvp => dependentObjectTypes.Contains(kvp.Value.ObjectType)))
+			foreach (var dep in HeaderIndex.Where(kvp => kvp.Value is ObjectIndexEntry oi && dependentObjectTypes.Contains(oi.ObjectType)))
 			{
 #if DEBUG
 				SawyerStreamReader.LoadFullObjectFromFile(dep.Key);
@@ -147,7 +147,7 @@ namespace OpenLoco.WinGui
 		// this method loads every single object entirely. it takes a long time to run
 		void CreateIndex(string[] allFiles, IProgress<float>? progress)
 		{
-			ConcurrentDictionary<string, ObjectIndex> ccHeaderIndex = new(); // key is full path/filename
+			ConcurrentDictionary<string, ObjectIndexEntryBase> ccHeaderIndex = new(); // key is full path/filename
 			ConcurrentDictionary<string, UiLocoObject> ccObjectCache = new(); // key is full path/filename
 
 			var count = 0;
@@ -158,7 +158,7 @@ namespace OpenLoco.WinGui
 			var sw = new Stopwatch();
 			sw.Start();
 
-			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (file) =>
+			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (Action<string>)((file) =>
 			//foreach (var file in allFiles)
 			{
 				try
@@ -184,7 +184,7 @@ namespace OpenLoco.WinGui
 					}
 
 					var s5 = fileInfo.S5Header;
-					var indexObjectHeader = new ObjectIndex(file, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, veh);
+					var indexObjectHeader = new ObjectIndexEntry(file, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, veh);
 					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 					{
 						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
@@ -200,7 +200,7 @@ namespace OpenLoco.WinGui
 					logger.Error($"Failed to load \"{file}\"", ex);
 
 					var s5 = SawyerStreamReader.LoadS5HeaderFromFile(file);
-					var indexObjectHeader = new ObjectIndex(file, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, null);
+					var indexObjectHeader = new ObjectIndexEntry(file, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, (VehicleType?)null);
 					_ = ccHeaderIndex.TryAdd(file, indexObjectHeader);
 				}
 				finally
@@ -209,7 +209,7 @@ namespace OpenLoco.WinGui
 					progress?.Report(count / (float)allFiles.Length);
 				}
 				//}
-			});
+			}));
 
 			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

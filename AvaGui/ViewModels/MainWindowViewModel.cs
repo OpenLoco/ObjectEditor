@@ -1,4 +1,3 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.Dat.FileParsing.ObjectIndex>;
 using Avalonia;
 using AvaGui.Models;
 using ReactiveUI;

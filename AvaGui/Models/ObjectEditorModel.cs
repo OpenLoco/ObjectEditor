@@ -28,7 +28,7 @@ namespace AvaGui.Models
 
 		public ILogger Logger;
 
-		public HeaderIndex HeaderIndex { get; private set; } = [];
+		public ObjectIndex ObjectIndex { get; private set; }
 
 		public PaletteMap PaletteMap { get; set; }
 
@@ -80,16 +80,21 @@ namespace AvaGui.Models
 			}
 
 			var text = File.ReadAllText(SettingsFile);
-			var settings = JsonSerializer.Deserialize<EditorSettings>(text);
+			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: new() { WriteIndented = true });
 			Verify.NotNull(settings);
 
 			Settings = settings!;
 
-			if (ValidateSettings(Settings, Logger) && File.Exists(IndexFilename))
+			if (!ValidateSettings(Settings, Logger) && File.Exists(IndexFilename))
 			{
-				Logger?.Info($"Loading header index from \"{IndexFilename}\"");
-				Task.Run(async () => await LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true)).Wait();
+				Logger?.Error("Unable to validate settings file - please delete it and it will be recreated on next editor startup.");
 			}
+
+			//if (File.Exists(IndexFilename))
+			//{
+			//	Logger?.Info($"Loading header index from \"{IndexFilename}\"");
+			//	Task.Run(async () => await LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true)).Wait();
+			//}
 		}
 
 		public string IndexFilename
@@ -123,7 +128,7 @@ namespace AvaGui.Models
 
 		public void SaveSettings()
 		{
-			var text = JsonSerializer.Serialize(Settings);
+			var text = JsonSerializer.Serialize(Settings, options: new() { WriteIndented = true });
 
 			var parentDir = Path.GetDirectoryName(SettingsFile);
 			if (parentDir != null && !Directory.Exists(parentDir))
@@ -131,7 +136,14 @@ namespace AvaGui.Models
 				_ = Directory.CreateDirectory(parentDir);
 			}
 
-			File.WriteAllText(SettingsFile, text);
+			try
+			{
+				File.WriteAllText(SettingsFile, text);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(ex);
+			}
 		}
 
 		public bool TryLoadObject(FileSystemItem filesystemItem, out UiLocoFile? uiLocoFile)
@@ -217,9 +229,7 @@ namespace AvaGui.Models
 			sw.Start();
 
 			var fileCount = allFiles.Length;
-			var index = await SawyerStreamReader.FastIndexAsync(allFiles, progress);
-
-			HeaderIndex = index.ToDictionary(x => x.Filename, x => x);
+			ObjectIndex = await SawyerStreamReader.FastIndexAsync(allFiles, progress);
 
 			sw.Stop();
 			Logger?.Info($"Indexed {fileCount} in {sw.Elapsed}");
@@ -292,16 +302,28 @@ namespace AvaGui.Models
 
 			if (useExistingIndex && File.Exists(IndexFilename))
 			{
-				HeaderIndex = ObjectIndexManager.DeserialiseHeaderIndexFromFile(IndexFilename, Logger) ?? HeaderIndex;
+				var exception = false;
 
-				if (HeaderIndex == null || HeaderIndex.Any(x => string.IsNullOrEmpty(x.Value.Filename) || string.IsNullOrEmpty(x.Value.ObjectName)))
+				try
 				{
-					Logger?.Warning("Index file appears to be malformed - recreating now.");
+					ObjectIndex = ObjectIndexManager.DeserialiseHeaderIndexFromFile(IndexFilename, Logger) ?? ObjectIndex;
+				}
+				catch (Exception ex)
+				{
+					Logger.Error(ex);
+					exception = true;
+				}
+
+				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.ObjectName))) != false)
+				{
+					Logger?.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
 					await RecreateIndex(progress, allFiles);
 					return;
 				}
 
-				if (HeaderIndex.Keys.Except(allFiles).Any() || allFiles.Except(HeaderIndex.Keys).Any())
+
+				var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.Filename).Concat(ObjectIndex.ObjectsFailed.Select(x => x.Filename));
+				if (objectIndexFilenames.Except(allFiles).Any() || allFiles.Except(objectIndexFilenames).Any())
 				{
 					Logger?.Warning("Index file appears to be outdated - recreating now.");
 					await RecreateIndex(progress, allFiles);
@@ -318,7 +340,7 @@ namespace AvaGui.Models
 			{
 				Logger?.Info("Recreating index file");
 				await CreateIndex(allFiles, progress); // do we need the array?
-				ObjectIndexManager.SerialiseHeaderIndexToFile(IndexFilename, HeaderIndex, Logger);
+				ObjectIndexManager.SerialiseHeaderIndexToFile(IndexFilename, ObjectIndex, Logger);
 			}
 		}
 	}

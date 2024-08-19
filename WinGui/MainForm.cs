@@ -304,14 +304,17 @@ namespace OpenLoco.WinGui
 				? model.HeaderIndex
 				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
-			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.ObjectName, f.Value.Checksum));
+			var filteredIndicies = filteredFiles
+				.Select(f => f.Value)
+				.OfType<ObjectIndexEntry>()
+				.Where(f => !vanillaOnly || IsOriginalFile(f.ObjectName, f.Checksum));
 
 			tvFileTree.ImageList = MakeImageList(model);
 
-			foreach (var obj in filteredFiles)
+			foreach (var obj in filteredIndicies)
 			{
-				var relative = Path.GetRelativePath(model.Settings.ObjDataDirectory, obj.Key);
-				AddObjectNode(obj.Key, relative, obj.Value.ObjectName, obj.Value.Checksum, tvFileTree);
+				var relative = Path.GetRelativePath(model.Settings.ObjDataDirectory, obj.Filename);
+				AddObjectNode(obj.Filename, relative, obj.ObjectName, obj.Checksum, tvFileTree);
 			}
 
 			tvFileTree.Sort();
@@ -347,12 +350,15 @@ namespace OpenLoco.WinGui
 				? model.HeaderIndex
 				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
-			filteredFiles = filteredFiles.Where(f => !vanillaOnly || IsOriginalFile(f.Value.ObjectName, f.Value.Checksum));
+			var filteredIndicies = filteredFiles
+				.Select(f => f.Value)
+				.OfType<ObjectIndexEntry>()
+				.Where(f => !vanillaOnly || IsOriginalFile(f.ObjectName, f.Checksum));
 
 			tvObjType.ImageList = MakeImageList(model);
 
 			var nodesToAdd = new List<TreeNode>();
-			foreach (var group in filteredFiles.GroupBy(kvp => kvp.Value.ObjectType))
+			foreach (var group in filteredIndicies.GroupBy(kvp => kvp.ObjectType))
 			{
 				var imageListOffset = model.G1 == null ? 0 : ((int)group.Key) + 2; // + 2 because we have a vanilla+custom image first
 				var objTypeNode = new TreeNode(group.Key.ToString(), imageListOffset, imageListOffset);
@@ -360,18 +366,17 @@ namespace OpenLoco.WinGui
 				{
 					foreach (var obj in group)
 					{
-						AddObjectNode(obj.Key, obj.Value.ObjectName, obj.Value.ObjectName, obj.Value.Checksum, objTypeNode);
+						AddObjectNode(obj.Filename, obj.ObjectName, obj.ObjectName, obj.Checksum, objTypeNode);
 					}
 				}
 				else
 				{
-					var vehicleGroup = group.GroupBy(o => o.Value.VehicleType);
-					foreach (var vehicleType in vehicleGroup)
+					foreach (var vehicleType in group.GroupBy(o => o.VehicleType))
 					{
 						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
 						foreach (var veh in vehicleType)
 						{
-							AddObjectNode(veh.Key, veh.Value.ObjectName, veh.Value.ObjectName, veh.Value.Checksum, vehicleTypeNode);
+							AddObjectNode(veh.Filename, veh.ObjectName, veh.ObjectName, veh.Checksum, vehicleTypeNode);
 						}
 
 						_ = objTypeNode.Nodes.Add(vehicleTypeNode);

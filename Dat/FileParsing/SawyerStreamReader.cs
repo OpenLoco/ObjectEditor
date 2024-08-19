@@ -463,11 +463,10 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static Task<List<ObjectIndex>> FastIndexAsync(string[] files, IProgress<float> progress)
+		public static Task<ObjectIndex> FastIndexAsync(string[] files, IProgress<float> progress)
 		{
 			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
-			ConcurrentQueue<ObjectIndex> pendingIndices = [];
-			ConcurrentBag<string> failedFiles = [];
+			ConcurrentQueue<ObjectIndexEntryBase> pendingIndices = [];
 
 			var producerTask = Task.Run(async () =>
 			{
@@ -477,38 +476,29 @@ namespace OpenLoco.Dat.FileParsing
 
 			var consumerTask = Task.Run(async () =>
 			{
-				while ((pendingIndices.Count + failedFiles.Count) != files.Length)
+				while (pendingIndices.Count != files.Length)
 				{
 					if (pendingFiles.TryDequeue(out var content))
 					{
-						var index = await GetDatFileInfoFromBytes(content);
-						if (index == null)
-						{
-							failedFiles.Add(content.Filename);
-						}
-						else
-						{
-							pendingIndices.Enqueue(index);
-						}
-
-						progress.Report((pendingIndices.Count + failedFiles.Count) / (float)files.Length);
+						pendingIndices.Enqueue(await GetDatFileInfoFromBytes(content));
+						progress.Report(pendingIndices.Count / (float)files.Length);
 					}
 				}
 			});
 
-			return Task.Run<List<ObjectIndex>>(async () =>
+			return Task.Run(async () =>
 			{
 				await Task.WhenAll(producerTask, consumerTask);
-				return [.. pendingIndices];
+				return new ObjectIndex() { Objects = pendingIndices.OfType<ObjectIndexEntry>(), ObjectsFailed = pendingIndices.OfType<ObjectIndexFailedEntry>() };
 			});
 		}
 
-		static async Task<ObjectIndex?> GetDatFileInfoFromBytes((string Filename, byte[] Data) file)
-			=> await Task.Run(() =>
+		static async Task<ObjectIndexEntryBase> GetDatFileInfoFromBytes((string Filename, byte[] Data) file)
+			=> await Task.Run((Func<ObjectIndexEntryBase>)(() =>
 			{
 				if (file.Data!.Length < (S5Header.StructLength + ObjectHeader.StructLength))
 				{
-					return null;
+					return new ObjectIndexFailedEntry(file.Filename);
 				}
 
 				var span = file.Data.AsSpan();
@@ -518,13 +508,13 @@ namespace OpenLoco.Dat.FileParsing
 				if (s5.ObjectType == ObjectType.Vehicle)
 				{
 					var decoded = Decode(oh.Encoding, remainingData, 4); // only need 4 bytes since:
-					return new ObjectIndex(file.Filename, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, (VehicleType)decoded[3]); // 4th byte is vehicle type
+					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, (VehicleType)decoded[3]); // 4th byte is vehicle type
 				}
 				else
 				{
-					return new ObjectIndex(file.Filename, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum);
+					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum);
 				}
-			});
+			}));
 
 		public static T ReadChunk<T>(ref ReadOnlySpan<byte> data) where T : class
 			=> ByteReader.ReadLocoStruct<T>(ReadChunkCore(ref data));

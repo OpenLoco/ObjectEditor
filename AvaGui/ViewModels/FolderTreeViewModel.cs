@@ -46,7 +46,7 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public float IndexingProgress { get; set; }
 
-		Progress<float> Progress { get; }
+		Progress<float> Progress { get; } = new();
 
 		public ReactiveCommand<Unit, Task> RecreateIndex { get; }
 
@@ -85,7 +85,6 @@ namespace AvaGui.ViewModels
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
 			Model = model;
-			Progress = new();
 			Progress.ProgressChanged += (_, progress) => IndexingProgress = progress;
 
 			RecreateIndex = ReactiveCommand.Create(() => RefreshDirectoryAsync(false));
@@ -93,6 +92,7 @@ namespace AvaGui.ViewModels
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
 				.Subscribe(async _ => await RefreshDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
+				.Throttle(TimeSpan.FromMilliseconds(1000))
 				.Subscribe(async _ => await RefreshDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
@@ -122,12 +122,92 @@ namespace AvaGui.ViewModels
 			=> DirectoryItems = SelectedTabIndex == 0
 				? new(LocalDirectoryItems)
 				: new(OnlineDirectoryItems);
+		async Task RefreshDirectoryAsync(bool useExistingIndex)
+		{
+			if (SelectedTabIndex == 0)
+			{
+				// local
+				await LoadObjDirectoryAsync(CurrentLocalDirectory, useExistingIndex);
+			}
+			else // remote
+			{
+				await LoadOnlineDirectoryAsync(useExistingIndex);
+			}
+		}
 
-		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndex> index, string filenameFilter, bool vanillaOnly, FileLocation fileLocation)
+		async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
+		{
+			if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+			{
+				//LocalDirectoryItems = [];
+				return;
+			}
+
+			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
+			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects, FilenameFilter, DisplayVanillaOnly, FileLocation.Local);
+		}
+
+		List<ObjectIndexEntryBase>? cachedIndexFromServer;
+
+		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
+		{
+			Model.Logger.Info("Trying to query main server");
+			if (Design.IsDesignMode)
+			{
+				// DO NOT WEB QUERY AT DESIGN TIME
+				return;
+			}
+
+			if (!useExistingIndex || cachedIndexFromServer == null)
+			{
+				try
+				{
+					using var response = await Model.WebClient.GetAsync("/objects/list");
+
+					if (!response.IsSuccessStatusCode)
+					{
+						Model.Logger.Error($"Request failed: {response}");
+						return;
+					}
+					else
+					{
+						Model.Logger.Info("Main server queried successfully");
+					}
+
+					var data = await response.Content.ReadFromJsonAsync<List<ObjectIndexEntryBase>>();
+					if (data == null)
+					{
+						Model.Logger.Error($"Received data but couldn't parse it: {response}");
+						return;
+					}
+					cachedIndexFromServer = data;
+				}
+				catch (HttpRequestException ex)
+				{
+					if (ex.HttpRequestError == HttpRequestError.ConnectionError)
+					{
+						Model.Logger.Error("Request failed: unable to connect to the main server; it may be down.");
+					}
+					else
+					{
+						Model.Logger.Error("Request failed", ex);
+					}
+					return;
+				}
+			}
+			OnlineDirectoryItems = ConstructTreeView(
+				cachedIndexFromServer,
+				FilenameFilter,
+				DisplayVanillaOnly,
+				FileLocation.Online);
+		}
+
+		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, bool vanillaOnly, FileLocation fileLocation)
 		{
 			var result = new List<FileSystemItemBase>();
 
 			var groupedObjects = index
+				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
 				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!vanillaOnly || o.SourceGame == SourceGame.Vanilla))
 				.GroupBy(o => o.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
@@ -174,101 +254,5 @@ namespace AvaGui.ViewModels
 
 			return result;
 		}
-
-		async Task RefreshDirectoryAsync(bool useExistingIndex)
-		{
-			if (SelectedTabIndex == 0)
-			{
-				// local
-				await LoadObjDirectoryAsync(CurrentLocalDirectory, useExistingIndex);
-			}
-			else // remote
-			{
-				await LoadOnlineDirectoryAsync(useExistingIndex);
-			}
-		}
-
-		async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
-		{
-			if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
-			{
-				//LocalDirectoryItems = [];
-				return;
-			}
-
-			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
-			LocalDirectoryItems = ConstructTreeView(Model.HeaderIndex.Values, FilenameFilter, DisplayVanillaOnly, FileLocation.Local);
-		}
-
-		List<ObjectIndex>? cachedIndexFromServer;
-
-		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
-		{
-			Model.Logger.Info("Trying to query main server");
-			if (Design.IsDesignMode)
-			{
-				// DO NOT WEB QUERY AT DESIGN TIME
-				return;
-			}
-
-			if (!useExistingIndex || cachedIndexFromServer == null)
-			{
-				try
-				{
-					using var response = await Model.WebClient.GetAsync("/objects/list");
-
-					if (!response.IsSuccessStatusCode)
-					{
-						Model.Logger.Error($"Request failed: {response}");
-						return;
-					}
-					else
-					{
-						Model.Logger.Info("Main server queried successfully");
-					}
-
-					var data = await response.Content.ReadFromJsonAsync<List<ObjectIndex>>();
-					if (data == null)
-					{
-						Model.Logger.Error($"Received data but couldn't parse it: {response}");
-						return;
-					}
-					cachedIndexFromServer = data;
-				}
-				catch (HttpRequestException ex)
-				{
-					if (ex.HttpRequestError == HttpRequestError.ConnectionError)
-					{
-						Model.Logger.Error("Request failed: unable to connect to the main server; it may be down.");
-					}
-					else
-					{
-						Model.Logger.Error("Request failed", ex);
-					}
-					return;
-				}
-			}
-			OnlineDirectoryItems = ConstructTreeView(
-				cachedIndexFromServer,
-				FilenameFilter,
-				DisplayVanillaOnly,
-				FileLocation.Online);
-		}
-	}
-
-	public enum LeaveEngineErrorCode
-	{
-		NoSignificantDates,
-		BadData,
-		SomeCalculationError,
-		// etc
-	}
-
-	public class LeaveEngineException : Exception
-	{
-		public readonly LeaveEngineErrorCode ErrorCode;
-
-		public LeaveEngineException(LeaveEngineErrorCode ec)
-			=> ErrorCode = ec;
 	}
 }

@@ -371,7 +371,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.CostFactor, Is.EqualTo(400), nameof(struc.CostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
-				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltAwayFromTown | IndustryObjectFlags.unk18 | IndustryObjectFlags.unk19), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltAwayFromTown | IndustryObjectFlags.unk_18 | IndustryObjectFlags.unk_19), nameof(struc.Flags));
 				Assert.That(struc.InitialProductionRate[0].Min, Is.EqualTo(8));
 				Assert.That(struc.InitialProductionRate[0].Max, Is.EqualTo(12));
 				Assert.That(struc.InitialProductionRate[1].Min, Is.EqualTo(0));
@@ -532,7 +532,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.CostIndex, Is.EqualTo(2), nameof(struc.CostIndex));
 				Assert.That(struc.var_03, Is.EqualTo(5), nameof(struc.var_03));
 				Assert.That(struc.var_04, Is.EqualTo(1), nameof(struc.var_04));
-				Assert.That(struc.Flags, Is.EqualTo(LandObjectFlags.unk0), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(LandObjectFlags.unk_00), nameof(struc.Flags));
 				Assert.That(struc.CliffEdgeHeader1, Is.EqualTo(0), nameof(struc.CliffEdgeHeader1));
 				Assert.That(struc.CliffEdgeHeader2, Is.EqualTo(0), nameof(struc.CliffEdgeHeader2));
 				Assert.That(struc.CostFactor, Is.EqualTo(20), nameof(struc.CostFactor));
@@ -714,7 +714,7 @@ namespace OpenLoco.Dat.Tests
 			{
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
 
-				Assert.That(struc.Flags, Is.EqualTo(SteamObjectFlags.ApplyWind | SteamObjectFlags.DisperseOnCollision | SteamObjectFlags.unk2), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(SteamObjectFlags.ApplyWind | SteamObjectFlags.DisperseOnCollision | SteamObjectFlags.unk_02), nameof(struc.Flags));
 				// FrameInfoType0 contents
 				// FrameInfoType1 contents
 				Assert.That(struc.FrameInfoType0, Has.Count.EqualTo(47), nameof(struc.FrameInfoType0));

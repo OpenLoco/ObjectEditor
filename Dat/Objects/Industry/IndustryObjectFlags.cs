@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.Dat.Objects
+namespace OpenLoco.Dat.Objects
 {
 	[Flags]
 	public enum IndustryObjectFlags : uint32_t
@@ -19,19 +19,19 @@
 		BuiltRequiresOpenSpace = 1 << 12,
 		Oilfield = 1 << 13,
 		Mines = 1 << 14,
-		unk15 = 1 << 15,
+		NotRotatable = 1 << 15,
 		CanBeFoundedByPlayer = 1 << 16,
 		RequiresAllCargo = 1 << 17,
-		unk18 = 1 << 18,
-		unk19 = 1 << 19,
-		unk20 = 1 << 20,
+		unk_18 = 1 << 18,
+		unk_19 = 1 << 19,
+		RequiresElectricityPylons = 1 << 20,
 		HasShadows = 1 << 21,
-		unk22 = 1 << 22,
-		unk23 = 1 << 23,
+		unk_22 = 1 << 22,
+		unk_23 = 1 << 23,
 		BuiltInDesert = 1 << 24,
 		BuiltNearDesert = 1 << 25,
-		unk26 = 1 << 26,
-		unk27 = 1 << 27,
-		unk28 = 1 << 28,
+		unk_26 = 1 << 26,
+		unk_27 = 1 << 27,
+		unk_28 = 1 << 28,
 	}
 }

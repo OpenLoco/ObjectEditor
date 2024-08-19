@@ -8,7 +8,7 @@ namespace OpenLoco.Dat.Objects
 	[Flags]
 	public enum RoadObjectFlags : uint16_t
 	{
-		none = 0,
+		None = 0,
 		unk_00 = 1 << 0,
 		unk_01 = 1 << 1,
 		unk_02 = 1 << 2,

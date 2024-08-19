@@ -11,7 +11,7 @@ namespace OpenLoco.Dat.Objects
 		None = 0 << 0,
 		IsLeft = 1 << 0,
 		HasLights = 1 << 1,
-		unk1 = 1 << 2,
+		unk_02 = 1 << 2,
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

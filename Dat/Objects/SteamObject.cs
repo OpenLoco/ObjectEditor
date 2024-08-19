@@ -11,8 +11,8 @@ namespace OpenLoco.Dat.Objects
 		None = 0,
 		ApplyWind = 1 << 0,
 		DisperseOnCollision = 1 << 1,
-		unk2 = 1 << 2,
-		unk3 = 1 << 3,
+		unk_02 = 1 << 2,
+		unk_03 = 1 << 3,
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

@@ -8,7 +8,7 @@ namespace OpenLoco.Dat.Types
 	{
 		None = 0,
 		HasTransparency = 1 << 0,   // Image data contains transparent sections (when not set data is plain bmp)
-		unk1 = 1 << 1,              // Unknown function not used on any entry
+		unk_01 = 1 << 1,              // Unknown function not used on any entry
 		IsRLECompressed = 1 << 2,   // Image data is encoded using CS's form of run length encoding
 		IsR8G8B8Palette = 1 << 3,   // Image data is a sequence of palette entries R8G8B8
 		HasZoomSprites = 1 << 4,    // Use a different sprite for higher zoom levels

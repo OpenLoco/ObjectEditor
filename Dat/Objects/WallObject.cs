@@ -13,10 +13,10 @@ namespace OpenLoco.Dat.Objects
 		HasGlass = 1 << 1,  // unused? only for rct2?
 		OnlyOnLevelLand = 1 << 2,
 		DoubleSided = 1 << 3, // unused? only for rct2?
-		Door = 1 << 4, // unused? only for rct2?
-		LongDoorAnimation = 1 << 5, // unused? only for rct2?
+		Door_UNUSED = 1 << 4, // unused, setting it in loco does nothing
+		LongDoor_UNUSED = 1 << 5, // unused, setting it in loco does nothing
 		HasSecondaryColour = 1 << 6,
-		HasTertiaryColour = 1 << 7, // unused? only for rct2?
+		HasTertiaryColour_UNUSED = 1 << 7, // unused, setting it in loco does nothing
 	};
 
 	// this is copied from OpenRCT2: https://github.com/OpenRCT2/OpenRCT2/blob/develop/src/openrct2/object/WallSceneryEntry.h

@@ -4,9 +4,9 @@ namespace OpenLoco.Dat.Types.SCV5
 	public enum CompanyFlags : uint32_t
 	{
 		None = 0U,
-		Unk0 = 1U << 0,                      // 0x01
-		Unk1 = 1U << 1,                      // 0x02
-		Unk2 = 1U << 2,                      // 0x04
+		unk_00 = 1U << 0,                    // 0x01
+		unk_01 = 1U << 1,                    // 0x02
+		unk_02 = 1U << 2,                    // 0x04
 		Sorted = 1U << 3,                    // 0x08
 		IncreasedPerformance = 1U << 4,      // 0x10
 		DecreasedPerformance = 1U << 5,      // 0x20

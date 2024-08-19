@@ -75,7 +75,7 @@ namespace AvaGui.ViewModels
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
 
-					var name = CurrentObject.DatFileInfo.S5Header.Name.Trim();
+					var name = CurrentObject.DatFileInfo.S5Header.Name;
 					CurrentMetadata = Utils.LoadObjectMetadata(name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata);
 				}
 				else

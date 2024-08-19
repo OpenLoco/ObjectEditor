@@ -168,18 +168,17 @@ namespace OpenLoco.Dat.FileParsing
 			// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
 
 			// s5 header
-			uint32_t checksum = 0; // todo: compute this
-			var s5Header = new S5Header(objName, checksum)
-			{
-				SourceGame = SourceGame.Custom
-			};
 			var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
-			s5Header.ObjectType = attr!.ObjectType;
+			var s5Header = new S5Header(objName, 0)
+			{
+				SourceGame = SourceGame.Custom,
+				ObjectType = attr!.ObjectType
+			};
 
 			// calculate checksum
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
 			var asciiName = objName.Take(8).Select(c => (byte)c).ToArray();
-			checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, objStream.ToArray());
+			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, objStream.ToArray());
 			s5Header = s5Header with { Checksum = checksum };
 
 			var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint32_t)objStream.Length);

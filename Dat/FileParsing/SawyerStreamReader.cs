@@ -169,7 +169,7 @@ namespace OpenLoco.Dat.FileParsing
 			{
 				if (s5Header.SourceGame == SourceGame.Vanilla)
 				{
-					var s5Name = s5Header.Name.Trim();
+					var s5Name = s5Header.Name;
 					if (!OriginalObjectFiles.Names.TryGetValue(s5Name, out var value) || s5Header.Checksum != value)
 					{
 						warnings.Add($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");

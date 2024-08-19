@@ -223,7 +223,7 @@ namespace AvaGui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(o => new FileSystemItem(o.Filename, o.ObjectName.Trim(), o.SourceGame, fileLocation))
+							.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.SourceGame, fileLocation))
 							.OrderBy(o => o.Name));
 
 						if (vg.Key == null)
@@ -242,7 +242,7 @@ namespace AvaGui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(o => new FileSystemItem(o.Filename, o.ObjectName.Trim(), o.SourceGame, fileLocation))
+						.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.SourceGame, fileLocation))
 						.OrderBy(o => o.Name));
 				}
 

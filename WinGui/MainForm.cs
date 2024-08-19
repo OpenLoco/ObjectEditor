@@ -293,7 +293,7 @@ namespace OpenLoco.WinGui
 		}
 
 		static bool IsOriginalFile(string name, uint checksum)
-			=> OriginalObjectFiles.Names.TryGetValue(name.Trim(), out var expectedChecksum) && expectedChecksum == checksum;
+			=> OriginalObjectFiles.Names.TryGetValue(name, out var expectedChecksum) && expectedChecksum == checksum;
 
 		void InitFileTreeView(bool vanillaOnly, string fileFilter)
 		{

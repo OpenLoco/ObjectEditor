@@ -77,7 +77,7 @@ static void SeedDb(LocoDb db)
 			var tblLocoObject = new TblLocoObject()
 			{
 				Name = Utils.GetDatCompositeKey(fileInfo.S5Header.Name, fileInfo.S5Header.Checksum),
-				OriginalName = fileInfo.S5Header.Name.Trim(),
+				OriginalName = fileInfo.S5Header.Name,
 				OriginalChecksum = fileInfo.S5Header.Checksum,
 				OriginalBytes = bytes,
 				SourceGame = fileInfo.S5Header.SourceGame,

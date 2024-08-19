@@ -62,7 +62,7 @@ namespace OpenLoco.Shared
 		}
 
 		public static string GetDatCompositeKey(string name, uint checksum)
-			=> $"{name.Trim()}_{checksum}";
+			=> $"{name}_{checksum}";
 
 		public static void SaveMetadata(string filename, Dictionary<string, ObjectMetadata> metadata)
 		{

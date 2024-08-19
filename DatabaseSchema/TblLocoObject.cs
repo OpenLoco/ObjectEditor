@@ -38,7 +38,7 @@ namespace OpenLoco.Db.Schema
 
 		public ICollection<TblObjectTagLink> TagLinks { get; set; }
 
-		//public List<TblPackTagLink>? PackTags { get; } = [];
+		public ICollection<TblModpackTagLink> ModpackLinks { get; set; }
 		#endregion
 	}
 }

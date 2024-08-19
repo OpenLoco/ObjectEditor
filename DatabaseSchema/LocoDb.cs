@@ -30,19 +30,40 @@ namespace OpenLoco.Db.Schema
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<TblObjectTagLink>()
+			#region TagLinks
+
+			_ = modelBuilder.Entity<TblObjectTagLink>()
 				.HasKey(ba => new { ba.TblLocoObjectId, ba.TblTagId });
 
-			modelBuilder.Entity<TblObjectTagLink>()
+			_ = modelBuilder.Entity<TblObjectTagLink>()
 
 				.HasOne(ba => ba.Object)
 				.WithMany(b => b.TagLinks)
 				.HasForeignKey(ba => ba.TblLocoObjectId);
 
-			modelBuilder.Entity<TblObjectTagLink>()
+			_ = modelBuilder.Entity<TblObjectTagLink>()
 				.HasOne(ba => ba.Tag)
 				.WithMany(a => a.TagLinks)
 				.HasForeignKey(ba => ba.TblTagId);
+
+			#endregion
+
+			#region Modpack Links
+
+			_ = modelBuilder.Entity<TblModpackTagLink>()
+				.HasKey(ba => new { ba.TblLocoObjectId, ba.TblModpackId });
+
+			_ = modelBuilder.Entity<TblModpackTagLink>()
+				.HasOne(ba => ba.Object)
+				.WithMany(b => b.ModpackLinks)
+				.HasForeignKey(ba => ba.TblLocoObjectId);
+
+			_ = modelBuilder.Entity<TblModpackTagLink>()
+				.HasOne(ba => ba.Modpack)
+				.WithMany(a => a.ModpackLinks)
+				.HasForeignKey(ba => ba.TblModpackId);
+
+			#endregion
 		}
 
 		public static string GetDbPath()

@@ -5,7 +5,9 @@ namespace OpenLoco.Dat.FileParsing
 {
 	public class ObjectIndex
 	{
-		public const int Version = 1; // change this every time this format changes
+		public const int JsonVersion = 1; // change this every time this format changes
+		public int Version => JsonVersion;
+
 		public required IEnumerable<ObjectIndexEntry> Objects { get; set; }
 
 		public required IEnumerable<ObjectIndexFailedEntry> ObjectsFailed { get; set; }

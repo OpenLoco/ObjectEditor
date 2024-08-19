@@ -298,7 +298,7 @@
 			</ScrollViewer>
 		</Expander>
 
-		<DockPanel DataContext="{Binding FolderTreeViewModel}" >
+		<DockPanel DataContext="{Binding FolderTreeViewModel}" Width="384" MinWidth="256" MaxWidth="512">
 			<TabControl DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
 				<TabItem>
 					<TabItem.Header>
@@ -317,7 +317,7 @@
 					</TabItem.Header>
 				</TabItem>
 			</TabControl>
-			<Grid DockPanel.Dock="Left" Margin="8" MinWidth="256" MaxWidth="512">
+			<Grid DockPanel.Dock="Left" Margin="8">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="Auto"/>

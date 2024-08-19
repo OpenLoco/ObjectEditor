@@ -9,7 +9,7 @@ namespace OpenLoco.Dat.Objects
 	public enum DockObjectFlags : uint16_t
 	{
 		None = 0,
-		unk01 = 1 << 0,
+		HasShadows = 1 << 0,
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

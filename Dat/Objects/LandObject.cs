@@ -9,10 +9,12 @@ namespace OpenLoco.Dat.Objects
 	public enum LandObjectFlags : uint8_t
 	{
 		None = 0,
-		unk0 = 1 << 0,
-		unk1 = 1 << 1,
+		unk_00 = 1 << 0,
+		unk_01 = 1 << 1,
 		IsDesert = 1 << 2,
 		NoTrees = 1 << 3,
+		unk_04 = 1 << 4,
+		unk_05 = 1 << 5,
 	};
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
@@ -48,7 +50,7 @@ namespace OpenLoco.Dat.Objects
 			remainingData = remainingData[S5Header.StructLength..];
 
 			// unused obj
-			if (Flags.HasFlag(LandObjectFlags.unk1))
+			if (Flags.HasFlag(LandObjectFlags.unk_01))
 			{
 				UnkObjHeader = S5Header.Read(remainingData[..S5Header.StructLength]);
 				remainingData = remainingData[S5Header.StructLength..];
@@ -59,12 +61,12 @@ namespace OpenLoco.Dat.Objects
 
 		public ReadOnlySpan<byte> Save()
 		{
-			var variableDataSize = S5Header.StructLength + (Flags.HasFlag(LandObjectFlags.unk1) ? S5Header.StructLength : 0);
+			var variableDataSize = S5Header.StructLength + (Flags.HasFlag(LandObjectFlags.unk_01) ? S5Header.StructLength : 0);
 
 			var data = new byte[variableDataSize];
 			data = [.. CliffEdgeHeader.Write()];
 
-			if (Flags.HasFlag(LandObjectFlags.unk1))
+			if (Flags.HasFlag(LandObjectFlags.unk_01))
 			{
 				UnkObjHeader.Write().CopyTo(data.AsSpan()[S5Header.StructLength..]);
 			}

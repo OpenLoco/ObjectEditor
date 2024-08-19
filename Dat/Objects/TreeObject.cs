@@ -10,11 +10,11 @@ namespace OpenLoco.Dat.Objects
 	{
 		None = 0,
 		HasSnowVariation = 1 << 0,
-		unk1 = 1 << 1,
+		unk_01 = 1 << 1,
 		VeryHighAltitude = 1 << 2,
 		HighAltitude = 1 << 3,
 		RequiresWater = 1 << 4,
-		unk5 = 1 << 5,
+		unk_05 = 1 << 5,
 		DroughtResistant = 1 << 6,
 		HasShadow = 1 << 7,
 	};

@@ -7,7 +7,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		BeTopCompany = (byte)(1U << 0),
 		BeWithinTopThreeCompanies = (byte)(1U << 1),
 		WithinTimeLimit = (byte)(1U << 2),
-		Flag_3 = (byte)(1U << 3),
-		Flag_4 = (byte)(1U << 4),
+		unk_03 = (byte)(1U << 3),
+		unk_04 = (byte)(1U << 4),
 	}
 }

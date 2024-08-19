@@ -1,8 +1,7 @@
 using System.IO;
 using System;
-using OpenLoco.Dat.Settings;
+using OpenLoco.Common;
 using System.Text.Json;
-using OpenLoco.Dat.Logging;
 using Zenith.Core;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,10 +14,11 @@ using System.Collections.ObjectModel;
 using DynamicData;
 using System.Net.Http;
 using Avalonia.Threading;
-using OpenLoco.Shared;
 using System.Net.Http.Json;
 using OpenLoco.Dat.Types;
 using OpenLoco.Db.Schema;
+using OpenLoco.Common.Logging;
+using System.Threading;
 
 namespace AvaGui.Models
 {
@@ -220,7 +220,6 @@ namespace AvaGui.Models
 			return true;
 		}
 
-		// this method loads every single object entirely. it takes a long time to run
 		async Task CreateIndex(string[] allFiles, IProgress<float> progress)
 		{
 			Logger?.Info($"Creating index on {allFiles.Length} files");
@@ -229,7 +228,7 @@ namespace AvaGui.Models
 			sw.Start();
 
 			var fileCount = allFiles.Length;
-			ObjectIndex = await SawyerStreamReader.FastIndexAsync(allFiles, progress);
+			ObjectIndex = await ObjectIndex.FastIndexAsync(allFiles, progress);
 
 			sw.Stop();
 			Logger?.Info($"Indexed {fileCount} in {sw.Elapsed}");
@@ -288,7 +287,29 @@ namespace AvaGui.Models
 		//public void LoadObjDirectory(string directory)
 		//	=> LoadObjDirectory(directory, new Progress<float>(), true);
 
+		private static Task indexerTask;
+		private static SemaphoreSlim taskLock = new SemaphoreSlim(1, 1);
+
 		public async Task LoadObjDirectoryAsync(string directory, IProgress<float> progress, bool useExistingIndex)
+		{
+			await taskLock.WaitAsync(); // Acquire the lock
+
+			try
+			{
+				if (indexerTask == null || indexerTask.IsCompleted)
+				{
+					indexerTask = Task.Run(async () => await LoadObjDirectoryAsyncCore(directory, progress, useExistingIndex));
+				}
+			}
+			finally
+			{
+				_ = taskLock.Release(); // Release the lock
+			}
+
+			await indexerTask; // Await the task (whether newly created or reused)
+		}
+
+		async Task LoadObjDirectoryAsyncCore(string directory, IProgress<float> progress, bool useExistingIndex)
 		{
 			if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory) || progress == null)
 			{

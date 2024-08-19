@@ -3,10 +3,10 @@ using AvaGui.Models;
 using OpenLoco.Dat.FileParsing;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
-using OpenLoco.Dat.Logging;
 using System.Threading.Tasks;
-using OpenLoco.Shared;
+using OpenLoco.Common;
 using OpenLoco.Dat.Objects.Sound;
+using OpenLoco.Common.Logging;
 
 namespace AvaGui.ViewModels
 {

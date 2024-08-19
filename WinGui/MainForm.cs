@@ -2,7 +2,6 @@ using NAudio.Gui;
 using NAudio.Wave;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
-using OpenLoco.Dat.Logging;
 using System.Data;
 using System.Drawing.Imaging;
 using System.Reflection;
@@ -14,9 +13,10 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Diagnostics;
 using OpenLoco.Dat;
-using OpenLoco.Shared;
+using OpenLoco.Common;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types.SCV5;
+using OpenLoco.Common.Logging;
 
 namespace OpenLoco.WinGui
 {

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.Shared
+namespace OpenLoco.Common
 {
 	public class GlenDBSchema
 	{

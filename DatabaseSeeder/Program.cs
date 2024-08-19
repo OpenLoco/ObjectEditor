@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Db.Schema;
-using OpenLoco.Shared;
+using OpenLoco.Common;
 using System.Text.Json;
 
 var filename = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";

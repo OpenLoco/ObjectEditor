@@ -1,9 +1,7 @@
 using System.Runtime.CompilerServices;
 
-namespace OpenLoco.Dat.Logging
+namespace OpenLoco.Common.Logging
 {
-	public enum LogLevel { Debug2, Debug, Info, Warning, Error };
-
 	public interface ILogger
 	{
 		public event EventHandler<LogAddedEventArgs>? LogAdded;

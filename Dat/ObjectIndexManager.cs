@@ -1,7 +1,7 @@
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using OpenLoco.Common.Logging;
 
 namespace OpenLoco.Dat
 {

@@ -13,12 +13,11 @@ namespace AvaGui
 {
 	public static class PlatformSpecific
 	{
-		public static void FolderOpenInDesktop()
+		public static void FolderOpenInDesktop(string directory)
 		{
-			var folderPath = ObjectEditorModel.SettingsPath;
-			if (!Directory.Exists(folderPath))
+			if (!Directory.Exists(directory))
 			{
-				throw new ArgumentException("The specified folder does not exist.", nameof(folderPath));
+				throw new ArgumentException("The specified folder does not exist.", nameof(directory));
 			}
 
 			// Platform-specific command construction
@@ -46,7 +45,7 @@ namespace AvaGui
 			var processStartInfo = new ProcessStartInfo
 			{
 				FileName = command,
-				Arguments = folderPath,
+				Arguments = directory,
 				UseShellExecute = true // Use the shell for proper handling on each OS
 			};
 

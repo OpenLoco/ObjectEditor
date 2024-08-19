@@ -1,18 +1,7 @@
 using System.Collections.Concurrent;
 
-namespace OpenLoco.Dat.Logging
+namespace OpenLoco.Common.Logging
 {
-	public class LogAddedEventArgs(LogLine log) : EventArgs
-	{
-		public readonly LogLine Log = log;
-	}
-
-	public record LogLine(DateTime Time, LogLevel Level, string Caller, string Message)
-	{
-		public override string ToString()
-			=> $"[{Time}] [{Level}] [{Caller}] {Message}";
-	}
-
 	public class Logger : ILogger
 	{
 		public readonly ConcurrentQueue<LogLine> Logs = [];

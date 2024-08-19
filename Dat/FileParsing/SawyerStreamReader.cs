@@ -1,11 +1,11 @@
 using System.Text;
 using OpenLoco.Dat.Types;
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects.Sound;
 using Zenith.Core;
 using System.Collections.Concurrent;
+using OpenLoco.Common.Logging;
 
 namespace OpenLoco.Dat.FileParsing
 {
@@ -463,37 +463,7 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static Task<ObjectIndex> FastIndexAsync(string[] files, IProgress<float> progress)
-		{
-			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
-			ConcurrentQueue<ObjectIndexEntryBase> pendingIndices = [];
-
-			var producerTask = Task.Run(async () =>
-			{
-				var options = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
-				await Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(f, ct))));
-			});
-
-			var consumerTask = Task.Run(async () =>
-			{
-				while (pendingIndices.Count != files.Length)
-				{
-					if (pendingFiles.TryDequeue(out var content))
-					{
-						pendingIndices.Enqueue(await GetDatFileInfoFromBytes(content));
-						progress.Report(pendingIndices.Count / (float)files.Length);
-					}
-				}
-			});
-
-			return Task.Run(async () =>
-			{
-				await Task.WhenAll(producerTask, consumerTask);
-				return new ObjectIndex() { Objects = pendingIndices.OfType<ObjectIndexEntry>(), ObjectsFailed = pendingIndices.OfType<ObjectIndexFailedEntry>() };
-			});
-		}
-
-		static async Task<ObjectIndexEntryBase> GetDatFileInfoFromBytes((string Filename, byte[] Data) file)
+		public static async Task<ObjectIndexEntryBase> GetDatFileInfoFromBytes((string Filename, byte[] Data) file)
 			=> await Task.Run((Func<ObjectIndexEntryBase>)(() =>
 			{
 				if (file.Data!.Length < (S5Header.StructLength + ObjectHeader.StructLength))

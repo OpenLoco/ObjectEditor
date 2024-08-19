@@ -1,8 +1,8 @@
 using System.Text;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Types;
-using OpenLoco.Dat.Logging;
 using OpenLoco.Dat.Objects.Sound;
+using OpenLoco.Common.Logging;
 
 namespace OpenLoco.Dat.FileParsing
 {

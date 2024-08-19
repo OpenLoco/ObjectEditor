@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat.Settings
+namespace OpenLoco.Common
 {
 	public class EditorSettings
 	{

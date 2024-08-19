@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace OpenLoco.Shared
+namespace OpenLoco.Common
 {
 	public static class Utils
 	{

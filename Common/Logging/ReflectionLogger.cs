@@ -1,7 +1,7 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text;
 
-namespace OpenLoco.Dat.Logging
+namespace OpenLoco.Common.Logging
 {
 	public static class ReflectionLogger
 	{

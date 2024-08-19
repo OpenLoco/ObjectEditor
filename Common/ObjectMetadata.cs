@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
-namespace OpenLoco.Shared
+namespace OpenLoco.Common
 {
 	public class ObjectMetadata
 	{

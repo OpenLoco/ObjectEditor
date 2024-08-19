@@ -9,7 +9,6 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using OpenLoco.Dat;
 using SixLabors.ImageSharp.PixelFormats;
-using OpenLoco.Dat.Logging;
 using Avalonia.Platform;
 using SixLabors.ImageSharp;
 using System.IO;
@@ -19,7 +18,8 @@ using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text;
-using OpenLoco.Shared;
+using OpenLoco.Common;
+using OpenLoco.Common.Logging;
 
 namespace AvaGui.ViewModels
 {
@@ -80,7 +80,7 @@ namespace AvaGui.ViewModels
 			ObjDataItems.Insert(0, new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
 			ObjDataItems.Insert(1, new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
 
-			OpenSettingsFolder = ReactiveCommand.Create(PlatformSpecific.FolderOpenInDesktop);
+			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.SettingsPath));
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObjectToIndex);
 
 			#region Version

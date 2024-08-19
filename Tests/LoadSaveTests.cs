@@ -5,7 +5,7 @@ using NUnit.Framework.Internal;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
-using Logger = OpenLoco.Dat.Logging.Logger;
+using Logger = OpenLoco.Common.Logging.Logger;
 
 namespace OpenLoco.Dat.Tests
 {

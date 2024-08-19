@@ -26,6 +26,32 @@
 		<mo:ObjectTypeToMaterialIconConverter x:Key="ObjectTypeToMaterialIconConverter"/>
 	</Window.Resources>
 
+	<Window.Styles>
+		<Style Selector="TabItem">
+			<Setter Property="FontSize" Value="20"/>
+		</Style>
+		<Style Selector="Border">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+			<Setter Property="CornerRadius" Value="4"/>
+			<Setter Property="Margin" Value="0"/>
+		</Style>
+		<Style Selector="Button">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+		</Style>
+		<Style Selector="TextBox">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+		</Style>
+		<Style Selector="NumericUpDown">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+		</Style>
+		<Style Selector="DataGrid">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+		</Style>
+		<Style Selector="ComboBox">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+		</Style>
+	</Window.Styles>
+
 	<Window.DataTemplates>
 		<!-- Mind the order of the Templates. Begin with the most specific first. -->
 
@@ -53,25 +79,25 @@
 		<DataTemplate DataType="vm:ObjectEditorViewModel">
 			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
 				<StackPanel Orientation="Horizontal">
-					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding ReloadObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+					<Button Grid.Row="3" Command="{Binding ReloadObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Reload</TextBlock>
 						</DockPanel>
 					</Button>
-					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+					<Button Grid.Row="3" Command="{Binding SaveObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="ContentSave" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save</TextBlock>
 						</DockPanel>
 					</Button>
-					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveAsObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+					<Button Grid.Row="3" Command="{Binding SaveAsObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="ContentSavePlus" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save As</TextBlock>
 						</DockPanel>
 					</Button>
-					<Button Grid.Row="3" BorderBrush="Gray" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+					<Button Grid.Row="3" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="ContentSaveCog" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save Metadata</TextBlock>
@@ -114,7 +140,7 @@
 					<TabItem Header="Metadata">
 						<DockPanel>
 							<pgc:PropertyGrid x:Name="propertyGrid_Metadata" DockPanel.Dock="Top" Margin="2" IsEnabled="False" DataContext="{Binding CurrentMetadata}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-							<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Margin="2">
+							<Border BorderThickness="1">
 								<StackPanel>
 									<TextBlock Margin="4">Tags</TextBlock>
 									<ItemsRepeater ItemsSource="{Binding CurrentMetadata.Tags}" Background="{DynamicResource ExpanderContentBackground}" >
@@ -123,7 +149,7 @@
 										</ItemsRepeater.Layout>
 										<ItemsRepeater.ItemTemplate>
 											<DataTemplate>
-												<Border BorderThickness="4" CornerRadius="8" Margin="2" Background="{DynamicResource ButtonBackground}">
+												<Border BorderThickness="4" Background="{DynamicResource ButtonBackground}">
 													<TextBlock Margin="4" Text="{Binding}" />
 												</Border>
 											</DataTemplate>
@@ -147,13 +173,13 @@
 		<DataTemplate DataType="vm:ImageTableViewModel">
 			<DockPanel>
 				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-					<Button BorderBrush="Gray" Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
+					<Button Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="FolderUpload" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import from Directory</TextBlock>
 						</DockPanel>
 					</Button>
-					<Button BorderBrush="Gray" Command="{Binding ExportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export to Directory">
+					<Button Command="{Binding ExportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export to Directory">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="FolderDownload" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export to Directory</TextBlock>
@@ -161,7 +187,7 @@
 					</Button>
 					<!--<Label VerticalAlignment="Center">🔍 Image Scaling (1-10):</Label>
 								<NumericUpDown Value="{Binding Zoom}" FormatString="0" Watermark="1" Width="108" Minimum="1" Maximum="10" />-->
-					<Button BorderBrush="Gray" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select background colour">
+					<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select background colour">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Select background colour</TextBlock>
@@ -173,12 +199,12 @@
 						</Button.Flyout>
 					</Button>
 				</StackPanel>
-				<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" DockPanel.Dock="Right">
+				<Border BorderThickness="1" DockPanel.Dock="Right">
 					<StackPanel>
 						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" MinWidth="256" Margin="2" IsEnabled="False" DataContext="{Binding SelectedG1Element, Mode=OneWay}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
 					</StackPanel>
 				</Border>
-				<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+				<Border BorderThickness="1">
 					<ListBox ItemsSource="{Binding Images}" SelectedIndex="{Binding SelectedImageIndex}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
@@ -200,7 +226,7 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:SoundViewModel">
-			<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+			<Border BorderThickness="1">
 				<StackPanel Orientation="Vertical" >
 					<StackPanel Margin="4" Orientation="Horizontal">
 						<TextBlock Text="{Binding Sound.SoundName}" VerticalAlignment="Center" Margin="4"/>
@@ -209,19 +235,19 @@
 					<OnPlatform>
 						<OnPlatform.Windows>
 							<StackPanel Orientation="Horizontal" Margin="4">
-								<Button BorderBrush="Gray" Command="{Binding PlaySoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Play audio">
+								<Button Command="{Binding PlaySoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Play audio">
 									<DockPanel>
 										<materialIcons:MaterialIcon Kind="Play" Width="24" Height="24" Margin="2" />
 										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Play</TextBlock>
 									</DockPanel>
 								</Button>
-								<Button BorderBrush="Gray" Command="{Binding PauseSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Pause audio">
+								<Button Command="{Binding PauseSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Pause audio">
 									<DockPanel>
 										<materialIcons:MaterialIcon Kind="Pause" Width="24" Height="24" Margin="2" />
 										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Pause</TextBlock>
 									</DockPanel>
 								</Button>
-								<Button BorderBrush="Gray" Command="{Binding StopSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Stop audio">
+								<Button Command="{Binding StopSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Stop audio">
 									<DockPanel>
 										<materialIcons:MaterialIcon Kind="Stop" Width="24" Height="24" Margin="2" />
 										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Stop</TextBlock>
@@ -274,8 +300,22 @@
 
 		<DockPanel DataContext="{Binding FolderTreeViewModel}" >
 			<TabControl DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
-				<TabItem Header="Local" FontSize="16"/>
-				<TabItem Header="Online" FontSize="16"/>
+				<TabItem>
+					<TabItem.Header>
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="DesktopClassic" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Local" />
+						</DockPanel>
+					</TabItem.Header>
+				</TabItem>
+				<TabItem>
+					<TabItem.Header>
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="Web" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Online" />
+						</DockPanel>
+					</TabItem.Header>
+				</TabItem>
 			</TabControl>
 			<Grid DockPanel.Dock="Left" Margin="8" MinWidth="256" MaxWidth="512">
 				<Grid.RowDefinitions>
@@ -286,9 +326,9 @@
 					<RowDefinition Height="Auto"/>
 					<RowDefinition Height="*"/>
 				</Grid.RowDefinitions>
-				<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" BorderBrush="Gray" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
-				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" BorderBrush="Gray" Watermark="Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
-				<Button Grid.Row="2" BorderBrush="Gray" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
+				<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" Watermark="Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
+				<Button Grid.Row="2" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
 					<DockPanel>
 						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexingProgress}"/>
 						<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
@@ -297,10 +337,10 @@
 				</Button>
 				<DockPanel Grid.Row="3" Margin="2" >
 					<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
-					<TextBox Text="{Binding FilenameFilter}" BorderBrush="Gray" Watermark="Filename filter" />
+					<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />
 				</DockPanel>
-				<ToggleSwitch Grid.Row="4" BorderBrush="Gray" IsChecked="{Binding DisplayVanillaOnly}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
-				<Border Grid.Row="5" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+				<ToggleSwitch Grid.Row="4" IsChecked="{Binding DisplayVanillaOnly}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
+				<Border Grid.Row="5" BorderThickness="1">
 					<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
 						<TreeView.ItemTemplate>
 							<TreeDataTemplate ItemsSource="{Binding SubNodes}">
@@ -311,7 +351,7 @@
 				</Border>
 			</Grid>
 		</DockPanel>
-		<Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Margin="8">
+		<Border Margin="8" BorderThickness="1">
 			<ScrollViewer>
 				<ContentControl Content="{Binding CurrentEditorModel}"/>
 			</ScrollViewer>

@@ -1,5 +1,4 @@
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Headers;
+using OpenLoco.Dat.Types;
 using System.Collections.Generic;
 using System.ComponentModel;
 

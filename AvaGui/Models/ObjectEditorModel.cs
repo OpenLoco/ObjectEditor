@@ -1,21 +1,24 @@
 using System.IO;
 using System;
-using OpenLoco.ObjectEditor.Settings;
+using OpenLoco.Common;
 using System.Text.Json;
-using OpenLoco.ObjectEditor.Logging;
 using Zenith.Core;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Objects;
-using System.Threading;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat;
 using System.Collections.ObjectModel;
+using DynamicData;
+using System.Net.Http;
+using Avalonia.Threading;
+using System.Net.Http.Json;
+using OpenLoco.Dat.Types;
+using OpenLoco.Db.Schema;
+using OpenLoco.Common.Logging;
+using System.Threading;
 
 namespace AvaGui.Models
 {
@@ -23,11 +26,9 @@ namespace AvaGui.Models
 	{
 		public EditorSettings Settings { get; private set; }
 
-		public string SettingsFilePath { get; set; }
-
 		public ILogger Logger;
 
-		public HeaderIndex HeaderIndex { get; private set; } = [];
+		public ObjectIndex ObjectIndex { get; private set; }
 
 		public PaletteMap PaletteMap { get; set; }
 
@@ -41,6 +42,8 @@ namespace AvaGui.Models
 
 		public Dictionary<string, byte[]> Tutorials { get; } = [];
 
+		public Dictionary<string, ObjectMetadata> Metadata { get; set; } = [];
+
 		public Collection<string> MiscFiles { get; } = [];
 
 		public const string ApplicationName = "OpenLoco Object Editor";
@@ -51,41 +54,54 @@ namespace AvaGui.Models
 
 		public ObservableCollection<LogLine> LoggerObservableLogs = [];
 
+		public HttpClient WebClient { get; }
+
 		public ObjectEditorModel()
 		{
 			Logger = new Logger();
 			LoggerObservableLogs = [];
-			Logger.LogAdded += (sender, laea) => LoggerObservableLogs.Insert(0, laea.Log);
+			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
 
-			LoadSettings(SettingsFile, Logger);
+			LoadSettings();
+			//Metadata = Utils.LoadMetadata(MetadataFilename);
+			Metadata = Utils.LoadMetadata("Q:\\Games\\Locomotion\\LocoVault\\dataBase.json");
+
+			// create http client
+			WebClient = new HttpClient() { BaseAddress = new Uri("https://localhost:7230"), };
 		}
 
-		public void LoadSettings(string settingsFile, ILogger? logger)
+		public void LoadSettings()
 		{
-			SettingsFilePath = settingsFile;
-
-			if (!File.Exists(settingsFile))
+			if (!File.Exists(SettingsFile))
 			{
 				Settings = new();
 				SaveSettings();
 				return;
 			}
 
-			var text = File.ReadAllText(settingsFile);
-			var settings = JsonSerializer.Deserialize<EditorSettings>(text);
+			var text = File.ReadAllText(SettingsFile);
+			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: new() { WriteIndented = true });
 			Verify.NotNull(settings);
 
 			Settings = settings!;
 
-			if (ValidateSettings(Settings, logger))
+			if (!ValidateSettings(Settings, Logger) && File.Exists(IndexFilename))
 			{
-				if (File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
-				{
-					Logger?.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-					LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true).Wait();
-				}
+				Logger?.Error("Unable to validate settings file - please delete it and it will be recreated on next editor startup.");
 			}
+
+			//if (File.Exists(IndexFilename))
+			//{
+			//	Logger?.Info($"Loading header index from \"{IndexFilename}\"");
+			//	Task.Run(async () => await LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true)).Wait();
+			//}
 		}
+
+		public string IndexFilename
+			=> Settings.GetObjDataFullPath(Settings.IndexFileName);
+
+		public string MetadataFilename
+			=> Settings.GetObjDataFullPath(Settings.MetadataFileName);
 
 		static bool ValidateSettings(EditorSettings settings, ILogger? logger)
 		{
@@ -112,43 +128,90 @@ namespace AvaGui.Models
 
 		public void SaveSettings()
 		{
-			var options = GetOptions();
-			var text = JsonSerializer.Serialize(Settings, options);
+			var text = JsonSerializer.Serialize(Settings, options: new() { WriteIndented = true });
 
-			var parentDir = Path.GetDirectoryName(SettingsFilePath);
+			var parentDir = Path.GetDirectoryName(SettingsFile);
 			if (parentDir != null && !Directory.Exists(parentDir))
 			{
 				_ = Directory.CreateDirectory(parentDir);
 			}
 
-			File.WriteAllText(SettingsFilePath, text);
+			try
+			{
+				File.WriteAllText(SettingsFile, text);
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(ex);
+			}
 		}
 
-		public bool TryLoadObject(string filename, out UiLocoFile? uiLocoFile)
+		public bool TryLoadObject(FileSystemItem filesystemItem, out UiLocoFile? uiLocoFile)
 		{
-			if (string.IsNullOrEmpty(filename))
+			if (string.IsNullOrEmpty(filesystemItem.Path))
 			{
 				uiLocoFile = null;
 				return false;
 			}
 
-			DatFileInfo? fileInfo;
-			ILocoObject? locoObject;
+			DatFileInfo? fileInfo = null;
+			ILocoObject? locoObject = null;
+			uiLocoFile = null;
 
 			try
 			{
-				(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
+				if (filesystemItem.FileLocation == FileLocation.Online)
+				{
+					TblLocoObject? locoObj = null;
+					try
+					{
+						using HttpResponseMessage response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
+						// wait for request to arrive back
+						if (!response.IsSuccessStatusCode)
+						{
+							Logger.Error($"Request failed: {response.ReasonPhrase}");
+							return false;
+						}
+
+						locoObj = response.Content.ReadFromJsonAsync<TblLocoObject>().Result;
+					}
+					catch (HttpRequestException ex)
+					{
+						if (ex.HttpRequestError == HttpRequestError.ConnectionError)
+						{
+							Logger.Error("Request failed: unable to connect to the main server; it may be down.");
+						}
+						else
+						{
+							Logger.Error("Request failed", ex);
+						}
+						return false;
+					}
+
+					if (locoObj == null || locoObj.OriginalBytes.Length == 0)
+					{
+						Logger?.Error($"Unable to load {filesystemItem.Path} from online");
+					}
+					else
+					{
+						(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(locoObj.OriginalBytes, $"{filesystemItem.Path}/{filesystemItem.Name}", true, Logger);
+					}
+				}
+				else
+				{
+					(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(filesystemItem.Path, logger: Logger);
+				}
 			}
 			catch (Exception ex)
 			{
-				Logger?.Error($"Unable to load {filename}", ex);
+				Logger?.Error($"Unable to load {filesystemItem.Path}", ex);
 				uiLocoFile = null;
 				return false;
 			}
 
 			if (locoObject == null || fileInfo == null)
 			{
-				Logger?.Error($"Unable to load {filename}. FileInfo={fileInfo}");
+				Logger?.Error($"Unable to load {filesystemItem.Path}. FileInfo={fileInfo}");
 				uiLocoFile = null;
 				return false;
 			}
@@ -157,7 +220,6 @@ namespace AvaGui.Models
 			return true;
 		}
 
-		// this method loads every single object entirely. it takes a long time to run
 		async Task CreateIndex(string[] allFiles, IProgress<float> progress)
 		{
 			Logger?.Info($"Creating index on {allFiles.Length} files");
@@ -166,32 +228,10 @@ namespace AvaGui.Models
 			sw.Start();
 
 			var fileCount = allFiles.Length;
-			var index = await SawyerStreamReader.FastIndexAsync(allFiles, progress);
-
-			HeaderIndex = index.ToDictionary(
-				x => x.filename,
-				x => new ObjectIndexModel(
-					x.s5.Name,
-					DatFileType.Object,
-					x.s5.ObjectType,
-					x.s5.SourceGame,
-					x.s5.Checksum,
-					x.VehicleType)
-				);
+			ObjectIndex = await ObjectIndex.CreateIndexAsync(allFiles, progress);
 
 			sw.Stop();
 			Logger?.Info($"Indexed {fileCount} in {sw.Elapsed}");
-		}
-
-		public void SaveFile(string path, UiLocoFile obj)
-		{
-			if (obj == null)
-			{
-				Logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
-				return;
-			}
-
-			SawyerStreamWriter.Save(path, obj.DatFileInfo.S5Header.Name, obj.LocoObject);
 		}
 
 		public bool LoadDataDirectory(string directory)
@@ -247,7 +287,29 @@ namespace AvaGui.Models
 		//public void LoadObjDirectory(string directory)
 		//	=> LoadObjDirectory(directory, new Progress<float>(), true);
 
+		static Task? indexerTask;
+		static readonly SemaphoreSlim taskLock = new(1, 1);
+
 		public async Task LoadObjDirectoryAsync(string directory, IProgress<float> progress, bool useExistingIndex)
+		{
+			await taskLock.WaitAsync();
+
+			try
+			{
+				if (indexerTask?.IsCompleted != false)
+				{
+					indexerTask = Task.Run(async () => await LoadObjDirectoryAsyncCore(directory, progress, useExistingIndex));
+				}
+			}
+			finally
+			{
+				_ = taskLock.Release();
+			}
+
+			await indexerTask;
+		}
+
+		async Task LoadObjDirectoryAsyncCore(string directory, IProgress<float> progress, bool useExistingIndex)
 		{
 			if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory) || progress == null)
 			{
@@ -256,57 +318,51 @@ namespace AvaGui.Models
 			}
 
 			Settings.ObjDataDirectory = directory;
-			var allFiles = Directory
-				.GetFiles(directory, "*", SearchOption.AllDirectories); // the searchPattern doesn't support full regex and is not case sensitive on windows but is case sensitive on linux
+			SaveSettings();
+			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 
-			allFiles = allFiles
-				.Where(x => Path.GetExtension(x).Equals(".dat", StringComparison.OrdinalIgnoreCase))
-				.ToArray();
-
-			if (useExistingIndex && File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
+			if (useExistingIndex && File.Exists(IndexFilename))
 			{
-				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.GetObjDataFullPath(Settings.IndexFileName)) ?? HeaderIndex;
+				var exception = false;
 
-				var a = HeaderIndex.Keys.Except(allFiles);
-				var b = allFiles.Except(HeaderIndex.Keys);
-				if (a.Any() || b.Any())
+				try
 				{
-					Logger?.Warning("Selected directory had an index file but it was outdated; suggest recreating it when you have a moment");
+					ObjectIndex = ObjectIndexManager.DeserialiseHeaderIndexFromFile(IndexFilename, Logger) ?? ObjectIndex;
+				}
+				catch (Exception ex)
+				{
+					Logger.Error(ex);
+					exception = true;
+				}
+
+				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.ObjectName))) != false)
+				{
+					Logger?.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
+					await RecreateIndex(progress, allFiles);
+					return;
+				}
+
+
+				var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.Filename).Concat(ObjectIndex.ObjectsFailed.Select(x => x.Filename));
+				if (objectIndexFilenames.Except(allFiles).Any() || allFiles.Except(objectIndexFilenames).Any())
+				{
+					Logger?.Warning("Index file appears to be outdated - recreating now.");
+					await RecreateIndex(progress, allFiles);
+					return;
 				}
 			}
 			else
 			{
+				await RecreateIndex(progress, allFiles);
+				return;
+			}
+
+			async Task RecreateIndex(IProgress<float> progress, string[] allFiles)
+			{
 				Logger?.Info("Recreating index file");
 				await CreateIndex(allFiles, progress); // do we need the array?
-				SerialiseHeaderIndexToFile(Settings.GetObjDataFullPath(Settings.IndexFileName), HeaderIndex, GetOptions());
+				ObjectIndexManager.SerialiseHeaderIndexToFile(IndexFilename, ObjectIndex, Logger);
 			}
-
-			SaveSettings();
-		}
-
-		private static JsonSerializerOptions GetOptions()
-			=> new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
-
-		static void SerialiseHeaderIndexToFile(string filename, HeaderIndex headerIndex, JsonSerializerOptions options, ILogger? logger = null)
-		{
-			logger?.Info($"Saved settings to {filename}");
-			var json = JsonSerializer.Serialize(headerIndex, options);
-			File.WriteAllText(filename, json);
-		}
-
-		static HeaderIndex? DeserialiseHeaderIndexFromFile(string filename, ILogger? logger = null)
-		{
-			if (!File.Exists(filename))
-			{
-				logger?.Info($"Settings file {filename} does not exist");
-				return null;
-			}
-
-			logger?.Info($"Loading settings from {filename}");
-
-			var json = File.ReadAllText(filename);
-
-			return JsonSerializer.Deserialize<HeaderIndex>(json, GetOptions()) ?? [];
 		}
 	}
 }

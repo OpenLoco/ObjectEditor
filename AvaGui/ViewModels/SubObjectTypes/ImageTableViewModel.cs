@@ -1,11 +1,10 @@
 using ReactiveUI;
-using OpenLoco.ObjectEditor.DatFileParsing;
 using System.Linq;
 using ReactiveUI.Fody.Helpers;
 using Avalonia.Media.Imaging;
 using System.Collections.Generic;
-using OpenLoco.ObjectEditor.Headers;
-using OpenLoco.ObjectEditor;
+using OpenLoco.Dat.Types;
+using OpenLoco.Dat;
 using SixLabors.ImageSharp.PixelFormats;
 using Avalonia;
 using Avalonia.Platform;
@@ -15,7 +14,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.ComponentModel;
-using OpenLoco.ObjectEditor.Types;
 
 namespace AvaGui.ViewModels
 {
@@ -141,7 +139,7 @@ namespace AvaGui.ViewModels
 			}
 			set
 			{
-				images = value;
+				//images = value;
 				_ = this.RaiseAndSetIfChanged(ref images, value);
 			}
 		}

@@ -1,4 +1,4 @@
-using OpenLoco.ObjectEditor.Data;
+using OpenLoco.Dat.Data;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 

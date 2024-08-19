@@ -1,6 +1,6 @@
 using ReactiveUI;
 using System;
-using OpenLoco.ObjectEditor.Types;
+using OpenLoco.Dat.Types;
 using System.Linq;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;

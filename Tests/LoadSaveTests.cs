@@ -1,15 +1,13 @@
-using Core.Objects;
-using Core.Objects.Sound;
+using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Objects.Sound;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using OpenLoco.ObjectEditor.Data;
-using OpenLoco.ObjectEditor.DatFileParsing;
-using OpenLoco.ObjectEditor.Headers;
-using OpenLoco.ObjectEditor.Objects;
-using OpenLoco.ObjectEditor.Types;
-using Logger = OpenLoco.ObjectEditor.Logging.Logger;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Types;
+using Logger = OpenLoco.Common.Logging.Logger;
 
-namespace OpenLoco.ObjectEditor.Tests
+namespace OpenLoco.Dat.Tests
 {
 	[TestFixture]
 	public class LoadSaveTests
@@ -48,11 +46,12 @@ namespace OpenLoco.ObjectEditor.Tests
 			return (loaded.LocoObject!, (T)loaded.LocoObject!.Object);
 		}
 
-		static void LoadSaveGenericTest<T>(string objectName, Action<ILocoObject, T> assertFunc) where T : ILocoStruct
+		static void LoadSaveGenericTest<T>(string filename, Action<ILocoObject, T> assertFunc) where T : ILocoStruct
 		{
-			var (obj1, struc1) = LoadObject<T>(objectName);
+			var (obj1, struc1) = LoadObject<T>(filename);
 			assertFunc(obj1, struc1);
 
+			var objectName = filename.Split('.')[0];
 			var bytes1 = SawyerStreamWriter.WriteLocoObject(objectName, obj1);
 
 			var (obj2, struc2) = LoadObject<T>(bytes1);
@@ -466,11 +465,11 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.MapColour, Is.EqualTo(Colour.MutedPurple), nameof(struc.MapColour));
 				// ProducedCargo
 				Assert.That(struc.ProducedCargo, Has.Count.EqualTo(1));
-				Assert.That(struc.ProducedCargo[0].Name.Trim(), Is.EqualTo("FOOD"));
+				Assert.That(struc.ProducedCargo[0].Name, Is.EqualTo("FOOD"));
 				Assert.That(struc.ProducedCargo[0].ObjectType, Is.EqualTo(ObjectType.Cargo));
 				// RequiredCargo
 				Assert.That(struc.RequiredCargo, Has.Count.EqualTo(1));
-				Assert.That(struc.RequiredCargo[0].Name.Trim(), Is.EqualTo("GRAIN"));
+				Assert.That(struc.RequiredCargo[0].Name, Is.EqualTo("GRAIN"));
 				Assert.That(struc.RequiredCargo[0].ObjectType, Is.EqualTo(ObjectType.Cargo));
 				// Rest of object
 				Assert.That(struc.ScaffoldingColour, Is.EqualTo(Colour.Grey), nameof(struc.ScaffoldingColour));
@@ -592,7 +591,7 @@ namespace OpenLoco.ObjectEditor.Tests
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(22), nameof(struc.BuildCostFactor));
 				// Compatible
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
-				Assert.That(struc.Flags, Is.EqualTo(RoadObjectFlags.unk_00 | RoadObjectFlags.unk_02 | RoadObjectFlags.unk_03 | RoadObjectFlags.unk_04 | RoadObjectFlags.IsRoad), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(RoadObjectFlags.unk_00 | RoadObjectFlags.unk_02 | RoadObjectFlags.unk_03 | RoadObjectFlags.unk_04 | RoadObjectFlags.IsRoad | RoadObjectFlags.unk_07), nameof(struc.Flags));
 				Assert.That(struc.MaxSpeed, Is.EqualTo(400), nameof(struc.MaxSpeed));
 				// Mods
 				Assert.That(struc.NumBridges, Is.EqualTo(5), nameof(struc.NumBridges));
@@ -981,13 +980,13 @@ namespace OpenLoco.ObjectEditor.Tests
 				//Assert.That(struc.pad_135, Is.EqualTo(0), nameof(struc.pad_135));
 				Assert.That(struc.NumStartSounds, Is.EqualTo(2), nameof(struc.NumStartSounds));
 
-				Assert.That(struc.StartSounds[0].Name, Is.EqualTo("SNDTD1  "), nameof(struc.StartSounds) + "[0]Name");
+				Assert.That(struc.StartSounds[0].Name, Is.EqualTo("SNDTD1"), nameof(struc.StartSounds) + "[0]Name");
 				Assert.That(struc.StartSounds[0].Checksum, Is.EqualTo(0), nameof(struc.StartSounds) + "[0]Checksum");
 				Assert.That(struc.StartSounds[0].Flags, Is.EqualTo(1), nameof(struc.StartSounds) + "[0]Flags");
 				Assert.That(struc.StartSounds[0].SourceGame, Is.EqualTo(SourceGame.Custom), nameof(struc.StartSounds) + "[0]Checksum");
 				Assert.That(struc.StartSounds[0].ObjectType, Is.EqualTo(ObjectType.Sound), nameof(struc.StartSounds) + "[0]Flags");
 
-				Assert.That(struc.StartSounds[1].Name, Is.EqualTo("SNDTD2  "), nameof(struc.StartSounds) + "[1]Name");
+				Assert.That(struc.StartSounds[1].Name, Is.EqualTo("SNDTD2"), nameof(struc.StartSounds) + "[1]Name");
 				Assert.That(struc.StartSounds[1].Checksum, Is.EqualTo(0), nameof(struc.StartSounds) + "[1]Checksum");
 				Assert.That(struc.StartSounds[1].Flags, Is.EqualTo(1), nameof(struc.StartSounds) + "[1]Flags");
 				Assert.That(struc.StartSounds[1].SourceGame, Is.EqualTo(SourceGame.Custom), nameof(struc.StartSounds) + "[1]Checksum");

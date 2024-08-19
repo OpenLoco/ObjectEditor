@@ -1,11 +1,12 @@
 using ReactiveUI;
 using AvaGui.Models;
-using OpenLoco.ObjectEditor.DatFileParsing;
+using OpenLoco.Dat.FileParsing;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
-using OpenLoco.ObjectEditor.Logging;
 using System.Threading.Tasks;
-using Core.Objects.Sound;
+using OpenLoco.Common;
+using OpenLoco.Dat.Objects.Sound;
+using OpenLoco.Common.Logging;
 
 namespace AvaGui.ViewModels
 {
@@ -14,6 +15,7 @@ namespace AvaGui.ViewModels
 		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveAsObjectCommand { get; init; }
+		public ReactiveCommand<Unit, Unit> SaveMetadataCommand { get; init; }
 
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
@@ -25,6 +27,9 @@ namespace AvaGui.ViewModels
 
 		[Reactive]
 		public UiLocoFile? CurrentObject { get; private set; }
+
+		[Reactive]
+		public ObjectMetadata CurrentMetadata { get; private set; }
 
 		[Reactive]
 		public FileSystemItemBase CurrentFile { get; init; }
@@ -41,6 +46,7 @@ namespace AvaGui.ViewModels
 			ReloadObjectCommand = ReactiveCommand.Create(LoadObject);
 			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
 			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
+			SaveMetadataCommand = ReactiveCommand.Create(SaveCurrentMetadata);
 		}
 
 		public void LoadObject()
@@ -51,14 +57,14 @@ namespace AvaGui.ViewModels
 				svm.Dispose();
 			}
 
-			if (CurrentFile == null)
+			if (CurrentFile is not FileSystemItem cf)
 			{
 				return;
 			}
 
-			Logger?.Info($"Loading {CurrentFile.Name} from {CurrentFile.Path}");
+			Logger?.Info($"Loading {cf.Name} from {cf.Path}");
 
-			if (Model.TryLoadObject(CurrentFile.Path, out var newObj))
+			if (Model.TryLoadObject(cf, out var newObj))
 			{
 				CurrentObject = newObj;
 
@@ -68,6 +74,9 @@ namespace AvaGui.ViewModels
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
+
+					var name = CurrentObject.DatFileInfo.S5Header.Name;
+					CurrentMetadata = Utils.LoadObjectMetadata(name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
 				}
 				else
 				{
@@ -110,6 +119,11 @@ namespace AvaGui.ViewModels
 
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {saveFile.Path.AbsolutePath}");
 			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+		}
+
+		public void SaveCurrentMetadata()
+		{
+			Utils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
 		}
 	}
 }

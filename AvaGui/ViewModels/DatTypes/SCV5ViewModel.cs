@@ -1,4 +1,4 @@
-using Core.Types.SCV5;
+using OpenLoco.Dat.Types.SCV5;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;

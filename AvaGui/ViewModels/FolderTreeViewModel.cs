@@ -91,6 +91,8 @@ namespace AvaGui.ViewModels
 
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
 				.Subscribe(async _ => await RefreshDirectoryAsync(true));
+			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
 				.Throttle(TimeSpan.FromMilliseconds(1000))
 				.Subscribe(async _ => await RefreshDirectoryAsync(true));
@@ -133,6 +135,7 @@ namespace AvaGui.ViewModels
 			{
 				await LoadOnlineDirectoryAsync(useExistingIndex);
 			}
+
 		}
 
 		async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)

@@ -13,7 +13,7 @@ namespace OpenLoco.Dat.FileParsing
 
 		public required IEnumerable<ObjectIndexFailedEntry> ObjectsFailed { get; set; }
 
-		public static Task<ObjectIndex> FastIndexAsync(string[] files, IProgress<float> progress)
+		public static Task<ObjectIndex> CreateIndexAsync(string[] files, IProgress<float> progress)
 		{
 			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
 			ConcurrentQueue<ObjectIndexEntryBase> pendingIndices = [];

@@ -228,7 +228,7 @@ namespace AvaGui.Models
 			sw.Start();
 
 			var fileCount = allFiles.Length;
-			ObjectIndex = await ObjectIndex.FastIndexAsync(allFiles, progress);
+			ObjectIndex = await ObjectIndex.CreateIndexAsync(allFiles, progress);
 
 			sw.Stop();
 			Logger?.Info($"Indexed {fileCount} in {sw.Elapsed}");
@@ -287,26 +287,26 @@ namespace AvaGui.Models
 		//public void LoadObjDirectory(string directory)
 		//	=> LoadObjDirectory(directory, new Progress<float>(), true);
 
-		private static Task indexerTask;
-		private static SemaphoreSlim taskLock = new SemaphoreSlim(1, 1);
+		static Task? indexerTask;
+		static readonly SemaphoreSlim taskLock = new(1, 1);
 
 		public async Task LoadObjDirectoryAsync(string directory, IProgress<float> progress, bool useExistingIndex)
 		{
-			await taskLock.WaitAsync(); // Acquire the lock
+			await taskLock.WaitAsync();
 
 			try
 			{
-				if (indexerTask == null || indexerTask.IsCompleted)
+				if (indexerTask?.IsCompleted != false)
 				{
 					indexerTask = Task.Run(async () => await LoadObjDirectoryAsyncCore(directory, progress, useExistingIndex));
 				}
 			}
 			finally
 			{
-				_ = taskLock.Release(); // Release the lock
+				_ = taskLock.Release();
 			}
 
-			await indexerTask; // Await the task (whether newly created or reused)
+			await indexerTask;
 		}
 
 		async Task LoadObjDirectoryAsyncCore(string directory, IProgress<float> progress, bool useExistingIndex)

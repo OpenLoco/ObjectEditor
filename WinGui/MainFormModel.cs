@@ -1,4 +1,3 @@
-global using HeaderIndex = System.Collections.Generic.Dictionary<string, OpenLoco.Dat.FileParsing.ObjectIndexEntryBase>;
 global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.WinGui.UiLocoObject>;
 
 using System.Collections.Concurrent;
@@ -20,7 +19,7 @@ namespace OpenLoco.WinGui
 	{
 		private readonly ILogger logger;
 
-		public HeaderIndex HeaderIndex { get; private set; } = [];
+		public ObjectIndex ObjectIndex { get; private set; }
 
 		public ObjectCache ObjectCache { get; private set; } = [];
 
@@ -57,10 +56,10 @@ namespace OpenLoco.WinGui
 				logger.Debug($"Preloading dependent {depObjectType} objects");
 			}
 
-			foreach (var dep in HeaderIndex.Where(kvp => kvp.Value is ObjectIndexEntry oi && dependentObjectTypes.Contains(oi.ObjectType)))
+			foreach (var dep in ObjectIndex.Objects.Where(x => x is ObjectIndexEntry oi && dependentObjectTypes.Contains(oi.ObjectType)))
 			{
 #if DEBUG
-				SawyerStreamReader.LoadFullObjectFromFile(dep.Key);
+				SawyerStreamReader.LoadFullObjectFromFile(dep.Filename);
 #else
 				try
 				{
@@ -198,10 +197,7 @@ namespace OpenLoco.WinGui
 				catch (Exception ex)
 				{
 					logger.Error($"Failed to load \"{file}\"", ex);
-
-					var s5 = SawyerStreamReader.LoadS5HeaderFromFile(file);
-					var indexObjectHeader = new ObjectIndexEntry(file, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, (VehicleType?)null);
-					_ = ccHeaderIndex.TryAdd(file, indexObjectHeader);
+					_ = ccHeaderIndex.TryAdd(file, new ObjectIndexFailedEntry(file));
 				}
 				finally
 				{
@@ -211,7 +207,7 @@ namespace OpenLoco.WinGui
 				//}
 			}));
 
-			HeaderIndex = ccHeaderIndex.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+			ObjectIndex = new ObjectIndex() { Objects = ccHeaderIndex.Values.OfType<ObjectIndexEntry>(), ObjectsFailed = ccHeaderIndex.Values.OfType<ObjectIndexFailedEntry>() };
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 			sw.Stop();
@@ -256,10 +252,11 @@ namespace OpenLoco.WinGui
 			var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
 			if (useExistingIndex && File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
 			{
-				HeaderIndex = DeserialiseHeaderIndexFromFile(Settings.GetObjDataFullPath(Settings.IndexFileName)) ?? HeaderIndex;
+				ObjectIndex = DeserialiseHeaderIndexFromFile(Settings.GetObjDataFullPath(Settings.IndexFileName)) ?? ObjectIndex;
 
-				var a = HeaderIndex.Keys.Except(allFiles);
-				var b = allFiles.Except(HeaderIndex.Keys);
+				var filenames = ObjectIndex.Objects.Select(x => x.Filename).Concat(ObjectIndex.ObjectsFailed.Select(x => x.Filename));
+				var a = filenames.Except(allFiles);
+				var b = allFiles.Except(filenames);
 				if (a.Any() || b.Any())
 				{
 					logger.Warning("Selected directory had an index file but it was outdated; suggest recreating it when you have a moment");
@@ -280,7 +277,7 @@ namespace OpenLoco.WinGui
 			{
 				logger.Info("Recreating index file");
 				CreateIndex(allFiles, progress);
-				SerialiseHeaderIndexToFile(Settings.GetObjDataFullPath(Settings.IndexFileName), HeaderIndex, GetOptions());
+				SerialiseHeaderIndexToFile(Settings.GetObjDataFullPath(Settings.IndexFileName), ObjectIndex, GetOptions());
 			}
 
 			SaveSettings();
@@ -346,14 +343,14 @@ namespace OpenLoco.WinGui
 		private static JsonSerializerOptions GetOptions()
 			=> new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
 
-		static void SerialiseHeaderIndexToFile(string filename, HeaderIndex headerIndex, JsonSerializerOptions options, ILogger? logger = null)
+		static void SerialiseHeaderIndexToFile(string filename, ObjectIndex headerIndex, JsonSerializerOptions options, ILogger? logger = null)
 		{
 			logger?.Info($"Saved settings to {filename}");
 			var json = JsonSerializer.Serialize(headerIndex, options);
 			File.WriteAllText(filename, json);
 		}
 
-		static HeaderIndex? DeserialiseHeaderIndexFromFile(string filename, ILogger? logger = null)
+		static ObjectIndex? DeserialiseHeaderIndexFromFile(string filename, ILogger? logger = null)
 		{
 			if (!File.Exists(filename))
 			{
@@ -364,7 +361,7 @@ namespace OpenLoco.WinGui
 
 			var json = File.ReadAllText(filename);
 
-			return JsonSerializer.Deserialize<HeaderIndex>(json, GetOptions()) ?? [];
+			return JsonSerializer.Deserialize<ObjectIndex>(json, GetOptions());
 		}
 
 		public UiLocoObject? LoadAndCacheObject(string filename)

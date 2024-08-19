@@ -301,11 +301,11 @@ namespace OpenLoco.WinGui
 			tvFileTree.Nodes.Clear();
 
 			var filteredFiles = string.IsNullOrEmpty(fileFilter)
-				? model.HeaderIndex
-				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+				? model.ObjectIndex.Objects
+				: model.ObjectIndex.Objects.Where(x => x.Filename.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
 			var filteredIndicies = filteredFiles
-				.Select(f => f.Value)
+				.Select(f => f)
 				.OfType<ObjectIndexEntry>()
 				.Where(f => !vanillaOnly || IsOriginalFile(f.ObjectName, f.Checksum));
 
@@ -347,11 +347,11 @@ namespace OpenLoco.WinGui
 		void InitObjectCategoryTree(bool vanillaOnly, string fileFilter)
 		{
 			var filteredFiles = string.IsNullOrEmpty(fileFilter)
-				? model.HeaderIndex
-				: model.HeaderIndex.Where(hdr => hdr.Key.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
+				? model.ObjectIndex.Objects
+				: model.ObjectIndex.Objects.Where(x => x.Filename.Contains(fileFilter, StringComparison.InvariantCultureIgnoreCase));
 
 			var filteredIndicies = filteredFiles
-				.Select(f => f.Value)
+				.Select(f => f)
 				.OfType<ObjectIndexEntry>()
 				.Where(f => !vanillaOnly || IsOriginalFile(f.ObjectName, f.Checksum));
 

@@ -150,7 +150,7 @@ namespace AvaGui.ViewModels
 			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects, FilenameFilter, DisplayVanillaOnly, FileLocation.Local);
 		}
 
-		List<ObjectIndexEntryBase>? cachedIndexFromServer;
+		List<ObjectIndexEntry>? cachedIndexFromServer;
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 		{
@@ -177,7 +177,7 @@ namespace AvaGui.ViewModels
 						Model.Logger.Info("Main server queried successfully");
 					}
 
-					var data = await response.Content.ReadFromJsonAsync<List<ObjectIndexEntryBase>>();
+					var data = await response.Content.ReadFromJsonAsync<List<ObjectIndexEntry>>();
 					if (data == null)
 					{
 						Model.Logger.Error($"Received data but couldn't parse it: {response}");

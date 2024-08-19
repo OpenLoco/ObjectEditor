@@ -76,7 +76,7 @@ namespace AvaGui.ViewModels
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
 
 					var name = CurrentObject.DatFileInfo.S5Header.Name;
-					CurrentMetadata = Utils.LoadObjectMetadata(name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata);
+					CurrentMetadata = Utils.LoadObjectMetadata(name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
 				}
 				else
 				{

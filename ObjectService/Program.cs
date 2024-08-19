@@ -62,8 +62,12 @@ _ = app.MapGet("/objects/list/", (LocoDb db)
 	=> db.Objects.Select(x => new ObjectIndexEntry(x.Name, x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)));
 
 // eg: https://localhost:7230/objects/originaldat/114
-_ = app.MapGet("/objects/originaldat/{uniqueObjectId}", async (string uniqueObjectId, LocoDb db)
-	=> await db.Objects.FindAsync(uniqueObjectId))
+_ = app.MapGet("/objects/originaldat/{uniqueObjectId}", async (string uniqueObjectId, LocoDb db) =>
+//=> await db.Objects.FindAsync(uniqueObjectId))
+	{
+		var s = uniqueObjectId.Split('_');
+		return await db.Objects.SingleAsync(x => x.OriginalName == s[0] && x.OriginalChecksum == uint.Parse(s[1]));
+	})
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapGet("/objects/newobjectformat/{uniqueObjectId}", (string uniqueObjectId) =>

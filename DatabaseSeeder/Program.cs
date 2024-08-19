@@ -16,7 +16,7 @@ foreach (var x in dupes) //.OrderBy(x => x.ObjectName))
 	Console.WriteLine($"{x.ObjectName} - {x.DescriptionAndFile}");
 }
 
-//using var db = ExampleRun();
+using var db = ExampleRun();
 
 Console.WriteLine("done");
 Console.ReadLine();

@@ -38,6 +38,19 @@ namespace DatabaseSchema.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TblModpack",
+                columns: table => new
+                {
+                    TblModpackId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblModpack", x => x.TblModpackId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Objects",
                 columns: table => new
                 {
@@ -89,6 +102,30 @@ namespace DatabaseSchema.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TblModpackTagLink",
+                columns: table => new
+                {
+                    TblLocoObjectId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TblModpackId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblModpackTagLink", x => new { x.TblLocoObjectId, x.TblModpackId });
+                    table.ForeignKey(
+                        name: "FK_TblModpackTagLink_Objects_TblLocoObjectId",
+                        column: x => x.TblLocoObjectId,
+                        principalTable: "Objects",
+                        principalColumn: "TblLocoObjectId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblModpackTagLink_TblModpack_TblModpackId",
+                        column: x => x.TblModpackId,
+                        principalTable: "TblModpack",
+                        principalColumn: "TblModpackId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Objects_AuthorTblAuthorId",
                 table: "Objects",
@@ -98,6 +135,11 @@ namespace DatabaseSchema.Migrations
                 name: "IX_ObjectTagLinks_TblTagId",
                 table: "ObjectTagLinks",
                 column: "TblTagId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TblModpackTagLink_TblModpackId",
+                table: "TblModpackTagLink",
+                column: "TblModpackId");
         }
 
         /// <inheritdoc />
@@ -107,10 +149,16 @@ namespace DatabaseSchema.Migrations
                 name: "ObjectTagLinks");
 
             migrationBuilder.DropTable(
-                name: "Objects");
+                name: "TblModpackTagLink");
 
             migrationBuilder.DropTable(
                 name: "Tags");
+
+            migrationBuilder.DropTable(
+                name: "Objects");
+
+            migrationBuilder.DropTable(
+                name: "TblModpack");
 
             migrationBuilder.DropTable(
                 name: "Authors");

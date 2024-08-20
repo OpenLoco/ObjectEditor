@@ -1,19 +1,19 @@
-using ReactiveUI;
-using System.Linq;
-using ReactiveUI.Fody.Helpers;
-using Avalonia.Media.Imaging;
-using System.Collections.Generic;
-using OpenLoco.Dat.Types;
-using OpenLoco.Dat;
-using SixLabors.ImageSharp.PixelFormats;
 using Avalonia;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using System.Reactive.Linq;
+using OpenLoco.Dat;
+using OpenLoco.Dat.Types;
+using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.ComponentModel;
 
 namespace AvaGui.ViewModels
 {
@@ -137,11 +137,9 @@ namespace AvaGui.ViewModels
 				images = CreateImages(Parent.G1Elements, PaletteMap, Zoom).ToList();
 				return images;
 			}
-			set
-			{
+			set =>
 				//images = value;
 				_ = this.RaiseAndSetIfChanged(ref images, value);
-			}
 		}
 		List<Bitmap> images;
 

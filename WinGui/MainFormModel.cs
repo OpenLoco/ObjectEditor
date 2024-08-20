@@ -1,17 +1,16 @@
 global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.WinGui.UiLocoObject>;
-
-using System.Collections.Concurrent;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Diagnostics;
 using OpenLoco.Common;
+using OpenLoco.Common.Logging;
+using OpenLoco.Dat;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Types;
-using OpenLoco.Dat;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Zenith.Core;
-using OpenLoco.Common.Logging;
 
 namespace OpenLoco.WinGui
 {
@@ -157,7 +156,7 @@ namespace OpenLoco.WinGui
 			var sw = new Stopwatch();
 			sw.Start();
 
-			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (Action<string>)((file) =>
+			_ = Parallel.ForEach(allFiles, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (file) =>
 			//foreach (var file in allFiles)
 			{
 				try
@@ -205,7 +204,7 @@ namespace OpenLoco.WinGui
 					progress?.Report(count / (float)allFiles.Length);
 				}
 				//}
-			}));
+			});
 
 			ObjectIndex = new ObjectIndex() { Objects = ccHeaderIndex.Values.OfType<ObjectIndexEntry>(), ObjectsFailed = ccHeaderIndex.Values.OfType<ObjectIndexFailedEntry>() };
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

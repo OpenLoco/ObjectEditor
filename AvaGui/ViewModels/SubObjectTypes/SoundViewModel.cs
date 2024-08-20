@@ -1,17 +1,17 @@
-using ReactiveUI;
+using AvaGui.Models;
+using NAudio.Wave;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects.Sound;
+using OpenLoco.Dat.Types;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using OpenLoco.Dat.Data;
-using NAudio.Wave;
-using System.Threading;
-using System.Runtime.InteropServices;
-using AvaGui.Models;
-using System;
-using OpenLoco.Dat.Types;
-using OpenLoco.Dat.Objects.Sound;
 
 namespace AvaGui.ViewModels
 {

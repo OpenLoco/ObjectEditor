@@ -1,19 +1,19 @@
 using AvaGui.Models;
+using Avalonia.Controls;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System;
 using System.Linq;
-using System.Reactive.Linq;
-using OpenLoco.Dat.Data;
-using ReactiveUI.Fody.Helpers;
-using System.Reactive;
-using System.Threading.Tasks;
-using Avalonia.Controls;
-using System.Net.Http.Json;
-using OpenLoco.Dat.FileParsing;
 using System.Net.Http;
+using System.Net.Http.Json;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace AvaGui.ViewModels
 {

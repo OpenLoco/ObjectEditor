@@ -1,22 +1,22 @@
 using NAudio.Gui;
 using NAudio.Wave;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Types;
-using System.Data;
-using System.Drawing.Imaging;
-using System.Reflection;
-using OpenLoco.Dat.Data;
-using Zenith.Core;
-using System.Text;
-using SixLabors.ImageSharp.PixelFormats;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Diagnostics;
-using OpenLoco.Dat;
 using OpenLoco.Common;
-using OpenLoco.Dat.Objects.Sound;
-using OpenLoco.Dat.Types.SCV5;
 using OpenLoco.Common.Logging;
+using OpenLoco.Dat;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects.Sound;
+using OpenLoco.Dat.Types;
+using OpenLoco.Dat.Types.SCV5;
+using SixLabors.ImageSharp.PixelFormats;
+using System.Data;
+using System.Diagnostics;
+using System.Drawing.Imaging;
+using System.Net.Http.Headers;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using Zenith.Core;
 
 namespace OpenLoco.WinGui
 {

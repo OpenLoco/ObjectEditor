@@ -1,4 +1,3 @@
-using AvaGui.Models;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;

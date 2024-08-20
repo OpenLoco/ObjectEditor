@@ -1,6 +1,5 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Types;
 
 namespace OpenLoco.Dat.Types.SCV5
 {

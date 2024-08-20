@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.Common;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Db.Schema;
-using OpenLoco.Common;
 using System.Text.Json;
 
 var filename = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
@@ -25,10 +25,10 @@ static void SeedDb(LocoDb db)
 {
 	Console.WriteLine("Clearing database");
 	// clear
-	db.Authors.ExecuteDelete();
-	db.Tags.ExecuteDelete();
-	db.Objects.ExecuteDelete();
-	db.SaveChanges();
+	_ = db.Authors.ExecuteDelete();
+	_ = db.Tags.ExecuteDelete();
+	_ = db.Objects.ExecuteDelete();
+	_ = db.SaveChanges();
 
 	// Load data
 
@@ -46,9 +46,9 @@ static void SeedDb(LocoDb db)
 		var authors = metadata.Values.Select(x => x.Author).Distinct();
 		foreach (var author in authors)
 		{
-			db.Add(new TblAuthor() { Name = author });
+			_ = db.Add(new TblAuthor() { Name = author });
 		}
-		db.SaveChanges();
+		_ = db.SaveChanges();
 	}
 
 	// ...
@@ -59,9 +59,9 @@ static void SeedDb(LocoDb db)
 		var tags = metadata.Values.Select(x => x.Tags).SelectMany(x => x).Distinct();
 		foreach (var tag in tags.Where(x => !string.IsNullOrEmpty(x)))
 		{
-			db.Add(new TblTag() { Name = tag });
+			_ = db.Add(new TblTag() { Name = tag });
 		}
-		db.SaveChanges();
+		_ = db.SaveChanges();
 	}
 
 	// ...
@@ -89,9 +89,9 @@ static void SeedDb(LocoDb db)
 				LastEditDate = null,
 			};
 
-			db.Add(tblLocoObject);
+			_ = db.Add(tblLocoObject);
 		}
-		db.SaveChanges();
+		_ = db.SaveChanges();
 	}
 
 	Console.WriteLine("Finished seeding");
@@ -100,13 +100,13 @@ static void SeedDb(LocoDb db)
 static LocoDb ExampleRun()
 {
 	var builder = new DbContextOptionsBuilder<LocoDb>();
-	builder.UseSqlite(LocoDb.GetDbPath());
+	_ = builder.UseSqlite(LocoDb.GetDbPath());
 	var db = new LocoDb(builder.Options);
 
 	// Note: The database must exist before this script works
 	Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
 
-	bool seed = true;
+	var seed = true;
 	if (seed)
 	{
 		SeedDb(db);

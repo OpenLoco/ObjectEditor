@@ -1,9 +1,9 @@
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Objects.Sound;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using Logger = OpenLoco.Common.Logging.Logger;
 

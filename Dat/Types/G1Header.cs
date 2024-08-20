@@ -1,5 +1,5 @@
-using System.ComponentModel;
 using OpenLoco.Dat.FileParsing;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Types
 {

@@ -18,7 +18,9 @@ namespace OpenLoco.Dat.Types.SCV5
 		void SetLast(bool value)
 		{
 			if (value)
+			{
 				Flags |= FLAG_LAST;
+			}
 			else
 			{
 				unchecked
@@ -28,14 +30,8 @@ namespace OpenLoco.Dat.Types.SCV5
 			}
 		}
 
-		bool IsGhost()
-		{
-			return (Flags & FLAG_GHOST) == FLAG_GHOST;
-		}
+		bool IsGhost() => (Flags & FLAG_GHOST) == FLAG_GHOST;
 
-		bool IsLast()
-		{
-			return (Flags & FLAG_LAST) == FLAG_LAST;
-		}
+		bool IsLast() => (Flags & FLAG_LAST) == FLAG_LAST;
 	}
 }

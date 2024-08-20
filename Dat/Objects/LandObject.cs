@@ -1,7 +1,7 @@
-using System.ComponentModel;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects
 {
@@ -62,9 +62,8 @@ namespace OpenLoco.Dat.Objects
 		public ReadOnlySpan<byte> Save()
 		{
 			var variableDataSize = S5Header.StructLength + (Flags.HasFlag(LandObjectFlags.unk_01) ? S5Header.StructLength : 0);
-
-			var data = new byte[variableDataSize];
-			data = [.. CliffEdgeHeader.Write()];
+			_ = new byte[variableDataSize];
+			byte[]? data = [.. CliffEdgeHeader.Write()];
 
 			if (Flags.HasFlag(LandObjectFlags.unk_01))
 			{

@@ -1,6 +1,6 @@
-using System.ComponentModel;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
+using System.ComponentModel;
 using Zenith.Core;
 
 namespace OpenLoco.Dat.Types

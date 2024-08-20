@@ -1,9 +1,9 @@
-using ReactiveUI;
-using System;
 using OpenLoco.Dat.Types;
-using System.Linq;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace AvaGui.ViewModels
 {

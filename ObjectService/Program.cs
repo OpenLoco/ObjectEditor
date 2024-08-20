@@ -36,7 +36,7 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 			}
 
 			context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-			context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.");
+			_ = context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.");
 
 			return new ValueTask();
 		};
@@ -53,8 +53,8 @@ app.UseRateLimiter();
 if (app.Environment.IsDevelopment())
 {
 	// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-	app.UseSwagger();
-	app.UseSwaggerUI();
+	_ = app.UseSwagger();
+	_ = app.UseSwaggerUI();
 }
 
 // eg: https://localhost:7230/objects/list
@@ -85,8 +85,8 @@ _ = app.MapGet("/todoitems", async (LocoDb db) =>
 
 _ = app.MapPost("/todoitems", async (TblLocoObject locoObject, LocoDb db) =>
 {
-	db.Objects.Add(locoObject);
-	await db.SaveChangesAsync();
+	_ = db.Objects.Add(locoObject);
+	_ = await db.SaveChangesAsync();
 
 	return Results.Created($"/todoitems/{locoObject.Name}", locoObject);
 });

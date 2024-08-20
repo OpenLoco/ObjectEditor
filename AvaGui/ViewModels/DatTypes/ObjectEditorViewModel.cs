@@ -1,18 +1,18 @@
-using ReactiveUI;
 using AvaGui.Models;
+using OpenLoco.Common;
+using OpenLoco.Common.Logging;
+using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects.Sound;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using OpenLoco.Common;
-using OpenLoco.Dat.Objects.Sound;
-using OpenLoco.Common.Logging;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Collections.ObjectModel;
-using OpenLoco.Dat;
-using System;
 
 namespace AvaGui.ViewModels
 {
@@ -81,7 +81,7 @@ namespace AvaGui.ViewModels
 		{
 			if (CurrentlySelectedHexAnnotation != null && DATDumpAnnotationIdentifiers.TryGetValue(CurrentlySelectedHexAnnotation.Title, out var positionValues))
 			{
-				CurrentHexDumpLines = GetDumpLines(currentByteList, positionValues.Item1, positionValues.Item2).ToArray();
+				CurrentHexDumpLines = GetDumpLines(currentByteList, positionValues.Start, positionValues.End).ToArray();
 			}
 			else
 			{
@@ -166,10 +166,7 @@ namespace AvaGui.ViewModels
 			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
-		public void SaveCurrentMetadata()
-		{
-			Utils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
-		}
+		public void SaveCurrentMetadata() => Utils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
 		{

@@ -1,7 +1,7 @@
-using System.ComponentModel;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects.Sound
 {

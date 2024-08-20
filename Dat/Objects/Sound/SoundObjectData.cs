@@ -1,6 +1,6 @@
-using System.ComponentModel;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects.Sound
 {
@@ -13,9 +13,6 @@ namespace OpenLoco.Dat.Objects.Sound
 		[property: LocoStructOffset(0x0C)] WaveFormatEx PcmHeader
 		) : ILocoStruct
 	{
-		public bool Validate()
-		{
-			return Offset >= 0;
-		}
+		public bool Validate() => Offset >= 0;
 	}
 }

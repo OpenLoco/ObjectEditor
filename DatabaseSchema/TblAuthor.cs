@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-
 namespace OpenLoco.Db.Schema
 {
 	public class TblAuthor

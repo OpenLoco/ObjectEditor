@@ -1,8 +1,8 @@
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Types;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Types;
 using Zenith.Core;
 
 namespace OpenLoco.Dat.FileParsing

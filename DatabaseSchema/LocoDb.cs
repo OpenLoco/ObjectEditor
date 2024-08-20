@@ -4,18 +4,13 @@ namespace OpenLoco.Db.Schema
 {
 	public class LocoDb : DbContext
 	{
-		public LocoDb()
-		{
-			DbPath = GetDbPath();
-		}
+		public LocoDb() => DbPath = GetDbPath();
 
 		public LocoDb(DbContextOptions<LocoDb> options)
-			: base(options)
-		{
+			: base(options) =>
 			//var folder = Environment.SpecialFolder.LocalApplicationData;
 			//var path = Environment.GetFolderPath(folder);
 			DbPath = GetDbPath();
-		}
 
 		public DbSet<TblAuthor> Authors => Set<TblAuthor>();
 		public DbSet<TblTag> Tags => Set<TblTag>();

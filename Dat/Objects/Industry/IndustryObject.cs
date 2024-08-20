@@ -1,8 +1,7 @@
-using System.ComponentModel;
-using OpenLoco.Common;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects
 {
@@ -123,7 +122,9 @@ namespace OpenLoco.Dat.Objects
 			{
 				var ptr_1F = 0;
 				while (remainingData[++ptr_1F] != 0xFF)
+				{
 					;
+				}
 
 				BuildingParts.Add(remainingData[..ptr_1F].ToArray());
 				ptr_1F++;

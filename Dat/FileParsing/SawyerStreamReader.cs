@@ -1,11 +1,10 @@
-using System.Text;
-using OpenLoco.Dat.Types;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects.Sound;
-using Zenith.Core;
-using System.Collections.Concurrent;
 using OpenLoco.Common.Logging;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Objects.Sound;
+using OpenLoco.Dat.Types;
+using System.Text;
+using Zenith.Core;
 
 namespace OpenLoco.Dat.FileParsing
 {

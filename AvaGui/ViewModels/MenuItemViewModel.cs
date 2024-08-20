@@ -1,6 +1,6 @@
 using ReactiveUI;
-using System.Windows.Input;
 using ReactiveUI.Fody.Helpers;
+using System.Windows.Input;
 
 namespace AvaGui.ViewModels
 {

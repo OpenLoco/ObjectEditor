@@ -1,24 +1,24 @@
-using System.IO;
-using System;
-using OpenLoco.Common;
-using System.Text.Json;
-using Zenith.Core;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat;
-using System.Collections.ObjectModel;
-using DynamicData;
-using System.Net.Http;
 using Avalonia.Threading;
-using System.Net.Http.Json;
+using DynamicData;
+using OpenLoco.Common;
+using OpenLoco.Common.Logging;
+using OpenLoco.Dat;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using OpenLoco.Db.Schema;
-using OpenLoco.Common.Logging;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
+using Zenith.Core;
 
 namespace AvaGui.Models
 {
@@ -165,7 +165,7 @@ namespace AvaGui.Models
 					TblLocoObject? locoObj = null;
 					try
 					{
-						using HttpResponseMessage response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
+						using var response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
 						// wait for request to arrive back
 						if (!response.IsSuccessStatusCode)
 						{

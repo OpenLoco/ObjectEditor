@@ -22,6 +22,10 @@ namespace OpenLoco.Dat
 		}
 
 		public string Name { get; set; }
+
+		public string OffsetText
+			=> string.Format("(0x{0:X}-0x{1:X})", Start, End);
+
 		public HexAnnotation? Parent { get; set; }
 
 		public int Start

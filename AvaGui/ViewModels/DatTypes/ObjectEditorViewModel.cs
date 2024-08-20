@@ -12,11 +12,12 @@ using System.Linq;
 using System.IO;
 using System.Collections.ObjectModel;
 using OpenLoco.Dat;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using System;
 
 namespace AvaGui.ViewModels
 {
+	public record HexAnnotationLine(string Address, string Data, int? SelectionStart, int? SelectionEnd);
+
 	public class ObjectEditorViewModel : ReactiveObject, ILocoFileViewModel
 	{
 		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
@@ -45,13 +46,14 @@ namespace AvaGui.ViewModels
 		public TreeNode? CurrentlySelectedHexAnnotation { get; set; }
 
 		[Reactive]
-		public string[]? CurrentHexDumpLines { get; set; }
+		public HexAnnotationLine[]? CurrentHexDumpLines { get; set; }
 
 		[Reactive]
 		public FileSystemItemBase CurrentFile { get; init; }
 
+		byte[] currentByteList;
 
-		Dictionary<string, (int, int)> DATDumpAnnotationIdentifiers = [];
+		Dictionary<string, (int Start, int End)> DATDumpAnnotationIdentifiers = [];
 		const int bytesPerDumpLine = 32;
 		const int addressStringSizeBytes = 8;
 		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
@@ -77,21 +79,14 @@ namespace AvaGui.ViewModels
 
 		public void UpdateHexDumpView()
 		{
-			//int dumpPositionToRTBPosition(int position) => rtbDATDumpView.GetFirstCharIndexFromLine(
-			//	position / bytesPerDumpLine)
-			//	+ (position % bytesPerDumpLine * 2)            // Bytes are displayed 2 characters wide
-			//	+ (position % bytesPerDumpLine / dumpWordSize) // Every word is separated by an extra space
-			//	+ addressStringSizePrependBytes;               // Each line starts with 10 characters indicating address
-
-			//if (DATDumpAnnotationIdentifiers.TryGetValue(CurrentlySelectedHexAnnotation!.Title, out var positionValues))
-			//{
-			//	//var linePosStart = rtbDATDumpView.GetFirstCharIndexFromLine(positionValues.Item1 / bytesPerDumpLine);
-			//	//var linePosEnd = rtbDATDumpView.GetFirstCharIndexFromLine(positionValues.Item2 / bytesPerDumpLine);
-
-			//	var selectPositionStart = dumpPositionToRTBPosition(positionValues.Item1);
-			//	var selectPositionEnd = Math.Min(dumpPositionToRTBPosition(positionValues.Item2), rtbDATDumpView.TextLength - 1);
-			//	rtbDATDumpView.Select(selectPositionStart, selectPositionEnd - selectPositionStart);
-			//}
+			if (CurrentlySelectedHexAnnotation != null && DATDumpAnnotationIdentifiers.TryGetValue(CurrentlySelectedHexAnnotation.Title, out var positionValues))
+			{
+				CurrentHexDumpLines = GetDumpLines(currentByteList, positionValues.Item1, positionValues.Item2).ToArray();
+			}
+			else
+			{
+				CurrentHexDumpLines = GetDumpLines(currentByteList, null, null).ToArray();
+			}
 		}
 
 		public void LoadObject()
@@ -123,9 +118,9 @@ namespace AvaGui.ViewModels
 					var name = CurrentObject.DatFileInfo.S5Header.Name;
 					CurrentMetadata = Utils.LoadObjectMetadata(name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
 
-					var (treeView, dumpLines, annotationIdentifiers) = AnnotateFile(cf.Path, false);
+					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Path, false, null);
 					CurrentHexAnnotations = new(treeView);
-					CurrentHexDumpLines = dumpLines;
+					//CurrentHexDumpLines = dumpLines;
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}
 				else
@@ -176,44 +171,35 @@ namespace AvaGui.ViewModels
 			Utils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
 		}
 
-		static (IList<TreeNode> treeView, string[] dumpLines, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
+		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
 		{
 			try
 			{
 				if (!File.Exists(path))
 				{
-					return ([], [], []);
+					return ([], []);
 				}
 
 				IList<HexAnnotation> annotations = [];
 
-				var byteList = File.ReadAllBytes(path);
-				var resultingByteList = byteList;
+				currentByteList = File.ReadAllBytes(path);
+				var resultingByteList = currentByteList;
 				annotations = isG1
-					? ObjectAnnotator.AnnotateG1Data(byteList)
-					: ObjectAnnotator.Annotate(byteList, out resultingByteList);
+					? ObjectAnnotator.AnnotateG1Data(currentByteList)
+					: ObjectAnnotator.Annotate(currentByteList, out resultingByteList);
 
-				var (treeView, annotationIdentifiers) = AnnotateFileCore(annotations);
-				var dumpLines = GetDumpLines(byteList);
-				return (treeView, dumpLines, annotationIdentifiers);
+				return AnnotateFileCore(annotations);
 			}
 			catch (Exception ex)
 			{
 				logger?.Error(ex);
-				return ([], [], []);
+				return ([], []);
 			}
 		}
 
 		static (IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFileCore(IList<HexAnnotation> annotations)
 		{
-			//tvDATDumpAnnotations.SuspendLayout();
-			//tvDATDumpAnnotations.Nodes.Clear();
-			var currentParent = new TreeNode();
-			var tvDATDumpAnnotations = new List<TreeNode>();
-
-			static string constructAnnotationText(HexAnnotation annotation)
-				=> string.Format("{0} (0x{1:X}-0x{2:X})", annotation.Name, annotation.Start, annotation.End);
-
+			var treeView = new List<TreeNode>();
 			var parents = new Dictionary<string, TreeNode>();
 			Dictionary<string, TreeNode> imageHeaderIndexToNode = [];
 			Dictionary<string, TreeNode> imageDataIndexToNode = [];
@@ -221,17 +207,16 @@ namespace AvaGui.ViewModels
 
 			foreach (var annotation in annotations)
 			{
-				var annotationText = constructAnnotationText(annotation);
-				parents[annotationText] = new TreeNode(annotationText);
+				var annotationText = annotation.Name;
+				parents[annotationText] = new TreeNode(annotation.Name, annotation.OffsetText);
 				datDumpAnnotationIdentifiers[annotationText] = (annotation.Start, annotation.End);
 				if (annotation.Parent == null)
 				{
-					tvDATDumpAnnotations.Add(parents[constructAnnotationText(annotation)]);
+					treeView.Add(parents[annotation.Name]);
 				}
-				else if (parents.ContainsKey(constructAnnotationText(annotation.Parent)))
+				else if (parents.TryGetValue(annotation.Parent.Name, out var parentNode))
 				{
-					var parentText = constructAnnotationText(annotation.Parent);
-					parents[parentText].Nodes.Add(parents[annotationText]);
+					parentNode.Nodes.Add(parents[annotationText]);
 
 					if (annotation.Parent.Name == "Headers")
 					{
@@ -245,40 +230,39 @@ namespace AvaGui.ViewModels
 				}
 			}
 
-			//tvDATDumpAnnotations.ResumeLayout();
-			//rtbDATDumpView.Text = string.Join("\n", dumpLines);
-
-			return (tvDATDumpAnnotations, datDumpAnnotationIdentifiers);
+			return (treeView, datDumpAnnotationIdentifiers);
 		}
 
-		private static string[] GetDumpLines(byte[] byteList)
+		private static IEnumerable<HexAnnotationLine> GetDumpLines(byte[] byteList, int? selectionStart, int? selectionEnd)
 		{
-			var extraLine = byteList.Length % bytesPerDumpLine;
-			if (extraLine > 0)
+			var count = 0;
+
+			foreach (var b in byteList.Chunk(bytesPerDumpLine))
 			{
-				extraLine = 1;
+				int? sStart = selectionStart != null && (selectionStart >= count || selectionEnd > count)
+					? (Math.Max(selectionStart.Value, count) * 2) - (count * 2) : null;
+
+				int? sEnd = selectionEnd != null && sStart != null && selectionEnd >= count
+					? (Math.Min(selectionEnd.Value, count + bytesPerDumpLine) * 2) - (count * 2) : null;
+
+				yield return new HexAnnotationLine(
+					string.Format("{0:X" + addressStringSizeBytes + "}", count),
+					string.Join(" ", b.Chunk(4).Select(x => string.Concat(x.Select(y => y.ToString("X2"))))),
+					sStart + (sStart / 8),
+					sEnd + (sEnd / 8));
+
+				count += bytesPerDumpLine;
 			}
-
-
-			var dumpLines = byteList
-					.Select(b => string.Format("{0,2:X2}", b))
-					.Chunk(dumpWordSize)
-					.Select(c => string.Format("{0} ", string.Concat(c)))
-					.Chunk(bytesPerDumpLine / dumpWordSize)
-					.Zip(Enumerable.Range(0, (byteList.Length / bytesPerDumpLine) + extraLine))
-					.Select(l => string.Format("{0:X" + addressStringSizeBytes + "}: {1}", l.Second * bytesPerDumpLine, string.Concat(l.First)))
-					.ToArray();
-			return dumpLines;
 		}
 	}
 
-	public class TreeNode(string title, ObservableCollection<TreeNode> nodes)
+	public class TreeNode(string title, string offsetText, ObservableCollection<TreeNode> nodes)
 	{
 		public ObservableCollection<TreeNode>? Nodes { get; } = nodes;
 		public string Title { get; } = title;
+		public string OffsetText { get; } = offsetText;
+		public TreeNode() : this("<empty>", "<empty>") { }
 
-		public TreeNode() : this("<empty>") { }
-
-		public TreeNode(string title) : this(title, []) { }
+		public TreeNode(string title, string offsetText) : this(title, offsetText, []) { }
 	}
 }

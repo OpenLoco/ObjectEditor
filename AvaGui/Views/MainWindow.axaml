@@ -7,11 +7,12 @@
 		xmlns:mo="using:AvaGui.Models"
 		xmlns:ol="using:OpenLoco.ObjectEditor.Logging"
 		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+		xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
 		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
-		mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+		mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
 		Icon="/Assets/loco_icon.png"
@@ -27,12 +28,6 @@
 	</Window.Resources>
 
 	<Window.Styles>
-		<Style Selector="SelectableTextBlock">
-			<Setter Property="VerticalAlignment" Value="Center"/>
-		</Style>
-		<Style Selector="TextBlock">
-			<Setter Property="VerticalAlignment" Value="Center"/>
-		</Style>
 		<Style Selector="TabItem">
 			<Setter Property="FontSize" Value="20"/>
 		</Style>
@@ -46,7 +41,7 @@
 		</Style>
 		<Style Selector="TextBox">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
-			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
 		</Style>
 		<Style Selector="NumericUpDown">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
@@ -168,17 +163,27 @@
 					</TabItem>
 					<TabItem Header="Hex Dump">
 						<DockPanel>
-							<TreeView ItemsSource="{Binding CurrentHexAnnotations}" SelectedItem="{Binding CurrentlySelectedHexAnnotation}" Margin="2" DockPanel.Dock="Left" Width =" 256">
+							<TreeView ItemsSource="{Binding CurrentHexAnnotations}" SelectedItem="{Binding CurrentlySelectedHexAnnotation}" Margin="4" DockPanel.Dock="Left" Width =" 256">
 								<TreeView.ItemTemplate>
 									<TreeDataTemplate ItemsSource="{Binding Nodes}">
-										<TextBlock Text="{Binding Title}" />
+										<StackPanel Orientation="Horizontal">
+											<TextBlock VerticalAlignment="Center" Text="{Binding Title}"/>
+											<TextBlock VerticalAlignment="Center" Text="{Binding OffsetText}" FontFamily="Courier New" />
+										</StackPanel>
 									</TreeDataTemplate>
 								</TreeView.ItemTemplate>
 							</TreeView>
-							<ItemsRepeater ItemsSource="{Binding CurrentHexDumpLines}">
+							<ItemsRepeater ItemsSource="{Binding CurrentHexDumpLines}" Background="{DynamicResource ErrorBrush}">
 								<ItemsRepeater.ItemTemplate>
 									<DataTemplate>
-										<SelectableTextBlock Margin="4" Text="{Binding}" FontFamily="Consolas" />
+										<Grid DockPanel.Dock="Left" Margin="4" x:DataType="vm:HexAnnotationLine">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="*"/>
+											</Grid.ColumnDefinitions>
+											<TextBlock Grid.Column="0" Text="{Binding Address}" VerticalAlignment="Center" Margin="4" FontFamily="Courier New" FontWeight="Bold" />
+											<SelectableTextBlock Grid.Column="1" Margin="4" Text="{Binding Data}" VerticalAlignment="Center" FontFamily="Courier New" SelectionStart="{Binding SelectionStart}" SelectionEnd="{Binding SelectionEnd}" />
+										</Grid>
 									</DataTemplate>
 								</ItemsRepeater.ItemTemplate>
 							</ItemsRepeater>

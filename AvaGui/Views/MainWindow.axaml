@@ -151,7 +151,7 @@
 										</ItemsRepeater.Layout>
 										<ItemsRepeater.ItemTemplate>
 											<DataTemplate>
-												<Border BorderThickness="4" Background="{DynamicResource ButtonBackground}">
+												<Border BorderThickness="2">
 													<TextBlock Margin="4" Text="{Binding}" />
 												</Border>
 											</DataTemplate>
@@ -163,17 +163,21 @@
 					</TabItem>
 					<TabItem Header="Hex Dump">
 						<DockPanel>
-							<TreeView ItemsSource="{Binding CurrentHexAnnotations}" SelectedItem="{Binding CurrentlySelectedHexAnnotation}" Margin="4" DockPanel.Dock="Left" Width =" 256">
+							<TreeView ItemsSource="{Binding CurrentHexAnnotations}" SelectedItem="{Binding CurrentlySelectedHexAnnotation}" Margin="4" DockPanel.Dock="Left" >
 								<TreeView.ItemTemplate>
 									<TreeDataTemplate ItemsSource="{Binding Nodes}">
-										<StackPanel Orientation="Horizontal">
-											<TextBlock VerticalAlignment="Center" Text="{Binding Title}"/>
-											<TextBlock VerticalAlignment="Center" Text="{Binding OffsetText}" FontFamily="Courier New" />
-										</StackPanel>
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="*"/>
+											</Grid.ColumnDefinitions>
+											<TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{Binding Title}" Margin="2"/>
+											<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{Binding OffsetText}" Margin="2" FontFamily="Courier New" />
+										</Grid>
 									</TreeDataTemplate>
 								</TreeView.ItemTemplate>
 							</TreeView>
-							<ItemsRepeater ItemsSource="{Binding CurrentHexDumpLines}" Background="{DynamicResource ErrorBrush}">
+							<ItemsRepeater ItemsSource="{Binding CurrentHexDumpLines}" Background="{DynamicResource ButtonBackground}">
 								<ItemsRepeater.ItemTemplate>
 									<DataTemplate>
 										<Grid DockPanel.Dock="Left" Margin="4" x:DataType="vm:HexAnnotationLine">
@@ -181,7 +185,10 @@
 												<ColumnDefinition Width="Auto"/>
 												<ColumnDefinition Width="*"/>
 											</Grid.ColumnDefinitions>
-											<TextBlock Grid.Column="0" Text="{Binding Address}" VerticalAlignment="Center" Margin="4" FontFamily="Courier New" FontWeight="Bold" />
+											<Border Grid.Column="0" Grid.ColumnSpan="1" Background="{DynamicResource ButtonBackgroundPointerOver}">
+												<TextBlock Text="{Binding Address}" VerticalAlignment="Center" Margin="4" FontFamily="Courier New" FontWeight="Bold" />
+
+											</Border>
 											<SelectableTextBlock Grid.Column="1" Margin="4" Text="{Binding Data}" VerticalAlignment="Center" FontFamily="Courier New" SelectionStart="{Binding SelectionStart}" SelectionEnd="{Binding SelectionEnd}" />
 										</Grid>
 									</DataTemplate>

@@ -3,6 +3,7 @@ using OpenLoco.Dat.Objects;
 
 namespace OpenLoco.Db.Schema
 {
+
 	public class TblLocoObject
 	{
 		public int TblLocoObjectId { get; set; }
@@ -38,6 +39,11 @@ namespace OpenLoco.Db.Schema
 		public ICollection<TblObjectTagLink> TagLinks { get; set; }
 
 		public ICollection<TblModpackTagLink> ModpackLinks { get; set; }
+
+		public ObjectAvailability Availability { get; set; }
+
+		public TblLicence? Licence { get; set; }
+
 		#endregion
 	}
 }

@@ -7,11 +7,12 @@
 		xmlns:mo="using:AvaGui.Models"
 		xmlns:ol="using:OpenLoco.ObjectEditor.Logging"
 		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+		xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
 		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
-		mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
+		mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
 		Icon="/Assets/loco_icon.png"
@@ -40,6 +41,7 @@
 		</Style>
 		<Style Selector="TextBox">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
 		</Style>
 		<Style Selector="NumericUpDown">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
@@ -149,7 +151,7 @@
 										</ItemsRepeater.Layout>
 										<ItemsRepeater.ItemTemplate>
 											<DataTemplate>
-												<Border BorderThickness="4" Background="{DynamicResource ButtonBackground}">
+												<Border BorderThickness="2">
 													<TextBlock Margin="4" Text="{Binding}" />
 												</Border>
 											</DataTemplate>
@@ -157,6 +159,41 @@
 									</ItemsRepeater>
 								</StackPanel>
 							</Border>
+						</DockPanel>
+					</TabItem>
+					<TabItem Header="Hex Dump">
+						<DockPanel>
+							<TreeView ItemsSource="{Binding CurrentHexAnnotations}" SelectedItem="{Binding CurrentlySelectedHexAnnotation}" Margin="4" DockPanel.Dock="Left" >
+								<TreeView.ItemTemplate>
+									<TreeDataTemplate ItemsSource="{Binding Nodes}">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="*"/>
+											</Grid.ColumnDefinitions>
+											<TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{Binding Title}" Margin="2"/>
+											<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{Binding OffsetText}" Margin="2" FontFamily="Courier New" />
+										</Grid>
+									</TreeDataTemplate>
+								</TreeView.ItemTemplate>
+							</TreeView>
+							<ItemsRepeater ItemsSource="{Binding CurrentHexDumpLines}" Background="{DynamicResource ButtonBackground}">
+								<ItemsRepeater.ItemTemplate>
+									<DataTemplate>
+										<Grid DockPanel.Dock="Left" Margin="4" x:DataType="vm:HexAnnotationLine">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="*"/>
+											</Grid.ColumnDefinitions>
+											<Border Grid.Column="0" Grid.ColumnSpan="1" Background="{DynamicResource ButtonBackgroundPointerOver}">
+												<TextBlock Text="{Binding Address}" VerticalAlignment="Center" Margin="4" FontFamily="Courier New" FontWeight="Bold" />
+
+											</Border>
+											<SelectableTextBlock Grid.Column="1" Margin="4" Text="{Binding Data}" VerticalAlignment="Center" FontFamily="Courier New" SelectionStart="{Binding SelectionStart}" SelectionEnd="{Binding SelectionEnd}" />
+										</Grid>
+									</DataTemplate>
+								</ItemsRepeater.ItemTemplate>
+							</ItemsRepeater>
 						</DockPanel>
 					</TabItem>
 				</TabControl>

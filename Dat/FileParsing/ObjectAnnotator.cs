@@ -9,26 +9,26 @@ namespace OpenLoco.Dat.FileParsing
 {
 	public static class ObjectAnnotator
 	{
-		public static IList<Annotation> Annotate(byte[] bytelist, out byte[] fullData)
+		public static IList<HexAnnotation> Annotate(byte[] bytelist, out byte[] fullData)
 		{
-			var annotations = new List<Annotation>();
+			var annotations = new List<HexAnnotation>();
 			var runningCount = 0;
 
 			// S5 Header Annotations
-			var s5HeaderAnnotation = new Annotation("S5 Header", 0, S5Header.StructLength);
+			var s5HeaderAnnotation = new HexAnnotation("S5 Header", 0, S5Header.StructLength);
 			annotations.Add(s5HeaderAnnotation);
-			annotations.Add(new Annotation("Flags", s5HeaderAnnotation, 0, 4));
-			annotations.Add(new Annotation("Name: '" + Encoding.ASCII.GetString(bytelist[4..12]) + "'", s5HeaderAnnotation, 4, 8));
-			annotations.Add(new Annotation("Checksum", s5HeaderAnnotation, 12, 4));
+			annotations.Add(new HexAnnotation("Flags", s5HeaderAnnotation, 0, 4));
+			annotations.Add(new HexAnnotation("Name: '" + Encoding.ASCII.GetString(bytelist[4..12]) + "'", s5HeaderAnnotation, 4, 8));
+			annotations.Add(new HexAnnotation("Checksum", s5HeaderAnnotation, 12, 4));
 
 			var s5Header = S5Header.Read(bytelist.AsSpan()[0..S5Header.StructLength]);
 			runningCount += S5Header.StructLength;
 
 			// Object Header Annotations
-			var objectHeaderAnnotation = new Annotation("Object Header", runningCount, ObjectHeader.StructLength);
+			var objectHeaderAnnotation = new HexAnnotation("Object Header", runningCount, ObjectHeader.StructLength);
 			annotations.Add(objectHeaderAnnotation);
-			annotations.Add(new Annotation("Encoding", objectHeaderAnnotation, runningCount, 1));
-			annotations.Add(new Annotation("Data Length", objectHeaderAnnotation, runningCount + 1, 4));
+			annotations.Add(new HexAnnotation("Encoding", objectHeaderAnnotation, runningCount, 1));
+			annotations.Add(new HexAnnotation("Data Length", objectHeaderAnnotation, runningCount + 1, 4));
 			var objectHeader = ObjectHeader.Read(bytelist.AsSpan()[runningCount..(runningCount + ObjectHeader.StructLength)]);
 			runningCount += ObjectHeader.StructLength;
 
@@ -45,7 +45,7 @@ namespace OpenLoco.Dat.FileParsing
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
 			var locoStructSize = structSize!.Size;
 
-			var locoStructAnnotation = new Annotation("Loco Struct", runningCount, locoStructSize);
+			var locoStructAnnotation = new HexAnnotation("Loco Struct", runningCount, locoStructSize);
 			annotations.Add(locoStructAnnotation);
 			annotations.AddRange(AnnotateProperties(locoStruct, runningCount, locoStructAnnotation));
 
@@ -61,7 +61,7 @@ namespace OpenLoco.Dat.FileParsing
 				remainingData = locoStructExtra.Load(remainingData);
 			}
 
-			annotations.Add(new Annotation("Loco Variables", runningCount, currentRemainingData - remainingData.Length));
+			annotations.Add(new HexAnnotation("Loco Variables", runningCount, currentRemainingData - remainingData.Length));
 			runningCount += currentRemainingData - remainingData.Length;
 
 			annotations.AddRange(AnnotateG1Data(fullData, runningCount));
@@ -69,18 +69,18 @@ namespace OpenLoco.Dat.FileParsing
 			return annotations;
 		}
 
-		public static IList<Annotation> AnnotateG1Data(byte[] fullData, int runningCount = 0)
+		public static IList<HexAnnotation> AnnotateG1Data(byte[] fullData, int runningCount = 0)
 		{
-			var g1Annotation = new Annotation("G1", runningCount, fullData.Length - runningCount);
-			var g1HeaderAnnotation = new Annotation("Header", g1Annotation, runningCount, 8);
-			var annotations = new List<Annotation>();
+			var g1Annotation = new HexAnnotation("G1", runningCount, fullData.Length - runningCount);
+			var g1HeaderAnnotation = new HexAnnotation("Header", g1Annotation, runningCount, 8);
+			var annotations = new List<HexAnnotation>();
 
 			if (runningCount < fullData.Length)
 			{
 				annotations.Add(g1Annotation);
 				annotations.Add(g1HeaderAnnotation);
-				annotations.Add(new Annotation("Number Of Entries", g1HeaderAnnotation, runningCount, sizeof(uint32_t)));
-				annotations.Add(new Annotation("Total Size", g1HeaderAnnotation, runningCount + sizeof(uint32_t), sizeof(uint32_t)));
+				annotations.Add(new HexAnnotation("Number Of Entries", g1HeaderAnnotation, runningCount, sizeof(uint32_t)));
+				annotations.Add(new HexAnnotation("Total Size", g1HeaderAnnotation, runningCount + sizeof(uint32_t), sizeof(uint32_t)));
 
 				var g1Header = new G1Header(
 					BitConverter.ToUInt32(fullData.AsSpan()[runningCount..(runningCount + 4)]),
@@ -88,12 +88,12 @@ namespace OpenLoco.Dat.FileParsing
 
 				runningCount += 8;
 
-				var g1DataAnnotation = new Annotation("Data", g1Annotation, runningCount, 1)
+				var g1DataAnnotation = new HexAnnotation("Data", g1Annotation, runningCount, 1)
 				{
 					End = fullData.Length
 				};
 
-				var gHeadersAnnotation = new Annotation("Headers", g1DataAnnotation, runningCount, 1);
+				var gHeadersAnnotation = new HexAnnotation("Headers", g1DataAnnotation, runningCount, 1);
 				annotations.Add(g1DataAnnotation);
 				annotations.Add(gHeadersAnnotation);
 
@@ -102,7 +102,7 @@ namespace OpenLoco.Dat.FileParsing
 				for (var i = 0; i < g1Header.NumEntries; i++)
 				{
 					var g32Element = ByteReader.ReadLocoStruct<G1Element32>(fullData.AsSpan()[runningCount..]);
-					var g32ElementAnnotation = new Annotation("Header " + (i + 1), gHeadersAnnotation, runningCount, G1Element32.StructLength);
+					var g32ElementAnnotation = new HexAnnotation("Header " + (i + 1), gHeadersAnnotation, runningCount, G1Element32.StructLength);
 
 					annotations.Add(g32ElementAnnotation);
 					annotations.AddRange(AnnotateProperties(g32Element, runningCount, g32ElementAnnotation));
@@ -114,7 +114,7 @@ namespace OpenLoco.Dat.FileParsing
 				gHeadersAnnotation.End = runningCount;
 
 				var imageDataStart = runningCount;
-				var g1ImageDataAnnotation = new Annotation("Images", g1DataAnnotation, runningCount, 8);
+				var g1ImageDataAnnotation = new HexAnnotation("Images", g1DataAnnotation, runningCount, 8);
 
 				annotations.Add(g1ImageDataAnnotation);
 				g1ImageDataAnnotation.End = fullData.Length;
@@ -128,16 +128,16 @@ namespace OpenLoco.Dat.FileParsing
 						imageSize = (int)g32elements[i + 1].Offset - (int)g32elements[i].Offset;
 					}
 
-					annotations.Add(new Annotation("Image " + (i + 1), g1ImageDataAnnotation, imageStart, imageSize));
+					annotations.Add(new HexAnnotation("Image " + (i + 1), g1ImageDataAnnotation, imageStart, imageSize));
 				}
 			}
 
 			return annotations;
 		}
 
-		static int AnnotateStringTable(byte[] fullData, int runningCount, ILocoStruct locoStruct, List<Annotation> annotations)
+		static int AnnotateStringTable(byte[] fullData, int runningCount, ILocoStruct locoStruct, List<HexAnnotation> annotations)
 		{
-			var root = new Annotation("String Table", runningCount, 1);
+			var root = new HexAnnotation("String Table", runningCount, 1);
 			annotations.Add(root);
 
 			var locoStructType = locoStruct.GetType();
@@ -167,18 +167,18 @@ namespace OpenLoco.Dat.FileParsing
 				while (continuing);
 
 				var endIndexOfStringList = index + runningCount;
-				var elementRoot = new Annotation("Element " + i++, root, runningCount, index);
+				var elementRoot = new HexAnnotation("Element " + i++, root, runningCount, index);
 				annotations.Add(elementRoot);
 
 				do
 				{
-					annotations.Add(new Annotation(((LanguageId)fullData[runningCount]).ToString(), elementRoot, runningCount, 1));
+					annotations.Add(new HexAnnotation(((LanguageId)fullData[runningCount]).ToString(), elementRoot, runningCount, 1));
 					runningCount++;
 					var nullIndex = Array.IndexOf(fullData[runningCount..], (byte)0);
 
 					var stringElement = Encoding.ASCII.GetString(fullData[runningCount..(runningCount + nullIndex)]);
 
-					annotations.Add(new Annotation($"'{stringElement}'", elementRoot, runningCount, stringElement.Length + 1));
+					annotations.Add(new HexAnnotation($"'{stringElement}'", elementRoot, runningCount, stringElement.Length + 1));
 					runningCount += nullIndex + 1;
 				} while (runningCount < endIndexOfStringList);
 
@@ -189,9 +189,9 @@ namespace OpenLoco.Dat.FileParsing
 			return runningCount;
 		}
 
-		static List<Annotation> AnnotateProperties(object o, int runningCount = 0, Annotation? root = null)
+		static List<HexAnnotation> AnnotateProperties(object o, int runningCount = 0, HexAnnotation? root = null)
 		{
-			var annotations = new List<Annotation>();
+			var annotations = new List<HexAnnotation>();
 
 			foreach (var p in o.GetType().GetProperties())
 			{
@@ -235,7 +235,7 @@ namespace OpenLoco.Dat.FileParsing
 						length *= lengthAttr.Length;
 					}
 
-					annotations.Add(new Annotation(p.Name, root, location, length));
+					annotations.Add(new HexAnnotation(p.Name, root, location, length));
 				}
 			}
 

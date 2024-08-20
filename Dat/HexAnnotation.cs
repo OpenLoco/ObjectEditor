@@ -1,12 +1,12 @@
 namespace OpenLoco.Dat
 {
-	public class Annotation
+	public class HexAnnotation
 	{
 		private int start;
 		private int end;
 		private int length;
 
-		public Annotation(string name, Annotation? parent, int start, int length)
+		public HexAnnotation(string name, HexAnnotation? parent, int start, int length)
 		{
 			Name = name;
 			Parent = parent;
@@ -14,7 +14,7 @@ namespace OpenLoco.Dat
 			Length = length;
 		}
 
-		public Annotation(string name, int start, int length)
+		public HexAnnotation(string name, int start, int length)
 		{
 			Name = name;
 			this.start = start;
@@ -22,7 +22,11 @@ namespace OpenLoco.Dat
 		}
 
 		public string Name { get; set; }
-		public Annotation? Parent { get; set; }
+
+		public string OffsetText
+			=> string.Format("(0x{0:X}-0x{1:X})", Start, End);
+
+		public HexAnnotation? Parent { get; set; }
 
 		public int Start
 		{

@@ -70,15 +70,15 @@ namespace OpenLoco.WinGui
 		int currentUIImagePageNumber;
 
 		// DAT Dump viewer fields
-		IList<Annotation> DATDumpAnnotations;
+		IList<HexAnnotation> DATDumpAnnotations;
 		readonly Dictionary<string, (int, int)> DATDumpAnnotationIdentifiers = [];
 		readonly Dictionary<string, TreeNode> imageHeaderIndexToNode = [];
 		readonly Dictionary<string, TreeNode> imageDataIndexToNode = [];
+		readonly Dictionary<string, Action<string>> tvUniqueLoadValues = [];
 		const int bytesPerDumpLine = 32;
 		const int addressStringSizeBytes = 8;
 		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
 		const int dumpWordSize = 4;
-		readonly Dictionary<string, Action<string>> tvUniqueLoadValues = [];
 		// End DAT Dump viewer fields
 
 		const int ImagesPerPage = 50;
@@ -648,7 +648,7 @@ namespace OpenLoco.WinGui
 				tvDATDumpAnnotations.Nodes.Clear();
 				var currentParent = new TreeNode();
 
-				static string constructAnnotationText(Annotation annotation)
+				static string constructAnnotationText(HexAnnotation annotation)
 					=> string.Format("{0} (0x{1:X}-0x{2:X})", annotation.Name, annotation.Start, annotation.End);
 
 				var parents = new Dictionary<string, TreeNode>();

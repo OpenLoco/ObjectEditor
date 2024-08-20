@@ -11,7 +11,7 @@
 		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
 		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
-		mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
+		mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
 		Icon="/Assets/loco_icon.png"
@@ -27,6 +27,12 @@
 	</Window.Resources>
 
 	<Window.Styles>
+		<Style Selector="SelectableTextBlock">
+			<Setter Property="VerticalAlignment" Value="Center"/>
+		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="VerticalAlignment" Value="Center"/>
+		</Style>
 		<Style Selector="TabItem">
 			<Setter Property="FontSize" Value="20"/>
 		</Style>
@@ -40,6 +46,7 @@
 		</Style>
 		<Style Selector="TextBox">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
 		</Style>
 		<Style Selector="NumericUpDown">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
@@ -157,6 +164,24 @@
 									</ItemsRepeater>
 								</StackPanel>
 							</Border>
+						</DockPanel>
+					</TabItem>
+					<TabItem Header="Hex Dump">
+						<DockPanel>
+							<TreeView ItemsSource="{Binding CurrentHexAnnotations}" SelectedItem="{Binding CurrentlySelectedHexAnnotation}" Margin="2" DockPanel.Dock="Left" Width =" 256">
+								<TreeView.ItemTemplate>
+									<TreeDataTemplate ItemsSource="{Binding Nodes}">
+										<TextBlock Text="{Binding Title}" />
+									</TreeDataTemplate>
+								</TreeView.ItemTemplate>
+							</TreeView>
+							<ItemsRepeater ItemsSource="{Binding CurrentHexDumpLines}">
+								<ItemsRepeater.ItemTemplate>
+									<DataTemplate>
+										<SelectableTextBlock Margin="4" Text="{Binding}" FontFamily="Consolas" />
+									</DataTemplate>
+								</ItemsRepeater.ItemTemplate>
+							</ItemsRepeater>
 						</DockPanel>
 					</TabItem>
 				</TabControl>

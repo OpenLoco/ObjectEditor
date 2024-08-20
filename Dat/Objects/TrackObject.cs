@@ -51,7 +51,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x18)] int16_t TunnelCostFactor,
 		[property: LocoStructOffset(0x1A)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x1B), Browsable(false)] object_id _Tunnel,
-		[property: LocoStructOffset(0x1C)] uint16_t CurveSpeed,
+		[property: LocoStructOffset(0x1C)] Speed16 CurveSpeed,
 		[property: LocoStructOffset(0x1E), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x22)] TrackObjectFlags Flags,
 		[property: LocoStructOffset(0x24)] uint8_t NumBridges,

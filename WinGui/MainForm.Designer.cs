@@ -229,11 +229,11 @@ namespace OpenLoco.WinGui
 			tcSubObjectView.Controls.Add(tpObjectStringTable);
 			tcSubObjectView.Controls.Add(tpObjectGraphicsTable);
 			tcSubObjectView.Dock = DockStyle.Fill;
-			tcSubObjectView.Location = new Point(3, 123);
+			tcSubObjectView.Location = new Point(3, 274);
 			tcSubObjectView.Margin = new Padding(2, 1, 2, 1);
 			tcSubObjectView.Name = "tcSubObjectView";
 			tcSubObjectView.SelectedIndex = 0;
-			tcSubObjectView.Size = new Size(1401, 640);
+			tcSubObjectView.Size = new Size(1401, 489);
 			tcSubObjectView.TabIndex = 33;
 			// 
 			// tpObjectObject
@@ -243,7 +243,7 @@ namespace OpenLoco.WinGui
 			tpObjectObject.Margin = new Padding(2, 1, 2, 1);
 			tpObjectObject.Name = "tpObjectObject";
 			tpObjectObject.Padding = new Padding(2, 1, 2, 1);
-			tpObjectObject.Size = new Size(1393, 612);
+			tpObjectObject.Size = new Size(1393, 461);
 			tpObjectObject.TabIndex = 2;
 			tpObjectObject.Text = "Object";
 			tpObjectObject.UseVisualStyleBackColor = true;
@@ -254,7 +254,7 @@ namespace OpenLoco.WinGui
 			pgObject.HelpVisible = false;
 			pgObject.Location = new Point(2, 1);
 			pgObject.Name = "pgObject";
-			pgObject.Size = new Size(1389, 610);
+			pgObject.Size = new Size(1389, 459);
 			pgObject.TabIndex = 24;
 			pgObject.ToolbarVisible = false;
 			// 
@@ -428,7 +428,7 @@ namespace OpenLoco.WinGui
 			// scHeaders.Panel2
 			// 
 			scHeaders.Panel2.Controls.Add(pgObjHeader);
-			scHeaders.Size = new Size(1401, 120);
+			scHeaders.Size = new Size(1401, 271);
 			scHeaders.SplitterDistance = 698;
 			scHeaders.TabIndex = 34;
 			// 
@@ -438,7 +438,7 @@ namespace OpenLoco.WinGui
 			pgS5Header.HelpVisible = false;
 			pgS5Header.Location = new Point(0, 0);
 			pgS5Header.Name = "pgS5Header";
-			pgS5Header.Size = new Size(698, 120);
+			pgS5Header.Size = new Size(698, 271);
 			pgS5Header.TabIndex = 22;
 			pgS5Header.ToolbarVisible = false;
 			// 
@@ -448,7 +448,7 @@ namespace OpenLoco.WinGui
 			pgObjHeader.HelpVisible = false;
 			pgObjHeader.Location = new Point(0, 0);
 			pgObjHeader.Name = "pgObjHeader";
-			pgObjHeader.Size = new Size(699, 120);
+			pgObjHeader.Size = new Size(699, 271);
 			pgObjHeader.TabIndex = 23;
 			pgObjHeader.ToolbarVisible = false;
 			// 
@@ -638,7 +638,7 @@ namespace OpenLoco.WinGui
 			// 
 			objectDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setObjectDirectoryToolStripMenuItem, toolStripSeparator1 });
 			objectDirectoriesToolStripMenuItem.Name = "objectDirectoriesToolStripMenuItem";
-			objectDirectoriesToolStripMenuItem.Size = new Size(180, 22);
+			objectDirectoriesToolStripMenuItem.Size = new Size(176, 22);
 			objectDirectoriesToolStripMenuItem.Text = "ObjData Directories";
 			// 
 			// setObjectDirectoryToolStripMenuItem
@@ -657,7 +657,7 @@ namespace OpenLoco.WinGui
 			// 
 			dataDirectoriesToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setDataDirectoryToolStripMenuItem, toolStripSeparator2 });
 			dataDirectoriesToolStripMenuItem.Name = "dataDirectoriesToolStripMenuItem";
-			dataDirectoriesToolStripMenuItem.Size = new Size(180, 22);
+			dataDirectoriesToolStripMenuItem.Size = new Size(176, 22);
 			dataDirectoriesToolStripMenuItem.Text = "Data Directories";
 			// 
 			// setDataDirectoryToolStripMenuItem
@@ -676,32 +676,32 @@ namespace OpenLoco.WinGui
 			// 
 			scv5ToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { setscv5DirectoryToolStripMenuItem, toolStripSeparator5 });
 			scv5ToolStripMenuItem.Name = "scv5ToolStripMenuItem";
-			scv5ToolStripMenuItem.Size = new Size(180, 22);
+			scv5ToolStripMenuItem.Size = new Size(176, 22);
 			scv5ToolStripMenuItem.Text = "SCV5 Directories";
 			// 
 			// setscv5DirectoryToolStripMenuItem
 			// 
 			setscv5DirectoryToolStripMenuItem.Name = "setscv5DirectoryToolStripMenuItem";
-			setscv5DirectoryToolStripMenuItem.Size = new Size(180, 22);
+			setscv5DirectoryToolStripMenuItem.Size = new Size(123, 22);
 			setscv5DirectoryToolStripMenuItem.Text = "Add New";
 			setscv5DirectoryToolStripMenuItem.Click += setscv5DirectoryToolStripMenuItem_Click;
 			// 
 			// toolStripSeparator5
 			// 
 			toolStripSeparator5.Name = "toolStripSeparator5";
-			toolStripSeparator5.Size = new Size(177, 6);
+			toolStripSeparator5.Size = new Size(120, 6);
 			// 
 			// recreateIndexToolStripMenuItem
 			// 
 			recreateIndexToolStripMenuItem.Name = "recreateIndexToolStripMenuItem";
-			recreateIndexToolStripMenuItem.Size = new Size(180, 22);
+			recreateIndexToolStripMenuItem.Size = new Size(176, 22);
 			recreateIndexToolStripMenuItem.Text = "Recreate Index";
 			recreateIndexToolStripMenuItem.Click += recreateIndexToolStripMenuItem_Click;
 			// 
 			// loadPaletteToolStripMenuItem
 			// 
 			loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
-			loadPaletteToolStripMenuItem.Size = new Size(180, 22);
+			loadPaletteToolStripMenuItem.Size = new Size(176, 22);
 			loadPaletteToolStripMenuItem.Text = "Load Palette";
 			loadPaletteToolStripMenuItem.Click += loadPaletteToolStripMenuItem_Click;
 			// 

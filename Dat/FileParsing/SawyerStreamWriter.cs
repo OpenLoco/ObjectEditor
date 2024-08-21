@@ -74,7 +74,20 @@ namespace OpenLoco.Dat.FileParsing
 				return ms.ToArray();
 			}
 		}
+		public static byte[] SaveMusicToDat(RiffWavHeader header, byte[] data)
+		{
+			using (var ms = new MemoryStream())
+			using (var br = new BinaryWriter(ms))
+			{
+				br.Write(ByteWriter.WriteLocoStruct(header));
+				br.Write(data);
 
+				ms.Flush();
+				ms.Close();
+
+				return ms.ToArray();
+			}
+		}
 		public static void ExportMusicAsWave(string filename, RiffWavHeader header, byte[] pcmData)
 		{
 			using (var stream = File.Create(filename))
@@ -82,7 +95,6 @@ namespace OpenLoco.Dat.FileParsing
 				stream.Write(ByteWriter.WriteLocoStruct(header));
 				stream.Write(pcmData);
 				stream.Flush();
-				stream.Close();
 			}
 		}
 

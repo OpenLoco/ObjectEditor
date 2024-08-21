@@ -1565,14 +1565,16 @@ namespace OpenLoco.WinGui
 					}
 					else if (currentUIObject is UiSoundObjectList uiSoundObjList)
 					{
-						if (tvObjType.SelectedNode.Name == "css1.dat")
+						if (model.SoundEffects.ContainsKey(tvObjType.SelectedNode.Name))
 						{
 							var rawBytes = SawyerStreamWriter.SaveSoundEffectsToCSS(uiSoundObjList.Audio.ConvertAll(uis => (uis.Header, uis.Data)));
 							File.WriteAllBytes(filename, rawBytes);
 						}
-						else
+						else if (model.Music.ContainsKey(tvObjType.SelectedNode.Name))
 						{
-							// save regular sound
+							var track = uiSoundObjList.Audio.ConvertAll(uis => (uis.Header, uis.Data)).First();
+							var rawBytes = SawyerStreamWriter.SaveMusicToDat(track.Header, track.Data);
+							File.WriteAllBytes(filename, rawBytes);
 						}
 					}
 

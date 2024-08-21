@@ -3,7 +3,6 @@ using OpenLoco.Dat.Objects;
 
 namespace OpenLoco.Db.Schema
 {
-
 	public class TblLocoObject
 	{
 		public int TblLocoObjectId { get; set; }
@@ -36,9 +35,9 @@ namespace OpenLoco.Db.Schema
 
 		public DateTime? LastEditDate { get; set; }
 
-		public ICollection<TblObjectTagLink> TagLinks { get; set; }
+		public ICollection<TblTag> Tags { get; set; }
 
-		public ICollection<TblModpackTagLink> ModpackLinks { get; set; }
+		public ICollection<TblModpack> Modpacks { get; set; }
 
 		public ObjectAvailability Availability { get; set; }
 

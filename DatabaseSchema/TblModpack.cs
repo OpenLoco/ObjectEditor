@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.Db.Schema
+namespace OpenLoco.Db.Schema
 {
 	public class TblModpack
 	{
@@ -6,6 +6,6 @@
 
 		public string Name { get; set; }
 
-		public ICollection<TblModpackTagLink> ModpackLinks { get; set; }
+		public ICollection<TblLocoObject> Objects { get; set; }
 	}
 }

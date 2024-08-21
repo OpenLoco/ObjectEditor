@@ -32,6 +32,25 @@ namespace DatabaseSchema.Migrations
                     b.ToTable("Authors");
                 });
 
+            modelBuilder.Entity("OpenLoco.Db.Schema.TblLicence", b =>
+                {
+                    b.Property<int>("TblLicenceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("TblLicenceId");
+
+                    b.ToTable("Licences");
+                });
+
             modelBuilder.Entity("OpenLoco.Db.Schema.TblLocoObject", b =>
                 {
                     b.Property<int>("TblLocoObjectId")
@@ -39,6 +58,9 @@ namespace DatabaseSchema.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("AuthorTblAuthorId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Availability")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("CreationDate")
@@ -49,6 +71,9 @@ namespace DatabaseSchema.Migrations
 
                     b.Property<DateTime?>("LastEditDate")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("LicenceTblLicenceId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -78,6 +103,8 @@ namespace DatabaseSchema.Migrations
 
                     b.HasIndex("AuthorTblAuthorId");
 
+                    b.HasIndex("LicenceTblLicenceId");
+
                     b.ToTable("Objects");
                 });
 
@@ -93,37 +120,7 @@ namespace DatabaseSchema.Migrations
 
                     b.HasKey("TblModpackId");
 
-                    b.ToTable("TblModpack");
-                });
-
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblModpackTagLink", b =>
-                {
-                    b.Property<int>("TblLocoObjectId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TblModpackId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("TblLocoObjectId", "TblModpackId");
-
-                    b.HasIndex("TblModpackId");
-
-                    b.ToTable("TblModpackTagLink");
-                });
-
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblObjectTagLink", b =>
-                {
-                    b.Property<int>("TblLocoObjectId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TblTagId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("TblLocoObjectId", "TblTagId");
-
-                    b.HasIndex("TblTagId");
-
-                    b.ToTable("ObjectTagLinks");
+                    b.ToTable("Modpacks");
                 });
 
             modelBuilder.Entity("OpenLoco.Db.Schema.TblTag", b =>
@@ -141,68 +138,79 @@ namespace DatabaseSchema.Migrations
                     b.ToTable("Tags");
                 });
 
+            modelBuilder.Entity("TblLocoObjectTblModpack", b =>
+                {
+                    b.Property<int>("ModpacksTblModpackId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ObjectsTblLocoObjectId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ModpacksTblModpackId", "ObjectsTblLocoObjectId");
+
+                    b.HasIndex("ObjectsTblLocoObjectId");
+
+                    b.ToTable("TblLocoObjectTblModpack");
+                });
+
+            modelBuilder.Entity("TblLocoObjectTblTag", b =>
+                {
+                    b.Property<int>("ObjectsTblLocoObjectId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TagsTblTagId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ObjectsTblLocoObjectId", "TagsTblTagId");
+
+                    b.HasIndex("TagsTblTagId");
+
+                    b.ToTable("TblLocoObjectTblTag");
+                });
+
             modelBuilder.Entity("OpenLoco.Db.Schema.TblLocoObject", b =>
                 {
                     b.HasOne("OpenLoco.Db.Schema.TblAuthor", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorTblAuthorId");
 
+                    b.HasOne("OpenLoco.Db.Schema.TblLicence", "Licence")
+                        .WithMany()
+                        .HasForeignKey("LicenceTblLicenceId");
+
                     b.Navigation("Author");
+
+                    b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblModpackTagLink", b =>
+            modelBuilder.Entity("TblLocoObjectTblModpack", b =>
                 {
-                    b.HasOne("OpenLoco.Db.Schema.TblLocoObject", "Object")
-                        .WithMany("ModpackLinks")
-                        .HasForeignKey("TblLocoObjectId")
+                    b.HasOne("OpenLoco.Db.Schema.TblModpack", null)
+                        .WithMany()
+                        .HasForeignKey("ModpacksTblModpackId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Db.Schema.TblModpack", "Modpack")
-                        .WithMany("ModpackLinks")
-                        .HasForeignKey("TblModpackId")
+                    b.HasOne("OpenLoco.Db.Schema.TblLocoObject", null)
+                        .WithMany()
+                        .HasForeignKey("ObjectsTblLocoObjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TblLocoObjectTblTag", b =>
+                {
+                    b.HasOne("OpenLoco.Db.Schema.TblLocoObject", null)
+                        .WithMany()
+                        .HasForeignKey("ObjectsTblLocoObjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Modpack");
-
-                    b.Navigation("Object");
-                });
-
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblObjectTagLink", b =>
-                {
-                    b.HasOne("OpenLoco.Db.Schema.TblLocoObject", "Object")
-                        .WithMany("TagLinks")
-                        .HasForeignKey("TblLocoObjectId")
+                    b.HasOne("OpenLoco.Db.Schema.TblTag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsTblTagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("OpenLoco.Db.Schema.TblTag", "Tag")
-                        .WithMany("TagLinks")
-                        .HasForeignKey("TblTagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Object");
-
-                    b.Navigation("Tag");
-                });
-
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblLocoObject", b =>
-                {
-                    b.Navigation("ModpackLinks");
-
-                    b.Navigation("TagLinks");
-                });
-
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblModpack", b =>
-                {
-                    b.Navigation("ModpackLinks");
-                });
-
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblTag", b =>
-                {
-                    b.Navigation("TagLinks");
                 });
 #pragma warning restore 612, 618
         }

@@ -36,16 +36,15 @@ namespace OpenLoco.Common
 					x => new ObjectMetadata(x.ObjectName, 123) { Author = x.Creator, Description = x.DescriptionAndFile, Tags = [.. x.Tags] });
 		}
 
-		public static ObjectMetadata? LoadObjectMetadata(string objectName, uint checksum, Dictionary<string, ObjectMetadata> metadata)
+		public static ObjectMetadata? LoadObjectMetadata(string filename, string objectName, uint checksum, Dictionary<string, ObjectMetadata> metadata)
 		{
 			if (!metadata.TryGetValue(objectName, out var value))
 			{
-				const string metadataFile = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
-				if (!File.Exists(metadataFile))
+				if (!File.Exists(filename))
 				{
 					return null;
 				}
-				var text = File.ReadAllText(metadataFile);
+				var text = File.ReadAllText(filename);
 				var data = JsonSerializer.Deserialize<GlenDBSchema>(text); // this loads and deserialises the entire thing every time, rip
 				var matching = data!.data.Where(x => x.ObjectName == objectName);
 				var first = matching.FirstOrDefault();

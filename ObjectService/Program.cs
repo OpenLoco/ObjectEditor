@@ -36,7 +36,7 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 			}
 
 			context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-			_ = context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.");
+			_ = context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", cancellationToken);
 
 			return new ValueTask();
 		};
@@ -58,37 +58,31 @@ if (app.Environment.IsDevelopment())
 }
 
 // eg: https://localhost:7230/objects/list
-_ = app.MapGet("/objects/list/", (LocoDb db)
-	=> db.Objects.Select(x => new ObjectIndexEntry(x.Name, x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)));
-
-// eg: https://localhost:7230/objects/originaldat/114
-_ = app.MapGet("/objects/originaldat/{uniqueObjectId}", async (string uniqueObjectId, LocoDb db) =>
-//=> await db.Objects.FindAsync(uniqueObjectId))
-	{
-		var s = uniqueObjectId.Split('_');
-		return await db.Objects.SingleAsync(x => x.OriginalName == s[0] && x.OriginalChecksum == uint.Parse(s[1]));
-	})
+_ = app.MapGet("/objects/list", (LocoDb db)
+	=> db.Objects.Select(x => new ObjectIndexEntry(x.Name, x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)))
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapGet("/objects/newobjectformat/{uniqueObjectId}", (string uniqueObjectId) =>
-{
+// using db id
+// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256
+_ = app.MapGet("/objects/originaldat", async (int uniqueObjectId, LocoDb db)
+	=> await db.Objects.FindAsync(uniqueObjectId))
+	.RequireRateLimiting(tokenPolicy);
 
-});
+// using objectname+checksum
+// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
+_ = app.MapGet("/objects/originaldat", async (string objectName, uint checksum, LocoDb db)
+	=> await db.Objects.SingleAsync(x => x.OriginalName == objectName && x.OriginalChecksum == checksum))
+	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapGet("/objects/metadata/{uniqueObjectId}", (string uniqueObjectId) =>
-{
+//_ = app.MapGet("/todoitems", async (LocoDb db) =>
+//	await db.Objects.ToListAsync());
 
-});
+//_ = app.MapPost("/todoitems", async (TblLocoObject locoObject, LocoDb db) =>
+//{
+//	_ = db.Objects.Add(locoObject);
+//	_ = await db.SaveChangesAsync();
 
-_ = app.MapGet("/todoitems", async (LocoDb db) =>
-	await db.Objects.ToListAsync());
-
-_ = app.MapPost("/todoitems", async (TblLocoObject locoObject, LocoDb db) =>
-{
-	_ = db.Objects.Add(locoObject);
-	_ = await db.SaveChangesAsync();
-
-	return Results.Created($"/todoitems/{locoObject.Name}", locoObject);
-});
+//	return Results.Created($"/todoitems/{locoObject.Name}", locoObject);
+//});
 
 app.Run();

@@ -6,6 +6,6 @@ namespace OpenLoco.Db.Schema
 
 		public string Name { get; set; }
 
-		public ICollection<TblObjectTagLink> TagLinks { get; set; }
+		public ICollection<TblLocoObject> Objects { get; set; }
 	}
 }

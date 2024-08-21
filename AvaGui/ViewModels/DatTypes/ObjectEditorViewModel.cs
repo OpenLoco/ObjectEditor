@@ -116,7 +116,7 @@ namespace AvaGui.ViewModels
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
 
 					var name = CurrentObject.DatFileInfo.S5Header.Name;
-					CurrentMetadata = Utils.LoadObjectMetadata(name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
+					CurrentMetadata = Utils.LoadObjectMetadata(ObjectEditorModel.MetadataFile, name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
 
 					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Path, false, null);
 					CurrentHexAnnotations = new(treeView);

@@ -5,17 +5,7 @@ using OpenLoco.Dat.Objects;
 using OpenLoco.Db.Schema;
 using System.Text.Json;
 
-var filename = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
-var text = File.ReadAllText(filename);
-var metadata = JsonSerializer.Deserialize<GlenDBSchema>(text).data;
-var distinct = metadata.DistinctBy(x => x.ObjectName);
-var dupes = metadata.Except(distinct);
-
-foreach (var x in dupes) //.OrderBy(x => x.ObjectName))
-{
-	Console.WriteLine($"{x.ObjectName} - {x.DescriptionAndFile}");
-}
-
+const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\database_new.json";
 using var db = ExampleRun();
 
 Console.WriteLine("done");
@@ -29,22 +19,20 @@ static void SeedDb(LocoDb db)
 	_ = db.Tags.ExecuteDelete();
 	_ = db.Objects.ExecuteDelete();
 	_ = db.SaveChanges();
+	const string objDirectory2 = "Q:\\Games\\Locomotion\\LocoVault\\DatVault";
+	var datFiles = SawyerStreamUtils.GetDatFilesInDirectory(objDirectory2);
 
-	// Load data
+	Console.WriteLine("Loading metadata");
+	var metadata = LoadMetadata(MetadataFile);
 
-	var objDirectory = "Q:\\Games\\Locomotion\\OriginalObjects";
-	var datFiles = SawyerStreamUtils.GetDatFilesInDirectory(objDirectory);
+	// ...
 
-	Console.WriteLine("Loading metadata data file");
-	var metadata = Utils.LoadMetadata("Q:\\Games\\Locomotion\\LocoVault\\dataBase.json");
-
-	// Seed
-
+	Console.WriteLine("Seeding");
 	if (!db.Authors.Any())
 	{
 		Console.WriteLine("Seeding Authors");
-		var authors = metadata.Values.Select(x => x.Author).Distinct();
-		foreach (var author in authors)
+		var authors = metadata.Values.Select(x => x.Creator).Distinct();
+		foreach (var author in authors.Where(x => !string.IsNullOrEmpty(x)))
 		{
 			_ = db.Add(new TblAuthor() { Name = author });
 		}
@@ -68,28 +56,59 @@ static void SeedDb(LocoDb db)
 
 	if (!db.Objects.Any())
 	{
-		Console.WriteLine("Seeding Objects");
-		foreach (var datFile in datFiles)
+		var list = datFiles.ToList();
+		Console.WriteLine($"Seeding {list.Count} Objects");
+		var count = 0;
+
+		foreach (var datFile in list.Take(500))
 		{
 			var bytes = File.ReadAllBytes(datFile);
-			var (fileInfo, locoObj) = SawyerStreamReader.LoadFullObjectFromStream(bytes, filename: datFile, loadExtra: false); // currently don't need to load extra
 
-			var tblLocoObject = new TblLocoObject()
+			try
 			{
-				Name = Utils.GetDatCompositeKey(fileInfo.S5Header.Name, fileInfo.S5Header.Checksum),
-				OriginalName = fileInfo.S5Header.Name,
-				OriginalChecksum = fileInfo.S5Header.Checksum,
-				OriginalBytes = bytes,
-				SourceGame = fileInfo.S5Header.SourceGame,
-				ObjectType = fileInfo.S5Header.ObjectType,
-				VehicleType = (locoObj?.Object is VehicleObject veh) ? veh.Type : null,
-				Description = "<unk>", // todo: load from Glen's DB
-				Author = null, // todo: load from Glen's DB
-				CreationDate = null,
-				LastEditDate = null,
-			};
+				count++;
+				var mod = list.Count / 100;
+				if (count % mod == 0)
+				{
+					Console.WriteLine($"Progress: {count}/{list.Count} ({count * 100 / list.Count}%)");
+				}
 
-			_ = db.Add(tblLocoObject);
+				var (fileInfo, locoObj) = SawyerStreamReader.LoadFullObjectFromStream(bytes, filename: datFile, loadExtra: true);
+				var metadataKey = (fileInfo.S5Header.Name, fileInfo.S5Header.Checksum.ToString());
+
+				if (!metadata.TryGetValue(metadataKey, out var meta))
+				{
+					Console.WriteLine($"{datFile} had no metadata");
+				}
+
+				var author = meta?.Creator == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Creator);
+				var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name));
+
+				var tblLocoObject = new TblLocoObject()
+				{
+					Name = fileInfo.S5Header.Name,
+					OriginalName = fileInfo.S5Header.Name,
+					OriginalChecksum = fileInfo.S5Header.Checksum,
+					OriginalBytes = bytes,
+					SourceGame = fileInfo.S5Header.SourceGame,
+					ObjectType = fileInfo.S5Header.ObjectType,
+					VehicleType = (locoObj?.Object is VehicleObject veh) ? veh.Type : null,
+					Description = meta?.DescriptionAndFile,
+					Author = author,
+					CreationDate = null,
+					LastEditDate = null,
+					Tags = tags == null ? [] : [.. tags],
+					Availability = ObjectAvailability.NewGames,
+					Licence = null,
+				};
+
+				_ = db.Add(tblLocoObject);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Failed to load object - not adding to db. Filename={datFile} Exception={ex.Message}");
+				continue;
+			}
 		}
 		_ = db.SaveChanges();
 	}
@@ -129,6 +148,7 @@ static LocoDb ExampleRun()
 	var obj = db.Objects
 		.OrderBy(b => b.Name)
 		.First();
+
 	Console.WriteLine(obj.OriginalName);
 	Console.WriteLine(obj.Description);
 	Console.WriteLine(obj.ObjectType);
@@ -145,6 +165,21 @@ static LocoDb ExampleRun()
 	//db.Objects.ExecuteDelete();
 	//db.SaveChanges();
 	return db;
+}
+
+static Dictionary<(string ObjectName, string Checksum), GlenDbData2> LoadMetadata(string MetadataFileNew)
+{
+	var text = File.ReadAllText(MetadataFileNew);
+	var metadata = JsonSerializer.Deserialize<GlenDBSchema2>(text).data;
+	var kvList = metadata.GroupBy(x => (x.ObjectName, uint32_t_LittleToBigEndian(x.Checksum)));
+	var metadataDict = kvList.ToDictionary(x => x.Key, x => x.First());
+	return metadataDict;
+}
+
+static string? uint32_t_LittleToBigEndian(string input)
+{
+	var r = new string(input.Chunk(2).Reverse().SelectMany(x => x).ToArray());
+	return Convert.ToUInt32(r, 16).ToString();
 }
 
 // Update

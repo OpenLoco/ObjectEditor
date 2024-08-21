@@ -56,6 +56,8 @@ namespace AvaGui.Models
 
 		public HttpClient WebClient { get; }
 
+		public const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
+
 		public ObjectEditorModel()
 		{
 			Logger = new Logger();
@@ -63,11 +65,11 @@ namespace AvaGui.Models
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
 
 			LoadSettings();
-			//Metadata = Utils.LoadMetadata(MetadataFilename);
-			Metadata = Utils.LoadMetadata("Q:\\Games\\Locomotion\\LocoVault\\dataBase.json");
+			Metadata = Utils.LoadMetadata(MetadataFile);
 
 			// create http client
-			WebClient = new HttpClient() { BaseAddress = new Uri("https://localhost:7230"), };
+			//WebClient = new HttpClient() { BaseAddress = new Uri("https://localhost:7230"), };
+			WebClient = new HttpClient() { BaseAddress = new Uri("https://leftofzen.dev:2053"), };
 		}
 
 		public void LoadSettings()

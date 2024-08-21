@@ -37,7 +37,7 @@ namespace AvaGui.ViewModels
 		public UiLocoFile? CurrentObject { get; private set; }
 
 		[Reactive]
-		public ObjectMetadata CurrentMetadata { get; private set; }
+		public ObjectMetadata? CurrentMetadata { get; private set; }
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
@@ -232,6 +232,11 @@ namespace AvaGui.ViewModels
 
 		private static IEnumerable<HexAnnotationLine> GetDumpLines(byte[] byteList, int? selectionStart, int? selectionEnd)
 		{
+			if (byteList == null)
+			{
+				yield break;
+			}
+
 			var count = 0;
 
 			foreach (var b in byteList.Chunk(bytesPerDumpLine))

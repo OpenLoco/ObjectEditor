@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenLoco.Db.Schema;
 
@@ -10,9 +11,11 @@ using OpenLoco.Db.Schema;
 namespace DatabaseSchema.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    partial class LocoDbModelSnapshot : ModelSnapshot
+    [Migration("20240822005503_removeOriginalObjectDataAndAddUniqueNameConstraints")]
+    partial class removeOriginalObjectDataAndAddUniqueNameConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -89,10 +92,6 @@ namespace DatabaseSchema.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PathOnDisk")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<byte>("SourceGame")
                         .HasColumnType("INTEGER");
 
@@ -106,9 +105,6 @@ namespace DatabaseSchema.Migrations
                     b.HasIndex("LicenceTblLicenceId");
 
                     b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.HasIndex("PathOnDisk")
                         .IsUnique();
 
                     b.HasIndex("OriginalName", "OriginalChecksum")

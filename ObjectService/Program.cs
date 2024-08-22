@@ -1,3 +1,4 @@
+using DatabaseSchema.DTOs;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -64,8 +65,36 @@ _ = app.MapGet("/objects/list", (LocoDb db)
 
 // using db id
 // eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256
-_ = app.MapGet("/objects/originaldat", async (int uniqueObjectId, LocoDb db)
-	=> await db.Objects.FindAsync(uniqueObjectId))
+_ = app.MapGet("/objects/originaldat", async (int uniqueObjectId, LocoDb db) =>
+	{
+		var obj = await db.Objects.FindAsync(uniqueObjectId);
+		return obj == null
+			? null
+			: new TblLocoObjectDto()
+			{
+				TblLocoObjectId = obj.TblLocoObjectId,
+				Name = obj.Name,
+
+				// OriginalDatdata
+				OriginalName = obj.OriginalName,
+				OriginalChecksum = obj.OriginalChecksum,
+				OriginalBytes = File.Exists(obj.PathOnDisk) ? await File.ReadAllBytesAsync(obj.PathOnDisk) : null,
+
+				SourceGame = obj.SourceGame,
+				ObjectType = obj.ObjectType,
+				VehicleType = obj.VehicleType,
+
+				// Metadata
+				Description = obj.Description,
+				Author = obj.Author,
+				CreationDate = obj.CreationDate,
+				LastEditDate = obj.LastEditDate,
+				Tags = obj.Tags,
+				Modpacks = obj.Modpacks,
+				Availability = obj.Availability,
+				Licence = obj.Licence
+			};
+	})
 	.RequireRateLimiting(tokenPolicy);
 
 // using objectname+checksum

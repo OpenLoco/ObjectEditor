@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using DatabaseSchema.DTOs;
 using DynamicData;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
@@ -6,7 +7,6 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
-using OpenLoco.Db.Schema;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -164,7 +164,7 @@ namespace AvaGui.Models
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					TblLocoObject? locoObj = null;
+					TblLocoObjectDto? locoObj = null;
 					try
 					{
 						using var response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
@@ -175,7 +175,7 @@ namespace AvaGui.Models
 							return false;
 						}
 
-						locoObj = response.Content.ReadFromJsonAsync<TblLocoObject>().Result;
+						locoObj = response.Content.ReadFromJsonAsync<TblLocoObjectDto>().Result;
 					}
 					catch (HttpRequestException ex)
 					{
@@ -190,7 +190,7 @@ namespace AvaGui.Models
 						return false;
 					}
 
-					if (locoObj == null || locoObj.OriginalBytes.Length == 0)
+					if (locoObj?.OriginalBytes == null || locoObj.OriginalBytes.Length == 0)
 					{
 						Logger?.Error($"Unable to load {filesystemItem.Path} from online");
 					}

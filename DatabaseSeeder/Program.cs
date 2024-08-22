@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects;
 using OpenLoco.Db.Schema;
 using System.Text.Json;
 
@@ -15,12 +14,14 @@ static void SeedDb(LocoDb db)
 {
 	Console.WriteLine("Clearing database");
 	// clear
+	_ = db.Objects.ExecuteDelete();
 	_ = db.Authors.ExecuteDelete();
 	_ = db.Tags.ExecuteDelete();
-	_ = db.Objects.ExecuteDelete();
+	_ = db.Modpacks.ExecuteDelete();
+	_ = db.Licences.ExecuteDelete();
 	_ = db.SaveChanges();
-	const string objDirectory2 = "Q:\\Games\\Locomotion\\LocoVault\\DatVault";
-	var datFiles = SawyerStreamUtils.GetDatFilesInDirectory(objDirectory2);
+	const string ObjDirectory = "Q:\\Games\\Locomotion\\LocoVault\\DatVault";
+	var datFiles = SawyerStreamUtils.GetDatFilesInDirectory(ObjDirectory);
 
 	Console.WriteLine("Loading metadata");
 	var metadata = LoadMetadata(MetadataFile);
@@ -56,58 +57,58 @@ static void SeedDb(LocoDb db)
 
 	if (!db.Objects.Any())
 	{
-		var list = datFiles.ToList();
-		Console.WriteLine($"Seeding {list.Count} Objects");
-		var count = 0;
+		var fileArr = datFiles.ToArray();
+		Console.WriteLine($"Seeding {fileArr.Length} Objects");
 
-		foreach (var datFile in list.Take(500))
+		var progress = new Progress<float>();
+		var index = ObjectIndex.CreateIndexAsync(fileArr, progress).Result;
+
+		foreach (var objIndex in index.Objects.DistinctBy(x => new { x.ObjectName, x.Checksum }))
 		{
-			var bytes = File.ReadAllBytes(datFile);
-
-			try
+			var metadataKey = (objIndex.ObjectName, objIndex.Checksum.ToString());
+			if (!metadata.TryGetValue(metadataKey, out var meta))
 			{
-				count++;
-				var mod = list.Count / 100;
-				if (count % mod == 0)
-				{
-					Console.WriteLine($"Progress: {count}/{list.Count} ({count * 100 / list.Count}%)");
-				}
+				Console.WriteLine($"{objIndex} had no metadata");
+			}
 
-				var (fileInfo, locoObj) = SawyerStreamReader.LoadFullObjectFromStream(bytes, filename: datFile, loadExtra: true);
-				var metadataKey = (fileInfo.S5Header.Name, fileInfo.S5Header.Checksum.ToString());
+			var author = meta?.Creator == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Creator);
+			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name));
 
-				if (!metadata.TryGetValue(metadataKey, out var meta))
-				{
-					Console.WriteLine($"{datFile} had no metadata");
-				}
+			var tblLocoObject = new TblLocoObject()
+			{
+				Name = Path.GetFileNameWithoutExtension(objIndex.Filename),
+				PathOnDisk = Path.Combine(ObjDirectory, objIndex.Filename),
+				OriginalName = objIndex.ObjectName,
+				OriginalChecksum = objIndex.Checksum,
+				SourceGame = objIndex.SourceGame,
+				ObjectType = objIndex.ObjectType,
+				VehicleType = objIndex.VehicleType,
+				Description = meta?.DescriptionAndFile,
+				Author = author,
+				CreationDate = null,
+				LastEditDate = null,
+				Tags = tags == null ? [] : [.. tags],
+				Availability = ObjectAvailability.NewGames,
+				Licence = null,
+			};
 
-				var author = meta?.Creator == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Creator);
-				var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name));
+			// there's a unique constraint on the composite key index (OriginalName, OriginalChecksum), so check existence first so no exceptions
+			var existingEntityInDb = db.Objects
+				.FirstOrDefault(e => e.OriginalName == tblLocoObject.OriginalName && e.OriginalChecksum == tblLocoObject.OriginalChecksum);
 
-				var tblLocoObject = new TblLocoObject()
-				{
-					Name = fileInfo.S5Header.Name,
-					OriginalName = fileInfo.S5Header.Name,
-					OriginalChecksum = fileInfo.S5Header.Checksum,
-					OriginalBytes = bytes,
-					SourceGame = fileInfo.S5Header.SourceGame,
-					ObjectType = fileInfo.S5Header.ObjectType,
-					VehicleType = (locoObj?.Object is VehicleObject veh) ? veh.Type : null,
-					Description = meta?.DescriptionAndFile,
-					Author = author,
-					CreationDate = null,
-					LastEditDate = null,
-					Tags = tags == null ? [] : [.. tags],
-					Availability = ObjectAvailability.NewGames,
-					Licence = null,
-				};
+			var existingEntityInChangeTracker = db.ChangeTracker.Entries()
+				.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblLocoObject))
+				.Select(e => e.Entity as TblLocoObject)
+				.FirstOrDefault(e => e!.OriginalName == tblLocoObject.OriginalName && e.OriginalChecksum == tblLocoObject.OriginalChecksum);
 
+			if (existingEntityInDb == null && existingEntityInChangeTracker == null)
+			{
 				_ = db.Add(tblLocoObject);
 			}
-			catch (Exception ex)
+			else
 			{
-				Console.WriteLine($"Failed to load object - not adding to db. Filename={datFile} Exception={ex.Message}");
-				continue;
+				var existing = existingEntityInDb ?? existingEntityInChangeTracker;
+				Console.WriteLine($"Didn't add object - already exists. Filename={objIndex} OriginalName={existing!.OriginalName} OriginalChecksum={existing.OriginalChecksum}");
 			}
 		}
 		_ = db.SaveChanges();

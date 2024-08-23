@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Db.Schema;
+using OpenLoco.Schema;
+using OpenLoco.Schema.Database;
 using System.Text.Json;
 
 const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\database_new.json";

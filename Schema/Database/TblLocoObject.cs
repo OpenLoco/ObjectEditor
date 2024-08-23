@@ -1,32 +1,25 @@
+using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
-using OpenLoco.Db.Schema;
 
-namespace DatabaseSchema.DTOs
+namespace OpenLoco.Schema.Database
 {
-	public class ObjectIndexEntryDTO
-	{
-		public string Filename { get; set; }
-		public string ObjectName { get; set; }
-		public ObjectType ObjectType { get; set; }
-		public SourceGame SourceGame { get; set; }
-		public uint Checksum { get; set; }
-		public VehicleType? VehicleType { get; set; } = null;
-	}
-
-	public class TblLocoObjectDTO
+	[Index(nameof(OriginalName), nameof(OriginalChecksum), IsDescending = [true, false], IsUnique = true)]
+	[Index(nameof(Name), IsUnique = true)]
+	[Index(nameof(PathOnDisk), IsUnique = true)]
+	public class TblLocoObject
 	{
 		public int TblLocoObjectId { get; set; }
 
 		public string Name { get; set; }
+
+		public string PathOnDisk { get; set; }
 
 		#region OriginalDatdata
 
 		public string OriginalName { get; set; }
 
 		public uint OriginalChecksum { get; set; }
-
-		public byte[]? OriginalBytes { get; set; }
 
 		#endregion
 

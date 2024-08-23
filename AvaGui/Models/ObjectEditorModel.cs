@@ -1,5 +1,4 @@
 using Avalonia.Threading;
-using DatabaseSchema.DTOs;
 using DynamicData;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
@@ -7,6 +6,7 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
+using OpenLoco.Schema.Server;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

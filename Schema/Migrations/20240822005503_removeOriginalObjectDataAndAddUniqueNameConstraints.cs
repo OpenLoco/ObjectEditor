@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace DatabaseSchema.Migrations
+namespace OpenLoco.Schema.Migrations
 {
 	/// <inheritdoc />
 	public partial class removeOriginalObjectDataAndAddUniqueNameConstraints : Migration

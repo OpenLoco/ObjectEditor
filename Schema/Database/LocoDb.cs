@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace OpenLoco.Db.Schema
+namespace OpenLoco.Schema.Database
 {
 	public class LocoDb : DbContext
 	{

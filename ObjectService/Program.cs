@@ -1,10 +1,10 @@
-using DatabaseSchema.DTOs;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Db.Schema;
 using OpenLoco.ObjectService;
+using OpenLoco.Schema.Database;
+using OpenLoco.Schema.Server;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 

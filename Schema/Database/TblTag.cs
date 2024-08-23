@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace OpenLoco.Db.Schema
+namespace OpenLoco.Schema.Database
 {
 	[Index(nameof(Name), IsUnique = true)]
 	public class TblTag

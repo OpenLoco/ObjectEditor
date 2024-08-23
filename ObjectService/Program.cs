@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Dat.FileParsing;
 using OpenLoco.ObjectService;
 using OpenLoco.Schema.Database;
 using OpenLoco.Schema.Server;
@@ -16,8 +15,18 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(LocoDb.GetDbPath()));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddHttpLogging(logging => logging.LoggingFields = HttpLoggingFields.All);
-builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+	options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+	options.SerializerOptions.WriteIndented = false;
+});
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+	options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+	options.JsonSerializerOptions.WriteIndented = false;
+});
+
 //builder.Services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
 
 var tokenPolicy = "token";
@@ -65,7 +74,7 @@ if (app.Environment.IsDevelopment())
 
 // eg: https://localhost:7230/objects/list
 _ = app.MapGet("/objects/list", (LocoDb db)
-	=> db.Objects.Select(x => new ObjectIndexEntry(x.TblLocoObjectId.ToString(), x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)))
+	=> db.Objects.Select(x => new ObjectIndexEntryDTO(x.TblLocoObjectId.ToString(), x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)))
 	.RequireRateLimiting(tokenPolicy);
 
 // using db id
@@ -76,7 +85,7 @@ _ = app.MapGet("/objects/getobject", async (int uniqueObjectId, LocoDb db) =>
 		var obj = await db.Objects.FindAsync(uniqueObjectId);
 		return obj == null
 			? Results.NotFound()
-			: new TblLocoObjectDTO()
+			: Results.Ok(new TblLocoObjectDTO(default, default, default, default, null, default, default, null, null, null, null, null, default, default, default, null)
 			{
 				TblLocoObjectId = obj.TblLocoObjectId,
 				Name = obj.Name,
@@ -99,21 +108,26 @@ _ = app.MapGet("/objects/getobject", async (int uniqueObjectId, LocoDb db) =>
 				Modpacks = obj.Modpacks,
 				Availability = obj.Availability,
 				Licence = obj.Licence
-			};
+			});
 	})
 	.RequireRateLimiting(tokenPolicy);
 
 // using objectname+checksum
 // eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
-_ = app.MapGet("/objects/getdat", async (string objectName, uint checksum, LocoDb db)
-	=> await db.Objects.SingleAsync(x => x.OriginalName == objectName && x.OriginalChecksum == checksum))
+_ = app.MapGet("/objects/getdat", async (string objectName, uint checksum, LocoDb db) =>
+	{
+		var obj = await db.Objects.SingleOrDefaultAsync(x => x.OriginalName == objectName && x.OriginalChecksum == checksum);
+		return obj == null
+		? Results.NotFound()
+		: Results.Ok(obj);
+	})
 	.RequireRateLimiting(tokenPolicy);
 
 // default
-app.MapGet("/", () => "This is a GET");
-app.MapPost("/", () => "This is a POST");
-app.MapPut("/", () => "This is a PUT");
-app.MapDelete("/", () => "This is a DELETE");
+//app.MapGet("/", () => "This is a GET");
+//app.MapPost("/", () => "This is a POST");
+//app.MapPut("/", () => "This is a PUT");
+//app.MapDelete("/", () => "This is a DELETE");
 
 //_ = app.MapPost("/todoitems", async (TblLocoObject locoObject, LocoDb db) =>
 //{

@@ -4,46 +4,21 @@ using OpenLoco.Schema.Database;
 
 namespace OpenLoco.Schema.Server
 {
-	public class TblLocoObjectDTO
-	{
-		public int TblLocoObjectId { get; set; }
-
-		public string Name { get; set; }
-
-		#region OriginalDatdata
-
-		public string OriginalName { get; set; }
-
-		public uint OriginalChecksum { get; set; }
-
-		public byte[]? OriginalBytes { get; set; }
-
-		#endregion
-
-		public SourceGame SourceGame { get; set; }
-
-		public ObjectType ObjectType { get; set; }
-
-		public VehicleType? VehicleType { get; set; }
-
-		#region Metadata
-
-		public string? Description { get; set; }
-
-		public TblAuthor? Author { get; set; }
-
-		public DateTime? CreationDate { get; set; }
-
-		public DateTime? LastEditDate { get; set; }
-
-		public ICollection<TblTag> Tags { get; set; }
-
-		public ICollection<TblModpack> Modpacks { get; set; }
-
-		public ObjectAvailability Availability { get; set; }
-
-		public TblLicence? Licence { get; set; }
-
-		#endregion
-	}
+	public record TblLocoObjectDTO(
+		int TblLocoObjectId,
+		string Name,
+		string OriginalName,
+		uint OriginalChecksum,
+		byte[]? OriginalBytes,
+		SourceGame SourceGame,
+		ObjectType ObjectType,
+		VehicleType? VehicleType,
+		string? Description,
+		TblAuthor? Author,
+		DateTime? CreationDate,
+		DateTime? LastEditDate,
+		ICollection<TblTag> Tags,
+		ICollection<TblModpack> Modpacks,
+		ObjectAvailability Availability,
+		TblLicence? Licence);
 }

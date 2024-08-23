@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using Dat;
 using DynamicData;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
@@ -329,7 +330,7 @@ namespace AvaGui.Models
 
 				try
 				{
-					ObjectIndex = ObjectIndexManager.DeserialiseHeaderIndexFromFile(IndexFilename, Logger) ?? ObjectIndex;
+					ObjectIndex = ObjectIndex.LoadIndex(IndexFilename) ?? ObjectIndex;
 				}
 				catch (Exception ex)
 				{
@@ -363,7 +364,7 @@ namespace AvaGui.Models
 			{
 				Logger?.Info("Recreating index file");
 				await CreateIndex(allFiles, progress); // do we need the array?
-				ObjectIndexManager.SerialiseHeaderIndexToFile(IndexFilename, ObjectIndex, Logger);
+				ObjectIndex?.SaveIndex(IndexFilename);
 			}
 		}
 	}

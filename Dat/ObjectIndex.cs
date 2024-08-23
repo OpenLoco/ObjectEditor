@@ -1,8 +1,10 @@
 using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using System.Collections.Concurrent;
+using System.Text.Json;
 
-namespace OpenLoco.Dat.FileParsing
+namespace Dat
 {
 	public class ObjectIndex
 	{
@@ -13,7 +15,7 @@ namespace OpenLoco.Dat.FileParsing
 
 		public required IEnumerable<ObjectIndexFailedEntry> ObjectsFailed { get; set; }
 
-		public static Task<ObjectIndex> CreateIndexAsync(string[] files, IProgress<float> progress)
+		public static Task<ObjectIndex> CreateIndexAsync(string[] files, IProgress<float>? progress)
 		{
 			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
 			ConcurrentQueue<ObjectIndexEntryBase> pendingIndices = [];
@@ -31,7 +33,7 @@ namespace OpenLoco.Dat.FileParsing
 					if (pendingFiles.TryDequeue(out var content))
 					{
 						pendingIndices.Enqueue(await SawyerStreamReader.GetDatFileInfoFromBytes(content));
-						progress.Report(pendingIndices.Count / (float)files.Length);
+						progress?.Report(pendingIndices.Count / (float)files.Length);
 					}
 				}
 			});
@@ -41,6 +43,35 @@ namespace OpenLoco.Dat.FileParsing
 				await Task.WhenAll(producerTask, consumerTask);
 				return new ObjectIndex() { Objects = pendingIndices.OfType<ObjectIndexEntry>(), ObjectsFailed = pendingIndices.OfType<ObjectIndexFailedEntry>() };
 			});
+		}
+
+		public void SaveIndex(string indexFile)
+			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
+		public void SaveIndex(string indexFile, JsonSerializerOptions options)
+			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+
+		public static ObjectIndex LoadIndex(string indexFile)
+			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile));
+
+		public static ObjectIndex LoadIndex(string indexFile, JsonSerializerOptions options)
+			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile), options);
+
+		public static ObjectIndex LoadOrCreateIndex(string directory)
+		{
+			var indexPath = Path.Combine(directory, "objectIndex.json");
+			ObjectIndex? index;
+			if (File.Exists(indexPath))
+			{
+				index = LoadIndex(indexPath);
+			}
+			else
+			{
+				var fileArr = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
+				index = CreateIndexAsync(fileArr, null).Result;
+				index.SaveIndex(indexPath);
+			}
+
+			return index;
 		}
 	}
 

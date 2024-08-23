@@ -1,3 +1,4 @@
+using Dat;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;

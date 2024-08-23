@@ -1,7 +1,7 @@
 using AvaGui.Models;
 using Avalonia.Controls;
+using Dat;
 using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;

@@ -1,3 +1,4 @@
+using Dat;
 using NAudio.Gui;
 using NAudio.Wave;
 using OpenLoco.Common;

@@ -1,4 +1,5 @@
 global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.WinGui.UiLocoObject>;
+using Dat;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -345,8 +346,7 @@ namespace OpenLoco.WinGui
 		static void SerialiseHeaderIndexToFile(string filename, ObjectIndex headerIndex, JsonSerializerOptions options, ILogger? logger = null)
 		{
 			logger?.Info($"Saved settings to {filename}");
-			var json = JsonSerializer.Serialize(headerIndex, options);
-			File.WriteAllText(filename, json);
+			headerIndex.SaveIndex(filename, options);
 		}
 
 		static ObjectIndex? DeserialiseHeaderIndexFromFile(string filename, ILogger? logger = null)
@@ -357,10 +357,7 @@ namespace OpenLoco.WinGui
 				return null;
 			}
 			logger?.Info($"Loading settings from {filename}");
-
-			var json = File.ReadAllText(filename);
-
-			return JsonSerializer.Deserialize<ObjectIndex>(json, GetOptions());
+			return ObjectIndex.LoadIndex(filename);
 		}
 
 		public UiLocoObject? LoadAndCacheObject(string filename)

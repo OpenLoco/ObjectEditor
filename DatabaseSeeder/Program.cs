@@ -1,3 +1,4 @@
+using Dat;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common;
 using OpenLoco.Dat.FileParsing;
@@ -5,26 +6,30 @@ using OpenLoco.Schema;
 using OpenLoco.Schema.Database;
 using System.Text.Json;
 
-const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\database_new.json";
+
 using var db = ExampleRun();
 
 Console.WriteLine("done");
 Console.ReadLine();
 
-static void SeedDb(LocoDb db)
+static void SeedDb(LocoDb db, bool deleteExisting)
 {
-	Console.WriteLine("Clearing database");
-	// clear
-	_ = db.Objects.ExecuteDelete();
-	_ = db.Authors.ExecuteDelete();
-	_ = db.Tags.ExecuteDelete();
-	_ = db.Modpacks.ExecuteDelete();
-	_ = db.Licences.ExecuteDelete();
-	_ = db.SaveChanges();
-	const string ObjDirectory = "Q:\\Games\\Locomotion\\LocoVault\\DatVault";
-	var datFiles = SawyerStreamUtils.GetDatFilesInDirectory(ObjDirectory);
+	if (deleteExisting)
+	{
+		Console.WriteLine("Clearing database");
+		_ = db.Objects.ExecuteDelete();
+		_ = db.Authors.ExecuteDelete();
+		_ = db.Tags.ExecuteDelete();
+		_ = db.Modpacks.ExecuteDelete();
+		_ = db.Licences.ExecuteDelete();
+		_ = db.SaveChanges(); // not necessary since ExecuteDelete auto-saves
+	}
+
+	const string ObjDirectory = "Q:\\Games\\Locomotion\\Server";
+	var allDatFiles = SawyerStreamUtils.GetDatFilesInDirectory(ObjDirectory);
 
 	Console.WriteLine("Loading metadata");
+	const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\database_new.json";
 	var metadata = LoadMetadata(MetadataFile);
 
 	// ...
@@ -58,11 +63,11 @@ static void SeedDb(LocoDb db)
 
 	if (!db.Objects.Any())
 	{
-		var fileArr = datFiles.ToArray();
+		var fileArr = allDatFiles.ToArray();
 		Console.WriteLine($"Seeding {fileArr.Length} Objects");
 
 		var progress = new Progress<float>();
-		var index = ObjectIndex.CreateIndexAsync(fileArr, progress).Result;
+		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
 
 		foreach (var objIndex in index.Objects.DistinctBy(x => new { x.ObjectName, x.Checksum }))
 		{
@@ -124,52 +129,23 @@ static LocoDb ExampleRun()
 	var seed = true;
 	if (seed)
 	{
-		SeedDb(db);
+		SeedDb(db, false);
 	}
 
-	// Read
-	Console.WriteLine("Querying for an Author");
-	var _author = db.Authors
-		.OrderBy(b => b.Name)
-		.First();
-	Console.WriteLine(_author.Name);
-
-	Console.WriteLine("Querying for a Tag");
-	var _tag = db.Tags
-		.OrderBy(b => b.Name)
-		.First();
-	Console.WriteLine(_tag.Name);
-
-	Console.WriteLine("Querying for an Object");
-	var obj = db.Objects
-		.OrderBy(b => b.Name)
-		.First();
-
-	Console.WriteLine(obj.OriginalName);
-	Console.WriteLine(obj.Description);
-	Console.WriteLine(obj.ObjectType);
-	Console.WriteLine(obj.Author?.Name);
-	//Console.WriteLine(obj.Tags.Count);
-	//foreach (var t in obj.Tags)
-	//{
-	//	Console.WriteLine(t.Tag.Name);
-	//}
-
-	// clear
-	//db.Authors.ExecuteDelete();
-	//db.Tags.ExecuteDelete();
-	//db.Objects.ExecuteDelete();
-	//db.SaveChanges();
 	return db;
 }
 
-static Dictionary<(string ObjectName, string Checksum), GlenDbData2> LoadMetadata(string MetadataFileNew)
+static Dictionary<(string ObjectName, string Checksum), GlenDbData2> LoadMetadata(string metadataFile)
 {
-	var text = File.ReadAllText(MetadataFileNew);
+	if (!File.Exists(metadataFile))
+	{
+		return [];
+	}
+
+	var text = File.ReadAllText(metadataFile);
 	var metadata = JsonSerializer.Deserialize<GlenDBSchema2>(text).data;
 	var kvList = metadata.GroupBy(x => (x.ObjectName, uint32_t_LittleToBigEndian(x.Checksum)));
-	var metadataDict = kvList.ToDictionary(x => x.Key, x => x.First());
-	return metadataDict;
+	return kvList.ToDictionary(x => x.Key, x => x.First());
 }
 
 static string? uint32_t_LittleToBigEndian(string input)
@@ -177,6 +153,7 @@ static string? uint32_t_LittleToBigEndian(string input)
 	var r = new string(input.Chunk(2).Reverse().SelectMany(x => x).ToArray());
 	return Convert.ToUInt32(r, 16).ToString();
 }
+
 
 // Update
 //Console.WriteLine("Updating the blog and adding a post");

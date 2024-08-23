@@ -93,23 +93,17 @@ static void SeedDb(LocoDb db)
 			};
 
 			// there's a unique constraint on the composite key index (OriginalName, OriginalChecksum), so check existence first so no exceptions
-			var existingEntityInDb = db.Objects
-				.FirstOrDefault(e => e.OriginalName == tblLocoObject.OriginalName && e.OriginalChecksum == tblLocoObject.OriginalChecksum);
+			// this isn't necessary since we're already filtering in LINQ, but if we were adding to a non-empty database, this would be necessary
+			//var existingEntityInDb = db.Objects
+			//	.FirstOrDefault(e => e.OriginalName == tblLocoObject.OriginalName && e.OriginalChecksum == tblLocoObject.OriginalChecksum);
 
-			var existingEntityInChangeTracker = db.ChangeTracker.Entries()
-				.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblLocoObject))
-				.Select(e => e.Entity as TblLocoObject)
-				.FirstOrDefault(e => e!.OriginalName == tblLocoObject.OriginalName && e.OriginalChecksum == tblLocoObject.OriginalChecksum);
+			//var existingEntityInChangeTracker = db.ChangeTracker.Entries()
+			//	.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblLocoObject))
+			//	.Select(e => e.Entity as TblLocoObject)
+			//	.FirstOrDefault(e => e!.OriginalName == tblLocoObject.OriginalName && e.OriginalChecksum == tblLocoObject.OriginalChecksum);
 
-			if (existingEntityInDb == null && existingEntityInChangeTracker == null)
-			{
-				_ = db.Add(tblLocoObject);
-			}
-			else
-			{
-				var existing = existingEntityInDb ?? existingEntityInChangeTracker;
-				Console.WriteLine($"Didn't add object - already exists. Filename={objIndex} OriginalName={existing!.OriginalName} OriginalChecksum={existing.OriginalChecksum}");
-			}
+			_ = db.Add(tblLocoObject);
+
 		}
 		_ = db.SaveChanges();
 	}

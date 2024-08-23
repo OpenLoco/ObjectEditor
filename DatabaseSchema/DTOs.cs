@@ -4,7 +4,17 @@ using OpenLoco.Db.Schema;
 
 namespace DatabaseSchema.DTOs
 {
-	public class TblLocoObjectDto
+	public class ObjectIndexEntryDTO
+	{
+		public string Filename { get; set; }
+		public string ObjectName { get; set; }
+		public ObjectType ObjectType { get; set; }
+		public SourceGame SourceGame { get; set; }
+		public uint Checksum { get; set; }
+		public VehicleType? VehicleType { get; set; } = null;
+	}
+
+	public class TblLocoObjectDTO
 	{
 		public int TblLocoObjectId { get; set; }
 

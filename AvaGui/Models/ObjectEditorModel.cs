@@ -164,7 +164,7 @@ namespace AvaGui.Models
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					TblLocoObjectDto? locoObj = null;
+					TblLocoObjectDTO? locoObj = null;
 					try
 					{
 						using var response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
@@ -175,7 +175,7 @@ namespace AvaGui.Models
 							return false;
 						}
 
-						locoObj = response.Content.ReadFromJsonAsync<TblLocoObjectDto>().Result;
+						locoObj = response.Content.ReadFromJsonAsync<TblLocoObjectDTO>().Result;
 					}
 					catch (HttpRequestException ex)
 					{

@@ -14,6 +14,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace AvaGui.ViewModels
@@ -151,7 +152,7 @@ namespace AvaGui.ViewModels
 			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects, FilenameFilter, DisplayVanillaOnly, FileLocation.Local);
 		}
 
-		List<DtoObjectIndexEntry>? cachedIndexFromServer;
+		IEnumerable<DtoObjectIndexEntry>? cachedIndexFromServer;
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 		{
@@ -178,7 +179,13 @@ namespace AvaGui.ViewModels
 						Model.Logger.Info("Main server queried successfully");
 					}
 
-					var data = await response.Content.ReadFromJsonAsync<List<DtoObjectIndexEntry>>();
+					//var jsonOptions = new JsonSerializerOptions()
+					//{
+					//	Converters = { new JsonStringEnumConverter() },
+					//	WriteIndented = false,
+					//};
+
+					var data = await response.Content.ReadFromJsonAsync<IEnumerable<DtoObjectIndexEntry>>();
 					if (data == null)
 					{
 						Model.Logger.Error($"Received data but couldn't parse it: {response}");
@@ -196,6 +203,11 @@ namespace AvaGui.ViewModels
 					{
 						Model.Logger.Error("Request failed", ex);
 					}
+					return;
+				}
+				catch (JsonException ex)
+				{
+					Model.Logger.Error(ex);
 					return;
 				}
 			}

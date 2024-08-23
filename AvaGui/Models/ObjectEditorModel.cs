@@ -168,7 +168,7 @@ namespace AvaGui.Models
 					DtoLocoObject? locoObj = null;
 					try
 					{
-						using var response = Task.Run(async () => await WebClient.GetAsync($"/objects/getobject/{filesystemItem.Name}")).Result;
+						using var response = Task.Run(async () => await WebClient.GetAsync($"/objects/getobject?uniqueObjectId={filesystemItem.Path}")).Result;
 						// wait for request to arrive back
 						if (!response.IsSuccessStatusCode)
 						{

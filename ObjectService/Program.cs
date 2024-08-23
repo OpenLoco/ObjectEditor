@@ -5,7 +5,6 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.ObjectService;
 using OpenLoco.Schema.Database;
 using OpenLoco.Schema.Server;
-using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,16 +16,16 @@ builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(LocoDb.GetDbPath()));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddHttpLogging(logging => logging.LoggingFields = HttpLoggingFields.All);
 
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-	options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-	options.SerializerOptions.WriteIndented = false;
-});
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-	options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-	options.JsonSerializerOptions.WriteIndented = false;
-});
+//builder.Services.ConfigureHttpJsonOptions(options =>
+//{
+//	options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+//	options.SerializerOptions.WriteIndented = false;
+//});
+//builder.Services.AddControllers().AddJsonOptions(options =>
+//{
+//	options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+//	options.JsonSerializerOptions.WriteIndented = false;
+//});
 
 //builder.Services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
 
@@ -75,7 +74,7 @@ if (app.Environment.IsDevelopment())
 
 // eg: https://localhost:7230/objects/list
 _ = app.MapGet("/objects/list", (LocoDb db)
-	=> db.Objects.Select(x => new DtoObjectIndexEntry(x.TblLocoObjectId.ToString(), x.OriginalName, x.ObjectType, x.IsVanilla, x.OriginalChecksum, x.VehicleType)))
+	=> Results.Ok(db.Objects.Select(x => new DtoObjectIndexEntry(x.TblLocoObjectId.ToString(), x.OriginalName, x.ObjectType, x.IsVanilla, x.OriginalChecksum, x.VehicleType))))
 	.RequireRateLimiting(tokenPolicy);
 
 // using db id

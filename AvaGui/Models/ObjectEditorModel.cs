@@ -165,10 +165,10 @@ namespace AvaGui.Models
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					TblLocoObjectDTO? locoObj = null;
+					DtoLocoObject? locoObj = null;
 					try
 					{
-						using var response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
+						using var response = Task.Run(async () => await WebClient.GetAsync($"/objects/getobject/{filesystemItem.Name}")).Result;
 						// wait for request to arrive back
 						if (!response.IsSuccessStatusCode)
 						{
@@ -176,7 +176,7 @@ namespace AvaGui.Models
 							return false;
 						}
 
-						locoObj = response.Content.ReadFromJsonAsync<TblLocoObjectDTO>().Result;
+						locoObj = response.Content.ReadFromJsonAsync<DtoLocoObject>().Result;
 					}
 					catch (HttpRequestException ex)
 					{
@@ -197,12 +197,22 @@ namespace AvaGui.Models
 					}
 					else
 					{
-						(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(locoObj.OriginalBytes, $"{filesystemItem.Path}/{filesystemItem.Name}", true, Logger);
+						var obj = SawyerStreamReader.LoadFullObjectFromStream(locoObj.OriginalBytes, $"{filesystemItem.Path}/{filesystemItem.Name}", true, Logger);
+						if (obj != null)
+						{
+							fileInfo = obj.Value.DatFileInfo;
+							locoObject = obj.Value.LocoObject;
+						}
 					}
 				}
 				else
 				{
-					(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(filesystemItem.Path, logger: Logger);
+					var obj = SawyerStreamReader.LoadFullObjectFromFile(filesystemItem.Path, logger: Logger);
+					if (obj != null)
+					{
+						fileInfo = obj.Value.DatFileInfo;
+						locoObject = obj.Value.LocoObject;
+					}
 				}
 			}
 			catch (Exception ex)

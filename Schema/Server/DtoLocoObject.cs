@@ -4,19 +4,20 @@ using OpenLoco.Schema.Database;
 
 namespace OpenLoco.Schema.Server
 {
-	public record TblLocoObjectDTO(
+	public record DtoLocoObject(
 		int TblLocoObjectId,
 		string Name,
 		string OriginalName,
 		uint OriginalChecksum,
 		byte[]? OriginalBytes,
-		SourceGame SourceGame,
+		bool IsVanilla,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
 		string? Description,
 		TblAuthor? Author,
-		DateTime? CreationDate,
-		DateTime? LastEditDate,
+		DateTimeOffset? CreationDate,
+		DateTimeOffset? LastEditDate,
+		DateTimeOffset? UploadDate,
 		ICollection<TblTag> Tags,
 		ICollection<TblModpack> Modpacks,
 		ObjectAvailability Availability,

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.Dat.FileParsing;
 using OpenLoco.ObjectService;
 using OpenLoco.Schema.Database;
 using OpenLoco.Schema.Server;
@@ -74,7 +75,7 @@ if (app.Environment.IsDevelopment())
 
 // eg: https://localhost:7230/objects/list
 _ = app.MapGet("/objects/list", (LocoDb db)
-	=> db.Objects.Select(x => new ObjectIndexEntryDTO(x.TblLocoObjectId.ToString(), x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)))
+	=> db.Objects.Select(x => new DtoObjectIndexEntry(x.TblLocoObjectId.ToString(), x.OriginalName, x.ObjectType, x.IsVanilla, x.OriginalChecksum, x.VehicleType)))
 	.RequireRateLimiting(tokenPolicy);
 
 // using db id
@@ -83,32 +84,31 @@ _ = app.MapGet("/objects/getobject", async (int uniqueObjectId, LocoDb db) =>
 	{
 		Console.WriteLine($"Object [{uniqueObjectId}] requested");
 		var obj = await db.Objects.FindAsync(uniqueObjectId);
-		return obj == null
-			? Results.NotFound()
-			: Results.Ok(new TblLocoObjectDTO(default, default, default, default, null, default, default, null, null, null, null, null, default, default, default, null)
-			{
-				TblLocoObjectId = obj.TblLocoObjectId,
-				Name = obj.Name,
+		if (obj == null)
+		{
+			return Results.NotFound();
+		}
 
-				// OriginalDatdata
-				OriginalName = obj.OriginalName,
-				OriginalChecksum = obj.OriginalChecksum,
-				OriginalBytes = null, //File.Exists(obj.PathOnDisk) ? await File.ReadAllBytesAsync(obj.PathOnDisk) : null,
+		var bytes = !obj.IsVanilla && File.Exists(obj.PathOnDisk) ? await File.ReadAllBytesAsync(obj.PathOnDisk) : null;
 
-				SourceGame = obj.SourceGame,
-				ObjectType = obj.ObjectType,
-				VehicleType = obj.VehicleType,
-
-				// Metadata
-				Description = obj.Description,
-				Author = obj.Author,
-				CreationDate = obj.CreationDate,
-				LastEditDate = obj.LastEditDate,
-				Tags = obj.Tags,
-				Modpacks = obj.Modpacks,
-				Availability = obj.Availability,
-				Licence = obj.Licence
-			});
+		return Results.Ok(new DtoLocoObject(
+				obj.TblLocoObjectId,
+				obj.Name,
+				obj.OriginalName,
+				obj.OriginalChecksum,
+				bytes,
+				obj.IsVanilla,
+				obj.ObjectType,
+				obj.VehicleType,
+				obj.Description,
+				obj.Author,
+				obj.CreationDate,
+				obj.LastEditDate,
+				obj.UploadDate,
+				obj.Tags,
+				obj.Modpacks,
+				obj.Availability,
+				obj.Licence));
 	})
 	.RequireRateLimiting(tokenPolicy);
 
@@ -123,18 +123,61 @@ _ = app.MapGet("/objects/getdat", async (string objectName, uint checksum, LocoD
 	})
 	.RequireRateLimiting(tokenPolicy);
 
-// default
-//app.MapGet("/", () => "This is a GET");
-//app.MapPost("/", () => "This is a POST");
-//app.MapPut("/", () => "This is a PUT");
-//app.MapDelete("/", () => "This is a DELETE");
+_ = app.MapPost("/objects/adddat", async (DtoLocoObject locoObject, LocoDb db) =>
+{
+	if (locoObject.OriginalBytes == null)
+	{
+		return Results.BadRequest("OriginalBytes cannot be null - it must contain the valid bytes of a loco dat object.");
+	}
 
-//_ = app.MapPost("/todoitems", async (TblLocoObject locoObject, LocoDb db) =>
-//{
-//	_ = db.Objects.Add(locoObject);
-//	_ = await db.SaveChangesAsync();
+	var obj = SawyerStreamReader.LoadAndDecodeFromStream(locoObject.OriginalBytes);
+	if (obj == null || obj.Value.decodedData.Length == 0)
+	{
+		return Results.BadRequest("Provided byte data was unable to be decoded into a real loco dat object.");
+	}
 
-//	return Results.Created($"/todoitems/{locoObject.Name}", locoObject);
-//});
+	if (db.DoesObjectExist(locoObject.OriginalName, locoObject.OriginalChecksum))
+	{
+		return Results.Accepted("Provided object already exists in the database.");
+	}
+
+	const string UploadFolder = "Q:\\Games\\Locomotion\\Server\\CustomObjects\\Uploaded";
+	var uuid = Guid.NewGuid();
+	var saveFileName = Path.Combine(UploadFolder, uuid.ToString(), ".dat");
+	Console.WriteLine($"File accepted OriginalName={locoObject.OriginalName} OriginalChecksum={locoObject.OriginalChecksum} PathOnDisk={saveFileName}");
+
+	var s5Header = obj.Value.s5Header;
+	var objectHeader = obj.Value.objHeader;
+	//var decodedData = obj.Value.decodedData;
+
+	//ObjectIndex.AddObject(await SawyerStreamReader.GetDatFileInfoFromBytesAsync((saveFileName, locoObject.OriginalBytes)));
+
+	var locoTbl = new TblLocoObject()
+	{
+		// for now, trust DtoLocoObj, but we could full-parse here
+		Name = locoObject.Name,
+		PathOnDisk = saveFileName,
+		OriginalName = locoObject.OriginalName,
+		OriginalChecksum = locoObject.OriginalChecksum,
+		IsVanilla = locoObject.IsVanilla,
+		ObjectType = locoObject.ObjectType,
+		VehicleType = locoObject.VehicleType,
+		Description = locoObject.Description,
+		Author = locoObject.Author,
+		CreationDate = locoObject.CreationDate,
+		LastEditDate = locoObject.LastEditDate,
+		UploadDate = DateTimeOffset.UtcNow,
+		Tags = locoObject.Tags,
+		Modpacks = locoObject.Modpacks,
+		Availability = locoObject.Availability,
+		Licence = locoObject.Licence
+	};
+
+	_ = db.Objects.Add(locoTbl);
+	_ = await db.SaveChangesAsync();
+
+	return Results.Created($"Successfully added {locoObject.Name} with unique id {locoTbl.TblLocoObjectId}", locoTbl.TblLocoObjectId);
+
+}).RequireRateLimiting(tokenPolicy);
 
 app.Run();

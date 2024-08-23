@@ -2,6 +2,7 @@ using AvaGui.Models;
 using Avalonia.Controls;
 using Dat;
 using OpenLoco.Dat.Data;
+using OpenLoco.Schema.Server;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -150,7 +151,7 @@ namespace AvaGui.ViewModels
 			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects, FilenameFilter, DisplayVanillaOnly, FileLocation.Local);
 		}
 
-		List<ObjectIndexEntry>? cachedIndexFromServer;
+		List<DtoObjectIndexEntry>? cachedIndexFromServer;
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 		{
@@ -177,7 +178,7 @@ namespace AvaGui.ViewModels
 						Model.Logger.Info("Main server queried successfully");
 					}
 
-					var data = await response.Content.ReadFromJsonAsync<List<ObjectIndexEntry>>();
+					var data = await response.Content.ReadFromJsonAsync<List<DtoObjectIndexEntry>>();
 					if (data == null)
 					{
 						Model.Logger.Error($"Received data but couldn't parse it: {response}");
@@ -199,7 +200,7 @@ namespace AvaGui.ViewModels
 				}
 			}
 			OnlineDirectoryItems = ConstructTreeView(
-				cachedIndexFromServer,
+				cachedIndexFromServer.Select(x => new ObjectIndexEntry(x.Filename, x.ObjectName, x.ObjectType, x.IsVanilla, x.Checksum, x.VehicleType)),
 				FilenameFilter,
 				DisplayVanillaOnly,
 				FileLocation.Online);
@@ -211,7 +212,7 @@ namespace AvaGui.ViewModels
 
 			var groupedObjects = index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
-				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!vanillaOnly || o.SourceGame == SourceGame.Vanilla))
+				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!vanillaOnly || o.IsVanilla))
 				.GroupBy(o => o.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 
@@ -226,7 +227,7 @@ namespace AvaGui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.SourceGame, fileLocation))
+							.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.IsVanilla, fileLocation))
 							.OrderBy(o => o.Name));
 
 						if (vg.Key == null)
@@ -245,7 +246,7 @@ namespace AvaGui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.SourceGame, fileLocation))
+						.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.IsVanilla, fileLocation))
 						.OrderBy(o => o.Name));
 				}
 

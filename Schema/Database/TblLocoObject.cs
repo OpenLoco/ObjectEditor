@@ -23,7 +23,7 @@ namespace OpenLoco.Schema.Database
 
 		#endregion
 
-		public SourceGame SourceGame { get; set; }
+		public bool IsVanilla { get; set; }
 
 		public ObjectType ObjectType { get; set; }
 
@@ -35,9 +35,11 @@ namespace OpenLoco.Schema.Database
 
 		public TblAuthor? Author { get; set; }
 
-		public DateTime? CreationDate { get; set; }
+		public DateTimeOffset? CreationDate { get; set; }
 
-		public DateTime? LastEditDate { get; set; }
+		public DateTimeOffset? LastEditDate { get; set; }
+
+		public DateTimeOffset? UploadDate { get; set; }
 
 		public ICollection<TblTag> Tags { get; set; }
 

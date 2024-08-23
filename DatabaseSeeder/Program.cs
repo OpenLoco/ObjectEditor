@@ -5,12 +5,33 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Schema;
 using OpenLoco.Schema.Database;
 using System.Text.Json;
-
+using System.Text.Json.Serialization;
 
 using var db = ExampleRun();
 
 Console.WriteLine("done");
 Console.ReadLine();
+
+static LocoDb ExampleRun()
+{
+	var builder = new DbContextOptionsBuilder<LocoDb>();
+	_ = builder.UseSqlite(LocoDb.GetDbPath());
+	var db = new LocoDb(builder.Options);
+
+	// Note: The database must exist before this script works
+	Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
+
+	const bool seed = true;
+	const bool DeleteExisting = true;
+
+	if (seed)
+	{
+		SeedDb(db, DeleteExisting);
+	}
+
+	return db;
+}
+
 
 static void SeedDb(LocoDb db, bool deleteExisting)
 {
@@ -28,22 +49,32 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	const string ObjDirectory = "Q:\\Games\\Locomotion\\Server";
 	var allDatFiles = SawyerStreamUtils.GetDatFilesInDirectory(ObjDirectory);
 
-	Console.WriteLine("Loading metadata");
-	const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\database_new.json";
-	var metadata = LoadMetadata(MetadataFile);
+	Console.WriteLine("Seeding");
+
+	var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
 
 	// ...
 
-	Console.WriteLine("Seeding");
 	if (!db.Authors.Any())
 	{
 		Console.WriteLine("Seeding Authors");
-		var authors = metadata.Values.Select(x => x.Creator).Distinct();
-		foreach (var author in authors.Where(x => !string.IsNullOrEmpty(x)))
+
+		// load from metadata
+		//var authors = metadata.Values
+		//	.Select(x => x.Creator)
+		//	.Distinct()
+		//	.Where(x => !string.IsNullOrEmpty(x))
+		//	.Select(x => new TblAuthor() { Name = x })
+		//	.OrderBy(x => x.Name);
+
+		//File.WriteAllText("Q:\\Games\\Locomotion\\Server\\authors.json", JsonSerializer.Serialize(authors.Select(x => x.Name), jsonOptions)); // write separate file
+
+		var authors = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\authors.json"), jsonOptions);
+		if (authors != null)
 		{
-			_ = db.Add(new TblAuthor() { Name = author });
+			db.AddRange(authors.Select(x => new TblAuthor() { Name = x }));
+			_ = db.SaveChanges();
 		}
-		_ = db.SaveChanges();
 	}
 
 	// ...
@@ -51,12 +82,73 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	if (!db.Tags.Any())
 	{
 		Console.WriteLine("Seeding Tags");
-		var tags = metadata.Values.Select(x => x.Tags).SelectMany(x => x).Distinct();
-		foreach (var tag in tags.Where(x => !string.IsNullOrEmpty(x)))
+
+		// load from metadata
+		//var tags = metadata.Values
+		//	.Select(x => x.Tags)
+		//	.SelectMany(x => x)
+		//	.Distinct()
+		//	.Where(x => !string.IsNullOrEmpty(x))
+		//	.Select(x => new TblTag() { Name = x })
+		//	.OrderBy(x => x.Name);
+
+		//File.WriteAllText("Q:\\Games\\Locomotion\\Server\\tags.json", JsonSerializer.Serialize(tags.Select(x => x.Name), jsonOptions)); // write separate file
+
+		var tags = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\tags.json"), jsonOptions);
+		if (tags != null)
 		{
-			_ = db.Add(new TblTag() { Name = tag });
+			db.AddRange(tags.Select(x => new TblTag() { Name = x }));
+			_ = db.SaveChanges();
 		}
-		_ = db.SaveChanges();
+	}
+
+	// ...
+
+	if (!db.Licences.Any())
+	{
+		Console.WriteLine("Seeding Licences");
+
+		// load from metadata
+		//var licences = new List<TblLicence>
+		//{
+		//	new() { Name = "CC BY_NC_SA", Text = "This license enables users to distribute, remix, adapt, and build upon the material in any medium or format for noncommercial purposes only, and only so long as attribution is given to the creator. If you remix, adapt, or build upon the material, you must license the modified material under identical terms. CC BY-NC-SA includes the following elements:\r\n\r\n BY: credit must be given to the creator.\r\n NC: Only noncommercial uses of the work are permitted.\r\n SA: Adaptations must be shared under the same terms." }
+		//}
+		//.Where(x => !string.IsNullOrEmpty(x.Name))
+		//.OrderBy(x => x.Name);
+
+		//var toWrite = licences.Select(x => new LicenceJsonRecord(x.Name, x.Text)).ToList();
+		//File.WriteAllText("Q:\\Games\\Locomotion\\Server\\licences.json", JsonSerializer.Serialize(toWrite, jsonOptions)); // write separate file
+
+		var licences = JsonSerializer.Deserialize<IEnumerable<LicenceJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\licences.json"), jsonOptions);
+		if (licences != null)
+		{
+			db.AddRange(licences.Select(x => new TblLicence() { Name = x.Name, Text = x.Text }));
+			_ = db.SaveChanges();
+		}
+	}
+
+	// ...
+
+	if (!db.Modpacks.Any())
+	{
+		Console.WriteLine("Seeding Modpacks");
+
+		// load from metadata
+		//var modpacks = new List<TblModpack>
+		//{
+		//	new() { Name = "pack1" },
+		//}
+		//.Where(x => !string.IsNullOrEmpty(x.Name))
+		//.OrderBy(x => x.Name);
+
+		//File.WriteAllText("Q:\\Games\\Locomotion\\Server\\modpacks.json", JsonSerializer.Serialize(modpacks.Select(x => x.Name), jsonOptions)); // write separate file
+
+		var modpacks = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\modpacks.json"), jsonOptions);
+		if (modpacks != null)
+		{
+			db.AddRange(modpacks.Select(x => new TblModpack() { Name = x }));
+			_ = db.SaveChanges();
+		}
 	}
 
 	// ...
@@ -69,12 +161,15 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var progress = new Progress<float>();
 		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
 
+		const string MetadataFile = "Q:\\Games\\Locomotion\\Server\\database_new.json";
+		var metadata = LoadMetadata(MetadataFile);
+
 		foreach (var objIndex in index.Objects.DistinctBy(x => new { x.ObjectName, x.Checksum }))
 		{
 			var metadataKey = (objIndex.ObjectName, objIndex.Checksum.ToString());
 			if (!metadata.TryGetValue(metadataKey, out var meta))
 			{
-				Console.WriteLine($"{objIndex} had no metadata");
+				continue;
 			}
 
 			var author = meta?.Creator == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Creator);
@@ -82,11 +177,11 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 			var tblLocoObject = new TblLocoObject()
 			{
-				Name = Path.GetFileNameWithoutExtension(objIndex.Filename),
+				Name = $"{objIndex.ObjectName}_{objIndex.Checksum}",
 				PathOnDisk = Path.Combine(ObjDirectory, objIndex.Filename),
 				OriginalName = objIndex.ObjectName,
 				OriginalChecksum = objIndex.Checksum,
-				SourceGame = objIndex.SourceGame,
+				IsVanilla = objIndex.IsVanilla,
 				ObjectType = objIndex.ObjectType,
 				VehicleType = objIndex.VehicleType,
 				Description = meta?.DescriptionAndFile,
@@ -98,15 +193,6 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				Licence = null,
 			};
 
-			// there's a unique constraint on the composite key index (OriginalName, OriginalChecksum), so check existence first so no exceptions
-			// this isn't necessary since we're already filtering in LINQ, but if we were adding to a non-empty database, this would be necessary
-			//var existingEntityInDb = db.Objects
-			//	.FirstOrDefault(e => e.OriginalName == tblLocoObject.OriginalName && e.OriginalChecksum == tblLocoObject.OriginalChecksum);
-
-			//var existingEntityInChangeTracker = db.ChangeTracker.Entries()
-			//	.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblLocoObject))
-			//	.Select(e => e.Entity as TblLocoObject)
-			//	.FirstOrDefault(e => e!.OriginalName == tblLocoObject.OriginalName && e.OriginalChecksum == tblLocoObject.OriginalChecksum);
 
 			_ = db.Add(tblLocoObject);
 
@@ -115,24 +201,6 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	}
 
 	Console.WriteLine("Finished seeding");
-}
-
-static LocoDb ExampleRun()
-{
-	var builder = new DbContextOptionsBuilder<LocoDb>();
-	_ = builder.UseSqlite(LocoDb.GetDbPath());
-	var db = new LocoDb(builder.Options);
-
-	// Note: The database must exist before this script works
-	Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
-
-	var seed = true;
-	if (seed)
-	{
-		SeedDb(db, false);
-	}
-
-	return db;
 }
 
 static Dictionary<(string ObjectName, string Checksum), GlenDbData2> LoadMetadata(string metadataFile)
@@ -154,14 +222,4 @@ static string? uint32_t_LittleToBigEndian(string input)
 	return Convert.ToUInt32(r, 16).ToString();
 }
 
-
-// Update
-//Console.WriteLine("Updating the blog and adding a post");
-//blog.Url = "https://devblogs.microsoft.com/dotnet";
-//blog.Posts.Add(new Post { Title = "Hello World", Content = "I wrote an app using EF Core!" });
-//db.SaveChanges();
-
-// Delete
-//Console.WriteLine("Delete the blog");
-//db.Remove(blog);
-//db.SaveChanges();
+record LicenceJsonRecord(string Name, string Text);

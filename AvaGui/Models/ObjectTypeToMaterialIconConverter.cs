@@ -26,7 +26,7 @@ namespace AvaGui.Models
 				return vehicleIcon;
 			}
 
-			if (value is SourceGame sourceType && SourceGameMapping.TryGetValue(sourceType, out var sourceIcon))
+			if (value is bool isVanilla && SourceGameMapping.TryGetValue(isVanilla, out var sourceIcon))
 			{
 				return sourceIcon;
 			}
@@ -85,11 +85,10 @@ namespace AvaGui.Models
 			{ VehicleType.Ship, "Sailboat" },
 		};
 
-		static readonly Dictionary<SourceGame, string> SourceGameMapping = new()
+		static readonly Dictionary<bool, string> SourceGameMapping = new()
 		{
-			{ SourceGame.Custom, "AccountEdit" },
-			{ SourceGame.DataFile, "File" },
-			{ SourceGame.Vanilla, "AccountTieHat" },
+			{ true, "AccountTieHat" },
+			{ false, "AccountEdit" },
 		};
 
 		static readonly Dictionary<DatFileType, string> DatTypeMapping = new()

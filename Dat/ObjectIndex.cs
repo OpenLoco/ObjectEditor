@@ -11,9 +11,21 @@ namespace Dat
 		public const int JsonVersion = 1; // change this every time this format changes
 		public int Version => JsonVersion;
 
-		public required IEnumerable<ObjectIndexEntry> Objects { get; set; }
+		public required IList<ObjectIndexEntry> Objects { get; set; }
 
-		public required IEnumerable<ObjectIndexFailedEntry> ObjectsFailed { get; set; }
+		public required IList<ObjectIndexFailedEntry> ObjectsFailed { get; set; }
+
+		public void AddObject(ObjectIndexEntryBase entryBase)
+		{
+			if (entryBase is ObjectIndexEntry entry)
+			{
+				Objects.Add(entry);
+			}
+			else if (entryBase is ObjectIndexFailedEntry failed)
+			{
+				ObjectsFailed.Add(failed);
+			}
+		}
 
 		public static Task<ObjectIndex> CreateIndexAsync(string[] files, IProgress<float>? progress)
 		{
@@ -32,7 +44,7 @@ namespace Dat
 				{
 					if (pendingFiles.TryDequeue(out var content))
 					{
-						pendingIndices.Enqueue(await SawyerStreamReader.GetDatFileInfoFromBytes(content));
+						pendingIndices.Enqueue(await SawyerStreamReader.GetDatFileInfoFromBytesAsync(content));
 						progress?.Report(pendingIndices.Count / (float)files.Length);
 					}
 				}
@@ -41,7 +53,7 @@ namespace Dat
 			return Task.Run(async () =>
 			{
 				await Task.WhenAll(producerTask, consumerTask);
-				return new ObjectIndex() { Objects = pendingIndices.OfType<ObjectIndexEntry>(), ObjectsFailed = pendingIndices.OfType<ObjectIndexFailedEntry>() };
+				return new ObjectIndex() { Objects = pendingIndices.OfType<ObjectIndexEntry>().ToList(), ObjectsFailed = pendingIndices.OfType<ObjectIndexFailedEntry>().ToList() };
 			});
 		}
 
@@ -77,7 +89,13 @@ namespace Dat
 
 	public abstract record ObjectIndexEntryBase(string Filename);
 
-	public record ObjectIndexEntry(string Filename, string ObjectName, ObjectType ObjectType, SourceGame SourceGame, uint32_t Checksum, VehicleType? VehicleType = null)
+	public record ObjectIndexEntry(
+		string Filename,
+		string ObjectName,
+		ObjectType ObjectType,
+		bool IsVanilla,
+		uint32_t Checksum,
+		VehicleType? VehicleType = null)
 		: ObjectIndexEntryBase(Filename);
 
 	public record ObjectIndexFailedEntry(string Filename)

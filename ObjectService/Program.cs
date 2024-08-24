@@ -69,16 +69,16 @@ if (app.Environment.IsDevelopment())
 	_ = app.UseSwaggerUI();
 }
 
-_ = app.MapGet(Routes.Lookup[RouteName.ListObjects], Server.ListObjects)
+_ = app.MapGet(Routes.ListObjects, Server.ListObjects)
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapGet(Routes.Lookup[RouteName.GetObject], Server.GetObject)
+_ = app.MapGet(Routes.GetObject, Server.GetObject)
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapPost(Routes.Lookup[RouteName.GetDat], Server.GetDat)
+_ = app.MapGet(Routes.GetDat, Server.GetDat)
 	.RequireRateLimiting(tokenPolicy);
 
-//_ = app.MapPost(Routes.Lookup[RouteName.UploadDat], Server.UploadDat)
+//_ = app.MapPost(Routes.UploadDat, Server.UploadDat)
 //	.RequireRateLimiting(tokenPolicy);
 
 app.Run();

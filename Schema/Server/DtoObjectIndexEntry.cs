@@ -4,7 +4,7 @@ using OpenLoco.Dat.Objects;
 namespace OpenLoco.Schema.Server
 {
 	public record DtoObjectIndexEntry(
-		string Filename,
+		int UniqueId,
 		string ObjectName,
 		ObjectType ObjectType,
 		bool IsVanilla,

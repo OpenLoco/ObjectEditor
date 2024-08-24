@@ -5,32 +5,13 @@ using OpenLoco.Schema.Server;
 
 namespace ObjectService
 {
-	public enum RouteName
-	{
-		ListObjects,
-		GetObject,
-		GetDat,
-		UploadDat,
-	}
-
-	public static class Routes
-	{
-		public static Dictionary<RouteName, string> Lookup = new()
-		{
-			{ RouteName.ListObjects, "/objects/list" },
-			{ RouteName.GetDat, "/objects/getdat" },
-			{ RouteName.GetObject, "/objects/getobject" },
-			{ RouteName.UploadDat, "/objects/uploaddat" },
-		};
-	}
-
 	public static class Server
 	{
 		// eg: https://localhost:7230/objects/list
 		public static async Task<IResult> ListObjects(LocoDb db)
 			=> Results.Ok(
 				await db.Objects.Select(x => new DtoObjectIndexEntry(
-					x.TblLocoObjectId.ToString(),
+					x.TblLocoObjectId,
 					x.OriginalName,
 					x.ObjectType,
 					x.IsVanilla,

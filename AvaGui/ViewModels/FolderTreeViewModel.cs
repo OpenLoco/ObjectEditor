@@ -10,11 +10,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace AvaGui.ViewModels
@@ -156,7 +153,6 @@ namespace AvaGui.ViewModels
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 		{
-			Model.Logger.Info("Trying to query main server");
 			if (Design.IsDesignMode)
 			{
 				// DO NOT WEB QUERY AT DESIGN TIME
@@ -165,57 +161,17 @@ namespace AvaGui.ViewModels
 
 			if (!useExistingIndex || cachedIndexFromServer == null)
 			{
-				try
-				{
-					using var response = await Model.WebClient.GetAsync("/objects/list");
-
-					if (!response.IsSuccessStatusCode)
-					{
-						Model.Logger.Error($"Request failed: {response}");
-						return;
-					}
-					else
-					{
-						Model.Logger.Info("Main server queried successfully");
-					}
-
-					//var jsonOptions = new JsonSerializerOptions()
-					//{
-					//	Converters = { new JsonStringEnumConverter() },
-					//	WriteIndented = false,
-					//};
-
-					var data = await response.Content.ReadFromJsonAsync<IEnumerable<DtoObjectIndexEntry>>();
-					if (data == null)
-					{
-						Model.Logger.Error($"Received data but couldn't parse it: {response}");
-						return;
-					}
-					cachedIndexFromServer = data;
-				}
-				catch (HttpRequestException ex)
-				{
-					if (ex.HttpRequestError == HttpRequestError.ConnectionError)
-					{
-						Model.Logger.Error("Request failed: unable to connect to the main server; it may be down.");
-					}
-					else
-					{
-						Model.Logger.Error("Request failed", ex);
-					}
-					return;
-				}
-				catch (JsonException ex)
-				{
-					Model.Logger.Error(ex);
-					return;
-				}
+				cachedIndexFromServer = await ObjectService.Client.GetObjectListAsync(Model.WebClient, Model.Logger);
 			}
-			OnlineDirectoryItems = ConstructTreeView(
-				cachedIndexFromServer.Select(x => new ObjectIndexEntry(x.Filename, x.ObjectName, x.ObjectType, x.IsVanilla, x.Checksum, x.VehicleType)),
-				FilenameFilter,
-				DisplayVanillaOnly,
-				FileLocation.Online);
+
+			if (cachedIndexFromServer != null)
+			{
+				OnlineDirectoryItems = ConstructTreeView(
+					cachedIndexFromServer.Select(x => new ObjectIndexEntry(x.UniqueId.ToString(), x.ObjectName, x.ObjectType, x.IsVanilla, x.Checksum, x.VehicleType)),
+					FilenameFilter,
+					DisplayVanillaOnly,
+					FileLocation.Online);
+			}
 		}
 
 		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, bool vanillaOnly, FileLocation fileLocation)

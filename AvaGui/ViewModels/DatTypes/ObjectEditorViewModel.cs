@@ -102,7 +102,7 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			Logger?.Info($"Loading {cf.Name} from {cf.Path}");
+			Logger?.Info($"Loading {cf.Name} from {cf.Filename}");
 
 			if (Model.TryLoadObject(cf, out var newObj))
 			{
@@ -118,7 +118,7 @@ namespace AvaGui.ViewModels
 					var name = CurrentObject.DatFileInfo.S5Header.Name;
 					CurrentMetadata = Utils.LoadObjectMetadata(ObjectEditorModel.MetadataFile, name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
 
-					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Path, false, null);
+					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Filename, false, null);
 					CurrentHexAnnotations = new(treeView);
 					//CurrentHexDumpLines = dumpLines;
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
@@ -144,8 +144,8 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {CurrentFile.Path}");
-			SawyerStreamWriter.Save(CurrentFile.Path, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {CurrentFile.Filename}");
+			SawyerStreamWriter.Save(CurrentFile.Filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		public void SaveAsCurrentObject()

@@ -88,7 +88,7 @@ namespace AvaGui.Models
 		static readonly Dictionary<bool, string> SourceGameMapping = new()
 		{
 			{ true, "AccountTieHat" },
-			{ false, "AccountEdit" },
+			{ false, "HumanEdit" },
 		};
 
 		static readonly Dictionary<DatFileType, string> DatTypeMapping = new()

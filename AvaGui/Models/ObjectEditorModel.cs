@@ -42,7 +42,7 @@ namespace AvaGui.Models
 
 		public Dictionary<string, byte[]> Tutorials { get; } = [];
 
-		public Dictionary<string, ObjectMetadata> Metadata { get; set; } = [];
+		public Dictionary<string, Metadata> Metadata { get; set; } = [];
 
 		public Collection<string> MiscFiles { get; } = [];
 
@@ -56,7 +56,7 @@ namespace AvaGui.Models
 
 		public HttpClient WebClient { get; }
 
-		public const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
+		//public const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
 
 		public ObjectEditorModel()
 		{
@@ -65,7 +65,7 @@ namespace AvaGui.Models
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
 
 			LoadSettings();
-			Metadata = Utils.LoadMetadata(MetadataFile);
+			//Metadata = Utils.LoadMetadata(MetadataFile);
 
 			var server = Settings.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
 			WebClient = new HttpClient() { BaseAddress = new Uri(server), };
@@ -165,13 +165,17 @@ namespace AvaGui.Models
 				{
 					var locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, int.Parse(filesystemItem.Filename))).Result;
 
-					if (locoObj.IsVanilla)
+					if (locoObj == null)
+					{
+						Logger?.Error($"Unable to load {filesystemItem.Name} from online - received no data");
+					}
+					else if (locoObj.IsVanilla)
 					{
 						Logger?.Info($"Unable to load {filesystemItem.Name} from online - requested object is a vanilla object and it is illegal to distribute copyright material");
 					}
-					else if (locoObj?.OriginalBytes == null || locoObj.OriginalBytes.Length == 0)
+					else if (locoObj.OriginalBytes == null || locoObj.OriginalBytes.Length == 0)
 					{
-						Logger?.Error($"Unable to load {filesystemItem.Name} from online - received no data");
+						Logger?.Error($"Unable to load {filesystemItem.Name} from online - received no object data");
 					}
 					else
 					{

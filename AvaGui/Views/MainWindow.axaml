@@ -99,12 +99,12 @@
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save As</TextBlock>
 						</DockPanel>
 					</Button>
-					<Button Grid.Row="3" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+					<!--<Button Grid.Row="3" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="ContentSaveCog" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save Metadata</TextBlock>
 						</DockPanel>
-					</Button>
+					</Button>-->
 				</StackPanel>
 				<TabControl>
 					<TabItem Header="Headers">

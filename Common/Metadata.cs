@@ -2,9 +2,9 @@ using System.ComponentModel;
 
 namespace OpenLoco.Common
 {
-	public class ObjectMetadata
+	public class Metadata
 	{
-		public ObjectMetadata(string originalName, uint originalChecksum)
+		public Metadata(string originalName, uint originalChecksum)
 		{
 			OriginalName = originalName;
 			OriginalChecksum = originalChecksum;

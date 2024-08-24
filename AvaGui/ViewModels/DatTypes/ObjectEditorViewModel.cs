@@ -37,7 +37,7 @@ namespace AvaGui.ViewModels
 		public UiLocoFile? CurrentObject { get; private set; }
 
 		[Reactive]
-		public ObjectMetadata? CurrentMetadata { get; private set; }
+		public Metadata? CurrentMetadata { get; private set; }
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
@@ -71,7 +71,7 @@ namespace AvaGui.ViewModels
 			ReloadObjectCommand = ReactiveCommand.Create(LoadObject);
 			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
 			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
-			SaveMetadataCommand = ReactiveCommand.Create(SaveCurrentMetadata);
+			//SaveMetadataCommand = ReactiveCommand.Create(SaveCurrentMetadata);
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());
@@ -114,9 +114,8 @@ namespace AvaGui.ViewModels
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
-
-					var name = CurrentObject.DatFileInfo.S5Header.Name;
-					CurrentMetadata = Utils.LoadObjectMetadata(ObjectEditorModel.MetadataFile, name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
+					_ = CurrentObject.DatFileInfo.S5Header.Name;
+					//CurrentMetadata = Utils.LoadObjectMetadata(ObjectEditorModel.MetadataFile, name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
 
 					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Filename, false, null);
 					CurrentHexAnnotations = new(treeView);
@@ -166,7 +165,7 @@ namespace AvaGui.ViewModels
 			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
-		public void SaveCurrentMetadata() => Utils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
+		//public void SaveCurrentMetadata() => MetadataUtils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
 		{

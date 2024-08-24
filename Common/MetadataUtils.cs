@@ -2,9 +2,9 @@ using System.Text.Json;
 
 namespace OpenLoco.Common
 {
-	public static class Utils
+	public static class MetadataUtils
 	{
-		public static List<ObjectMetadata> LoadMetadataList(string filename)
+		public static List<Metadata> LoadMetadataList(string filename)
 		{
 			if (!File.Exists(filename))
 			{
@@ -15,11 +15,11 @@ namespace OpenLoco.Common
 			var metadata = JsonSerializer.Deserialize<GlenDBSchema>(text);
 
 			return metadata.data
-				.Select(x => new ObjectMetadata(x.ObjectName, 123) { Author = x.Creator, Description = x.DescriptionAndFile, Tags = [.. x.Tags] })
+				.Select(x => new Metadata(x.ObjectName, 123) { Author = x.Creator, Description = x.DescriptionAndFile, Tags = [.. x.Tags] })
 				.ToList();
 		}
 
-		public static Dictionary<string, ObjectMetadata> LoadMetadata(string filename)
+		public static Dictionary<string, Metadata> LoadMetadata(string filename)
 		{
 			if (!File.Exists(filename))
 			{
@@ -33,10 +33,10 @@ namespace OpenLoco.Common
 				.DistinctBy(x => x.ObjectName) // todo: this skips duplicates, which may actually be valid - cleanup data instead with unique keys
 				.ToDictionary(
 					x => x.ObjectName,
-					x => new ObjectMetadata(x.ObjectName, 123) { Author = x.Creator, Description = x.DescriptionAndFile, Tags = [.. x.Tags] });
+					x => new Metadata(x.ObjectName, 123) { Author = x.Creator, Description = x.DescriptionAndFile, Tags = [.. x.Tags] });
 		}
 
-		public static ObjectMetadata? LoadObjectMetadata(string filename, string objectName, uint checksum, Dictionary<string, ObjectMetadata> metadata)
+		public static Metadata? LoadObjectMetadata(string filename, string objectName, uint checksum, Dictionary<string, Metadata> metadata)
 		{
 			if (!metadata.TryGetValue(objectName, out var value))
 			{
@@ -49,14 +49,13 @@ namespace OpenLoco.Common
 				var matching = data!.data.Where(x => x.ObjectName == objectName);
 				var first = matching.FirstOrDefault();
 
-				value = new ObjectMetadata(objectName, checksum);
+				value = new Metadata(objectName, checksum);
 
 				if (first != null)
 				{
 					value.Description = first.DescriptionAndFile;
 					value.Author = first.Creator;
 					//value.Tags.AddRange(first.Tags);
-
 				}
 
 				metadata.Add(objectName, value);
@@ -65,10 +64,7 @@ namespace OpenLoco.Common
 			return value;
 		}
 
-		public static string GetDatCompositeKey(string name, uint checksum)
-			=> $"{name}_{checksum}";
-
-		public static void SaveMetadata(string filename, Dictionary<string, ObjectMetadata> metadata)
+		public static void SaveMetadata(string filename, Dictionary<string, Metadata> metadata)
 		{
 			var text = JsonSerializer.Serialize(metadata);
 

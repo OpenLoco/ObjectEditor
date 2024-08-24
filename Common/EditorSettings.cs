@@ -60,8 +60,8 @@ namespace OpenLoco.Common
 		HashSet<string> scv5Directories;
 
 		public bool UseHttps { get; set; }
-		public string ServerAddressHttp { get; set; } = "http://leftofzen.dev:2052";
-		public string ServerAddressHttps { get; set; } = "https://leftofzen.dev:2053";
+		public string ServerAddressHttp { get; set; } = "http://www.leftofzen.dev/";
+		public string ServerAddressHttps { get; set; } = "https://www.leftofzen.dev/";
 
 		public string PaletteFile { get; set; } = "palette.png";
 		public string MetadataFileName { get; set; } = "objectMetadata.json";

@@ -32,7 +32,6 @@ static LocoDb ExampleRun()
 	return db;
 }
 
-
 static void SeedDb(LocoDb db, bool deleteExisting)
 {
 	if (deleteExisting)

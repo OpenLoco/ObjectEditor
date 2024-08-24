@@ -29,7 +29,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectService", "ObjectService\ObjectService.csproj", "{9A3C313B-8D72-44C5-879D-0374BB98B9FD}"
 	ProjectSection(ProjectDependencies) = postProject
 		{95C3FA06-59A8-4A95-8FB7-F722106D6071} = {95C3FA06-59A8-4A95-8FB7-F722106D6071}
-		{D533FEE8-653C-455C-A8A5-3A4B90060891} = {D533FEE8-653C-455C-A8A5-3A4B90060891}
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseSeeder", "DatabaseSeeder\DatabaseSeeder.csproj", "{D533FEE8-653C-455C-A8A5-3A4B90060891}"

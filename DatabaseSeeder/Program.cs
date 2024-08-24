@@ -168,9 +168,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		{
 			var metadataKey = (objIndex.ObjectName, objIndex.Checksum.ToString());
 			if (!metadata.TryGetValue(metadataKey, out var meta))
-			{
-				continue;
-			}
+			{ }
 
 			var author = meta?.Creator == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Creator);
 			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name));

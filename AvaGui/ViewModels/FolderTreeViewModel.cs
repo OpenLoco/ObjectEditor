@@ -2,7 +2,8 @@ using AvaGui.Models;
 using Avalonia.Controls;
 using Dat;
 using OpenLoco.Dat.Data;
-using OpenLoco.Schema.Server;
+using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.Web;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -161,7 +162,7 @@ namespace AvaGui.ViewModels
 
 			if (!useExistingIndex || cachedIndexFromServer == null)
 			{
-				cachedIndexFromServer = await ObjectService.Client.GetObjectListAsync(Model.WebClient, Model.Logger);
+				cachedIndexFromServer = await Client.GetObjectListAsync(Model.WebClient, Model.Logger);
 			}
 
 			if (cachedIndexFromServer != null)

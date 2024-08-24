@@ -38,7 +38,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseSeeder", "DatabaseS
 		{95C3FA06-59A8-4A95-8FB7-F722106D6071} = {95C3FA06-59A8-4A95-8FB7-F722106D6071}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Schema", "Schema\Schema.csproj", "{16B6E331-F893-483A-AECC-A3B4E87CE34C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Definitions", "Definitions\Definitions.csproj", "{16B6E331-F893-483A-AECC-A3B4E87CE34C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

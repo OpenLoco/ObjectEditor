@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 
-namespace OpenLoco.Schema.Database
+namespace OpenLoco.Definitions.Database
 {
 	[Index(nameof(OriginalName), nameof(OriginalChecksum), IsDescending = [true, false], IsUnique = true)]
 	[Index(nameof(Name), IsUnique = true)]

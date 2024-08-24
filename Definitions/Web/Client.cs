@@ -1,6 +1,7 @@
-using OpenLoco.Schema.Server;
+using OpenLoco.Definitions.DTO;
+using System.Net.Http.Json;
 
-namespace ObjectService
+namespace OpenLoco.Definitions.Web
 {
 	public static class Client
 	{

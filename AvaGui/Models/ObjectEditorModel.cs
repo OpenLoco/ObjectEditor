@@ -7,6 +7,7 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
+using OpenLoco.Definitions.Web;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -162,7 +163,7 @@ namespace AvaGui.Models
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					var locoObj = Task.Run(async () => await ObjectService.Client.GetObjectAsync(WebClient, int.Parse(filesystemItem.Filename))).Result;
+					var locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, int.Parse(filesystemItem.Filename))).Result;
 
 					if (locoObj.IsVanilla)
 					{

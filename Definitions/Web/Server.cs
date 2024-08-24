@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Schema.Database;
-using OpenLoco.Schema.Server;
+using OpenLoco.Definitions.Database;
+using OpenLoco.Definitions.DTO;
 
-namespace ObjectService
+namespace OpenLoco.Definitions.Web
 {
 	public static class Server
 	{

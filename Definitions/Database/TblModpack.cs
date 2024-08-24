@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace OpenLoco.Schema.Database
+namespace OpenLoco.Definitions.Database
 {
 	[Index(nameof(Name), IsUnique = true)]
-	public class TblTag
+	public class TblModpack
 	{
-		public int TblTagId { get; set; }
+		public int TblModpackId { get; set; }
 
 		public string Name { get; set; }
 

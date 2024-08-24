@@ -56,7 +56,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Dat\Dat.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\ObjectService\ObjectService.csproj" />
-    <ProjectReference Include="..\Schema\Schema.csproj" />
+    <ProjectReference Include="..\Definitions\Definitions.csproj" />
   </ItemGroup>
 </Project>

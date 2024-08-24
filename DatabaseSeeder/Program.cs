@@ -2,8 +2,8 @@ using Dat;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Schema;
-using OpenLoco.Schema.Database;
+using OpenLoco.Definitions;
+using OpenLoco.Definitions.Database;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

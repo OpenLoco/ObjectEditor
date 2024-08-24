@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using ObjectService;
+using OpenLoco.Definitions.Database;
+using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
-using OpenLoco.Schema.Database;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,7 +1,7 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 
-namespace OpenLoco.Schema.Server
+namespace OpenLoco.Definitions.DTO
 {
 	public record DtoObjectIndexEntry(
 		int UniqueId,

@@ -1,8 +1,8 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
-using OpenLoco.Schema.Database;
+using OpenLoco.Definitions.Database;
 
-namespace OpenLoco.Schema.Server
+namespace OpenLoco.Definitions.DTO
 {
 	public record DtoLocoObject(
 		int TblLocoObjectId,

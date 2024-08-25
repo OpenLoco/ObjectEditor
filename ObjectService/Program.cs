@@ -15,19 +15,6 @@ builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(LocoDb.GetDbPath()));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddHttpLogging(logging => logging.LoggingFields = HttpLoggingFields.All);
 
-//builder.Services.ConfigureHttpJsonOptions(options =>
-//{
-//	options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-//	options.SerializerOptions.WriteIndented = false;
-//});
-//builder.Services.AddControllers().AddJsonOptions(options =>
-//{
-//	options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-//	options.JsonSerializerOptions.WriteIndented = false;
-//});
-
-//builder.Services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
-
 var tokenPolicy = "token";
 var myOptions = new ObjectServiceRateLimitOptions();
 builder.Configuration.GetSection(ObjectServiceRateLimitOptions.MyRateLimit).Bind(myOptions);
@@ -59,7 +46,6 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 var app = builder.Build();
-//app.UseAuthentication();
 app.UseHttpLogging();
 app.UseRateLimiter();
 

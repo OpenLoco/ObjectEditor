@@ -9,6 +9,8 @@ namespace OpenLoco.Definitions.Database
 
 		public string Name { get; set; }
 
+		public TblAuthor? Author { get; set; }
+
 		public ICollection<TblLocoObject> Objects { get; set; }
 	}
 }

@@ -22,7 +22,7 @@ static LocoDb ExampleRun()
 	Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
 
 	const bool seed = true;
-	const bool DeleteExisting = true;
+	const bool DeleteExisting = false;
 
 	if (seed)
 	{
@@ -152,7 +152,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 	// ...
 
-	if (!db.Objects.Any())
+	//if (!db.Objects.Any())
 	{
 		var fileArr = allDatFiles.ToArray();
 		Console.WriteLine($"Seeding {fileArr.Length} Objects");
@@ -160,17 +160,87 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var progress = new Progress<float>();
 		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
 
+		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json"), jsonOptions);
+		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.ObjectName, x.Checksum), x => x);
+
+		#region RewriteMetadata
+
 		const string MetadataFile = "Q:\\Games\\Locomotion\\Server\\database_new.json";
 		var metadata = LoadMetadata(MetadataFile);
+
+		var authors = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\authors.json"), jsonOptions);
+		var modpacks = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\modpacks.json"), jsonOptions);
+		var tagsj = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\tags.json"), jsonOptions);
+
+		var allMeta = new List<ObjectMetadata>();
 
 		foreach (var objIndex in index.Objects.DistinctBy(x => new { x.ObjectName, x.Checksum }))
 		{
 			var metadataKey = (objIndex.ObjectName, objIndex.Checksum.ToString());
 			if (!metadata.TryGetValue(metadataKey, out var meta))
+			{
+				continue;
+			}
+
+			// some authors are now metadata
+			List<string> authorss = modpacks.Contains(meta.Creator) ? [] : [meta.Creator];
+
+			var tagss = meta.Tags.ToList();
+
+			List<string> modpackss = modpacks.Contains(meta.Creator) ? [meta.Creator] : [];
+
+			string? licence = null;
+			if (meta.Creator is "Zeak" or "Walter1940")
+			{
+				licence = "CC BY_NC_SA";
+			}
+
+			if (modpackss.Contains("Manuel18 - Tuna Mod"))
+			{
+				authorss.Add("Manuel18");
+			}
+			if (modpackss.Contains("Zimms Depots"))
+			{
+				authorss.Add("Zimm");
+			}
+			if (modpackss.Contains("Nicholas Soares Airplane Pack"))
+			{
+				authorss.Add("Nicholas Soares");
+			}
+
+			var metaD = new ObjectMetadata(objIndex.ObjectName, objIndex.Checksum, meta.DescriptionAndFile, authorss, tagss, modpackss, licence);
+
+			//			if objIndex.
+			//{
+			//				var author = meta?.Creator == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Creator);
+			//			}
+
+			//			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name));
+			allMeta.Add(metaD);
+		}
+		//foreach (var c in metadata)
+		//{
+		//	var meta = c.Value;
+		//	if (modpacks.Contains(meta.Creator))
+		//	{
+		//		meta.Creator = "";
+		//		meta.Mod
+		//	}
+		//}
+
+		File.WriteAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json", JsonSerializer.Serialize(allMeta.OrderBy(x => x.ObjectName), jsonOptions)); // write separate file
+
+		#endregion
+
+		foreach (var objIndex in index.Objects.DistinctBy(x => new { x.ObjectName, x.Checksum }))
+		{
+			var metadataKey = (objIndex.ObjectName, objIndex.Checksum);
+			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{ }
 
-			var author = meta?.Creator == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Creator);
-			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name));
+			var author = meta?.Authors == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Authors.FirstOrDefault());
+			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
+			var licence = meta?.Licence == null ? null : db.Licences.Where(x => x.Name == meta.Licence).First();
 
 			var tblLocoObject = new TblLocoObject()
 			{
@@ -181,21 +251,28 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				IsVanilla = objIndex.IsVanilla,
 				ObjectType = objIndex.ObjectType,
 				VehicleType = objIndex.VehicleType,
-				Description = meta?.DescriptionAndFile,
+				Description = meta?.Description,
 				Author = author,
 				CreationDate = null,
 				LastEditDate = null,
-				Tags = tags == null ? [] : [.. tags],
+				Tags = tags ?? [],
 				Availability = ObjectAvailability.NewGames,
-				Licence = null,
+				Licence = licence,
 			};
 
-
-			_ = db.Add(tblLocoObject);
+			//_ = db.Add(tblLocoObject);
 
 		}
-		_ = db.SaveChanges();
+		//_ = db.SaveChanges();
 	}
+
+	//Console.WriteLine("Seeding existing dat-licence data");
+	//var ccbyncsa = db.Licences.Single(x => x.Name == "CC BY_NC_SA");
+	//foreach (var dat in db.Objects.Where(x => x.Author != null && (x.Author.Name == "Zeak" || x.Author.Name == "Walter1940")))
+	//{
+	//	dat.Licence = ccbyncsa;
+	//}
+	//_ = db.SaveChanges();
 
 	Console.WriteLine("Finished seeding");
 }
@@ -220,3 +297,5 @@ static string? uint32_t_LittleToBigEndian(string input)
 }
 
 record LicenceJsonRecord(string Name, string Text);
+
+record ObjectMetadata(string ObjectName, uint Checksum, string Description, List<string> Authors, List<string> Tags, List<string> Modpacks, string? Licence);

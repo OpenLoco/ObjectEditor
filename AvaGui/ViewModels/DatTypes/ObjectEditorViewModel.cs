@@ -1,5 +1,4 @@
 using AvaGui.Models;
-using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
@@ -35,9 +34,6 @@ namespace AvaGui.ViewModels
 
 		[Reactive]
 		public UiLocoFile? CurrentObject { get; private set; }
-
-		[Reactive]
-		public Metadata? CurrentMetadata { get; private set; }
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }

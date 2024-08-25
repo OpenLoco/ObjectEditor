@@ -78,6 +78,9 @@ _ = app.MapGet(Routes.GetObject, Server.GetObject)
 _ = app.MapGet(Routes.GetDat, Server.GetDat)
 	.RequireRateLimiting(tokenPolicy);
 
+_ = app.MapGet(Routes.GetDatFile, Server.GetDatFile)
+	.RequireRateLimiting(tokenPolicy);
+
 //_ = app.MapPost(Routes.UploadDat, Server.UploadDat)
 //	.RequireRateLimiting(tokenPolicy);
 

@@ -42,8 +42,6 @@ namespace AvaGui.Models
 
 		public Dictionary<string, byte[]> Tutorials { get; } = [];
 
-		public Dictionary<string, Metadata> Metadata { get; set; } = [];
-
 		public Collection<string> MiscFiles { get; } = [];
 
 		public const string ApplicationName = "OpenLoco Object Editor";
@@ -157,6 +155,7 @@ namespace AvaGui.Models
 
 			DatFileInfo? fileInfo = null;
 			ILocoObject? locoObject = null;
+			MetadataModel? metadata = null;
 			uiLocoFile = null;
 
 			try
@@ -184,6 +183,18 @@ namespace AvaGui.Models
 						{
 							fileInfo = obj.Value.DatFileInfo;
 							locoObject = obj.Value.LocoObject;
+							metadata = new MetadataModel(locoObj.OriginalName, locoObj.OriginalChecksum)
+							{
+								Description = locoObj.Description,
+								Author = locoObj.Author,
+								CreationDate = locoObj.CreationDate,
+								LastEditDate = locoObj.LastEditDate,
+								UploadDate = locoObj.UploadDate,
+								Tags = locoObj.Tags,
+								Modpacks = locoObj.Modpacks,
+								Availability = locoObj.Availability,
+								Licence = locoObj.Licence,
+							};
 						}
 					}
 				}
@@ -194,6 +205,7 @@ namespace AvaGui.Models
 					{
 						fileInfo = obj.Value.DatFileInfo;
 						locoObject = obj.Value.LocoObject;
+						metadata = null; // todo: look this up from internet anyways
 					}
 				}
 			}
@@ -211,7 +223,7 @@ namespace AvaGui.Models
 				return false;
 			}
 
-			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject };
+			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
 			return true;
 		}
 

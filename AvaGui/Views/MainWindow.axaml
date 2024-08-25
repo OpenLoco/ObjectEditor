@@ -141,24 +141,43 @@
 					</TabItem>
 					<TabItem Header="Metadata">
 						<DockPanel>
-							<pgc:PropertyGrid x:Name="propertyGrid_Metadata" DockPanel.Dock="Top" Margin="2" IsEnabled="False" DataContext="{Binding CurrentMetadata}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-							<Border BorderThickness="1">
-								<StackPanel>
-									<TextBlock Margin="4">Tags</TextBlock>
-									<ItemsRepeater ItemsSource="{Binding CurrentMetadata.Tags}" Background="{DynamicResource ExpanderContentBackground}" >
-										<ItemsRepeater.Layout>
-											<WrapLayout />
-										</ItemsRepeater.Layout>
-										<ItemsRepeater.ItemTemplate>
-											<DataTemplate>
-												<Border BorderThickness="2">
-													<TextBlock Margin="4" Text="{Binding}" />
-												</Border>
-											</DataTemplate>
-										</ItemsRepeater.ItemTemplate>
-									</ItemsRepeater>
-								</StackPanel>
-							</Border>
+							<pgc:PropertyGrid x:Name="propertyGrid_Metadata" DockPanel.Dock="Top" Margin="2" IsEnabled="False" DataContext="{Binding CurrentObject.Metadata}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+							<StackPanel>
+								<Border BorderThickness="1" Margin="2" >
+									<StackPanel>
+										<TextBlock Margin="4">Tags</TextBlock>
+										<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Tags}" Background="{DynamicResource ExpanderContentBackground}" >
+											<ItemsRepeater.Layout>
+												<WrapLayout />
+											</ItemsRepeater.Layout>
+											<ItemsRepeater.ItemTemplate>
+												<DataTemplate>
+													<Border BorderThickness="2">
+														<TextBlock Margin="4" Text="{Binding Name}" />
+													</Border>
+												</DataTemplate>
+											</ItemsRepeater.ItemTemplate>
+										</ItemsRepeater>
+									</StackPanel>
+								</Border>
+								<Border BorderThickness="1" Margin="2" >
+									<StackPanel>
+										<TextBlock Margin="4">Modpacks</TextBlock>
+										<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Modpacks}" Background="{DynamicResource ExpanderContentBackground}" >
+											<ItemsRepeater.Layout>
+												<WrapLayout />
+											</ItemsRepeater.Layout>
+											<ItemsRepeater.ItemTemplate>
+												<DataTemplate>
+													<Border BorderThickness="2">
+														<TextBlock Margin="4" Text="{Binding Name}" />
+													</Border>
+												</DataTemplate>
+											</ItemsRepeater.ItemTemplate>
+										</ItemsRepeater>
+									</StackPanel>
+								</Border>
+							</StackPanel>
 						</DockPanel>
 					</TabItem>
 					<TabItem Header="Hex Dump">

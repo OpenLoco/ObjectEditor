@@ -6,5 +6,6 @@ namespace OpenLoco.Definitions.Web
 		public const string GetDat = "/objects/getdat";
 		public const string GetObject = "/objects/getobject";
 		public const string UploadDat = "/objects/uploaddat";
+		public const string GetDatFile = "/objects/getdatfile";
 	}
 }

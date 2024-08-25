@@ -6,6 +6,9 @@ using OpenLoco.Definitions.DTO;
 
 namespace OpenLoco.Definitions.Web
 {
+	// this must be done because eager-loading related many-to-many data in entity framework is recursive and cannot be turned off...
+	public record ExpandedTblLocoObject(TblLocoObject Object, ICollection<TblTag> Tags, ICollection<TblModpack> Modpacks);
+
 	public static class Server
 	{
 		// eg: https://localhost:7230/objects/list
@@ -22,42 +25,71 @@ namespace OpenLoco.Definitions.Web
 		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
 		public static async Task<IResult> GetDat(string objectName, uint checksum, LocoDb db)
 		{
-			var obj = await db.Objects.SingleOrDefaultAsync(x => x.OriginalName == objectName && x.OriginalChecksum == checksum);
-			return obj == null
-			? Results.NotFound()
-			: Results.Ok(obj);
+			var eObj = await db.Objects
+				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
+				.Include(x => x.Author)
+				.Include(x => x.Licence)
+				.Select(x => new ExpandedTblLocoObject(x, x.Tags, x.Modpacks))
+				.SingleOrDefaultAsync();
+
+			return eObj == null || eObj.Object == null
+				? Results.NotFound()
+				: Results.Ok(await PrepareLocoObject(eObj));
+		}
+
+		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
+		public static async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
+		{
+			var obj = await db.Objects
+				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
+				.SingleOrDefaultAsync();
+
+			var fileExists = !obj.IsVanilla && File.Exists(obj.PathOnDisk);
+
+			return fileExists
+				? Results.NotFound()
+				: Results.File(obj.PathOnDisk);
 		}
 
 		// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256
 		public static async Task<IResult> GetObject(int uniqueObjectId, LocoDb db)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");
-			var obj = await db.Objects.FindAsync(uniqueObjectId);
-			if (obj == null)
-			{
-				return Results.NotFound();
-			}
+			var eObj = await db.Objects
+				.Where(x => x.TblLocoObjectId == uniqueObjectId)
+				.Include(x => x.Author)
+				.Include(x => x.Licence)
+				.Select(x => new ExpandedTblLocoObject(x, x.Tags, x.Modpacks))
+				.SingleOrDefaultAsync();
 
+			return eObj == null || eObj.Object == null
+				? Results.NotFound()
+				: Results.Ok(await PrepareLocoObject(eObj));
+		}
+
+		public static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj)
+		{
+			var obj = eObj!.Object;
 			var bytes = !obj.IsVanilla && File.Exists(obj.PathOnDisk) ? await File.ReadAllBytesAsync(obj.PathOnDisk) : null;
 
-			return Results.Ok(new DtoLocoObject(
-					obj.TblLocoObjectId,
-					obj.Name,
-					obj.OriginalName,
-					obj.OriginalChecksum,
-					bytes,
-					obj.IsVanilla,
-					obj.ObjectType,
-					obj.VehicleType,
-					obj.Description,
-					obj.Author,
-					obj.CreationDate,
-					obj.LastEditDate,
-					obj.UploadDate,
-					obj.Tags,
-					obj.Modpacks,
-					obj.Availability,
-					obj.Licence));
+			return new DtoLocoObject(
+				obj.TblLocoObjectId,
+				obj.Name,
+				obj.OriginalName,
+				obj.OriginalChecksum,
+				bytes,
+				obj.IsVanilla,
+				obj.ObjectType,
+				obj.VehicleType,
+				obj.Description,
+				obj.Author,
+				obj.CreationDate,
+				obj.LastEditDate,
+				obj.UploadDate,
+				eObj.Tags,
+				eObj.Modpacks,
+				obj.Availability,
+				obj.Licence);
 		}
 
 		// eg: <todo>

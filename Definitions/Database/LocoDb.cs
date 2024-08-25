@@ -21,6 +21,10 @@ namespace OpenLoco.Definitions.Database
 		protected override void OnConfiguring(DbContextOptionsBuilder options)
 			=> options.UseSqlite($"Data Source={DbPath}");
 
+		protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.Entity<TblLocoObject>()
+				.Property(b => b.UploadDate)
+				.HasDefaultValueSql("getutcdate()");
+
 		public static string GetDbPath()
 			=> Path.Join(
 				Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

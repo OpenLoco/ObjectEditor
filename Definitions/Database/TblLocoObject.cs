@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpenLoco.Definitions.Database
 {
@@ -39,6 +40,7 @@ namespace OpenLoco.Definitions.Database
 
 		public DateTimeOffset? LastEditDate { get; set; }
 
+		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
 		public DateTimeOffset? UploadDate { get; set; }
 
 		public ICollection<TblTag> Tags { get; set; }

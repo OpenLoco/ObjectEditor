@@ -23,7 +23,7 @@ namespace OpenLoco.Definitions.Database
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.Entity<TblLocoObject>()
 				.Property(b => b.UploadDate)
-				.HasDefaultValueSql("datetime('now', 'utc')");
+				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 
 		public static string GetDbPath()
 			=> Path.Join(

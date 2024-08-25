@@ -87,7 +87,7 @@ namespace Definitions.Migrations
                     AuthorTblAuthorId = table.Column<int>(type: "INTEGER", nullable: true),
                     CreationDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
                     LastEditDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true, defaultValueSql: "datetime('now', 'utc')"),
+                    UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')"),
                     Availability = table.Column<int>(type: "INTEGER", nullable: false),
                     LicenceTblLicenceId = table.Column<int>(type: "INTEGER", nullable: true)
                 },

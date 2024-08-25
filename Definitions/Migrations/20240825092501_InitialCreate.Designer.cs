@@ -11,7 +11,7 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240825091333_InitialCreate")]
+    [Migration("20240825092501_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -105,7 +105,7 @@ namespace Definitions.Migrations
                     b.Property<DateTimeOffset?>("UploadDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
-                        .HasDefaultValueSql("datetime('now', 'utc')");
+                        .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
 
                     b.Property<byte?>("VehicleType")
                         .HasColumnType("INTEGER");

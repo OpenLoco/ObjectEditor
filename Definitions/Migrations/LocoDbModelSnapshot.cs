@@ -102,7 +102,7 @@ namespace Definitions.Migrations
                     b.Property<DateTimeOffset?>("UploadDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
-                        .HasDefaultValueSql("datetime('now', 'utc')");
+                        .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
 
                     b.Property<byte?>("VehicleType")
                         .HasColumnType("INTEGER");

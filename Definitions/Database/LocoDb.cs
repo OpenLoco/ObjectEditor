@@ -23,7 +23,7 @@ namespace OpenLoco.Definitions.Database
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.Entity<TblLocoObject>()
 				.Property(b => b.UploadDate)
-				.HasDefaultValueSql("getutcdate()");
+				.HasDefaultValueSql("datetime('now', 'utc')");
 
 		public static string GetDbPath()
 			=> Path.Join(

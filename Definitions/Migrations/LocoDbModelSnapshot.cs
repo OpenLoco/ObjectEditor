@@ -101,7 +101,8 @@ namespace Definitions.Migrations
 
                     b.Property<DateTimeOffset?>("UploadDate")
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now', 'utc')");
 
                     b.Property<byte?>("VehicleType")
                         .HasColumnType("INTEGER");
@@ -131,11 +132,16 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("AuthorTblAuthorId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("TblModpackId");
+
+                    b.HasIndex("AuthorTblAuthorId");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -204,6 +210,15 @@ namespace Definitions.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Licence");
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblModpack", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorTblAuthorId");
+
+                    b.Navigation("Author");
                 });
 
             modelBuilder.Entity("TblLocoObjectTblModpack", b =>

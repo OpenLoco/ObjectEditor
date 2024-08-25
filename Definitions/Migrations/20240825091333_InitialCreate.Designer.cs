@@ -11,7 +11,7 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240824051539_InitialCreate")]
+    [Migration("20240825091333_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -103,7 +103,9 @@ namespace Definitions.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTimeOffset?>("UploadDate")
-                        .HasColumnType("TEXT");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime('now', 'utc')");
 
                     b.Property<byte?>("VehicleType")
                         .HasColumnType("INTEGER");
@@ -133,11 +135,16 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("AuthorTblAuthorId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("TblModpackId");
+
+                    b.HasIndex("AuthorTblAuthorId");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -206,6 +213,15 @@ namespace Definitions.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Licence");
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblModpack", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorTblAuthorId");
+
+                    b.Navigation("Author");
                 });
 
             modelBuilder.Entity("TblLocoObjectTblModpack", b =>

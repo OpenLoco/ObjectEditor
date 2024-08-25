@@ -39,19 +39,6 @@ namespace Definitions.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Modpacks",
-                columns: table => new
-                {
-                    TblModpackId = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Modpacks", x => x.TblModpackId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Tags",
                 columns: table => new
                 {
@@ -62,6 +49,25 @@ namespace Definitions.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tags", x => x.TblTagId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Modpacks",
+                columns: table => new
+                {
+                    TblModpackId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    AuthorTblAuthorId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Modpacks", x => x.TblModpackId);
+                    table.ForeignKey(
+                        name: "FK_Modpacks_Authors_AuthorTblAuthorId",
+                        column: x => x.AuthorTblAuthorId,
+                        principalTable: "Authors",
+                        principalColumn: "TblAuthorId");
                 });
 
             migrationBuilder.CreateTable(
@@ -81,7 +87,7 @@ namespace Definitions.Migrations
                     AuthorTblAuthorId = table.Column<int>(type: "INTEGER", nullable: true),
                     CreationDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
                     LastEditDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
+                    UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true, defaultValueSql: "datetime('now', 'utc')"),
                     Availability = table.Column<int>(type: "INTEGER", nullable: false),
                     LicenceTblLicenceId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
@@ -153,6 +159,11 @@ namespace Definitions.Migrations
                 table: "Licences",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Modpacks_AuthorTblAuthorId",
+                table: "Modpacks",
+                column: "AuthorTblAuthorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Modpacks_Name",

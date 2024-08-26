@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Logging;
 using Avalonia.ReactiveUI;
 using System;
 
@@ -18,7 +19,7 @@ namespace AvaGui
 			=> AppBuilder.Configure<App>()
 				.UsePlatformDetect()
 				.WithInterFont()
-				.LogToTrace()
+				.LogToTrace(LogEventLevel.Verbose, LogArea.Binding)
 				.UseReactiveUI();
 	}
 }

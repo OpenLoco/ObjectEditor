@@ -67,7 +67,6 @@ namespace AvaGui.ViewModels
 			ReloadObjectCommand = ReactiveCommand.Create(LoadObject);
 			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
 			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
-			//SaveMetadataCommand = ReactiveCommand.Create(SaveCurrentMetadata);
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());
@@ -110,12 +109,9 @@ namespace AvaGui.ViewModels
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
-					_ = CurrentObject.DatFileInfo.S5Header.Name;
-					//CurrentMetadata = Utils.LoadObjectMetadata(ObjectEditorModel.MetadataFile, name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
 
 					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Filename, false, null);
 					CurrentHexAnnotations = new(treeView);
-					//CurrentHexDumpLines = dumpLines;
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}
 				else

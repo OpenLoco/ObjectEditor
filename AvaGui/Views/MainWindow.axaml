@@ -6,6 +6,8 @@
 		xmlns:vi="using:AvaGui.Views"
 		xmlns:mo="using:AvaGui.Models"
 		xmlns:ol="using:OpenLoco.ObjectEditor.Logging"
+		xmlns:oldt="using:OpenLoco.Dat.Types"
+		xmlns:oldo="using:OpenLoco.Dat.Objects"
 		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 		xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -78,6 +80,66 @@
 			</StackPanel>
 		</DataTemplate>
 
+		<DataTemplate DataType="oldt:S5Header">
+			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Name" Margin="2"/>
+				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Name}" IsReadOnly="True" Margin="2" />
+
+				<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Object Type" Margin="2" />
+				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding ObjectType}" IsReadOnly="True" Margin="2" />
+
+				<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Source Game" Margin="2"/>
+				<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SourceGame}" IsReadOnly="True" Margin="2" />
+
+				<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Flags" Margin="2"/>
+				<TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Flags}" IsReadOnly="True" Margin="2" />
+
+				<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Checksum" Margin="2"/>
+				<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Checksum}" IsReadOnly="True" Margin="2" />
+			</Grid>
+		</DataTemplate>
+
+		<DataTemplate DataType="oldt:ObjectHeader">
+			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Encoding" Margin="2"/>
+				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Encoding}" IsReadOnly="True" Margin="2" />
+
+				<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Encoded Data Length" Margin="2"/>
+				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DataLength}" IsReadOnly="True" Margin="2" />
+			</Grid>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:UiLocoFile">
+
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:UiG1">
+			<!-- todo -->
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:UiSoundObjectList">
+			<!-- todo -->
+		</DataTemplate>
+
 		<DataTemplate DataType="vm:ObjectEditorViewModel">
 			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
 				<StackPanel Orientation="Horizontal">
@@ -99,16 +161,13 @@
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save As</TextBlock>
 						</DockPanel>
 					</Button>
-					<!--<Button Grid.Row="3" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="ContentSaveCog" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save Metadata</TextBlock>
-						</DockPanel>
-					</Button>-->
 				</StackPanel>
 				<TabControl>
-					<TabItem Header="Headers">
-						<pgc:PropertyGrid x:Name="propertyGrid_Headers" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					<TabItem Header="Dat Headers">
+						<StackPanel>
+							<ContentControl Content="{Binding CurrentObject.DatFileInfo.S5Header}"></ContentControl>
+							<ContentControl Content="{Binding CurrentObject.DatFileInfo.ObjectHeader}"></ContentControl>
+						</StackPanel>
 					</TabItem>
 					<TabItem Header="Object">
 						<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
@@ -170,13 +229,13 @@
 								<TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Author.Name}" IsReadOnly="True" Margin="2" />
 
 								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Creation Date" Margin="2" />
-								<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding CreationDate}" IsReadOnly="True" Margin="2" />
+								<DatePicker Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreationDate}" IsEnabled="False" Margin="2" />
 
 								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Last Edit Date" Margin="2"/>
-								<TextBox Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" Text="{Binding LastEditDate}" IsReadOnly="True" Margin="2" />
+								<DatePicker Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding LastEditDate}" IsEnabled="False" Margin="2" />
 
 								<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="2"/>
-								<TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Text="{Binding UploadDate}" IsReadOnly="True" Margin="2" />
+								<DatePicker Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadDate}" IsEnabled="False" Margin="2" />
 
 								<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="2"/>
 								<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="2" />
@@ -184,7 +243,6 @@
 								<TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="2"/>
 								<TextBox Grid.Row="8" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="2" />
 							</Grid>
-							<!--<pgc:PropertyGrid x:Name="propertyGrid_Metadata" DockPanel.Dock="Top" Margin="2" IsEnabled="False" DataContext="{Binding CurrentObject.Metadata}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
 							<StackPanel>
 								<Border BorderThickness="1" Margin="2" >
 									<StackPanel>

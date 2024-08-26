@@ -24,13 +24,16 @@ namespace OpenLoco.Dat.Tests
 			var logger = new Logger();
 			var loaded = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: logger);
 
+			Assert.That(loaded, Is.Not.Null);
+			var (datFileInfo, locoObject) = loaded.Value;
+
 			Assert.Multiple(() =>
 			{
-				Assert.That(loaded.LocoObject, Is.Not.Null);
-				Assert.That(loaded.DatFileInfo.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
+				Assert.That(locoObject, Is.Not.Null);
+				Assert.That(datFileInfo!.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 			});
 
-			return (loaded.LocoObject!, (T)loaded.LocoObject!.Object);
+			return (locoObject!, (T)locoObject!.Object);
 		}
 
 		static (ILocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
@@ -38,12 +41,15 @@ namespace OpenLoco.Dat.Tests
 			var logger = new Logger();
 			var loaded = SawyerStreamReader.LoadFullObjectFromStream(data, logger: logger);
 
-#pragma warning disable NUnit2045 // Use Assert.Multiple - cannot use a ReadOnlySpan inside an anonymous method
-			Assert.That(loaded.LocoObject, Is.Not.Null);
-#pragma warning restore NUnit2045 // Use Assert.Multiple
-			Assert.That(loaded.DatFileInfo.ObjectHeader.DataLength, Is.EqualTo(data.Length - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
+			Assert.That(loaded, Is.Not.Null);
+			var (datFileInfo, locoObject) = loaded.Value;
 
-			return (loaded.LocoObject!, (T)loaded.LocoObject!.Object);
+#pragma warning disable NUnit2045 // Use Assert.Multiple - cannot use a ReadOnlySpan inside an anonymous method
+			Assert.That(locoObject, Is.Not.Null);
+#pragma warning restore NUnit2045 // Use Assert.Multiple
+			Assert.That(datFileInfo.ObjectHeader.DataLength, Is.EqualTo(data.Length - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
+
+			return (locoObject!, (T)locoObject!.Object);
 		}
 
 		static void LoadSaveGenericTest<T>(string filename, Action<ILocoObject, T> assertFunc) where T : ILocoStruct

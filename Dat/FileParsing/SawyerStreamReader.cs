@@ -1,3 +1,4 @@
+using Dat;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
@@ -59,11 +60,16 @@ namespace OpenLoco.Dat.FileParsing
 			return File.ReadAllBytes(filename);
 		}
 
-		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData) LoadAndDecodeFromFile(string filename, ILogger? logger = null)
+		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecodeFromFile(string filename, ILogger? logger = null)
 			=> LoadAndDecodeFromStream(LoadBytesFromFile(filename), logger);
 
-		static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData) LoadAndDecodeFromStream(ReadOnlySpan<byte> fullData, ILogger? logger = null)
+		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecodeFromStream(ReadOnlySpan<byte> fullData, ILogger? logger = null)
 		{
+			if (fullData.Length < S5Header.StructLength + ObjectHeader.StructLength)
+			{
+				return null;
+			}
+
 			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
 			var remainingData = fullData[S5Header.StructLength..];
 
@@ -94,10 +100,10 @@ namespace OpenLoco.Dat.FileParsing
 		}
 
 		// load file
-		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject) LoadFullObjectFromFile(string filename, bool loadExtra = true, ILogger? logger = null)
+		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject)? LoadFullObjectFromFile(string filename, bool loadExtra = true, ILogger? logger = null)
 			=> LoadFullObjectFromStream(File.ReadAllBytes(filename), filename, loadExtra, logger);
 
-		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject) LoadFullObjectFromStream(ReadOnlySpan<byte> data, string filename = "<in-memory>", bool loadExtra = true, ILogger? logger = null)
+		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject)? LoadFullObjectFromStream(ReadOnlySpan<byte> data, string filename = "<in-memory>", bool loadExtra = true, ILogger? logger = null)
 		{
 			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
@@ -107,7 +113,15 @@ namespace OpenLoco.Dat.FileParsing
 				return new(new DatFileInfo(S5Header.NullHeader, ObjectHeader.NullHeader), null);
 			}
 
-			var (s5Header, objectHeader, decodedData) = LoadAndDecodeFromStream(data, logger);
+			var obj = LoadAndDecodeFromStream(data, logger);
+			if (obj == null || obj.Value.decodedData.Length == 0)
+			{
+				return null;
+			}
+
+			var s5Header = obj.Value.s5Header;
+			var objectHeader = obj.Value.objHeader;
+			var decodedData = obj.Value.decodedData;
 
 			if (decodedData.Length == 0)
 			{
@@ -462,7 +476,7 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static async Task<ObjectIndexEntryBase> GetDatFileInfoFromBytes((string Filename, byte[] Data) file)
+		public static async Task<ObjectIndexEntryBase> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file)
 			=> await Task.Run((Func<ObjectIndexEntryBase>)(() =>
 			{
 				if (file.Data!.Length < (S5Header.StructLength + ObjectHeader.StructLength))
@@ -474,14 +488,16 @@ namespace OpenLoco.Dat.FileParsing
 				var s5 = S5Header.Read(span[0..S5Header.StructLength]);
 				var oh = ObjectHeader.Read(span[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
 				var remainingData = span[(S5Header.StructLength + ObjectHeader.StructLength)..];
+				var isVanilla = OriginalObjectFiles.Names.TryGetValue(s5.Name, out var expectedChecksum) && s5.Checksum == expectedChecksum;
+
 				if (s5.ObjectType == ObjectType.Vehicle)
 				{
-					var decoded = Decode(oh.Encoding, remainingData, 4); // only need 4 bytes since:
-					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, (VehicleType)decoded[3]); // 4th byte is vehicle type
+					var decoded = Decode(oh.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
+					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum, (VehicleType)decoded[3]);
 				}
 				else
 				{
-					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum);
+					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum);
 				}
 			}));
 

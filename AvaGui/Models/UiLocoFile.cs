@@ -1,3 +1,4 @@
+using OpenLoco.Common;
 using OpenLoco.Dat.Types;
 using System.ComponentModel;
 
@@ -8,5 +9,6 @@ namespace AvaGui.Models
 	{
 		public required DatFileInfo DatFileInfo { get; set; }
 		public ILocoObject? LocoObject { get; set; }
+		public MetadataModel? Metadata { get; set; }
 	}
 }

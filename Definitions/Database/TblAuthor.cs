@@ -1,4 +1,4 @@
-namespace OpenLoco.Db.Schema
+namespace OpenLoco.Definitions.Database
 {
 	public class TblAuthor
 	{

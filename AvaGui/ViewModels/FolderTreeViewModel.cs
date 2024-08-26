@@ -1,7 +1,9 @@
 using AvaGui.Models;
 using Avalonia.Controls;
+using Dat;
 using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
+using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.Web;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -9,8 +11,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -150,11 +150,10 @@ namespace AvaGui.ViewModels
 			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects, FilenameFilter, DisplayVanillaOnly, FileLocation.Local);
 		}
 
-		List<ObjectIndexEntry>? cachedIndexFromServer;
+		IEnumerable<DtoObjectIndexEntry>? cachedIndexFromServer;
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 		{
-			Model.Logger.Info("Trying to query main server");
 			if (Design.IsDesignMode)
 			{
 				// DO NOT WEB QUERY AT DESIGN TIME
@@ -163,46 +162,17 @@ namespace AvaGui.ViewModels
 
 			if (!useExistingIndex || cachedIndexFromServer == null)
 			{
-				try
-				{
-					using var response = await Model.WebClient.GetAsync("/objects/list");
-
-					if (!response.IsSuccessStatusCode)
-					{
-						Model.Logger.Error($"Request failed: {response}");
-						return;
-					}
-					else
-					{
-						Model.Logger.Info("Main server queried successfully");
-					}
-
-					var data = await response.Content.ReadFromJsonAsync<List<ObjectIndexEntry>>();
-					if (data == null)
-					{
-						Model.Logger.Error($"Received data but couldn't parse it: {response}");
-						return;
-					}
-					cachedIndexFromServer = data;
-				}
-				catch (HttpRequestException ex)
-				{
-					if (ex.HttpRequestError == HttpRequestError.ConnectionError)
-					{
-						Model.Logger.Error("Request failed: unable to connect to the main server; it may be down.");
-					}
-					else
-					{
-						Model.Logger.Error("Request failed", ex);
-					}
-					return;
-				}
+				cachedIndexFromServer = await Client.GetObjectListAsync(Model.WebClient, Model.Logger);
 			}
-			OnlineDirectoryItems = ConstructTreeView(
-				cachedIndexFromServer,
-				FilenameFilter,
-				DisplayVanillaOnly,
-				FileLocation.Online);
+
+			if (cachedIndexFromServer != null)
+			{
+				OnlineDirectoryItems = ConstructTreeView(
+					cachedIndexFromServer.Select(x => new ObjectIndexEntry(x.UniqueId.ToString(), x.ObjectName, x.ObjectType, x.IsVanilla, x.Checksum, x.VehicleType)),
+					FilenameFilter,
+					DisplayVanillaOnly,
+					FileLocation.Online);
+			}
 		}
 
 		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, bool vanillaOnly, FileLocation fileLocation)
@@ -211,7 +181,7 @@ namespace AvaGui.ViewModels
 
 			var groupedObjects = index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
-				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!vanillaOnly || o.SourceGame == SourceGame.Vanilla))
+				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!vanillaOnly || o.IsVanilla))
 				.GroupBy(o => o.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 
@@ -226,7 +196,7 @@ namespace AvaGui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.SourceGame, fileLocation))
+							.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.IsVanilla, fileLocation))
 							.OrderBy(o => o.Name));
 
 						if (vg.Key == null)
@@ -245,7 +215,7 @@ namespace AvaGui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.SourceGame, fileLocation))
+						.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.IsVanilla, fileLocation))
 						.OrderBy(o => o.Name));
 				}
 

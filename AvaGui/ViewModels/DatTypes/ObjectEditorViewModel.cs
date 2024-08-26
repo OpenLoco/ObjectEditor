@@ -1,5 +1,4 @@
 using AvaGui.Models;
-using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
@@ -37,9 +36,6 @@ namespace AvaGui.ViewModels
 		public UiLocoFile? CurrentObject { get; private set; }
 
 		[Reactive]
-		public ObjectMetadata? CurrentMetadata { get; private set; }
-
-		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
 
 		[Reactive]
@@ -71,7 +67,7 @@ namespace AvaGui.ViewModels
 			ReloadObjectCommand = ReactiveCommand.Create(LoadObject);
 			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
 			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
-			SaveMetadataCommand = ReactiveCommand.Create(SaveCurrentMetadata);
+			//SaveMetadataCommand = ReactiveCommand.Create(SaveCurrentMetadata);
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());
@@ -102,7 +98,7 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			Logger?.Info($"Loading {cf.Name} from {cf.Path}");
+			Logger?.Info($"Loading {cf.Name} from {cf.Filename}");
 
 			if (Model.TryLoadObject(cf, out var newObj))
 			{
@@ -114,11 +110,10 @@ namespace AvaGui.ViewModels
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
+					_ = CurrentObject.DatFileInfo.S5Header.Name;
+					//CurrentMetadata = Utils.LoadObjectMetadata(ObjectEditorModel.MetadataFile, name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
 
-					var name = CurrentObject.DatFileInfo.S5Header.Name;
-					CurrentMetadata = Utils.LoadObjectMetadata(ObjectEditorModel.MetadataFile, name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
-
-					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Path, false, null);
+					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Filename, false, null);
 					CurrentHexAnnotations = new(treeView);
 					//CurrentHexDumpLines = dumpLines;
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
@@ -144,8 +139,8 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {CurrentFile.Path}");
-			SawyerStreamWriter.Save(CurrentFile.Path, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {CurrentFile.Filename}");
+			SawyerStreamWriter.Save(CurrentFile.Filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		public void SaveAsCurrentObject()
@@ -166,7 +161,7 @@ namespace AvaGui.ViewModels
 			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
-		public void SaveCurrentMetadata() => Utils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
+		//public void SaveCurrentMetadata() => MetadataUtils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
 		{

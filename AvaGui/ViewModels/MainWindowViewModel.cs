@@ -126,10 +126,10 @@ namespace AvaGui.ViewModels
 
 			//logger?.Info($"Opening {path}");
 			// todo: instead of using FileSystemItem.path, add a property IsOnline
-			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), OpenLoco.Dat.Data.SourceGame.Vanilla, FileLocation.Local), out var uiLocoFile))
+			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), true, FileLocation.Local), out var uiLocoFile))
 			{
 				Model.Logger.Warning($"Successfully loaded {path}");
-				var file = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame, FileLocation.Local);
+				var file = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame == OpenLoco.Dat.Data.SourceGame.Vanilla, FileLocation.Local);
 				SetObjectViewModel(file);
 			}
 			else

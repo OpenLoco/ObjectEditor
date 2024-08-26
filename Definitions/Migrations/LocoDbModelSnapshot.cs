@@ -2,25 +2,22 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using OpenLoco.Db.Schema;
+using OpenLoco.Definitions.Database;
 
 #nullable disable
 
-namespace DatabaseSchema.Migrations
+namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240821125207_InitialCreate")]
-    partial class InitialCreate
+    partial class LocoDbModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblAuthor", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
                 {
                     b.Property<int>("TblAuthorId")
                         .ValueGeneratedOnAdd()
@@ -35,7 +32,7 @@ namespace DatabaseSchema.Migrations
                     b.ToTable("Authors");
                 });
 
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblLicence", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLicence", b =>
                 {
                     b.Property<int>("TblLicenceId")
                         .ValueGeneratedOnAdd()
@@ -51,10 +48,13 @@ namespace DatabaseSchema.Migrations
 
                     b.HasKey("TblLicenceId");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Licences");
                 });
 
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblLocoObject", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
                 {
                     b.Property<int>("TblLocoObjectId")
                         .ValueGeneratedOnAdd()
@@ -66,13 +66,16 @@ namespace DatabaseSchema.Migrations
                     b.Property<int>("Availability")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("CreationDate")
+                    b.Property<DateTimeOffset?>("CreationDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("LastEditDate")
+                    b.Property<bool>("IsVanilla")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("LastEditDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("LicenceTblLicenceId")
@@ -85,10 +88,6 @@ namespace DatabaseSchema.Migrations
                     b.Property<byte>("ObjectType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte[]>("OriginalBytes")
-                        .IsRequired()
-                        .HasColumnType("BLOB");
-
                     b.Property<uint>("OriginalChecksum")
                         .HasColumnType("INTEGER");
 
@@ -96,8 +95,14 @@ namespace DatabaseSchema.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<byte>("SourceGame")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("PathOnDisk")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("UploadDate")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
 
                     b.Property<byte?>("VehicleType")
                         .HasColumnType("INTEGER");
@@ -108,13 +113,26 @@ namespace DatabaseSchema.Migrations
 
                     b.HasIndex("LicenceTblLicenceId");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("PathOnDisk")
+                        .IsUnique();
+
+                    b.HasIndex("OriginalName", "OriginalChecksum")
+                        .IsUnique()
+                        .IsDescending(true, false);
+
                     b.ToTable("Objects");
                 });
 
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblModpack", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblModpack", b =>
                 {
                     b.Property<int>("TblModpackId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AuthorTblAuthorId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -123,10 +141,15 @@ namespace DatabaseSchema.Migrations
 
                     b.HasKey("TblModpackId");
 
+                    b.HasIndex("AuthorTblAuthorId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Modpacks");
                 });
 
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblTag", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblTag", b =>
                 {
                     b.Property<int>("TblTagId")
                         .ValueGeneratedOnAdd()
@@ -137,6 +160,9 @@ namespace DatabaseSchema.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("TblTagId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Tags");
                 });
@@ -171,13 +197,13 @@ namespace DatabaseSchema.Migrations
                     b.ToTable("TblLocoObjectTblTag");
                 });
 
-            modelBuilder.Entity("OpenLoco.Db.Schema.TblLocoObject", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
                 {
-                    b.HasOne("OpenLoco.Db.Schema.TblAuthor", "Author")
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorTblAuthorId");
 
-                    b.HasOne("OpenLoco.Db.Schema.TblLicence", "Licence")
+                    b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceTblLicenceId");
 
@@ -186,15 +212,24 @@ namespace DatabaseSchema.Migrations
                     b.Navigation("Licence");
                 });
 
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblModpack", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorTblAuthorId");
+
+                    b.Navigation("Author");
+                });
+
             modelBuilder.Entity("TblLocoObjectTblModpack", b =>
                 {
-                    b.HasOne("OpenLoco.Db.Schema.TblModpack", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblModpack", null)
                         .WithMany()
                         .HasForeignKey("ModpacksTblModpackId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Db.Schema.TblLocoObject", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsTblLocoObjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -203,13 +238,13 @@ namespace DatabaseSchema.Migrations
 
             modelBuilder.Entity("TblLocoObjectTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Db.Schema.TblLocoObject", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsTblLocoObjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Db.Schema.TblTag", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
                         .WithMany()
                         .HasForeignKey("TagsTblTagId")
                         .OnDelete(DeleteBehavior.Cascade)

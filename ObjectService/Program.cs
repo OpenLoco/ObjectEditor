@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Db.Schema;
+using OpenLoco.Definitions.Database;
+using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
 using System.Threading.RateLimiting;
 
@@ -49,40 +49,36 @@ var app = builder.Build();
 app.UseHttpLogging();
 app.UseRateLimiter();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 	_ = app.UseSwagger();
 	_ = app.UseSwaggerUI();
 }
 
-// eg: https://localhost:7230/objects/list
-_ = app.MapGet("/objects/list", (LocoDb db)
-	=> db.Objects.Select(x => new ObjectIndexEntry(x.Name, x.OriginalName, x.ObjectType, x.SourceGame, x.OriginalChecksum, x.VehicleType)))
+// GET
+_ = app.MapGet(Routes.ListObjects, Server.ListObjects)
 	.RequireRateLimiting(tokenPolicy);
 
-// using db id
-// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256
-_ = app.MapGet("/objects/originaldat", async (int uniqueObjectId, LocoDb db)
-	=> await db.Objects.FindAsync(uniqueObjectId))
+_ = app.MapGet(Routes.GetDat, Server.GetDat)
 	.RequireRateLimiting(tokenPolicy);
 
-// using objectname+checksum
-// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
-_ = app.MapGet("/objects/originaldat", async (string objectName, uint checksum, LocoDb db)
-	=> await db.Objects.SingleAsync(x => x.OriginalName == objectName && x.OriginalChecksum == checksum))
+_ = app.MapGet(Routes.GetObject, Server.GetObject)
 	.RequireRateLimiting(tokenPolicy);
 
-//_ = app.MapGet("/todoitems", async (LocoDb db) =>
-//	await db.Objects.ToListAsync());
+_ = app.MapGet(Routes.GetDatFile, Server.GetDatFile)
+	.RequireRateLimiting(tokenPolicy);
 
-//_ = app.MapPost("/todoitems", async (TblLocoObject locoObject, LocoDb db) =>
-//{
-//	_ = db.Objects.Add(locoObject);
-//	_ = await db.SaveChangesAsync();
+_ = app.MapGet(Routes.GetObjectFile, Server.GetObjectFile)
+	.RequireRateLimiting(tokenPolicy);
 
-//	return Results.Created($"/todoitems/{locoObject.Name}", locoObject);
-//});
+// POST
+_ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+_ = app.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+
+// PATCH
+_ = app.MapPost(Routes.UploadDat, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy);
+_ = app.MapPost(Routes.UploadObject, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy);
 
 app.Run();

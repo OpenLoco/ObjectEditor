@@ -1,120 +1,16 @@
+using Dat;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Db.Schema;
+using OpenLoco.Definitions;
+using OpenLoco.Definitions.Database;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
-const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\database_new.json";
 using var db = ExampleRun();
 
 Console.WriteLine("done");
 Console.ReadLine();
-
-static void SeedDb(LocoDb db)
-{
-	Console.WriteLine("Clearing database");
-	// clear
-	_ = db.Authors.ExecuteDelete();
-	_ = db.Tags.ExecuteDelete();
-	_ = db.Objects.ExecuteDelete();
-	_ = db.SaveChanges();
-	const string objDirectory2 = "Q:\\Games\\Locomotion\\LocoVault\\DatVault";
-	var datFiles = SawyerStreamUtils.GetDatFilesInDirectory(objDirectory2);
-
-	Console.WriteLine("Loading metadata");
-	var metadata = LoadMetadata(MetadataFile);
-
-	// ...
-
-	Console.WriteLine("Seeding");
-	if (!db.Authors.Any())
-	{
-		Console.WriteLine("Seeding Authors");
-		var authors = metadata.Values.Select(x => x.Creator).Distinct();
-		foreach (var author in authors.Where(x => !string.IsNullOrEmpty(x)))
-		{
-			_ = db.Add(new TblAuthor() { Name = author });
-		}
-		_ = db.SaveChanges();
-	}
-
-	// ...
-
-	if (!db.Tags.Any())
-	{
-		Console.WriteLine("Seeding Tags");
-		var tags = metadata.Values.Select(x => x.Tags).SelectMany(x => x).Distinct();
-		foreach (var tag in tags.Where(x => !string.IsNullOrEmpty(x)))
-		{
-			_ = db.Add(new TblTag() { Name = tag });
-		}
-		_ = db.SaveChanges();
-	}
-
-	// ...
-
-	if (!db.Objects.Any())
-	{
-		var list = datFiles.ToList();
-		Console.WriteLine($"Seeding {list.Count} Objects");
-		var count = 0;
-
-		foreach (var datFile in list.Take(500))
-		{
-			var bytes = File.ReadAllBytes(datFile);
-
-			try
-			{
-				count++;
-				var mod = list.Count / 100;
-				if (count % mod == 0)
-				{
-					Console.WriteLine($"Progress: {count}/{list.Count} ({count * 100 / list.Count}%)");
-				}
-
-				var (fileInfo, locoObj) = SawyerStreamReader.LoadFullObjectFromStream(bytes, filename: datFile, loadExtra: true);
-				var metadataKey = (fileInfo.S5Header.Name, fileInfo.S5Header.Checksum.ToString());
-
-				if (!metadata.TryGetValue(metadataKey, out var meta))
-				{
-					Console.WriteLine($"{datFile} had no metadata");
-				}
-
-				var author = meta?.Creator == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Creator);
-				var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name));
-
-				var tblLocoObject = new TblLocoObject()
-				{
-					Name = fileInfo.S5Header.Name,
-					OriginalName = fileInfo.S5Header.Name,
-					OriginalChecksum = fileInfo.S5Header.Checksum,
-					OriginalBytes = bytes,
-					SourceGame = fileInfo.S5Header.SourceGame,
-					ObjectType = fileInfo.S5Header.ObjectType,
-					VehicleType = (locoObj?.Object is VehicleObject veh) ? veh.Type : null,
-					Description = meta?.DescriptionAndFile,
-					Author = author,
-					CreationDate = null,
-					LastEditDate = null,
-					Tags = tags == null ? [] : [.. tags],
-					Availability = ObjectAvailability.NewGames,
-					Licence = null,
-				};
-
-				_ = db.Add(tblLocoObject);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Failed to load object - not adding to db. Filename={datFile} Exception={ex.Message}");
-				continue;
-			}
-		}
-		_ = db.SaveChanges();
-	}
-
-	Console.WriteLine("Finished seeding");
-}
 
 static LocoDb ExampleRun()
 {
@@ -125,55 +21,154 @@ static LocoDb ExampleRun()
 	// Note: The database must exist before this script works
 	Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
 
-	var seed = true;
+	const bool seed = true;
+	const bool DeleteExisting = true;
+
 	if (seed)
 	{
-		SeedDb(db);
+		SeedDb(db, DeleteExisting);
 	}
 
-	// Read
-	Console.WriteLine("Querying for an Author");
-	var _author = db.Authors
-		.OrderBy(b => b.Name)
-		.First();
-	Console.WriteLine(_author.Name);
-
-	Console.WriteLine("Querying for a Tag");
-	var _tag = db.Tags
-		.OrderBy(b => b.Name)
-		.First();
-	Console.WriteLine(_tag.Name);
-
-	Console.WriteLine("Querying for an Object");
-	var obj = db.Objects
-		.OrderBy(b => b.Name)
-		.First();
-
-	Console.WriteLine(obj.OriginalName);
-	Console.WriteLine(obj.Description);
-	Console.WriteLine(obj.ObjectType);
-	Console.WriteLine(obj.Author?.Name);
-	//Console.WriteLine(obj.Tags.Count);
-	//foreach (var t in obj.Tags)
-	//{
-	//	Console.WriteLine(t.Tag.Name);
-	//}
-
-	// clear
-	//db.Authors.ExecuteDelete();
-	//db.Tags.ExecuteDelete();
-	//db.Objects.ExecuteDelete();
-	//db.SaveChanges();
 	return db;
 }
 
-static Dictionary<(string ObjectName, string Checksum), GlenDbData2> LoadMetadata(string MetadataFileNew)
+static void SeedDb(LocoDb db, bool deleteExisting)
 {
-	var text = File.ReadAllText(MetadataFileNew);
+	if (deleteExisting)
+	{
+		Console.WriteLine("Clearing database");
+		_ = db.Objects.ExecuteDelete();
+		_ = db.Authors.ExecuteDelete();
+		_ = db.Tags.ExecuteDelete();
+		_ = db.Modpacks.ExecuteDelete();
+		_ = db.Licences.ExecuteDelete();
+		_ = db.SaveChanges(); // not necessary since ExecuteDelete auto-saves
+	}
+
+	const string ObjDirectory = "Q:\\Games\\Locomotion\\Server";
+	var allDatFiles = SawyerStreamUtils.GetDatFilesInDirectory(ObjDirectory);
+
+	Console.WriteLine("Seeding");
+
+	var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
+
+	// ...
+
+	if (!db.Authors.Any())
+	{
+		Console.WriteLine("Seeding Authors");
+
+		var authors = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\authors.json"), jsonOptions);
+		if (authors != null)
+		{
+			db.AddRange(authors.Select(x => new TblAuthor() { Name = x }));
+			_ = db.SaveChanges();
+		}
+	}
+
+	// ...
+
+	if (!db.Tags.Any())
+	{
+		Console.WriteLine("Seeding Tags");
+
+		var tags = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\tags.json"), jsonOptions);
+		if (tags != null)
+		{
+			db.AddRange(tags.Select(x => new TblTag() { Name = x }));
+			_ = db.SaveChanges();
+		}
+	}
+
+	// ...
+
+	if (!db.Licences.Any())
+	{
+		Console.WriteLine("Seeding Licences");
+
+		var licences = JsonSerializer.Deserialize<IEnumerable<LicenceJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\licences.json"), jsonOptions);
+		if (licences != null)
+		{
+			db.AddRange(licences.Select(x => new TblLicence() { Name = x.Name, Text = x.Text }));
+			_ = db.SaveChanges();
+		}
+	}
+
+	// ...
+
+	if (!db.Modpacks.Any())
+	{
+		Console.WriteLine("Seeding Modpacks");
+
+		var modpacks = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\modpacks.json"), jsonOptions);
+		if (modpacks != null)
+		{
+			db.AddRange(modpacks.Select(x => new TblModpack() { Name = x }));
+			_ = db.SaveChanges();
+		}
+	}
+
+	// ...
+
+	if (!db.Objects.Any())
+	{
+		var fileArr = allDatFiles.ToArray();
+		Console.WriteLine($"Seeding {fileArr.Length} Objects");
+
+		var progress = new Progress<float>();
+		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
+
+		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json"), jsonOptions);
+		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.ObjectName, x.Checksum), x => x);
+
+		foreach (var objIndex in index.Objects.DistinctBy(x => new { x.ObjectName, x.Checksum }))
+		{
+			var metadataKey = (objIndex.ObjectName, objIndex.Checksum);
+			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
+			{ }
+
+			var author = meta?.Authors == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Authors.FirstOrDefault());
+			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
+			var licence = meta?.Licence == null ? null : db.Licences.Where(x => x.Name == meta.Licence).First();
+
+			var tblLocoObject = new TblLocoObject()
+			{
+				Name = $"{objIndex.ObjectName}_{objIndex.Checksum}",
+				PathOnDisk = Path.Combine(ObjDirectory, objIndex.Filename),
+				OriginalName = objIndex.ObjectName,
+				OriginalChecksum = objIndex.Checksum,
+				IsVanilla = objIndex.IsVanilla,
+				ObjectType = objIndex.ObjectType,
+				VehicleType = objIndex.VehicleType,
+				Description = meta?.Description,
+				Author = author,
+				CreationDate = null,
+				LastEditDate = null,
+				Tags = tags ?? [],
+				Availability = ObjectAvailability.NewGames,
+				Licence = licence,
+			};
+
+			_ = db.Add(tblLocoObject);
+
+		}
+		_ = db.SaveChanges();
+	}
+
+	Console.WriteLine("Finished seeding");
+}
+
+static Dictionary<(string ObjectName, string Checksum), GlenDbData2> LoadMetadata(string metadataFile)
+{
+	if (!File.Exists(metadataFile))
+	{
+		return [];
+	}
+
+	var text = File.ReadAllText(metadataFile);
 	var metadata = JsonSerializer.Deserialize<GlenDBSchema2>(text).data;
 	var kvList = metadata.GroupBy(x => (x.ObjectName, uint32_t_LittleToBigEndian(x.Checksum)));
-	var metadataDict = kvList.ToDictionary(x => x.Key, x => x.First());
-	return metadataDict;
+	return kvList.ToDictionary(x => x.Key, x => x.First());
 }
 
 static string? uint32_t_LittleToBigEndian(string input)
@@ -182,13 +177,6 @@ static string? uint32_t_LittleToBigEndian(string input)
 	return Convert.ToUInt32(r, 16).ToString();
 }
 
-// Update
-//Console.WriteLine("Updating the blog and adding a post");
-//blog.Url = "https://devblogs.microsoft.com/dotnet";
-//blog.Posts.Add(new Post { Title = "Hello World", Content = "I wrote an app using EF Core!" });
-//db.SaveChanges();
+record LicenceJsonRecord(string Name, string Text);
 
-// Delete
-//Console.WriteLine("Delete the blog");
-//db.Remove(blog);
-//db.SaveChanges();
+record ObjectMetadata(string ObjectName, uint Checksum, string Description, List<string> Authors, List<string> Tags, List<string> Modpacks, string? Licence);

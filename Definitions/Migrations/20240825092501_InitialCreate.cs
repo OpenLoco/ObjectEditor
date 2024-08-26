@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace DatabaseSchema.Migrations
+namespace Definitions.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -39,19 +39,6 @@ namespace DatabaseSchema.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Modpacks",
-                columns: table => new
-                {
-                    TblModpackId = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Modpacks", x => x.TblModpackId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Tags",
                 columns: table => new
                 {
@@ -65,22 +52,42 @@ namespace DatabaseSchema.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Modpacks",
+                columns: table => new
+                {
+                    TblModpackId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    AuthorTblAuthorId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Modpacks", x => x.TblModpackId);
+                    table.ForeignKey(
+                        name: "FK_Modpacks_Authors_AuthorTblAuthorId",
+                        column: x => x.AuthorTblAuthorId,
+                        principalTable: "Authors",
+                        principalColumn: "TblAuthorId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Objects",
                 columns: table => new
                 {
                     TblLocoObjectId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
+                    PathOnDisk = table.Column<string>(type: "TEXT", nullable: false),
                     OriginalName = table.Column<string>(type: "TEXT", nullable: false),
                     OriginalChecksum = table.Column<uint>(type: "INTEGER", nullable: false),
-                    OriginalBytes = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    SourceGame = table.Column<byte>(type: "INTEGER", nullable: false),
+                    IsVanilla = table.Column<bool>(type: "INTEGER", nullable: false),
                     ObjectType = table.Column<byte>(type: "INTEGER", nullable: false),
                     VehicleType = table.Column<byte>(type: "INTEGER", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     AuthorTblAuthorId = table.Column<int>(type: "INTEGER", nullable: true),
-                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    LastEditDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    CreationDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
+                    LastEditDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
+                    UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')"),
                     Availability = table.Column<int>(type: "INTEGER", nullable: false),
                     LicenceTblLicenceId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
@@ -148,6 +155,23 @@ namespace DatabaseSchema.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Licences_Name",
+                table: "Licences",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Modpacks_AuthorTblAuthorId",
+                table: "Modpacks",
+                column: "AuthorTblAuthorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Modpacks_Name",
+                table: "Modpacks",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Objects_AuthorTblAuthorId",
                 table: "Objects",
                 column: "AuthorTblAuthorId");
@@ -156,6 +180,31 @@ namespace DatabaseSchema.Migrations
                 name: "IX_Objects_LicenceTblLicenceId",
                 table: "Objects",
                 column: "LicenceTblLicenceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Objects_Name",
+                table: "Objects",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Objects_OriginalName_OriginalChecksum",
+                table: "Objects",
+                columns: new[] { "OriginalName", "OriginalChecksum" },
+                unique: true,
+                descending: new[] { true, false });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Objects_PathOnDisk",
+                table: "Objects",
+                column: "PathOnDisk",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_Name",
+                table: "Tags",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_TblLocoObjectTblModpack_ObjectsTblLocoObjectId",

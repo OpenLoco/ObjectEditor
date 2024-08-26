@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using Dat;
 using DynamicData;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
@@ -6,7 +7,7 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
-using OpenLoco.Db.Schema;
+using OpenLoco.Definitions.Web;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,7 +15,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,8 +42,6 @@ namespace AvaGui.Models
 
 		public Dictionary<string, byte[]> Tutorials { get; } = [];
 
-		public Dictionary<string, ObjectMetadata> Metadata { get; set; } = [];
-
 		public Collection<string> MiscFiles { get; } = [];
 
 		public const string ApplicationName = "OpenLoco Object Editor";
@@ -56,7 +54,7 @@ namespace AvaGui.Models
 
 		public HttpClient WebClient { get; }
 
-		public const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
+		//public const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
 
 		public ObjectEditorModel()
 		{
@@ -65,11 +63,10 @@ namespace AvaGui.Models
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
 
 			LoadSettings();
-			Metadata = Utils.LoadMetadata(MetadataFile);
+			//Metadata = Utils.LoadMetadata(MetadataFile);
 
-			// create http client
-			//WebClient = new HttpClient() { BaseAddress = new Uri("https://localhost:7230"), };
-			WebClient = new HttpClient() { BaseAddress = new Uri("https://leftofzen.dev:2053"), };
+			var server = Settings.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
+			WebClient = new HttpClient() { BaseAddress = new Uri(server), };
 		}
 
 		public void LoadSettings()
@@ -150,7 +147,7 @@ namespace AvaGui.Models
 
 		public bool TryLoadObject(FileSystemItem filesystemItem, out UiLocoFile? uiLocoFile)
 		{
-			if (string.IsNullOrEmpty(filesystemItem.Path))
+			if (string.IsNullOrEmpty(filesystemItem.Filename))
 			{
 				uiLocoFile = null;
 				return false;
@@ -158,67 +155,75 @@ namespace AvaGui.Models
 
 			DatFileInfo? fileInfo = null;
 			ILocoObject? locoObject = null;
+			MetadataModel? metadata = null;
 			uiLocoFile = null;
 
 			try
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					TblLocoObject? locoObj = null;
-					try
-					{
-						using var response = Task.Run(async () => await WebClient.GetAsync($"/objects/originaldat/{filesystemItem.Path}")).Result;
-						// wait for request to arrive back
-						if (!response.IsSuccessStatusCode)
-						{
-							Logger.Error($"Request failed: {response.ReasonPhrase}");
-							return false;
-						}
+					var locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, int.Parse(filesystemItem.Filename))).Result;
 
-						locoObj = response.Content.ReadFromJsonAsync<TblLocoObject>().Result;
-					}
-					catch (HttpRequestException ex)
+					if (locoObj == null)
 					{
-						if (ex.HttpRequestError == HttpRequestError.ConnectionError)
-						{
-							Logger.Error("Request failed: unable to connect to the main server; it may be down.");
-						}
-						else
-						{
-							Logger.Error("Request failed", ex);
-						}
-						return false;
+						Logger?.Error($"Unable to load {filesystemItem.Name} from online - received no data");
 					}
-
-					if (locoObj == null || locoObj.OriginalBytes.Length == 0)
+					else if (locoObj.IsVanilla)
 					{
-						Logger?.Error($"Unable to load {filesystemItem.Path} from online");
+						Logger?.Info($"Unable to load {filesystemItem.Name} from online - requested object is a vanilla object and it is illegal to distribute copyright material");
+					}
+					else if (locoObj.OriginalBytes == null || locoObj.OriginalBytes.Length == 0)
+					{
+						Logger?.Error($"Unable to load {filesystemItem.Name} from online - received no object data");
 					}
 					else
 					{
-						(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(locoObj.OriginalBytes, $"{filesystemItem.Path}/{filesystemItem.Name}", true, Logger);
+						var obj = SawyerStreamReader.LoadFullObjectFromStream(locoObj.OriginalBytes, $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
+						if (obj != null)
+						{
+							fileInfo = obj.Value.DatFileInfo;
+							locoObject = obj.Value.LocoObject;
+							metadata = new MetadataModel(locoObj.OriginalName, locoObj.OriginalChecksum)
+							{
+								Description = locoObj.Description,
+								Author = locoObj.Author,
+								CreationDate = locoObj.CreationDate,
+								LastEditDate = locoObj.LastEditDate,
+								UploadDate = locoObj.UploadDate,
+								Tags = locoObj.Tags,
+								Modpacks = locoObj.Modpacks,
+								Availability = locoObj.Availability,
+								Licence = locoObj.Licence,
+							};
+						}
 					}
 				}
 				else
 				{
-					(fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(filesystemItem.Path, logger: Logger);
+					var obj = SawyerStreamReader.LoadFullObjectFromFile(filesystemItem.Filename, logger: Logger);
+					if (obj != null)
+					{
+						fileInfo = obj.Value.DatFileInfo;
+						locoObject = obj.Value.LocoObject;
+						metadata = null; // todo: look this up from internet anyways
+					}
 				}
 			}
 			catch (Exception ex)
 			{
-				Logger?.Error($"Unable to load {filesystemItem.Path}", ex);
+				Logger?.Error($"Unable to load {filesystemItem.Filename}", ex);
 				uiLocoFile = null;
 				return false;
 			}
 
 			if (locoObject == null || fileInfo == null)
 			{
-				Logger?.Error($"Unable to load {filesystemItem.Path}. FileInfo={fileInfo}");
+				Logger?.Error($"Unable to load {filesystemItem.Filename}");
 				uiLocoFile = null;
 				return false;
 			}
 
-			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject };
+			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
 			return true;
 		}
 
@@ -329,7 +334,7 @@ namespace AvaGui.Models
 
 				try
 				{
-					ObjectIndex = ObjectIndexManager.DeserialiseHeaderIndexFromFile(IndexFilename, Logger) ?? ObjectIndex;
+					ObjectIndex = ObjectIndex.LoadIndex(IndexFilename) ?? ObjectIndex;
 				}
 				catch (Exception ex)
 				{
@@ -363,7 +368,7 @@ namespace AvaGui.Models
 			{
 				Logger?.Info("Recreating index file");
 				await CreateIndex(allFiles, progress); // do we need the array?
-				ObjectIndexManager.SerialiseHeaderIndexToFile(IndexFilename, ObjectIndex, Logger);
+				ObjectIndex?.SaveIndex(IndexFilename);
 			}
 		}
 	}

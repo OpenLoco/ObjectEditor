@@ -1,4 +1,5 @@
 global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.WinGui.UiLocoObject>;
+using Dat;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -162,13 +163,16 @@ namespace OpenLoco.WinGui
 				try
 				{
 					var startTime = sw.Elapsed;
-					var (fileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromFile(file);
+					var obj = SawyerStreamReader.LoadFullObjectFromFile(file);
 
-					if (locoObject == null)
+					if (obj == null || obj.Value.LocoObject == null)
 					{
-						logger.Error($"Unable to load {file}. FileInfo={fileInfo}");
+						logger.Error($"Unable to load {file}. FileInfo={obj.Value.DatFileInfo}");
 						return;
 					}
+
+					var fileInfo = obj.Value.DatFileInfo;
+					var locoObject = obj.Value.LocoObject;
 
 					if (!ccObjectCache.TryAdd(file, new UiLocoObject(fileInfo, locoObject)))
 					{
@@ -182,7 +186,8 @@ namespace OpenLoco.WinGui
 					}
 
 					var s5 = fileInfo.S5Header;
-					var indexObjectHeader = new ObjectIndexEntry(file, s5.Name, s5.ObjectType, s5.SourceGame, s5.Checksum, veh);
+					var isVanilla = OriginalObjectFiles.Names.TryGetValue(s5.Name, out var expectedChecksum) && s5.Checksum == expectedChecksum;
+					var indexObjectHeader = new ObjectIndexEntry(file, s5.Name, s5.ObjectType, isVanilla, s5.Checksum, veh);
 					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 					{
 						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
@@ -206,7 +211,7 @@ namespace OpenLoco.WinGui
 				//}
 			});
 
-			ObjectIndex = new ObjectIndex() { Objects = ccHeaderIndex.Values.OfType<ObjectIndexEntry>(), ObjectsFailed = ccHeaderIndex.Values.OfType<ObjectIndexFailedEntry>() };
+			ObjectIndex = new ObjectIndex() { Objects = ccHeaderIndex.Values.OfType<ObjectIndexEntry>().ToList(), ObjectsFailed = ccHeaderIndex.Values.OfType<ObjectIndexFailedEntry>().ToList() };
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 			sw.Stop();
@@ -336,6 +341,7 @@ namespace OpenLoco.WinGui
 			Settings.SCV5Directory = directory;
 			SaveSettings();
 
+
 			return true;
 		}
 
@@ -345,8 +351,7 @@ namespace OpenLoco.WinGui
 		static void SerialiseHeaderIndexToFile(string filename, ObjectIndex headerIndex, JsonSerializerOptions options, ILogger? logger = null)
 		{
 			logger?.Info($"Saved settings to {filename}");
-			var json = JsonSerializer.Serialize(headerIndex, options);
-			File.WriteAllText(filename, json);
+			headerIndex.SaveIndex(filename, options);
 		}
 
 		static ObjectIndex? DeserialiseHeaderIndexFromFile(string filename, ILogger? logger = null)
@@ -357,10 +362,7 @@ namespace OpenLoco.WinGui
 				return null;
 			}
 			logger?.Info($"Loading settings from {filename}");
-
-			var json = File.ReadAllText(filename);
-
-			return JsonSerializer.Deserialize<ObjectIndex>(json, GetOptions());
+			return ObjectIndex.LoadIndex(filename);
 		}
 
 		public UiLocoObject? LoadAndCacheObject(string filename)
@@ -377,7 +379,7 @@ namespace OpenLoco.WinGui
 			else
 			{
 				var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: logger);
-				var uiObj = new UiLocoObject(obj.DatFileInfo, obj.LocoObject);
+				var uiObj = new UiLocoObject(obj?.DatFileInfo, obj?.LocoObject);
 				_ = ObjectCache.TryAdd(filename, uiObj);
 				return uiObj;
 			}

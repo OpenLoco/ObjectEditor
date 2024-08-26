@@ -1,13 +1,20 @@
+using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace OpenLoco.Db.Schema
+namespace OpenLoco.Definitions.Database
 {
+	[Index(nameof(OriginalName), nameof(OriginalChecksum), IsDescending = [true, false], IsUnique = true)]
+	[Index(nameof(Name), IsUnique = true)]
+	[Index(nameof(PathOnDisk), IsUnique = true)]
 	public class TblLocoObject
 	{
 		public int TblLocoObjectId { get; set; }
 
 		public string Name { get; set; }
+
+		public string PathOnDisk { get; set; }
 
 		#region OriginalDatdata
 
@@ -15,11 +22,9 @@ namespace OpenLoco.Db.Schema
 
 		public uint OriginalChecksum { get; set; }
 
-		public byte[] OriginalBytes { get; set; }
-
 		#endregion
 
-		public SourceGame SourceGame { get; set; }
+		public bool IsVanilla { get; set; }
 
 		public ObjectType ObjectType { get; set; }
 
@@ -31,9 +36,12 @@ namespace OpenLoco.Db.Schema
 
 		public TblAuthor? Author { get; set; }
 
-		public DateTime? CreationDate { get; set; }
+		public DateTimeOffset? CreationDate { get; set; }
 
-		public DateTime? LastEditDate { get; set; }
+		public DateTimeOffset? LastEditDate { get; set; }
+
+		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+		public DateTimeOffset? UploadDate { get; set; }
 
 		public ICollection<TblTag> Tags { get; set; }
 

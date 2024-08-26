@@ -37,20 +37,6 @@ namespace OpenLoco.Definitions.Web
 				: Results.Ok(await PrepareLocoObject(eObj));
 		}
 
-		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
-		public static async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
-		{
-			var obj = await db.Objects
-				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
-				.SingleOrDefaultAsync();
-
-			var fileExists = !obj.IsVanilla && File.Exists(obj.PathOnDisk);
-
-			return fileExists
-				? Results.NotFound()
-				: Results.File(obj.PathOnDisk);
-		}
-
 		// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256
 		public static async Task<IResult> GetObject(int uniqueObjectId, LocoDb db)
 		{
@@ -65,6 +51,34 @@ namespace OpenLoco.Definitions.Web
 			return eObj == null || eObj.Object == null
 				? Results.NotFound()
 				: Results.Ok(await PrepareLocoObject(eObj));
+		}
+
+		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
+		public static async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
+		{
+			var obj = await db.Objects
+				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
+				.SingleOrDefaultAsync();
+
+			const string contentType = "application/octet-stream";
+
+			return obj?.IsVanilla == false && File.Exists(obj.PathOnDisk)
+				? Results.File(obj.PathOnDisk, contentType, Path.GetFileName(obj.PathOnDisk))
+				: Results.NotFound();
+		}
+
+		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
+		public static async Task<IResult> GetObjectFile(int uniqueObjectId, LocoDb db)
+		{
+			var obj = await db.Objects
+				.Where(x => x.TblLocoObjectId == uniqueObjectId)
+				.SingleOrDefaultAsync();
+
+			const string contentType = "application/octet-stream";
+
+			return obj?.IsVanilla == false && File.Exists(obj.PathOnDisk)
+				? Results.File(obj.PathOnDisk, contentType, Path.GetFileName(obj.PathOnDisk))
+				: Results.NotFound();
 		}
 
 		public static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj)

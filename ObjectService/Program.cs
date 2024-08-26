@@ -55,19 +55,30 @@ if (app.Environment.IsDevelopment())
 	_ = app.UseSwaggerUI();
 }
 
+// GET
 _ = app.MapGet(Routes.ListObjects, Server.ListObjects)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapGet(Routes.GetObject, Server.GetObject)
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapGet(Routes.GetDat, Server.GetDat)
 	.RequireRateLimiting(tokenPolicy);
 
+_ = app.MapGet(Routes.GetObject, Server.GetObject)
+	.RequireRateLimiting(tokenPolicy);
+
 _ = app.MapGet(Routes.GetDatFile, Server.GetDatFile)
 	.RequireRateLimiting(tokenPolicy);
 
-//_ = app.MapPost(Routes.UploadDat, Server.UploadDat)
-//	.RequireRateLimiting(tokenPolicy);
+_ = app.MapGet(Routes.GetObjectFile, Server.GetObjectFile)
+	.RequireRateLimiting(tokenPolicy);
+
+// POST
+_ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+_ = app.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+
+// PATCH
+_ = app.MapPost(Routes.UploadDat, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy);
+_ = app.MapPost(Routes.UploadObject, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy);
 
 app.Run();

@@ -100,10 +100,10 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding Modpacks");
 
-		var modpacks = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\modpacks.json"), jsonOptions);
+		var modpacks = JsonSerializer.Deserialize<IEnumerable<ModpackJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\modpacks.json"), jsonOptions);
 		if (modpacks != null)
 		{
-			db.AddRange(modpacks.Select(x => new TblModpack() { Name = x }));
+			db.AddRange(modpacks.Select(x => new TblModpack() { Name = x.Name, Author = x.Author == null ? null : db.Authors.Single(a => a.Name == x.Author) }));
 			_ = db.SaveChanges();
 		}
 	}
@@ -129,6 +129,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 			var author = meta?.Authors == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Authors.FirstOrDefault());
 			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
+			var modpacks = meta?.Modpacks == null ? null : db.Modpacks.Where(x => meta.Modpacks.Contains(x.Name)).ToList();
 			var licence = meta?.Licence == null ? null : db.Licences.Where(x => x.Name == meta.Licence).First();
 
 			var tblLocoObject = new TblLocoObject()
@@ -145,6 +146,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				CreationDate = null,
 				LastEditDate = null,
 				Tags = tags ?? [],
+				Modpacks = modpacks ?? [],
 				Availability = ObjectAvailability.NewGames,
 				Licence = licence,
 			};
@@ -178,5 +180,7 @@ static string? uint32_t_LittleToBigEndian(string input)
 }
 
 record LicenceJsonRecord(string Name, string Text);
+
+record ModpackJsonRecord(string Name, string? Author);
 
 record ObjectMetadata(string ObjectName, uint Checksum, string Description, List<string> Authors, List<string> Tags, List<string> Modpacks, string? Licence);

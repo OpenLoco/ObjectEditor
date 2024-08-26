@@ -5,7 +5,7 @@ namespace OpenLoco.Definitions.Database
 	[Index(nameof(Name), IsUnique = true)]
 	public class TblModpack
 	{
-		public int TblModpackId { get; set; }
+		public int Id { get; set; }
 
 		public string Name { get; set; }
 

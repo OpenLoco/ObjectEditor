@@ -141,7 +141,50 @@
 					</TabItem>
 					<TabItem Header="Metadata">
 						<DockPanel>
-							<pgc:PropertyGrid x:Name="propertyGrid_Metadata" DockPanel.Dock="Top" Margin="2" IsEnabled="False" DataContext="{Binding CurrentObject.Metadata}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+							<Grid DataContext="{Binding CurrentObject.Metadata}" DockPanel.Dock="Left">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+								</Grid.RowDefinitions>
+								<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Original Name" Margin="2"/>
+								<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding OriginalName}" IsReadOnly="True" Margin="2" />
+
+								<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Original Checksum" Margin="2"/>
+								<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding OriginalChecksum}" IsReadOnly="True" Margin="2" />
+
+								<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="2"/>
+								<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="2" />
+
+								<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Author" Margin="2"/>
+								<TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Author.Name}" IsReadOnly="True" Margin="2" />
+
+								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Creation Date" Margin="2" />
+								<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding CreationDate}" IsReadOnly="True" Margin="2" />
+
+								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Last Edit Date" Margin="2"/>
+								<TextBox Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" Text="{Binding LastEditDate}" IsReadOnly="True" Margin="2" />
+
+								<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="2"/>
+								<TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Text="{Binding UploadDate}" IsReadOnly="True" Margin="2" />
+
+								<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="2"/>
+								<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="2" />
+
+								<TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="2"/>
+								<TextBox Grid.Row="8" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="2" />
+							</Grid>
+							<!--<pgc:PropertyGrid x:Name="propertyGrid_Metadata" DockPanel.Dock="Top" Margin="2" IsEnabled="False" DataContext="{Binding CurrentObject.Metadata}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
 							<StackPanel>
 								<Border BorderThickness="1" Margin="2" >
 									<StackPanel>

@@ -5,7 +5,7 @@ namespace OpenLoco.Definitions.Database
 	[Index(nameof(Name), IsUnique = true)]
 	public class TblLicence
 	{
-		public int TblLicenceId { get; set; }
+		public int Id { get; set; }
 
 		public string Name { get; set; }
 

@@ -15,7 +15,7 @@ namespace OpenLoco.Definitions.Web
 		public static async Task<IResult> ListObjects(LocoDb db)
 			=> Results.Ok(
 				await db.Objects.Select(x => new DtoObjectIndexEntry(
-					x.TblLocoObjectId,
+					x.Id,
 					x.OriginalName,
 					x.ObjectType,
 					x.IsVanilla,
@@ -42,7 +42,7 @@ namespace OpenLoco.Definitions.Web
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");
 			var eObj = await db.Objects
-				.Where(x => x.TblLocoObjectId == uniqueObjectId)
+				.Where(x => x.Id == uniqueObjectId)
 				.Include(x => x.Author)
 				.Include(x => x.Licence)
 				.Select(x => new ExpandedTblLocoObject(x, x.Tags, x.Modpacks))
@@ -71,7 +71,7 @@ namespace OpenLoco.Definitions.Web
 		public static async Task<IResult> GetObjectFile(int uniqueObjectId, LocoDb db)
 		{
 			var obj = await db.Objects
-				.Where(x => x.TblLocoObjectId == uniqueObjectId)
+				.Where(x => x.Id == uniqueObjectId)
 				.SingleOrDefaultAsync();
 
 			const string contentType = "application/octet-stream";
@@ -87,7 +87,7 @@ namespace OpenLoco.Definitions.Web
 			var bytes = !obj.IsVanilla && File.Exists(obj.PathOnDisk) ? await File.ReadAllBytesAsync(obj.PathOnDisk) : null;
 
 			return new DtoLocoObject(
-				obj.TblLocoObjectId,
+				obj.Id,
 				obj.Name,
 				obj.OriginalName,
 				obj.OriginalChecksum,
@@ -159,7 +159,7 @@ namespace OpenLoco.Definitions.Web
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();
 
-			return Results.Created($"Successfully added {locoObject.Name} with unique id {locoTbl.TblLocoObjectId}", locoTbl.TblLocoObjectId);
+			return Results.Created($"Successfully added {locoObject.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 	}
 }

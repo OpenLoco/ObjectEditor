@@ -10,7 +10,7 @@ namespace OpenLoco.Definitions.Database
 	[Index(nameof(PathOnDisk), IsUnique = true)]
 	public class TblLocoObject
 	{
-		public int TblLocoObjectId { get; set; }
+		public int Id { get; set; }
 
 		public string Name { get; set; }
 

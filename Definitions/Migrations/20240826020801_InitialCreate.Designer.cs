@@ -11,7 +11,7 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240825092501_InitialCreate")]
+    [Migration("20240826020801_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -22,7 +22,7 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
                 {
-                    b.Property<int>("TblAuthorId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -30,14 +30,14 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("TblAuthorId");
+                    b.HasKey("Id");
 
                     b.ToTable("Authors");
                 });
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblLicence", b =>
                 {
-                    b.Property<int>("TblLicenceId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -49,7 +49,7 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("TblLicenceId");
+                    b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -59,11 +59,11 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
                 {
-                    b.Property<int>("TblLocoObjectId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("AuthorTblAuthorId")
+                    b.Property<int?>("AuthorId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Availability")
@@ -81,7 +81,7 @@ namespace Definitions.Migrations
                     b.Property<DateTimeOffset?>("LastEditDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("LicenceTblLicenceId")
+                    b.Property<int?>("LicenceId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -110,11 +110,11 @@ namespace Definitions.Migrations
                     b.Property<byte?>("VehicleType")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("TblLocoObjectId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("AuthorTblAuthorId");
+                    b.HasIndex("AuthorId");
 
-                    b.HasIndex("LicenceTblLicenceId");
+                    b.HasIndex("LicenceId");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -131,20 +131,20 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblModpack", b =>
                 {
-                    b.Property<int>("TblModpackId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("AuthorTblAuthorId")
+                    b.Property<int?>("AuthorId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("TblModpackId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("AuthorTblAuthorId");
+                    b.HasIndex("AuthorId");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -154,7 +154,7 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblTag", b =>
                 {
-                    b.Property<int>("TblTagId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -162,7 +162,7 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("TblTagId");
+                    b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -172,30 +172,30 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblLocoObjectTblModpack", b =>
                 {
-                    b.Property<int>("ModpacksTblModpackId")
+                    b.Property<int>("ModpacksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ObjectsTblLocoObjectId")
+                    b.Property<int>("ObjectsId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("ModpacksTblModpackId", "ObjectsTblLocoObjectId");
+                    b.HasKey("ModpacksId", "ObjectsId");
 
-                    b.HasIndex("ObjectsTblLocoObjectId");
+                    b.HasIndex("ObjectsId");
 
                     b.ToTable("TblLocoObjectTblModpack");
                 });
 
             modelBuilder.Entity("TblLocoObjectTblTag", b =>
                 {
-                    b.Property<int>("ObjectsTblLocoObjectId")
+                    b.Property<int>("ObjectsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TagsTblTagId")
+                    b.Property<int>("TagsId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("ObjectsTblLocoObjectId", "TagsTblTagId");
+                    b.HasKey("ObjectsId", "TagsId");
 
-                    b.HasIndex("TagsTblTagId");
+                    b.HasIndex("TagsId");
 
                     b.ToTable("TblLocoObjectTblTag");
                 });
@@ -204,11 +204,11 @@ namespace Definitions.Migrations
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "Author")
                         .WithMany()
-                        .HasForeignKey("AuthorTblAuthorId");
+                        .HasForeignKey("AuthorId");
 
                     b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
                         .WithMany()
-                        .HasForeignKey("LicenceTblLicenceId");
+                        .HasForeignKey("LicenceId");
 
                     b.Navigation("Author");
 
@@ -219,7 +219,7 @@ namespace Definitions.Migrations
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "Author")
                         .WithMany()
-                        .HasForeignKey("AuthorTblAuthorId");
+                        .HasForeignKey("AuthorId");
 
                     b.Navigation("Author");
                 });
@@ -228,13 +228,13 @@ namespace Definitions.Migrations
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblModpack", null)
                         .WithMany()
-                        .HasForeignKey("ModpacksTblModpackId")
+                        .HasForeignKey("ModpacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
                         .WithMany()
-                        .HasForeignKey("ObjectsTblLocoObjectId")
+                        .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -243,13 +243,13 @@ namespace Definitions.Migrations
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
                         .WithMany()
-                        .HasForeignKey("ObjectsTblLocoObjectId")
+                        .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
                         .WithMany()
-                        .HasForeignKey("TagsTblTagId")
+                        .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

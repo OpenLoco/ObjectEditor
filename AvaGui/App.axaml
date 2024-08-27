@@ -1,9 +1,10 @@
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-			 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:local="using:AvaGui"
-             x:Class="AvaGui.App"
-             RequestedThemeVariant="Default">
+<Application
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+	xmlns:local="using:AvaGui"
+	x:Class="AvaGui.App"
+	RequestedThemeVariant="Default">
 	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
 	<Application.DataTemplates>
@@ -16,5 +17,11 @@
 		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
 		<StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
 	</Application.Styles>
+
+	<!--<ResourceDictionary>
+		<ResourceDictionary.MergedDictionaries>
+			<ResourceInclude Source="ObjectDataTemplates.axaml"/>
+		</ResourceDictionary.MergedDictionaries>
+	</ResourceDictionary>-->
 
 </Application>

@@ -162,7 +162,7 @@ namespace AvaGui.Models
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					var locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, int.Parse(filesystemItem.Filename))).Result;
+					var locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, int.Parse(filesystemItem.Filename), true)).Result;
 
 					if (locoObj == null)
 					{
@@ -178,7 +178,7 @@ namespace AvaGui.Models
 					}
 					else
 					{
-						var obj = SawyerStreamReader.LoadFullObjectFromStream(locoObj.OriginalBytes, $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
+						var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
 						if (obj != null)
 						{
 							fileInfo = obj.Value.DatFileInfo;

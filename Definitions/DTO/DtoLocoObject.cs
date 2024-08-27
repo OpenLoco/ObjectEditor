@@ -9,7 +9,7 @@ namespace OpenLoco.Definitions.DTO
 		string Name,
 		string OriginalName,
 		uint OriginalChecksum,
-		byte[]? OriginalBytes,
+		string? OriginalBytes, // base64-encoded
 		bool IsVanilla,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,

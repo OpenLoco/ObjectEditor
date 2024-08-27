@@ -72,12 +72,16 @@ _ = app.MapGet(Routes.GetObjectFile, Server.GetObjectFile)
 	.RequireRateLimiting(tokenPolicy);
 
 // POST
-_ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-_ = app.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+_ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy);
 
 // PATCH
 _ = app.MapPost(Routes.UploadDat, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
 	.RequireRateLimiting(tokenPolicy);
+
 _ = app.MapPost(Routes.UploadObject, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
 	.RequireRateLimiting(tokenPolicy);
 

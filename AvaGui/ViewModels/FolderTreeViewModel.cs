@@ -44,11 +44,11 @@ namespace AvaGui.ViewModels
 		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; set; }
 
 		[Reactive]
-		public float IndexingProgress { get; set; }
+		public float IndexOrDownloadProgress { get; set; }
 
 		Progress<float> Progress { get; } = new();
 
-		public ReactiveCommand<Unit, Task> RecreateIndex { get; }
+		public ReactiveCommand<Unit, Task> RefreshDirectoryItems { get; }
 
 		[Reactive]
 		public int SelectedTabIndex { get; set; }
@@ -85,20 +85,20 @@ namespace AvaGui.ViewModels
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
 			Model = model;
-			Progress.ProgressChanged += (_, progress) => IndexingProgress = progress;
+			Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = progress;
 
-			RecreateIndex = ReactiveCommand.Create(() => RefreshDirectoryAsync(false));
+			RefreshDirectoryItems = ReactiveCommand.Create(() => ReloadDirectoryAsync(false));
 
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
-				.Subscribe(async _ => await RefreshDirectoryAsync(true));
+				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
 			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
 				.Throttle(TimeSpan.FromMilliseconds(1000))
-				.Subscribe(async _ => await RefreshDirectoryAsync(true));
+				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
-				.Subscribe(async _ => await RefreshDirectoryAsync(true));
+				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 
 			_ = this.WhenAnyValue(o => o.DirectoryItems)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
@@ -106,25 +106,26 @@ namespace AvaGui.ViewModels
 				.Subscribe(_ => CurrentlySelectedObject = null);
 
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
-				.Subscribe(_ => UpdateDirectory());
+				.Subscribe(_ => SwitchDirectoryItemsView());
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(RecreateText)));
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
 			_ = this.WhenAnyValue(o => o.LocalDirectoryItems)
-				.Subscribe(_ => UpdateDirectory());
+				.Subscribe(_ => SwitchDirectoryItemsView());
 			_ = this.WhenAnyValue(o => o.OnlineDirectoryItems)
-				.Subscribe(_ => UpdateDirectory());
+				.Subscribe(_ => SwitchDirectoryItemsView());
 
 			// loads the last-viewed folder
 			CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
 		}
 
-		void UpdateDirectory()
+		void SwitchDirectoryItemsView()
 			=> DirectoryItems = SelectedTabIndex == 0
 				? new(LocalDirectoryItems)
 				: new(OnlineDirectoryItems);
-		async Task RefreshDirectoryAsync(bool useExistingIndex)
+
+		async Task ReloadDirectoryAsync(bool useExistingIndex)
 		{
 			if (SelectedTabIndex == 0)
 			{

@@ -22,7 +22,6 @@ namespace AvaGui.ViewModels
 		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveAsObjectCommand { get; init; }
-		public ReactiveCommand<Unit, Unit> SaveMetadataCommand { get; init; }
 
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
@@ -156,8 +155,6 @@ namespace AvaGui.ViewModels
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {saveFile.Path.AbsolutePath}");
 			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
-
-		//public void SaveCurrentMetadata() => MetadataUtils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
 		{

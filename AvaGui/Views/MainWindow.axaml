@@ -5,6 +5,7 @@
 		xmlns:vm="using:AvaGui.ViewModels"
 		xmlns:vi="using:AvaGui.Views"
 		xmlns:mo="using:AvaGui.Models"
+		xmlns:moc="using:AvaGui.Models.Converters"
 		xmlns:ol="using:OpenLoco.ObjectEditor.Logging"
 		xmlns:oldt="using:OpenLoco.Dat.Types"
 		xmlns:oldo="using:OpenLoco.Dat.Objects"
@@ -26,7 +27,9 @@
 
 	<Window.Resources>
 		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
-		<mo:ObjectTypeToMaterialIconConverter x:Key="ObjectTypeToMaterialIconConverter"/>
+		<moc:ObjectTypeToMaterialIconConverter x:Key="ObjectTypeToMaterialIconConverter"/>
+		<moc:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
 	</Window.Resources>
 
 	<Window.Styles>
@@ -514,9 +517,21 @@
 					<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
 					<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />
 				</DockPanel>
-				<ToggleSwitch Grid.Row="4" IsChecked="{Binding DisplayVanillaOnly}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
-				<Border Grid.Row="5" BorderThickness="1">
-					<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
+				<Border Grid.Row="4" BorderThickness="1" Margin="2">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="*"/>
+						</Grid.ColumnDefinitions>
+						<RadioButton Grid.Column="0" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="Vanilla" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Vanilla}}"/>
+						<RadioButton Grid.Column="1" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="Custom" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Custom}}"/>
+						<RadioButton Grid.Column="2" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
+					</Grid>
+				</Border>
+				<!--<ToggleSwitch Grid.Row="4" IsChecked="{Binding DisplayMode}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />-->
+				<Border Grid.Row="5" BorderThickness="1" Margin="2">
+					<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
 						<TreeView.ItemTemplate>
 							<TreeDataTemplate ItemsSource="{Binding SubNodes}">
 								<ContentControl Content="{Binding}" />

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace AvaGui.Models
+namespace AvaGui.Models.Converters
 {
 	public class ObjectTypeToMaterialIconConverter : IValueConverter
 	{

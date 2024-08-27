@@ -32,7 +32,7 @@ namespace AvaGui.ViewModels
 		public string FilenameFilter { get; set; } = string.Empty;
 
 		[Reactive]
-		public bool DisplayVanillaOnly { get; set; }
+		public ObjectDisplayMode DisplayMode { get; set; } = ObjectDisplayMode.All;
 
 		[Reactive]
 		List<FileSystemItemBase> LocalDirectoryItems { get; set; } = [];
@@ -49,6 +49,9 @@ namespace AvaGui.ViewModels
 		Progress<float> Progress { get; } = new();
 
 		public ReactiveCommand<Unit, Task> RefreshDirectoryItems { get; }
+
+		[Reactive]
+		public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; set; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 
 		[Reactive]
 		public int SelectedTabIndex { get; set; }
@@ -93,7 +96,7 @@ namespace AvaGui.ViewModels
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
-			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
+			_ = this.WhenAnyValue(o => o.DisplayMode)
 				.Throttle(TimeSpan.FromMilliseconds(1000))
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
@@ -148,7 +151,7 @@ namespace AvaGui.ViewModels
 			}
 
 			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
-			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects, FilenameFilter, DisplayVanillaOnly, FileLocation.Local);
+			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects, FilenameFilter, DisplayMode, FileLocation.Local);
 		}
 
 		IEnumerable<DtoObjectIndexEntry>? cachedIndexFromServer;
@@ -171,18 +174,18 @@ namespace AvaGui.ViewModels
 				OnlineDirectoryItems = ConstructTreeView(
 					cachedIndexFromServer.Select(x => new ObjectIndexEntry(x.UniqueId.ToString(), x.ObjectName, x.ObjectType, x.IsVanilla, x.Checksum, x.VehicleType)),
 					FilenameFilter,
-					DisplayVanillaOnly,
+					DisplayMode,
 					FileLocation.Online);
 			}
 		}
 
-		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, bool vanillaOnly, FileLocation fileLocation)
+		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
 		{
 			var result = new List<FileSystemItemBase>();
 
 			var groupedObjects = index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
-				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!vanillaOnly || o.IsVanilla))
+				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == o.IsVanilla)))
 				.GroupBy(o => o.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 

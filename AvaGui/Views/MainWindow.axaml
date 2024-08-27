@@ -5,7 +5,10 @@
 		xmlns:vm="using:AvaGui.ViewModels"
 		xmlns:vi="using:AvaGui.Views"
 		xmlns:mo="using:AvaGui.Models"
+		xmlns:moc="using:AvaGui.Models.Converters"
 		xmlns:ol="using:OpenLoco.ObjectEditor.Logging"
+		xmlns:oldt="using:OpenLoco.Dat.Types"
+		xmlns:oldo="using:OpenLoco.Dat.Objects"
 		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 		xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -24,7 +27,9 @@
 
 	<Window.Resources>
 		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
-		<mo:ObjectTypeToMaterialIconConverter x:Key="ObjectTypeToMaterialIconConverter"/>
+		<moc:ObjectTypeToMaterialIconConverter x:Key="ObjectTypeToMaterialIconConverter"/>
+		<moc:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
 	</Window.Resources>
 
 	<Window.Styles>
@@ -78,37 +83,96 @@
 			</StackPanel>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:ObjectEditorViewModel">
+		<DataTemplate DataType="oldt:S5Header">
+			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Name" Margin="4"/>
+				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Name}" IsReadOnly="True" Margin="4" />
+
+				<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Object Type" Margin="4" />
+				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding ObjectType}" IsReadOnly="True" Margin="4" />
+
+				<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Source Game" Margin="4"/>
+				<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SourceGame}" IsReadOnly="True" Margin="4" />
+
+				<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Flags" Margin="4"/>
+				<TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Flags}" IsReadOnly="True" Margin="4" />
+
+				<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Checksum" Margin="4"/>
+				<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Checksum}" IsReadOnly="True" Margin="4" />
+			</Grid>
+		</DataTemplate>
+
+		<DataTemplate DataType="oldt:ObjectHeader">
+			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Encoding" Margin="4"/>
+				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Encoding}" IsReadOnly="True" Margin="4" />
+
+				<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Encoded Data Length" Margin="4"/>
+				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DataLength}" IsReadOnly="True" Margin="4" />
+			</Grid>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:UiLocoFile">
+
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:UiG1">
+			<!-- todo -->
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:UiSoundObjectList">
+			<!-- todo -->
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:DatObjectEditorViewModel">
 			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
 				<StackPanel Orientation="Horizontal">
 					<Button Grid.Row="3" Command="{Binding ReloadObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
-							<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Reload</TextBlock>
+							<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
 						</DockPanel>
 					</Button>
 					<Button Grid.Row="3" Command="{Binding SaveObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
-							<materialIcons:MaterialIcon Kind="ContentSave" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save</TextBlock>
+							<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
 						</DockPanel>
 					</Button>
 					<Button Grid.Row="3" Command="{Binding SaveAsObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
-							<materialIcons:MaterialIcon Kind="ContentSavePlus" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save As</TextBlock>
+							<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
 						</DockPanel>
 					</Button>
-					<!--<Button Grid.Row="3" Command="{Binding SaveMetadataCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="ContentSaveCog" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Save Metadata</TextBlock>
-						</DockPanel>
-					</Button>-->
 				</StackPanel>
 				<TabControl>
-					<TabItem Header="Headers">
-						<pgc:PropertyGrid x:Name="propertyGrid_Headers" Margin="2" DataContext="{Binding CurrentObject.DatFileInfo}" DockPanel.Dock="Top" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					<TabItem Header="File Headers">
+						<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
+							<StackPanel Margin="8">
+								<ContentControl Content="{Binding CurrentObject.DatFileInfo.S5Header}"></ContentControl>
+								<ContentControl Content="{Binding CurrentObject.DatFileInfo.ObjectHeader}"></ContentControl>
+							</StackPanel>
+						</Border>
 					</TabItem>
 					<TabItem Header="Object">
 						<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
@@ -140,88 +204,102 @@
 						</DockPanel>
 					</TabItem>
 					<TabItem Header="Metadata">
-						<DockPanel>
-							<Grid DataContext="{Binding CurrentObject.Metadata}" DockPanel.Dock="Left">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="Auto"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-								</Grid.RowDefinitions>
-								<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Original Name" Margin="2"/>
-								<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding OriginalName}" IsReadOnly="True" Margin="2" />
+						<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
+							<DockPanel Margin="8">
+								<Grid DataContext="{Binding CurrentObject.Metadata}" DockPanel.Dock="Left">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto"/>
+										<ColumnDefinition Width="*"/>
+									</Grid.ColumnDefinitions>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="Auto"/>
+									</Grid.RowDefinitions>
+									<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Original Name" Margin="4"/>
+									<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding OriginalName}" IsReadOnly="True" Margin="4" />
 
-								<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Original Checksum" Margin="2"/>
-								<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding OriginalChecksum}" IsReadOnly="True" Margin="2" />
+									<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Original Checksum" Margin="4"/>
+									<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding OriginalChecksum}" IsReadOnly="True" Margin="4" />
 
-								<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="2"/>
-								<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="2" />
+									<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="4"/>
+									<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="4" />
 
-								<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Author" Margin="2"/>
-								<TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Author.Name}" IsReadOnly="True" Margin="2" />
+									<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Creation Date" Margin="4" />
+									<DatePicker Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreationDate}" IsEnabled="False" Margin="4" />
 
-								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Creation Date" Margin="2" />
-								<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding CreationDate}" IsReadOnly="True" Margin="2" />
+									<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Last Edit Date" Margin="4"/>
+									<DatePicker Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding LastEditDate}" IsEnabled="False" Margin="4" />
 
-								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Last Edit Date" Margin="2"/>
-								<TextBox Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" Text="{Binding LastEditDate}" IsReadOnly="True" Margin="2" />
+									<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="4"/>
+									<DatePicker Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadDate}" IsEnabled="False" Margin="4" />
 
-								<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="2"/>
-								<TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Text="{Binding UploadDate}" IsReadOnly="True" Margin="2" />
+									<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="4"/>
+									<TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="4" />
 
-								<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="2"/>
-								<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="2" />
-
-								<TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="2"/>
-								<TextBox Grid.Row="8" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="2" />
-							</Grid>
-							<!--<pgc:PropertyGrid x:Name="propertyGrid_Metadata" DockPanel.Dock="Top" Margin="2" IsEnabled="False" DataContext="{Binding CurrentObject.Metadata}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
-							<StackPanel>
-								<Border BorderThickness="1" Margin="2" >
-									<StackPanel>
-										<TextBlock Margin="4">Tags</TextBlock>
-										<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Tags}" Background="{DynamicResource ExpanderContentBackground}" >
-											<ItemsRepeater.Layout>
-												<WrapLayout />
-											</ItemsRepeater.Layout>
-											<ItemsRepeater.ItemTemplate>
-												<DataTemplate>
-													<Border BorderThickness="2">
-														<TextBlock Margin="4" Text="{Binding Name}" />
-													</Border>
-												</DataTemplate>
-											</ItemsRepeater.ItemTemplate>
-										</ItemsRepeater>
-									</StackPanel>
-								</Border>
-								<Border BorderThickness="1" Margin="2" >
-									<StackPanel>
-										<TextBlock Margin="4">Modpacks</TextBlock>
-										<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Modpacks}" Background="{DynamicResource ExpanderContentBackground}" >
-											<ItemsRepeater.Layout>
-												<WrapLayout />
-											</ItemsRepeater.Layout>
-											<ItemsRepeater.ItemTemplate>
-												<DataTemplate>
-													<Border BorderThickness="2">
-														<TextBlock Margin="4" Text="{Binding Name}" />
-													</Border>
-												</DataTemplate>
-											</ItemsRepeater.ItemTemplate>
-										</ItemsRepeater>
-									</StackPanel>
-								</Border>
-							</StackPanel>
-						</DockPanel>
+									<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
+									<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="4" />
+								</Grid>
+								<StackPanel>
+									<Border BorderThickness="1" Margin="4" >
+										<StackPanel>
+											<TextBlock Margin="4">Authors</TextBlock>
+											<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Authors}" Background="{DynamicResource ExpanderContentBackground}" >
+												<ItemsRepeater.Layout>
+													<WrapLayout />
+												</ItemsRepeater.Layout>
+												<ItemsRepeater.ItemTemplate>
+													<DataTemplate>
+														<Border BorderThickness="2">
+															<TextBlock Margin="4" Text="{Binding Name}" />
+														</Border>
+													</DataTemplate>
+												</ItemsRepeater.ItemTemplate>
+											</ItemsRepeater>
+										</StackPanel>
+									</Border>
+									<Border BorderThickness="1" Margin="4" >
+										<StackPanel>
+											<TextBlock Margin="4">Tags</TextBlock>
+											<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Tags}" Background="{DynamicResource ExpanderContentBackground}" >
+												<ItemsRepeater.Layout>
+													<WrapLayout />
+												</ItemsRepeater.Layout>
+												<ItemsRepeater.ItemTemplate>
+													<DataTemplate>
+														<Border BorderThickness="2">
+															<TextBlock Margin="4" Text="{Binding Name}" />
+														</Border>
+													</DataTemplate>
+												</ItemsRepeater.ItemTemplate>
+											</ItemsRepeater>
+										</StackPanel>
+									</Border>
+									<Border BorderThickness="1" Margin="4" >
+										<StackPanel>
+											<TextBlock Margin="4">Modpacks</TextBlock>
+											<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Modpacks}" Background="{DynamicResource ExpanderContentBackground}" >
+												<ItemsRepeater.Layout>
+													<WrapLayout />
+												</ItemsRepeater.Layout>
+												<ItemsRepeater.ItemTemplate>
+													<DataTemplate>
+														<Border BorderThickness="2">
+															<TextBlock Margin="4" Text="{Binding Name}" />
+														</Border>
+													</DataTemplate>
+												</ItemsRepeater.ItemTemplate>
+											</ItemsRepeater>
+										</StackPanel>
+									</Border>
+								</StackPanel>
+							</DockPanel>
+						</Border>
 					</TabItem>
 					<TabItem Header="Hex Dump">
 						<DockPanel>
@@ -377,8 +455,9 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
 					<MenuItem Header="Open single object" Command="{Binding OpenSingleObject}" />
+					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
+					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
 				</MenuItem>
 				<MenuItem Header="_ObjData" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
 					<MenuItem.Styles>
@@ -398,7 +477,7 @@
 		</Expander>
 
 		<DockPanel DataContext="{Binding FolderTreeViewModel}" Width="384" MinWidth="256" MaxWidth="512">
-			<TabControl DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
+			<TabStrip DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
 				<TabItem>
 					<TabItem.Header>
 						<DockPanel>
@@ -415,7 +494,7 @@
 						</DockPanel>
 					</TabItem.Header>
 				</TabItem>
-			</TabControl>
+			</TabStrip>
 			<Grid DockPanel.Dock="Left" Margin="8">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -426,10 +505,10 @@
 					<RowDefinition Height="*"/>
 				</Grid.RowDefinitions>
 				<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
-				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" Watermark="Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
-				<Button Grid.Row="2" Command="{Binding RecreateIndex}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
+				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
+				<Button Grid.Row="2" Command="{Binding RefreshDirectoryItems}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
 					<DockPanel>
-						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexingProgress}"/>
+						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
 						<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
 						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding RecreateText}" />
 					</DockPanel>
@@ -438,9 +517,20 @@
 					<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
 					<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />
 				</DockPanel>
-				<ToggleSwitch Grid.Row="4" IsChecked="{Binding DisplayVanillaOnly}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />
-				<Border Grid.Row="5" BorderThickness="1">
-					<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" Margin="2">
+				<Border Grid.Row="4" BorderThickness="1" Margin="2">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="*"/>
+						</Grid.ColumnDefinitions>
+						<RadioButton Grid.Column="0" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="Vanilla" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Vanilla}}"/>
+						<RadioButton Grid.Column="1" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="Custom" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Custom}}"/>
+						<RadioButton Grid.Column="2" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
+					</Grid>
+				</Border>
+				<Border Grid.Row="5" BorderThickness="1" Margin="2">
+					<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
 						<TreeView.ItemTemplate>
 							<TreeDataTemplate ItemsSource="{Binding SubNodes}">
 								<ContentControl Content="{Binding}" />

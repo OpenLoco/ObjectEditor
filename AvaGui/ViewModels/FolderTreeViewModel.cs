@@ -32,7 +32,7 @@ namespace AvaGui.ViewModels
 		public string FilenameFilter { get; set; } = string.Empty;
 
 		[Reactive]
-		public bool DisplayVanillaOnly { get; set; }
+		public ObjectDisplayMode DisplayMode { get; set; } = ObjectDisplayMode.All;
 
 		[Reactive]
 		List<FileSystemItemBase> LocalDirectoryItems { get; set; } = [];
@@ -44,11 +44,14 @@ namespace AvaGui.ViewModels
 		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; set; }
 
 		[Reactive]
-		public float IndexingProgress { get; set; }
+		public float IndexOrDownloadProgress { get; set; }
 
 		Progress<float> Progress { get; } = new();
 
-		public ReactiveCommand<Unit, Task> RecreateIndex { get; }
+		public ReactiveCommand<Unit, Task> RefreshDirectoryItems { get; }
+
+		[Reactive]
+		public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; set; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 
 		[Reactive]
 		public int SelectedTabIndex { get; set; }
@@ -85,20 +88,20 @@ namespace AvaGui.ViewModels
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
 			Model = model;
-			Progress.ProgressChanged += (_, progress) => IndexingProgress = progress;
+			Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = progress;
 
-			RecreateIndex = ReactiveCommand.Create(() => RefreshDirectoryAsync(false));
+			RefreshDirectoryItems = ReactiveCommand.Create(() => ReloadDirectoryAsync(false));
 
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
-				.Subscribe(async _ => await RefreshDirectoryAsync(true));
+				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
-			_ = this.WhenAnyValue(o => o.DisplayVanillaOnly)
+			_ = this.WhenAnyValue(o => o.DisplayMode)
 				.Throttle(TimeSpan.FromMilliseconds(1000))
-				.Subscribe(async _ => await RefreshDirectoryAsync(true));
+				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
-				.Subscribe(async _ => await RefreshDirectoryAsync(true));
+				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 
 			_ = this.WhenAnyValue(o => o.DirectoryItems)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
@@ -106,25 +109,26 @@ namespace AvaGui.ViewModels
 				.Subscribe(_ => CurrentlySelectedObject = null);
 
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
-				.Subscribe(_ => UpdateDirectory());
+				.Subscribe(_ => SwitchDirectoryItemsView());
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(RecreateText)));
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
 			_ = this.WhenAnyValue(o => o.LocalDirectoryItems)
-				.Subscribe(_ => UpdateDirectory());
+				.Subscribe(_ => SwitchDirectoryItemsView());
 			_ = this.WhenAnyValue(o => o.OnlineDirectoryItems)
-				.Subscribe(_ => UpdateDirectory());
+				.Subscribe(_ => SwitchDirectoryItemsView());
 
 			// loads the last-viewed folder
 			CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
 		}
 
-		void UpdateDirectory()
+		void SwitchDirectoryItemsView()
 			=> DirectoryItems = SelectedTabIndex == 0
 				? new(LocalDirectoryItems)
 				: new(OnlineDirectoryItems);
-		async Task RefreshDirectoryAsync(bool useExistingIndex)
+
+		async Task ReloadDirectoryAsync(bool useExistingIndex)
 		{
 			if (SelectedTabIndex == 0)
 			{
@@ -147,7 +151,7 @@ namespace AvaGui.ViewModels
 			}
 
 			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
-			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects, FilenameFilter, DisplayVanillaOnly, FileLocation.Local);
+			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes), FilenameFilter, DisplayMode, FileLocation.Local);
 		}
 
 		IEnumerable<DtoObjectIndexEntry>? cachedIndexFromServer;
@@ -170,18 +174,18 @@ namespace AvaGui.ViewModels
 				OnlineDirectoryItems = ConstructTreeView(
 					cachedIndexFromServer.Select(x => new ObjectIndexEntry(x.UniqueId.ToString(), x.ObjectName, x.ObjectType, x.IsVanilla, x.Checksum, x.VehicleType)),
 					FilenameFilter,
-					DisplayVanillaOnly,
+					DisplayMode,
 					FileLocation.Online);
 			}
 		}
 
-		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, bool vanillaOnly, FileLocation fileLocation)
+		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
 		{
 			var result = new List<FileSystemItemBase>();
 
 			var groupedObjects = index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
-				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (!vanillaOnly || o.IsVanilla))
+				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == o.IsVanilla)))
 				.GroupBy(o => o.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 

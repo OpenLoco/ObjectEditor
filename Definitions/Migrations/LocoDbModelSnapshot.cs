@@ -60,9 +60,6 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("AuthorId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("Availability")
                         .HasColumnType("INTEGER");
 
@@ -108,8 +105,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AuthorId");
 
                     b.HasIndex("LicenceId");
 
@@ -167,6 +162,21 @@ namespace Definitions.Migrations
                     b.ToTable("Tags");
                 });
 
+            modelBuilder.Entity("TblAuthorTblLocoObject", b =>
+                {
+                    b.Property<int>("AuthorsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ObjectsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AuthorsId", "ObjectsId");
+
+                    b.HasIndex("ObjectsId");
+
+                    b.ToTable("TblAuthorTblLocoObject");
+                });
+
             modelBuilder.Entity("TblLocoObjectTblModpack", b =>
                 {
                     b.Property<int>("ModpacksId")
@@ -199,15 +209,9 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "Author")
-                        .WithMany()
-                        .HasForeignKey("AuthorId");
-
                     b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
-
-                    b.Navigation("Author");
 
                     b.Navigation("Licence");
                 });
@@ -219,6 +223,21 @@ namespace Definitions.Migrations
                         .HasForeignKey("AuthorId");
 
                     b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("TblAuthorTblLocoObject", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
+                        .WithMany()
+                        .HasForeignKey("ObjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TblLocoObjectTblModpack", b =>

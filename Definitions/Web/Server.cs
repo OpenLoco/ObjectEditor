@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
@@ -7,14 +8,16 @@ using OpenLoco.Definitions.DTO;
 namespace OpenLoco.Definitions.Web
 {
 	// this must be done because eager-loading related many-to-many data in entity framework is recursive and cannot be turned off...
-	public record ExpandedTblLocoObject(TblLocoObject Object, ICollection<TblTag> Tags, ICollection<TblModpack> Modpacks);
+	public record ExpandedTblLocoObject(TblLocoObject Object, ICollection<TblAuthor> Authors, ICollection<TblTag> Tags, ICollection<TblModpack> Modpacks);
 
 	public static class Server
 	{
 		// eg: https://localhost:7230/objects/list
 		public static async Task<IResult> ListObjects(LocoDb db)
 			=> Results.Ok(
-				await db.Objects.Select(x => new DtoObjectIndexEntry(
+				await db.Objects
+				.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes) // for now - only return value objects
+				.Select(x => new DtoObjectIndexEntry(
 					x.Id,
 					x.OriginalName,
 					x.ObjectType,
@@ -23,34 +26,32 @@ namespace OpenLoco.Definitions.Web
 					x.VehicleType)).ToListAsync());
 
 		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
-		public static async Task<IResult> GetDat(string objectName, uint checksum, LocoDb db)
+		public static async Task<IResult> GetDat(string objectName, uint checksum, bool returnObjBytes, LocoDb db)
 		{
 			var eObj = await db.Objects
 				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
-				.Include(x => x.Author)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Tags, x.Modpacks))
+				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
 				.SingleOrDefaultAsync();
 
 			return eObj == null || eObj.Object == null
 				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj));
+				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes));
 		}
 
-		// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256
-		public static async Task<IResult> GetObject(int uniqueObjectId, LocoDb db)
+		// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256&returnObjBytes=false
+		public static async Task<IResult> GetObject(int uniqueObjectId, bool returnObjBytes, LocoDb db)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");
 			var eObj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
-				.Include(x => x.Author)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Tags, x.Modpacks))
+				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
 				.SingleOrDefaultAsync();
 
 			return eObj == null || eObj.Object == null
 				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj));
+				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes));
 		}
 
 		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
@@ -81,10 +82,10 @@ namespace OpenLoco.Definitions.Web
 				: Results.NotFound();
 		}
 
-		public static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj)
+		public static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj, bool returnObjBytes)
 		{
 			var obj = eObj!.Object;
-			var bytes = !obj.IsVanilla && File.Exists(obj.PathOnDisk) ? await File.ReadAllBytesAsync(obj.PathOnDisk) : null;
+			var bytes = returnObjBytes && !obj.IsVanilla && File.Exists(obj.PathOnDisk) ? Convert.ToBase64String(await File.ReadAllBytesAsync(obj.PathOnDisk)) : null;
 
 			return new DtoLocoObject(
 				obj.Id,
@@ -96,7 +97,7 @@ namespace OpenLoco.Definitions.Web
 				obj.ObjectType,
 				obj.VehicleType,
 				obj.Description,
-				obj.Author,
+				obj.Authors,
 				obj.CreationDate,
 				obj.LastEditDate,
 				obj.UploadDate,
@@ -114,7 +115,7 @@ namespace OpenLoco.Definitions.Web
 				return Results.BadRequest("OriginalBytes cannot be null - it must contain the valid bytes of a loco dat object.");
 			}
 
-			var obj = SawyerStreamReader.LoadAndDecodeFromStream(locoObject.OriginalBytes);
+			var obj = SawyerStreamReader.LoadAndDecodeFromStream(Convert.FromBase64String(locoObject.OriginalBytes));
 			if (obj == null || obj.Value.decodedData.Length == 0)
 			{
 				return Results.BadRequest("Provided byte data was unable to be decoded into a real loco dat object.");
@@ -146,7 +147,7 @@ namespace OpenLoco.Definitions.Web
 				ObjectType = locoObject.ObjectType,
 				VehicleType = locoObject.VehicleType,
 				Description = locoObject.Description,
-				Author = locoObject.Author,
+				Authors = locoObject.Authors,
 				CreationDate = locoObject.CreationDate,
 				LastEditDate = locoObject.LastEditDate,
 				UploadDate = DateTimeOffset.UtcNow,

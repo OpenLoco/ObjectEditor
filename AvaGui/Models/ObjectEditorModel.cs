@@ -54,8 +54,6 @@ namespace AvaGui.Models
 
 		public HttpClient WebClient { get; }
 
-		//public const string MetadataFile = "Q:\\Games\\Locomotion\\LocoVault\\dataBase.json";
-
 		public ObjectEditorModel()
 		{
 			Logger = new Logger();
@@ -63,7 +61,6 @@ namespace AvaGui.Models
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
 
 			LoadSettings();
-			//Metadata = Utils.LoadMetadata(MetadataFile);
 
 			var server = Settings.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
 			WebClient = new HttpClient() { BaseAddress = new Uri(server), };
@@ -83,24 +80,29 @@ namespace AvaGui.Models
 			Verify.NotNull(settings);
 
 			Settings = settings!;
+			InitialiseDownloadDirectory();
 
 			if (!ValidateSettings(Settings, Logger) && File.Exists(IndexFilename))
 			{
-				Logger?.Error("Unable to validate settings file - please delete it and it will be recreated on next editor startup.");
+				Logger?.Error("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
+			}
+		}
+
+		void InitialiseDownloadDirectory()
+		{
+			if (string.IsNullOrEmpty(Settings.DownloadFolder))
+			{
+				Settings.DownloadFolder = Path.Combine(SettingsPath, "downloads");
 			}
 
-			//if (File.Exists(IndexFilename))
-			//{
-			//	Logger?.Info($"Loading header index from \"{IndexFilename}\"");
-			//	Task.Run(async () => await LoadObjDirectoryAsync(Settings.ObjDataDirectory, new Progress<float>(), true)).Wait();
-			//}
+			if (!Directory.Exists(Settings.DownloadFolder))
+			{
+				_ = Directory.CreateDirectory(Settings.DownloadFolder);
+			}
 		}
 
 		public string IndexFilename
 			=> Settings.GetObjDataFullPath(Settings.IndexFileName);
-
-		public string MetadataFilename
-			=> Settings.GetObjDataFullPath(Settings.MetadataFileName);
 
 		static bool ValidateSettings(EditorSettings settings, ILogger? logger)
 		{
@@ -162,7 +164,7 @@ namespace AvaGui.Models
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					var locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, int.Parse(filesystemItem.Filename))).Result;
+					var locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, int.Parse(filesystemItem.Filename), true)).Result;
 
 					if (locoObj == null)
 					{
@@ -178,7 +180,7 @@ namespace AvaGui.Models
 					}
 					else
 					{
-						var obj = SawyerStreamReader.LoadFullObjectFromStream(locoObj.OriginalBytes, $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
+						var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
 						if (obj != null)
 						{
 							fileInfo = obj.Value.DatFileInfo;
@@ -186,7 +188,7 @@ namespace AvaGui.Models
 							metadata = new MetadataModel(locoObj.OriginalName, locoObj.OriginalChecksum)
 							{
 								Description = locoObj.Description,
-								Author = locoObj.Author,
+								Authors = locoObj.Authors,
 								CreationDate = locoObj.CreationDate,
 								LastEditDate = locoObj.LastEditDate,
 								UploadDate = locoObj.UploadDate,

@@ -8,12 +8,18 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
+
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(LocoDb.GetDbPath()));
+builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddHttpLogging(logging => logging.LoggingFields = HttpLoggingFields.All);
+builder.Services.AddHttpLogging(logging =>
+{
+	logging.LoggingFields = HttpLoggingFields.All;
+	logging.CombineLogs = true;
+});
 
 var tokenPolicy = "token";
 var myOptions = new ObjectServiceRateLimitOptions();
@@ -72,12 +78,16 @@ _ = app.MapGet(Routes.GetObjectFile, Server.GetObjectFile)
 	.RequireRateLimiting(tokenPolicy);
 
 // POST
-_ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-_ = app.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+_ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy);
 
 // PATCH
 _ = app.MapPost(Routes.UploadDat, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
 	.RequireRateLimiting(tokenPolicy);
+
 _ = app.MapPost(Routes.UploadObject, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
 	.RequireRateLimiting(tokenPolicy);
 

@@ -15,11 +15,12 @@ Console.ReadLine();
 static LocoDb ExampleRun()
 {
 	var builder = new DbContextOptionsBuilder<LocoDb>();
-	_ = builder.UseSqlite(LocoDb.GetDbPath());
+	const string connectionString = "Data Source=Q:\\Games\\Locomotion\\Server\\loco.db";
+	_ = builder.UseSqlite(connectionString);
 	var db = new LocoDb(builder.Options);
 
 	// Note: The database must exist before this script works
-	Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
+	Console.WriteLine($"Database path: {connectionString}");
 
 	const bool seed = true;
 	const bool DeleteExisting = true;
@@ -127,7 +128,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{ }
 
-			var author = meta?.Authors == null ? null : db.Authors.SingleOrDefault(x => x.Name == meta.Authors.FirstOrDefault());
+			var authors = meta?.Authors == null ? null : db.Authors.Where(x => meta.Authors.Contains(x.Name)).ToList();
 			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
 			var modpacks = meta?.Modpacks == null ? null : db.Modpacks.Where(x => meta.Modpacks.Contains(x.Name)).ToList();
 			var licence = meta?.Licence == null ? null : db.Licences.Where(x => x.Name == meta.Licence).First();
@@ -142,7 +143,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				ObjectType = objIndex.ObjectType,
 				VehicleType = objIndex.VehicleType,
 				Description = meta?.Description,
-				Author = author,
+				Authors = authors ?? [],
 				CreationDate = null,
 				LastEditDate = null,
 				Tags = tags ?? [],

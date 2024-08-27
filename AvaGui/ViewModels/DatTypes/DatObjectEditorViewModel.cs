@@ -17,12 +17,11 @@ namespace AvaGui.ViewModels
 {
 	public record HexAnnotationLine(string Address, string Data, int? SelectionStart, int? SelectionEnd);
 
-	public class ObjectEditorViewModel : ReactiveObject, ILocoFileViewModel
+	public class DatObjectEditorViewModel : ReactiveObject, ILocoFileViewModel
 	{
 		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveAsObjectCommand { get; init; }
-		public ReactiveCommand<Unit, Unit> SaveMetadataCommand { get; init; }
 
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
@@ -45,7 +44,16 @@ namespace AvaGui.ViewModels
 		public HexAnnotationLine[]? CurrentHexDumpLines { get; set; }
 
 		[Reactive]
-		public FileSystemItemBase CurrentFile { get; init; }
+		public FileSystemItem CurrentFile { get; init; }
+
+		public string ReloadText => CurrentFile.FileLocation == FileLocation.Local ? "Reload" : "Redownload";
+		public string SaveText => CurrentFile.FileLocation == FileLocation.Local ? "Save" : "Download";
+		public string SaveAsText => $"{SaveText} As";
+
+		public string ReloadIcon => CurrentFile.FileLocation == FileLocation.Local ? "DatabaseRefresh" : "FileSync";
+		public string SaveIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSave" : "FileDownload";
+		public string SaveAsIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSavePlus" : "FileDownloadOutline";
+
 
 		byte[] currentByteList;
 
@@ -57,7 +65,7 @@ namespace AvaGui.ViewModels
 
 		ILogger? Logger => Model.Logger;
 
-		public ObjectEditorViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public DatObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		{
 			CurrentFile = currentFile;
 			Model = model;
@@ -67,7 +75,6 @@ namespace AvaGui.ViewModels
 			ReloadObjectCommand = ReactiveCommand.Create(LoadObject);
 			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
 			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
-			//SaveMetadataCommand = ReactiveCommand.Create(SaveCurrentMetadata);
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());
@@ -110,12 +117,9 @@ namespace AvaGui.ViewModels
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
-					_ = CurrentObject.DatFileInfo.S5Header.Name;
-					//CurrentMetadata = Utils.LoadObjectMetadata(ObjectEditorModel.MetadataFile, name, CurrentObject.DatFileInfo.S5Header.Checksum, Model.Metadata); // in future this will be an online-only service
 
 					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Filename, false, null);
 					CurrentHexAnnotations = new(treeView);
-					//CurrentHexDumpLines = dumpLines;
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}
 				else
@@ -139,12 +143,14 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {CurrentFile.Filename}");
-			SawyerStreamWriter.Save(CurrentFile.Filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+			var savePath = CurrentFile.FileLocation == FileLocation.Local ? CurrentFile.Filename : Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.Name, ".dat"));
+			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
+			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		public void SaveAsCurrentObject()
 		{
+
 			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
 			if (saveFile == null)
 			{
@@ -157,11 +163,10 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {saveFile.Path.AbsolutePath}");
-			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+			var savePath = saveFile.Path.LocalPath;
+			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
+			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
-
-		//public void SaveCurrentMetadata() => MetadataUtils.SaveMetadata(Model.MetadataFilename, Model.Metadata);
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
 		{

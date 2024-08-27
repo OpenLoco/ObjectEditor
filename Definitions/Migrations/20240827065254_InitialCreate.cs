@@ -84,7 +84,6 @@ namespace Definitions.Migrations
                     ObjectType = table.Column<byte>(type: "INTEGER", nullable: false),
                     VehicleType = table.Column<byte>(type: "INTEGER", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
-                    AuthorId = table.Column<int>(type: "INTEGER", nullable: true),
                     CreationDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
                     LastEditDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
                     UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')"),
@@ -95,15 +94,34 @@ namespace Definitions.Migrations
                 {
                     table.PrimaryKey("PK_Objects", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Objects_Authors_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "Authors",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_Objects_Licences_LicenceId",
                         column: x => x.LicenceId,
                         principalTable: "Licences",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TblAuthorTblLocoObject",
+                columns: table => new
+                {
+                    AuthorsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ObjectsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblAuthorTblLocoObject", x => new { x.AuthorsId, x.ObjectsId });
+                    table.ForeignKey(
+                        name: "FK_TblAuthorTblLocoObject_Authors_AuthorsId",
+                        column: x => x.AuthorsId,
+                        principalTable: "Authors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblAuthorTblLocoObject_Objects_ObjectsId",
+                        column: x => x.ObjectsId,
+                        principalTable: "Objects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -172,11 +190,6 @@ namespace Definitions.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Objects_AuthorId",
-                table: "Objects",
-                column: "AuthorId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Objects_LicenceId",
                 table: "Objects",
                 column: "LicenceId");
@@ -207,6 +220,11 @@ namespace Definitions.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_TblAuthorTblLocoObject_ObjectsId",
+                table: "TblAuthorTblLocoObject",
+                column: "ObjectsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TblLocoObjectTblModpack_ObjectsId",
                 table: "TblLocoObjectTblModpack",
                 column: "ObjectsId");
@@ -220,6 +238,9 @@ namespace Definitions.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "TblAuthorTblLocoObject");
+
             migrationBuilder.DropTable(
                 name: "TblLocoObjectTblModpack");
 

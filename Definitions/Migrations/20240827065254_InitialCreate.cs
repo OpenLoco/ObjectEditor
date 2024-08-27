@@ -12,6 +12,19 @@ namespace Definitions.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Authors",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Authors", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Licences",
                 columns: table => new
                 {
@@ -36,6 +49,25 @@ namespace Definitions.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tags", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Modpacks",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    AuthorId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Modpacks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Modpacks_Authors_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "Authors",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -69,65 +101,27 @@ namespace Definitions.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Authors",
+                name: "TblAuthorTblLocoObject",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    TblLocoObjectId = table.Column<int>(type: "INTEGER", nullable: true)
+                    AuthorsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ObjectsId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Authors", x => x.Id);
+                    table.PrimaryKey("PK_TblAuthorTblLocoObject", x => new { x.AuthorsId, x.ObjectsId });
                     table.ForeignKey(
-                        name: "FK_Authors_Objects_TblLocoObjectId",
-                        column: x => x.TblLocoObjectId,
-                        principalTable: "Objects",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TblLocoObjectTblTag",
-                columns: table => new
-                {
-                    ObjectsId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TagsId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TblLocoObjectTblTag", x => new { x.ObjectsId, x.TagsId });
+                        name: "FK_TblAuthorTblLocoObject_Authors_AuthorsId",
+                        column: x => x.AuthorsId,
+                        principalTable: "Authors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TblLocoObjectTblTag_Objects_ObjectsId",
+                        name: "FK_TblAuthorTblLocoObject_Objects_ObjectsId",
                         column: x => x.ObjectsId,
                         principalTable: "Objects",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TblLocoObjectTblTag_Tags_TagsId",
-                        column: x => x.TagsId,
-                        principalTable: "Tags",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Modpacks",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    AuthorId = table.Column<int>(type: "INTEGER", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Modpacks", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Modpacks_Authors_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "Authors",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -154,10 +148,29 @@ namespace Definitions.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Authors_TblLocoObjectId",
-                table: "Authors",
-                column: "TblLocoObjectId");
+            migrationBuilder.CreateTable(
+                name: "TblLocoObjectTblTag",
+                columns: table => new
+                {
+                    ObjectsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TagsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblLocoObjectTblTag", x => new { x.ObjectsId, x.TagsId });
+                    table.ForeignKey(
+                        name: "FK_TblLocoObjectTblTag_Objects_ObjectsId",
+                        column: x => x.ObjectsId,
+                        principalTable: "Objects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblLocoObjectTblTag_Tags_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Licences_Name",
@@ -207,6 +220,11 @@ namespace Definitions.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_TblAuthorTblLocoObject_ObjectsId",
+                table: "TblAuthorTblLocoObject",
+                column: "ObjectsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TblLocoObjectTblModpack_ObjectsId",
                 table: "TblLocoObjectTblModpack",
                 column: "ObjectsId");
@@ -221,6 +239,9 @@ namespace Definitions.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "TblAuthorTblLocoObject");
+
+            migrationBuilder.DropTable(
                 name: "TblLocoObjectTblModpack");
 
             migrationBuilder.DropTable(
@@ -230,13 +251,13 @@ namespace Definitions.Migrations
                 name: "Modpacks");
 
             migrationBuilder.DropTable(
+                name: "Objects");
+
+            migrationBuilder.DropTable(
                 name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Authors");
-
-            migrationBuilder.DropTable(
-                name: "Objects");
 
             migrationBuilder.DropTable(
                 name: "Licences");

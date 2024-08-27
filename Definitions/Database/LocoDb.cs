@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenLoco.Definitions.Database
 {
-	public class LocoDb(DbContextOptions<LocoDb> options) : DbContext(options)
+	public class LocoDb : DbContext
 	{
 		public DbSet<TblAuthor> Authors => Set<TblAuthor>();
 		public DbSet<TblTag> Tags => Set<TblTag>();
@@ -10,9 +10,23 @@ namespace OpenLoco.Definitions.Database
 		public DbSet<TblLocoObject> Objects => Set<TblLocoObject>();
 		public DbSet<TblLicence> Licences => Set<TblLicence>();
 
+		public LocoDb()
+		{ }
+
+		public LocoDb(DbContextOptions<LocoDb> options) : base(options)
+		{ }
+
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			if (!optionsBuilder.IsConfigured)
+			{
+				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Server\\loco.db");
+			}
+		}
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.Entity<TblLocoObject>()
-				.Property(b => b.UploadDate)
-				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+			.Property(b => b.UploadDate)
+			.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 
 		public bool DoesObjectExist(string originalName, uint originalChecksum)
 		{

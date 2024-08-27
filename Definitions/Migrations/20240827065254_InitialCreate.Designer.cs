@@ -11,7 +11,7 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240827002043_InitialCreate")]
+    [Migration("20240827065254_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -30,12 +30,7 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("TblLocoObjectId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("TblLocoObjectId");
 
                     b.ToTable("Authors");
                 });
@@ -170,6 +165,21 @@ namespace Definitions.Migrations
                     b.ToTable("Tags");
                 });
 
+            modelBuilder.Entity("TblAuthorTblLocoObject", b =>
+                {
+                    b.Property<int>("AuthorsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ObjectsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AuthorsId", "ObjectsId");
+
+                    b.HasIndex("ObjectsId");
+
+                    b.ToTable("TblAuthorTblLocoObject");
+                });
+
             modelBuilder.Entity("TblLocoObjectTblModpack", b =>
                 {
                     b.Property<int>("ModpacksId")
@@ -200,13 +210,6 @@ namespace Definitions.Migrations
                     b.ToTable("TblLocoObjectTblTag");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
-                {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
-                        .WithMany("Authors")
-                        .HasForeignKey("TblLocoObjectId");
-                });
-
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
@@ -223,6 +226,21 @@ namespace Definitions.Migrations
                         .HasForeignKey("AuthorId");
 
                     b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("TblAuthorTblLocoObject", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
+                        .WithMany()
+                        .HasForeignKey("ObjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TblLocoObjectTblModpack", b =>
@@ -253,11 +271,6 @@ namespace Definitions.Migrations
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
-                {
-                    b.Navigation("Authors");
                 });
 #pragma warning restore 612, 618
         }

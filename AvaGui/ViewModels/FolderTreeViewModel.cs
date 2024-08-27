@@ -151,7 +151,7 @@ namespace AvaGui.ViewModels
 			}
 
 			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
-			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects, FilenameFilter, DisplayMode, FileLocation.Local);
+			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes), FilenameFilter, DisplayMode, FileLocation.Local);
 		}
 
 		IEnumerable<DtoObjectIndexEntry>? cachedIndexFromServer;

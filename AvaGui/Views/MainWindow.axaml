@@ -477,7 +477,7 @@
 		</Expander>
 
 		<DockPanel DataContext="{Binding FolderTreeViewModel}" Width="384" MinWidth="256" MaxWidth="512">
-			<TabControl DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
+			<TabStrip DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
 				<TabItem>
 					<TabItem.Header>
 						<DockPanel>
@@ -494,7 +494,7 @@
 						</DockPanel>
 					</TabItem.Header>
 				</TabItem>
-			</TabControl>
+			</TabStrip>
 			<Grid DockPanel.Dock="Left" Margin="8">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -505,7 +505,7 @@
 					<RowDefinition Height="*"/>
 				</Grid.RowDefinitions>
 				<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
-				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" Watermark="Indexed objects for current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
+				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
 				<Button Grid.Row="2" Command="{Binding RefreshDirectoryItems}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
 					<DockPanel>
 						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
@@ -529,7 +529,6 @@
 						<RadioButton Grid.Column="2" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
 					</Grid>
 				</Border>
-				<!--<ToggleSwitch Grid.Row="4" IsChecked="{Binding DisplayMode}" OnContent="Displaying vanilla only" OffContent="Displaying all objects" Margin="2" />-->
 				<Border Grid.Row="5" BorderThickness="1" Margin="2">
 					<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}">
 						<TreeView.ItemTemplate>

@@ -128,14 +128,20 @@ namespace AvaGui.ViewModels
 
 		public void SaveCurrentObject()
 		{
-			if (CurrentObject?.LocoObject == null)
+			if (CurrentFile is FileSystemItem currFile)
 			{
-				Logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
-				return;
-			}
+				if (CurrentObject?.LocoObject == null)
+				{
+					Logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
+					return;
+				}
 
-			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {CurrentFile.Filename}");
-			SawyerStreamWriter.Save(CurrentFile.Filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+				Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {currFile.Filename}");
+
+				var savePath = currFile.FileLocation == FileLocation.Local ? currFile.Filename : Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(currFile.Name, ".dat"));
+
+				SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+			}
 		}
 
 		public void SaveAsCurrentObject()

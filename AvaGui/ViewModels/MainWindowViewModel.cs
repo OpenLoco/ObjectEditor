@@ -42,6 +42,7 @@ namespace AvaGui.ViewModels
 
 		public ReactiveCommand<Unit, Unit> LoadPalette { get; }
 
+		public ReactiveCommand<Unit, Unit> OpenDownloadFolder { get; }
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
 		public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
 
@@ -80,8 +81,9 @@ namespace AvaGui.ViewModels
 			ObjDataItems.Insert(0, new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
 			ObjDataItems.Insert(1, new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
 
-			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.SettingsPath));
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObjectToIndex);
+			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder));
+			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.SettingsPath));
 
 			#region Version
 
@@ -118,7 +120,7 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			var path = openFile.SingleOrDefault()?.Path.AbsolutePath;
+			var path = openFile.SingleOrDefault()?.Path.LocalPath;
 			if (path == null)
 			{
 				return;

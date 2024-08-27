@@ -448,8 +448,9 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
 					<MenuItem Header="Open single object" Command="{Binding OpenSingleObject}" />
+					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
+					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
 				</MenuItem>
 				<MenuItem Header="_ObjData" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
 					<MenuItem.Styles>

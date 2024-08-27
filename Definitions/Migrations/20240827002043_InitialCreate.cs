@@ -12,19 +12,6 @@ namespace Definitions.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Authors",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Authors", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Licences",
                 columns: table => new
                 {
@@ -52,6 +39,79 @@ namespace Definitions.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Objects",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    PathOnDisk = table.Column<string>(type: "TEXT", nullable: false),
+                    OriginalName = table.Column<string>(type: "TEXT", nullable: false),
+                    OriginalChecksum = table.Column<uint>(type: "INTEGER", nullable: false),
+                    IsVanilla = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ObjectType = table.Column<byte>(type: "INTEGER", nullable: false),
+                    VehicleType = table.Column<byte>(type: "INTEGER", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    CreationDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
+                    LastEditDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
+                    UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')"),
+                    Availability = table.Column<int>(type: "INTEGER", nullable: false),
+                    LicenceId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Objects", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Objects_Licences_LicenceId",
+                        column: x => x.LicenceId,
+                        principalTable: "Licences",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Authors",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    TblLocoObjectId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Authors", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Authors_Objects_TblLocoObjectId",
+                        column: x => x.TblLocoObjectId,
+                        principalTable: "Objects",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TblLocoObjectTblTag",
+                columns: table => new
+                {
+                    ObjectsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TagsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblLocoObjectTblTag", x => new { x.ObjectsId, x.TagsId });
+                    table.ForeignKey(
+                        name: "FK_TblLocoObjectTblTag_Objects_ObjectsId",
+                        column: x => x.ObjectsId,
+                        principalTable: "Objects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblLocoObjectTblTag_Tags_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Modpacks",
                 columns: table => new
                 {
@@ -67,42 +127,6 @@ namespace Definitions.Migrations
                         name: "FK_Modpacks_Authors_AuthorId",
                         column: x => x.AuthorId,
                         principalTable: "Authors",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Objects",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    PathOnDisk = table.Column<string>(type: "TEXT", nullable: false),
-                    OriginalName = table.Column<string>(type: "TEXT", nullable: false),
-                    OriginalChecksum = table.Column<uint>(type: "INTEGER", nullable: false),
-                    IsVanilla = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ObjectType = table.Column<byte>(type: "INTEGER", nullable: false),
-                    VehicleType = table.Column<byte>(type: "INTEGER", nullable: true),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    AuthorId = table.Column<int>(type: "INTEGER", nullable: true),
-                    CreationDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    LastEditDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')"),
-                    Availability = table.Column<int>(type: "INTEGER", nullable: false),
-                    LicenceId = table.Column<int>(type: "INTEGER", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Objects", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Objects_Authors_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "Authors",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Objects_Licences_LicenceId",
-                        column: x => x.LicenceId,
-                        principalTable: "Licences",
                         principalColumn: "Id");
                 });
 
@@ -130,29 +154,10 @@ namespace Definitions.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "TblLocoObjectTblTag",
-                columns: table => new
-                {
-                    ObjectsId = table.Column<int>(type: "INTEGER", nullable: false),
-                    TagsId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TblLocoObjectTblTag", x => new { x.ObjectsId, x.TagsId });
-                    table.ForeignKey(
-                        name: "FK_TblLocoObjectTblTag_Objects_ObjectsId",
-                        column: x => x.ObjectsId,
-                        principalTable: "Objects",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TblLocoObjectTblTag_Tags_TagsId",
-                        column: x => x.TagsId,
-                        principalTable: "Tags",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_Authors_TblLocoObjectId",
+                table: "Authors",
+                column: "TblLocoObjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Licences_Name",
@@ -170,11 +175,6 @@ namespace Definitions.Migrations
                 table: "Modpacks",
                 column: "Name",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Objects_AuthorId",
-                table: "Objects",
-                column: "AuthorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Objects_LicenceId",
@@ -230,13 +230,13 @@ namespace Definitions.Migrations
                 name: "Modpacks");
 
             migrationBuilder.DropTable(
-                name: "Objects");
-
-            migrationBuilder.DropTable(
                 name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Authors");
+
+            migrationBuilder.DropTable(
+                name: "Objects");
 
             migrationBuilder.DropTable(
                 name: "Licences");

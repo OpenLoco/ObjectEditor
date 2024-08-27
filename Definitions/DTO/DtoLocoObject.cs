@@ -14,7 +14,7 @@ namespace OpenLoco.Definitions.DTO
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
 		string? Description,
-		TblAuthor? Author,
+		ICollection<TblAuthor> Authors,
 		DateTimeOffset? CreationDate,
 		DateTimeOffset? LastEditDate,
 		DateTimeOffset? UploadDate,

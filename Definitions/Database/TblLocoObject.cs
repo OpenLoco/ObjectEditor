@@ -34,7 +34,7 @@ namespace OpenLoco.Definitions.Database
 
 		public string? Description { get; set; }
 
-		public TblAuthor? Author { get; set; }
+		public ICollection<TblAuthor> Authors { get; set; }
 
 		public DateTimeOffset? CreationDate { get; set; }
 

@@ -18,7 +18,7 @@ namespace AvaGui.Models
 		public uint OriginalChecksum { get; }
 		public string? Description { get; set; }
 
-		public TblAuthor? Author { get; set; }
+		public ICollection<TblAuthor> Authors { get; set; }
 
 		public DateTimeOffset? CreationDate { get; set; }
 
@@ -28,8 +28,8 @@ namespace AvaGui.Models
 		[Browsable(false)]
 
 		public ICollection<TblTag> Tags { get; set; }
-		[Browsable(false)]
 
+		[Browsable(false)]
 		public ICollection<TblModpack> Modpacks { get; set; }
 
 		public ObjectAvailability Availability { get; set; }

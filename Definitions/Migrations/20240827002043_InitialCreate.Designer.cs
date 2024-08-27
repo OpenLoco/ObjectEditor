@@ -11,7 +11,7 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240826020801_InitialCreate")]
+    [Migration("20240827002043_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -30,7 +30,12 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("TblLocoObjectId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TblLocoObjectId");
 
                     b.ToTable("Authors");
                 });
@@ -61,9 +66,6 @@ namespace Definitions.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("AuthorId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Availability")
@@ -111,8 +113,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AuthorId");
 
                     b.HasIndex("LicenceId");
 
@@ -200,17 +200,18 @@ namespace Definitions.Migrations
                     b.ToTable("TblLocoObjectTblTag");
                 });
 
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
+                        .WithMany("Authors")
+                        .HasForeignKey("TblLocoObjectId");
+                });
+
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "Author")
-                        .WithMany()
-                        .HasForeignKey("AuthorId");
-
                     b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
-
-                    b.Navigation("Author");
 
                     b.Navigation("Licence");
                 });
@@ -252,6 +253,11 @@ namespace Definitions.Migrations
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
+                {
+                    b.Navigation("Authors");
                 });
 #pragma warning restore 612, 618
         }

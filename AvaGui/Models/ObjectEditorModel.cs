@@ -186,7 +186,7 @@ namespace AvaGui.Models
 							metadata = new MetadataModel(locoObj.OriginalName, locoObj.OriginalChecksum)
 							{
 								Description = locoObj.Description,
-								Author = locoObj.Author,
+								Authors = locoObj.Authors,
 								CreationDate = locoObj.CreationDate,
 								LastEditDate = locoObj.LastEditDate,
 								UploadDate = locoObj.UploadDate,

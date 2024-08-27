@@ -214,7 +214,6 @@
 									<RowDefinition Height="Auto"/>
 									<RowDefinition Height="Auto"/>
 									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
 								</Grid.RowDefinitions>
 								<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Original Name" Margin="2"/>
 								<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding OriginalName}" IsReadOnly="True" Margin="2" />
@@ -225,25 +224,39 @@
 								<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="2"/>
 								<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="2" />
 
-								<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Author" Margin="2"/>
-								<TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Author.Name}" IsReadOnly="True" Margin="2" />
+								<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Creation Date" Margin="2" />
+								<DatePicker Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreationDate}" IsEnabled="False" Margin="2" />
 
-								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Creation Date" Margin="2" />
-								<DatePicker Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreationDate}" IsEnabled="False" Margin="2" />
+								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Last Edit Date" Margin="2"/>
+								<DatePicker Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding LastEditDate}" IsEnabled="False" Margin="2" />
 
-								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Last Edit Date" Margin="2"/>
-								<DatePicker Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding LastEditDate}" IsEnabled="False" Margin="2" />
+								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="2"/>
+								<DatePicker Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadDate}" IsEnabled="False" Margin="2" />
 
-								<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="2"/>
-								<DatePicker Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadDate}" IsEnabled="False" Margin="2" />
+								<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="2"/>
+								<TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="2" />
 
-								<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="2"/>
-								<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="2" />
-
-								<TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="2"/>
-								<TextBox Grid.Row="8" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="2" />
+								<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="2"/>
+								<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="2" />
 							</Grid>
 							<StackPanel>
+								<Border BorderThickness="1" Margin="2" >
+									<StackPanel>
+										<TextBlock Margin="4">Authors</TextBlock>
+										<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Authors}" Background="{DynamicResource ExpanderContentBackground}" >
+											<ItemsRepeater.Layout>
+												<WrapLayout />
+											</ItemsRepeater.Layout>
+											<ItemsRepeater.ItemTemplate>
+												<DataTemplate>
+													<Border BorderThickness="2">
+														<TextBlock Margin="4" Text="{Binding Name}" />
+													</Border>
+												</DataTemplate>
+											</ItemsRepeater.ItemTemplate>
+										</ItemsRepeater>
+									</StackPanel>
+								</Border>
 								<Border BorderThickness="1" Margin="2" >
 									<StackPanel>
 										<TextBlock Margin="4">Tags</TextBlock>

@@ -7,7 +7,7 @@ using OpenLoco.Definitions.DTO;
 namespace OpenLoco.Definitions.Web
 {
 	// this must be done because eager-loading related many-to-many data in entity framework is recursive and cannot be turned off...
-	public record ExpandedTblLocoObject(TblLocoObject Object, ICollection<TblTag> Tags, ICollection<TblModpack> Modpacks);
+	public record ExpandedTblLocoObject(TblLocoObject Object, ICollection<TblAuthor> Authors, ICollection<TblTag> Tags, ICollection<TblModpack> Modpacks);
 
 	public static class Server
 	{
@@ -27,9 +27,8 @@ namespace OpenLoco.Definitions.Web
 		{
 			var eObj = await db.Objects
 				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
-				.Include(x => x.Author)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Tags, x.Modpacks))
+				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
 				.SingleOrDefaultAsync();
 
 			return eObj == null || eObj.Object == null
@@ -43,9 +42,8 @@ namespace OpenLoco.Definitions.Web
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");
 			var eObj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
-				.Include(x => x.Author)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Tags, x.Modpacks))
+				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
 				.SingleOrDefaultAsync();
 
 			return eObj == null || eObj.Object == null
@@ -96,7 +94,7 @@ namespace OpenLoco.Definitions.Web
 				obj.ObjectType,
 				obj.VehicleType,
 				obj.Description,
-				obj.Author,
+				obj.Authors,
 				obj.CreationDate,
 				obj.LastEditDate,
 				obj.UploadDate,
@@ -146,7 +144,7 @@ namespace OpenLoco.Definitions.Web
 				ObjectType = locoObject.ObjectType,
 				VehicleType = locoObject.VehicleType,
 				Description = locoObject.Description,
-				Author = locoObject.Author,
+				Authors = locoObject.Authors,
 				CreationDate = locoObject.CreationDate,
 				LastEditDate = locoObject.LastEditDate,
 				UploadDate = DateTimeOffset.UtcNow,

@@ -106,9 +106,9 @@ namespace AvaGui.ViewModels
 
 		void SetObjectViewModel(FileSystemItemBase? file)
 		{
-			if (file != null)
+			if (file is not null and FileSystemItem fsi)
 			{
-				CurrentEditorModel = new ObjectEditorViewModel(file, Model);
+				CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
 			}
 		}
 

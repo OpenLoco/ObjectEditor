@@ -17,7 +17,7 @@ namespace AvaGui.ViewModels
 {
 	public record HexAnnotationLine(string Address, string Data, int? SelectionStart, int? SelectionEnd);
 
-	public class ObjectEditorViewModel : ReactiveObject, ILocoFileViewModel
+	public class DatObjectEditorViewModel : ReactiveObject, ILocoFileViewModel
 	{
 		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveObjectCommand { get; init; }
@@ -44,7 +44,16 @@ namespace AvaGui.ViewModels
 		public HexAnnotationLine[]? CurrentHexDumpLines { get; set; }
 
 		[Reactive]
-		public FileSystemItemBase CurrentFile { get; init; }
+		public FileSystemItem CurrentFile { get; init; }
+
+		public string ReloadText => CurrentFile.FileLocation == FileLocation.Local ? "Reload" : "Redownload";
+		public string SaveText => CurrentFile.FileLocation == FileLocation.Local ? "Save" : "Download";
+		public string SaveAsText => $"{SaveText} As";
+
+		public string ReloadIcon => CurrentFile.FileLocation == FileLocation.Local ? "DatabaseRefresh" : "FileSync";
+		public string SaveIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSave" : "FileDownload";
+		public string SaveAsIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSavePlus" : "FileDownloadOutline";
+
 
 		byte[] currentByteList;
 
@@ -56,7 +65,7 @@ namespace AvaGui.ViewModels
 
 		ILogger? Logger => Model.Logger;
 
-		public ObjectEditorViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public DatObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		{
 			CurrentFile = currentFile;
 			Model = model;
@@ -128,24 +137,20 @@ namespace AvaGui.ViewModels
 
 		public void SaveCurrentObject()
 		{
-			if (CurrentFile is FileSystemItem currFile)
+			if (CurrentObject?.LocoObject == null)
 			{
-				if (CurrentObject?.LocoObject == null)
-				{
-					Logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
-					return;
-				}
-
-				Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {currFile.Filename}");
-
-				var savePath = currFile.FileLocation == FileLocation.Local ? currFile.Filename : Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(currFile.Name, ".dat"));
-
-				SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+				Logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
+				return;
 			}
+
+			var savePath = CurrentFile.FileLocation == FileLocation.Local ? CurrentFile.Filename : Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.Name, ".dat"));
+			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
+			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		public void SaveAsCurrentObject()
 		{
+
 			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
 			if (saveFile == null)
 			{
@@ -158,8 +163,9 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {saveFile.Path.AbsolutePath}");
-			SawyerStreamWriter.Save(saveFile.Path.AbsolutePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+			var savePath = saveFile.Path.LocalPath;
+			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
+			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)

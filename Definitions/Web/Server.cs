@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
@@ -14,7 +15,9 @@ namespace OpenLoco.Definitions.Web
 		// eg: https://localhost:7230/objects/list
 		public static async Task<IResult> ListObjects(LocoDb db)
 			=> Results.Ok(
-				await db.Objects.Select(x => new DtoObjectIndexEntry(
+				await db.Objects
+				.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes) // for now - only return value objects
+				.Select(x => new DtoObjectIndexEntry(
 					x.Id,
 					x.OriginalName,
 					x.ObjectType,
@@ -36,7 +39,7 @@ namespace OpenLoco.Definitions.Web
 				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes));
 		}
 
-		// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256
+		// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256&returnObjBytes=false
 		public static async Task<IResult> GetObject(int uniqueObjectId, bool returnObjBytes, LocoDb db)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");

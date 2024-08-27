@@ -15,11 +15,12 @@ Console.ReadLine();
 static LocoDb ExampleRun()
 {
 	var builder = new DbContextOptionsBuilder<LocoDb>();
-	_ = builder.UseSqlite(LocoDb.GetDbPath());
+	const string connectionString = "Data Source=Q:\\Games\\Locomotion\\Server\\loco.db";
+	_ = builder.UseSqlite(connectionString);
 	var db = new LocoDb(builder.Options);
 
 	// Note: The database must exist before this script works
-	Console.WriteLine($"Database path: {LocoDb.GetDbPath()}");
+	Console.WriteLine($"Database path: {connectionString}");
 
 	const bool seed = true;
 	const bool DeleteExisting = true;

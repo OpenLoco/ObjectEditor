@@ -2,34 +2,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace OpenLoco.Definitions.Database
 {
-	public class LocoDb : DbContext
+	public class LocoDb(DbContextOptions<LocoDb> options) : DbContext(options)
 	{
-		public LocoDb() => DbPath = GetDbPath();
-
-		public LocoDb(DbContextOptions<LocoDb> options)
-			: base(options) =>
-			DbPath = GetDbPath();
-
 		public DbSet<TblAuthor> Authors => Set<TblAuthor>();
 		public DbSet<TblTag> Tags => Set<TblTag>();
 		public DbSet<TblModpack> Modpacks => Set<TblModpack>();
 		public DbSet<TblLocoObject> Objects => Set<TblLocoObject>();
 		public DbSet<TblLicence> Licences => Set<TblLicence>();
 
-		public string DbPath { get; }
-
-		protected override void OnConfiguring(DbContextOptionsBuilder options)
-			=> options.UseSqlite($"Data Source={DbPath}");
-
 		protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.Entity<TblLocoObject>()
 				.Property(b => b.UploadDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
-
-		public static string GetDbPath()
-			=> Path.Join(
-				Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-				"OpenLoco Object Editor",
-				"loco.db");
 
 		public bool DoesObjectExist(string originalName, uint originalChecksum)
 		{

@@ -32,5 +32,6 @@ namespace OpenLoco.Dat.Data
 		public const size_t kMaxMiscEntities = 4000;
 
 		public const int kMaxObjectTypes = 34;
+		public const int kMaxSawyerEncodings = 4;
 	}
 }

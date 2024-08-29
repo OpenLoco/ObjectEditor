@@ -11,9 +11,9 @@ namespace Dat
 		public const int JsonVersion = 1; // change this every time this format changes
 		public int Version => JsonVersion;
 
-		public required IList<ObjectIndexEntry> Objects { get; set; }
+		public required IList<ObjectIndexEntry> Objects { get; set; } = [];
 
-		public required IList<ObjectIndexFailedEntry> ObjectsFailed { get; set; }
+		public required IList<ObjectIndexFailedEntry> ObjectsFailed { get; set; } = [];
 
 		public void AddObject(ObjectIndexEntryBase entryBase)
 		{
@@ -59,6 +59,7 @@ namespace Dat
 
 		public void SaveIndex(string indexFile)
 			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
+
 		public void SaveIndex(string indexFile, JsonSerializerOptions options)
 			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
 

@@ -5,7 +5,7 @@ namespace OpenLoco.Common.Logging
 	public class Logger : ILogger
 	{
 		public readonly ConcurrentQueue<LogLine> Logs = [];
-		public LogLevel Level = LogLevel.Info;
+		public LogLevel Level = LogLevel.Debug;
 
 		public event EventHandler<LogAddedEventArgs>? LogAdded;
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.Dat.Types;
 
 namespace OpenLoco.Definitions.Database
 {
@@ -20,7 +21,7 @@ namespace OpenLoco.Definitions.Database
 		{
 			if (!optionsBuilder.IsConfigured)
 			{
-				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Server\\loco.db");
+				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Server\\loco-dev.db");
 			}
 		}
 
@@ -28,7 +29,10 @@ namespace OpenLoco.Definitions.Database
 			.Property(b => b.UploadDate)
 			.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 
-		public bool DoesObjectExist(string originalName, uint originalChecksum)
+		public bool DoesObjectExist(S5Header s5Header, out TblLocoObject? existingObject)
+		 => DoesObjectExist(s5Header.Name, s5Header.Checksum, out existingObject);
+
+		public bool DoesObjectExist(string originalName, uint originalChecksum, out TblLocoObject? existingObject)
 		{
 			// there's a unique constraint on the composite key index (OriginalName, OriginalChecksum), so check existence first so no exceptions
 			// this isn't necessary since we're already filtering in LINQ, but if we were adding to a non-empty database, this would be necessary
@@ -40,8 +44,8 @@ namespace OpenLoco.Definitions.Database
 				.Select(e => e.Entity as TblLocoObject)
 				.FirstOrDefault(e => e!.OriginalName == originalName && e.OriginalChecksum == originalChecksum);
 
-			return existingEntityInDb != null || existingEntityInChangeTracker != null;
-
+			existingObject = existingEntityInDb ?? existingEntityInChangeTracker;
+			return existingObject != null;
 		}
 	}
 }

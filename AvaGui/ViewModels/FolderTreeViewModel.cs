@@ -140,6 +140,8 @@ namespace AvaGui.ViewModels
 				await LoadOnlineDirectoryAsync(useExistingIndex);
 			}
 
+			await Model.CheckForDatFilesNotOnServer();
+
 		}
 
 		async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
@@ -151,10 +153,14 @@ namespace AvaGui.ViewModels
 			}
 
 			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
-			LocalDirectoryItems = ConstructTreeView(Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes), FilenameFilter, DisplayMode, FileLocation.Local);
+			LocalDirectoryItems = ConstructTreeView(
+				Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
+				FilenameFilter,
+				DisplayMode,
+				FileLocation.Local);
 		}
 
-		IEnumerable<DtoObjectIndexEntry>? cachedIndexFromServer;
+		readonly IEnumerable<DtoObjectIndexEntry>? cachedIndexFromServer;
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 		{
@@ -166,17 +172,20 @@ namespace AvaGui.ViewModels
 
 			if (!useExistingIndex || cachedIndexFromServer == null)
 			{
-				cachedIndexFromServer = await Client.GetObjectListAsync(Model.WebClient, Model.Logger);
+				Model.ObjectIndexOnline = new ObjectIndex()
+				{
+					Objects = (await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
+					.Select(x => new ObjectIndexEntry(x.UniqueId.ToString(), x.ObjectName, x.ObjectType, x.IsVanilla, x.Checksum, x.VehicleType))
+					.ToList(),
+					ObjectsFailed = []
+				};
 			}
 
-			if (cachedIndexFromServer != null)
-			{
-				OnlineDirectoryItems = ConstructTreeView(
-					cachedIndexFromServer.Select(x => new ObjectIndexEntry(x.UniqueId.ToString(), x.ObjectName, x.ObjectType, x.IsVanilla, x.Checksum, x.VehicleType)),
-					FilenameFilter,
-					DisplayMode,
-					FileLocation.Online);
-			}
+			OnlineDirectoryItems = ConstructTreeView(
+				Model.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
+				FilenameFilter,
+				DisplayMode,
+				FileLocation.Online);
 		}
 
 		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)

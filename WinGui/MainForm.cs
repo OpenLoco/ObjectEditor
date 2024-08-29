@@ -390,7 +390,7 @@ namespace OpenLoco.WinGui
 			var objDataNode = new TreeNode("ObjData");
 			objDataNode.Nodes.AddRange([.. nodesToAdd]);
 			_ = tvObjType.Nodes.Add(objDataNode);
-			tvObjType.Sort();
+			//tvObjType.Sort(); // this takes INSANELY long with large folders. not worth sorting for such performance loss
 		}
 
 		void InitDataCategoryTree()

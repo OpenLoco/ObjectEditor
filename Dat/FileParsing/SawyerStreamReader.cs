@@ -487,6 +487,12 @@ namespace OpenLoco.Dat.FileParsing
 				var span = file.Data.AsSpan();
 				var s5 = S5Header.Read(span[0..S5Header.StructLength]);
 				var oh = ObjectHeader.Read(span[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+
+				if (!s5.Validate() || !oh.Validate())
+				{
+					return new ObjectIndexFailedEntry(file.Filename);
+				}
+
 				var remainingData = span[(S5Header.StructLength + ObjectHeader.StructLength)..];
 				var isVanilla = OriginalObjectFiles.Names.TryGetValue(s5.Name, out var expectedChecksum) && s5.Checksum == expectedChecksum;
 

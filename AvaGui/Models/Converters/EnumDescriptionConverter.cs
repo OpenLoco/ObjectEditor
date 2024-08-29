@@ -10,7 +10,7 @@ namespace AvaGui.Models.Converters
 		public override object ProvideValue(IServiceProvider serviceProvider)
 			=> this;
 
-		public object? Convert(object? value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object? Convert(object? value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var type = value?.GetType();
 			var text = value?.ToString();
@@ -19,7 +19,7 @@ namespace AvaGui.Models.Converters
 				: (object?)$"{type.Name}_{text}";
 		}
 
-		public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
+		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 			=> null;
 	}
 

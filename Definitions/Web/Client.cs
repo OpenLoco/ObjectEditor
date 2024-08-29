@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using OpenLoco.Common.Logging;
 using OpenLoco.Definitions.DTO;
 using System.Net.Http.Json;
@@ -6,8 +7,8 @@ namespace OpenLoco.Definitions.Web
 {
 	public static class Client
 	{
-		public static async Task<IEnumerable<DtoObjectIndexEntry>?> GetObjectListAsync(HttpClient client, ILogger? logger = null)
-			=> await SendRequestAsync<IEnumerable<DtoObjectIndexEntry>?>(client, Routes.ListObjects, logger);
+		public static async Task<IEnumerable<DtoObjectIndexEntry>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
+			=> await SendRequestAsync<IEnumerable<DtoObjectIndexEntry>?>(client, Routes.ListObjects, logger) ?? [];
 
 		public static async Task<DtoLocoObject?> GetDatAsync(HttpClient client, string objectName, uint checksum, bool returnObjBytes, ILogger? logger = null)
 			=> await SendRequestAsync<DtoLocoObject?>(client, Routes.GetDat + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}&{nameof(returnObjBytes)}={returnObjBytes}", logger);
@@ -21,13 +22,12 @@ namespace OpenLoco.Definitions.Web
 		public static async Task<DtoLocoObject?> GetObjectFileAsync(HttpClient client, int uniqueObjectId, ILogger? logger = null)
 			=> await SendRequestAsync<DtoLocoObject?>(client, Routes.GetDatFile + $"?{nameof(uniqueObjectId)}={uniqueObjectId}", logger);
 
-
-		public static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, ILogger? logger = null)
+		static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, ILogger? logger = null)
 		{
 			try
 			{
 				route = route.TrimStart('/');
-				logger?.Info($"Querying {client.BaseAddress}{route}");
+				logger?.Debug($"Querying {client.BaseAddress}{route}");
 				using var response = await client.GetAsync(route);
 
 				if (!response.IsSuccessStatusCode)
@@ -36,7 +36,7 @@ namespace OpenLoco.Definitions.Web
 					return default;
 				}
 
-				logger?.Info("Main server queried successfully");
+				logger?.Debug("Main server queried successfully");
 
 				var data = await response.Content.ReadFromJsonAsync<T?>();
 				if (data == null)
@@ -50,6 +50,28 @@ namespace OpenLoco.Definitions.Web
 			{
 				logger?.Error(ex);
 				return default;
+			}
+		}
+
+		public static async Task UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateTimeOffset creationDate, ILogger logger)
+		{
+			try
+			{
+				logger.Debug($"Posting {filename} to {client.BaseAddress}{Routes.UploadDat}");
+				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate);
+				var response = await client.PostAsJsonAsync(Routes.UploadDat, request);
+
+				if (!response.IsSuccessStatusCode)
+				{
+					logger.Error($"Posting {filename} failed: {response}");
+					return;
+				}
+
+				logger.Debug($"Uploaded {filename} to main server successfully");
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex);
 			}
 		}
 	}

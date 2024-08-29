@@ -15,7 +15,7 @@ Console.ReadLine();
 static LocoDb ExampleRun()
 {
 	var builder = new DbContextOptionsBuilder<LocoDb>();
-	const string connectionString = "Data Source=Q:\\Games\\Locomotion\\Server\\loco.db";
+	const string connectionString = "Data Source=Q:\\Games\\Locomotion\\Server\\loco-dev.db";
 	_ = builder.UseSqlite(connectionString);
 	var db = new LocoDb(builder.Options);
 
@@ -122,13 +122,13 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json"), jsonOptions);
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.ObjectName, x.Checksum), x => x);
 
-		foreach (var objIndex in index.Objects.DistinctBy(x => new { x.ObjectName, x.Checksum }))
+		foreach (var objIndex in index.Objects.DistinctBy(x => (x.ObjectName, x.Checksum)))
 		{
 			var metadataKey = (objIndex.ObjectName, objIndex.Checksum);
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{ }
 
-			var lastModifiedTime = File.GetLastWriteTimeUtc(objIndex.ObjectName); // this is the "Modified" time as shown in Windows
+			var creationTime = File.GetLastWriteTimeUtc(objIndex.Filename); // this is the "Modified" time as shown in Windows
 
 			var authors = meta?.Authors == null ? null : db.Authors.Where(x => meta.Authors.Contains(x.Name)).ToList();
 			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
@@ -137,7 +137,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 			var tblLocoObject = new TblLocoObject()
 			{
-				Name = $"{objIndex.ObjectName}_{objIndex.Checksum}",
+				Name = $"{objIndex.ObjectName}_{objIndex.Checksum}",  // same as server upload name
 				PathOnDisk = Path.Combine(ObjDirectory, objIndex.Filename),
 				OriginalName = objIndex.ObjectName,
 				OriginalChecksum = objIndex.Checksum,
@@ -146,7 +146,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				VehicleType = objIndex.VehicleType,
 				Description = meta?.Description,
 				Authors = authors ?? [],
-				CreationDate = lastModifiedTime,
+				CreationDate = creationTime,
 				LastEditDate = null,
 				Tags = tags ?? [],
 				Modpacks = modpacks ?? [],

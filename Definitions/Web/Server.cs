@@ -2,13 +2,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 
 namespace OpenLoco.Definitions.Web
 {
 	// this must be done because eager-loading related many-to-many data in entity framework is recursive and cannot be turned off...
-	public record ExpandedTblLocoObject(TblLocoObject Object, ICollection<TblAuthor> Authors, ICollection<TblTag> Tags, ICollection<TblModpack> Modpacks);
+	internal record ExpandedTblLocoObject(TblLocoObject Object, ICollection<TblAuthor> Authors, ICollection<TblTag> Tags, ICollection<TblModpack> Modpacks);
 
 	public static class Server
 	{
@@ -25,8 +26,8 @@ namespace OpenLoco.Definitions.Web
 					x.OriginalChecksum,
 					x.VehicleType)).ToListAsync());
 
-		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
-		public static async Task<IResult> GetDat(string objectName, uint checksum, bool returnObjBytes, LocoDb db)
+		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123$returnObjBytes=false
+		public static async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db)
 		{
 			var eObj = await db.Objects
 				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
@@ -36,11 +37,11 @@ namespace OpenLoco.Definitions.Web
 
 			return eObj == null || eObj.Object == null
 				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes));
+				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes ?? false));
 		}
 
 		// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256&returnObjBytes=false
-		public static async Task<IResult> GetObject(int uniqueObjectId, bool returnObjBytes, LocoDb db)
+		public static async Task<IResult> GetObject(int uniqueObjectId, bool? returnObjBytes, LocoDb db)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");
 			var eObj = await db.Objects
@@ -51,7 +52,7 @@ namespace OpenLoco.Definitions.Web
 
 			return eObj == null || eObj.Object == null
 				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes));
+				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes ?? false));
 		}
 
 		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
@@ -82,7 +83,7 @@ namespace OpenLoco.Definitions.Web
 				: Results.NotFound();
 		}
 
-		public static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj, bool returnObjBytes)
+		internal static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj, bool returnObjBytes)
 		{
 			var obj = eObj!.Object;
 			var bytes = returnObjBytes && !obj.IsVanilla && File.Exists(obj.PathOnDisk) ? Convert.ToBase64String(await File.ReadAllBytesAsync(obj.PathOnDisk)) : null;
@@ -108,59 +109,84 @@ namespace OpenLoco.Definitions.Web
 		}
 
 		// eg: <todo>
-		public static async Task<IResult> UploadDat(DtoLocoObject locoObject, LocoDb db)
+		public static async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db)
 		{
-			if (locoObject.OriginalBytes == null)
+			if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 			{
-				return Results.BadRequest("OriginalBytes cannot be null - it must contain the valid bytes of a loco dat object.");
+				return Results.BadRequest("DatBytesAsBase64 cannot be null - it must contain the valid bytes of a loco dat object.");
 			}
 
-			var obj = SawyerStreamReader.LoadAndDecodeFromStream(Convert.FromBase64String(locoObject.OriginalBytes));
-			if (obj == null || obj.Value.decodedData.Length == 0)
+			byte[]? datFileBytes;
+			try
 			{
-				return Results.BadRequest("Provided byte data was unable to be decoded into a real loco dat object.");
+				datFileBytes = Convert.FromBase64String(request.DatBytesAsBase64);
+			}
+			catch (FormatException ex)
+			{
+				return Results.BadRequest(ex.Message);
 			}
 
-			if (db.DoesObjectExist(locoObject.OriginalName, locoObject.OriginalChecksum))
+			if (datFileBytes == null || datFileBytes.Length == 0)
 			{
-				return Results.Accepted("Provided object already exists in the database.");
+				return Results.BadRequest("Unable to decode DatBytesAsBase64 - it must contain the valid bytes of a loco dat object.");
+			}
+
+			if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)
+			{
+				return Results.BadRequest("Unable to accept file sizes > 5MB");
+			}
+
+			var creationTime = request.CreationDate;
+
+			var obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes);
+			if (obj == null || obj.Value.LocoObject == null)
+			{
+				return Results.BadRequest("Provided data was unable to be decoded into a real loco dat object.");
+			}
+
+			var datFileInfo = obj.Value.DatFileInfo;
+			var locoObject = obj.Value.LocoObject;
+			var s5Header = datFileInfo.S5Header;
+
+			if (OriginalObjectFiles.Names.TryGetValue(s5Header.Name, out var chksum) && chksum == s5Header.Checksum)
+			{
+				return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
+			}
+
+			if (db.DoesObjectExist(s5Header, out var existingObject))
+			{
+				return Results.Accepted($"Object already exists in the database. OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} UploadDate={existingObject!.UploadDate}");
 			}
 
 			const string UploadFolder = "Q:\\Games\\Locomotion\\Server\\CustomObjects\\Uploaded";
 			var uuid = Guid.NewGuid();
-			var saveFileName = Path.Combine(UploadFolder, uuid.ToString(), ".dat");
-			Console.WriteLine($"File accepted OriginalName={locoObject.OriginalName} OriginalChecksum={locoObject.OriginalChecksum} PathOnDisk={saveFileName}");
-			_ = obj.Value.s5Header;
-			_ = obj.Value.objHeader;
-			//var decodedData = obj.Value.decodedData;
-
-			//ObjectIndex.AddObject(await SawyerStreamReader.GetDatFileInfoFromBytesAsync((saveFileName, locoObject.OriginalBytes)));
+			var saveFileName = Path.Combine(UploadFolder, $"{uuid}.dat");
+			Console.WriteLine($"File accepted OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} PathOnDisk={saveFileName}");
 
 			var locoTbl = new TblLocoObject()
 			{
-				// for now, trust DtoLocoObj, but we could full-parse here
-				Name = locoObject.Name,
+				Name = $"{s5Header.Name}_{s5Header.Checksum}", // same as DB seeder name
 				PathOnDisk = saveFileName,
-				OriginalName = locoObject.OriginalName,
-				OriginalChecksum = locoObject.OriginalChecksum,
-				IsVanilla = locoObject.IsVanilla,
-				ObjectType = locoObject.ObjectType,
-				VehicleType = locoObject.VehicleType,
-				Description = locoObject.Description,
-				Authors = locoObject.Authors,
-				CreationDate = locoObject.CreationDate,
-				LastEditDate = locoObject.LastEditDate,
+				OriginalName = s5Header.Name,
+				OriginalChecksum = s5Header.Checksum,
+				IsVanilla = false, // not possible to upload vanilla objects
+				ObjectType = s5Header.ObjectType,
+				VehicleType = s5Header.ObjectType == ObjectType.Vehicle ? (locoObject.Object as VehicleObject)!.Type : null,
+				Description = "",
+				Authors = [],
+				CreationDate = creationTime,
+				LastEditDate = null,
 				UploadDate = DateTimeOffset.UtcNow,
-				Tags = locoObject.Tags,
-				Modpacks = locoObject.Modpacks,
-				Availability = locoObject.Availability,
-				Licence = locoObject.Licence
+				Tags = [],
+				Modpacks = [],
+				Availability = ObjectAvailability.NewGames,
+				Licence = null,
 			};
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();
 
-			return Results.Created($"Successfully added {locoObject.Name} with unique id {locoTbl.Id}", locoTbl.Id);
+			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 	}
 }

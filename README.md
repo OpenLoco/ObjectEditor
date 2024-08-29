@@ -8,6 +8,8 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 | ![image](https://github.com/user-attachments/assets/1adb4be5-cc8e-46a0-9174-83e0634c2ad2) | ![image](https://github.com/user-attachments/assets/bb0aec69-c3ba-4edf-aba0-1861d99077a2) |
 | **String table editing** | **Light/dark mode** |
 | ![image](https://github.com/user-attachments/assets/dd97a5cd-5208-4c0c-8215-e3692bfbe90e) | ![image](https://github.com/user-attachments/assets/3c7cc173-a001-47e4-8ab7-34ca80b2307a) |
+| **Hex dump viewer** | **Object repository browsing and downloading** |
+| ![image](https://github.com/user-attachments/assets/d2794946-acc4-4cbb-a6d0-275cd6776ec1) | ![image](https://github.com/user-attachments/assets/98c37f5f-1325-4795-9729-2f1c8e1d4ce7) |
 
 # How to use
 
@@ -23,6 +25,12 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 3. It will appear in the editor view on the right side of the tool
 
 # Features
+
+## 3.0.0+
+- Online mode
+  - Can connect to the object repository to view and download any object stored in it
+  - Automatic upload of 'undiscovered' dat files (ie dat files that don't exist in the object repository)
+- Property/hex viewer has been ported over from 1.0.5/the WinForms editor
 
 ## 2.0.0+
 

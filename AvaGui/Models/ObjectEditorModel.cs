@@ -227,7 +227,8 @@ namespace AvaGui.Models
 				}
 				else
 				{
-					var obj = SawyerStreamReader.LoadFullObjectFromFile(filesystemItem.Filename, logger: Logger);
+					var filename = Path.Combine(Settings.ObjDataDirectory, filesystemItem.Filename);
+					var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
 					if (obj != null)
 					{
 						fileInfo = obj.Value.DatFileInfo;
@@ -416,8 +417,8 @@ namespace AvaGui.Models
 		{
 			Logger.Info($"Uploading {dat.Filename} to object repository");
 			var lastModifiedTime = File.GetLastWriteTimeUtc(dat.Filename); // this is the "Modified" time as shown in Windows
-
-			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(dat.Filename), lastModifiedTime, Logger);
+			var filename = Path.Combine(Settings.ObjDataDirectory, dat.Filename);
+			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), lastModifiedTime, Logger);
 		}
 	}
 }

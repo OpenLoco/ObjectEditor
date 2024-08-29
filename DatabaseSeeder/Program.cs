@@ -39,14 +39,14 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Clearing database");
 		_ = db.Objects.ExecuteDelete();
-		_ = db.Authors.ExecuteDelete();
 		_ = db.Tags.ExecuteDelete();
 		_ = db.Modpacks.ExecuteDelete();
+		_ = db.Authors.ExecuteDelete();
 		_ = db.Licences.ExecuteDelete();
 		_ = db.SaveChanges(); // not necessary since ExecuteDelete auto-saves
 	}
 
-	const string ObjDirectory = "Q:\\Games\\Locomotion\\Server";
+	const string ObjDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var allDatFiles = SawyerStreamUtils.GetDatFilesInDirectory(ObjDirectory);
 
 	Console.WriteLine("Seeding");
@@ -122,13 +122,16 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json"), jsonOptions);
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.ObjectName, x.Checksum), x => x);
 
+		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
+
 		foreach (var objIndex in index.Objects.DistinctBy(x => (x.ObjectName, x.Checksum)))
 		{
 			var metadataKey = (objIndex.ObjectName, objIndex.Checksum);
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{ }
 
-			var creationTime = File.GetLastWriteTimeUtc(objIndex.Filename); // this is the "Modified" time as shown in Windows
+			var fullPath = Path.Combine(ObjDirectory, objIndex.Filename);
+			var creationTime = objIndex.IsVanilla ? gameReleaseDate : File.GetLastWriteTimeUtc(fullPath); // this is the "Modified" time as shown in Windows
 
 			var authors = meta?.Authors == null ? null : db.Authors.Where(x => meta.Authors.Contains(x.Name)).ToList();
 			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
@@ -138,7 +141,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			var tblLocoObject = new TblLocoObject()
 			{
 				Name = $"{objIndex.ObjectName}_{objIndex.Checksum}",  // same as server upload name
-				PathOnDisk = Path.Combine(ObjDirectory, objIndex.Filename),
+				PathOnDisk = objIndex.Filename.Replace('\\', '/'), // make the path linux-compatible
 				OriginalName = objIndex.ObjectName,
 				OriginalChecksum = objIndex.Checksum,
 				IsVanilla = objIndex.IsVanilla,

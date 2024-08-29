@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenLoco.Dat.Data;
@@ -37,7 +38,7 @@ namespace OpenLoco.ObjectService
 					x.VehicleType)).ToListAsync());
 
 		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		public async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db)
+		public async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			var eObj = await db.Objects
 				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
@@ -47,11 +48,11 @@ namespace OpenLoco.ObjectService
 
 			return eObj == null || eObj.Object == null
 				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj, settings.ObjectRootFolder, returnObjBytes ?? false));
+				: Results.Ok(await PrepareLocoObject(eObj, settings.ObjectRootFolder, returnObjBytes ?? false, logger));
 		}
 
 		// eg: https://localhost:7230/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
-		public async Task<IResult> GetObject(int uniqueObjectId, bool? returnObjBytes, LocoDb db)
+		public async Task<IResult> GetObject(int uniqueObjectId, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");
 			var eObj = await db.Objects
@@ -62,7 +63,7 @@ namespace OpenLoco.ObjectService
 
 			return eObj == null || eObj.Object == null
 				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj, settings.ObjectRootFolder, returnObjBytes ?? false));
+				: Results.Ok(await PrepareLocoObject(eObj, settings.ObjectRootFolder, returnObjBytes ?? false, logger));
 		}
 
 		// eg: https://localhost:7230/objects/originaldatfile?objectName=114&checksum=123
@@ -104,11 +105,12 @@ namespace OpenLoco.ObjectService
 				: Results.NotFound();
 		}
 
-		internal static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj, string objectRootFolder, bool returnObjBytes)
+		internal static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj, string objectRootFolder, bool returnObjBytes, ILogger<Server> logger)
 		{
 			var obj = eObj!.Object;
 
-			var pathOnDisk = Path.Combine(objectRootFolder, obj.PathOnDisk);
+			var pathOnDisk = Path.Combine(objectRootFolder, obj.PathOnDisk.Replace('\\', '/')); // handle windows paths by replacing path separator
+			logger.LogInformation("Loading file from {0}", pathOnDisk);
 			var bytes = returnObjBytes && !obj.IsVanilla && File.Exists(pathOnDisk) ? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk)) : null;
 
 			return new DtoLocoObject(
@@ -181,10 +183,9 @@ namespace OpenLoco.ObjectService
 				return Results.Accepted($"Object already exists in the database. OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} UploadDate={existingObject!.UploadDate}");
 			}
 
-			const string SettingsPath = "Q:\\Games\\Locomotion\\Server\\CustomObjects";
 			const string UploadFolder = "UploadedObjects";
 			var uuid = Guid.NewGuid();
-			var saveFileName = Path.Combine(SettingsPath, UploadFolder, $"{uuid}.dat");
+			var saveFileName = Path.Combine(settings.ObjectRootFolder, UploadFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
 
 			Console.WriteLine($"File accepted OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} PathOnDisk={saveFileName}");
@@ -192,6 +193,7 @@ namespace OpenLoco.ObjectService
 			var locoTbl = new TblLocoObject()
 			{
 				Name = $"{s5Header.Name}_{s5Header.Checksum}", // same as DB seeder name
+				PathOnDisk = Path.Combine(UploadFolder, $"{uuid}.dat"),
 				OriginalName = s5Header.Name,
 				OriginalChecksum = s5Header.Checksum,
 				IsVanilla = false, // not possible to upload vanilla objects

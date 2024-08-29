@@ -57,7 +57,8 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				logger.Debug($"Posting {filename} to {client.BaseAddress}{Routes.UploadDat}");
+				var route = $"{client.BaseAddress}{Routes.UploadDat}".Replace("//", "'/");
+				logger.Debug($"Posting {filename} to {route}");
 				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate);
 				var response = await client.PostAsJsonAsync(Routes.UploadDat, request);
 

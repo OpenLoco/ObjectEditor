@@ -8,6 +8,9 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
 // Add services to the container.
@@ -50,9 +53,6 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 
 builder.Services.AddSingleton<Server>();
 var serviceSettings = builder.Services.Configure<ObjectServiceSettings>(builder.Configuration.GetSection("ObjectService"));
-
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
 
 var app = builder.Build();
 app.UseHttpLogging();

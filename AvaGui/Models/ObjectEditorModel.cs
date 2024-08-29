@@ -7,6 +7,7 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
+using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,8 @@ namespace AvaGui.Models
 		public ObjectIndex ObjectIndex { get; private set; }
 
 		public ObjectIndex ObjectIndexOnline { get; set; }
+
+		public Dictionary<int, DtoLocoObject> OnlineCache { get; set; } = [];
 
 		public PaletteMap PaletteMap { get; set; }
 
@@ -170,41 +173,58 @@ namespace AvaGui.Models
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					var locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, int.Parse(filesystemItem.Filename), true)).Result;
+					var uniqueObjectId = int.Parse(filesystemItem.Filename);
 
-					if (locoObj == null)
+					if (!OnlineCache.TryGetValue(uniqueObjectId, out var locoObj))
 					{
-						Logger.Error($"Unable to load {filesystemItem.Name} from online - received no data");
-					}
-					else if (locoObj.IsVanilla)
-					{
-						Logger.Info($"Unable to load {filesystemItem.Name} from online - requested object is a vanilla object and it is illegal to distribute copyright material");
-					}
-					else if (locoObj.OriginalBytes == null || locoObj.OriginalBytes.Length == 0)
-					{
-						Logger.Error($"Unable to load {filesystemItem.Name} from online - received no object data");
+						Logger.Debug($"Didn't find object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - downloading it");
+						locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId, true)).Result;
+
+						if (locoObj == null)
+						{
+							Logger.Error($"Unable to object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no data");
+							return false;
+						}
+						else if (locoObj.IsVanilla)
+						{
+							Logger.Info($"Unable to object {filesystemItem.Name} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material");
+							return false;
+						}
+						else if (locoObj.OriginalBytes == null || locoObj.OriginalBytes.Length == 0)
+						{
+							Logger.Error($"Unable to load object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no object data");
+							return false;
+						}
+
+						Logger.Error($"Added object {filesystemItem.Name} with unique id {uniqueObjectId} to local cache");
+						OnlineCache.Add(uniqueObjectId, locoObj);
 					}
 					else
 					{
-						var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
-						if (obj != null)
-						{
-							fileInfo = obj.Value.DatFileInfo;
-							locoObject = obj.Value.LocoObject;
-							metadata = new MetadataModel(locoObj.OriginalName, locoObj.OriginalChecksum)
-							{
-								Description = locoObj.Description,
-								Authors = locoObj.Authors,
-								CreationDate = locoObj.CreationDate,
-								LastEditDate = locoObj.LastEditDate,
-								UploadDate = locoObj.UploadDate,
-								Tags = locoObj.Tags,
-								Modpacks = locoObj.Modpacks,
-								Availability = locoObj.Availability,
-								Licence = locoObj.Licence,
-							};
-						}
+						Logger.Debug($"Found object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - reusing it");
 					}
+
+					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
+					if (obj == null)
+					{
+						Logger.Error($"Unable to load {filesystemItem.Name} from the received data");
+						return false;
+					}
+
+					fileInfo = obj.Value.DatFileInfo;
+					locoObject = obj.Value.LocoObject;
+					metadata = new MetadataModel(locoObj.OriginalName, locoObj.OriginalChecksum)
+					{
+						Description = locoObj.Description,
+						Authors = locoObj.Authors,
+						CreationDate = locoObj.CreationDate,
+						LastEditDate = locoObj.LastEditDate,
+						UploadDate = locoObj.UploadDate,
+						Tags = locoObj.Tags,
+						Modpacks = locoObj.Modpacks,
+						Availability = locoObj.Availability,
+						Licence = locoObj.Licence,
+					};
 				}
 				else
 				{

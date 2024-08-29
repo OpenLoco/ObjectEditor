@@ -185,7 +185,7 @@ namespace AvaGui.ViewModels
 				Model.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
 				FilenameFilter,
 				DisplayMode,
-				FileLocation.Local);
+				FileLocation.Online);
 		}
 
 		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)

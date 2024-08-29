@@ -1,18 +1,28 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.Web;
 
-namespace OpenLoco.Definitions.Web
+namespace OpenLoco.ObjectService
 {
 	// this must be done because eager-loading related many-to-many data in entity framework is recursive and cannot be turned off...
 	internal record ExpandedTblLocoObject(TblLocoObject Object, ICollection<TblAuthor> Authors, ICollection<TblTag> Tags, ICollection<TblModpack> Modpacks);
 
-	public static class Server
+	public class ObjectServiceSettings
 	{
+		public required string ObjectRootFolder { get; set; }
+	}
+
+	public class Server(ObjectServiceSettings settings)
+	{
+		public Server(IOptions<ObjectServiceSettings> options) : this(options.Value)
+		{ }
+
 		// eg: https://localhost:7230/objects/list
 		public static async Task<IResult> ListObjects(LocoDb db)
 			=> Results.Ok(
@@ -27,7 +37,7 @@ namespace OpenLoco.Definitions.Web
 					x.VehicleType)).ToListAsync());
 
 		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		public static async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db)
+		public async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db)
 		{
 			var eObj = await db.Objects
 				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
@@ -37,11 +47,11 @@ namespace OpenLoco.Definitions.Web
 
 			return eObj == null || eObj.Object == null
 				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes ?? false));
+				: Results.Ok(await PrepareLocoObject(eObj, settings.ObjectRootFolder, returnObjBytes ?? false));
 		}
 
 		// eg: https://localhost:7230/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
-		public static async Task<IResult> GetObject(int uniqueObjectId, bool? returnObjBytes, LocoDb db)
+		public async Task<IResult> GetObject(int uniqueObjectId, bool? returnObjBytes, LocoDb db)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");
 			var eObj = await db.Objects
@@ -52,11 +62,11 @@ namespace OpenLoco.Definitions.Web
 
 			return eObj == null || eObj.Object == null
 				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes ?? false));
+				: Results.Ok(await PrepareLocoObject(eObj, settings.ObjectRootFolder, returnObjBytes ?? false));
 		}
 
 		// eg: https://localhost:7230/objects/originaldatfile?objectName=114&checksum=123
-		public static async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
+		public async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
 		{
 			var obj = await db.Objects
 				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
@@ -70,7 +80,7 @@ namespace OpenLoco.Definitions.Web
 		}
 
 		// eg: https://localhost:7230/objects/getobjectfile?objectName=114&checksum=123
-		public static async Task<IResult> GetObjectFile(int uniqueObjectId, LocoDb db)
+		public async Task<IResult> GetObjectFile(int uniqueObjectId, LocoDb db)
 		{
 			var obj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
@@ -78,15 +88,28 @@ namespace OpenLoco.Definitions.Web
 
 			const string contentType = "application/octet-stream";
 
-			return obj?.IsVanilla == false && File.Exists(obj.PathOnDisk)
-				? Results.File(obj.PathOnDisk, contentType, Path.GetFileName(obj.PathOnDisk))
+			if (obj == null)
+			{
+				return Results.NotFound();
+			}
+
+			if (obj.IsVanilla)
+			{
+				return Results.BadRequest("Nice try genius. Downloading vanilla objects is not allowed.");
+			}
+
+			var pathOnDisk = Path.Combine(settings.ObjectRootFolder, obj.PathOnDisk);
+			return File.Exists(pathOnDisk)
+				? Results.File(pathOnDisk, contentType, Path.GetFileName(pathOnDisk))
 				: Results.NotFound();
 		}
 
-		internal static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj, bool returnObjBytes)
+		internal static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj, string objectRootFolder, bool returnObjBytes)
 		{
 			var obj = eObj!.Object;
-			var bytes = returnObjBytes && !obj.IsVanilla && File.Exists(obj.PathOnDisk) ? Convert.ToBase64String(await File.ReadAllBytesAsync(obj.PathOnDisk)) : null;
+
+			var pathOnDisk = Path.Combine(objectRootFolder, obj.PathOnDisk);
+			var bytes = returnObjBytes && !obj.IsVanilla && File.Exists(pathOnDisk) ? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk)) : null;
 
 			return new DtoLocoObject(
 				obj.Id,
@@ -109,7 +132,7 @@ namespace OpenLoco.Definitions.Web
 		}
 
 		// eg: <todo>
-		public static async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db)
+		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db)
 		{
 			if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 			{
@@ -158,15 +181,17 @@ namespace OpenLoco.Definitions.Web
 				return Results.Accepted($"Object already exists in the database. OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} UploadDate={existingObject!.UploadDate}");
 			}
 
-			const string UploadFolder = "Q:\\Games\\Locomotion\\Server\\CustomObjects\\Uploaded";
+			const string SettingsPath = "Q:\\Games\\Locomotion\\Server\\CustomObjects";
+			const string UploadFolder = "UploadedObjects";
 			var uuid = Guid.NewGuid();
-			var saveFileName = Path.Combine(UploadFolder, $"{uuid}.dat");
+			var saveFileName = Path.Combine(SettingsPath, UploadFolder, $"{uuid}.dat");
+			File.WriteAllBytes(saveFileName, datFileBytes);
+
 			Console.WriteLine($"File accepted OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} PathOnDisk={saveFileName}");
 
 			var locoTbl = new TblLocoObject()
 			{
 				Name = $"{s5Header.Name}_{s5Header.Checksum}", // same as DB seeder name
-				PathOnDisk = saveFileName,
 				OriginalName = s5Header.Name,
 				OriginalChecksum = s5Header.Checksum,
 				IsVanilla = false, // not possible to upload vanilla objects

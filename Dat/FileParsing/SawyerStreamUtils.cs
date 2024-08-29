@@ -24,9 +24,11 @@ namespace OpenLoco.Dat.FileParsing
 			return checksum;
 		}
 
+		// returns paths relative to the input directory
 		public static IEnumerable<string> GetDatFilesInDirectory(string directory)
 			=> Directory
 				.GetFiles(directory, "*", SearchOption.AllDirectories)
-				.Where(x => Path.GetExtension(x).Equals(".dat", StringComparison.OrdinalIgnoreCase));
+				.Where(x => Path.GetExtension(x).Equals(".dat", StringComparison.OrdinalIgnoreCase))
+				.Select(x => Path.GetRelativePath(directory, x));
 	}
 }

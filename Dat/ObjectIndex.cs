@@ -27,7 +27,7 @@ namespace Dat
 			}
 		}
 
-		public static Task<ObjectIndex> CreateIndexAsync(string[] files, IProgress<float>? progress)
+		public static Task<ObjectIndex> CreateIndexAsync(string rootObjectDirectory, string[] files, IProgress<float>? progress)
 		{
 			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
 			ConcurrentQueue<ObjectIndexEntryBase> pendingIndices = [];
@@ -35,7 +35,7 @@ namespace Dat
 			var producerTask = Task.Run(async () =>
 			{
 				var options = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
-				await Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(f, ct))));
+				await Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(rootObjectDirectory, f), ct))));
 			});
 
 			var consumerTask = Task.Run(async () =>
@@ -80,7 +80,7 @@ namespace Dat
 			else
 			{
 				var fileArr = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-				index = CreateIndexAsync(fileArr, null).Result;
+				index = CreateIndexAsync(directory, fileArr, null).Result;
 				index.SaveIndex(indexPath);
 			}
 

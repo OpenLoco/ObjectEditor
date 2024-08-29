@@ -48,6 +48,9 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
+builder.Services.AddSingleton<Server>();
+var serviceSettings = builder.Services.Configure<ObjectServiceSettings>(builder.Configuration.GetSection("ObjectService"));
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
@@ -61,20 +64,23 @@ if (app.Environment.IsDevelopment())
 	_ = app.UseSwaggerUI();
 }
 
+var objRoot = builder.Configuration["ObjectService:ObjectRootFolder"];
+var server = new Server(new ObjectServiceSettings() { ObjectRootFolder = objRoot! });
+
 // GET
 _ = app.MapGet(Routes.ListObjects, Server.ListObjects)
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapGet(Routes.GetDat, Server.GetDat)
+_ = app.MapGet(Routes.GetDat, server.GetDat)
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapGet(Routes.GetObject, Server.GetObject)
+_ = app.MapGet(Routes.GetObject, server.GetObject)
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapGet(Routes.GetDatFile, Server.GetDatFile)
+_ = app.MapGet(Routes.GetDatFile, server.GetDatFile)
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapGet(Routes.GetObjectFile, Server.GetObjectFile)
+_ = app.MapGet(Routes.GetObjectFile, server.GetObjectFile)
 	.RequireRateLimiting(tokenPolicy);
 
 // PATCH
@@ -85,7 +91,7 @@ _ = app.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCo
 	.RequireRateLimiting(tokenPolicy);
 
 // POST
-_ = app.MapPost(Routes.UploadDat, Server.UploadDat)
+_ = app.MapPost(Routes.UploadDat, server.UploadDat)
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapPost(Routes.UploadObject, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))

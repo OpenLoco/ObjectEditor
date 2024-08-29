@@ -128,6 +128,8 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{ }
 
+			var lastModifiedTime = File.GetLastWriteTimeUtc(objIndex.ObjectName); // this is the "Modified" time as shown in Windows
+
 			var authors = meta?.Authors == null ? null : db.Authors.Where(x => meta.Authors.Contains(x.Name)).ToList();
 			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
 			var modpacks = meta?.Modpacks == null ? null : db.Modpacks.Where(x => meta.Modpacks.Contains(x.Name)).ToList();
@@ -144,7 +146,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				VehicleType = objIndex.VehicleType,
 				Description = meta?.Description,
 				Authors = authors ?? [],
-				CreationDate = null,
+				CreationDate = lastModifiedTime,
 				LastEditDate = null,
 				Tags = tags ?? [],
 				Modpacks = modpacks ?? [],

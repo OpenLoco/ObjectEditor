@@ -30,6 +30,8 @@ dotnet publish AvaGui/AvaGui.csproj -c Release -p:PublishSingleFile=true -p:Vers
 dotnet publish AvaGui/AvaGui.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime linux-x64
 dotnet publish AvaGui/AvaGui.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime osx-x64
 
+dotnet publish ObjectService/ObjectService.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime linux-x64
+
 # 6. Create the ZIP and tar archives
 echo "Zipping"
 

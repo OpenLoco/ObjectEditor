@@ -26,7 +26,7 @@ namespace OpenLoco.Definitions.Web
 					x.OriginalChecksum,
 					x.VehicleType)).ToListAsync());
 
-		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123$returnObjBytes=false
+		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
 		public static async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db)
 		{
 			var eObj = await db.Objects
@@ -40,7 +40,7 @@ namespace OpenLoco.Definitions.Web
 				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes ?? false));
 		}
 
-		// eg: https://localhost:7230/objects/originaldat?uniqueObjectId=246263256&returnObjBytes=false
+		// eg: https://localhost:7230/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
 		public static async Task<IResult> GetObject(int uniqueObjectId, bool? returnObjBytes, LocoDb db)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");
@@ -55,7 +55,7 @@ namespace OpenLoco.Definitions.Web
 				: Results.Ok(await PrepareLocoObject(eObj, returnObjBytes ?? false));
 		}
 
-		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
+		// eg: https://localhost:7230/objects/originaldatfile?objectName=114&checksum=123
 		public static async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
 		{
 			var obj = await db.Objects
@@ -69,7 +69,7 @@ namespace OpenLoco.Definitions.Web
 				: Results.NotFound();
 		}
 
-		// eg: https://localhost:7230/objects/originaldat?objectName=114&checksum=123
+		// eg: https://localhost:7230/objects/getobjectfile?objectName=114&checksum=123
 		public static async Task<IResult> GetObjectFile(int uniqueObjectId, LocoDb db)
 		{
 			var obj = await db.Objects

@@ -64,7 +64,13 @@ You can technically manually call the `uploaddat` route but this is intended pri
     ```
 
 ## Technical Details
+
+### Database
+- The server is backed by a simple SQLite database.
+- You can view the current schema for it [here](https://github.com/OpenLoco/ObjectEditor/tree/master/Definitions/Database).
+- Whilst the schema is in heavy development and subject to frequent change, instead of the database being the source of truth, for now all the data is stored in JSON files locally. The [DatabaseSeeder](https://github.com/OpenLoco/ObjectEditor/blob/master/DatabaseSeeder/Program.cs) project is what reads these files and populates the database with the existing data. This enables quick iteration or schema and web server without fear of losing data. In future, the database will become the source of truth.
+
+### Web Server
 - The API is rate-limited to a burst limit of [20 requests per second](https://github.com/OpenLoco/ObjectEditor/blob/master/ObjectService/ObjectServiceRateLimitOptions.cs) with 10 tokens replenished every second. This is a global limit, regardless of client. This will be [changed in the future](https://github.com/OpenLoco/ObjectEditor/issues/76).
-- A SQLite database backs the web server. More details [here]().
 - The server runs on a spare PC I have converted into a Linux (Ubuntu) server. It runs the Object Service as a daemon under systemctl and has an auto-restart configured in case it crashes.
 - The domain is registered with Cloudflare. I have a `cloudflared` daemon running on the server that connects Cloudflare's servers and DNS lookup/routing to the server. This tunnel/daemon/Cloudflare hosting setup also acts as a reverse-proxy meaning I don't need to worry about load-balancing or exposing my public IP address to anyone.

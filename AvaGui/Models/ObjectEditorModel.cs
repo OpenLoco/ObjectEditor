@@ -416,8 +416,8 @@ namespace AvaGui.Models
 		public async Task UploadDatToServer(ObjectIndexEntry dat)
 		{
 			Logger.Info($"Uploading {dat.Filename} to object repository");
-			var lastModifiedTime = File.GetLastWriteTimeUtc(dat.Filename); // this is the "Modified" time as shown in Windows
 			var filename = Path.Combine(Settings.ObjDataDirectory, dat.Filename);
+			var lastModifiedTime = File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows
 			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), lastModifiedTime, Logger);
 		}
 	}

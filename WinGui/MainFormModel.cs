@@ -254,9 +254,10 @@ namespace OpenLoco.WinGui
 
 			Settings.ObjDataDirectory = directory;
 			var allFiles = Directory.GetFiles(directory, "*.dat", SearchOption.AllDirectories);
-			if (useExistingIndex && File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
+			var indexFileName = Settings.GetObjDataFullPath(Settings.IndexFileName);
+			if (useExistingIndex && File.Exists(indexFileName))
 			{
-				ObjectIndex = DeserialiseHeaderIndexFromFile(Settings.GetObjDataFullPath(Settings.IndexFileName)) ?? ObjectIndex;
+				ObjectIndex = ObjectIndex.LoadIndex(indexFileName) ?? ObjectIndex;
 
 				var filenames = ObjectIndex.Objects.Select(x => x.Filename).Concat(ObjectIndex.ObjectsFailed.Select(x => x.Filename));
 				var a = filenames.Except(allFiles);
@@ -352,17 +353,6 @@ namespace OpenLoco.WinGui
 		{
 			logger?.Info($"Saved settings to {filename}");
 			headerIndex.SaveIndex(filename, options);
-		}
-
-		static ObjectIndex? DeserialiseHeaderIndexFromFile(string filename, ILogger? logger = null)
-		{
-			if (!File.Exists(filename))
-			{
-				logger?.Info($"Settings file {filename} does not exist");
-				return null;
-			}
-			logger?.Info($"Loading settings from {filename}");
-			return ObjectIndex.LoadIndex(filename);
 		}
 
 		public UiLocoObject? LoadAndCacheObject(string filename)

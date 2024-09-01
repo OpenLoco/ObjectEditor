@@ -151,6 +151,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				Authors = authors ?? [],
 				CreationDate = creationTime,
 				LastEditDate = null,
+				UploadDate = DateTimeOffset.Now,
 				Tags = tags ?? [],
 				Modpacks = modpacks ?? [],
 				Availability = ObjectAvailability.NewGames,

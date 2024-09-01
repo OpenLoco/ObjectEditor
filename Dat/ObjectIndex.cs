@@ -2,15 +2,13 @@ using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using System.Collections.Concurrent;
+using System.Text;
 using System.Text.Json;
 
 namespace Dat
 {
 	public class ObjectIndex
 	{
-		public const int JsonVersion = 1; // change this every time this format changes
-		public int Version => JsonVersion;
-
 		public required IList<ObjectIndexEntry> Objects { get; set; } = [];
 
 		public required IList<ObjectIndexFailedEntry> ObjectsFailed { get; set; } = [];
@@ -63,13 +61,24 @@ namespace Dat
 		public void SaveIndex(string indexFile, JsonSerializerOptions options)
 			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
 
-		public static ObjectIndex LoadIndex(string indexFile)
+		public static ObjectIndex? LoadIndex(string indexFile)
 			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile));
 
-		public static ObjectIndex LoadIndex(string indexFile, JsonSerializerOptions options)
+		public static ObjectIndex? LoadIndex(string indexFile, JsonSerializerOptions options)
 			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile), options);
 
-		public static ObjectIndex LoadOrCreateIndex(string directory)
+		public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
+		{
+			await using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(await File.ReadAllTextAsync(indexFile))))
+			{
+				return await JsonSerializer.DeserializeAsync<ObjectIndex>(stream);
+			}
+		}
+
+		public static ObjectIndex? LoadOrCreateIndex(string directory)
+			=> LoadOrCreateIndexAsync(directory).Result;
+
+		public static async Task<ObjectIndex?> LoadOrCreateIndexAsync(string directory)
 		{
 			var indexPath = Path.Combine(directory, "objectIndex.json");
 			ObjectIndex? index;
@@ -80,7 +89,7 @@ namespace Dat
 			else
 			{
 				var fileArr = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-				index = CreateIndexAsync(directory, fileArr, null).Result;
+				index = await CreateIndexAsync(directory, fileArr, null);
 				index.SaveIndex(indexPath);
 			}
 

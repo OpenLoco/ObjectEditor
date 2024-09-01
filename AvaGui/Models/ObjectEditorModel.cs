@@ -348,7 +348,7 @@ namespace AvaGui.Models
 
 				try
 				{
-					ObjectIndex = ObjectIndex.LoadIndex(IndexFilename) ?? ObjectIndex;
+					ObjectIndex = await ObjectIndex.LoadIndexAsync(IndexFilename) ?? ObjectIndex;
 				}
 				catch (Exception ex)
 				{

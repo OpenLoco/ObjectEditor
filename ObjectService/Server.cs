@@ -173,7 +173,7 @@ namespace OpenLoco.ObjectService
 			var locoObject = obj.Value.LocoObject;
 			var s5Header = datFileInfo.S5Header;
 
-			if (OriginalObjectFiles.Names.TryGetValue(s5Header.Name, out var chksum) && chksum == s5Header.Checksum)
+			if (!s5Header.IsOriginal())
 			{
 				return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
 			}

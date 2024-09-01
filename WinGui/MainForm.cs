@@ -283,18 +283,15 @@ namespace OpenLoco.WinGui
 
 		static void AddObjectNode(string key, string text, string objName, uint objChecksum, TreeView tv)
 		{
-			var imageIndex = IsOriginalFile(objName, objChecksum) ? 1 : 0;
+			var imageIndex = S5Header.IsOriginal(objName, objChecksum) ? 1 : 0;
 			_ = tv.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
 
 		static void AddObjectNode(string key, string text, string objName, uint objChecksum, TreeNode tn)
 		{
-			var imageIndex = IsOriginalFile(objName, objChecksum) ? 1 : 0;
+			var imageIndex = S5Header.IsOriginal(objName, objChecksum) ? 1 : 0;
 			_ = tn.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
-
-		static bool IsOriginalFile(string name, uint checksum)
-			=> OriginalObjectFiles.Names.TryGetValue(name, out var expectedChecksum) && expectedChecksum == checksum;
 
 		void InitFileTreeView(bool vanillaOnly, string fileFilter)
 		{
@@ -308,7 +305,7 @@ namespace OpenLoco.WinGui
 			var filteredIndicies = filteredFiles
 				.Select(f => f)
 				.OfType<ObjectIndexEntry>()
-				.Where(f => !vanillaOnly || IsOriginalFile(f.ObjectName, f.Checksum));
+				.Where(f => !vanillaOnly || S5Header.IsOriginal(f.ObjectName, f.Checksum));
 
 			tvFileTree.ImageList = MakeImageList(model);
 
@@ -354,7 +351,7 @@ namespace OpenLoco.WinGui
 			var filteredIndicies = filteredFiles
 				.Select(f => f)
 				.OfType<ObjectIndexEntry>()
-				.Where(f => !vanillaOnly || IsOriginalFile(f.ObjectName, f.Checksum));
+				.Where(f => !vanillaOnly || S5Header.IsOriginal(f.ObjectName, f.Checksum));
 
 			tvObjType.ImageList = MakeImageList(model);
 

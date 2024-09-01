@@ -17,6 +17,8 @@ namespace AvaGui.ViewModels
 {
 	public record HexAnnotationLine(string Address, string Data, int? SelectionStart, int? SelectionEnd);
 
+	public record AnimationSequence(string Name, int StartIndex, int EndIndex);
+
 	public class DatObjectEditorViewModel : ReactiveObject, ILocoFileViewModel
 	{
 		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
@@ -28,6 +30,9 @@ namespace AvaGui.ViewModels
 
 		[Reactive]
 		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
+
+		[Reactive]
+		public ObservableCollection<AnimationSequence> CurrentAnimations { get; set; }
 
 		ObjectEditorModel Model { get; init; }
 
@@ -53,7 +58,6 @@ namespace AvaGui.ViewModels
 		public string ReloadIcon => CurrentFile.FileLocation == FileLocation.Local ? "DatabaseRefresh" : "FileSync";
 		public string SaveIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSave" : "FileDownload";
 		public string SaveAsIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSavePlus" : "FileDownloadOutline";
-
 
 		byte[] currentByteList;
 

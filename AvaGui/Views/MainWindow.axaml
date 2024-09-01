@@ -336,6 +336,9 @@
 							</ItemsRepeater>
 						</DockPanel>
 					</TabItem>
+					<TabItem Header="Animations" DataContext="{Binding CurrentAnimations}">
+
+					</TabItem>
 				</TabControl>
 			</StackPanel>
 		</DataTemplate>

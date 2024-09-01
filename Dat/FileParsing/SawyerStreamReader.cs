@@ -183,7 +183,7 @@ namespace OpenLoco.Dat.FileParsing
 				if (s5Header.SourceGame == SourceGame.Vanilla)
 				{
 					var s5Name = s5Header.Name;
-					if (!OriginalObjectFiles.Names.TryGetValue(s5Name, out var value) || s5Header.Checksum != value)
+					if (!OriginalObjectFiles.Names.TryGetValue(s5Name, out var value) || s5Header.Checksum != value.SteamChecksum || s5Header.Checksum != value.GoGChecksum)
 					{
 						warnings.Add($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
 					}
@@ -494,7 +494,7 @@ namespace OpenLoco.Dat.FileParsing
 				}
 
 				var remainingData = span[(S5Header.StructLength + ObjectHeader.StructLength)..];
-				var isVanilla = OriginalObjectFiles.Names.TryGetValue(s5.Name, out var expectedChecksum) && s5.Checksum == expectedChecksum;
+				var isVanilla = s5.IsOriginal();
 
 				if (s5.ObjectType == ObjectType.Vehicle)
 				{

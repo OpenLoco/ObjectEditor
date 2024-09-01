@@ -186,7 +186,7 @@ namespace OpenLoco.WinGui
 					}
 
 					var s5 = fileInfo.S5Header;
-					var isVanilla = OriginalObjectFiles.Names.TryGetValue(s5.Name, out var expectedChecksum) && s5.Checksum == expectedChecksum;
+					var isVanilla = s5.IsOriginal();
 					var indexObjectHeader = new ObjectIndexEntry(file, s5.Name, s5.ObjectType, isVanilla, s5.Checksum, veh);
 					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 					{

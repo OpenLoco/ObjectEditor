@@ -7,27 +7,7 @@ using OpenLoco.Definitions.Database;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-var steam = ObjectIndex.LoadIndex("Q:\\Games\\Locomotion\\OriginalObjects\\Steam\\objectIndex.json");
-var gog = ObjectIndex.LoadIndex("Q:\\Games\\Locomotion\\OriginalObjects\\GoG\\objectIndex.json");
-
-//foreach (var x in gog.Objects.Select(x => x.ObjectName).Except(steam.Objects.Select(x => x.ObjectName)))
-//{
-//	Console.WriteLine(x);
-//}
-
-var combined = steam.Objects.Join(
-	gog.Objects,
-	x => x.ObjectName,
-	y => y.ObjectName,
-	(a, b) => (a.ObjectName, a.Checksum, b.Checksum)
-);
-
-foreach (var x in combined.OrderBy(x => x.ObjectName))
-{
-	Console.WriteLine($"{{ \"{x.ObjectName}\", ({x.Item2}, {x.Item3}) }},");
-}
-
-//using var db = ExampleRun();
+using var db = ExampleRun();
 
 Console.WriteLine("done");
 Console.ReadLine();

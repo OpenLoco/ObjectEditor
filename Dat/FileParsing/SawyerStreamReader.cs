@@ -183,7 +183,7 @@ namespace OpenLoco.Dat.FileParsing
 				if (s5Header.SourceGame == SourceGame.Vanilla)
 				{
 					var s5Name = s5Header.Name;
-					if (!OriginalObjectFiles.Names.TryGetValue(s5Name, out var value) || s5Header.Checksum != value.SteamChecksum || s5Header.Checksum != value.GoGChecksum)
+					if (!s5Header.IsOriginal())
 					{
 						warnings.Add($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
 					}

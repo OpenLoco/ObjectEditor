@@ -1,4 +1,5 @@
 using AvaGui.Models;
+using Avalonia.Media.Imaging;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
@@ -17,7 +18,7 @@ namespace AvaGui.ViewModels
 {
 	public record HexAnnotationLine(string Address, string Data, int? SelectionStart, int? SelectionEnd);
 
-	public record AnimationSequence(string Name, int StartIndex, int EndIndex);
+	public record AnimationSequence(string Name, int StartIndex, int EndIndex, int CurrentFrame = 0);
 
 	public class DatObjectEditorViewModel : ReactiveObject, ILocoFileViewModel
 	{
@@ -33,6 +34,24 @@ namespace AvaGui.ViewModels
 
 		[Reactive]
 		public ObservableCollection<AnimationSequence> CurrentAnimations { get; set; }
+
+		public AnimationSequence CurrentAnimation => CurrentAnimations[0];
+
+		[Reactive]
+		public int CurrentFrame { get; set; }
+
+		[Reactive]
+		public Bitmap? CurrentAnimationFrame
+		{
+			get
+			{
+				if (ExtraContentViewModel is ImageTableViewModel itvm)
+				{
+					return itvm.Images[CurrentFrame];
+				}
+				return null;
+			}
+		}
 
 		ObjectEditorModel Model { get; init; }
 
@@ -82,6 +101,9 @@ namespace AvaGui.ViewModels
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());
+
+			_ = this.WhenAnyValue(o => o.CurrentFrame)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentAnimationFrame)));
 		}
 
 		public void UpdateHexDumpView()
@@ -125,11 +147,13 @@ namespace AvaGui.ViewModels
 					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Filename, false, null);
 					CurrentHexAnnotations = new(treeView);
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
+					CurrentAnimations = [new AnimationSequence("Normal", 0, 63)];
 				}
 				else
 				{
 					StringTableViewModel = null;
 					ExtraContentViewModel = null;
+					CurrentAnimations = [];
 				}
 			}
 			else

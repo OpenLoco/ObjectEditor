@@ -1,5 +1,6 @@
-using OpenLoco.Common;
+using Avalonia.Media.Imaging;
 using OpenLoco.Dat.Types;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace AvaGui.Models
@@ -9,6 +10,7 @@ namespace AvaGui.Models
 	{
 		public required DatFileInfo DatFileInfo { get; set; }
 		public ILocoObject? LocoObject { get; set; }
+		public IList<Bitmap> Images { get; set; } = [];
 		public MetadataModel? Metadata { get; set; }
 	}
 }

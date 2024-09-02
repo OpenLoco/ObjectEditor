@@ -1,3 +1,4 @@
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Dat;
 using DynamicData;
@@ -167,6 +168,7 @@ namespace AvaGui.Models
 			ILocoObject? locoObject = null;
 			MetadataModel? metadata = null;
 			uiLocoFile = null;
+			List<Bitmap> images = [];
 
 			try
 			{
@@ -203,6 +205,11 @@ namespace AvaGui.Models
 						Logger.Debug($"Found object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - reusing it");
 					}
 
+					if (locoObj.OriginalBytes == null)
+					{
+						Logger.Error($"Received no data for {filesystemItem.Name}");
+						return false;
+					}
 					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
 					if (obj == null)
 					{
@@ -224,6 +231,8 @@ namespace AvaGui.Models
 						Availability = locoObj.Availability,
 						Licence = locoObj.Licence,
 					};
+
+					images = G1ImageConversion.CreateImages(locoObject?.G1Elements ?? [], PaletteMap).ToList();
 				}
 				else
 				{
@@ -234,6 +243,7 @@ namespace AvaGui.Models
 						fileInfo = obj.Value.DatFileInfo;
 						locoObject = obj.Value.LocoObject;
 						metadata = null; // todo: look this up from internet anyways
+						images = G1ImageConversion.CreateImages(locoObject?.G1Elements ?? [], PaletteMap).ToList();
 					}
 				}
 			}
@@ -251,7 +261,7 @@ namespace AvaGui.Models
 				return false;
 			}
 
-			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
+			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata, Images = images };
 			return true;
 		}
 

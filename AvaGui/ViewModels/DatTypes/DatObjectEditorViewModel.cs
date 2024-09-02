@@ -79,9 +79,6 @@ namespace AvaGui.ViewModels
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());
-
-			_ = this.WhenAnyValue(o => o.CurrentFrame)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentAnimationFrame)));
 		}
 
 		public void UpdateHexDumpView()
@@ -120,18 +117,16 @@ namespace AvaGui.ViewModels
 					StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 						? new SoundViewModel(CurrentObject.LocoObject)
-						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap);
+						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap, CurrentObject.Images);
 
 					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Filename, false, null);
 					CurrentHexAnnotations = new(treeView);
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
-					CurrentAnimations = [new AnimationSequence("Normal", 0, 63)];
 				}
 				else
 				{
 					StringTableViewModel = null;
 					ExtraContentViewModel = null;
-					CurrentAnimations = [];
 				}
 			}
 			else

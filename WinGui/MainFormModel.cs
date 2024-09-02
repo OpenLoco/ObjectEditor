@@ -58,16 +58,17 @@ namespace OpenLoco.WinGui
 
 			foreach (var dep in ObjectIndex.Objects.Where(x => x is ObjectIndexEntry oi && dependentObjectTypes.Contains(oi.ObjectType)))
 			{
+				var filename = Path.Combine(Settings.ObjDataDirectory, dep.Filename);
 #if DEBUG
-				SawyerStreamReader.LoadFullObjectFromFile(dep.Filename);
+				SawyerStreamReader.LoadFullObjectFromFile(filename);
 #else
 				try
 				{
-					SawyerStreamReader.LoadFullObjectFromFile(dep.Key);
+					SawyerStreamReader.LoadFullObjectFromFile(filename);
 				}
 				catch (Exception ex)
 				{
-					logger.Error($"File=\"{dep}\" Message=\"{ex.Message}\"");
+					logger.Error($"File=\"{filename}\" Message=\"{ex.Message}\"");
 				}
 #endif
 			}

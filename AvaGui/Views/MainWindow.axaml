@@ -336,38 +336,6 @@
 							</ItemsRepeater>
 						</DockPanel>
 					</TabItem>
-					<TabItem Header="Animations">
-						<StackPanel>
-							<Slider Value="{Binding CurrentFrame}" Minimum="0" Maximum="63"/>
-							<Image Source="{Binding CurrentAnimationFrame}" Stretch="None" />
-							<TextBlock Text="{Binding CurrentFrame}"/>
-						</StackPanel>
-						<!--<ItemsRepeater ItemsSource="{Binding CurrentAnimations}" Background="{DynamicResource ButtonBackground}">
-							<ItemsRepeater.ItemTemplate>
-								<DataTemplate>
-									<StackPanel>
-										<Slider Value="{Binding CurrentFrame}" Minimum="{Binding StartIndex}" Maximum="{Binding EndIndex}"/>
-										<Image Source="{Binding CurrentAnimationFrame}" />
-										<TextBlock Text="{Binding CurrentFrame}"/>
-									</StackPanel>
-									-->
-						<!--<Grid DockPanel.Dock="Left" Margin="4" x:DataType="vm:AnimationSequence">
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="Auto"/>
-											<ColumnDefinition Width="*"/>
-										</Grid.ColumnDefinitions>
-										<Border Grid.Column="0" Grid.ColumnSpan="1" Background="{DynamicResource ButtonBackgroundPointerOver}">
-											<TextBlock Text="{Binding Address}" VerticalAlignment="Center" Margin="4" FontFamily="Courier New" FontWeight="Bold" />
-
-										</Border>
-										<SelectableTextBlock Grid.Column="1" Margin="4" Text="{Binding Data}" VerticalAlignment="Center" FontFamily="Courier New" SelectionStart="{Binding SelectionStart}" SelectionEnd="{Binding SelectionEnd}" />
-									</Grid>-->
-						<!--
-								</DataTemplate>
-							</ItemsRepeater.ItemTemplate>
-						</ItemsRepeater>-->
-
-					</TabItem>
 				</TabControl>
 			</StackPanel>
 		</DataTemplate>

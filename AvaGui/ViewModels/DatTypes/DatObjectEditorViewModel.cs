@@ -1,5 +1,4 @@
 using AvaGui.Models;
-using Avalonia.Media.Imaging;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
@@ -31,27 +30,6 @@ namespace AvaGui.ViewModels
 
 		[Reactive]
 		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
-
-		[Reactive]
-		public ObservableCollection<AnimationSequence> CurrentAnimations { get; set; }
-
-		public AnimationSequence CurrentAnimation => CurrentAnimations[0];
-
-		[Reactive]
-		public int CurrentFrame { get; set; }
-
-		[Reactive]
-		public Bitmap? CurrentAnimationFrame
-		{
-			get
-			{
-				if (ExtraContentViewModel is ImageTableViewModel itvm)
-				{
-					return itvm.Images[CurrentFrame];
-				}
-				return null;
-			}
-		}
 
 		ObjectEditorModel Model { get; init; }
 

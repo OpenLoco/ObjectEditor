@@ -5,23 +5,6 @@ namespace OpenLoco.Dat
 {
 	public static class PaletteHelpers
 	{
-		//public static byte[] ConvertRgba32ImageToG1Data(this PaletteMap paletteMap, Image<Rgba32> img)
-		//{
-		//	var pixels = img.Width * img.Height;
-		//	var bytes = new byte[pixels];
-
-		//	for (var y = 0; y < img.Height; ++y)
-		//	{
-		//		for (var x = 0; x < img.Width; ++x)
-		//		{
-		//			var dstIndex = (y * img.Width) + x;
-		//			bytes[dstIndex] = paletteMap.ColorToPaletteIndex(img[x, y]);
-		//		}
-		//	}
-
-		//	return bytes;
-		//}
-
 		public static byte[] ConvertRgb32ImageToG1Data(this PaletteMap paletteMap, SKBitmap img)
 		{
 			var pixels = img.Width * img.Height;

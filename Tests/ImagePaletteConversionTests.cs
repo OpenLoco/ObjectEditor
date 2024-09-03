@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using OpenLoco.Dat.FileParsing;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace OpenLoco.Dat.Tests
 {
@@ -14,23 +13,27 @@ namespace OpenLoco.Dat.Tests
 		[TestCase("AIRPORT1.DAT")]
 		[TestCase("BALDWIN1.DAT")]
 		[TestCase("FACTORY.DAT")]
-		[TestCase("INTERDEF.DAT")] // nothing i can do here - multiple indexes map to the same RGB colour (0x00FF00) in this case
-		[TestCase("WATER1.DAT")]   // nothing i can do here - multiple indexes map to the same RGB colour (0x00FF00) in this case
+		//[TestCase("INTERDEF.DAT")] // these files use different palettes
+		//[TestCase("WATER1.DAT")]   // these files use different palettes
 		public void G1ElementToPNGAndBack(string objectSource)
 		{
-			var paletteFile = "palette.png";
-			var paletteMap = new PaletteMap(SixLabors.ImageSharp.Image.Load<Rgb24>(Path.Combine(BasePalettePath, paletteFile)));
+			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
+			var paletteMap = new PaletteMap(paletteFile);
 
 			var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource));
 
 			// convert g1 data into an image, and then back
 
-			foreach (var element in obj.Value.LocoObject.G1Elements)
+			Assert.Multiple(() =>
 			{
-				var image0 = paletteMap.ConvertG1IndexedToRgb24Bitmap(element);
-				var g1Bytes = paletteMap.ConvertRgb24ImageToG1Data(image0);
-				Assert.That(g1Bytes, Is.EquivalentTo(element.ImageData));
-			}
+				var i = 0;
+				foreach (var element in obj.Value.LocoObject.G1Elements)
+				{
+					var image0 = paletteMap.ConvertG1IndexedToRgb32Bitmap(element);
+					var g1Bytes = paletteMap.ConvertRgb32ImageToG1Data(image0);
+					Assert.That(g1Bytes, Is.EquivalentTo(element.ImageData), $"[{i++}]");
+				}
+			});
 		}
 	}
 }

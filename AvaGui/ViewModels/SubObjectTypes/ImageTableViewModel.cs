@@ -1,9 +1,10 @@
+using AvaGui.Models;
 using Avalonia.Media.Imaging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -45,20 +46,23 @@ namespace AvaGui.ViewModels
 	{
 		readonly ILocoObject Parent;
 
-		public ImageTableViewModel(ILocoObject parent, PaletteMap paletteMap, IList<Bitmap> images)
+		public ImageTableViewModel(ILocoObject parent, PaletteMap paletteMap, IList<SKBitmap> images)
 		{
 			Parent = parent;
 			PaletteMap = paletteMap;
-			Images = images;
+			SKBitmaps = images;
 
 			_ = this.WhenAnyValue(o => o.Parent)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(SKBitmaps)));
 			_ = this.WhenAnyValue(o => o.PaletteMap)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(SKBitmaps)));
 			_ = this.WhenAnyValue(o => o.Zoom)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(SKBitmaps)));
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
+
+			_ = this.WhenAnyValue(o => o.SKBitmaps)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 
 			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
 			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
@@ -83,11 +87,9 @@ namespace AvaGui.ViewModels
 				var i = 0;
 				foreach (var file in sorted)
 				{
-					var img = SixLabors.ImageSharp.Image.Load<Rgb24>(file);
-					var data = PaletteMap.ConvertRgb24ImageToG1Data(img);
-					var hasTransparency = data.Any(b => b == 0);
-					var oldImage = Parent.G1Elements[i++];
-					oldImage.ImageData = PaletteMap.ConvertRgb24ImageToG1Data(img); // simply overwrite existing pixel data
+					var img = SKBitmap.Decode(file);
+					SKBitmaps[i] = img;
+					Parent.G1Elements[i++].ImageData = PaletteMap.ConvertRgb32ImageToG1Data(img); // simply overwrite existing pixel data
 				}
 			}
 
@@ -107,12 +109,19 @@ namespace AvaGui.ViewModels
 			if (Directory.Exists(dirPath))
 			{
 				var counter = 0;
-				foreach (var image in Images)
+				foreach (var image in SKBitmaps)
 				{
 					var imageName = counter++.ToString(); // todo: use GetImageName from winforms project
 					var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
 					//logger.Debug($"Saving image to {path}");
-					image.Save(path);
+
+					using (var data = image.Encode(SKEncodedImageFormat.Png, 100)) // 100 is the quality (0-100)
+					{
+						await using (var stream = File.OpenWrite(path))
+						{
+							data.SaveTo(stream);
+						}
+					}
 				}
 			}
 		}
@@ -130,7 +139,10 @@ namespace AvaGui.ViewModels
 		public int Zoom { get; set; } = 1;
 
 		[Reactive]
-		public IList<Bitmap> Images { get; set; }
+		public IList<SKBitmap> SKBitmaps { get; set; }
+
+		public IList<Bitmap> Images
+			=> G1ImageConversion.CreateAvaloniaImages(SKBitmaps).ToList();
 
 		[Reactive]
 		public int SelectedImageIndex { get; set; } = -1;
@@ -161,9 +173,5 @@ namespace AvaGui.ViewModels
 
 			return "<unk>";
 		}
-
-
-
-
 	}
 }

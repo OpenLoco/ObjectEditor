@@ -1,4 +1,3 @@
-using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Dat;
 using DynamicData;
@@ -10,6 +9,7 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -168,7 +168,7 @@ namespace AvaGui.Models
 			ILocoObject? locoObject = null;
 			MetadataModel? metadata = null;
 			uiLocoFile = null;
-			List<Bitmap> images = [];
+			List<SKBitmap> images = [];
 
 			try
 			{
@@ -232,7 +232,10 @@ namespace AvaGui.Models
 						Licence = locoObj.Licence,
 					};
 
-					images = G1ImageConversion.CreateImages(locoObject?.G1Elements ?? [], PaletteMap).ToList();
+					foreach (var i in locoObject?.G1Elements)
+					{
+						images.Add(PaletteMap.ConvertG1IndexedToRgb32Bitmap(i));
+					}
 				}
 				else
 				{
@@ -243,7 +246,11 @@ namespace AvaGui.Models
 						fileInfo = obj.Value.DatFileInfo;
 						locoObject = obj.Value.LocoObject;
 						metadata = null; // todo: look this up from internet anyways
-						images = G1ImageConversion.CreateImages(locoObject?.G1Elements ?? [], PaletteMap).ToList();
+
+						foreach (var i in locoObject?.G1Elements)
+						{
+							images.Add(PaletteMap.ConvertG1IndexedToRgb32Bitmap(i));
+						}
 					}
 				}
 			}

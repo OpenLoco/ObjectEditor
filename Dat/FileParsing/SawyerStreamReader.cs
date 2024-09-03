@@ -317,7 +317,7 @@ namespace OpenLoco.Dat.FileParsing
 			{
 				var currElement = g1Element32s[i];
 				var nextOffset = i < g1Header.NumEntries - 1
-					? g1Element32s[i + 1].Offset
+					? GetNextNonDuplicateOffset(g1Element32s, i)
 					: (uint)g1Header.ImageData.Length;
 
 				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
@@ -329,6 +329,14 @@ namespace OpenLoco.Dat.FileParsing
 			}
 
 			return (g1Header, g1Element32s, G1Header.StructLength + g1ElementHeaders.Length + imageData.Length);
+
+			static uint GetNextNonDuplicateOffset(List<G1Element32> elements, int currentElement)
+			{
+				while (elements[++currentElement].Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
+				{ }
+
+				return elements[currentElement].Offset;
+			}
 		}
 
 		public static byte[] DecodeRLEImageData(G1Element32 img)

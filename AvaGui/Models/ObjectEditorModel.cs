@@ -9,6 +9,7 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -167,6 +168,7 @@ namespace AvaGui.Models
 			ILocoObject? locoObject = null;
 			MetadataModel? metadata = null;
 			uiLocoFile = null;
+			List<SKBitmap> images = [];
 
 			try
 			{
@@ -203,6 +205,11 @@ namespace AvaGui.Models
 						Logger.Debug($"Found object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - reusing it");
 					}
 
+					if (locoObj.OriginalBytes == null)
+					{
+						Logger.Error($"Received no data for {filesystemItem.Name}");
+						return false;
+					}
 					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
 					if (obj == null)
 					{
@@ -224,6 +231,11 @@ namespace AvaGui.Models
 						Availability = locoObj.Availability,
 						Licence = locoObj.Licence,
 					};
+
+					foreach (var i in locoObject?.G1Elements)
+					{
+						images.Add(PaletteMap.ConvertG1IndexedToRgb32Bitmap(i));
+					}
 				}
 				else
 				{
@@ -234,6 +246,11 @@ namespace AvaGui.Models
 						fileInfo = obj.Value.DatFileInfo;
 						locoObject = obj.Value.LocoObject;
 						metadata = null; // todo: look this up from internet anyways
+
+						foreach (var i in locoObject?.G1Elements)
+						{
+							images.Add(PaletteMap.ConvertG1IndexedToRgb32Bitmap(i));
+						}
 					}
 				}
 			}
@@ -251,7 +268,7 @@ namespace AvaGui.Models
 				return false;
 			}
 
-			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
+			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata, Images = images };
 			return true;
 		}
 

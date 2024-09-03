@@ -22,7 +22,7 @@ namespace OpenLoco.Dat
 
 		public PaletteMap(Color[] _palette)
 		{
-			_ = Verify.Equals(_palette.Length, 255);
+			_ = Verify.Equals(_palette.Length, 256);
 			Palette = new (Color, byte)[256];
 
 			for (var i = 0; i < 256; ++i)
@@ -36,20 +36,24 @@ namespace OpenLoco.Dat
 		public (Color Color, byte Index) Transparent
 			=> Palette[0];
 		public (Color Color, byte Index)[] DirectXReserved
-			=> Palette[1..6];
+			=> Palette[1..7];
 		public (Color Color, byte Index)[] PrimaryRemapColours
-			=> [.. Palette[7..9], .. Palette[246..254]];
+			=> [.. Palette[7..10], .. Palette[246..255]];
+
+		public (Color Color, byte Index)[] UnkReserved
+			=> Palette[154..166];
+
 		public (Color Color, byte Index)[] SecondaryRemapColours
-			=> Palette[202..213];
-		public (Color Color, byte Index) Glass
-			=> Palette[47];
+			=> Palette[202..214];
+		//public (Color Color, byte Index) Glass
+		//	=> Palette[47];
 		public (Color Color, byte Index) ChunkedTransparent
 			=> Palette[255];
 
 		public (Color Color, byte Index)[] ValidColours
-			=> [.. Palette[10..201], .. Palette[214..244]];
+			=> [.. Palette[10..154], .. Palette[166..202], .. Palette[214..246]];
 
 		public (Color Color, byte Index)[] ReservedColours
-			=> [Transparent, .. DirectXReserved, .. PrimaryRemapColours, .. SecondaryRemapColours, ChunkedTransparent];
+			=> [Transparent, .. DirectXReserved, .. PrimaryRemapColours, .. UnkReserved, .. SecondaryRemapColours, ChunkedTransparent];
 	}
 }

@@ -119,7 +119,7 @@ namespace AvaGui.ViewModels
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap, CurrentObject.Images);
 
-					var (treeView, annotationIdentifiers) = AnnotateFile(cf.Filename, false, null);
+					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, cf.Filename), false, null);
 					CurrentHexAnnotations = new(treeView);
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}

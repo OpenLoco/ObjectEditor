@@ -93,14 +93,25 @@ namespace AvaGui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(WindowTitle)));
 
 			var assembly = Assembly.GetExecutingAssembly();
+
 			ApplicationVersion = GetCurrentAppVersion(assembly);
 
-			// check for new version
-			var latestVersion = GetLatestAppVersion();
-			if (latestVersion > ApplicationVersion)
+#if !DEBUG
+
+			try
 			{
-				LatestVersionText = $"newer version exists: {latestVersion}";
+				var latestVersion = GetLatestAppVersion();
+				if (latestVersion > ApplicationVersion)
+				{
+					LatestVersionText = $"newer version exists: {latestVersion}";
+				}
 			}
+			catch (Exception ex)
+			{
+				Model.Logger.Error(ex);
+			}
+#endif
+
 			#endregion
 		}
 
@@ -170,7 +181,7 @@ namespace AvaGui.ViewModels
 			}
 
 #pragma warning disable CA2201 // Do not raise reserved exception types
-			throw new Exception("Unable to get latest version");
+			throw new Exception($"Unable to get latest version. Error={response.StatusCode}");
 #pragma warning restore CA2201 // Do not raise reserved exception types
 		}
 

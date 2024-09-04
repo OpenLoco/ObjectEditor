@@ -189,7 +189,7 @@ namespace OpenLoco.Dat.FileParsing
 
 			// calculate checksum
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
-			var asciiName = objName.Take(8).Select(c => (byte)c).ToArray();
+			var asciiName = objName.PadRight(8, ' ').Take(8).Select(c => (byte)c).ToArray();
 			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, objStream.ToArray());
 			s5Header = s5Header with { Checksum = checksum };
 

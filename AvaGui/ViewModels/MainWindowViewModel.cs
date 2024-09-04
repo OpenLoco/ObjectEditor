@@ -6,7 +6,8 @@ using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using SkiaSharp;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -61,7 +62,7 @@ namespace AvaGui.ViewModels
 		public MainWindowViewModel()
 		{
 			var paletteUri = new Uri("avares://ObjectEditor/Assets/palette.png");
-			var palette = SKBitmap.Decode(AssetLoader.Open(paletteUri));
+			var palette = Image.Load<Rgba32>(AssetLoader.Open(paletteUri));
 
 			Model = new()
 			{

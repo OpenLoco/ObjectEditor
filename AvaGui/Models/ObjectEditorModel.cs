@@ -9,7 +9,8 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
-using SkiaSharp;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -168,7 +169,7 @@ namespace AvaGui.Models
 			ILocoObject? locoObject = null;
 			MetadataModel? metadata = null;
 			uiLocoFile = null;
-			List<SKBitmap> images = [];
+			List<Image<Rgba32>> images = [];
 
 			try
 			{
@@ -234,7 +235,7 @@ namespace AvaGui.Models
 
 					foreach (var i in locoObject?.G1Elements)
 					{
-						images.Add(PaletteMap.ConvertG1IndexedToRgb32Bitmap(i));
+						images.Add(PaletteMap.ConvertG1ToRgb32Bitmap(i));
 					}
 				}
 				else
@@ -249,7 +250,7 @@ namespace AvaGui.Models
 
 						foreach (var i in locoObject?.G1Elements)
 						{
-							images.Add(PaletteMap.ConvertG1IndexedToRgb32Bitmap(i));
+							images.Add(PaletteMap.ConvertG1ToRgb32Bitmap(i));
 						}
 					}
 				}

@@ -1,5 +1,6 @@
 using Avalonia.Media.Imaging;
-using SkiaSharp;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.IO;
 
@@ -7,19 +8,19 @@ namespace AvaGui.Models
 {
 	public static class G1ImageConversion
 	{
-		public static IEnumerable<Bitmap> CreateAvaloniaImages(IEnumerable<SKBitmap> skBitmaps)
+		public static IEnumerable<Bitmap> CreateAvaloniaImages(IEnumerable<Image<Rgba32>> images)
 		{
-			foreach (var bmp in skBitmaps)
+			foreach (var bmp in images)
 			{
 				yield return CreateAvaloniaImage(bmp);
 			}
 		}
 
-		public static Bitmap CreateAvaloniaImage(SKBitmap skBitmap)
+		public static Bitmap CreateAvaloniaImage(Image<Rgba32> image)
 		{
 			using (var stream = new MemoryStream())
 			{
-				_ = skBitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
+				image.SaveAsPng(stream);
 				stream.Position = 0;
 				return new Bitmap(stream);
 			}

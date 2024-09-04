@@ -29,7 +29,7 @@ namespace OpenLoco.Dat.Tests
 				var i = 0;
 				foreach (var element in obj.Value.LocoObject.G1Elements)
 				{
-					var image0 = paletteMap.ConvertG1IndexedToRgb32Bitmap(element);
+					var image0 = paletteMap.ConvertG1ToRgb32Bitmap(element);
 					var g1Bytes = paletteMap.ConvertRgb32ImageToG1Data(image0);
 					Assert.That(g1Bytes, Is.EquivalentTo(element.ImageData), $"[{i++}]");
 				}

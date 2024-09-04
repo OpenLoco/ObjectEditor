@@ -4,7 +4,8 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using SkiaSharp;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -46,22 +47,22 @@ namespace AvaGui.ViewModels
 	{
 		readonly ILocoObject Parent;
 
-		public ImageTableViewModel(ILocoObject parent, PaletteMap paletteMap, IList<SKBitmap> images)
+		public ImageTableViewModel(ILocoObject parent, PaletteMap paletteMap, IList<Image<Rgba32>> images)
 		{
 			Parent = parent;
 			PaletteMap = paletteMap;
-			SKBitmaps = images;
+			Images = images;
 
 			_ = this.WhenAnyValue(o => o.Parent)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(SKBitmaps)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.PaletteMap)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(SKBitmaps)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.Zoom)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(SKBitmaps)));
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
 
-			_ = this.WhenAnyValue(o => o.SKBitmaps)
+			_ = this.WhenAnyValue(o => o.Images)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 
 			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
@@ -87,13 +88,14 @@ namespace AvaGui.ViewModels
 				var i = 0;
 				foreach (var file in sorted)
 				{
-					var img = SKBitmap.Decode(file);
-					SKBitmaps[i] = img;
+					var img = Image.Load<Rgba32>(file);
+					Images[i] = img;
 					Parent.G1Elements[i++].ImageData = PaletteMap.ConvertRgb32ImageToG1Data(img); // simply overwrite existing pixel data
 				}
 			}
 
-			this.RaisePropertyChanged(nameof(Images));
+			this.RaisePropertyChanged(nameof(Bitmaps));
+			//this.RaisePropertyChanged(nameof(Images));
 		}
 
 		public async Task ExportImages()
@@ -109,19 +111,12 @@ namespace AvaGui.ViewModels
 			if (Directory.Exists(dirPath))
 			{
 				var counter = 0;
-				foreach (var image in SKBitmaps)
+				foreach (var image in Images)
 				{
 					var imageName = counter++.ToString(); // todo: use GetImageName from winforms project
 					var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
 					//logger.Debug($"Saving image to {path}");
-
-					using (var data = image.Encode(SKEncodedImageFormat.Png, 100)) // 100 is the quality (0-100)
-					{
-						await using (var stream = File.OpenWrite(path))
-						{
-							data.SaveTo(stream);
-						}
-					}
+					await image.SaveAsPngAsync(path);
 				}
 			}
 		}
@@ -139,10 +134,31 @@ namespace AvaGui.ViewModels
 		public int Zoom { get; set; } = 1;
 
 		[Reactive]
-		public IList<SKBitmap> SKBitmaps { get; set; }
+		public IList<Image<Rgba32>> Images { get; set; }
 
-		public IList<Bitmap> Images
-			=> G1ImageConversion.CreateAvaloniaImages(SKBitmaps).ToList();
+		public IList<Bitmap?> Bitmaps
+		{
+			get
+			{
+				// this shenanigans is to handle the DuplicatePrevious flag. we store it as null
+				// and here we just reuse the previous image if the flag is set (ie null image)
+				var list = G1ImageConversion.CreateAvaloniaImages(Images).ToList();
+				Bitmap? prevValue = null;
+
+				for (var i = 0; i < list.Count; i++)
+				{
+					if (list[i] == null)
+					{
+						list[i] = prevValue;
+					}
+					else
+					{
+						prevValue = list[i];
+					}
+				}
+				return list;
+			}
+		}
 
 		[Reactive]
 		public int SelectedImageIndex { get; set; } = -1;

@@ -382,7 +382,7 @@
 					</StackPanel>
 				</Border>
 				<Border BorderThickness="1">
-					<ListBox ItemsSource="{Binding Images}" SelectedIndex="{Binding SelectedImageIndex}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+					<ListBox ItemsSource="{Binding Bitmaps}" SelectedIndex="{Binding SelectedImageIndex}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
 								<WrapPanel/>

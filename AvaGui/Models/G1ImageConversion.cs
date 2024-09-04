@@ -8,7 +8,7 @@ namespace AvaGui.Models
 {
 	public static class G1ImageConversion
 	{
-		public static IEnumerable<Bitmap> CreateAvaloniaImages(IEnumerable<Image<Rgba32>> images)
+		public static IEnumerable<Bitmap?> CreateAvaloniaImages(IEnumerable<Image<Rgba32>?> images)
 		{
 			foreach (var bmp in images)
 			{
@@ -16,8 +16,13 @@ namespace AvaGui.Models
 			}
 		}
 
-		public static Bitmap CreateAvaloniaImage(Image<Rgba32> image)
+		public static Bitmap? CreateAvaloniaImage(Image<Rgba32>? image)
 		{
+			if (image == null)
+			{
+				return null;
+			}
+
 			using (var stream = new MemoryStream())
 			{
 				image.SaveAsPng(stream);

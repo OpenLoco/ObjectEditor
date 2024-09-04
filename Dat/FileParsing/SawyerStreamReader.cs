@@ -320,6 +320,11 @@ namespace OpenLoco.Dat.FileParsing
 					? GetNextNonDuplicateOffset(g1Element32s, i)
 					: (uint)g1Header.ImageData.Length;
 
+				if (currElement.Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
+				{
+					continue;
+				}
+
 				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
 
 				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed))

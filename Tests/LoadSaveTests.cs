@@ -12,7 +12,7 @@ namespace OpenLoco.Dat.Tests
 	[TestFixture]
 	public class LoadSaveTests
 	{
-		const string BaseObjDataPath = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData\\";
+		const string BaseObjDataPath = "Q:\\Games\\Locomotion\\OriginalObjects\\Steam";
 
 		// TODO: find a way to not have to hardcode a path here (but this may be impossible as it will depend on a user's PC and Loco install path)
 		// TODO: find a nicer (and more automated) way to check Name+Image fields, StringTable and G1Table
@@ -29,6 +29,7 @@ namespace OpenLoco.Dat.Tests
 
 			Assert.Multiple(() =>
 			{
+				Assert.That(datFileInfo.S5Header.Checksum, Is.EqualTo(OriginalObjectFiles.Names[datFileInfo.S5Header.Name].SteamChecksum));
 				Assert.That(locoObject, Is.Not.Null);
 				Assert.That(datFileInfo!.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 			});
@@ -82,7 +83,7 @@ namespace OpenLoco.Dat.Tests
 			{
 				Assert.That(bytes2S5Header, Is.EqualTo(bytes1S5Header));
 				Assert.That(bytes2ObjHeader, Is.EqualTo(bytes1ObjHeader));
-				Assert.That(bytes1ObjArr.ToArray(), Is.EquivalentTo(bytes2ObjArr.ToArray()));
+				Assert.That(bytes1ObjArr.ToArray(), Is.EqualTo(bytes2ObjArr.ToArray()));
 			});
 		}
 

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using OpenLoco.Dat.FileParsing;
+using SixLabors.ImageSharp;
 
 namespace OpenLoco.Dat.Tests
 {
@@ -17,8 +18,10 @@ namespace OpenLoco.Dat.Tests
 		//[TestCase("WATER1.DAT")]   // these files use different palettes
 		public void G1ElementToPNGAndBack(string objectSource)
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
+			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp.png");
 			var paletteMap = new PaletteMap(paletteFile);
+
+			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
 
 			var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource));
 
@@ -26,13 +29,16 @@ namespace OpenLoco.Dat.Tests
 
 			Assert.Multiple(() =>
 			{
-				var i = 0;
-				foreach (var element in obj.Value.LocoObject.G1Elements)
+				_ = Parallel.ForEach(obj.Value.LocoObject.G1Elements, (element, _, i) =>
 				{
 					var image0 = paletteMap.ConvertG1ToRgb32Bitmap(element);
-					var g1Bytes = paletteMap.ConvertRgb32ImageToG1Data(image0);
-					Assert.That(g1Bytes, Is.EquivalentTo(element.ImageData), $"[{i++}]");
-				}
+
+					if (image0 != null)
+					{
+						var g1Bytes = paletteMap.ConvertRgb32ImageToG1Data(image0);
+						Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i}]");
+					}
+				});
 			});
 		}
 	}

@@ -169,7 +169,7 @@ namespace AvaGui.Models
 			ILocoObject? locoObject = null;
 			MetadataModel? metadata = null;
 			uiLocoFile = null;
-			List<Image<Rgba32>> images = [];
+			List<Image<Rgba32>?> images = [];
 
 			try
 			{

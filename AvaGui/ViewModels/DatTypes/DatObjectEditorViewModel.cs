@@ -144,7 +144,10 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			var savePath = CurrentFile.FileLocation == FileLocation.Local ? CurrentFile.Filename : Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.Name, ".dat"));
+			var savePath = CurrentFile.FileLocation == FileLocation.Local
+				? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename)
+				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.Name, ".dat"));
+
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
 			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}

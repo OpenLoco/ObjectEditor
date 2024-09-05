@@ -4,11 +4,13 @@ using Avalonia.Platform;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
+using OpenLoco.Dat.FileParsing;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -45,6 +47,7 @@ namespace AvaGui.ViewModels
 		public ReactiveCommand<Unit, Unit> OpenDownloadFolder { get; }
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
 		public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
+		public ReactiveCommand<Unit, Task> OpenG1 { get; }
 
 		public const string GithubApplicationName = "ObjectEditor";
 		public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
@@ -84,6 +87,7 @@ namespace AvaGui.ViewModels
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObjectToIndex);
 			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder));
 			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.SettingsPath));
+			OpenG1 = ReactiveCommand.Create(LoadG1);
 
 			#region Version
 
@@ -121,6 +125,40 @@ namespace AvaGui.ViewModels
 			{
 				CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
 			}
+		}
+		public async Task LoadG1()
+		{
+			var openFile = await PlatformSpecific.OpenFilePicker();
+			if (openFile == null)
+			{
+				return;
+			}
+
+			var path = openFile.SingleOrDefault()?.Path.LocalPath;
+			if (path == null)
+			{
+				return;
+			}
+
+			Model.G1 = SawyerStreamReader.LoadG1(path, Model.Logger);
+
+			var images = new List<Image<Rgba32>?>();
+
+			var i = 0;
+			foreach (var e in Model.G1.G1Elements)
+			{
+				try
+				{
+					images.Add(Model.PaletteMap.ConvertG1ToRgba32Bitmap(e));
+				}
+				catch (Exception ex)
+				{
+					Model.Logger.Error($"[{i}] - [e]", ex);
+				}
+				i++;
+			}
+
+			CurrentEditorModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images);
 		}
 
 		public async Task LoadSingleObjectToIndex()

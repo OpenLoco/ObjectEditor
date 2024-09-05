@@ -14,7 +14,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x06), LocoArrayLength(3)] uint16_t[] SegmentHeights,
 		[property: LocoStructOffset(0x0C), LocoArrayLength(3)] uint16_t[] RoofHeights
-		) : ILocoStruct, ILocoImageTableNames
+		) : ILocoStruct, IImageTableNameProvider
 	{
 		public bool Validate() => true;
 

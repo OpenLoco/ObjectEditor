@@ -3,17 +3,19 @@ using System.ComponentModel;
 namespace OpenLoco.Dat.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public record G1Dat(
-		G1Header G1Header,
-		List<G1Element32> G1Elements) : ILocoImageTableNames
+	public class G1Dat(G1Header g1Header, List<G1Element32> g1Elements) : IHasG1Elements, IImageTableNameProvider
 	{
+		public G1Header G1Header { get; set; } = g1Header;
+
+		public List<G1Element32> G1Elements { get; set; } = g1Elements;
+
 		public bool IsSteamG1
 			=> G1Elements.Count == 3896;
 
 		public bool TryGetImageName(int id, out string? value)
 			=> id < 3550
 				? BaseImageIdNameMap.TryGetValue(id, out value)
-				: (IsSteamG1 ? SteamImageIdNameMap : OtherImageIdNameMap).TryGetValue(id, out value);
+				: (IsSteamG1 ? SteamImageIdNameMap : GoGImageIdNameMap).TryGetValue(id, out value);
 
 		static readonly Dictionary<int, string> BaseImageIdNameMap = new()
 		{
@@ -2226,7 +2228,7 @@ namespace OpenLoco.Dat.Types
 			{ 3628, "owner_jailed" },
 		};
 
-		static readonly Dictionary<int, string> OtherImageIdNameMap = new()
+		static readonly Dictionary<int, string> GoGImageIdNameMap = new()
 		{
 			// steam G1.dat doesn't have these 2
 			{ 3550, "title_menu_lesson_a" },

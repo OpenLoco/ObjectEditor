@@ -146,34 +146,7 @@ namespace OpenLoco.Dat.FileParsing
 			}
 
 			// graphics data
-			if (obj.G1Elements != null && obj.G1Elements.Count != 0)
-			{
-				// write G1Header
-				objStream.Write(BitConverter.GetBytes((uint32_t)obj.G1Elements.Count));
-				objStream.Write(BitConverter.GetBytes((uint32_t)obj.G1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
-
-				var offsetBytesIntoImageData = 0;
-				// write G1Element headers
-				foreach (var g1Element in obj.G1Elements)
-				{
-					// we need to update the offsets of the image data
-					// and we're not going to compress the data on save, so make sure the RLECompressed flag is not set
-					var newElement = g1Element with
-					{
-						Offset = (uint)offsetBytesIntoImageData,
-						Flags = g1Element.Flags & ~G1ElementFlags.IsRLECompressed
-					};
-
-					objStream.Write(newElement.Write());
-					offsetBytesIntoImageData += g1Element.ImageData.Length;
-				}
-
-				// write G1Elements ImageData
-				foreach (var g1Element in obj.G1Elements)
-				{
-					objStream.Write(g1Element.ImageData);
-				}
-			}
+			SaveImageTable(obj.G1Elements, objStream);
 
 			objStream.Flush();
 
@@ -214,6 +187,38 @@ namespace OpenLoco.Dat.FileParsing
 			objStream.Close();
 
 			return headerStream;
+		}
+
+		private static void SaveImageTable(List<G1Element32> g1Elements, Stream objStream)
+		{
+			if (g1Elements != null && g1Elements.Count != 0)
+			{
+				// write G1Header
+				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Count));
+				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
+
+				var offsetBytesIntoImageData = 0;
+				// write G1Element headers
+				foreach (var g1Element in g1Elements)
+				{
+					// we need to update the offsets of the image data
+					// and we're not going to compress the data on save, so make sure the RLECompressed flag is not set
+					var newElement = g1Element with
+					{
+						Offset = (uint)offsetBytesIntoImageData,
+						Flags = g1Element.Flags & ~G1ElementFlags.IsRLECompressed
+					};
+
+					objStream.Write(newElement.Write());
+					offsetBytesIntoImageData += g1Element.ImageData.Length;
+				}
+
+				// write G1Elements ImageData
+				foreach (var g1Element in g1Elements)
+				{
+					objStream.Write(g1Element.ImageData);
+				}
+			}
 		}
 
 		//public static ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data, ILogger? logger = null)
@@ -308,5 +313,13 @@ namespace OpenLoco.Dat.FileParsing
 
 		//	return encodedSpan;
 		//}
+
+		public static void SaveG1(G1Dat g1, string filename)
+		{
+			using (var fs = File.OpenWrite(filename))
+			{
+				SaveImageTable(g1.G1Elements, fs);
+			}
+		}
 	}
 }

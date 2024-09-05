@@ -18,7 +18,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E)
-	: ILocoStruct, ILocoImageTableNames
+	: ILocoStruct, IImageTableNameProvider
 	{
 		public bool TryGetImageName(int id, out string? value)
 			=> ImageIdNameMap.TryGetValue(id - 8, out value);

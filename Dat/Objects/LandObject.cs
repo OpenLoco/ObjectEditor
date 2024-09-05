@@ -38,7 +38,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x1B)] uint8_t NumVariations,
 		[property: LocoStructOffset(0x1C)] uint8_t VariationLikelihood,
 		[property: LocoStructOffset(0x1D), Browsable(false)] uint8_t pad_1D
-		) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
+		) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
 		public S5Header CliffEdgeHeader { get; set; }
 		public S5Header UnkObjHeader { get; set; }

@@ -22,7 +22,7 @@ namespace OpenLoco.Dat.Tests
 			filename = Path.Combine(BaseObjDataPath, filename);
 			var fileSize = new FileInfo(filename).Length;
 			var logger = new Logger();
-			var loaded = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: logger);
+			var loaded = SawyerStreamReader.LoadFullObjectFromFile(filename, logger);
 
 			Assert.That(loaded, Is.Not.Null);
 			var (datFileInfo, locoObject) = loaded.Value;

@@ -18,7 +18,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x05), LocoPropertyMaybeUnused] uint8_t var_05,
 		[property: LocoStructOffset(0x06), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id MapPixelImage
-		) : ILocoStruct, ILocoImageTableNames
+		) : ILocoStruct, IImageTableNameProvider
 	{
 		public bool Validate()
 		{

@@ -8,7 +8,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -17,43 +16,19 @@ using System.Windows.Input;
 
 namespace AvaGui.ViewModels
 {
-	public record UIG1Element32(
-		[Category("Image")] int ImageIndex,
-		[Category("Image")] string ImageName,
-		[Category("G1Element32")] uint32_t Offset,
-		[Category("G1Element32")] int16_t Width,
-		[Category("G1Element32")] int16_t Height,
-		[Category("G1Element32")] int16_t XOffset,
-		[Category("G1Element32")] int16_t YOffset,
-		[Category("G1Element32")] G1ElementFlags Flags,
-		[Category("G1Element32")] int16_t ZoomOffset
-	)
+	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel, ILocoFileViewModel
 	{
-		public UIG1Element32(int imageIndex, string imageName, G1Element32 g1Element)
-			: this(
-				imageIndex,
-				imageName,
-				g1Element.Offset,
-				g1Element.Width,
-				g1Element.Height,
-				g1Element.XOffset,
-				g1Element.YOffset,
-				g1Element.Flags,
-				g1Element.ZoomOffset)
-		{ }
-	}
+		readonly IHasG1Elements G1Provider;
+		readonly IImageTableNameProvider NameProvider;
 
-	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
-	{
-		readonly ILocoObject Parent;
-
-		public ImageTableViewModel(ILocoObject parent, PaletteMap paletteMap, IList<Image<Rgba32>> images)
+		public ImageTableViewModel(IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, IList<Image<Rgba32>> images)
 		{
-			Parent = parent;
+			G1Provider = g1ElementProvider;
+			NameProvider = imageNameProvider;
 			PaletteMap = paletteMap;
 			Images = images;
 
-			_ = this.WhenAnyValue(o => o.Parent)
+			_ = this.WhenAnyValue(o => o.G1Provider)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.PaletteMap)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
@@ -90,7 +65,8 @@ namespace AvaGui.ViewModels
 				{
 					var img = Image.Load<Rgba32>(file);
 					Images[i] = img;
-					Parent.G1Elements[i++].ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img); // simply overwrite existing pixel data
+					var currG1 = G1Provider.G1Elements[i++];
+					currG1.ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags); // simply overwrite existing pixel data
 				}
 			}
 
@@ -164,30 +140,13 @@ namespace AvaGui.ViewModels
 		public int SelectedImageIndex { get; set; } = -1;
 
 		public UIG1Element32? SelectedG1Element
-			=> SelectedImageIndex == -1 || Parent.G1Elements.Count == 0 ? null : new UIG1Element32(SelectedImageIndex, GetImageName(Parent, SelectedImageIndex), Parent.G1Elements[SelectedImageIndex]);
+			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0
+			? null
+			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
 
-		public static string GetImageName(ILocoObject locoObj, int counter)
-		{
-			ILocoImageTableNames? its = null;
-			//var objectName = string.Empty;
-
-			if (locoObj.Object is ILocoImageTableNames itss)
-			{
-				its = itss;
-				//objectName = locoObj.DatFileInfo.S5Header.Name;
-			}
-			//else if (uiObj is UiG1 uiG1 && uiG1.G1 is ILocoImageTableNames itsg)
-			//{
-			//	its = itsg;
-			//	objectName = "g1.dat";
-			//}
-
-			if (its != null && its.TryGetImageName(counter, out var value) && value != null)
-			{
-				return $"{value}";
-			}
-
-			return "<unk>";
-		}
+		public static string GetImageName(IImageTableNameProvider nameProvider, int counter)
+			=> nameProvider.TryGetImageName(counter, out var value) && !string.IsNullOrEmpty(value)
+				? value
+				: counter.ToString();
 	}
 }

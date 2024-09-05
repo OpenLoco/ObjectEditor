@@ -54,7 +54,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x1B)] uint16_t PaymentFactor,
 		[property: LocoStructOffset(0x1D)] uint8_t PaymentIndex,
 		[property: LocoStructOffset(0x1E)] uint8_t UnitSize
-		) : ILocoStruct, ILocoImageTableNames
+		) : ILocoStruct, IImageTableNameProvider
 	{
 		public bool Validate()
 			=> var_02 <= 3840

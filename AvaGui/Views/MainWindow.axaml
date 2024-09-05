@@ -458,6 +458,7 @@
 					<MenuItem Header="Open single object" Command="{Binding OpenSingleObject}" />
 					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
 					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
+					<MenuItem Header="Open G1.dat" Command="{Binding OpenG1}" />
 				</MenuItem>
 				<MenuItem Header="_ObjData" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
 					<MenuItem.Styles>

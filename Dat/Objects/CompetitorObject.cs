@@ -33,7 +33,7 @@ namespace OpenLoco.Dat.Objects
 			[property: LocoStructOffset(0x35)] uint8_t Aggressiveness,
 			[property: LocoStructOffset(0x36)] uint8_t Competitiveness,
 			[property: LocoStructOffset(0x37)] uint8_t var_37
-		) : ILocoStruct, ILocoImageTableNames
+		) : ILocoStruct, IImageTableNameProvider
 	{
 		public const int ImagesLength = 9;
 

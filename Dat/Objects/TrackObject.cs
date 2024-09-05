@@ -60,7 +60,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x2D), LocoArrayLength(TrackObject.MaxStations), Browsable(false)] object_id[] _Stations,       // 0x2D
 		[property: LocoStructOffset(0x34)] uint8_t DisplayOffset,
 		[property: LocoStructOffset(0x35), Browsable(false)] uint8_t pad_35
-		) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
+		) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
 		public List<S5Header> Compatible { get; set; } = [];
 		public List<S5Header> Mods { get; set; } = [];

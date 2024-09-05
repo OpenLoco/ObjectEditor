@@ -788,23 +788,15 @@ namespace OpenLoco.WinGui
 
 					if (CurrentUIObject is IUiObjectWithGraphics uiObjHasGraphics)
 					{
-						//var g1Elements = new List<G1Element32>();
 						var i = 0;
 						foreach (var file in sorted)
 						{
+							var currG1 = uiObjHasGraphics.G1Elements[i++];
 							var img = SixLabors.ImageSharp.Image.Load<Rgba32>(file);
-							var data = model.PaletteMap.ConvertRgba32ImageToG1Data(img);
-							var hasTransparency = data.Any(b => b == 0);
-							var oldImage = uiObjHasGraphics.G1Elements[i++];
-							oldImage.ImageData = model.PaletteMap.ConvertRgba32ImageToG1Data(img);
-							//var g1Element = new G1Element32(0, (short)img.Width, (short)img.Height, oldImage.XOffset, oldImage.YOffset, hasTransparency ? G1ElementFlags.HasTransparency : G1ElementFlags.None, oldImage.ZoomOffset)
-							//{
-							//	ImageData = model.PaletteMap.ConvertRgb24ImageToG1Data(img)
-							//};
-							//g1Elements.Add(g1Element);
+							var newG1Data = model.PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags);
+							currG1.ImageData = newG1Data;
 						}
 
-						//uiObjHasGraphics.G1Elements = g1Elements;
 						currentUIObjectImages = CreateImages(uiObjHasGraphics.G1Elements, model.PaletteMap).ToList();
 						RefreshImageControls();
 					}
@@ -839,15 +831,15 @@ namespace OpenLoco.WinGui
 
 		public string GetImageName(IUiObject? uiObj, int counter)
 		{
-			ILocoImageTableNames? its = null;
+			IImageTableNameProvider? its = null;
 			var objectName = string.Empty;
 
-			if (uiObj is UiLocoObject uiLocoObj && uiLocoObj?.LocoObject != null && uiLocoObj.LocoObject.Object is ILocoImageTableNames itss)
+			if (uiObj is UiLocoObject uiLocoObj && uiLocoObj?.LocoObject != null && uiLocoObj.LocoObject.Object is IImageTableNameProvider itss)
 			{
 				its = itss;
 				objectName = uiLocoObj.DatFileInfo.S5Header.Name;
 			}
-			else if (uiObj is UiG1 uiG1 && uiG1.G1 is ILocoImageTableNames itsg)
+			else if (uiObj is UiG1 uiG1 && uiG1.G1 is IImageTableNameProvider itsg)
 			{
 				its = itsg;
 				objectName = "g1.dat";
@@ -1217,7 +1209,7 @@ namespace OpenLoco.WinGui
 					continue;
 				}
 
-				yield return currElement.Flags.HasFlag(G1ElementFlags.IsR8G8B8Palette)
+				yield return currElement.Flags.HasFlag(G1ElementFlags.IsBgr24)
 					? G1RGBToBitmap(currElement)
 					: G1IndexedToBitmap(currElement, paletteMap, useTransparency);
 			}

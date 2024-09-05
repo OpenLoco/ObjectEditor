@@ -144,8 +144,8 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
-			<StackPanel DataContext="{Binding}" Margin="10" Orientation="Vertical">
-				<StackPanel Orientation="Horizontal">
+			<DockPanel DataContext="{Binding}" Margin="10">
+				<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
 					<Button Grid.Row="3" Command="{Binding ReloadObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
@@ -175,7 +175,9 @@
 						</Border>
 					</TabItem>
 					<TabItem Header="Object">
-						<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						<ScrollViewer>
+							<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						</ScrollViewer>
 					</TabItem>
 					<TabItem Header="String Table">
 						<StackPanel Orientation="Horizontal" Spacing="16">
@@ -303,41 +305,45 @@
 					</TabItem>
 					<TabItem Header="Hex Dump">
 						<DockPanel>
-							<TreeView ItemsSource="{Binding CurrentHexAnnotations}" SelectedItem="{Binding CurrentlySelectedHexAnnotation}" Margin="4" DockPanel.Dock="Left" >
-								<TreeView.ItemTemplate>
-									<TreeDataTemplate ItemsSource="{Binding Nodes}">
-										<Grid>
-											<Grid.ColumnDefinitions>
-												<ColumnDefinition Width="Auto"/>
-												<ColumnDefinition Width="*"/>
-											</Grid.ColumnDefinitions>
-											<TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{Binding Title}" Margin="2"/>
-											<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{Binding OffsetText}" Margin="2" FontFamily="Courier New" />
-										</Grid>
-									</TreeDataTemplate>
-								</TreeView.ItemTemplate>
-							</TreeView>
-							<ItemsRepeater ItemsSource="{Binding CurrentHexDumpLines}" Background="{DynamicResource ButtonBackground}">
-								<ItemsRepeater.ItemTemplate>
-									<DataTemplate>
-										<Grid DockPanel.Dock="Left" Margin="4" x:DataType="vm:HexAnnotationLine">
-											<Grid.ColumnDefinitions>
-												<ColumnDefinition Width="Auto"/>
-												<ColumnDefinition Width="*"/>
-											</Grid.ColumnDefinitions>
-											<Border Grid.Column="0" Grid.ColumnSpan="1" Background="{DynamicResource ButtonBackgroundPointerOver}">
-												<TextBlock Text="{Binding Address}" VerticalAlignment="Center" Margin="4" FontFamily="Courier New" FontWeight="Bold" />
+							<ScrollViewer>
+								<TreeView ItemsSource="{Binding CurrentHexAnnotations}" SelectedItem="{Binding CurrentlySelectedHexAnnotation}" Margin="4" DockPanel.Dock="Left" >
+									<TreeView.ItemTemplate>
+										<TreeDataTemplate ItemsSource="{Binding Nodes}">
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="Auto"/>
+													<ColumnDefinition Width="*"/>
+												</Grid.ColumnDefinitions>
+												<TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{Binding Title}" Margin="2"/>
+												<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Text="{Binding OffsetText}" Margin="2" FontFamily="Courier New" />
+											</Grid>
+										</TreeDataTemplate>
+									</TreeView.ItemTemplate>
+								</TreeView>
+							</ScrollViewer>
+							<ScrollViewer>
+								<ItemsRepeater ItemsSource="{Binding CurrentHexDumpLines}" Background="{DynamicResource ButtonBackground}">
+									<ItemsRepeater.ItemTemplate>
+										<DataTemplate>
+											<Grid DockPanel.Dock="Left" Margin="4" x:DataType="vm:HexAnnotationLine">
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="Auto"/>
+													<ColumnDefinition Width="*"/>
+												</Grid.ColumnDefinitions>
+												<Border Grid.Column="0" Grid.ColumnSpan="1" Background="{DynamicResource ButtonBackgroundPointerOver}">
+													<TextBlock Text="{Binding Address}" VerticalAlignment="Center" Margin="4" FontFamily="Courier New" FontWeight="Bold" />
 
-											</Border>
-											<SelectableTextBlock Grid.Column="1" Margin="4" Text="{Binding Data}" VerticalAlignment="Center" FontFamily="Courier New" SelectionStart="{Binding SelectionStart}" SelectionEnd="{Binding SelectionEnd}" />
-										</Grid>
-									</DataTemplate>
-								</ItemsRepeater.ItemTemplate>
-							</ItemsRepeater>
+												</Border>
+												<SelectableTextBlock Grid.Column="1" Margin="4" Text="{Binding Data}" VerticalAlignment="Center" FontFamily="Courier New" SelectionStart="{Binding SelectionStart}" SelectionEnd="{Binding SelectionEnd}" />
+											</Grid>
+										</DataTemplate>
+									</ItemsRepeater.ItemTemplate>
+								</ItemsRepeater>
+							</ScrollViewer>
 						</DockPanel>
 					</TabItem>
 				</TabControl>
-			</StackPanel>
+			</DockPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:SCV5ViewModel">
@@ -381,24 +387,26 @@
 						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" MinWidth="256" Margin="2" IsEnabled="False" DataContext="{Binding SelectedG1Element, Mode=OneWay}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
 					</StackPanel>
 				</Border>
-				<Border BorderThickness="1">
-					<ListBox ItemsSource="{Binding Bitmaps}" SelectedIndex="{Binding SelectedImageIndex}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
-						<ListBox.ItemsPanel>
-							<ItemsPanelTemplate>
-								<WrapPanel/>
-							</ItemsPanelTemplate>
-						</ListBox.ItemsPanel>
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<Image Source="{Binding}" Stretch="None" Margin="0">
-									<!--<Image.RenderTransform>
+				<ScrollViewer>
+					<Border BorderThickness="1">
+						<ListBox ItemsSource="{Binding Bitmaps}" SelectedIndex="{Binding SelectedImageIndex}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+							<ListBox.ItemsPanel>
+								<ItemsPanelTemplate>
+									<WrapPanel/>
+								</ItemsPanelTemplate>
+							</ListBox.ItemsPanel>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<Image Source="{Binding}" Stretch="None" Margin="0">
+										<!--<Image.RenderTransform>
 										<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
 									</Image.RenderTransform>-->
-								</Image>
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
-				</Border>
+									</Image>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</Border>
+				</ScrollViewer>
 			</DockPanel>
 		</DataTemplate>
 
@@ -542,9 +550,7 @@
 			</Grid>
 		</DockPanel>
 		<Border Margin="8" BorderThickness="1">
-			<ScrollViewer>
-				<ContentControl Content="{Binding CurrentEditorModel}"/>
-			</ScrollViewer>
+			<ContentControl Content="{Binding CurrentEditorModel}"/>
 		</Border>
 	</DockPanel>
 </Window>

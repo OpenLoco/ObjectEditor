@@ -3,6 +3,7 @@ using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects.Sound;
+using OpenLoco.Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -114,10 +115,11 @@ namespace AvaGui.ViewModels
 
 				if (CurrentObject?.LocoObject != null)
 				{
+					var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp) ? itnp : new DefaultImageTableNameProvider();
 					StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 						? new SoundViewModel(CurrentObject.LocoObject)
-						: new ImageTableViewModel(CurrentObject.LocoObject, Model.PaletteMap, CurrentObject.Images);
+						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images);
 
 					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, cf.Filename), false, null);
 					CurrentHexAnnotations = new(treeView);

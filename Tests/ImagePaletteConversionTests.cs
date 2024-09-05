@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using OpenLoco.Common.Logging;
 using OpenLoco.Dat.FileParsing;
 using SixLabors.ImageSharp;
 
@@ -10,6 +11,7 @@ namespace OpenLoco.Dat.Tests
 		const string BaseObjDataPath = "Q:\\Games\\Locomotion\\OriginalObjects\\GoG\\";
 		const string BaseImagePath = "Q:\\Games\\Locomotion\\ExportedImagesFromObjectEditor\\";
 		const string BasePalettePath = "Q:\\Games\\Locomotion\\Palettes\\";
+		readonly ILogger Logger = new Logger();
 
 		[TestCase("AIRPORT1.DAT")]
 		[TestCase("BALDWIN1.DAT")]
@@ -23,7 +25,7 @@ namespace OpenLoco.Dat.Tests
 
 			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
 
-			var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource));
+			var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource), Logger);
 
 			// convert g1 data into an image, and then back
 
@@ -35,7 +37,7 @@ namespace OpenLoco.Dat.Tests
 
 					if (image0 != null)
 					{
-						var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0);
+						var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0, element.Flags);
 						Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i}]");
 					}
 				});

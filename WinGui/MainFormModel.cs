@@ -60,7 +60,7 @@ namespace OpenLoco.WinGui
 			{
 				var filename = Path.Combine(Settings.ObjDataDirectory, dep.Filename);
 #if DEBUG
-				SawyerStreamReader.LoadFullObjectFromFile(filename);
+				SawyerStreamReader.LoadFullObjectFromFile(filename, logger);
 #else
 				try
 				{
@@ -164,7 +164,7 @@ namespace OpenLoco.WinGui
 				try
 				{
 					var startTime = sw.Elapsed;
-					var obj = SawyerStreamReader.LoadFullObjectFromFile(file);
+					var obj = SawyerStreamReader.LoadFullObjectFromFile(file, logger);
 
 					if (obj == null || obj.Value.LocoObject == null)
 					{
@@ -323,7 +323,7 @@ namespace OpenLoco.WinGui
 			MiscFiles = [.. allDataFiles];
 
 			// load G1 only for now since we need it for palette
-			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
+			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName), logger);
 
 			//LoadPalette(); // update palette from g1
 

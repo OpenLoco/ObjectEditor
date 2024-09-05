@@ -211,7 +211,7 @@ namespace AvaGui.Models
 						Logger.Error($"Received no data for {filesystemItem.Name}");
 						return false;
 					}
-					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), $"{filesystemItem.Filename}-{filesystemItem.Name}", true, Logger);
+					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.Name}", true);
 					if (obj == null)
 					{
 						Logger.Error($"Unable to load {filesystemItem.Name} from the received data");
@@ -308,7 +308,7 @@ namespace AvaGui.Models
 			//MiscFiles = [.. allDataFiles];
 
 			// load G1 only for now since we need it for palette
-			G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
+			//G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
 
 			//LoadPalette(); // update palette from g1
 

@@ -10,7 +10,7 @@ namespace OpenLoco.Dat.Types
 		HasTransparency = 1 << 0,   // Image data contains transparent sections (when not set data is plain bmp)
 		unk_01 = 1 << 1,            // Unknown function not used on any entry
 		IsRLECompressed = 1 << 2,   // Image data is encoded using CS's form of run length encoding
-		IsR8G8B8Palette = 1 << 3,   // Image data is a sequence of palette entries R8G8B8
+		IsBgr24 = 1 << 3,           // Image data is in Bgr24 format. Is false (unset), image is in an Index8 palette format
 		HasZoomSprites = 1 << 4,    // Use a different sprite for higher zoom levels
 		NoZoomDraw = 1 << 5,        // Does not get drawn at higher zoom levels (only zoom 0)
 		DuplicatePrevious = 1 << 6, // Duplicates the previous element but with adjusted x/y offsets

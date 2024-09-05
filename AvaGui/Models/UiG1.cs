@@ -5,7 +5,7 @@ using System.ComponentModel;
 namespace AvaGui.Models
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiG1 : IUiObject, IUiObjectWithGraphics
+	public class UiG1 : IUiObject
 	{
 		public G1Dat G1 { get; set; }
 

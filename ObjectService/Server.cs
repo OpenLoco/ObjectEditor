@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
@@ -23,6 +24,8 @@ namespace OpenLoco.ObjectService
 	{
 		public Server(IOptions<ObjectServiceSettings> options) : this(options.Value)
 		{ }
+
+		Common.Logging.ILogger Logger { get; set; } = new Logger();
 
 		// eg: https://localhost:7230/objects/list
 		public static async Task<IResult> ListObjects(LocoDb db)
@@ -110,7 +113,7 @@ namespace OpenLoco.ObjectService
 			var obj = eObj!.Object;
 
 			var pathOnDisk = Path.Combine(objectRootFolder, obj.PathOnDisk.Replace('\\', '/')); // handle windows paths by replacing path separator
-			logger.LogInformation("Loading file from {0}", pathOnDisk);
+			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 			var bytes = returnObjBytes && !obj.IsVanilla && File.Exists(pathOnDisk) ? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk)) : null;
 
 			return new DtoLocoObject(
@@ -163,7 +166,7 @@ namespace OpenLoco.ObjectService
 
 			var creationTime = request.CreationDate;
 
-			var obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes);
+			var obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, Logger);
 			if (obj == null || obj.Value.LocoObject == null)
 			{
 				return Results.BadRequest("Provided data was unable to be decoded into a real loco dat object.");

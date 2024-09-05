@@ -100,16 +100,16 @@ namespace OpenLoco.Dat.FileParsing
 		}
 
 		// load file
-		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject)? LoadFullObjectFromFile(string filename, bool loadExtra = true, ILogger? logger = null)
-			=> LoadFullObjectFromStream(File.ReadAllBytes(filename), filename, loadExtra, logger);
+		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject)? LoadFullObjectFromFile(string filename, ILogger logger, bool loadExtra = true)
+			=> LoadFullObjectFromStream(File.ReadAllBytes(filename), logger, filename, loadExtra);
 
-		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject)? LoadFullObjectFromStream(ReadOnlySpan<byte> data, string filename = "<in-memory>", bool loadExtra = true, ILogger? logger = null)
+		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject)? LoadFullObjectFromStream(ReadOnlySpan<byte> data, ILogger logger, string filename = "<in-memory>", bool loadExtra = true)
 		{
-			logger?.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
+			logger.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
 			if (data.Length < (S5Header.StructLength + ObjectHeader.StructLength))
 			{
-				logger?.Error($"{filename} didn't have enough data");
+				logger.Error($"{filename} didn't have enough data");
 				return new(new DatFileInfo(S5Header.NullHeader, ObjectHeader.NullHeader), null);
 			}
 
@@ -125,7 +125,7 @@ namespace OpenLoco.Dat.FileParsing
 
 			if (decodedData.Length == 0)
 			{
-				logger?.Warning($"No data was decoded from {filename}, file is malformed.");
+				logger.Warning($"No data was decoded from {filename}, file is malformed.");
 				return new(new DatFileInfo(s5Header, objectHeader), null);
 			}
 
@@ -139,7 +139,7 @@ namespace OpenLoco.Dat.FileParsing
 			remainingData = remainingData[locoStructSize..];
 
 			// every object has a string table
-			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct);
+			var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct, logger);
 			remainingData = remainingData[stringTableBytesRead..];
 
 			// some objects have variable-sized data
@@ -153,14 +153,14 @@ namespace OpenLoco.Dat.FileParsing
 			{
 				// some objects have graphics data
 				var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-				logger?.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+				logger.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
 				newObj = new LocoObject(locoStruct, stringTable, imageTable);
 			}
 			catch (Exception ex)
 			{
 				newObj = new LocoObject(locoStruct, stringTable);
-				logger?.Error(ex, "Error loading graphics table");
+				logger.Error(ex, "Error loading graphics table");
 			}
 
 			// some objects have variable-sized data
@@ -232,13 +232,13 @@ namespace OpenLoco.Dat.FileParsing
 			return languageDict;
 		}
 
-		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames, ILogger? logger = null)
+		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames, ILogger logger)
 		{
 			var stringTable = new StringTable();
 
 			if (data.Length == 0 || stringNames.Length == 0)
 			{
-				logger?.Warning("No data for language table");
+				logger.Warning("No data for language table");
 				return (stringTable, 0);
 			}
 
@@ -264,27 +264,27 @@ namespace OpenLoco.Dat.FileParsing
 			return (stringTable, ptr);
 		}
 
-		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct)
+		public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct, ILogger logger)
 		{
 			var locoStructType = locoStruct.GetType();
 			var stringTableStrings = AttributeHelper.Has<LocoStringTableAttribute>(locoStructType)
 				? AttributeHelper.Get<LocoStringTableAttribute>(locoStructType)!.Strings
 				: AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStructType).Select(s => s.Name).ToArray();
 
-			return LoadStringTable(data, stringTableStrings);
+			return LoadStringTable(data, stringTableStrings, logger);
 		}
 
-		public static G1Dat? LoadG1(string filename, ILogger? logger = null)
+		public static G1Dat? LoadG1(string filename, ILogger logger)
 		{
 			if (!File.Exists(filename))
 			{
-				logger?.Debug($"File {filename} does not exist");
+				logger.Debug($"File {filename} does not exist");
 				return null;
 			}
 
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
-			logger?.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
+			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
 			return new G1Dat(g1Header, imageTable);
 		}
 

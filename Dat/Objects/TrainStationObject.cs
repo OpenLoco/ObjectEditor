@@ -37,7 +37,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes,
 		[property: LocoStructOffset(0x3E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.ManualPowerLength), Browsable(false)] uint8_t[] _ManualPower
-	) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
+	) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
 		public List<S5Header> Compatible { get; set; } = [];
 

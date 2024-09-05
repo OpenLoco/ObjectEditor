@@ -37,7 +37,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x2C), LocoStructVariableLoad, Browsable(false)] object_id _CargoTypeId,
 		[property: LocoStructOffset(0x2D)] uint8_t pad_2D,
 		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes
-	) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
+	) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
 		public const int MaxImageOffsets = 4;
 		public const int MaxNumMods = 7;

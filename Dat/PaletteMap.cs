@@ -63,17 +63,28 @@ namespace OpenLoco.Dat
 		public (Color Color, byte Index)[] ReservedColours
 			=> [Transparent, .. DirectXReserved, .. PrimaryRemapColours, .. UnkReserved, .. SecondaryRemapColours, ChunkedTransparent];
 
-		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img)
+		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags)
 		{
 			var pixels = img.Width * img.Height;
 			var bytes = new byte[pixels];
 
+			var index = 0;
 			for (var y = 0; y < img.Height; ++y)
 			{
 				for (var x = 0; x < img.Width; ++x)
 				{
-					var index = (y * img.Width) + x;
-					bytes[index] = ColorToPaletteIndex(img[x, y]);
+					if (flags.HasFlag(G1ElementFlags.IsBgr24))
+					{
+						var pixel = img[x, y];
+						bytes[index++] = pixel.B;
+						bytes[index++] = pixel.G;
+						bytes[index++] = pixel.R;
+					}
+					else
+					{
+						index = (y * img.Width) + x;
+						bytes[index] = ColorToPaletteIndex(img[x, y]);
+					}
 				}
 			}
 
@@ -89,16 +100,36 @@ namespace OpenLoco.Dat
 
 			var image = new Image<Rgba32>(g1Element.Width, g1Element.Height);
 
+			var index = 0;
 			for (var y = 0; y < g1Element.Height; y++)
 			{
 				for (var x = 0; x < g1Element.Width; x++)
 				{
-					var index = (y * g1Element.Width) + x;
-					var paletteIndex = g1Element.ImageData[index];
+					if (g1Element.Flags.HasFlag(G1ElementFlags.IsBgr24))
+					{
+						if (index >= g1Element.ImageData.Length)
+						{
+							// malformed image - didn't have enough bytes to cover the full dimensions
+							// steam's g1.dat index 304 (the default palette) has this issue. 236x16 but should be 236x1 since it only has 236*3=708 bytes of data
+							break;
+						}
+						// rgb
+						var b = g1Element.ImageData[index++];
+						var g = g1Element.ImageData[index++];
+						var r = g1Element.ImageData[index++];
+						image[x, y] = Color.FromRgb(r, g, b);
+					}
+					else
+					{
+						// palette
 
-					image[x, y] = paletteIndex == 0 && g1Element.Flags.HasFlag(G1ElementFlags.HasTransparency)
-						? Color.Transparent
-						: Palette[paletteIndex].Color;
+						var paletteIndex = g1Element.ImageData[index];
+						image[x, y] = paletteIndex == 0 && g1Element.Flags.HasFlag(G1ElementFlags.HasTransparency)
+							? Color.Transparent
+							: Palette[paletteIndex].Color;
+
+						index++;
+					}
 				}
 			}
 

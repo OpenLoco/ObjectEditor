@@ -33,7 +33,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x13), LocoArrayLength(TrainSignalObject.ModsLength), Browsable(false)] object_id[] ModHeaderIds,
 		[property: LocoStructOffset(0x1A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x1C)] uint16_t ObsoleteYear
-	) : ILocoStruct, ILocoStructVariableData, ILocoImageTableNames
+	) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
 		public const int ModsLength = 7;
 

@@ -12,7 +12,7 @@ namespace OpenLoco.Dat.Objects
 	public record SnowObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image
-		) : ILocoStruct, ILocoImageTableNames
+		) : ILocoStruct, IImageTableNameProvider
 	{
 		public bool Validate() => true;
 

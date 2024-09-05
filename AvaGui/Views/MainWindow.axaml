@@ -97,7 +97,7 @@
 					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 				<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Name" Margin="4"/>
-				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Name}" IsReadOnly="True" Margin="4" />
+				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Name}" Margin="4" />
 
 				<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Object Type" Margin="4" />
 				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding ObjectType}" IsReadOnly="True" Margin="4" />

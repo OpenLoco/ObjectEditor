@@ -346,23 +346,18 @@ namespace OpenLoco.Dat.FileParsing
 
 		public static byte[] DecodeRLEImageData(G1Element32 img)
 		{
-			// not sure why this happens, but this seems 'legit'; airport files have these
-			if (img.ImageData.Length == 0)
-			{
-				return [];
-			}
-
 			var width = img.Width;
 			var height = img.Height;
 
 			var dstLineWidth = img.Width;
-			var dst0Index = 0; // dstLineWidth * img.yOffset + img.xOffset;
+			var dst0Index = 0;
 
 			var srcBuf = img.ImageData;
 			var dstBuf = new byte[img.Width * img.Height]; // Assuming a single byte per pixel
 
 			var srcY = 0;
 
+			// Move up to the first line of the image if source_y_start is negative. Why does this even occur?
 			if (srcY < 0)
 			{
 				srcY++;
@@ -370,48 +365,41 @@ namespace OpenLoco.Dat.FileParsing
 				dst0Index += dstLineWidth;
 			}
 
+			// For every line in the image
 			for (var i = 0; i < height; i++)
 			{
 				var y = srcY + i;
 
-				var lineOffset = srcBuf[y * 2] | (srcBuf[(y * 2) + 1] << 8);
-
-				var nextRunIndex = lineOffset;
+				// The first part of the source pointer is a list of offsets to different lines
+				// This will move the pointer to the correct source line.
+				var nextRunIndex = srcBuf[y * 2] | (srcBuf[(y * 2) + 1] << 8);
 				var dstLineStartIndex = dst0Index + (dstLineWidth * i);
 
-				while (true)
+				// For every data chunk in the line
+				var isEndOfLine = false;
+				while (!isEndOfLine)
 				{
 					var srcIndex = nextRunIndex;
-
-					var rleInfoByte = srcBuf[srcIndex++];
-					var dataSize = rleInfoByte & 0x7F;
-					var isEndOfLine = (rleInfoByte & 0x80) != 0;
-
+					var dataSize = srcBuf[srcIndex++];
 					var firstPixelX = srcBuf[srcIndex++];
+					isEndOfLine = (dataSize & 0x80) != 0;
+					dataSize &= 0x7F;
+
+					// Have our next source pointer point to the next data section
 					nextRunIndex = srcIndex + dataSize;
 
-					var x = firstPixelX - 0; // img.xOffset;
-					var numPixels = dataSize;
+					var x = firstPixelX;
+					int numPixels = dataSize;
 
-					if (x > 0)
-					{
-						x++;
-						srcIndex++;
-						numPixels--;
-					}
-					else if (x < 0)
-					{
-						srcIndex += -x;
-						numPixels += x;
-						x = 0;
-					}
-
+					// If the end position is further out than the whole image
+					// end position then we need to shorten the line again
 					numPixels = Math.Min(numPixels, width - x);
 
 					var dstIndex = dstLineStartIndex + x;
 
 					if (numPixels > 0)
 					{
+						// Since we're sampling each pixel at this zoom level, just do a straight std::memcpy
 						Array.Copy(srcBuf, srcIndex, dstBuf, dstIndex, numPixels);
 					}
 

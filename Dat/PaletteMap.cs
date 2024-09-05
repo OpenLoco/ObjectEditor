@@ -48,9 +48,6 @@ namespace OpenLoco.Dat
 		public (Color Color, byte Index)[] PrimaryRemapColours
 			=> [.. Palette[7..10], .. Palette[246..255]];
 
-		public (Color Color, byte Index)[] UnkReserved
-			=> Palette[154..166];
-
 		public (Color Color, byte Index)[] SecondaryRemapColours
 			=> Palette[202..214];
 
@@ -58,10 +55,10 @@ namespace OpenLoco.Dat
 			=> Palette[255];
 
 		public (Color Color, byte Index)[] ValidColours
-			=> [.. Palette[10..154], .. Palette[166..202], .. Palette[214..246]];
+			=> [.. Palette[10..202], .. Palette[214..246]];
 
 		public (Color Color, byte Index)[] ReservedColours
-			=> [Transparent, .. DirectXReserved, .. PrimaryRemapColours, .. UnkReserved, .. SecondaryRemapColours, ChunkedTransparent];
+			=> [Transparent, .. DirectXReserved, .. PrimaryRemapColours, .. SecondaryRemapColours, ChunkedTransparent];
 
 		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags)
 		{

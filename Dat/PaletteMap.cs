@@ -63,7 +63,7 @@ namespace OpenLoco.Dat
 		public (Color Color, byte Index)[] ReservedColours
 			=> [Transparent, .. DirectXReserved, .. PrimaryRemapColours, .. UnkReserved, .. SecondaryRemapColours, ChunkedTransparent];
 
-		public byte[] ConvertRgb32ImageToG1Data(Image<Rgba32> img)
+		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img)
 		{
 			var pixels = img.Width * img.Height;
 			var bytes = new byte[pixels];
@@ -80,7 +80,7 @@ namespace OpenLoco.Dat
 			return bytes;
 		}
 
-		public Image<Rgba32>? ConvertG1ToRgb32Bitmap(G1Element32 g1Element)
+		public Image<Rgba32>? ConvertG1ToRgba32Bitmap(G1Element32 g1Element)
 		{
 			if (g1Element.Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
 			{

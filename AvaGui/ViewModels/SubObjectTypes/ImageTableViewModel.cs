@@ -90,7 +90,7 @@ namespace AvaGui.ViewModels
 				{
 					var img = Image.Load<Rgba32>(file);
 					Images[i] = img;
-					Parent.G1Elements[i++].ImageData = PaletteMap.ConvertRgb32ImageToG1Data(img); // simply overwrite existing pixel data
+					Parent.G1Elements[i++].ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img); // simply overwrite existing pixel data
 				}
 			}
 

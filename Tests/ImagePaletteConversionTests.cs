@@ -31,11 +31,11 @@ namespace OpenLoco.Dat.Tests
 			{
 				_ = Parallel.ForEach(obj.Value.LocoObject.G1Elements, (element, _, i) =>
 				{
-					var image0 = paletteMap.ConvertG1ToRgb32Bitmap(element);
+					var image0 = paletteMap.ConvertG1ToRgba32Bitmap(element);
 
 					if (image0 != null)
 					{
-						var g1Bytes = paletteMap.ConvertRgb32ImageToG1Data(image0);
+						var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0);
 						Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i}]");
 					}
 				});

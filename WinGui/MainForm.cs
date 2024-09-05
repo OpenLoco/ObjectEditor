@@ -131,7 +131,7 @@ namespace OpenLoco.WinGui
 				//var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
 				//model = new MainFormModel(logger, SettingsFile, palette);
 
-				var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgb24>(stream!);
+				var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgba32>(stream!);
 				var palette = new PaletteMap(paletteBitmap);
 				model = new MainFormModel(logger, SettingsFile, palette);
 			}
@@ -792,11 +792,11 @@ namespace OpenLoco.WinGui
 						var i = 0;
 						foreach (var file in sorted)
 						{
-							var img = SixLabors.ImageSharp.Image.Load<Rgb24>(file);
-							var data = model.PaletteMap.ConvertRgb24ImageToG1Data(img);
+							var img = SixLabors.ImageSharp.Image.Load<Rgba32>(file);
+							var data = model.PaletteMap.ConvertRgba32ImageToG1Data(img);
 							var hasTransparency = data.Any(b => b == 0);
 							var oldImage = uiObjHasGraphics.G1Elements[i++];
-							oldImage.ImageData = model.PaletteMap.ConvertRgb24ImageToG1Data(img);
+							oldImage.ImageData = model.PaletteMap.ConvertRgba32ImageToG1Data(img);
 							//var g1Element = new G1Element32(0, (short)img.Width, (short)img.Height, oldImage.XOffset, oldImage.YOffset, hasTransparency ? G1ElementFlags.HasTransparency : G1ElementFlags.None, oldImage.ZoomOffset)
 							//{
 							//	ImageData = model.PaletteMap.ConvertRgb24ImageToG1Data(img)
@@ -1292,7 +1292,7 @@ namespace OpenLoco.WinGui
 				if (openFileDialog.ShowDialog() == DialogResult.OK && File.Exists(openFileDialog.FileName))
 				{
 					//model.PaletteFile = openFileDialog.FileName;
-					var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgb24>(openFileDialog.FileName);
+					var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgba32>(openFileDialog.FileName);
 					model.PaletteMap = new PaletteMap(paletteBitmap);
 
 					RefreshObjectUI();

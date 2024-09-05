@@ -235,7 +235,7 @@ namespace AvaGui.Models
 
 					foreach (var i in locoObject?.G1Elements)
 					{
-						images.Add(PaletteMap.ConvertG1ToRgb32Bitmap(i));
+						images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
 					}
 				}
 				else
@@ -250,7 +250,7 @@ namespace AvaGui.Models
 
 						foreach (var i in locoObject?.G1Elements)
 						{
-							images.Add(PaletteMap.ConvertG1ToRgb32Bitmap(i));
+							images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
 						}
 					}
 				}

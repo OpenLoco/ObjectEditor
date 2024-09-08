@@ -1,5 +1,7 @@
 using AvaGui.Models;
+using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
@@ -13,6 +15,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace AvaGui.ViewModels
 {
@@ -36,13 +39,138 @@ namespace AvaGui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
-
 			_ = this.WhenAnyValue(o => o.Images)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+			_ = this.WhenAnyValue(o => o.AnimationSpeed)
+				.Subscribe(_ => UpdateAnimationSpeed());
 
 			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
 			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
+
+			SelectionModel = new SelectionModel<Bitmap>
+			{
+				SingleSelect = false
+			};
+			SelectionModel.SelectionChanged += SelectionChanged;
+
+			// Set up the animation timer
+			animationTimer = new DispatcherTimer
+			{
+				Interval = TimeSpan.FromMilliseconds(25) // Adjust animation speed as needed
+			};
+			animationTimer.Tick += AnimationTimer_Tick;
+			animationTimer.Start();
 		}
+
+		readonly DispatcherTimer animationTimer;
+		int currentFrameIndex;
+
+		public IList<Bitmap> SelectedBitmaps { get; set; }
+
+		[Reactive]
+		public Bitmap SelectedBitmapPreview { get; set; }
+
+		[Reactive]
+		public int AnimationWindowHeight { get; set; }
+
+		void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+		{
+			var sm = (SelectionModel<Bitmap>)sender;
+
+			if (sm.SelectedIndexes.Count > 0)
+			{
+				SelectedImageIndex = sm.SelectedIndex;
+			}
+
+			// ... handle selection changed
+			SelectedBitmaps = sm.SelectedItems.Cast<Bitmap>().ToList();
+			AnimationWindowHeight = (int)SelectedBitmaps.Max(x => x.Size.Height) * 2;
+		}
+
+		[Reactive]
+		public int AnimationSpeed { get; set; } = 40;
+
+		void UpdateAnimationSpeed()
+		{
+			if (animationTimer == null)
+			{
+				return;
+			}
+
+			animationTimer.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed);
+		}
+
+		private void AnimationTimer_Tick(object? sender, EventArgs e)
+		{
+			if (SelectedBitmaps == null || SelectedBitmaps.Count == 0)
+			{
+				return;
+			}
+
+			if (currentFrameIndex >= SelectedBitmaps.Count)
+			{
+				currentFrameIndex = 0;
+			}
+
+			// Update the displayed image
+			SelectedBitmapPreview = SelectedBitmaps[currentFrameIndex];
+			SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex];
+
+			// Move to the next frame, looping back to the beginning if necessary
+			currentFrameIndex = (currentFrameIndex + 1) % SelectedBitmaps.Count;
+		}
+
+		[Reactive]
+		public PaletteMap PaletteMap { get; set; }
+
+		[Reactive]
+		public ICommand ImportImagesCommand { get; set; }
+
+		[Reactive]
+		public ICommand ExportImagesCommand { get; set; }
+
+		[Reactive]
+		public int Zoom { get; set; } = 1;
+
+		// where the actual image data is stored
+		[Reactive]
+		public IList<Image<Rgba32>> Images { get; set; }
+
+		// what is displaying on the ui
+		public IList<Bitmap?> Bitmaps
+		{
+			get
+			{
+				// this shenanigans is to handle the DuplicatePrevious flag. we store it as null
+				// and here we just reuse the previous image if the flag is set (ie null image)
+				var list = G1ImageConversion.CreateAvaloniaImages(Images).ToList();
+				Bitmap? prevValue = null;
+
+				for (var i = 0; i < list.Count; i++)
+				{
+					if (list[i] == null)
+					{
+						list[i] = prevValue;
+					}
+					else
+					{
+						prevValue = list[i];
+					}
+				}
+				return list;
+			}
+		}
+
+		[Reactive]
+		public int SelectedImageIndex { get; set; } = -1;
+
+		[Reactive]
+		public SelectionModel<Bitmap> SelectionModel { get; set; }
+
+		public UIG1Element32? SelectedG1Element
+			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0
+			? null
+			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
 
 		public async Task ImportImages()
 		{
@@ -71,7 +199,6 @@ namespace AvaGui.ViewModels
 			}
 
 			this.RaisePropertyChanged(nameof(Bitmaps));
-			//this.RaisePropertyChanged(nameof(Images));
 		}
 
 		public async Task ExportImages()
@@ -96,53 +223,6 @@ namespace AvaGui.ViewModels
 				}
 			}
 		}
-
-		[Reactive]
-		public PaletteMap PaletteMap { get; set; }
-
-		[Reactive]
-		public ICommand ImportImagesCommand { get; set; }
-
-		[Reactive]
-		public ICommand ExportImagesCommand { get; set; }
-
-		[Reactive]
-		public int Zoom { get; set; } = 1;
-
-		[Reactive]
-		public IList<Image<Rgba32>> Images { get; set; }
-
-		public IList<Bitmap?> Bitmaps
-		{
-			get
-			{
-				// this shenanigans is to handle the DuplicatePrevious flag. we store it as null
-				// and here we just reuse the previous image if the flag is set (ie null image)
-				var list = G1ImageConversion.CreateAvaloniaImages(Images).ToList();
-				Bitmap? prevValue = null;
-
-				for (var i = 0; i < list.Count; i++)
-				{
-					if (list[i] == null)
-					{
-						list[i] = prevValue;
-					}
-					else
-					{
-						prevValue = list[i];
-					}
-				}
-				return list;
-			}
-		}
-
-		[Reactive]
-		public int SelectedImageIndex { get; set; } = -1;
-
-		public UIG1Element32? SelectedG1Element
-			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0
-			? null
-			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
 
 		public static string GetImageName(IImageTableNameProvider nameProvider, int counter)
 			=> nameProvider.TryGetImageName(counter, out var value) && !string.IsNullOrEmpty(value)

@@ -70,17 +70,21 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public Bitmap SelectedBitmapPreview { get; set; }
 
+		[Reactive]
+		public int AnimationWindowHeight { get; set; }
+
 		void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
 		{
 			var sm = (SelectionModel<Bitmap>)sender;
 
-			if (e.SelectedIndexes.Count > 0)
+			if (sm.SelectedIndexes.Count > 0)
 			{
 				SelectedImageIndex = sm.SelectedIndex;
 			}
 
 			// ... handle selection changed
 			SelectedBitmaps = sm.SelectedItems.Cast<Bitmap>().ToList();
+			AnimationWindowHeight = (int)SelectedBitmaps.Max(x => x.Size.Height) * 2;
 		}
 
 		[Reactive]
@@ -110,6 +114,7 @@ namespace AvaGui.ViewModels
 
 			// Update the displayed image
 			SelectedBitmapPreview = SelectedBitmaps[currentFrameIndex];
+			SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex];
 
 			// Move to the next frame, looping back to the beginning if necessary
 			currentFrameIndex = (currentFrameIndex + 1) % SelectedBitmaps.Count;

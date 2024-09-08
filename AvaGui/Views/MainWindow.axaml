@@ -354,6 +354,7 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:ImageTableViewModel">
+
 			<DockPanel>
 				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
 					<Button Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
@@ -382,38 +383,46 @@
 						</Button.Flyout>
 					</Button>
 				</StackPanel>
-				<Border BorderThickness="1" DockPanel.Dock="Right">
-					<StackPanel Orientation="Vertical">
-						<Border BorderThickness="1" Margin="4">
-							<StackPanel Orientation="Vertical">
-								<Image Source="{Binding SelectedBitmapPreview}" Stretch="None" Margin="4" Height="256" Width="256"/>
-								<TextBlock HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
-								<Slider Minimum="1" Maximum="40" Value="{Binding AnimationSpeed}" />
-							</StackPanel>
+				<Grid ColumnDefinitions="*, Auto, 256">
+					<ScrollViewer>
+						<Border BorderThickness="1">
+							<ListBox ItemsSource="{Binding Bitmaps}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+								<ListBox.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel/>
+									</ItemsPanelTemplate>
+								</ListBox.ItemsPanel>
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<Image Source="{Binding}" Stretch="None" Margin="0" />
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
 						</Border>
-						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" MinWidth="256" Margin="2" IsEnabled="False" DataContext="{Binding SelectedG1Element, Mode=OneWay}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
-					</StackPanel>
-				</Border>
-				<ScrollViewer>
-					<Border BorderThickness="1">
-						<ListBox ItemsSource="{Binding Bitmaps}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
-							<ListBox.ItemsPanel>
-								<ItemsPanelTemplate>
-									<WrapPanel/>
-								</ItemsPanelTemplate>
-							</ListBox.ItemsPanel>
-							<ListBox.ItemTemplate>
-								<DataTemplate>
-									<Image Source="{Binding}" Stretch="None" Margin="0">
-										<!--<Image.RenderTransform>
-										<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
-									</Image.RenderTransform>-->
+					</ScrollViewer>
+					<GridSplitter Grid.Column="1" />
+					<Border BorderThickness="1" Grid.Column="2">
+						<DockPanel>
+							<Border BorderThickness="1" DockPanel.Dock="Top">
+								<StackPanel Orientation="Vertical" MaxHeight="512">
+									<Image Name="AnimationPreviewPP" Source="{Binding SelectedBitmapPreview}" Stretch="None" Margin="4" MaxHeight="1024" MinHeight="64" Height="{Binding AnimationWindowHeight}" Width="256">
+										<Image.RenderTransform>
+											<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+										</Image.RenderTransform>
+
 									</Image>
-								</DataTemplate>
-							</ListBox.ItemTemplate>
-						</ListBox>
+									<TextBlock HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
+									<Slider Minimum="1" Maximum="40" Value="{Binding AnimationSpeed}" />
+									<TextBlock HorizontalAlignment="Center" Text="{Binding Zoom, StringFormat='Zoom: {0}x'}"></TextBlock>
+									<Slider Minimum="1" Maximum="10" Value="{Binding Zoom}" />
+								</StackPanel>
+							</Border>
+							<ScrollViewer>
+								<pgc:PropertyGrid x:Name="propertyGrid_imageProps" Margin="8" MinWidth="256" IsEnabled="False" DataContext="{Binding SelectedG1Element, Mode=OneWay}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
+							</ScrollViewer>
+						</DockPanel>
 					</Border>
-				</ScrollViewer>
+				</Grid>
 			</DockPanel>
 		</DataTemplate>
 

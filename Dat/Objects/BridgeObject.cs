@@ -42,11 +42,11 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x12)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x14)] BridgeDisabledTrackFlags DisabledTrackFlags,
 		[property: LocoStructOffset(0x16), Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x1A), LocoPropertyMaybeUnused] uint8_t NumCompatibleTrackMods,
+		[property: LocoStructOffset(0x1A)] uint8_t NumCompatibleTrackMods,
 		[property: LocoStructOffset(0x1B), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumTrackMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] TrackModHeaderIds,
-		[property: LocoStructOffset(0x22), LocoPropertyMaybeUnused] uint8_t NumCompatibleRoadMods,
+		[property: LocoStructOffset(0x22)] uint8_t NumCompatibleRoadMods,
 		[property: LocoStructOffset(0x23), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumRoadMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] RoadModHeaderIds,
-		[property: LocoStructOffset(0x2A), LocoPropertyMaybeUnused] uint16_t DesignedYear
+		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear
 		) : ILocoStruct, ILocoStructVariableData
 	{
 		public const int _03PadSize = 3;

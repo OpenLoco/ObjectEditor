@@ -383,13 +383,16 @@
 					</Button>
 				</StackPanel>
 				<Border BorderThickness="1" DockPanel.Dock="Right">
-					<StackPanel>
+					<StackPanel Orientation="Vertical">
+						<Border BorderThickness="1" Margin="4">
+							<Image Source="{Binding SelectedBitmapPreview}" Stretch="None" Margin="4" Height="256" Width="256"/>
+						</Border>
 						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" MinWidth="256" Margin="2" IsEnabled="False" DataContext="{Binding SelectedG1Element, Mode=OneWay}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
 					</StackPanel>
 				</Border>
 				<ScrollViewer>
 					<Border BorderThickness="1">
-						<ListBox ItemsSource="{Binding Bitmaps}" SelectedIndex="{Binding SelectedImageIndex}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+						<ListBox ItemsSource="{Binding Bitmaps}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
 							<ListBox.ItemsPanel>
 								<ItemsPanelTemplate>
 									<WrapPanel/>

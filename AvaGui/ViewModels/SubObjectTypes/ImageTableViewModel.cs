@@ -39,9 +39,10 @@ namespace AvaGui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
-
 			_ = this.WhenAnyValue(o => o.Images)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+			_ = this.WhenAnyValue(o => o.AnimationSpeed)
+				.Subscribe(_ => UpdateAnimationSpeed());
 
 			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
 			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
@@ -80,6 +81,19 @@ namespace AvaGui.ViewModels
 
 			// ... handle selection changed
 			SelectedBitmaps = sm.SelectedItems.Cast<Bitmap>().ToList();
+		}
+
+		[Reactive]
+		public int AnimationSpeed { get; set; } = 40;
+
+		void UpdateAnimationSpeed()
+		{
+			if (animationTimer == null)
+			{
+				return;
+			}
+
+			animationTimer.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed);
 		}
 
 		private void AnimationTimer_Tick(object? sender, EventArgs e)

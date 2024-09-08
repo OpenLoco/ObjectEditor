@@ -385,7 +385,11 @@
 				<Border BorderThickness="1" DockPanel.Dock="Right">
 					<StackPanel Orientation="Vertical">
 						<Border BorderThickness="1" Margin="4">
-							<Image Source="{Binding SelectedBitmapPreview}" Stretch="None" Margin="4" Height="256" Width="256"/>
+							<StackPanel Orientation="Vertical">
+								<Image Source="{Binding SelectedBitmapPreview}" Stretch="None" Margin="4" Height="256" Width="256"/>
+								<TextBlock HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
+								<Slider Minimum="1" Maximum="40" Value="{Binding AnimationSpeed}" />
+							</StackPanel>
 						</Border>
 						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" MinWidth="256" Margin="2" IsEnabled="False" DataContext="{Binding SelectedG1Element, Mode=OneWay}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
 					</StackPanel>

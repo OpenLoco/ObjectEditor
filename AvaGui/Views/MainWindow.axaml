@@ -405,7 +405,7 @@
 						<DockPanel>
 							<Border BorderThickness="1" DockPanel.Dock="Top">
 								<StackPanel Orientation="Vertical" MaxHeight="512">
-									<Image Name="AnimationPreviewPP" Source="{Binding SelectedBitmapPreview}" Stretch="None" Margin="4" MaxHeight="1024" MinHeight="64" Height="{Binding AnimationWindowHeight}" Width="256">
+									<Image Name="AnimationPreviewPP" Source="{Binding SelectedBitmapPreview}" RenderOptions.BitmapInterpolationMode="None" Stretch="None" Margin="4" MaxHeight="1024" MinHeight="64" Height="{Binding AnimationWindowHeight}" Width="256">
 										<Image.RenderTransform>
 											<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
 										</Image.RenderTransform>

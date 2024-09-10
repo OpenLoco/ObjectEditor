@@ -2,7 +2,6 @@ using AvaGui.Models;
 using Avalonia.Controls;
 using Dat;
 using OpenLoco.Dat.Data;
-using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -160,8 +159,6 @@ namespace AvaGui.ViewModels
 				FileLocation.Local);
 		}
 
-		readonly IEnumerable<DtoObjectIndexEntry>? cachedIndexFromServer;
-
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 		{
 			if (Design.IsDesignMode)
@@ -170,7 +167,7 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			if (!useExistingIndex || cachedIndexFromServer == null)
+			if (!useExistingIndex || Model.ObjectIndexOnline == null)
 			{
 				Model.ObjectIndexOnline = new ObjectIndex()
 				{

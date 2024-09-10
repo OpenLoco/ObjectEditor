@@ -20,7 +20,9 @@ builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddHttpLogging(logging =>
 {
-	logging.LoggingFields = HttpLoggingFields.All;
+	logging.LoggingFields = HttpLoggingFields.Request
+		| HttpLoggingFields.ResponsePropertiesAndHeaders
+		| HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
 	logging.CombineLogs = true;
 });
 

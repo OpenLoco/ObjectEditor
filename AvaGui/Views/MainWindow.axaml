@@ -418,7 +418,7 @@
 								</StackPanel>
 							</Border>
 							<ScrollViewer>
-								<pgc:PropertyGrid x:Name="propertyGrid_imageProps" Margin="8" MinWidth="256" IsEnabled="False" DataContext="{Binding SelectedG1Element, Mode=OneWay}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
+								<pgc:PropertyGrid x:Name="propertyGrid_imageProps" Margin="8" MinWidth="256" DataContext="{Binding SelectedG1Element}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
 							</ScrollViewer>
 						</DockPanel>
 					</Border>

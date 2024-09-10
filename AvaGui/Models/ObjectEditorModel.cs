@@ -179,7 +179,7 @@ namespace AvaGui.Models
 
 					if (!OnlineCache.TryGetValue(uniqueObjectId, out var locoObj))
 					{
-						Logger.Debug($"Didn't find object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - downloading it");
+						Logger.Debug($"Didn't find object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - downloading it from {WebClient.BaseAddress}");
 						locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId, true)).Result;
 
 						if (locoObj == null)
@@ -194,11 +194,10 @@ namespace AvaGui.Models
 						}
 						else if (locoObj.OriginalBytes == null || locoObj.OriginalBytes.Length == 0)
 						{
-							Logger.Error($"Unable to load object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no object data");
-							return false;
+							Logger.Warning($"Unable to load object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no DAT object data");
 						}
 
-						Logger.Error($"Added object {filesystemItem.Name} with unique id {uniqueObjectId} to local cache");
+						Logger.Info($"Added object {filesystemItem.Name} with unique id {uniqueObjectId} to local cache");
 						OnlineCache.Add(uniqueObjectId, locoObj);
 					}
 					else
@@ -206,20 +205,20 @@ namespace AvaGui.Models
 						Logger.Debug($"Found object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - reusing it");
 					}
 
-					if (locoObj.OriginalBytes == null)
+					if (locoObj != null && locoObj.OriginalBytes?.Length > 0)
 					{
-						Logger.Error($"Received no data for {filesystemItem.Name}");
-						return false;
-					}
-					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.Name}", true);
-					if (obj == null)
-					{
-						Logger.Error($"Unable to load {filesystemItem.Name} from the received data");
-						return false;
+						var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.Name}", true);
+						if (obj == null)
+						{
+							Logger.Warning($"Unable to load {filesystemItem.Name} from the received DAT object data");
+						}
+						else
+						{
+							fileInfo = obj?.DatFileInfo;
+							locoObject = obj?.LocoObject;
+						}
 					}
 
-					fileInfo = obj.Value.DatFileInfo;
-					locoObject = obj.Value.LocoObject;
 					metadata = new MetadataModel(locoObj.OriginalName, locoObj.OriginalChecksum)
 					{
 						Description = locoObj.Description,
@@ -233,9 +232,12 @@ namespace AvaGui.Models
 						Licence = locoObj.Licence,
 					};
 
-					foreach (var i in locoObject?.G1Elements)
+					if (locoObject != null)
 					{
-						images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+						foreach (var i in locoObject.G1Elements)
+						{
+							images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+						}
 					}
 				}
 				else
@@ -262,7 +264,7 @@ namespace AvaGui.Models
 				return false;
 			}
 
-			if (locoObject == null || fileInfo == null)
+			if (locoObject == null && fileInfo == null && metadata == null && images == null)
 			{
 				Logger.Error($"Unable to load {filesystemItem.Filename}");
 				uiLocoFile = null;

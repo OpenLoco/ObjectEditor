@@ -1,3 +1,4 @@
+using AvaGui.Models;
 using OpenLoco.Dat.Types.SCV5;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -8,13 +9,13 @@ namespace AvaGui.ViewModels
 	public class SCV5ViewModel : ReactiveObject, ILocoFileViewModel
 	{
 		public SCV5ViewModel()
-			=> _ = this.WhenAnyValue(o => o.CurrentFileName)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentFile)));
+			=> _ = this.WhenAnyValue(o => o.CurrentFile)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentS5File)));
 
 		[Reactive]
-		public string CurrentFileName { get; set; }
+		public S5File CurrentS5File { get; set; }
 
 		[Reactive]
-		public S5File CurrentFile { get; set; }
+		public FileSystemItem CurrentFile { get; init; }
 	}
 }

@@ -34,6 +34,9 @@ namespace AvaGui.ViewModels
 		readonly IImageTableNameProvider NameProvider;
 		readonly ILogger Logger;
 
+		[Reactive]
+		public FileSystemItem CurrentFile { get; init; }
+
 		public ImageTableViewModel(IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, IList<Image<Rgba32>> images, ILogger logger)
 		{
 			G1Provider = g1ElementProvider;

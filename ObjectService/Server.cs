@@ -126,7 +126,7 @@ namespace OpenLoco.ObjectService
 				obj.ObjectType,
 				obj.VehicleType,
 				obj.Description,
-				obj.Authors,
+				eObj.Authors,
 				obj.CreationDate,
 				obj.LastEditDate,
 				obj.UploadDate,

@@ -4,15 +4,16 @@ using OpenLoco.Common;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
+using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using var db = ExampleRun();
+using var db = Seed();
 
 Console.WriteLine("done");
 Console.ReadLine();
 
-static LocoDb ExampleRun()
+static LocoDb Seed()
 {
 	var builder = new DbContextOptionsBuilder<LocoDb>();
 	const string connectionString = "Data Source=Q:\\Games\\Locomotion\\Server\\loco-dev.db";
@@ -159,8 +160,8 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			};
 
 			_ = db.Add(tblLocoObject);
-
 		}
+
 		_ = db.SaveChanges();
 	}
 
@@ -185,9 +186,3 @@ static string? uint32_t_LittleToBigEndian(string input)
 	var r = new string(input.Chunk(2).Reverse().SelectMany(x => x).ToArray());
 	return Convert.ToUInt32(r, 16).ToString();
 }
-
-record LicenceJsonRecord(string Name, string Text);
-
-record ModpackJsonRecord(string Name, string? Author);
-
-record ObjectMetadata(string ObjectName, uint Checksum, string Description, List<string> Authors, List<string> Tags, List<string> Modpacks, string? Licence);

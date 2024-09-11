@@ -8,12 +8,11 @@ using OpenLoco.Dat.Objects;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
 
 namespace OpenLoco.ObjectService
 {
-	// this must be done because eager-loading related many-to-many data in entity framework is recursive and cannot be turned off...
-	internal record ExpandedTblLocoObject(TblLocoObject Object, ICollection<TblAuthor> Authors, ICollection<TblTag> Tags, ICollection<TblModpack> Modpacks);
 
 	public class ObjectServiceSettings
 	{

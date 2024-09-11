@@ -68,14 +68,24 @@ namespace AvaGui.Models
 
 			LoadSettings();
 
-			var server = Settings.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
-			WebClient = new HttpClient() { BaseAddress = new Uri(server), };
+			var serverAddress = Settings!.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
+
+			if (Uri.TryCreate(serverAddress, new(), out var serverUri))
+			{
+				WebClient = new HttpClient() { BaseAddress = serverUri, };
+				Logger.Info($"Successfully registered object service with address \"{serverUri}\"");
+			}
+			else
+			{
+				Logger.Error($"Unable to parse object service address \"{serverAddress}\". Online functionality will work until the address is corrected and the editor is restarted.");
+			}
 		}
 
 		public void LoadSettings()
 		{
 			if (!File.Exists(SettingsFile))
 			{
+				Logger.Info($"Settings file doesn't exist; creating now at \"{SettingsFile}\"");
 				Settings = new();
 				SaveSettings();
 				return;
@@ -88,7 +98,11 @@ namespace AvaGui.Models
 			Settings = settings!;
 			InitialiseDownloadDirectory();
 
-			if (!ValidateSettings(Settings, Logger) && File.Exists(IndexFilename))
+			if (ValidateSettings(Settings, Logger) && File.Exists(IndexFilename))
+			{
+				Logger.Info("Settings loaded and validated successfully.");
+			}
+			else
 			{
 				Logger.Error("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
 			}
@@ -103,6 +117,7 @@ namespace AvaGui.Models
 
 			if (!Directory.Exists(Settings.DownloadFolder))
 			{
+				Logger.Info($"Download folder doesn't exist; creating now at \"{Settings.DownloadFolder}\"");
 				_ = Directory.CreateDirectory(Settings.DownloadFolder);
 			}
 		}

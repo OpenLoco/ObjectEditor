@@ -22,7 +22,11 @@ namespace AvaGui.ViewModels
 
 		[Reactive]
 		public string CurrentLocalDirectory { get; set; } = string.Empty;
-		public string CurrentDirectory => SelectedTabIndex == 0 ? CurrentLocalDirectory : "<online>";
+		public string CurrentDirectory => SelectedTabIndex == 0
+			? CurrentLocalDirectory
+			: Model.Settings.UseHttps
+				? Model.Settings.ServerAddressHttps
+				: Model.Settings.ServerAddressHttp;
 
 		[Reactive]
 		public FileSystemItemBase? CurrentlySelectedObject { get; set; }

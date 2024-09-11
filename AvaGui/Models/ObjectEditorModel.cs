@@ -54,11 +54,7 @@ namespace AvaGui.Models
 
 		public static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 
-#if DEBUG
-		public static string SettingsFile => Path.Combine(SettingsPath, "settings-dev.json");
-#else
-		public static string SettingsFile => Path.Combine(SettingsPath, "settings.json");
-#endif
+		public static string SettingsFile => Path.Combine(SettingsPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE")!); // "settings-dev.json" for dev, "settings.json" for prod
 
 		public ObservableCollection<LogLine> LoggerObservableLogs = [];
 

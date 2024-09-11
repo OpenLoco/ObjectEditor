@@ -32,9 +32,9 @@ namespace AvaGui.Models
 
 		public ObjectIndex ObjectIndex { get; private set; }
 
-		public ObjectIndex ObjectIndexOnline { get; set; }
+		public ObjectIndex? ObjectIndexOnline { get; set; }
 
-		public Dictionary<int, DtoLocoObject> OnlineCache { get; set; } = [];
+		public Dictionary<int, DtoLocoObject> OnlineCache { get; } = [];
 
 		public PaletteMap PaletteMap { get; set; }
 
@@ -58,7 +58,7 @@ namespace AvaGui.Models
 
 		public ObservableCollection<LogLine> LoggerObservableLogs = [];
 
-		public HttpClient WebClient { get; }
+		public HttpClient? WebClient { get; }
 
 		public ObjectEditorModel()
 		{
@@ -203,7 +203,7 @@ namespace AvaGui.Models
 							Logger.Info($"Unable to object {filesystemItem.Name} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material");
 							return false;
 						}
-						else if (locoObj.OriginalBytes == null || locoObj.OriginalBytes.Length == 0)
+						else if (string.IsNullOrEmpty(locoObj.OriginalBytes))
 						{
 							Logger.Warning($"Unable to load object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no DAT object data");
 						}
@@ -387,7 +387,7 @@ namespace AvaGui.Models
 					exception = true;
 				}
 
-				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.ObjectName))) != false)
+				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.ObjectName))))
 				{
 					Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
 					await RecreateIndex(directory, allFiles, progress);

@@ -54,7 +54,7 @@ namespace AvaGui.ViewModels
 		public ReactiveCommand<Unit, Task> RefreshDirectoryItems { get; }
 
 		[Reactive]
-		public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; set; } = [.. Enum.GetValues<ObjectDisplayMode>()];
+		public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 
 		[Reactive]
 		public int SelectedTabIndex { get; set; }
@@ -144,7 +144,6 @@ namespace AvaGui.ViewModels
 			}
 
 			await Model.CheckForDatFilesNotOnServer();
-
 		}
 
 		async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
@@ -171,7 +170,7 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			if (!useExistingIndex || Model.ObjectIndexOnline == null)
+			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.WebClient != null)
 			{
 				Model.ObjectIndexOnline = new ObjectIndex()
 				{
@@ -182,11 +181,14 @@ namespace AvaGui.ViewModels
 				};
 			}
 
-			OnlineDirectoryItems = ConstructTreeView(
-				Model.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
-				FilenameFilter,
-				DisplayMode,
-				FileLocation.Online);
+			if (Model.ObjectIndexOnline != null)
+			{
+				OnlineDirectoryItems = ConstructTreeView(
+					Model.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
+					FilenameFilter,
+					DisplayMode,
+					FileLocation.Online);
+			}
 		}
 
 		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)

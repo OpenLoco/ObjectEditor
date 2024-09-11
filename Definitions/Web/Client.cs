@@ -44,6 +44,7 @@ namespace OpenLoco.Definitions.Web
 					logger?.Error($"Received data but couldn't parse it: {response}");
 					return default;
 				}
+
 				return data;
 			}
 			catch (Exception ex)

@@ -208,7 +208,8 @@ namespace AvaGui.Models
 							Logger.Warning($"Unable to load object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no DAT object data");
 						}
 
-						Logger.Info($"Added object {filesystemItem.Name} with unique id {uniqueObjectId} to local cache");
+						Logger.Info($"Downloaded object {filesystemItem.Name} with unique id {uniqueObjectId} and added it to the local cache");
+						Logger.Debug($"{filesystemItem.Name} has authors=[{string.Join(", ", locoObj.Authors.Select(x => x.Name))}], tags=[{string.Join(", ", locoObj.Tags.Select(x => x.Name))}], modpacks=[{string.Join(", ", locoObj.Modpacks.Select(x => x.Name))}], licence={locoObj.Licence}");
 						OnlineCache.Add(uniqueObjectId, locoObj);
 					}
 					else

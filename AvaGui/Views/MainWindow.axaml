@@ -251,52 +251,58 @@
 									<Border BorderThickness="1" Margin="4" >
 										<StackPanel>
 											<TextBlock Margin="4">Authors</TextBlock>
-											<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Authors}" Background="{DynamicResource ExpanderContentBackground}" >
-												<ItemsRepeater.Layout>
-													<WrapLayout />
-												</ItemsRepeater.Layout>
-												<ItemsRepeater.ItemTemplate>
+											<ListBox ItemsSource="{Binding CurrentObject.Metadata.Authors}">
+												<ListBox.ItemsPanel>
+													<ItemsPanelTemplate>
+														<WrapPanel/>
+													</ItemsPanelTemplate>
+												</ListBox.ItemsPanel>
+												<ListBox.ItemTemplate>
 													<DataTemplate>
 														<Border BorderThickness="2">
 															<TextBlock Margin="4" Text="{Binding Name}" />
 														</Border>
 													</DataTemplate>
-												</ItemsRepeater.ItemTemplate>
-											</ItemsRepeater>
+												</ListBox.ItemTemplate>
+											</ListBox >
 										</StackPanel>
 									</Border>
 									<Border BorderThickness="1" Margin="4" >
 										<StackPanel>
 											<TextBlock Margin="4">Tags</TextBlock>
-											<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Tags}" Background="{DynamicResource ExpanderContentBackground}" >
-												<ItemsRepeater.Layout>
-													<WrapLayout />
-												</ItemsRepeater.Layout>
-												<ItemsRepeater.ItemTemplate>
+											<ListBox ItemsSource="{Binding CurrentObject.Metadata.Tags}">
+												<ListBox.ItemsPanel>
+													<ItemsPanelTemplate>
+														<WrapPanel/>
+													</ItemsPanelTemplate>
+												</ListBox.ItemsPanel>
+												<ListBox.ItemTemplate>
 													<DataTemplate>
 														<Border BorderThickness="2">
 															<TextBlock Margin="4" Text="{Binding Name}" />
 														</Border>
 													</DataTemplate>
-												</ItemsRepeater.ItemTemplate>
-											</ItemsRepeater>
+												</ListBox.ItemTemplate>
+											</ListBox >
 										</StackPanel>
 									</Border>
 									<Border BorderThickness="1" Margin="4" >
 										<StackPanel>
 											<TextBlock Margin="4">Modpacks</TextBlock>
-											<ItemsRepeater ItemsSource="{Binding CurrentObject.Metadata.Modpacks}" Background="{DynamicResource ExpanderContentBackground}" >
-												<ItemsRepeater.Layout>
-													<WrapLayout />
-												</ItemsRepeater.Layout>
-												<ItemsRepeater.ItemTemplate>
+											<ListBox ItemsSource="{Binding CurrentObject.Metadata.Modpacks}">
+												<ListBox.ItemsPanel>
+													<ItemsPanelTemplate>
+														<WrapPanel/>
+													</ItemsPanelTemplate>
+												</ListBox.ItemsPanel>
+												<ListBox.ItemTemplate>
 													<DataTemplate>
 														<Border BorderThickness="2">
 															<TextBlock Margin="4" Text="{Binding Name}" />
 														</Border>
 													</DataTemplate>
-												</ItemsRepeater.ItemTemplate>
-											</ItemsRepeater>
+												</ListBox.ItemTemplate>
+											</ListBox >
 										</StackPanel>
 									</Border>
 								</StackPanel>

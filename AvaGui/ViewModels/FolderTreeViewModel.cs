@@ -53,7 +53,6 @@ namespace AvaGui.ViewModels
 
 		public ReactiveCommand<Unit, Task> RefreshDirectoryItems { get; }
 
-		[Reactive]
 		public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 
 		[Reactive]

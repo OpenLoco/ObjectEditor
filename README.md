@@ -31,6 +31,8 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
   - Can connect to the object repository to view and download any object stored in it
   - Automatic upload of 'undiscovered' dat files (ie dat files that don't exist in the object repository)
 - Property/hex viewer has been ported over from 1.0.5/the WinForms editor
+- Vehicle animator
+- G1.dat viewing/exporting
 
 ## 2.0.0+
 
@@ -44,6 +46,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
   - Can display image properties of images in the image table
   - Can handle many more objects than the 1.x.x version
   - Can change background colour of image viewer
+  - Can play sound objects
 
 ## 1.0.5+
 
@@ -83,7 +86,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - This file is used to store where the users' object folder paths are, and other program data
 
 ## Indexing
-- When the tool first loads an objdata directory it will scan every file to make an index and save that into `objectIndex.json` in that folder
+- When the tool first loads an `objdata` directory it will scan every file to make an index and save that into `objectIndex.json` in that folder
 - This indexing is relatively slow, but only needs to run once/when the folder contents change
 - On subsequent uses of the tool, the index file will be loaded instead, and this is fast
 - The tool will print a log message if it detects changes in the folder and thinks you need to reindex it
@@ -99,11 +102,11 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 # Future Plans/Features
 - [x] Better flag editing support
 - [ ] Validation of object limits/sane values
-- [ ] Detection of bugged objects
+- [x] Detection of bugged objects
 - [ ] Support/edit tutorials
 - [ ] Support/edit maps/savegames/scenarios
 - [ ] Support language files
-- [ ] Implement vehicle previewer
+- [x] Vehicle previewer
 - [ ] Better G1 support including palette file editing
 - [ ] Export/convert object to a future modern OpenLoco file format
 - [x] Dark mode
@@ -116,7 +119,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 
 # Building
 - Open AvaGui/AvaGui.sln in Visual Studio
-  - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer
+  - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer, but it isn't required to actually build or run the solution.
 
 # Deploying
-See `deploy.sh`
+See `build.sh` and `tag.sh`

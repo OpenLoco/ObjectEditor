@@ -12,6 +12,9 @@ version="$1"
 
 echo "Building version $version"
 
+# 2. Write the version to version.txt. This is read by the UI to know the current version.
+echo "$version" > AvaGui/version.txt
+
 ## 2. Build the project for different platforms
 echo "Building"
 dotnet publish AvaGui/AvaGui.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime win-x64

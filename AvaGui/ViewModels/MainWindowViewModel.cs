@@ -158,7 +158,7 @@ namespace AvaGui.ViewModels
 				i++;
 			}
 
-			CurrentEditorModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images);
+			CurrentEditorModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, Model.Logger);
 		}
 
 		public async Task LoadSingleObjectToIndex()

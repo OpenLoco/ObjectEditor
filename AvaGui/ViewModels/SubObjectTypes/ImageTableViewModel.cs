@@ -2,6 +2,7 @@ using AvaGui.Models;
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
@@ -10,9 +11,11 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Image = SixLabors.ImageSharp.Image;
@@ -23,13 +26,15 @@ namespace AvaGui.ViewModels
 	{
 		readonly IHasG1Elements G1Provider;
 		readonly IImageTableNameProvider NameProvider;
+		readonly ILogger Logger;
 
-		public ImageTableViewModel(IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, IList<Image<Rgba32>> images)
+		public ImageTableViewModel(IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, IList<Image<Rgba32>> images, ILogger logger)
 		{
 			G1Provider = g1ElementProvider;
 			NameProvider = imageNameProvider;
 			PaletteMap = paletteMap;
 			Images = images;
+			Logger = logger;
 
 			_ = this.WhenAnyValue(o => o.G1Provider)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
@@ -60,6 +65,7 @@ namespace AvaGui.ViewModels
 			};
 			animationTimer.Tick += AnimationTimer_Tick;
 			animationTimer.Start();
+			Logger = logger;
 		}
 
 		readonly DispatcherTimer animationTimer;
@@ -172,6 +178,7 @@ namespace AvaGui.ViewModels
 			? null
 			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
 
+		//todo: second half should be model
 		public async Task ImportImages()
 		{
 			var folders = await PlatformSpecific.OpenFolderPicker();
@@ -182,10 +189,32 @@ namespace AvaGui.ViewModels
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			if (Directory.Exists(dirPath) && Directory.EnumerateFiles(dirPath).Any())
+			if (!Directory.Exists(dirPath))
 			{
-				var files = Directory.GetFiles(dirPath);
-				var sorted = files.OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f).Split('-')[0]));
+				return;
+			}
+
+			var files = Directory.GetFiles(dirPath);
+			if (files.Length == 0)
+			{
+				return;
+			}
+
+			try
+			{
+				var sorted = files.OrderBy(static f =>
+				{
+					var match = Regex.Match(Path.GetFileNameWithoutExtension(f), @".*?(\d+).*?");
+					return match.Success
+						? int.Parse(match.Groups[1].Value)
+						: throw new InvalidDataException($"Directory contains file that doesn't contain a number={f}");
+				});
+
+				var sortedH = sorted.ToImmutableHashSet();
+				if (G1Provider.G1Elements.Count != sortedH.Count)
+				{
+					throw new ArgumentOutOfRangeException($"Directory doesn't contain the same number of images as expected Directory={sortedH.Count} Expected={G1Provider.G1Elements.Count}");
+				}
 
 				var g1Elements = new List<G1Element32>();
 				var i = 0;
@@ -196,11 +225,16 @@ namespace AvaGui.ViewModels
 					var currG1 = G1Provider.G1Elements[i++];
 					currG1.ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags); // simply overwrite existing pixel data
 				}
-			}
 
-			this.RaisePropertyChanged(nameof(Bitmaps));
+				this.RaisePropertyChanged(nameof(Bitmaps));
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(ex);
+			}
 		}
 
+		// todo: second half should be in model
 		public async Task ExportImages()
 		{
 			var folders = await PlatformSpecific.OpenFolderPicker();

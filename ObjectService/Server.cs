@@ -185,37 +185,100 @@ namespace OpenLoco.ObjectService
 				return Results.Accepted($"Object already exists in the database. OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} UploadDate={existingObject!.UploadDate}");
 			}
 
-			const string UploadFolder = "UploadedObjects";
-			var uuid = Guid.NewGuid();
-			var saveFileName = Path.Combine(settings.ObjectRootFolder, UploadFolder, $"{uuid}.dat");
-			File.WriteAllBytes(saveFileName, datFileBytes);
-
-			Console.WriteLine($"File accepted OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} PathOnDisk={saveFileName}");
-
-			var locoTbl = new TblLocoObject()
+			try
 			{
-				Name = $"{s5Header.Name}_{s5Header.Checksum}", // same as DB seeder name
-				PathOnDisk = Path.Combine(UploadFolder, $"{uuid}.dat"),
-				OriginalName = s5Header.Name,
-				OriginalChecksum = s5Header.Checksum,
-				IsVanilla = false, // not possible to upload vanilla objects
-				ObjectType = s5Header.ObjectType,
-				VehicleType = s5Header.ObjectType == ObjectType.Vehicle ? (locoObject.Object as VehicleObject)!.Type : null,
-				Description = "",
-				Authors = [],
-				CreationDate = creationTime,
-				LastEditDate = null,
-				UploadDate = DateTimeOffset.UtcNow,
-				Tags = [],
-				Modpacks = [],
-				Availability = ObjectAvailability.NewGames,
-				Licence = null,
-			};
+				const string UploadFolder = "UploadedObjects";
+				var uuid = Guid.NewGuid();
+				var saveFileName = Path.Combine(settings.ObjectRootFolder, UploadFolder, $"{uuid}.dat");
+				File.WriteAllBytes(saveFileName, datFileBytes);
 
-			_ = db.Objects.Add(locoTbl);
-			_ = await db.SaveChangesAsync();
+				Console.WriteLine($"File accepted OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} PathOnDisk={saveFileName}");
 
-			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
+				var locoTbl = new TblLocoObject()
+				{
+					Name = $"{s5Header.Name}_{s5Header.Checksum}", // same as DB seeder name
+					PathOnDisk = Path.Combine(UploadFolder, $"{uuid}.dat"),
+					OriginalName = s5Header.Name,
+					OriginalChecksum = s5Header.Checksum,
+					IsVanilla = false, // not possible to upload vanilla objects
+					ObjectType = s5Header.ObjectType,
+					VehicleType = s5Header.ObjectType == ObjectType.Vehicle ? (locoObject.Object as VehicleObject)!.Type : null,
+					Description = "",
+					Authors = [],
+					CreationDate = creationTime,
+					LastEditDate = null,
+					UploadDate = DateTimeOffset.UtcNow,
+					Tags = [],
+					Modpacks = [],
+					Availability = ObjectAvailability.NewGames,
+					Licence = null,
+				};
+
+				_ = db.Objects.Add(locoTbl);
+				_ = await db.SaveChangesAsync();
+
+				return Results.Created($"Successfully added object {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
+			}
+			catch (Exception ex)
+			{
+				return Results.Problem(ex.Message);
+			}
 		}
+
+		public async Task<IResult> CreateUser(DtoCreateUser request, LocoDb db)
+		{
+			if (string.IsNullOrEmpty(request.Name))
+			{
+				return Results.BadRequest("Cannot accept empty name");
+			}
+			if (string.IsNullOrEmpty(request.DisplayName))
+			{
+				return Results.BadRequest("Cannot accept empty display name");
+			}
+			if (string.IsNullOrEmpty(request.Password))
+			{
+				return Results.BadRequest("Cannot accept empty password");
+			}
+			if (request.Password.Length < 8)
+			{
+				return Results.BadRequest("Password must be 8 or more characters");
+			}
+
+			if (db.Users.FirstOrDefault(x => x.Name == request.Name) != null)
+			{
+				return Results.Conflict($"User {request.Name} already exists in database.");
+			}
+
+			if (!string.IsNullOrEmpty(request.Author) && db.Authors.FirstOrDefault(x => x.Name == request.Author) == null)
+			{
+				return Results.Conflict($"Author {request.Author} does not exist in database.");
+			}
+
+			(var salt, var hashed) = Passwords.HashPassword(request.Password);
+
+			try
+			{
+				var user = new TblUser()
+				{
+					Name = request.Name,
+					DisplayName = request.DisplayName,
+					Author = db.Authors.FirstOrDefault(x => x.Name == request.Name),
+					PasswordHashed = hashed,
+					PasswordSalt = salt
+				};
+
+				_ = db.Users.Add(user);
+				_ = await db.SaveChangesAsync();
+
+				return Results.Created($"Successfully added user {user.Name}", user.Name);
+			}
+			catch (Exception ex)
+			{
+				return Results.Problem(ex.Message);
+			}
+		}
+
+		public async Task<IResult> AddRole(DtoAddRole request, LocoDb db) => Results.Ok();
+
+		public async Task<IResult> RemoveRole(DtoRemoveRole request, LocoDb db) => Results.Ok();
 	}
-}

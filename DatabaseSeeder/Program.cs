@@ -39,6 +39,8 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	if (deleteExisting)
 	{
 		Console.WriteLine("Clearing database");
+		_ = db.Users.ExecuteDelete();
+		_ = db.Roles.ExecuteDelete();
 		_ = db.Objects.ExecuteDelete();
 		_ = db.Tags.ExecuteDelete();
 		_ = db.Modpacks.ExecuteDelete();
@@ -56,14 +58,48 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 	// ...
 
+	if (!db.Roles.Any())
+	{
+		Console.WriteLine("Seeding Roles");
+
+		var roles = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\roles.json"), jsonOptions);
+		if (roles != null)
+		{
+			db.AddRange(roles.Select(x => new TblRole() { Name = x }));
+			_ = db.SaveChanges();
+		}
+	}
+
+	// ...
+
+	Console.WriteLine("Seeding Users");
+
+	var users = JsonSerializer.Deserialize<IEnumerable<UserJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\users.json"), jsonOptions);
+	if (users != null)
+	{
+		db.AddRange(users.Select(x => new TblUser()
+		{
+			Name = x.Name,
+			DisplayName = x.DisplayName,
+			Author = db.Authors.SingleOrDefault(a => a.Name == x.Author),
+			Roles = [.. db.Roles.Where(r => x.Roles.Contains(r.Name))],
+			PasswordHashed = x.PasswordHashed,
+			PasswordSalt = x.PasswordSalt
+		}));
+		_ = db.SaveChanges();
+	}
+
+	// ...
+
 	if (!db.Authors.Any())
 	{
+
 		Console.WriteLine("Seeding Authors");
 
 		var authors = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\authors.json"), jsonOptions);
 		if (authors != null)
 		{
-			db.AddRange(authors.Select(x => new TblAuthor() { Name = x }));
+			db.AddRange(authors.Select(x => new TblUser() { Name = x }));
 			_ = db.SaveChanges();
 		}
 	}

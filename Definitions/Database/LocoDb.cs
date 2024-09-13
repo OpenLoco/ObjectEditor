@@ -5,11 +5,13 @@ namespace OpenLoco.Definitions.Database
 {
 	public class LocoDb : DbContext
 	{
+		public DbSet<TblLocoObject> Objects => Set<TblLocoObject>();
 		public DbSet<TblAuthor> Authors => Set<TblAuthor>();
 		public DbSet<TblTag> Tags => Set<TblTag>();
 		public DbSet<TblModpack> Modpacks => Set<TblModpack>();
-		public DbSet<TblLocoObject> Objects => Set<TblLocoObject>();
 		public DbSet<TblLicence> Licences => Set<TblLicence>();
+		public DbSet<TblUser> Users => Set<TblUser>();
+		public DbSet<TblRole> Roles => Set<TblRole>();
 
 		public LocoDb()
 		{ }
@@ -25,9 +27,16 @@ namespace OpenLoco.Definitions.Database
 			}
 		}
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.Entity<TblLocoObject>()
-			.Property(b => b.UploadDate)
-			.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			modelBuilder.Entity<TblLocoObject>()
+				.Property(x => x.UploadDate)
+				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+
+			modelBuilder.Entity<TblUser>()
+				.Property(x => x.CreatedDate)
+				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+		}
 
 		public bool DoesObjectExist(S5Header s5Header, out TblLocoObject? existingObject)
 		 => DoesObjectExist(s5Header.Name, s5Header.Checksum, out existingObject);

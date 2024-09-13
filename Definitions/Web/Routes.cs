@@ -12,9 +12,19 @@ namespace OpenLoco.Definitions.Web
 		// POST
 		public const string UploadDat = "/objects/uploaddat";
 		public const string UploadObject = "/objects/uploadobject";
+		public const string CreateUser = "/users/create";
+
 
 		// PATCH
 		public const string UpdateDat = "/objects/updatedat";
 		public const string UpdateObject = "/objects/updateobject";
+
+		public const string AddRole = "/users/{userid}/roles/add/{tagid}";
+		public const string RemoveRole = "/users/{userid}/roles/remove/{tagid}";
+
+		public const string AddAuthor = "/users/{userid}/author/add/{authorid}";
+		public const string RemoveAuthor = "/users/{userid}/author/remove/{authorid}";
+
+		public const string AddModpack
 	}
 }

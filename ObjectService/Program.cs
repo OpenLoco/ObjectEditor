@@ -53,6 +53,15 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
+builder.Services.AddAuthentication().AddJwtBearer("Bearer");
+builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder()
+	.AddPolicy("editObject", policy => policy.RequireRole("editor"))
+	.AddPolicy("editAuthor", policy => policy.RequireRole("editor"))
+	.AddPolicy("editTags", policy => policy.RequireRole("editor"))
+	.AddPolicy("editLicence", policy => policy.RequireRole("editor"))
+	.AddPolicy("editModpack", policy => policy.RequireRole("editor"));
+
 builder.Services.AddSingleton<Server>();
 var serviceSettings = builder.Services.Configure<ObjectServiceSettings>(builder.Configuration.GetSection("ObjectService"));
 
@@ -87,12 +96,25 @@ _ = app.MapGet(Routes.GetObjectFile, server.GetObjectFile)
 
 // PATCH
 _ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
-	.RequireRateLimiting(tokenPolicy);
+	.RequireRateLimiting(tokenPolicy)
+	.RequireAuthorization("editObject");
 
 _ = app.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
-	.RequireRateLimiting(tokenPolicy);
+	.RequireRateLimiting(tokenPolicy)
+	.RequireAuthorization("editObject");
+
+_ = app.MapPatch(Routes.AddRole, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy)
+	.RequireAuthorization("editObject");
+
+_ = app.MapPatch(Routes.RemoveRole, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
+	.RequireRateLimiting(tokenPolicy)
+	.RequireAuthorization("editObject");
 
 // POST
+_ = app.MapPost(Routes.CreateUser, server.CreateUser)
+	.RequireRateLimiting(tokenPolicy);
+
 _ = app.MapPost(Routes.UploadDat, server.UploadDat)
 	.RequireRateLimiting(tokenPolicy);
 

@@ -88,6 +88,11 @@ namespace AvaGui.ViewModels
 				SelectedImageIndex = sm.SelectedIndex;
 			}
 
+			if (sm.SelectedItems.Count == 0)
+			{
+				return;
+			}
+
 			// ... handle selection changed
 			SelectedBitmaps = sm.SelectedItems.Cast<Bitmap>().ToList();
 			AnimationWindowHeight = (int)SelectedBitmaps.Max(x => x.Size.Height) * 2;
@@ -108,7 +113,7 @@ namespace AvaGui.ViewModels
 
 		private void AnimationTimer_Tick(object? sender, EventArgs e)
 		{
-			if (SelectedBitmaps == null || SelectedBitmaps.Count == 0)
+			if (SelectedBitmaps == null || SelectedBitmaps.Count == 0 || SelectionModel.SelectedIndexes.Count == 0)
 			{
 				return;
 			}

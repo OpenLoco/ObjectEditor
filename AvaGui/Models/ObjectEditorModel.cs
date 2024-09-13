@@ -51,10 +51,13 @@ namespace AvaGui.Models
 		public Collection<string> MiscFiles { get; } = [];
 
 		public const string ApplicationName = "OpenLoco Object Editor";
+		public const string LoggingFileName = "objectEditor.log";
 
 		public static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
 
 		public static string SettingsFile => Path.Combine(SettingsPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? "settings.json"); // "settings-dev.json" for dev, "settings.json" for prod
+
+		public static string LoggingFile => Path.Combine(SettingsPath, LoggingFileName);
 
 		public ObservableCollection<LogLine> LoggerObservableLogs = [];
 
@@ -65,6 +68,7 @@ namespace AvaGui.Models
 			Logger = new Logger();
 			LoggerObservableLogs = [];
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
+			Logger.LogAdded += (sender, laea) => File.AppendAllLines(LoggingFile, [laea.Log.ToString()]);
 
 			LoadSettings();
 

@@ -40,7 +40,7 @@ namespace OpenLoco.Dat
 		public Color[] PaletteColours => Palette.Select(x => x.Color).ToArray();
 
 		public (Color Color, byte Index) Transparent
-			=> Palette[0];
+			=> (Color.FromRgba(0, 0, 0, 0), 0); //Palette[0];
 
 		public (Color Color, byte Index)[] DirectXReserved
 			=> Palette[1..7];

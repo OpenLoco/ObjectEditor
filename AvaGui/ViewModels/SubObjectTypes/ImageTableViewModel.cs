@@ -216,10 +216,6 @@ namespace AvaGui.ViewModels
 				});
 
 				var sortedH = sorted.ToImmutableHashSet();
-				if (G1Provider.G1Elements.Count != sortedH.Count)
-				{
-					throw new ArgumentOutOfRangeException($"Directory doesn't contain the same number of images as expected Directory={sortedH.Count} Expected={G1Provider.G1Elements.Count}");
-				}
 
 				var g1Elements = new List<G1Element32>();
 				var i = 0;
@@ -227,8 +223,16 @@ namespace AvaGui.ViewModels
 				{
 					var img = Image.Load<Rgba32>(file);
 					Images[i] = img;
-					var currG1 = G1Provider.G1Elements[i++];
-					currG1.ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags); // simply overwrite existing pixel data
+					var currG1 = G1Provider.G1Elements[i];
+					currG1 = currG1 with
+					{
+						Width = (int16_t)img.Width,
+						Height = (int16_t)img.Height,
+						Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
+						ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags)
+					};
+					G1Provider.G1Elements[i] = currG1;
+					i++;
 				}
 
 				this.RaisePropertyChanged(nameof(Bitmaps));

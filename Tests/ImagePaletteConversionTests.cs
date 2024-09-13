@@ -2,6 +2,7 @@ using NUnit.Framework;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.FileParsing;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace OpenLoco.Dat.Tests
 {
@@ -13,6 +14,34 @@ namespace OpenLoco.Dat.Tests
 		const string BasePalettePath = "Q:\\Games\\Locomotion\\Palettes\\";
 		readonly ILogger Logger = new Logger();
 
+		[Test]
+		public void TestWrite00000000ToIndex0()
+		{
+			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp3.png");
+			var paletteMap = Image.Load<Rgba32>(paletteFile);
+			paletteMap[0, 0] = Color.Transparent;
+			paletteMap.SaveAsPng(paletteFile);
+		}
+
+		[Test]
+		public void PaletteIndex0IsTransparent()
+		{
+			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp3.png");
+			var paletteMap = new PaletteMap(paletteFile);
+
+			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
+		}
+
+		[Test]
+		public void PaletteHasUniqueColours()
+		{
+			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp3.png");
+			var paletteMap = new PaletteMap(paletteFile);
+
+			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
+			Assert.That(paletteMap.PaletteColours.Length, Is.EqualTo(paletteMap.PaletteColours.ToHashSet().Count));
+		}
+
 		[TestCase("AIRPORT1.DAT")]
 		[TestCase("BALDWIN1.DAT")]
 		[TestCase("FACTORY.DAT")]
@@ -20,11 +49,8 @@ namespace OpenLoco.Dat.Tests
 		//[TestCase("WATER1.DAT")]   // these files use different palettes
 		public void G1ElementToPNGAndBack(string objectSource)
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp.png");
+			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp3.png");
 			var paletteMap = new PaletteMap(paletteFile);
-
-			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
-
 			var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource), Logger);
 
 			// convert g1 data into an image, and then back

@@ -20,7 +20,6 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using static System.Net.WebRequestMethods;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace AvaGui.ViewModels
@@ -208,16 +207,16 @@ namespace AvaGui.ViewModels
 			}
 
 			var offsetsFile = Path.Combine(dirPath, "sprites.json");
-			var spritesFolder = Path.Combine(dirPath, "sprites");
-			if (File.Exists(offsetsFile) && Directory.Exists(spritesFolder))
+			if (File.Exists(offsetsFile))
 			{
 				// found blender folder
 				var offsets = JsonSerializer.Deserialize<IEnumerable<SpriteOffset>>(offsetsFile);
+				Logger.Debug("Found sprites.json file, using that");
 				LoadSpritesFolderWithOffsets(dirPath, offsets.ToList());
-
 			}
 			else
 			{
+				Logger.Debug("No sprites.json file found");
 				LoadSpritesFolder(dirPath);
 			}
 		}
@@ -230,18 +229,11 @@ namespace AvaGui.ViewModels
 				var filename = Path.Combine(dirPath, spriteOffset.Path);
 				if (!Path.Exists(filename))
 				{
-					throw new ArgumentOutOfRangeException(nameof(spriteOffset.Path), $"File listed in sprites.json doesn't exist: \"{filename}\"");
+					Logger.Error($"File listed in sprites.json doesn't exist: \"{filename}\", aborting import");
+					return;
 				}
 				files.Add(filename);
 			}
-
-			var sorted = files.OrderBy(static f =>
-			{
-				var match = Regex.Match(Path.GetFileNameWithoutExtension(f), @".*?(\d+).*?");
-				return match.Success
-					? int.Parse(match.Groups[1].Value)
-					: throw new InvalidDataException($"Directory contains file that doesn't contain a number={f}");
-			});
 
 			try
 			{
@@ -250,18 +242,16 @@ namespace AvaGui.ViewModels
 					var match = Regex.Match(Path.GetFileNameWithoutExtension(f), @".*?(\d+).*?");
 					return match.Success
 						? int.Parse(match.Groups[1].Value)
-						: throw new InvalidDataException($"Directory contains file that doesn't contain a number={f}");
+						: throw new InvalidDataException($"Directory contains file that doesn't contain a number={f}, aborting import");
 				});
 
-				var sortedH = sorted.ToImmutableHashSet();
+				Logger.Debug($"Attempting to import {sorted.Count()} images");
 
 				var g1Elements = new List<G1Element32>();
 				var i = 0;
-				var zeroOffset = new SpriteOffset(string.Empty, 0, 0);
 				foreach (var file in sorted)
 				{
 					var img = Image.Load<Rgba32>(file);
-					var offset = offsets == null ? zeroOffset : offsets[i];
 					Images[i] = img;
 					var currG1 = G1Provider.G1Elements[i];
 					currG1 = currG1 with
@@ -270,13 +260,14 @@ namespace AvaGui.ViewModels
 						Height = (int16_t)img.Height,
 						Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
 						ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
-						XOffset = offset.X,
-						YOffset = offset.Y,
+						XOffset = offsets[i].X,
+						YOffset = offsets[i].Y,
 					};
 					G1Provider.G1Elements[i] = currG1;
 					i++;
 				}
 
+				Logger.Debug($"Import successful");
 				this.RaisePropertyChanged(nameof(Bitmaps));
 			}
 			catch (Exception ex)

@@ -291,13 +291,13 @@ namespace OpenLoco.Dat.Objects
 			}
 
 			// animation
-			foreach (var x in CompatibleVehicles)
+			foreach (var x in AnimationHeaders)
 			{
 				ms.Write(x.Write());
 			}
 
 			// numCompat
-			foreach (var x in AnimationHeaders)
+			foreach (var x in CompatibleVehicles)
 			{
 				ms.Write(x.Write());
 			}

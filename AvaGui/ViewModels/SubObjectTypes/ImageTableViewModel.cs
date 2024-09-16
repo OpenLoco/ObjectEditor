@@ -11,7 +11,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -208,130 +207,71 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			var offsetsFile = Path.Combine(dirPath, "sprites.json");
-			if (File.Exists(offsetsFile))
+			try
 			{
-				// found blender folder
-				try
+				var offsetsFile = Path.Combine(dirPath, "sprites.json");
+				if (File.Exists(offsetsFile))
 				{
+					// found blender folder
 					var offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 					Logger.Debug("Found sprites.json file, using that");
-					LoadSpritesFolderWithOffsets(dirPath, offsets.ToList());
+
+					foreach (var offset in offsets)
+					{
+						var filename = Path.Combine(dirPath, offset.Path);
+						LoadSprite(filename, offset);
+					}
 				}
-				catch (Exception ex)
+				else
 				{
-					Logger.Error(ex);
+					Logger.Debug("No sprites.json file found");
+					foreach (var filename in Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories))
+					{
+						LoadSprite(filename);
+					}
 				}
+
+				Logger.Debug("Import successful");
+				this.RaisePropertyChanged(nameof(Bitmaps));
 			}
-			else
+			catch (Exception ex)
 			{
-				Logger.Debug("No sprites.json file found");
-				LoadSpritesFolder(dirPath);
+				Logger.Error(ex);
 			}
 
 			animationTimer.Start();
 		}
 
-		private void LoadSpritesFolderWithOffsets(string dirPath, IList<SpriteOffset> offsets)
+		void LoadSprite(string filename, SpriteOffset? offset = null)
 		{
-			var files = new List<string>();
-			foreach (var spriteOffset in offsets)
+			if (!Path.Exists(filename))
 			{
-				var filename = Path.Combine(dirPath, spriteOffset.Path);
-				if (!Path.Exists(filename))
-				{
-					Logger.Error($"File listed in sprites.json doesn't exist: \"{filename}\", aborting import");
-					return;
-				}
-				files.Add(filename);
-			}
-
-			try
-			{
-				var sorted = files.OrderBy(static f =>
-				{
-					var match = Regex.Match(Path.GetFileNameWithoutExtension(f), @".*?(\d+).*?");
-					return match.Success
-						? int.Parse(match.Groups[1].Value)
-						: throw new InvalidDataException($"Directory contains file that doesn't contain a number={f}, aborting import");
-				});
-
-				Logger.Debug($"Attempting to import {sorted.Count()} images");
-
-				var g1Elements = new List<G1Element32>();
-				var i = 0;
-				foreach (var file in sorted)
-				{
-					var img = Image.Load<Rgba32>(file);
-					Images[i] = img;
-					var currG1 = G1Provider.G1Elements[i];
-					currG1 = currG1 with
-					{
-						Width = (int16_t)img.Width,
-						Height = (int16_t)img.Height,
-						Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
-						ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
-						XOffset = offsets[i].X,
-						YOffset = offsets[i].Y,
-					};
-					G1Provider.G1Elements[i] = currG1;
-					i++;
-				}
-
-				Logger.Debug($"Import successful");
-				this.RaisePropertyChanged(nameof(Bitmaps));
-			}
-			catch (Exception ex)
-			{
-				Logger.Error(ex);
-			}
-		}
-
-		private void LoadSpritesFolder(string dirPath)
-		{
-			var files = Directory.GetFiles(dirPath);
-			if (files.Length == 0)
-			{
+				Logger.Error($"File doesn't exist: \"{filename}\"");
 				return;
 			}
 
-			try
+			var match = Regex.Match(Path.GetFileNameWithoutExtension(filename), @".*?(\d+).*?");
+			if (!match.Success)
 			{
-				var sorted = files.OrderBy(static f =>
-				{
-					var match = Regex.Match(Path.GetFileNameWithoutExtension(f), @".*?(\d+).*?");
-					return match.Success
-						? int.Parse(match.Groups[1].Value)
-						: throw new InvalidDataException($"Directory contains file that doesn't contain a number={f}");
-				});
-
-				var sortedH = sorted.ToImmutableHashSet();
-
-				var g1Elements = new List<G1Element32>();
-				var i = 0;
-				var zeroOffset = new SpriteOffset(string.Empty, 0, 0);
-				foreach (var file in sorted)
-				{
-					var img = Image.Load<Rgba32>(file);
-					Images[i] = img;
-					var currG1 = G1Provider.G1Elements[i];
-					currG1 = currG1 with
-					{
-						Width = (int16_t)img.Width,
-						Height = (int16_t)img.Height,
-						Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
-						ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
-					};
-					G1Provider.G1Elements[i] = currG1;
-					i++;
-				}
-
-				this.RaisePropertyChanged(nameof(Bitmaps));
+				Logger.Warning($"Couldn't parse sprite index from filename: \"{filename}\"");
+				return;
 			}
-			catch (Exception ex)
+
+			var index = int.Parse(match.Groups[1].Value);
+			var img = Image.Load<Rgba32>(filename);
+			Images[index] = img;
+
+			var currG1 = G1Provider.G1Elements[index];
+			currG1 = currG1 with
 			{
-				Logger.Error(ex);
-			}
+				Width = (int16_t)img.Width,
+				Height = (int16_t)img.Height,
+				Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
+				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
+				XOffset = offset?.X ?? currG1.XOffset,
+				YOffset = offset?.Y ?? currG1.YOffset
+			};
+			G1Provider.G1Elements[index] = currG1;
 		}
 
 		// todo: second half should be in model

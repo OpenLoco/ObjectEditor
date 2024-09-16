@@ -17,8 +17,6 @@ namespace AvaGui.ViewModels
 {
 	public record HexAnnotationLine(string Address, string Data, int? SelectionStart, int? SelectionEnd);
 
-	public record AnimationSequence(string Name, int StartIndex, int EndIndex, int CurrentFrame = 0);
-
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
 		[Reactive]

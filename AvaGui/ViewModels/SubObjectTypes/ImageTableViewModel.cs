@@ -15,13 +15,21 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using static System.Net.WebRequestMethods;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace AvaGui.ViewModels
 {
+	public record SpriteOffset(
+		[property: JsonPropertyName("path")] string Path,
+		[property: JsonPropertyName("x")] int16_t X,
+		[property: JsonPropertyName("y")] int16_t Y);
+
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel, ILocoFileViewModel
 	{
 		readonly IHasG1Elements G1Provider;
@@ -199,6 +207,86 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
+			var offsetsFile = Path.Combine(dirPath, "sprites.json");
+			var spritesFolder = Path.Combine(dirPath, "sprites");
+			if (File.Exists(offsetsFile) && Directory.Exists(spritesFolder))
+			{
+				// found blender folder
+				var offsets = JsonSerializer.Deserialize<IEnumerable<SpriteOffset>>(offsetsFile);
+				LoadSpritesFolderWithOffsets(dirPath, offsets.ToList());
+
+			}
+			else
+			{
+				LoadSpritesFolder(dirPath);
+			}
+		}
+
+		private void LoadSpritesFolderWithOffsets(string dirPath, IList<SpriteOffset> offsets)
+		{
+			var files = new List<string>();
+			foreach (var spriteOffset in offsets)
+			{
+				var filename = Path.Combine(dirPath, spriteOffset.Path);
+				if (!Path.Exists(filename))
+				{
+					throw new ArgumentOutOfRangeException(nameof(spriteOffset.Path), $"File listed in sprites.json doesn't exist: \"{filename}\"");
+				}
+				files.Add(filename);
+			}
+
+			var sorted = files.OrderBy(static f =>
+			{
+				var match = Regex.Match(Path.GetFileNameWithoutExtension(f), @".*?(\d+).*?");
+				return match.Success
+					? int.Parse(match.Groups[1].Value)
+					: throw new InvalidDataException($"Directory contains file that doesn't contain a number={f}");
+			});
+
+			try
+			{
+				var sorted = files.OrderBy(static f =>
+				{
+					var match = Regex.Match(Path.GetFileNameWithoutExtension(f), @".*?(\d+).*?");
+					return match.Success
+						? int.Parse(match.Groups[1].Value)
+						: throw new InvalidDataException($"Directory contains file that doesn't contain a number={f}");
+				});
+
+				var sortedH = sorted.ToImmutableHashSet();
+
+				var g1Elements = new List<G1Element32>();
+				var i = 0;
+				var zeroOffset = new SpriteOffset(string.Empty, 0, 0);
+				foreach (var file in sorted)
+				{
+					var img = Image.Load<Rgba32>(file);
+					var offset = offsets == null ? zeroOffset : offsets[i];
+					Images[i] = img;
+					var currG1 = G1Provider.G1Elements[i];
+					currG1 = currG1 with
+					{
+						Width = (int16_t)img.Width,
+						Height = (int16_t)img.Height,
+						Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
+						ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
+						XOffset = offset.X,
+						YOffset = offset.Y,
+					};
+					G1Provider.G1Elements[i] = currG1;
+					i++;
+				}
+
+				this.RaisePropertyChanged(nameof(Bitmaps));
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(ex);
+			}
+		}
+
+		private void LoadSpritesFolder(string dirPath)
+		{
 			var files = Directory.GetFiles(dirPath);
 			if (files.Length == 0)
 			{
@@ -219,6 +307,7 @@ namespace AvaGui.ViewModels
 
 				var g1Elements = new List<G1Element32>();
 				var i = 0;
+				var zeroOffset = new SpriteOffset(string.Empty, 0, 0);
 				foreach (var file in sorted)
 				{
 					var img = Image.Load<Rgba32>(file);
@@ -229,7 +318,7 @@ namespace AvaGui.ViewModels
 						Width = (int16_t)img.Width,
 						Height = (int16_t)img.Height,
 						Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
-						ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags)
+						ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
 					};
 					G1Provider.G1Elements[i] = currG1;
 					i++;

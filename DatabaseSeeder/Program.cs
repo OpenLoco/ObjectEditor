@@ -121,7 +121,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
 
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json"), jsonOptions);
-		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.ObjectName, x.Checksum), x => x);
+		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.ObjectName, x.ObjectChecksum), x => x);
 
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
 

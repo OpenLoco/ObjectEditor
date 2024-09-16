@@ -27,6 +27,7 @@ foreach (var o in db.Objects
 		.OrderBy(x => x.Object.Name))
 {
 	var obj = new ObjectMetadata(
+		o.Object.Name,
 		o.Object.OriginalName,
 		o.Object.OriginalChecksum,
 		o.Object.Description,

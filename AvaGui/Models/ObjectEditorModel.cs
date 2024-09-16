@@ -68,7 +68,7 @@ namespace AvaGui.Models
 			Logger = new Logger();
 			LoggerObservableLogs = [];
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
-			Logger.LogAdded += (sender, laea) => File.AppendAllLines(LoggingFile, [laea.Log.ToString()]);
+			//Logger.LogAdded += (sender, laea) => File.AppendAllLines(LoggingFile, [laea.Log.ToString()]);
 
 			LoadSettings();
 
@@ -376,7 +376,6 @@ namespace AvaGui.Models
 
 			Settings.ObjDataDirectory = directory;
 			SaveSettings();
-			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 
 			if (useExistingIndex && File.Exists(IndexFilename))
 			{
@@ -395,26 +394,27 @@ namespace AvaGui.Models
 				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.ObjectName))))
 				{
 					Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
-					await RecreateIndex(directory, allFiles, progress);
+					await RecreateIndex(directory, progress);
 					return;
 				}
 
 				var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.Filename).Concat(ObjectIndex.ObjectsFailed.Select(x => x.Filename));
+				var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 				if (objectIndexFilenames.Except(allFiles).Any() || allFiles.Except(objectIndexFilenames).Any())
 				{
 					Logger.Warning("Index file appears to be outdated - recreating now.");
-					await RecreateIndex(directory, allFiles, progress);
+					await RecreateIndex(directory, progress);
 				}
 			}
 			else
 			{
-				await RecreateIndex(directory, allFiles, progress);
+				await RecreateIndex(directory, progress);
 			}
 
-			async Task RecreateIndex(string rootObjectDirectory, string[] allFiles, IProgress<float> progress)
+			async Task RecreateIndex(string directory, IProgress<float> progress)
 			{
 				Logger.Info("Recreating index file");
-				ObjectIndex = await ObjectIndex.CreateIndexAsync(rootObjectDirectory, allFiles, progress);
+				ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, progress);
 				ObjectIndex?.SaveIndex(IndexFilename);
 			}
 		}

@@ -25,15 +25,38 @@ namespace Dat
 			}
 		}
 
-		public static Task<ObjectIndex> CreateIndexAsync(string rootObjectDirectory, string[] files, IProgress<float>? progress)
+		public static async Task<ObjectIndex?> LoadOrCreateIndexAsync(string directory, IProgress<float>? progress = null)
 		{
+			var indexPath = Path.Combine(directory, "objectIndex.json");
+			ObjectIndex? index;
+			if (File.Exists(indexPath))
+			{
+				index = LoadIndex(indexPath);
+			}
+			else
+			{
+
+				index = await CreateIndexAsync(directory, progress);
+				index.SaveIndex(indexPath);
+			}
+
+			return index;
+		}
+
+		public static ObjectIndex? LoadOrCreateIndex(string directory, IProgress<float>? progress = null)
+			=> LoadOrCreateIndexAsync(directory, progress).Result;
+
+		public static Task<ObjectIndex> CreateIndexAsync(string directory, IProgress<float>? progress = null)
+		{
+			var files = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
+
 			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
 			ConcurrentQueue<ObjectIndexEntryBase> pendingIndices = [];
 
 			var producerTask = Task.Run(async () =>
 			{
 				var options = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
-				await Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(rootObjectDirectory, f), ct))));
+				await Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(directory, f), ct))));
 			});
 
 			var consumerTask = Task.Run(async () =>
@@ -55,11 +78,8 @@ namespace Dat
 			});
 		}
 
-		public void SaveIndex(string indexFile)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
-
-		public void SaveIndex(string indexFile, JsonSerializerOptions options)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+		public static ObjectIndex CreateIndex(string directory, IProgress<float>? progress = null)
+			=> CreateIndexAsync(directory, progress).Result;
 
 		public static ObjectIndex? LoadIndex(string indexFile)
 			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile));
@@ -75,26 +95,11 @@ namespace Dat
 			}
 		}
 
-		public static ObjectIndex? LoadOrCreateIndex(string directory)
-			=> LoadOrCreateIndexAsync(directory).Result;
+		public void SaveIndex(string indexFile)
+			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
 
-		public static async Task<ObjectIndex?> LoadOrCreateIndexAsync(string directory)
-		{
-			var indexPath = Path.Combine(directory, "objectIndex.json");
-			ObjectIndex? index;
-			if (File.Exists(indexPath))
-			{
-				index = LoadIndex(indexPath);
-			}
-			else
-			{
-				var fileArr = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-				index = await CreateIndexAsync(directory, fileArr, null);
-				index.SaveIndex(indexPath);
-			}
-
-			return index;
-		}
+		public void SaveIndex(string indexFile, JsonSerializerOptions options)
+			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
 	}
 
 	public abstract record ObjectIndexEntryBase(string Filename);

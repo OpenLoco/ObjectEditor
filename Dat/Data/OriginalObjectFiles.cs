@@ -1,7 +1,26 @@
 namespace OpenLoco.Dat.Data
 {
+	public enum FileSource { VanillaSteam, VanillaGoG, Custom };
+
 	public static class OriginalObjectFiles
 	{
+		public static FileSource GetFileSource(string name, uint checksum)
+		{
+			if (Names.TryGetValue(name, out var chksum))
+			{
+				if (checksum == chksum.SteamChecksum)
+				{
+					return FileSource.VanillaSteam;
+				}
+				else if (checksum == chksum.GoGChecksum)
+				{
+					return FileSource.VanillaGoG;
+				}
+			}
+
+			return FileSource.Custom;
+		}
+
 		public static readonly Dictionary<string, (uint SteamChecksum, uint GoGChecksum)> Names = new()
 		{
 			{ "114", (1733551639, 1873462701) },

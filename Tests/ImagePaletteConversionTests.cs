@@ -17,7 +17,7 @@ namespace OpenLoco.Dat.Tests
 		[Test]
 		public void TestWrite00000000ToIndex0()
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp3.png");
+			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
 			var paletteMap = Image.Load<Rgba32>(paletteFile);
 			paletteMap[0, 0] = Color.Transparent;
 			paletteMap.SaveAsPng(paletteFile);
@@ -26,7 +26,7 @@ namespace OpenLoco.Dat.Tests
 		[Test]
 		public void PaletteIndex0IsTransparent()
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp3.png");
+			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
 			var paletteMap = new PaletteMap(paletteFile);
 
 			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
@@ -35,7 +35,7 @@ namespace OpenLoco.Dat.Tests
 		[Test]
 		public void PaletteHasUniqueColours()
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp3.png");
+			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
 			var paletteMap = new PaletteMap(paletteFile);
 
 			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
@@ -49,7 +49,7 @@ namespace OpenLoco.Dat.Tests
 		//[TestCase("WATER1.DAT")]   // these files use different palettes
 		public void G1ElementToPNGAndBack(string objectSource)
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette_32bpp3.png");
+			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
 			var paletteMap = new PaletteMap(paletteFile);
 			var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource), Logger);
 

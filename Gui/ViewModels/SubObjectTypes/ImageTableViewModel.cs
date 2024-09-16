@@ -28,7 +28,7 @@ namespace AvaGui.ViewModels
 		[property: JsonPropertyName("x")] int16_t X,
 		[property: JsonPropertyName("y")] int16_t Y);
 
-	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel, ILocoFileViewModel
+	public class ImageTableViewModel : BaseLocoFileViewModel, IExtraContentViewModel
 	{
 		readonly IHasG1Elements G1Provider;
 		readonly IImageTableNameProvider NameProvider;

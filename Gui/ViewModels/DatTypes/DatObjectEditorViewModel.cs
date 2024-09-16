@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 
 namespace AvaGui.ViewModels
@@ -20,12 +19,8 @@ namespace AvaGui.ViewModels
 
 	public record AnimationSequence(string Name, int StartIndex, int EndIndex, int CurrentFrame = 0);
 
-	public class DatObjectEditorViewModel : ReactiveObject, ILocoFileViewModel
+	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
-		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
-		public ReactiveCommand<Unit, Unit> SaveObjectCommand { get; init; }
-		public ReactiveCommand<Unit, Unit> SaveAsObjectCommand { get; init; }
-
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
 
@@ -46,17 +41,6 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public HexAnnotationLine[]? CurrentHexDumpLines { get; set; }
 
-		[Reactive]
-		public FileSystemItem CurrentFile { get; init; }
-
-		public string ReloadText => CurrentFile.FileLocation == FileLocation.Local ? "Reload" : "Redownload";
-		public string SaveText => CurrentFile.FileLocation == FileLocation.Local ? "Save" : "Download";
-		public string SaveAsText => $"{SaveText} As";
-
-		public string ReloadIcon => CurrentFile.FileLocation == FileLocation.Local ? "DatabaseRefresh" : "FileSync";
-		public string SaveIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSave" : "FileDownload";
-		public string SaveAsIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSavePlus" : "FileDownloadOutline";
-
 		byte[] currentByteList;
 
 		Dictionary<string, (int Start, int End)> DATDumpAnnotationIdentifiers = [];
@@ -74,9 +58,9 @@ namespace AvaGui.ViewModels
 
 			LoadObject();
 
-			ReloadObjectCommand = ReactiveCommand.Create(LoadObject);
-			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
-			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
+			ReloadCommand = ReactiveCommand.Create(LoadObject);
+			SaveCommand = ReactiveCommand.Create(SaveCurrentObject);
+			SaveAsCommand = ReactiveCommand.Create(SaveAsCurrentObject);
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());

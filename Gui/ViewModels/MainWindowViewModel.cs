@@ -126,6 +126,7 @@ namespace AvaGui.ViewModels
 				CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
 			}
 		}
+
 		public async Task LoadG1()
 		{
 			var openFile = await PlatformSpecific.OpenFilePicker();
@@ -139,6 +140,8 @@ namespace AvaGui.ViewModels
 			{
 				return;
 			}
+
+			var fsi = new FileSystemItem(path, Path.GetFileName(path), false, FileLocation.Local);
 
 			Model.G1 = SawyerStreamReader.LoadG1(path, Model.Logger);
 
@@ -158,7 +161,8 @@ namespace AvaGui.ViewModels
 				i++;
 			}
 
-			CurrentEditorModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, Model.Logger);
+			CurrentEditorModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, Model.Logger)
+			{ CurrentFile = fsi };
 		}
 
 		public async Task LoadSingleObjectToIndex()

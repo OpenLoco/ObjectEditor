@@ -145,26 +145,6 @@
 
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
 			<DockPanel DataContext="{Binding}" Margin="10">
-				<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-					<Button Grid.Row="3" Command="{Binding ReloadObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
-						</DockPanel>
-					</Button>
-					<Button Grid.Row="3" Command="{Binding SaveObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
-						</DockPanel>
-					</Button>
-					<Button Grid.Row="3" Command="{Binding SaveAsObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
-						</DockPanel>
-					</Button>
-				</StackPanel>
 				<TabControl>
 					<TabItem Header="File Headers">
 						<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
@@ -352,12 +332,12 @@
 			</DockPanel>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:SCV5ViewModel">
+		<!--<DataTemplate DataType="vm:SCV5ViewModel">
 			<StackPanel Orientation="Vertical">
 				<TextBlock Text="{Binding CurrentFileName}"/>
 				<TextBlock Text="{Binding CurrentFile}"/>
 			</StackPanel>
-		</DataTemplate>
+		</DataTemplate>-->
 
 		<DataTemplate DataType="vm:ImageTableViewModel">
 
@@ -506,7 +486,6 @@
 				<DataGrid MinHeight="256" MaxHeight="1024" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False"/>
 			</ScrollViewer>
 		</Expander>
-
 		<DockPanel DataContext="{Binding FolderTreeViewModel}" Width="384" MinWidth="256" MaxWidth="512">
 			<TabStrip DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
 				<TabItem>
@@ -572,7 +551,29 @@
 			</Grid>
 		</DockPanel>
 		<Border Margin="8" BorderThickness="1">
-			<ContentControl Content="{Binding CurrentEditorModel}"/>
+			<DockPanel DataContext="{Binding CurrentEditorModel}">
+				<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+					<Button Grid.Row="3" Command="{Binding ReloadCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
+						</DockPanel>
+					</Button>
+					<Button Grid.Row="3" Command="{Binding SaveCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
+						</DockPanel>
+					</Button>
+					<Button Grid.Row="3" Command="{Binding SaveAsCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
+						</DockPanel>
+					</Button>
+				</StackPanel>
+				<ContentControl Content="{Binding}"/>
+			</DockPanel>
 		</Border>
 	</DockPanel>
 </Window>

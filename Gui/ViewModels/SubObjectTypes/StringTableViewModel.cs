@@ -27,7 +27,7 @@ namespace AvaGui.ViewModels
 
 		public ObservableCollection<string> Keys => new(OriginalTable.Table.Keys);
 
-		public ObservableCollection<LanguageTranslation>? TranslationTable
-			=> SelectedKey == null ? null : new(OriginalTable.Table[SelectedKey].Select(kvp => new LanguageTranslation(kvp.Key, kvp.Value)));
+		public ObservableCollection<LanguageTranslationViewModel>? TranslationTable
+			=> SelectedKey == null ? null : new(OriginalTable.Table[SelectedKey].Select(kvp => new LanguageTranslationViewModel(kvp.Key, kvp.Value)));
 	}
 }

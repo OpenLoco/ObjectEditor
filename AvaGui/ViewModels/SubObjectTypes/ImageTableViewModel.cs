@@ -193,6 +193,8 @@ namespace AvaGui.ViewModels
 		//todo: second half should be model
 		public async Task ImportImages()
 		{
+			animationTimer.Stop();
+
 			var folders = await PlatformSpecific.OpenFolderPicker();
 			var dir = folders.FirstOrDefault();
 			if (dir == null)
@@ -210,15 +212,24 @@ namespace AvaGui.ViewModels
 			if (File.Exists(offsetsFile))
 			{
 				// found blender folder
-				var offsets = JsonSerializer.Deserialize<IEnumerable<SpriteOffset>>(offsetsFile);
-				Logger.Debug("Found sprites.json file, using that");
-				LoadSpritesFolderWithOffsets(dirPath, offsets.ToList());
+				try
+				{
+					var offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+					Logger.Debug("Found sprites.json file, using that");
+					LoadSpritesFolderWithOffsets(dirPath, offsets.ToList());
+				}
+				catch (Exception ex)
+				{
+					Logger.Error(ex);
+				}
 			}
 			else
 			{
 				Logger.Debug("No sprites.json file found");
 				LoadSpritesFolder(dirPath);
 			}
+
+			animationTimer.Start();
 		}
 
 		private void LoadSpritesFolderWithOffsets(string dirPath, IList<SpriteOffset> offsets)

@@ -1,6 +1,6 @@
 using AvaGui.Models;
 using Avalonia.Controls;
-using Dat;
+using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions.Web;
 using ReactiveUI;

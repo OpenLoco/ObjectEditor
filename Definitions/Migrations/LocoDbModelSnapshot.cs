@@ -92,10 +92,6 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PathOnDisk")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTimeOffset?>("UploadDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
@@ -109,9 +105,6 @@ namespace Definitions.Migrations
                     b.HasIndex("LicenceId");
 
                     b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.HasIndex("PathOnDisk")
                         .IsUnique();
 
                     b.HasIndex("OriginalName", "OriginalChecksum")

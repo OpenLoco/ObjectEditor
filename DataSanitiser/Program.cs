@@ -1,5 +1,5 @@
 // 1. objectMetadata.json must contain a single record for every unique object we have
-using Dat;
+using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;

@@ -77,7 +77,6 @@ namespace Definitions.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    PathOnDisk = table.Column<string>(type: "TEXT", nullable: false),
                     OriginalName = table.Column<string>(type: "TEXT", nullable: false),
                     OriginalChecksum = table.Column<uint>(type: "INTEGER", nullable: false),
                     IsVanilla = table.Column<bool>(type: "INTEGER", nullable: false),
@@ -206,12 +205,6 @@ namespace Definitions.Migrations
                 columns: new[] { "OriginalName", "OriginalChecksum" },
                 unique: true,
                 descending: new[] { true, false });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Objects_PathOnDisk",
-                table: "Objects",
-                column: "PathOnDisk",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tags_Name",

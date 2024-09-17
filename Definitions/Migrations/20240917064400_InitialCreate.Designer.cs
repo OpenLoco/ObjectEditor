@@ -11,7 +11,7 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240829143539_InitialCreate")]
+    [Migration("20240917064400_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -95,10 +95,6 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PathOnDisk")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTimeOffset?>("UploadDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
@@ -112,9 +108,6 @@ namespace Definitions.Migrations
                     b.HasIndex("LicenceId");
 
                     b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.HasIndex("PathOnDisk")
                         .IsUnique();
 
                     b.HasIndex("OriginalName", "OriginalChecksum")

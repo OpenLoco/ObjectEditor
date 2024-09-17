@@ -1,5 +1,4 @@
 using Avalonia.Threading;
-using Dat;
 using DynamicData;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;

@@ -1,4 +1,3 @@
-using Dat;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
@@ -476,37 +475,6 @@ namespace OpenLoco.Dat.FileParsing
 				return (header, pcmData);
 			}
 		}
-
-		public static async Task<ObjectIndexEntryBase> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file)
-			=> await Task.Run((Func<ObjectIndexEntryBase>)(() =>
-			{
-				if (file.Data!.Length < (S5Header.StructLength + ObjectHeader.StructLength))
-				{
-					return new ObjectIndexFailedEntry(file.Filename);
-				}
-
-				var span = file.Data.AsSpan();
-				var s5 = S5Header.Read(span[0..S5Header.StructLength]);
-				var oh = ObjectHeader.Read(span[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
-
-				if (!s5.Validate() || !oh.Validate())
-				{
-					return new ObjectIndexFailedEntry(file.Filename);
-				}
-
-				var remainingData = span[(S5Header.StructLength + ObjectHeader.StructLength)..];
-				var isVanilla = s5.IsOriginal();
-
-				if (s5.ObjectType == ObjectType.Vehicle)
-				{
-					var decoded = Decode(oh.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
-					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum, (VehicleType)decoded[3]);
-				}
-				else
-				{
-					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum);
-				}
-			}));
 
 		public static T ReadChunk<T>(ref ReadOnlySpan<byte> data) where T : class
 			=> ByteReader.ReadLocoStruct<T>(ReadChunkCore(ref data));

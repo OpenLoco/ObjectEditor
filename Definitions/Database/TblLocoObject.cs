@@ -7,14 +7,11 @@ namespace OpenLoco.Definitions.Database
 {
 	[Index(nameof(OriginalName), nameof(OriginalChecksum), IsDescending = [true, false], IsUnique = true)]
 	[Index(nameof(Name), IsUnique = true)]
-	[Index(nameof(PathOnDisk), IsUnique = true)]
 	public class TblLocoObject
 	{
 		public int Id { get; set; }
 
 		public string Name { get; set; }
-
-		public string PathOnDisk { get; set; }
 
 		#region OriginalDatdata
 

@@ -1,17 +1,18 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Types;
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 
-namespace Dat
+namespace OpenLoco.Dat
 {
 	public class ObjectIndex
 	{
-		public required IList<ObjectIndexEntry> Objects { get; set; } = [];
+		public required IList<ObjectIndexEntry> Objects { get; init; } = [];
 
-		public required IList<ObjectIndexFailedEntry> ObjectsFailed { get; set; } = [];
+		public required IList<ObjectIndexFailedEntry> ObjectsFailed { get; init; } = [];
 
 		public void AddObject(ObjectIndexEntryBase entryBase)
 		{
@@ -25,6 +26,12 @@ namespace Dat
 			}
 		}
 
+		public bool TryFind((string name, uint checksum) key, out ObjectIndexEntry? entry)
+		{
+			entry = Objects.FirstOrDefault(x => x.ObjectName == key.name && x.Checksum == key.checksum);
+			return entry != null;
+		}
+
 		public static async Task<ObjectIndex?> LoadOrCreateIndexAsync(string directory, IProgress<float>? progress = null)
 		{
 			var indexPath = Path.Combine(directory, "objectIndex.json");
@@ -35,7 +42,6 @@ namespace Dat
 			}
 			else
 			{
-
 				index = await CreateIndexAsync(directory, progress);
 				index.SaveIndex(indexPath);
 			}
@@ -65,7 +71,7 @@ namespace Dat
 				{
 					if (pendingFiles.TryDequeue(out var content))
 					{
-						pendingIndices.Enqueue(await SawyerStreamReader.GetDatFileInfoFromBytesAsync(content));
+						pendingIndices.Enqueue(await GetDatFileInfoFromBytesAsync(content));
 						progress?.Report(pendingIndices.Count / (float)files.Length);
 					}
 				}
@@ -100,6 +106,37 @@ namespace Dat
 
 		public void SaveIndex(string indexFile, JsonSerializerOptions options)
 			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+
+		public static async Task<ObjectIndexEntryBase> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file)
+			=> await Task.Run((Func<ObjectIndexEntryBase>)(() =>
+			{
+				if (file.Data!.Length < (S5Header.StructLength + ObjectHeader.StructLength))
+				{
+					return new ObjectIndexFailedEntry(file.Filename);
+				}
+
+				var span = file.Data.AsSpan();
+				var s5 = S5Header.Read(span[0..S5Header.StructLength]);
+				var oh = ObjectHeader.Read(span[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+
+				if (!s5.IsValid() || !oh.IsValid())
+				{
+					return new ObjectIndexFailedEntry(file.Filename);
+				}
+
+				var remainingData = span[(S5Header.StructLength + ObjectHeader.StructLength)..];
+				var isVanilla = s5.IsOriginal();
+
+				if (s5.ObjectType == ObjectType.Vehicle)
+				{
+					var decoded = SawyerStreamReader.Decode(oh.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
+					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum, (VehicleType)decoded[3]);
+				}
+				else
+				{
+					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum);
+				}
+			}));
 	}
 
 	public abstract record ObjectIndexEntryBase(string Filename);

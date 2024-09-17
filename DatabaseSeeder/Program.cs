@@ -1,7 +1,6 @@
-using Dat;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common;
-using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
@@ -48,7 +47,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	}
 
 	const string ObjDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
-	var allDatFiles = SawyerStreamUtils.GetDatFilesInDirectory(ObjDirectory);
+	//var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
 
 	Console.WriteLine("Seeding");
 
@@ -114,13 +113,17 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 	if (!db.Objects.Any())
 	{
-		var fileArr = allDatFiles.ToArray();
-		Console.WriteLine($"Seeding {fileArr.Length} Objects");
+		Console.WriteLine("Seeding Objects");
 
 		var progress = new Progress<float>();
 		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
 
-		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json"), jsonOptions);
+		if (index == null)
+		{
+			throw new ArgumentNullException(nameof(index));
+		}
+
+		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions);
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.ObjectName, x.ObjectChecksum), x => x);
 
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
@@ -142,7 +145,6 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			var tblLocoObject = new TblLocoObject()
 			{
 				Name = $"{objIndex.ObjectName}_{objIndex.Checksum}",  // same as server upload name
-				PathOnDisk = objIndex.Filename.Replace('\\', '/'), // make the path linux-compatible
 				OriginalName = objIndex.ObjectName,
 				OriginalChecksum = objIndex.Checksum,
 				IsVanilla = objIndex.IsVanilla,

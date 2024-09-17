@@ -11,7 +11,7 @@ namespace OpenLoco.Dat.Types
 	{
 		public const int StructLength = 0x05;
 
-		public bool Validate()
+		public bool IsValid()
 			=> (int)Encoding is >= 0 and < Limits.kMaxSawyerEncodings;
 
 		public static ObjectHeader Read(ReadOnlySpan<byte> data)

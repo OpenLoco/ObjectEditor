@@ -418,7 +418,7 @@
 
 									</Image>
 									<TextBlock HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
-									<Slider Minimum="1" Maximum="40" Value="{Binding AnimationSpeed}" />
+									<Slider Minimum="1" Maximum="80" Value="{Binding AnimationSpeed}" />
 									<TextBlock HorizontalAlignment="Center" Text="{Binding Zoom, StringFormat='Zoom: {0}x'}"></TextBlock>
 									<Slider Minimum="1" Maximum="10" Value="{Binding Zoom}" />
 								</StackPanel>

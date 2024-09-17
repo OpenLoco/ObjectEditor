@@ -11,10 +11,11 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -22,6 +23,11 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace AvaGui.ViewModels
 {
+	public record SpriteOffset(
+		[property: JsonPropertyName("path")] string Path,
+		[property: JsonPropertyName("x")] int16_t X,
+		[property: JsonPropertyName("y")] int16_t Y);
+
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel, ILocoFileViewModel
 	{
 		readonly IHasG1Elements G1Provider;
@@ -186,6 +192,8 @@ namespace AvaGui.ViewModels
 		//todo: second half should be model
 		public async Task ImportImages()
 		{
+			animationTimer.Stop();
+
 			var folders = await PlatformSpecific.OpenFolderPicker();
 			var dir = folders.FirstOrDefault();
 			if (dir == null)
@@ -199,48 +207,71 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			var files = Directory.GetFiles(dirPath);
-			if (files.Length == 0)
-			{
-				return;
-			}
-
 			try
 			{
-				var sorted = files.OrderBy(static f =>
+				var offsetsFile = Path.Combine(dirPath, "sprites.json");
+				if (File.Exists(offsetsFile))
 				{
-					var match = Regex.Match(Path.GetFileNameWithoutExtension(f), @".*?(\d+).*?");
-					return match.Success
-						? int.Parse(match.Groups[1].Value)
-						: throw new InvalidDataException($"Directory contains file that doesn't contain a number={f}");
-				});
+					// found blender folder
+					var offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+					Logger.Debug("Found sprites.json file, using that");
 
-				var sortedH = sorted.ToImmutableHashSet();
-
-				var g1Elements = new List<G1Element32>();
-				var i = 0;
-				foreach (var file in sorted)
-				{
-					var img = Image.Load<Rgba32>(file);
-					Images[i] = img;
-					var currG1 = G1Provider.G1Elements[i];
-					currG1 = currG1 with
+					foreach (var offset in offsets)
 					{
-						Width = (int16_t)img.Width,
-						Height = (int16_t)img.Height,
-						Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
-						ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags)
-					};
-					G1Provider.G1Elements[i] = currG1;
-					i++;
+						var filename = Path.Combine(dirPath, offset.Path);
+						LoadSprite(filename, offset);
+					}
+				}
+				else
+				{
+					Logger.Debug("No sprites.json file found");
+					foreach (var filename in Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories))
+					{
+						LoadSprite(filename);
+					}
 				}
 
+				Logger.Debug("Import successful");
 				this.RaisePropertyChanged(nameof(Bitmaps));
 			}
 			catch (Exception ex)
 			{
 				Logger.Error(ex);
 			}
+
+			animationTimer.Start();
+		}
+
+		void LoadSprite(string filename, SpriteOffset? offset = null)
+		{
+			if (!Path.Exists(filename))
+			{
+				Logger.Error($"File doesn't exist: \"{filename}\"");
+				return;
+			}
+
+			var match = Regex.Match(Path.GetFileNameWithoutExtension(filename), @".*?(\d+).*?");
+			if (!match.Success)
+			{
+				Logger.Warning($"Couldn't parse sprite index from filename: \"{filename}\"");
+				return;
+			}
+
+			var index = int.Parse(match.Groups[1].Value);
+			var img = Image.Load<Rgba32>(filename);
+			Images[index] = img;
+
+			var currG1 = G1Provider.G1Elements[index];
+			currG1 = currG1 with
+			{
+				Width = (int16_t)img.Width,
+				Height = (int16_t)img.Height,
+				Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
+				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
+				XOffset = offset?.X ?? currG1.XOffset,
+				YOffset = offset?.Y ?? currG1.YOffset
+			};
+			G1Provider.G1Elements[index] = currG1;
 		}
 
 		// todo: second half should be in model

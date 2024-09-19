@@ -4,7 +4,7 @@ using OpenLoco.Dat.Objects;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoObjectIndexEntry(
-		int UniqueId,
+		int Id,
 		string DatName,
 		uint DatChecksum,
 		ObjectType ObjectType,

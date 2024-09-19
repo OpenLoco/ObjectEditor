@@ -17,7 +17,7 @@ namespace OpenLoco.Definitions.DTO
 		ICollection<TblAuthor> Authors,
 		DateTimeOffset? CreationDate,
 		DateTimeOffset? LastEditDate,
-		DateTimeOffset? UploadDate,
+		DateTimeOffset UploadDate,
 		ICollection<TblTag> Tags,
 		ICollection<TblModpack> Modpacks,
 		ObjectAvailability Availability,

@@ -39,10 +39,8 @@ namespace OpenLoco.ObjectService
 					x.Id,
 					x.DatName,
 					x.DatChecksum,
-					x.DatName,
 					x.ObjectType,
 					x.IsVanilla,
-					x.DatChecksum,
 					x.VehicleType)).ToListAsync());
 
 		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false

@@ -232,7 +232,7 @@ namespace AvaGui.Models
 							}
 						}
 
-						metadata = new MetadataModel(locoObj.DatName, locoObj.DatChecksum)
+						metadata = new MetadataModel(locoObj.UniqueName, locoObj.DatName, locoObj.DatChecksum)
 						{
 							Description = locoObj.Description,
 							Authors = locoObj.Authors,

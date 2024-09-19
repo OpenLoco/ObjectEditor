@@ -38,6 +38,8 @@ namespace OpenLoco.ObjectService
 				.Select(x => new DtoObjectIndexEntry(
 					x.Id,
 					x.DatName,
+					x.DatChecksum,
+					x.DatName,
 					x.ObjectType,
 					x.IsVanilla,
 					x.DatChecksum,

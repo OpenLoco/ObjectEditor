@@ -5,7 +5,7 @@ using OpenLoco.Definitions.Database;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoDatObjectWithMetadata(
-		int TblLocoObjectId,
+		int Id,
 		string UniqueName,
 		string DatName,
 		uint DatChecksum,

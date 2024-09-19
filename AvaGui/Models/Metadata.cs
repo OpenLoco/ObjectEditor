@@ -8,10 +8,10 @@ namespace AvaGui.Models
 {
 	public class MetadataModel
 	{
-		public MetadataModel(string DatName, uint DatChecksum)
+		public MetadataModel(string datName, uint datChecksum)
 		{
-			DatName = DatName;
-			DatChecksum = DatChecksum;
+			DatName = datName;
+			DatChecksum = datChecksum;
 		}
 
 		public string DatName { get; }

@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenLoco.Common.Logging;
-using OpenLoco.Dat.Data;
+using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Types;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
@@ -13,24 +14,27 @@ using OpenLoco.Definitions.Web;
 
 namespace OpenLoco.ObjectService
 {
-
-	public class ObjectServiceSettings
+	public class Server
 	{
-		public required string ObjectRootFolder { get; set; }
-	}
+		public Server(ServerSettings settings)
+		{
+			Settings = settings;
+			ObjectManager = new ObjectFolderManager(Settings.ObjectRootFolder)!;
+		}
 
-	public class Server(ObjectServiceSettings settings)
-	{
-		public Server(IOptions<ObjectServiceSettings> options) : this(options.Value)
+		public Server(IOptions<ServerSettings> options) : this(options.Value)
 		{ }
 
-		Common.Logging.ILogger Logger { get; set; } = new Logger();
+		ServerSettings Settings { get; init; }
+
+		ObjectFolderManager ObjectManager { get; init; }
+
+		Common.Logging.ILogger Logger { get; } = new Logger();
 
 		// eg: https://localhost:7230/objects/list
 		public static async Task<IResult> ListObjects(LocoDb db)
 			=> Results.Ok(
 				await db.Objects
-				.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes) // for now - only return value objects
 				.Select(x => new DtoObjectIndexEntry(
 					x.Id,
 					x.DatName,
@@ -42,80 +46,53 @@ namespace OpenLoco.ObjectService
 		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
 		public async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
+			Console.WriteLine($"Object [({objectName}, {checksum})] requested");
+
 			var eObj = await db.Objects
 				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
 				.Include(x => x.Licence)
 				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
 				.SingleOrDefaultAsync();
 
-			return eObj == null || eObj.Object == null
-				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj, settings.ObjectRootFolder, returnObjBytes ?? false, logger));
+			return await ReturnObject(returnObjBytes, logger, eObj);
 		}
 
 		// eg: https://localhost:7230/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
 		public async Task<IResult> GetObject(int uniqueObjectId, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested");
+
 			var eObj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
 				.Include(x => x.Licence)
 				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
 				.SingleOrDefaultAsync();
 
-			return eObj == null || eObj.Object == null
-				? Results.NotFound()
-				: Results.Ok(await PrepareLocoObject(eObj, settings.ObjectRootFolder, returnObjBytes ?? false, logger));
+			return await ReturnObject(returnObjBytes, logger, eObj);
 		}
 
-		// eg: https://localhost:7230/objects/originaldatfile?objectName=114&checksum=123
-		public async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
+		private async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTblLocoObject? eObj)
 		{
-			var obj = await db.Objects
-				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
-				.SingleOrDefaultAsync();
-
-			const string contentType = "application/octet-stream";
-
-			return obj?.IsVanilla == false && File.Exists(obj.PathOnDisk)
-				? Results.File(obj.PathOnDisk, contentType, Path.GetFileName(obj.PathOnDisk))
-				: Results.NotFound();
-		}
-
-		// eg: https://localhost:7230/objects/getobjectfile?objectName=114&checksum=123
-		public async Task<IResult> GetObjectFile(int uniqueObjectId, LocoDb db)
-		{
-			var obj = await db.Objects
-				.Where(x => x.Id == uniqueObjectId)
-				.SingleOrDefaultAsync();
-
-			const string contentType = "application/octet-stream";
-
-			if (obj == null)
+			if (eObj == null || eObj.Object == null)
 			{
 				return Results.NotFound();
 			}
 
-			if (obj.IsVanilla)
+			if (!ObjectManager.Index.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
 			{
-				return Results.BadRequest("Nice try genius. Downloading vanilla objects is not allowed.");
+				return Results.NotFound();
 			}
 
-			var pathOnDisk = Path.Combine(settings.ObjectRootFolder, obj.PathOnDisk);
-			return File.Exists(pathOnDisk)
-				? Results.File(pathOnDisk, contentType, Path.GetFileName(pathOnDisk))
-				: Results.NotFound();
-		}
-
-		internal static async Task<DtoLocoObject> PrepareLocoObject(ExpandedTblLocoObject eObj, string objectRootFolder, bool returnObjBytes, ILogger<Server> logger)
-		{
 			var obj = eObj!.Object;
 
-			var pathOnDisk = Path.Combine(objectRootFolder, obj.PathOnDisk.Replace('\\', '/')); // handle windows paths by replacing path separator
+			var pathOnDisk = Path.Combine(Settings.ObjectRootFolder, index!.Filename); // handle windows paths by replacing path separator
 			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
-			var bytes = returnObjBytes && !obj.IsVanilla && File.Exists(pathOnDisk) ? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk)) : null;
 
-			return new DtoLocoObject(
+			var bytes = (returnObjBytes ?? false) && !obj.IsVanilla && File.Exists(pathOnDisk)
+				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
+				: null;
+
+			var dtoObject = new DtoDatObjectWithMetadata(
 				obj.Id,
 				obj.UniqueName,
 				obj.DatName,
@@ -133,6 +110,53 @@ namespace OpenLoco.ObjectService
 				eObj.Modpacks,
 				obj.Availability,
 				obj.Licence);
+
+			return Results.Ok(dtoObject);
+		}
+
+		// eg: https://localhost:7230/objects/originaldatfile?objectName=114&checksum=123
+		public async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
+		{
+			var obj = await db.Objects
+				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
+				.SingleOrDefaultAsync();
+
+			return ReturnFile(obj);
+		}
+
+		// eg: https://localhost:7230/objects/getobjectfile?objectName=114&checksum=123
+		public async Task<IResult> GetObjectFile(int uniqueObjectId, LocoDb db)
+		{
+			var obj = await db.Objects
+				.Where(x => x.Id == uniqueObjectId)
+				.SingleOrDefaultAsync();
+
+			return ReturnFile(obj);
+		}
+
+		IResult ReturnFile(TblLocoObject? obj)
+		{
+			if (obj == null)
+			{
+				return Results.NotFound();
+			}
+
+			if (obj.IsVanilla)
+			{
+				return Results.Forbid();
+			}
+
+			if (!ObjectManager.Index.TryFind((obj.DatName, obj.DatChecksum), out var index))
+			{
+				return Results.NotFound();
+			}
+
+			const string contentType = "application/octet-stream";
+
+			var path = Path.Combine(Settings.ObjectRootFolder, index!.Filename);
+			return obj?.IsVanilla == false && File.Exists(path)
+				? Results.File(path, contentType, Path.GetFileName(path))
+				: Results.NotFound();
 		}
 
 		// eg: <todo>
@@ -163,54 +187,63 @@ namespace OpenLoco.ObjectService
 				return Results.BadRequest("Unable to accept file sizes > 5MB");
 			}
 
-			var creationTime = request.CreationDate;
-
-			var obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, Logger);
-			if (obj == null || obj.Value.LocoObject == null)
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs))
 			{
-				return Results.BadRequest("Provided data was unable to be decoded into a real loco dat object.");
+				return Results.BadRequest("Provided data had invalid dat file headers");
 			}
 
-			var datFileInfo = obj.Value.DatFileInfo;
-			var locoObject = obj.Value.LocoObject;
-			var s5Header = datFileInfo.S5Header;
-
-			if (!s5Header.IsOriginal())
+			if (hdrs.S5.IsVanilla())
 			{
 				return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
 			}
 
-			if (db.DoesObjectExist(s5Header, out var existingObject))
+			if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
 			{
-				return Results.Accepted($"Object already exists in the database. DatName={s5Header.Name} DatChecksum={s5Header.Checksum} UploadDate={existingObject!.UploadDate}");
+				return Results.BadRequest("Invalid DAT file.");
 			}
 
-			const string UploadFolder = "UploadedObjects";
+			if (db.DoesObjectExist(hdrs.S5, out var existingObject))
+			{
+				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadDate={existingObject!.UploadDate}");
+			}
+
+			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
+
+			(DatFileInfo DatFileInfo, ILocoObject? LocoObject)? obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, Logger);
 			var uuid = Guid.NewGuid();
-			var saveFileName = Path.Combine(settings.ObjectRootFolder, UploadFolder, $"{uuid}.dat");
+			var saveFileName = Path.Combine(ObjectManager.CustomObjectFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
 
-			Console.WriteLine($"File accepted DatName={s5Header.Name} DatChecksum={s5Header.Checksum} PathOnDisk={saveFileName}");
+			Console.WriteLine($"File accepted DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} PathOnDisk={saveFileName}");
+
+			var creationTime = request.CreationDate;
+
+			VehicleType? vehicleType = null;
+			if (obj?.LocoObject?.Object is VehicleObject veh)
+			{
+				vehicleType = veh.Type;
+			}
 
 			var locoTbl = new TblLocoObject()
 			{
-				UniqueName = $"{s5Header.Name}_{s5Header.Checksum}", // same as DB seeder name
-				PathOnDisk = Path.Combine(UploadFolder, $"{uuid}.dat"),
-				DatName = s5Header.Name,
-				DatChecksum = s5Header.Checksum,
+				UniqueName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
+				DatName = hdrs.S5.Name,
+				DatChecksum = hdrs.S5.Checksum,
 				IsVanilla = false, // not possible to upload vanilla objects
-				ObjectType = s5Header.ObjectType,
-				VehicleType = s5Header.ObjectType == ObjectType.Vehicle ? (locoObject.Object as VehicleObject)!.Type : null,
-				Description = "",
+				ObjectType = hdrs.S5.ObjectType,
+				VehicleType = vehicleType,
+				Description = string.Empty,
 				Authors = [],
 				CreationDate = creationTime,
 				LastEditDate = null,
 				UploadDate = DateTimeOffset.UtcNow,
 				Tags = [],
 				Modpacks = [],
-				Availability = ObjectAvailability.NewGames,
+				Availability = obj?.LocoObject == null ? ObjectAvailability.Unavailable : ObjectAvailability.AllGames,
 				Licence = null,
 			};
+
+			ObjectManager.Index.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.IsVanilla, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();

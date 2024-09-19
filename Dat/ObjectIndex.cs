@@ -1,39 +1,66 @@
+using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Types;
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 
-namespace Dat
+namespace OpenLoco.Dat
 {
 	public class ObjectIndex
 	{
-		public required IList<ObjectIndexEntry> Objects { get; set; } = [];
+		public required IList<ObjectIndexEntry> Objects { get; init; } = [];
 
-		public required IList<ObjectIndexFailedEntry> ObjectsFailed { get; set; } = [];
+		public const string DefaultIndexFileName = "objectIndex.json";
 
-		public void AddObject(ObjectIndexEntryBase entryBase)
+		public bool TryFind((string name, uint checksum) key, out ObjectIndexEntry? entry)
 		{
-			if (entryBase is ObjectIndexEntry entry)
-			{
-				Objects.Add(entry);
-			}
-			else if (entryBase is ObjectIndexFailedEntry failed)
-			{
-				ObjectsFailed.Add(failed);
-			}
+			entry = Objects.FirstOrDefault(x => x.DatName == key.name && x.DatChecksum == key.checksum);
+			return entry != null;
 		}
 
-		public static Task<ObjectIndex> CreateIndexAsync(string rootObjectDirectory, string[] files, IProgress<float>? progress)
+		public void SaveIndex(string indexFile)
+			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
+
+		public void SaveIndex(string indexFile, JsonSerializerOptions options)
+			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+		public static async Task<ObjectIndexEntry> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file)
+			=> await Task.Run(() => GetDatFileInfoFromBytes(file));
+
+		public static async Task<ObjectIndex?> LoadOrCreateIndexAsync(string directory, IProgress<float>? progress = null)
 		{
+			var indexPath = Path.Combine(directory, DefaultIndexFileName);
+			ObjectIndex? index;
+			if (File.Exists(indexPath))
+			{
+				index = LoadIndex(indexPath);
+			}
+			else
+			{
+				index = await CreateIndexAsync(directory, progress);
+				index.SaveIndex(indexPath);
+			}
+
+			return index;
+		}
+
+		public static ObjectIndex? LoadOrCreateIndex(string directory, IProgress<float>? progress = null)
+			=> LoadOrCreateIndexAsync(directory, progress).Result;
+
+		public static Task<ObjectIndex> CreateIndexAsync(string directory, IProgress<float>? progress = null)
+		{
+			var files = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
+
 			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
-			ConcurrentQueue<ObjectIndexEntryBase> pendingIndices = [];
+			ConcurrentQueue<ObjectIndexEntry> pendingIndices = [];
+			var dummyLogger = new Logger(); // todo: pass in as parameter
 
 			var producerTask = Task.Run(async () =>
 			{
 				var options = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
-				await Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(rootObjectDirectory, f), ct))));
+				await Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(directory, f), ct))));
 			});
 
 			var consumerTask = Task.Run(async () =>
@@ -42,7 +69,7 @@ namespace Dat
 				{
 					if (pendingFiles.TryDequeue(out var content))
 					{
-						pendingIndices.Enqueue(await SawyerStreamReader.GetDatFileInfoFromBytesAsync(content));
+						pendingIndices.Enqueue(await GetDatFileInfoFromBytesAsync(content)); // no possible way to know if an object is invalid from partial analysis, so this will always return 'valid'
 						progress?.Report(pendingIndices.Count / (float)files.Length);
 					}
 				}
@@ -51,15 +78,12 @@ namespace Dat
 			return Task.Run(async () =>
 			{
 				await Task.WhenAll(producerTask, consumerTask);
-				return new ObjectIndex() { Objects = pendingIndices.OfType<ObjectIndexEntry>().ToList(), ObjectsFailed = pendingIndices.OfType<ObjectIndexFailedEntry>().ToList() };
+				return new ObjectIndex() { Objects = [.. pendingIndices] };
 			});
 		}
 
-		public void SaveIndex(string indexFile)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
-
-		public void SaveIndex(string indexFile, JsonSerializerOptions options)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+		public static ObjectIndex CreateIndex(string directory, IProgress<float>? progress = null)
+			=> CreateIndexAsync(directory, progress).Result;
 
 		public static ObjectIndex? LoadIndex(string indexFile)
 			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile));
@@ -75,39 +99,33 @@ namespace Dat
 			}
 		}
 
-		public static ObjectIndex? LoadOrCreateIndex(string directory)
-			=> LoadOrCreateIndexAsync(directory).Result;
-
-		public static async Task<ObjectIndex?> LoadOrCreateIndexAsync(string directory)
+		public static ObjectIndexEntry GetDatFileInfoFromBytes((string Filename, byte[] Data) file)
 		{
-			var indexPath = Path.Combine(directory, "objectIndex.json");
-			ObjectIndex? index;
-			if (File.Exists(indexPath))
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(file.Data, out var hdrs))
 			{
-				index = LoadIndex(indexPath);
+				throw new ArgumentException($"{file.Filename} must have valid S5 and Object headers to call this method", nameof(file));
+			}
+
+			var remainingData = file.Data[(S5Header.StructLength + ObjectHeader.StructLength)..];
+			var isVanilla = hdrs.S5.IsVanilla();
+
+			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
+			{
+				var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
+				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, isVanilla, (VehicleType)decoded[3]);
 			}
 			else
 			{
-				var fileArr = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-				index = await CreateIndexAsync(directory, fileArr, null);
-				index.SaveIndex(indexPath);
+				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, isVanilla);
 			}
-
-			return index;
 		}
 	}
-
-	public abstract record ObjectIndexEntryBase(string Filename);
 
 	public record ObjectIndexEntry(
 		string Filename,
 		string DatName,
+		uint32_t DatChecksum,
 		ObjectType ObjectType,
 		bool IsVanilla,
-		uint32_t Checksum,
-		VehicleType? VehicleType = null)
-		: ObjectIndexEntryBase(Filename);
-
-	public record ObjectIndexFailedEntry(string Filename)
-		: ObjectIndexEntryBase(Filename);
+		VehicleType? VehicleType = null);
 }

@@ -8,23 +8,28 @@ namespace AvaGui.Models
 {
 	public class MetadataModel
 	{
-		public MetadataModel(string originalName, uint originalChecksum)
+		public MetadataModel(string uniqueName, string datName, uint datChecksum)
 		{
-			DatName = originalName;
-			DatChecksum = originalChecksum;
+			UniqueName = uniqueName;
+			DatName = datName;
+			DatChecksum = datChecksum;
 		}
 
-		public string DatName { get; }
-		public uint DatChecksum { get; }
+		public string UniqueName { get; init; }
+
+		public string DatName { get; init; }
+		public uint DatChecksum { get; init; }
 		public string? Description { get; set; }
 
+		[Browsable(false)]
 		public ICollection<TblAuthor> Authors { get; set; }
 
 		public DateTimeOffset? CreationDate { get; set; }
 
 		public DateTimeOffset? LastEditDate { get; set; }
 
-		public DateTimeOffset? UploadDate { get; set; }
+		public DateTimeOffset UploadDate { get; set; }
+
 		[Browsable(false)]
 
 		public ICollection<TblTag> Tags { get; set; }

@@ -1,5 +1,4 @@
 using Avalonia.Threading;
-using Dat;
 using DynamicData;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
@@ -34,7 +33,7 @@ namespace AvaGui.Models
 
 		public ObjectIndex? ObjectIndexOnline { get; set; }
 
-		public Dictionary<int, DtoLocoObject> OnlineCache { get; } = [];
+		public Dictionary<int, DtoDatObjectWithMetadata> OnlineCache { get; } = [];
 
 		public PaletteMap PaletteMap { get; set; }
 
@@ -199,17 +198,16 @@ namespace AvaGui.Models
 
 						if (locoObj == null)
 						{
-							Logger.Error($"Unable to object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no data");
+							Logger.Error($"Unable to download object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no data");
 							return false;
+						}
+						else if (string.IsNullOrEmpty(locoObj.DatBytes))
+						{
+							Logger.Warning($"Unable to download object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
 						}
 						else if (locoObj.IsVanilla)
 						{
-							Logger.Info($"Unable to object {filesystemItem.Name} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material");
-							return false;
-						}
-						else if (string.IsNullOrEmpty(locoObj.OriginalBytes))
-						{
-							Logger.Warning($"Unable to load object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no DAT object data");
+							Logger.Warning($"Unable to download object {filesystemItem.Name} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
 						}
 
 						Logger.Info($"Downloaded object {filesystemItem.Name} with unique id {uniqueObjectId} and added it to the local cache");
@@ -221,38 +219,38 @@ namespace AvaGui.Models
 						Logger.Debug($"Found object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - reusing it");
 					}
 
-					if (locoObj != null && locoObj.OriginalBytes?.Length > 0)
+					if (locoObj != null)
 					{
-						var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.Name}", true);
-						if (obj == null)
+						if (locoObj.DatBytes?.Length > 0)
 						{
-							Logger.Warning($"Unable to load {filesystemItem.Name} from the received DAT object data");
+							var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.Name}", true);
+							fileInfo = obj.DatFileInfo;
+							locoObject = obj.LocoObject;
+							if (obj.LocoObject == null)
+							{
+								Logger.Warning($"Unable to load {filesystemItem.Name} from the received DAT object data");
+							}
 						}
-						else
-						{
-							fileInfo = obj?.DatFileInfo;
-							locoObject = obj?.LocoObject;
-						}
-					}
 
-					metadata = new MetadataModel(locoObj.DatName, locoObj.DatChecksum)
-					{
-						Description = locoObj.Description,
-						Authors = locoObj.Authors,
-						CreationDate = locoObj.CreationDate,
-						LastEditDate = locoObj.LastEditDate,
-						UploadDate = locoObj.UploadDate,
-						Tags = locoObj.Tags,
-						Modpacks = locoObj.Modpacks,
-						Availability = locoObj.Availability,
-						Licence = locoObj.Licence,
-					};
-
-					if (locoObject != null)
-					{
-						foreach (var i in locoObject.G1Elements)
+						metadata = new MetadataModel(locoObj.UniqueName, locoObj.DatName, locoObj.DatChecksum)
 						{
-							images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+							Description = locoObj.Description,
+							Authors = locoObj.Authors,
+							CreationDate = locoObj.CreationDate,
+							LastEditDate = locoObj.LastEditDate,
+							UploadDate = locoObj.UploadDate,
+							Tags = locoObj.Tags,
+							Modpacks = locoObj.Modpacks,
+							Availability = locoObj.Availability,
+							Licence = locoObj.Licence,
+						};
+
+						if (locoObject != null)
+						{
+							foreach (var i in locoObject.G1Elements)
+							{
+								images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+							}
 						}
 					}
 				}
@@ -376,7 +374,6 @@ namespace AvaGui.Models
 
 			Settings.ObjDataDirectory = directory;
 			SaveSettings();
-			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 
 			if (useExistingIndex && File.Exists(IndexFilename))
 			{
@@ -395,26 +392,27 @@ namespace AvaGui.Models
 				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DatName))))
 				{
 					Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
-					await RecreateIndex(directory, allFiles, progress);
+					await RecreateIndex(directory, progress);
 					return;
 				}
 
-				var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.Filename).Concat(ObjectIndex.ObjectsFailed.Select(x => x.Filename));
+				var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.Filename);
+				var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 				if (objectIndexFilenames.Except(allFiles).Any() || allFiles.Except(objectIndexFilenames).Any())
 				{
 					Logger.Warning("Index file appears to be outdated - recreating now.");
-					await RecreateIndex(directory, allFiles, progress);
+					await RecreateIndex(directory, progress);
 				}
 			}
 			else
 			{
-				await RecreateIndex(directory, allFiles, progress);
+				await RecreateIndex(directory, progress);
 			}
 
-			async Task RecreateIndex(string rootObjectDirectory, string[] allFiles, IProgress<float> progress)
+			async Task RecreateIndex(string directory, IProgress<float> progress)
 			{
 				Logger.Info("Recreating index file");
-				ObjectIndex = await ObjectIndex.CreateIndexAsync(rootObjectDirectory, allFiles, progress);
+				ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, progress);
 				ObjectIndex?.SaveIndex(IndexFilename);
 			}
 		}
@@ -429,8 +427,8 @@ namespace AvaGui.Models
 			Logger.Debug("Comparing local objects to object repository");
 
 			var localButNotOnline = ObjectIndex.Objects.ExceptBy(ObjectIndexOnline.Objects.Select(
-				x => (x.DatName, x.Checksum)),
-				x => (x.DatName, x.Checksum)).ToList();
+				x => (x.DatName, x.DatChecksum)),
+				x => (x.DatName, x.DatChecksum)).ToList();
 
 			if (localButNotOnline.Count != 0)
 			{
@@ -455,6 +453,7 @@ namespace AvaGui.Models
 			var filename = Path.Combine(Settings.ObjDataDirectory, dat.Filename);
 			var lastModifiedTime = File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows
 			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), lastModifiedTime, Logger);
+			await Task.Delay(100); // wait 100ms, ie don't DoS the server
 		}
 	}
 }

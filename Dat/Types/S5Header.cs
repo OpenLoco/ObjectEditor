@@ -39,8 +39,11 @@ namespace OpenLoco.Dat.Types
 			set => Flags = (Flags & (~0x3u << 6)) | ((uint)value & 0x3F);
 		}
 
-		public bool Validate()
-			=> (int)SourceGame is >= 0 and < 3 && (int)ObjectType is >= 0 and < Limits.kMaxObjectTypes;
+		public bool IsValid()
+			=> IsValid((int)SourceGame, (int)ObjectType);
+
+		public static bool IsValid(int sourceGame, int objectType)
+			=> sourceGame is >= 0 and < 3 && objectType is >= 0 and < Limits.kMaxObjectTypes;
 
 		public static S5Header Read(ReadOnlySpan<byte> data)
 		{
@@ -69,10 +72,10 @@ namespace OpenLoco.Dat.Types
 		// Vanilla objects do 0x000000FF but all FF is fine too
 		public static readonly S5Header NullHeader = new(0x000000FF, "        ", 0);
 
-		public bool IsOriginal()
-			=> IsOriginal(Name, Checksum);
+		public bool IsVanilla()
+			=> IsVanilla(Name, Checksum);
 
-		public static bool IsOriginal(string name, uint checksum)
-			=> OriginalObjectFiles.Names.TryGetValue(name, out var obj) && (obj.SteamChecksum == checksum || obj.GoGChecksum == checksum);
+		public static bool IsVanilla(string name, uint checksum)
+			=> OriginalObjectFiles.GetFileSource(name, checksum) != FileSource.Custom;
 	}
 }

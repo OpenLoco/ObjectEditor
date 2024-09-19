@@ -27,13 +27,15 @@ foreach (var o in db.Objects
 		.OrderBy(x => x.Object.UniqueName))
 {
 	var obj = new ObjectMetadata(
+		o.Object.UniqueName,
 		o.Object.DatName,
 		o.Object.DatChecksum,
 		o.Object.Description,
 		o.Authors.Select(a => a.Name).ToList(),
 		o.Tags.Select(t => t.Name).ToList(),
 		o.Modpacks.Select(m => m.Name).ToList(),
-		o.Object.Licence?.Name);
+		o.Object.Licence?.Name,
+		o.Object.Availability);
 	objs.Add(obj);
 }
 
@@ -45,6 +47,6 @@ File.WriteAllText("Q:\\Games\\Locomotion\\Database\\authors.json", authors);
 File.WriteAllText("Q:\\Games\\Locomotion\\Database\\tags.json", tags);
 File.WriteAllText("Q:\\Games\\Locomotion\\Database\\licences.json", licences);
 File.WriteAllText("Q:\\Games\\Locomotion\\Database\\modpacks.json", modpacks);
-File.WriteAllText("Q:\\Games\\Locomotion\\Database\\objects.json", objects);
+File.WriteAllText("Q:\\Games\\Locomotion\\Database\\objectMetadata.json", objects);
 
 Console.WriteLine("done");

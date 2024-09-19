@@ -1,4 +1,3 @@
-using Dat;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
@@ -65,58 +64,70 @@ namespace OpenLoco.Dat.FileParsing
 
 		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecodeFromStream(ReadOnlySpan<byte> fullData, ILogger? logger = null)
 		{
-			if (fullData.Length < S5Header.StructLength + ObjectHeader.StructLength)
+			if (!TryGetHeadersFromBytes(fullData, out var hdrs))
 			{
 				return null;
 			}
 
-			var s5Header = S5Header.Read(fullData[0..S5Header.StructLength]);
-			var remainingData = fullData[S5Header.StructLength..];
-
-			var objectHeader = ObjectHeader.Read(remainingData[0..ObjectHeader.StructLength]);
-			remainingData = remainingData[ObjectHeader.StructLength..];
+			var remainingData = fullData[(S5Header.StructLength + ObjectHeader.StructLength)..];
 
 			byte[] decodedData;
 			try
 			{
-				decodedData = Decode(objectHeader.Encoding, remainingData);
+				decodedData = Decode(hdrs.Obj.Encoding, remainingData);
 			}
 			catch (InvalidDataException ex)
 			{
 				logger?.Error(ex);
-				return (s5Header, objectHeader, []);
+				return (hdrs.S5, hdrs.Obj, []);
 			}
 			//remainingData = decodedData;
 
-			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
+			var headerFlag = BitConverter.GetBytes(hdrs.S5.Flags).AsSpan()[0..1];
 			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
 
-			if (checksum != s5Header.Checksum)
+			if (checksum != hdrs.S5.Checksum)
 			{
-				logger?.Error($"{s5Header.Name} had incorrect checksum. expected={s5Header.Checksum} actual={checksum}");
+				logger?.Error($"{hdrs.S5.Name} had incorrect checksum. expected={hdrs.S5.Checksum} actual={checksum}");
 			}
 
-			return (s5Header, objectHeader, decodedData);
+			return (hdrs.S5, hdrs.Obj, decodedData);
+		}
+
+		public static bool TryGetHeadersFromBytes(ReadOnlySpan<byte> data, out (S5Header S5, ObjectHeader Obj) hdrs)
+		{
+			hdrs = default;
+			if (data.Length < (S5Header.StructLength + ObjectHeader.StructLength))
+			{
+				return false;
+			}
+
+			var s5 = S5Header.Read(data[0..S5Header.StructLength]);
+			var oh = ObjectHeader.Read(data[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+
+			if (!s5.IsValid() || !oh.IsValid())
+			{
+				return false;
+			}
+
+			hdrs.S5 = s5;
+			hdrs.Obj = oh;
+			return true;
 		}
 
 		// load file
 		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject)? LoadFullObjectFromFile(string filename, ILogger logger, bool loadExtra = true)
 			=> LoadFullObjectFromStream(File.ReadAllBytes(filename), logger, filename, loadExtra);
 
-		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject)? LoadFullObjectFromStream(ReadOnlySpan<byte> data, ILogger logger, string filename = "<in-memory>", bool loadExtra = true)
+		public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject) LoadFullObjectFromStream(ReadOnlySpan<byte> data, ILogger logger, string filename = "<in-memory>", bool loadExtra = true)
 		{
 			logger.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
-
-			if (data.Length < (S5Header.StructLength + ObjectHeader.StructLength))
-			{
-				logger.Error($"{filename} didn't have enough data");
-				return new(new DatFileInfo(S5Header.NullHeader, ObjectHeader.NullHeader), null);
-			}
 
 			var obj = LoadAndDecodeFromStream(data, logger);
 			if (obj == null || obj.Value.decodedData.Length == 0)
 			{
-				return null;
+				logger.Error($"{filename} was unable to be decoded");
+				return (new DatFileInfo(S5Header.NullHeader, ObjectHeader.NullHeader), null);
 			}
 
 			var s5Header = obj.Value.s5Header;
@@ -126,7 +137,7 @@ namespace OpenLoco.Dat.FileParsing
 			if (decodedData.Length == 0)
 			{
 				logger.Warning($"No data was decoded from {filename}, file is malformed.");
-				return new(new DatFileInfo(s5Header, objectHeader), null);
+				return (new DatFileInfo(s5Header, objectHeader), null);
 			}
 
 			ReadOnlySpan<byte> remainingData = decodedData;
@@ -183,7 +194,7 @@ namespace OpenLoco.Dat.FileParsing
 				if (s5Header.SourceGame == SourceGame.Vanilla)
 				{
 					var s5Name = s5Header.Name;
-					if (!s5Header.IsOriginal())
+					if (!s5Header.IsVanilla())
 					{
 						warnings.Add($"\"{s5Header.Name}\" is not a vanilla object but is marked as such.");
 					}
@@ -476,37 +487,6 @@ namespace OpenLoco.Dat.FileParsing
 				return (header, pcmData);
 			}
 		}
-
-		public static async Task<ObjectIndexEntryBase> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file)
-			=> await Task.Run((Func<ObjectIndexEntryBase>)(() =>
-			{
-				if (file.Data!.Length < (S5Header.StructLength + ObjectHeader.StructLength))
-				{
-					return new ObjectIndexFailedEntry(file.Filename);
-				}
-
-				var span = file.Data.AsSpan();
-				var s5 = S5Header.Read(span[0..S5Header.StructLength]);
-				var oh = ObjectHeader.Read(span[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
-
-				if (!s5.Validate() || !oh.Validate())
-				{
-					return new ObjectIndexFailedEntry(file.Filename);
-				}
-
-				var remainingData = span[(S5Header.StructLength + ObjectHeader.StructLength)..];
-				var isVanilla = s5.IsOriginal();
-
-				if (s5.ObjectType == ObjectType.Vehicle)
-				{
-					var decoded = Decode(oh.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
-					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum, (VehicleType)decoded[3]);
-				}
-				else
-				{
-					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum);
-				}
-			}));
 
 		public static T ReadChunk<T>(ref ReadOnlySpan<byte> data) where T : class
 			=> ByteReader.ReadLocoStruct<T>(ReadChunkCore(ref data));

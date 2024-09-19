@@ -7,20 +7,17 @@ namespace OpenLoco.Definitions.Database
 {
 	[Index(nameof(DatName), nameof(DatChecksum), IsDescending = [true, false], IsUnique = true)]
 	[Index(nameof(UniqueName), IsUnique = true)]
-	[Index(nameof(PathOnDisk), IsUnique = true)]
 	public class TblLocoObject
 	{
 		public int Id { get; set; }
 
-		public string UniqueName { get; set; }
-
-		public string PathOnDisk { get; set; }
+		public required string UniqueName { get; set; }
 
 		#region OriginalDatdata
 
-		public string DatName { get; set; }
+		public required string DatName { get; set; }
 
-		public uint DatChecksum { get; set; }
+		public required uint DatChecksum { get; set; }
 
 		#endregion
 
@@ -41,7 +38,7 @@ namespace OpenLoco.Definitions.Database
 		public DateTimeOffset? LastEditDate { get; set; }
 
 		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-		public DateTimeOffset? UploadDate { get; set; }
+		public DateTimeOffset UploadDate { get; set; }
 
 		public ICollection<TblTag> Tags { get; set; }
 

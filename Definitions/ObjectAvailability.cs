@@ -2,7 +2,8 @@ namespace OpenLoco.Definitions
 {
 	public enum ObjectAvailability
 	{
-		NewGames,
-		SaveGamesOnly
+		Unavailable,
+		AllGames,
+		SaveGamesOnly,
 	}
 }

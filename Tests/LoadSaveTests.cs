@@ -40,10 +40,7 @@ namespace OpenLoco.Dat.Tests
 		static (ILocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
 		{
 			var logger = new Logger();
-			var loaded = SawyerStreamReader.LoadFullObjectFromStream(data, logger: logger);
-
-			Assert.That(loaded, Is.Not.Null);
-			var (datFileInfo, locoObject) = loaded.Value;
+			var (datFileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(data, logger: logger);
 
 #pragma warning disable NUnit2045 // Use Assert.Multiple - cannot use a ReadOnlySpan inside an anonymous method
 			Assert.That(locoObject, Is.Not.Null);

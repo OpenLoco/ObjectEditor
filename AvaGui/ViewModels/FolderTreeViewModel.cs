@@ -1,6 +1,6 @@
 using AvaGui.Models;
 using Avalonia.Controls;
-using Dat;
+using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions.Web;
 using ReactiveUI;
@@ -174,9 +174,8 @@ namespace AvaGui.ViewModels
 				Model.ObjectIndexOnline = new ObjectIndex()
 				{
 					Objects = (await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.ObjectType, x.IsVanilla, x.DatChecksum, x.VehicleType))
-					.ToList(),
-					ObjectsFailed = []
+						.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.IsVanilla, x.VehicleType))
+						.ToList()
 				};
 			}
 
@@ -190,7 +189,7 @@ namespace AvaGui.ViewModels
 			}
 		}
 
-		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntryBase> index, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
+		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
 		{
 			var result = new List<FileSystemItemBase>();
 

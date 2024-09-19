@@ -64,7 +64,7 @@ namespace OpenLoco.Common
 		public string ServerAddressHttps { get; set; } = "https://openloco.leftofzen.dev/";
 
 		public string PaletteFile { get; set; } = "palette.png";
-		public string IndexFileName { get; set; } = "objectIndex.json";
+		public string IndexFileName { get; set; } = "objectIndex.json"; // this should be the same as ObjectIndex.IndexFileName
 		public string G1DatFileName { get; set; } = "g1.DAT";
 		public string DownloadFolder { get; set; } = string.Empty;
 

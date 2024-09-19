@@ -4,12 +4,12 @@ using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public record DtoLocoObject(
+	public record DtoDatObjectWithMetadata(
 		int Id,
 		string UniqueName,
 		string DatName,
 		uint DatChecksum,
-		string? OriginalBytes, // base64-encoded
+		string? DatBytes, // base64-encoded
 		bool IsVanilla,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
@@ -17,7 +17,7 @@ namespace OpenLoco.Definitions.DTO
 		ICollection<TblAuthor> Authors,
 		DateTimeOffset? CreationDate,
 		DateTimeOffset? LastEditDate,
-		DateTimeOffset? UploadDate,
+		DateTimeOffset UploadDate,
 		ICollection<TblTag> Tags,
 		ICollection<TblModpack> Modpacks,
 		ObjectAvailability Availability,

@@ -161,7 +161,6 @@ namespace OpenLoco.Dat.Objects
 			}
 
 			CargoTypeSpriteOffsets.Clear();
-
 			MaxCargo.Clear();
 
 			for (var i = 0; i < CompatibleCargoTypesLength; ++i)

@@ -20,8 +20,7 @@ builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddHttpLogging(logging =>
 {
-	logging.LoggingFields = HttpLoggingFields.Request
-		| HttpLoggingFields.ResponsePropertiesAndHeaders
+	logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders
 		| HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
 	logging.CombineLogs = true;
 });
@@ -54,7 +53,7 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 	}));
 
 builder.Services.AddSingleton<Server>();
-var serviceSettings = builder.Services.Configure<ObjectServiceSettings>(builder.Configuration.GetSection("ObjectService"));
+var serviceSettings = builder.Services.Configure<ServerSettings>(builder.Configuration.GetSection("ObjectService"));
 
 var app = builder.Build();
 app.UseHttpLogging();
@@ -67,7 +66,7 @@ if (app.Environment.IsDevelopment())
 }
 
 var objRoot = builder.Configuration["ObjectService:ObjectRootFolder"];
-var server = new Server(new ObjectServiceSettings() { ObjectRootFolder = objRoot! });
+var server = new Server(new ServerSettings(objRoot) { ObjectRootFolder = objRoot! });
 
 // GET
 _ = app.MapGet(Routes.ListObjects, Server.ListObjects)

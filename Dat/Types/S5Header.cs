@@ -72,10 +72,10 @@ namespace OpenLoco.Dat.Types
 		// Vanilla objects do 0x000000FF but all FF is fine too
 		public static readonly S5Header NullHeader = new(0x000000FF, "        ", 0);
 
-		public bool IsOriginal()
-			=> IsOriginal(Name, Checksum);
+		public bool IsVanilla()
+			=> IsVanilla(Name, Checksum);
 
-		public static bool IsOriginal(string name, uint checksum)
+		public static bool IsVanilla(string name, uint checksum)
 			=> OriginalObjectFiles.GetFileSource(name, checksum) != FileSource.Custom;
 	}
 }

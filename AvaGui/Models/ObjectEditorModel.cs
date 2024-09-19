@@ -33,7 +33,7 @@ namespace AvaGui.Models
 
 		public ObjectIndex? ObjectIndexOnline { get; set; }
 
-		public Dictionary<int, DtoLocoObject> OnlineCache { get; } = [];
+		public Dictionary<int, DtoDatObjectWithMetadata> OnlineCache { get; } = [];
 
 		public PaletteMap PaletteMap { get; set; }
 
@@ -206,7 +206,7 @@ namespace AvaGui.Models
 							Logger.Info($"Unable to object {filesystemItem.Name} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material");
 							return false;
 						}
-						else if (string.IsNullOrEmpty(locoObj.OriginalBytes))
+						else if (string.IsNullOrEmpty(locoObj.DatBytes))
 						{
 							Logger.Warning($"Unable to load object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no DAT object data");
 						}
@@ -220,38 +220,38 @@ namespace AvaGui.Models
 						Logger.Debug($"Found object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - reusing it");
 					}
 
-					if (locoObj != null && locoObj.OriginalBytes?.Length > 0)
+					if (locoObj != null)
 					{
-						var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.OriginalBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.Name}", true);
-						if (obj == null)
+						if (locoObj.DatBytes?.Length > 0)
 						{
-							Logger.Warning($"Unable to load {filesystemItem.Name} from the received DAT object data");
+							var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.Name}", true);
+							fileInfo = obj.DatFileInfo;
+							locoObject = obj.LocoObject;
+							if (obj.LocoObject == null)
+							{
+								Logger.Warning($"Unable to load {filesystemItem.Name} from the received DAT object data");
+							}
 						}
-						else
-						{
-							fileInfo = obj?.DatFileInfo;
-							locoObject = obj?.LocoObject;
-						}
-					}
 
-					metadata = new MetadataModel(locoObj.OriginalName, locoObj.OriginalChecksum)
-					{
-						Description = locoObj.Description,
-						Authors = locoObj.Authors,
-						CreationDate = locoObj.CreationDate,
-						LastEditDate = locoObj.LastEditDate,
-						UploadDate = locoObj.UploadDate,
-						Tags = locoObj.Tags,
-						Modpacks = locoObj.Modpacks,
-						Availability = locoObj.Availability,
-						Licence = locoObj.Licence,
-					};
-
-					if (locoObject != null)
-					{
-						foreach (var i in locoObject.G1Elements)
+						metadata = new MetadataModel(locoObj.DatName, locoObj.DatChecksum)
 						{
-							images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+							Description = locoObj.Description,
+							Authors = locoObj.Authors,
+							CreationDate = locoObj.CreationDate,
+							LastEditDate = locoObj.LastEditDate,
+							UploadDate = locoObj.UploadDate,
+							Tags = locoObj.Tags,
+							Modpacks = locoObj.Modpacks,
+							Availability = locoObj.Availability,
+							Licence = locoObj.Licence,
+						};
+
+						if (locoObject != null)
+						{
+							foreach (var i in locoObject.G1Elements)
+							{
+								images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+							}
 						}
 					}
 				}
@@ -390,14 +390,14 @@ namespace AvaGui.Models
 					exception = true;
 				}
 
-				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.ObjectName))))
+				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DatName))))
 				{
 					Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
 					await RecreateIndex(directory, progress);
 					return;
 				}
 
-				var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.Filename).Concat(ObjectIndex.ObjectsFailed.Select(x => x.Filename));
+				var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.Filename);
 				var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 				if (objectIndexFilenames.Except(allFiles).Any() || allFiles.Except(objectIndexFilenames).Any())
 				{
@@ -428,8 +428,8 @@ namespace AvaGui.Models
 			Logger.Debug("Comparing local objects to object repository");
 
 			var localButNotOnline = ObjectIndex.Objects.ExceptBy(ObjectIndexOnline.Objects.Select(
-				x => (x.ObjectName, x.Checksum)),
-				x => (x.ObjectName, x.Checksum)).ToList();
+				x => (x.DatName, x.DatChecksum)),
+				x => (x.DatName, x.DatChecksum)).ToList();
 
 			if (localButNotOnline.Count != 0)
 			{

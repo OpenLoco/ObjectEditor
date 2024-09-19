@@ -11,7 +11,7 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240917064400_InitialCreate")]
+    [Migration("20240919063309_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -69,6 +69,13 @@ namespace Definitions.Migrations
                     b.Property<DateTimeOffset?>("CreationDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<uint>("DatChecksum")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DatName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
@@ -81,21 +88,14 @@ namespace Definitions.Migrations
                     b.Property<int?>("LicenceId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<byte>("ObjectType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<uint>("OriginalChecksum")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("OriginalName")
+                    b.Property<string>("UniqueName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset?>("UploadDate")
+                    b.Property<DateTimeOffset>("UploadDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
@@ -107,10 +107,10 @@ namespace Definitions.Migrations
 
                     b.HasIndex("LicenceId");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("UniqueName")
                         .IsUnique();
 
-                    b.HasIndex("OriginalName", "OriginalChecksum")
+                    b.HasIndex("DatName", "DatChecksum")
                         .IsUnique()
                         .IsDescending(true, false);
 

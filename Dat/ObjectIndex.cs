@@ -1,3 +1,4 @@
+using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
@@ -12,29 +13,25 @@ namespace OpenLoco.Dat
 	{
 		public required IList<ObjectIndexEntry> Objects { get; init; } = [];
 
-		public required IList<ObjectIndexFailedEntry> ObjectsFailed { get; init; } = [];
-
-		public void AddObject(ObjectIndexEntryBase entryBase)
-		{
-			if (entryBase is ObjectIndexEntry entry)
-			{
-				Objects.Add(entry);
-			}
-			else if (entryBase is ObjectIndexFailedEntry failed)
-			{
-				ObjectsFailed.Add(failed);
-			}
-		}
+		public const string DefaultIndexFileName = "objectIndex.json";
 
 		public bool TryFind((string name, uint checksum) key, out ObjectIndexEntry? entry)
 		{
-			entry = Objects.FirstOrDefault(x => x.ObjectName == key.name && x.Checksum == key.checksum);
+			entry = Objects.FirstOrDefault(x => x.DatName == key.name && x.DatChecksum == key.checksum);
 			return entry != null;
 		}
 
+		public void SaveIndex(string indexFile)
+			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
+
+		public void SaveIndex(string indexFile, JsonSerializerOptions options)
+			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+		public static async Task<ObjectIndexEntry> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file)
+			=> await Task.Run(() => GetDatFileInfoFromBytes(file));
+
 		public static async Task<ObjectIndex?> LoadOrCreateIndexAsync(string directory, IProgress<float>? progress = null)
 		{
-			var indexPath = Path.Combine(directory, "objectIndex.json");
+			var indexPath = Path.Combine(directory, DefaultIndexFileName);
 			ObjectIndex? index;
 			if (File.Exists(indexPath))
 			{
@@ -57,7 +54,8 @@ namespace OpenLoco.Dat
 			var files = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 
 			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
-			ConcurrentQueue<ObjectIndexEntryBase> pendingIndices = [];
+			ConcurrentQueue<ObjectIndexEntry> pendingIndices = [];
+			var dummyLogger = new Logger(); // todo: pass in as parameter
 
 			var producerTask = Task.Run(async () =>
 			{
@@ -71,7 +69,7 @@ namespace OpenLoco.Dat
 				{
 					if (pendingFiles.TryDequeue(out var content))
 					{
-						pendingIndices.Enqueue(await GetDatFileInfoFromBytesAsync(content));
+						pendingIndices.Enqueue(await GetDatFileInfoFromBytesAsync(content)); // no possible way to know if an object is invalid from partial analysis, so this will always return 'valid'
 						progress?.Report(pendingIndices.Count / (float)files.Length);
 					}
 				}
@@ -80,7 +78,7 @@ namespace OpenLoco.Dat
 			return Task.Run(async () =>
 			{
 				await Task.WhenAll(producerTask, consumerTask);
-				return new ObjectIndex() { Objects = pendingIndices.OfType<ObjectIndexEntry>().ToList(), ObjectsFailed = pendingIndices.OfType<ObjectIndexFailedEntry>().ToList() };
+				return new ObjectIndex() { Objects = [.. pendingIndices] };
 			});
 		}
 
@@ -101,55 +99,33 @@ namespace OpenLoco.Dat
 			}
 		}
 
-		public void SaveIndex(string indexFile)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
-
-		public void SaveIndex(string indexFile, JsonSerializerOptions options)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
-
-		public static async Task<ObjectIndexEntryBase> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file)
-			=> await Task.Run((Func<ObjectIndexEntryBase>)(() =>
+		public static ObjectIndexEntry GetDatFileInfoFromBytes((string Filename, byte[] Data) file)
+		{
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(file.Data, out var hdrs))
 			{
-				if (file.Data!.Length < (S5Header.StructLength + ObjectHeader.StructLength))
-				{
-					return new ObjectIndexFailedEntry(file.Filename);
-				}
+				throw new ArgumentException($"{file.Filename} must have valid S5 and Object headers to call this method", nameof(file));
+			}
 
-				var span = file.Data.AsSpan();
-				var s5 = S5Header.Read(span[0..S5Header.StructLength]);
-				var oh = ObjectHeader.Read(span[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+			var remainingData = file.Data[(S5Header.StructLength + ObjectHeader.StructLength)..];
+			var isVanilla = hdrs.S5.IsVanilla();
 
-				if (!s5.IsValid() || !oh.IsValid())
-				{
-					return new ObjectIndexFailedEntry(file.Filename);
-				}
-
-				var remainingData = span[(S5Header.StructLength + ObjectHeader.StructLength)..];
-				var isVanilla = s5.IsOriginal();
-
-				if (s5.ObjectType == ObjectType.Vehicle)
-				{
-					var decoded = SawyerStreamReader.Decode(oh.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
-					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum, (VehicleType)decoded[3]);
-				}
-				else
-				{
-					return new ObjectIndexEntry(file.Filename, s5.Name, s5.ObjectType, isVanilla, s5.Checksum);
-				}
-			}));
+			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
+			{
+				var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
+				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, isVanilla, (VehicleType)decoded[3]);
+			}
+			else
+			{
+				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, isVanilla);
+			}
+		}
 	}
-
-	public abstract record ObjectIndexEntryBase(string Filename);
 
 	public record ObjectIndexEntry(
 		string Filename,
-		string ObjectName,
+		string DatName,
+		uint32_t DatChecksum,
 		ObjectType ObjectType,
 		bool IsVanilla,
-		uint32_t Checksum,
-		VehicleType? VehicleType = null)
-		: ObjectIndexEntryBase(Filename);
-
-	public record ObjectIndexFailedEntry(string Filename)
-		: ObjectIndexEntryBase(Filename);
+		VehicleType? VehicleType = null);
 }

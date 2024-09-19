@@ -4,12 +4,12 @@ using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public record DtoLocoObject(
+	public record DtoDatObjectWithMetadata(
 		int TblLocoObjectId,
-		string Name,
-		string OriginalName,
-		uint OriginalChecksum,
-		string? OriginalBytes, // base64-encoded
+		string UniqueName,
+		string DatName,
+		uint DatChecksum,
+		string? DatBytes, // base64-encoded
 		bool IsVanilla,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,

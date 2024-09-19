@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
-using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Types;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
@@ -19,14 +19,16 @@ namespace OpenLoco.ObjectService
 		public Server(ServerSettings settings)
 		{
 			Settings = settings;
-			Index = ObjectIndex.LoadOrCreateIndex(Settings.ObjectRootFolder)!;
+			ObjectManager = new ObjectFolderManager(Settings.ObjectRootFolder)!;
 		}
 
 		public Server(IOptions<ServerSettings> options) : this(options.Value)
 		{ }
 
 		ServerSettings Settings { get; init; }
-		ObjectIndex Index { get; init; }
+
+		ObjectFolderManager ObjectManager { get; init; }
+
 		Common.Logging.ILogger Logger { get; } = new Logger();
 
 		// eg: https://localhost:7230/objects/list
@@ -35,10 +37,10 @@ namespace OpenLoco.ObjectService
 				await db.Objects
 				.Select(x => new DtoObjectIndexEntry(
 					x.Id,
-					x.OriginalName,
+					x.DatName,
 					x.ObjectType,
 					x.IsVanilla,
-					x.OriginalChecksum,
+					x.DatChecksum,
 					x.VehicleType)).ToListAsync());
 
 		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
@@ -47,7 +49,7 @@ namespace OpenLoco.ObjectService
 			Console.WriteLine($"Object [({objectName}, {checksum})] requested");
 
 			var eObj = await db.Objects
-				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
+				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
 				.Include(x => x.Licence)
 				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
 				.SingleOrDefaultAsync();
@@ -76,7 +78,7 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			if (!Index.TryFind((eObj.Object.OriginalName, eObj.Object.OriginalChecksum), out var index))
+			if (!ObjectManager.Index.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
@@ -90,11 +92,11 @@ namespace OpenLoco.ObjectService
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
-			var dtoObject = new DtoLocoObject(
+			var dtoObject = new DtoDatObjectWithMetadata(
 				obj.Id,
-				obj.Name,
-				obj.OriginalName,
-				obj.OriginalChecksum,
+				obj.UniqueName,
+				obj.DatName,
+				obj.DatChecksum,
 				bytes,
 				obj.IsVanilla,
 				obj.ObjectType,
@@ -116,7 +118,7 @@ namespace OpenLoco.ObjectService
 		public async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
 		{
 			var obj = await db.Objects
-				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
+				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
 				.SingleOrDefaultAsync();
 
 			return ReturnFile(obj);
@@ -144,7 +146,7 @@ namespace OpenLoco.ObjectService
 				return Results.Forbid();
 			}
 
-			if (!Index.TryFind((obj.OriginalName, obj.OriginalChecksum), out var index))
+			if (!ObjectManager.Index.TryFind((obj.DatName, obj.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
@@ -185,65 +187,68 @@ namespace OpenLoco.ObjectService
 				return Results.BadRequest("Unable to accept file sizes > 5MB");
 			}
 
-			var creationTime = request.CreationDate;
-
-			var obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, Logger);
-			if (obj == null || obj.Value.LocoObject == null)
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs))
 			{
-				return Results.BadRequest("Provided data was unable to be decoded into a real loco dat object.");
+				return Results.BadRequest("Provided data had invalid dat file headers");
 			}
 
-			var datFileInfo = obj.Value.DatFileInfo;
-			var locoObject = obj.Value.LocoObject;
-			var s5Header = datFileInfo.S5Header;
-
-			if (!s5Header.IsOriginal())
+			if (!hdrs.S5.IsVanilla())
 			{
 				return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
 			}
 
-			if (!s5Header.IsValid())
+			if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
 			{
 				return Results.BadRequest("Invalid DAT file.");
 			}
 
-			if (db.DoesObjectExist(s5Header, out var existingObject))
+			if (db.DoesObjectExist(hdrs.S5, out var existingObject))
 			{
-				return Results.Accepted($"Object already exists in the database. OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} UploadDate={existingObject!.UploadDate}");
+				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadDate={existingObject!.UploadDate}");
 			}
 
-			const string UploadFolder = "UploadedObjects";
+			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
+
+			(DatFileInfo DatFileInfo, ILocoObject? LocoObject)? obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, Logger);
 			var uuid = Guid.NewGuid();
-			var saveFileName = Path.Combine(Settings.ObjectRootFolder, UploadFolder, $"{uuid}.dat");
+			var saveFileName = Path.Combine(ObjectManager.CustomObjectFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
 
-			Console.WriteLine($"File accepted OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} PathOnDisk={saveFileName}");
+			Console.WriteLine($"File accepted DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} PathOnDisk={saveFileName}");
+
+			var creationTime = request.CreationDate;
+
+			VehicleType? vehicleType = null;
+			if (obj?.LocoObject?.Object is VehicleObject veh)
+			{
+				vehicleType = veh.Type;
+			}
 
 			var locoTbl = new TblLocoObject()
 			{
-				Name = $"{s5Header.Name}_{s5Header.Checksum}", // same as DB seeder name
-				OriginalName = s5Header.Name,
-				OriginalChecksum = s5Header.Checksum,
+				UniqueName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
+				DatName = hdrs.S5.Name,
+				DatChecksum = hdrs.S5.Checksum,
 				IsVanilla = false, // not possible to upload vanilla objects
-				ObjectType = s5Header.ObjectType,
-				VehicleType = s5Header.ObjectType == ObjectType.Vehicle ? (locoObject.Object as VehicleObject)!.Type : null,
-				Description = "",
+				ObjectType = hdrs.S5.ObjectType,
+				VehicleType = vehicleType,
+				Description = string.Empty,
 				Authors = [],
 				CreationDate = creationTime,
 				LastEditDate = null,
 				UploadDate = DateTimeOffset.UtcNow,
 				Tags = [],
 				Modpacks = [],
-				Availability = ObjectAvailability.NewGames,
+				Availability = obj?.LocoObject == null ? ObjectAvailability.Unavailable : ObjectAvailability.NewGames,
 				Licence = null,
 			};
 
-			Index.AddObject(new ObjectIndexEntry(saveFileName, locoTbl.OriginalName, locoTbl.ObjectType, locoTbl.IsVanilla, locoTbl.OriginalChecksum, locoTbl.VehicleType));
+			ObjectManager.Index.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.IsVanilla, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();
 
-			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
+			return Results.Created($"Successfully added {locoTbl.UniqueName} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 	}
 }

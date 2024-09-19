@@ -32,17 +32,17 @@ namespace OpenLoco.Definitions.Database
 		public bool DoesObjectExist(S5Header s5Header, out TblLocoObject? existingObject)
 		 => DoesObjectExist(s5Header.Name, s5Header.Checksum, out existingObject);
 
-		public bool DoesObjectExist(string originalName, uint originalChecksum, out TblLocoObject? existingObject)
+		public bool DoesObjectExist(string DatName, uint DatChecksum, out TblLocoObject? existingObject)
 		{
-			// there's a unique constraint on the composite key index (OriginalName, OriginalChecksum), so check existence first so no exceptions
+			// there's a unique constraint on the composite key index (DatName, DatChecksum), so check existence first so no exceptions
 			// this isn't necessary since we're already filtering in LINQ, but if we were adding to a non-empty database, this would be necessary
 			var existingEntityInDb = Objects
-				.FirstOrDefault(e => e.OriginalName == originalName && e.OriginalChecksum == originalChecksum);
+				.FirstOrDefault(e => e.DatName == DatName && e.DatChecksum == DatChecksum);
 
 			var existingEntityInChangeTracker = ChangeTracker.Entries()
 				.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblLocoObject))
 				.Select(e => e.Entity as TblLocoObject)
-				.FirstOrDefault(e => e!.OriginalName == originalName && e.OriginalChecksum == originalChecksum);
+				.FirstOrDefault(e => e!.DatName == DatName && e.DatChecksum == DatChecksum);
 
 			existingObject = existingEntityInDb ?? existingEntityInChangeTracker;
 			return existingObject != null;

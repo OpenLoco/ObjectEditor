@@ -8,14 +8,14 @@ namespace AvaGui.Models
 {
 	public class MetadataModel
 	{
-		public MetadataModel(string originalName, uint originalChecksum)
+		public MetadataModel(string DatName, uint DatChecksum)
 		{
-			OriginalName = originalName;
-			OriginalChecksum = originalChecksum;
+			DatName = DatName;
+			DatChecksum = DatChecksum;
 		}
 
-		public string OriginalName { get; }
-		public uint OriginalChecksum { get; }
+		public string DatName { get; }
+		public uint DatChecksum { get; }
 		public string? Description { get; set; }
 
 		public ICollection<TblAuthor> Authors { get; set; }

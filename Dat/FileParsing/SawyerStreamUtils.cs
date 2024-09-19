@@ -4,7 +4,7 @@ namespace OpenLoco.Dat.FileParsing
 {
 	public static class SawyerStreamUtils
 	{
-		public static uint ComputeObjectChecksum(ReadOnlySpan<byte> headerFlagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
+		public static uint ComputeDatChecksum(ReadOnlySpan<byte> headerFlagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 		{
 			static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
 			{
@@ -17,8 +17,8 @@ namespace OpenLoco.Dat.FileParsing
 				return checksum;
 			}
 
-			const uint32_t objectChecksumMagic = 0xF369A75B;
-			var checksum = ComputeChecksum(headerFlagByte, objectChecksumMagic);
+			const uint32_t DatChecksumMagic = 0xF369A75B;
+			var checksum = ComputeChecksum(headerFlagByte, DatChecksumMagic);
 			checksum = ComputeChecksum(name, checksum);
 			checksum = ComputeChecksum(data, checksum);
 			return checksum;

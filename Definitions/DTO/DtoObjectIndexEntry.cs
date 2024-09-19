@@ -5,7 +5,7 @@ namespace OpenLoco.Definitions.DTO
 {
 	public record DtoObjectIndexEntry(
 		int UniqueId,
-		string ObjectName,
+		string DatName,
 		ObjectType ObjectType,
 		bool IsVanilla,
 		uint Checksum,

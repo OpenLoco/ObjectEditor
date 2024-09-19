@@ -24,12 +24,12 @@ foreach (var o in db.Objects
 		.Include(l => l.Licence)
 		.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
 		.ToList()
-		.OrderBy(x => x.Object.Name))
+		.OrderBy(x => x.Object.UniqueName))
 {
 	var obj = new ObjectMetadata(
-		o.Object.Name,
-		o.Object.OriginalName,
-		o.Object.OriginalChecksum,
+		o.Object.UniqueName,
+		o.Object.DatName,
+		o.Object.DatChecksum,
 		o.Object.Description,
 		o.Authors.Select(a => a.Name).ToList(),
 		o.Tags.Select(t => t.Name).ToList(),
@@ -46,6 +46,6 @@ File.WriteAllText("Q:\\Games\\Locomotion\\Database\\authors.json", authors);
 File.WriteAllText("Q:\\Games\\Locomotion\\Database\\tags.json", tags);
 File.WriteAllText("Q:\\Games\\Locomotion\\Database\\licences.json", licences);
 File.WriteAllText("Q:\\Games\\Locomotion\\Database\\modpacks.json", modpacks);
-File.WriteAllText("Q:\\Games\\Locomotion\\Database\\objects.json", objects);
+File.WriteAllText("Q:\\Games\\Locomotion\\Database\\objectMetadata.json", objects);
 
 Console.WriteLine("done");

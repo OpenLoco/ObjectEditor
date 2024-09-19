@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Common;
 using OpenLoco.Dat;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
@@ -47,7 +46,6 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	}
 
 	const string ObjDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
-	//var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
 
 	Console.WriteLine("Seeding");
 
@@ -124,18 +122,22 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		}
 
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions);
-		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.ObjectName, x.ObjectChecksum), x => x);
+		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
 
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
 
-		foreach (var objIndex in index.Objects.DistinctBy(x => (x.ObjectName, x.Checksum)))
+		foreach (var objIndex in index.Objects.DistinctBy(x => (x.DatName, x.DatChecksum)))
 		{
-			var metadataKey = (objIndex.ObjectName, objIndex.Checksum);
+			var metadataKey = (objIndex.DatName, objIndex.DatChecksum);
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
-			{ }
+			{
+				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), objIndex.DatName, objIndex.DatChecksum, null, [], [], [], null);
+				meta = newMetadata;
+				objectMetadataDict.Add((objIndex.DatName, objIndex.DatChecksum), newMetadata);
+			}
 
-			var fullPath = Path.Combine(ObjDirectory, objIndex.Filename);
-			var creationTime = objIndex.IsVanilla ? gameReleaseDate : File.GetLastWriteTimeUtc(fullPath); // this is the "Modified" time as shown in Windows
+			var filename = Path.Combine(ObjDirectory, objIndex.Filename);
+			var creationTime = objIndex.IsVanilla ? gameReleaseDate : File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows
 
 			var authors = meta?.Authors == null ? null : db.Authors.Where(x => meta.Authors.Contains(x.Name)).ToList();
 			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
@@ -144,9 +146,9 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 			var tblLocoObject = new TblLocoObject()
 			{
-				Name = $"{objIndex.ObjectName}_{objIndex.Checksum}",  // same as server upload name
-				OriginalName = objIndex.ObjectName,
-				OriginalChecksum = objIndex.Checksum,
+				UniqueName = meta!.UniqueName,
+				DatName = objIndex.DatName,
+				DatChecksum = objIndex.DatChecksum,
 				IsVanilla = objIndex.IsVanilla,
 				ObjectType = objIndex.ObjectType,
 				VehicleType = objIndex.VehicleType,
@@ -168,19 +170,6 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	}
 
 	Console.WriteLine("Finished seeding");
-}
-
-static Dictionary<(string ObjectName, string Checksum), GlenDbData2> LoadMetadata(string metadataFile)
-{
-	if (!File.Exists(metadataFile))
-	{
-		return [];
-	}
-
-	var text = File.ReadAllText(metadataFile);
-	var metadata = JsonSerializer.Deserialize<GlenDBSchema2>(text).data;
-	var kvList = metadata.GroupBy(x => (x.ObjectName, uint32_t_LittleToBigEndian(x.Checksum)));
-	return kvList.ToDictionary(x => x.Key, x => x.First());
 }
 
 static string? uint32_t_LittleToBigEndian(string input)

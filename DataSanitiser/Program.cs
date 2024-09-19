@@ -1,97 +1,96 @@
 // 1. objectMetadata.json must contain a single record for every unique object we have
+using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
 var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions)
-	.ToDictionary(x => (x.ObjectName, x.ObjectChecksum), x => x);
+	.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
 
 Console.WriteLine($"MetadataCount={objectMetadata.Count()}");
 
 var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
-var index = ObjectIndex.CreateIndex(dir);
+var index = ObjectIndex.LoadOrCreateIndex(dir);
+var logger = new Logger();
 
-Console.WriteLine($"ObjectCount={index.Objects.Count}");
-Console.WriteLine($"ObjectFailedCount={index.ObjectsFailed.Count}");
-
-//AddNewObjectMetadataEntries();
-
-foreach (var failed in index.ObjectsFailed)
+var objectList = new List<(DatFileInfo DatFileInfo, VehicleObject Vehicle)>();
+var count = 0;
+foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Vehicle))
 {
-	Console.WriteLine($"Faulty object: {failed.Filename}");
-}
-
-//foreach (var missing in index.Objects.Where(x => !objectMetadata.ContainsKey((x.ObjectName, x.Checksum))))
-//{
-//	Console.WriteLine(missing.Filename);
-//}
-
-//foreach (var (ObjectName, ObjectChecksum) in objectMetadata.Keys.Where(x => !index.Objects.Select(x => (x.ObjectName, x.Checksum)).Contains((x.ObjectName, x.ObjectChecksum))))
-//{
-//	Console.WriteLine($"{ObjectName} - {ObjectChecksum}");
-//}
-
-//var duplicates = index.Objects
-//	.GroupBy(x => (x.ObjectName, x.Checksum))
-//	.Where(g => g.Count() > 1);
-
-//foreach (var d in duplicates)
-//{
-//	Console.WriteLine($"{d.Key}");
-//	foreach (var dd in d)
-//	{
-//		var meta = objectMetadata[d.Key].UniqueName;
-//		var shouldDelete = $"{meta}.dat" != dd.Filename;
-//		var deleteFilename = Path.Combine(dir, dd.Filename);
-//		Console.WriteLine($"  - {dd.Filename} MetadataUniqueName={meta} ShouldDelete={shouldDelete} DeleteFilename={deleteFilename}");
-//		if (shouldDelete)
-//		{
-//			//File.Delete(deleteFilename);
-//			//Console.WriteLine($"Deleted {deleteFilename}");
-//		}
-//	}
-//}
-
-// delete original objects from custom folder
-foreach (var obj in index.Objects)
-{
-	if (OriginalObjectFiles.GetFileSource(obj.ObjectName, obj.Checksum) != FileSource.Custom)
+	try
 	{
-		if (obj.Filename.StartsWith("CustomObjects"))
+		var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.Filename), logger);
+		if (o?.LocoObject != null)
 		{
-			var deleteFilename = Path.Combine(dir, obj.Filename);
-			Console.WriteLine($"Original obj in custom folder: {deleteFilename}");
-			//File.Delete(deleteFilename);
-			//objectMetadata.Remove()
+			objectList.Add((o!.Value.DatFileInfo, o!.Value.LocoObject.Object! as VehicleObject));
 		}
-		// we've got a duplicate - delete it from the custom folder
+	}
+	catch (Exception ex)
+	{
+		Console.WriteLine($"{obj.Filename} - {ex.Message}");
+	}
+
+	if (count++ % 1000 == 0)
+	{
+		Console.WriteLine(count);
 	}
 }
 
-//var indexDict = index.Objects.ToDictionary(x => (x.ObjectName, x.Checksum), x => x);
+// every object is loaded in ram here - do your query:
+var cargo1 = objectList
+	.OrderByDescending(x => x.Vehicle.CompatibleCargoCategories1.Count)
+	.Take(10);
 
-//Console.WriteLine($"IndexDictCount={indexDict.Count()}");
-Console.WriteLine($"MetadataCount={objectMetadata.Count()}");
+foreach (var x in cargo1)
+{
+	Console.WriteLine($"{x.DatFileInfo.S5Header.Name} - ({x.Vehicle.CompatibleCargoCategories1.Count})");
+	foreach (var c in x.Vehicle.CompatibleCargoCategories1)
+	{
+		Console.WriteLine($"  - {c}");
+	}
+}
+
+Console.WriteLine("-----");
+
+var cargo2 = objectList
+	.OrderByDescending(x => x.Vehicle.CompatibleCargoCategories2.Count)
+	.Take(10);
+
+foreach (var x in cargo2)
+{
+	Console.WriteLine($"{x.DatFileInfo.S5Header.Name} - ({x.Vehicle.CompatibleCargoCategories2.Count})");
+	foreach (var c in x.Vehicle.CompatibleCargoCategories2)
+	{
+		Console.WriteLine($"  - {c}");
+	}
+}
+
+Console.WriteLine($"ObjectCount={index.Objects.Count}");
+
+//AddNewObjectMetadataEntries();
 
 void AddNewObjectMetadataEntries()
 {
 	foreach (var obj in index.Objects)
 	{
-		var key = (obj.ObjectName, obj.Checksum);
+		var key = (obj.DatName, obj.DatChecksum);
 		if (!objectMetadata.ContainsKey(key))
 		{
-			objectMetadata.Add(key, new ObjectMetadata(Path.GetFileNameWithoutExtension(obj.Filename), obj.ObjectName, obj.Checksum, null, [], [], [], null));
+			objectMetadata.Add(key, new ObjectMetadata(Path.GetFileNameWithoutExtension(obj.Filename), obj.DatName, obj.DatChecksum, null, [], [], [], null));
 		}
 	}
 
-	var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.ObjectName), jsonOptions);
+	var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.DatName), jsonOptions);
 	File.WriteAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json", objs);
 }
 
-//var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.ObjectName), jsonOptions);
+//var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.DatName), jsonOptions);
 //File.WriteAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json", objs);
 
 Console.ReadLine();

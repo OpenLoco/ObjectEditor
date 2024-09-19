@@ -76,16 +76,16 @@ namespace Definitions.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    OriginalName = table.Column<string>(type: "TEXT", nullable: false),
-                    OriginalChecksum = table.Column<uint>(type: "INTEGER", nullable: false),
+                    UniqueName = table.Column<string>(type: "TEXT", nullable: false),
+                    DatName = table.Column<string>(type: "TEXT", nullable: false),
+                    DatChecksum = table.Column<uint>(type: "INTEGER", nullable: false),
                     IsVanilla = table.Column<bool>(type: "INTEGER", nullable: false),
                     ObjectType = table.Column<byte>(type: "INTEGER", nullable: false),
                     VehicleType = table.Column<byte>(type: "INTEGER", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     CreationDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
                     LastEditDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')"),
+                    UploadDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: false, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')"),
                     Availability = table.Column<int>(type: "INTEGER", nullable: false),
                     LicenceId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
@@ -189,22 +189,22 @@ namespace Definitions.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Objects_DatName_DatChecksum",
+                table: "Objects",
+                columns: new[] { "DatName", "DatChecksum" },
+                unique: true,
+                descending: new[] { true, false });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Objects_LicenceId",
                 table: "Objects",
                 column: "LicenceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Objects_Name",
+                name: "IX_Objects_UniqueName",
                 table: "Objects",
-                column: "Name",
+                column: "UniqueName",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Objects_OriginalName_OriginalChecksum",
-                table: "Objects",
-                columns: new[] { "OriginalName", "OriginalChecksum" },
-                unique: true,
-                descending: new[] { true, false });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tags_Name",

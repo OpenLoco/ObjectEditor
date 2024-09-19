@@ -84,7 +84,7 @@ namespace OpenLoco.Dat.FileParsing
 			//remainingData = decodedData;
 
 			var headerFlag = BitConverter.GetBytes(hdrs.S5.Flags).AsSpan()[0..1];
-			var checksum = SawyerStreamUtils.ComputeDatChecksum(headerFlag, fullData[4..12], decodedData);
+			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
 
 			if (checksum != hdrs.S5.Checksum)
 			{

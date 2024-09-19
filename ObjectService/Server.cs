@@ -239,7 +239,7 @@ namespace OpenLoco.ObjectService
 				UploadDate = DateTimeOffset.UtcNow,
 				Tags = [],
 				Modpacks = [],
-				Availability = obj?.LocoObject == null ? ObjectAvailability.Unavailable : ObjectAvailability.NewGames,
+				Availability = obj?.LocoObject == null ? ObjectAvailability.Unavailable : ObjectAvailability.AllGames,
 				Licence = null,
 			};
 

@@ -115,23 +115,16 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 		var progress = new Progress<float>();
 		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
-
-		if (index == null)
-		{
-			throw new ArgumentNullException(nameof(index));
-		}
-
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions);
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
-
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
 
-		foreach (var objIndex in index.Objects.DistinctBy(x => (x.DatName, x.DatChecksum)))
+		foreach (var objIndex in index!.Objects.DistinctBy(x => (x.DatName, x.DatChecksum)))
 		{
 			var metadataKey = (objIndex.DatName, objIndex.DatChecksum);
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{
-				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), objIndex.DatName, objIndex.DatChecksum, null, [], [], [], null);
+				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), objIndex.DatName, objIndex.DatChecksum, null, [], [], [], null, ObjectAvailability.AllGames);
 				meta = newMetadata;
 				objectMetadataDict.Add((objIndex.DatName, objIndex.DatChecksum), newMetadata);
 			}
@@ -139,10 +132,10 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			var filename = Path.Combine(ObjDirectory, objIndex.Filename);
 			var creationTime = objIndex.IsVanilla ? gameReleaseDate : File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows
 
-			var authors = meta?.Authors == null ? null : db.Authors.Where(x => meta.Authors.Contains(x.Name)).ToList();
-			var tags = meta?.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
-			var modpacks = meta?.Modpacks == null ? null : db.Modpacks.Where(x => meta.Modpacks.Contains(x.Name)).ToList();
-			var licence = meta?.Licence == null ? null : db.Licences.Where(x => x.Name == meta.Licence).First();
+			var authors = meta.Authors == null ? null : db.Authors.Where(x => meta.Authors.Contains(x.Name)).ToList();
+			var tags = meta.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
+			var modpacks = meta.Modpacks == null ? null : db.Modpacks.Where(x => meta.Modpacks.Contains(x.Name)).ToList();
+			var licence = meta.Licence == null ? null : db.Licences.Where(x => x.Name == meta.Licence).First();
 
 			var tblLocoObject = new TblLocoObject()
 			{
@@ -159,7 +152,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				UploadDate = DateTimeOffset.Now,
 				Tags = tags ?? [],
 				Modpacks = modpacks ?? [],
-				Availability = ObjectAvailability.NewGames,
+				Availability = meta!.ObjectAvailability,
 				Licence = licence,
 			};
 

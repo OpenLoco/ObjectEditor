@@ -174,8 +174,8 @@ namespace AvaGui.ViewModels
 				Model.ObjectIndexOnline = new ObjectIndex()
 				{
 					Objects = (await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.IsVanilla, x.VehicleType))
-					.ToList()
+						.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.IsVanilla, x.VehicleType))
+						.ToList()
 				};
 			}
 

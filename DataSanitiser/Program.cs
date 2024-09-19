@@ -82,7 +82,7 @@ void AddNewObjectMetadataEntries()
 		var key = (obj.DatName, obj.DatChecksum);
 		if (!objectMetadata.ContainsKey(key))
 		{
-			objectMetadata.Add(key, new ObjectMetadata(Path.GetFileNameWithoutExtension(obj.Filename), obj.DatName, obj.DatChecksum, null, [], [], [], null));
+			objectMetadata.Add(key, new ObjectMetadata(Path.GetFileNameWithoutExtension(obj.Filename), obj.DatName, obj.DatChecksum, null, [], [], [], null, OpenLoco.Definitions.ObjectAvailability.AllGames));
 		}
 	}
 

@@ -1,5 +1,4 @@
 global using ObjectCache = System.Collections.Generic.Dictionary<string, OpenLoco.WinGui.UiLocoObject>;
-using Dat;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -147,7 +146,7 @@ namespace OpenLoco.WinGui
 		// this method loads every single object entirely. it takes a long time to run
 		void CreateIndex(string[] allFiles, IProgress<float>? progress)
 		{
-			ConcurrentDictionary<string, ObjectIndexEntryBase> ccHeaderIndex = new(); // key is full path/filename
+			ConcurrentDictionary<string, ObjectIndexEntry> ccHeaderIndex = new(); // key is full path/filename
 			ConcurrentDictionary<string, UiLocoObject> ccObjectCache = new(); // key is full path/filename
 
 			var count = 0;
@@ -187,8 +186,8 @@ namespace OpenLoco.WinGui
 					}
 
 					var s5 = fileInfo.S5Header;
-					var isVanilla = s5.IsOriginal();
-					var indexObjectHeader = new ObjectIndexEntry(file, s5.Name, s5.ObjectType, isVanilla, s5.Checksum, veh);
+					var isVanilla = s5.IsVanilla();
+					var indexObjectHeader = new ObjectIndexEntry(file, s5.Name, s5.Checksum, s5.ObjectType, isVanilla, veh);
 					if (!ccHeaderIndex.TryAdd(file, indexObjectHeader))
 					{
 						logger.Warning($"Didn't add file {file} to index - already exists (how???)");
@@ -202,7 +201,7 @@ namespace OpenLoco.WinGui
 				catch (Exception ex)
 				{
 					logger.Error($"Failed to load \"{file}\"", ex);
-					_ = ccHeaderIndex.TryAdd(file, new ObjectIndexFailedEntry(file));
+					//_ = ccHeaderIndex.TryAdd(file, new ObjectIndexEntry(file));
 				}
 				finally
 				{
@@ -212,7 +211,7 @@ namespace OpenLoco.WinGui
 				//}
 			});
 
-			ObjectIndex = new ObjectIndex() { Objects = ccHeaderIndex.Values.OfType<ObjectIndexEntry>().ToList(), ObjectsFailed = ccHeaderIndex.Values.OfType<ObjectIndexFailedEntry>().ToList() };
+			ObjectIndex = new ObjectIndex() { Objects = ccHeaderIndex.Values.OfType<ObjectIndexEntry>().ToList() };
 			ObjectCache = ccObjectCache.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 			sw.Stop();
@@ -260,7 +259,7 @@ namespace OpenLoco.WinGui
 			{
 				ObjectIndex = ObjectIndex.LoadIndex(indexFileName) ?? ObjectIndex;
 
-				var filenames = ObjectIndex.Objects.Select(x => x.Filename).Concat(ObjectIndex.ObjectsFailed.Select(x => x.Filename));
+				var filenames = ObjectIndex.Objects.Select(x => x.Filename);
 				var a = filenames.Except(allFiles);
 				var b = allFiles.Except(filenames);
 				if (a.Any() || b.Any())

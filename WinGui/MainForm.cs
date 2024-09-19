@@ -1,4 +1,3 @@
-using Dat;
 using NAudio.Gui;
 using NAudio.Wave;
 using OpenLoco.Common;
@@ -127,10 +126,6 @@ namespace OpenLoco.WinGui
 			const string paletteFilename = "WinGui.palette.png";
 			using (var stream = assembly.GetManifestResourceStream(paletteFilename))
 			{
-				//var paletteBitmap = (Bitmap)Image.FromStream(stream!);
-				//var palette = PaletteHelpers.PaletteFromBitmap(paletteBitmap);
-				//model = new MainFormModel(logger, SettingsFile, palette);
-
 				var paletteBitmap = SixLabors.ImageSharp.Image.Load<Rgba32>(stream!);
 				var palette = new PaletteMap(paletteBitmap);
 				model = new MainFormModel(logger, SettingsFile, palette);
@@ -283,13 +278,13 @@ namespace OpenLoco.WinGui
 
 		static void AddObjectNode(string key, string text, string objName, uint objChecksum, TreeView tv)
 		{
-			var imageIndex = S5Header.IsOriginal(objName, objChecksum) ? 1 : 0;
+			var imageIndex = S5Header.IsVanilla(objName, objChecksum) ? 1 : 0;
 			_ = tv.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
 
 		static void AddObjectNode(string key, string text, string objName, uint objChecksum, TreeNode tn)
 		{
-			var imageIndex = S5Header.IsOriginal(objName, objChecksum) ? 1 : 0;
+			var imageIndex = S5Header.IsVanilla(objName, objChecksum) ? 1 : 0;
 			_ = tn.Nodes.Add(key, text, imageIndex, imageIndex);
 		}
 
@@ -305,14 +300,14 @@ namespace OpenLoco.WinGui
 			var filteredIndicies = filteredFiles
 				.Select(f => f)
 				.OfType<ObjectIndexEntry>()
-				.Where(f => !vanillaOnly || S5Header.IsOriginal(f.ObjectName, f.Checksum));
+				.Where(f => !vanillaOnly || S5Header.IsVanilla(f.DatName, f.DatChecksum));
 
 			tvFileTree.ImageList = MakeImageList(model);
 
 			foreach (var obj in filteredIndicies)
 			{
 				var relative = Path.GetRelativePath(model.Settings.ObjDataDirectory, obj.Filename);
-				AddObjectNode(obj.Filename, relative, obj.ObjectName, obj.Checksum, tvFileTree);
+				AddObjectNode(obj.Filename, relative, obj.DatName, obj.DatChecksum, tvFileTree);
 			}
 
 			tvFileTree.Sort();
@@ -351,7 +346,7 @@ namespace OpenLoco.WinGui
 			var filteredIndicies = filteredFiles
 				.Select(f => f)
 				.OfType<ObjectIndexEntry>()
-				.Where(f => !vanillaOnly || S5Header.IsOriginal(f.ObjectName, f.Checksum));
+				.Where(f => !vanillaOnly || S5Header.IsVanilla(f.DatName, f.DatChecksum));
 
 			tvObjType.ImageList = MakeImageList(model);
 
@@ -364,7 +359,7 @@ namespace OpenLoco.WinGui
 				{
 					foreach (var obj in group)
 					{
-						AddObjectNode(obj.Filename, obj.ObjectName, obj.ObjectName, obj.Checksum, objTypeNode);
+						AddObjectNode(obj.Filename, obj.DatName, obj.DatName, obj.DatChecksum, objTypeNode);
 					}
 				}
 				else
@@ -374,7 +369,7 @@ namespace OpenLoco.WinGui
 						var vehicleTypeNode = new TreeNode(vehicleType.Key.ToString());
 						foreach (var veh in vehicleType)
 						{
-							AddObjectNode(veh.Filename, veh.ObjectName, veh.ObjectName, veh.Checksum, vehicleTypeNode);
+							AddObjectNode(veh.Filename, veh.DatName, veh.DatName, veh.DatChecksum, vehicleTypeNode);
 						}
 
 						_ = objTypeNode.Nodes.Add(vehicleTypeNode);

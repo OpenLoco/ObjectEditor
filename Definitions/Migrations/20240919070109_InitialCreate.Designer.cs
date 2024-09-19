@@ -11,7 +11,7 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240919063309_InitialCreate")]
+    [Migration("20240919070109_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

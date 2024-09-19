@@ -8,9 +8,9 @@ namespace OpenLoco.ObjectService
 		//public int PermitLimit { get; set; } = 1;
 		//public int Window { get; set; } = 10;
 		public int ReplenishmentPeriod { get; set; } = 1;
-		public int QueueLimit { get; set; } = 0;
-		public int TokenLimit { get; set; } = 20;
-		public int TokensReplenishedPerPeriod { get; set; } = 10;
-		public bool AutoReplenishment { get; set; } = false;
+		public int QueueLimit { get; set; } = 500;
+		public int TokenLimit { get; set; } = 100;
+		public int TokensReplenishedPerPeriod { get; set; } = 50;
+		public bool AutoReplenishment { get; set; } = true;
 	}
 }

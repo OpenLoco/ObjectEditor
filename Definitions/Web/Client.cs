@@ -65,7 +65,8 @@ namespace OpenLoco.Definitions.Web
 
 				if (!response.IsSuccessStatusCode)
 				{
-					logger.Error($"Posting {filename} failed: {response}");
+					var error = await response.Content.ReadAsStringAsync();
+					logger.Error($"Posting {filename} failed. Error={error}");
 					return;
 				}
 

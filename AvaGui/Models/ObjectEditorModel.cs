@@ -198,17 +198,16 @@ namespace AvaGui.Models
 
 						if (locoObj == null)
 						{
-							Logger.Error($"Unable to object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no data");
-							return false;
-						}
-						else if (locoObj.IsVanilla)
-						{
-							Logger.Info($"Unable to object {filesystemItem.Name} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material");
+							Logger.Error($"Unable to download object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no data");
 							return false;
 						}
 						else if (string.IsNullOrEmpty(locoObj.DatBytes))
 						{
-							Logger.Warning($"Unable to load object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no DAT object data");
+							Logger.Warning($"Unable to download object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
+						}
+						else if (locoObj.IsVanilla)
+						{
+							Logger.Warning($"Unable to download object {filesystemItem.Name} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
 						}
 
 						Logger.Info($"Downloaded object {filesystemItem.Name} with unique id {uniqueObjectId} and added it to the local cache");
@@ -454,6 +453,7 @@ namespace AvaGui.Models
 			var filename = Path.Combine(Settings.ObjDataDirectory, dat.Filename);
 			var lastModifiedTime = File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows
 			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), lastModifiedTime, Logger);
+			await Task.Delay(100); // wait 100ms, ie don't DoS the server
 		}
 	}
 }

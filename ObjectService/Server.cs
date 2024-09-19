@@ -192,7 +192,7 @@ namespace OpenLoco.ObjectService
 				return Results.BadRequest("Provided data had invalid dat file headers");
 			}
 
-			if (!hdrs.S5.IsVanilla())
+			if (hdrs.S5.IsVanilla())
 			{
 				return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
 			}

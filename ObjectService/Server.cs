@@ -33,17 +33,17 @@ namespace OpenLoco.ObjectService
 				.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes) // for now - only return value objects
 				.Select(x => new DtoObjectIndexEntry(
 					x.Id,
-					x.OriginalName,
+					x.DatName,
+					x.DatChecksum,
 					x.ObjectType,
 					x.IsVanilla,
-					x.OriginalChecksum,
 					x.VehicleType)).ToListAsync());
 
 		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
 		public async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			var eObj = await db.Objects
-				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
+				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
 				.Include(x => x.Licence)
 				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
 				.SingleOrDefaultAsync();
@@ -72,7 +72,7 @@ namespace OpenLoco.ObjectService
 		public async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
 		{
 			var obj = await db.Objects
-				.Where(x => x.OriginalName == objectName && x.OriginalChecksum == checksum)
+				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
 				.SingleOrDefaultAsync();
 
 			const string contentType = "application/octet-stream";
@@ -117,9 +117,9 @@ namespace OpenLoco.ObjectService
 
 			return new DtoLocoObject(
 				obj.Id,
-				obj.Name,
-				obj.OriginalName,
-				obj.OriginalChecksum,
+				obj.UniqueName,
+				obj.DatName,
+				obj.DatChecksum,
 				bytes,
 				obj.IsVanilla,
 				obj.ObjectType,
@@ -182,7 +182,7 @@ namespace OpenLoco.ObjectService
 
 			if (db.DoesObjectExist(s5Header, out var existingObject))
 			{
-				return Results.Accepted($"Object already exists in the database. OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} UploadDate={existingObject!.UploadDate}");
+				return Results.Accepted($"Object already exists in the database. DatName={s5Header.Name} DatChecksum={s5Header.Checksum} UploadDate={existingObject!.UploadDate}");
 			}
 
 			const string UploadFolder = "UploadedObjects";
@@ -190,14 +190,14 @@ namespace OpenLoco.ObjectService
 			var saveFileName = Path.Combine(settings.ObjectRootFolder, UploadFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
 
-			Console.WriteLine($"File accepted OriginalName={s5Header.Name} OriginalChecksum={s5Header.Checksum} PathOnDisk={saveFileName}");
+			Console.WriteLine($"File accepted DatName={s5Header.Name} DatChecksum={s5Header.Checksum} PathOnDisk={saveFileName}");
 
 			var locoTbl = new TblLocoObject()
 			{
-				Name = $"{s5Header.Name}_{s5Header.Checksum}", // same as DB seeder name
+				UniqueName = $"{s5Header.Name}_{s5Header.Checksum}", // same as DB seeder name
 				PathOnDisk = Path.Combine(UploadFolder, $"{uuid}.dat"),
-				OriginalName = s5Header.Name,
-				OriginalChecksum = s5Header.Checksum,
+				DatName = s5Header.Name,
+				DatChecksum = s5Header.Checksum,
 				IsVanilla = false, // not possible to upload vanilla objects
 				ObjectType = s5Header.ObjectType,
 				VehicleType = s5Header.ObjectType == ObjectType.Vehicle ? (locoObject.Object as VehicleObject)!.Type : null,
@@ -215,7 +215,7 @@ namespace OpenLoco.ObjectService
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();
 
-			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
+			return Results.Created($"Successfully added {locoTbl.UniqueName} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 	}
 }

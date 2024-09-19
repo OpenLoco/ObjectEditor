@@ -121,13 +121,13 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
 
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json"), jsonOptions);
-		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.ObjectName, x.Checksum), x => x);
+		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.DatName, x.Checksum), x => x);
 
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
 
-		foreach (var objIndex in index.Objects.DistinctBy(x => (x.ObjectName, x.Checksum)))
+		foreach (var objIndex in index.Objects.DistinctBy(x => (x.DatName, x.Checksum)))
 		{
-			var metadataKey = (objIndex.ObjectName, objIndex.Checksum);
+			var metadataKey = (objIndex.DatName, objIndex.Checksum);
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{ }
 
@@ -141,10 +141,10 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 			var tblLocoObject = new TblLocoObject()
 			{
-				Name = $"{objIndex.ObjectName}_{objIndex.Checksum}",  // same as server upload name
+				UniqueName = $"{objIndex.DatName}_{objIndex.Checksum}",  // same as server upload name
 				PathOnDisk = objIndex.Filename.Replace('\\', '/'), // make the path linux-compatible
-				OriginalName = objIndex.ObjectName,
-				OriginalChecksum = objIndex.Checksum,
+				DatName = objIndex.DatName,
+				DatChecksum = objIndex.Checksum,
 				IsVanilla = objIndex.IsVanilla,
 				ObjectType = objIndex.ObjectType,
 				VehicleType = objIndex.VehicleType,
@@ -168,7 +168,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	Console.WriteLine("Finished seeding");
 }
 
-static Dictionary<(string ObjectName, string Checksum), GlenDbData2> LoadMetadata(string metadataFile)
+static Dictionary<(string DatName, string Checksum), GlenDbData2> LoadMetadata(string metadataFile)
 {
 	if (!File.Exists(metadataFile))
 	{
@@ -177,7 +177,7 @@ static Dictionary<(string ObjectName, string Checksum), GlenDbData2> LoadMetadat
 
 	var text = File.ReadAllText(metadataFile);
 	var metadata = JsonSerializer.Deserialize<GlenDBSchema2>(text).data;
-	var kvList = metadata.GroupBy(x => (x.ObjectName, uint32_t_LittleToBigEndian(x.Checksum)));
+	var kvList = metadata.GroupBy(x => (x.DatName, uint32_t_LittleToBigEndian(x.Checksum)));
 	return kvList.ToDictionary(x => x.Key, x => x.First());
 }
 

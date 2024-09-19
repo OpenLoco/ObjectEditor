@@ -5,10 +5,10 @@ using OpenLoco.Definitions.Database;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoLocoObject(
-		int TblLocoObjectId,
-		string Name,
-		string OriginalName,
-		uint OriginalChecksum,
+		int Id,
+		string UniqueName,
+		string DatName,
+		uint DatChecksum,
 		string? OriginalBytes, // base64-encoded
 		bool IsVanilla,
 		ObjectType ObjectType,

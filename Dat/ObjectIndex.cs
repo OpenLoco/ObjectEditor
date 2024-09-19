@@ -101,7 +101,7 @@ namespace Dat
 
 	public record ObjectIndexEntry(
 		string Filename,
-		string ObjectName,
+		string DatName,
 		ObjectType ObjectType,
 		bool IsVanilla,
 		uint32_t Checksum,

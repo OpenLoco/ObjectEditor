@@ -5,22 +5,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpenLoco.Definitions.Database
 {
-	[Index(nameof(OriginalName), nameof(OriginalChecksum), IsDescending = [true, false], IsUnique = true)]
-	[Index(nameof(Name), IsUnique = true)]
+	[Index(nameof(DatName), nameof(DatChecksum), IsDescending = [true, false], IsUnique = true)]
+	[Index(nameof(UniqueName), IsUnique = true)]
 	[Index(nameof(PathOnDisk), IsUnique = true)]
 	public class TblLocoObject
 	{
 		public int Id { get; set; }
 
-		public string Name { get; set; }
+		public string UniqueName { get; set; }
 
 		public string PathOnDisk { get; set; }
 
 		#region OriginalDatdata
 
-		public string OriginalName { get; set; }
+		public string DatName { get; set; }
 
-		public uint OriginalChecksum { get; set; }
+		public uint DatChecksum { get; set; }
 
 		#endregion
 

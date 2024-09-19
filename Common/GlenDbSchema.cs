@@ -14,7 +14,7 @@ namespace OpenLoco.Common
 
 	public class GlenDbData
 	{
-		[JsonPropertyName("C00")] public string ObjectName { get; set; }
+		[JsonPropertyName("C00")] public string DatName { get; set; }
 		[JsonPropertyName("C01")] public string Image { get; set; }
 		[JsonPropertyName("C02")] public string DescriptionAndFile { get; set; }
 		[JsonPropertyName("C03")] public string ClassNumber { get; set; }
@@ -41,7 +41,7 @@ namespace OpenLoco.Common
 
 	public class GlenDbData2
 	{
-		[JsonPropertyName("C00")] public string ObjectName { get; set; }
+		[JsonPropertyName("C00")] public string DatName { get; set; }
 		[JsonPropertyName("C01")] public string Image { get; set; }
 		[JsonPropertyName("C02")] public string DescriptionAndFile { get; set; }
 		[JsonPropertyName("C03")] public string ObjectType { get; set; }

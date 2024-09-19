@@ -235,7 +235,7 @@ namespace AvaGui.Models
 						}
 					}
 
-					metadata = new MetadataModel(locoObj.OriginalName, locoObj.OriginalChecksum)
+					metadata = new MetadataModel(locoObj.DatName, locoObj.DatChecksum)
 					{
 						Description = locoObj.Description,
 						Authors = locoObj.Authors,
@@ -392,7 +392,7 @@ namespace AvaGui.Models
 					exception = true;
 				}
 
-				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.ObjectName))))
+				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DatName))))
 				{
 					Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
 					await RecreateIndex(directory, allFiles, progress);
@@ -429,8 +429,8 @@ namespace AvaGui.Models
 			Logger.Debug("Comparing local objects to object repository");
 
 			var localButNotOnline = ObjectIndex.Objects.ExceptBy(ObjectIndexOnline.Objects.Select(
-				x => (x.ObjectName, x.Checksum)),
-				x => (x.ObjectName, x.Checksum)).ToList();
+				x => (x.DatName, x.Checksum)),
+				x => (x.DatName, x.Checksum)).ToList();
 
 			if (localButNotOnline.Count != 0)
 			{

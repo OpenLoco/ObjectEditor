@@ -174,7 +174,7 @@ namespace AvaGui.ViewModels
 				Model.ObjectIndexOnline = new ObjectIndex()
 				{
 					Objects = (await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-					.Select(x => new ObjectIndexEntry(x.UniqueId.ToString(), x.ObjectName, x.ObjectType, x.IsVanilla, x.Checksum, x.VehicleType))
+					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.ObjectType, x.IsVanilla, x.DatChecksum, x.VehicleType))
 					.ToList(),
 					ObjectsFailed = []
 				};
@@ -196,7 +196,7 @@ namespace AvaGui.ViewModels
 
 			var groupedObjects = index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
-				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.ObjectName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == o.IsVanilla)))
+				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.DatName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == o.IsVanilla)))
 				.GroupBy(o => o.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 
@@ -211,7 +211,7 @@ namespace AvaGui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.IsVanilla, fileLocation))
+							.Select(o => new FileSystemItem(o.Filename, o.DatName, o.IsVanilla, fileLocation))
 							.OrderBy(o => o.Name));
 
 						if (vg.Key == null)
@@ -230,7 +230,7 @@ namespace AvaGui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(o => new FileSystemItem(o.Filename, o.ObjectName, o.IsVanilla, fileLocation))
+						.Select(o => new FileSystemItem(o.Filename, o.DatName, o.IsVanilla, fileLocation))
 						.OrderBy(o => o.Name));
 				}
 

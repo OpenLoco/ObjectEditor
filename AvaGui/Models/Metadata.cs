@@ -10,12 +10,12 @@ namespace AvaGui.Models
 	{
 		public MetadataModel(string originalName, uint originalChecksum)
 		{
-			OriginalName = originalName;
-			OriginalChecksum = originalChecksum;
+			DatName = originalName;
+			DatChecksum = originalChecksum;
 		}
 
-		public string OriginalName { get; }
-		public uint OriginalChecksum { get; }
+		public string DatName { get; }
+		public uint DatChecksum { get; }
 		public string? Description { get; set; }
 
 		public ICollection<TblAuthor> Authors { get; set; }

@@ -224,10 +224,10 @@
 										<RowDefinition Height="Auto"/>
 									</Grid.RowDefinitions>
 									<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Original Name" Margin="4"/>
-									<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding OriginalName}" IsReadOnly="True" Margin="4" />
+									<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DatName}" IsReadOnly="True" Margin="4" />
 
 									<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Original Checksum" Margin="4"/>
-									<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding OriginalChecksum}" IsReadOnly="True" Margin="4" />
+									<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DatChecksum}" IsReadOnly="True" Margin="4" />
 
 									<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="4"/>
 									<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="4" />

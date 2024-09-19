@@ -54,23 +54,6 @@ namespace OpenLoco.WinGui
 			{
 				logger.Debug($"Preloading dependent {depObjectType} objects");
 			}
-
-			foreach (var dep in ObjectIndex.Objects.Where(x => x is ObjectIndexEntry oi && dependentObjectTypes.Contains(oi.ObjectType)))
-			{
-				var filename = Path.Combine(Settings.ObjDataDirectory, dep.Filename);
-#if DEBUG
-				SawyerStreamReader.LoadFullObjectFromFile(filename, logger);
-#else
-				try
-				{
-					SawyerStreamReader.LoadFullObjectFromFile(filename);
-				}
-				catch (Exception ex)
-				{
-					logger.Error($"File=\"{filename}\" Message=\"{ex.Message}\"");
-				}
-#endif
-			}
 		}
 
 		public EditorSettings Settings { get; private set; }
@@ -94,16 +77,7 @@ namespace OpenLoco.WinGui
 
 			Settings = settings!;
 
-			if (!ValidateSettings(Settings, logger))
-			{
-				return;
-			}
-
-			if (File.Exists(Settings.GetObjDataFullPath(Settings.IndexFileName)))
-			{
-				logger.Info($"Loading header index from \"{Settings.IndexFileName}\"");
-				LoadObjDirectory(Settings.ObjDataDirectory, new Progress<float>(), true);
-			}
+			_ = !ValidateSettings(Settings, logger);
 		}
 
 		static bool ValidateSettings(EditorSettings settings, ILogger logger)

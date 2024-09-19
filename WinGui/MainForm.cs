@@ -201,20 +201,14 @@ namespace OpenLoco.WinGui
 			// can only do this after window handle has been created (so can't do in constructor)
 			((Logger)logger).LogAdded += (s, e) => lbLogs.Invoke(() => lbLogs.Items.Insert(0, e.Log));
 
-			InitUI(cbVanillaObjects.Checked, tbFileFilter.Text);
+			InitToolStripMenuItems();
 		}
 
 		void InitUI(bool vanillaOnly, string filter)
 		{
-			// required to load the object type images from g1.dat
-			//if (Directory.Exists(model.Settings.DataDirectory))
-			//{
-			//	_ = model.LoadDataDirectory(model.Settings.DataDirectory);
-			//}
-
+			InitToolStripMenuItems();
 			InitFileTreeView(vanillaOnly, filter);
 			InitCategoryTreeView(vanillaOnly, filter);
-			InitToolStripMenuItems();
 		}
 
 		bool LoadObjDataDirectory(string directory, bool useExistingIndex)

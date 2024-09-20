@@ -133,12 +133,12 @@ namespace AvaGui.ViewModels
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.Name, ".dat"));
 
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
+			//StringTableViewModel?.WriteTableBackToObject();
 			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		public void SaveAsCurrentObject()
 		{
-
 			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
 			if (saveFile == null)
 			{
@@ -153,6 +153,7 @@ namespace AvaGui.ViewModels
 
 			var savePath = saveFile.Path.LocalPath;
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
+			//StringTableViewModel?.WriteTableBackToObject();
 			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 

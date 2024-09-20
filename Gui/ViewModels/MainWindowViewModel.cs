@@ -34,7 +34,7 @@ namespace AvaGui.ViewModels
 		public SCV5ViewModel SCV5ViewModel { get; }
 
 		[Reactive]
-		public ILocoFileViewModel CurrentEditorModel { get; set; }
+		public ILocoFileViewModel? CurrentEditorModel { get; set; } = null;
 
 		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; }
 
@@ -141,9 +141,13 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			var fsi = new FileSystemItem(path, Path.GetFileName(path), false, FileLocation.Local);
-
 			Model.G1 = SawyerStreamReader.LoadG1(path, Model.Logger);
+
+			SetG1ViewModel(path);
+		}
+
+		public void SetG1ViewModel(string path)
+		{
 
 			var images = new List<Image<Rgba32>?>();
 
@@ -161,8 +165,15 @@ namespace AvaGui.ViewModels
 				i++;
 			}
 
+			var fsi = new FileSystemItem(path, Path.GetFileName(path), false, FileLocation.Local);
 			CurrentEditorModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, Model.Logger)
-			{ CurrentFile = fsi };
+			{
+				CurrentFile = fsi,
+				// SaveCommand = ...
+				// SaveAsCommand = ...
+				// ReloadCommand = ...
+
+			};
 		}
 
 		public async Task LoadSingleObjectToIndex()

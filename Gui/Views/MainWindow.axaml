@@ -15,6 +15,7 @@
 		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
 		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
+		xmlns:ui="using:FluentAvalonia.UI.Controls"
 		mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900"
 		x:Class="AvaGui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
@@ -354,8 +355,7 @@
 
 		<DataTemplate DataType="vm:SCV5ViewModel">
 			<StackPanel Orientation="Vertical">
-				<TextBlock Text="{Binding CurrentFileName}"/>
-				<TextBlock Text="{Binding CurrentFile}"/>
+				<TextBlock Text="{Binding CurrentFile.Filename}"/>
 			</StackPanel>
 		</DataTemplate>
 
@@ -572,7 +572,22 @@
 			</Grid>
 		</DockPanel>
 		<Border Margin="8" BorderThickness="1">
-			<ContentControl Content="{Binding CurrentEditorModel}"/>
+			<ui:TabView>
+				<TextBlock Text="Bob"></TextBlock>
+				<TextBlock Text="Betty"></TextBlock>
+				<!--<ui:TabView.TabItemTemplate>
+					<DataTemplate DataType="vm:ILocoFileViewModel">
+						-->
+				<!--<ui:TabViewItem Header="{Binding CurrentFile.Name}" Content="{Binding}" IconSource="{Binding IconSource}" />-->
+				<!--
+						<ui:TabViewItem Header="{Binding CurrentFile.Name}" Content="Foo" />
+						-->
+				<!--<ContentControl Content="{Binding}"/>-->
+				<!--
+					</DataTemplate>
+				</ui:TabView.TabItemTemplate>-->
+			</ui:TabView>
+			<!--<ContentControl Content="{Binding CurrentEditorModel}"/>-->
 		</Border>
 	</DockPanel>
 </Window>

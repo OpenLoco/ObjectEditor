@@ -1,6 +1,7 @@
 using AvaGui.Models;
 using Avalonia;
 using Avalonia.Platform;
+using FluentAvalonia.UI.Controls;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -25,6 +26,16 @@ using System.Threading.Tasks;
 
 namespace AvaGui.ViewModels
 {
+	public class TabViewPageViewModel : ViewModelBase
+	{
+		public TabViewPageViewModel() => Documents = [];
+		public ObservableCollection<ILocoFileViewModel> Documents { get; }
+
+		public ILocoFileViewModel? SelectedDocument { get; set; }
+
+		void BindingTabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args) => Documents.Remove(args.Item as ILocoFileViewModel);
+	}
+
 	public class MainWindowViewModel : ViewModelBase
 	{
 		public ObjectEditorModel Model { get; }
@@ -33,8 +44,11 @@ namespace AvaGui.ViewModels
 
 		public SCV5ViewModel SCV5ViewModel { get; }
 
+		//[Reactive]
+		//public ILocoFileViewModel CurrentEditorModel { get; set; }
+
 		[Reactive]
-		public ILocoFileViewModel CurrentEditorModel { get; set; }
+		public TabViewPageViewModel CurrentTabModel { get; set; } = new();
 
 		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; }
 
@@ -123,7 +137,8 @@ namespace AvaGui.ViewModels
 		{
 			if (file is not null and FileSystemItem fsi)
 			{
-				CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
+				//CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
+				CurrentTabModel.Documents.Add(new DatObjectEditorViewModel(fsi, Model));
 			}
 		}
 		public async Task LoadG1()
@@ -158,7 +173,7 @@ namespace AvaGui.ViewModels
 				i++;
 			}
 
-			CurrentEditorModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, Model.Logger);
+			CurrentTabModel.Documents.Add(new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, Model.Logger));
 		}
 
 		public async Task LoadSingleObjectToIndex()

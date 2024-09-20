@@ -5,11 +5,6 @@ VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dat", "Dat\Dat.csproj", "{95C3FA06-59A8-4A95-8FB7-F722106D6071}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinGui", "WinGui\WinGui.csproj", "{3AE3C370-4870-48ED-A906-770AE62B00DE}"
-	ProjectSection(ProjectDependencies) = postProject
-		{95C3FA06-59A8-4A95-8FB7-F722106D6071} = {95C3FA06-59A8-4A95-8FB7-F722106D6071}
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{BCD93536-D322-4C14-B193-1F643D03C788}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{55293DEB-00FA-45AD-814D-CB37383BE0D5}"
@@ -24,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaGui", "AvaGui\AvaGui.csproj", "{97BB6E13-07B5-4F91-BCB2-AEC1960EACC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gui", "Gui\Gui.csproj", "{97BB6E13-07B5-4F91-BCB2-AEC1960EACC3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectService", "ObjectService\ObjectService.csproj", "{9A3C313B-8D72-44C5-879D-0374BB98B9FD}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -65,18 +60,6 @@ Global
 		{95C3FA06-59A8-4A95-8FB7-F722106D6071}.Release|x64.Build.0 = Release|Any CPU
 		{95C3FA06-59A8-4A95-8FB7-F722106D6071}.Release|x86.ActiveCfg = Release|Any CPU
 		{95C3FA06-59A8-4A95-8FB7-F722106D6071}.Release|x86.Build.0 = Release|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Debug|x64.Build.0 = Debug|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Debug|x86.Build.0 = Debug|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Release|x64.ActiveCfg = Release|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Release|x64.Build.0 = Release|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Release|x86.ActiveCfg = Release|Any CPU
-		{3AE3C370-4870-48ED-A906-770AE62B00DE}.Release|x86.Build.0 = Release|Any CPU
 		{BCD93536-D322-4C14-B193-1F643D03C788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BCD93536-D322-4C14-B193-1F643D03C788}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCD93536-D322-4C14-B193-1F643D03C788}.Debug|x64.ActiveCfg = Debug|Any CPU

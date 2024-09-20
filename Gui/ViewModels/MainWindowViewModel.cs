@@ -192,7 +192,7 @@ namespace AvaGui.ViewModels
 		static Version GetCurrentAppVersion(Assembly assembly)
 		{
 			// grab current appl version from assembly
-			const string versionFilename = "AvaGui.version.txt";
+			const string versionFilename = "Gui.version.txt";
 			using (var stream = assembly.GetManifestResourceStream(versionFilename))
 			{
 				var buf = new byte[5];

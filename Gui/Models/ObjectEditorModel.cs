@@ -95,7 +95,7 @@ namespace AvaGui.Models
 			}
 
 			var text = File.ReadAllText(SettingsFile);
-			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: new() { WriteIndented = true });
+			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: new() { WriteIndented = true }); // todo: try-catch this for invalid settings files
 			Verify.NotNull(settings);
 
 			Settings = settings!;

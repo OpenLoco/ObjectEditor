@@ -2,6 +2,7 @@ using AvaGui.Models;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
@@ -15,10 +16,11 @@ using System.Threading.Tasks;
 
 namespace AvaGui.ViewModels
 {
-	public record HexAnnotationLine(string Address, string Data, int? SelectionStart, int? SelectionEnd);
-
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
+		[Reactive]
+		public VehicleViewModel? VehicleVM { get; set; }
+
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
 
@@ -97,6 +99,50 @@ namespace AvaGui.ViewModels
 
 				if (CurrentObject?.LocoObject != null)
 				{
+					if (CurrentObject.LocoObject.Object is VehicleObject veh)
+					{
+						VehicleVM = new VehicleViewModel()
+						{
+							Mode = veh.Mode,
+							Type = veh.Type,
+							var_04 = veh.var_04,
+							TrackTypeId = veh.TrackTypeId,
+							NumTrackExtras = veh.NumTrackExtras,
+							CostIndex = veh.CostIndex,
+							CostFactor = veh.CostFactor,
+							Reliability = veh.Reliability,
+							RunCostIndex = veh.RunCostIndex,
+							RunCostFactor = veh.RunCostFactor,
+							ColourType = veh.ColourType,
+							NumCompatibleVehicles = veh.NumCompatibleVehicles,
+							CompatibleVehicles = new(veh.CompatibleVehicles),
+							RequiredTrackExtras = new(veh.RequiredTrackExtras),
+							var_24 = new(veh.var_24),
+							BodySprites = new(veh.BodySprites),
+							BogieSprites = new(veh.BogieSprites),
+							Power = veh.Power,
+							Speed = veh.Speed,
+							RackSpeed = veh.RackSpeed,
+							Weight = veh.Weight,
+							Flags = veh.Flags,
+							MaxCargo = new(veh.MaxCargo),
+							CompatibleCargoCategories1 = new(veh.CompatibleCargoCategories[0]),
+							CompatibleCargoCategories2 = new(veh.CompatibleCargoCategories[1]),
+							CargoTypeSpriteOffsets = new(veh.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList()),
+							Animation = new(veh.Animation),
+							var_113 = veh.var_113,
+							DesignedYear = veh.Designed,
+							ObsoleteYear = veh.Obsolete,
+							RackRailType = veh.RackRailType,
+							SoundType = veh.SoundType,
+							NumStartSounds = veh.NumStartSounds,
+							StartSounds = new(veh.StartSounds),
+							FrictionSound = veh.SoundPropertyFriction,
+							Engine1Sound = veh.SoundPropertyEngine1,
+							Engine2Sound = veh.SoundPropertyEngine2,
+						};
+					}
+
 					var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp) ? itnp : new DefaultImageTableNameProvider();
 					StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
@@ -133,7 +179,15 @@ namespace AvaGui.ViewModels
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.Name, ".dat"));
 
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
-			//StringTableViewModel?.WriteTableBackToObject();
+			StringTableViewModel?.WriteTableBackToObject();
+			// convert VehicleVM back to DAT, eg cargo sprites, string table, etc
+			if (VehicleVM != null && CurrentObject.LocoObject.Object is VehicleObject veh)
+			{
+				foreach (var ctso in VehicleVM.CargoTypeSpriteOffsets)
+				{
+					veh.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
+				}
+			}
 			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
@@ -153,7 +207,7 @@ namespace AvaGui.ViewModels
 
 			var savePath = saveFile.Path.LocalPath;
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
-			//StringTableViewModel?.WriteTableBackToObject();
+			StringTableViewModel?.WriteTableBackToObject();
 			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 

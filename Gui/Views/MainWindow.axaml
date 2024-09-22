@@ -156,7 +156,9 @@
 					</TabItem>
 					<TabItem Header="Object">
 						<ScrollViewer>
-							<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+							<!--<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
+							<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding VehicleVM}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+
 						</ScrollViewer>
 					</TabItem>
 					<TabItem Header="String Table">
@@ -172,8 +174,8 @@
 								<ListBox.ItemTemplate>
 									<DataTemplate>
 										<StackPanel Orientation="Horizontal">
-											<TextBlock Text="{Binding Key}" Margin="4" Width="128"></TextBlock>
-											<TextBox Text="{Binding Value, Mode=TwoWay}" Width="256"></TextBox>
+											<TextBlock Text="{Binding Language}" Margin="4" Width="128"></TextBlock>
+											<TextBox Text="{Binding Translation}" Width="256"></TextBox>
 										</StackPanel>
 									</DataTemplate>
 								</ListBox.ItemTemplate>

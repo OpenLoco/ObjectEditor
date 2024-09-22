@@ -216,6 +216,12 @@ namespace AvaGui.ViewModels
 					var offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 					Logger.Debug("Found sprites.json file, using that");
 
+					if (offsets?.Count != G1Provider.G1Elements.Count)
+					{
+						Logger.Error($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets?.Count} offsets");
+						return;
+					}
+
 					foreach (var offset in offsets)
 					{
 						var filename = Path.Combine(dirPath, offset.Path);
@@ -225,7 +231,15 @@ namespace AvaGui.ViewModels
 				else
 				{
 					Logger.Debug("No sprites.json file found");
-					foreach (var filename in Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories))
+					var files = Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories);
+
+					if (files.Length != G1Provider.G1Elements.Count)
+					{
+						Logger.Error($"Expected {G1Provider.G1Elements.Count} offsets, got {files.Length} offsets");
+						return;
+					}
+
+					foreach (var filename in files)
 					{
 						LoadSprite(filename);
 					}

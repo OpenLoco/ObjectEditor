@@ -46,12 +46,12 @@ namespace OpenLoco.Dat.Objects
 		public uint8_t NumFramesPerRotation { get; set; }
 
 		// unused in this tool, but we need to keep them so the object saves properly
-		public image_id FlatImageId { get; set; }
-		public image_id GentleImageId { get; set; }
-		public image_id SlopedImageId { get; set; }
-		public image_id SteepImageId { get; set; }
-		public image_id UnkImageId1 { get; set; }
-		public image_id UnkImageId2 { get; set; }
+		[Browsable(false)] public image_id FlatImageId { get; set; }
+		[Browsable(false)] public image_id GentleImageId { get; set; }
+		[Browsable(false)] public image_id SlopedImageId { get; set; }
+		[Browsable(false)] public image_id SteepImageId { get; set; }
+		[Browsable(false)] public image_id UnkImageId1 { get; set; }
+		[Browsable(false)] public image_id UnkImageId2 { get; set; }
 
 		//
 

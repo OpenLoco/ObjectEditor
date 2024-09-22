@@ -1,53 +1,54 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Types;
+using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 
 namespace AvaGui.ViewModels
 {
+	public record LanguageTranslationModel(LanguageId Language, string Translation);
+
 	public class StringTableViewModel : ReactiveObject
 	{
 		public StringTableViewModel(StringTable table)
 		{
 			OriginalTable = table;
 			SelectedKey = table.Table.Keys.FirstOrDefault();
-			Keys = new([.. OriginalTable.Table.Keys]);
+			Keys = table.Table.Keys.ToBindingList();
+
+			TableView = table.Table.ToDictionary(
+				x => x.Key,
+				x => x.Value.Select(y => new LanguageTranslationModel(y.Key, y.Value)).ToBindingList()
+			);
 
 			_ = this.WhenAnyValue(o => o.SelectedKey)
-				.Subscribe(_ => SelectedInnerDictionary = OriginalTable.Table.TryGetValue(SelectedKey, out var innerDict) ? innerDict : null);
-
-			_ = this.WhenAnyValue(o => o.SelectedInnerDictionary)
-				.Subscribe(newDict =>
-				{
-					if (SelectedKey != null && newDict != null)
-					{
-						OriginalTable.Table[SelectedKey] = newDict;
-					}
-				});
+				.Subscribe(_ => SelectedInnerDictionary = TableView[SelectedKey]);
 		}
 
-		StringTable OriginalTable { get; init; }
+		[Reactive] public Dictionary<string, BindingList<LanguageTranslationModel>> TableView { get; set; }
 
-		[Reactive]
-		public Dictionary<LanguageId, string> SelectedInnerDictionary { get; set; }
+		[Reactive] public BindingList<LanguageTranslationModel> SelectedInnerDictionary { get; set; }
 
 		[Reactive]
 		public string? SelectedKey { get; set; }
 
-		public Collection<string> Keys { get; init; }
+		public BindingList<string> Keys { get; init; }
+
+		StringTable OriginalTable { get; init; }
+
+		public void WriteTableBackToObject()
+		{
+			foreach (var key in TableView)
+			{
+				foreach (var t in key.Value)
+				{
+					OriginalTable[key.Key][t.Language] = t.Translation;
+				}
+			}
+		}
 	}
-	//public void WriteTableBackToObject()
-	//{
-	//	foreach (var key in Keys)
-	//	{
-	//		foreach (var t in TranslationTable)
-	//		{
-	//			OriginalTable[key][t.Language] = t.Translation;
-	//		}
-	//	}
-	//}
 }

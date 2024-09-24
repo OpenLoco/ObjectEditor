@@ -18,6 +18,9 @@ namespace AvaGui.ViewModels
 {
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
+		ObjectEditorModel Model { get; init; }
+		ILogger? Logger => Model.Logger;
+
 		[Reactive]
 		public VehicleViewModel? VehicleVM { get; set; }
 
@@ -26,8 +29,6 @@ namespace AvaGui.ViewModels
 
 		[Reactive]
 		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
-
-		ObjectEditorModel Model { get; init; }
 
 		[Reactive]
 		public UiLocoFile? CurrentObject { get; private set; }
@@ -49,7 +50,6 @@ namespace AvaGui.ViewModels
 		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
 		const int dumpWordSize = 4;
 
-		ILogger? Logger => Model.Logger;
 
 		public DatObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		{
@@ -86,14 +86,9 @@ namespace AvaGui.ViewModels
 				svm.Dispose();
 			}
 
-			if (CurrentFile is not FileSystemItem cf)
-			{
-				return;
-			}
+			Logger?.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.Filename}");
 
-			Logger?.Info($"Loading {cf.Name} from {cf.Filename}");
-
-			if (Model.TryLoadObject(cf, out var newObj))
+			if (Model.TryLoadObject(CurrentFile, out var newObj))
 			{
 				CurrentObject = newObj;
 
@@ -149,7 +144,7 @@ namespace AvaGui.ViewModels
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
 
-					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, cf.Filename), false, null);
+					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), false, null);
 					CurrentHexAnnotations = new(treeView);
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}
@@ -176,7 +171,7 @@ namespace AvaGui.ViewModels
 
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
 				? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename)
-				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.Name, ".dat"));
+				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
 			StringTableViewModel?.WriteTableBackToObject();
@@ -213,20 +208,19 @@ namespace AvaGui.ViewModels
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
 		{
+			if (!File.Exists(path))
+			{
+				return ([], []);
+			}
+
+			IList<HexAnnotation> annotations = [];
+			currentByteList = File.ReadAllBytes(path);
+
 			try
 			{
-				if (!File.Exists(path))
-				{
-					return ([], []);
-				}
-
-				IList<HexAnnotation> annotations = [];
-
-				currentByteList = File.ReadAllBytes(path);
-				var resultingByteList = currentByteList;
 				annotations = isG1
 					? ObjectAnnotator.AnnotateG1Data(currentByteList)
-					: ObjectAnnotator.Annotate(currentByteList, out resultingByteList);
+					: ObjectAnnotator.Annotate(currentByteList);
 
 				return AnnotateFileCore(annotations);
 			}

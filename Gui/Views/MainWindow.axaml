@@ -64,14 +64,14 @@
 
 		<DataTemplate DataType="mo:FileSystemItemGroup">
 			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemVehicleGroup">
 			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
 		</DataTemplate>
@@ -340,9 +340,11 @@
 				<TextBlock Text="{Binding CurrentFile}"/>
 			</StackPanel>
 		</DataTemplate>-->
+		<DataTemplate DataType="vm:G1ViewModel">
+			<ContentControl Content="{Binding ImageTableViewModel}"/>
+		</DataTemplate>
 
 		<DataTemplate DataType="vm:ImageTableViewModel">
-
 			<DockPanel>
 				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
 					<Button Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">

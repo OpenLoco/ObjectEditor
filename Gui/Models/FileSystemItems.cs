@@ -12,14 +12,14 @@ namespace AvaGui.Models
 		Online,
 	}
 
-	public abstract record FileSystemItemBase(string Filename, string Name, ObservableCollection<FileSystemItemBase>? SubNodes = null)
+	public abstract record FileSystemItemBase(string Filename, string DisplayName, ObservableCollection<FileSystemItemBase>? SubNodes = null)
 	{
 		public string NameComputed
-			=> $"{Name}{(SubNodes == null ? string.Empty : $" ({SubNodes.Count})")}"; // nested interpolated string...what have i become
+			=> $"{DisplayName}{(SubNodes == null ? string.Empty : $" ({SubNodes.Count})")}"; // nested interpolated string...what have i become
 	}
 
-	public record FileSystemItem(string Filename, string Name, bool IsVanilla, FileLocation FileLocation)
-		: FileSystemItemBase(Filename, Name, null);
+	public record FileSystemItem(string Filename, string DisplayName, bool IsVanilla, FileLocation FileLocation)
+		: FileSystemItemBase(Filename, DisplayName, null);
 
 	//public record FileSystemDatGroup(string Path, DatFileType DatFileType, ObservableCollection<FileSystemItemBase> SubNodes)
 	//	: FileSystemItemBase(Path, DatFileType.ToString(), SubNodes);

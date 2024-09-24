@@ -26,21 +26,21 @@ namespace AvaGui.ViewModels
 			);
 
 			_ = this.WhenAnyValue(o => o.SelectedKey)
-				.Subscribe(_ => SelectedInnerDictionary = TableView[SelectedKey]);
+				.Subscribe(_ => SelectedInnerDictionary = SelectedKey == null ? null : TableView[SelectedKey]);
 		}
 
 		[Reactive] public Dictionary<string, BindingList<LanguageTranslationModel>> TableView { get; set; }
 
-		[Reactive] public BindingList<LanguageTranslationModel> SelectedInnerDictionary { get; set; }
+		[Reactive] public BindingList<LanguageTranslationModel>? SelectedInnerDictionary { get; set; }
 
 		[Reactive]
-		public string? SelectedKey { get; set; }
+		string? SelectedKey { get; set; }
 
-		public BindingList<string> Keys { get; init; }
+		BindingList<string> Keys { get; init; }
 
 		StringTable OriginalTable { get; init; }
 
-		public void WriteTableBackToObject()
+		public void WriteTableBackToObject() // potentially could be done when SelectedInnerDictionary items change
 		{
 			foreach (var key in TableView)
 			{

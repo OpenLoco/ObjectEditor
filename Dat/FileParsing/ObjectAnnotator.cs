@@ -9,7 +9,7 @@ namespace OpenLoco.Dat.FileParsing
 {
 	public static class ObjectAnnotator
 	{
-		public static IList<HexAnnotation> Annotate(byte[] bytelist, out byte[] fullData)
+		public static IList<HexAnnotation> Annotate(byte[] byteList)
 		{
 			var annotations = new List<HexAnnotation>();
 			var runningCount = 0;
@@ -18,10 +18,10 @@ namespace OpenLoco.Dat.FileParsing
 			var s5HeaderAnnotation = new HexAnnotation("S5 Header", 0, S5Header.StructLength);
 			annotations.Add(s5HeaderAnnotation);
 			annotations.Add(new HexAnnotation("Flags", s5HeaderAnnotation, 0, 4));
-			annotations.Add(new HexAnnotation("Name: '" + Encoding.ASCII.GetString(bytelist[4..12]) + "'", s5HeaderAnnotation, 4, 8));
+			annotations.Add(new HexAnnotation("Name: '" + Encoding.ASCII.GetString(byteList[4..12]) + "'", s5HeaderAnnotation, 4, 8));
 			annotations.Add(new HexAnnotation("Checksum", s5HeaderAnnotation, 12, 4));
 
-			var s5Header = S5Header.Read(bytelist.AsSpan()[0..S5Header.StructLength]);
+			var s5Header = S5Header.Read(byteList.AsSpan()[0..S5Header.StructLength]);
 			runningCount += S5Header.StructLength;
 
 			// Object Header Annotations
@@ -29,14 +29,14 @@ namespace OpenLoco.Dat.FileParsing
 			annotations.Add(objectHeaderAnnotation);
 			annotations.Add(new HexAnnotation("Encoding", objectHeaderAnnotation, runningCount, 1));
 			annotations.Add(new HexAnnotation("Data Length", objectHeaderAnnotation, runningCount + 1, 4));
-			var objectHeader = ObjectHeader.Read(bytelist.AsSpan()[runningCount..(runningCount + ObjectHeader.StructLength)]);
+			var objectHeader = ObjectHeader.Read(byteList.AsSpan()[runningCount..(runningCount + ObjectHeader.StructLength)]);
 			runningCount += ObjectHeader.StructLength;
 
 			// Decode Loco Struct
-			fullData =
+			byte[] fullData =
 			[
-				.. bytelist[..runningCount],
-				.. SawyerStreamReader.Decode(objectHeader.Encoding, bytelist[runningCount..(int)(runningCount + objectHeader.DataLength)]),
+				.. byteList[..runningCount],
+				.. SawyerStreamReader.Decode(objectHeader.Encoding, byteList[runningCount..(int)(runningCount + objectHeader.DataLength)]),
 			];
 
 			var locoStruct = SawyerStreamReader.GetLocoStruct(s5Header.ObjectType, fullData.AsSpan()[runningCount..]);

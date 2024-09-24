@@ -189,7 +189,21 @@ namespace OpenLoco.Dat.FileParsing
 			return headerStream;
 		}
 
-		private static void SaveImageTable(List<G1Element32> g1Elements, Stream objStream)
+		public static void SaveImageTable(string filename, List<G1Element32> g1Elements)
+		{
+			using var stream = File.Create(filename);
+
+			using var objStream = new MemoryStream();
+			SaveImageTable(g1Elements, objStream);
+			objStream.Close();
+
+			stream.Write(objStream.ToArray());
+			stream.Flush();
+			stream.Close();
+
+		}
+
+		static void SaveImageTable(List<G1Element32> g1Elements, Stream objStream)
 		{
 			if (g1Elements != null && g1Elements.Count != 0)
 			{

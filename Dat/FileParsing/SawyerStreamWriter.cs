@@ -195,7 +195,7 @@ namespace OpenLoco.Dat.FileParsing
 			{
 				// write G1Header
 				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Count));
-				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
+				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Sum(x => x.ImageData.Length)));
 
 				var offsetBytesIntoImageData = 0;
 				// write G1Element headers

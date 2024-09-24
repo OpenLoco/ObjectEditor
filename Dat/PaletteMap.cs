@@ -63,14 +63,15 @@ namespace OpenLoco.Dat
 		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags)
 		{
 			var pixels = img.Width * img.Height;
-			var bytes = new byte[pixels];
+			var isBgr = flags.HasFlag(G1ElementFlags.IsBgr24);
+			var bytes = new byte[pixels * (isBgr ? 3 : 1)];
 
 			var index = 0;
 			for (var y = 0; y < img.Height; ++y)
 			{
 				for (var x = 0; x < img.Width; ++x)
 				{
-					if (flags.HasFlag(G1ElementFlags.IsBgr24))
+					if (isBgr)
 					{
 						var pixel = img[x, y];
 						bytes[index++] = pixel.B;

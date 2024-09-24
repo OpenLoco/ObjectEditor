@@ -2,6 +2,7 @@ using AvaGui.Models;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
@@ -11,20 +12,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 
 namespace AvaGui.ViewModels
 {
-	public record HexAnnotationLine(string Address, string Data, int? SelectionStart, int? SelectionEnd);
-
-	public record AnimationSequence(string Name, int StartIndex, int EndIndex, int CurrentFrame = 0);
-
-	public class DatObjectEditorViewModel : ReactiveObject, ILocoFileViewModel
+	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
-		public ReactiveCommand<Unit, Unit> ReloadObjectCommand { get; init; }
-		public ReactiveCommand<Unit, Unit> SaveObjectCommand { get; init; }
-		public ReactiveCommand<Unit, Unit> SaveAsObjectCommand { get; init; }
+		ObjectEditorModel Model { get; init; }
+		ILogger? Logger => Model.Logger;
 
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
@@ -32,10 +27,16 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
 
-		ObjectEditorModel Model { get; init; }
+		[Reactive]
+		public VehicleViewModel? VehicleVM { get; set; }
 
 		[Reactive]
-		public UiLocoFile? CurrentObject { get; private set; }
+		public UiDatLocoFile? CurrentObject { get; private set; }
+
+		public IObjectViewModel CurrentObjectViewModel
+			=> VehicleVM == null
+				? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object }
+				: VehicleVM;
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
@@ -46,17 +47,6 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public HexAnnotationLine[]? CurrentHexDumpLines { get; set; }
 
-		[Reactive]
-		public FileSystemItem CurrentFile { get; init; }
-
-		public string ReloadText => CurrentFile.FileLocation == FileLocation.Local ? "Reload" : "Redownload";
-		public string SaveText => CurrentFile.FileLocation == FileLocation.Local ? "Save" : "Download";
-		public string SaveAsText => $"{SaveText} As";
-
-		public string ReloadIcon => CurrentFile.FileLocation == FileLocation.Local ? "DatabaseRefresh" : "FileSync";
-		public string SaveIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSave" : "FileDownload";
-		public string SaveAsIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSavePlus" : "FileDownloadOutline";
-
 		byte[] currentByteList;
 
 		Dictionary<string, (int Start, int End)> DATDumpAnnotationIdentifiers = [];
@@ -65,8 +55,6 @@ namespace AvaGui.ViewModels
 		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
 		const int dumpWordSize = 4;
 
-		ILogger? Logger => Model.Logger;
-
 		public DatObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		{
 			CurrentFile = currentFile;
@@ -74,9 +62,9 @@ namespace AvaGui.ViewModels
 
 			LoadObject();
 
-			ReloadObjectCommand = ReactiveCommand.Create(LoadObject);
-			SaveObjectCommand = ReactiveCommand.Create(SaveCurrentObject);
-			SaveAsObjectCommand = ReactiveCommand.Create(SaveAsCurrentObject);
+			ReloadCommand = ReactiveCommand.Create(LoadObject);
+			SaveCommand = ReactiveCommand.Create(SaveCurrentObject);
+			SaveAsCommand = ReactiveCommand.Create(SaveAsCurrentObject);
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());
@@ -102,26 +90,69 @@ namespace AvaGui.ViewModels
 				svm.Dispose();
 			}
 
-			if (CurrentFile is not FileSystemItem cf)
-			{
-				return;
-			}
+			Logger?.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.Filename}");
 
-			Logger?.Info($"Loading {cf.Name} from {cf.Filename}");
-
-			if (Model.TryLoadObject(cf, out var newObj))
+			if (Model.TryLoadObject(CurrentFile, out var newObj))
 			{
 				CurrentObject = newObj;
 
 				if (CurrentObject?.LocoObject != null)
 				{
+					if (CurrentObject.LocoObject.Object is VehicleObject veh)
+					{
+						VehicleVM = new VehicleViewModel()
+						{
+							Mode = veh.Mode,
+							Type = veh.Type,
+							var_04 = veh.var_04,
+							TrackTypeId = veh.TrackTypeId,
+							NumTrackExtras = veh.NumTrackExtras,
+							CostIndex = veh.CostIndex,
+							CostFactor = veh.CostFactor,
+							Reliability = veh.Reliability,
+							RunCostIndex = veh.RunCostIndex,
+							RunCostFactor = veh.RunCostFactor,
+							ColourType = veh.ColourType,
+							NumCompatibleVehicles = veh.NumCompatibleVehicles,
+							CompatibleVehicles = new(veh.CompatibleVehicles),
+							RequiredTrackExtras = new(veh.RequiredTrackExtras),
+							var_24 = new(veh.var_24),
+							BodySprites = new(veh.BodySprites),
+							BogieSprites = new(veh.BogieSprites),
+							Power = veh.Power,
+							Speed = veh.Speed,
+							RackSpeed = veh.RackSpeed,
+							Weight = veh.Weight,
+							Flags = veh.Flags,
+							MaxCargo = new(veh.MaxCargo),
+							CompatibleCargoCategories1 = new(veh.CompatibleCargoCategories[0]),
+							CompatibleCargoCategories2 = new(veh.CompatibleCargoCategories[1]),
+							CargoTypeSpriteOffsets = new(veh.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList()),
+							Animation = new(veh.Animation),
+							var_113 = veh.var_113,
+							DesignedYear = veh.Designed,
+							ObsoleteYear = veh.Obsolete,
+							RackRailType = veh.RackRailType,
+							SoundType = veh.SoundType,
+							NumStartSounds = veh.NumStartSounds,
+							StartSounds = new(veh.StartSounds),
+							FrictionSound = veh.SoundPropertyFriction,
+							Engine1Sound = veh.SoundPropertyEngine1,
+							Engine2Sound = veh.SoundPropertyEngine2,
+						};
+					}
+					else
+					{
+						VehicleVM = null;
+					}
+
 					var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp) ? itnp : new DefaultImageTableNameProvider();
 					StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
 
-					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, cf.Filename), false, null);
+					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), false, null);
 					CurrentHexAnnotations = new(treeView);
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}
@@ -148,15 +179,23 @@ namespace AvaGui.ViewModels
 
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
 				? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename)
-				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.Name, ".dat"));
+				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
+			StringTableViewModel?.WriteTableBackToObject();
+			// convert VehicleVM back to DAT, eg cargo sprites, string table, etc
+			if (VehicleVM != null && CurrentObject.LocoObject.Object is VehicleObject veh)
+			{
+				foreach (var ctso in VehicleVM.CargoTypeSpriteOffsets)
+				{
+					veh.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
+				}
+			}
 			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		public void SaveAsCurrentObject()
 		{
-
 			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
 			if (saveFile == null)
 			{
@@ -171,25 +210,25 @@ namespace AvaGui.ViewModels
 
 			var savePath = saveFile.Path.LocalPath;
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
+			StringTableViewModel?.WriteTableBackToObject();
 			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
 		{
+			if (!File.Exists(path))
+			{
+				return ([], []);
+			}
+
+			IList<HexAnnotation> annotations = [];
+			currentByteList = File.ReadAllBytes(path);
+
 			try
 			{
-				if (!File.Exists(path))
-				{
-					return ([], []);
-				}
-
-				IList<HexAnnotation> annotations = [];
-
-				currentByteList = File.ReadAllBytes(path);
-				var resultingByteList = currentByteList;
 				annotations = isG1
 					? ObjectAnnotator.AnnotateG1Data(currentByteList)
-					: ObjectAnnotator.Annotate(currentByteList, out resultingByteList);
+					: ObjectAnnotator.Annotate(currentByteList);
 
 				return AnnotateFileCore(annotations);
 			}

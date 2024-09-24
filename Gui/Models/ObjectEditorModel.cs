@@ -67,7 +67,7 @@ namespace AvaGui.Models
 			Logger = new Logger();
 			LoggerObservableLogs = [];
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
-			Logger.LogAdded += (sender, laea) => File.AppendAllLines(LoggingFile, [laea.Log.ToString()]);
+			//Logger.LogAdded += (sender, laea) => File.AppendAllLines(LoggingFile, [laea.Log.ToString()]);
 
 			LoadSettings();
 
@@ -171,7 +171,7 @@ namespace AvaGui.Models
 			}
 		}
 
-		public bool TryLoadObject(FileSystemItem filesystemItem, out UiLocoFile? uiLocoFile)
+		public bool TryLoadObject(FileSystemItem filesystemItem, out UiDatLocoFile? uiLocoFile)
 		{
 			if (string.IsNullOrEmpty(filesystemItem.Filename))
 			{
@@ -193,42 +193,42 @@ namespace AvaGui.Models
 
 					if (!OnlineCache.TryGetValue(uniqueObjectId, out var locoObj))
 					{
-						Logger.Debug($"Didn't find object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - downloading it from {WebClient.BaseAddress}");
+						Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {WebClient.BaseAddress}");
 						locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId, true)).Result;
 
 						if (locoObj == null)
 						{
-							Logger.Error($"Unable to download object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no data");
+							Logger.Error($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no data");
 							return false;
 						}
 						else if (string.IsNullOrEmpty(locoObj.DatBytes))
 						{
-							Logger.Warning($"Unable to download object {filesystemItem.Name} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
+							Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
 						}
 						else if (locoObj.IsVanilla)
 						{
-							Logger.Warning($"Unable to download object {filesystemItem.Name} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
+							Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
 						}
 
-						Logger.Info($"Downloaded object {filesystemItem.Name} with unique id {uniqueObjectId} and added it to the local cache");
-						Logger.Debug($"{filesystemItem.Name} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], modpacks=[{string.Join(", ", locoObj?.Modpacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
+						Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");
+						Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], modpacks=[{string.Join(", ", locoObj?.Modpacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
 						OnlineCache.Add(uniqueObjectId, locoObj!);
 					}
 					else
 					{
-						Logger.Debug($"Found object {filesystemItem.Name} with unique id {uniqueObjectId} in cache - reusing it");
+						Logger.Debug($"Found object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - reusing it");
 					}
 
 					if (locoObj != null)
 					{
 						if (locoObj.DatBytes?.Length > 0)
 						{
-							var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.Name}", true);
+							var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
 							fileInfo = obj.DatFileInfo;
 							locoObject = obj.LocoObject;
 							if (obj.LocoObject == null)
 							{
-								Logger.Warning($"Unable to load {filesystemItem.Name} from the received DAT object data");
+								Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
 							}
 						}
 
@@ -278,14 +278,14 @@ namespace AvaGui.Models
 				return false;
 			}
 
-			if (locoObject == null && fileInfo == null && metadata == null && images == null)
+			if (fileInfo == null)
 			{
 				Logger.Error($"Unable to load {filesystemItem.Filename}");
 				uiLocoFile = null;
 				return false;
 			}
 
-			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata, Images = images };
+			uiLocoFile = new UiDatLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata, Images = images };
 			return true;
 		}
 

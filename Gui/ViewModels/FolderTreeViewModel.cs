@@ -211,7 +211,7 @@ namespace AvaGui.ViewModels
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
 							.Select(o => new FileSystemItem(o.Filename, o.DatName, o.IsVanilla, fileLocation))
-							.OrderBy(o => o.Name));
+							.OrderBy(o => o.DisplayName));
 
 						if (vg.Key == null)
 						{
@@ -230,7 +230,7 @@ namespace AvaGui.ViewModels
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
 						.Select(o => new FileSystemItem(o.Filename, o.DatName, o.IsVanilla, fileLocation))
-						.OrderBy(o => o.Name));
+						.OrderBy(o => o.DisplayName));
 				}
 
 				result.Add(new FileSystemItemGroup(

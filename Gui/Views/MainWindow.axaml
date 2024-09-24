@@ -64,14 +64,14 @@
 
 		<DataTemplate DataType="mo:FileSystemItemGroup">
 			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemVehicleGroup">
 			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding Name, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
 		</DataTemplate>
@@ -131,40 +131,24 @@
 			</Grid>
 		</DataTemplate>
 
-		<DataTemplate DataType="mo:UiLocoFile">
+		<DataTemplate DataType="mo:UiDatLocoFile">
 
-		</DataTemplate>
-
-		<DataTemplate DataType="mo:UiG1">
-			<!-- todo -->
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:UiSoundObjectList">
 			<!-- todo -->
 		</DataTemplate>
 
+		<DataTemplate DataType="vm:GenericObjectViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_ObjectVm" DataContext="{Binding Object}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:VehicleViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_VehicleVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+		</DataTemplate>
+
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
 			<DockPanel DataContext="{Binding}" Margin="10">
-				<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-					<Button Grid.Row="3" Command="{Binding ReloadObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
-						</DockPanel>
-					</Button>
-					<Button Grid.Row="3" Command="{Binding SaveObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
-						</DockPanel>
-					</Button>
-					<Button Grid.Row="3" Command="{Binding SaveAsObjectCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
-						</DockPanel>
-					</Button>
-				</StackPanel>
 				<TabControl>
 					<TabItem Header="File Headers">
 						<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
@@ -176,19 +160,19 @@
 					</TabItem>
 					<TabItem Header="Object">
 						<ScrollViewer>
-							<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+							<ContentControl Content="{Binding CurrentObjectViewModel}"></ContentControl>
 						</ScrollViewer>
 					</TabItem>
 					<TabItem Header="String Table">
-						<StackPanel Orientation="Horizontal" Spacing="16">
-							<ListBox ItemsSource="{Binding StringTableViewModel.Keys}" SelectedItem="{Binding StringTableViewModel.SelectedKey}">
+						<StackPanel DataContext="{Binding StringTableViewModel}" Orientation="Horizontal" Spacing="16">
+							<ListBox ItemsSource="{Binding Keys}" SelectedItem="{Binding SelectedKey}">
 								<ListBox.ItemTemplate>
 									<DataTemplate>
 										<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
 									</DataTemplate>
 								</ListBox.ItemTemplate>
 							</ListBox>
-							<ListBox ItemsSource="{Binding StringTableViewModel.TranslationTable}">
+							<ListBox ItemsSource="{Binding SelectedInnerDictionary}">
 								<ListBox.ItemTemplate>
 									<DataTemplate>
 										<StackPanel Orientation="Horizontal">
@@ -352,15 +336,18 @@
 			</DockPanel>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:SCV5ViewModel">
+		<!--<DataTemplate DataType="vm:SCV5ViewModel">
 			<StackPanel Orientation="Vertical">
 				<TextBlock Text="{Binding CurrentFileName}"/>
 				<TextBlock Text="{Binding CurrentFile}"/>
 			</StackPanel>
+		</DataTemplate>-->
+
+		<DataTemplate DataType="vm:G1ViewModel">
+			<ContentControl Content="{Binding ImageTableViewModel}"/>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:ImageTableViewModel">
-
 			<DockPanel>
 				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
 					<Button Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
@@ -506,7 +493,6 @@
 				<DataGrid MinHeight="256" MaxHeight="1024" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False"/>
 			</ScrollViewer>
 		</Expander>
-
 		<DockPanel DataContext="{Binding FolderTreeViewModel}" Width="384" MinWidth="256" MaxWidth="512">
 			<TabStrip DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
 				<TabItem>
@@ -572,7 +558,29 @@
 			</Grid>
 		</DockPanel>
 		<Border Margin="8" BorderThickness="1">
-			<ContentControl Content="{Binding CurrentEditorModel}"/>
+			<DockPanel DataContext="{Binding CurrentEditorModel}">
+				<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+					<Button Grid.Row="3" Command="{Binding ReloadCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
+						</DockPanel>
+					</Button>
+					<Button Grid.Row="3" Command="{Binding SaveCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
+						</DockPanel>
+					</Button>
+					<Button Grid.Row="3" Command="{Binding SaveAsCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
+						</DockPanel>
+					</Button>
+				</StackPanel>
+				<ContentControl Content="{Binding}"/>
+			</DockPanel>
 		</Border>
 	</DockPanel>
 </Window>

@@ -189,13 +189,13 @@ namespace OpenLoco.Dat.FileParsing
 			return headerStream;
 		}
 
-		private static void SaveImageTable(List<G1Element32> g1Elements, Stream objStream)
+		static void SaveImageTable(List<G1Element32> g1Elements, Stream objStream)
 		{
 			if (g1Elements != null && g1Elements.Count != 0)
 			{
 				// write G1Header
 				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Count));
-				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Sum(x => G1Element32.StructLength + x.ImageData.Length)));
+				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Sum(x => x.ImageData.Length)));
 
 				var offsetBytesIntoImageData = 0;
 				// write G1Element headers
@@ -218,6 +218,14 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					objStream.Write(g1Element.ImageData);
 				}
+			}
+		}
+
+		public static void SaveG1(string filename, G1Dat g1)
+		{
+			using (var fs = File.OpenWrite(filename))
+			{
+				SaveImageTable(g1.G1Elements, fs);
 			}
 		}
 
@@ -313,13 +321,5 @@ namespace OpenLoco.Dat.FileParsing
 
 		//	return encodedSpan;
 		//}
-
-		public static void SaveG1(G1Dat g1, string filename)
-		{
-			using (var fs = File.OpenWrite(filename))
-			{
-				SaveImageTable(g1.G1Elements, fs);
-			}
-		}
 	}
 }

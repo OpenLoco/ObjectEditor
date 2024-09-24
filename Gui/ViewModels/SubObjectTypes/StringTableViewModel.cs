@@ -1,33 +1,54 @@
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Types;
+using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace AvaGui.ViewModels
 {
-	public class StringTableViewModel : ViewModelBase
+	public record LanguageTranslationModel(LanguageId Language, string Translation);
+
+	public class StringTableViewModel : ReactiveObject
 	{
 		public StringTableViewModel(StringTable table)
 		{
 			OriginalTable = table;
 			SelectedKey = table.Table.Keys.FirstOrDefault();
+			Keys = table.Table.Keys.ToBindingList();
 
-			_ = this.WhenAnyValue(o => o.Keys)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedKey)));
+			TableView = table.Table.ToDictionary(
+				x => x.Key,
+				x => x.Value.Select(y => new LanguageTranslationModel(y.Key, y.Value)).ToBindingList()
+			);
+
 			_ = this.WhenAnyValue(o => o.SelectedKey)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(TranslationTable)));
+				.Subscribe(_ => SelectedInnerDictionary = SelectedKey == null ? null : TableView[SelectedKey]);
 		}
+
+		[Reactive] public Dictionary<string, BindingList<LanguageTranslationModel>> TableView { get; set; }
+
+		[Reactive] public BindingList<LanguageTranslationModel>? SelectedInnerDictionary { get; set; }
+
+		[Reactive]
+		string? SelectedKey { get; set; }
+
+		BindingList<string> Keys { get; init; }
 
 		StringTable OriginalTable { get; init; }
 
-		[Reactive]
-		public string? SelectedKey { get; set; }
-
-		public ObservableCollection<string> Keys => new(OriginalTable.Table.Keys);
-
-		public ObservableCollection<LanguageTranslation>? TranslationTable
-			=> SelectedKey == null ? null : new(OriginalTable.Table[SelectedKey].Select(kvp => new LanguageTranslation(kvp.Key, kvp.Value)));
+		public void WriteTableBackToObject() // potentially could be done when SelectedInnerDictionary items change
+		{
+			foreach (var key in TableView)
+			{
+				foreach (var t in key.Value)
+				{
+					OriginalTable[key.Key][t.Language] = t.Translation;
+				}
+			}
+		}
 	}
 }

@@ -67,7 +67,7 @@ namespace AvaGui.Models
 			Logger = new Logger();
 			LoggerObservableLogs = [];
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
-			Logger.LogAdded += (sender, laea) => File.AppendAllLines(LoggingFile, [laea.Log.ToString()]);
+			//Logger.LogAdded += (sender, laea) => File.AppendAllLines(LoggingFile, [laea.Log.ToString()]);
 
 			LoadSettings();
 

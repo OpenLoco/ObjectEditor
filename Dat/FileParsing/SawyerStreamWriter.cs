@@ -189,20 +189,6 @@ namespace OpenLoco.Dat.FileParsing
 			return headerStream;
 		}
 
-		public static void SaveImageTable(string filename, List<G1Element32> g1Elements)
-		{
-			using var stream = File.Create(filename);
-
-			using var objStream = new MemoryStream();
-			SaveImageTable(g1Elements, objStream);
-			objStream.Close();
-
-			stream.Write(objStream.ToArray());
-			stream.Flush();
-			stream.Close();
-
-		}
-
 		static void SaveImageTable(List<G1Element32> g1Elements, Stream objStream)
 		{
 			if (g1Elements != null && g1Elements.Count != 0)
@@ -232,6 +218,14 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					objStream.Write(g1Element.ImageData);
 				}
+			}
+		}
+
+		public static void SaveG1(string filename, G1Dat g1)
+		{
+			using (var fs = File.OpenWrite(filename))
+			{
+				SaveImageTable(g1.G1Elements, fs);
 			}
 		}
 
@@ -327,13 +321,5 @@ namespace OpenLoco.Dat.FileParsing
 
 		//	return encodedSpan;
 		//}
-
-		public static void SaveG1(G1Dat g1, string filename)
-		{
-			using (var fs = File.OpenWrite(filename))
-			{
-				SaveImageTable(g1.G1Elements, fs);
-			}
-		}
 	}
 }

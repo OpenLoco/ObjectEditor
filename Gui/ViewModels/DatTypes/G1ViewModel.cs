@@ -74,7 +74,7 @@ namespace AvaGui.ViewModels
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 			Logger?.Info($"Saving G1.dat to {savePath}");
-			SawyerStreamWriter.SaveImageTable(savePath, Model.G1.G1Elements);
+			SawyerStreamWriter.SaveG1(savePath, Model.G1);
 		}
 
 		public void SaveAsG1()
@@ -93,7 +93,7 @@ namespace AvaGui.ViewModels
 
 			var savePath = saveFile.Path.LocalPath;
 			Logger?.Info($"Saving G1.dat to {savePath}");
-			SawyerStreamWriter.SaveImageTable(savePath, Model.G1.G1Elements);
+			SawyerStreamWriter.SaveG1(savePath, Model.G1);
 		}
 	}
 }

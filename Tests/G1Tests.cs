@@ -15,7 +15,7 @@ namespace OpenLoco.Dat.Tests
 			var g1File = "Q:\\Games\\Locomotion\\G1\\g1.dat";
 			var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
 			var tempName = Path.GetTempFileName();
-			SawyerStreamWriter.SaveG1(g1, tempName);
+			SawyerStreamWriter.SaveG1(tempName, g1);
 			var g1a = SawyerStreamReader.LoadG1(tempName, Logger);
 
 			Assert.That(g1.G1Header.NumEntries, Is.EqualTo(g1a.G1Header.NumEntries));

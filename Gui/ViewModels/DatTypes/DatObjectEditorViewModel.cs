@@ -35,8 +35,8 @@ namespace AvaGui.ViewModels
 
 		public IObjectViewModel CurrentObjectViewModel
 			=> VehicleVM == null
-			? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object }
-			: VehicleVM;
+				? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object }
+				: VehicleVM;
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }

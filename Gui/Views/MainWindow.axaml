@@ -131,16 +131,20 @@
 			</Grid>
 		</DataTemplate>
 
-		<DataTemplate DataType="mo:UiLocoFile">
+		<DataTemplate DataType="mo:UiDatLocoFile">
 
-		</DataTemplate>
-
-		<DataTemplate DataType="mo:UiG1">
-			<!-- todo -->
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:UiSoundObjectList">
 			<!-- todo -->
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:GenericObjectViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_ObjectVm" DataContext="{Binding Object}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:VehicleViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_VehicleVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
@@ -156,9 +160,7 @@
 					</TabItem>
 					<TabItem Header="Object">
 						<ScrollViewer>
-							<!--<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding CurrentObject.LocoObject.Object}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
-							<pgc:PropertyGrid x:Name="propertyGrid_Object" Margin="2" DataContext="{Binding VehicleVM}" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-
+							<ContentControl Content="{Binding CurrentObjectViewModel}"></ContentControl>
 						</ScrollViewer>
 					</TabItem>
 					<TabItem Header="String Table">
@@ -340,6 +342,7 @@
 				<TextBlock Text="{Binding CurrentFile}"/>
 			</StackPanel>
 		</DataTemplate>-->
+
 		<DataTemplate DataType="vm:G1ViewModel">
 			<ContentControl Content="{Binding ImageTableViewModel}"/>
 		</DataTemplate>

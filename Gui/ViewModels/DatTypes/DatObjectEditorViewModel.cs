@@ -22,16 +22,21 @@ namespace AvaGui.ViewModels
 		ILogger? Logger => Model.Logger;
 
 		[Reactive]
-		public VehicleViewModel? VehicleVM { get; set; }
-
-		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
 
 		[Reactive]
 		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
 
 		[Reactive]
-		public UiLocoFile? CurrentObject { get; private set; }
+		public VehicleViewModel? VehicleVM { get; set; }
+
+		[Reactive]
+		public UiDatLocoFile? CurrentObject { get; private set; }
+
+		public IObjectViewModel CurrentObjectViewModel
+			=> VehicleVM == null
+			? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object }
+			: VehicleVM;
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
@@ -49,7 +54,6 @@ namespace AvaGui.ViewModels
 		const int addressStringSizeBytes = 8;
 		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
 		const int dumpWordSize = 4;
-
 
 		public DatObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		{
@@ -136,6 +140,10 @@ namespace AvaGui.ViewModels
 							Engine1Sound = veh.SoundPropertyEngine1,
 							Engine2Sound = veh.SoundPropertyEngine2,
 						};
+					}
+					else
+					{
+						VehicleVM = null;
 					}
 
 					var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp) ? itnp : new DefaultImageTableNameProvider();

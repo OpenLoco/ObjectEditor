@@ -6,7 +6,15 @@ using System.ComponentModel;
 
 namespace AvaGui.ViewModels
 {
-	public class VehicleViewModel : ReactiveObject
+	public interface IObjectViewModel;
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public class GenericObjectViewModel : ReactiveObject, IObjectViewModel
+	{
+		[Reactive] public required ILocoStruct Object { get; set; }
+	}
+
+	public class VehicleViewModel : ReactiveObject, IObjectViewModel
 	{
 		[Reactive, Category("Stats")] public TransportMode Mode { get; set; }
 		[Reactive, Category("Stats")] public VehicleType Type { get; set; }

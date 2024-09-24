@@ -171,7 +171,7 @@ namespace AvaGui.Models
 			}
 		}
 
-		public bool TryLoadObject(FileSystemItem filesystemItem, out UiLocoFile? uiLocoFile)
+		public bool TryLoadObject(FileSystemItem filesystemItem, out UiDatLocoFile? uiLocoFile)
 		{
 			if (string.IsNullOrEmpty(filesystemItem.Filename))
 			{
@@ -278,14 +278,14 @@ namespace AvaGui.Models
 				return false;
 			}
 
-			if (locoObject == null && fileInfo == null && metadata == null && images == null)
+			if (fileInfo == null)
 			{
 				Logger.Error($"Unable to load {filesystemItem.Filename}");
 				uiLocoFile = null;
 				return false;
 			}
 
-			uiLocoFile = new UiLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata, Images = images };
+			uiLocoFile = new UiDatLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata, Images = images };
 			return true;
 		}
 

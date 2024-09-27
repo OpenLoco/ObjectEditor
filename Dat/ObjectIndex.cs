@@ -26,27 +26,29 @@ namespace OpenLoco.Dat
 
 		public void SaveIndex(string indexFile, JsonSerializerOptions options)
 			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+
 		public static async Task<ObjectIndexEntry> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file)
 			=> await Task.Run(() => GetDatFileInfoFromBytes(file));
 
-		public static async Task<ObjectIndex?> LoadOrCreateIndexAsync(string directory, IProgress<float>? progress = null)
+		public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, IProgress<float>? progress = null)
 		{
 			var indexPath = Path.Combine(directory, DefaultIndexFileName);
-			ObjectIndex? index;
+			ObjectIndex? index = null;
 			if (File.Exists(indexPath))
 			{
 				index = LoadIndex(indexPath);
 			}
-			else
+
+			if (index == null)
 			{
 				index = await CreateIndexAsync(directory, progress);
 				index.SaveIndex(indexPath);
 			}
 
-			return index;
+			return index; ;
 		}
 
-		public static ObjectIndex? LoadOrCreateIndex(string directory, IProgress<float>? progress = null)
+		public static ObjectIndex LoadOrCreateIndex(string directory, IProgress<float>? progress = null)
 			=> LoadOrCreateIndexAsync(directory, progress).Result;
 
 		public static Task<ObjectIndex> CreateIndexAsync(string directory, IProgress<float>? progress = null)
@@ -107,16 +109,16 @@ namespace OpenLoco.Dat
 			}
 
 			var remainingData = file.Data[(S5Header.StructLength + ObjectHeader.StructLength)..];
-			var isVanilla = hdrs.S5.IsVanilla();
+			var source = OriginalObjectFiles.GetFileSource(hdrs.S5.Name, hdrs.S5.Checksum);
 
 			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
 			{
 				var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
-				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, isVanilla, (VehicleType)decoded[3]);
+				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source, (VehicleType)decoded[3]);
 			}
 			else
 			{
-				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, isVanilla);
+				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source);
 			}
 		}
 	}
@@ -126,6 +128,6 @@ namespace OpenLoco.Dat
 		string DatName,
 		uint32_t DatChecksum,
 		ObjectType ObjectType,
-		bool IsVanilla,
+		ObjectSource ObjectSource,
 		VehicleType? VehicleType = null);
 }

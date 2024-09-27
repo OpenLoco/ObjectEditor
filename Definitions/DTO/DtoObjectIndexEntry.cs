@@ -8,6 +8,6 @@ namespace OpenLoco.Definitions.DTO
 		string DatName,
 		uint DatChecksum,
 		ObjectType ObjectType,
-		bool IsVanilla,
+		ObjectSource ObjectSource,
 		VehicleType? VehicleType);
 }

@@ -265,7 +265,7 @@ namespace AvaGui.ViewModels
 			var match = Regex.Match(Path.GetFileNameWithoutExtension(filename), @".*?(\d+).*?");
 			if (!match.Success)
 			{
-				Logger.Warning($"Couldn't parse sprite index from filename: \"{filename}\"");
+				Logger.Error($"Couldn't parse sprite index from filename: \"{filename}\"");
 				return;
 			}
 
@@ -274,7 +274,10 @@ namespace AvaGui.ViewModels
 
 			if (index >= G1Provider.G1Elements.Count)
 			{
-				var newElement = new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, 0, 0, ~G1ElementFlags.IsRLECompressed, 0);
+				var newElement = new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, 0, 0, G1ElementFlags.None, 0)
+				{
+					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, G1ElementFlags.None)
+				};
 				G1Provider.G1Elements.Insert(index, newElement);
 				Images.Insert(index, img); // update the UI
 			}
@@ -306,16 +309,19 @@ namespace AvaGui.ViewModels
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			if (Directory.Exists(dirPath))
+			if (!Directory.Exists(dirPath))
 			{
-				var counter = 0;
-				foreach (var image in Images)
-				{
-					var imageName = counter++.ToString(); // todo: use GetImageName from winforms project
-					var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
-					//logger.Debug($"Saving image to {path}");
-					await image.SaveAsPngAsync(path);
-				}
+				return;
+			}
+
+			Logger.Info($"Saving images to {dirPath}");
+
+			var counter = 0;
+			foreach (var image in Images)
+			{
+				var imageName = counter++.ToString(); // todo: maybe use image name provider below (but number must still exist)
+				var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
+				await image.SaveAsPngAsync(path);
 			}
 		}
 

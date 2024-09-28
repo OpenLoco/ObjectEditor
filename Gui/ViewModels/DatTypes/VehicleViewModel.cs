@@ -39,7 +39,7 @@ namespace AvaGui.ViewModels
 		[Reactive] public uint8_t var_04 { get; set; }
 		[Reactive] public uint8_t var_113 { get; set; }
 		[Reactive, Category("Sprites")] public uint8_t ColourType { get; set; }
-		[Reactive, Category("Sprites")] public BindingList<VehicleObjectUnk> var_24 { get; set; }
+		[Reactive, Category("Sprites")] public BindingList<VehicleObjectCar> CarComponents { get; set; }
 		[Reactive, Category("Sprites")] public BindingList<BodySprite> BodySprites { get; set; }
 		[Reactive, Category("Sprites")] public BindingList<BogieSprite> BogieSprites { get; set; }
 		[Reactive, Category("Sprites")] public BindingList<SimpleAnimation> Animation { get; set; }

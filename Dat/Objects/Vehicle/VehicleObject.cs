@@ -25,7 +25,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0F)] uint8_t NumCompatibleVehicles,
 		[property: LocoStructOffset(0x10), LocoArrayLength(8), LocoStructVariableLoad] List<S5Header> CompatibleVehicles,
 		[property: LocoStructOffset(0x20), LocoArrayLength(4), LocoStructVariableLoad] List<S5Header> RequiredTrackExtras,
-		[property: LocoStructOffset(0x24), LocoArrayLength(4)] VehicleObjectUnk[] var_24,
+		[property: LocoStructOffset(0x24), LocoArrayLength(4)] VehicleObjectCar[] CarComponents,
 		[property: LocoStructOffset(0x3C), LocoArrayLength(VehicleObject.MaxBodySprites)] BodySprite[] BodySprites,
 		[property: LocoStructOffset(0xB4), LocoArrayLength(VehicleObject.MaxBogieSprites)] BogieSprite[] BogieSprites,
 		[property: LocoStructOffset(0xD8)] uint16_t Power,

@@ -116,7 +116,7 @@ namespace AvaGui.ViewModels
 							NumCompatibleVehicles = veh.NumCompatibleVehicles,
 							CompatibleVehicles = new(veh.CompatibleVehicles),
 							RequiredTrackExtras = new(veh.RequiredTrackExtras),
-							var_24 = new(veh.var_24),
+							CarComponents = new(veh.CarComponents),
 							BodySprites = new(veh.BodySprites),
 							BogieSprites = new(veh.BogieSprites),
 							Power = veh.Power,

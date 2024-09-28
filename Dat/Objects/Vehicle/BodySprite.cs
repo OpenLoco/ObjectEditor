@@ -37,6 +37,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x1A), LocoStructVariableLoad, Browsable(false)] image_id _SteepImageId
 		) : ILocoStruct
 	{
+		public BodySprite() : this(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+		{ }
+
 		// these properties are set on vehicle load and are not saved in the struct/object file itself
 		public uint8_t Width { get; set; }
 		public uint8_t HeightNegative { get; set; }

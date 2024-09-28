@@ -15,6 +15,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x05)] uint8_t var_05
 		) : ILocoStruct
 	{
+		public VehicleObjectCar() : this(0, 0, 0, 0, 0, 0)
+		{ }
+
 		public bool Validate() => true;
 	}
 }

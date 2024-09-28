@@ -12,6 +12,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x02)] SimpleAnimationType Type
 		) : ILocoStruct
 	{
+		public SimpleAnimation() : this(0, 0, 0)
+		{ }
+
 		public bool Validate() => true;
 	}
 }

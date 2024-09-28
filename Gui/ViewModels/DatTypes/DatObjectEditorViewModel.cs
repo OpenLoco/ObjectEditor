@@ -106,14 +106,12 @@ namespace AvaGui.ViewModels
 							Type = veh.Type,
 							var_04 = veh.var_04,
 							TrackTypeId = veh.TrackTypeId,
-							NumTrackExtras = veh.NumTrackExtras,
 							CostIndex = veh.CostIndex,
 							CostFactor = veh.CostFactor,
 							Reliability = veh.Reliability,
 							RunCostIndex = veh.RunCostIndex,
 							RunCostFactor = veh.RunCostFactor,
 							ColourType = veh.ColourType,
-							NumCompatibleVehicles = veh.NumCompatibleVehicles,
 							CompatibleVehicles = new(veh.CompatibleVehicles),
 							RequiredTrackExtras = new(veh.RequiredTrackExtras),
 							CarComponents = new(veh.CarComponents),
@@ -134,7 +132,6 @@ namespace AvaGui.ViewModels
 							ObsoleteYear = veh.Obsolete,
 							RackRailType = veh.RackRailType,
 							SoundType = veh.SoundType,
-							NumStartSounds = veh.NumStartSounds,
 							StartSounds = new(veh.StartSounds),
 							FrictionSound = veh.SoundPropertyFriction,
 							Engine1Sound = veh.SoundPropertyEngine1,
@@ -183,13 +180,21 @@ namespace AvaGui.ViewModels
 
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
 			StringTableViewModel?.WriteTableBackToObject();
-			// convert VehicleVM back to DAT, eg cargo sprites, string table, etc
 			if (VehicleVM != null && CurrentObject.LocoObject.Object is VehicleObject veh)
 			{
+				// convert VehicleVM back to DAT, eg cargo sprites, string table, etc
+				// this can probably go in VehicleViewModelClass
 				foreach (var ctso in VehicleVM.CargoTypeSpriteOffsets)
 				{
 					veh.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
 				}
+
+				CurrentObject.LocoObject.Object = veh with
+				{
+					NumCompatibleVehicles = (byte)VehicleVM.CompatibleVehicles.Count,
+					NumRequiredTrackExtras = (byte)VehicleVM.RequiredTrackExtras.Count,
+					NumStartSounds = (byte)VehicleVM.StartSounds.Count,
+				};
 			}
 			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
 		}

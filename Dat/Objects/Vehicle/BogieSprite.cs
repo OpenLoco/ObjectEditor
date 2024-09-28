@@ -25,6 +25,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)] uint32_t _SteepImageIds   // steep sprites
 		) : ILocoStruct
 	{
+		public BogieSprite() : this(0, 0, 0, 0, 0, 0, 0, 0, 0)
+		{ }
+
 		public uint8_t NumRollSprites { get; set; }
 
 		public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds = [];

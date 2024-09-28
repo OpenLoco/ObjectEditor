@@ -15,6 +15,7 @@ namespace OpenLoco.Dat.Objects
 
 	public enum CargoCategory : uint16_t
 	{
+		None = 0,
 		Grain = 1,
 		Coal,
 		IronOre,

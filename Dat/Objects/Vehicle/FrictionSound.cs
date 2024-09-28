@@ -16,6 +16,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0A)] uint8_t MaxVolume
 		) : ILocoStruct
 	{
+		public FrictionSound() : this(0, 0, 0, 0, 0, 0, 0)
+		{ }
+
 		public bool Validate() => true;
 	}
 }

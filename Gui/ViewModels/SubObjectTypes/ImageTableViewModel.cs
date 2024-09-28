@@ -218,8 +218,7 @@ namespace AvaGui.ViewModels
 
 					if (offsets?.Count != G1Provider.G1Elements.Count)
 					{
-						Logger.Error($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets?.Count} offsets");
-						return;
+						Logger.Warning($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets?.Count} offsets. Continue at your peril.");
 					}
 
 					foreach (var offset in offsets)
@@ -235,8 +234,7 @@ namespace AvaGui.ViewModels
 
 					if (files.Length != G1Provider.G1Elements.Count)
 					{
-						Logger.Error($"Expected {G1Provider.G1Elements.Count} offsets, got {files.Length} offsets");
-						return;
+						Logger.Warning($"Expected {G1Provider.G1Elements.Count} images, got {files.Length} images. Continue at your peril.");
 					}
 
 					foreach (var filename in files)
@@ -273,19 +271,28 @@ namespace AvaGui.ViewModels
 
 			var index = int.Parse(match.Groups[1].Value);
 			var img = Image.Load<Rgba32>(filename);
-			Images[index] = img;
 
-			var currG1 = G1Provider.G1Elements[index];
-			currG1 = currG1 with
+			if (index >= G1Provider.G1Elements.Count)
 			{
-				Width = (int16_t)img.Width,
-				Height = (int16_t)img.Height,
-				Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
-				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
-				XOffset = offset?.X ?? currG1.XOffset,
-				YOffset = offset?.Y ?? currG1.YOffset
-			};
-			G1Provider.G1Elements[index] = currG1;
+				var newElement = new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, 0, 0, ~G1ElementFlags.IsRLECompressed, 0);
+				G1Provider.G1Elements.Insert(index, newElement);
+				Images.Insert(index, img); // update the UI
+			}
+			else
+			{
+				var currG1 = G1Provider.G1Elements[index];
+				currG1 = currG1 with
+				{
+					Width = (int16_t)img.Width,
+					Height = (int16_t)img.Height,
+					Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
+					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
+					XOffset = offset?.X ?? currG1.XOffset,
+					YOffset = offset?.Y ?? currG1.YOffset
+				};
+				G1Provider.G1Elements[index] = currG1;
+				Images[index] = img; // update the UI
+			}
 		}
 
 		// todo: second half should be in model

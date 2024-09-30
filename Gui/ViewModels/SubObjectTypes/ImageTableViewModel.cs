@@ -23,6 +23,32 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace AvaGui.ViewModels
 {
+	public enum ColourSwatches
+	{
+		Black,
+		Bronze,
+		Copper,
+		Yellow,
+		Rose,
+		GrassGreen,
+		AvocadoGreen,
+		Green,
+		Brass,
+		Lavender,
+		Blue,
+		SeaGreen,
+		Purple,
+		Red,
+		Orange,
+		Teal,
+		Brown,
+		Amber,
+		MiscGrey,
+		MiscYellow,
+		PrimaryRemap,
+		SecondaryRemap,
+	}
+
 	public record SpriteOffset(
 		[property: JsonPropertyName("path")] string Path,
 		[property: JsonPropertyName("x")] int16_t X,
@@ -33,6 +59,9 @@ namespace AvaGui.ViewModels
 		readonly IHasG1Elements G1Provider;
 		readonly IImageTableNameProvider NameProvider;
 		readonly ILogger Logger;
+
+		public ColourSwatches[] ColourSwatchesArr { get; } = (ColourSwatches[])Enum.GetValues(typeof(ColourSwatches));
+		[Reactive] public ColourSwatches SelectedColourSwatch { get; set; } = ColourSwatches.PrimaryRemap;
 
 		public ImageTableViewModel(IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, IList<Image<Rgba32>> images, ILogger logger)
 		{

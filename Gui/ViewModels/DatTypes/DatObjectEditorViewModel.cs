@@ -127,6 +127,7 @@ namespace AvaGui.ViewModels
 							CompatibleCargoCategories2 = new(veh.CompatibleCargoCategories[1]),
 							CargoTypeSpriteOffsets = new(veh.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList()),
 							Animation = new(veh.Animation),
+							AnimationHeaders = new(veh.AnimationHeaders),
 							var_113 = veh.var_113,
 							DesignedYear = veh.Designed,
 							ObsoleteYear = veh.Obsolete,

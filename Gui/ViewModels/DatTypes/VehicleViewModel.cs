@@ -42,6 +42,7 @@ namespace AvaGui.ViewModels
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; set; }
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; set; }
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<SimpleAnimation> Animation { get; set; }
+		[Reactive, Category("Sprites")] public BindingList<S5Header> AnimationHeaders { get; set; }
 		[Reactive, Category("Cargo")] public BindingList<uint8_t> MaxCargo { get; set; }
 		[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories1 { get; set; }
 		[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories2 { get; set; }

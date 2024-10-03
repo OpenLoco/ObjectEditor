@@ -1,4 +1,4 @@
-﻿using OpenLoco.Dat;
+using OpenLoco.Dat;
 
 namespace OpenLoco.ObjectService
 {
@@ -12,23 +12,30 @@ namespace OpenLoco.ObjectService
 		public ObjectFolderManager(string rootDirectory)
 		{
 			RootDirectory = rootDirectory;
-			Index = ObjectIndex.LoadOrCreateIndex(rootDirectory)!;
+			ObjectIndex = ObjectIndex.LoadOrCreateIndex(Path.Combine(rootDirectory, ObjectsFolderName))!;
 		}
+		public ObjectIndex ObjectIndex { get; init; }
 
-		public ObjectIndex Index { get; init; }
+		public const string ObjectsFolderName = "Objects";
+		public const string OriginalObjectsFolderName = "Original";
+		public const string CustomObjectFolderName = "Custom";
+		public const string ScenariosFolderName = "Scenarios";
 
-		public string IndexFile => Path.Combine(RootDirectory, ObjectIndex.DefaultIndexFileName);
-		public string OriginalObjectFolder => Path.Combine(RootDirectory, "Original");
-		public string CustomObjectFolder => Path.Combine(RootDirectory, "Custom");
+		public string IndexFile => Path.Combine(RootDirectory, ObjectsFolderName, ObjectIndex.DefaultIndexFileName);
+		public string OriginalObjectFolder => Path.Combine(RootDirectory, ObjectsFolderName, OriginalObjectsFolderName);
+		public string CustomObjectFolder => Path.Combine(RootDirectory, ObjectsFolderName, CustomObjectFolderName);
 
 		// === structure ===
-		// - objectIndex.json
-		// - CustomObjects
-		//     - ...
-		// - OriginalObjects
-		//     - Steam
+		// - Scenarios
+		//   - ...
+		// - Objects
+		//   - objectIndex.json
+		//   - CustomObjects
 		//       - ...
-		//     - GoG
-		//       - ...
+		//   - OriginalObjects
+		//       - Steam
+		//         - ...
+		//       - GoG
+		//         - ...
 	}
 }

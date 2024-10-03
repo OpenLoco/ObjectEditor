@@ -84,6 +84,13 @@ _ = app.MapGet(Routes.GetDatFile, server.GetDatFile)
 _ = app.MapGet(Routes.GetObjectFile, server.GetObjectFile)
 	.RequireRateLimiting(tokenPolicy);
 
+_ = app.MapGet(Routes.ListScenarios, Server.ListScenarios)
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapGet(Routes.GetScenario, server.GetScenario)
+	.RequireRateLimiting(tokenPolicy);
+
+
 // PATCH
 _ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
 	.RequireRateLimiting(tokenPolicy);

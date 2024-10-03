@@ -78,7 +78,7 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			if (!ObjectManager.Index.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
+			if (!ObjectManager.ObjectIndex.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
@@ -146,7 +146,7 @@ namespace OpenLoco.ObjectService
 				return Results.Forbid();
 			}
 
-			if (!ObjectManager.Index.TryFind((obj.DatName, obj.DatChecksum), out var index))
+			if (!ObjectManager.ObjectIndex.TryFind((obj.DatName, obj.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
@@ -158,6 +158,30 @@ namespace OpenLoco.ObjectService
 				? Results.File(path, contentType, Path.GetFileName(path))
 				: Results.NotFound();
 		}
+
+		// eg: https://localhost:7230/scenarios/list
+		public static async Task<IResult> ListScenarios(LocoDb db)
+			=> Results.Ok(
+				await db.Objects
+				.Select(x => new DtoScenarioIndexEntry(
+					x.Id,
+					x.DatName,
+					x.DatChecksum)).ToListAsync());
+
+		// eg: https://localhost:7230/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
+		public async Task<IResult> GetScenario(int uniqueScenarioId, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		{
+			Console.WriteLine($"Object [{uniqueScenarioId}] requested");
+
+			var eObj = await db.Objects
+				.Where(x => x.Id == uniqueScenarioId)
+				.Include(x => x.Licence)
+				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
+				.SingleOrDefaultAsync();
+
+			return await ReturnObject(returnObjBytes, logger, eObj);
+		}
+
 
 		// eg: <todo>
 		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db)
@@ -243,7 +267,7 @@ namespace OpenLoco.ObjectService
 				Licence = null,
 			};
 
-			ObjectManager.Index.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.IsVanilla, locoTbl.VehicleType));
+			ObjectManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.IsVanilla, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();

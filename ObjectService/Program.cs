@@ -65,7 +65,7 @@ if (app.Environment.IsDevelopment())
 	_ = app.UseSwaggerUI();
 }
 
-var objRoot = builder.Configuration["ObjectService:ObjectRootFolder"];
+var objRoot = builder.Configuration["ObjectService:RootFolder"];
 var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
 
 // GET
@@ -84,7 +84,7 @@ _ = app.MapGet(Routes.GetDatFile, server.GetDatFile)
 _ = app.MapGet(Routes.GetObjectFile, server.GetObjectFile)
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapGet(Routes.ListScenarios, Server.ListScenarios)
+_ = app.MapGet(Routes.ListScenarios, server.ListScenarios)
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapGet(Routes.GetScenario, server.GetScenario)

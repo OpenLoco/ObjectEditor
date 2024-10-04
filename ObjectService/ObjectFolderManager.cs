@@ -1,4 +1,5 @@
-﻿using OpenLoco.Dat;
+using OpenLoco.Dat;
+using Zenith.Core;
 
 namespace OpenLoco.ObjectService
 {
@@ -12,23 +13,41 @@ namespace OpenLoco.ObjectService
 		public ObjectFolderManager(string rootDirectory)
 		{
 			RootDirectory = rootDirectory;
-			Index = ObjectIndex.LoadOrCreateIndex(rootDirectory)!;
+			ObjectIndex = ObjectIndex.LoadOrCreateIndex(Path.Combine(rootDirectory, ObjectsFolderName))!;
+
+			Verify.AreEqual(true, Directory.Exists(ObjectsOriginalFolder), message: $"OrignalObjectsFolder: {ObjectsOriginalFolder} didn't exist");
+			Verify.AreEqual(true, Directory.Exists(ObjectsCustomFolder), message: $"ObjectsCustomFolder: {ObjectsCustomFolder} didn't exist");
+			Verify.AreEqual(true, Directory.Exists(ScenariosOriginalFolder), message: $"ScenariosOriginalFolder: {ScenariosOriginalFolder} didn't exist");
+			Verify.AreEqual(true, Directory.Exists(ScenariosCustomFolder), message: $"ScenariosCustomFolder: {ScenariosCustomFolder} didn't exist");
 		}
 
-		public ObjectIndex Index { get; init; }
+		public ObjectIndex ObjectIndex { get; init; }
 
-		public string IndexFile => Path.Combine(RootDirectory, ObjectIndex.DefaultIndexFileName);
-		public string OriginalObjectFolder => Path.Combine(RootDirectory, "Original");
-		public string CustomObjectFolder => Path.Combine(RootDirectory, "Custom");
+		public const string ObjectsFolderName = "Objects";
+		public const string ScenariosFolderName = "Scenarios";
+
+		public const string OriginalFolderName = "Original";
+		public const string CustomFolderName = "Custom";
+
+		public string IndexFile => Path.Combine(RootDirectory, ObjectsFolderName, ObjectIndex.DefaultIndexFileName);
+		public string ObjectsOriginalFolder => Path.Combine(RootDirectory, ObjectsFolderName, OriginalFolderName);
+		public string ObjectsCustomFolder => Path.Combine(RootDirectory, ObjectsFolderName, CustomFolderName);
+
+		public string ScenariosOriginalFolder => Path.Combine(RootDirectory, ScenariosFolderName, OriginalFolderName);
+		public string ScenariosCustomFolder => Path.Combine(RootDirectory, ScenariosFolderName, CustomFolderName);
 
 		// === structure ===
-		// - objectIndex.json
-		// - CustomObjects
-		//     - ...
-		// - OriginalObjects
-		//     - Steam
+		// - Scenarios
+		//   - Original
+		//   - Custom
+		// - Objects
+		//   - objectIndex.json
+		//   - Custom
 		//       - ...
-		//     - GoG
-		//       - ...
+		//   - Original
+		//       - Steam
+		//         - ...
+		//       - GoG
+		//         - ...
 	}
 }

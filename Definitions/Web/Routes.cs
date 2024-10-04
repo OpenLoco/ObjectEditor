@@ -9,6 +9,9 @@ namespace OpenLoco.Definitions.Web
 		public const string GetDatFile = "/objects/getdatfile";
 		public const string GetObjectFile = "/objects/getobjectfile";
 
+		public const string ListScenarios = "/scenarios/list";
+		public const string GetScenario = "/scenarios/getscenario";
+
 		// POST
 		public const string UploadDat = "/objects/uploaddat";
 		public const string UploadObject = "/objects/uploadobject";

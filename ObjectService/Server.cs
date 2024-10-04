@@ -19,7 +19,7 @@ namespace OpenLoco.ObjectService
 		public Server(ServerSettings settings)
 		{
 			Settings = settings;
-			ObjectManager = new ObjectFolderManager(Settings.ObjectRootFolder)!;
+			ObjectManager = new ObjectFolderManager(Settings.RootFolder)!;
 		}
 
 		public Server(IOptions<ServerSettings> options) : this(options.Value)
@@ -78,14 +78,14 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			if (!ObjectManager.Index.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
+			if (!ObjectManager.ObjectIndex.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
 
 			var obj = eObj!.Object;
 
-			var pathOnDisk = Path.Combine(Settings.ObjectRootFolder, index!.Filename); // handle windows paths by replacing path separator
+			var pathOnDisk = Path.Combine(Settings.RootFolder, index!.Filename); // handle windows paths by replacing path separator
 			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
 			var bytes = (returnObjBytes ?? false) && !obj.IsVanilla && File.Exists(pathOnDisk)
@@ -146,17 +146,28 @@ namespace OpenLoco.ObjectService
 				return Results.Forbid();
 			}
 
-			if (!ObjectManager.Index.TryFind((obj.DatName, obj.DatChecksum), out var index))
+			if (!ObjectManager.ObjectIndex.TryFind((obj.DatName, obj.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
 
 			const string contentType = "application/octet-stream";
 
-			var path = Path.Combine(Settings.ObjectRootFolder, index!.Filename);
+			var path = Path.Combine(Settings.RootFolder, index!.Filename);
 			return obj?.IsVanilla == false && File.Exists(path)
 				? Results.File(path, contentType, Path.GetFileName(path))
 				: Results.NotFound();
+		}
+
+		// eg: https://localhost:7230/scenarios/list
+		public static async Task<IResult> ListScenarios(LocoDb db)
+			=> Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
+
+		// eg: https://localhost:7230/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
+		public async Task<IResult> GetScenario(int uniqueScenarioId, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		{
+			Console.WriteLine($"Scenario [{uniqueScenarioId}] requested");
+			return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
 		}
 
 		// eg: <todo>
@@ -211,7 +222,7 @@ namespace OpenLoco.ObjectService
 
 			(DatFileInfo DatFileInfo, ILocoObject? LocoObject)? obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, Logger);
 			var uuid = Guid.NewGuid();
-			var saveFileName = Path.Combine(ObjectManager.CustomObjectFolder, $"{uuid}.dat");
+			var saveFileName = Path.Combine(ObjectManager.ObjectsCustomFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
 
 			Console.WriteLine($"File accepted DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} PathOnDisk={saveFileName}");
@@ -243,7 +254,7 @@ namespace OpenLoco.ObjectService
 				Licence = null,
 			};
 
-			ObjectManager.Index.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.IsVanilla, locoTbl.VehicleType));
+			ObjectManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.IsVanilla, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();

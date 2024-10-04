@@ -66,7 +66,7 @@ if (app.Environment.IsDevelopment())
 }
 
 var objRoot = builder.Configuration["ObjectService:ObjectRootFolder"];
-var server = new Server(new ServerSettings(objRoot) { ObjectRootFolder = objRoot! });
+var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
 
 // GET
 _ = app.MapGet(Routes.ListObjects, Server.ListObjects)

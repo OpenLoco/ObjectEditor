@@ -55,7 +55,7 @@ namespace AvaGui.ViewModels
 		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
 		const int dumpWordSize = 4;
 
-		public DatObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
 		{
 			CurrentFile = currentFile;
 			Model = model;

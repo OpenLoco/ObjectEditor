@@ -26,9 +26,13 @@ namespace AvaGui.Models.Converters
 				return vehicleIcon;
 			}
 
-			if (value is bool isVanilla && SourceGameMapping.TryGetValue(isVanilla, out var sourceIcon))
+			if (Enum.TryParse<ObjectSource>(value as string, out var objectSource) && SourceGameMapping.TryGetValue(objectSource, out var sourceIcon))
 			{
 				return sourceIcon;
+			}
+			else if ((value is ObjectSource objectSource2) && SourceGameMapping.TryGetValue(objectSource2, out var sourceIcon2))
+			{
+				return sourceIcon2;
 			}
 
 			return null;
@@ -85,10 +89,12 @@ namespace AvaGui.Models.Converters
 			{ VehicleType.Ship, "Sailboat" },
 		};
 
-		static readonly Dictionary<bool, string> SourceGameMapping = new()
+		static readonly Dictionary<ObjectSource, string> SourceGameMapping = new()
 		{
-			{ true, "AccountTieHat" },
-			{ false, "HumanEdit" },
+			{ ObjectSource.Custom, "HumanEdit" },
+			{ ObjectSource.LocomotionSteam, "AccountTieHat" },
+			{ ObjectSource.LocomotionGoG, "AccountTieHatOutline" },
+			{ ObjectSource.OpenLoco, "AccountHardHat" },
 		};
 
 		static readonly Dictionary<DatFileType, string> DatTypeMapping = new()

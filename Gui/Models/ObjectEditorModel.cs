@@ -205,7 +205,7 @@ namespace AvaGui.Models
 						{
 							Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
 						}
-						else if (locoObj.IsVanilla)
+						else if (locoObj.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 						{
 							Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
 						}

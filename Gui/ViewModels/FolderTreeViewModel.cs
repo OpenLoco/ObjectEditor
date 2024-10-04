@@ -74,7 +74,7 @@ namespace AvaGui.ViewModels
 
 			foreach (var node in fib.SubNodes)
 			{
-				if (node is FileSystemItem)
+				if (node is FileSystemItemObject)
 				{
 					count++;
 				}
@@ -174,7 +174,7 @@ namespace AvaGui.ViewModels
 				Model.ObjectIndexOnline = new ObjectIndex()
 				{
 					Objects = (await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-						.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.IsVanilla, x.VehicleType))
+						.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.ObjectSource, x.VehicleType))
 						.ToList()
 				};
 			}
@@ -195,7 +195,7 @@ namespace AvaGui.ViewModels
 
 			var groupedObjects = index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
-				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.DatName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == o.IsVanilla)))
+				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.DatName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == (o.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG))))
 				.GroupBy(o => o.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 
@@ -210,7 +210,7 @@ namespace AvaGui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(o => new FileSystemItem(o.Filename, o.DatName, o.IsVanilla, fileLocation))
+							.Select(o => new FileSystemItemObject(o.Filename, o.DatName, fileLocation, o.ObjectSource))
 							.OrderBy(o => o.DisplayName));
 
 						if (vg.Key == null)
@@ -229,7 +229,7 @@ namespace AvaGui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(o => new FileSystemItem(o.Filename, o.DatName, o.IsVanilla, fileLocation))
+						.Select(o => new FileSystemItemObject(o.Filename, o.DatName, fileLocation, o.ObjectSource))
 						.OrderBy(o => o.DisplayName));
 				}
 

@@ -18,8 +18,11 @@ namespace AvaGui.Models
 			=> $"{DisplayName}{(SubNodes == null ? string.Empty : $" ({SubNodes.Count})")}"; // nested interpolated string...what have i become
 	}
 
-	public record FileSystemItem(string Filename, string DisplayName, bool IsVanilla, FileLocation FileLocation)
+	public record FileSystemItem(string Filename, string DisplayName, FileLocation FileLocation)
 		: FileSystemItemBase(Filename, DisplayName, null);
+
+	public record FileSystemItemObject(string Filename, string DisplayName, FileLocation FileLocation, ObjectSource ObjectSource)
+		: FileSystemItem(Filename, DisplayName, FileLocation);
 
 	//public record FileSystemDatGroup(string Path, DatFileType DatFileType, ObservableCollection<FileSystemItemBase> SubNodes)
 	//	: FileSystemItemBase(Path, DatFileType.ToString(), SubNodes);

@@ -21,7 +21,7 @@ namespace OpenLoco.Definitions.Database
 
 		#endregion
 
-		public bool IsVanilla { get; set; }
+		public ObjectSource ObjectSource { get; set; }
 
 		public ObjectType ObjectType { get; set; }
 

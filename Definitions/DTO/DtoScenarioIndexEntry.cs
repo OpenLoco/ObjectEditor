@@ -1,7 +1,6 @@
-﻿namespace OpenLoco.Definitions.DTO
+namespace OpenLoco.Definitions.DTO
 {
 	public record DtoScenarioIndexEntry(
 		int Id,
-		string DatName,
-		string DatChecksum);
+		string Name);
 }

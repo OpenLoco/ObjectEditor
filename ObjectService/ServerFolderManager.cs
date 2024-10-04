@@ -6,11 +6,11 @@ namespace OpenLoco.ObjectService
 	/// <summary>
 	/// This class represents the folder structure for objects on the server.
 	/// </summary>
-	public class ObjectFolderManager
+	public class ServerFolderManager
 	{
-		public string RootDirectory { get; init; }
+		string RootDirectory { get; init; }
 
-		public ObjectFolderManager(string rootDirectory)
+		public ServerFolderManager(string rootDirectory)
 		{
 			RootDirectory = rootDirectory;
 			ObjectIndex = ObjectIndex.LoadOrCreateIndex(Path.Combine(rootDirectory, ObjectsFolderName))!;
@@ -33,15 +33,21 @@ namespace OpenLoco.ObjectService
 		public string ObjectsOriginalFolder => Path.Combine(RootDirectory, ObjectsFolderName, OriginalFolderName);
 		public string ObjectsCustomFolder => Path.Combine(RootDirectory, ObjectsFolderName, CustomFolderName);
 
+		public string ScenariosFolder => Path.Combine(RootDirectory, ScenariosFolderName);
 		public string ScenariosOriginalFolder => Path.Combine(RootDirectory, ScenariosFolderName, OriginalFolderName);
 		public string ScenariosCustomFolder => Path.Combine(RootDirectory, ScenariosFolderName, CustomFolderName);
 
 		// === structure ===
-		// - Scenarios
-		//   - Original
-		//   - Custom
 		// - Objects
 		//   - objectIndex.json
+		//   - Custom
+		//       - ...
+		//   - Original
+		//       - Steam
+		//         - ...
+		//       - GoG
+		//         - ...
+		// - Scenarios
 		//   - Custom
 		//       - ...
 		//   - Original

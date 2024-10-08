@@ -181,7 +181,7 @@ namespace OpenLoco.ObjectService
 		{
 			if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 			{
-				return Results.BadRequest("DatBytesAsBase64 cannot be null - it must contain the valid bytes of a loco dat object.");
+				return Results.BadRequest($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.");
 			}
 
 			byte[]? datFileBytes;
@@ -196,7 +196,7 @@ namespace OpenLoco.ObjectService
 
 			if (datFileBytes == null || datFileBytes.Length == 0)
 			{
-				return Results.BadRequest("Unable to decode DatBytesAsBase64 - it must contain the valid bytes of a loco dat object.");
+				return Results.BadRequest($"Unable to decode {nameof(request.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.");
 			}
 
 			if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)

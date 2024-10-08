@@ -197,7 +197,8 @@ namespace AvaGui.ViewModels
 					NumStartSounds = (byte)VehicleVM.StartSounds.Count,
 				};
 			}
-			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+
+			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject, Logger);
 		}
 
 		public void SaveAsCurrentObject()
@@ -217,7 +218,8 @@ namespace AvaGui.ViewModels
 			var savePath = saveFile.Path.LocalPath;
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
 			StringTableViewModel?.WriteTableBackToObject();
-			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject);
+
+			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject, Logger);
 		}
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)

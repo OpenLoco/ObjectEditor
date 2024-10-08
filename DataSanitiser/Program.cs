@@ -6,8 +6,32 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.SourceData;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
+// load 32bpp palette
+var paletteFile = "Q:\\Games\\Locomotion\\Palettes\\palette.png";
+var img = Image.Load<Rgba32>(paletteFile);
+var palStrings = new List<string>()
+{
+	"JASC-PAL", // header
+	"0100", // version
+	"256", // colours in palette file
+};
+
+for (var y = 0; y < img.Height; y++)
+{
+	for (var x = 0; x < img.Width; x++)
+	{
+		var col = img[x, y];
+		palStrings.Add($"{col.R} {col.G} {col.B}");
+	}
+}
+File.WriteAllLines("Q:\\Games\\Locomotion\\Palettes\\jascpal.pal", palStrings);
+// spit out .pal file
+Environment.Exit(0);
 
 var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
 var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions)

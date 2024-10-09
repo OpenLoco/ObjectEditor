@@ -6,31 +6,39 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.SourceData;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-// load 32bpp palette
-var paletteFile = "Q:\\Games\\Locomotion\\Palettes\\palette.png";
-var img = Image.Load<Rgba32>(paletteFile);
-var palStrings = new List<string>()
+// directory maker
+var path = "Q:\\Games\\Locomotion\\OriginalObjects\\GoG\\objectIndex.json";
+var idx = ObjectIndex.LoadIndex(path);
+var sourcePath = "C:\\Users\\bigba\\source\\repos\\OpenLoco\\OpenGraphics\\objects";
+var keepfile = Path.Combine(sourcePath, ".gitkeep");
+foreach (var objType in idx.Objects.GroupBy(x => x.ObjectType))
 {
-	"JASC-PAL", // header
-	"0100", // version
-	"256", // colours in palette file
-};
-
-for (var y = 0; y < img.Height; y++)
-{
-	for (var x = 0; x < img.Width; x++)
+	var d = Directory.CreateDirectory(Path.Combine(sourcePath, objType.Key.ToString()));
+	if (objType.Key == ObjectType.Vehicle)
 	{
-		var col = img[x, y];
-		palStrings.Add($"{col.R} {col.G} {col.B}");
+		foreach (var subtype in objType.GroupBy(x => x.VehicleType))
+		{
+			var dd = Directory.CreateDirectory(Path.Combine(d.FullName, subtype.Key.ToString()!));
+			foreach (var obj in subtype)
+			{
+				var ddd = Directory.CreateDirectory(Path.Combine(dd.FullName, obj.DatName));
+				_ = File.Create(Path.Combine(ddd.FullName, ".gitkeep"), 0);
+			}
+		}
+	}
+	else
+	{
+		foreach (var obj in objType)
+		{
+			var ddd = Directory.CreateDirectory(Path.Combine(d.FullName, obj.DatName));
+			_ = File.Create(Path.Combine(ddd.FullName, ".gitkeep"), 0);
+		}
 	}
 }
-File.WriteAllLines("Q:\\Games\\Locomotion\\Palettes\\jascpal.pal", palStrings);
-// spit out .pal file
 Environment.Exit(0);
 
 var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };

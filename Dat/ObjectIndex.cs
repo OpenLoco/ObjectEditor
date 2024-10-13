@@ -45,7 +45,7 @@ namespace OpenLoco.Dat
 				index.SaveIndex(indexPath);
 			}
 
-			return index; ;
+			return index;
 		}
 
 		public static ObjectIndex LoadOrCreateIndex(string directory, IProgress<float>? progress = null)

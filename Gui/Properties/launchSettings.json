@@ -4,16 +4,16 @@
       "commandName": "WSL2",
       "distributionName": "Ubuntu-24.04"
     },
-    "AvaGuiDevService": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "ENV_SETTINGS_FILE": "settings-dev.json"
-      }
-    },
-    "AvaGuiProdService": {
+    "Gui-ProdService": {
       "commandName": "Project",
       "environmentVariables": {
         "ENV_SETTINGS_FILE": "settings.json"
+      }
+    },
+    "Gui-DevService": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ENV_SETTINGS_FILE": "settings-dev.json"
       }
     }
   }

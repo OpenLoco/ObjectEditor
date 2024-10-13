@@ -155,8 +155,6 @@ namespace OpenLoco.ObjectService
 			const string contentType = "application/octet-stream";
 
 			var path = Path.Combine(Settings.RootFolder, index!.Filename);
-			return obj?.IsVanilla == false && File.Exists(path)
-			var path = Path.Combine(Settings.ObjectRootFolder, index!.Filename);
 			return obj != null && File.Exists(path)
 				? Results.File(path, contentType, Path.GetFileName(path))
 				: Results.NotFound();
@@ -263,7 +261,7 @@ namespace OpenLoco.ObjectService
 				Licence = null,
 			};
 
-			ServerFolderManager.Index.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.VehicleType));
+			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();

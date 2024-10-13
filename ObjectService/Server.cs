@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
@@ -40,7 +41,7 @@ namespace OpenLoco.ObjectService
 					x.DatName,
 					x.DatChecksum,
 					x.ObjectType,
-					x.IsVanilla,
+					x.ObjectSource,
 					x.VehicleType)).ToListAsync());
 
 		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
@@ -85,10 +86,16 @@ namespace OpenLoco.ObjectService
 
 			var obj = eObj!.Object;
 
-			var pathOnDisk = Path.Combine(Settings.RootFolder, index!.Filename); // handle windows paths by replacing path separator
+			var pathOnDisk = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
 			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
-			var bytes = (returnObjBytes ?? false) && !obj.IsVanilla && File.Exists(pathOnDisk)
+			var fileExists = File.Exists(pathOnDisk);
+			if (!fileExists)
+			{
+				logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder.", pathOnDisk);
+			}
+
+			var bytes = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
@@ -98,7 +105,7 @@ namespace OpenLoco.ObjectService
 				obj.DatName,
 				obj.DatChecksum,
 				bytes,
-				obj.IsVanilla,
+				obj.ObjectSource,
 				obj.ObjectType,
 				obj.VehicleType,
 				obj.Description,
@@ -141,7 +148,7 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			if (obj.IsVanilla)
+			if (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco)
 			{
 				return Results.Forbid();
 			}
@@ -153,8 +160,8 @@ namespace OpenLoco.ObjectService
 
 			const string contentType = "application/octet-stream";
 
-			var path = Path.Combine(Settings.RootFolder, index!.Filename);
-			return obj?.IsVanilla == false && File.Exists(path)
+			var path = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename);
+			return obj != null && File.Exists(path)
 				? Results.File(path, contentType, Path.GetFileName(path))
 				: Results.NotFound();
 		}
@@ -246,7 +253,7 @@ namespace OpenLoco.ObjectService
 				UniqueName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
 				DatName = hdrs.S5.Name,
 				DatChecksum = hdrs.S5.Checksum,
-				IsVanilla = false, // not possible to upload vanilla objects
+				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
 				ObjectType = hdrs.S5.ObjectType,
 				VehicleType = vehicleType,
 				Description = string.Empty,
@@ -260,7 +267,7 @@ namespace OpenLoco.ObjectService
 				Licence = null,
 			};
 
-			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.IsVanilla, locoTbl.VehicleType));
+			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();

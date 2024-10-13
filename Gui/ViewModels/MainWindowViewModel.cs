@@ -4,6 +4,7 @@ using Avalonia.Platform;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
+using OpenLoco.Dat.Data;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -78,7 +79,7 @@ namespace AvaGui.ViewModels
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe((x) =>
 				{
-					if (x is FileSystemItem fsi)
+					if (x is FileSystemItemObject fsi)
 					{
 						SetObjectViewModel(fsi);
 					}
@@ -176,10 +177,11 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), true, FileLocation.Local), out var uiLocoFile))
+			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 			{
 				Model.Logger.Warning($"Successfully loaded {path}");
-				var fsi = new FileSystemItem(path, uiLocoFile!.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.SourceGame == OpenLoco.Dat.Data.SourceGame.Vanilla, FileLocation.Local);
+				var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.Checksum);
+				var fsi = new FileSystemItemObject(path, uiLocoFile!.DatFileInfo.S5Header.Name, FileLocation.Local, source);
 				SetObjectViewModel(fsi);
 			}
 			else
@@ -188,7 +190,7 @@ namespace AvaGui.ViewModels
 			}
 		}
 
-		void SetObjectViewModel(FileSystemItem fsi) => CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
+		void SetObjectViewModel(FileSystemItemObject fsi) => CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
 
 		public async Task LoadG1()
 		{
@@ -204,7 +206,7 @@ namespace AvaGui.ViewModels
 				return;
 			}
 
-			var fsi = new FileSystemItem(path, Path.GetFileName(path), false, FileLocation.Local);
+			var fsi = new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
 			SetG1ViewModel(fsi);
 		}
 

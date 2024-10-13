@@ -35,7 +35,8 @@ foreach (var o in db.Objects
 		o.Tags.Select(t => t.Name).ToList(),
 		o.Modpacks.Select(m => m.Name).ToList(),
 		o.Object.Licence?.Name,
-		o.Object.Availability);
+		o.Object.Availability,
+		o.Object.ObjectSource);
 	objs.Add(obj);
 }
 

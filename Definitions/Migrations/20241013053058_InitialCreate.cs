@@ -79,7 +79,7 @@ namespace Definitions.Migrations
                     UniqueName = table.Column<string>(type: "TEXT", nullable: false),
                     DatName = table.Column<string>(type: "TEXT", nullable: false),
                     DatChecksum = table.Column<uint>(type: "INTEGER", nullable: false),
-                    IsVanilla = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ObjectSource = table.Column<int>(type: "INTEGER", nullable: false),
                     ObjectType = table.Column<byte>(type: "INTEGER", nullable: false),
                     VehicleType = table.Column<byte>(type: "INTEGER", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),

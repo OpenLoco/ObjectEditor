@@ -80,6 +80,6 @@ namespace OpenLoco.Dat.Types
 			=> IsVanilla(Name, Checksum);
 
 		public static bool IsVanilla(string name, uint checksum)
-			=> OriginalObjectFiles.GetFileSource(name, checksum) != FileSource.Custom;
+			=> OriginalObjectFiles.GetFileSource(name, checksum) != ObjectSource.Custom;
 	}
 }

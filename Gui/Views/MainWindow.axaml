@@ -76,9 +76,16 @@
 			</StackPanel>
 		</DataTemplate>
 
+		<DataTemplate DataType="mo:FileSystemItemObject">
+			<StackPanel Orientation="Horizontal">
+				<materialIcons:MaterialIcon Kind="{Binding ObjectSource, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
+			</StackPanel>
+		</DataTemplate>
+
 		<DataTemplate DataType="mo:FileSystemItem">
 			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding IsVanilla, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
 			</StackPanel>
 		</DataTemplate>
@@ -397,12 +404,14 @@
 						<DockPanel>
 							<Border BorderThickness="1" DockPanel.Dock="Top">
 								<StackPanel Orientation="Vertical" MaxHeight="512">
-									<Image Name="AnimationPreviewPP" Source="{Binding SelectedBitmapPreview}" RenderOptions.BitmapInterpolationMode="None" Stretch="None" Margin="4" MaxHeight="1024" MinHeight="64" Height="{Binding AnimationWindowHeight}" Width="256">
-										<Image.RenderTransform>
-											<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
-										</Image.RenderTransform>
-
-									</Image>
+									<Grid>
+										<Image Name="AnimationPreviewPP" Source="{Binding SelectedBitmapPreview}" RenderOptions.BitmapInterpolationMode="None" Stretch="None" Margin="4" MaxHeight="1024" MinHeight="64" Height="{Binding AnimationWindowHeight}" Width="256">
+											<Image.RenderTransform>
+												<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+											</Image.RenderTransform>
+										</Image>
+										<Rectangle Fill="Red" Width="40" Height="40" Opacity="0.5" />
+									</Grid>
 									<TextBlock HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
 									<Slider Minimum="1" Maximum="80" Value="{Binding AnimationSpeed}" />
 									<TextBlock HorizontalAlignment="Center" Text="{Binding Zoom, StringFormat='Zoom: {0}x'}"></TextBlock>

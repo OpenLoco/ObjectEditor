@@ -76,13 +76,13 @@ namespace Definitions.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsVanilla")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTimeOffset?>("LastEditDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("LicenceId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ObjectSource")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("ObjectType")

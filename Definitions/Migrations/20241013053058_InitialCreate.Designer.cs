@@ -11,7 +11,7 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20240919082414_InitialCreate")]
+    [Migration("20241013053058_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -79,13 +79,13 @@ namespace Definitions.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsVanilla")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTimeOffset?>("LastEditDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("LicenceId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ObjectSource")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("ObjectType")

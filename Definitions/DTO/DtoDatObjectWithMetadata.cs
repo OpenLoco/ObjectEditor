@@ -10,7 +10,7 @@ namespace OpenLoco.Definitions.DTO
 		string DatName,
 		uint DatChecksum,
 		string? DatBytes, // base64-encoded
-		bool IsVanilla,
+		ObjectSource ObjectSource,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
 		string? Description,

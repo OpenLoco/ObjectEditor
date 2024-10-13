@@ -98,7 +98,7 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static void Save(string filename, string objName, ILocoObject locoObject, ILogger? logger = null)
+		public static void Save(string filename, string objName, ILocoObject locoObject, ILogger? logger)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
@@ -106,10 +106,21 @@ namespace OpenLoco.Dat.FileParsing
 
 			var objBytes = WriteLocoObject(objName, locoObject);
 
-			var stream = File.Create(filename);
-			stream.Write(objBytes);
-			stream.Flush();
-			stream.Close();
+			try
+			{
+				var stream = File.Create(filename);
+				stream.Write(objBytes);
+				stream.Flush();
+				stream.Close();
+			}
+			catch (Exception ex)
+			{
+				// will usually be UnauthorizedAccessException
+				logger?.Error(ex);
+				return;
+			}
+
+			logger?.Info($"{objName} successfully saved to {filename}");
 		}
 
 		public static ReadOnlySpan<byte> WriteLocoObject(string objName, ILocoObject obj)

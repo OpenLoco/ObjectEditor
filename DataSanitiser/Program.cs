@@ -6,8 +6,40 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.SourceData;
+using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
+// directory maker
+var path = "Q:\\Games\\Locomotion\\OriginalObjects\\GoG\\objectIndex.json";
+var idx = ObjectIndex.LoadIndex(path);
+var sourcePath = "C:\\Users\\bigba\\source\\repos\\OpenLoco\\OpenGraphics\\objects";
+var keepfile = Path.Combine(sourcePath, ".gitkeep");
+foreach (var objType in idx.Objects.GroupBy(x => x.ObjectType))
+{
+	var d = Directory.CreateDirectory(Path.Combine(sourcePath, objType.Key.ToString()));
+	if (objType.Key == ObjectType.Vehicle)
+	{
+		foreach (var subtype in objType.GroupBy(x => x.VehicleType))
+		{
+			var dd = Directory.CreateDirectory(Path.Combine(d.FullName, subtype.Key.ToString()!));
+			foreach (var obj in subtype)
+			{
+				var ddd = Directory.CreateDirectory(Path.Combine(dd.FullName, obj.DatName));
+				_ = File.Create(Path.Combine(ddd.FullName, ".gitkeep"), 0);
+			}
+		}
+	}
+	else
+	{
+		foreach (var obj in objType)
+		{
+			var ddd = Directory.CreateDirectory(Path.Combine(d.FullName, obj.DatName));
+			_ = File.Create(Path.Combine(ddd.FullName, ".gitkeep"), 0);
+		}
+	}
+}
+Environment.Exit(0);
 
 var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
 var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions)

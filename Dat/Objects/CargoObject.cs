@@ -15,6 +15,7 @@ namespace OpenLoco.Dat.Objects
 
 	public enum CargoCategory : uint16_t
 	{
+		None = 0,
 		Grain = 1,
 		Coal,
 		IronOre,
@@ -61,13 +62,12 @@ namespace OpenLoco.Dat.Objects
 			&& CargoTransferTime != 0;
 
 		public bool TryGetImageName(int id, out string? value)
-			=> ImageIdNameMap.TryGetValue(id, out value);
-
-		public static Dictionary<int, string> ImageIdNameMap = new()
 		{
-			{ 0, "kInlineSprite" },
-			// There are NumPlatformVariations sprites after this one
-			{ 1, "kStationPlatformBegin" },
-		};
+			value = id == 0
+				? "kInlineSprite"
+				: $"kStationPlatform{id}";
+
+			return true;
+		}
 	}
 }

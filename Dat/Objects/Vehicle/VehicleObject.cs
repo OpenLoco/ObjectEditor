@@ -15,7 +15,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x03)] VehicleType Type,
 		[property: LocoStructOffset(0x04)] uint8_t var_04,
 		[property: LocoStructOffset(0x05), LocoStructVariableLoad, Browsable(false)] object_id TrackTypeId,
-		[property: LocoStructOffset(0x06)] uint8_t NumTrackExtras,
+		[property: LocoStructOffset(0x06)] uint8_t NumRequiredTrackExtras,
 		[property: LocoStructOffset(0x07)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x08)] int16_t CostFactor,
 		[property: LocoStructOffset(0x0A)] uint8_t Reliability,
@@ -25,7 +25,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0F)] uint8_t NumCompatibleVehicles,
 		[property: LocoStructOffset(0x10), LocoArrayLength(8), LocoStructVariableLoad] List<S5Header> CompatibleVehicles,
 		[property: LocoStructOffset(0x20), LocoArrayLength(4), LocoStructVariableLoad] List<S5Header> RequiredTrackExtras,
-		[property: LocoStructOffset(0x24), LocoArrayLength(4)] VehicleObjectUnk[] var_24,
+		[property: LocoStructOffset(0x24), LocoArrayLength(4)] VehicleObjectCar[] CarComponents,
 		[property: LocoStructOffset(0x3C), LocoArrayLength(VehicleObject.MaxBodySprites)] BodySprite[] BodySprites,
 		[property: LocoStructOffset(0xB4), LocoArrayLength(VehicleObject.MaxBogieSprites)] BogieSprite[] BogieSprites,
 		[property: LocoStructOffset(0xD8)] uint16_t Power,
@@ -63,6 +63,9 @@ namespace OpenLoco.Dat.Objects
 		public const int AnimationCount = 2;
 		public const int CompatibleCargoTypesLength = 2;
 		public const int CargoTypeSpriteOffsetsLength = 32;
+
+		public VehicleObject() : this(0, TransportMode.Rail, VehicleType.Train, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, 0, 0, 0, VehicleObjectFlags.None, [], [[], []], [], 0, [], 0, 0, 0, 0, DrivingSoundType.None, [], [], 0, [])
+		{ }
 
 		public FrictionSound? SoundPropertyFriction
 		{
@@ -150,8 +153,8 @@ namespace OpenLoco.Dat.Objects
 
 			// track extras
 			RequiredTrackExtras.Clear();
-			RequiredTrackExtras.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumTrackExtras));
-			remainingData = remainingData[(S5Header.StructLength * NumTrackExtras)..];
+			RequiredTrackExtras.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumRequiredTrackExtras));
+			remainingData = remainingData[(S5Header.StructLength * NumRequiredTrackExtras)..];
 
 			// compatible cargo types
 			CompatibleCargoCategories.Clear();
@@ -296,6 +299,12 @@ namespace OpenLoco.Dat.Objects
 			}
 
 			// numCompat
+
+			if (NumCompatibleVehicles != CompatibleVehicles.Count)
+			{
+				throw new ArgumentOutOfRangeException(nameof(NumCompatibleVehicles), $"NumCompatibleVehicles ({NumCompatibleVehicles}) must be equal to CompatibleVehicles.Count ({CompatibleVehicles.Count})");
+			}
+
 			foreach (var x in CompatibleVehicles)
 			{
 				ms.Write(x.Write());
@@ -501,7 +510,7 @@ namespace OpenLoco.Dat.Objects
 
 			if (Flags.HasFlag(VehicleObjectFlags.unk_09))
 			{
-				if (NumTrackExtras != 0)
+				if (NumRequiredTrackExtras != 0)
 				{
 					return false;
 				}
@@ -512,7 +521,7 @@ namespace OpenLoco.Dat.Objects
 				}
 			}
 
-			if (NumTrackExtras > 4)
+			if (NumRequiredTrackExtras > 4)
 			{
 				return false;
 			}

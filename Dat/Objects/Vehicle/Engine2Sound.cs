@@ -26,6 +26,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x1A)] uint8_t SpeedFreqFactor
 		) : ILocoStruct
 	{
+		public Engine2Sound() : this(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+		{ }
+
 		public bool Validate() => true;
 	}
 }

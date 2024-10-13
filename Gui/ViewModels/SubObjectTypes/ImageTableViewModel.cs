@@ -218,8 +218,7 @@ namespace AvaGui.ViewModels
 
 					if (offsets?.Count != G1Provider.G1Elements.Count)
 					{
-						Logger.Error($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets?.Count} offsets");
-						return;
+						Logger.Warning($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets?.Count} offsets. Continue at your peril.");
 					}
 
 					foreach (var offset in offsets)
@@ -235,8 +234,7 @@ namespace AvaGui.ViewModels
 
 					if (files.Length != G1Provider.G1Elements.Count)
 					{
-						Logger.Error($"Expected {G1Provider.G1Elements.Count} offsets, got {files.Length} offsets");
-						return;
+						Logger.Warning($"Expected {G1Provider.G1Elements.Count} images, got {files.Length} images. Continue at your peril.");
 					}
 
 					foreach (var filename in files)
@@ -267,25 +265,37 @@ namespace AvaGui.ViewModels
 			var match = Regex.Match(Path.GetFileNameWithoutExtension(filename), @".*?(\d+).*?");
 			if (!match.Success)
 			{
-				Logger.Warning($"Couldn't parse sprite index from filename: \"{filename}\"");
+				Logger.Error($"Couldn't parse sprite index from filename: \"{filename}\"");
 				return;
 			}
 
 			var index = int.Parse(match.Groups[1].Value);
 			var img = Image.Load<Rgba32>(filename);
-			Images[index] = img;
 
-			var currG1 = G1Provider.G1Elements[index];
-			currG1 = currG1 with
+			if (index >= G1Provider.G1Elements.Count)
 			{
-				Width = (int16_t)img.Width,
-				Height = (int16_t)img.Height,
-				Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
-				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
-				XOffset = offset?.X ?? currG1.XOffset,
-				YOffset = offset?.Y ?? currG1.YOffset
-			};
-			G1Provider.G1Elements[index] = currG1;
+				var newElement = new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, 0, 0, G1ElementFlags.None, 0)
+				{
+					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, G1ElementFlags.None)
+				};
+				G1Provider.G1Elements.Insert(index, newElement);
+				Images.Insert(index, img); // update the UI
+			}
+			else
+			{
+				var currG1 = G1Provider.G1Elements[index];
+				currG1 = currG1 with
+				{
+					Width = (int16_t)img.Width,
+					Height = (int16_t)img.Height,
+					Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
+					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
+					XOffset = offset?.X ?? currG1.XOffset,
+					YOffset = offset?.Y ?? currG1.YOffset
+				};
+				G1Provider.G1Elements[index] = currG1;
+				Images[index] = img; // update the UI
+			}
 		}
 
 		// todo: second half should be in model
@@ -299,16 +309,19 @@ namespace AvaGui.ViewModels
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			if (Directory.Exists(dirPath))
+			if (!Directory.Exists(dirPath))
 			{
-				var counter = 0;
-				foreach (var image in Images)
-				{
-					var imageName = counter++.ToString(); // todo: use GetImageName from winforms project
-					var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
-					//logger.Debug($"Saving image to {path}");
-					await image.SaveAsPngAsync(path);
-				}
+				return;
+			}
+
+			Logger.Info($"Saving images to {dirPath}");
+
+			var counter = 0;
+			foreach (var image in Images)
+			{
+				var imageName = counter++.ToString(); // todo: maybe use image name provider below (but number must still exist)
+				var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
+				await image.SaveAsPngAsync(path);
 			}
 		}
 

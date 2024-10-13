@@ -20,7 +20,7 @@ namespace OpenLoco.ObjectService
 		public Server(ServerSettings settings)
 		{
 			Settings = settings;
-			ObjectManager = new ObjectFolderManager(Settings.ObjectRootFolder)!;
+			ServerFolderManager = new ServerFolderManager(Settings.RootFolder)!;
 		}
 
 		public Server(IOptions<ServerSettings> options) : this(options.Value)
@@ -28,7 +28,7 @@ namespace OpenLoco.ObjectService
 
 		ServerSettings Settings { get; init; }
 
-		ObjectFolderManager ObjectManager { get; init; }
+		ServerFolderManager ServerFolderManager { get; init; }
 
 		Common.Logging.ILogger Logger { get; } = new Logger();
 
@@ -79,14 +79,14 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			if (!ObjectManager.Index.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
+			if (!ServerFolderManager.ObjectIndex.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
 
 			var obj = eObj!.Object;
 
-			var pathOnDisk = Path.Combine(Settings.ObjectRootFolder, index!.Filename); // handle windows paths by replacing path separator
+			var pathOnDisk = Path.Combine(Settings.RootFolder, index!.Filename); // handle windows paths by replacing path separator
 			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
 			var bytes = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && File.Exists(pathOnDisk)
@@ -147,17 +147,36 @@ namespace OpenLoco.ObjectService
 				return Results.Forbid();
 			}
 
-			if (!ObjectManager.Index.TryFind((obj.DatName, obj.DatChecksum), out var index))
+			if (!ServerFolderManager.ObjectIndex.TryFind((obj.DatName, obj.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
 
 			const string contentType = "application/octet-stream";
 
+			var path = Path.Combine(Settings.RootFolder, index!.Filename);
+			return obj?.IsVanilla == false && File.Exists(path)
 			var path = Path.Combine(Settings.ObjectRootFolder, index!.Filename);
 			return obj != null && File.Exists(path)
 				? Results.File(path, contentType, Path.GetFileName(path))
 				: Results.NotFound();
+		}
+
+		// eg: https://localhost:7230/scenarios/list
+		public async Task<IResult> ListScenarios(LocoDb db)
+			=> await Task.Run(() =>
+			{
+				var files = Directory.GetFiles(ServerFolderManager.ScenariosFolder, "*.SC5", SearchOption.AllDirectories);
+				var count = 0;
+				var filenames = files.Select(x => new DtoScenarioIndexEntry(count++, Path.GetRelativePath(ServerFolderManager.ScenariosFolder, x)));
+				return Results.Ok(filenames.ToList());
+			});
+
+		// eg: https://localhost:7230/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
+		public async Task<IResult> GetScenario(int uniqueScenarioId, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		{
+			Console.WriteLine($"Scenario [{uniqueScenarioId}] requested");
+			return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
 		}
 
 		// eg: <todo>
@@ -165,7 +184,7 @@ namespace OpenLoco.ObjectService
 		{
 			if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 			{
-				return Results.BadRequest("DatBytesAsBase64 cannot be null - it must contain the valid bytes of a loco dat object.");
+				return Results.BadRequest($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.");
 			}
 
 			byte[]? datFileBytes;
@@ -180,7 +199,7 @@ namespace OpenLoco.ObjectService
 
 			if (datFileBytes == null || datFileBytes.Length == 0)
 			{
-				return Results.BadRequest("Unable to decode DatBytesAsBase64 - it must contain the valid bytes of a loco dat object.");
+				return Results.BadRequest($"Unable to decode {nameof(request.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.");
 			}
 
 			if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)
@@ -212,7 +231,7 @@ namespace OpenLoco.ObjectService
 
 			(DatFileInfo DatFileInfo, ILocoObject? LocoObject)? obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, Logger);
 			var uuid = Guid.NewGuid();
-			var saveFileName = Path.Combine(ObjectManager.CustomObjectFolder, $"{uuid}.dat");
+			var saveFileName = Path.Combine(ServerFolderManager.ObjectsCustomFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
 
 			Console.WriteLine($"File accepted DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} PathOnDisk={saveFileName}");
@@ -244,7 +263,7 @@ namespace OpenLoco.ObjectService
 				Licence = null,
 			};
 
-			ObjectManager.Index.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.VehicleType));
+			ServerFolderManager.Index.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();

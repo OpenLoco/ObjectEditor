@@ -65,8 +65,8 @@ if (app.Environment.IsDevelopment())
 	_ = app.UseSwaggerUI();
 }
 
-var objRoot = builder.Configuration["ObjectService:ObjectRootFolder"];
-var server = new Server(new ServerSettings(objRoot) { ObjectRootFolder = objRoot! });
+var objRoot = builder.Configuration["ObjectService:RootFolder"];
+var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
 
 // GET
 _ = app.MapGet(Routes.ListObjects, Server.ListObjects)
@@ -83,6 +83,13 @@ _ = app.MapGet(Routes.GetDatFile, server.GetDatFile)
 
 _ = app.MapGet(Routes.GetObjectFile, server.GetObjectFile)
 	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapGet(Routes.ListScenarios, server.ListScenarios)
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapGet(Routes.GetScenario, server.GetScenario)
+	.RequireRateLimiting(tokenPolicy);
+
 
 // PATCH
 _ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))

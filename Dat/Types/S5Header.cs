@@ -21,6 +21,10 @@ namespace OpenLoco.Dat.Types
 			: this(0, name, checksum)
 		{ }
 
+		public S5Header()
+			: this(0, string.Empty, uint.MaxValue)
+		{ }
+
 		public const int StructLength = 0x10;
 
 		public uint32_t Flags { get; set; }

@@ -976,8 +976,8 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.Animation[1].Height, Is.EqualTo(0), nameof(struc.Animation));
 				Assert.That(struc.Animation[1].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.Animation));
 				Assert.That(struc.var_113, Is.EqualTo(0), nameof(struc.var_113));
-				Assert.That(struc.Designed, Is.EqualTo(1957), nameof(struc.Designed));
-				Assert.That(struc.Obsolete, Is.EqualTo(1987), nameof(struc.Obsolete));
+				Assert.That(struc.DesignedYear, Is.EqualTo(1957), nameof(struc.DesignedYear));
+				Assert.That(struc.ObsoleteYear, Is.EqualTo(1987), nameof(struc.ObsoleteYear));
 				Assert.That(struc.RackRailType, Is.EqualTo(0), nameof(struc.RackRailType));
 				//Assert.That(struc.DrivingSoundType, Is.EqualTo(DrivingSoundType.Engine1), nameof(struc.DrivingSoundType));
 				//Assert.That(struc.Sound, Is.EqualTo(0), nameof(struc.Sound));

@@ -38,6 +38,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseExporter", "Databas
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataSanitiser", "DataSanitiser\DataSanitiser.csproj", "{ED77CF9B-CA65-4798-A269-0748D14CFC9F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaletteGenerator", "PaletteGenerator\PaletteGenerator.csproj", "{010B8AB4-9867-4BE0-A663-6261DA4056F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -156,6 +158,18 @@ Global
 		{ED77CF9B-CA65-4798-A269-0748D14CFC9F}.Release|x64.Build.0 = Release|Any CPU
 		{ED77CF9B-CA65-4798-A269-0748D14CFC9F}.Release|x86.ActiveCfg = Release|Any CPU
 		{ED77CF9B-CA65-4798-A269-0748D14CFC9F}.Release|x86.Build.0 = Release|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Debug|x64.Build.0 = Debug|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Debug|x86.Build.0 = Debug|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Release|x64.ActiveCfg = Release|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Release|x64.Build.0 = Release|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Release|x86.ActiveCfg = Release|Any CPU
+		{010B8AB4-9867-4BE0-A663-6261DA4056F9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

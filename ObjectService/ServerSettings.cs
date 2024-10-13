@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.ObjectService
+namespace OpenLoco.ObjectService
 {
-	public record ServerSettings(string ObjectRootFolder);
+	public record ServerSettings(string RootFolder);
 }

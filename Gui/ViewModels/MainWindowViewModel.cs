@@ -40,12 +40,15 @@ namespace AvaGui.ViewModels
 
 		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
-		public ReactiveCommand<Unit, Unit> LoadPalette { get; }
+		//public ReactiveCommand<Unit, Unit> LoadPalette { get; }
 
 		public ReactiveCommand<Unit, Unit> OpenDownloadFolder { get; }
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
 		public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
 		public ReactiveCommand<Unit, Task> OpenG1 { get; }
+
+		public ReactiveCommand<Unit, Task> UseDefaultPalette { get; }
+		public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
 
 		public const string GithubApplicationName = "ObjectEditor";
 		public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
@@ -60,15 +63,15 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public string LatestVersionText { get; set; } = "Up-to-date";
 
+		const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
+		Image<Rgba32> DefaultPaletteImage { get; init; }
+
 		public MainWindowViewModel()
 		{
-			var paletteUri = new Uri("avares://ObjectEditor/Assets/palette.png");
-			var palette = Image.Load<Rgba32>(AssetLoader.Open(paletteUri));
+			DefaultPaletteImage = Image.Load<Rgba32>(AssetLoader.Open(new Uri(DefaultPaletteImageString)));
 
-			Model = new()
-			{
-				PaletteMap = new PaletteMap(palette)
-			};
+			Model = new();
+			LoadDefaultPalette();
 
 			FolderTreeViewModel = new FolderTreeViewModel(Model);
 
@@ -92,6 +95,9 @@ namespace AvaGui.ViewModels
 			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder));
 			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.SettingsPath));
 			OpenG1 = ReactiveCommand.Create(LoadG1);
+
+			UseDefaultPalette = ReactiveCommand.Create(LoadDefaultPalette);
+			UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
 
 			#region Version
 
@@ -123,9 +129,42 @@ namespace AvaGui.ViewModels
 			#endregion
 		}
 
+		async Task LoadDefaultPalette()
+		{
+			Model.PaletteMap = new PaletteMap(DefaultPaletteImage);
+			if (CurrentEditorModel != null)
+			{
+				_ = await CurrentEditorModel.ReloadCommand.Execute();
+			}
+		}
+
+		async Task LoadCustomPalette()
+		{
+			// file picker
+			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.PngFileTypes);
+			if (openFile == null)
+			{
+				return;
+			}
+
+			var path = openFile.SingleOrDefault()?.Path.LocalPath;
+			if (path == null)
+			{
+				return;
+			}
+
+			//
+			Model.PaletteMap = new PaletteMap(path);
+			// could use reactive here, but its simple for now so we won't. just reload the current model, which will in turn reload the images with the new palette
+			if (CurrentEditorModel != null)
+			{
+				_ = await CurrentEditorModel.ReloadCommand.Execute();
+			}
+		}
+
 		public async Task LoadSingleObject()
 		{
-			var openFile = await PlatformSpecific.OpenFilePicker();
+			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.DatFileTypes);
 			if (openFile == null)
 			{
 				return;
@@ -153,7 +192,7 @@ namespace AvaGui.ViewModels
 
 		public async Task LoadG1()
 		{
-			var openFile = await PlatformSpecific.OpenFilePicker();
+			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.DatFileTypes);
 			if (openFile == null)
 			{
 				return;

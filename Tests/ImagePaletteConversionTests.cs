@@ -12,12 +12,13 @@ namespace OpenLoco.Dat.Tests
 		const string BaseObjDataPath = "Q:\\Games\\Locomotion\\OriginalObjects\\GoG\\";
 		const string BaseImagePath = "Q:\\Games\\Locomotion\\ExportedImagesFromObjectEditor\\";
 		const string BasePalettePath = "Q:\\Games\\Locomotion\\Palettes\\";
+		const string PaletteFileName = "palette.png";
 		readonly ILogger Logger = new Logger();
 
 		[Test]
 		public void TestWrite00000000ToIndex0()
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
+			var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 			var paletteMap = Image.Load<Rgba32>(paletteFile);
 			paletteMap[0, 0] = Color.Transparent;
 			paletteMap.SaveAsPng(paletteFile);
@@ -26,7 +27,7 @@ namespace OpenLoco.Dat.Tests
 		[Test]
 		public void PaletteIndex0IsTransparent()
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
+			var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 			var paletteMap = new PaletteMap(paletteFile);
 
 			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
@@ -35,11 +36,12 @@ namespace OpenLoco.Dat.Tests
 		[Test]
 		public void PaletteHasUniqueColours()
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
+			var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 			var paletteMap = new PaletteMap(paletteFile);
+			var paletteColours = paletteMap.Palette.Select(x => x.Color).ToArray();
 
 			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
-			Assert.That(paletteMap.PaletteColours.Length, Is.EqualTo(paletteMap.PaletteColours.ToHashSet().Count));
+			Assert.That(paletteColours.Length, Is.EqualTo(paletteColours.ToHashSet().Count));
 		}
 
 		[TestCase("AIRPORT1.DAT")]
@@ -49,7 +51,7 @@ namespace OpenLoco.Dat.Tests
 		//[TestCase("WATER1.DAT")]   // these files use different palettes
 		public void G1ElementToPNGAndBack(string objectSource)
 		{
-			var paletteFile = Path.Combine(BasePalettePath, "palette.png");
+			var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 			var paletteMap = new PaletteMap(paletteFile);
 			var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource), Logger);
 

@@ -33,10 +33,12 @@ namespace AvaGui.ViewModels
 		[Reactive]
 		public UiDatLocoFile? CurrentObject { get; private set; }
 
-		public IObjectViewModel CurrentObjectViewModel
-			=> VehicleVM == null
-				? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object }
-				: VehicleVM;
+		public IObjectViewModel? CurrentObjectViewModel
+			=> CurrentObject == null || CurrentObject.LocoObject == null
+			? null :
+				VehicleVM == null
+					? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object }
+					: VehicleVM;
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }

@@ -30,12 +30,13 @@ namespace OpenLoco.ObjectService
 		public const string CustomFolderName = "Custom";
 
 		public string IndexFile => Path.Combine(RootDirectory, ObjectsFolderName, ObjectIndex.DefaultIndexFileName);
-		public string ObjectsOriginalFolder => Path.Combine(RootDirectory, ObjectsFolderName, OriginalFolderName);
-		public string ObjectsCustomFolder => Path.Combine(RootDirectory, ObjectsFolderName, CustomFolderName);
+		public string ObjectsFolder => Path.Combine(RootDirectory, ObjectsFolderName);
+		public string ObjectsOriginalFolder => Path.Combine(ObjectsFolder, OriginalFolderName);
+		public string ObjectsCustomFolder => Path.Combine(ObjectsFolder, CustomFolderName);
 
 		public string ScenariosFolder => Path.Combine(RootDirectory, ScenariosFolderName);
-		public string ScenariosOriginalFolder => Path.Combine(RootDirectory, ScenariosFolderName, OriginalFolderName);
-		public string ScenariosCustomFolder => Path.Combine(RootDirectory, ScenariosFolderName, CustomFolderName);
+		public string ScenariosOriginalFolder => Path.Combine(ScenariosFolder, OriginalFolderName);
+		public string ScenariosCustomFolder => Path.Combine(ScenariosFolder, CustomFolderName);
 
 		// === structure ===
 		// - Objects

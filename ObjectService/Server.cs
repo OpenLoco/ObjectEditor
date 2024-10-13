@@ -86,10 +86,16 @@ namespace OpenLoco.ObjectService
 
 			var obj = eObj!.Object;
 
-			var pathOnDisk = Path.Combine(Settings.RootFolder, index!.Filename); // handle windows paths by replacing path separator
+			var pathOnDisk = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
 			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
-			var bytes = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && File.Exists(pathOnDisk)
+			var fileExists = File.Exists(pathOnDisk);
+			if (!fileExists)
+			{
+				logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder.", pathOnDisk);
+			}
+
+			var bytes = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
@@ -154,7 +160,7 @@ namespace OpenLoco.ObjectService
 
 			const string contentType = "application/octet-stream";
 
-			var path = Path.Combine(Settings.RootFolder, index!.Filename);
+			var path = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename);
 			return obj != null && File.Exists(path)
 				? Results.File(path, contentType, Path.GetFileName(path))
 				: Results.NotFound();

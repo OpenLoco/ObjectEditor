@@ -79,6 +79,8 @@ namespace AvaGui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
+			_ = this.WhenAnyValue(o => o.SelectedBitmapPreview)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
 			_ = this.WhenAnyValue(o => o.Images)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.AnimationSpeed)
@@ -108,11 +110,10 @@ namespace AvaGui.ViewModels
 
 		public IList<Bitmap> SelectedBitmaps { get; set; }
 
-		[Reactive]
-		public Bitmap SelectedBitmapPreview { get; set; }
+		[Reactive] public Bitmap SelectedBitmapPreview { get; set; }
+		public Avalonia.Size SelectedBitmapPreviewBorder => SelectedBitmapPreview == null ? new Avalonia.Size() : new Avalonia.Size(SelectedBitmapPreview.Size.Width + 2, SelectedBitmapPreview.Size.Height + 2);
 
-		[Reactive]
-		public int AnimationWindowHeight { get; set; }
+		[Reactive] public int AnimationWindowHeight { get; set; }
 
 		void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
 		{
@@ -203,6 +204,7 @@ namespace AvaGui.ViewModels
 						prevValue = list[i];
 					}
 				}
+
 				return list;
 			}
 		}
@@ -224,60 +226,62 @@ namespace AvaGui.ViewModels
 			animationTimer.Stop();
 
 			var folders = await PlatformSpecific.OpenFolderPicker();
-			var dir = folders.FirstOrDefault();
-			if (dir == null)
+			using (var dir = folders.FirstOrDefault())
 			{
-				return;
-			}
-
-			var dirPath = dir.Path.LocalPath;
-			if (!Directory.Exists(dirPath))
-			{
-				return;
-			}
-
-			try
-			{
-				var offsetsFile = Path.Combine(dirPath, "sprites.json");
-				if (File.Exists(offsetsFile))
+				if (dir == null)
 				{
-					// found blender folder
-					var offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
-					Logger.Debug("Found sprites.json file, using that");
-
-					if (offsets?.Count != G1Provider.G1Elements.Count)
-					{
-						Logger.Warning($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets?.Count} offsets. Continue at your peril.");
-					}
-
-					foreach (var offset in offsets)
-					{
-						var filename = Path.Combine(dirPath, offset.Path);
-						LoadSprite(filename, offset);
-					}
-				}
-				else
-				{
-					Logger.Debug("No sprites.json file found");
-					var files = Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories);
-
-					if (files.Length != G1Provider.G1Elements.Count)
-					{
-						Logger.Warning($"Expected {G1Provider.G1Elements.Count} images, got {files.Length} images. Continue at your peril.");
-					}
-
-					foreach (var filename in files)
-					{
-						LoadSprite(filename);
-					}
+					return;
 				}
 
-				Logger.Debug("Import successful");
-				this.RaisePropertyChanged(nameof(Bitmaps));
-			}
-			catch (Exception ex)
-			{
-				Logger.Error(ex);
+				var dirPath = dir.Path.LocalPath;
+				if (!Directory.Exists(dirPath))
+				{
+					return;
+				}
+
+				try
+				{
+					var offsetsFile = Path.Combine(dirPath, "sprites.json");
+					if (File.Exists(offsetsFile))
+					{
+						// found blender folder
+						var offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+						Logger.Debug("Found sprites.json file, using that");
+
+						if (offsets?.Count != G1Provider.G1Elements.Count)
+						{
+							Logger.Warning($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets?.Count} offsets. Continue at your peril.");
+						}
+
+						foreach (var offset in offsets)
+						{
+							var filename = Path.Combine(dirPath, offset.Path);
+							LoadSprite(filename, offset);
+						}
+					}
+					else
+					{
+						Logger.Debug("No sprites.json file found");
+						var files = Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories);
+
+						if (files.Length != G1Provider.G1Elements.Count)
+						{
+							Logger.Warning($"Expected {G1Provider.G1Elements.Count} images, got {files.Length} images. Continue at your peril.");
+						}
+
+						foreach (var filename in files)
+						{
+							LoadSprite(filename);
+						}
+					}
+
+					Logger.Debug("Import successful");
+					this.RaisePropertyChanged(nameof(Bitmaps));
+				}
+				catch (Exception ex)
+				{
+					Logger.Error(ex);
+				}
 			}
 
 			animationTimer.Start();

@@ -373,9 +373,7 @@
 							</Flyout>
 						</Button.Flyout>
 					</Button>
-					<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedColourSwatch}">
-
-					</ComboBox>
+					<!--<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedColourSwatch}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />-->
 				</StackPanel>
 				<Grid ColumnDefinitions="*, Auto, 256">
 					<ScrollViewer>
@@ -478,7 +476,11 @@
 					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
 					<MenuItem Header="Open G1.dat" Command="{Binding OpenG1}" />
 				</MenuItem>
-				<MenuItem Header="_ObjData" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
+				<MenuItem Header="_Palette">
+					<MenuItem Header="Load default palette" Command="{Binding UseDefaultPalette}" />
+					<MenuItem Header="Load custom palette" Command="{Binding UseCustomPalette}" />
+				</MenuItem>
+				<MenuItem Header="_Objects" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
 					<MenuItem.Styles>
 						<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemViewModel">
 							<Setter Property="Header" Value="{Binding Name}"/>

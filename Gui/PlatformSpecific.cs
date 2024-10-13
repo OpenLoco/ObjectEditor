@@ -68,7 +68,10 @@ namespace AvaGui
 			});
 		}
 
-		public static async Task<IReadOnlyList<IStorageFile>> OpenFilePicker()
+		public static readonly IReadOnlyList<FilePickerFileType> DatFileTypes = [new("Locomotion DAT Files") { Patterns = ["*.dat", "*.DAT"] }];
+		public static readonly IReadOnlyList<FilePickerFileType> PngFileTypes = [new("PNG Files") { Patterns = ["*.png", "*.PNG"] }];
+
+		public static async Task<IReadOnlyList<IStorageFile>> OpenFilePicker(IReadOnlyList<FilePickerFileType> filetypes)
 		{
 			// See IoCFileOps project for an example of how to accomplish this.
 			if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
@@ -81,7 +84,7 @@ namespace AvaGui
 			{
 				Title = "Select a Locomotion object file",
 				AllowMultiple = false,
-				FileTypeFilter = [new("Locomotion DAT Files") { Patterns = ["*.dat", "*.DAT"] }]
+				FileTypeFilter = filetypes,
 			});
 		}
 

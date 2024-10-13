@@ -382,7 +382,7 @@
 					</Button>
 					<!--<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedColourSwatch}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />-->
 				</StackPanel>
-				<Grid ColumnDefinitions="*, Auto, 256">
+				<Grid ColumnDefinitions="*, Auto, 384">
 					<ScrollViewer>
 						<Border BorderThickness="1">
 							<ListBox ItemsSource="{Binding Bitmaps}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
@@ -402,22 +402,66 @@
 					<GridSplitter Grid.Column="1" />
 					<Border BorderThickness="1" Grid.Column="2">
 						<DockPanel>
-							<Border BorderThickness="1" DockPanel.Dock="Top">
-								<StackPanel Orientation="Vertical" MaxHeight="512">
-									<Grid>
-										<Image Name="AnimationPreviewPP" Source="{Binding SelectedBitmapPreview}" RenderOptions.BitmapInterpolationMode="None" Stretch="None" Margin="4" MaxHeight="1024" MinHeight="64" Height="{Binding AnimationWindowHeight}" Width="256">
-											<Image.RenderTransform>
-												<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
-											</Image.RenderTransform>
-										</Image>
-										<Rectangle Fill="Red" Width="40" Height="40" Opacity="0.5" />
-									</Grid>
-									<TextBlock HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
-									<Slider Minimum="1" Maximum="80" Value="{Binding AnimationSpeed}" />
-									<TextBlock HorizontalAlignment="Center" Text="{Binding Zoom, StringFormat='Zoom: {0}x'}"></TextBlock>
-									<Slider Minimum="1" Maximum="10" Value="{Binding Zoom}" />
+							<StackPanel Orientation="Vertical" MaxHeight="512" DockPanel.Dock="Top">
+								<StackPanel Orientation="Horizontal">
+									<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select preview background colour">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Background</TextBlock>
+										</DockPanel>
+										<Button.Flyout >
+											<Flyout>
+												<ColorView Name="ImageColorViewPreviewBackground" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+											</Flyout>
+										</Button.Flyout>
+									</Button>
+									<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select border preview colour">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Border</TextBlock>
+										</DockPanel>
+										<Button.Flyout >
+											<Flyout>
+												<ColorView Name="ImageColorViewBorder" Palette="" Color="Gray" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+											</Flyout>
+										</Button.Flyout>
+									</Button>
+									<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select origin point colour">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Origin</TextBlock>
+										</DockPanel>
+										<Button.Flyout >
+											<Flyout>
+												<ColorView Name="ImageColorViewOriginPoint" Palette="" Color="Red" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+											</Flyout>
+										</Button.Flyout>
+									</Button>
 								</StackPanel>
-							</Border>
+								<Grid>
+									<!-- Bounding box -->
+									<Rectangle Fill="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" Stroke="{Binding #ImageColorViewBorder.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" StrokeThickness="1.0" Width="{Binding SelectedBitmapPreviewBorder.Width}" Height="{Binding SelectedBitmapPreviewBorder.Height}" Opacity="1.0">
+										<Rectangle.RenderTransform>
+											<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+										</Rectangle.RenderTransform>
+									</Rectangle>
+									<Image Name="AnimationPreviewPP" Source="{Binding SelectedBitmapPreview}" RenderOptions.BitmapInterpolationMode="None" Stretch="None" Height="{Binding AnimationWindowHeight}" Width="256">
+										<Image.RenderTransform>
+											<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+										</Image.RenderTransform>
+									</Image>
+									<!--  Origin point -->
+									<Rectangle Fill="{Binding #ImageColorViewOriginPoint.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" Width="1" Height="1" Opacity="1.0">
+										<Rectangle.RenderTransform>
+											<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+										</Rectangle.RenderTransform>
+									</Rectangle>
+								</Grid>
+								<TextBlock HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
+								<Slider Minimum="1" Maximum="80" Value="{Binding AnimationSpeed}" />
+								<TextBlock HorizontalAlignment="Center" Text="{Binding Zoom, StringFormat='Zoom: {0}x'}"></TextBlock>
+								<Slider Minimum="1" Maximum="10" Value="{Binding Zoom}" />
+							</StackPanel>
 							<ScrollViewer>
 								<pgc:PropertyGrid x:Name="propertyGrid_imageProps" Margin="8" MinWidth="256" DataContext="{Binding SelectedG1Element}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
 							</ScrollViewer>

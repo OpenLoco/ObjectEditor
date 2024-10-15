@@ -1,9 +1,9 @@
-using AvaGui.Models;
+using OpenLoco.Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public interface ILocoFileViewModel
 	{

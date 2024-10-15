@@ -1,7 +1,7 @@
 using OpenLoco.Dat.Types;
 using System.ComponentModel;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public record UIG1Element32(
 		[Category("Image")] int ImageIndex,

@@ -1,4 +1,4 @@
-using AvaGui.Models;
+using OpenLoco.Gui.Models;
 using NAudio.Wave;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public class SoundViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
 	{

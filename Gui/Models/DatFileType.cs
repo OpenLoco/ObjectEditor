@@ -1,4 +1,4 @@
-﻿namespace AvaGui.Models
+﻿namespace OpenLoco.Gui.Models
 {
 	public enum DatFileType
 	{

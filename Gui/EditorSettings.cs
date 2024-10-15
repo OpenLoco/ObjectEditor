@@ -1,4 +1,7 @@
-namespace OpenLoco.Common
+using System.Collections.Generic;
+using System.IO;
+
+namespace OpenLoco.Gui
 {
 	public class EditorSettings
 	{

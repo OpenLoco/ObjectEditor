@@ -118,7 +118,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 ...many more things
 
 # Building
-- Open AvaGui/AvaGui.sln in Visual Studio
+- Open Gui/Gui.sln in Visual Studio
   - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer, but it isn't required to actually build or run the solution.
 
 # Deploying

@@ -4,7 +4,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace AvaGui.Models
+namespace OpenLoco.Gui.Models
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class UiDatLocoFile

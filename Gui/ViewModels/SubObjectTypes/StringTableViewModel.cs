@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public record LanguageTranslationModel(LanguageId Language, string Translation);
 

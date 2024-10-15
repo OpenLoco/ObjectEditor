@@ -1,4 +1,4 @@
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public interface IExtraContentViewModel;
 }

@@ -3,7 +3,7 @@ using OpenLoco.Dat.Objects;
 using System;
 using System.Collections.ObjectModel;
 
-namespace AvaGui.Models
+namespace OpenLoco.Gui.Models
 {
 	[Flags]
 	public enum FileLocation

@@ -1,6 +1,5 @@
 using Avalonia.Threading;
 using DynamicData;
-using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
@@ -21,7 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Zenith.Core;
 
-namespace AvaGui.Models
+namespace OpenLoco.Gui.Models
 {
 	public class ObjectEditorModel
 	{

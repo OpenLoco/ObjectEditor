@@ -1,10 +1,10 @@
-using AvaGui.ViewModels;
-using AvaGui.Views;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using OpenLoco.Gui.ViewModels;
+using OpenLoco.Gui.Views;
 
-namespace AvaGui
+namespace OpenLoco.Gui
 {
 	public partial class App : Application
 	{

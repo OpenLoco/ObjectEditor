@@ -2,7 +2,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Windows.Input;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public class MenuItemViewModel(string name, ICommand menuCommand/*, ICommand deleteCommand*/) : ReactiveObject
 	{

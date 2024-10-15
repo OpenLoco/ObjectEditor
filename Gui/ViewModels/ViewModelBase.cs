@@ -1,6 +1,6 @@
 using ReactiveUI;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public class ViewModelBase : ReactiveObject;
 }

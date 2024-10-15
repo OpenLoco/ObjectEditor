@@ -1,10 +1,11 @@
-using AvaGui.Models;
 using Avalonia;
 using Avalonia.Platform;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
+using OpenLoco.Gui.Models;
+
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -22,7 +23,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public class MainWindowViewModel : ViewModelBase
 	{

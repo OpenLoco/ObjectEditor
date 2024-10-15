@@ -6,7 +6,7 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <StartupObject>AvaGui.Program</StartupObject>
+    <StartupObject>OpenLoco.Gui.Program</StartupObject>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>

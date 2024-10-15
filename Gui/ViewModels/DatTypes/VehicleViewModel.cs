@@ -5,7 +5,7 @@ using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public interface IObjectViewModel;
 

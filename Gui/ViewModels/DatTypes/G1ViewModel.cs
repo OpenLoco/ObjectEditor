@@ -1,6 +1,7 @@
-using AvaGui.Models;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.FileParsing;
+using OpenLoco.Gui.Models;
+
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -10,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public class G1ViewModel : BaseLocoFileViewModel
 	{

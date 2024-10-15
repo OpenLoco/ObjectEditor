@@ -1,6 +1,6 @@
 using OpenLoco.Dat.Types;
 
-namespace AvaGui.Models
+namespace OpenLoco.Gui.Models
 {
 	public record UiSoundObject(string SoundName)
 	{

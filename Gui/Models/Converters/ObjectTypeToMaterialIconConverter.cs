@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace AvaGui.Models.Converters
+namespace OpenLoco.Gui.Models.Converters
 {
 	public class ObjectTypeToMaterialIconConverter : IValueConverter
 	{

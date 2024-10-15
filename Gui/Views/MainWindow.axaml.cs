@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace AvaGui.Views
+namespace OpenLoco.Gui.Views
 {
 	public partial class MainWindow : Window
 	{

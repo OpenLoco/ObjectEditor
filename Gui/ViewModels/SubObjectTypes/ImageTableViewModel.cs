@@ -1,4 +1,4 @@
-using AvaGui.Models;
+using OpenLoco.Gui.Models;
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public enum ColourSwatches
 	{

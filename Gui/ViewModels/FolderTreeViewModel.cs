@@ -1,8 +1,9 @@
-using AvaGui.Models;
 using Avalonia.Controls;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions.Web;
+using OpenLoco.Gui.Models;
+
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -14,7 +15,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public class FolderTreeViewModel : ReactiveObject
 	{

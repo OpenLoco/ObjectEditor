@@ -1,10 +1,11 @@
-using AvaGui.Models;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
+using OpenLoco.Gui.Models;
+
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -14,7 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AvaGui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{

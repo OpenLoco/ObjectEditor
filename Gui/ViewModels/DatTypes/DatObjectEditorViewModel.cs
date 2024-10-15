@@ -172,17 +172,44 @@ namespace OpenLoco.Gui.ViewModels
 
 		public void SaveCurrentObject()
 		{
-			if (CurrentObject?.LocoObject == null)
-			{
-				Logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
-				return;
-			}
-
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
 				? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename)
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+			SaveCore(savePath);
+		}
 
-			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
+		public void SaveAsCurrentObject()
+		{
+			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
+			if (saveFile != null)
+			{
+				SaveCore(saveFile.Path.LocalPath);
+			}
+		}
+
+		private void SaveCore(string filename)
+		{
+			if (CurrentObject?.LocoObject == null)
+			{
+				Logger?.Error("Cannot save - loco object was null");
+				return;
+			}
+
+			if (string.IsNullOrEmpty(filename))
+			{
+				Logger?.Error("Cannot save - filename was empty");
+				return;
+			}
+
+			var saveDir = Path.GetDirectoryName(filename);
+
+			if (string.IsNullOrEmpty(saveDir) || !Directory.Exists(saveDir))
+			{
+				Logger?.Error("Cannot save - directory is invalid");
+				return;
+			}
+
+			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
 			StringTableViewModel?.WriteTableBackToObject();
 			if (VehicleVM != null && CurrentObject.LocoObject.Object is VehicleObject veh)
 			{
@@ -224,28 +251,7 @@ namespace OpenLoco.Gui.ViewModels
 				};
 			}
 
-			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject, Logger);
-		}
-
-		public void SaveAsCurrentObject()
-		{
-			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
-			if (saveFile == null)
-			{
-				return;
-			}
-
-			if (CurrentObject?.LocoObject == null)
-			{
-				Logger?.Error("Cannot save an object with a null loco object - the file would be empty!");
-				return;
-			}
-
-			var savePath = saveFile.Path.LocalPath;
-			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {savePath}");
-			StringTableViewModel?.WriteTableBackToObject();
-
-			SawyerStreamWriter.Save(savePath, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject, Logger);
+			SawyerStreamWriter.Save(filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject, Logger);
 		}
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)

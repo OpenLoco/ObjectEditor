@@ -3,6 +3,7 @@ using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
+using OpenLoco.Dat.Types.SCV5;
 using System.Text;
 using Zenith.Core;
 
@@ -284,6 +285,26 @@ namespace OpenLoco.Dat.FileParsing
 
 			return LoadStringTable(data, stringTableStrings, logger);
 		}
+
+		public static S5File? LoadSave(string filename, ILogger? logger)
+		{
+			var data = LoadBytesFromFile(filename, logger).AsSpan();
+			if (data.Length < S5File.StructLength)
+			{
+				return null;
+			}
+			var s5FileHeader = S5File.Read(data);
+			var remainingData = data[S5File.StructLength..];
+			return s5FileHeader;
+		}
+
+		//public static S5File LoadScenario()
+		//{
+		//}
+
+		//public static S5File LoadSaveGame()
+		//{
+		//}
 
 		public static G1Dat? LoadG1(string filename, ILogger logger)
 		{

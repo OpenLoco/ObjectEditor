@@ -1,7 +1,9 @@
 using OpenLoco.Dat.FileParsing;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]
 	public record SaveDetails([property: LocoStructOffset(0x00), LocoArrayLength(256)] char_t[] Company,
 		[property: LocoStructOffset(0x100), LocoArrayLength(256)] char_t[] Owner,

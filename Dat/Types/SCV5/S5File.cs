@@ -1,8 +1,11 @@
 using OpenLoco.Dat.FileParsing;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
 	// todo: make a list? is this hardcoded?
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(StructLength)]
 	public record S5File(
 		[property: LocoStructOffset(0x00)] Header Header,
 		[property: LocoStructOffset(0x20)] LandscapeDetails? LandscapeOptions,
@@ -15,6 +18,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		: ILocoStruct
 	{
 		public bool Validate() => true;
+		public const int StructLength = 0x20;
 
 		public static S5File Read(ReadOnlySpan<byte> data)
 		{

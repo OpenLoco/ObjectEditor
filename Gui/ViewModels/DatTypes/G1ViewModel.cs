@@ -1,8 +1,5 @@
-using OpenLoco.Common.Logging;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Gui.Models;
-
-using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -16,23 +13,11 @@ namespace OpenLoco.Gui.ViewModels
 	public class G1ViewModel : BaseLocoFileViewModel
 	{
 		public G1ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		{
-			CurrentFile = currentFile;
-			Model = model;
-
-			LoadG1();
-
-			ReloadCommand = ReactiveCommand.Create(LoadG1);
-			SaveCommand = ReactiveCommand.Create(SaveG1);
-			SaveAsCommand = ReactiveCommand.Create(SaveAsG1);
-		}
-
-		ObjectEditorModel Model { get; init; }
-		ILogger? Logger => Model.Logger;
+			: base(currentFile, model) => Load();
 
 		[Reactive] public ImageTableViewModel ImageTableViewModel { get; set; }
 
-		public void LoadG1()
+		public override void Load()
 		{
 			Logger?.Info($"Loading G1 from {CurrentFile.Filename}");
 			Model.G1 = SawyerStreamReader.LoadG1(CurrentFile.Filename, Model.Logger);
@@ -62,7 +47,7 @@ namespace OpenLoco.Gui.ViewModels
 			ImageTableViewModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, Logger);
 		}
 
-		public void SaveG1()
+		public override void Save()
 		{
 			if (Model.G1 == null)
 			{
@@ -78,7 +63,7 @@ namespace OpenLoco.Gui.ViewModels
 			SawyerStreamWriter.SaveG1(savePath, Model.G1);
 		}
 
-		public void SaveAsG1()
+		public override void SaveAs()
 		{
 			if (Model.G1 == null)
 			{

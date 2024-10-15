@@ -31,7 +31,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		public FolderTreeViewModel FolderTreeViewModel { get; }
 
-		public SCV5ViewModel SCV5ViewModel { get; }
+		public ScenarioViewModel SCV5ViewModel { get; }
 
 		[Reactive]
 		public ILocoFileViewModel? CurrentEditorModel { get; set; } = null;

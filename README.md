@@ -33,6 +33,9 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - Property/hex viewer has been ported over from 1.0.5/the WinForms editor
 - Vehicle animator
 - G1.dat viewing/exporting
+- Editing of the inner list properties of objects
+- Indexed image support
+- Steam/GoG variation support
 
 ## 2.0.0+
 

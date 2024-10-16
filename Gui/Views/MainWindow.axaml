@@ -27,7 +27,7 @@
 
 	<Window.Resources>
 		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
-		<moc:ObjectTypeToMaterialIconConverter x:Key="ObjectTypeToMaterialIconConverter"/>
+		<moc:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
 		<moc:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
 	</Window.Resources>
@@ -64,28 +64,28 @@
 
 		<DataTemplate DataType="mo:FileSystemItemGroup">
 			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemVehicleGroup">
 			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemItemObject">
 			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding ObjectSource, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<materialIcons:MaterialIcon Kind="{Binding ObjectSource, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
 			</StackPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="mo:FileSystemItem">
 			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
 			</StackPanel>
 		</DataTemplate>
@@ -348,7 +348,7 @@
 			</DockPanel>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:ScenarioSaveGameViewModel">
+		<DataTemplate DataType="vm:SCV5ViewModel">
 			<ScrollViewer>
 				<TabControl>
 					<TabItem Header="Header">
@@ -371,7 +371,7 @@
 								<DataTemplate>
 									<!--<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmRequiredObject" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
 									<StackPanel>
-										<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+										<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 										<ContentControl Content="{Binding}"></ContentControl>
 									</StackPanel>
 								</DataTemplate>
@@ -559,18 +559,13 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
-					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
+
 					<MenuItem Header="Open single object (.DAT)" Command="{Binding OpenSingleObject}" />
 					<MenuItem Header="Open G1 (.DAT)" Command="{Binding OpenG1}" />
-					<MenuItem Header="Open scenario/save game (.SC5/.SV5) (coming soon)" Command="{Binding OpenScenarioSaveGame}"/>
+					<MenuItem Header="Open scenario/save game/landscape (.SC5/.SV5)" Command="{Binding OpenSCV5}"/>
 					<MenuItem Header="Open tutorial (.DAT) (coming soon)" Command="{Binding OpenG1}" IsEnabled="False"/>
 					<MenuItem Header="Open music file (.CSS) (coming soon)" Command="{Binding OpenG1}" IsEnabled="False"/>
 					<MenuItem Header="Open sound effect file (.CSS) (coming soon)" Command="{Binding OpenG1}" IsEnabled="False"/>
-				</MenuItem>
-				<MenuItem Header="_Palette">
-					<MenuItem Header="Load default palette" Command="{Binding UseDefaultPalette}" />
-					<MenuItem Header="Load custom palette" Command="{Binding UseCustomPalette}" />
 				</MenuItem>
 				<MenuItem Header="_Objects" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
 					<MenuItem.Styles>
@@ -579,6 +574,14 @@
 							<Setter Property="Command" Value="{Binding MenuCommand}"/>
 						</Style>
 					</MenuItem.Styles>
+				</MenuItem>
+				<MenuItem Header="_Palette">
+					<MenuItem Header="Load default palette" Command="{Binding UseDefaultPalette}" />
+					<MenuItem Header="Load custom palette" Command="{Binding UseCustomPalette}" />
+				</MenuItem>
+				<MenuItem Header="_Settings">
+					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
+					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
 				</MenuItem>
 			</Menu>
 			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}" />

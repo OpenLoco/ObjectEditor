@@ -3,19 +3,14 @@ using OpenLoco.Dat.Types;
 using OpenLoco.Dat.Types.SCV5;
 using OpenLoco.Gui.Models;
 using ReactiveUI.Fody.Helpers;
-using System;
 using System.ComponentModel;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class ScenarioSaveGameViewModel : BaseLocoFileViewModel
+	public class SCV5ViewModel : BaseLocoFileViewModel
 	{
-		public ScenarioSaveGameViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-			: base(currentFile, model) =>
-			//_ = this.WhenAnyValue(o => o.CurrentS5File)
-			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(RequiredObjects)));
-
-			Load();
+		public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+			: base(currentFile, model) => Load();
 
 		[Reactive]
 		public S5File? CurrentS5File { get; set; }
@@ -30,8 +25,8 @@ namespace OpenLoco.Gui.ViewModels
 			RequiredObjects = new BindingList<S5Header>(CurrentS5File!.RequiredObjects);
 		}
 
-		public override void Save() => throw new NotImplementedException();
+		public override void Save() => Logger?.Error("Saving SC5/SV5 is not implemented yet");
 
-		public override void SaveAs() => throw new NotImplementedException();
+		public override void SaveAs() => Logger?.Error("Saving SC5/SV5 is not implemented yet");
 	}
 }

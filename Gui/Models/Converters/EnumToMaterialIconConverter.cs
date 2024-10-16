@@ -7,47 +7,27 @@ using System.Globalization;
 
 namespace OpenLoco.Gui.Models.Converters
 {
-	public class ObjectTypeToMaterialIconConverter : IValueConverter
+	public class EnumToMaterialIconConverter : IValueConverter
 	{
 		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
-			if (Enum.TryParse<DatFileType>(value as string, out var datType) && DatTypeMapping.TryGetValue(datType, out var datIcon))
-			{
-				return datIcon;
-			}
-			else if ((value is DatFileType datType2) && DatTypeMapping.TryGetValue(datType2, out var datIcon2))
-			{
-				return datIcon2;
-			}
+			return TryGetIcon(value, DatTypeMapping)
+				?? TryGetIcon(value, ObjectMapping)
+				?? TryGetIcon(value, VehicleMapping)
+				?? TryGetIcon(value, SourceGameMapping);
 
-			if (Enum.TryParse<ObjectType>(value as string, out var objType) && ObjectMapping.TryGetValue(objType, out var objectIcon))
+			static string? TryGetIcon<T>(object? value, Dictionary<T, string> mapping) where T : struct
 			{
-				return objectIcon;
+				if (Enum.TryParse<T>(value as string, out var source) && mapping.TryGetValue(source, out var icon))
+				{
+					return icon;
+				}
+				else if ((value is T source2) && mapping.TryGetValue(source2, out var icon2))
+				{
+					return icon2;
+				}
+				return null;
 			}
-			else if ((value is ObjectType objType2) && ObjectMapping.TryGetValue(objType2, out var objectIcon2))
-			{
-				return objectIcon2;
-			}
-
-			if (Enum.TryParse<VehicleType>(value as string, out var vehType) && VehicleMapping.TryGetValue(vehType, out var vehicleIcon))
-			{
-				return vehicleIcon;
-			}
-			else if ((value is VehicleType vehType2) && VehicleMapping.TryGetValue(vehType2, out var vehicleIcon2))
-			{
-				return vehicleIcon2;
-			}
-
-			if (Enum.TryParse<ObjectSource>(value as string, out var objectSource) && SourceGameMapping.TryGetValue(objectSource, out var sourceIcon))
-			{
-				return sourceIcon;
-			}
-			else if ((value is ObjectSource objectSource2) && SourceGameMapping.TryGetValue(objectSource2, out var sourceIcon2))
-			{
-				return sourceIcon2;
-			}
-
-			return null;
 		}
 
 		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

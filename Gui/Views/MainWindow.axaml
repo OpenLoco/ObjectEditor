@@ -348,33 +348,41 @@
 			</DockPanel>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:ScenarioViewModel">
+		<DataTemplate DataType="vm:ScenarioSaveGameViewModel">
 			<ScrollViewer>
 				<TabControl>
 					<TabItem Header="Header">
-						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioVmHeader" DataContext="{Binding CurrentS5File.Header}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmHeader" DataContext="{Binding CurrentS5File.Header}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 					</TabItem>
 					<TabItem Header="Landscape">
-						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioVmLandscape" DataContext="{Binding CurrentS5File.LandscapeOptions}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmLandscape" DataContext="{Binding CurrentS5File.LandscapeOptions}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 					</TabItem>
 					<TabItem Header="SaveGame">
-						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioVmSave" DataContext="{Binding CurrentS5File.SaveDetails}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmSave" DataContext="{Binding CurrentS5File.SaveDetails}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 					</TabItem>
 					<TabItem Header="Required Objects">
-						<TextBlock Text="todo: required objects"/>
+						<ListBox ItemsSource="{Binding RequiredObjects}" >
+							<ListBox.ItemsPanel>
+								<ItemsPanelTemplate>
+									<WrapPanel/>
+								</ItemsPanelTemplate>
+							</ListBox.ItemsPanel>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<!--<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmRequiredObject" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
+									<StackPanel>
+										<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource ObjectTypeToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+										<ContentControl Content="{Binding}"></ContentControl>
+									</StackPanel>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
 					</TabItem>
 					<TabItem Header="GameState">
-						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 					</TabItem>
 				</TabControl>
 			</ScrollViewer>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:SaveGameViewModel">
-			<StackPanel Orientation="Vertical">
-				<TextBlock Text="{Binding CurrentFile.Filename}"/>
-				<TextBlock Text="{Binding CurrentFile.DisplayName}"/>
-			</StackPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:G1ViewModel">
@@ -555,8 +563,7 @@
 					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
 					<MenuItem Header="Open single object (.DAT)" Command="{Binding OpenSingleObject}" />
 					<MenuItem Header="Open G1 (.DAT)" Command="{Binding OpenG1}" />
-					<MenuItem Header="Open scenario (.SC5) (coming soon)" Command="{Binding OpenScenario}"/>
-					<MenuItem Header="Open save game (.SV5) (coming soon)" Command="{Binding OpenSaveGame}"/>
+					<MenuItem Header="Open scenario/save game (.SC5/.SV5) (coming soon)" Command="{Binding OpenScenarioSaveGame}"/>
 					<MenuItem Header="Open tutorial (.DAT) (coming soon)" Command="{Binding OpenG1}" IsEnabled="False"/>
 					<MenuItem Header="Open music file (.CSS) (coming soon)" Command="{Binding OpenG1}" IsEnabled="False"/>
 					<MenuItem Header="Open sound effect file (.CSS) (coming soon)" Command="{Binding OpenG1}" IsEnabled="False"/>

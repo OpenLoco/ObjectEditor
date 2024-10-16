@@ -10,7 +10,8 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x00)] Header Header,
 		[property: LocoStructOffset(0x20)] LandscapeDetails? LandscapeOptions,
 		[property: LocoStructOffset(0x433A)] SaveDetails? SaveDetails,
-		[property: LocoStructOffset(0x10952), LocoArrayLength(859)] S5Header[] RequiredObjects,
+		//[property: LocoStructOffset(0x10952), LocoArrayLength(859), Browsable(false)] S5Header[] _RequiredObjects,
+		[property: LocoStructOffset(0x10952)] List<S5Header> RequiredObjects,
 		[property: LocoStructOffset(0x13F02)] GameState GameState
 		//[property: LocoStructOffset(0x4B4546)] List<TileElement> TileElements,
 		//List<(ObjectHeader, byte[])> PackedObjects
@@ -19,6 +20,8 @@ namespace OpenLoco.Dat.Types.SCV5
 	{
 		public bool Validate() => true;
 		public const int StructLength = 0x20;
+
+		//public List<S5Header> RequiredObjects { get; private set; } = [];
 
 		public static S5File Read(ReadOnlySpan<byte> data)
 		{
@@ -53,7 +56,11 @@ namespace OpenLoco.Dat.Types.SCV5
 			while (bytes.Length > 0)
 			{
 				var obj = S5Header.Read(bytes[..S5Header.StructLength]);
-				requiredObjects.Add(obj);
+
+				if (obj.Checksum != uint.MaxValue)
+				{
+					requiredObjects.Add(obj);
+				}
 				bytes = bytes[S5Header.StructLength..];
 			}
 
@@ -91,7 +98,7 @@ namespace OpenLoco.Dat.Types.SCV5
 			// tile elements
 
 			// packed objects
-			return new S5File(header, landscapeDetails, saveDetails, [.. requiredObjects], gameState);
+			return new S5File(header, landscapeDetails, saveDetails, requiredObjects, gameState);
 		}
 
 		//public ReadOnlySpan<byte> Write()

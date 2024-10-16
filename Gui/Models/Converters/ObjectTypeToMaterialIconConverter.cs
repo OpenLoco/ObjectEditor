@@ -15,15 +15,27 @@ namespace OpenLoco.Gui.Models.Converters
 			{
 				return datIcon;
 			}
+			else if ((value is DatFileType datType2) && DatTypeMapping.TryGetValue(datType2, out var datIcon2))
+			{
+				return datIcon2;
+			}
 
 			if (Enum.TryParse<ObjectType>(value as string, out var objType) && ObjectMapping.TryGetValue(objType, out var objectIcon))
 			{
 				return objectIcon;
 			}
+			else if ((value is ObjectType objType2) && ObjectMapping.TryGetValue(objType2, out var objectIcon2))
+			{
+				return objectIcon2;
+			}
 
 			if (Enum.TryParse<VehicleType>(value as string, out var vehType) && VehicleMapping.TryGetValue(vehType, out var vehicleIcon))
 			{
 				return vehicleIcon;
+			}
+			else if ((value is VehicleType vehType2) && VehicleMapping.TryGetValue(vehType2, out var vehicleIcon2))
+			{
+				return vehicleIcon2;
 			}
 
 			if (Enum.TryParse<ObjectSource>(value as string, out var objectSource) && SourceGameMapping.TryGetValue(objectSource, out var sourceIcon))

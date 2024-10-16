@@ -1,8 +1,10 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	//[LocoStructOffset(0x13BA), LocoArrayLength((int)Limits.kMaxMessages)] public Message[] Messages { get; set; }
 	[LocoStructSize(StructLength)] // 4,851,268
 	public record GameState([property: LocoStructOffset(0x00), LocoArrayLength(2)] uint32_t[] Rng,

@@ -19,9 +19,6 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
-		ObjectEditorModel Model { get; init; }
-		ILogger? Logger => Model.Logger;
-
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
 
@@ -36,10 +33,8 @@ namespace OpenLoco.Gui.ViewModels
 
 		public IObjectViewModel? CurrentObjectViewModel
 			=> CurrentObject == null || CurrentObject.LocoObject == null
-			? null :
-				VehicleVM == null
-					? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object }
-					: VehicleVM;
+				? null
+				: (IObjectViewModel?)VehicleVM ?? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
@@ -59,15 +54,9 @@ namespace OpenLoco.Gui.ViewModels
 		const int dumpWordSize = 4;
 
 		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
+			: base(currentFile, model)
 		{
-			CurrentFile = currentFile;
-			Model = model;
-
-			LoadObject();
-
-			ReloadCommand = ReactiveCommand.Create(LoadObject);
-			SaveCommand = ReactiveCommand.Create(SaveCurrentObject);
-			SaveAsCommand = ReactiveCommand.Create(SaveAsCurrentObject);
+			Load();
 
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());
@@ -85,7 +74,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		public void LoadObject()
+		public override void Load()
 		{
 			// this stops any currently-playing sounds
 			if (ExtraContentViewModel is SoundViewModel svm)
@@ -170,7 +159,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		public void SaveCurrentObject()
+		public override void Save()
 		{
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
 				? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename)
@@ -178,7 +167,7 @@ namespace OpenLoco.Gui.ViewModels
 			SaveCore(savePath);
 		}
 
-		public void SaveAsCurrentObject()
+		public override void SaveAs()
 		{
 			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
 			if (saveFile != null)

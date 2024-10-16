@@ -27,9 +27,9 @@ namespace OpenLoco.Dat.Types
 
 		public const int StructLength = 0x10;
 
-		public uint32_t Flags { get; set; }
 		public string Name { get; set; }
 		public uint32_t Checksum { get; set; }
+		public uint32_t Flags { get; set; }
 
 		public SourceGame SourceGame
 		{

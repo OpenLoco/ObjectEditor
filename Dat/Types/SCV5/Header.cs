@@ -1,7 +1,9 @@
 using OpenLoco.Dat.FileParsing;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]
 	public record Header(
 		[property: LocoStructOffset(0x00)] S5Type Type,

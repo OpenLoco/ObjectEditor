@@ -48,6 +48,7 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
 		public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
 		public ReactiveCommand<Unit, Task> OpenG1 { get; }
+		public ReactiveCommand<Unit, Task> OpenSCV5 { get; }
 
 		public ReactiveCommand<Unit, Task> UseDefaultPalette { get; }
 		public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
@@ -97,6 +98,7 @@ namespace OpenLoco.Gui.ViewModels
 			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder));
 			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.SettingsPath));
 			OpenG1 = ReactiveCommand.Create(LoadG1);
+			OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
 
 			UseDefaultPalette = ReactiveCommand.Create(LoadDefaultPalette);
 			UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
@@ -208,10 +210,44 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			var fsi = new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
-			SetG1ViewModel(fsi);
+			CurrentEditorModel = new G1ViewModel(fsi, Model);
 		}
 
-		public void SetG1ViewModel(FileSystemItem fsi) => CurrentEditorModel = new G1ViewModel(fsi, Model);
+		public async Task LoadSCV5()
+		{
+			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.ScenarioSaveGameFileTypes);
+			if (openFile == null)
+			{
+				return;
+			}
+
+			var path = openFile.SingleOrDefault()?.Path.LocalPath;
+			if (path == null)
+			{
+				return;
+			}
+
+			var fsi = new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
+			CurrentEditorModel = new SCV5ViewModel(fsi, Model);
+		}
+
+		//public async Task LoadSaveGame()
+		//{
+		//	var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.SaveGameFileTypes);
+		//	if (openFile == null)
+		//	{
+		//		return;
+		//	}
+
+		//	var path = openFile.SingleOrDefault()?.Path.LocalPath;
+		//	if (path == null)
+		//	{
+		//		return;
+		//	}
+
+		//	var fsi = new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
+		//	CurrentEditorModel = new SaveGameViewModel(fsi, Model);
+		//}
 
 		static Version GetCurrentAppVersion(Assembly assembly)
 		{

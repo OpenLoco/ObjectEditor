@@ -215,7 +215,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		public async Task LoadSCV5()
 		{
-			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.ScenarioSaveGameFileTypes);
+			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.SCV5FileTypes);
 			if (openFile == null)
 			{
 				return;

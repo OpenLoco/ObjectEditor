@@ -3,25 +3,21 @@ using System.ComponentModel;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
-	// todo: make a list? is this hardcoded?
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]
 	public record S5File(
 		[property: LocoStructOffset(0x00)] Header Header,
 		[property: LocoStructOffset(0x20)] LandscapeDetails? LandscapeOptions,
 		[property: LocoStructOffset(0x433A)] SaveDetails? SaveDetails,
-		//[property: LocoStructOffset(0x10952), LocoArrayLength(859), Browsable(false)] S5Header[] _RequiredObjects,
-		[property: LocoStructOffset(0x10952)] List<S5Header> RequiredObjects,
-		[property: LocoStructOffset(0x13F02)] GameState GameState
-		//[property: LocoStructOffset(0x4B4546)] List<TileElement> TileElements,
-		//List<(ObjectHeader, byte[])> PackedObjects
+		[property: LocoStructOffset(0x10952), LocoArrayLength(859), Browsable(false)] List<S5Header> RequiredObjects,
+		[property: LocoStructOffset(0x13F02)] GameState GameState,
+		[property: LocoStructOffset(0x4B4546)] List<TileElement> TileElements,
+		List<(S5Header, byte[])> PackedObjects
 		)
 		: ILocoStruct
 	{
 		public bool Validate() => true;
 		public const int StructLength = 0x20;
-
-		//public List<S5Header> RequiredObjects { get; private set; } = [];
 
 		public static S5File Read(ReadOnlySpan<byte> data)
 		{
@@ -61,44 +57,28 @@ namespace OpenLoco.Dat.Types.SCV5
 				{
 					requiredObjects.Add(obj);
 				}
+
 				bytes = bytes[S5Header.StructLength..];
 			}
-
-			//var obj = ObjectHeader.Read(data[..ObjectHeader.StructLength]);
-			//data = data[ObjectHeader.StructLength..];
-
-			//List<(S5Header, byte[])> requiredObjects = [];
-			//for (var i = 0; i < obj.DataLength; ++i)
-			//{ }
-			//var chunkData = SawyerStreamReader.ReadChunkCore(ref data);
-			//packedObjects.Add((obj, chunkData));
 
 			// load game state
 			var gameState = SawyerStreamReader.ReadChunk<GameState>(ref data);
 
-			//if (header.Type == S5Type.Scenario)
-			//{
-			//	//
-			//}
-			//else
-			//{
-			//}
-
-			//List<S5Header> requiredObjects = [];
-			//for (var i = 0; i < 859; ++i)
-			//{
-			//	requiredObjects.Add(S5Header.Read(data[..S5Header.StructLength]));
-			//	data = data[S5Header.StructLength..];
-			//}
-
-			// game state
-			//var gameState = ByteReader.ReadLocoStruct<GameState>(data);
-			//data = data[..GameState.StructLength];
-
 			// tile elements
+			var tileElementData = SawyerStreamReader.ReadChunkCore(ref data);
+			var numTileElements = tileElementData.Length / TileElement.StructLength;
+			List<TileElement> tileElements = [];
+			for (var i = 0; i < numTileElements; ++i)
+			{
+				var el = TileElement.Read(tileElementData[..TileElement.StructLength]);
+				tileElementData = tileElementData[TileElement.StructLength..];
+				tileElements.Add(el);
+				// el.IsLast() indicates its the last element on that tile
+				// tiles are set out in rows
+				// see TileManager.cpp::updateTilePointers in OpenLoco
+			}
 
-			// packed objects
-			return new S5File(header, landscapeDetails, saveDetails, requiredObjects, gameState);
+			return new S5File(header, landscapeDetails, saveDetails, requiredObjects, gameState, tileElements, packedObjects);
 		}
 
 		//public ReadOnlySpan<byte> Write()

@@ -1,10 +1,13 @@
 using OpenLoco.Dat.FileParsing;
+using Zenith.Core;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
-	[LocoStructSize(0x08)]
+	[LocoStructSize(StructLength)]
 	public class TileElement
 	{
+		public const int StructLength = 0x08;
+
 		public const uint8_t FLAG_GHOST = 1 << 4;
 		public const uint8_t FLAG_LAST = 1 << 7;
 
@@ -33,5 +36,18 @@ namespace OpenLoco.Dat.Types.SCV5
 		bool IsGhost() => (Flags & FLAG_GHOST) == FLAG_GHOST;
 
 		bool IsLast() => (Flags & FLAG_LAST) == FLAG_LAST;
+
+		public static TileElement Read(ReadOnlySpan<byte> data)
+		{
+			Verify.AreEqual(data.Length, StructLength);
+			return new TileElement
+			{
+				Type = data[0],
+				Flags = data[1],
+				BaseZ = data[2],
+				ClearZ = data[3],
+				pad_4 = data[4..8].ToArray()
+			};
+		}
 	}
 }

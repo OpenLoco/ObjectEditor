@@ -18,11 +18,19 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public BindingList<S5Header>? RequiredObjects { get; set; }
 
+		[Reactive]
+		public BindingList<S5Header>? PackedObjects { get; set; }
+
+		[Reactive]
+		public BindingList<TileElement>? TileElements { get; set; }
+
 		public override void Load()
 		{
 			Logger?.Info($"Loading scenario from {CurrentFile.Filename}");
 			CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.Filename, Model.Logger);
 			RequiredObjects = new BindingList<S5Header>(CurrentS5File!.RequiredObjects);
+			PackedObjects = new BindingList<S5Header>(CurrentS5File!.PackedObjects.ConvertAll(x => x.Item1)); // note: cannot bind to this, but it'll allow us to display at least
+			TileElements = new BindingList<TileElement>(CurrentS5File!.TileElements);
 		}
 
 		public override void Save() => Logger?.Error("Saving SC5/SV5 is not implemented yet");

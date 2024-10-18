@@ -360,6 +360,9 @@
 					<TabItem Header="SaveGame">
 						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmSave" DataContext="{Binding CurrentS5File.SaveDetails}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 					</TabItem>
+					<TabItem Header="GameState">
+						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</TabItem>
 					<TabItem Header="Required Objects">
 						<ListBox ItemsSource="{Binding RequiredObjects}" >
 							<ListBox.ItemsPanel>
@@ -378,8 +381,41 @@
 							</ListBox.ItemTemplate>
 						</ListBox>
 					</TabItem>
-					<TabItem Header="GameState">
-						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					<TabItem Header="Packed Objects">
+						<StackPanel>
+							<TextBlock Text="{Binding PackedObjects.Count}" />
+							<ListBox ItemsSource="{Binding PackedObjects}" >
+								<ListBox.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel/>
+									</ItemsPanelTemplate>
+								</ListBox.ItemsPanel>
+								<ListBox.ItemTemplate>
+									<DataTemplate>
+										<!--<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmRequiredObject" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>-->
+										<StackPanel>
+											<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+											<ContentControl Content="{Binding}"></ContentControl>
+										</StackPanel>
+									</DataTemplate>
+								</ListBox.ItemTemplate>
+							</ListBox>
+						</StackPanel>
+					</TabItem>
+					<TabItem Header="Tile Elements">
+						<TextBlock Text="{Binding TileElements.Count}" />
+						<!--<ListBox ItemsSource="{Binding TileElements}" >
+							<ListBox.ItemsPanel>
+								<ItemsPanelTemplate>
+									<WrapPanel/>
+								</ItemsPanelTemplate>
+							</ListBox.ItemsPanel>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<ContentControl Content="{Binding}"></ContentControl>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>-->
 					</TabItem>
 				</TabControl>
 			</ScrollViewer>

@@ -8,9 +8,9 @@ namespace OpenLoco.Dat.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x04)]
-	public record TownNamesUnk(
+	public record Category(
 		[property: LocoStructOffset(0x00)] uint8_t Count,
-		[property: LocoStructOffset(0x01)] uint8_t Fill,
+		[property: LocoStructOffset(0x01)] uint8_t Bias,
 		[property: LocoStructOffset(0x02)] uint16_t Offset
 		) : ILocoStruct
 	{
@@ -23,9 +23,11 @@ namespace OpenLoco.Dat.Objects
 	[LocoStringTable("Name")]
 	public record TownNamesObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02), LocoArrayLength(6)] TownNamesUnk[] UnknownTownNameStructs
+		[property: LocoStructOffset(0x02), LocoArrayLength(6)] Category[] Categories
 	) : ILocoStruct, ILocoStructVariableData
 	{
+		public const int MinNumNameCombinations = 80;
+
 		byte[] tempUnkVariableData;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)

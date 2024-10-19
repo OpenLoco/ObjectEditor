@@ -762,29 +762,29 @@ namespace OpenLoco.Dat.Tests
 		{
 			void assertFunc(ILocoObject obj, TownNamesObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.UnknownTownNameStructs[0].Count, Is.EqualTo(2), nameof(struc.UnknownTownNameStructs) + "[0] Count");
-				Assert.That(struc.UnknownTownNameStructs[0].Fill, Is.EqualTo(30), nameof(struc.UnknownTownNameStructs) + "[0] Fill");
-				Assert.That(struc.UnknownTownNameStructs[0].Offset, Is.EqualTo(93), nameof(struc.UnknownTownNameStructs) + "[0] Offset");
+				Assert.That(struc.Categories[0].Count, Is.EqualTo(2), nameof(struc.Categories) + "[0] Count");
+				Assert.That(struc.Categories[0].Bias, Is.EqualTo(30), nameof(struc.Categories) + "[0] Bias");
+				Assert.That(struc.Categories[0].Offset, Is.EqualTo(93), nameof(struc.Categories) + "[0] Offset");
 
-				Assert.That(struc.UnknownTownNameStructs[1].Count, Is.EqualTo(94), nameof(struc.UnknownTownNameStructs) + "[1] Count");
-				Assert.That(struc.UnknownTownNameStructs[1].Fill, Is.EqualTo(0), nameof(struc.UnknownTownNameStructs) + "[1] Fill");
-				Assert.That(struc.UnknownTownNameStructs[1].Offset, Is.EqualTo(110), nameof(struc.UnknownTownNameStructs) + "[1] Offset");
+				Assert.That(struc.Categories[1].Count, Is.EqualTo(94), nameof(struc.Categories) + "[1] Count");
+				Assert.That(struc.Categories[1].Bias, Is.EqualTo(0), nameof(struc.Categories) + "[1] Bias");
+				Assert.That(struc.Categories[1].Offset, Is.EqualTo(110), nameof(struc.Categories) + "[1] Offset");
 
-				Assert.That(struc.UnknownTownNameStructs[2].Count, Is.EqualTo(0), nameof(struc.UnknownTownNameStructs) + "[2] Count");
-				Assert.That(struc.UnknownTownNameStructs[2].Fill, Is.EqualTo(0), nameof(struc.UnknownTownNameStructs) + "[2] Fill");
-				Assert.That(struc.UnknownTownNameStructs[2].Offset, Is.EqualTo(0), nameof(struc.UnknownTownNameStructs) + "[2] Offset");
+				Assert.That(struc.Categories[2].Count, Is.EqualTo(0), nameof(struc.Categories) + "[2] Count");
+				Assert.That(struc.Categories[2].Bias, Is.EqualTo(0), nameof(struc.Categories) + "[2] Bias");
+				Assert.That(struc.Categories[2].Offset, Is.EqualTo(0), nameof(struc.Categories) + "[2] Offset");
 
-				Assert.That(struc.UnknownTownNameStructs[3].Count, Is.EqualTo(0), nameof(struc.UnknownTownNameStructs) + "[3] Count");
-				Assert.That(struc.UnknownTownNameStructs[3].Fill, Is.EqualTo(0), nameof(struc.UnknownTownNameStructs) + "[3] Fill");
-				Assert.That(struc.UnknownTownNameStructs[3].Offset, Is.EqualTo(0), nameof(struc.UnknownTownNameStructs) + "[3] Offset");
+				Assert.That(struc.Categories[3].Count, Is.EqualTo(0), nameof(struc.Categories) + "[3] Count");
+				Assert.That(struc.Categories[3].Bias, Is.EqualTo(0), nameof(struc.Categories) + "[3] Bias");
+				Assert.That(struc.Categories[3].Offset, Is.EqualTo(0), nameof(struc.Categories) + "[3] Offset");
 
-				Assert.That(struc.UnknownTownNameStructs[4].Count, Is.EqualTo(18), nameof(struc.UnknownTownNameStructs) + "[4] Count");
-				Assert.That(struc.UnknownTownNameStructs[4].Fill, Is.EqualTo(0), nameof(struc.UnknownTownNameStructs) + "[4] Fill");
-				Assert.That(struc.UnknownTownNameStructs[4].Offset, Is.EqualTo(923), nameof(struc.UnknownTownNameStructs) + "[4] Offset");
+				Assert.That(struc.Categories[4].Count, Is.EqualTo(18), nameof(struc.Categories) + "[4] Count");
+				Assert.That(struc.Categories[4].Bias, Is.EqualTo(0), nameof(struc.Categories) + "[4] Bias");
+				Assert.That(struc.Categories[4].Offset, Is.EqualTo(923), nameof(struc.Categories) + "[4] Offset");
 
-				Assert.That(struc.UnknownTownNameStructs[5].Count, Is.EqualTo(6), nameof(struc.UnknownTownNameStructs) + "[5] Count");
-				Assert.That(struc.UnknownTownNameStructs[5].Fill, Is.EqualTo(20), nameof(struc.UnknownTownNameStructs) + "[5] Fill");
-				Assert.That(struc.UnknownTownNameStructs[5].Offset, Is.EqualTo(1071), nameof(struc.UnknownTownNameStructs) + "[5] Offset");
+				Assert.That(struc.Categories[5].Count, Is.EqualTo(6), nameof(struc.Categories) + "[5] Count");
+				Assert.That(struc.Categories[5].Bias, Is.EqualTo(20), nameof(struc.Categories) + "[5] Bias");
+				Assert.That(struc.Categories[5].Offset, Is.EqualTo(1071), nameof(struc.Categories) + "[5] Offset");
 
 				Assert.That(obj.StringTable["Name"][LanguageId.English_UK], Is.EqualTo("North-American style town names"));
 				Assert.That(obj.StringTable["Name"][LanguageId.English_US], Is.EqualTo("North-American style town names"));

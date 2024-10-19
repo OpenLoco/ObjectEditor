@@ -636,13 +636,14 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-
 					<MenuItem Header="Open single object (.DAT)" Command="{Binding OpenSingleObject}" />
 					<MenuItem Header="Open G1 (.DAT)" Command="{Binding OpenG1}" />
 					<MenuItem Header="Open scenario/save game/landscape (.SC5/.SV5)" Command="{Binding OpenSCV5}"/>
-					<MenuItem Header="Open tutorial (.DAT) (coming soon)" Command="{Binding OpenG1}" IsEnabled="False"/>
-					<MenuItem Header="Open music file (.CSS) (coming soon)" Command="{Binding OpenG1}" IsEnabled="False"/>
-					<MenuItem Header="Open sound effect file (.CSS) (coming soon)" Command="{Binding OpenG1}" IsEnabled="False"/>
+					<MenuItem Header="Open music file (.CSS) (coming soon)" Command="{Binding OpenMusic}" IsEnabled="False"/>
+					<MenuItem Header="Open sound effect file (.CSS) (coming soon)" Command="{Binding OpenSoundEffect}" IsEnabled="False"/>
+					<MenuItem Header="Open tutorial (.DAT) (coming soon)" Command="{Binding OpenTutorial}" IsEnabled="False"/>
+					<MenuItem Header="Open scores file (.DAT) (coming soon)" Command="{Binding OpenScores}" IsEnabled="False"/>
+					<MenuItem Header="Open language file (.DAT) (coming soon)" Command="{Binding OpenLanguage}" IsEnabled="False"/>
 				</MenuItem>
 				<MenuItem Header="_Objects" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
 					<MenuItem.Styles>

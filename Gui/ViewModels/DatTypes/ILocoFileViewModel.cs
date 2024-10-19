@@ -15,13 +15,13 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public FileSystemItem CurrentFile { get; init; }
 
-		public string ReloadText => CurrentFile.FileLocation == FileLocation.Local ? "Reload" : "Redownload";
-		public string SaveText => CurrentFile.FileLocation == FileLocation.Local ? "Save" : "Download";
-		public string SaveAsText => $"{SaveText} As";
+		public string ReloadText { get; }
+		public string SaveText { get; }
+		public string SaveAsText { get; }
 
-		public string ReloadIcon => CurrentFile.FileLocation == FileLocation.Local ? "DatabaseRefresh" : "FileSync";
-		public string SaveIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSave" : "FileDownload";
-		public string SaveAsIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSavePlus" : "FileDownloadOutline";
+		public string ReloadIcon { get; }
+		public string SaveIcon { get; }
+		public string SaveAsIcon { get; }
 	}
 
 	public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel

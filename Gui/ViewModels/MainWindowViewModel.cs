@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Platform;
-using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
@@ -14,13 +13,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
@@ -31,14 +27,10 @@ namespace OpenLoco.Gui.ViewModels
 
 		public FolderTreeViewModel FolderTreeViewModel { get; }
 
-		public SCV5ViewModel SCV5ViewModel { get; }
-
 		[Reactive]
-		public ILocoFileViewModel? CurrentEditorModel { get; set; } = null;
+		public ILocoFileViewModel? CurrentEditorModel { get; set; }
 
 		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; }
-
-		public ObservableCollection<MenuItemViewModel> DataItems { get; init; }
 
 		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
@@ -49,6 +41,11 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
 		public ReactiveCommand<Unit, Task> OpenG1 { get; }
 		public ReactiveCommand<Unit, Task> OpenSCV5 { get; }
+		public ReactiveCommand<Unit, Task> OpenMusic { get; }
+		public ReactiveCommand<Unit, Task> OpenSoundEffect { get; }
+		public ReactiveCommand<Unit, Task> OpenTutorial { get; }
+		public ReactiveCommand<Unit, Task> OpenScores { get; }
+		public ReactiveCommand<Unit, Task> OpenLanguage { get; }
 
 		public ReactiveCommand<Unit, Task> UseDefaultPalette { get; }
 		public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
@@ -59,7 +56,6 @@ namespace OpenLoco.Gui.ViewModels
 		public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 
 		public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
-
 
 		[Reactive]
 		public Version ApplicationVersion { get; set; }
@@ -75,7 +71,7 @@ namespace OpenLoco.Gui.ViewModels
 			DefaultPaletteImage = Image.Load<Rgba32>(AssetLoader.Open(new Uri(DefaultPaletteImageString)));
 
 			Model = new();
-			LoadDefaultPalette();
+			Task.Run(LoadDefaultPalette);
 
 			FolderTreeViewModel = new FolderTreeViewModel(Model);
 
@@ -194,7 +190,8 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		void SetObjectViewModel(FileSystemItemObject fsi) => CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
+		void SetObjectViewModel(FileSystemItemObject fsi)
+			=> CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
 
 		public async Task LoadG1()
 		{
@@ -262,6 +259,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
+#if !DEBUG
 		// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
 		Version GetLatestAppVersion()
 		{
@@ -283,6 +281,7 @@ namespace OpenLoco.Gui.ViewModels
 			throw new Exception($"Unable to get latest version. Error={response.StatusCode}");
 #pragma warning restore CA2201 // Do not raise reserved exception types
 		}
+#endif
 
 		public async Task SelectNewFolder()
 		{

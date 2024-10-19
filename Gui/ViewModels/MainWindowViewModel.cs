@@ -60,11 +60,12 @@ namespace OpenLoco.Gui.ViewModels
 
 		public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
+
 		[Reactive]
 		public Version ApplicationVersion { get; set; }
 
 		[Reactive]
-		public string LatestVersionText { get; set; } = "Up-to-date";
+		public string LatestVersionText { get; set; } = "Development build";
 
 		const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
 		Image<Rgba32> DefaultPaletteImage { get; init; }

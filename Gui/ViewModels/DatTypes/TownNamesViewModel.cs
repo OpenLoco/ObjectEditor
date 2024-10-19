@@ -11,12 +11,12 @@ namespace OpenLoco.Gui.ViewModels
 	{
 		[Reactive, Length(6, 6), Editable(false)] public BindingList<Category> Categories { get; set; }
 
-		public TownNamesViewModel(TownNamesObject veh) => Categories = new(veh.Categories);
+		public TownNamesViewModel(TownNamesObject tno) => Categories = new(tno.Categories);
 
 		public ILocoStruct GetAsLocoStruct(ILocoStruct locoStruct)
-			=> GetAsVehicleStruct((locoStruct as TownNamesObject)!);
+			=> GetAsStruct((locoStruct as TownNamesObject)!);
 
-		public TownNamesObject GetAsVehicleStruct(TownNamesObject baseTownNames)
+		public TownNamesObject GetAsStruct(TownNamesObject baseTownNames)
 			=> baseTownNames;
 	}
 }

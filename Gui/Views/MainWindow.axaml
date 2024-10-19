@@ -328,15 +328,15 @@
 					<GridSplitter Grid.Column="1" />
 					<TabControl Grid.Column="2">
 						<TabItem Header="Headers">
-							<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
-								<StackPanel Margin="8">
+							<Border Margin="4" Background="{DynamicResource ExpanderContentBackground}">
+								<StackPanel Margin="4">
 									<ContentControl Content="{Binding CurrentObject.DatFileInfo.S5Header}"></ContentControl>
 									<ContentControl Content="{Binding CurrentObject.DatFileInfo.ObjectHeader}"></ContentControl>
 								</StackPanel>
 							</Border>
 						</TabItem>
-						<TabItem Header="Hex Dump">
-							<DockPanel>
+						<TabItem Header="Hex Dump" >
+							<DockPanel Margin="4" Background="{DynamicResource ExpanderContentBackground}">
 								<ScrollViewer>
 									<TreeView ItemsSource="{Binding CurrentHexAnnotations}" SelectedItem="{Binding CurrentlySelectedHexAnnotation}" Margin="4" DockPanel.Dock="Left" >
 										<TreeView.ItemTemplate>
@@ -382,18 +382,27 @@
 		<DataTemplate DataType="vm:SCV5ViewModel">
 			<TabControl>
 				<TabItem Header="Header">
-					<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmHeader" DataContext="{Binding CurrentS5File.Header}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					<ScrollViewer>
+						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmHeader" DataContext="{Binding CurrentS5File.Header}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</ScrollViewer>
 				</TabItem>
 				<TabItem Header="Landscape">
-					<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmLandscape" DataContext="{Binding CurrentS5File.LandscapeOptions}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					<ScrollViewer>
+						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmLandscape" DataContext="{Binding CurrentS5File.LandscapeOptions}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</ScrollViewer>
 				</TabItem>
 				<TabItem Header="SaveGame">
-					<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmSave" DataContext="{Binding CurrentS5File.SaveDetails}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					<ScrollViewer>
+						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmSave" DataContext="{Binding CurrentS5File.SaveDetails}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</ScrollViewer>
 				</TabItem>
 				<TabItem Header="GameState">
-					<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					<ScrollViewer>
+						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					</ScrollViewer>
 				</TabItem>
 				<TabItem Header="Required Objects">
+
 					<DockPanel>
 						<TextBlock Text="{Binding RequiredObjects.Count}" DockPanel.Dock="Top" />
 						<ScrollViewer>

@@ -5,7 +5,6 @@ using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using OpenLoco.Gui.Models;
-
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -14,12 +13,14 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using static OpenLoco.Gui.ViewModels.TownNamesViewModel;
 
 namespace OpenLoco.Gui.ViewModels
 {
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
+		[Reactive]
+		public IObjectViewModel? CurrentObjectViewModel { get; set; }
+
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
 
@@ -27,15 +28,7 @@ namespace OpenLoco.Gui.ViewModels
 		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
 
 		[Reactive]
-		public IObjectViewModel? SpecificObjectVM { get; set; }
-
-		[Reactive]
 		public UiDatLocoFile? CurrentObject { get; private set; }
-
-		public IObjectViewModel? CurrentObjectViewModel
-			=> CurrentObject == null || CurrentObject.LocoObject == null
-				? null
-				: SpecificObjectVM ?? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
@@ -51,8 +44,8 @@ namespace OpenLoco.Gui.ViewModels
 		Dictionary<string, (int Start, int End)> DATDumpAnnotationIdentifiers = [];
 		const int bytesPerDumpLine = 32;
 		const int addressStringSizeBytes = 8;
-		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
-		const int dumpWordSize = 4;
+		//const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
+		//const int dumpWordSize = 4;
 
 		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
@@ -64,16 +57,9 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		public void UpdateHexDumpView()
-		{
-			if (CurrentlySelectedHexAnnotation != null && DATDumpAnnotationIdentifiers.TryGetValue(CurrentlySelectedHexAnnotation.Title, out var positionValues))
-			{
-				CurrentHexDumpLines = GetDumpLines(currentByteList, positionValues.Start, positionValues.End).ToArray();
-			}
-			else
-			{
-				CurrentHexDumpLines = GetDumpLines(currentByteList, null, null).ToArray();
-			}
-		}
+			=> CurrentHexDumpLines = CurrentlySelectedHexAnnotation != null && DATDumpAnnotationIdentifiers.TryGetValue(CurrentlySelectedHexAnnotation.Title, out var positionValues)
+				? GetDumpLines(currentByteList, positionValues.Start, positionValues.End).ToArray()
+				: GetDumpLines(currentByteList, null, null).ToArray();
 
 		public override void Load()
 		{
@@ -93,15 +79,15 @@ namespace OpenLoco.Gui.ViewModels
 				{
 					if (CurrentObject.LocoObject.Object is VehicleObject veh)
 					{
-						SpecificObjectVM = new VehicleViewModel(veh);
+						CurrentObjectViewModel = new VehicleViewModel(veh);
 					}
 					else if (CurrentObject.LocoObject.Object is TownNamesObject tow)
 					{
-						SpecificObjectVM = new TownNamesViewModel(tow);
+						CurrentObjectViewModel = new TownNamesViewModel(tow);
 					}
 					else
 					{
-						SpecificObjectVM = null;
+						CurrentObjectViewModel = new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };
 					}
 
 					var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp) ? itnp : new DefaultImageTableNameProvider();
@@ -124,6 +110,7 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				// todo: show warnings here
 				CurrentObject = null;
+				CurrentObjectViewModel = null;
 			}
 		}
 
@@ -169,9 +156,9 @@ namespace OpenLoco.Gui.ViewModels
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
 			StringTableViewModel?.WriteTableBackToObject();
 
-			if (SpecificObjectVM is not null and not GenericObjectViewModel)
+			if (CurrentObjectViewModel is not null and not GenericObjectViewModel)
 			{
-				CurrentObject.LocoObject.Object = SpecificObjectVM.GetAsLocoStruct(CurrentObject.LocoObject.Object);
+				CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsLocoStruct(CurrentObject.LocoObject.Object);
 			}
 
 			SawyerStreamWriter.Save(filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject, Logger);
@@ -184,7 +171,7 @@ namespace OpenLoco.Gui.ViewModels
 				return ([], []);
 			}
 
-			IList<HexAnnotation> annotations = [];
+			IList<HexAnnotation> annotations;
 			currentByteList = File.ReadAllBytes(path);
 
 			try

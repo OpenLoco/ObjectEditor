@@ -21,6 +21,13 @@ dotnet_style_collection_initializer = true:suggestion
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
 dotnet_style_prefer_conditional_expression_over_return = true:suggestion
+tab_width = 4
+indent_size = 4
+dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+dotnet_style_prefer_compound_assignment = true:suggestion
+dotnet_style_prefer_simplified_interpolation = true:suggestion
 
 # C# files
 [*.csproj]
@@ -325,7 +332,7 @@ dotnet_diagnostic.CA1825.severity = none
 dotnet_diagnostic.CA2201.severity = warning
 dotnet_diagnostic.CA2208.severity = none
 dotnet_diagnostic.CA2225.severity = none
-dotnet_diagnostic.CA2227.severity = suggestion
+dotnet_diagnostic.CA2227.severity = none
 
 dotnet_diagnostic.CS8032.severity = none
 dotnet_diagnostic.CS8602.severity = warning # do not change: DAT treats this as error so we need to match it

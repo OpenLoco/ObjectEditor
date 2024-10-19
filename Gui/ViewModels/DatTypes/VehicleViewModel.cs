@@ -8,7 +8,6 @@ using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-
 	public class VehicleViewModel : ReactiveObject, IObjectViewModel
 	{
 		[Reactive, Category("Stats")] public TransportMode Mode { get; set; }
@@ -89,18 +88,16 @@ namespace OpenLoco.Gui.ViewModels
 			Engine2Sound = veh.SoundPropertyEngine2;
 		}
 
-		public ILocoStruct GetAsLocoStruct(ILocoStruct locoStruct) => GetAsVehicleStruct((locoStruct as VehicleObject)!);
+		public ILocoStruct GetAsLocoStruct(ILocoStruct locoStruct) => GetAsStruct((locoStruct as VehicleObject)!);
 
-		public VehicleObject GetAsVehicleStruct(VehicleObject baseVehicle)
+		public VehicleObject GetAsStruct(VehicleObject veh)
 		{
-			// convert VehicleVM back to DAT, eg cargo sprites, string table, etc
-			// this can probably go in VehicleViewModelClass
 			foreach (var ctso in CargoTypeSpriteOffsets)
 			{
-				baseVehicle.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
+				veh.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
 			}
 
-			return baseVehicle with
+			return veh with
 			{
 				Mode = Mode,
 				Type = Type,
@@ -130,7 +127,6 @@ namespace OpenLoco.Gui.ViewModels
 				NumStartSounds = (byte)StartSounds.Count,
 			};
 		}
-
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

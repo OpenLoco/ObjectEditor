@@ -3,6 +3,19 @@ using Zenith.Core;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
+	public enum ElementType : uint8_t
+	{
+		Surface,
+		Track,
+		Station,
+		Signal,
+		Building,
+		Tree,
+		Wall,
+		Road,
+		Industry,
+	};
+
 	[LocoStructSize(StructLength)]
 	public class TileElement
 	{
@@ -11,7 +24,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		public const uint8_t FLAG_GHOST = 1 << 4;
 		public const uint8_t FLAG_LAST = 1 << 7;
 
-		public uint8_t Type { get; set; }
+		public ElementType Type { get; set; }
 		public uint8_t Flags { get; set; }
 		public uint8_t BaseZ { get; set; }
 		public uint8_t ClearZ { get; set; }
@@ -35,14 +48,14 @@ namespace OpenLoco.Dat.Types.SCV5
 
 		bool IsGhost() => (Flags & FLAG_GHOST) == FLAG_GHOST;
 
-		bool IsLast() => (Flags & FLAG_LAST) == FLAG_LAST;
+		public bool IsLast() => (Flags & FLAG_LAST) == FLAG_LAST;
 
 		public static TileElement Read(ReadOnlySpan<byte> data)
 		{
 			Verify.AreEqual(data.Length, StructLength);
 			return new TileElement
 			{
-				Type = data[0],
+				Type = (ElementType)data[0],
 				Flags = data[1],
 				BaseZ = data[2],
 				ClearZ = data[3],

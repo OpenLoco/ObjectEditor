@@ -5,7 +5,6 @@ using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using OpenLoco.Gui.Models;
-
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -20,21 +19,16 @@ namespace OpenLoco.Gui.ViewModels
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
 		[Reactive]
+		public IObjectViewModel? CurrentObjectViewModel { get; set; }
+
+		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
 
 		[Reactive]
 		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
 
 		[Reactive]
-		public VehicleViewModel? VehicleVM { get; set; }
-
-		[Reactive]
 		public UiDatLocoFile? CurrentObject { get; private set; }
-
-		public IObjectViewModel? CurrentObjectViewModel
-			=> CurrentObject == null || CurrentObject.LocoObject == null
-				? null
-				: (IObjectViewModel?)VehicleVM ?? new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };
 
 		[Reactive]
 		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
@@ -50,8 +44,8 @@ namespace OpenLoco.Gui.ViewModels
 		Dictionary<string, (int Start, int End)> DATDumpAnnotationIdentifiers = [];
 		const int bytesPerDumpLine = 32;
 		const int addressStringSizeBytes = 8;
-		const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
-		const int dumpWordSize = 4;
+		//const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
+		//const int dumpWordSize = 4;
 
 		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
@@ -63,16 +57,9 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		public void UpdateHexDumpView()
-		{
-			if (CurrentlySelectedHexAnnotation != null && DATDumpAnnotationIdentifiers.TryGetValue(CurrentlySelectedHexAnnotation.Title, out var positionValues))
-			{
-				CurrentHexDumpLines = GetDumpLines(currentByteList, positionValues.Start, positionValues.End).ToArray();
-			}
-			else
-			{
-				CurrentHexDumpLines = GetDumpLines(currentByteList, null, null).ToArray();
-			}
-		}
+			=> CurrentHexDumpLines = CurrentlySelectedHexAnnotation != null && DATDumpAnnotationIdentifiers.TryGetValue(CurrentlySelectedHexAnnotation.Title, out var positionValues)
+				? GetDumpLines(currentByteList, positionValues.Start, positionValues.End).ToArray()
+				: GetDumpLines(currentByteList, null, null).ToArray();
 
 		public override void Load()
 		{
@@ -92,48 +79,15 @@ namespace OpenLoco.Gui.ViewModels
 				{
 					if (CurrentObject.LocoObject.Object is VehicleObject veh)
 					{
-						VehicleVM = new VehicleViewModel()
-						{
-							Mode = veh.Mode,
-							Type = veh.Type,
-							var_04 = veh.var_04,
-							TrackTypeId = veh.TrackTypeId,
-							CostIndex = veh.CostIndex,
-							CostFactor = veh.CostFactor,
-							Reliability = veh.Reliability,
-							RunCostIndex = veh.RunCostIndex,
-							RunCostFactor = veh.RunCostFactor,
-							ColourType = veh.ColourType,
-							CompatibleVehicles = new(veh.CompatibleVehicles),
-							RequiredTrackExtras = new(veh.RequiredTrackExtras),
-							CarComponents = new(veh.CarComponents),
-							BodySprites = new(veh.BodySprites),
-							BogieSprites = new(veh.BogieSprites),
-							Power = veh.Power,
-							Speed = veh.Speed,
-							RackSpeed = veh.RackSpeed,
-							Weight = veh.Weight,
-							Flags = veh.Flags,
-							MaxCargo = new(veh.MaxCargo),
-							CompatibleCargoCategories1 = new(veh.CompatibleCargoCategories[0]),
-							CompatibleCargoCategories2 = new(veh.CompatibleCargoCategories[1]),
-							CargoTypeSpriteOffsets = new(veh.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList()),
-							Animation = new(veh.Animation),
-							AnimationHeaders = new(veh.AnimationHeaders),
-							var_113 = veh.var_113,
-							DesignedYear = veh.ObsoleteYear,
-							ObsoleteYear = veh.ObsoleteYear,
-							RackRailType = veh.RackRailType,
-							SoundType = veh.SoundType,
-							StartSounds = new(veh.StartSounds),
-							FrictionSound = veh.SoundPropertyFriction,
-							Engine1Sound = veh.SoundPropertyEngine1,
-							Engine2Sound = veh.SoundPropertyEngine2,
-						};
+						CurrentObjectViewModel = new VehicleViewModel(veh);
+					}
+					else if (CurrentObject.LocoObject.Object is TownNamesObject tow)
+					{
+						CurrentObjectViewModel = new TownNamesViewModel(tow);
 					}
 					else
 					{
-						VehicleVM = null;
+						CurrentObjectViewModel = new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };
 					}
 
 					var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp) ? itnp : new DefaultImageTableNameProvider();
@@ -156,6 +110,7 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				// todo: show warnings here
 				CurrentObject = null;
+				CurrentObjectViewModel = null;
 			}
 		}
 
@@ -200,44 +155,10 @@ namespace OpenLoco.Gui.ViewModels
 
 			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
 			StringTableViewModel?.WriteTableBackToObject();
-			if (VehicleVM != null && CurrentObject.LocoObject.Object is VehicleObject veh)
-			{
-				// convert VehicleVM back to DAT, eg cargo sprites, string table, etc
-				// this can probably go in VehicleViewModelClass
-				foreach (var ctso in VehicleVM.CargoTypeSpriteOffsets)
-				{
-					veh.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
-				}
 
-				CurrentObject.LocoObject.Object = veh with
-				{
-					Mode = VehicleVM.Mode,
-					Type = VehicleVM.Type,
-					var_04 = VehicleVM.var_04,
-					TrackTypeId = VehicleVM.TrackTypeId,
-					CostIndex = VehicleVM.CostIndex,
-					CostFactor = VehicleVM.CostFactor,
-					Reliability = VehicleVM.Reliability,
-					RunCostIndex = VehicleVM.RunCostIndex,
-					RunCostFactor = VehicleVM.RunCostFactor,
-					ColourType = VehicleVM.ColourType,
-					Power = VehicleVM.Power,
-					Speed = VehicleVM.Speed,
-					RackSpeed = VehicleVM.RackSpeed,
-					Weight = VehicleVM.Weight,
-					Flags = VehicleVM.Flags,
-					var_113 = VehicleVM.var_113,
-					DesignedYear = VehicleVM.DesignedYear,
-					ObsoleteYear = VehicleVM.ObsoleteYear,
-					RackRailType = VehicleVM.RackRailType,
-					SoundType = VehicleVM.SoundType,
-					SoundPropertyFriction = VehicleVM.FrictionSound,
-					SoundPropertyEngine1 = VehicleVM.Engine1Sound,
-					SoundPropertyEngine2 = VehicleVM.Engine2Sound,
-					NumCompatibleVehicles = (byte)VehicleVM.CompatibleVehicles.Count,
-					NumRequiredTrackExtras = (byte)VehicleVM.RequiredTrackExtras.Count,
-					NumStartSounds = (byte)VehicleVM.StartSounds.Count,
-				};
+			if (CurrentObjectViewModel is not null and not GenericObjectViewModel)
+			{
+				CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsLocoStruct(CurrentObject.LocoObject.Object);
 			}
 
 			SawyerStreamWriter.Save(filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject, Logger);
@@ -250,7 +171,7 @@ namespace OpenLoco.Gui.ViewModels
 				return ([], []);
 			}
 
-			IList<HexAnnotation> annotations = [];
+			IList<HexAnnotation> annotations;
 			currentByteList = File.ReadAllBytes(path);
 
 			try

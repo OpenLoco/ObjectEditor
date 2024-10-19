@@ -4,17 +4,10 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public interface IObjectViewModel;
-
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class GenericObjectViewModel : ReactiveObject, IObjectViewModel
-	{
-		[Reactive] public required ILocoStruct Object { get; set; }
-	}
-
 	public class VehicleViewModel : ReactiveObject, IObjectViewModel
 	{
 		[Reactive, Category("Stats")] public TransportMode Mode { get; set; }
@@ -55,6 +48,85 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Sound")] public Engine1Sound? Engine1Sound { get; set; }
 		[Reactive, Category("Sound")] public Engine2Sound? Engine2Sound { get; set; }
 		[Reactive, Category("Sound")] public BindingList<S5Header> StartSounds { get; set; }
+
+		public VehicleViewModel(VehicleObject veh)
+		{
+			Mode = veh.Mode;
+			Type = veh.Type;
+			var_04 = veh.var_04;
+			TrackTypeId = veh.TrackTypeId;
+			CostIndex = veh.CostIndex;
+			CostFactor = veh.CostFactor;
+			Reliability = veh.Reliability;
+			RunCostIndex = veh.RunCostIndex;
+			RunCostFactor = veh.RunCostFactor;
+			ColourType = veh.ColourType;
+			CompatibleVehicles = new(veh.CompatibleVehicles);
+			RequiredTrackExtras = new(veh.RequiredTrackExtras);
+			CarComponents = new(veh.CarComponents);
+			BodySprites = new(veh.BodySprites);
+			BogieSprites = new(veh.BogieSprites);
+			Power = veh.Power;
+			Speed = veh.Speed;
+			RackSpeed = veh.RackSpeed;
+			Weight = veh.Weight;
+			Flags = veh.Flags;
+			MaxCargo = new(veh.MaxCargo);
+			CompatibleCargoCategories1 = new(veh.CompatibleCargoCategories[0]);
+			CompatibleCargoCategories2 = new(veh.CompatibleCargoCategories[1]);
+			CargoTypeSpriteOffsets = new(veh.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList());
+			Animation = new(veh.Animation);
+			AnimationHeaders = new(veh.AnimationHeaders);
+			var_113 = veh.var_113;
+			DesignedYear = veh.ObsoleteYear;
+			ObsoleteYear = veh.ObsoleteYear;
+			RackRailType = veh.RackRailType;
+			SoundType = veh.SoundType;
+			StartSounds = new(veh.StartSounds);
+			FrictionSound = veh.SoundPropertyFriction;
+			Engine1Sound = veh.SoundPropertyEngine1;
+			Engine2Sound = veh.SoundPropertyEngine2;
+		}
+
+		public ILocoStruct GetAsLocoStruct(ILocoStruct locoStruct) => GetAsStruct((locoStruct as VehicleObject)!);
+
+		public VehicleObject GetAsStruct(VehicleObject veh)
+		{
+			foreach (var ctso in CargoTypeSpriteOffsets)
+			{
+				veh.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
+			}
+
+			return veh with
+			{
+				Mode = Mode,
+				Type = Type,
+				var_04 = var_04,
+				TrackTypeId = TrackTypeId,
+				CostIndex = CostIndex,
+				CostFactor = CostFactor,
+				Reliability = Reliability,
+				RunCostIndex = RunCostIndex,
+				RunCostFactor = RunCostFactor,
+				ColourType = ColourType,
+				Power = Power,
+				Speed = Speed,
+				RackSpeed = RackSpeed,
+				Weight = Weight,
+				Flags = Flags,
+				var_113 = var_113,
+				DesignedYear = DesignedYear,
+				ObsoleteYear = ObsoleteYear,
+				RackRailType = RackRailType,
+				SoundType = SoundType,
+				SoundPropertyFriction = FrictionSound,
+				SoundPropertyEngine1 = Engine1Sound,
+				SoundPropertyEngine2 = Engine2Sound,
+				NumCompatibleVehicles = (byte)CompatibleVehicles.Count,
+				NumRequiredTrackExtras = (byte)RequiredTrackExtras.Count,
+				NumStartSounds = (byte)StartSounds.Count,
+			};
+		}
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

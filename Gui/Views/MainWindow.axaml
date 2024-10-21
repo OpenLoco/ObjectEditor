@@ -195,25 +195,28 @@
 							</ScrollViewer>
 						</TabItem>
 						<TabItem Header="String Table">
-							<StackPanel DataContext="{Binding StringTableViewModel}" Orientation="Horizontal" Spacing="16">
-								<ListBox ItemsSource="{Binding Keys}" SelectedItem="{Binding SelectedKey}">
+							<DockPanel DataContext="{Binding StringTableViewModel}" >
+								<ListBox ItemsSource="{Binding Keys}" SelectedItem="{Binding SelectedKey}" DockPanel.Dock="Left" Background="{DynamicResource ScrollBarTrackFill}">
 									<ListBox.ItemTemplate>
 										<DataTemplate>
 											<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
 										</DataTemplate>
 									</ListBox.ItemTemplate>
 								</ListBox>
-								<ListBox ItemsSource="{Binding SelectedInnerDictionary}">
-									<ListBox.ItemTemplate>
+								<ItemsRepeater ItemsSource="{Binding SelectedInnerDictionary}" Background="{DynamicResource ExpanderContentBackground}">
+									<ItemsRepeater.Layout>
+										<UniformGridLayout Orientation="Vertical"/>
+									</ItemsRepeater.Layout>
+									<ItemsRepeater.ItemTemplate>
 										<DataTemplate>
-											<StackPanel Orientation="Horizontal">
+											<StackPanel Orientation="Horizontal" Margin="4">
 												<TextBlock Text="{Binding Language}" Margin="4" Width="128"></TextBlock>
 												<TextBox Text="{Binding Translation}" Width="256"></TextBox>
 											</StackPanel>
 										</DataTemplate>
-									</ListBox.ItemTemplate>
-								</ListBox>
-							</StackPanel>
+									</ItemsRepeater.ItemTemplate>
+								</ItemsRepeater>
+							</DockPanel>
 						</TabItem>
 						<TabItem Header="Image/Sound Table">
 							<DockPanel>

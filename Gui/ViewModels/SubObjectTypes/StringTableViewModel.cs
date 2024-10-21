@@ -29,14 +29,17 @@ namespace OpenLoco.Gui.ViewModels
 				.Subscribe(_ => SelectedInnerDictionary = SelectedKey == null ? null : TableView[SelectedKey]);
 		}
 
-		[Reactive] public Dictionary<string, BindingList<LanguageTranslationModel>> TableView { get; set; }
-
-		[Reactive] public BindingList<LanguageTranslationModel>? SelectedInnerDictionary { get; set; }
+		[Reactive]
+		public Dictionary<string, BindingList<LanguageTranslationModel>> TableView { get; set; }
 
 		[Reactive]
-		string? SelectedKey { get; set; }
+		public BindingList<LanguageTranslationModel>? SelectedInnerDictionary { get; set; }
 
-		BindingList<string> Keys { get; init; }
+		[Reactive]
+		public string? SelectedKey { get; set; }
+
+		[Reactive]
+		public BindingList<string> Keys { get; init; }
 
 		StringTable OriginalTable { get; init; }
 

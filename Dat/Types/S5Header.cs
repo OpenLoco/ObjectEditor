@@ -7,7 +7,7 @@ namespace OpenLoco.Dat.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]
-	public record S5Header
+	public class S5Header
 	{
 		// this is necessary because Flags must be get-set to enable setters for SourceGame and ObjectType
 		public S5Header(uint32_t flags, string name, uint32_t checksum)
@@ -34,13 +34,13 @@ namespace OpenLoco.Dat.Types
 		public SourceGame SourceGame
 		{
 			get => (SourceGame)((Flags >> 6) & 0x3u);
-			set => Flags = (Flags & ~(0x3u << 6)) | (((uint)value & 0x3u) << 6);
+			set => Flags |= (Flags & ~(0x3u << 6)) | (((uint)value & 0x3u) << 6);
 		}
 
 		public ObjectType ObjectType
 		{
-			get => (ObjectType)(Flags & 0x3F);
-			set => Flags = (Flags & (~0x3u << 6)) | ((uint)value & 0x3F);
+			get => (ObjectType)(Flags & 0x3Fu);
+			set => Flags |= (Flags & ~0x3Fu) | ((uint)value & 0x3Fu);
 		}
 
 		public bool IsValid()

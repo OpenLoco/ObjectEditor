@@ -167,15 +167,14 @@ namespace OpenLoco.Dat.FileParsing
 			var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
 			var s5Header = new S5Header(objName, 0)
 			{
-				SourceGame = SourceGame.Custom,
+				SourceGame = SourceGame.Vanilla,
 				ObjectType = attr!.ObjectType
 			};
 
 			// calculate checksum
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
 			var asciiName = objName.PadRight(8, ' ').Take(8).Select(c => (byte)c).ToArray();
-			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, objStream.ToArray());
-			s5Header = s5Header with { Checksum = checksum };
+			s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, objStream.ToArray());
 
 			var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint32_t)objStream.Length);
 

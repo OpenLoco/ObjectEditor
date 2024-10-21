@@ -7,8 +7,11 @@ namespace OpenLoco.Dat.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x05)]
-	public record ObjectHeader(SawyerEncoding Encoding, uint32_t DataLength)
+	public class ObjectHeader(SawyerEncoding encoding, uint dataLength)
 	{
+		public SawyerEncoding Encoding { get; set; } = encoding;
+		public uint32_t DataLength { get; set; } = dataLength;
+
 		public const int StructLength = 0x05;
 
 		public bool IsValid()

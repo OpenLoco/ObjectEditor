@@ -263,9 +263,12 @@ namespace OpenLoco.Gui.Models
 						locoObject = obj.Value.LocoObject;
 						metadata = null; // todo: look this up from internet anyways
 
-						foreach (var i in locoObject?.G1Elements)
+						if (locoObject != null)
 						{
-							images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+							foreach (var i in locoObject.G1Elements)
+							{
+								images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+							}
 						}
 					}
 				}
@@ -411,7 +414,7 @@ namespace OpenLoco.Gui.Models
 			async Task RecreateIndex(string directory, IProgress<float> progress)
 			{
 				Logger.Info("Recreating index file");
-				ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, progress);
+				ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress);
 				ObjectIndex?.SaveIndex(IndexFilename);
 			}
 		}

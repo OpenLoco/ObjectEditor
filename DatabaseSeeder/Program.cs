@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions;
@@ -49,6 +50,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	const string ObjDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
 
 	Console.WriteLine("Seeding");
+	var logger = new Logger();
 
 	var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
 
@@ -115,7 +117,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		Console.WriteLine("Seeding Objects");
 
 		var progress = new Progress<float>();
-		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory);
+		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory, logger);
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions);
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);

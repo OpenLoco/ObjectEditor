@@ -161,7 +161,7 @@ namespace OpenLoco.Gui.ViewModels
 				CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsLocoStruct(CurrentObject.LocoObject.Object);
 			}
 
-			SawyerStreamWriter.Save(filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.LocoObject, Logger);
+			SawyerStreamWriter.Save(filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.DatFileInfo.S5Header.SourceGame, CurrentObject.LocoObject, Logger);
 		}
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)

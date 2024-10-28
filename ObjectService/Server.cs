@@ -211,7 +211,8 @@ namespace OpenLoco.ObjectService
 				return Results.BadRequest("Unable to accept file sizes > 5MB");
 			}
 
-			if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs))
+			var logger = new Logger();
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, logger))
 			{
 				return Results.BadRequest("Provided data had invalid dat file headers");
 			}

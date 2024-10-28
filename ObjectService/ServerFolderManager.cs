@@ -1,3 +1,4 @@
+using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using Zenith.Core;
 
@@ -13,7 +14,8 @@ namespace OpenLoco.ObjectService
 		public ServerFolderManager(string rootDirectory)
 		{
 			RootDirectory = rootDirectory;
-			ObjectIndex = ObjectIndex.LoadOrCreateIndex(Path.Combine(rootDirectory, ObjectsFolderName))!;
+			var logger = new Logger();
+			ObjectIndex = ObjectIndex.LoadOrCreateIndex(Path.Combine(rootDirectory, ObjectsFolderName), logger)!;
 
 			Verify.AreEqual(true, Directory.Exists(ObjectsOriginalFolder), message: $"OrignalObjectsFolder: {ObjectsOriginalFolder} didn't exist");
 			Verify.AreEqual(true, Directory.Exists(ObjectsCustomFolder), message: $"ObjectsCustomFolder: {ObjectsCustomFolder} didn't exist");

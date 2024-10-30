@@ -184,8 +184,10 @@ namespace OpenLoco.ObjectService
 		}
 
 		// eg: <todo>
-		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db)
+		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
+			logger.LogInformation("Upload requested");
+
 			if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 			{
 				return Results.BadRequest($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.");
@@ -211,8 +213,8 @@ namespace OpenLoco.ObjectService
 				return Results.BadRequest("Unable to accept file sizes > 5MB");
 			}
 
-			var logger = new Logger();
-			if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, logger))
+			var ssrLogger = new Logger();
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
 			{
 				return Results.BadRequest("Provided data had invalid dat file headers");
 			}

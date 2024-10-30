@@ -58,7 +58,7 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				var route = $"{client.BaseAddress}{Routes.UploadDat}".Replace("//", "'/");
+				var route = $"{client.BaseAddress?.OriginalString}{Routes.UploadDat}";
 				logger.Debug($"Posting {filename} to {route}");
 				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate);
 				var response = await client.PostAsJsonAsync(Routes.UploadDat, request);
@@ -66,7 +66,16 @@ namespace OpenLoco.Definitions.Web
 				if (!response.IsSuccessStatusCode)
 				{
 					var error = await response.Content.ReadAsStringAsync();
-					logger.Error($"Posting {filename} failed. Error={error}");
+
+					if (string.IsNullOrEmpty(error))
+					{
+
+						logger.Error($"Posting {filename} failed. StatusCode={response.StatusCode} ReasonPhrase={response.ReasonPhrase}");
+					}
+					else
+					{
+						logger.Error($"Posting {filename} failed. Error={error}");
+					}
 					return;
 				}
 

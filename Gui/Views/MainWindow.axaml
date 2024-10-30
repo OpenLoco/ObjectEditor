@@ -9,6 +9,7 @@
 		xmlns:ol="using:OpenLoco.ObjectEditor.Logging"
 		xmlns:oldt="using:OpenLoco.Dat.Types"
 		xmlns:old5="using:OpenLoco.Dat.Types.SCV5"
+		xmlns:oldd="using:OpenLoco.Dat.Data"
 		xmlns:oldo="using:OpenLoco.Dat.Objects"
 		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 		xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox"
@@ -91,7 +92,7 @@
 			</StackPanel>
 		</DataTemplate>
 
-		<DataTemplate DataType="oldt:S5Header">
+		<!--<DataTemplate DataType="oldt:S5Header">
 			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
@@ -108,20 +109,30 @@
 				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Name}" Margin="4" />
 
 				<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Object Type" Margin="4" />
-				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding ObjectType}" IsReadOnly="True" Margin="4" />
+				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding ObjectType}" IsReadOnly="True" IsEnabled="False" Margin="4" />
 
 				<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Source Game" Margin="4"/>
-				<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding SourceGame}" IsReadOnly="True" Margin="4" />
+				-->
+		<!--<ComboBox Grid.Row="2" Grid.Column="1" Name="SourceGameCombo" SelectedItem="{Binding SourceGame}" ItemsSource="{Binding Source={x:Type oldd:SourceGame}} Converter={StaticResource EnumToItemsSourceConverter}}" Margin="4" />-->
+		<!--
 
 				<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Flags" Margin="4"/>
-				<TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Flags}" IsReadOnly="True" Margin="4" />
+				<TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Flags}" IsReadOnly="True" IsEnabled="False" Margin="4" />
 
 				<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Checksum" Margin="4"/>
-				<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Checksum}" IsReadOnly="True" Margin="4" />
+				<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Checksum}" IsReadOnly="True" IsEnabled="False" Margin="4" />
 			</Grid>
+		</DataTemplate>-->
+
+		<DataTemplate DataType="vm:S5HeaderViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_S5HeaderVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
 		</DataTemplate>
 
-		<DataTemplate DataType="oldt:ObjectHeader">
+		<DataTemplate DataType="oldt:S5Header">
+			<pgc:PropertyGrid x:Name="propertyGrid_S5Header" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
+		</DataTemplate>
+
+		<!--<DataTemplate DataType="oldt:ObjectHeader">
 			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto"/>
@@ -132,11 +143,15 @@
 					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 				<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Encoding" Margin="4"/>
-				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Encoding}" IsReadOnly="True" Margin="4" />
+				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Encoding}" IsReadOnly="True" IsEnabled="False" Margin="4" />
 
 				<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Encoded Data Length" Margin="4"/>
-				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DataLength}" IsReadOnly="True" Margin="4" />
+				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DataLength}" IsReadOnly="True" IsEnabled="False" Margin="4" />
 			</Grid>
+		</DataTemplate>-->
+
+		<DataTemplate DataType="oldt:ObjectHeader">
+			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeader" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled" IsEnabled="False"></pgc:PropertyGrid>
 		</DataTemplate>
 
 		<DataTemplate DataType="old5:TileElement">
@@ -182,7 +197,7 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:TownNamesViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_TownNamesVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+			<pgc:PropertyGrid x:Name="propertyGrid_TownNamesVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
@@ -333,7 +348,7 @@
 						<TabItem Header="Headers">
 							<Border Margin="4" Background="{DynamicResource ExpanderContentBackground}">
 								<StackPanel Margin="4">
-									<ContentControl Content="{Binding CurrentObject.DatFileInfo.S5Header}"></ContentControl>
+									<ContentControl Content="{Binding S5HeaderViewModel}"></ContentControl>
 									<ContentControl Content="{Binding CurrentObject.DatFileInfo.ObjectHeader}"></ContentControl>
 								</StackPanel>
 							</Border>
@@ -578,7 +593,7 @@
 								<Slider Minimum="1" Maximum="10" Value="{Binding Zoom}" />
 							</StackPanel>
 							<ScrollViewer>
-								<pgc:PropertyGrid x:Name="propertyGrid_imageProps" Margin="8" MinWidth="256" DataContext="{Binding SelectedG1Element}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Builtin"></pgc:PropertyGrid>
+								<pgc:PropertyGrid x:Name="propertyGrid_imageProps" Margin="8" MinWidth="256" DataContext="{Binding SelectedG1Element}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
 							</ScrollViewer>
 						</DockPanel>
 					</Border>

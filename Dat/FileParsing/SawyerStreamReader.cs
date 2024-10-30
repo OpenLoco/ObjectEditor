@@ -60,12 +60,12 @@ namespace OpenLoco.Dat.FileParsing
 			return File.ReadAllBytes(filename);
 		}
 
-		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecodeFromFile(string filename, ILogger? logger = null)
+		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecodeFromFile(string filename, ILogger logger)
 			=> LoadAndDecodeFromStream(LoadBytesFromFile(filename), logger);
 
-		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecodeFromStream(ReadOnlySpan<byte> fullData, ILogger? logger = null)
+		public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecodeFromStream(ReadOnlySpan<byte> fullData, ILogger logger)
 		{
-			if (!TryGetHeadersFromBytes(fullData, out var hdrs))
+			if (!TryGetHeadersFromBytes(fullData, out var hdrs, logger))
 			{
 				return null;
 			}
@@ -95,7 +95,7 @@ namespace OpenLoco.Dat.FileParsing
 			return (hdrs.S5, hdrs.Obj, decodedData);
 		}
 
-		public static bool TryGetHeadersFromBytes(ReadOnlySpan<byte> data, out (S5Header S5, ObjectHeader Obj) hdrs)
+		public static bool TryGetHeadersFromBytes(ReadOnlySpan<byte> data, out (S5Header S5, ObjectHeader Obj) hdrs, ILogger logger)
 		{
 			hdrs = default;
 			if (data.Length < (S5Header.StructLength + ObjectHeader.StructLength))
@@ -106,8 +106,15 @@ namespace OpenLoco.Dat.FileParsing
 			var s5 = S5Header.Read(data[0..S5Header.StructLength]);
 			var oh = ObjectHeader.Read(data[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
 
-			if (!s5.IsValid() || !oh.IsValid())
+			if (!s5.IsValid())
 			{
+				logger.Error("S5 header was invalid");
+				return false;
+			}
+
+			if (!oh.IsValid())
+			{
+				logger.Error("Object header was invalid");
 				return false;
 			}
 

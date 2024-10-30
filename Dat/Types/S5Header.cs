@@ -47,7 +47,7 @@ namespace OpenLoco.Dat.Types
 			=> IsValid((int)SourceGame, (int)ObjectType);
 
 		public static bool IsValid(int sourceGame, int objectType)
-			=> sourceGame is >= 0 and < 3 && objectType is >= 0 and < Limits.kMaxObjectTypes;
+			=> sourceGame is >= 0 and <= 3 && objectType is >= 0 and < Limits.kMaxObjectTypes;
 
 		public static S5Header Read(ReadOnlySpan<byte> data)
 		{

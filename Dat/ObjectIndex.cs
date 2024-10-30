@@ -27,10 +27,10 @@ namespace OpenLoco.Dat
 		public void SaveIndex(string indexFile, JsonSerializerOptions options)
 			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
 
-		public static async Task<ObjectIndexEntry> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file)
-			=> await Task.Run(() => GetDatFileInfoFromBytes(file));
+		public static async Task<ObjectIndexEntry> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file, ILogger logger)
+			=> await Task.Run(() => GetDatFileInfoFromBytes(file, logger));
 
-		public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, IProgress<float>? progress = null)
+		public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 		{
 			var indexPath = Path.Combine(directory, DefaultIndexFileName);
 			ObjectIndex? index = null;
@@ -41,23 +41,22 @@ namespace OpenLoco.Dat
 
 			if (index == null)
 			{
-				index = await CreateIndexAsync(directory, progress);
+				index = await CreateIndexAsync(directory, logger, progress);
 				index.SaveIndex(indexPath);
 			}
 
 			return index;
 		}
 
-		public static ObjectIndex LoadOrCreateIndex(string directory, IProgress<float>? progress = null)
-			=> LoadOrCreateIndexAsync(directory, progress).Result;
+		public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
+			=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
 
-		public static Task<ObjectIndex> CreateIndexAsync(string directory, IProgress<float>? progress = null)
+		public static Task<ObjectIndex> CreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 		{
 			var files = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 
 			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
 			ConcurrentQueue<ObjectIndexEntry> pendingIndices = [];
-			var dummyLogger = new Logger(); // todo: pass in as parameter
 
 			var producerTask = Task.Run(async () =>
 			{
@@ -71,7 +70,7 @@ namespace OpenLoco.Dat
 				{
 					if (pendingFiles.TryDequeue(out var content))
 					{
-						pendingIndices.Enqueue(await GetDatFileInfoFromBytesAsync(content)); // no possible way to know if an object is invalid from partial analysis, so this will always return 'valid'
+						pendingIndices.Enqueue(await GetDatFileInfoFromBytesAsync(content, logger)); // no possible way to know if an object is invalid from partial analysis, so this will always return 'valid'
 						progress?.Report(pendingIndices.Count / (float)files.Length);
 					}
 				}
@@ -84,8 +83,8 @@ namespace OpenLoco.Dat
 			});
 		}
 
-		public static ObjectIndex CreateIndex(string directory, IProgress<float>? progress = null)
-			=> CreateIndexAsync(directory, progress).Result;
+		public static ObjectIndex CreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
+			=> CreateIndexAsync(directory, logger, progress).Result;
 
 		public static ObjectIndex? LoadIndex(string indexFile)
 			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile));
@@ -101,9 +100,9 @@ namespace OpenLoco.Dat
 			}
 		}
 
-		public static ObjectIndexEntry GetDatFileInfoFromBytes((string Filename, byte[] Data) file)
+		public static ObjectIndexEntry GetDatFileInfoFromBytes((string Filename, byte[] Data) file, ILogger logger)
 		{
-			if (!SawyerStreamReader.TryGetHeadersFromBytes(file.Data, out var hdrs))
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(file.Data, out var hdrs, logger))
 			{
 				throw new ArgumentException($"{file.Filename} must have valid S5 and Object headers to call this method", nameof(file));
 			}

@@ -98,13 +98,13 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static void Save(string filename, string objName, ILocoObject locoObject, ILogger? logger)
+		public static void Save(string filename, string objName, SourceGame sourceGame, ILocoObject locoObject, ILogger logger)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
-			logger?.Info($"Writing \"{objName}\" to {filename}");
+			logger.Info($"Writing \"{objName}\" to {filename}");
 
-			var objBytes = WriteLocoObject(objName, locoObject);
+			var objBytes = WriteLocoObject(objName, sourceGame, logger, locoObject);
 
 			try
 			{
@@ -120,13 +120,13 @@ namespace OpenLoco.Dat.FileParsing
 				return;
 			}
 
-			logger?.Info($"{objName} successfully saved to {filename}");
+			logger.Info($"{objName} successfully saved to {filename}");
 		}
 
-		public static ReadOnlySpan<byte> WriteLocoObject(string objName, ILocoObject obj)
-		 => WriteLocoObjectStream(objName, obj).ToArray();
+		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj)
+		 => WriteLocoObjectStream(objName, sourceGame, logger, obj).ToArray();
 
-		public static MemoryStream WriteLocoObjectStream(string objName, ILocoObject obj)
+		public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj)
 		{
 			using var objStream = new MemoryStream();
 
@@ -165,9 +165,15 @@ namespace OpenLoco.Dat.FileParsing
 
 			// s5 header
 			var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
+
+			if (sourceGame == SourceGame.Vanilla)
+			{
+				logger.Warning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
+			}
+
 			var s5Header = new S5Header(objName, 0)
 			{
-				SourceGame = SourceGame.Vanilla,
+				SourceGame = sourceGame == SourceGame.Vanilla ? SourceGame.Custom : sourceGame, // do not allow users to write "Vanilla" to objects
 				ObjectType = attr!.ObjectType
 			};
 

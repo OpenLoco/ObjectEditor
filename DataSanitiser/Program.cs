@@ -48,8 +48,8 @@ var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(Fil
 Console.WriteLine($"MetadataCount={objectMetadata.Count}");
 
 var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
-var index = ObjectIndex.LoadOrCreateIndex(dir);
 var logger = new Logger();
+var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
 
 foreach (var meta in objectMetadata)
 {

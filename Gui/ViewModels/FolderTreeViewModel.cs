@@ -3,7 +3,6 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions.Web;
 using OpenLoco.Gui.Models;
-
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;

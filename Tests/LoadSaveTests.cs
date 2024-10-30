@@ -55,13 +55,14 @@ namespace OpenLoco.Dat.Tests
 			var (obj1, struc1) = LoadObject<T>(filename);
 			assertFunc(obj1, struc1);
 
+			var logger = new Logger();
 			var objectName = filename.Split('.')[0];
-			var bytes1 = SawyerStreamWriter.WriteLocoObject(objectName, obj1);
+			var bytes1 = SawyerStreamWriter.WriteLocoObject(objectName, SourceGame.Vanilla, logger, obj1);
 
 			var (obj2, struc2) = LoadObject<T>(bytes1);
 			assertFunc(obj2, struc2);
 
-			var bytes2 = SawyerStreamWriter.WriteLocoObject(objectName, obj2);
+			var bytes2 = SawyerStreamWriter.WriteLocoObject(objectName, SourceGame.Vanilla, logger, obj2);
 
 			// we could just simply compare byte arrays and be done, but i wanted something that makes it easier to diagnose problems
 

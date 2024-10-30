@@ -40,7 +40,7 @@ namespace OpenLoco.Gui.ViewModels
 		public FileSystemItem CurrentFile { get; init; }
 		public ObjectEditorModel Model { get; init; }
 
-		protected ILogger? Logger => Model.Logger;
+		protected ILogger Logger => Model.Logger;
 
 		public ReactiveCommand<Unit, Unit> ReloadCommand { get; init; }
 		public ReactiveCommand<Unit, Unit> SaveCommand { get; init; }

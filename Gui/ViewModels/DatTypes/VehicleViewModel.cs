@@ -78,7 +78,7 @@ namespace OpenLoco.Gui.ViewModels
 			Animation = new(veh.Animation);
 			AnimationHeaders = new(veh.AnimationHeaders);
 			var_113 = veh.var_113;
-			DesignedYear = veh.ObsoleteYear;
+			DesignedYear = veh.DesignedYear;
 			ObsoleteYear = veh.ObsoleteYear;
 			RackRailType = veh.RackRailType;
 			SoundType = veh.SoundType;

@@ -18,6 +18,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
+#if !DEBUG
+using OpenLoco.Common;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
+#endif
+
 namespace OpenLoco.Gui.ViewModels
 {
 	public class MainWindowViewModel : ViewModelBase

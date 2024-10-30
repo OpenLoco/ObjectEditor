@@ -6,12 +6,12 @@ using System.ComponentModel;
 namespace OpenLoco.Gui.ViewModels
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class GenericObjectViewModel : ReactiveObject, IObjectViewModel
+	public class GenericObjectViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
 	{
 		[Reactive]
 		public required ILocoStruct Object { get; set; }
 
-		public ILocoStruct GetAsLocoStruct(ILocoStruct locoStruct)
+		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
 			=> locoStruct;
 	}
 }

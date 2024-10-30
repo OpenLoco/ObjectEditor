@@ -1,9 +1,7 @@
-using OpenLoco.Dat.Types;
-
 namespace OpenLoco.Gui.ViewModels
 {
-	public interface IObjectViewModel
+	public interface IObjectViewModel<T>
 	{
-		ILocoStruct GetAsLocoStruct(ILocoStruct locoStruct);
+		T GetAsUnderlyingType(T underlyingType);
 	}
 }

@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class VehicleViewModel : ReactiveObject, IObjectViewModel
+	public class VehicleViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
 	{
 		[Reactive, Category("Stats")] public TransportMode Mode { get; set; }
 		[Reactive, Category("Stats")] public VehicleType Type { get; set; }
@@ -88,7 +88,7 @@ namespace OpenLoco.Gui.ViewModels
 			Engine2Sound = veh.SoundPropertyEngine2;
 		}
 
-		public ILocoStruct GetAsLocoStruct(ILocoStruct locoStruct) => GetAsStruct((locoStruct as VehicleObject)!);
+		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct) => GetAsStruct((locoStruct as VehicleObject)!);
 
 		public VehicleObject GetAsStruct(VehicleObject veh)
 		{

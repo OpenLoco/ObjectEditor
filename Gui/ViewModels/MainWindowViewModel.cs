@@ -4,7 +4,6 @@ using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Gui.Models;
-
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;

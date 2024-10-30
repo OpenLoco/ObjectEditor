@@ -19,13 +19,16 @@ namespace OpenLoco.Gui.ViewModels
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
 		[Reactive]
-		public IObjectViewModel? CurrentObjectViewModel { get; set; }
+		public IObjectViewModel<ILocoStruct>? CurrentObjectViewModel { get; set; }
 
 		[Reactive]
 		public StringTableViewModel? StringTableViewModel { get; set; }
 
 		[Reactive]
 		public IExtraContentViewModel? ExtraContentViewModel { get; set; }
+
+		[Reactive]
+		public S5HeaderViewModel? S5HeaderViewModel { get; set; }
 
 		[Reactive]
 		public UiDatLocoFile? CurrentObject { get; private set; }
@@ -50,10 +53,10 @@ namespace OpenLoco.Gui.ViewModels
 		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
 		{
-			Load();
-
 			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
 				.Subscribe(_ => UpdateHexDumpView());
+
+			Load();
 		}
 
 		public void UpdateHexDumpView()
@@ -69,7 +72,7 @@ namespace OpenLoco.Gui.ViewModels
 				svm.Dispose();
 			}
 
-			Logger?.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.Filename}");
+			Logger.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.Filename}");
 
 			if (Model.TryLoadObject(CurrentFile, out var newObj))
 			{
@@ -96,7 +99,7 @@ namespace OpenLoco.Gui.ViewModels
 						? new SoundViewModel(CurrentObject.LocoObject)
 						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
 
-					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), false, null);
+					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), Logger, false);
 					CurrentHexAnnotations = new(treeView);
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}
@@ -104,6 +107,11 @@ namespace OpenLoco.Gui.ViewModels
 				{
 					StringTableViewModel = null;
 					ExtraContentViewModel = null;
+				}
+
+				if (CurrentObject != null)
+				{
+					S5HeaderViewModel = new S5HeaderViewModel(CurrentObject.DatFileInfo.S5Header);
 				}
 			}
 			else
@@ -135,13 +143,13 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			if (CurrentObject?.LocoObject == null)
 			{
-				Logger?.Error("Cannot save - loco object was null");
+				Logger.Error("Cannot save - loco object was null");
 				return;
 			}
 
 			if (string.IsNullOrEmpty(filename))
 			{
-				Logger?.Error("Cannot save - filename was empty");
+				Logger.Error("Cannot save - filename was empty");
 				return;
 			}
 
@@ -149,22 +157,26 @@ namespace OpenLoco.Gui.ViewModels
 
 			if (string.IsNullOrEmpty(saveDir) || !Directory.Exists(saveDir))
 			{
-				Logger?.Error("Cannot save - directory is invalid");
+				Logger.Error("Cannot save - directory is invalid");
 				return;
 			}
 
-			Logger?.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
+			Logger.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
 			StringTableViewModel?.WriteTableBackToObject();
 
 			if (CurrentObjectViewModel is not null and not GenericObjectViewModel)
 			{
-				CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsLocoStruct(CurrentObject.LocoObject.Object);
+				CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsUnderlyingType(CurrentObject.LocoObject.Object);
 			}
 
-			SawyerStreamWriter.Save(filename, CurrentObject.DatFileInfo.S5Header.Name, CurrentObject.DatFileInfo.S5Header.SourceGame, CurrentObject.LocoObject, Logger);
+			SawyerStreamWriter.Save(filename,
+				S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
+				S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
+				CurrentObject.LocoObject,
+				Logger);
 		}
 
-		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, bool isG1 = false, ILogger? logger = null)
+		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, ILogger logger, bool isG1 = false)
 		{
 			if (!File.Exists(path))
 			{
@@ -184,7 +196,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 			catch (Exception ex)
 			{
-				logger?.Error(ex);
+				logger.Error(ex);
 				return ([], []);
 			}
 		}

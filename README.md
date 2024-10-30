@@ -10,19 +10,26 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 | ![image](https://github.com/user-attachments/assets/dd97a5cd-5208-4c0c-8215-e3692bfbe90e) | ![image](https://github.com/user-attachments/assets/3c7cc173-a001-47e4-8ab7-34ca80b2307a) |
 | **Hex dump viewer** | **Object repository browsing and downloading** |
 | ![image](https://github.com/user-attachments/assets/d2794946-acc4-4cbb-a6d0-275cd6776ec1) | ![image](https://github.com/user-attachments/assets/98c37f5f-1325-4795-9729-2f1c8e1d4ce7) |
+| **Scenario/Landscape/SaveGame data viewer** | **Palette swapping** |
+| ![image](https://github.com/user-attachments/assets/6bffd1e1-fc74-4979-9b0f-ce3c23c74e0e) | ![image](https://github.com/user-attachments/assets/baef3750-91d8-46ef-bb64-e8d8cd8004b2) |
+
 
 # How to use
 
 ## 1. Load an object folder
-1. Click `ObjData` -> `Add new folder`, which will open a folder browser window
+1. Click `Objects` -> `Add new folder`, which will open a folder browser window
 2. Navigate to a folder that contains Locomotion object files
 3. Click `Select Folder` to close the folder browser window
-4. The tool will load all objects in that folder and display them in the tree view on the left of the tool
+4. The tool will load all objects in that folder (recursively) and display them in the tree view on the left of the tool
 
 ## 2. Select an object to view/edit
 1. Expand the tree-view of objects to one you wish to view or edit
 2. Click on the object
 3. It will appear in the editor view on the right side of the tool
+
+## 3. Play
+* Edit any of the properties and save the object to use in-game
+* Export images from objects with grahics
 
 # Features
 
@@ -30,12 +37,15 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - Online mode
   - Can connect to the object repository to view and download any object stored in it
   - Automatic upload of 'undiscovered' dat files (ie dat files that don't exist in the object repository)
-- Property/hex viewer has been ported over from 1.0.5/the WinForms editor
+- Property/hex viewer has been ported over from 1.0.5/the WinForms editor (wasn't present in the 2.x releases)
 - Vehicle animator
-- G1.dat viewing/exporting
-- Editing of the inner list properties of objects
-- Indexed image support
-- Steam/GoG variation support
+- G1.dat viewing/exporting/saving
+- Editing of the inner list properties of vehicle objects (more to come soon)
+- Indexed PNG image support
+- Sprite animation
+- Steam/GoG object variation support
+- Savegame/Scenario/Landscape data viewer
+- Palette hotswapping
 
 ## 2.0.0+
 
@@ -87,9 +97,10 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
   - Windows: `%APPDATA%\\Roaming\\OpenLoco Object Editor\\`
   - Linux/macOSX: `/~/<user>/.config/OpenLoco Object Editor`
 - This file is used to store where the users' object folder paths are, and other program data
+- Feel free to inspect it and change it if necessary, or even delete it if you mess things up too much - the editor will recreate a fresh one!
 
 ## Indexing
-- When the tool first loads an `objdata` directory it will scan every file to make an index and save that into `objectIndex.json` in that folder
+- When the tool first loads a directory containing objects it will scan every file to make an index and save that into `objectIndex.json` in that folder
 - This indexing is relatively slow, but only needs to run once/when the folder contents change
 - On subsequent uses of the tool, the index file will be loaded instead, and this is fast
 - The tool will print a log message if it detects changes in the folder and thinks you need to reindex it
@@ -107,7 +118,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - [ ] Validation of object limits/sane values
 - [x] Detection of bugged objects
 - [ ] Support/edit tutorials
-- [ ] Support/edit maps/savegames/scenarios
+- [x] Support/edit maps/savegames/scenarios
 - [ ] Support language files
 - [x] Vehicle previewer
 - [ ] Better G1 support including palette file editing
@@ -117,12 +128,13 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - [x] Full unit-testing suite
 - [ ] Blank template objects for object creation from scratch
 - [x] Use a proper C# image library for image creation instead of WinForms
+- [ ] Export/import sounds (The WinForms v1.* version allows you to do this!)
 
 ...many more things
 
 # Building
-- Open Gui/Gui.sln in Visual Studio
-  - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer, but it isn't required to actually build or run the solution.
+- Open `ObjectEditor.sln` in Visual Studio
+  - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer, but it isn't required to actually build or run the editor
 
 # Deploying
 See `build.sh` and `tag.sh`

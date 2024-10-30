@@ -67,23 +67,35 @@ namespace OpenLoco.Dat.Tests
 			// we could just simply compare byte arrays and be done, but i wanted something that makes it easier to diagnose problems
 
 			// grab headers first
-			var bytes1S5Header = S5Header.Read(bytes1[0..S5Header.StructLength]);
-			var bytes2S5Header = S5Header.Read(bytes2[0..S5Header.StructLength]);
+			var s5Header1 = S5Header.Read(bytes1[0..S5Header.StructLength]);
+			var s5Header2 = S5Header.Read(bytes2[0..S5Header.StructLength]);
 
-			var bytes1ObjHeader = ObjectHeader.Read(bytes1[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
-			var bytes2ObjHeader = ObjectHeader.Read(bytes2[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+			var objHeader1 = ObjectHeader.Read(bytes1[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+			var objHeader2 = ObjectHeader.Read(bytes2[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
 
 			// then grab object bytes
 			var bytes1ObjArr = bytes1[21..].ToArray();
 			var bytes2ObjArr = bytes2[21..].ToArray();
 
-			Assert.Multiple(() =>
-			{
-				Assert.That(bytes2S5Header, Is.EqualTo(bytes1S5Header));
-				Assert.That(bytes2ObjHeader, Is.EqualTo(bytes1ObjHeader));
-				Assert.That(bytes1ObjArr.ToArray(), Is.EqualTo(bytes2ObjArr.ToArray()));
-			});
+			AssertS5Headers(s5Header1, s5Header2);
+			AssertObjHeaders(objHeader1, objHeader2);
+			Assert.That(bytes1ObjArr.ToArray(), Is.EqualTo(bytes2ObjArr.ToArray()));
 		}
+
+		static void AssertS5Headers(S5Header expected, S5Header actual)
+			=> Assert.Multiple(() =>
+				{
+					Assert.That(actual.Name, Is.EqualTo(expected.Name));
+					Assert.That(actual.Flags, Is.EqualTo(expected.Flags));
+					Assert.That(actual.Checksum, Is.EqualTo(expected.Checksum));
+				});
+
+		static void AssertObjHeaders(ObjectHeader expected, ObjectHeader actual)
+			=> Assert.Multiple(() =>
+				{
+					Assert.That(actual.Encoding, Is.EqualTo(expected.Encoding));
+					Assert.That(actual.DataLength, Is.EqualTo(expected.DataLength));
+				});
 
 		[TestCase("AIRPORT1.DAT")]
 		public void AirportObject(string objectName)

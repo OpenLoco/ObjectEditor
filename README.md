@@ -3,13 +3,13 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 
 # Screenshots
 
-| **Object property editing** | **Graphics viewing** |
+| **Object property editing** | **Graphics viewing and editing** |
 |:-----:|:-----:|
-| ![image](https://github.com/user-attachments/assets/1adb4be5-cc8e-46a0-9174-83e0634c2ad2) | ![image](https://github.com/user-attachments/assets/bb0aec69-c3ba-4edf-aba0-1861d99077a2) |
+| ![image](https://github.com/user-attachments/assets/1adb4be5-cc8e-46a0-9174-83e0634c2ad2) | ![image](https://github.com/user-attachments/assets/17bf5419-6e58-4903-9998-cda708be359a) |
 | **String table editing** | **Light/dark mode** |
-| ![image](https://github.com/user-attachments/assets/dd97a5cd-5208-4c0c-8215-e3692bfbe90e) | ![image](https://github.com/user-attachments/assets/3c7cc173-a001-47e4-8ab7-34ca80b2307a) |
+| ![image](https://github.com/user-attachments/assets/a60f6f62-084c-4bbd-ba66-0175177becef) | ![image](https://github.com/user-attachments/assets/3d0d36d2-17b9-4449-8940-f9820dcfdc5b) |
 | **Hex dump viewer** | **Object repository browsing and downloading** |
-| ![image](https://github.com/user-attachments/assets/d2794946-acc4-4cbb-a6d0-275cd6776ec1) | ![image](https://github.com/user-attachments/assets/98c37f5f-1325-4795-9729-2f1c8e1d4ce7) |
+| ![image](https://github.com/user-attachments/assets/4c20b844-fdbc-4c35-b9da-5b7b3bbf879b) | ![image](https://github.com/user-attachments/assets/98c37f5f-1325-4795-9729-2f1c8e1d4ce7) |
 | **Scenario/Landscape/SaveGame data viewer** | **Palette swapping** |
 | ![image](https://github.com/user-attachments/assets/6bffd1e1-fc74-4979-9b0f-ce3c23c74e0e) | ![image](https://github.com/user-attachments/assets/baef3750-91d8-46ef-bb64-e8d8cd8004b2) |
 

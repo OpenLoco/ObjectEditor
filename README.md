@@ -46,6 +46,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - Steam/GoG object variation support
 - Savegame/Scenario/Landscape data viewer
 - Palette hotswapping
+- Music and sound effect file loading/saving as well as audio import and export
 
 ## 2.0.0+
 
@@ -128,7 +129,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - [x] Full unit-testing suite
 - [ ] Blank template objects for object creation from scratch
 - [x] Use a proper C# image library for image creation instead of WinForms
-- [ ] Export/import sounds (The WinForms v1.* version allows you to do this!)
+- [x] Export/import sounds
 
 ...many more things
 

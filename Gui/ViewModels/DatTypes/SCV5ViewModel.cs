@@ -7,7 +7,9 @@ using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -27,10 +29,29 @@ namespace OpenLoco.Gui.ViewModels
 		public SoundViewModel SoundViewModel { get; set; }
 
 		public override void Save()
-			=> throw new NotImplementedException();
+		{
+			var savePath = CurrentFile.FileLocation == FileLocation.Local
+				? Path.Combine(Model.Settings.DataDirectory, CurrentFile.Filename)
+				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+
+			Logger?.Info($"Saving music to {savePath}");
+			var bytes = SawyerStreamWriter.SaveMusicToDat(SoundViewModel.Sound.Header, SoundViewModel.Sound.Data);
+			File.WriteAllBytes(savePath, bytes);
+		}
 
 		public override void SaveAs()
-			=> throw new NotImplementedException();
+		{
+			var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+			if (saveFile == null)
+			{
+				return;
+			}
+
+			var savePath = saveFile.Path.LocalPath;
+			Logger?.Info($"Saving music to {savePath}");
+			var bytes = SawyerStreamWriter.SaveMusicToDat(SoundViewModel.Sound.Header, SoundViewModel.Sound.Data);
+			File.WriteAllBytes(savePath, bytes);
+		}
 	}
 
 	public class SoundEffectsViewModel : BaseLocoFileViewModel
@@ -50,10 +71,29 @@ namespace OpenLoco.Gui.ViewModels
 		public BindingList<SoundViewModel> SoundViewModels { get; set; } = [];
 
 		public override void Save()
-			=> throw new NotImplementedException();
+		{
+			var savePath = CurrentFile.FileLocation == FileLocation.Local
+				? Path.Combine(Model.Settings.DataDirectory, CurrentFile.Filename)
+				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+
+			Logger?.Info($"Saving sound effects to {savePath}");
+			var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS(SoundViewModels.Select(x => (x.Sound.Header, x.Sound.Data)).ToList());
+			File.WriteAllBytes(savePath, bytes);
+		}
 
 		public override void SaveAs()
-			=> throw new NotImplementedException();
+		{
+			var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+			if (saveFile == null)
+			{
+				return;
+			}
+
+			var savePath = saveFile.Path.LocalPath;
+			Logger?.Info($"Saving sound effects to {savePath}");
+			var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS(SoundViewModels.Select(x => (x.Sound.Header, x.Sound.Data)).ToList());
+			File.WriteAllBytes(savePath, bytes);
+		}
 	}
 
 	public class SCV5ViewModel : BaseLocoFileViewModel

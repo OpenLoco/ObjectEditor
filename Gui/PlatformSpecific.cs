@@ -84,7 +84,7 @@ namespace OpenLoco.Gui
 
 			return await provider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{
-				Title = "Select a Locomotion object file",
+				Title = "Select a file",
 				AllowMultiple = false,
 				FileTypeFilter = filetypes,
 			});

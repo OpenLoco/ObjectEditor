@@ -94,7 +94,11 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		public async Task ImportSound()
-		{ }
+		{
+			var fsi = await MainWindowViewModel.GetFileSystemItemFromUser(PlatformSpecific.WavFileTypes);
+			var (header, pcmData) = SawyerStreamReader.LoadWavFile(fsi.Filename);
+			Sound = new UiSoundObject(Sound.SoundName, header, pcmData);
+		}
 
 		public async Task ExportSoundAsync()
 		{

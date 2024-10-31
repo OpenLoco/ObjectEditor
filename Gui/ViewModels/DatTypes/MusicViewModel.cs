@@ -1,4 +1,5 @@
-﻿using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.FileParsing;
 using OpenLoco.Gui.Models;
 using ReactiveUI.Fody.Helpers;
 using System.IO;
@@ -15,7 +16,25 @@ namespace OpenLoco.Gui.ViewModels
 		public override void Load()
 		{
 			var (header, data) = SawyerStreamReader.LoadWavFile(CurrentFile.Filename);
-			SoundViewModel = new SoundViewModel(CurrentFile.DisplayName, header, data);
+			SoundViewModel = new SoundViewModel(
+				GetDisplayName(CurrentFile.DisplayName),
+				header,
+				data);
+		}
+
+		string GetDisplayName(string filename)
+		{
+			if (OriginalDataFiles.Music.TryGetValue(CurrentFile.DisplayName, out var musicName))
+			{
+				return $"{musicName} ({CurrentFile.DisplayName})";
+			}
+
+			if (OriginalDataFiles.MiscellaneousTracks.TryGetValue(CurrentFile.DisplayName, out var miscTrackName))
+			{
+				return $"{miscTrackName} ({CurrentFile.DisplayName})";
+			}
+
+			return CurrentFile.DisplayName;
 		}
 
 		[Reactive]

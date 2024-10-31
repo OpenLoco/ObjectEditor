@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
@@ -9,6 +10,7 @@ using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -102,6 +104,8 @@ namespace OpenLoco.Gui.ViewModels
 			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.SettingsPath));
 			OpenG1 = ReactiveCommand.Create(LoadG1);
 			OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
+			OpenSoundEffect = ReactiveCommand.Create(LoadSoundEffects);
+			OpenMusic = ReactiveCommand.Create(LoadMusic);
 
 			UseDefaultPalette = ReactiveCommand.Create(LoadDefaultPalette);
 			UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
@@ -134,6 +138,21 @@ namespace OpenLoco.Gui.ViewModels
 #endif
 
 			#endregion
+		}
+
+		public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
+		{
+			var openFile = await PlatformSpecific.OpenFilePicker(filetypes);
+			if (openFile == null)
+			{
+				return null;
+			}
+
+			var path = openFile.SingleOrDefault()?.Path.LocalPath;
+
+			return path == null
+				? null
+				: new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
 		}
 
 		async Task LoadDefaultPalette()
@@ -171,28 +190,22 @@ namespace OpenLoco.Gui.ViewModels
 
 		public async Task LoadSingleObject()
 		{
-			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.DatFileTypes);
-			if (openFile == null)
+			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
+			if (fsi == null)
 			{
 				return;
 			}
 
-			var path = openFile.SingleOrDefault()?.Path.LocalPath;
-			if (path == null)
+			if (Model.TryLoadObject(new FileSystemItem(fsi.Filename, Path.GetFileName(fsi.Filename), FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 			{
-				return;
-			}
-
-			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
-			{
-				Model.Logger.Warning($"Successfully loaded {path}");
+				Model.Logger.Warning($"Successfully loaded {fsi.Filename}");
 				var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.Checksum);
-				var fsi = new FileSystemItemObject(path, uiLocoFile!.DatFileInfo.S5Header.Name, FileLocation.Local, source);
-				SetObjectViewModel(fsi);
+				var fsi2 = new FileSystemItemObject(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, FileLocation.Local, source);
+				SetObjectViewModel(fsi2);
 			}
 			else
 			{
-				Model.Logger.Warning($"Unable to load {path}");
+				Model.Logger.Warning($"Unable to load {fsi.Filename}");
 			}
 		}
 
@@ -201,57 +214,39 @@ namespace OpenLoco.Gui.ViewModels
 
 		public async Task LoadG1()
 		{
-			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.DatFileTypes);
-			if (openFile == null)
+			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
+			if (fsi != null)
 			{
-				return;
+				CurrentEditorModel = new G1ViewModel(fsi, Model);
 			}
-
-			var path = openFile.SingleOrDefault()?.Path.LocalPath;
-			if (path == null)
-			{
-				return;
-			}
-
-			var fsi = new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
-			CurrentEditorModel = new G1ViewModel(fsi, Model);
 		}
 
 		public async Task LoadSCV5()
 		{
-			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.SCV5FileTypes);
-			if (openFile == null)
+			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.SCV5FileTypes);
+			if (fsi != null)
 			{
-				return;
+				CurrentEditorModel = new SCV5ViewModel(fsi, Model);
 			}
-
-			var path = openFile.SingleOrDefault()?.Path.LocalPath;
-			if (path == null)
-			{
-				return;
-			}
-
-			var fsi = new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
-			CurrentEditorModel = new SCV5ViewModel(fsi, Model);
 		}
 
-		//public async Task LoadSaveGame()
-		//{
-		//	var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.SaveGameFileTypes);
-		//	if (openFile == null)
-		//	{
-		//		return;
-		//	}
+		async Task LoadMusic()
+		{
+			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
+			if (fsi != null)
+			{
+				CurrentEditorModel = new MusicViewModel(fsi, Model);
+			}
+		}
 
-		//	var path = openFile.SingleOrDefault()?.Path.LocalPath;
-		//	if (path == null)
-		//	{
-		//		return;
-		//	}
-
-		//	var fsi = new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
-		//	CurrentEditorModel = new SaveGameViewModel(fsi, Model);
-		//}
+		async Task LoadSoundEffects()
+		{
+			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
+			if (fsi != null)
+			{
+				CurrentEditorModel = new SoundEffectsViewModel(fsi, Model);
+			}
+		}
 
 		static Version GetCurrentAppVersion(Assembly assembly)
 		{

@@ -1,6 +1,4 @@
-using OpenLoco.Gui.Models;
 using NAudio.Wave;
-using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
@@ -19,24 +17,25 @@ namespace OpenLoco.Gui.ViewModels
 	{
 		WaveOutEvent? CurrentWOEvent { get; set; }
 
-		public SoundViewModel(ILocoObject parent)
-		{
-			if (parent.Object is not SoundObject soundObject)
-			{
-				return;
-			}
+		public SoundViewModel(string soundName, WaveFormatEx pcmHeader, byte[] pcmData)
+			: this(soundName, SawyerStreamWriter.WaveFormatExToRiff(pcmHeader, pcmData.Length), pcmData) { }
 
-			var hdr = soundObject.SoundObjectData.PcmHeader;
-			var text = parent.StringTable.Table["Name"][LanguageId.English_UK] ?? "<null>";
-			Sound = new UiSoundObject(text, SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), soundObject.PcmData);
+		public SoundViewModel(string soundName, RiffWavHeader riffHeader, byte[] pcmData)
+		{
+			Name = soundName;
+			Header = riffHeader;
+			Data = pcmData;
+			Duration = $"{CalculateDuration():0.##}s";
 
 			PlaySoundCommand = ReactiveCommand.Create(PlaySound);
 			PauseSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Pause());
 			StopSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Stop());
-
-			//ImportSoundCommand = ReactiveCommand.Create(ImportSound);
-			//ExportSoundCommand = ReactiveCommand.Create(ExportSound);
+			ImportSoundCommand = ReactiveCommand.Create(ImportSound);
+			ExportSoundCommand = ReactiveCommand.Create(ExportSoundAsync);
 		}
+
+		decimal CalculateDuration()
+			=> Data.Length / (decimal)Header.BytesPerSecond;
 
 		public void PlaySound()
 		{
@@ -71,8 +70,8 @@ namespace OpenLoco.Gui.ViewModels
 
 				CurrentWOEvent?.Dispose();
 
-				using (var ms = new MemoryStream(Sound.Data))
-				using (var rs = new RawSourceWaveStream(ms, new WaveFormat((int)Sound.Header.SampleRate, Sound.Header.BitsPerSample, Sound.Header.NumberOfChannels)))
+				using (var ms = new MemoryStream(Data))
+				using (var rs = new RawSourceWaveStream(ms, new WaveFormat((int)Header.SampleRate, Header.BitsPerSample, Header.NumberOfChannels)))
 				using (CurrentWOEvent = new WaveOutEvent())
 				{
 					CurrentWOEvent.Init(rs);
@@ -94,8 +93,34 @@ namespace OpenLoco.Gui.ViewModels
 			});
 		}
 
+		public async Task ImportSound()
+		{
+			var fsi = await MainWindowViewModel.GetFileSystemItemFromUser(PlatformSpecific.WavFileTypes);
+			var (header, pcmData) = SawyerStreamReader.LoadWavFile(fsi.Filename);
+			Header = header;
+			Data = pcmData;
+			Duration = $"{CalculateDuration():0.##}s";
+		}
+
+		public async Task ExportSoundAsync()
+		{
+			var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.WavFileTypes);
+			if (saveFile?.Path != null)
+			{
+				SawyerStreamWriter.ExportMusicAsWave(saveFile.Path.LocalPath, Header, Data);
+			}
+		}
 		[Reactive]
-		public UiSoundObject Sound { get; set; }
+		public string Name { get; init; }
+
+		[Reactive]
+		public string Duration { get; set; }
+
+		[Reactive]
+		public RiffWavHeader Header { get; set; }
+
+		[Reactive]
+		public byte[] Data { get; set; }
 
 		[Reactive]
 		public ICommand PlaySoundCommand { get; set; }
@@ -105,6 +130,12 @@ namespace OpenLoco.Gui.ViewModels
 
 		[Reactive]
 		public ICommand StopSoundCommand { get; set; }
+
+		[Reactive]
+		public ICommand ImportSoundCommand { get; set; }
+
+		[Reactive]
+		public ICommand ExportSoundCommand { get; set; }
 
 		public void Dispose()
 		{

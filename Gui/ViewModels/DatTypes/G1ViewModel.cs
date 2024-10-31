@@ -71,7 +71,7 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
+			var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
 			if (saveFile == null)
 			{
 				return;

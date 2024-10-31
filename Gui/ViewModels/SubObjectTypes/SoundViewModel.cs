@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Reflection.PortableExecutable;
+using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -33,7 +34,7 @@ namespace OpenLoco.Gui.ViewModels
 			PauseSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Pause());
 			StopSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Stop());
 			ImportSoundCommand = ReactiveCommand.Create(ImportSound);
-			ExportSoundCommand = ReactiveCommand.Create(ExportSound);
+			ExportSoundCommand = ReactiveCommand.Create(ExportSoundAsync);
 		}
 
 		public void PlaySound()
@@ -92,11 +93,19 @@ namespace OpenLoco.Gui.ViewModels
 			});
 		}
 
-		public void ImportSound()
+		public async Task ImportSound()
 		{ }
 
-		public void ExportSound()
-		{ }
+		public async Task ExportSoundAsync()
+		{
+			var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.WavFileTypes);
+			if (saveFile?.Path != null)
+			{
+				SawyerStreamWriter.ExportMusicAsWave(saveFile.Path.LocalPath, Sound.Header, Sound.Data);
+			}
+
+			//Logger.Info($"Saving sounds to {dirPath}");
+		}
 
 		[Reactive]
 		public UiSoundObject Sound { get; set; }

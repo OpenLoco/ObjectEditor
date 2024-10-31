@@ -140,9 +140,7 @@ namespace OpenLoco.Gui.ViewModels
 			#endregion
 		}
 
-
-
-		async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
+		public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
 		{
 			var openFile = await PlatformSpecific.OpenFilePicker(filetypes);
 			if (openFile == null)
@@ -192,28 +190,22 @@ namespace OpenLoco.Gui.ViewModels
 
 		public async Task LoadSingleObject()
 		{
-			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.DatFileTypes);
-			if (openFile == null)
+			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
+			if (fsi == null)
 			{
 				return;
 			}
 
-			var path = openFile.SingleOrDefault()?.Path.LocalPath;
-			if (path == null)
+			if (Model.TryLoadObject(new FileSystemItem(fsi.Filename, Path.GetFileName(fsi.Filename), FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 			{
-				return;
-			}
-
-			if (Model.TryLoadObject(new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
-			{
-				Model.Logger.Warning($"Successfully loaded {path}");
+				Model.Logger.Warning($"Successfully loaded {fsi.Filename}");
 				var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.Checksum);
-				var fsi = new FileSystemItemObject(path, uiLocoFile!.DatFileInfo.S5Header.Name, FileLocation.Local, source);
-				SetObjectViewModel(fsi);
+				var fsi2 = new FileSystemItemObject(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, FileLocation.Local, source);
+				SetObjectViewModel(fsi2);
 			}
 			else
 			{
-				Model.Logger.Warning($"Unable to load {path}");
+				Model.Logger.Warning($"Unable to load {fsi.Filename}");
 			}
 		}
 

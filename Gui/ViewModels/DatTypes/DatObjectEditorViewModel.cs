@@ -132,7 +132,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void SaveAs()
 		{
-			var saveFile = Task.Run(PlatformSpecific.SaveFilePicker).Result;
+			var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
 			if (saveFile != null)
 			{
 				SaveCore(saveFile.Path.LocalPath);

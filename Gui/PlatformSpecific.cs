@@ -71,6 +71,7 @@ namespace OpenLoco.Gui
 		public static readonly IReadOnlyList<FilePickerFileType> DatFileTypes = [new("Locomotion DAT Files") { Patterns = ["*.dat", "*.DAT"] }];
 		public static readonly IReadOnlyList<FilePickerFileType> PngFileTypes = [new("PNG Files") { Patterns = ["*.png", "*.PNG"] }];
 		public static readonly IReadOnlyList<FilePickerFileType> SCV5FileTypes = [new("SC5/SV5 Files") { Patterns = ["*.sc5", "*.SC5", "*.sv5", "*.SV5"] }];
+		public static readonly IReadOnlyList<FilePickerFileType> WavFileTypes = [new("WAV Files") { Patterns = ["*.wav", "*.WAV"] }];
 
 		public static async Task<IReadOnlyList<IStorageFile>> OpenFilePicker(IReadOnlyList<FilePickerFileType> filetypes)
 		{
@@ -89,7 +90,7 @@ namespace OpenLoco.Gui
 			});
 		}
 
-		public static async Task<IStorageFile?> SaveFilePicker()
+		public static async Task<IStorageFile?> SaveFilePicker(IReadOnlyList<FilePickerFileType> filetypes)
 		{
 			// See IoCFileOps project for an example of how to accomplish this.
 			if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
@@ -101,8 +102,8 @@ namespace OpenLoco.Gui
 			return await provider.SaveFilePickerAsync(new FilePickerSaveOptions()
 			{
 				ShowOverwritePrompt = true,
-				DefaultExtension = "dat",
 				Title = "Select a new file name",
+				FileTypeChoices = filetypes,
 			});
 		}
 	}

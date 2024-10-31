@@ -12,30 +12,28 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Reflection.PortableExecutable;
 
 namespace OpenLoco.Gui.ViewModels
 {
 	public class SoundViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
 	{
 		WaveOutEvent? CurrentWOEvent { get; set; }
+		public SoundViewModel(string soundName, RiffWavHeader riffHeader, byte[] pcmData)
+			: this(new UiSoundObject(soundName, riffHeader, pcmData)) { }
 
-		public SoundViewModel(ILocoObject parent)
+		public SoundViewModel(string soundName, WaveFormatEx pcmHeader, byte[] pcmData)
+			: this(new UiSoundObject(soundName, SawyerStreamWriter.WaveFormatExToRiff(pcmHeader, pcmData.Length), pcmData)) { }
+
+		public SoundViewModel(UiSoundObject soundObject)
 		{
-			if (parent.Object is not SoundObject soundObject)
-			{
-				return;
-			}
-
-			var hdr = soundObject.SoundObjectData.PcmHeader;
-			var text = parent.StringTable.Table["Name"][LanguageId.English_UK] ?? "<null>";
-			Sound = new UiSoundObject(text, SawyerStreamWriter.WaveFormatExToRiff(hdr, soundObject.PcmData.Length), soundObject.PcmData);
+			Sound = soundObject;
 
 			PlaySoundCommand = ReactiveCommand.Create(PlaySound);
 			PauseSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Pause());
 			StopSoundCommand = ReactiveCommand.Create(() => CurrentWOEvent?.Stop());
-
-			//ImportSoundCommand = ReactiveCommand.Create(ImportSound);
-			//ExportSoundCommand = ReactiveCommand.Create(ExportSound);
+			ImportSoundCommand = ReactiveCommand.Create(ImportSound);
+			ExportSoundCommand = ReactiveCommand.Create(ExportSound);
 		}
 
 		public void PlaySound()
@@ -94,6 +92,12 @@ namespace OpenLoco.Gui.ViewModels
 			});
 		}
 
+		public void ImportSound()
+		{ }
+
+		public void ExportSound()
+		{ }
+
 		[Reactive]
 		public UiSoundObject Sound { get; set; }
 
@@ -105,6 +109,12 @@ namespace OpenLoco.Gui.ViewModels
 
 		[Reactive]
 		public ICommand StopSoundCommand { get; set; }
+
+		[Reactive]
+		public ICommand ImportSoundCommand { get; set; }
+
+		[Reactive]
+		public ICommand ExportSoundCommand { get; set; }
 
 		public void Dispose()
 		{

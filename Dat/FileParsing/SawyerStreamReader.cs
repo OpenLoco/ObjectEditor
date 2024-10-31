@@ -502,6 +502,9 @@ namespace OpenLoco.Dat.FileParsing
 			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
 		};
 
+		public static (RiffWavHeader header, byte[] data) LoadWavFile(string filename)
+			=> LoadWavFile(File.ReadAllBytes(filename));
+
 		public static (RiffWavHeader header, byte[] data) LoadWavFile(byte[] data)
 		{
 			using (var ms = new MemoryStream(data))
@@ -530,6 +533,9 @@ namespace OpenLoco.Dat.FileParsing
 			data = data[(int)chunk.DataLength..];
 			return Decode(chunk.Encoding, chunkBytes);
 		}
+
+		public static List<(WaveFormatEx header, byte[] data)> LoadSoundEffectsFromCSS(string filename)
+			=> LoadSoundEffectsFromCSS(File.ReadAllBytes(filename));
 
 		public static List<(WaveFormatEx header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
 		{

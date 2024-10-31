@@ -95,8 +95,8 @@ namespace OpenLoco.Gui.ViewModels
 
 					var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp) ? itnp : new DefaultImageTableNameProvider();
 					StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
-					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject
-						? new SoundViewModel(CurrentObject.LocoObject)
+					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
+						? new SoundViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
 						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
 
 					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), Logger, false);

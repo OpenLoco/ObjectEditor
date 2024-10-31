@@ -18,6 +18,9 @@ namespace OpenLoco.Dat.Types
 		[property: LocoStructOffset(0x24)] uint32_t DataMarker,
 		[property: LocoStructOffset(0x28)] uint32_t DataLength) : ILocoStruct
 	{
+		public uint BytesPerSecond
+			=> SampleRate * BitsPerSample * NumberOfChannels / 8;
+
 		public bool Validate()
 		{
 			if (Signature != 0x46464952) // "RIFF"

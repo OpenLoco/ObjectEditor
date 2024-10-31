@@ -565,8 +565,8 @@
 			<Border BorderThickness="1">
 				<StackPanel Orientation="Vertical" Background="{DynamicResource ScrollBarTrackFill}">
 					<StackPanel Margin="4" Orientation="Horizontal">
-						<TextBlock Text="{Binding Sound.SoundName}" VerticalAlignment="Center" Margin="4"/>
-						<TextBlock Text="{Binding Sound.Duration}" VerticalAlignment="Center" Margin="4"/>
+						<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="4"/>
+						<TextBlock Text="{Binding Duration}" VerticalAlignment="Center" Margin="4"/>
 					</StackPanel>
 					<OnPlatform>
 						<OnPlatform.Windows>

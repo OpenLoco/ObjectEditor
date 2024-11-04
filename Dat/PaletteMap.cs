@@ -40,7 +40,7 @@ namespace OpenLoco.Dat
 
 		public (Color Color, byte Index)[] Palette { get; set; }
 
-		public (Color Color, byte Index) Transparent
+		public static (Color Color, byte Index) Transparent
 			=> (Color.FromRgba(0, 0, 0, 0), 0); //Palette[0];
 
 		public (Color Color, byte Index)[] TextRendering
@@ -140,14 +140,15 @@ namespace OpenLoco.Dat
 			return bytes;
 		}
 
-		public Image<Rgba32>? ConvertG1ToRgba32Bitmap(G1Element32 g1Element)
+		public bool TryConvertG1ToRgba32Bitmap(G1Element32 g1Element, out Image<Rgba32>? image)
 		{
 			if (g1Element.Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
 			{
-				return null;
+				image = null;
+				return false;
 			}
 
-			var image = new Image<Rgba32>(g1Element.Width, g1Element.Height);
+			image = new Image<Rgba32>(g1Element.Width, g1Element.Height);
 
 			var index = 0;
 			for (var y = 0; y < g1Element.Height; y++)
@@ -182,7 +183,7 @@ namespace OpenLoco.Dat
 				}
 			}
 
-			return image;
+			return true;
 		}
 
 		byte ColorToPaletteIndex(Color c)

@@ -6,7 +6,6 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
@@ -180,7 +179,7 @@ namespace OpenLoco.ObjectService
 		public async Task<IResult> GetScenario(int uniqueScenarioId, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			Console.WriteLine($"Scenario [{uniqueScenarioId}] requested");
-			return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
+			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 		}
 
 		// eg: <todo>
@@ -236,7 +235,7 @@ namespace OpenLoco.ObjectService
 
 			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
 
-			(DatFileInfo DatFileInfo, ILocoObject? LocoObject)? obj = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, Logger);
+			var (_, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, Logger);
 			var uuid = Guid.NewGuid();
 			var saveFileName = Path.Combine(ServerFolderManager.ObjectsCustomFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
@@ -246,7 +245,7 @@ namespace OpenLoco.ObjectService
 			var creationTime = request.CreationDate;
 
 			VehicleType? vehicleType = null;
-			if (obj?.LocoObject?.Object is VehicleObject veh)
+			if (LocoObject?.Object is VehicleObject veh)
 			{
 				vehicleType = veh.Type;
 			}
@@ -266,7 +265,7 @@ namespace OpenLoco.ObjectService
 				UploadDate = DateTimeOffset.UtcNow,
 				Tags = [],
 				Modpacks = [],
-				Availability = obj?.LocoObject == null ? ObjectAvailability.Unavailable : ObjectAvailability.AllGames,
+				Availability = LocoObject == null ? ObjectAvailability.Unavailable : ObjectAvailability.AllGames,
 				Licence = null,
 			};
 

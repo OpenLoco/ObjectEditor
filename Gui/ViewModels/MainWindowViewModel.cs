@@ -130,6 +130,10 @@ namespace OpenLoco.Gui.ViewModels
 				{
 					LatestVersionText = $"newer version exists: {latestVersion}";
 				}
+				else
+				{
+					LatestVersionText = "latest version";
+				}
 			}
 			catch (Exception ex)
 			{

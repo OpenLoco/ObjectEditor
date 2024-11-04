@@ -267,7 +267,7 @@ namespace OpenLoco.Gui.ViewModels
 
 	public class TreeNode(string title, string offsetText, ObservableCollection<TreeNode> nodes)
 	{
-		public ObservableCollection<TreeNode>? Nodes { get; } = nodes;
+		public ObservableCollection<TreeNode> Nodes { get; } = nodes;
 		public string Title { get; } = title;
 		public string OffsetText { get; } = offsetText;
 		public TreeNode() : this("<empty>", "<empty>") { }

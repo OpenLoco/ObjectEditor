@@ -182,7 +182,7 @@ namespace OpenLoco.Gui.Models
 			ILocoObject? locoObject = null;
 			MetadataModel? metadata = null;
 			uiLocoFile = null;
-			List<Image<Rgba32>?> images = [];
+			List<Image<Rgba32>> images = [];
 
 			try
 			{
@@ -192,6 +192,12 @@ namespace OpenLoco.Gui.Models
 
 					if (!OnlineCache.TryGetValue(uniqueObjectId, out var locoObj))
 					{
+						if (WebClient == null)
+						{
+							Logger.Error("Web client is null");
+							return false;
+						}
+
 						Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {WebClient.BaseAddress}");
 						locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId, true)).Result;
 
@@ -212,6 +218,7 @@ namespace OpenLoco.Gui.Models
 						Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");
 						Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], modpacks=[{string.Join(", ", locoObj?.Modpacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
 						OnlineCache.Add(uniqueObjectId, locoObj!);
+						// todo: autosave downloaded object into downloads folder
 					}
 					else
 					{
@@ -248,7 +255,10 @@ namespace OpenLoco.Gui.Models
 						{
 							foreach (var i in locoObject.G1Elements)
 							{
-								images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, out var image))
+								{
+									images.Add(image!);
+								}
 							}
 						}
 					}
@@ -267,7 +277,10 @@ namespace OpenLoco.Gui.Models
 						{
 							foreach (var i in locoObject.G1Elements)
 							{
-								images.Add(PaletteMap.ConvertG1ToRgba32Bitmap(i));
+								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, out var image))
+								{
+									images.Add(image!);
+								}
 							}
 						}
 					}
@@ -454,6 +467,12 @@ namespace OpenLoco.Gui.Models
 			Logger.Info($"Uploading {dat.Filename} to object repository");
 			var filename = Path.Combine(Settings.ObjDataDirectory, dat.Filename);
 			var lastModifiedTime = File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows
+			if (WebClient == null)
+			{
+				Logger.Error("Web client is null");
+				return;
+			}
+
 			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), lastModifiedTime, Logger);
 			await Task.Delay(100); // wait 100ms, ie don't DoS the server
 		}

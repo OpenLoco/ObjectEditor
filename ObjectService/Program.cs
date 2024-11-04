@@ -26,8 +26,8 @@ builder.Services.AddHttpLogging(logging =>
 });
 
 var tokenPolicy = "token";
-var myOptions = new ObjectServiceRateLimitOptions();
-builder.Configuration.GetSection(ObjectServiceRateLimitOptions.MyRateLimit).Bind(myOptions);
+var myOptions = new RateLimitOptions();
+builder.Configuration.GetSection(RateLimitOptions.Name).Bind(myOptions);
 
 builder.Services.AddRateLimiter(rlOptions => rlOptions
 	.AddTokenBucketLimiter(policyName: tokenPolicy, options =>

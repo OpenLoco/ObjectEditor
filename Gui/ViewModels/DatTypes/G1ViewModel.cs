@@ -35,7 +35,10 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				try
 				{
-					images.Add(Model.PaletteMap.ConvertG1ToRgba32Bitmap(e)!);
+					if (Model.PaletteMap.TryConvertG1ToRgba32Bitmap(e, out var image))
+					{
+						images.Add(image!);
+					}
 				}
 				catch (Exception ex)
 				{

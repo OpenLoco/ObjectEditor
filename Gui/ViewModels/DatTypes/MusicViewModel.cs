@@ -22,19 +22,19 @@ namespace OpenLoco.Gui.ViewModels
 				data);
 		}
 
-		string GetDisplayName(string filename)
+		static string GetDisplayName(string filename)
 		{
-			if (OriginalDataFiles.Music.TryGetValue(CurrentFile.DisplayName, out var musicName))
+			if (OriginalDataFiles.Music.TryGetValue(filename, out var musicName))
 			{
-				return $"{musicName} ({CurrentFile.DisplayName})";
+				return $"{musicName} ({filename})";
 			}
 
-			if (OriginalDataFiles.MiscellaneousTracks.TryGetValue(CurrentFile.DisplayName, out var miscTrackName))
+			if (OriginalDataFiles.MiscellaneousTracks.TryGetValue(filename, out var miscTrackName))
 			{
-				return $"{miscTrackName} ({CurrentFile.DisplayName})";
+				return $"{miscTrackName} ({filename})";
 			}
 
-			return CurrentFile.DisplayName;
+			return filename;
 		}
 
 		[Reactive]

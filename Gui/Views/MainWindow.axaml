@@ -426,7 +426,12 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:MusicViewModel">
-			<ContentControl Content="{Binding SoundViewModel}"/>
+			<DockPanel>
+				<ContentControl Content="{Binding SoundViewModel}" DockPanel.Dock="Left"/>
+				<ScrollViewer>
+					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding SoundViewModel.Header}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
+				</ScrollViewer>
+			</DockPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:SoundEffectsViewModel">

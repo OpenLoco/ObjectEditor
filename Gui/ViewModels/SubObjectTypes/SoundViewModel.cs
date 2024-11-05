@@ -5,6 +5,7 @@ using OpenLoco.Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -113,13 +114,13 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public string Name { get; init; }
 
-		[Reactive]
+		[Reactive, Editable(false)]
 		public string Duration { get; set; }
 
-		[Reactive]
+		[Reactive, Editable(false)]
 		public RiffWavHeader Header { get; set; }
 
-		[Reactive]
+		[Reactive, Editable(false)]
 		public byte[] Data { get; set; }
 
 		[Reactive]

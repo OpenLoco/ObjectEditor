@@ -27,7 +27,7 @@ namespace OpenLoco.Dat
 		public void SaveIndex(string indexFile, JsonSerializerOptions options)
 			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
 
-		public static async Task<ObjectIndexEntry> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file, ILogger logger)
+		public static async Task<ObjectIndexEntry?> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file, ILogger logger)
 			=> await Task.Run(() => GetDatFileInfoFromBytes(file, logger));
 
 		public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
@@ -57,6 +57,7 @@ namespace OpenLoco.Dat
 
 			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
 			ConcurrentQueue<ObjectIndexEntry> pendingIndices = [];
+			ConcurrentQueue<string> failedFiles = [];
 
 			var producerTask = Task.Run(async () =>
 			{
@@ -70,8 +71,16 @@ namespace OpenLoco.Dat
 				{
 					if (pendingFiles.TryDequeue(out var content))
 					{
-						pendingIndices.Enqueue(await GetDatFileInfoFromBytesAsync(content, logger)); // no possible way to know if an object is invalid from partial analysis, so this will always return 'valid'
-						progress?.Report(pendingIndices.Count / (float)files.Length);
+						var entry = await GetDatFileInfoFromBytesAsync(content, logger);
+						if (entry != null)
+						{
+							pendingIndices.Enqueue(entry);
+						}
+						else
+						{
+							failedFiles.Enqueue(content.Filename);
+						}
+						progress?.Report((pendingIndices.Count + failedFiles.Count) / (float)files.Length);
 					}
 				}
 			});
@@ -100,11 +109,12 @@ namespace OpenLoco.Dat
 			}
 		}
 
-		public static ObjectIndexEntry GetDatFileInfoFromBytes((string Filename, byte[] Data) file, ILogger logger)
+		public static ObjectIndexEntry? GetDatFileInfoFromBytes((string Filename, byte[] Data) file, ILogger logger)
 		{
 			if (!SawyerStreamReader.TryGetHeadersFromBytes(file.Data, out var hdrs, logger))
 			{
-				throw new ArgumentException($"{file.Filename} must have valid S5 and Object headers to call this method", nameof(file));
+				logger.Error($"{file.Filename} must have valid S5 and Object headers to call this method", nameof(file));
+				return null;
 			}
 
 			var remainingData = file.Data[(S5Header.StructLength + ObjectHeader.StructLength)..];

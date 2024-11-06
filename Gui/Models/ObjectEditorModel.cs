@@ -216,7 +216,7 @@ namespace OpenLoco.Gui.Models
 						}
 
 						Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");
-						Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], modpacks=[{string.Join(", ", locoObj?.Modpacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
+						Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", locoObj?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
 						OnlineCache.Add(uniqueObjectId, locoObj!);
 
 						if (!string.IsNullOrEmpty(locoObj!.DatBytes))
@@ -252,7 +252,7 @@ namespace OpenLoco.Gui.Models
 							LastEditDate = locoObj.LastEditDate,
 							UploadDate = locoObj.UploadDate,
 							Tags = locoObj.Tags,
-							Modpacks = locoObj.Modpacks,
+							ObjectPacks = locoObj.ObjectPacks,
 							Availability = locoObj.Availability,
 							Licence = locoObj.Licence,
 						};

@@ -235,7 +235,9 @@
 													<ListBox.ItemTemplate>
 														<DataTemplate>
 															<Border BorderThickness="2">
-																<TextBlock Margin="4" Text="{Binding Name}" />
+																<StackPanel>
+																	<TextBlock Margin="4" Text="{Binding}" />
+																</StackPanel>
 															</Border>
 														</DataTemplate>
 													</ListBox.ItemTemplate>
@@ -263,8 +265,8 @@
 										</Border>
 										<Border BorderThickness="1" Margin="4" >
 											<StackPanel>
-												<TextBlock Margin="4">Modpacks</TextBlock>
-												<ListBox ItemsSource="{Binding CurrentObject.Metadata.Modpacks}">
+												<TextBlock Margin="4">Object Packs</TextBlock>
+												<ListBox ItemsSource="{Binding CurrentObject.Metadata.ObjectPacks}">
 													<ListBox.ItemsPanel>
 														<ItemsPanelTemplate>
 															<WrapPanel/>

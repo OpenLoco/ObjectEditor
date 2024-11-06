@@ -1,13 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpenLoco.Definitions.Database
 {
 	[Index(nameof(DatName), nameof(DatChecksum), IsDescending = [true, false], IsUnique = true)]
 	[Index(nameof(UniqueName), IsUnique = true)]
-	public class TblLocoObject
+	public class TblSCV5File
 	{
 		public int Id { get; set; }
 
@@ -23,12 +22,6 @@ namespace OpenLoco.Definitions.Database
 
 		public ObjectSource ObjectSource { get; set; }
 
-		public ObjectType ObjectType { get; set; }
-
-		public VehicleType? VehicleType { get; set; }
-
-		#region Metadata
-
 		public string? Description { get; set; }
 
 		public ICollection<TblAuthor> Authors { get; set; }
@@ -42,12 +35,8 @@ namespace OpenLoco.Definitions.Database
 
 		public ICollection<TblTag> Tags { get; set; }
 
-		public ICollection<TblLocoObjectPack> ObjectPacks { get; set; } // aka modpack
-
-		public ObjectAvailability Availability { get; set; }
+		public ICollection<TblSCV5FilePack> SCV5FilePacks { get; set; }
 
 		public TblLicence? Licence { get; set; }
-
-		#endregion
 	}
 }

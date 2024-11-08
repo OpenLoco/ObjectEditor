@@ -21,7 +21,9 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 		[Reactive, Category("Stats")] public uint8_t Reliability { get; set; }
 		[Reactive] public VehicleObjectFlags Flags { get; set; }
-		[Reactive] public object_id TrackTypeId { get; set; }
+		[Reactive] public S5Header TrackType { get; set; }
+		[Reactive] public S5Header RackRail { get; set; }
+		[Reactive, Category("Sound")] public S5Header Sound { get; set; }
 		[Reactive, Category("Cost"), Range(0, 32)] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost"), Range(1, int16_t.MaxValue)] public int16_t CostFactor { get; set; }
 		[Reactive, Category("Cost"), Range(0, 32)] public uint8_t RunCostIndex { get; set; }
@@ -54,7 +56,7 @@ namespace OpenLoco.Gui.ViewModels
 			Mode = veh.Mode;
 			Type = veh.Type;
 			var_04 = veh.var_04;
-			TrackTypeId = veh.TrackTypeId;
+			TrackType = veh.TrackType;
 			CostIndex = veh.CostIndex;
 			CostFactor = veh.CostFactor;
 			Reliability = veh.Reliability;
@@ -80,7 +82,8 @@ namespace OpenLoco.Gui.ViewModels
 			var_113 = veh.var_113;
 			DesignedYear = veh.DesignedYear;
 			ObsoleteYear = veh.ObsoleteYear;
-			RackRailType = veh.RackRailType;
+			RackRail = veh.RackRail;
+			Sound = veh.Sound;
 			SoundType = veh.SoundType;
 			StartSounds = new(veh.StartSounds);
 			FrictionSound = veh.SoundPropertyFriction;
@@ -102,7 +105,7 @@ namespace OpenLoco.Gui.ViewModels
 				Mode = Mode,
 				Type = Type,
 				var_04 = var_04,
-				TrackTypeId = TrackTypeId,
+				TrackType = TrackType,
 				CostIndex = CostIndex,
 				CostFactor = CostFactor,
 				Reliability = Reliability,
@@ -117,7 +120,7 @@ namespace OpenLoco.Gui.ViewModels
 				var_113 = var_113,
 				DesignedYear = DesignedYear,
 				ObsoleteYear = ObsoleteYear,
-				RackRailType = RackRailType,
+				RackRail = RackRail,
 				SoundType = SoundType,
 				SoundPropertyFriction = FrictionSound,
 				SoundPropertyEngine1 = Engine1Sound,

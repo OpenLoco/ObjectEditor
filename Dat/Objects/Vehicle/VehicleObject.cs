@@ -41,7 +41,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x113)] uint8_t var_113,
 		[property: LocoStructOffset(0x114)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x116)] uint16_t ObsoleteYear,
-		[property: LocoStructOffset(0x118), LocoStructVariableLoad] uint8_t RackRailType,
+		[property: LocoStructOffset(0x118), LocoStructVariableLoad, Browsable(false)] uint8_t RackRailType,
 		[property: LocoStructOffset(0x119)] DrivingSoundType SoundType,
 		// this is a union...length is the length of the longest union struct, which is Engine2Sound. make the byte[] not visible in editor
 		[property: LocoStructOffset(0x11A), LocoArrayLength(VehicleObject.MaxUnionSoundStructLength), Browsable(false)] byte[] SoundPropertiesData,

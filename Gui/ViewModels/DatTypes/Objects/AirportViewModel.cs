@@ -3,6 +3,7 @@ using OpenLoco.Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -18,7 +19,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public uint32_t LargeTiles { get; set; }
 		[Reactive, Category("Building")] public BindingList<uint8_t> BuildingVariationHeights { get; set; }
 		[Reactive, Category("Building")] public BindingList<BuildingPartAnimation> BuildingVariationAnimations { get; set; }
-		[Reactive, Category("Building")] public BindingList<uint8_t[]> BuildingVariationParts { get; set; }
+		[Reactive, Category("Building"), Length(AirportObject.VariationPartCount, AirportObject.VariationPartCount)] public BindingList<uint8_t[]> BuildingVariationParts { get; set; }
 		[Reactive, Category("Building")] public BindingList<AirportBuilding> BuildingPositions { get; set; }
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
@@ -26,7 +27,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Movement")] public BindingList<MovementNode> MovementNodes { get; set; }
 		[Reactive, Category("Movement")] public BindingList<MovementEdge> MovementEdges { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_07 { get; set; }
-		[Reactive, Category("<unknown>")] public BindingList<uint8_t> pad_B6 { get; set; }
+		[Reactive, Category("<unknown>"), Length(4, 4)] public BindingList<uint8_t> pad_B6 { get; set; }
 
 		public AirportViewModel(AirportObject ao)
 		{

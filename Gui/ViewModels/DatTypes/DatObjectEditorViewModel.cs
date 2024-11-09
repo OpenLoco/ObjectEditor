@@ -88,6 +88,10 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						CurrentObjectViewModel = new TownNamesViewModel(tow);
 					}
+					else if (CurrentObject.LocoObject.Object is AirportObject ao)
+					{
+						CurrentObjectViewModel = new AirportViewModel(ao);
+					}
 					else
 					{
 						CurrentObjectViewModel = new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };

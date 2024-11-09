@@ -134,6 +134,10 @@
 			<pgc:PropertyGrid x:Name="propertyGrid_ObjectVm" DataContext="{Binding Object}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 		</DataTemplate>
 
+		<DataTemplate DataType="vm:AirportViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_AirportVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+		</DataTemplate>
+
 		<DataTemplate DataType="vm:VehicleViewModel">
 			<pgc:PropertyGrid x:Name="propertyGrid_VehicleVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 		</DataTemplate>

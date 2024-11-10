@@ -146,6 +146,10 @@
 			<pgc:PropertyGrid x:Name="propertyGrid_TownNamesVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
 		</DataTemplate>
 
+		<DataTemplate DataType="vm:IndustryViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_IndustryVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+		</DataTemplate>
+
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
 			<DockPanel DataContext="{Binding}" Margin="10">
 				<Grid ColumnDefinitions="*, Auto, 384">

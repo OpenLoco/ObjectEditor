@@ -384,8 +384,8 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.BuildingParts[4][0], Is.EqualTo(8));
 				Assert.That(struc.BuildingParts[4][1], Is.EqualTo(9));
 				// Rest of object
-				Assert.That(struc.ClearCostFactor, Is.EqualTo(240), nameof(struc.ClearCostFactor));
-				Assert.That(struc.CostFactor, Is.EqualTo(400), nameof(struc.CostFactor));
+				Assert.That(struc.SellCostFactor, Is.EqualTo(240), nameof(struc.SellCostFactor));
+				Assert.That(struc.BuildCostFactor, Is.EqualTo(400), nameof(struc.BuildCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
 				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltAwayFromTown | IndustryObjectFlags.unk_18 | IndustryObjectFlags.unk_19), nameof(struc.Flags));
@@ -465,8 +465,8 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.BuildingParts[1][1], Is.EqualTo(3));
 
 				// Rest of object
-				Assert.That(struc.ClearCostFactor, Is.EqualTo(240), nameof(struc.ClearCostFactor));
-				Assert.That(struc.CostFactor, Is.EqualTo(320), nameof(struc.CostFactor));
+				Assert.That(struc.SellCostFactor, Is.EqualTo(240), nameof(struc.SellCostFactor));
+				Assert.That(struc.BuildCostFactor, Is.EqualTo(320), nameof(struc.BuildCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
 				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltNearWater | IndustryObjectFlags.BuiltNearTown | IndustryObjectFlags.BuiltNearDesert | IndustryObjectFlags.CanBeFoundedByPlayer), nameof(struc.Flags));

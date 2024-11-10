@@ -30,7 +30,7 @@ namespace OpenLoco.Dat.Tests
 			var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 			var paletteMap = new PaletteMap(paletteFile);
 
-			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
+			Assert.That(PaletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
 		}
 
 		[Test]
@@ -40,7 +40,7 @@ namespace OpenLoco.Dat.Tests
 			var paletteMap = new PaletteMap(paletteFile);
 			var paletteColours = paletteMap.Palette.Select(x => x.Color).ToArray();
 
-			Assert.That(paletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
+			Assert.That(PaletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
 			Assert.That(paletteColours.Length, Is.EqualTo(paletteColours.ToHashSet().Count));
 		}
 
@@ -61,11 +61,9 @@ namespace OpenLoco.Dat.Tests
 			{
 				_ = Parallel.ForEach(obj.Value.LocoObject.G1Elements, (element, _, i) =>
 				{
-					var image0 = paletteMap.ConvertG1ToRgba32Bitmap(element);
-
-					if (image0 != null)
+					if (paletteMap.TryConvertG1ToRgba32Bitmap(element, out var image0))
 					{
-						var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0, element.Flags);
+						var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0!, element.Flags);
 						Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i}]");
 					}
 				});

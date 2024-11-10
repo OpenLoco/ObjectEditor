@@ -38,8 +38,8 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0xCC)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0xCE)] uint8_t TotalOfTypeInScenario, // Total industries of this type that can be created in a scenario Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.
 		[property: LocoStructOffset(0xCF)] uint8_t CostIndex,
-		[property: LocoStructOffset(0xD0)] int16_t CostFactor,
-		[property: LocoStructOffset(0xD2)] int16_t ClearCostFactor,
+		[property: LocoStructOffset(0xD0)] int16_t BuildCostFactor,
+		[property: LocoStructOffset(0xD2)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0xD4)] uint8_t ScaffoldingSegmentType,
 		[property: LocoStructOffset(0xD5)] Colour ScaffoldingColour,
 		[property: LocoStructOffset(0xD6), LocoArrayLength(IndustryObject.InitialProductionRateCount)] IndustryObjectProductionRateRange[] InitialProductionRate,
@@ -52,7 +52,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0xEA)] uint8_t var_EA,
 		[property: LocoStructOffset(0xEB)] uint8_t var_EB,
 		[property: LocoStructOffset(0xEC)] uint8_t var_EC,
-		[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.WallTypeCount)] List<S5Header> WallTypes, // There can be up to 4 different wall types for an industry
+		[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxWallTypeCount)] List<S5Header> WallTypes, // There can be up to 4 different wall types for an industry
 		[property: LocoStructOffset(0xF1), LocoStructVariableLoad] object_id _BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
 		[property: LocoStructOffset(0xF2), LocoStructVariableLoad] object_id _BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
@@ -63,7 +63,7 @@ namespace OpenLoco.Dat.Objects
 		public const int MaxProducedCargoType = 2;
 		public const int MaxRequiredCargoType = 3;
 		public const int VariationPartCount = 32;
-		public const int WallTypeCount = 4;
+		public const int MaxWallTypeCount = 4;
 
 		//public List<IndustryObjectUnk38> UnkIndustry38 { get; set; } = [];
 
@@ -148,8 +148,8 @@ namespace OpenLoco.Dat.Objects
 
 			// wall types
 			WallTypes.Clear();
-			WallTypes.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, WallTypeCount));
-			remainingData = remainingData[(S5Header.StructLength * WallTypeCount)..];
+			WallTypes.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxWallTypeCount));
+			remainingData = remainingData[(S5Header.StructLength * MaxWallTypeCount)..];
 
 			// wall type
 			if (remainingData[0] != 0xFF)
@@ -239,7 +239,7 @@ namespace OpenLoco.Dat.Objects
 				}
 
 				// wall types
-				foreach (var obj in WallTypes.Fill(WallTypeCount, S5Header.NullHeader))
+				foreach (var obj in WallTypes.Fill(MaxWallTypeCount, S5Header.NullHeader))
 				{
 					ms.Write(obj.Write());
 				}
@@ -291,7 +291,7 @@ namespace OpenLoco.Dat.Objects
 			}
 
 			// 230/256 = ~90%
-			if (-ClearCostFactor > CostFactor * 230 / 256)
+			if (-SellCostFactor > BuildCostFactor * 230 / 256)
 			{
 				return false;
 			}

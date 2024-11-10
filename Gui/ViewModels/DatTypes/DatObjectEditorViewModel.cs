@@ -92,6 +92,10 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						CurrentObjectViewModel = new AirportViewModel(ao);
 					}
+					else if (CurrentObject.LocoObject.Object is IndustryObject io)
+					{
+						CurrentObjectViewModel = new IndustryViewModel(io);
+					}
 					else
 					{
 						CurrentObjectViewModel = new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };

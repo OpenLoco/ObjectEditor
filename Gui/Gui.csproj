@@ -18,6 +18,7 @@
     <Version>1.2.3</Version>
     <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <ApplicationIcon>Assets\loco_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +27,10 @@
 
   <ItemGroup>
     <None Remove="version.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\loco_icon.ico" />
   </ItemGroup>
 
   <ItemGroup>

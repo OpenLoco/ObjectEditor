@@ -1,10 +1,12 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
+using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -15,27 +17,27 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public uint16_t ObsoleteYear { get; set; }
 		[Reactive] public IndustryObjectFlags Flags { get; set; }
 		[Reactive] public Colour MapColour { get; set; }
+		[Reactive] public uint32_t AvailableColours { get; set; }  // bitset
 		[Reactive, Category("Production")] public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; set; }
-		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5Header> ProducedCargo { get; set; }   // (0xFF = null)
-		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5Header> RequiredCargo { get; set; } // (0xFF = null)
+		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5Header> ProducedCargo { get; set; }
+		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5Header> RequiredCargo { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
-		[Reactive, Category("Building")] public uint32_t AvailableColours { get; set; }  // bitset
-		[Reactive, Category("Building"), Length(IndustryObject.AnimationSequencesCount, IndustryObject.AnimationSequencesCount)] public BindingList<uint8_t[]> AnimationSequences { get; set; } // Access with getAnimationSequence helper method
+		[Reactive, Category("Building"), Length(IndustryObject.AnimationSequencesCount, IndustryObject.AnimationSequencesCount)] public BindingList<BindingList<uint8_t>> AnimationSequences { get; set; }
 		[Reactive, Category("Building")] public BindingList<BuildingPartAnimation> BuildingPartAnimations { get; set; }
-		[Reactive, Category("Building")] public BindingList<uint8_t> BuildingPartHeights { get; set; }    // This is the height of a building image
-		[Reactive, Category("Building"), Length(IndustryObject.VariationPartCount, IndustryObject.VariationPartCount)] public BindingList<uint8_t[]> BuildingParts { get; set; }  // Access with getBuildingParts helper method
+		[Reactive, Category("Building")] public BindingList<uint8_t> BuildingPartHeights { get; set; }
+		[Reactive, Category("Building"), Length(IndustryObject.VariationPartCount, IndustryObject.VariationPartCount)] public BindingList<BindingList<uint8_t>> BuildingParts { get; set; }
 		[Reactive, Category("Building")] public uint8_t MinNumBuildings { get; set; }
 		[Reactive, Category("Building")] public uint8_t MaxNumBuildings { get; set; }
 		[Reactive, Category("Building")] public BindingList<uint8_t> Buildings { get; set; }
-		[Reactive, Category("Building")] public uint32_t BuildingSizeFlags { get; set; } // flags indicating the building types size 1:large4x4{ get; set; } 0:small1x1
+		[Reactive, Category("Building")] public uint32_t BuildingSizeFlags { get; set; }
 		[Reactive, Category("Building")] public uint8_t ScaffoldingSegmentType { get; set; }
 		[Reactive, Category("Building")] public Colour ScaffoldingColour { get; set; }
-		[Reactive, Category("Building"), Length(0, IndustryObject.MaxWallTypeCount)] public BindingList<S5Header> WallTypes { get; set; } // There can be up to 4 different wall types for an industry
+		[Reactive, Category("Building"), Length(0, IndustryObject.MaxWallTypeCount)] public BindingList<S5Header> WallTypes { get; set; }
 		[Reactive, Category("Building")] public S5Header? BuildingWall { get; set; }
 		[Reactive, Category("Building")] public S5Header? BuildingWallEntrance { get; set; }
-		[Reactive, Category("<unknown>")] public BindingList<IndustryObjectUnk38> var_38 { get; set; }    // Access with getUnk38 helper method
+		[Reactive, Category("<unknown>")] public BindingList<IndustryObjectUnk38> var_38 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_E8 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_E9 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_EA { get; set; }
@@ -45,11 +47,11 @@ namespace OpenLoco.Gui.ViewModels
 
 		public IndustryViewModel(IndustryObject io)
 		{
-			AnimationSequences = new(io.AnimationSequences);
+			AnimationSequences = new(io.AnimationSequences.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
 			var_38 = new(io.var_38);
 			BuildingPartHeights = new(io.BuildingPartHeights);
 			BuildingPartAnimations = new(io.BuildingPartAnimations);
-			BuildingParts = new(io.BuildingParts);
+			BuildingParts = new(io.BuildingParts.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
 			Buildings = new(io.Buildings);
 			BuildingSizeFlags = io.BuildingSizeFlags;
 			BuildingWall = io.BuildingWall;

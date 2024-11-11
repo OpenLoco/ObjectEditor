@@ -130,10 +130,10 @@ namespace OpenLoco.Dat.Tests
 				//Assert.That(struc.MovementNodes, Is.EqualTo(0), nameof(struc.MovementNodes));
 				//Assert.That(struc.MovementEdges, Is.EqualTo(0), nameof(struc.MovementEdges));
 
-				Assert.That(struc.pad_B6[0], Is.EqualTo(0), nameof(struc.pad_B6) + "[0]");
-				Assert.That(struc.pad_B6[1], Is.EqualTo(19), nameof(struc.pad_B6) + "[1]");
-				Assert.That(struc.pad_B6[2], Is.EqualTo(0), nameof(struc.pad_B6) + "[2]");
-				Assert.That(struc.pad_B6[3], Is.EqualTo(0), nameof(struc.pad_B6) + "[3]");
+				Assert.That(struc.var_B6[0], Is.EqualTo(0), nameof(struc.var_B6) + "[0]");
+				Assert.That(struc.var_B6[1], Is.EqualTo(19), nameof(struc.var_B6) + "[1]");
+				Assert.That(struc.var_B6[2], Is.EqualTo(0), nameof(struc.var_B6) + "[2]");
+				Assert.That(struc.var_B6[3], Is.EqualTo(0), nameof(struc.var_B6) + "[3]");
 			});
 			LoadSaveGenericTest<AirportObject>(objectName, assertFunc);
 		}
@@ -145,9 +145,9 @@ namespace OpenLoco.Dat.Tests
 			{
 				Assert.That(struc.NoRoof, Is.EqualTo(0), nameof(struc.NoRoof));
 
-				// Assert.That(struc.pad_03[0], Is.EqualTo(0), nameof(struc.pad_03) + "[0]");
-				// Assert.That(struc.pad_03[1], Is.EqualTo(0), nameof(struc.pad_03) + "[1]");
-				// Assert.That(struc.pad_03[2], Is.EqualTo(0), nameof(struc.pad_03) + "[2]");
+				// Assert.That(struc.var_03[0], Is.EqualTo(0), nameof(struc.var_03) + "[0]");
+				// Assert.That(struc.var_03[1], Is.EqualTo(0), nameof(struc.var_03) + "[1]");
+				// Assert.That(struc.var_03[2], Is.EqualTo(0), nameof(struc.var_03) + "[2]");
 
 				Assert.That(struc.var_06, Is.EqualTo(16), nameof(struc.var_06));
 				Assert.That(struc.SpanLength, Is.EqualTo(1), nameof(struc.SpanLength));
@@ -257,7 +257,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.SeasonLengths[3], Is.EqualTo(80), nameof(struc.SeasonLengths) + "[3]");
 				Assert.That(struc.WinterSnowLine, Is.EqualTo(48), nameof(struc.WinterSnowLine));
 				Assert.That(struc.SummerSnowLine, Is.EqualTo(76), nameof(struc.SummerSnowLine));
-				Assert.That(struc.pad_09, Is.EqualTo(0), nameof(struc.pad_09));
+				Assert.That(struc.var_09, Is.EqualTo(0), nameof(struc.var_09));
 			});
 			LoadSaveGenericTest<ClimateObject>(objectName, assertFunc);
 		}
@@ -553,14 +553,14 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.CliffEdgeHeader1, Is.EqualTo(0), nameof(struc.CliffEdgeHeader1));
 				Assert.That(struc.CliffEdgeHeader2, Is.EqualTo(0), nameof(struc.CliffEdgeHeader2));
 				Assert.That(struc.CostFactor, Is.EqualTo(20), nameof(struc.CostFactor));
-				Assert.That(struc.pad_09, Is.EqualTo(0), nameof(struc.pad_09));
+				Assert.That(struc.var_09, Is.EqualTo(0), nameof(struc.var_09));
 				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
 				Assert.That(struc.CliffEdgeImage, Is.EqualTo(0), nameof(struc.CliffEdgeImage));
 				Assert.That(struc.MapPixelImage, Is.EqualTo(0), nameof(struc.MapPixelImage));
 				Assert.That(struc.DistributionPattern, Is.EqualTo(0), nameof(struc.DistributionPattern));
 				Assert.That(struc.NumVariations, Is.EqualTo(3), nameof(struc.NumVariations));
 				Assert.That(struc.VariationLikelihood, Is.EqualTo(10), nameof(struc.VariationLikelihood));
-				Assert.That(struc.pad_1D, Is.EqualTo(0), nameof(struc.pad_1D));
+				Assert.That(struc.var_1D, Is.EqualTo(0), nameof(struc.var_1D));
 			});
 			LoadSaveGenericTest<LandObject>(objectName, assertFunc);
 		}
@@ -579,7 +579,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.ClosedFrames, Is.EqualTo(11), nameof(struc.ClosedFrames));
 
 				Assert.That(struc.var_0A, Is.EqualTo(3), nameof(struc.var_0A));
-				Assert.That(struc.pad_0B, Is.EqualTo(0), nameof(struc.pad_0B));
+				Assert.That(struc.var_0B, Is.EqualTo(0), nameof(struc.var_0B));
 
 				Assert.That(struc.DesignedYear, Is.EqualTo(1955), nameof(struc.DesignedYear));
 			});
@@ -591,10 +591,10 @@ namespace OpenLoco.Dat.Tests
 		{
 			void assertFunc(ILocoObject obj, RegionObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.pad_06, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 2)), nameof(struc.pad_06));
+				Assert.That(struc.var_06, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 2)), nameof(struc.var_06));
 				Assert.That(struc.RequiredObjectCount, Is.EqualTo(1), nameof(struc.RequiredObjectCount));
 				//CollectionAssert.AreEqual(struc.requiredObjects, Array.CreateInstance(typeof(byte), 4), nameof(struc.requiredObjects));
-				Assert.That(struc.pad_0D, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 5)), nameof(struc.pad_0D));
+				Assert.That(struc.var_0D, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 5)), nameof(struc.var_0D));
 			});
 			LoadSaveGenericTest<RegionObject>(objectName, assertFunc);
 		}
@@ -679,7 +679,7 @@ namespace OpenLoco.Dat.Tests
 		[TestCase("STEX000.DAT")]
 		public void ScenarioTextObject(string objectName)
 		{
-			void assertFunc(ILocoObject obj, ScenarioTextObject struc) => Assert.Multiple(() => Assert.That(struc.pad_04, Is.EqualTo(0), nameof(struc.pad_04)));
+			void assertFunc(ILocoObject obj, ScenarioTextObject struc) => Assert.Multiple(() => Assert.That(struc.var_04, Is.EqualTo(0), nameof(struc.var_04)));
 			LoadSaveGenericTest<ScenarioTextObject>(objectName, assertFunc);
 		}
 
@@ -703,7 +703,7 @@ namespace OpenLoco.Dat.Tests
 			void assertFunc(ILocoObject obj, SoundObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
-				Assert.That(struc.pad_07, Is.EqualTo(0), nameof(struc.pad_07));
+				Assert.That(struc.var_07, Is.EqualTo(0), nameof(struc.var_07));
 				Assert.That(struc.var_06, Is.EqualTo(1), nameof(struc.var_06));
 				Assert.That(struc.Volume, Is.EqualTo(0), nameof(struc.Volume));
 
@@ -994,7 +994,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.RackRailType, Is.EqualTo(0), nameof(struc.RackRailType));
 				//Assert.That(struc.DrivingSoundType, Is.EqualTo(DrivingSoundType.Engine1), nameof(struc.DrivingSoundType));
 				//Assert.That(struc.Sound, Is.EqualTo(0), nameof(struc.Sound));
-				//Assert.That(struc.pad_135, Is.EqualTo(0), nameof(struc.pad_135));
+				//Assert.That(struc.var_135, Is.EqualTo(0), nameof(struc.var_135));
 				Assert.That(struc.NumStartSounds, Is.EqualTo(2), nameof(struc.NumStartSounds));
 
 				Assert.That(struc.StartSounds[0].Name, Is.EqualTo("SNDTD1"), nameof(struc.StartSounds) + "[0]Name");

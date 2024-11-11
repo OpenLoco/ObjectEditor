@@ -30,7 +30,7 @@ namespace OpenLoco.Dat.Objects
 	public record BridgeObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t NoRoof,
-		[property: LocoStructOffset(0x03), LocoStructVariableLoad, LocoArrayLength(BridgeObject._03PadSize), LocoPropertyMaybeUnused, Browsable(false)] uint8_t[] pad_03,
+		[property: LocoStructOffset(0x03), LocoStructVariableLoad, LocoArrayLength(BridgeObject._03PadSize), LocoPropertyMaybeUnused, Browsable(false)] uint8_t[] var_03,
 		[property: LocoStructOffset(0x06)] uint16_t var_06,
 		[property: LocoStructOffset(0x08)] uint8_t SpanLength,
 		[property: LocoStructOffset(0x09)] uint8_t PillarSpacing,

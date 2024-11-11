@@ -52,7 +52,7 @@ namespace OpenLoco.Dat.Objects
 		//	VehicleObjectEngine2Sound engine2,
 		//}
 		//sound,
-		[property: LocoStructOffset(0x135), LocoArrayLength(0x15A - 0x135), LocoStructVariableLoad] List<uint8_t> pad_135,
+		[property: LocoStructOffset(0x135), LocoArrayLength(0x15A - 0x135), LocoStructVariableLoad] List<uint8_t> var_135,
 		[property: LocoStructOffset(0x15A)] uint8_t NumStartSounds,
 		[property: LocoStructOffset(0x15B), LocoArrayLength(3), LocoStructVariableLoad] List<S5Header> StartSounds
 	) : ILocoStruct, ILocoStructVariableData, ILocoStructPostLoad

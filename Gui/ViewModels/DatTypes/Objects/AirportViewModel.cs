@@ -51,7 +51,7 @@ namespace OpenLoco.Gui.ViewModels
 			ObsoleteYear = ao.ObsoleteYear;
 			MovementNodes = new(ao.MovementNodes);
 			MovementEdges = new(ao.MovementEdges);
-			var_B6 = new(ao.pad_B6);
+			var_B6 = new(ao.var_B6);
 		}
 
 		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)

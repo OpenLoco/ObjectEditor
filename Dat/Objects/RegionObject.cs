@@ -12,10 +12,10 @@ namespace OpenLoco.Dat.Objects
 	public record RegionObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x06), LocoArrayLength(0x8 - 0x6), Browsable(false)] uint8_t[] pad_06,
+		[property: LocoStructOffset(0x06), LocoArrayLength(0x8 - 0x6), Browsable(false)] uint8_t[] var_06,
 		[property: LocoStructOffset(0x08), Browsable(false)] uint8_t RequiredObjectCount,
 		[property: LocoStructOffset(0x09), LocoArrayLength(RegionObject.MaxRequiredObjects), LocoStructVariableLoad, Browsable(false)] object_id[] _RequiredObjects,
-		[property: LocoStructOffset(0x0D), LocoArrayLength(0x12 - 0xD), Browsable(false)] uint8_t[] pad_0D
+		[property: LocoStructOffset(0x0D), LocoArrayLength(0x12 - 0xD), Browsable(false)] uint8_t[] var_0D
 		) : ILocoStruct, ILocoStructVariableData
 	{
 		public const int MaxRequiredObjects = 4;

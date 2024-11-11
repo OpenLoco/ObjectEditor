@@ -35,9 +35,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0A), LocoArrayLength(6), Browsable(false)] image_id[] Sprites,
 		[property: LocoStructOffset(0x22), LocoArrayLength(6), Browsable(false)] image_id[] SnowSprites,
 		[property: LocoStructOffset(0x3A)] uint16_t ShadowImageOffset,
-		[property: LocoStructOffset(0x3C)] uint8_t var_3C,
+		[property: LocoStructOffset(0x3C)] uint8_t var_3C, // something with images
 		[property: LocoStructOffset(0x3D)] uint8_t SeasonState,
-		[property: LocoStructOffset(0x3E)] uint8_t var_3E,
+		[property: LocoStructOffset(0x3E)] uint8_t Season,
 		[property: LocoStructOffset(0x3F)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x40)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x42)] int16_t ClearCostFactor,

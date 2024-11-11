@@ -29,15 +29,15 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x06), Browsable(false)] object_id CliffEdgeHeader1,
 		[property: LocoStructOffset(0x07), Browsable(false), LocoPropertyMaybeUnused] object_id CliffEdgeHeader2,
 		[property: LocoStructOffset(0x08)] int8_t CostFactor,
-		[property: LocoStructOffset(0x09), Browsable(false)] uint8_t var_09,
+		[property: LocoStructOffset(0x09)] uint8_t var_09,
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E,
 		[property: LocoStructOffset(0x12), Browsable(false)] image_id CliffEdgeImage,
 		[property: LocoStructOffset(0x16), Browsable(false)] image_id MapPixelImage,
-		[property: LocoStructOffset(0x1A), Browsable(false)] uint8_t DistributionPattern,
+		[property: LocoStructOffset(0x1A)] uint8_t DistributionPattern,
 		[property: LocoStructOffset(0x1B)] uint8_t NumVariations,
 		[property: LocoStructOffset(0x1C)] uint8_t VariationLikelihood,
-		[property: LocoStructOffset(0x1D), Browsable(false)] uint8_t var_1D
+		[property: LocoStructOffset(0x1D)] uint8_t var_1D
 		) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
 		public S5Header CliffEdgeHeader { get; set; }

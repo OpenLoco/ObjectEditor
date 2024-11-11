@@ -1,4 +1,3 @@
-using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
@@ -19,7 +18,7 @@ namespace OpenLoco.Gui.ViewModels
 		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
 			=> GetAsStruct((locoStruct as TownNamesObject)!);
 
-		public TownNamesObject GetAsStruct(TownNamesObject baseTownNames)
-			=> baseTownNames;
+		public TownNamesObject GetAsStruct(TownNamesObject tno)
+			=> tno;
 	}
 }

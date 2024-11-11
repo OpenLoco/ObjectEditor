@@ -17,7 +17,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public uint16_t ObsoleteYear { get; set; }
 		[Reactive] public IndustryObjectFlags Flags { get; set; }
 		[Reactive] public Colour MapColour { get; set; }
-		[Reactive] public uint32_t AvailableColours { get; set; }  // bitset
+		[Reactive] public uint32_t Colours { get; set; } // bitset
 		[Reactive, Category("Production")] public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; set; }
 		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5Header> ProducedCargo { get; set; }
 		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5Header> RequiredCargo { get; set; }
@@ -25,9 +25,9 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive, Category("Building"), Length(IndustryObject.AnimationSequencesCount, IndustryObject.AnimationSequencesCount)] public BindingList<BindingList<uint8_t>> AnimationSequences { get; set; }
-		[Reactive, Category("Building")] public BindingList<BuildingPartAnimation> BuildingPartAnimations { get; set; }
-		[Reactive, Category("Building")] public BindingList<uint8_t> BuildingPartHeights { get; set; }
-		[Reactive, Category("Building"), Length(IndustryObject.VariationPartCount, IndustryObject.VariationPartCount)] public BindingList<BindingList<uint8_t>> BuildingParts { get; set; }
+		[Reactive, Category("Building"), Length(1, IndustryObject.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
+		[Reactive, Category("Building"), Length(1, IndustryObject.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
+		[Reactive, Category("Building"), Length(1, IndustryObject.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
 		[Reactive, Category("Building")] public uint8_t MinNumBuildings { get; set; }
 		[Reactive, Category("Building")] public uint8_t MaxNumBuildings { get; set; }
 		[Reactive, Category("Building")] public BindingList<uint8_t> Buildings { get; set; }
@@ -49,9 +49,9 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			AnimationSequences = new(io.AnimationSequences.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
 			var_38 = new(io.var_38);
-			BuildingPartHeights = new(io.BuildingPartHeights);
-			BuildingPartAnimations = new(io.BuildingPartAnimations);
-			BuildingParts = new(io.BuildingParts.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
+			BuildingHeights = new(io.BuildingHeights);
+			BuildingAnimations = new(io.BuildingAnimations);
+			BuildingVariations = new(io.BuildingVariations.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
 			Buildings = new(io.Buildings);
 			BuildingSizeFlags = io.BuildingSizeFlags;
 			BuildingWall = io.BuildingWall;
@@ -62,7 +62,7 @@ namespace OpenLoco.Gui.ViewModels
 			ProducedCargo = new(io.ProducedCargo);
 			RequiredCargo = new(io.RequiredCargo);
 			WallTypes = new(io.WallTypes);
-			AvailableColours = io.AvailableColours;
+			Colours = io.Colours;
 			DesignedYear = io.DesignedYear;
 			ObsoleteYear = io.ObsoleteYear;
 			TotalOfTypeInScenario = io.TotalOfTypeInScenario;
@@ -84,6 +84,8 @@ namespace OpenLoco.Gui.ViewModels
 		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
 			=> GetAsStruct((locoStruct as IndustryObject)!);
 
+		// validation:
+		// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
 		public IndustryObject GetAsStruct(IndustryObject io)
 			=> io with
 			{
@@ -92,9 +94,9 @@ namespace OpenLoco.Gui.ViewModels
 				BuildingWallEntrance = BuildingWallEntrance,
 				MinNumBuildings = MinNumBuildings,
 				MaxNumBuildings = MaxNumBuildings,
-				NumBuildingParts = (uint8_t)BuildingPartHeights.Count,
-				NumBuildingVariations = (uint8_t)BuildingPartAnimations.Count,
-				AvailableColours = AvailableColours,
+				NumBuildingParts = (uint8_t)BuildingAnimations.Count,
+				NumBuildingVariations = (uint8_t)BuildingVariations.Count,
+				Colours = Colours,
 				DesignedYear = DesignedYear,
 				ObsoleteYear = ObsoleteYear,
 				TotalOfTypeInScenario = TotalOfTypeInScenario,

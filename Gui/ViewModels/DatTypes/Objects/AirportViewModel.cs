@@ -22,14 +22,14 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
-		[Reactive, Category("Building")] public BindingList<uint8_t> BuildingVariationHeights { get; set; }
-		[Reactive, Category("Building")] public BindingList<BuildingPartAnimation> BuildingVariationAnimations { get; set; }
-		[Reactive, Category("Building"), Length(AirportObject.VariationPartCount, AirportObject.VariationPartCount)] public BindingList<BindingList<uint8_t>> BuildingVariationParts { get; set; }
+		[Reactive, Category("Building"), Length(1, AirportObject.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
+		[Reactive, Category("Building"), Length(1, AirportObject.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
+		[Reactive, Category("Building"), Length(1, AirportObject.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
 		[Reactive, Category("Building")] public BindingList<AirportBuilding> BuildingPositions { get; set; }
-		[Reactive, Category("Movement")] public BindingList<MovementNode> MovementNodes { get; set; }
-		[Reactive, Category("Movement")] public BindingList<MovementEdge> MovementEdges { get; set; }
+		[Reactive, Category("Movement")] public BindingList<MovementNode> MovementNodes { get; set; } // NumMovementNodes
+		[Reactive, Category("Movement")] public BindingList<MovementEdge> MovementEdges { get; set; } // NumMovementEdges
 		[Reactive, Category("<unknown>")] public uint8_t var_07 { get; set; }
-		[Reactive, Category("<unknown>"), Length(4, 4)] public BindingList<uint8_t> pad_B6 { get; set; }
+		[Reactive, Category("<unknown>"), Length(4, 4)] public BindingList<uint8_t> var_B6 { get; set; }
 
 		public AirportViewModel(AirportObject ao)
 		{
@@ -38,9 +38,9 @@ namespace OpenLoco.Gui.ViewModels
 			SellCostFactor = ao.SellCostFactor;
 			var_07 = ao.var_07;
 			AllowedPlaneTypes = ao.AllowedPlaneTypes;
-			BuildingVariationHeights = new(ao.BuildingVariationHeights);
-			BuildingVariationAnimations = new(ao.BuildingVariationAnimations);
-			BuildingVariationParts = new(ao.BuildingVariationParts.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
+			BuildingHeights = new(ao.BuildingHeights);
+			BuildingAnimations = new(ao.BuildingAnimations);
+			BuildingVariations = new(ao.BuildingVariations.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
 			BuildingPositions = new(ao.BuildingPositions);
 			LargeTiles = ao.LargeTiles;
 			MinX = ao.MinX;
@@ -51,18 +51,16 @@ namespace OpenLoco.Gui.ViewModels
 			ObsoleteYear = ao.ObsoleteYear;
 			MovementNodes = new(ao.MovementNodes);
 			MovementEdges = new(ao.MovementEdges);
-			pad_B6 = new(ao.pad_B6);
+			var_B6 = new(ao.pad_B6);
 		}
 
 		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
 			=> GetAsStruct((locoStruct as AirportObject)!);
 
+		// validation:
+		// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
 		public AirportObject GetAsStruct(AirportObject ao)
-		{
-			// validation:
-			// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-
-			return ao with
+			=> ao with
 			{
 				BuildCostFactor = ao.BuildCostFactor,
 				SellCostFactor = ao.SellCostFactor,
@@ -76,11 +74,10 @@ namespace OpenLoco.Gui.ViewModels
 				MaxY = ao.MaxY,
 				DesignedYear = ao.DesignedYear,
 				ObsoleteYear = ao.ObsoleteYear,
-				NumBuildingAnimations = (uint8_t)ao.BuildingVariationAnimations.Count,
-				NumBuildingVariations = (uint8_t)ao.BuildingVariationParts.Count,
+				NumBuildingParts = (uint8_t)ao.BuildingAnimations.Count,
+				NumBuildingVariations = (uint8_t)ao.BuildingVariations.Count,
 				NumMovementEdges = (uint8_t)ao.MovementEdges.Count,
 				NumMovementNodes = (uint8_t)ao.MovementNodes.Count,
 			};
-		}
 	}
 }

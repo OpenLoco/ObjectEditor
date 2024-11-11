@@ -337,7 +337,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
 
 				Assert.That(struc.AnimationSequences, Is.All.EqualTo(new byte[0]));
-				Assert.That(struc.AvailableColours, Is.EqualTo(4), nameof(struc.AvailableColours));
+				Assert.That(struc.Colours, Is.EqualTo(4), nameof(struc.Colours));
 				// Buildings
 				Assert.That(struc.BuildingSizeFlags, Is.EqualTo(7), nameof(struc.BuildingSizeFlags));
 				Assert.That(struc._BuildingWall, Is.EqualTo(0), nameof(struc._BuildingWall));
@@ -438,7 +438,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
 
 				Assert.That(struc.AnimationSequences, Is.All.EqualTo(new byte[0]));
-				Assert.That(struc.AvailableColours, Is.EqualTo(4), nameof(struc.AvailableColours));
+				Assert.That(struc.Colours, Is.EqualTo(4), nameof(struc.Colours));
 				// Buildings
 				Assert.That(struc.BuildingSizeFlags, Is.EqualTo(1), nameof(struc.BuildingSizeFlags));
 				Assert.That(struc._BuildingWall, Is.EqualTo(0), nameof(struc._BuildingWall));

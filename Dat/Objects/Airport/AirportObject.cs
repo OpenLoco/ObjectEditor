@@ -18,11 +18,11 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x08), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0C), Browsable(false)] image_id ImageOffset,
 		[property: LocoStructOffset(0x10)] uint16_t AllowedPlaneTypes,
-		[property: LocoStructOffset(0x12)] uint8_t NumBuildingAnimations,
+		[property: LocoStructOffset(0x12)] uint8_t NumBuildingParts,
 		[property: LocoStructOffset(0x13)] uint8_t NumBuildingVariations,
-		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> BuildingVariationHeights,
-		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingVariationAnimations,
-		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(AirportObject.VariationPartCount)] List<uint8_t[]> BuildingVariationParts,
+		[property: LocoStructOffset(0x14), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingHeightCount)] List<uint8_t> BuildingHeights,
+		[property: LocoStructOffset(0x18), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingAnimationCount)] List<BuildingPartAnimation> BuildingAnimations,
+		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingVariationCount)] List<uint8_t[]> BuildingVariations,
 		[property: LocoStructOffset(0x9C), LocoStructVariableLoad] List<AirportBuilding> BuildingPositions,
 		[property: LocoStructOffset(0xA0)] uint32_t LargeTiles,
 		[property: LocoStructOffset(0xA4)] int8_t MinX,
@@ -38,21 +38,23 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
 	) : ILocoStruct, ILocoStructVariableData
 	{
-		public const int VariationPartCount = 32;
+		public const int BuildingVariationCount = 32;
+		public const int BuildingHeightCount = 4;
+		public const int BuildingAnimationCount = 2;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// variation heights
-			BuildingVariationHeights.Clear();
-			BuildingVariationHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingAnimations * 1)], NumBuildingAnimations));
-			remainingData = remainingData[(NumBuildingAnimations * 1)..]; // uint8_t*
+			BuildingHeights.Clear();
+			BuildingHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingParts * 1)], NumBuildingParts));
+			remainingData = remainingData[(NumBuildingParts * 1)..]; // uint8_t*
 
 			// variation animations
-			BuildingVariationAnimations.Clear();
+			BuildingAnimations.Clear();
 			var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
-			BuildingVariationAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingAnimations * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingAnimations, buildingAnimationSize)
+			BuildingAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingParts * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingParts, buildingAnimationSize)
 				.Cast<BuildingPartAnimation>());
-			remainingData = remainingData[(NumBuildingAnimations * 2)..]; // uint16_t*
+			remainingData = remainingData[(NumBuildingParts * 2)..]; // uint16_t*
 
 			// variation parts
 			for (var i = 0; i < NumBuildingVariations; ++i)
@@ -61,7 +63,7 @@ namespace OpenLoco.Dat.Objects
 				while (remainingData[++ptr_1C] != 0xFF)
 				{ }
 
-				BuildingVariationParts.Add(remainingData[..ptr_1C].ToArray());
+				BuildingVariations.Add(remainingData[..ptr_1C].ToArray());
 				ptr_1C++;
 				remainingData = remainingData[ptr_1C..];
 			}
@@ -101,26 +103,27 @@ namespace OpenLoco.Dat.Objects
 		{
 			var ms = new MemoryStream();
 
-			// variation heights
-			foreach (var x in BuildingVariationHeights)
+			// heights
+			foreach (var x in BuildingHeights)
 			{
 				ms.WriteByte(x);
 			}
 
-			// variation animations
-			foreach (var x in BuildingVariationAnimations)
+			// animations
+			foreach (var x in BuildingAnimations)
 			{
 				ms.WriteByte(x.NumFrames);
 				ms.WriteByte(x.AnimationSpeed);
 			}
 
-			// variation parts
-			foreach (var x in BuildingVariationParts)
+			// variations
+			foreach (var x in BuildingVariations)
 			{
 				ms.Write(x);
 				ms.WriteByte(0xFF);
 			}
 
+			// positions
 			foreach (var x in BuildingPositions)
 			{
 				ms.WriteByte(x.Index);

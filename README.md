@@ -139,3 +139,6 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 
 # Deploying
 See `build.sh` and `tag.sh`
+
+# Disclaimer and Terms of Service
+When you run the editor and select a folder to browse, you give permission for the editor to read all DAT objects in that folder (and no other type of object or file). By doing this, you hereby give permission for the editor to check the DAT files in that directory against the master list in the object service. If a file is discovered that is not listed in the service, the editor will automatically upload the file to the service for archiving. These are the terms for using the object editor and object service. If you disagree with these terms, do not use the editor or service.

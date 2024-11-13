@@ -355,16 +355,21 @@ namespace OpenLoco.Dat.FileParsing
 			for (var i = 0; i < g1Header.NumEntries; ++i)
 			{
 				var currElement = g1Element32s[i];
-				var nextOffset = i < g1Header.NumEntries - 1
-					? GetNextNonDuplicateOffset(g1Element32s, i)
-					: (uint)g1Header.ImageData.Length;
 
 				if (currElement.Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
 				{
+					if (i == 0)
+					{
+						throw new ArgumentException("First image cannot have DuplicatePrevious flag since there is no previous image");
+					}
+					currElement.ImageData = g1Element32s[i - 1].ImageData.ToArray();
 					continue;
 				}
-
-				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
+				else
+				{
+					var nextOffset = GetNextNonDuplicateOffset(g1Element32s, i, (uint)g1Header.ImageData.Length);
+					currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
+				}
 
 				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed))
 				{
@@ -374,12 +379,14 @@ namespace OpenLoco.Dat.FileParsing
 
 			return (g1Header, g1Element32s, G1Header.StructLength + g1ElementHeaders.Length + imageData.Length);
 
-			static uint GetNextNonDuplicateOffset(List<G1Element32> elements, int currentElement)
+			static uint GetNextNonDuplicateOffset(List<G1Element32> elements, int currentElement, uint imageDataLength)
 			{
-				while (elements[++currentElement].Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
+				while (++currentElement < elements.Count && elements[currentElement].Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
 				{ }
 
-				return elements[currentElement].Offset;
+				return currentElement >= elements.Count - 1
+					? imageDataLength // the last image in the file has an end offset that is the end of the file, which is the same as the total data length
+					: elements[currentElement].Offset;
 			}
 		}
 

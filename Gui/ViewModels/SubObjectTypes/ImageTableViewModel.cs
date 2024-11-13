@@ -184,30 +184,7 @@ namespace OpenLoco.Gui.ViewModels
 		public IList<Image<Rgba32>> Images { get; set; }
 
 		// what is displaying on the ui
-		public IList<Bitmap?> Bitmaps
-		{
-			get
-			{
-				// this shenanigans is to handle the DuplicatePrevious flag. we store it as null
-				// and here we just reuse the previous image if the flag is set (ie null image)
-				var list = G1ImageConversion.CreateAvaloniaImages(Images).ToList();
-				Bitmap? prevValue = null;
-
-				for (var i = 0; i < list.Count; i++)
-				{
-					if (list[i] == null)
-					{
-						list[i] = prevValue;
-					}
-					else
-					{
-						prevValue = list[i];
-					}
-				}
-
-				return list;
-			}
-		}
+		public IList<Bitmap?> Bitmaps => G1ImageConversion.CreateAvaloniaImages(Images).ToList();
 
 		[Reactive]
 		public int SelectedImageIndex { get; set; } = -1;

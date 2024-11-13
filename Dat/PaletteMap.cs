@@ -142,12 +142,6 @@ namespace OpenLoco.Dat
 
 		public bool TryConvertG1ToRgba32Bitmap(G1Element32 g1Element, out Image<Rgba32>? image)
 		{
-			//if (g1Element.Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
-			//{
-			//	image = null;
-			//	return false;
-			//}
-
 			image = new Image<Rgba32>(g1Element.Width, g1Element.Height);
 
 			var index = 0;

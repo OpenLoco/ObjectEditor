@@ -665,6 +665,7 @@
 					<MenuItem Header="Load custom palette" Command="{Binding UseCustomPalette}" />
 				</MenuItem>
 				<MenuItem Header="_Settings">
+					<MenuItem Header="Edit settings" Command="{Binding EditSettings}" />
 					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
 					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
 				</MenuItem>

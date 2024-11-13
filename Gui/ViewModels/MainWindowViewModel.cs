@@ -1,10 +1,12 @@
 using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Gui.Models;
+using OpenLoco.Gui.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -46,6 +48,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		public ReactiveCommand<Unit, Unit> OpenDownloadFolder { get; }
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
+		public ReactiveCommand<Unit, Task> EditSettings { get; }
 		public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
 		public ReactiveCommand<Unit, Task> OpenG1 { get; }
 		public ReactiveCommand<Unit, Task> OpenSCV5 { get; }
@@ -102,6 +105,15 @@ namespace OpenLoco.Gui.ViewModels
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObject);
 			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder));
 			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.SettingsPath));
+			EditSettings = ReactiveCommand.Create(async () =>
+			{
+				var dialog = new EditSettingsWindow(Model.Settings);
+				var currentView = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+				if (currentView != null)
+				{
+					await dialog.ShowDialog(currentView);
+				}
+			});
 			OpenG1 = ReactiveCommand.Create(LoadG1);
 			OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
 			OpenSoundEffect = ReactiveCommand.Create(LoadSoundEffects);

@@ -62,6 +62,8 @@ namespace OpenLoco.Gui
 		}
 		HashSet<string> scv5Directories;
 
+		public bool AutoObjectDiscoveryAndUpload { get; set; }
+
 		public bool UseHttps { get; set; }
 		public string ServerAddressHttp { get; set; } = "http://openloco.leftofzen.dev/";
 		public string ServerAddressHttps { get; set; } = "https://openloco.leftofzen.dev/";

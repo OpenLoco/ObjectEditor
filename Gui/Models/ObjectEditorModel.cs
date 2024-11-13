@@ -456,10 +456,14 @@ namespace OpenLoco.Gui.Models
 				Logger.Info($"Found {localButNotOnline.Count} objects that aren't known to the object repository!");
 
 				// would you like to upload?
-
-				foreach (var dat in localButNotOnline)
+				var isEnabledString = Settings.AutoObjectDiscoveryAndUpload ? "enabled" : "disabled";
+				Logger.Info($"Automatic object discovery and upload to master service is {isEnabledString}");
+				if (Settings.AutoObjectDiscoveryAndUpload)
 				{
-					await UploadDatToServer(dat);
+					foreach (var dat in localButNotOnline)
+					{
+						await UploadDatToServer(dat);
+					}
 				}
 			}
 			else

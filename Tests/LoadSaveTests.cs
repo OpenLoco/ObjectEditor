@@ -919,7 +919,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.ShadowImageOffset, Is.EqualTo(0), nameof(struc.ShadowImageOffset));
 				Assert.That(struc.var_3C, Is.EqualTo(15), nameof(struc.var_3C));
 				Assert.That(struc.SeasonState, Is.EqualTo(3), nameof(struc.SeasonState));
-				Assert.That(struc.var_3E, Is.EqualTo(2), nameof(struc.var_3E));
+				Assert.That(struc.Season, Is.EqualTo(2), nameof(struc.Season));
 				Assert.That(struc.CostIndex, Is.EqualTo(3), nameof(struc.CostIndex));
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(8), nameof(struc.BuildCostFactor));
 				Assert.That(struc.ClearCostFactor, Is.EqualTo(4), nameof(struc.ClearCostFactor));

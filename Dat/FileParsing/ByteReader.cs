@@ -239,7 +239,7 @@ namespace OpenLoco.Dat.FileParsing
 					else
 					{
 						var newInstance = Activator.CreateInstance(p.PropertyType);
-						Verify.NotNull(newInstance, paramName: p.PropertyType.Name);
+						ArgumentNullException.ThrowIfNull(newInstance, paramName: p.PropertyType.Name);
 						args.Add(newInstance!);
 					}
 

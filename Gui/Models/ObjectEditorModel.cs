@@ -18,7 +18,6 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Zenith.Core;
 
 namespace OpenLoco.Gui.Models
 {
@@ -95,7 +94,7 @@ namespace OpenLoco.Gui.Models
 
 			var text = File.ReadAllText(SettingsFile);
 			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: new() { WriteIndented = true }); // todo: try-catch this for invalid settings files
-			Verify.NotNull(settings);
+			ArgumentNullException.ThrowIfNull(settings);
 
 			Settings = settings!;
 			InitialiseDownloadDirectory();

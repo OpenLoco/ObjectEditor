@@ -1,5 +1,4 @@
 using OpenLoco.Dat.Types;
-using Zenith.Core;
 
 namespace OpenLoco.Dat.FileParsing
 {

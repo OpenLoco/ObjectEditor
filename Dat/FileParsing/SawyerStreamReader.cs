@@ -5,7 +5,6 @@ using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using OpenLoco.Dat.Types.SCV5;
 using System.Text;
-using Zenith.Core;
 
 namespace OpenLoco.Dat.FileParsing
 {

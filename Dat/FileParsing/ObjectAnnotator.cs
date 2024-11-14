@@ -3,7 +3,6 @@ using OpenLoco.Dat.Types;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using Zenith.Core;
 
 namespace OpenLoco.Dat.FileParsing
 {

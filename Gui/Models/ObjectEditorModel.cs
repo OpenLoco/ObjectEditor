@@ -15,7 +15,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,11 +49,10 @@ namespace OpenLoco.Gui.Models
 		public const string ApplicationName = "OpenLoco Object Editor";
 		public const string LoggingFileName = "objectEditor.log";
 
-		public static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
-
-		public static string SettingsFile => Path.Combine(SettingsPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? "settings.json"); // "settings-dev.json" for dev, "settings.json" for prod
-
-		public static string LoggingFile => Path.Combine(SettingsPath, LoggingFileName);
+		// stores settings.json, objectEditor.log, etc
+		public static string ProgramDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
+		public static string SettingsFile => Path.Combine(ProgramDataPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? EditorSettings.DefaultFileName);
+		public static string LoggingFile => Path.Combine(ProgramDataPath, LoggingFileName);
 
 		public ObservableCollection<LogLine> LoggerObservableLogs = [];
 
@@ -65,9 +63,9 @@ namespace OpenLoco.Gui.Models
 			Logger = new Logger();
 			LoggerObservableLogs = [];
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
-			//Logger.LogAdded += (sender, laea) => File.AppendAllLines(LoggingFile, [laea.Log.ToString()]);
 
 			LoadSettings();
+			InitialiseDownloadDirectory();
 
 			var serverAddress = Settings!.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
 
@@ -82,24 +80,11 @@ namespace OpenLoco.Gui.Models
 			}
 		}
 
-		public void LoadSettings()
+		void LoadSettings()
 		{
-			if (!File.Exists(SettingsFile))
-			{
-				Logger.Info($"Settings file doesn't exist; creating now at \"{SettingsFile}\"");
-				Settings = new();
-				SaveSettings();
-				return;
-			}
+			Settings = EditorSettings.Load(SettingsFile, Logger);
 
-			var text = File.ReadAllText(SettingsFile);
-			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: new() { WriteIndented = true }); // todo: try-catch this for invalid settings files
-			ArgumentNullException.ThrowIfNull(settings);
-
-			Settings = settings!;
-			InitialiseDownloadDirectory();
-
-			if (ValidateSettings(Settings, Logger) && File.Exists(IndexFilename))
+			if (Settings.Validate(Logger))
 			{
 				Logger.Info("Settings loaded and validated successfully.");
 			}
@@ -107,65 +92,20 @@ namespace OpenLoco.Gui.Models
 			{
 				Logger.Error("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
 			}
+
 		}
 
 		void InitialiseDownloadDirectory()
 		{
 			if (string.IsNullOrEmpty(Settings.DownloadFolder))
 			{
-				Settings.DownloadFolder = Path.Combine(SettingsPath, "downloads");
+				Settings.DownloadFolder = Path.Combine(ProgramDataPath, "downloads");
 			}
 
 			if (!Directory.Exists(Settings.DownloadFolder))
 			{
 				Logger.Info($"Download folder doesn't exist; creating now at \"{Settings.DownloadFolder}\"");
 				_ = Directory.CreateDirectory(Settings.DownloadFolder);
-			}
-		}
-
-		public string IndexFilename
-			=> Settings.GetObjDataFullPath(Settings.IndexFileName);
-
-		static bool ValidateSettings(EditorSettings settings, ILogger? logger)
-		{
-			if (settings == null)
-			{
-				logger?.Error("Invalid settings file: Unable to deserialise settings file");
-				return false;
-			}
-
-			if (string.IsNullOrEmpty(settings.ObjDataDirectory))
-			{
-				logger?.Warning("Invalid settings file: Object directory was null or empty");
-				return false;
-			}
-
-			if (!Directory.Exists(settings.ObjDataDirectory))
-			{
-				logger?.Warning($"Invalid settings file: Directory \"{settings.ObjDataDirectory}\" does not exist");
-				return false;
-			}
-
-			return true;
-		}
-
-		public void SaveSettings()
-		{
-			var text = JsonSerializer.Serialize(Settings, options: new() { WriteIndented = true });
-
-			var parentDir = Path.GetDirectoryName(SettingsFile);
-			if (parentDir != null && !Directory.Exists(parentDir))
-			{
-				_ = Directory.CreateDirectory(parentDir);
-			}
-
-			try
-			{
-				File.WriteAllText(SettingsFile, text);
-			}
-			catch (Exception ex)
-			{
-				Logger.Error(ex);
 			}
 		}
 
@@ -309,59 +249,6 @@ namespace OpenLoco.Gui.Models
 			return true;
 		}
 
-		public bool LoadDataDirectory(string directory)
-		{
-			if (!Directory.Exists(directory))
-			{
-				Logger.Warning("Invalid directory: doesn't exist");
-				return false;
-			}
-
-			Settings.DataDirectory = directory;
-
-			var allDataFiles = Directory.GetFiles(Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower()).ToHashSet();
-
-			void LoadKnownData(HashSet<string> allFilesInDir, HashSet<string> knownFilenames, Dictionary<string, byte[]> dict)
-			{
-				dict.Clear();
-				var expectedMusicFiles = knownFilenames.Select(f => f.ToLower());
-				foreach (var music in expectedMusicFiles)
-				{
-					var matching = allFilesInDir.Where(f => f.EndsWith(music));
-					if (matching.Any())
-					{
-						dict.Add(music, File.ReadAllBytes(Path.Combine(Settings.DataDirectory, music)));
-						_ = allFilesInDir.RemoveWhere(f => f.EndsWith(music));
-					}
-				}
-			}
-
-			LoadKnownData(allDataFiles, [.. OriginalDataFiles.Music.Keys], Music);
-			LoadKnownData(allDataFiles, [.. OriginalDataFiles.MiscellaneousTracks.Keys], MiscellaneousTracks);
-			LoadKnownData(allDataFiles, [OriginalDataFiles.SoundEffect], SoundEffects);
-			LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
-
-			//MiscFiles = [.. allDataFiles];
-
-			// load G1 only for now since we need it for palette
-			//G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
-
-			//LoadPalette(); // update palette from g1
-
-			//await SaveSettings();
-
-			return true;
-		}
-
-		// this method will load any supported file type
-		//public void LoadDirectory(string directory)
-		//{
-		//	var allFiles = Directory.GetFiles(directory, "*.dat|*.sv5|*.sc5", SearchOption.AllDirectories);
-		//}
-
-		//public void LoadObjDirectory(string directory)
-		//	=> LoadObjDirectory(directory, new Progress<float>(), true);
-
 		static Task? indexerTask;
 		static readonly SemaphoreSlim taskLock = new(1, 1);
 
@@ -393,15 +280,15 @@ namespace OpenLoco.Gui.Models
 			}
 
 			Settings.ObjDataDirectory = directory;
-			SaveSettings();
+			Settings.Save(SettingsFile, Logger);
 
-			if (useExistingIndex && File.Exists(IndexFilename))
+			if (useExistingIndex && File.Exists(Settings.IndexFileName))
 			{
 				var exception = false;
 
 				try
 				{
-					ObjectIndex = await ObjectIndex.LoadIndexAsync(IndexFilename) ?? ObjectIndex;
+					ObjectIndex = await ObjectIndex.LoadIndexAsync(Settings.IndexFileName) ?? ObjectIndex;
 				}
 				catch (Exception ex)
 				{
@@ -433,7 +320,7 @@ namespace OpenLoco.Gui.Models
 			{
 				Logger.Info("Recreating index file");
 				ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress);
-				ObjectIndex?.SaveIndex(IndexFilename);
+				ObjectIndex?.SaveIndex(Settings.IndexFileName);
 			}
 		}
 

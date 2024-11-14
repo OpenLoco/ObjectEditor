@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:gui="using:OpenLoco.Gui"
+	xmlns:vm="using:OpenLoco.Gui.ViewModels"
+	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+	x:Class="OpenLoco.Gui.Views.EditSettingsWindow"
+	x:DataType="vm:EditorSettingsWindowViewModel"
+	Title="EditSettingsWindow"
+	WindowStartupLocation="CenterOwner"
+	SystemDecorations="Full"
+	Width="800"
+	Height="600"
+	ShowInTaskbar="False"
+	Closing="Window_Closing">
+
+	<Design.DataContext>
+		<vm:EditorSettingsWindowViewModel/>
+	</Design.DataContext>
+
+	<ScrollViewer>
+		<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Category"></pgc:PropertyGrid>
+	</ScrollViewer>
+
+</Window>

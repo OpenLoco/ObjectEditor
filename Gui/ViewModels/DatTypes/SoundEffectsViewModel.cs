@@ -1,4 +1,4 @@
-﻿using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Gui.Models;
 using PropertyModels.Extensions;
@@ -30,7 +30,7 @@ namespace OpenLoco.Gui.ViewModels
 		public override void Save()
 		{
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
-				? Path.Combine(Model.Settings.DataDirectory, CurrentFile.Filename)
+				? CurrentFile.Filename
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 			Logger?.Info($"Saving sound effects to {savePath}");

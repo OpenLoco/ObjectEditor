@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
+//using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
@@ -18,6 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+//builder.Services.AddOd
 builder.Services.AddHttpLogging(logging =>
 {
 	logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders
@@ -70,6 +72,9 @@ var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
 
 // GET
 _ = app.MapGet(Routes.ListObjects, Server.ListObjects)
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapGet(Routes.SearchObjects, Server.SearchObjects)
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapGet(Routes.GetDat, server.GetDat)

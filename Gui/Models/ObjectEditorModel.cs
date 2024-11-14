@@ -155,14 +155,17 @@ namespace OpenLoco.Gui.Models
 						}
 
 						Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");
-						Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], modpacks=[{string.Join(", ", locoObj?.Modpacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
+						Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", locoObj?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
 						OnlineCache.Add(uniqueObjectId, locoObj!);
 
 						if (!string.IsNullOrEmpty(locoObj!.DatBytes))
 						{
 							var filename = Path.Combine(Settings.DownloadFolder, $"{locoObj.UniqueName}.dat");
-							File.WriteAllBytes(filename, Convert.FromBase64String(locoObj.DatBytes));
-							Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {filename}");
+							if (!File.Exists(filename))
+							{
+								File.WriteAllBytes(filename, Convert.FromBase64String(locoObj.DatBytes));
+								Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {filename}");
+							}
 						}
 					}
 					else
@@ -191,7 +194,7 @@ namespace OpenLoco.Gui.Models
 							LastEditDate = locoObj.LastEditDate,
 							UploadDate = locoObj.UploadDate,
 							Tags = locoObj.Tags,
-							Modpacks = locoObj.Modpacks,
+							ObjectPacks = locoObj.ObjectPacks,
 							Availability = locoObj.Availability,
 							Licence = locoObj.Licence,
 						};

@@ -11,6 +11,7 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
+using System.Security.AccessControl;
 
 namespace OpenLoco.ObjectService
 {
@@ -43,6 +44,13 @@ namespace OpenLoco.ObjectService
 					x.ObjectSource,
 					x.VehicleType)).ToListAsync());
 
+		// eg: https://localhost:7230/objects/search
+		public static async Task<IResult> SearchObjects(LocoDb db)
+		{
+			Console.WriteLine($"Object search requested");
+			return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
+		}
+
 		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
 		public async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
@@ -51,7 +59,7 @@ namespace OpenLoco.ObjectService
 			var eObj = await db.Objects
 				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
+				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
@@ -65,7 +73,7 @@ namespace OpenLoco.ObjectService
 			var eObj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.Modpacks))
+				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
@@ -113,7 +121,7 @@ namespace OpenLoco.ObjectService
 				obj.LastEditDate,
 				obj.UploadDate,
 				eObj.Tags,
-				eObj.Modpacks,
+				eObj.ObjectPacks,
 				obj.Availability,
 				obj.Licence);
 
@@ -264,7 +272,7 @@ namespace OpenLoco.ObjectService
 				LastEditDate = null,
 				UploadDate = DateTimeOffset.UtcNow,
 				Tags = [],
-				Modpacks = [],
+				ObjectPacks = [],
 				Availability = LocoObject == null ? ObjectAvailability.Unavailable : ObjectAvailability.AllGames,
 				Licence = null,
 			};

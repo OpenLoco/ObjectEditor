@@ -153,7 +153,7 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
+			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex).ConfigureAwait(false);
 			LocalDirectoryItems = ConstructTreeView(
 				Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
 				FilenameFilter,

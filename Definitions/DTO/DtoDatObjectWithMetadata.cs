@@ -19,7 +19,7 @@ namespace OpenLoco.Definitions.DTO
 		DateTimeOffset? LastEditDate,
 		DateTimeOffset UploadDate,
 		ICollection<TblTag> Tags,
-		ICollection<TblModpack> Modpacks,
+		ICollection<TblLocoObjectPack> ObjectPacks,
 		ObjectAvailability Availability,
 		TblLicence? Licence);
 }

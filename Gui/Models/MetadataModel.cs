@@ -35,7 +35,7 @@ namespace OpenLoco.Gui.Models
 		public ICollection<TblTag> Tags { get; set; }
 
 		[Browsable(false)]
-		public ICollection<TblModpack> Modpacks { get; set; }
+		public ICollection<TblLocoObjectPack> ObjectPacks { get; set; }
 
 		public ObjectAvailability Availability { get; set; }
 

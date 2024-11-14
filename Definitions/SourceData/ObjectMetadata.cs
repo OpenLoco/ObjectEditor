@@ -9,7 +9,7 @@ namespace OpenLoco.Definitions.SourceData
 		string? Description,
 		List<string> Authors,
 		List<string> Tags,
-		List<string> Modpacks,
+		List<string> ObjectPacks,
 		string? Licence,
 		ObjectAvailability ObjectAvailability,
 		ObjectSource ObjectSource);

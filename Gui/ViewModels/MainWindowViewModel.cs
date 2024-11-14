@@ -12,6 +12,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -55,6 +56,7 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Task> UseDefaultPalette { get; }
 		public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
 		public ReactiveCommand<Unit, Unit> EditSettingsCommand { get; }
+		public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
 
 		public const string GithubApplicationName = "ObjectEditor";
 		public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
@@ -70,7 +72,7 @@ namespace OpenLoco.Gui.ViewModels
 		public string LatestVersionText { get; set; } = "Development build";
 
 		[Reactive]
-		public bool IsUpdateAvailable { get; set; } = false;
+		public bool IsUpdateAvailable { get; set; }
 
 		const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
 		Image<Rgba32> DefaultPaletteImage { get; init; }
@@ -121,6 +123,8 @@ namespace OpenLoco.Gui.ViewModels
 				Model.Settings.Save(ObjectEditorModel.SettingsFile, Model.Logger);
 			});
 
+			OpenDownloadLink = ReactiveCommand.Create(() => Process.Start(new ProcessStartInfo(GithubLatestReleaseDownloadPage) { UseShellExecute = true }));
+
 			#region Version
 
 			_ = this.WhenAnyValue(o => o.ApplicationVersion)
@@ -137,7 +141,7 @@ namespace OpenLoco.Gui.ViewModels
 			try
 			{
 				var latestVersion = GetLatestAppVersion();
-				if (latestVersion >= ApplicationVersion)
+				if (latestVersion > ApplicationVersion)
 				{
 					LatestVersionText = $"newer version exists: {latestVersion}";
 					IsUpdateAvailable = true;
@@ -153,7 +157,6 @@ namespace OpenLoco.Gui.ViewModels
 				Model.Logger.Error(ex);
 			}
 #endif
-
 			#endregion
 		}
 

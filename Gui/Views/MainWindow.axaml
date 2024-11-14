@@ -675,9 +675,10 @@
 				</MenuItem>
 			</Menu>
 			<StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
-				<Button Margin="4" IsVisible="{Binding IsUpdateAvailable}" IsEnabled="{Binding IsUpdateAvailable}">
-					Download latest version
+				<Button Margin="4" Command="{Binding OpenDownloadLink}" IsVisible="{Binding IsUpdateAvailable}" IsEnabled="{Binding IsUpdateAvailable}">
+					New version available!
 				</Button>
+				<Panel Margin="4" Width="32"/>
 				<ToggleSwitch Margin="4" IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}" />
 			</StackPanel>
 		</DockPanel>

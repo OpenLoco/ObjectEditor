@@ -1,5 +1,4 @@
 using OpenLoco.Dat.FileParsing;
-using Zenith.Core;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
@@ -52,7 +51,7 @@ namespace OpenLoco.Dat.Types.SCV5
 
 		public static TileElement Read(ReadOnlySpan<byte> data)
 		{
-			Verify.AreEqual(data.Length, StructLength);
+			ArgumentOutOfRangeException.ThrowIfNotEqual(data.Length, StructLength);
 			return new TileElement
 			{
 				Type = (ElementType)data[0],

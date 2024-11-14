@@ -1,6 +1,5 @@
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
-using Zenith.Core;
 
 namespace OpenLoco.ObjectService
 {
@@ -42,25 +41,25 @@ namespace OpenLoco.ObjectService
 			var logger = new Logger();
 			ObjectIndex = ObjectIndex.LoadOrCreateIndex(Path.Combine(rootDirectory, ObjectsFolderName), logger)!;
 
-			Verify.AreEqual(true, Directory.Exists(ObjectsOriginalFolder), message: $"OrignalObjectsFolder: {ObjectsOriginalFolder} didn't exist");
-			Verify.AreEqual(true, Directory.Exists(ObjectsCustomFolder), message: $"ObjectsCustomFolder: {ObjectsCustomFolder} didn't exist");
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsCustomFolder));
 
-			Verify.AreEqual(true, Directory.Exists(GraphicsOriginalFolder), message: $"GraphicsOriginalFolder: {GraphicsOriginalFolder} didn't exist");
-			Verify.AreEqual(true, Directory.Exists(GraphicsCustomFolder), message: $"GraphicsCustomFolder: {GraphicsCustomFolder} didn't exist");
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsOriginalFolder));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsCustomFolder));
 
-			Verify.AreEqual(true, Directory.Exists(MusicOriginalFolder), message: $"MusicOriginalFolder: {MusicOriginalFolder} didn't exist");
-			Verify.AreEqual(true, Directory.Exists(MusicCustomFolder), message: $"MusicCustomFolder: {MusicCustomFolder} didn't exist");
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicOriginalFolder));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicCustomFolder));
 
-			Verify.AreEqual(true, Directory.Exists(SoundEffectsOriginalFolder), message: $"SoundEffectsOriginalFolder: {SoundEffectsOriginalFolder} didn't exist");
-			Verify.AreEqual(true, Directory.Exists(SoundEffectsCustomFolder), message: $"SoundEffectsCustomFolder: {SoundEffectsCustomFolder} didn't exist");
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsOriginalFolder));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsCustomFolder));
 
-			Verify.AreEqual(true, Directory.Exists(TutorialsOriginalFolder), message: $"TutorialsOriginalFolder: {TutorialsOriginalFolder} didn't exist");
-			Verify.AreEqual(true, Directory.Exists(TutorialsCustomFolder), message: $"TutorialsCustomFolder: {TutorialsCustomFolder} didn't exist");
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsOriginalFolder));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsCustomFolder));
 
-			Verify.AreEqual(true, Directory.Exists(ScenariosOriginalFolder), message: $"ScenariosOriginalFolder: {ScenariosOriginalFolder} didn't exist");
-			Verify.AreEqual(true, Directory.Exists(ScenariosCustomFolder), message: $"ScenariosCustomFolder: {ScenariosCustomFolder} didn't exist");
-			Verify.AreEqual(true, Directory.Exists(ScenariosGoGFolder), message: $"ScenariosGoGFolder: {ScenariosGoGFolder} didn't exist");
-			Verify.AreEqual(true, Directory.Exists(ScenariosSteamFolder), message: $"ScenariosSteamFolder: {ScenariosSteamFolder} didn't exist");
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosOriginalFolder));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosCustomFolder));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosGoGFolder));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosSteamFolder));
 		}
 
 		public ObjectIndex ObjectIndex { get; init; }

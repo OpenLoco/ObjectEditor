@@ -1,5 +1,3 @@
-﻿using Zenith.Core;
-
 namespace OpenLoco.Dat.FileParsing
 {
 	public static class ByteHelpers
@@ -25,7 +23,7 @@ namespace OpenLoco.Dat.FileParsing
 				size = sizeAttr.Size;
 			}
 
-			Verify.Positive(size, message: $"type {type.Name} has no size data associated with it");
+			ArgumentOutOfRangeException.ThrowIfNegativeOrZero(size, nameof(size));
 
 			return size;
 		}

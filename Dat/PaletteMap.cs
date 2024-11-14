@@ -1,7 +1,6 @@
 using OpenLoco.Dat.Types;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Zenith.Core;
 
 namespace OpenLoco.Dat
 {
@@ -13,8 +12,8 @@ namespace OpenLoco.Dat
 
 		public PaletteMap(Image<Rgba32> img)
 		{
-			Verify.AreEqual(16, img.Height);
-			Verify.AreEqual(16, img.Height);
+			ArgumentOutOfRangeException.ThrowIfNotEqual(16, img.Height);
+			ArgumentOutOfRangeException.ThrowIfNotEqual(16, img.Height);
 
 			Palette = new (Color, byte)[img.Width * img.Height];
 			for (var y = 0; y < img.Height; ++y)
@@ -29,7 +28,7 @@ namespace OpenLoco.Dat
 
 		public PaletteMap(Color[] _palette)
 		{
-			Verify.AreEqual(256, _palette.Length);
+			ArgumentOutOfRangeException.ThrowIfNotEqual(256, _palette.Length);
 			Palette = new (Color, byte)[_palette.Length];
 
 			for (var i = 0; i < _palette.Length; ++i)

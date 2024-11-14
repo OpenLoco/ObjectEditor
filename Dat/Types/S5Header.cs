@@ -1,7 +1,6 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using System.ComponentModel;
-using Zenith.Core;
 
 namespace OpenLoco.Dat.Types
 {
@@ -51,7 +50,7 @@ namespace OpenLoco.Dat.Types
 
 		public static S5Header Read(ReadOnlySpan<byte> data)
 		{
-			Verify.AreEqual(data.Length, StructLength);
+			ArgumentOutOfRangeException.ThrowIfNotEqual(data.Length, StructLength);
 
 			var flags = BitConverter.ToUInt32(data[0..4]);
 			var name = System.Text.Encoding.ASCII.GetString(data[4..12]);

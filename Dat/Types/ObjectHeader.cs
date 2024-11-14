@@ -1,7 +1,6 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using System.ComponentModel;
-using Zenith.Core;
 
 namespace OpenLoco.Dat.Types
 {
@@ -19,7 +18,7 @@ namespace OpenLoco.Dat.Types
 
 		public static ObjectHeader Read(ReadOnlySpan<byte> data)
 		{
-			Verify.AreEqual(data.Length, StructLength);
+			ArgumentOutOfRangeException.ThrowIfNotEqual(data.Length, StructLength);
 
 			var encoding = (SawyerEncoding)data[0];
 			var dataLength = BitConverter.ToUInt32(data[1..5]);

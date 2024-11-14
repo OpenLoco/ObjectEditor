@@ -674,7 +674,12 @@
 					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
 				</MenuItem>
 			</Menu>
-			<ToggleSwitch IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" HorizontalAlignment="Right" OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}" />
+			<StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
+				<Button Margin="4" IsVisible="{Binding IsUpdateAvailable}" IsEnabled="{Binding IsUpdateAvailable}">
+					Download latest version
+				</Button>
+				<ToggleSwitch Margin="4" IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}" />
+			</StackPanel>
 		</DockPanel>
 		<Expander Header="Logs" Padding="0" ExpandDirection="Down" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="8" MaxHeight="512">
 			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">

@@ -69,6 +69,9 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public string LatestVersionText { get; set; } = "Development build";
 
+		[Reactive]
+		public bool IsUpdateAvailable { get; set; } = false;
+
 		const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
 		Image<Rgba32> DefaultPaletteImage { get; init; }
 
@@ -134,13 +137,15 @@ namespace OpenLoco.Gui.ViewModels
 			try
 			{
 				var latestVersion = GetLatestAppVersion();
-				if (latestVersion > ApplicationVersion)
+				if (latestVersion >= ApplicationVersion)
 				{
 					LatestVersionText = $"newer version exists: {latestVersion}";
+					IsUpdateAvailable = true;
 				}
 				else
 				{
 					LatestVersionText = "latest version";
+					IsUpdateAvailable = false;
 				}
 			}
 			catch (Exception ex)

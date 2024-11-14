@@ -43,7 +43,7 @@ namespace OpenLoco.Gui.ViewModels
 		public override void Save()
 		{
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
-				? Path.Combine(Model.Settings.DataDirectory, CurrentFile.Filename)
+				? CurrentFile.Filename
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 			Logger?.Info($"Saving music to {savePath}");

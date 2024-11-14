@@ -151,7 +151,7 @@ namespace OpenLoco.Dat.FileParsing
 			ReadOnlySpan<byte> remainingData = decodedData;
 
 			var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
-			Verify.NotNull(locoStruct, paramName: filename);
+			ArgumentNullException.ThrowIfNull(locoStruct, paramName: filename);
 
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
 			var locoStructSize = structSize!.Size;

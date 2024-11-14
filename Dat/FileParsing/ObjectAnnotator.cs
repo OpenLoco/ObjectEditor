@@ -40,7 +40,7 @@ namespace OpenLoco.Dat.FileParsing
 			];
 
 			var locoStruct = SawyerStreamReader.GetLocoStruct(s5Header.ObjectType, fullData.AsSpan()[runningCount..]);
-			Verify.NotNull(locoStruct);
+			ArgumentNullException.ThrowIfNull(locoStruct);
 
 			var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
 			var locoStructSize = structSize!.Size;

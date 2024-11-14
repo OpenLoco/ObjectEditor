@@ -5,10 +5,12 @@ namespace OpenLoco.Gui.Views
 {
 	public partial class EditSettingsWindow : Window
 	{
-		public EditSettingsWindow(EditorSettings settings)
+		public EditSettingsWindow()
+			=> InitializeComponent();
+
+		private void Window_Closing(object? sender, WindowClosingEventArgs e)
 		{
-			InitializeComponent();
-			DataContext = new EditorSettingsWindowViewModel() { Settings = settings };
+			((EditorSettingsWindowViewModel)DataContext).Commit();
 		}
 	}
 }

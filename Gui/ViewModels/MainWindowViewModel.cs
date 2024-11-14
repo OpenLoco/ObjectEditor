@@ -14,6 +14,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -44,11 +45,8 @@ namespace OpenLoco.Gui.ViewModels
 
 		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
-		//public ReactiveCommand<Unit, Unit> LoadPalette { get; }
-
 		public ReactiveCommand<Unit, Unit> OpenDownloadFolder { get; }
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
-		public ReactiveCommand<Unit, Task> EditSettings { get; }
 		public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
 		public ReactiveCommand<Unit, Task> OpenG1 { get; }
 		public ReactiveCommand<Unit, Task> OpenSCV5 { get; }
@@ -57,9 +55,9 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Task> OpenTutorial { get; }
 		public ReactiveCommand<Unit, Task> OpenScores { get; }
 		public ReactiveCommand<Unit, Task> OpenLanguage { get; }
-
 		public ReactiveCommand<Unit, Task> UseDefaultPalette { get; }
 		public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
+		public ReactiveCommand<Unit, Unit> EditSettingsCommand { get; }
 
 		public const string GithubApplicationName = "ObjectEditor";
 		public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
@@ -76,6 +74,8 @@ namespace OpenLoco.Gui.ViewModels
 
 		const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
 		Image<Rgba32> DefaultPaletteImage { get; init; }
+
+		public Interaction<EditorSettingsWindowViewModel, EditorSettingsWindowViewModel?> ShowDialog { get; }
 
 		public MainWindowViewModel()
 		{
@@ -104,16 +104,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObject);
 			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder));
-			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.SettingsPath));
-			EditSettings = ReactiveCommand.Create(async () =>
-			{
-				var dialog = new EditSettingsWindow(Model.Settings);
-				var currentView = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-				if (currentView != null)
-				{
-					await dialog.ShowDialog(currentView);
-				}
-			});
+			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.ProgramDataPath));
 			OpenG1 = ReactiveCommand.Create(LoadG1);
 			OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
 			OpenSoundEffect = ReactiveCommand.Create(LoadSoundEffects);
@@ -121,6 +112,14 @@ namespace OpenLoco.Gui.ViewModels
 
 			UseDefaultPalette = ReactiveCommand.Create(LoadDefaultPalette);
 			UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
+
+			ShowDialog = new();
+			EditSettingsCommand = ReactiveCommand.CreateFromTask(async () =>
+			{
+				var vm = new EditorSettingsWindowViewModel(Model.Settings);
+				var result = await ShowDialog.Handle(vm);
+				Model.Settings.Save(ObjectEditorModel.SettingsFile, Model.Logger);
+			});
 
 			#region Version
 

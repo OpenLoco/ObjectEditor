@@ -75,7 +75,7 @@ namespace OpenLoco.Dat.FileParsing
 
 		public static ReadOnlySpan<byte> WriteLocoStruct(ILocoStruct obj)
 		{
-			Verify.NotNull(obj);
+			ArgumentNullException.ThrowIfNull(obj);
 
 			var t = obj.GetType();
 			var objSize = ByteHelpers.GetObjectSize(t);

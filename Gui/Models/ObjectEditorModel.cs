@@ -161,8 +161,11 @@ namespace OpenLoco.Gui.Models
 						if (!string.IsNullOrEmpty(locoObj!.DatBytes))
 						{
 							var filename = Path.Combine(Settings.DownloadFolder, $"{locoObj.UniqueName}.dat");
-							File.WriteAllBytes(filename, Convert.FromBase64String(locoObj.DatBytes));
-							Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {filename}");
+							if (!File.Exists(filename))
+							{
+								File.WriteAllBytes(filename, Convert.FromBase64String(locoObj.DatBytes));
+								Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {filename}");
+							}
 						}
 					}
 					else

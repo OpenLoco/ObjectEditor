@@ -249,59 +249,6 @@ namespace OpenLoco.Gui.Models
 			return true;
 		}
 
-		//public bool LoadDataDirectory(string directory)
-		//{
-		//	if (!Directory.Exists(directory))
-		//	{
-		//		Logger.Warning("Invalid directory: doesn't exist");
-		//		return false;
-		//	}
-
-		//	Settings.DataDirectory = directory;
-
-		//	var allDataFiles = Directory.GetFiles(Settings.DataDirectory).Select(f => Path.GetFileName(f).ToLower()).ToHashSet();
-
-		//	void LoadKnownData(HashSet<string> allFilesInDir, HashSet<string> knownFilenames, Dictionary<string, byte[]> dict)
-		//	{
-		//		dict.Clear();
-		//		var expectedMusicFiles = knownFilenames.Select(f => f.ToLower());
-		//		foreach (var music in expectedMusicFiles)
-		//		{
-		//			var matching = allFilesInDir.Where(f => f.EndsWith(music));
-		//			if (matching.Any())
-		//			{
-		//				dict.Add(music, File.ReadAllBytes(Path.Combine(Settings.DataDirectory, music)));
-		//				_ = allFilesInDir.RemoveWhere(f => f.EndsWith(music));
-		//			}
-		//		}
-		//	}
-
-		//	LoadKnownData(allDataFiles, [.. OriginalDataFiles.Music.Keys], Music);
-		//	LoadKnownData(allDataFiles, [.. OriginalDataFiles.MiscellaneousTracks.Keys], MiscellaneousTracks);
-		//	LoadKnownData(allDataFiles, [OriginalDataFiles.SoundEffect], SoundEffects);
-		//	LoadKnownData(allDataFiles, OriginalDataFiles.Tutorials, Tutorials);
-
-		//	//MiscFiles = [.. allDataFiles];
-
-		//	// load G1 only for now since we need it for palette
-		//	//G1 = SawyerStreamReader.LoadG1(Settings.GetDataFullPath(Settings.G1DatFileName));
-
-		//	//LoadPalette(); // update palette from g1
-
-		//	//await SaveSettings();
-
-		//	return true;
-		//}
-
-		// this method will load any supported file type
-		//public void LoadDirectory(string directory)
-		//{
-		//	var allFiles = Directory.GetFiles(directory, "*.dat|*.sv5|*.sc5", SearchOption.AllDirectories);
-		//}
-
-		//public void LoadObjDirectory(string directory)
-		//	=> LoadObjDirectory(directory, new Progress<float>(), true);
-
 		static Task? indexerTask;
 		static readonly SemaphoreSlim taskLock = new(1, 1);
 

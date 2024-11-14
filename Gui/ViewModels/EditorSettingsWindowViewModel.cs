@@ -39,7 +39,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		#region Object Folders
 
-		[Reactive, PathBrowsable, Category("Object Folders"), DisplayName("Downloads"), Description("The folder to store downloaded objects")]
+		[Reactive, PathBrowsable(PathBrowsableType.Directory), Category("Object Folders"), DisplayName("Downloads"), Description("The folder to store downloaded objects")]
 		public string DownloadFolder { get; set; } = string.Empty;
 
 		[Reactive, ReadOnly(true), Category("Object Folders"), DisplayName("Current ObjectData folder"), Description("The currently-selected ObjectData folder. This is readonly and only used to remember the previous location when you start up the editor.")]

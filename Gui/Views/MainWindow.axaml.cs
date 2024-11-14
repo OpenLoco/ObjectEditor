@@ -1,8 +1,6 @@
 using Avalonia.ReactiveUI;
-using Microsoft.VisualBasic;
 using OpenLoco.Gui.ViewModels;
 using ReactiveUI;
-using System;
 using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.Views

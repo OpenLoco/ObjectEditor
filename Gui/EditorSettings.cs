@@ -1,12 +1,8 @@
-using DynamicData;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
-using OpenLoco.Gui.Models;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

@@ -70,7 +70,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x2A), Browsable(false)] uint16_t _CompatibleRoads, // bitset
 		[property: LocoStructOffset(0x2C), Browsable(false)] uint16_t _CompatibleTracks, // bitset
 		[property: LocoStructOffset(0x2E)] TownSize TargetTownSize,
-		[property: LocoStructOffset(0x2F)] uint8_t pad_2F
+		[property: LocoStructOffset(0x2F)] uint8_t var_2F
 		) : ILocoStruct, ILocoStructVariableData
 	{
 		public List<S5Header> Compatible { get; set; } = [];

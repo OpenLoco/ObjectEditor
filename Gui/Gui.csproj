@@ -18,6 +18,7 @@
     <Version>1.2.3</Version>
     <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <ApplicationIcon>Assets\loco_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +27,10 @@
 
   <ItemGroup>
     <None Remove="version.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\loco_icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,7 +55,6 @@
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
     <PackageReference Include="ReactiveUI.Validation" Version="4.1.1" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
-    <PackageReference Include="Zenith.Core" Version="1.0.20" />
   </ItemGroup>
 
   <ItemGroup>

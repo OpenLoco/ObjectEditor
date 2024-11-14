@@ -18,6 +18,8 @@
 		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 		xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
 		mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900"
+		Width="1440"
+		Height="900"
 		x:Class="OpenLoco.Gui.Views.MainWindow"
 		x:DataType="vm:MainWindowViewModel"
 		Icon="/Assets/loco_icon.png"
@@ -134,12 +136,24 @@
 			<pgc:PropertyGrid x:Name="propertyGrid_ObjectVm" DataContext="{Binding Object}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 		</DataTemplate>
 
+		<DataTemplate DataType="vm:AirportViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_AirportVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+		</DataTemplate>
+
 		<DataTemplate DataType="vm:VehicleViewModel">
 			<pgc:PropertyGrid x:Name="propertyGrid_VehicleVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:TownNamesViewModel">
 			<pgc:PropertyGrid x:Name="propertyGrid_TownNamesVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:IndustryViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_IndustryVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:BuildingViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_BuildingVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
@@ -655,6 +669,7 @@
 					<MenuItem Header="Load custom palette" Command="{Binding UseCustomPalette}" />
 				</MenuItem>
 				<MenuItem Header="_Settings">
+					<MenuItem Header="Edit settings" Command="{Binding EditSettingsCommand}" />
 					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
 					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
 				</MenuItem>

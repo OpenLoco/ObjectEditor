@@ -24,22 +24,22 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x1A), Browsable(false)] image_id _var_1A,
 		[property: LocoStructOffset(0x1E)] uint8_t NumBuildingParts,
 		[property: LocoStructOffset(0x1F)] uint8_t NumBuildingVariations,
-		[property: LocoStructOffset(0x20), LocoStructVariableLoad] List<uint8_t> BuildingPartHeights,    // This is the height of a building image
-		[property: LocoStructOffset(0x24), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingPartAnimations,
+		[property: LocoStructOffset(0x20), LocoStructVariableLoad, LocoArrayLength(IndustryObject.BuildingHeightCount)] List<uint8_t> BuildingHeights,    // This is the height of a building image
+		[property: LocoStructOffset(0x24), LocoStructVariableLoad, LocoArrayLength(IndustryObject.BuildingAnimationCount)] List<BuildingPartAnimation> BuildingAnimations,
 		[property: LocoStructOffset(0x28), LocoStructVariableLoad, LocoArrayLength(IndustryObject.AnimationSequencesCount)] List<uint8_t[]> AnimationSequences, // Access with getAnimationSequence helper method
 		[property: LocoStructOffset(0x38), LocoStructVariableLoad] List<IndustryObjectUnk38> var_38,    // Access with getUnk38 helper method
-		[property: LocoStructOffset(0x3C), LocoStructVariableLoad, LocoArrayLength(IndustryObject.VariationPartCount)] List<uint8_t[]> BuildingParts,  // Access with getBuildingParts helper method
+		[property: LocoStructOffset(0x3C), LocoStructVariableLoad, LocoArrayLength(IndustryObject.BuildingVariationCount)] List<uint8_t[]> BuildingVariations,  // Access with getBuildingParts helper method
 		[property: LocoStructOffset(0xBC)] uint8_t MinNumBuildings,
 		[property: LocoStructOffset(0xBD)] uint8_t MaxNumBuildings,
 		[property: LocoStructOffset(0xBE), LocoStructVariableLoad] List<uint8_t> Buildings,
-		[property: LocoStructOffset(0xC2)] uint32_t AvailableColours,  // bitset
+		[property: LocoStructOffset(0xC2)] uint32_t Colours,  // bitset
 		[property: LocoStructOffset(0xC6)] uint32_t BuildingSizeFlags, // flags indicating the building types size 1:large4x4, 0:small1x1
 		[property: LocoStructOffset(0xCA)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0xCC)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0xCE)] uint8_t TotalOfTypeInScenario, // Total industries of this type that can be created in a scenario Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.
 		[property: LocoStructOffset(0xCF)] uint8_t CostIndex,
-		[property: LocoStructOffset(0xD0)] int16_t CostFactor,
-		[property: LocoStructOffset(0xD2)] int16_t ClearCostFactor,
+		[property: LocoStructOffset(0xD0)] int16_t BuildCostFactor,
+		[property: LocoStructOffset(0xD2)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0xD4)] uint8_t ScaffoldingSegmentType,
 		[property: LocoStructOffset(0xD5)] Colour ScaffoldingColour,
 		[property: LocoStructOffset(0xD6), LocoArrayLength(IndustryObject.InitialProductionRateCount)] IndustryObjectProductionRateRange[] InitialProductionRate,
@@ -52,18 +52,20 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0xEA)] uint8_t var_EA,
 		[property: LocoStructOffset(0xEB)] uint8_t var_EB,
 		[property: LocoStructOffset(0xEC)] uint8_t var_EC,
-		[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.WallTypeCount)] List<S5Header> WallTypes, // There can be up to 4 different wall types for an industry
-		[property: LocoStructOffset(0xF1), LocoStructVariableLoad] object_id _BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
-		[property: LocoStructOffset(0xF2), LocoStructVariableLoad] object_id _BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
+		[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxWallTypeCount)] List<S5Header> WallTypes, // There can be up to 4 different wall types for an industry
+		[property: LocoStructOffset(0xF1), LocoStructVariableLoad, Browsable(false)] object_id _BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
+		[property: LocoStructOffset(0xF2), LocoStructVariableLoad, Browsable(false)] object_id _BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
 		[property: LocoStructOffset(0xF3)] uint8_t var_F3
 		) : ILocoStruct, ILocoStructVariableData
 	{
 		public const int AnimationSequencesCount = 4;
+		public const int BuildingVariationCount = 32;
+		public const int BuildingHeightCount = 4;
+		public const int BuildingAnimationCount = 2;
 		public const int InitialProductionRateCount = 2;
 		public const int MaxProducedCargoType = 2;
 		public const int MaxRequiredCargoType = 3;
-		public const int VariationPartCount = 32;
-		public const int WallTypeCount = 4;
+		public const int MaxWallTypeCount = 4;
 
 		//public List<IndustryObjectUnk38> UnkIndustry38 { get; set; } = [];
 
@@ -79,14 +81,14 @@ namespace OpenLoco.Dat.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// part heights
-			BuildingPartHeights.Clear();
-			BuildingPartHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingParts * 1)], NumBuildingParts));
+			BuildingHeights.Clear();
+			BuildingHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingParts * 1)], NumBuildingParts));
 			remainingData = remainingData[(NumBuildingParts * 1)..]; // uint8_t*
 
 			// part animations
-			BuildingPartAnimations.Clear();
+			BuildingAnimations.Clear();
 			var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
-			BuildingPartAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingParts * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingParts, buildingAnimationSize)
+			BuildingAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingParts * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingParts, buildingAnimationSize)
 				.Cast<BuildingPartAnimation>());
 			remainingData = remainingData[(NumBuildingParts * 2)..]; // uint16_t*
 
@@ -117,7 +119,7 @@ namespace OpenLoco.Dat.Objects
 			remainingData = remainingData[1..]; // skip final 0xFF byte
 
 			// variation parts
-			BuildingParts.Clear();
+			BuildingVariations.Clear();
 			for (var i = 0; i < NumBuildingVariations; ++i)
 			{
 				var ptr_1F = 0;
@@ -126,7 +128,7 @@ namespace OpenLoco.Dat.Objects
 					;
 				}
 
-				BuildingParts.Add(remainingData[..ptr_1F].ToArray());
+				BuildingVariations.Add(remainingData[..ptr_1F].ToArray());
 				ptr_1F++;
 				remainingData = remainingData[ptr_1F..];
 			}
@@ -148,8 +150,8 @@ namespace OpenLoco.Dat.Objects
 
 			// wall types
 			WallTypes.Clear();
-			WallTypes.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, WallTypeCount));
-			remainingData = remainingData[(S5Header.StructLength * WallTypeCount)..];
+			WallTypes.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxWallTypeCount));
+			remainingData = remainingData[(S5Header.StructLength * MaxWallTypeCount)..];
 
 			// wall type
 			if (remainingData[0] != 0xFF)
@@ -186,13 +188,13 @@ namespace OpenLoco.Dat.Objects
 			using (var ms = new MemoryStream())
 			{
 				// part heights
-				foreach (var x in BuildingPartHeights)
+				foreach (var x in BuildingHeights)
 				{
 					ms.WriteByte(x);
 				}
 
 				// part animations
-				foreach (var x in BuildingPartAnimations)
+				foreach (var x in BuildingAnimations)
 				{
 					ms.WriteByte(x.NumFrames);
 					ms.WriteByte(x.AnimationSpeed);
@@ -215,7 +217,7 @@ namespace OpenLoco.Dat.Objects
 				ms.WriteByte(0xFF);
 
 				// variation parts
-				foreach (var x in BuildingParts)
+				foreach (var x in BuildingVariations)
 				{
 					ms.Write(x);
 					ms.WriteByte(0xFF);
@@ -239,7 +241,7 @@ namespace OpenLoco.Dat.Objects
 				}
 
 				// wall types
-				foreach (var obj in WallTypes.Fill(WallTypeCount, S5Header.NullHeader))
+				foreach (var obj in WallTypes.Fill(MaxWallTypeCount, S5Header.NullHeader))
 				{
 					ms.Write(obj.Write());
 				}
@@ -291,7 +293,7 @@ namespace OpenLoco.Dat.Objects
 			}
 
 			// 230/256 = ~90%
-			if (-ClearCostFactor > CostFactor * 230 / 256)
+			if (-SellCostFactor > BuildCostFactor * 230 / 256)
 			{
 				return false;
 			}

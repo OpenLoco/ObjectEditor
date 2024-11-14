@@ -9,10 +9,10 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x00)] EditorControllerStep EditorStep,
 		[property: LocoStructOffset(0x01)] uint8_t Difficulty,
 		[property: LocoStructOffset(0x02)] uint16_t ScenarioStartYear,
-		[property: LocoStructOffset(0x04), LocoArrayLength(2)] uint8_t[] pad_4,
+		[property: LocoStructOffset(0x04), LocoArrayLength(2)] uint8_t[] var_4,
 		[property: LocoStructOffset(0x06)] ScenarioFlags ScenarioFlags,
 		[property: LocoStructOffset(0x08)] uint8_t MadeAnyChanges,
-		[property: LocoStructOffset(0x09)] uint8_t pad_9,
+		[property: LocoStructOffset(0x09)] uint8_t var_9,
 		[property: LocoStructOffset(0x0A), LocoArrayLength(32)] LandDistributionPattern LandDistributionPatterns,
 		[property: LocoStructOffset(0x2A), LocoArrayLength(64)] char_t[] ScenarioName, // this is a string
 		[property: LocoStructOffset(0x6A), LocoArrayLength(256)] char_t[] ScenarioDetails, // this is a string
@@ -39,7 +39,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x41AD)] S5Header Currency,
 		[property: LocoStructOffset(0x41B2)] LandGeneratorType Generator,
 		[property: LocoStructOffset(0x41B3)] uint8_t NumTerrainSmoothingPasses,
-		[property: LocoStructOffset(0x41B4), LocoArrayLength(347)] byte[] pad_41BD) : ILocoStruct
+		[property: LocoStructOffset(0x41B4), LocoArrayLength(347)] byte[] var_41BD) : ILocoStruct
 	{
 		public const int StructLength = 0x431A;
 		public bool Validate() => true;

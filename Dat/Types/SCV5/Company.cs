@@ -12,8 +12,8 @@ namespace OpenLoco.Dat.Types.SCV5
 		public uint32_t CurrentLoan { get; set; }          // 0x000E
 		public uint32_t UpdateCounter { get; set; }        // 0x0012
 		public int16_t PerformanceIndex { get; set; }      // 0x0016
-		[LocoArrayLength(0x8C4E - 0x18)] public uint8_t[] pad_18 { get; set; } // 0x0018
+		[LocoArrayLength(0x8C4E - 0x18)] public uint8_t[] var_18 { get; set; } // 0x0018
 		public uint8_t ChallengeProgress { get; set; }     // 0x8C4E
-		[LocoArrayLength(0x8FA8 - 0x8C4F)] public uint8_t[] pad_8C4F { get; set; }
+		[LocoArrayLength(0x8FA8 - 0x8C4F)] public uint8_t[] var_8C4F { get; set; }
 	}
 }

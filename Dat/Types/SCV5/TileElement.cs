@@ -29,7 +29,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		public uint8_t BaseZ { get; set; }
 		public uint8_t ClearZ { get; set; }
 		[LocoArrayLength(4)]
-		public uint8_t[] pad_4 { get; set; }
+		public uint8_t[] var_4 { get; set; }
 
 		void SetLast(bool value)
 		{
@@ -59,7 +59,7 @@ namespace OpenLoco.Dat.Types.SCV5
 				Flags = data[1],
 				BaseZ = data[2],
 				ClearZ = data[3],
-				pad_4 = data[4..8].ToArray()
+				var_4 = data[4..8].ToArray()
 			};
 		}
 	}

@@ -5,81 +5,6 @@ using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects
 {
-	//[TypeConverter(typeof(ExpandableObjectConverter))]
-	//[LocoStructType(ObjectType.Airport)]
-	//public class AirportNew(Dictionary<LanguageId, List<string>> name, AirportObject airport, List<G1Element32> graphics)
-	//{
-	//	public Dictionary<LanguageId, List<string>> Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
-
-	//	public int16_t BuildCostFactor { get; set; } = airport.BuildCostFactor;
-	//	public int16_t SellCostFactor { get; set; } = airport.SellCostFactor;
-	//	public uint8_t CostIndex { get; set; } = airport.CostIndex;
-	//	public uint16_t AllowedPlaneTypes { get; set; } = airport.AllowedPlaneTypes;
-	//	public uint8_t NumBuildingAnimations { get; set; } = airport.NumBuildingAnimations;
-	//	public int16_t NumBuildingVariations { get; set; } = airport.NumBuildingVariations;
-	//	public IList<uint8_t> BuildingVariationHeights { get; } = airport.BuildingVariationHeights ?? throw new ArgumentNullException(nameof(airport.BuildingVariationHeights));
-	//	public IList<BuildingPartAnimation> BuildingVariationAnimations { get; } = airport.BuildingVariationAnimations ?? throw new ArgumentNullException(nameof(airport.BuildingVariationAnimations));
-	//	public IList<uint8_t[]> BuildingVariationParts { get; } = airport.BuildingVariationParts ?? throw new ArgumentNullException(nameof(airport.BuildingVariationParts));
-	//	public IList<AirportBuilding> BuildingPositions { get; } = airport.BuildingPositions ?? throw new ArgumentNullException(nameof(airport.BuildingPositions));
-	//	public uint32_t LargeTiles { get; set; } = airport.LargeTiles;
-	//	public int8_t MinX { get; set; } = airport.MinX;
-	//	public int8_t MinY { get; set; } = airport.MinY;
-	//	public int8_t MaxX { get; set; } = airport.MaxX;
-	//	public int8_t MaxY { get; set; } = airport.MaxY;
-	//	public uint16_t DesignedYear { get; set; } = airport.DesignedYear;
-	//	public uint16_t ObsoleteYear { get; set; } = airport.ObsoleteYear;
-	//	public uint8_t NumMovementNodes { get; set; } = airport.NumMovementNodes;
-	//	public uint8_t NumMovementEdges { get; set; } = airport.NumMovementEdges;
-	//	public IList<MovementNode> MovementNodes { get; } = airport.MovementNodes ?? throw new ArgumentNullException(nameof(airport.MovementNodes));
-	//	public IList<MovementEdge> MovementEdges { get; } = airport.MovementEdges ?? throw new ArgumentNullException(nameof(airport.MovementEdges));
-
-	//	public IList<G1Element32> Graphics { get; } = graphics ?? throw new ArgumentNullException(nameof(graphics));
-
-	//	//public const int FixedSize = 0xBA;
-
-	//	//public static AirportNew FromDatFile(ReadOnlySpan<byte> bytes) // bytes is the dat file, minus the s5 and obj headers
-	//	//{
-	//	//	var x = new AirportNew();
-	//	//	x.BuildCostFactor = ByteReaderT.Read_int16t(bytes, 0x02);
-	//	//	x.SellCostFactor = ByteReaderT.Read_int16t(bytes, 0x04);
-	//	//	x.CostIndex = ByteReaderT.Read_uint8t(bytes, 0x06);
-	//	//	x.AllowedPlaneTypes = ByteReaderT.Read_uint16t(bytes, 0x10);
-	//	//	x.NumBuildingAnimations = ByteReaderT.Read_uint8t(bytes, 0x12);
-	//	//	x.NumBuildingVariations = ByteReaderT.Read_uint8t(bytes, 0x13);
-
-	//	//	//x.BuildingVariationHeights = ByteReaderT.Read_Array<uint8_t>(bytes, 0x14);
-	//	//	//x.BuildingVariationAnimations = ByteReaderT.Read_int16t(bytes, 0x18);
-	//	//	//x.BuildingVariationParts = ByteReaderT.Read_uint8t(bytes, 0x1C);
-	//	//	//x.BuildingPositions = ByteReaderT.Read_int16t(bytes, 0x9C);
-
-	//	//	x.LargeTiles = ByteReaderT.Read_uint32t(bytes, 0xA0);
-	//	//	x.MinX = ByteReaderT.Read_int8t(bytes, 0xA4);
-	//	//	x.MinY = ByteReaderT.Read_int8t(bytes, 0xA5);
-	//	//	x.MaxX = ByteReaderT.Read_int8t(bytes, 0xA6);
-	//	//	x.MaxY = ByteReaderT.Read_int8t(bytes, 0xA7);
-	//	//	x.DesignedYear = ByteReaderT.Read_uint16t(bytes, 0xA8);
-	//	//	x.ObsoleteYear = ByteReaderT.Read_uint16t(bytes, 0xAA);
-	//	//	x.NumMovementNodes = ByteReaderT.Read_uint8t(bytes, 0xAC);
-	//	//	x.NumMovementEdges = ByteReaderT.Read_uint8t(bytes, 0xAD);
-
-	//	//	///x.MovementNodes = ByteReaderT.Read_int16t(bytes, 0x02);
-	//	//	//x.MovementEdgesMaxY = ByteReaderT.Read_int16t(bytes, 0x04);
-
-	//	//	// move past fixed section
-	//	//	bytes = bytes[FixedSize..];
-
-	//	//	// read variable data
-
-	//	//	// read string table
-	//	//	var bytesString = 1;
-	//	//	bytes = bytes[bytesString..];
-
-	//	//	// read graphics
-
-	//	//	return x;
-	//	//}
-	//}
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xBA)]
 	[LocoStructType(ObjectType.Airport)]
@@ -93,11 +18,11 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x08), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0C), Browsable(false)] image_id ImageOffset,
 		[property: LocoStructOffset(0x10)] uint16_t AllowedPlaneTypes,
-		[property: LocoStructOffset(0x12)] uint8_t NumBuildingAnimations,
+		[property: LocoStructOffset(0x12)] uint8_t NumBuildingParts,
 		[property: LocoStructOffset(0x13)] uint8_t NumBuildingVariations,
-		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> BuildingVariationHeights,
-		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<BuildingPartAnimation> BuildingVariationAnimations,
-		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(AirportObject.VariationPartCount)] List<uint8_t[]> BuildingVariationParts,
+		[property: LocoStructOffset(0x14), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingHeightCount)] List<uint8_t> BuildingHeights,
+		[property: LocoStructOffset(0x18), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingAnimationCount)] List<BuildingPartAnimation> BuildingAnimations,
+		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingVariationCount)] List<uint8_t[]> BuildingVariations,
 		[property: LocoStructOffset(0x9C), LocoStructVariableLoad] List<AirportBuilding> BuildingPositions,
 		[property: LocoStructOffset(0xA0)] uint32_t LargeTiles,
 		[property: LocoStructOffset(0xA4)] int8_t MinX,
@@ -110,24 +35,26 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0xAD)] uint8_t NumMovementEdges,
 		[property: LocoStructOffset(0xAE), LocoStructVariableLoad] List<MovementNode> MovementNodes,
 		[property: LocoStructOffset(0xB2), LocoStructVariableLoad] List<MovementEdge> MovementEdges,
-		[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] pad_B6
+		[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] var_B6
 	) : ILocoStruct, ILocoStructVariableData
 	{
-		public const int VariationPartCount = 32;
+		public const int BuildingVariationCount = 32;
+		public const int BuildingHeightCount = 4;
+		public const int BuildingAnimationCount = 2;
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// variation heights
-			BuildingVariationHeights.Clear();
-			BuildingVariationHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingAnimations * 1)], NumBuildingAnimations));
-			remainingData = remainingData[(NumBuildingAnimations * 1)..]; // uint8_t*
+			BuildingHeights.Clear();
+			BuildingHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingParts * 1)], NumBuildingParts));
+			remainingData = remainingData[(NumBuildingParts * 1)..]; // uint8_t*
 
 			// variation animations
-			BuildingVariationAnimations.Clear();
+			BuildingAnimations.Clear();
 			var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
-			BuildingVariationAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingAnimations * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingAnimations, buildingAnimationSize)
+			BuildingAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingParts * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingParts, buildingAnimationSize)
 				.Cast<BuildingPartAnimation>());
-			remainingData = remainingData[(NumBuildingAnimations * 2)..]; // uint16_t*
+			remainingData = remainingData[(NumBuildingParts * 2)..]; // uint16_t*
 
 			// variation parts
 			for (var i = 0; i < NumBuildingVariations; ++i)
@@ -136,7 +63,7 @@ namespace OpenLoco.Dat.Objects
 				while (remainingData[++ptr_1C] != 0xFF)
 				{ }
 
-				BuildingVariationParts.Add(remainingData[..ptr_1C].ToArray());
+				BuildingVariations.Add(remainingData[..ptr_1C].ToArray());
 				ptr_1C++;
 				remainingData = remainingData[ptr_1C..];
 			}
@@ -176,26 +103,27 @@ namespace OpenLoco.Dat.Objects
 		{
 			var ms = new MemoryStream();
 
-			// variation heights
-			foreach (var x in BuildingVariationHeights)
+			// heights
+			foreach (var x in BuildingHeights)
 			{
 				ms.WriteByte(x);
 			}
 
-			// variation animations
-			foreach (var x in BuildingVariationAnimations)
+			// animations
+			foreach (var x in BuildingAnimations)
 			{
 				ms.WriteByte(x.NumFrames);
 				ms.WriteByte(x.AnimationSpeed);
 			}
 
-			// variation parts
-			foreach (var x in BuildingVariationParts)
+			// variations
+			foreach (var x in BuildingVariations)
 			{
 				ms.Write(x);
 				ms.WriteByte(0xFF);
 			}
 
+			// positions
 			foreach (var x in BuildingPositions)
 			{
 				ms.WriteByte(x.Index);

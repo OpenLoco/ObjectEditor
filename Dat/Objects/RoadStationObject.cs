@@ -35,7 +35,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x28)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x2A)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0x2C), LocoStructVariableLoad, Browsable(false)] object_id _CargoTypeId,
-		[property: LocoStructOffset(0x2D)] uint8_t pad_2D,
+		[property: LocoStructOffset(0x2D)] uint8_t var_2D,
 		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes
 	) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{

@@ -11,10 +11,10 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x204)] uint16_t PerformanceIndex,
 		[property: LocoStructOffset(0x206), LocoArrayLength(64)] char_t[] Scenario,
 		[property: LocoStructOffset(0x246)] uint8_t ChallengeProgress,
-		[property: LocoStructOffset(0x247)] byte pad_247,
+		[property: LocoStructOffset(0x247)] byte var_247,
 		[property: LocoStructOffset(0x248), LocoArrayLength(250 * 200)] uint8_t[] Image,
 		[property: LocoStructOffset(0xC598)] CompanyFlags ChallengeFlags,
-		[property: LocoStructOffset(0xC59C), LocoArrayLength(124)] byte[] pad_C59C)
+		[property: LocoStructOffset(0xC59C), LocoArrayLength(124)] byte[] var_C59C)
 		: ILocoStruct
 	{
 		public const int StructLength = 0xC618;

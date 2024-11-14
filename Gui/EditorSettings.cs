@@ -1,5 +1,10 @@
+using OpenLoco.Common.Logging;
+using OpenLoco.Dat;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OpenLoco.Gui
 {
@@ -24,54 +29,81 @@ namespace OpenLoco.Gui
 		}
 		HashSet<string> objDataDirectories;
 
-		public string DataDirectory
-		{
-			get => dataDirectory;
-			set
-			{
-				dataDirectory = value;
-				DataDirectories ??= [];
-				_ = DataDirectories.Add(dataDirectory);
-			}
-		}
-		string dataDirectory;
-
-		public HashSet<string> DataDirectories
-		{
-			get => dataDirectories ??= [];
-			set => dataDirectories = value;
-		}
-		HashSet<string> dataDirectories;
-
-		public string SCV5Directory
-		{
-			get => scv5Directory;
-			set
-			{
-				scv5Directory = value;
-				SCV5Directories ??= [];
-				_ = SCV5Directories.Add(scv5Directory);
-			}
-		}
-		string scv5Directory;
-
-		public HashSet<string> SCV5Directories
-		{
-			get => scv5Directories ??= [];
-			set => scv5Directories = value;
-		}
-		HashSet<string> scv5Directories;
+		public bool AutoObjectDiscoveryAndUpload { get; set; }
 
 		public bool UseHttps { get; set; }
 		public string ServerAddressHttp { get; set; } = "http://openloco.leftofzen.dev/";
 		public string ServerAddressHttps { get; set; } = "https://openloco.leftofzen.dev/";
 
-		public string PaletteFile { get; set; } = "palette.png";
-		public string IndexFileName { get; set; } = "objectIndex.json"; // this should be the same as ObjectIndex.IndexFileName
-		public string G1DatFileName { get; set; } = "g1.DAT";
 		public string DownloadFolder { get; set; } = string.Empty;
 
-		public string GetObjDataFullPath(string fileName) => Path.Combine(ObjDataDirectory, fileName);
-		public string GetDataFullPath(string fileName) => Path.Combine(DataDirectory, fileName);
+		[JsonIgnore]
+		public string IndexFileName
+			=> GetObjDataFullPath(ObjectIndex.DefaultIndexFileName);
+
+		public string GetObjDataFullPath(string fileName)
+			=> Path.Combine(ObjDataDirectory, fileName);
+
+		[JsonIgnore]
+		public const string DefaultFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
+
+		[JsonIgnore]
+		static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true, AllowTrailingCommas = true };
+
+		public static EditorSettings Load(string filename, ILogger logger)
+		{
+			if (!File.Exists(filename))
+			{
+				logger.Info($"Settings file doesn't exist; creating now at \"{filename}\"");
+				var newSettings = new EditorSettings();
+				Save(newSettings, filename, logger);
+				return newSettings;
+			}
+
+			var text = File.ReadAllText(filename);
+			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: SerializerOptions); // todo: try-catch this for invalid settings files
+			ArgumentNullException.ThrowIfNull(settings);
+			return settings;
+		}
+
+		public void Save(string filename, ILogger logger)
+			=> Save(this, filename, logger);
+
+		static void Save(EditorSettings settings, string filename, ILogger logger)
+		{
+			var text = JsonSerializer.Serialize(settings, options: SerializerOptions);
+
+			var parentDir = Path.GetDirectoryName(filename);
+			if (parentDir != null && !Directory.Exists(parentDir))
+			{
+				_ = Directory.CreateDirectory(parentDir);
+			}
+
+			try
+			{
+				File.WriteAllText(filename, text);
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex);
+			}
+		}
+
+		public bool Validate(ILogger logger)
+		{
+			if (string.IsNullOrEmpty(ObjDataDirectory))
+			{
+				logger.Warning("Invalid settings file: Object directory was null or empty");
+				return false;
+			}
+
+			if (!Directory.Exists(ObjDataDirectory))
+			{
+				logger.Warning($"Invalid settings file: Directory \"{ObjDataDirectory}\" does not exist");
+				return false;
+			}
+
+			return true;
+		}
 	}
 }

@@ -25,7 +25,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public uint16_t SellCostFactor { get; set; }
 		[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5Header> ProducedCargo { get; set; }
 		[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5Header> RequiredCargo { get; set; }
-		[Reactive, Category("Production"), Length(1, BuildingObject.MaxProducedQuantity)] public BindingList<uint8_t> ProducedQuantity { get; set; }
+		[Reactive, Category("Production"), Length(1, BuildingObject.MaxProducedCargoType)] public BindingList<uint8_t> ProducedQuantity { get; set; }
 		[Reactive, Category("Building"), Length(1, BuildingObject.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
 		[Reactive, Category("Building"), Length(1, BuildingObject.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
 		[Reactive, Category("Building"), Length(1, BuildingObject.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
@@ -52,7 +52,7 @@ namespace OpenLoco.Gui.ViewModels
 			SellCostFactor = bo.SellCostFactor;
 			ProducedCargo = new(bo.ProducedCargo);
 			RequiredCargo = new(bo.RequiredCargo);
-			ProducedQuantity = new(bo.ProducedQuantity);
+			ProducedQuantity = [.. bo.ProducedQuantity];
 			BuildingHeights = new(bo.BuildingHeights);
 			BuildingAnimations = new(bo.BuildingAnimations);
 			BuildingVariations = new(bo.BuildingVariations.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
@@ -84,6 +84,7 @@ namespace OpenLoco.Gui.ViewModels
 				var_AC = var_AC,
 				NumBuildingParts = (uint8_t)bo.BuildingAnimations.Count,
 				NumBuildingVariations = (uint8_t)bo.BuildingVariations.Count,
+				ProducedQuantity = [.. ProducedQuantity],
 				//NumElevatorSequences = (uint8_t)bo.ElevatorHeightSequences.Count,
 			};
 	}

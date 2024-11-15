@@ -26,7 +26,7 @@ namespace OpenLoco.Dat.Objects
 			[property: LocoStructOffset(0x07)] uint8_t NumBuildingVariations,
 			[property: LocoStructOffset(0x08), LocoStructVariableLoad, LocoArrayLength(BuildingObject.BuildingHeightCount)] List<uint8_t> BuildingHeights,
 			[property: LocoStructOffset(0x0C), LocoStructVariableLoad, LocoArrayLength(BuildingObject.BuildingAnimationCount)] List<BuildingPartAnimation> BuildingAnimations,
-			[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(BuildingObject.BuildingVariationCount)] List<uint8_t[]> BuildingVariations,
+			[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(BuildingObject.BuildingVariationCount)] List<List<uint8_t>> BuildingVariations,
 			[property: LocoStructOffset(0x90)] uint32_t Colours,
 			[property: LocoStructOffset(0x94)] uint16_t DesignedYear,
 			[property: LocoStructOffset(0x96)] uint16_t ObsoleteYear,
@@ -37,7 +37,7 @@ namespace OpenLoco.Dat.Objects
 			[property: LocoStructOffset(0x9D)] Colour ScaffoldingColour,
 			[property: LocoStructOffset(0x9E)] uint8_t GeneratorFunction,
 			[property: LocoStructOffset(0x9F)] uint8_t AverageNumberOnMap,
-			[property: LocoStructOffset(0xA0), LocoArrayLength(BuildingObject.MaxProducedQuantity)] uint8_t[] ProducedQuantity,
+			[property: LocoStructOffset(0xA0), LocoArrayLength(BuildingObject.MaxProducedCargoType)] uint8_t[] ProducedQuantity,
 			[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxProducedCargoType)] List<S5Header> ProducedCargo,
 			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxRequiredCargoType)] List<S5Header> RequiredCargo,
 			[property: LocoStructOffset(0xA6), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A6,
@@ -51,7 +51,6 @@ namespace OpenLoco.Dat.Objects
 		public const int BuildingVariationCount = 32;
 		public const int BuildingHeightCount = 4;
 		public const int BuildingAnimationCount = 2;
-		public const int MaxProducedQuantity = 2;
 		public const int MaxProducedCargoType = 2;
 		public const int MaxRequiredCargoType = 2;
 		public const int MaxElevatorHeightSequences = 4;
@@ -84,7 +83,7 @@ namespace OpenLoco.Dat.Objects
 					;
 				}
 
-				BuildingVariations.Add(remainingData[..ptr_10].ToArray());
+				BuildingVariations.Add(remainingData[..ptr_10].ToArray().ToList());
 				ptr_10++;
 				remainingData = remainingData[ptr_10..];
 			}
@@ -133,7 +132,7 @@ namespace OpenLoco.Dat.Objects
 			// variation parts
 			foreach (var x in BuildingVariations)
 			{
-				ms.Write(x);
+				ms.Write(x.ToArray());
 				ms.WriteByte(0xFF);
 			}
 

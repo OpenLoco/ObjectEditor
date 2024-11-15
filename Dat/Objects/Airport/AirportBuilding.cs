@@ -13,6 +13,10 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x03)] int8_t Y
 		) : ILocoStruct
 	{
-		public bool Validate() => true;
+		public AirportBuilding() : this(0, 0, 0, 0)
+		{ }
+
+		public bool Validate()
+			=> true;
 	}
 }

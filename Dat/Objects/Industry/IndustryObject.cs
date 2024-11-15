@@ -26,9 +26,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x1F)] uint8_t NumBuildingVariations,
 		[property: LocoStructOffset(0x20), LocoStructVariableLoad, LocoArrayLength(IndustryObject.BuildingHeightCount)] List<uint8_t> BuildingHeights,    // This is the height of a building image
 		[property: LocoStructOffset(0x24), LocoStructVariableLoad, LocoArrayLength(IndustryObject.BuildingAnimationCount)] List<BuildingPartAnimation> BuildingAnimations,
-		[property: LocoStructOffset(0x28), LocoStructVariableLoad, LocoArrayLength(IndustryObject.AnimationSequencesCount)] List<uint8_t[]> AnimationSequences, // Access with getAnimationSequence helper method
+		[property: LocoStructOffset(0x28), LocoStructVariableLoad, LocoArrayLength(IndustryObject.AnimationSequencesCount)] List<List<uint8_t>> AnimationSequences, // Access with getAnimationSequence helper method
 		[property: LocoStructOffset(0x38), LocoStructVariableLoad] List<IndustryObjectUnk38> var_38,    // Access with getUnk38 helper method
-		[property: LocoStructOffset(0x3C), LocoStructVariableLoad, LocoArrayLength(IndustryObject.BuildingVariationCount)] List<uint8_t[]> BuildingVariations,  // Access with getBuildingParts helper method
+		[property: LocoStructOffset(0x3C), LocoStructVariableLoad, LocoArrayLength(IndustryObject.BuildingVariationCount)] List<List<uint8_t>> BuildingVariations,  // Access with getBuildingParts helper method
 		[property: LocoStructOffset(0xBC)] uint8_t MinNumBuildings,
 		[property: LocoStructOffset(0xBD)] uint8_t MaxNumBuildings,
 		[property: LocoStructOffset(0xBE), LocoStructVariableLoad] List<uint8_t> Buildings,
@@ -103,7 +103,7 @@ namespace OpenLoco.Dat.Objects
 					arr = remainingData[1..size].ToArray();
 				}
 
-				AnimationSequences.Add(arr);
+				AnimationSequences.Add(arr.ToList());
 				remainingData = remainingData[(size + 1)..];
 			}
 
@@ -128,7 +128,7 @@ namespace OpenLoco.Dat.Objects
 					;
 				}
 
-				BuildingVariations.Add(remainingData[..ptr_1F].ToArray());
+				BuildingVariations.Add(remainingData[..ptr_1F].ToArray().ToList());
 				ptr_1F++;
 				remainingData = remainingData[ptr_1F..];
 			}
@@ -203,8 +203,8 @@ namespace OpenLoco.Dat.Objects
 				// animation sequences
 				foreach (var x in AnimationSequences)
 				{
-					ms.WriteByte((uint8_t)x.Length);
-					ms.Write(x);
+					ms.WriteByte((uint8_t)x.Count);
+					ms.Write(x.ToArray());
 				}
 
 				// unk animation related
@@ -219,7 +219,7 @@ namespace OpenLoco.Dat.Objects
 				// variation parts
 				foreach (var x in BuildingVariations)
 				{
-					ms.Write(x);
+					ms.Write(x.ToArray());
 					ms.WriteByte(0xFF);
 				}
 

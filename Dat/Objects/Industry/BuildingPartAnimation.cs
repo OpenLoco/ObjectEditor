@@ -12,6 +12,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x01)] uint8_t AnimationSpeed // Also encodes in bit 7 if the animation is position modified
 		) : ILocoStruct
 	{
+		public BuildingPartAnimation() : this(0, 0)
+		{ }
+
 		public bool Validate()
 			=> IsPowerOfTwo(NumFrames);
 

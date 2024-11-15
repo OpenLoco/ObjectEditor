@@ -13,6 +13,10 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x06)] AirportMovementNodeFlags Flags
 		) : ILocoStruct
 	{
-		public bool Validate() => true;
+		public MovementNode() : this(0, 0, 0, AirportMovementNodeFlags.None)
+		{ }
+
+		public bool Validate()
+			=> true;
 	}
 }

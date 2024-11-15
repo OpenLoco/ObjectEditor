@@ -15,6 +15,7 @@ namespace OpenLoco.Dat.Objects
 		public SimpleAnimation() : this(0, 0, 0)
 		{ }
 
-		public bool Validate() => true;
+		public bool Validate()
+			=> true;
 	}
 }

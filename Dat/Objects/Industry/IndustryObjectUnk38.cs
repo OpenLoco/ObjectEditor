@@ -12,6 +12,11 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x01)] uint8_t var_01
 		) : ILocoStruct
 	{
-		public bool Validate() => true;
+
+		public IndustryObjectUnk38() : this(0, 0)
+		{ }
+
+		public bool Validate()
+			=> true;
 	}
 }

@@ -22,7 +22,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x13)] uint8_t NumBuildingVariations,
 		[property: LocoStructOffset(0x14), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingHeightCount)] List<uint8_t> BuildingHeights,
 		[property: LocoStructOffset(0x18), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingAnimationCount)] List<BuildingPartAnimation> BuildingAnimations,
-		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingVariationCount)] List<uint8_t[]> BuildingVariations,
+		[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(AirportObject.BuildingVariationCount)] List<List<uint8_t>> BuildingVariations,
 		[property: LocoStructOffset(0x9C), LocoStructVariableLoad] List<AirportBuilding> BuildingPositions,
 		[property: LocoStructOffset(0xA0)] uint32_t LargeTiles,
 		[property: LocoStructOffset(0xA4)] int8_t MinX,
@@ -63,7 +63,7 @@ namespace OpenLoco.Dat.Objects
 				while (remainingData[++ptr_1C] != 0xFF)
 				{ }
 
-				BuildingVariations.Add(remainingData[..ptr_1C].ToArray());
+				BuildingVariations.Add(remainingData[..ptr_1C].ToArray().ToList());
 				ptr_1C++;
 				remainingData = remainingData[ptr_1C..];
 			}
@@ -119,7 +119,7 @@ namespace OpenLoco.Dat.Objects
 			// variations
 			foreach (var x in BuildingVariations)
 			{
-				ms.Write(x);
+				ms.Write(x.ToArray());
 				ms.WriteByte(0xFF);
 			}
 

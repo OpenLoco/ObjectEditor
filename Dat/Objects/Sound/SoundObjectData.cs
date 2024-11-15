@@ -13,6 +13,10 @@ namespace OpenLoco.Dat.Objects.Sound
 		[property: LocoStructOffset(0x0C)] WaveFormatEx PcmHeader
 		) : ILocoStruct
 	{
-		public bool Validate() => Offset >= 0;
+		public SoundObjectData() : this(0, 0, 0, new WaveFormatEx())
+		{ }
+
+		public bool Validate()
+			=> Offset >= 0;
 	}
 }

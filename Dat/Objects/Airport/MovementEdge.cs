@@ -15,6 +15,10 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x08)] uint32_t AtLeastOneClearEdges // Which edges must have at least one clear to use transition edge. should probably be some kind of flags?
 		) : ILocoStruct
 	{
-		public bool Validate() => true;
+		public MovementEdge() : this(0, 0, 0, 0, 0, 0)
+		{ }
+
+		public bool Validate()
+			=> true;
 	}
 }

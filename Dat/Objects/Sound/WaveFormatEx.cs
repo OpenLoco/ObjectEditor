@@ -16,6 +16,10 @@ namespace OpenLoco.Dat.Objects.Sound
 		[property: LocoStructOffset(0x010)] int16_t CBSize
 		) : ILocoStruct
 	{
-		public bool Validate() => true;
+		public WaveFormatEx() : this(0, 0, 0, 0, 0, 0, 0)
+		{ }
+
+		public bool Validate()
+			=> true;
 	}
 }

@@ -12,6 +12,10 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x02)] uint16_t Max
 		) : ILocoStruct
 	{
-		public bool Validate() => true;
+		public IndustryObjectProductionRateRange() : this(0, 0)
+		{ }
+
+		public bool Validate()
+			=> true;
 	}
 }

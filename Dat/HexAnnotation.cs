@@ -2,9 +2,9 @@ namespace OpenLoco.Dat
 {
 	public class HexAnnotation
 	{
-		private int start;
-		private int end;
-		private int length;
+		int start;
+		int end;
+		int length;
 
 		public HexAnnotation(string name, HexAnnotation? parent, int start, int length)
 		{

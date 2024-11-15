@@ -94,7 +94,7 @@ namespace OpenLoco.Dat.FileParsing
 			throw new NotImplementedException(t.ToString());
 		}
 
-		private static object ReadArray(ReadOnlySpan<byte> data, Type t, int offset, int arrLength, bool isVariableLoad)
+		static object ReadArray(ReadOnlySpan<byte> data, Type t, int offset, int arrLength, bool isVariableLoad)
 		{
 			var elementType = t.GetElementType() ?? throw new ArgumentNullException(t.Name);
 			var size = ByteHelpers.GetObjectSize(elementType);
@@ -108,7 +108,7 @@ namespace OpenLoco.Dat.FileParsing
 			return arr;
 		}
 
-		private static object ReadClass(ReadOnlySpan<byte> data, Type t, int offset)
+		static object ReadClass(ReadOnlySpan<byte> data, Type t, int offset)
 		{
 			if (t.Name == "ObjectHeader")
 			{
@@ -123,7 +123,7 @@ namespace OpenLoco.Dat.FileParsing
 			return ReadLocoStruct(data[offset..(offset + objectSize)], t);
 		}
 
-		private static object ReadEnum(ReadOnlySpan<byte> data, Type t, int offset)
+		static object ReadEnum(ReadOnlySpan<byte> data, Type t, int offset)
 		{
 			var underlyingType = t.GetEnumUnderlyingType();
 			var underlyingValue = ReadT(data, underlyingType, offset);

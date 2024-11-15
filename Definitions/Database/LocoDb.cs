@@ -29,10 +29,10 @@ namespace OpenLoco.Definitions.Database
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<TblLocoObject>()
+			_ = modelBuilder.Entity<TblLocoObject>()
 				.Property(b => b.UploadDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
-			modelBuilder.Entity<TblSCV5File>()
+			_ = modelBuilder.Entity<TblSCV5File>()
 				.Property(b => b.UploadDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 		}

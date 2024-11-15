@@ -144,7 +144,7 @@ namespace OpenLoco.Gui.ViewModels
 			GC.SuppressFinalize(this);
 		}
 
-		private bool disposed;
+		bool disposed;
 
 		protected virtual void Dispose(bool disposing)
 		{

@@ -13,7 +13,7 @@ namespace OpenLoco.Gui.Views
 			_ = this.WhenActivated(action => action(ViewModel!.ShowDialog.RegisterHandler(DoShowDialogAsync)));
 		}
 
-		private async Task DoShowDialogAsync(IInteractionContext<EditorSettingsWindowViewModel, EditorSettingsWindowViewModel?> interaction)
+		async Task DoShowDialogAsync(IInteractionContext<EditorSettingsWindowViewModel, EditorSettingsWindowViewModel?> interaction)
 		{
 			var dialog = new EditSettingsWindow
 			{

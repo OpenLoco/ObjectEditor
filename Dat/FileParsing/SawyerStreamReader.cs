@@ -300,7 +300,7 @@ namespace OpenLoco.Dat.FileParsing
 				return null;
 			}
 			var s5FileHeader = S5File.Read(data);
-			var remainingData = data[S5File.StructLength..];
+			_ = data[S5File.StructLength..];
 			return s5FileHeader;
 		}
 
@@ -573,7 +573,7 @@ namespace OpenLoco.Dat.FileParsing
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
-		private static byte[] DecodeRunLengthSingle(ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue)
+		static byte[] DecodeRunLengthSingle(ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue)
 		{
 			var ms = new MemoryStream();
 
@@ -619,7 +619,7 @@ namespace OpenLoco.Dat.FileParsing
 		}
 
 		// taken from openloco SawyerStreamReader::decodeRunLengthMulti
-		private static byte[] DecodeRunLengthMulti(ReadOnlySpan<byte> data)
+		static byte[] DecodeRunLengthMulti(ReadOnlySpan<byte> data)
 		{
 			List<byte> buffer = [];
 
@@ -653,7 +653,7 @@ namespace OpenLoco.Dat.FileParsing
 			return [.. buffer];
 		}
 
-		private static byte[] DecodeRotate(ReadOnlySpan<byte> data)
+		static byte[] DecodeRotate(ReadOnlySpan<byte> data)
 		{
 			static byte Ror(byte x, byte shift)
 			{

@@ -1,10 +1,10 @@
-using OpenLoco.Gui.Models;
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Types;
+using OpenLoco.Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -147,7 +147,7 @@ namespace OpenLoco.Gui.ViewModels
 			animationTimer.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed);
 		}
 
-		private void AnimationTimer_Tick(object? sender, EventArgs e)
+		void AnimationTimer_Tick(object? sender, EventArgs e)
 		{
 			if (SelectedBitmaps == null || SelectedBitmaps.Count == 0 || SelectionModel.SelectedIndexes.Count == 0)
 			{

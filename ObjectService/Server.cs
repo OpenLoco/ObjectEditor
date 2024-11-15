@@ -11,7 +11,6 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
-using System.Security.AccessControl;
 
 namespace OpenLoco.ObjectService
 {
@@ -79,7 +78,7 @@ namespace OpenLoco.ObjectService
 			return await ReturnObject(returnObjBytes, logger, eObj);
 		}
 
-		private async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTblLocoObject? eObj)
+		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTblLocoObject? eObj)
 		{
 			if (eObj == null || eObj.Object == null)
 			{

@@ -151,7 +151,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		private void SaveCore(string filename)
+		void SaveCore(string filename)
 		{
 			if (CurrentObject?.LocoObject == null)
 			{
@@ -249,7 +249,7 @@ namespace OpenLoco.Gui.ViewModels
 			return (treeView, datDumpAnnotationIdentifiers);
 		}
 
-		private static IEnumerable<HexAnnotationLine> GetDumpLines(byte[] byteList, int? selectionStart, int? selectionEnd)
+		static IEnumerable<HexAnnotationLine> GetDumpLines(byte[] byteList, int? selectionStart, int? selectionEnd)
 		{
 			if (byteList == null)
 			{

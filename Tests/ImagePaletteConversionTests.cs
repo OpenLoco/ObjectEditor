@@ -28,7 +28,7 @@ namespace OpenLoco.Dat.Tests
 		public void PaletteIndex0IsTransparent()
 		{
 			var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
-			var paletteMap = new PaletteMap(paletteFile);
+			_ = new PaletteMap(paletteFile);
 
 			Assert.That(PaletteMap.Transparent.Color, Is.EqualTo(Color.Transparent));
 		}

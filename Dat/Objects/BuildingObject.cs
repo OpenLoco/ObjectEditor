@@ -38,8 +38,8 @@ namespace OpenLoco.Dat.Objects
 			[property: LocoStructOffset(0x9E)] uint8_t GeneratorFunction,
 			[property: LocoStructOffset(0x9F)] uint8_t AverageNumberOnMap,
 			[property: LocoStructOffset(0xA0), LocoArrayLength(BuildingObject.MaxProducedQuantity)] uint8_t[] ProducedQuantity,
-			[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxProducedCargoType), Browsable(false)] List<object_id> _ProducedCargoType,
-			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxRequiredCargoType), Browsable(false)] List<object_id> _RequiredCargoType,
+			[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxProducedCargoType)] List<S5Header> ProducedCargo,
+			[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(BuildingObject.MaxRequiredCargoType)] List<S5Header> RequiredCargo,
 			[property: LocoStructOffset(0xA6), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A6,
 			[property: LocoStructOffset(0xA8), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A8,
 			[property: LocoStructOffset(0xAA)] int16_t DemolishRatingReduction,
@@ -55,9 +55,6 @@ namespace OpenLoco.Dat.Objects
 		public const int MaxProducedCargoType = 2;
 		public const int MaxRequiredCargoType = 2;
 		public const int MaxElevatorHeightSequences = 4;
-
-		public List<S5Header> ProducedCargo { get; set; } = [];
-		public List<S5Header> RequiredCargo { get; set; } = [];
 
 		public List<uint8_t[]> ElevatorHeightSequences { get; set; } = [];
 
@@ -94,12 +91,12 @@ namespace OpenLoco.Dat.Objects
 
 			// produced cargo
 			ProducedCargo.Clear();
-			ProducedCargo = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxProducedCargoType);
+			ProducedCargo.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxProducedCargoType));
 			remainingData = remainingData[(S5Header.StructLength * MaxProducedCargoType)..];
 
 			// required cargo
 			RequiredCargo.Clear();
-			RequiredCargo = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxRequiredCargoType);
+			RequiredCargo.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxRequiredCargoType));
 			remainingData = remainingData[(S5Header.StructLength * MaxRequiredCargoType)..];
 
 			// animation sequences

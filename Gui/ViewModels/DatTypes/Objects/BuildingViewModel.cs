@@ -25,12 +25,14 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public uint16_t SellCostFactor { get; set; }
 		[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5Header> ProducedCargo { get; set; }
 		[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5Header> RequiredCargo { get; set; }
+		[Reactive, Category("Production"), Length(1, BuildingObject.MaxProducedQuantity)] public BindingList<uint8_t> ProducedQuantity { get; set; }
 		[Reactive, Category("Building"), Length(1, BuildingObject.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
 		[Reactive, Category("Building"), Length(1, BuildingObject.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
 		[Reactive, Category("Building"), Length(1, BuildingObject.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
 
 		// note: these height sequences are massive. BLDCTY28 has 2 sequences, 512 in length and 1024 in length. Avalonia PropertyGrid takes 30+ seconds to render this. todo: don't use property grid in future
-		[Reactive, Category("Building"), Length(1, BuildingObject.MaxElevatorHeightSequences), Browsable(false)] public BindingList<BindingList<uint8_t>> ElevatorHeightSequences { get; set; } // NumElevatorSequences
+		//[Reactive, Category("Building"), Length(1, BuildingObject.MaxElevatorHeightSequences), Browsable(false)] public BindingList<BindingList<uint8_t>> ElevatorHeightSequences { get; set; } // NumElevatorSequences
+
 		[Reactive, Category("<unknown>"), Length(2, 2)] public BindingList<uint8_t> var_A6 { get; set; }
 		[Reactive, Category("<unknown>"), Length(2, 2)] public BindingList<uint8_t> var_A8 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_AC { get; set; }
@@ -50,6 +52,7 @@ namespace OpenLoco.Gui.ViewModels
 			SellCostFactor = bo.SellCostFactor;
 			ProducedCargo = new(bo.ProducedCargo);
 			RequiredCargo = new(bo.RequiredCargo);
+			ProducedQuantity = new(bo.ProducedQuantity);
 			BuildingHeights = new(bo.BuildingHeights);
 			BuildingAnimations = new(bo.BuildingAnimations);
 			BuildingVariations = new(bo.BuildingVariations.Select(x => new BindingList<uint8_t>(x)).ToBindingList());

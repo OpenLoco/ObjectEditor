@@ -250,7 +250,7 @@
 														<DataTemplate>
 															<Border BorderThickness="2">
 																<StackPanel>
-																	<TextBlock Margin="4" Text="{Binding}" />
+																	<TextBlock Margin="4" Text="{Binding Name}" />
 																</StackPanel>
 															</Border>
 														</DataTemplate>

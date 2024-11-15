@@ -375,7 +375,7 @@ namespace OpenLoco.Gui.Models
 			var minimumDate = new DateTime(2024, 01, 01);
 			if (File.GetCreationTimeUtc(filename) > minimumDate || File.GetLastWriteTimeUtc(filename) > minimumDate)
 			{
-				Logger.Debug("File is really new - skipping automatic upload for now as this doens't seem like an historical dat file");
+				Logger.Debug("File is really new - skipping automatic upload for now as this doesn't seem like an historical dat file");
 				return;
 			}
 

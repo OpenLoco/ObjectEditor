@@ -31,7 +31,7 @@ namespace OpenLoco.Dat.Types.SCV5
 				saveDetails = SawyerStreamReader.ReadChunk<SaveDetails>(ref data);
 			}
 
-			if (header.Type == S5Type.Scenario)
+			if (header.S5FileType == S5Type.Scenario)
 			{
 				landscapeDetails = SawyerStreamReader.ReadChunk<LandscapeDetails>(ref data);
 			}

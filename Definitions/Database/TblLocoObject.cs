@@ -15,7 +15,7 @@ namespace OpenLoco.Definitions.Database
 
 		#endregion
 
-		public ObjectSource ObjectSource { get; set; }
+		public ObjectSource SourceGame { get; set; }
 
 		public ObjectType ObjectType { get; set; }
 

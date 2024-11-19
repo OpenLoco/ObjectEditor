@@ -40,7 +40,7 @@ namespace OpenLoco.ObjectService
 					x.DatName,
 					x.DatChecksum,
 					x.ObjectType,
-					x.ObjectSource,
+					x.SourceGame,
 					x.VehicleType)).ToListAsync());
 
 		// eg: https://localhost:7230/objects/search
@@ -58,7 +58,7 @@ namespace OpenLoco.ObjectService
 			var eObj = await db.Objects
 				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.ObjectPacks))
+				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
@@ -72,13 +72,13 @@ namespace OpenLoco.ObjectService
 			var eObj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.ObjectPacks))
+				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
 		}
 
-		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTblLocoObject? eObj)
+		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTbl<TblLocoObject, TblLocoObjectPack>? eObj)
 		{
 			if (eObj == null || eObj.Object == null)
 			{
@@ -101,7 +101,7 @@ namespace OpenLoco.ObjectService
 				logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder.", pathOnDisk);
 			}
 
-			var bytes = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
+			var bytes = (returnObjBytes ?? false) && (obj.SourceGame is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
@@ -111,7 +111,7 @@ namespace OpenLoco.ObjectService
 				obj.DatName,
 				obj.DatChecksum,
 				bytes,
-				obj.ObjectSource,
+				obj.SourceGame,
 				obj.ObjectType,
 				obj.VehicleType,
 				obj.Description,
@@ -120,7 +120,7 @@ namespace OpenLoco.ObjectService
 				obj.LastEditDate,
 				obj.UploadDate,
 				eObj.Tags,
-				eObj.ObjectPacks,
+				eObj.Packs,
 				obj.Availability,
 				obj.Licence);
 
@@ -154,7 +154,7 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			if (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco)
+			if (obj.SourceGame is ObjectSource.Custom or ObjectSource.OpenLoco)
 			{
 				return Results.Forbid();
 			}
@@ -262,7 +262,7 @@ namespace OpenLoco.ObjectService
 				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
 				DatName = hdrs.S5.Name,
 				DatChecksum = hdrs.S5.Checksum,
-				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
+				SourceGame = ObjectSource.Custom, // not possible to upload vanilla objects
 				ObjectType = hdrs.S5.ObjectType,
 				VehicleType = vehicleType,
 				Description = string.Empty,
@@ -276,7 +276,7 @@ namespace OpenLoco.ObjectService
 				Licence = null,
 			};
 
-			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.VehicleType));
+			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.SourceGame, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();

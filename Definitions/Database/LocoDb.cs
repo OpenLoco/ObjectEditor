@@ -32,7 +32,7 @@ namespace OpenLoco.Definitions.Database
 		{
 			if (!optionsBuilder.IsConfigured)
 			{
-				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Server\\loco-dev.db");
+				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Database\\loco-exp.db");
 			}
 		}
 
@@ -42,6 +42,12 @@ namespace OpenLoco.Definitions.Database
 				.Property(b => b.UploadDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 			_ = modelBuilder.Entity<TblSC5File>()
+				.Property(b => b.UploadDate)
+				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+			_ = modelBuilder.Entity<TblLocoObjectPack>()
+				.Property(b => b.UploadDate)
+				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+			_ = modelBuilder.Entity<TblSC5FilePack>()
 				.Property(b => b.UploadDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 		}

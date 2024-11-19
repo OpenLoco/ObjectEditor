@@ -16,7 +16,7 @@ Console.ReadLine();
 static LocoDb Seed()
 {
 	var builder = new DbContextOptionsBuilder<LocoDb>();
-	const string connectionString = "Data Source=Q:\\Games\\Locomotion\\Server\\loco-dev.db";
+	const string connectionString = "Data Source=Q:\\Games\\Locomotion\\Database\\loco-exp.db";
 	_ = builder.UseSqlite(connectionString);
 	var db = new LocoDb(builder.Options);
 
@@ -39,10 +39,12 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	if (deleteExisting)
 	{
 		Console.WriteLine("Clearing database");
-		_ = db.Objects.ExecuteDelete();
-		_ = db.Tags.ExecuteDelete();
 		_ = db.ObjectPacks.ExecuteDelete();
+		_ = db.SC5FilePacks.ExecuteDelete();
+		_ = db.SC5Files.ExecuteDelete();
+		_ = db.Tags.ExecuteDelete();
 		_ = db.Authors.ExecuteDelete();
+		_ = db.Objects.ExecuteDelete();
 		_ = db.Licences.ExecuteDelete();
 		_ = db.SaveChanges(); // not necessary since ExecuteDelete auto-saves
 	}
@@ -52,7 +54,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	Console.WriteLine("Seeding");
 	var logger = new Logger();
 
-	var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
+	var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, AllowTrailingCommas = true };
 
 	// ...
 
@@ -63,7 +65,11 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var authors = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\authors.json"), jsonOptions);
 		if (authors != null)
 		{
-			db.AddRange(authors.Select(x => new TblAuthor() { Name = x }));
+			db.AddRange(authors.Select(x => new TblAuthor()
+			{
+				Name = x
+			}));
+
 			_ = db.SaveChanges();
 		}
 	}
@@ -77,7 +83,11 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var tags = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\tags.json"), jsonOptions);
 		if (tags != null)
 		{
-			db.AddRange(tags.Select(x => new TblTag() { Name = x }));
+			db.AddRange(tags.Select(x => new TblTag()
+			{
+				Name = x
+			}));
+
 			_ = db.SaveChanges();
 		}
 	}
@@ -91,7 +101,59 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var licences = JsonSerializer.Deserialize<IEnumerable<LicenceJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\licences.json"), jsonOptions);
 		if (licences != null)
 		{
-			db.AddRange(licences.Select(x => new TblLicence() { Name = x.Name, Text = x.Text }));
+			db.AddRange(licences.Select(x => new TblLicence()
+			{
+				Name = x.Name,
+				Text = x.Text
+			}));
+
+			_ = db.SaveChanges();
+		}
+	}
+
+	// ...
+
+	if (!db.SC5FilePacks.Any())
+	{
+		Console.WriteLine("Seeding SC5FilePacks");
+
+		var sc5FilePacks = JsonSerializer.Deserialize<IEnumerable<SC5FilePackJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\sc5FilePacks.json"), jsonOptions);
+		if (sc5FilePacks != null)
+		{
+			db.AddRange(sc5FilePacks.Select(x => new TblSC5FilePack()
+			{
+				Name = x.Name,
+				Description = x.Description,
+				Authors = [.. db.Authors.Where(a => x.Authors.Contains(a.Name))],
+				Tags = [.. db.Tags.Where(a => x.Tags.Contains(a.Name))],
+				Licence = x.Licence == null ? null : db.Licences.Single(l => l.Name == x.Licence),
+				CreationDate = x.CreationDate,
+				LastEditDate = x.LastEditDate,
+				UploadDate = x.UploadDate,
+			}));
+
+			_ = db.SaveChanges();
+		}
+	}
+
+	// ...
+
+	if (!db.SC5Files.Any())
+	{
+		Console.WriteLine("Seeding SC5Files");
+
+		var sc5Files = JsonSerializer.Deserialize<IEnumerable<SC5FileJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\sc5Files.json"), jsonOptions);
+		if (sc5Files != null)
+		{
+			var sC5FilePacks = db.SC5FilePacks?.Where(x => x.SC5Files.Select(fp => fp.Name).Contains(x.Name)).ToList();
+			db.AddRange(sc5Files.Select(x => new TblSC5File()
+			{
+				Name = x.Name,
+				Description = x.Description,
+				Authors = [.. db.Authors.Where(a => x.Authors.Contains(a.Name))],
+				SC5FilePacks = sC5FilePacks ?? []
+			}));
+
 			_ = db.SaveChanges();
 		}
 	}
@@ -108,7 +170,13 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			db.AddRange(objectPacks.Select(x => new TblLocoObjectPack()
 			{
 				Name = x.Name,
-				Authors = db.Authors.Where(a => x.Authors.Contains(a.Name)).ToList(),
+				Description = x.Description,
+				Authors = [.. db.Authors.Where(a => x.Authors.Contains(a.Name))],
+				Tags = [.. db.Tags.Where(a => x.Tags.Contains(a.Name))],
+				Licence = x.Licence == null ? null : db.Licences.Single(l => l.Name == x.Licence),
+				CreationDate = null,
+				LastEditDate = null,
+				UploadDate = DateTimeOffset.Now
 			}));
 			_ = db.SaveChanges();
 		}
@@ -131,7 +199,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			var metadataKey = (objIndex.DatName, objIndex.DatChecksum);
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{
-				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), objIndex.DatName, objIndex.DatChecksum, null, [], [], [], null, ObjectAvailability.AllGames, ObjectSource.Custom);
+				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), objIndex.DatName, objIndex.DatChecksum, null, [], [], [], null, ObjectAvailability.AllGames, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
 				meta = newMetadata;
 				objectMetadataDict.Add((objIndex.DatName, objIndex.DatChecksum), newMetadata);
 			}
@@ -151,7 +219,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				Name = meta!.UniqueName,
 				DatName = objIndex.DatName,
 				DatChecksum = objIndex.DatChecksum,
-				ObjectSource = objIndex.ObjectSource,
+				SourceGame = objIndex.ObjectSource,
 				ObjectType = objIndex.ObjectType,
 				VehicleType = objIndex.VehicleType,
 				Description = meta?.Description,
@@ -172,10 +240,4 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	}
 
 	Console.WriteLine("Finished seeding");
-}
-
-static string? uint32_t_LittleToBigEndian(string input)
-{
-	var r = new string(input.Chunk(2).Reverse().SelectMany(x => x).ToArray());
-	return Convert.ToUInt32(r, 16).ToString();
 }

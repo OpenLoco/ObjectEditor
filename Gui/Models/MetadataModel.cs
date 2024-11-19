@@ -18,7 +18,9 @@ namespace OpenLoco.Gui.Models
 		public string UniqueName { get; init; }
 
 		public string DatName { get; init; }
+
 		public uint DatChecksum { get; init; }
+
 		public string? Description { get; set; }
 
 		[Browsable(false)]

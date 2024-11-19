@@ -66,16 +66,14 @@ namespace OpenLoco.ObjectService
 
 		public const string ObjectsFolderName = "Objects";
 
+		public const string LandscapesFolderName = "Landscapes";
+		public const string ScenariosFolderName = "Scenarios";
 		public const string GameDataFolderName = "GameData";
+
 		public const string GraphicsFolderName = "Graphics";
 		public const string MusicFolderName = "Music";
 		public const string SoundEffectsFolderName = "SoundEffects";
 		public const string TutorialsFolderName = "Tutorials";
-
-		public const string SCV5FolderName = "SCV5";
-		public const string LandscapesFolderName = "Landscapes";
-		public const string ScenariosFolderName = "Scenarios";
-		public const string SaveGamesFolderName = "SaveGames";
 
 		public const string OriginalFolderName = "Original";
 		public const string CustomFolderName = "Custom";
@@ -107,13 +105,10 @@ namespace OpenLoco.ObjectService
 
 		#endregion
 
-		#region SCV5
+		#region SC5
 
-		public string SCV5Folder => Path.Combine(RootDirectory, SCV5FolderName);
-
-		public string LandscapesFolder => Path.Combine(SCV5Folder, LandscapesFolderName);
-		public string SaveGamesFolder => Path.Combine(SCV5Folder, SaveGamesFolderName);
-		public string ScenariosFolder => Path.Combine(SCV5Folder, ScenariosFolderName);
+		public string LandscapesFolder => Path.Combine(RootDirectory, LandscapesFolderName);
+		public string ScenariosFolder => Path.Combine(RootDirectory, ScenariosFolderName);
 
 		public string ScenariosOriginalFolder => Path.Combine(ScenariosFolder, OriginalFolderName);
 		public string ScenariosCustomFolder => Path.Combine(ScenariosFolder, CustomFolderName);

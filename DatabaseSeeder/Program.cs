@@ -102,10 +102,14 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding ObjectPacks");
 
-		var modpacks = JsonSerializer.Deserialize<IEnumerable<ObjectPackJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectPacks.json"), jsonOptions);
-		if (modpacks != null)
+		var objectPacks = JsonSerializer.Deserialize<IEnumerable<ObjectPackJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectPacks.json"), jsonOptions);
+		if (objectPacks != null)
 		{
-			db.AddRange(modpacks.Select(x => new TblLocoObjectPack() { Name = x.Name, Author = x.Author == null ? null : db.Authors.Single(a => a.Name == x.Author) }));
+			db.AddRange(objectPacks.Select(x => new TblLocoObjectPack()
+			{
+				Name = x.Name,
+				Authors = db.Authors.Where(a => x.Authors.Contains(a.Name)).ToList(),
+			}));
 			_ = db.SaveChanges();
 		}
 	}
@@ -144,7 +148,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 			var tblLocoObject = new TblLocoObject()
 			{
-				UniqueName = meta!.UniqueName,
+				Name = meta!.UniqueName,
 				DatName = objIndex.DatName,
 				DatChecksum = objIndex.DatChecksum,
 				ObjectSource = objIndex.ObjectSource,

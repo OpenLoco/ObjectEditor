@@ -107,7 +107,7 @@ namespace OpenLoco.ObjectService
 
 			var dtoObject = new DtoDatObjectWithMetadata(
 				obj.Id,
-				obj.UniqueName,
+				obj.Name,
 				obj.DatName,
 				obj.DatChecksum,
 				bytes,
@@ -259,7 +259,7 @@ namespace OpenLoco.ObjectService
 
 			var locoTbl = new TblLocoObject()
 			{
-				UniqueName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
+				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
 				DatName = hdrs.S5.Name,
 				DatChecksum = hdrs.S5.Checksum,
 				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
@@ -281,7 +281,7 @@ namespace OpenLoco.ObjectService
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();
 
-			return Results.Created($"Successfully added {locoTbl.UniqueName} with unique id {locoTbl.Id}", locoTbl.Id);
+			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 	}
 }

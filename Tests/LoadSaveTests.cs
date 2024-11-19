@@ -368,19 +368,19 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.BuildingAnimations[9].AnimationSpeed, Is.EqualTo(0));
 				// BuildingParts
 				Assert.That(struc.BuildingVariations, Has.Count.EqualTo(5));
-				Assert.That(struc.BuildingVariations[0], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingVariations[0], Has.Count.EqualTo(2));
 				Assert.That(struc.BuildingVariations[0][0], Is.EqualTo(0));
 				Assert.That(struc.BuildingVariations[0][1], Is.EqualTo(1));
-				Assert.That(struc.BuildingVariations[1], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingVariations[1], Has.Count.EqualTo(2));
 				Assert.That(struc.BuildingVariations[1][0], Is.EqualTo(2));
 				Assert.That(struc.BuildingVariations[1][1], Is.EqualTo(3));
-				Assert.That(struc.BuildingVariations[2], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingVariations[2], Has.Count.EqualTo(2));
 				Assert.That(struc.BuildingVariations[2][0], Is.EqualTo(4));
 				Assert.That(struc.BuildingVariations[2][1], Is.EqualTo(5));
-				Assert.That(struc.BuildingVariations[3], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingVariations[3], Has.Count.EqualTo(2));
 				Assert.That(struc.BuildingVariations[3][0], Is.EqualTo(6));
 				Assert.That(struc.BuildingVariations[3][1], Is.EqualTo(7));
-				Assert.That(struc.BuildingVariations[4], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingVariations[4], Has.Count.EqualTo(2));
 				Assert.That(struc.BuildingVariations[4][0], Is.EqualTo(8));
 				Assert.That(struc.BuildingVariations[4][1], Is.EqualTo(9));
 				// Rest of object
@@ -457,10 +457,10 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.BuildingAnimations[3].AnimationSpeed, Is.EqualTo(0));
 				// BuildingParts
 				Assert.That(struc.BuildingVariations, Has.Count.EqualTo(2));
-				Assert.That(struc.BuildingVariations[0], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingVariations[0], Has.Count.EqualTo(2));
 				Assert.That(struc.BuildingVariations[0][0], Is.EqualTo(0));
 				Assert.That(struc.BuildingVariations[0][1], Is.EqualTo(1));
-				Assert.That(struc.BuildingVariations[1], Has.Length.EqualTo(2));
+				Assert.That(struc.BuildingVariations[1], Has.Count.EqualTo(2));
 				Assert.That(struc.BuildingVariations[1][0], Is.EqualTo(2));
 				Assert.That(struc.BuildingVariations[1][1], Is.EqualTo(3));
 

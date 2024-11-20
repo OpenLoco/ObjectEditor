@@ -321,7 +321,7 @@ namespace OpenLoco.Gui.Models
 
 			async Task RecreateIndex(string directory, IProgress<float> progress)
 			{
-				Logger.Info("Recreating index file");
+				Logger.Info($"Recreating index file for {directory}");
 				ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress);
 				ObjectIndex?.SaveIndex(Settings.IndexFileName);
 			}

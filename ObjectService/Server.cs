@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Options;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -12,7 +11,6 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
-using System.Text.Json.Serialization;
 
 namespace OpenLoco.ObjectService
 {
@@ -39,9 +37,11 @@ namespace OpenLoco.ObjectService
 			[FromQuery] uint? checksum,
 			[FromQuery] string? description,
 			[FromQuery] ObjectType? objectType,
+			[FromQuery] VehicleType? vehicleType,
 			[FromQuery] string? authorName,
 			[FromQuery] string? tagName,
 			[FromQuery] string? objectPackName,
+			[FromQuery] ObjectSource? sourceGame,
 			LocoDb db)
 		{
 			var query = db.Objects.AsQueryable();
@@ -66,6 +66,17 @@ namespace OpenLoco.ObjectService
 			if (objectType != null)
 			{
 				query = query.Where(x => x.ObjectType == objectType);
+
+			}
+
+			if (objectType == ObjectType.Vehicle && vehicleType != null)
+			{
+				// can only query vehicle type if it's a vehicle. if ObjectType is unspecified, that is fine
+				if (objectType != null && objectType != ObjectType.Vehicle)
+				{
+					return Results.BadRequest("Cannot query for a Vehicle type on non-Vehicle objects");
+				}
+				query = query.Where(x => x.VehicleType == vehicleType);
 			}
 
 			if (!string.IsNullOrEmpty(authorName))
@@ -78,6 +89,11 @@ namespace OpenLoco.ObjectService
 				query = query.Where(x => x.Tags.Select(t => t.Name).Contains(tagName));
 			}
 
+			if (sourceGame != null)
+			{
+				query = query.Where(x => x.SourceGame == sourceGame);
+			}
+
 			#endregion
 
 			try
@@ -88,9 +104,16 @@ namespace OpenLoco.ObjectService
 					x.Id,
 					x.DatName,
 					x.DatChecksum,
-					x.ObjectType,
 					x.SourceGame,
-					x.VehicleType)).ToListAsync();
+					x.ObjectType,
+					x.VehicleType,
+					x.Availability,
+					x.Name,
+					x.Description,
+					x.CreationDate,
+					x.LastEditDate,
+					x.UploadDate
+					)).ToListAsync();
 				return Results.Ok(result);
 			}
 			catch (Exception ex)

@@ -7,7 +7,13 @@ namespace OpenLoco.Definitions.DTO
 		int Id,
 		string DatName,
 		uint DatChecksum,
+		ObjectSource SourceGame,
 		ObjectType ObjectType,
-		ObjectSource ObjectSource,
-		VehicleType? VehicleType);
+		VehicleType? VehicleType,
+		ObjectAvailability ObjectAvailability,
+		string InternalName,
+		string? Description,
+		DateTimeOffset? CreationDate,
+		DateTimeOffset? LastEditDate,
+		DateTimeOffset UploadDate);
 }

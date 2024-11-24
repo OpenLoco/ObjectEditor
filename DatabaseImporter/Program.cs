@@ -49,7 +49,16 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		_ = db.SaveChanges(); // not necessary since ExecuteDelete auto-saves
 	}
 
-	const string ObjDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
+	const string objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
+
+	const string databaseDirectory = "Q:\\Games\\Locomotion\\Database";
+	var authorsJson = Path.Combine(databaseDirectory, "authors.json");
+	var tagsJson = Path.Combine(databaseDirectory, "tags.json");
+	var licencesJson = Path.Combine(databaseDirectory, "licences.json");
+	var sc5FilePacksJson = Path.Combine(databaseDirectory, "sc5FilePacks.json");
+	var sc5FilesJson = Path.Combine(databaseDirectory, "sc5Files.json");
+	var objectPacksJson = Path.Combine(databaseDirectory, "objectPacks.json");
+	var objectMetadataJson = Path.Combine(databaseDirectory, "objectMetadata.json");
 
 	Console.WriteLine("Seeding");
 	var logger = new Logger();
@@ -62,7 +71,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding Authors");
 
-		var authors = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\authors.json"), jsonOptions);
+		var authors = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText(authorsJson), jsonOptions);
 		if (authors != null)
 		{
 			db.AddRange(authors.Select(x => new TblAuthor()
@@ -80,7 +89,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding Tags");
 
-		var tags = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\tags.json"), jsonOptions);
+		var tags = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText(tagsJson), jsonOptions);
 		if (tags != null)
 		{
 			db.AddRange(tags.Select(x => new TblTag()
@@ -98,7 +107,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding Licences");
 
-		var licences = JsonSerializer.Deserialize<IEnumerable<LicenceJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\licences.json"), jsonOptions);
+		var licences = JsonSerializer.Deserialize<IEnumerable<LicenceJsonRecord>>(File.ReadAllText(licencesJson), jsonOptions);
 		if (licences != null)
 		{
 			db.AddRange(licences.Select(x => new TblLicence()
@@ -117,7 +126,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding SC5FilePacks");
 
-		var sc5FilePacks = JsonSerializer.Deserialize<IEnumerable<SC5FilePackJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\sc5FilePacks.json"), jsonOptions);
+		var sc5FilePacks = JsonSerializer.Deserialize<IEnumerable<SC5FilePackJsonRecord>>(File.ReadAllText(sc5FilePacksJson), jsonOptions);
 		if (sc5FilePacks != null)
 		{
 			db.AddRange(sc5FilePacks.Select(x => new TblSC5FilePack()
@@ -142,7 +151,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding SC5Files");
 
-		var sc5Files = JsonSerializer.Deserialize<IEnumerable<SC5FileJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\sc5Files.json"), jsonOptions);
+		var sc5Files = JsonSerializer.Deserialize<IEnumerable<SC5FileJsonRecord>>(File.ReadAllText(sc5FilesJson), jsonOptions);
 		if (sc5Files != null)
 		{
 			var sC5FilePacks = db.SC5FilePacks?.Where(x => x.SC5Files.Select(fp => fp.Name).Contains(x.Name)).ToList();
@@ -164,7 +173,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding ObjectPacks");
 
-		var objectPacks = JsonSerializer.Deserialize<IEnumerable<ObjectPackJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectPacks.json"), jsonOptions);
+		var objectPacks = JsonSerializer.Deserialize<IEnumerable<ObjectPackJsonRecord>>(File.ReadAllText(objectPacksJson), jsonOptions);
 		if (objectPacks != null)
 		{
 			db.AddRange(objectPacks.Select(x => new TblLocoObjectPack()
@@ -189,8 +198,8 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		Console.WriteLine("Seeding Objects");
 
 		var progress = new Progress<float>();
-		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory, logger);
-		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions);
+		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
+		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText(objectMetadataJson), jsonOptions);
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
 
@@ -204,7 +213,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				objectMetadataDict.Add((objIndex.DatName, objIndex.DatChecksum), newMetadata);
 			}
 
-			var filename = Path.Combine(ObjDirectory, objIndex.Filename);
+			var filename = Path.Combine(objDirectory, objIndex.Filename);
 			var creationTime = objIndex.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG
 				? gameReleaseDate
 				: File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows

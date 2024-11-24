@@ -4,7 +4,6 @@ namespace OpenLoco.Definitions.Web
 	{
 		// GET
 		public const string ListObjects = "/objects/list";
-		public const string SearchObjects = "/objects/search";
 		public const string GetDat = "/objects/getdat";
 		public const string GetObject = "/objects/getobject";
 		public const string GetDatFile = "/objects/getdatfile";

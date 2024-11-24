@@ -12,6 +12,19 @@ namespace Definitions.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Authors",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Authors", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Licences",
                 columns: table => new
                 {
@@ -23,6 +36,19 @@ namespace Definitions.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Licences", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tags",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -125,6 +151,78 @@ namespace Definitions.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TblAuthorTblLocoObjectPack",
+                columns: table => new
+                {
+                    AuthorsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ObjectPacksId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblAuthorTblLocoObjectPack", x => new { x.AuthorsId, x.ObjectPacksId });
+                    table.ForeignKey(
+                        name: "FK_TblAuthorTblLocoObjectPack_Authors_AuthorsId",
+                        column: x => x.AuthorsId,
+                        principalTable: "Authors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblAuthorTblLocoObjectPack_ObjectPacks_ObjectPacksId",
+                        column: x => x.ObjectPacksId,
+                        principalTable: "ObjectPacks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TblLocoObjectPackTblTag",
+                columns: table => new
+                {
+                    ObjectPacksId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TagsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblLocoObjectPackTblTag", x => new { x.ObjectPacksId, x.TagsId });
+                    table.ForeignKey(
+                        name: "FK_TblLocoObjectPackTblTag_ObjectPacks_ObjectPacksId",
+                        column: x => x.ObjectPacksId,
+                        principalTable: "ObjectPacks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblLocoObjectPackTblTag_Tags_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TblAuthorTblLocoObject",
+                columns: table => new
+                {
+                    AuthorsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ObjectsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblAuthorTblLocoObject", x => new { x.AuthorsId, x.ObjectsId });
+                    table.ForeignKey(
+                        name: "FK_TblAuthorTblLocoObject_Authors_AuthorsId",
+                        column: x => x.AuthorsId,
+                        principalTable: "Authors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblAuthorTblLocoObject_Objects_ObjectsId",
+                        column: x => x.ObjectsId,
+                        principalTable: "Objects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TblLocoObjectTblLocoObjectPack",
                 columns: table => new
                 {
@@ -149,77 +247,99 @@ namespace Definitions.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Authors",
+                name: "TblLocoObjectTblTag",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    TblLocoObjectId = table.Column<int>(type: "INTEGER", nullable: true),
-                    TblLocoObjectPackId = table.Column<int>(type: "INTEGER", nullable: true),
-                    TblSC5FileId = table.Column<int>(type: "INTEGER", nullable: true),
-                    TblSC5FilePackId = table.Column<int>(type: "INTEGER", nullable: true)
+                    ObjectsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TagsId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Authors", x => x.Id);
+                    table.PrimaryKey("PK_TblLocoObjectTblTag", x => new { x.ObjectsId, x.TagsId });
                     table.ForeignKey(
-                        name: "FK_Authors_ObjectPacks_TblLocoObjectPackId",
-                        column: x => x.TblLocoObjectPackId,
-                        principalTable: "ObjectPacks",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Authors_Objects_TblLocoObjectId",
-                        column: x => x.TblLocoObjectId,
+                        name: "FK_TblLocoObjectTblTag_Objects_ObjectsId",
+                        column: x => x.ObjectsId,
                         principalTable: "Objects",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Authors_SC5FilePacks_TblSC5FilePackId",
-                        column: x => x.TblSC5FilePackId,
-                        principalTable: "SC5FilePacks",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Authors_SC5Files_TblSC5FileId",
-                        column: x => x.TblSC5FileId,
-                        principalTable: "SC5Files",
-                        principalColumn: "Id");
+                        name: "FK_TblLocoObjectTblTag_Tags_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tags",
+                name: "TblAuthorTblSC5FilePack",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    TblLocoObjectId = table.Column<int>(type: "INTEGER", nullable: true),
-                    TblLocoObjectPackId = table.Column<int>(type: "INTEGER", nullable: true),
-                    TblSC5FileId = table.Column<int>(type: "INTEGER", nullable: true),
-                    TblSC5FilePackId = table.Column<int>(type: "INTEGER", nullable: true)
+                    AuthorsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SC5FilePacksId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tags", x => x.Id);
+                    table.PrimaryKey("PK_TblAuthorTblSC5FilePack", x => new { x.AuthorsId, x.SC5FilePacksId });
                     table.ForeignKey(
-                        name: "FK_Tags_ObjectPacks_TblLocoObjectPackId",
-                        column: x => x.TblLocoObjectPackId,
-                        principalTable: "ObjectPacks",
-                        principalColumn: "Id");
+                        name: "FK_TblAuthorTblSC5FilePack_Authors_AuthorsId",
+                        column: x => x.AuthorsId,
+                        principalTable: "Authors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Tags_Objects_TblLocoObjectId",
-                        column: x => x.TblLocoObjectId,
-                        principalTable: "Objects",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Tags_SC5FilePacks_TblSC5FilePackId",
-                        column: x => x.TblSC5FilePackId,
+                        name: "FK_TblAuthorTblSC5FilePack_SC5FilePacks_SC5FilePacksId",
+                        column: x => x.SC5FilePacksId,
                         principalTable: "SC5FilePacks",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TblSC5FilePackTblTag",
+                columns: table => new
+                {
+                    SC5FilePacksId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TagsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblSC5FilePackTblTag", x => new { x.SC5FilePacksId, x.TagsId });
                     table.ForeignKey(
-                        name: "FK_Tags_SC5Files_TblSC5FileId",
-                        column: x => x.TblSC5FileId,
+                        name: "FK_TblSC5FilePackTblTag_SC5FilePacks_SC5FilePacksId",
+                        column: x => x.SC5FilePacksId,
+                        principalTable: "SC5FilePacks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblSC5FilePackTblTag_Tags_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TblAuthorTblSC5File",
+                columns: table => new
+                {
+                    AuthorsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SC5FilesId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblAuthorTblSC5File", x => new { x.AuthorsId, x.SC5FilesId });
+                    table.ForeignKey(
+                        name: "FK_TblAuthorTblSC5File_Authors_AuthorsId",
+                        column: x => x.AuthorsId,
+                        principalTable: "Authors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblAuthorTblSC5File_SC5Files_SC5FilesId",
+                        column: x => x.SC5FilesId,
                         principalTable: "SC5Files",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -246,25 +366,29 @@ namespace Definitions.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Authors_TblLocoObjectId",
-                table: "Authors",
-                column: "TblLocoObjectId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Authors_TblLocoObjectPackId",
-                table: "Authors",
-                column: "TblLocoObjectPackId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Authors_TblSC5FileId",
-                table: "Authors",
-                column: "TblSC5FileId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Authors_TblSC5FilePackId",
-                table: "Authors",
-                column: "TblSC5FilePackId");
+            migrationBuilder.CreateTable(
+                name: "TblSC5FileTblTag",
+                columns: table => new
+                {
+                    SC5FilesId = table.Column<int>(type: "INTEGER", nullable: false),
+                    TagsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TblSC5FileTblTag", x => new { x.SC5FilesId, x.TagsId });
+                    table.ForeignKey(
+                        name: "FK_TblSC5FileTblTag_SC5Files_SC5FilesId",
+                        column: x => x.SC5FilesId,
+                        principalTable: "SC5Files",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TblSC5FileTblTag_Tags_TagsId",
+                        column: x => x.TagsId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Licences_Name",
@@ -330,24 +454,29 @@ namespace Definitions.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tags_TblLocoObjectId",
-                table: "Tags",
-                column: "TblLocoObjectId");
+                name: "IX_TblAuthorTblLocoObject_ObjectsId",
+                table: "TblAuthorTblLocoObject",
+                column: "ObjectsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tags_TblLocoObjectPackId",
-                table: "Tags",
-                column: "TblLocoObjectPackId");
+                name: "IX_TblAuthorTblLocoObjectPack_ObjectPacksId",
+                table: "TblAuthorTblLocoObjectPack",
+                column: "ObjectPacksId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tags_TblSC5FileId",
-                table: "Tags",
-                column: "TblSC5FileId");
+                name: "IX_TblAuthorTblSC5File_SC5FilesId",
+                table: "TblAuthorTblSC5File",
+                column: "SC5FilesId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tags_TblSC5FilePackId",
-                table: "Tags",
-                column: "TblSC5FilePackId");
+                name: "IX_TblAuthorTblSC5FilePack_SC5FilePacksId",
+                table: "TblAuthorTblSC5FilePack",
+                column: "SC5FilePacksId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TblLocoObjectPackTblTag_TagsId",
+                table: "TblLocoObjectPackTblTag",
+                column: "TagsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TblLocoObjectTblLocoObjectPack_ObjectsId",
@@ -355,25 +484,61 @@ namespace Definitions.Migrations
                 column: "ObjectsId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TblLocoObjectTblTag_TagsId",
+                table: "TblLocoObjectTblTag",
+                column: "TagsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TblSC5FilePackTblTag_TagsId",
+                table: "TblSC5FilePackTblTag",
+                column: "TagsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TblSC5FileTblSC5FilePack_SC5FilesId",
                 table: "TblSC5FileTblSC5FilePack",
                 column: "SC5FilesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TblSC5FileTblTag_TagsId",
+                table: "TblSC5FileTblTag",
+                column: "TagsId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Authors");
+                name: "TblAuthorTblLocoObject");
 
             migrationBuilder.DropTable(
-                name: "Tags");
+                name: "TblAuthorTblLocoObjectPack");
+
+            migrationBuilder.DropTable(
+                name: "TblAuthorTblSC5File");
+
+            migrationBuilder.DropTable(
+                name: "TblAuthorTblSC5FilePack");
+
+            migrationBuilder.DropTable(
+                name: "TblLocoObjectPackTblTag");
 
             migrationBuilder.DropTable(
                 name: "TblLocoObjectTblLocoObjectPack");
 
             migrationBuilder.DropTable(
+                name: "TblLocoObjectTblTag");
+
+            migrationBuilder.DropTable(
+                name: "TblSC5FilePackTblTag");
+
+            migrationBuilder.DropTable(
                 name: "TblSC5FileTblSC5FilePack");
+
+            migrationBuilder.DropTable(
+                name: "TblSC5FileTblTag");
+
+            migrationBuilder.DropTable(
+                name: "Authors");
 
             migrationBuilder.DropTable(
                 name: "ObjectPacks");
@@ -386,6 +551,9 @@ namespace Definitions.Migrations
 
             migrationBuilder.DropTable(
                 name: "SC5Files");
+
+            migrationBuilder.DropTable(
+                name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Licences");

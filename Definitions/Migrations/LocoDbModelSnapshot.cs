@@ -27,27 +27,7 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("TblLocoObjectId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TblLocoObjectPackId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TblSC5FileId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TblSC5FilePackId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("TblLocoObjectId");
-
-                    b.HasIndex("TblLocoObjectPackId");
-
-                    b.HasIndex("TblSC5FileId");
-
-                    b.HasIndex("TblSC5FilePackId");
 
                     b.ToTable("Authors");
                 });
@@ -258,32 +238,87 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("TblLocoObjectId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TblLocoObjectPackId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TblSC5FileId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("TblSC5FilePackId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.HasIndex("TblLocoObjectId");
-
-                    b.HasIndex("TblLocoObjectPackId");
-
-                    b.HasIndex("TblSC5FileId");
-
-                    b.HasIndex("TblSC5FilePackId");
-
                     b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("TblAuthorTblLocoObject", b =>
+                {
+                    b.Property<int>("AuthorsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ObjectsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AuthorsId", "ObjectsId");
+
+                    b.HasIndex("ObjectsId");
+
+                    b.ToTable("TblAuthorTblLocoObject");
+                });
+
+            modelBuilder.Entity("TblAuthorTblLocoObjectPack", b =>
+                {
+                    b.Property<int>("AuthorsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ObjectPacksId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AuthorsId", "ObjectPacksId");
+
+                    b.HasIndex("ObjectPacksId");
+
+                    b.ToTable("TblAuthorTblLocoObjectPack");
+                });
+
+            modelBuilder.Entity("TblAuthorTblSC5File", b =>
+                {
+                    b.Property<int>("AuthorsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SC5FilesId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AuthorsId", "SC5FilesId");
+
+                    b.HasIndex("SC5FilesId");
+
+                    b.ToTable("TblAuthorTblSC5File");
+                });
+
+            modelBuilder.Entity("TblAuthorTblSC5FilePack", b =>
+                {
+                    b.Property<int>("AuthorsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SC5FilePacksId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AuthorsId", "SC5FilePacksId");
+
+                    b.HasIndex("SC5FilePacksId");
+
+                    b.ToTable("TblAuthorTblSC5FilePack");
+                });
+
+            modelBuilder.Entity("TblLocoObjectPackTblTag", b =>
+                {
+                    b.Property<int>("ObjectPacksId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TagsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ObjectPacksId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("TblLocoObjectPackTblTag");
                 });
 
             modelBuilder.Entity("TblLocoObjectTblLocoObjectPack", b =>
@@ -301,6 +336,36 @@ namespace Definitions.Migrations
                     b.ToTable("TblLocoObjectTblLocoObjectPack");
                 });
 
+            modelBuilder.Entity("TblLocoObjectTblTag", b =>
+                {
+                    b.Property<int>("ObjectsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TagsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ObjectsId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("TblLocoObjectTblTag");
+                });
+
+            modelBuilder.Entity("TblSC5FilePackTblTag", b =>
+                {
+                    b.Property<int>("SC5FilePacksId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TagsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("SC5FilePacksId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("TblSC5FilePackTblTag");
+                });
+
             modelBuilder.Entity("TblSC5FileTblSC5FilePack", b =>
                 {
                     b.Property<int>("SC5FilePacksId")
@@ -316,23 +381,19 @@ namespace Definitions.Migrations
                     b.ToTable("TblSC5FileTblSC5FilePack");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
+            modelBuilder.Entity("TblSC5FileTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
-                        .WithMany("Authors")
-                        .HasForeignKey("TblLocoObjectId");
+                    b.Property<int>("SC5FilesId")
+                        .HasColumnType("INTEGER");
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObjectPack", null)
-                        .WithMany("Authors")
-                        .HasForeignKey("TblLocoObjectPackId");
+                    b.Property<int>("TagsId")
+                        .HasColumnType("INTEGER");
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5File", null)
-                        .WithMany("Authors")
-                        .HasForeignKey("TblSC5FileId");
+                    b.HasKey("SC5FilesId", "TagsId");
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5FilePack", null)
-                        .WithMany("Authors")
-                        .HasForeignKey("TblSC5FilePackId");
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("TblSC5FileTblTag");
                 });
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
@@ -371,23 +432,79 @@ namespace Definitions.Migrations
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblTag", b =>
+            modelBuilder.Entity("TblAuthorTblLocoObject", b =>
                 {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("TblLocoObjectId");
+                        .WithMany()
+                        .HasForeignKey("ObjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TblAuthorTblLocoObjectPack", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("OpenLoco.Definitions.Database.TblLocoObjectPack", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("TblLocoObjectPackId");
+                        .WithMany()
+                        .HasForeignKey("ObjectPacksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TblAuthorTblSC5File", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("OpenLoco.Definitions.Database.TblSC5File", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("TblSC5FileId");
+                        .WithMany()
+                        .HasForeignKey("SC5FilesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TblAuthorTblSC5FilePack", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("OpenLoco.Definitions.Database.TblSC5FilePack", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("TblSC5FilePackId");
+                        .WithMany()
+                        .HasForeignKey("SC5FilePacksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TblLocoObjectPackTblTag", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObjectPack", null)
+                        .WithMany()
+                        .HasForeignKey("ObjectPacksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TblLocoObjectTblLocoObjectPack", b =>
@@ -401,6 +518,36 @@ namespace Definitions.Migrations
                     b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TblLocoObjectTblTag", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
+                        .WithMany()
+                        .HasForeignKey("ObjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TblSC5FilePackTblTag", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblSC5FilePack", null)
+                        .WithMany()
+                        .HasForeignKey("SC5FilePacksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -420,32 +567,19 @@ namespace Definitions.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
+            modelBuilder.Entity("TblSC5FileTblTag", b =>
                 {
-                    b.Navigation("Authors");
+                    b.HasOne("OpenLoco.Definitions.Database.TblSC5File", null)
+                        .WithMany()
+                        .HasForeignKey("SC5FilesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Tags");
-                });
-
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObjectPack", b =>
-                {
-                    b.Navigation("Authors");
-
-                    b.Navigation("Tags");
-                });
-
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5File", b =>
-                {
-                    b.Navigation("Authors");
-
-                    b.Navigation("Tags");
-                });
-
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5FilePack", b =>
-                {
-                    b.Navigation("Authors");
-
-                    b.Navigation("Tags");
+                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

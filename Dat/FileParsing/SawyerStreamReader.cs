@@ -18,6 +18,7 @@ namespace OpenLoco.Dat.FileParsing
 				if (data[0] != 0xFF)
 				{
 					var header = S5Header.Read(data[..S5Header.StructLength]);
+					// vanilla objects will have sourcegameflag == 0 and checksum == 0. custom objects will have a checksum specified - may need custom handling
 					if (header.Checksum != 0 || header.Flags != 255)
 					{
 						result.Add(header);

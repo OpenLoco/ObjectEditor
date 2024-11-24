@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,6 +56,11 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 builder.Services.AddSingleton<Server>();
 var serviceSettings = builder.Services.Configure<ServerSettings>(builder.Configuration.GetSection("ObjectService"));
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+	options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
 var app = builder.Build();
 app.UseHttpLogging();
 app.UseRateLimiter();
@@ -70,9 +76,6 @@ var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
 
 // GET
 _ = app.MapGet(Routes.ListObjects, Server.ListObjects)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapGet(Routes.SearchObjects, Server.SearchObjects)
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapGet(Routes.GetDat, server.GetDat)

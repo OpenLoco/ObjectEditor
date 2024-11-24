@@ -704,7 +704,7 @@ namespace OpenLoco.Dat.Tests
 			{
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
 				Assert.That(struc.var_07, Is.EqualTo(0), nameof(struc.var_07));
-				Assert.That(struc.var_06, Is.EqualTo(1), nameof(struc.var_06));
+				Assert.That(struc.LoopCount, Is.EqualTo(1), nameof(struc.LoopCount));
 				Assert.That(struc.Volume, Is.EqualTo(0), nameof(struc.Volume));
 
 				Assert.That(struc.PcmData, Has.Length.EqualTo(119666), nameof(struc.PcmData.Length));

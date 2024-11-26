@@ -185,7 +185,8 @@ namespace OpenLoco.Gui.ViewModels
 				S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
 				S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
 				CurrentObject.LocoObject,
-				Logger);
+				Logger,
+				Model.Settings.AllowSavingAsVanillaObject);
 		}
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, ILogger logger, bool isG1 = false)

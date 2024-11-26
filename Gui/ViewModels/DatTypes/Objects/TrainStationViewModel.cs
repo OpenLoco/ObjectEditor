@@ -14,15 +14,15 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public TrackTraitFlags TrackPieces { get; set; }
 		[Reactive] public uint16_t DesignedYear { get; set; }
 		[Reactive] public uint16_t ObsoleteYear { get; set; }
-		[Reactive] public int16_t BuildCostFactor { get; set; }
-		[Reactive] public int16_t SellCostFactor { get; set; }
-		[Reactive] public uint8_t CostIndex { get; set; }
 		[Reactive] public TrainStationObjectFlags Flags { get; set; }
 		[Reactive] public BindingList<uint32_t> ImageOffsets { get; set; }
 		[Reactive] public BindingList<uint8_t> Mods { get; set; }
-		[Reactive] public uint8_t var_0B { get; set; }
-		[Reactive] public uint8_t var_0D { get; set; }
-		[Reactive] public BindingList<S5Header> Compatible { get; set; }
+		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
+		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
+		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
+		[Reactive, Category("Compatible")] public BindingList<S5Header> Compatible { get; set; }
+		[Reactive, Category("<unknown>")] public uint8_t var_0B { get; set; }
+		[Reactive, Category("<unknown>")] public uint8_t var_0D { get; set; }
 
 		//public uint8_t[][][] CargoOffsetBytes { get; set; }
 

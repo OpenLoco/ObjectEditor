@@ -156,6 +156,14 @@
 			<pgc:PropertyGrid x:Name="propertyGrid_BuildingVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
 		</DataTemplate>
 
+		<DataTemplate DataType="vm:TrainStationViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_TrainStationVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:TrackViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_TrackVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+		</DataTemplate>
+
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
 			<DockPanel DataContext="{Binding}" Margin="10">
 				<Grid ColumnDefinitions="*, Auto, 384">

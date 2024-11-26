@@ -84,9 +84,9 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						CurrentObjectViewModel = new VehicleViewModel(veh);
 					}
-					else if (CurrentObject.LocoObject.Object is TownNamesObject tow)
+					else if (CurrentObject.LocoObject.Object is TownNamesObject tn)
 					{
-						CurrentObjectViewModel = new TownNamesViewModel(tow);
+						CurrentObjectViewModel = new TownNamesViewModel(tn);
 					}
 					else if (CurrentObject.LocoObject.Object is AirportObject ao)
 					{
@@ -99,6 +99,14 @@ namespace OpenLoco.Gui.ViewModels
 					else if (CurrentObject.LocoObject.Object is BuildingObject bo)
 					{
 						CurrentObjectViewModel = new BuildingViewModel(bo);
+					}
+					else if (CurrentObject.LocoObject.Object is TrainStationObject ts)
+					{
+						CurrentObjectViewModel = new TrainStationViewModel(ts);
+					}
+					else if (CurrentObject.LocoObject.Object is TrackObject to)
+					{
+						CurrentObjectViewModel = new TrackViewModel(to);
 					}
 					else
 					{

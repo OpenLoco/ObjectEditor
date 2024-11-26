@@ -18,6 +18,7 @@ namespace OpenLoco.Dat.FileParsing
 				if (data[0] != 0xFF)
 				{
 					var header = S5Header.Read(data[..S5Header.StructLength]);
+					// vanilla objects will have sourcegameflag == 0 and checksum == 0. custom objects will have a checksum specified - may need custom handling
 					if (header.Checksum != 0 || header.Flags != 255)
 					{
 						result.Add(header);
@@ -299,6 +300,7 @@ namespace OpenLoco.Dat.FileParsing
 			{
 				return null;
 			}
+
 			var s5FileHeader = S5File.Read(data);
 			_ = data[S5File.StructLength..];
 			return s5FileHeader;
@@ -361,7 +363,8 @@ namespace OpenLoco.Dat.FileParsing
 					{
 						throw new ArgumentException("First image cannot have DuplicatePrevious flag since there is no previous image");
 					}
-					currElement.ImageData = g1Element32s[i - 1].ImageData.ToArray();
+
+					currElement.ImageData = [.. g1Element32s[i - 1].ImageData];
 					continue;
 				}
 				else

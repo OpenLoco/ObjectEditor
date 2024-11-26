@@ -145,11 +145,11 @@ static void MapRoutes(RouteGroupBuilder routeGroup, Server server)
 	_ = routeGroup.MapGet(Routes.ListScenarios, server.ListScenarios);
 	_ = routeGroup.MapGet(Routes.GetScenario, server.GetScenario);
 
-	// PATCH
-	_ = routeGroup.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-	_ = routeGroup.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-
 	// POST
 	_ = routeGroup.MapPost(Routes.UploadDat, server.UploadDat);
-	_ = routeGroup.MapPost(Routes.UploadObject, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	_ = routeGroup.MapPost(Routes.UploadObject, server.UploadObject);
+
+	// PATCH
+	_ = routeGroup.MapPatch(Routes.UpdateDat, server.UpdateDat);
+	_ = routeGroup.MapPatch(Routes.UpdateObject, server.UpdateObject);
 }

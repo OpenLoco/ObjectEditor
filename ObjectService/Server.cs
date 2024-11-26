@@ -31,6 +31,8 @@ namespace OpenLoco.ObjectService
 
 		Common.Logging.ILogger Logger { get; } = new Logger();
 
+		#region GET
+
 		// eg: https://localhost:7230/objects/list
 		public static async Task<IResult> ListObjects(
 			[FromQuery] string? objectName,
@@ -261,6 +263,10 @@ namespace OpenLoco.ObjectService
 			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 		}
 
+		#endregion
+
+		#region POST
+
 		// eg: <todo>
 		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
@@ -355,5 +361,29 @@ namespace OpenLoco.ObjectService
 
 			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
+
+		public async Task<IResult> UploadObject([FromServices] ILogger<Server> logger)
+		{
+			logger.LogWarning("[UploadDat] - not implemented");
+			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		}
+
+		#endregion
+
+		#region PATCH
+
+		public async Task<IResult> UpdateDat([FromServices] ILogger<Server> logger)
+		{
+			logger.LogWarning("[UploadDat] - not implemented");
+			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		}
+
+		public async Task<IResult> UpdateObject([FromServices] ILogger<Server> logger)
+		{
+			logger.LogWarning("[UploadDat] - not implemented");
+			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		}
+
+		#endregion
 	}
 }

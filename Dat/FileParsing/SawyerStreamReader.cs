@@ -300,6 +300,7 @@ namespace OpenLoco.Dat.FileParsing
 			{
 				return null;
 			}
+
 			var s5FileHeader = S5File.Read(data);
 			_ = data[S5File.StructLength..];
 			return s5FileHeader;
@@ -362,7 +363,8 @@ namespace OpenLoco.Dat.FileParsing
 					{
 						throw new ArgumentException("First image cannot have DuplicatePrevious flag since there is no previous image");
 					}
-					currElement.ImageData = g1Element32s[i - 1].ImageData.ToArray();
+
+					currElement.ImageData = [.. g1Element32s[i - 1].ImageData];
 					continue;
 				}
 				else

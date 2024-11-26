@@ -92,7 +92,6 @@ namespace OpenLoco.Gui.Models
 			{
 				Logger.Error("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
 			}
-
 		}
 
 		void InitialiseDownloadDirectory()

@@ -6,20 +6,13 @@ using System.ComponentModel;
 
 namespace OpenLoco.Gui.Models
 {
-	public class MetadataModel
+	public class MetadataModel(string uniqueName, string datName, uint datChecksum)
 	{
-		public MetadataModel(string uniqueName, string datName, uint datChecksum)
-		{
-			UniqueName = uniqueName;
-			DatName = datName;
-			DatChecksum = datChecksum;
-		}
+		public string UniqueName { get; init; } = uniqueName;
 
-		public string UniqueName { get; init; }
+		public string DatName { get; init; } = datName;
 
-		public string DatName { get; init; }
-
-		public uint DatChecksum { get; init; }
+		public uint DatChecksum { get; init; } = datChecksum;
 
 		public string? Description { get; set; }
 

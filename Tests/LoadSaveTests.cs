@@ -42,9 +42,11 @@ namespace OpenLoco.Dat.Tests
 			var logger = new Logger();
 			var (datFileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(data, logger: logger);
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable NUnit2045 // Use Assert.Multiple - cannot use a ReadOnlySpan inside an anonymous method
 			Assert.That(locoObject, Is.Not.Null);
 #pragma warning restore NUnit2045 // Use Assert.Multiple
+#pragma warning restore IDE0079 // Remove unnecessary suppression
 			Assert.That(datFileInfo.ObjectHeader.DataLength, Is.EqualTo(data.Length - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 
 			return (locoObject!, (T)locoObject!.Object);

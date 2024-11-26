@@ -77,12 +77,14 @@ namespace OpenLoco.Dat
 				if (pendingFiles.TryDequeue(out var content))
 				{
 					ObjectIndexEntry? entry = null;
+#pragma warning disable RCS1075 // Avoid empty catch clause that catches System.Exception. This is fine because on Exception,  `entry` will be null and that is handled afterwards
 					try
 					{
 						entry = await GetDatFileInfoFromBytesAsync(content, logger).ConfigureAwait(false);
 					}
 					catch (Exception)
 					{ }
+#pragma warning restore RCS1075 // Avoid empty catch clause that catches System.Exception
 
 					if (entry == null)
 					{

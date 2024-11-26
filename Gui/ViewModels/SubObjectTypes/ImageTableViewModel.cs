@@ -223,11 +223,12 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						// found blender folder
 						var offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+						ArgumentNullException.ThrowIfNull(offsets);
 						Logger.Debug("Found sprites.json file, using that");
 
-						if (offsets?.Count != G1Provider.G1Elements.Count)
+						if (offsets.Count != G1Provider.G1Elements.Count)
 						{
-							Logger.Warning($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets?.Count} offsets. Continue at your peril.");
+							Logger.Warning($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets.Count} offsets. Continue at your peril.");
 						}
 
 						foreach (var offset in offsets)

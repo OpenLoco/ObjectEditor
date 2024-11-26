@@ -66,16 +66,16 @@ namespace OpenLoco.ObjectService
 			if (objectType != null)
 			{
 				query = query.Where(x => x.ObjectType == objectType);
-
 			}
 
 			if (objectType == ObjectType.Vehicle && vehicleType != null)
 			{
 				// can only query vehicle type if it's a vehicle. if ObjectType is unspecified, that is fine
-				if (objectType != null && objectType != ObjectType.Vehicle)
+				if (objectType is not null and not ObjectType.Vehicle)
 				{
 					return Results.BadRequest("Cannot query for a Vehicle type on non-Vehicle objects");
 				}
+
 				query = query.Where(x => x.VehicleType == vehicleType);
 			}
 
@@ -125,7 +125,7 @@ namespace OpenLoco.ObjectService
 		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
 		public async Task<IResult> GetDat([FromQuery] string objectName, [FromQuery] uint checksum, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
-			logger.LogInformation($"Object [({objectName}, {checksum})] requested");
+			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", objectName, checksum);
 
 			var eObj = await db.Objects
 				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
@@ -139,7 +139,7 @@ namespace OpenLoco.ObjectService
 		// eg: https://localhost:7230/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
 		public async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
-			logger.LogInformation($"Object [{uniqueObjectId}] requested");
+			logger.LogInformation("Object [{UniqueObjectId}] requested", uniqueObjectId);
 
 			var eObj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
@@ -245,7 +245,7 @@ namespace OpenLoco.ObjectService
 		}
 
 		// eg: https://localhost:7230/scenarios/list
-		public async Task<IResult> ListScenarios(LocoDb db)
+		public async Task<IResult> ListScenarios()
 			=> await Task.Run(() =>
 			{
 				var files = Directory.GetFiles(ServerFolderManager.ScenariosFolder, "*.SC5", SearchOption.AllDirectories);
@@ -257,7 +257,7 @@ namespace OpenLoco.ObjectService
 		// eg: https://localhost:7230/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
 		public async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
-			logger.LogInformation($"Scenario [{uniqueScenarioId}] requested");
+			logger.LogInformation("Scenario [{ScenarioId}] requested", uniqueScenarioId);
 			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 		}
 
@@ -319,7 +319,7 @@ namespace OpenLoco.ObjectService
 			var saveFileName = Path.Combine(ServerFolderManager.ObjectsCustomFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
 
-			logger.LogInformation($"File accepted DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} PathOnDisk={saveFileName}");
+			logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
 
 			var creationTime = request.CreationDate;
 

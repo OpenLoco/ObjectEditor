@@ -90,6 +90,7 @@ app.UseHttpLogging();
 app.UseRateLimiter();
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
+ArgumentNullException.ThrowIfNullOrEmpty(objRoot, nameof(objRoot));
 var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
 
 var apiSet = app.NewApiVersionSet().Build();

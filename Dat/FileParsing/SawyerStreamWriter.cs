@@ -166,14 +166,15 @@ namespace OpenLoco.Dat.FileParsing
 			// s5 header
 			var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
 
-			if (sourceGame == SourceGame.Vanilla)
+			if (sourceGame == SourceGame.Vanilla && !allowWritingAsVanilla)
 			{
+				sourceGame = SourceGame.Custom;
 				logger.Warning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
 			}
 
 			var s5Header = new S5Header(objName, 0)
 			{
-				SourceGame = sourceGame == SourceGame.Vanilla ? (allowWritingAsVanilla ? SourceGame.Vanilla : SourceGame.Custom) : sourceGame,
+				SourceGame = sourceGame,
 				ObjectType = attr!.ObjectType
 			};
 

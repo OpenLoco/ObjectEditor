@@ -32,6 +32,13 @@ builder.Services.AddSwaggerGen(options =>
 				Version = description.ApiVersion.ToString(),
 			});
 	}
+	options.SwaggerDoc(
+		"(pre-versioning)",
+		new OpenApiInfo()
+		{
+			Title = "ObjectService (pre-versioning)",
+			Version = "0.0",
+		});
 });
 builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -90,19 +97,24 @@ app.UseHttpLogging();
 app.UseRateLimiter();
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
-ArgumentNullException.ThrowIfNullOrEmpty(objRoot, nameof(objRoot));
+ArgumentException.ThrowIfNullOrEmpty(objRoot, nameof(objRoot));
 var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
 
 var apiSet = app.NewApiVersionSet().Build();
 
-var group = app
-	.MapGroup("v{version:apiVersion}")
-	.WithApiVersionSet(apiSet)
-	.HasDeprecatedApiVersion(1.0)
-	.HasApiVersion(2.0)
+var groupDeprecated = app
+	.MapGroup("")
 	.RequireRateLimiting(tokenPolicy);
 
-MapRoutes(group, server);
+var groupVersioned = app
+	.MapGroup("v{version:apiVersion}")
+	.WithApiVersionSet(apiSet)
+	//.HasDeprecatedApiVersion(1.0)
+	.HasApiVersion(1.0)
+	.RequireRateLimiting(tokenPolicy);
+
+MapRoutes(groupDeprecated, server);
+MapRoutes(groupVersioned, server);
 
 if (app.Environment.IsDevelopment())
 {

@@ -28,7 +28,7 @@ namespace OpenLoco.Dat
 			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
 
 		public static async Task<ObjectIndexEntry?> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file, ILogger logger)
-			=> await Task.Run(() => GetDatFileInfoFromBytes(file, logger));
+			=> await Task.Run(() => GetDatFileInfoFromBytes(file, logger)).ConfigureAwait(false);
 
 		public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 		{
@@ -41,7 +41,7 @@ namespace OpenLoco.Dat
 
 			if (index == null)
 			{
-				index = await CreateIndexAsync(directory, logger, progress);
+				index = await CreateIndexAsync(directory, logger, progress).ConfigureAwait(false);
 				index.SaveIndex(indexPath);
 			}
 
@@ -51,7 +51,7 @@ namespace OpenLoco.Dat
 		public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
 			=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
 
-		public static Task<ObjectIndex> CreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
+		public static async Task<ObjectIndex> CreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 		{
 			var files = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 
@@ -59,37 +59,45 @@ namespace OpenLoco.Dat
 			ConcurrentQueue<ObjectIndexEntry> pendingIndices = [];
 			ConcurrentQueue<string> failedFiles = [];
 
-			var producerTask = Task.Run(async () =>
-			{
-				var options = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
-				await Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(directory, f), ct))));
-			});
+			var options = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
+			var producerTask = Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(directory, f), ct).ConfigureAwait(false))));
+			var consumerTask = ConsumeInput(pendingIndices, pendingFiles, failedFiles, files.Length, progress, logger);
 
-			var consumerTask = Task.Run(async () =>
+			await producerTask.ConfigureAwait(false);
+			await consumerTask.ConfigureAwait(false);
+
+			await Task.WhenAll(producerTask, consumerTask).ConfigureAwait(false);
+			return new ObjectIndex() { Objects = [.. pendingIndices] };
+		}
+
+		static async Task ConsumeInput(ConcurrentQueue<ObjectIndexEntry> pendingIndices, ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles, ConcurrentQueue<string> failedFiles, int totalFiles, IProgress<float>? progress, ILogger logger)
+		{
+			while ((pendingIndices.Count + failedFiles.Count) != totalFiles)
 			{
-				while (pendingIndices.Count != files.Length)
+				if (pendingFiles.TryDequeue(out var content))
 				{
-					if (pendingFiles.TryDequeue(out var content))
+					ObjectIndexEntry? entry = null;
+#pragma warning disable RCS1075 // Avoid empty catch clause that catches System.Exception. This is fine because on Exception,  `entry` will be null and that is handled afterwards
+					try
 					{
-						var entry = await GetDatFileInfoFromBytesAsync(content, logger);
-						if (entry != null)
-						{
-							pendingIndices.Enqueue(entry);
-						}
-						else
-						{
-							failedFiles.Enqueue(content.Filename);
-						}
-						progress?.Report((pendingIndices.Count + failedFiles.Count) / (float)files.Length);
+						entry = await GetDatFileInfoFromBytesAsync(content, logger).ConfigureAwait(false);
 					}
-				}
-			});
+					catch (Exception)
+					{ }
+#pragma warning restore RCS1075 // Avoid empty catch clause that catches System.Exception
 
-			return Task.Run(async () =>
-			{
-				await Task.WhenAll(producerTask, consumerTask);
-				return new ObjectIndex() { Objects = [.. pendingIndices] };
-			});
+					if (entry == null)
+					{
+						failedFiles.Enqueue(content.Filename);
+					}
+					else
+					{
+						pendingIndices.Enqueue(entry);
+					}
+
+					progress?.Report((pendingIndices.Count + failedFiles.Count) / (float)totalFiles);
+				}
+			}
 		}
 
 		public static ObjectIndex CreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
@@ -103,9 +111,9 @@ namespace OpenLoco.Dat
 
 		public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
 		{
-			await using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(await File.ReadAllTextAsync(indexFile))))
+			await using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(await File.ReadAllTextAsync(indexFile).ConfigureAwait(false))))
 			{
-				return await JsonSerializer.DeserializeAsync<ObjectIndex>(stream);
+				return await JsonSerializer.DeserializeAsync<ObjectIndex>(stream).ConfigureAwait(false);
 			}
 		}
 

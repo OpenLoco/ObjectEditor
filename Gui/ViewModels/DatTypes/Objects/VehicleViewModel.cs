@@ -21,8 +21,8 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 		[Reactive, Category("Stats")] public uint8_t Reliability { get; set; }
 		[Reactive] public VehicleObjectFlags Flags { get; set; }
-		[Reactive] public S5Header TrackType { get; set; }
-		[Reactive] public S5Header RackRail { get; set; }
+		[Reactive] public S5Header? TrackType { get; set; }
+		[Reactive] public S5Header? RackRail { get; set; }
 		[Reactive, Length(0, 8)] public BindingList<S5Header> CompatibleVehicles { get; set; }
 		[Reactive, Length(0, 4)] public BindingList<S5Header> RequiredTrackExtras { get; set; }
 		[Reactive, Category("Cost"), Range(0, 32)] public uint8_t CostIndex { get; set; }
@@ -41,7 +41,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories1 { get; set; }
 		[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories2 { get; set; }
 		[Reactive, Category("Cargo"), Length(0, 32)] public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; set; } // this is a dictionary type
-		[Reactive, Category("Sound")] public S5Header Sound { get; set; }
+		[Reactive, Category("Sound")] public S5Header? Sound { get; set; }
 		[Reactive, Category("Sound")] public DrivingSoundType SoundType { get; set; }
 		// SoundPropertiesData
 		// these next 3 properties are a union in the dat file

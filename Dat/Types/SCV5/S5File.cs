@@ -6,7 +6,7 @@ namespace OpenLoco.Dat.Types.SCV5
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]
 	public record S5File(
-		[property: LocoStructOffset(0x00)] Header Header,
+		[property: LocoStructOffset(0x00)] S5FileHeader Header,
 		[property: LocoStructOffset(0x20)] LandscapeDetails? LandscapeOptions,
 		[property: LocoStructOffset(0x433A)] SaveDetails? SaveDetails,
 		[property: LocoStructOffset(0x10952), LocoArrayLength(859), Browsable(false)] List<S5Header> RequiredObjects,
@@ -21,7 +21,7 @@ namespace OpenLoco.Dat.Types.SCV5
 
 		public static S5File Read(ReadOnlySpan<byte> data)
 		{
-			var header = SawyerStreamReader.ReadChunk<Header>(ref data);
+			var header = SawyerStreamReader.ReadChunk<S5FileHeader>(ref data);
 
 			SaveDetails? saveDetails = null;
 			LandscapeDetails? landscapeDetails = null;

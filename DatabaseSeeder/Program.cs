@@ -169,9 +169,3 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 	Console.WriteLine("Finished seeding");
 }
-
-static string? uint32_t_LittleToBigEndian(string input)
-{
-	var r = new string(input.Chunk(2).Reverse().SelectMany(x => x).ToArray());
-	return Convert.ToUInt32(r, 16).ToString();
-}

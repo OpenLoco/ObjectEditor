@@ -66,6 +66,7 @@ if (app.Environment.IsDevelopment())
 }
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
+ArgumentNullException.ThrowIfNull(objRoot);
 var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
 
 // GET

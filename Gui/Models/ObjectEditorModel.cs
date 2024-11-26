@@ -92,7 +92,6 @@ namespace OpenLoco.Gui.Models
 			{
 				Logger.Error("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
 			}
-
 		}
 
 		void InitialiseDownloadDirectory()
@@ -321,7 +320,7 @@ namespace OpenLoco.Gui.Models
 
 			async Task RecreateIndex(string directory, IProgress<float> progress)
 			{
-				Logger.Info("Recreating index file");
+				Logger.Info($"Recreating index file for {directory}");
 				ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress);
 				ObjectIndex?.SaveIndex(Settings.IndexFileName);
 			}

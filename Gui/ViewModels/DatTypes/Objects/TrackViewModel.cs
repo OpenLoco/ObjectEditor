@@ -12,20 +12,20 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public TrackObjectFlags Flags { get; set; }
 		[Reactive] public TrackTraitFlags TrackPieces { get; set; }
 		[Reactive] public TrackTraitFlags StationTrackPieces { get; set; }
-		[Reactive] public int16_t BuildCostFactor { get; set; }
-		[Reactive] public int16_t SellCostFactor { get; set; }
-		[Reactive] public int16_t TunnelCostFactor { get; set; }
-		[Reactive] public uint8_t CostIndex { get; set; }
 		[Reactive] public Speed16 CurveSpeed { get; set; }
 		[Reactive] public uint8_t DisplayOffset { get; set; }
-		[Reactive] public BindingList<S5Header> Compatible { get; set; }
-		[Reactive] public BindingList<S5Header> Mods { get; set; }
-		[Reactive] public BindingList<S5Header> Signals { get; set; }
-		[Reactive] public BindingList<S5Header> Bridges { get; set; }
-		[Reactive] public BindingList<S5Header> Stations { get; set; }
 		[Reactive] public S5Header Tunnel { get; set; }
-		[Reactive] public uint8_t var_06 { get; set; }
-		[Reactive] public uint8_t var_35 { get; set; }
+		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
+		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
+		[Reactive, Category("Cost")] public int16_t TunnelCostFactor { get; set; }
+		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
+		[Reactive, Category("Compatible")] public BindingList<S5Header> Compatible { get; set; }
+		[Reactive, Category("Mods")] public BindingList<S5Header> Mods { get; set; }
+		[Reactive, Category("Signals")] public BindingList<S5Header> Signals { get; set; }
+		[Reactive, Category("Bridges")] public BindingList<S5Header> Bridges { get; set; }
+		[Reactive, Category("Stations")] public BindingList<S5Header> Stations { get; set; }
+		[Reactive, Category("<unknown>")] public uint8_t var_06 { get; set; }
+		[Reactive, Category("<unknown>")] public uint8_t var_35 { get; set; }
 
 		public TrackViewModel(TrackObject to)
 		{

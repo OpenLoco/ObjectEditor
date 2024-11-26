@@ -84,9 +84,9 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						CurrentObjectViewModel = new VehicleViewModel(veh);
 					}
-					else if (CurrentObject.LocoObject.Object is TownNamesObject tow)
+					else if (CurrentObject.LocoObject.Object is TownNamesObject tn)
 					{
-						CurrentObjectViewModel = new TownNamesViewModel(tow);
+						CurrentObjectViewModel = new TownNamesViewModel(tn);
 					}
 					else if (CurrentObject.LocoObject.Object is AirportObject ao)
 					{
@@ -99,6 +99,14 @@ namespace OpenLoco.Gui.ViewModels
 					else if (CurrentObject.LocoObject.Object is BuildingObject bo)
 					{
 						CurrentObjectViewModel = new BuildingViewModel(bo);
+					}
+					else if (CurrentObject.LocoObject.Object is TrainStationObject ts)
+					{
+						CurrentObjectViewModel = new TrainStationViewModel(ts);
+					}
+					else if (CurrentObject.LocoObject.Object is TrackObject to)
+					{
+						CurrentObjectViewModel = new TrackViewModel(to);
 					}
 					else
 					{
@@ -185,7 +193,8 @@ namespace OpenLoco.Gui.ViewModels
 				S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
 				S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
 				CurrentObject.LocoObject,
-				Logger);
+				Logger,
+				Model.Settings.AllowSavingAsVanillaObject);
 		}
 
 		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, ILogger logger, bool isG1 = false)

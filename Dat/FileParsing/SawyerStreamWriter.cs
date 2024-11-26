@@ -98,13 +98,13 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static void Save(string filename, string objName, SourceGame sourceGame, ILocoObject locoObject, ILogger logger)
+		public static void Save(string filename, string objName, SourceGame sourceGame, ILocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
 			logger.Info($"Writing \"{objName}\" to {filename}");
 
-			var objBytes = WriteLocoObject(objName, sourceGame, logger, locoObject);
+			var objBytes = WriteLocoObject(objName, sourceGame, logger, locoObject, allowWritingAsVanilla);
 
 			try
 			{
@@ -123,10 +123,10 @@ namespace OpenLoco.Dat.FileParsing
 			logger.Info($"{objName} successfully saved to {filename}");
 		}
 
-		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj)
-		 => WriteLocoObjectStream(objName, sourceGame, logger, obj).ToArray();
+		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+		 => WriteLocoObjectStream(objName, sourceGame, logger, obj, allowWritingAsVanilla).ToArray();
 
-		public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj)
+		public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
 		{
 			using var objStream = new MemoryStream();
 
@@ -166,14 +166,15 @@ namespace OpenLoco.Dat.FileParsing
 			// s5 header
 			var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
 
-			if (sourceGame == SourceGame.Vanilla)
+			if (sourceGame == SourceGame.Vanilla && !allowWritingAsVanilla)
 			{
+				sourceGame = SourceGame.Custom;
 				logger.Warning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
 			}
 
 			var s5Header = new S5Header(objName, 0)
 			{
-				SourceGame = sourceGame == SourceGame.Vanilla ? SourceGame.Custom : sourceGame, // do not allow users to write "Vanilla" to objects
+				SourceGame = sourceGame,
 				ObjectType = attr!.ObjectType
 			};
 

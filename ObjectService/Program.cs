@@ -102,19 +102,21 @@ var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
 
 var apiSet = app.NewApiVersionSet().Build();
 
-var groupDeprecated = app
-	.MapGroup("")
-	.RequireRateLimiting(tokenPolicy);
-
 var groupVersioned = app
 	.MapGroup("v{version:apiVersion}")
 	.WithApiVersionSet(apiSet)
 	//.HasDeprecatedApiVersion(1.0)
 	.HasApiVersion(1.0)
-	.RequireRateLimiting(tokenPolicy);
+	.RequireRateLimiting(tokenPolicy)
+	.WithTags("Versioned");
 
-MapRoutes(groupDeprecated, server);
+var groupDeprecated = app
+	.MapGroup("")
+	.RequireRateLimiting(tokenPolicy)
+	.WithTags("Non-Versioned");
+
 MapRoutes(groupVersioned, server);
+MapRoutes(groupDeprecated, server);
 
 if (app.Environment.IsDevelopment())
 {

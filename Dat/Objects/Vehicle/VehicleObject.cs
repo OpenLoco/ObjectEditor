@@ -78,13 +78,13 @@ namespace OpenLoco.Dat.Objects
 				{
 					ByteWriter.WriteLocoStruct(value).CopyTo(SoundPropertiesData);
 				}
-				else
-				{
-					for (var i = 0; i < MaxUnionSoundStructLength; ++i)
-					{
-						SoundPropertiesData[i] = 0;
-					}
-				}
+				//else
+				//{
+				//	for (var i = 0; i < MaxUnionSoundStructLength; ++i)
+				//	{
+				//		SoundPropertiesData[i] = 0;
+				//	}
+				//}
 			}
 		}
 
@@ -99,13 +99,13 @@ namespace OpenLoco.Dat.Objects
 				{
 					ByteWriter.WriteLocoStruct(value).CopyTo(SoundPropertiesData);
 				}
-				else
-				{
-					for (var i = 0; i < MaxUnionSoundStructLength; ++i)
-					{
-						SoundPropertiesData[i] = 0;
-					}
-				}
+				//else
+				//{
+				//	for (var i = 0; i < MaxUnionSoundStructLength; ++i)
+				//	{
+				//		SoundPropertiesData[i] = 0;
+				//	}
+				//}
 			}
 		}
 
@@ -120,13 +120,13 @@ namespace OpenLoco.Dat.Objects
 				{
 					ByteWriter.WriteLocoStruct(value).CopyTo(SoundPropertiesData);
 				}
-				else
-				{
-					for (var i = 0; i < MaxUnionSoundStructLength; ++i)
-					{
-						SoundPropertiesData[i] = 0;
-					}
-				}
+				//else
+				//{
+				//	for (var i = 0; i < MaxUnionSoundStructLength; ++i)
+				//	{
+				//		SoundPropertiesData[i] = 0;
+				//	}
+				//}
 			}
 		}
 

@@ -83,7 +83,7 @@ namespace OpenLoco.Gui.ViewModels
 			ObsoleteYear = veh.ObsoleteYear;
 			RackRail = veh.RackRail;
 			Sound = veh.Sound;
-			SoundType = veh.SoundType;
+			SoundType = veh.DrivingSoundType;
 			StartSounds = new(veh.StartSounds);
 			FrictionSound = veh.SoundPropertyFriction;
 			Engine1Sound = veh.SoundPropertyEngine1;
@@ -121,7 +121,8 @@ namespace OpenLoco.Gui.ViewModels
 				DesignedYear = DesignedYear,
 				ObsoleteYear = ObsoleteYear,
 				RackRail = RackRail,
-				SoundType = SoundType,
+				Sound = Sound,
+				DrivingSoundType = SoundType,
 				SoundPropertyFriction = FrictionSound,
 				SoundPropertyEngine1 = Engine1Sound,
 				SoundPropertyEngine2 = Engine2Sound,

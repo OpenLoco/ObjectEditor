@@ -41,8 +41,8 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x113)] uint8_t var_113,
 		[property: LocoStructOffset(0x114)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x116)] uint16_t ObsoleteYear,
-		[property: LocoStructOffset(0x118), LocoStructVariableLoad, Browsable(false)] uint8_t RackRailType,
-		[property: LocoStructOffset(0x119)] DrivingSoundType SoundType,
+		[property: LocoStructOffset(0x118), LocoStructVariableLoad, Browsable(false)] object_id RackRailType,
+		[property: LocoStructOffset(0x119)] DrivingSoundType DrivingSoundType,
 		// this is a union...length is the length of the longest union struct, which is Engine2Sound. make the byte[] not visible in editor
 		[property: LocoStructOffset(0x11A), LocoArrayLength(VehicleObject.MaxUnionSoundStructLength), Browsable(false)] byte[] SoundPropertiesData,
 		//union
@@ -69,7 +69,7 @@ namespace OpenLoco.Dat.Objects
 
 		public FrictionSound? SoundPropertyFriction
 		{
-			get => SoundType == DrivingSoundType.Friction
+			get => DrivingSoundType == DrivingSoundType.Friction
 					? (FrictionSound)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<FrictionSound>()], typeof(FrictionSound))
 					: null;
 			set
@@ -90,7 +90,7 @@ namespace OpenLoco.Dat.Objects
 
 		public Engine1Sound? SoundPropertyEngine1
 		{
-			get => SoundType == DrivingSoundType.Engine1
+			get => DrivingSoundType == DrivingSoundType.Engine1
 					? (Engine1Sound)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<Engine1Sound>()], typeof(Engine1Sound))
 					: null;
 			set
@@ -111,7 +111,7 @@ namespace OpenLoco.Dat.Objects
 
 		public Engine2Sound? SoundPropertyEngine2
 		{
-			get => SoundType == DrivingSoundType.Engine2
+			get => DrivingSoundType == DrivingSoundType.Engine2
 					? (Engine2Sound)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<Engine2Sound>()], typeof(Engine2Sound))
 					: null;
 			set
@@ -236,7 +236,7 @@ namespace OpenLoco.Dat.Objects
 			}
 
 			// driving sound
-			if (SoundType != DrivingSoundType.None)
+			if (DrivingSoundType != DrivingSoundType.None)
 			{
 				Sound = S5Header.Read(remainingData[..S5Header.StructLength]);
 				remainingData = remainingData[S5Header.StructLength..];
@@ -317,7 +317,7 @@ namespace OpenLoco.Dat.Objects
 			}
 
 			// driving sound
-			if (SoundType != DrivingSoundType.None)
+			if (DrivingSoundType != DrivingSoundType.None)
 			{
 				ms.Write(Sound!.Write());
 			}

@@ -1,3 +1,4 @@
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
@@ -8,6 +9,38 @@ using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public class S5ViewModel : ReactiveObject //, IObjectViewModel<S5Header>
+	{
+		public S5ViewModel(string name, uint checksum, SourceGame sourceGame, ObjectType objectType)
+		{
+			Name = name;
+			Checksum = checksum;
+			SourceGame = sourceGame;
+			ObjectType = objectType;
+		}
+		public S5ViewModel(S5Header s5Header)
+		{
+			Name = s5Header.Name;
+			Checksum = s5Header.Checksum;
+			SourceGame = s5Header.SourceGame;
+			ObjectType = s5Header.ObjectType;
+		}
+
+		public string Name { get; set; }
+		public uint32_t Checksum { get; set; }
+		public SourceGame SourceGame { get; set; }
+
+		public ObjectType ObjectType { get; set; }
+
+		public S5Header GetAsUnderlyingType()
+			=> new(Name, Checksum)
+			{
+				ObjectType = ObjectType,
+				SourceGame = SourceGame
+			};
+	}
+
 	public class VehicleViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
 	{
 		[Reactive, Category("Stats")] public TransportMode Mode { get; set; }
@@ -48,7 +81,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Sound")] public FrictionSound? FrictionSound { get; set; }
 		[Reactive, Category("Sound")] public Engine1Sound? Engine1Sound { get; set; }
 		[Reactive, Category("Sound")] public Engine2Sound? Engine2Sound { get; set; }
-		[Reactive, Category("Sound")] public BindingList<S5Header> StartSounds { get; set; }
+		[Reactive, Category("Sound")] public BindingList<S5ViewModel> StartSounds { get; set; }
 
 		public VehicleViewModel(VehicleObject veh)
 		{
@@ -84,7 +117,7 @@ namespace OpenLoco.Gui.ViewModels
 			RackRail = veh.RackRail;
 			Sound = veh.Sound;
 			SoundType = veh.DrivingSoundType;
-			StartSounds = new(veh.StartSounds);
+			StartSounds = new(veh.StartSounds.ConvertAll(x => new S5ViewModel(x)));
 			FrictionSound = veh.SoundPropertyFriction;
 			Engine1Sound = veh.SoundPropertyEngine1;
 			Engine2Sound = veh.SoundPropertyEngine2;
@@ -122,6 +155,7 @@ namespace OpenLoco.Gui.ViewModels
 				ObsoleteYear = ObsoleteYear,
 				RackRail = RackRail,
 				Sound = Sound,
+				StartSounds = StartSounds.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				DrivingSoundType = SoundType,
 				SoundPropertyFriction = FrictionSound,
 				SoundPropertyEngine1 = Engine1Sound,

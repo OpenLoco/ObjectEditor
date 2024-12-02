@@ -1,6 +1,6 @@
 namespace OpenLoco.Dat.Types.SCV5
 {
-	public enum S5Type : uint8_t
+	public enum S5FileType : uint8_t
 	{
 		SavedGame = 0,
 		Scenario = 1,

@@ -1,13 +1,11 @@
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
-using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class TrainStationViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
+	public class TrainStationViewModel : LocoObjectViewModel<TrainStationObject>
 	{
 		[Reactive] public uint8_t DrawStyle { get; set; }
 		[Reactive] public uint8_t Height { get; set; }
@@ -20,7 +18,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-		[Reactive, Category("Compatible")] public BindingList<S5Header> Compatible { get; set; }
+		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> Compatible { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_0B { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_0D { get; set; }
 
@@ -43,16 +41,13 @@ namespace OpenLoco.Gui.ViewModels
 			Mods = new(ts.Mods);
 			var_0B = ts.var_0B;
 			var_0D = ts.var_0D;
-			Compatible = new(ts.Compatible);
+			Compatible = new(ts.Compatible.ConvertAll(x => new S5HeaderViewModel(x)));
 			Mods = new(ts.Mods);
 		}
 
-		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
-			=> GetAsStruct((locoStruct as TrainStationObject)!);
-
 		// validation:
 		// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-		public TrainStationObject GetAsStruct(TrainStationObject ts)
+		public override TrainStationObject GetAsStruct(TrainStationObject ts)
 			=> ts with
 			{
 				DrawStyle = DrawStyle,
@@ -68,6 +63,7 @@ namespace OpenLoco.Gui.ViewModels
 				var_0D = var_0D,
 				Mods = [.. Mods],
 				NumCompatible = (uint8_t)Compatible.Count(),
+				Compatible = Compatible.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 			};
 	}
 }

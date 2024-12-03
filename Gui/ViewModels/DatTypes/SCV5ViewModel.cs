@@ -1,5 +1,4 @@
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Types;
 using OpenLoco.Dat.Types.SCV5;
 using OpenLoco.Gui.Models;
 using ReactiveUI.Fody.Helpers;
@@ -16,10 +15,10 @@ namespace OpenLoco.Gui.ViewModels
 		public S5File? CurrentS5File { get; set; }
 
 		[Reactive]
-		public BindingList<S5Header>? RequiredObjects { get; set; }
+		public BindingList<S5HeaderViewModel>? RequiredObjects { get; set; }
 
 		[Reactive]
-		public BindingList<S5Header>? PackedObjects { get; set; }
+		public BindingList<S5HeaderViewModel>? PackedObjects { get; set; }
 
 		[Reactive]
 		public BindingList<TileElement>? TileElements { get; set; }
@@ -34,8 +33,8 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			Logger?.Info($"Loading scenario from {CurrentFile.Filename}");
 			CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.Filename, Model.Logger);
-			RequiredObjects = new BindingList<S5Header>(CurrentS5File!.RequiredObjects);
-			PackedObjects = new BindingList<S5Header>(CurrentS5File!.PackedObjects.ConvertAll(x => x.Item1)); // note: cannot bind to this, but it'll allow us to display at least
+			RequiredObjects = new BindingList<S5HeaderViewModel>(CurrentS5File!.RequiredObjects.ConvertAll(x => new S5HeaderViewModel(x)));
+			PackedObjects = new BindingList<S5HeaderViewModel>(CurrentS5File!.PackedObjects.ConvertAll(x => new S5HeaderViewModel(x.Item1))); // note: cannot bind to this, but it'll allow us to display at least
 			TileElements = new BindingList<TileElement>(CurrentS5File!.TileElements);
 
 			//Map = new Image<Rgba32>(384, 384);

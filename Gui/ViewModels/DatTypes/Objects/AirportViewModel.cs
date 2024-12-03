@@ -1,7 +1,5 @@
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
 using PropertyModels.Extensions;
-using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +7,7 @@ using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class AirportViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
+	public class AirportViewModel : LocoObjectViewModel<AirportObject>
 	{
 		[Reactive] public uint16_t AllowedPlaneTypes { get; set; }
 		[Reactive] public int8_t MinX { get; set; }
@@ -54,12 +52,9 @@ namespace OpenLoco.Gui.ViewModels
 			var_B6 = [.. ao.var_B6];
 		}
 
-		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
-			=> GetAsStruct((locoStruct as AirportObject)!);
-
 		// validation:
 		// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-		public AirportObject GetAsStruct(AirportObject ao)
+		public override AirportObject GetAsStruct(AirportObject ao)
 			=> ao with
 			{
 				BuildCostFactor = ao.BuildCostFactor,

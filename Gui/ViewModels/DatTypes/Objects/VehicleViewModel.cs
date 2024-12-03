@@ -1,14 +1,13 @@
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
-using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class VehicleViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
+	public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	{
 		[Reactive, Category("Stats")] public TransportMode Mode { get; set; }
 		[Reactive, Category("Stats")] public VehicleType Type { get; set; }
@@ -21,10 +20,10 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 		[Reactive, Category("Stats")] public uint8_t Reliability { get; set; }
 		[Reactive] public VehicleObjectFlags Flags { get; set; }
-		[Reactive] public S5Header? TrackType { get; set; }
-		[Reactive] public S5Header? RackRail { get; set; }
-		[Reactive, Length(0, 8)] public BindingList<S5Header> CompatibleVehicles { get; set; }
-		[Reactive, Length(0, 4)] public BindingList<S5Header> RequiredTrackExtras { get; set; }
+		[Reactive] public S5HeaderViewModel? TrackType { get; set; }
+		[Reactive] public S5HeaderViewModel? RackRail { get; set; }
+		[Reactive, Length(0, 8)] public BindingList<S5HeaderViewModel> CompatibleVehicles { get; set; }
+		[Reactive, Length(0, 4)] public BindingList<S5HeaderViewModel> RequiredTrackExtras { get; set; }
 		[Reactive, Category("Cost"), Range(0, 32)] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost"), Range(1, int16_t.MaxValue)] public int16_t CostFactor { get; set; }
 		[Reactive, Category("Cost"), Range(0, 32)] public uint8_t RunCostIndex { get; set; }
@@ -36,12 +35,12 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; set; }
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; set; }
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<SimpleAnimation> Animation { get; set; }
-		[Reactive, Category("Sprites")] public BindingList<S5Header> AnimationHeaders { get; set; }
+		[Reactive, Category("Sprites")] public BindingList<S5HeaderViewModel> AnimationHeaders { get; set; }
 		[Reactive, Category("Cargo")] public BindingList<uint8_t> MaxCargo { get; set; }
 		[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories1 { get; set; }
 		[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories2 { get; set; }
 		[Reactive, Category("Cargo"), Length(0, 32)] public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; set; } // this is a dictionary type
-		[Reactive, Category("Sound")] public S5Header? Sound { get; set; }
+		[Reactive, Category("Sound")] public S5HeaderViewModel? Sound { get; set; }
 		[Reactive, Category("Sound")] public DrivingSoundType SoundType { get; set; }
 		// SoundPropertiesData
 		// these next 3 properties are a union in the dat file
@@ -55,15 +54,15 @@ namespace OpenLoco.Gui.ViewModels
 			Mode = veh.Mode;
 			Type = veh.Type;
 			var_04 = veh.var_04;
-			TrackType = veh.TrackType;
+			TrackType = veh.TrackType == null ? null : new(veh.TrackType);
 			CostIndex = veh.CostIndex;
 			CostFactor = veh.CostFactor;
 			Reliability = veh.Reliability;
 			RunCostIndex = veh.RunCostIndex;
 			RunCostFactor = veh.RunCostFactor;
 			ColourType = veh.ColourType;
-			CompatibleVehicles = new(veh.CompatibleVehicles);
-			RequiredTrackExtras = new(veh.RequiredTrackExtras);
+			CompatibleVehicles = new(veh.CompatibleVehicles.ConvertAll(x => new S5HeaderViewModel(x)));
+			RequiredTrackExtras = new(veh.RequiredTrackExtras.ConvertAll(x => new S5HeaderViewModel(x)));
 			CarComponents = new(veh.CarComponents);
 			BodySprites = new(veh.BodySprites);
 			BogieSprites = new(veh.BogieSprites);
@@ -77,23 +76,20 @@ namespace OpenLoco.Gui.ViewModels
 			CompatibleCargoCategories2 = new(veh.CompatibleCargoCategories[1]);
 			CargoTypeSpriteOffsets = new(veh.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList());
 			Animation = new(veh.Animation);
-			AnimationHeaders = new(veh.AnimationHeaders);
+			AnimationHeaders = new(veh.AnimationHeaders.ConvertAll(x => new S5HeaderViewModel(x)));
 			var_113 = veh.var_113;
 			DesignedYear = veh.DesignedYear;
 			ObsoleteYear = veh.ObsoleteYear;
-			RackRail = veh.RackRail;
-			Sound = veh.Sound;
-			SoundType = veh.DrivingSoundType;
+			RackRail = veh.RackRail == null ? null : new(veh.RackRail);
+			Sound = veh.Sound == null ? null : new(veh.Sound);
 			StartSounds = new(veh.StartSounds.ConvertAll(x => new S5HeaderViewModel(x)));
+			SoundType = veh.DrivingSoundType;
 			FrictionSound = veh.SoundPropertyFriction;
 			Engine1Sound = veh.SoundPropertyEngine1;
 			Engine2Sound = veh.SoundPropertyEngine2;
 		}
 
-		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
-			=> GetAsStruct((locoStruct as VehicleObject)!);
-
-		public VehicleObject GetAsStruct(VehicleObject veh)
+		public override VehicleObject GetAsStruct(VehicleObject veh)
 		{
 			foreach (var ctso in CargoTypeSpriteOffsets)
 			{
@@ -105,7 +101,7 @@ namespace OpenLoco.Gui.ViewModels
 				Mode = Mode,
 				Type = Type,
 				var_04 = var_04,
-				TrackType = TrackType,
+				TrackType = TrackType?.GetAsUnderlyingType(),
 				CostIndex = CostIndex,
 				CostFactor = CostFactor,
 				Reliability = Reliability,
@@ -120,9 +116,12 @@ namespace OpenLoco.Gui.ViewModels
 				var_113 = var_113,
 				DesignedYear = DesignedYear,
 				ObsoleteYear = ObsoleteYear,
-				RackRail = RackRail,
-				Sound = Sound,
+				RackRail = RackRail?.GetAsUnderlyingType(),
+				Sound = Sound?.GetAsUnderlyingType(),
 				StartSounds = StartSounds.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				CompatibleVehicles = CompatibleVehicles.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				RequiredTrackExtras = RequiredTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				DrivingSoundType = SoundType,
 				SoundPropertyFriction = FrictionSound,
 				SoundPropertyEngine1 = Engine1Sound,

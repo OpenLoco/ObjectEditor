@@ -108,6 +108,10 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						CurrentObjectViewModel = new TrackViewModel(to);
 					}
+					else if (CurrentObject.LocoObject.Object is RegionObject ro)
+					{
+						CurrentObjectViewModel = new RegionViewModel(ro);
+					}
 					else
 					{
 						CurrentObjectViewModel = new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };

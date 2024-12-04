@@ -120,6 +120,10 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						CurrentObjectViewModel = new StreetLightViewModel(sl);
 					}
+					else if (CurrentObject.LocoObject.Object is ClimateObject cl)
+					{
+						CurrentObjectViewModel = new ClimateViewModel(cl);
+					}
 					else
 					{
 						CurrentObjectViewModel = new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };

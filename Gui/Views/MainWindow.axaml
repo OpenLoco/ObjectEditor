@@ -176,6 +176,10 @@
 			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
 		</DataTemplate>
 
+		<DataTemplate DataType="vm:ClimateViewModel">
+			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+		</DataTemplate>
+
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
 			<DockPanel DataContext="{Binding}" Margin="10">
 				<Grid ColumnDefinitions="*, Auto, 384">

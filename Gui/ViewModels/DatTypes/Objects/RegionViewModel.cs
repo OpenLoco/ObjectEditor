@@ -1,4 +1,4 @@
-﻿using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Objects;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.Linq;

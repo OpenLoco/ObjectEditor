@@ -112,6 +112,14 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						CurrentObjectViewModel = new RegionViewModel(ro);
 					}
+					else if (CurrentObject.LocoObject.Object is TrainSignalObject tso)
+					{
+						CurrentObjectViewModel = new TrainSignalViewModel(tso);
+					}
+					else if (CurrentObject.LocoObject.Object is StreetLightObject sl)
+					{
+						CurrentObjectViewModel = new StreetLightViewModel(sl);
+					}
 					else
 					{
 						CurrentObjectViewModel = new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };

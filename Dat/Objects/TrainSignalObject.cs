@@ -23,7 +23,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x02)] TrainSignalObjectFlags Flags,
 		[property: LocoStructOffset(0x04)] uint8_t AnimationSpeed,
 		[property: LocoStructOffset(0x05)] uint8_t NumFrames,
-		[property: LocoStructOffset(0x06)] int16_t CostFactor,
+		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x0B)] uint8_t var_0B,
@@ -91,7 +91,7 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			if (-SellCostFactor > CostFactor)
+			if (-SellCostFactor > BuildCostFactor)
 			{
 				return false;
 			}

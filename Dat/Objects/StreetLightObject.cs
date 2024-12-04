@@ -11,7 +11,7 @@ namespace OpenLoco.Dat.Objects
 	[LocoStringTable("Name")]
 	public record StreetLightObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02), LocoArrayLength(StreetLightObject.DesignedYearLength)] uint16_t[] DesignedYear
+		[property: LocoStructOffset(0x02), LocoArrayLength(StreetLightObject.DesignedYearLength)] uint16_t[] DesignedYears
 	) : ILocoStruct, IImageTableNameProvider
 	{
 		public const int DesignedYearLength = 3;

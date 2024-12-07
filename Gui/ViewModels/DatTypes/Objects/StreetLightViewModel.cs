@@ -14,8 +14,8 @@ namespace OpenLoco.Gui.ViewModels
 			DesignedYears = ro.DesignedYears.ToBindingList();
 		}
 
-		public override StreetLightObject GetAsStruct(StreetLightObject input)
-			=> input with
+		public override StreetLightObject GetAsStruct(StreetLightObject slo)
+			=> slo with
 			{
 				DesignedYears = [.. DesignedYears]
 			};

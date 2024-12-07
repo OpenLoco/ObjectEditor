@@ -136,47 +136,7 @@
 			<pgc:PropertyGrid  DataContext="{Binding Object}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:AirportViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:VehicleViewModel">
-			<pgc:PropertyGrid  DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:TownNamesViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:IndustryViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:BuildingViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:TrainStationViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:TrackViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:RegionViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:TrainSignalViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:StreetLightViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:ClimateViewModel">
+		<DataTemplate DataType="vm:IObjectViewModel">
 			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
 		</DataTemplate>
 

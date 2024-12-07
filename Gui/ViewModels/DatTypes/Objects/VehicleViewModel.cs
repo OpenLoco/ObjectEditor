@@ -49,54 +49,54 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Sound")] public Engine2Sound? Engine2Sound { get; set; }
 		[Reactive, Category("Sound")] public BindingList<S5HeaderViewModel> StartSounds { get; set; }
 
-		public VehicleViewModel(VehicleObject veh)
+		public VehicleViewModel(VehicleObject vo)
 		{
-			Mode = veh.Mode;
-			Type = veh.Type;
-			var_04 = veh.var_04;
-			TrackType = veh.TrackType == null ? null : new(veh.TrackType);
-			CostIndex = veh.CostIndex;
-			CostFactor = veh.CostFactor;
-			Reliability = veh.Reliability;
-			RunCostIndex = veh.RunCostIndex;
-			RunCostFactor = veh.RunCostFactor;
-			ColourType = veh.ColourType;
-			CompatibleVehicles = new(veh.CompatibleVehicles.ConvertAll(x => new S5HeaderViewModel(x)));
-			RequiredTrackExtras = new(veh.RequiredTrackExtras.ConvertAll(x => new S5HeaderViewModel(x)));
-			CarComponents = new(veh.CarComponents);
-			BodySprites = new(veh.BodySprites);
-			BogieSprites = new(veh.BogieSprites);
-			Power = veh.Power;
-			Speed = veh.Speed;
-			RackSpeed = veh.RackSpeed;
-			Weight = veh.Weight;
-			Flags = veh.Flags;
-			MaxCargo = new(veh.MaxCargo);
-			CompatibleCargoCategories1 = new(veh.CompatibleCargoCategories[0]);
-			CompatibleCargoCategories2 = new(veh.CompatibleCargoCategories[1]);
-			CargoTypeSpriteOffsets = new(veh.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList());
-			Animation = new(veh.Animation);
-			AnimationHeaders = new(veh.AnimationHeaders.ConvertAll(x => new S5HeaderViewModel(x)));
-			var_113 = veh.var_113;
-			DesignedYear = veh.DesignedYear;
-			ObsoleteYear = veh.ObsoleteYear;
-			RackRail = veh.RackRail == null ? null : new(veh.RackRail);
-			Sound = veh.Sound == null ? null : new(veh.Sound);
-			StartSounds = new(veh.StartSounds.ConvertAll(x => new S5HeaderViewModel(x)));
-			SoundType = veh.DrivingSoundType;
-			FrictionSound = veh.SoundPropertyFriction;
-			Engine1Sound = veh.SoundPropertyEngine1;
-			Engine2Sound = veh.SoundPropertyEngine2;
+			Mode = vo.Mode;
+			Type = vo.Type;
+			var_04 = vo.var_04;
+			TrackType = vo.TrackType == null ? null : new(vo.TrackType);
+			CostIndex = vo.CostIndex;
+			CostFactor = vo.CostFactor;
+			Reliability = vo.Reliability;
+			RunCostIndex = vo.RunCostIndex;
+			RunCostFactor = vo.RunCostFactor;
+			ColourType = vo.ColourType;
+			CompatibleVehicles = new(vo.CompatibleVehicles.ConvertAll(x => new S5HeaderViewModel(x)));
+			RequiredTrackExtras = new(vo.RequiredTrackExtras.ConvertAll(x => new S5HeaderViewModel(x)));
+			CarComponents = new(vo.CarComponents);
+			BodySprites = new(vo.BodySprites);
+			BogieSprites = new(vo.BogieSprites);
+			Power = vo.Power;
+			Speed = vo.Speed;
+			RackSpeed = vo.RackSpeed;
+			Weight = vo.Weight;
+			Flags = vo.Flags;
+			MaxCargo = new(vo.MaxCargo);
+			CompatibleCargoCategories1 = new(vo.CompatibleCargoCategories[0]);
+			CompatibleCargoCategories2 = new(vo.CompatibleCargoCategories[1]);
+			CargoTypeSpriteOffsets = new(vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList());
+			Animation = new(vo.Animation);
+			AnimationHeaders = new(vo.AnimationHeaders.ConvertAll(x => new S5HeaderViewModel(x)));
+			var_113 = vo.var_113;
+			DesignedYear = vo.DesignedYear;
+			ObsoleteYear = vo.ObsoleteYear;
+			RackRail = vo.RackRail == null ? null : new(vo.RackRail);
+			Sound = vo.Sound == null ? null : new(vo.Sound);
+			StartSounds = new(vo.StartSounds.ConvertAll(x => new S5HeaderViewModel(x)));
+			SoundType = vo.DrivingSoundType;
+			FrictionSound = vo.SoundPropertyFriction;
+			Engine1Sound = vo.SoundPropertyEngine1;
+			Engine2Sound = vo.SoundPropertyEngine2;
 		}
 
-		public override VehicleObject GetAsStruct(VehicleObject veh)
+		public override VehicleObject GetAsStruct(VehicleObject vo)
 		{
 			foreach (var ctso in CargoTypeSpriteOffsets)
 			{
-				veh.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
+				vo.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
 			}
 
-			return veh with
+			return vo with
 			{
 				Mode = Mode,
 				Type = Type,

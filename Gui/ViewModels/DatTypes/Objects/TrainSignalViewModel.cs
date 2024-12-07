@@ -31,8 +31,8 @@ namespace OpenLoco.Gui.ViewModels
 			Mods = new(ro.Mods.ConvertAll(x => new S5HeaderViewModel(x)));
 		}
 
-		public override TrainSignalObject GetAsStruct(TrainSignalObject input)
-			=> input with
+		public override TrainSignalObject GetAsStruct(TrainSignalObject tso)
+			=> tso with
 			{
 				Flags = Flags,
 				AnimationSpeed = AnimationSpeed,

@@ -1,5 +1,4 @@
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.Linq;
@@ -31,24 +30,21 @@ namespace OpenLoco.Gui.ViewModels
 			Flags = to.Flags;
 			TrackPieces = to.TrackPieces;
 			StationTrackPieces = to.StationTrackPieces;
+			CurveSpeed = to.CurveSpeed;
+			DisplayOffset = to.DisplayOffset;
 			BuildCostFactor = to.BuildCostFactor;
 			SellCostFactor = to.SellCostFactor;
 			TunnelCostFactor = to.TunnelCostFactor;
 			CostIndex = to.CostIndex;
-			CurveSpeed = to.CurveSpeed;
-			DisplayOffset = to.DisplayOffset;
-			Tunnel = new(to.Tunnel);
-			var_06 = to.var_06;
-			var_35 = to.var_35;
 			Compatible = new(to.Compatible.ConvertAll(x => new S5HeaderViewModel(x)));
 			Mods = new(to.Mods.ConvertAll(x => new S5HeaderViewModel(x)));
 			Signals = new(to.Signals.ConvertAll(x => new S5HeaderViewModel(x)));
+			Tunnel = new(to.Tunnel);
 			Bridges = new(to.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
 			Stations = new(to.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
+			var_06 = to.var_06;
+			var_35 = to.var_35;
 		}
-
-		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
-			=> GetAsStruct((locoStruct as TrackObject)!);
 
 		// validation:
 		// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
@@ -57,24 +53,24 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				Flags = Flags,
 				TrackPieces = TrackPieces,
-				NumCompatible = (uint8_t)Compatible.Count(),
-				NumMods = (uint8_t)Mods.Count(),
-				NumBridges = (uint8_t)Bridges.Count(),
-				NumSignals = (uint8_t)Signals.Count(),
-				NumStations = (uint8_t)Stations.Count(),
 				StationTrackPieces = StationTrackPieces,
+				CurveSpeed = CurveSpeed,
+				DisplayOffset = DisplayOffset,
 				BuildCostFactor = BuildCostFactor,
 				SellCostFactor = SellCostFactor,
 				TunnelCostFactor = TunnelCostFactor,
 				CostIndex = CostIndex,
-				CurveSpeed = CurveSpeed,
-				DisplayOffset = DisplayOffset,
+				NumCompatible = (uint8_t)Compatible.Count,
 				Compatible = Compatible.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				NumMods = (uint8_t)Mods.Count,
 				Mods = Mods.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				NumSignals = (uint8_t)Signals.Count,
 				Signals = Signals.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				Bridges = Bridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				Stations = Stations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				Tunnel = Tunnel.GetAsUnderlyingType(),
+				NumBridges = (uint8_t)Bridges.Count,
+				Bridges = Bridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				NumStations = (uint8_t)Stations.Count,
+				Stations = Stations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				var_06 = var_06,
 				var_35 = var_35,
 			};

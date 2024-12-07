@@ -23,7 +23,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
 		[property: LocoStructOffset(0x03)] uint8_t Height,
-		[property: LocoStructOffset(0x04)] uint16_t RoadPieces,
+		[property: LocoStructOffset(0x04)] RoadTraitFlags RoadPieces,
 		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
@@ -31,7 +31,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0C), LocoStructVariableLoad, Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxImageOffsets)] uint32_t[] ImageOffsets,
 		[property: LocoStructOffset(0x20)] uint8_t NumCompatible,
-		[property: LocoStructOffset(0x21), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxNumMods)] uint8_t[] _Mods,
+		[property: LocoStructOffset(0x21), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxNumCompatible)] object_id[] _Compatible,
 		[property: LocoStructOffset(0x28)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x2A)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0x2C), LocoStructVariableLoad, Browsable(false)] object_id _CargoTypeId,
@@ -40,7 +40,7 @@ namespace OpenLoco.Dat.Objects
 	) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
 		public const int MaxImageOffsets = 4;
-		public const int MaxNumMods = 7;
+		public const int MaxNumCompatible = 7;
 		public const int CargoOffsetBytesSize = 16;
 		public List<S5Header> Compatible { get; set; } = [];
 

@@ -18,8 +18,8 @@ namespace OpenLoco.Gui.ViewModels
 			var_0D = new(ro.var_0D);
 		}
 
-		public override RegionObject GetAsStruct(RegionObject input)
-			=> input with
+		public override RegionObject GetAsStruct(RegionObject ro)
+			=> ro with
 			{
 				RequiredObjects = RequiredObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				RequiredObjectCount = (uint8_t)RequiredObjects.Count,

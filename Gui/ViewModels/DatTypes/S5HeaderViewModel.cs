@@ -10,6 +10,11 @@ namespace OpenLoco.Gui.ViewModels
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class S5HeaderViewModel : ReactiveObject
 	{
+		// todo: instead of setting ObjectType to a default here, instead prompt user to select a type if appropriate
+		public S5HeaderViewModel()
+			: this(string.Empty, 0, SourceGame.Custom, ObjectType.InterfaceSkin)
+		{ }
+
 		public S5HeaderViewModel(string name, uint checksum, SourceGame sourceGame, ObjectType objectType)
 		{
 			Name = name;

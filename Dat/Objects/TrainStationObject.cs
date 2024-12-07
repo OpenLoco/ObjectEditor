@@ -20,7 +20,7 @@ namespace OpenLoco.Dat.Objects
 	[LocoStringTable("Name")]
 	public record TrainStationObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint8_t DrawStyle,
+		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
 		[property: LocoStructOffset(0x03)] uint8_t Height,
 		[property: LocoStructOffset(0x04)] TrackTraitFlags TrackPieces,
 		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
@@ -29,10 +29,10 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0B)] uint8_t var_0B,
 		[property: LocoStructOffset(0x0C)] TrainStationObjectFlags Flags,
 		[property: LocoStructOffset(0x0D)] uint8_t var_0D,
-		[property: LocoStructOffset(0x0E)] image_id Image,
-		[property: LocoStructOffset(0x12), LocoArrayLength(4)] uint32_t[] ImageOffsets,
+		[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)] image_id Image,
+		[property: LocoStructOffset(0x12), LocoArrayLength(TrainStationObject.MaxImageOffsets)] uint32_t[] ImageOffsets,
 		[property: LocoStructOffset(0x22)] uint8_t NumCompatible,
-		[property: LocoStructOffset(0x23), LocoArrayLength(7)] uint8_t[] Mods,
+		[property: LocoStructOffset(0x23), LocoArrayLength(TrainStationObject.MaxNumCompatible)] object_id[] _Compatible,
 		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes,
@@ -41,6 +41,8 @@ namespace OpenLoco.Dat.Objects
 	{
 		public List<S5Header> Compatible { get; set; } = [];
 
+		public const int MaxImageOffsets = 4;
+		public const int MaxNumCompatible = 7;
 		public const int ManualPowerLength = 16;
 		public const int CargoOffsetBytesSize = 16;
 		public uint8_t[][][] CargoOffsetBytes { get; set; }
@@ -144,7 +146,7 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			if (DrawStyle >= 1)
+			if (PaintStyle >= 1)
 			{
 				return false;
 			}

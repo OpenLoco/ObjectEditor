@@ -1,4 +1,4 @@
-﻿using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Objects;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
@@ -22,8 +22,8 @@ namespace OpenLoco.Gui.ViewModels
 			SeasonLengths = ro.SeasonLengths.ToBindingList();
 		}
 
-		public override ClimateObject GetAsStruct(ClimateObject input)
-			=> input with
+		public override ClimateObject GetAsStruct(ClimateObject co)
+			=> co with
 			{
 				FirstSeason = FirstSeason,
 				WinterSnowLine = WinterSnowLine,

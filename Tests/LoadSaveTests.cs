@@ -304,8 +304,8 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.var_07, Is.EqualTo(0), nameof(struc.var_07));
 				Assert.That(struc.UnkImage, Is.EqualTo(0), nameof(struc.UnkImage));
 				Assert.That(struc.Flags, Is.EqualTo(DockObjectFlags.None), nameof(struc.Flags));
-				Assert.That(struc.NumAux01, Is.EqualTo(2), nameof(struc.NumAux01));
-				Assert.That(struc.NumAux02Ent, Is.EqualTo(1), nameof(struc.NumAux02Ent));
+				Assert.That(struc.NumBuildingPartAnimations, Is.EqualTo(2), nameof(struc.NumBuildingPartAnimations));
+				Assert.That(struc.NumBuildingVariationParts, Is.EqualTo(1), nameof(struc.NumBuildingVariationParts));
 
 				//Assert.That(struc.var_14, Is.EqualTo(1), nameof(struc.var_14));
 				//Assert.That(struc.var_14, Is.EqualTo(1), nameof(struc.var_18));
@@ -890,7 +890,7 @@ namespace OpenLoco.Dat.Tests
 				// Compatible
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(1960), nameof(struc.DesignedYear));
-				Assert.That(struc.DrawStyle, Is.EqualTo(0), nameof(struc.DrawStyle));
+				Assert.That(struc.PaintStyle, Is.EqualTo(0), nameof(struc.PaintStyle));
 				Assert.That(struc.Flags, Is.EqualTo(TrainStationObjectFlags.None), nameof(struc.Flags));
 				// ManualPower
 				Assert.That(struc.Height, Is.EqualTo(0), nameof(struc.Height));

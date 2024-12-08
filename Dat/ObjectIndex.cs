@@ -4,16 +4,25 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 
 namespace OpenLoco.Dat
 {
-	public class ObjectIndex
+	public class ObjectIndex : INotifyPropertyChanged
 	{
-		public required IList<ObjectIndexEntry> Objects { get; init; } = [];
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		IList<ObjectIndexEntry> _objects { get; init; } = [];
+
+		public IReadOnlyList<ObjectIndexEntry> Objects
+			=> _objects.AsReadOnly();
 
 		public const string DefaultIndexFileName = "objectIndex.json";
+
+		public ObjectIndex(IList<ObjectIndexEntry> objects)
+			=> _objects = objects;
 
 		public bool TryFind((string name, uint checksum) key, out ObjectIndexEntry? entry)
 		{
@@ -26,6 +35,17 @@ namespace OpenLoco.Dat
 
 		public void SaveIndex(string indexFile, JsonSerializerOptions options)
 			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+
+		public void Delete(ObjectIndexEntry entry)
+		{
+			if (_objects.Remove(entry))
+			{
+				OnPropertyChanged(nameof(Objects));
+			}
+		}
+
+		protected virtual void OnPropertyChanged(string propertyName)
+			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
 		public static async Task<ObjectIndexEntry?> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file, ILogger logger)
 			=> await Task.Run(() => GetDatFileInfoFromBytes(file, logger)).ConfigureAwait(false);
@@ -67,7 +87,7 @@ namespace OpenLoco.Dat
 			await consumerTask.ConfigureAwait(false);
 
 			await Task.WhenAll(producerTask, consumerTask).ConfigureAwait(false);
-			return new ObjectIndex() { Objects = [.. pendingIndices] };
+			return new ObjectIndex([.. pendingIndices]);
 		}
 
 		static async Task ConsumeInput(ConcurrentQueue<ObjectIndexEntry> pendingIndices, ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles, ConcurrentQueue<string> failedFiles, int totalFiles, IProgress<float>? progress, ILogger logger)

@@ -132,6 +132,24 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
+		public override void Delete()
+		{
+			if (CurrentFile.FileLocation != FileLocation.Local)
+			{
+				Logger.Error("Cannot delete non-local files");
+				return;
+			}
+
+			// delete file
+			var path = Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename);
+			Logger.Info($"Deleting file \"{path}\"");
+			File.Delete(path);
+
+			// remove from object index
+			var indexItem = Model.ObjectIndex.Objects.Single(x => x.Filename == CurrentFile.Filename);
+			Model.ObjectIndex.Delete(indexItem);
+		}
+
 		public override void Save()
 		{
 			var savePath = CurrentFile.FileLocation == FileLocation.Local

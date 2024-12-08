@@ -737,26 +737,32 @@
 		</DockPanel>
 		<Border Margin="8" BorderThickness="1">
 			<DockPanel DataContext="{Binding CurrentEditorModel}" Margin="4">
-				<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-					<Button Grid.Row="3" Command="{Binding ReloadCommand}" HorizontalAlignment="Stretch" Margin="4" Padding="2">
+				<DockPanel DockPanel.Dock="Top">
+					<Button Command="{Binding ReloadCommand}" Margin="4" Padding="2" DockPanel.Dock="Left">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
 						</DockPanel>
 					</Button>
-					<Button Grid.Row="3" Command="{Binding SaveCommand}" HorizontalAlignment="Stretch" Margin="4" Padding="2">
+					<Button Command="{Binding SaveCommand}" Margin="4" Padding="2" DockPanel.Dock="Left">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
 						</DockPanel>
 					</Button>
-					<Button Grid.Row="3" Command="{Binding SaveAsCommand}" HorizontalAlignment="Stretch" Margin="4" Padding="2">
+					<Button Command="{Binding SaveAsCommand}" Margin="4" Padding="2" DockPanel.Dock="Left">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
 						</DockPanel>
 					</Button>
-				</StackPanel>
+					<Button Command="{Binding DeleteLocalFileCommand}" HorizontalAlignment="Right" Margin="4" Padding="2" IsVisible="{Binding IsLocalMode}" IsEnabled="{Binding IsLocalMode}" Background="DarkRed" DockPanel.Dock="Right">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="{Binding DeleteLocalFileIcon}" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding DeleteLocalFileText}"/>
+						</DockPanel>
+					</Button>
+				</DockPanel>
 				<ContentControl Content="{Binding}"/>
 			</DockPanel>
 		</Border>

@@ -756,7 +756,7 @@
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
 						</DockPanel>
 					</Button>
-					<Button Command="{Binding DeleteLocalFileCommand}" HorizontalAlignment="Right" Margin="4" Padding="2" IsVisible="{Binding IsLocalMode}" IsEnabled="{Binding IsLocalMode}" Background="DarkRed" DockPanel.Dock="Right">
+					<Button Command="{Binding DeleteLocalFileCommand}" HorizontalAlignment="Right" Margin="4" Padding="2" IsVisible="{Binding IsLocalMode}" IsEnabled="{Binding IsLocalMode}" Background="DarkRed" DockPanel.Dock="Right" ToolTip.Tip="WARNING: this will delete your local file without asking! Only click this if you're sure you want to delete this file!">
 						<DockPanel>
 							<materialIcons:MaterialIcon Kind="{Binding DeleteLocalFileIcon}" Width="24" Height="24" Margin="2" />
 							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding DeleteLocalFileText}"/>

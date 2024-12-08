@@ -1,5 +1,6 @@
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
@@ -181,6 +182,7 @@ namespace OpenLoco.Gui.ViewModels
 			SawyerStreamWriter.Save(filename,
 				S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
 				S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
+				SawyerEncoding.Uncompressed, // todo: change based on what user selected
 				CurrentObject.LocoObject,
 				Logger,
 				Model.Settings.AllowSavingAsVanillaObject);

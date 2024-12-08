@@ -502,14 +502,15 @@ namespace OpenLoco.Dat.FileParsing
 			};
 
 		// taken from openloco's SawyerStreamReader::readChunk
-		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue) => encoding switch
-		{
-			SawyerEncoding.Uncompressed => data.ToArray(),
-			SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data, minDecodedBytes),
-			SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
-			SawyerEncoding.Rotate => DecodeRotate(data),
-			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
-		};
+		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue)
+			=> encoding switch
+			{
+				SawyerEncoding.Uncompressed => data.ToArray(),
+				SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data, minDecodedBytes),
+				SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
+				SawyerEncoding.Rotate => DecodeRotate(data),
+				_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
+			};
 
 		public static (RiffWavHeader header, byte[] data) LoadWavFile(string filename)
 			=> LoadWavFile(File.ReadAllBytes(filename));
@@ -578,7 +579,7 @@ namespace OpenLoco.Dat.FileParsing
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
 		static byte[] DecodeRunLengthSingle(ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue)
 		{
-			var ms = new MemoryStream();
+			using var ms = new MemoryStream();
 
 			for (var i = 0; i < data.Length; ++i)
 			{

@@ -98,13 +98,13 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static void Save(string filename, string objName, SourceGame sourceGame, ILocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
+		public static void Save(string filename, string objName, SourceGame sourceGame, SawyerEncoding encoding, ILocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
 			logger.Info($"Writing \"{objName}\" to {filename}");
 
-			var objBytes = WriteLocoObject(objName, sourceGame, logger, locoObject, allowWritingAsVanilla);
+			var objBytes = WriteLocoObject(objName, sourceGame, encoding, logger, locoObject, allowWritingAsVanilla);
 
 			try
 			{
@@ -123,43 +123,110 @@ namespace OpenLoco.Dat.FileParsing
 			logger.Info($"{objName} successfully saved to {filename}");
 		}
 
-		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
-		 => WriteLocoObjectStream(objName, sourceGame, logger, obj, allowWritingAsVanilla).ToArray();
+		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+			=> WriteLocoObjectStream(objName, sourceGame, encoding, logger, obj, allowWritingAsVanilla).ToArray();
+		public static byte[] Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
+			=> data.ToArray();
 
-		public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+		//public static byte[] Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
+		//	=> encoding switch
+		//	{
+		//		SawyerEncoding.Uncompressed => data.ToArray(),
+		//		SawyerEncoding.RunLengthSingle => EncodeRunLengthSingle(data),
+		//		SawyerEncoding.RunLengthMulti => throw new NotImplementedException(),
+		//		SawyerEncoding.Rotate => throw new NotImplementedException(),
+		//		_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
+		//	};
+
+		public static byte[] EncodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
-			using var objStream = new MemoryStream();
+			using var buffer = new MemoryStream();
+
+			var src = 0;
+			var srcEnd = data.Length;
+			var srcNormStart = 0;
+			byte count = 0;
+
+			while (src < srcEnd - 1)
+			{
+				if ((count != 0 && data[src] == data[src + 1]) || count > 125)
+				{
+					buffer.WriteByte((byte)(count - 1));
+					buffer.Write(data[srcNormStart..(srcNormStart + count)]);
+					srcNormStart += count;
+					count = 0;
+				}
+				if (data[src] == data[src + 1])
+				{
+					for (; count < 125 && src + count < srcEnd; count++)
+					{
+						if (data[src] != data[src + count])
+						{
+							break;
+						}
+					}
+					buffer.WriteByte((byte)(257 - count));
+					buffer.WriteByte(data[src]);
+					src += count;
+					srcNormStart = src;
+					count = 0;
+				}
+				else
+				{
+					count++;
+					src++;
+				}
+			}
+			if (src == srcEnd - 1)
+			{
+				count++;
+			}
+			if (count != 0)
+			{
+				buffer.WriteByte((byte)(count - 1));
+				buffer.Write(data[srcNormStart..(srcNormStart + count)]);
+			}
+
+			return buffer.ToArray();
+		}
+
+		public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+		{
+			using var rawObjStream = new MemoryStream();
 
 			// obj
 			var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
-			objStream.Write(objBytes);
+			rawObjStream.Write(objBytes);
 
 			// string table
 			foreach (var ste in obj.StringTable.Table)
 			{
 				foreach (var language in ste.Value.Where(str => !string.IsNullOrEmpty(str.Value))) // skip strings with empty content
 				{
-					objStream.WriteByte((byte)language.Key);
+					rawObjStream.WriteByte((byte)language.Key);
 
 					var strBytes = Encoding.Latin1.GetBytes(language.Value);
-					objStream.Write(strBytes, 0, strBytes.Length);
-					objStream.WriteByte((byte)'\0');
+					rawObjStream.Write(strBytes, 0, strBytes.Length);
+					rawObjStream.WriteByte((byte)'\0');
 				}
 
-				objStream.WriteByte(0xff);
+				rawObjStream.WriteByte(0xff);
 			}
 
 			// variable data
 			if (obj.Object is ILocoStructVariableData objV)
 			{
 				var variableBytes = objV.Save();
-				objStream.Write(variableBytes);
+				rawObjStream.Write(variableBytes);
 			}
 
 			// graphics data
-			SaveImageTable(obj.G1Elements, objStream);
+			SaveImageTable(obj.G1Elements, rawObjStream);
 
-			objStream.Flush();
+			rawObjStream.Flush();
+
+			//todo: actually use encoding
+			using var encodedObjStream = new MemoryStream(Encode(encoding, rawObjStream.ToArray()));
 
 			// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
 
@@ -181,9 +248,9 @@ namespace OpenLoco.Dat.FileParsing
 			// calculate checksum
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
 			var asciiName = objName.PadRight(8, ' ').Take(8).Select(c => (byte)c).ToArray();
-			s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, objStream.ToArray());
+			s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, encodedObjStream.ToArray());
 
-			var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint32_t)objStream.Length);
+			var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint32_t)encodedObjStream.Length);
 
 			// actual writing
 			var headerStream = new MemoryStream();
@@ -195,13 +262,13 @@ namespace OpenLoco.Dat.FileParsing
 			headerStream.Write(objHeader.Write());
 
 			// loco object itself, including string and graphics table
-			headerStream.Write(objStream.ToArray());
+			headerStream.Write(encodedObjStream.ToArray());
 
 			// stream cleanup
 			headerStream.Flush();
 
 			headerStream.Close();
-			objStream.Close();
+			encodedObjStream.Close();
 
 			return headerStream;
 		}

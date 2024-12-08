@@ -17,71 +17,55 @@ namespace OpenLoco.Dat.Tests
 		// TODO: find a way to not have to hardcode a path here (but this may be impossible as it will depend on a user's PC and Loco install path)
 		// TODO: find a nicer (and more automated) way to check Name+Image fields, StringTable and G1Table
 
-		static (ILocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
-		{
-			filename = Path.Combine(BaseObjDataPath, filename);
-			var fileSize = new FileInfo(filename).Length;
-			var logger = new Logger();
-			var loaded = SawyerStreamReader.LoadFullObjectFromFile(filename, logger);
+		static (DatFileInfo, ILocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
+			=> LoadObject<T>(File.ReadAllBytes(Path.Combine(BaseObjDataPath, filename)));
 
-			Assert.That(loaded, Is.Not.Null);
-			var (datFileInfo, locoObject) = loaded.Value;
-
-			Assert.Multiple(() =>
-			{
-				Assert.That(datFileInfo.S5Header.Checksum, Is.EqualTo(OriginalObjectFiles.Names[datFileInfo.S5Header.Name].SteamChecksum));
-				Assert.That(locoObject, Is.Not.Null);
-				Assert.That(datFileInfo!.ObjectHeader.DataLength, Is.EqualTo(fileSize - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
-			});
-
-			return (locoObject!, (T)locoObject!.Object);
-		}
-
-		static (ILocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
+		static (DatFileInfo, ILocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
 		{
 			var logger = new Logger();
-			var (datFileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(data, logger: logger);
+			var (datFileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(data, logger);
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable NUnit2045 // Use Assert.Multiple - cannot use a ReadOnlySpan inside an anonymous method
+			Assert.That(datFileInfo.S5Header.Checksum, Is.EqualTo(OriginalObjectFiles.Names[datFileInfo.S5Header.Name].SteamChecksum));
 			Assert.That(locoObject, Is.Not.Null);
 #pragma warning restore NUnit2045 // Use Assert.Multiple
 #pragma warning restore IDE0079 // Remove unnecessary suppression
 			Assert.That(datFileInfo.ObjectHeader.DataLength, Is.EqualTo(data.Length - S5Header.StructLength - ObjectHeader.StructLength), "ObjectHeader.Length didn't match actual size of struct");
 
-			return (locoObject!, (T)locoObject!.Object);
+			return (datFileInfo, locoObject!, (T)locoObject!.Object);
 		}
 
 		static void LoadSaveGenericTest<T>(string filename, Action<ILocoObject, T> assertFunc) where T : ILocoStruct
 		{
-			var (obj1, struc1) = LoadObject<T>(filename);
+			var (datInfo1, obj1, struc1) = LoadObject<T>(filename);
 			assertFunc(obj1, struc1);
 
 			var logger = new Logger();
 			var objectName = filename.Split('.')[0];
-			var bytes1 = SawyerStreamWriter.WriteLocoObject(objectName, SourceGame.Vanilla, logger, obj1, false);
+			var bytes1 = SawyerStreamWriter.WriteLocoObject(objectName, SourceGame.Vanilla, datInfo1.ObjectHeader.Encoding, logger, obj1, false);
 
-			var (obj2, struc2) = LoadObject<T>(bytes1);
+			var (datInfo2, obj2, struc2) = LoadObject<T>(bytes1);
 			assertFunc(obj2, struc2);
 
-			var bytes2 = SawyerStreamWriter.WriteLocoObject(objectName, SourceGame.Vanilla, logger, obj2, false);
+			var bytes2 = SawyerStreamWriter.WriteLocoObject(objectName, SourceGame.Vanilla, datInfo2.ObjectHeader.Encoding, logger, obj2, false);
 
 			// we could just simply compare byte arrays and be done, but i wanted something that makes it easier to diagnose problems
 
 			// grab headers first
 			var s5Header1 = S5Header.Read(bytes1[0..S5Header.StructLength]);
 			var s5Header2 = S5Header.Read(bytes2[0..S5Header.StructLength]);
+			AssertS5Headers(s5Header1, s5Header2);
 
 			var objHeader1 = ObjectHeader.Read(bytes1[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
 			var objHeader2 = ObjectHeader.Read(bytes2[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+			AssertObjHeaders(objHeader1, objHeader2);
 
 			// then grab object bytes
 			var bytes1ObjArr = bytes1[21..].ToArray();
 			var bytes2ObjArr = bytes2[21..].ToArray();
-
-			AssertS5Headers(s5Header1, s5Header2);
-			AssertObjHeaders(objHeader1, objHeader2);
 			Assert.That(bytes1ObjArr.ToArray(), Is.EqualTo(bytes2ObjArr.ToArray()));
+
 		}
 
 		static void AssertS5Headers(S5Header expected, S5Header actual)
@@ -98,6 +82,36 @@ namespace OpenLoco.Dat.Tests
 					Assert.That(actual.Encoding, Is.EqualTo(expected.Encoding));
 					Assert.That(actual.DataLength, Is.EqualTo(expected.DataLength));
 				});
+
+		[TestCase]
+		public void TestEncoding()
+		{
+			var logger = new Logger();
+
+			//var filename = "OGFOWL.dat";
+			//var path = "C:\\Users\\bigba\\source\\repos\\OpenLoco\\OpenGraphics\\objects\\Vehicle\\Train\\4F";
+			//var fullData = File.ReadAllBytes(Path.Combine(path, filename));
+
+			var filename = "707.dat";
+			var fullData = File.ReadAllBytes(Path.Combine(BaseObjDataPath, filename));
+
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(fullData, out var hdrs, logger))
+			{
+				Assert.Fail();
+				return;
+			}
+
+			var remainingData = fullData[(S5Header.StructLength + ObjectHeader.StructLength)..];
+
+			var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData);
+			var encoded = SawyerStreamWriter.Encode(hdrs.Obj.Encoding, decoded);
+			var decoded2 = SawyerStreamReader.Decode(hdrs.Obj.Encoding, encoded);
+			var encoded2 = SawyerStreamWriter.Encode(hdrs.Obj.Encoding, decoded2);
+
+			Assert.That(remainingData, Is.EqualTo(encoded));
+			Assert.That(decoded, Is.EqualTo(decoded2));
+			Assert.That(encoded, Is.EqualTo(encoded2));
+		}
 
 		[TestCase("AIRPORT1.DAT")]
 		public void AirportObject(string objectName)
@@ -656,7 +670,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.NumCompatible, Is.EqualTo(0), nameof(struc.NumCompatible));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(1945), nameof(struc.ObsoleteYear));
 				Assert.That(struc.PaintStyle, Is.EqualTo(0), nameof(struc.PaintStyle));
-				Assert.That(struc.RoadPieces, Is.EqualTo(0), nameof(struc.RoadPieces));
+				Assert.That(struc.RoadPieces, Is.EqualTo(RoadTraitFlags.None), nameof(struc.RoadPieces));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-17), nameof(struc.SellCostFactor));
 			});
 			LoadSaveGenericTest<RoadStationObject>(objectName, assertFunc);

@@ -44,6 +44,14 @@ namespace OpenLoco.Dat
 			}
 		}
 
+		public void Delete(Func<ObjectIndexEntry, bool> predicate)
+		{
+			foreach (var d in _objects.Where(predicate).ToList())
+			{
+				_ = _objects.Remove(d);
+			}
+		}
+
 		protected virtual void OnPropertyChanged(string propertyName)
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 

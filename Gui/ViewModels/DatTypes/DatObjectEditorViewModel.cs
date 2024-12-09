@@ -142,12 +142,18 @@ namespace OpenLoco.Gui.ViewModels
 
 			// delete file
 			var path = Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename);
-			Logger.Info($"Deleting file \"{path}\"");
-			File.Delete(path);
+			if (File.Exists(path))
+			{
+				Logger.Info($"Deleting file \"{path}\"");
+				File.Delete(path);
+			}
+			else
+			{
+				Logger.Info($"File already deleted \"{path}\"");
+			}
 
 			// remove from object index
-			var indexItem = Model.ObjectIndex.Objects.Single(x => x.Filename == CurrentFile.Filename);
-			Model.ObjectIndex.Delete(indexItem);
+			Model.ObjectIndex.Delete(x => x.Filename == CurrentFile.Filename);
 		}
 
 		public override void Save()

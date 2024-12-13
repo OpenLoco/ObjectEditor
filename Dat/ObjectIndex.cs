@@ -1,28 +1,31 @@
+using Common.Json;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using System.Collections.Concurrent;
-using System.ComponentModel;
-using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OpenLoco.Dat
 {
-	public class ObjectIndex : INotifyPropertyChanged
+	public class ObjectIndex
 	{
-		public event PropertyChangedEventHandler? PropertyChanged;
+		public List<ObjectIndexEntry> Objects { get; init; } = [];
 
-		IList<ObjectIndexEntry> _objects { get; init; } = [];
 
-		public IReadOnlyList<ObjectIndexEntry> Objects
-			=> _objects.AsReadOnly();
-
+		[JsonIgnore]
 		public const string DefaultIndexFileName = "objectIndex.json";
 
-		public ObjectIndex(IList<ObjectIndexEntry> objects)
-			=> _objects = objects;
+		[JsonIgnore]
+		static JsonSerializerOptions JsonOptions { get; } = new() { WriteIndented = true, AllowTrailingCommas = true };
+
+		public ObjectIndex()
+		{ }
+
+		public ObjectIndex(List<ObjectIndexEntry> objects)
+			=> Objects = objects;
 
 		public bool TryFind((string name, uint checksum) key, out ObjectIndexEntry? entry)
 		{
@@ -30,33 +33,14 @@ namespace OpenLoco.Dat
 			return entry != null;
 		}
 
-		public void SaveIndex(string indexFile)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
+		public async Task SaveIndexAsync(string indexFile)
+			=> await JsonFile.SerializeToFileAsync(this, indexFile, JsonOptions).ConfigureAwait(false);
 
-		public void SaveIndex(string indexFile, JsonSerializerOptions options)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+		public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
+			=> await JsonFile.DeserializeFromFileAsync<ObjectIndex?>(indexFile, JsonOptions).ConfigureAwait(false);
 
-		public void Delete(ObjectIndexEntry entry)
-		{
-			if (_objects.Remove(entry))
-			{
-				OnPropertyChanged(nameof(Objects));
-			}
-		}
-
-		public void Delete(Func<ObjectIndexEntry, bool> predicate)
-		{
-			foreach (var d in _objects.Where(predicate).ToList())
-			{
-				_ = _objects.Remove(d);
-			}
-		}
-
-		protected virtual void OnPropertyChanged(string propertyName)
-			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-		public static async Task<ObjectIndexEntry?> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file, ILogger logger)
-			=> await Task.Run(() => GetDatFileInfoFromBytes(file, logger)).ConfigureAwait(false);
+		public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
+			=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
 
 		public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 		{
@@ -64,20 +48,20 @@ namespace OpenLoco.Dat
 			ObjectIndex? index = null;
 			if (File.Exists(indexPath))
 			{
-				index = LoadIndex(indexPath);
+				index = await LoadIndexAsync(indexPath).ConfigureAwait(false);
 			}
 
 			if (index == null)
 			{
 				index = await CreateIndexAsync(directory, logger, progress).ConfigureAwait(false);
-				index.SaveIndex(indexPath);
+				await index.SaveIndexAsync(indexPath).ConfigureAwait(false);
 			}
 
 			return index;
 		}
 
-		public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
-			=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
+		public static ObjectIndex CreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
+			=> CreateIndexAsync(directory, logger, progress).Result;
 
 		public static async Task<ObjectIndex> CreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 		{
@@ -88,17 +72,31 @@ namespace OpenLoco.Dat
 			ConcurrentQueue<string> failedFiles = [];
 
 			var options = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
-			var producerTask = Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(directory, f), ct).ConfigureAwait(false))));
-			var consumerTask = ConsumeInput(pendingIndices, pendingFiles, failedFiles, files.Length, progress, logger);
+
+			var producerTask = Parallel.ForEachAsync(files, options, async (f, ct)
+				=> pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(directory, f), ct).ConfigureAwait(false))));
+
+			var consumerTask = ConsumeInputAsync(pendingIndices, pendingFiles, failedFiles, files.Length, progress, logger);
 
 			await producerTask.ConfigureAwait(false);
 			await consumerTask.ConfigureAwait(false);
-
 			await Task.WhenAll(producerTask, consumerTask).ConfigureAwait(false);
+
 			return new ObjectIndex([.. pendingIndices]);
 		}
 
-		static async Task ConsumeInput(ConcurrentQueue<ObjectIndexEntry> pendingIndices, ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles, ConcurrentQueue<string> failedFiles, int totalFiles, IProgress<float>? progress, ILogger logger)
+		public void Delete(Func<ObjectIndexEntry, bool> predicate)
+		{
+			foreach (var d in Objects.Where(predicate).ToList())
+			{
+				_ = Objects.Remove(d);
+			}
+		}
+
+		public static async Task<ObjectIndexEntry?> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file, ILogger logger)
+			=> await Task.Run(() => GetDatFileInfoFromBytes(file, logger)).ConfigureAwait(false);
+
+		static async Task ConsumeInputAsync(ConcurrentQueue<ObjectIndexEntry> pendingIndices, ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles, ConcurrentQueue<string> failedFiles, int totalFiles, IProgress<float>? progress, ILogger logger)
 		{
 			while ((pendingIndices.Count + failedFiles.Count) != totalFiles)
 			{
@@ -125,23 +123,6 @@ namespace OpenLoco.Dat
 
 					progress?.Report((pendingIndices.Count + failedFiles.Count) / (float)totalFiles);
 				}
-			}
-		}
-
-		public static ObjectIndex CreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
-			=> CreateIndexAsync(directory, logger, progress).Result;
-
-		public static ObjectIndex? LoadIndex(string indexFile)
-			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile));
-
-		public static ObjectIndex? LoadIndex(string indexFile, JsonSerializerOptions options)
-			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile), options);
-
-		public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
-		{
-			await using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(await File.ReadAllTextAsync(indexFile).ConfigureAwait(false))))
-			{
-				return await JsonSerializer.DeserializeAsync<ObjectIndex>(stream).ConfigureAwait(false);
 			}
 		}
 

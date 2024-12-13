@@ -95,30 +95,49 @@ namespace OpenLoco.Gui.ViewModels
 			RefreshDirectoryItems = ReactiveCommand.Create(() => ReloadDirectoryAsync(false));
 
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
+				.Skip(1)
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
+
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
+				.Skip(1)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
+
 			_ = this.WhenAnyValue(o => o.DisplayMode)
 				.Throttle(TimeSpan.FromMilliseconds(1000))
+				.Skip(1)
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
+
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
+				.Skip(1)
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 
 			_ = this.WhenAnyValue(o => o.DirectoryItems)
+				.Skip(1)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
+
 			_ = this.WhenAnyValue(o => o.DirectoryItems)
+				.Skip(1)
 				.Subscribe(_ => CurrentlySelectedObject = null);
 
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
+				.Skip(1)
 				.Subscribe(_ => SwitchDirectoryItemsView());
+
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
+				.Skip(1)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(RecreateText)));
+
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
+				.Skip(1)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
+
 			_ = this.WhenAnyValue(o => o.LocalDirectoryItems)
+				//.Skip(1)
 				.Subscribe(_ => SwitchDirectoryItemsView());
+
 			_ = this.WhenAnyValue(o => o.OnlineDirectoryItems)
+				.Skip(1)
 				.Subscribe(_ => SwitchDirectoryItemsView());
 
 			// loads the last-viewed folder

@@ -6,28 +6,27 @@ namespace OpenLoco.Common.Logging
 	{
 		public event EventHandler<LogAddedEventArgs>? LogAdded;
 
-		// should be 'private'
-		void Log(LogLevel level, string message, string callerMemberName);
+		void Log(LogLevel level, string message, string callerMemberName, string sourceFilePath, int sourceLineNumber);
 
-		void Debug2(string message, [CallerMemberName] string callerMemberName = "")
-			=> Log(LogLevel.Debug2, message, callerMemberName);
+		void Debug2(string message, [CallerMemberName] string callerMemberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+			=> Log(LogLevel.Debug2, message, callerMemberName, sourceFilePath, sourceLineNumber);
 
-		void Debug(string message, [CallerMemberName] string callerMemberName = "")
-			=> Log(LogLevel.Debug, message, callerMemberName);
+		void Debug(string message, [CallerMemberName] string callerMemberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+			=> Log(LogLevel.Debug, message, callerMemberName, sourceFilePath, sourceLineNumber);
 
-		void Info(string message, [CallerMemberName] string callerMemberName = "")
-			=> Log(LogLevel.Info, message, callerMemberName);
+		void Info(string message, [CallerMemberName] string callerMemberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+			=> Log(LogLevel.Info, message, callerMemberName, sourceFilePath, sourceLineNumber);
 
-		void Warning(string message, [CallerMemberName] string callerMemberName = "")
-			=> Log(LogLevel.Warning, message, callerMemberName);
+		void Warning(string message, [CallerMemberName] string callerMemberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+			=> Log(LogLevel.Warning, message, callerMemberName, sourceFilePath, sourceLineNumber);
 
-		void Error(string message, [CallerMemberName] string callerMemberName = "")
-			=> Log(LogLevel.Error, message, callerMemberName);
+		void Error(string message, [CallerMemberName] string callerMemberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+			=> Log(LogLevel.Error, message, callerMemberName, sourceFilePath, sourceLineNumber);
 
-		void Error(Exception ex, [CallerMemberName] string callerMemberName = "")
-			=> Log(LogLevel.Error, $"{ex.Message} - {ex.StackTrace}", callerMemberName);
+		void Error(Exception ex, [CallerMemberName] string callerMemberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+			=> Log(LogLevel.Error, $"{ex.Message} - {ex.StackTrace}", callerMemberName, sourceFilePath, sourceLineNumber);
 
-		void Error(string message, Exception ex, [CallerMemberName] string callerMemberName = "")
-			=> Log(LogLevel.Error, $"{message} - {ex.Message} - {ex.StackTrace}", callerMemberName);
+		void Error(string message, Exception ex, [CallerMemberName] string callerMemberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+			=> Log(LogLevel.Error, $"{message} - {ex.Message} - {ex.StackTrace}", callerMemberName, sourceFilePath, sourceLineNumber);
 	}
 }

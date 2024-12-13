@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace OpenLoco.Common.Logging
 {
@@ -9,9 +10,17 @@ namespace OpenLoco.Common.Logging
 
 		public event EventHandler<LogAddedEventArgs>? LogAdded;
 
-		public void Log(LogLevel level, string message, string callerMemberName = "")
+		public void Log(LogLevel level, string message, string callerMemberName = "", string sourceFilePath = "", int sourceLineNumber = 0)
 		{
-			var log = new LogLine(DateTime.Now, level, callerMemberName, message);
+			// Get the class name using reflection
+			var frame = new StackFrame(1); // Skip the Log method itself
+			var method = frame.GetMethod();
+			var className = method?.DeclaringType?.Name ?? "<unknown_class>";
+
+			//var fullCaller = $"[{className}.{callerMemberName}] ({sourceFilePath}:{sourceLineNumber})";
+			var caller = $"[{className}.{callerMemberName}]";
+
+			var log = new LogLine(DateTime.Now, level, caller, message);
 			Logs.Enqueue(log);
 
 			if (Level <= level)

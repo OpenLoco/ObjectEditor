@@ -12,7 +12,7 @@ using System.Text.Json.Serialization;
 
 // directory maker
 var path = "Q:\\Games\\Locomotion\\OriginalObjects\\GoG\\objectIndex.json";
-var idx = ObjectIndex.LoadIndex(path);
+var idx = ObjectIndex.LoadIndexAsync(path).Result;
 var sourcePath = "C:\\Users\\bigba\\source\\repos\\OpenLoco\\OpenGraphics\\objects";
 var keepfile = Path.Combine(sourcePath, ".gitkeep");
 foreach (var objType in idx.Objects.GroupBy(x => x.ObjectType))
@@ -39,6 +39,7 @@ foreach (var objType in idx.Objects.GroupBy(x => x.ObjectType))
 		}
 	}
 }
+
 Environment.Exit(0);
 
 var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };

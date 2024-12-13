@@ -257,7 +257,7 @@ namespace OpenLoco.Gui.Models
 		public async Task LoadObjDirectoryAsync(string directory, IProgress<float> progress, bool useExistingIndex)
 		{
 			// Check if a task is already running WITHOUT waiting on the semaphore
-			if (indexerTask != null && !indexerTask.IsCompleted)
+			if (indexerTask?.IsCompleted == false)
 			{
 				// A task is already running, so just return the existing task
 				return; // Or return _indexerTask if you need to await it elsewhere
@@ -268,7 +268,7 @@ namespace OpenLoco.Gui.Models
 			try
 			{
 				//Double check inside the lock
-				if (indexerTask != null && !indexerTask.IsCompleted)
+				if (indexerTask?.IsCompleted == false)
 				{
 					return;
 				}
@@ -303,7 +303,7 @@ namespace OpenLoco.Gui.Models
 					var index = await ObjectIndex.LoadIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
 					ArgumentNullException.ThrowIfNull(index, nameof(index));
 					ObjectIndex = index;
-					Logger.Info($"Loaded index with {ObjectIndex.Objects.Count} objects.");
+					Logger.Info($"Loaded index for {directory} with {ObjectIndex.Objects.Count} objects.");
 				}
 				catch (Exception ex)
 				{

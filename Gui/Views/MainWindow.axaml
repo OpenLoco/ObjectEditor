@@ -488,7 +488,13 @@
 								</ListBox.ItemsPanel>
 								<ListBox.ItemTemplate>
 									<DataTemplate>
-										<Image Source="{Binding}" Stretch="None" Margin="0" />
+										<Image Source="{Binding}" Stretch="None" Margin="0">
+											<Image.ContextMenu>
+												<ContextMenu>
+													<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
+												</ContextMenu>
+											</Image.ContextMenu>
+										</Image>
 									</DataTemplate>
 								</ListBox.ItemTemplate>
 							</ListBox>

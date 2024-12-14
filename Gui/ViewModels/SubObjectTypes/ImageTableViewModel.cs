@@ -88,6 +88,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
 			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
+			ReplaceImageCommand = ReactiveCommand.Create(ReplaceImage);
 
 			SelectionModel = new SelectionModel<Bitmap>
 			{
@@ -169,6 +170,9 @@ namespace OpenLoco.Gui.ViewModels
 
 		[Reactive]
 		public PaletteMap PaletteMap { get; set; }
+
+		[Reactive]
+		public ICommand ReplaceImageCommand { get; set; }
 
 		[Reactive]
 		public ICommand ImportImagesCommand { get; set; }
@@ -294,18 +298,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 			else
 			{
-				var currG1 = G1Provider.G1Elements[index];
-				currG1 = currG1 with
-				{
-					Width = (int16_t)img.Width,
-					Height = (int16_t)img.Height,
-					Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
-					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
-					XOffset = offset?.X ?? currG1.XOffset,
-					YOffset = offset?.Y ?? currG1.YOffset
-				};
-				G1Provider.G1Elements[index] = currG1;
-				Images[index] = img; // update the UI
+				UpdateImage(img, index);
 			}
 		}
 
@@ -334,6 +327,50 @@ namespace OpenLoco.Gui.ViewModels
 				var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
 				await image.SaveAsPngAsync(path);
 			}
+		}
+
+		public async Task ReplaceImage()
+		{
+			if (SelectedImageIndex == -1)
+			{
+				return;
+			}
+
+			// file picker
+			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.PngFileTypes);
+			if (openFile == null)
+			{
+				return;
+			}
+
+			var filename = openFile.SingleOrDefault()?.Path.LocalPath;
+			if (filename == null)
+			{
+				return;
+			}
+
+			// load image
+			UpdateImage(Image.Load<Rgba32>(filename), SelectedImageIndex);
+
+			this.RaisePropertyChanged(nameof(Bitmaps));
+			this.RaisePropertyChanged(nameof(SelectedG1Element));
+		}
+
+		void UpdateImage(Image<Rgba32> img, int index)
+		{
+			var currG1 = G1Provider.G1Elements[index];
+			currG1 = currG1 with
+			{
+				Width = (int16_t)img.Width,
+				Height = (int16_t)img.Height,
+				Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
+				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
+				XOffset = currG1.XOffset,
+				YOffset = currG1.YOffset
+			};
+			G1Provider.G1Elements[SelectedImageIndex] = currG1;
+			Images[SelectedImageIndex] = img;
+			Bitmaps[SelectedImageIndex] = G1ImageConversion.CreateAvaloniaImage(img);
 		}
 
 		public static string GetImageName(IImageTableNameProvider nameProvider, int counter)

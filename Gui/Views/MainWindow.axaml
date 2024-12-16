@@ -707,13 +707,21 @@
 				</Grid.RowDefinitions>
 				<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
-				<Button Grid.Row="2" Command="{Binding RefreshDirectoryItems}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
-					<DockPanel>
-						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
-						<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
-						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding RecreateText}" />
-					</DockPanel>
-				</Button>
+				<DockPanel Grid.Row="2">
+					<Button Command="{Binding RefreshDirectoryItems}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
+						<DockPanel>
+							<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
+							<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding RecreateText}" />
+						</DockPanel>
+					</Button>
+					<Button Command="{Binding OpenCurrentFolder}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Open folder">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="FolderOpen" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Open folder" />
+						</DockPanel>
+					</Button>
+				</DockPanel>
 				<DockPanel Grid.Row="3" Margin="2" >
 					<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
 					<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />

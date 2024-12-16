@@ -53,6 +53,8 @@ namespace OpenLoco.Gui.ViewModels
 
 		public ReactiveCommand<Unit, Task> RefreshDirectoryItems { get; }
 
+		public ReactiveCommand<Unit, Unit> OpenCurrentFolder { get; }
+
 		public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 
 		[Reactive]
@@ -93,6 +95,7 @@ namespace OpenLoco.Gui.ViewModels
 			Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = progress;
 
 			RefreshDirectoryItems = ReactiveCommand.Create(() => ReloadDirectoryAsync(false));
+			OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(CurrentLocalDirectory));
 
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
 				.Skip(1)

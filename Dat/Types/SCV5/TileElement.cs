@@ -28,7 +28,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		public uint8_t BaseZ { get; set; }
 		public uint8_t ClearZ { get; set; }
 		[LocoArrayLength(4)]
-		public uint8_t[] var_4 { get; set; }
+		public uint8_t[] var_4 { get; set; } // these vary per element type
 
 		void SetLast(bool value)
 		{
@@ -49,12 +49,14 @@ namespace OpenLoco.Dat.Types.SCV5
 
 		public bool IsLast() => (Flags & FLAG_LAST) == FLAG_LAST;
 
+		public bool IsWater() => (var_4[1] & 0x1F) != 0;
+
 		public static TileElement Read(ReadOnlySpan<byte> data)
 		{
 			ArgumentOutOfRangeException.ThrowIfNotEqual(data.Length, StructLength);
 			return new TileElement
 			{
-				Type = (ElementType)data[0],
+				Type = (ElementType)(data[0] & (0x3C >> 2)), // https://github.com/OpenLoco/OpenLoco/blob/master/src/OpenLoco/src/Map/Tile.cpp#L23
 				Flags = data[1],
 				BaseZ = data[2],
 				ClearZ = data[3],

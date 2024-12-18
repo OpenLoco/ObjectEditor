@@ -93,77 +93,81 @@ namespace OpenLoco.Gui.ViewModels
 						{
 							TileElementMap[x, y].Add(CurrentS5File!.TileElements[i]);
 
-							var topElement = TileElementMap[x, y].Last();
+							var el = TileElementMap[x, y].Last();
 							unsafe
 							{
-								var rgbaValues = (byte*)fb.Address;
+								var rgba = (byte*)fb.Address;
 								var idx = ((x * 384) + y) * 4; // not sure why this has to be reversed to match loco
 
-								if (topElement.Type == ElementType.Surface)
+								if (el.Type == ElementType.Surface)
 								{
-									if (topElement.IsWater())
+									if (el.IsWater())
 									{
-										rgbaValues[idx] = 74;
-										rgbaValues[idx + 1] = 118;
-										rgbaValues[idx + 2] = 124;
+										rgba[idx + 0] = (byte)(74 + el.BaseZ);
+										rgba[idx + 1] = (byte)(118 + el.BaseZ);
+										rgba[idx + 2] = (byte)(124 + el.BaseZ);
 									}
 									else
 									{
-										rgbaValues[idx] = 143;
-										rgbaValues[idx + 1] = 99;
-										rgbaValues[idx + 2] = 39;
+										rgba[idx + 0] = (byte)(111 + el.BaseZ - (el.Terrain() * 8));
+										rgba[idx + 1] = (byte)(75 + el.BaseZ + (el.Terrain() * 8));
+										rgba[idx + 2] = (byte)(23 + el.BaseZ + (el.Terrain() * 8));
+
+										//rgbaValues[idx + 0] = (byte)(el.Terrain() == 1 ? 255 : 0);
+										//rgbaValues[idx + 1] = (byte)(el.Terrain() == 1 ? 255 : 0);
+										//rgbaValues[idx + 2] = (byte)(el.Terrain() == 1 ? 255 : 0);
 									}
 								}
-								else if (topElement.Type == ElementType.Track)
+								else if (el.Type == ElementType.Track)
 								{
-									rgbaValues[idx] = 131;
-									rgbaValues[idx + 1] = 151;
-									rgbaValues[idx + 2] = 151;
+									rgba[idx + 0] = 131;
+									rgba[idx + 1] = 151;
+									rgba[idx + 2] = 151;
 								}
-								else if (topElement.Type == ElementType.Station)
+								else if (el.Type == ElementType.Station)
 								{
-									rgbaValues[idx] = 255;
-									rgbaValues[idx + 1] = 163;
-									rgbaValues[idx + 2] = 79;
+									rgba[idx + 0] = 255;
+									rgba[idx + 1] = 163;
+									rgba[idx + 2] = 79;
 								}
-								else if (topElement.Type == ElementType.Signal)
+								else if (el.Type == ElementType.Signal)
 								{
-									rgbaValues[idx] = 255;
-									rgbaValues[idx + 1] = 0;
-									rgbaValues[idx + 2] = 0;
+									rgba[idx] = 255;
+									rgba[idx + 1] = 0;
+									rgba[idx + 2] = 0;
 								}
-								else if (topElement.Type == ElementType.Building)
+								else if (el.Type == ElementType.Building)
 								{
-									rgbaValues[idx] = 179;
-									rgbaValues[idx + 1] = 79;
-									rgbaValues[idx + 2] = 79;
+									rgba[idx] = 179;
+									rgba[idx + 1] = 79;
+									rgba[idx + 2] = 79;
 								}
-								else if (topElement.Type == ElementType.Tree)
+								else if (el.Type == ElementType.Tree)
 								{
-									rgbaValues[idx] = 71;
-									rgbaValues[idx + 1] = 175;
-									rgbaValues[idx + 2] = 39;
+									rgba[idx] = 71;
+									rgba[idx + 1] = 175;
+									rgba[idx + 2] = 39;
 								}
-								else if (topElement.Type == ElementType.Wall)
+								else if (el.Type == ElementType.Wall)
 								{
-									rgbaValues[idx] = 200;
-									rgbaValues[idx + 1] = 200;
-									rgbaValues[idx + 2] = 0;
+									rgba[idx] = 200;
+									rgba[idx + 1] = 200;
+									rgba[idx + 2] = 0;
 								}
-								else if (topElement.Type == ElementType.Road)
+								else if (el.Type == ElementType.Road)
 								{
-									rgbaValues[idx] = 47;
-									rgbaValues[idx + 1] = 67;
-									rgbaValues[idx + 2] = 67;
+									rgba[idx] = 47;
+									rgba[idx + 1] = 67;
+									rgba[idx + 2] = 67;
 								}
-								else if (topElement.Type == ElementType.Industry)
+								else if (el.Type == ElementType.Industry)
 								{
-									rgbaValues[idx] = 139;
-									rgbaValues[idx + 1] = 139;
-									rgbaValues[idx + 2] = 191;
+									rgba[idx] = 139;
+									rgba[idx + 1] = 139;
+									rgba[idx + 2] = 191;
 								}
 
-								rgbaValues[idx + 3] = 255;
+								rgba[idx + 3] = 255;
 							}
 
 

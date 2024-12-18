@@ -49,14 +49,16 @@ namespace OpenLoco.Dat.Types.SCV5
 
 		public bool IsLast() => (Flags & FLAG_LAST) == FLAG_LAST;
 
+		// SurfaceElement only
 		public bool IsWater() => (var_4[1] & 0x1F) != 0;
+		public uint8_t Terrain() => (uint8_t)(var_4[2] & 0x1F);
 
 		public static TileElement Read(ReadOnlySpan<byte> data)
 		{
 			ArgumentOutOfRangeException.ThrowIfNotEqual(data.Length, StructLength);
 			return new TileElement
 			{
-				Type = (ElementType)(data[0] & (0x3C >> 2)), // https://github.com/OpenLoco/OpenLoco/blob/master/src/OpenLoco/src/Map/Tile.cpp#L23
+				Type = (ElementType)((data[0] & 0x3C) >> 2), // https://github.com/OpenLoco/OpenLoco/blob/master/src/OpenLoco/src/Map/Tile.cpp#L23
 				Flags = data[1],
 				BaseZ = data[2],
 				ClearZ = data[3],

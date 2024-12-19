@@ -1,3 +1,4 @@
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using System.ComponentModel;
 
@@ -18,6 +19,9 @@ namespace OpenLoco.Dat.Types.SCV5
 	{
 		public bool Validate() => true;
 		public const int StructLength = 0x20;
+
+		// convert the 1D TileElements into a more usable 2D array
+		public List<TileElement>[,] TileElementMap { get; set; }
 
 		public static S5File Read(ReadOnlySpan<byte> data)
 		{
@@ -67,18 +71,42 @@ namespace OpenLoco.Dat.Types.SCV5
 			// tile elements
 			var tileElementData = SawyerStreamReader.ReadChunkCore(ref data);
 			var numTileElements = tileElementData.Length / TileElement.StructLength;
+
 			List<TileElement> tileElements = [];
+			var tileElementMap = new List<TileElement>[Limits.kMapColumns, Limits.kMapRows];
+
+			var x = 0;
+			var y = 0;
 			for (var i = 0; i < numTileElements; ++i)
 			{
 				var el = TileElement.Read(tileElementData[..TileElement.StructLength]);
 				tileElementData = tileElementData[TileElement.StructLength..];
 				tileElements.Add(el);
+
+				if (tileElementMap[x, y] == null)
+				{
+					tileElementMap[x, y] = [el];
+				}
+				else
+				{
+					tileElementMap[x, y].Add(el);
+				}
+
+				if (el.IsLast())
+				{
+					if (x == Limits.kMapColumns - 1)
+					{
+						y = (y + 1) % Limits.kMapRows;
+					}
+					x = (x + 1) % Limits.kMapColumns;
+				}
+
 				// el.IsLast() indicates its the last element on that tile
 				// tiles are set out in rows
 				// see TileManager.cpp::updateTilePointers in OpenLoco
 			}
 
-			return new S5File(header, landscapeDetails, saveDetails, requiredObjects, gameState, tileElements, packedObjects);
+			return new S5File(header, landscapeDetails, saveDetails, requiredObjects, gameState, tileElements, packedObjects) { TileElementMap = tileElementMap };
 		}
 
 		//public ReadOnlySpan<byte> Write()

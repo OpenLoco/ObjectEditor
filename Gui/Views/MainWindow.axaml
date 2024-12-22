@@ -403,19 +403,26 @@
 				</TabItem>
 				<TabItem Header="Tile Elements">
 					<DockPanel>
-						<TextBlock Text="{Binding TileElements.Count}" DockPanel.Dock="Top" />
-						<ScrollViewer>
-							<ItemsRepeater ItemsSource="{Binding TileElements}">
+						<Image Source="{Binding Map}" RenderOptions.BitmapInterpolationMode="None" DockPanel.Dock="Right"/>
+						<StackPanel Orientation="Vertical" DockPanel.Dock="Left" MaxWidth="256">
+							<StackPanel Orientation="Horizontal" >
+								<TextBox Watermark="X" Text="{Binding TileElementX}"></TextBox>
+								<TextBox Watermark="Y" Text="{Binding TileElementY}"></TextBox>
+							</StackPanel>
+							<ItemsRepeater ItemsSource="{Binding CurrentTileElements}">
 								<ItemsRepeater.Layout>
-									<UniformGridLayout Orientation="Horizontal"/>
+									<UniformGridLayout Orientation="Vertical"/>
 								</ItemsRepeater.Layout>
 								<ItemsRepeater.ItemTemplate>
 									<DataTemplate>
-										<ContentControl Content="{Binding}"></ContentControl>
+										<Border Margin="4" BorderThickness="1">
+											<ContentControl Content="{Binding}"></ContentControl>
+
+										</Border>
 									</DataTemplate>
 								</ItemsRepeater.ItemTemplate>
 							</ItemsRepeater>
-						</ScrollViewer>
+						</StackPanel>
 					</DockPanel>
 				</TabItem>
 			</TabControl>

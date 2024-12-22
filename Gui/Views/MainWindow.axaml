@@ -415,7 +415,10 @@
 								</ItemsRepeater.Layout>
 								<ItemsRepeater.ItemTemplate>
 									<DataTemplate>
-										<ContentControl Content="{Binding}"></ContentControl>
+										<Border Margin="4" BorderThickness="1">
+											<ContentControl Content="{Binding}"></ContentControl>
+
+										</Border>
 									</DataTemplate>
 								</ItemsRepeater.ItemTemplate>
 							</ItemsRepeater>

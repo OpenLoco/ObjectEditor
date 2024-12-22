@@ -2,7 +2,6 @@ using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
-using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -46,8 +45,8 @@ namespace OpenLoco.Gui.ViewModels
 				SellCostFactor = SellCostFactor,
 				BoatPosition = BoatPosition,
 				var_07 = var_07,
-				BuildingPartAnimations = BuildingPartAnimations.ToList(),
-				BuildingVariationParts = BuildingVariationParts.ToList(),
+				BuildingPartAnimations = [.. BuildingPartAnimations],
+				BuildingVariationParts = [.. BuildingVariationParts],
 				NumBuildingPartAnimations = (uint8_t)BuildingPartAnimations.Count,
 				NumBuildingVariationParts = (uint8_t)BuildingVariationParts.Count,
 			};

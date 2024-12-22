@@ -36,7 +36,7 @@ namespace OpenLoco.Gui.ViewModels
 			_Settings.ServerAddressHttps = ServerAddressHttps;
 			_Settings.DownloadFolder = DownloadFolder;
 			_Settings.ObjDataDirectory = ObjDataDirectory;
-			_Settings.ObjDataDirectories = ObjDataDirectories.ToHashSet();
+			_Settings.ObjDataDirectories = [.. ObjDataDirectories];
 		}
 
 		[Reactive, Category("Misc"), DisplayName("Allow saving as vanilla object"), Description("If enabled, the editor will allow saving objects with \"Vanilla\" flag set. If disabled, the object will be forcefully saved as \"Custom\" instead.")]

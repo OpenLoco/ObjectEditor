@@ -4,7 +4,9 @@ using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using OpenLoco.Dat.Types.SCV5;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Text.Json;
 
 namespace OpenLoco.Dat.FileParsing
 {
@@ -367,7 +369,10 @@ namespace OpenLoco.Dat.FileParsing
 
 				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed))
 				{
+					//File.WriteAllText($"sq-g1-test-encoded-{i}.json", JsonSerializer.Serialize(currElement));
 					currElement.ImageData = DecodeRLEImageData(currElement);
+					//File.WriteAllText($"sq-g1-test-decoded-{i}.json", JsonSerializer.Serialize(currElement));
+					var temp = EncodeRLEImageData(currElement);
 				}
 			}
 
@@ -384,36 +389,87 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		static byte[] DecodeRLEImageData(G1Element32 img)
+		public static byte[] EncodeRLEImageData(G1Element32 img)
 		{
-			var width = img.Width;
-			var height = img.Height;
+			using var ms = new MemoryStream();
 
-			var dstLineWidth = img.Width;
-			var dst0Index = 0;
+			var bytes = new List<List<(int StartX, List<byte> RunBytes)>>();
 
-			var srcBuf = img.ImageData;
-			var dstBuf = new byte[img.Width * img.Height]; // Assuming a single byte per pixel
-
-			var srcY = 0;
-
-			// Move up to the first line of the image if source_y_start is negative. Why does this even occur?
-			if (srcY < 0)
+			// encode data
+			var lines = img.ImageData.Chunk(img.Height);
+			var y = 0;
+			foreach (var line in lines)
 			{
-				srcY++;
-				height--;
-				dst0Index += dstLineWidth;
+				bytes.Add([]);
+				var x = 0;
+				while (x < img.Width) // go over the line of pixels
+				{
+					if (line[x] != 0x0 && (x > 0 && line[x - 1] == 0x0) || x == 0)
+					{
+						var l = bytes[y];
+						l.Add((x, []));
+						while (x < img.Width && line[x] != 0x0)
+						{
+							l[^1].RunBytes.Add(line[x]);
+							x++;
+						}
+					}
+
+					x++;
+				}
+
+				if (bytes[y].Count == 0)
+				{
+					bytes[y].Add((0, [0x80, 0x00]));
+				}
+
+				y++;
 			}
 
-			// For every line in the image
-			for (var i = 0; i < height; i++)
+			// write source pointers. will be (2 * img.Height) bytes. need to know RLE data first to know the offsets
+			var headerOffset = bytes.Count * 2;
+			for (var yy = 0; yy < img.Height; ++yy)
 			{
-				var y = srcY + i;
 
+				var value = headerOffset + (yy * 2) + (bytes[yy].Count - 2);
+				ms.WriteByte((byte)(value & 0xFF));        // Low byte
+				ms.WriteByte((byte)((value >> 8) & 0xFF)); // High byte
+			}
+
+			// write lines
+			for (var yy = 0; yy < img.Height; ++yy)
+			{
+				var byteLine = bytes[yy];
+				for (var i = 0; i < byteLine.Count; ++i)
+				{
+					var (StartX, RunBytes) = byteLine[i];
+					var count = i == byteLine.Count - 1 ? RunBytes.Count | 0x80 : RunBytes.Count;
+					ms.WriteByte((byte)count);
+					ms.WriteByte((byte)StartX);
+					ms.Write(RunBytes.ToArray());
+				}
+			}
+
+			return ms.ToArray();
+		}
+
+		public static byte[] DecodeRLEImageData(G1Element32 img)
+		{
+			var srcBuf = img.ImageData;
+			var dstBuf = new byte[img.Width * img.Height]; // Assuming a single byte per pixel - these are palette images
+
+			// debugging only
+			var lineOffsets = new List<(int nextRun, List<(bool isEOL, int raw, int dataSize, int firstPixel)> lineSegments)>();
+
+			// For every line/row in the image
+			for (var y = 0; y < img.Height; ++y)
+			{
 				// The first part of the source pointer is a list of offsets to different lines
 				// This will move the pointer to the correct source line.
-				var nextRunIndex = srcBuf[y * 2] | (srcBuf[(y * 2) + 1] << 8);
-				var dstLineStartIndex = dst0Index + (dstLineWidth * i);
+				var nextRunIndex = srcBuf[y * 2] | (srcBuf[(y * 2) + 1] << 8); // takes 2 bytes and makes a uint16_t
+				var dstLineStartIndex = img.Width * y;
+
+				lineOffsets.Add((nextRunIndex, []));
 
 				// For every data chunk in the line
 				var isEndOfLine = false;
@@ -421,9 +477,12 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					var srcIndex = nextRunIndex;
 					var dataSize = srcBuf[srcIndex++];
+					var ll = dataSize;
 					var firstPixelX = srcBuf[srcIndex++];
 					isEndOfLine = (dataSize & 0x80) != 0;
 					dataSize &= 0x7F;
+
+					lineOffsets[y].lineSegments.Add((isEndOfLine, ll, dataSize, firstPixelX));
 
 					// Have our next source pointer point to the next data section
 					nextRunIndex = srcIndex + dataSize;
@@ -433,7 +492,7 @@ namespace OpenLoco.Dat.FileParsing
 
 					// If the end position is further out than the whole image
 					// end position then we need to shorten the line again
-					numPixels = Math.Min(numPixels, width - x);
+					numPixels = Math.Min(numPixels, img.Width - x);
 
 					var dstIndex = dstLineStartIndex + x;
 

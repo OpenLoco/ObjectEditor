@@ -273,10 +273,10 @@ namespace OpenLoco.Gui.ViewModels
 			// grab current appl version from assembly
 			const string versionFilename = "Gui.version.txt";
 			using (var stream = assembly.GetManifestResourceStream(versionFilename))
+			using (var ms = new MemoryStream())
 			{
-				var buf = new byte[5];
-				var arr = stream!.Read(buf);
-				return Version.Parse(Encoding.ASCII.GetString(buf));
+				stream!.CopyTo(ms);
+				return Version.Parse(Encoding.ASCII.GetString(ms.ToArray()));
 			}
 		}
 

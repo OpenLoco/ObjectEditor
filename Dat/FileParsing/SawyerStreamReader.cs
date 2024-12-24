@@ -306,14 +306,6 @@ namespace OpenLoco.Dat.FileParsing
 			return s5FileHeader;
 		}
 
-		//public static S5File LoadScenario()
-		//{
-		//}
-
-		//public static S5File LoadSaveGame()
-		//{
-		//}
-
 		public static G1Dat? LoadG1(string filename, ILogger logger)
 		{
 			if (!File.Exists(filename))
@@ -328,7 +320,7 @@ namespace OpenLoco.Dat.FileParsing
 			return new G1Dat(g1Header, imageTable);
 		}
 
-		public static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+		static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 		{
 			var g1Element32s = new List<G1Element32>();
 
@@ -392,7 +384,7 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static byte[] DecodeRLEImageData(G1Element32 img)
+		static byte[] DecodeRLEImageData(G1Element32 img)
 		{
 			var width = img.Width;
 			var height = img.Height;

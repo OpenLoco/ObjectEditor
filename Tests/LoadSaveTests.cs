@@ -88,12 +88,12 @@ namespace OpenLoco.Dat.Tests
 		{
 			var logger = new Logger();
 
-			//var filename = "OGFOWL.dat";
-			//var path = "C:\\Users\\bigba\\source\\repos\\OpenLoco\\OpenGraphics\\objects\\Vehicle\\Train\\4F";
-			//var fullData = File.ReadAllBytes(Path.Combine(path, filename));
+			var filename = "SQ_E03_001.dat";
+			var path = "C:\\Users\\benjamin.sutas\\Downloads";
+			var fullData = File.ReadAllBytes(Path.Combine(path, filename));
 
-			var filename = "707.dat";
-			var fullData = File.ReadAllBytes(Path.Combine(BaseObjDataPath, filename));
+			//var filename = "707.dat";
+			//var fullData = File.ReadAllBytes(Path.Combine(BaseObjDataPath, filename));
 
 			if (!SawyerStreamReader.TryGetHeadersFromBytes(fullData, out var hdrs, logger))
 			{

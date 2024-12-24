@@ -109,9 +109,9 @@ namespace OpenLoco.Gui.ViewModels
 						? new SoundViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
 						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
 
-					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), Logger, false);
-					CurrentHexAnnotations = new(treeView);
-					DATDumpAnnotationIdentifiers = annotationIdentifiers;
+					//var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), Logger, false);
+					//CurrentHexAnnotations = new(treeView);
+					//DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}
 				else
 				{

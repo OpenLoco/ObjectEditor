@@ -2,9 +2,11 @@ using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
+using SixLabors.ImageSharp.Memory;
 using System;
 using System.Numerics;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OpenLoco.Dat.FileParsing
 {
@@ -126,28 +128,25 @@ namespace OpenLoco.Dat.FileParsing
 		}
 
 		public static byte[] Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
-			=> data.ToArray();
+			=> encoding switch
+			{
+				SawyerEncoding.Uncompressed => data.ToArray(),
+				SawyerEncoding.RunLengthSingle => EncodeRunLengthSingle(data),
+				SawyerEncoding.RunLengthMulti => EncodeRunLengthMulti(data),
+				SawyerEncoding.Rotate => EncodeRotate(data),
+				_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
+			};
 
-		//public static byte[] Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
-		//	=> encoding switch
-		//	{
-		//		SawyerEncoding.Uncompressed => data.ToArray(),
-		//		SawyerEncoding.RunLengthSingle => EncodeRunLengthSingle(data),
-		//		SawyerEncoding.RunLengthMulti => throw new NotImplementedException(),
-		//		SawyerEncoding.Rotate => EncodeRotate(data),
-		//		_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
-		//	};
-
-		public static byte[] EncodeRunLengthSingle(ReadOnlySpan<byte> data)
+		static byte[] EncodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
 			using var buffer = new MemoryStream();
 
 			var src = 0;
-			var srcEnd = data.Length;
+			var srcLen = data.Length;
 			var srcNormStart = 0;
 			byte count = 0;
 
-			while (src < srcEnd - 1)
+			while (src < srcLen - 1)
 			{
 				if ((count != 0 && data[src] == data[src + 1]) || count > 125)
 				{
@@ -158,7 +157,7 @@ namespace OpenLoco.Dat.FileParsing
 				}
 				if (data[src] == data[src + 1])
 				{
-					for (; count < 125 && src + count < srcEnd; count++)
+					for (; count < 125 && src + count < srcLen; count++)
 					{
 						if (data[src] != data[src + count])
 						{
@@ -177,7 +176,7 @@ namespace OpenLoco.Dat.FileParsing
 					src++;
 				}
 			}
-			if (src == srcEnd - 1)
+			if (src == srcLen - 1)
 			{
 				count++;
 			}
@@ -185,6 +184,76 @@ namespace OpenLoco.Dat.FileParsing
 			{
 				buffer.WriteByte((byte)(count - 1));
 				buffer.Write(data[srcNormStart..(srcNormStart + count)]);
+			}
+			return buffer.ToArray();
+		}
+
+		static byte[] EncodeRunLengthMulti(ReadOnlySpan<byte> data)
+		{
+			using var buffer = new MemoryStream();
+
+			var src = 0;
+			var srcLen = data.Length;
+			if (srcLen == 0)
+			{
+				return [];
+			}
+
+			// Need to emit at least one byte, otherwise there is nothing to repeat
+			buffer.WriteByte(0xFF);
+			buffer.WriteByte(data[src]);
+
+			// Iterate through remainder of the source buffer
+			for (var i = 1; i < srcLen;)
+			{
+				var searchIndex = (i < 32) ? 0 : (i - 32);
+				var searchEnd = i - 1;
+
+				var bestRepeatIndex = 0;
+				var bestRepeatCount = 0;
+				for (var repeatIndex = searchIndex; repeatIndex <= searchEnd; repeatIndex++)
+				{
+					var repeatCount = 0;
+					var maxRepeatCount = Math.Min(Math.Min(7, searchEnd - repeatIndex), srcLen - i - 1);
+					// maxRepeatCount should not exceed srcLen
+					//assert(repeatIndex + maxRepeatCount < srcLen);
+					//assert(i + maxRepeatCount < srcLen);
+					for (size_t j = 0; j <= maxRepeatCount; j++)
+					{
+						if (data[(int)(repeatIndex + j)] == data[(int)(i + j)])
+						{
+							repeatCount++;
+						}
+
+						else
+						{
+							break;
+						}
+					}
+					if (repeatCount > bestRepeatCount)
+					{
+						bestRepeatIndex = repeatIndex;
+						bestRepeatCount = repeatCount;
+
+						// Maximum repeat count is 8
+						if (repeatCount == 8)
+						{
+							break;
+						}
+					}
+				}
+
+				if (bestRepeatCount == 0)
+				{
+					buffer.WriteByte(0xFF);
+					buffer.WriteByte(data[i]);
+					i++;
+				}
+				else
+				{
+					buffer.WriteByte((uint8_t)((bestRepeatCount - 1) | ((32 - (i - bestRepeatIndex)) << 3)));
+					i += bestRepeatCount;
+				}
 			}
 
 			return buffer.ToArray();

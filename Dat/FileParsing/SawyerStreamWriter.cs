@@ -2,6 +2,8 @@ using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
+using System;
+using System.Numerics;
 using System.Text;
 
 namespace OpenLoco.Dat.FileParsing
@@ -123,8 +125,6 @@ namespace OpenLoco.Dat.FileParsing
 			logger.Info($"{objName} successfully saved to {filename}");
 		}
 
-		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
-			=> WriteLocoObjectStream(objName, sourceGame, encoding, logger, obj, allowWritingAsVanilla).ToArray();
 		public static byte[] Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
 			=> data.ToArray();
 
@@ -134,7 +134,7 @@ namespace OpenLoco.Dat.FileParsing
 		//		SawyerEncoding.Uncompressed => data.ToArray(),
 		//		SawyerEncoding.RunLengthSingle => EncodeRunLengthSingle(data),
 		//		SawyerEncoding.RunLengthMulti => throw new NotImplementedException(),
-		//		SawyerEncoding.Rotate => throw new NotImplementedException(),
+		//		SawyerEncoding.Rotate => EncodeRotate(data),
 		//		_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
 		//	};
 
@@ -189,6 +189,29 @@ namespace OpenLoco.Dat.FileParsing
 
 			return buffer.ToArray();
 		}
+
+		static byte[] EncodeRotate(ReadOnlySpan<byte> data)
+		{
+			using var buffer = new MemoryStream();
+
+			uint8_t code = 1;
+			for (var i = 0; i < data.Length; ++i)
+			{
+				buffer.WriteByte(RotateLeft(data[i], code));
+				code = (uint8_t)((code + 2) & 7);
+			}
+
+			return buffer.ToArray();
+		}
+
+		static uint8_t RotateLeft(uint8_t value, uint8_t shift)
+		{
+			shift &= 7; // Ensure shift is within 0-7 for 8-bit bytes
+			return (uint8_t)((value << shift) | (value >> (8 - shift)));
+		}
+
+		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+			=> WriteLocoObjectStream(objName, sourceGame, encoding, logger, obj, allowWritingAsVanilla).ToArray();
 
 		public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
 		{
@@ -312,98 +335,5 @@ namespace OpenLoco.Dat.FileParsing
 				SaveImageTable(g1.G1Elements, fs);
 			}
 		}
-
-		//public static ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data, ILogger? logger = null)
-		//{
-		//	switch (encoding)
-		//	{
-		//		case SawyerEncoding.Uncompressed:
-		//			return data;
-		//		case SawyerEncoding.RunLengthSingle:
-		//			return EncodeRunLengthSingle(data);
-		//		//case SawyerEncoding.runLengthMulti:
-		//		//	return encodeRunLengthMulti(decodeRunLengthSingle(data));
-		//		//case SawyerEncoding.rotate:
-		//		//	return encodeRotate(data);
-		//		default:
-		//			logger?.Error("Unknown chunk encoding scheme");
-		//			throw new InvalidDataException("Unknown encoding");
-		//	}
-		//}
-
-		//public static void WriteToFile(string filename, ReadOnlySpan<byte> s5Header, ReadOnlySpan<byte> objectHeader, ReadOnlySpan<byte> encodedData)
-		//{
-		//	var stream = File.Create(filename);
-		//	stream.Write(s5Header);
-		//	stream.Write(objectHeader);
-		//	stream.Write(encodedData);
-		//	stream.Flush();
-		//	stream.Close();
-		//}
-
-		// taken from openloco SawyerStreamReader::encodeRunLengthSingle
-		// not sure why it doesn't work, but it doesn't work. gets the first 10 or so bytes correct for SIGC3.dat but then fails
-		//private static Span<byte> EncodeRunLengthSingle(ReadOnlySpan<byte> data)
-		//{
-		//	List<byte> buffer = [];
-		//	var src = 0; // ptr
-		//	var srcNormStart = 0; // ptr
-		//	var srcEnd = data.Length;
-		//	var count = 0;
-
-		//	while (src < srcEnd - 1)
-		//	{
-		//		if ((count != 0 && data[src] == data[src + 1]) || count > 125)
-		//		{
-		//			buffer.Add((byte)(count - 1));
-		//			buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
-		//			srcNormStart += count;
-		//			count = 0;
-		//		}
-
-		//		if (data[src] == data[src + 1])
-		//		{
-		//			for (; count < 125 && src + count < srcEnd; count++)
-		//			{
-		//				if (data[src] != data[count])
-		//				{
-		//					break;
-		//				}
-		//			}
-
-		//			buffer.Add((byte)(257 - count));
-		//			buffer.Add(data[src]);
-		//			src += count;
-		//			srcNormStart = src;
-		//			count = 0;
-		//		}
-		//		else
-		//		{
-		//			count++;
-		//			src++;
-		//		}
-		//	}
-
-		//	if (data[src] == data[srcEnd - 1])
-		//	{
-		//		count++;
-		//	}
-
-		//	if (count != 0)
-		//	{
-		//		buffer.Add((byte)(count - 1));
-		//		buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
-		//	}
-
-		//	// convert to span
-		//	Span<byte> encodedSpan = new byte[buffer.Count];
-		//	var counter = 0;
-		//	foreach (var b in buffer)
-		//	{
-		//		encodedSpan[counter++] = b;
-		//	}
-
-		//	return encodedSpan;
-		//}
 	}
 }

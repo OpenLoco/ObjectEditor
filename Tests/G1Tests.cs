@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
@@ -46,12 +45,13 @@ namespace OpenLoco.Dat.Tests
 		[Test]
 		public void EncodeDecodeRLE()
 		{
-			var dir = "C:\\Users\\benjamin.sutas\\source\\repos\\ObjectEditor\\Gui\\bin\\Debug\\net8.0";
+			// SQBR103A
+			var dir = "C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\bin\\Debug\\net8.0";
 			var encodedBytes = JsonSerializer.Deserialize<G1Element32>(File.ReadAllText(Path.Combine(dir, "sq-g1-test-encoded-0.json")));
 			var decodedBytes = JsonSerializer.Deserialize<G1Element32>(File.ReadAllText(Path.Combine(dir, "sq-g1-test-decoded-0.json")));
 
 			//var decodedG1 = SawyerStreamReader.DecodeRLEImageData(encodedBytes);
-			var encodedG1 = SawyerStreamReader.EncodeRLEImageData(decodedBytes);
+			var encodedG1 = SawyerStreamWriter.EncodeRLEImageData(decodedBytes);
 
 			Assert.Multiple(() =>
 			{

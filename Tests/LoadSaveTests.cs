@@ -10,9 +10,41 @@ using Logger = OpenLoco.Common.Logging.Logger;
 namespace OpenLoco.Dat.Tests
 {
 	[TestFixture]
+	public class EncodingTests
+	{
+		static string[] VanillaFiles => Directory
+			.GetFiles(LoadSaveTests.BaseObjDataPath, "*.dat")
+			.Select(x => Path.GetFileName(x))
+			.ToArray();
+
+		[TestCaseSource(nameof(VanillaFiles))]
+		public void TestEncoding(string filename)
+		{
+			var file = Path.Combine(LoadSaveTests.BaseObjDataPath, filename);
+
+			var logger = new Logger();
+			var fullData = File.ReadAllBytes(file);
+
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(fullData, out var hdrs, logger))
+			{
+				Assert.Fail();
+				return;
+			}
+
+			var remainingData = fullData[(S5Header.StructLength + ObjectHeader.StructLength)..];
+
+			File.WriteAllBytes("SNDA1-orig.mem", remainingData);
+
+			var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData);
+			var encoded = SawyerStreamWriter.Encode(hdrs.Obj.Encoding, decoded);
+			Assert.That(encoded, Is.EqualTo(remainingData).AsCollection);
+		}
+	}
+
+	[TestFixture]
 	public class LoadSaveTests
 	{
-		const string BaseObjDataPath = "Q:\\Games\\Locomotion\\OriginalObjects\\Steam";
+		public const string BaseObjDataPath = "Q:\\Games\\Locomotion\\OriginalObjects\\Steam";
 
 		// TODO: find a way to not have to hardcode a path here (but this may be impossible as it will depend on a user's PC and Loco install path)
 		// TODO: find a nicer (and more automated) way to check Name+Image fields, StringTable and G1Table
@@ -82,36 +114,6 @@ namespace OpenLoco.Dat.Tests
 					Assert.That(actual.Encoding, Is.EqualTo(expected.Encoding));
 					Assert.That(actual.DataLength, Is.EqualTo(expected.DataLength));
 				});
-
-		[TestCase]
-		public void TestEncoding()
-		{
-			var logger = new Logger();
-
-			var filename = "SQ_E03_001.dat";
-			var path = "C:\\Users\\benjamin.sutas\\Downloads";
-			var fullData = File.ReadAllBytes(Path.Combine(path, filename));
-
-			//var filename = "707.dat";
-			//var fullData = File.ReadAllBytes(Path.Combine(BaseObjDataPath, filename));
-
-			if (!SawyerStreamReader.TryGetHeadersFromBytes(fullData, out var hdrs, logger))
-			{
-				Assert.Fail();
-				return;
-			}
-
-			var remainingData = fullData[(S5Header.StructLength + ObjectHeader.StructLength)..];
-
-			var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData);
-			var encoded = SawyerStreamWriter.Encode(hdrs.Obj.Encoding, decoded);
-			var decoded2 = SawyerStreamReader.Decode(hdrs.Obj.Encoding, encoded);
-			var encoded2 = SawyerStreamWriter.Encode(hdrs.Obj.Encoding, decoded2);
-
-			Assert.That(remainingData, Is.EqualTo(encoded));
-			Assert.That(decoded, Is.EqualTo(decoded2));
-			Assert.That(encoded, Is.EqualTo(encoded2));
-		}
 
 		[TestCase("AIRPORT1.DAT")]
 		public void AirportObject(string objectName)

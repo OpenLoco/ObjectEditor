@@ -2,11 +2,7 @@ using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
-using SixLabors.ImageSharp.Memory;
-using System;
-using System.Numerics;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OpenLoco.Dat.FileParsing
 {
@@ -140,51 +136,61 @@ namespace OpenLoco.Dat.FileParsing
 		static byte[] EncodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
 			using var buffer = new MemoryStream();
-
-			var src = 0;
-			var srcLen = data.Length;
+			var src = data;
+			var srcPtr = 0;
+			var srcLen = src.Length;
 			var srcNormStart = 0;
 			byte count = 0;
 
-			while (src < srcLen - 1)
+			while (srcPtr < srcLen - 1)
 			{
-				if ((count != 0 && data[src] == data[src + 1]) || count > 125)
+				if (buffer.Position > 111460)
+				{
+					//Debugger.Break();
+				}
+
+				if ((count != 0 && src[srcPtr] == src[srcPtr + 1]) || count > 125)
 				{
 					buffer.WriteByte((byte)(count - 1));
-					buffer.Write(data[srcNormStart..(srcNormStart + count)]);
+					buffer.Write(src[srcNormStart..(srcNormStart + count)]);
 					srcNormStart += count;
 					count = 0;
 				}
-				if (data[src] == data[src + 1])
+				if (src[srcPtr] == src[srcPtr + 1])
 				{
-					for (; count < 125 && src + count < srcLen; count++)
+					for (; count < 125 && srcPtr + count < srcLen; count++)
 					{
-						if (data[src] != data[src + count])
+						if (src[srcPtr] != src[srcPtr + count])
 						{
 							break;
 						}
 					}
-					buffer.WriteByte((byte)(257 - count));
-					buffer.WriteByte(data[src]);
-					src += count;
-					srcNormStart = src;
+					var a = (byte)(257 - count);
+					var b = src[srcPtr];
+					buffer.WriteByte(a);
+					buffer.WriteByte(b);
+					srcPtr += count;
+					srcNormStart = srcPtr;
 					count = 0;
 				}
 				else
 				{
 					count++;
-					src++;
+					srcPtr++;
 				}
 			}
-			if (src == srcLen - 1)
+			if (srcPtr == srcLen - 1)
 			{
 				count++;
 			}
 			if (count != 0)
 			{
 				buffer.WriteByte((byte)(count - 1));
-				buffer.Write(data[srcNormStart..(srcNormStart + count)]);
+				buffer.Write(src[srcNormStart..(srcNormStart + count)]);
 			}
+
+			File.WriteAllBytes("SNDA1-editor.mem", buffer.ToArray());
+
 			return buffer.ToArray();
 		}
 
@@ -279,6 +285,92 @@ namespace OpenLoco.Dat.FileParsing
 			return (uint8_t)((value << shift) | (value >> (8 - shift)));
 		}
 
+
+		// this is ugly as all hell but it works. plenty of room for cleanup and optimisation
+		public static byte[] EncodeRLEImageData(G1Element32 img)
+		{
+			using var ms = new MemoryStream();
+
+			var bytes = new List<List<(int StartX, List<byte> RunBytes)>>();
+
+			// encode data
+			var lines = img.ImageData.Chunk(img.Width);
+			var y = 0;
+			foreach (var line in lines)
+			{
+				bytes.Add([]);
+				var x = 0;
+				while (x < img.Width) // go over the line of pixels
+				{
+					// find the start of a run
+					if (line[x] != 0x0 && ((x > 0 && line[x - 1] == 0x0) || x == 0))
+					{
+						var l = bytes[y];
+						l.Add((x, []));
+
+						// find the end
+						while (x < img.Width && line[x] != 0x0)
+						{
+							l[^1].RunBytes.Add(line[x]);
+							x++;
+						}
+					}
+
+					x++;
+				}
+
+				//if (bytes[y].Count == 0)
+				//{
+				//	bytes[y].Add((0, [0x80, 0x00]));
+				//}
+
+				y++;
+			}
+
+			// write source pointers. will be (2 * img.Height) bytes. need to know RLE data first to know the offsets
+			var headerOffset = bytes.Count * 2;
+			var bytesTotal = 0;
+			for (var yy = 0; yy < img.Height; ++yy)
+			{
+				// bytes per previous line is the sum of all the bytes in the runs plus the number of line segments * 2
+				var bytesPreviousLine = yy == 0
+					? 0
+					: bytes[yy - 1].Sum(x => x.RunBytes.Count) + (Math.Max(1, bytes[yy - 1].Count) * 2);
+				bytesTotal += bytesPreviousLine;
+
+				var value = headerOffset + bytesTotal;
+				var low = (byte)(value & 0xFF);
+				var high = (byte)((value >> 8) & 0xFF);
+				ms.WriteByte(low);
+				ms.WriteByte(high);
+			}
+
+			// write lines
+			foreach (var byteLine in bytes)
+			{
+				// if fully empty line
+				if (byteLine.Count == 0)
+				{
+					ms.WriteByte(0x80);
+					ms.WriteByte(0x00);
+					continue;
+				}
+
+				// line has at least one segment
+				for (var i = 0; i < byteLine.Count; ++i)
+				{
+					var (StartX, RunBytes) = byteLine[i];
+					var count = i == byteLine.Count - 1 ? RunBytes.Count | 0x80 : RunBytes.Count;
+					ms.WriteByte((byte)count);
+					ms.WriteByte((byte)StartX);
+					ms.Write(RunBytes.ToArray());
+
+				}
+			}
+
+			return ms.ToArray();
+		}
+
 		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
 			=> WriteLocoObjectStream(objName, sourceGame, encoding, logger, obj, allowWritingAsVanilla).ToArray();
 
@@ -317,7 +409,6 @@ namespace OpenLoco.Dat.FileParsing
 
 			rawObjStream.Flush();
 
-			//todo: actually use encoding
 			using var encodedObjStream = new MemoryStream(Encode(encoding, rawObjStream.ToArray()));
 
 			// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
@@ -378,15 +469,18 @@ namespace OpenLoco.Dat.FileParsing
 				foreach (var g1Element in g1Elements)
 				{
 					// we need to update the offsets of the image data
-					// and we're not going to compress the data on save, so make sure the RLECompressed flag is not set
+					var imageData = g1Element.Flags.HasFlag(G1ElementFlags.IsRLECompressed)
+						? EncodeRLEImageData(g1Element)
+						: g1Element.ImageData;
+
 					var newElement = g1Element with
 					{
 						Offset = (uint)offsetBytesIntoImageData,
-						Flags = g1Element.Flags & ~G1ElementFlags.IsRLECompressed
+						ImageData = imageData,
 					};
 
 					objStream.Write(newElement.Write());
-					offsetBytesIntoImageData += g1Element.ImageData.Length;
+					offsetBytesIntoImageData += imageData.Length;
 				}
 
 				// write G1Elements ImageData

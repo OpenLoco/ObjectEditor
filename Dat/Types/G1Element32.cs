@@ -56,6 +56,11 @@ namespace OpenLoco.Dat.Types
 			return span;
 		}
 
+		public byte[] GetImageDataForSave()
+			=> Flags.HasFlag(G1ElementFlags.IsRLECompressed)
+				? SawyerStreamWriter.EncodeRLEImageData(this)
+				: ImageData;
+
 		public bool Validate() => true;
 	}
 }

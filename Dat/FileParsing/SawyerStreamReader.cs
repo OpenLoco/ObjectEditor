@@ -360,7 +360,7 @@ namespace OpenLoco.Dat.FileParsing
 
 				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed))
 				{
-					currElement.ImageData = DecodeRLEImageData(currElement, i);
+					currElement.ImageData = DecodeRLEImageData(currElement);
 				}
 			}
 
@@ -377,7 +377,7 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static byte[] DecodeRLEImageData(G1Element32 img, int i)
+		public static byte[] DecodeRLEImageData(G1Element32 img)
 		{
 			var srcBuf = img.ImageData;
 			var dstBuf = new byte[img.Width * img.Height]; // Assuming a single byte per pixel - these are palette images

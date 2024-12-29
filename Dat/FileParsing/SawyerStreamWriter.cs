@@ -455,39 +455,37 @@ namespace OpenLoco.Dat.FileParsing
 		{
 			if (g1Elements != null && g1Elements.Count != 0)
 			{
-				// write G1Header
-				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Count));
-				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Sum(x => x.ImageData.Length)));
-
+				// encode if necessary
+				List<G1Element32> encoded = [];
 				var offsetBytesIntoImageData = 0;
-				// write G1Element headers
 				foreach (var g1Element in g1Elements)
 				{
-					// we need to update the offsets of the image data
-					var imageData = g1Element.Flags.HasFlag(G1ElementFlags.IsRLECompressed)
-						? EncodeRLEImageData(g1Element)
-						: g1Element.ImageData;
+					// this copies everything but it should be fine for now
 
 					var newElement = g1Element with
 					{
+						ImageData = g1Element.GetImageDataForSave(),
 						Offset = (uint)offsetBytesIntoImageData,
-						ImageData = imageData,
 					};
 
-					objStream.Write(newElement.Write());
-					offsetBytesIntoImageData += imageData.Length;
+					offsetBytesIntoImageData += newElement.ImageData.Length;
+					encoded.Add(newElement);
+				}
+
+				// write G1Header
+				objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Count));
+				objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Sum(x => x.ImageData.Length)));
+
+				// write G1Element headers
+				foreach (var g1Element in encoded)
+				{
+					objStream.Write(g1Element.Write());
 				}
 
 				// write G1Elements ImageData
-				foreach (var g1Element in g1Elements)
+				foreach (var g1Element in encoded)
 				{
-					// here we're duplicating the encoding above (ie for every RLE image, we're calculating its encoding twice)
-					// it is obviously inefficient but for now it's fine since encoding is fast
-					var imageData = g1Element.Flags.HasFlag(G1ElementFlags.IsRLECompressed)
-						? EncodeRLEImageData(g1Element)
-						: g1Element.ImageData;
-
-					objStream.Write(imageData);
+					objStream.Write(g1Element.ImageData);
 				}
 			}
 		}

@@ -359,7 +359,7 @@ namespace OpenLoco.Dat.FileParsing
 					currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
 				}
 
-				if (i == 3539)
+				if (i == 3894)
 				{
 					Debugger.Break();
 				}

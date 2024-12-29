@@ -10,11 +10,11 @@ namespace OpenLoco.Dat.Tests
 	public class G1Tests
 	{
 		readonly ILogger Logger = new Logger();
+		const string g1File = "Q:\\Games\\Locomotion\\G1\\g1.dat";
 
 		[Test]
 		public void LoadSaveLoadG1()
 		{
-			var g1File = "Q:\\Games\\Locomotion\\G1\\g1.dat";
 			var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
 			var tempName = Path.GetTempFileName();
 			SawyerStreamWriter.SaveG1(tempName, g1);
@@ -26,65 +26,57 @@ namespace OpenLoco.Dat.Tests
 
 			Assert.Multiple(() =>
 			{
-				foreach (var (a, b, i) in g1.G1Elements.Zip(g1a.G1Elements).Select((item, i) => (item.First, item.Second, i)))
+				foreach (var (expected, actual, i) in g1.G1Elements.Zip(g1a.G1Elements).Select((item, i) => (item.First, item.Second, i)))
 				{
-					AssertG1ElementsEqual(a, b, i);
+					// debugging
+					if (i == 3894)
+					{
+						var paletteFile = Path.Combine(ImagePaletteConversionTests.BasePalettePath, ImagePaletteConversionTests.PaletteFileName);
+						var pm = new PaletteMap(paletteFile);
+						if (pm.TryConvertG1ToRgba32Bitmap(g1.G1Elements[3894], out var i1))
+						{
+							i1.Save("i1.png");
+						}
+						if (pm.TryConvertG1ToRgba32Bitmap(g1a.G1Elements[3894], out var i2))
+						{
+							i2.Save("i2.png");
+						}
+					}
+					//
+
+					AssertG1ElementsEqual(expected, actual, i);
 				}
 			});
 		}
 
-		// these elements seem to cause problems with the current decoding, but I"m not sure what is wrong
+		// These images have RLE runs/segment lengths > 127, which require special handling in the encode
+		// method. I split these out to initially debug why they weren't working but I will leave these tests
+		// in as they serve as a kind of documentation of this quirk of the g1 encoding.
 		[TestCase(3539)]
 		[TestCase(3540)]
 		[TestCase(3541)]
 		[TestCase(3542)]
 		[TestCase(3618)]
 		[TestCase(3619)]
-		[TestCase(3894)]
-		public void LoadSaveLoadG1_EdgeCases(int element)
+		public void LoadSaveLoadG1_RLERunsGreaterThan127(int element)
 		{
-			var g1File = "Q:\\Games\\Locomotion\\G1\\g1.dat";
 			var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
 			var d1 = g1!.G1Elements[element];
 			var e1 = SawyerStreamWriter.EncodeRLEImageData(d1);
 			var d2 = SawyerStreamReader.DecodeRLEImageData(d1 with { ImageData = e1 });
-
-			var paletteFile = Path.Combine(ImagePaletteConversionTests.BasePalettePath, ImagePaletteConversionTests.PaletteFileName);
-			var pm = new PaletteMap(paletteFile);
-			if (pm.TryConvertG1ToRgba32Bitmap(d1, out var i1))
-			{
-				i1.Save("i1.png");
-			}
-			if (pm.TryConvertG1ToRgba32Bitmap(d1 with { ImageData = d2 }, out var i2))
-			{
-				i2.Save("i2.png");
-			}
-
 			Assert.That(d2, Is.EqualTo(d1.ImageData).AsCollection);
 		}
 
-		public void AssertG1ElementsEqual(G1Element32 a, G1Element32 b, int i)
+		public void AssertG1ElementsEqual(G1Element32 expected, G1Element32 actual, int i)
 		{
 			//Assert.That(a.Offset, Is.EqualTo(b.Offset), $"[{i}]");
-			Assert.That(a.Width, Is.EqualTo(b.Width), $"[{i}]");
-			Assert.That(a.Height, Is.EqualTo(b.Height), $"[{i}]");
-			Assert.That(a.XOffset, Is.EqualTo(b.XOffset), $"[{i}]");
-			Assert.That(a.YOffset, Is.EqualTo(b.YOffset), $"[{i}]");
-			Assert.That(a.Flags, Is.EqualTo(b.Flags), $"[{i}]");
-			Assert.That(a.ZoomOffset, Is.EqualTo(b.ZoomOffset), $"[{i}]");
-			Assert.That(a.ImageData, Is.EqualTo(b.ImageData).AsCollection, $"[{i}]");
-		}
-
-		public void AssertG1ElementsEqual(G1Element32 a, G1Element32 b)
-		{
-			//Assert.That(a.Offset, Is.EqualTo(b.Offset));
-			Assert.That(a.Width, Is.EqualTo(b.Width));
-			Assert.That(a.Height, Is.EqualTo(b.Height));
-			Assert.That(a.XOffset, Is.EqualTo(b.XOffset));
-			Assert.That(a.YOffset, Is.EqualTo(b.YOffset));
-			Assert.That(a.Flags, Is.EqualTo(b.Flags));
-			Assert.That(a.ZoomOffset, Is.EqualTo(b.ZoomOffset));
-			Assert.That(a.ImageData, Is.EqualTo(b.ImageData).AsCollection);
+			Assert.That(actual.Width, Is.EqualTo(expected.Width), $"[{i}]");
+			Assert.That(actual.Height, Is.EqualTo(expected.Height), $"[{i}]");
+			Assert.That(actual.XOffset, Is.EqualTo(expected.XOffset), $"[{i}]");
+			Assert.That(actual.YOffset, Is.EqualTo(expected.YOffset), $"[{i}]");
+			Assert.That(actual.Flags, Is.EqualTo(expected.Flags), $"[{i}]");
+			Assert.That(actual.ZoomOffset, Is.EqualTo(expected.ZoomOffset), $"[{i}]");
+			Assert.That(actual.ImageData, Is.EqualTo(expected.ImageData).AsCollection, $"[{i}]");
 		}
 	}
 }

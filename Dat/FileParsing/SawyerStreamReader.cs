@@ -4,6 +4,7 @@ using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using OpenLoco.Dat.Types.SCV5;
+using System.Diagnostics;
 using System.Text;
 
 namespace OpenLoco.Dat.FileParsing
@@ -358,6 +359,11 @@ namespace OpenLoco.Dat.FileParsing
 					currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
 				}
 
+				if (i == 3539)
+				{
+					Debugger.Break();
+				}
+
 				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed))
 				{
 					currElement.ImageData = DecodeRLEImageData(currElement);
@@ -390,7 +396,7 @@ namespace OpenLoco.Dat.FileParsing
 				var nextRunIndex = srcBuf[y * 2] | (srcBuf[(y * 2) + 1] << 8); // takes 2 bytes and makes a uint16_t
 				var dstLineStartIndex = img.Width * y;
 
-				// For every data chunk in the line
+				// For every segment in the line
 				var isEndOfLine = false;
 				while (!isEndOfLine)
 				{

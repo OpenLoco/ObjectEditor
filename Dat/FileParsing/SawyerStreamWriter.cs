@@ -280,57 +280,51 @@ namespace OpenLoco.Dat.FileParsing
 			return (uint8_t)((value << shift) | (value >> (8 - shift)));
 		}
 
-
 		// this is ugly as all hell but it works. plenty of room for cleanup and optimisation
 		public static byte[] EncodeRLEImageData(G1Element32 img)
 		{
 			using var ms = new MemoryStream();
 
-			var bytes = new List<List<(int StartX, List<byte> RunBytes)>>();
+			var lines = new List<List<(int StartX, List<byte> RunBytes)>>();
 
-			// encode data
-			var lines = img.ImageData.Chunk(img.Width);
-			var y = 0;
-			foreach (var line in lines)
+			// calculate the segments per line in the input image
+			foreach (var line in img.ImageData.Chunk(img.Width))
 			{
-				bytes.Add([]);
-				var x = 0;
-				while (x < img.Width) // go over the line of pixels
+				List<(int StartX, List<byte> RunBytes)> segments = [];
+				for (var x = 0; x < img.Width;)
 				{
-					// find the start of a run
-					if (line[x] != 0x0 && ((x > 0 && line[x - 1] == 0x0) || x == 0))
+					// find the start of a segment. previous pixel may be a segment
+					if (line[x] != 0x0)
 					{
-						var l = bytes[y];
-						l.Add((x, []));
-
 						// find the end
-						while (x < img.Width && line[x] != 0x0)
+						var startOfSegment = x;
+						List<byte> run = [];
+						while (x < img.Width && line[x] != 0x0 && run.Count < 127) // runs can only be 127 bytes in length. if the run is truly longer, then it gets split into multiple runs
 						{
-							l[^1].RunBytes.Add(line[x]);
+							run.Add(line[x]);
 							x++;
 						}
-					}
 
-					x++;
+						segments.Add((startOfSegment, run));
+					}
+					else
+					{
+						x++;
+					}
 				}
 
-				//if (bytes[y].Count == 0)
-				//{
-				//	bytes[y].Add((0, [0x80, 0x00]));
-				//}
-
-				y++;
+				lines.Add(segments);
 			}
 
 			// write source pointers. will be (2 * img.Height) bytes. need to know RLE data first to know the offsets
-			var headerOffset = bytes.Count * 2;
+			var headerOffset = lines.Count * 2;
 			var bytesTotal = 0;
 			for (var yy = 0; yy < img.Height; ++yy)
 			{
 				// bytes per previous line is the sum of all the bytes in the runs plus the number of line segments * 2
 				var bytesPreviousLine = yy == 0
 					? 0
-					: bytes[yy - 1].Sum(x => x.RunBytes.Count) + (Math.Max(1, bytes[yy - 1].Count) * 2);
+					: lines[yy - 1].Sum(x => x.RunBytes.Count) + (Math.Max(1, lines[yy - 1].Count) * 2);
 				bytesTotal += bytesPreviousLine;
 
 				var value = headerOffset + bytesTotal;
@@ -341,10 +335,10 @@ namespace OpenLoco.Dat.FileParsing
 			}
 
 			// write lines
-			foreach (var byteLine in bytes)
+			foreach (var line in lines)
 			{
 				// if fully empty line
-				if (byteLine.Count == 0)
+				if (line.Count == 0)
 				{
 					ms.WriteByte(0x80);
 					ms.WriteByte(0x00);
@@ -352,10 +346,16 @@ namespace OpenLoco.Dat.FileParsing
 				}
 
 				// line has at least one segment
-				for (var i = 0; i < byteLine.Count; ++i)
+				for (var i = 0; i < line.Count; ++i)
 				{
-					var (StartX, RunBytes) = byteLine[i];
-					var count = i == byteLine.Count - 1 ? RunBytes.Count | 0x80 : RunBytes.Count;
+					var (StartX, RunBytes) = line[i];
+
+					if (RunBytes.Count > 127)
+					{
+						throw new ArgumentException("Segment length cannot exceed 127 pixels");
+					}
+
+					var count = i == line.Count - 1 ? RunBytes.Count | 0x80 : RunBytes.Count;
 					ms.WriteByte((byte)count);
 					ms.WriteByte((byte)StartX);
 					ms.Write(RunBytes.ToArray());

@@ -9,10 +9,10 @@ namespace OpenLoco.Dat.Tests
 	[TestFixture]
 	public class ImagePaletteConversionTests
 	{
-		const string BaseObjDataPath = "Q:\\Games\\Locomotion\\OriginalObjects\\GoG\\";
-		const string BaseImagePath = "Q:\\Games\\Locomotion\\ExportedImagesFromObjectEditor\\";
-		const string BasePalettePath = "Q:\\Games\\Locomotion\\Palettes\\";
-		const string PaletteFileName = "palette.png";
+		public const string BaseObjDataPath = "Q:\\Games\\Locomotion\\OriginalObjects\\GoG\\";
+		public const string BaseImagePath = "Q:\\Games\\Locomotion\\ExportedImagesFromObjectEditor\\";
+		public const string BasePalettePath = "Q:\\Games\\Locomotion\\Palettes\\";
+		public const string PaletteFileName = "palette.png";
 		readonly ILogger Logger = new Logger();
 
 		[Test]

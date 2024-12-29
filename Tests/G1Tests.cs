@@ -1,6 +1,8 @@
 using NUnit.Framework;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.FileParsing;
+using OpenLoco.Dat.Types;
+using SixLabors.ImageSharp;
 
 namespace OpenLoco.Dat.Tests
 {
@@ -26,14 +28,7 @@ namespace OpenLoco.Dat.Tests
 			{
 				foreach (var (a, b, i) in g1.G1Elements.Zip(g1a.G1Elements).Select((item, i) => (item.First, item.Second, i)))
 				{
-					//Assert.That(a.Offset, Is.EqualTo(b.Offset), $"[{i}]");
-					Assert.That(a.Width, Is.EqualTo(b.Width), $"[{i}]");
-					Assert.That(a.Height, Is.EqualTo(b.Height), $"[{i}]");
-					Assert.That(a.XOffset, Is.EqualTo(b.XOffset), $"[{i}]");
-					Assert.That(a.YOffset, Is.EqualTo(b.YOffset), $"[{i}]");
-					Assert.That(a.Flags, Is.EqualTo(b.Flags), $"[{i}]");
-					Assert.That(a.ZoomOffset, Is.EqualTo(b.ZoomOffset), $"[{i}]");
-					Assert.That(a.ImageData, Is.EqualTo(b.ImageData), $"[{i}]");
+					AssertG1ElementsEqual(a, b, i);
 				}
 			});
 		}
@@ -54,7 +49,42 @@ namespace OpenLoco.Dat.Tests
 			var e1 = SawyerStreamWriter.EncodeRLEImageData(d1);
 			var d2 = SawyerStreamReader.DecodeRLEImageData(d1 with { ImageData = e1 });
 
+			var paletteFile = Path.Combine(ImagePaletteConversionTests.BasePalettePath, ImagePaletteConversionTests.PaletteFileName);
+			var pm = new PaletteMap(paletteFile);
+			if (pm.TryConvertG1ToRgba32Bitmap(d1, out var i1))
+			{
+				i1.Save("i1.png");
+			}
+			if (pm.TryConvertG1ToRgba32Bitmap(d1 with { ImageData = d2 }, out var i2))
+			{
+				i2.Save("i2.png");
+			}
+
 			Assert.That(d2, Is.EqualTo(d1.ImageData).AsCollection);
+		}
+
+		public void AssertG1ElementsEqual(G1Element32 a, G1Element32 b, int i)
+		{
+			//Assert.That(a.Offset, Is.EqualTo(b.Offset), $"[{i}]");
+			Assert.That(a.Width, Is.EqualTo(b.Width), $"[{i}]");
+			Assert.That(a.Height, Is.EqualTo(b.Height), $"[{i}]");
+			Assert.That(a.XOffset, Is.EqualTo(b.XOffset), $"[{i}]");
+			Assert.That(a.YOffset, Is.EqualTo(b.YOffset), $"[{i}]");
+			Assert.That(a.Flags, Is.EqualTo(b.Flags), $"[{i}]");
+			Assert.That(a.ZoomOffset, Is.EqualTo(b.ZoomOffset), $"[{i}]");
+			Assert.That(a.ImageData, Is.EqualTo(b.ImageData).AsCollection, $"[{i}]");
+		}
+
+		public void AssertG1ElementsEqual(G1Element32 a, G1Element32 b)
+		{
+			//Assert.That(a.Offset, Is.EqualTo(b.Offset));
+			Assert.That(a.Width, Is.EqualTo(b.Width));
+			Assert.That(a.Height, Is.EqualTo(b.Height));
+			Assert.That(a.XOffset, Is.EqualTo(b.XOffset));
+			Assert.That(a.YOffset, Is.EqualTo(b.YOffset));
+			Assert.That(a.Flags, Is.EqualTo(b.Flags));
+			Assert.That(a.ZoomOffset, Is.EqualTo(b.ZoomOffset));
+			Assert.That(a.ImageData, Is.EqualTo(b.ImageData).AsCollection);
 		}
 	}
 }

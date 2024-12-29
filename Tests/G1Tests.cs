@@ -1,8 +1,6 @@
 using NUnit.Framework;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Types;
-using System.Text.Json;
 
 namespace OpenLoco.Dat.Tests
 {
@@ -22,7 +20,6 @@ namespace OpenLoco.Dat.Tests
 
 			Assert.That(g1.G1Header.NumEntries, Is.EqualTo(g1a.G1Header.NumEntries));
 			//Assert.That(g1.G1Header.TotalSize, Is.EqualTo(g1a.G1Header.TotalSize));
-
 			Assert.That(g1.G1Elements.Count, Is.EqualTo(g1a.G1Elements.Count));
 
 			Assert.Multiple(() =>
@@ -39,25 +36,6 @@ namespace OpenLoco.Dat.Tests
 					Assert.That(a.ZoomOffset, Is.EqualTo(b.ZoomOffset), $"[{i}]");
 					Assert.That(a.ImageData, Is.EqualTo(b.ImageData), $"[{i}]");
 				});
-			});
-		}
-
-		[Test]
-		public void EncodeDecodeRLE()
-		{
-			// SQBR103A
-			var dir = "C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\bin\\Debug\\net8.0";
-			var encodedBytes = JsonSerializer.Deserialize<G1Element32>(File.ReadAllText(Path.Combine(dir, "sq-g1-test-encoded-0.json")));
-			var decodedBytes = JsonSerializer.Deserialize<G1Element32>(File.ReadAllText(Path.Combine(dir, "sq-g1-test-decoded-0.json")));
-
-			//var decodedG1 = SawyerStreamReader.DecodeRLEImageData(encodedBytes);
-			var encodedG1 = SawyerStreamWriter.EncodeRLEImageData(decodedBytes);
-
-			Assert.Multiple(() =>
-			{
-				// pointers
-				Assert.That(encodedG1[..200], Is.EqualTo(encodedBytes.ImageData[..200]).AsCollection);
-				Assert.That(encodedG1[200..], Is.EqualTo(encodedBytes.ImageData[200..]).AsCollection);
 			});
 		}
 	}

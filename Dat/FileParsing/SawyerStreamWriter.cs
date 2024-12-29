@@ -428,7 +428,7 @@ namespace OpenLoco.Dat.FileParsing
 			var asciiName = objName.PadRight(8, ' ').Take(8).Select(c => (byte)c).ToArray();
 			s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, encodedObjStream.ToArray());
 
-			var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint32_t)encodedObjStream.Length);
+			var objHeader = new ObjectHeader(encoding, (uint32_t)encodedObjStream.Length);
 
 			// actual writing
 			var headerStream = new MemoryStream();
@@ -481,7 +481,13 @@ namespace OpenLoco.Dat.FileParsing
 				// write G1Elements ImageData
 				foreach (var g1Element in g1Elements)
 				{
-					objStream.Write(g1Element.ImageData);
+					// here we're duplicating the encoding above (ie for every RLE image, we're calculating its encoding twice)
+					// it is obviously inefficient but for now it's fine since encoding is fast
+					var imageData = g1Element.Flags.HasFlag(G1ElementFlags.IsRLECompressed)
+						? EncodeRLEImageData(g1Element)
+						: g1Element.ImageData;
+
+					objStream.Write(imageData);
 				}
 			}
 		}

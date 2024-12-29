@@ -308,12 +308,6 @@ namespace OpenLoco.Dat.FileParsing
 
 		public static G1Dat? LoadG1(string filename, ILogger logger)
 		{
-			if (!File.Exists(filename))
-			{
-				logger.Debug($"File {filename} does not exist");
-				return null;
-			}
-
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
 			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
@@ -357,7 +351,6 @@ namespace OpenLoco.Dat.FileParsing
 					}
 
 					currElement.ImageData = [.. g1Element32s[i - 1].ImageData];
-					continue;
 				}
 				else
 				{

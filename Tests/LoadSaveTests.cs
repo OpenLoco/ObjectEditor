@@ -9,18 +9,23 @@ using Logger = OpenLoco.Common.Logging.Logger;
 
 namespace OpenLoco.Dat.Tests
 {
+	public static class TestConstants
+	{
+		public const string BaseObjDataPath = "Q:\\Games\\Locomotion\\OriginalObjects\\Steam";
+	}
+
 	[TestFixture]
 	public class EncodingTests
 	{
 		static string[] VanillaFiles => Directory
-			.GetFiles(LoadSaveTests.BaseObjDataPath, "*.dat")
+			.GetFiles(TestConstants.BaseObjDataPath, "*.dat")
 			.Select(x => Path.GetFileName(x))
 			.ToArray();
 
 		[TestCaseSource(nameof(VanillaFiles))]
 		public void TestEncoding(string filename)
 		{
-			var file = Path.Combine(LoadSaveTests.BaseObjDataPath, filename);
+			var file = Path.Combine(TestConstants.BaseObjDataPath, filename);
 
 			var logger = new Logger();
 			var fullData = File.ReadAllBytes(file);
@@ -33,24 +38,21 @@ namespace OpenLoco.Dat.Tests
 
 			var remainingData = fullData[(S5Header.StructLength + ObjectHeader.StructLength)..];
 
-			File.WriteAllBytes("SNDA1-orig.mem", remainingData);
-
 			var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData);
 			var encoded = SawyerStreamWriter.Encode(hdrs.Obj.Encoding, decoded);
-			Assert.That(encoded, Is.EqualTo(remainingData).AsCollection);
+			var decoded2 = SawyerStreamReader.Decode(hdrs.Obj.Encoding, encoded);
+			Assert.That(decoded2, Is.EqualTo(decoded).AsCollection);
 		}
 	}
 
 	[TestFixture]
 	public class LoadSaveTests
 	{
-		public const string BaseObjDataPath = "Q:\\Games\\Locomotion\\OriginalObjects\\Steam";
-
 		// TODO: find a way to not have to hardcode a path here (but this may be impossible as it will depend on a user's PC and Loco install path)
 		// TODO: find a nicer (and more automated) way to check Name+Image fields, StringTable and G1Table
 
 		static (DatFileInfo, ILocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
-			=> LoadObject<T>(File.ReadAllBytes(Path.Combine(BaseObjDataPath, filename)));
+			=> LoadObject<T>(File.ReadAllBytes(Path.Combine(TestConstants.BaseObjDataPath, filename)));
 
 		static (DatFileInfo, ILocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
 		{
@@ -75,12 +77,12 @@ namespace OpenLoco.Dat.Tests
 
 			var logger = new Logger();
 			var objectName = filename.Split('.')[0];
-			var bytes1 = SawyerStreamWriter.WriteLocoObject(objectName, SourceGame.Vanilla, datInfo1.ObjectHeader.Encoding, logger, obj1, false);
+			var bytes1 = SawyerStreamWriter.WriteLocoObject(objectName, datInfo1.S5Header.SourceGame, datInfo1.ObjectHeader.Encoding, logger, obj1, false);
 
 			var (datInfo2, obj2, struc2) = LoadObject<T>(bytes1);
 			assertFunc(obj2, struc2);
 
-			var bytes2 = SawyerStreamWriter.WriteLocoObject(objectName, SourceGame.Vanilla, datInfo2.ObjectHeader.Encoding, logger, obj2, false);
+			var bytes2 = SawyerStreamWriter.WriteLocoObject(objectName, datInfo1.S5Header.SourceGame, datInfo2.ObjectHeader.Encoding, logger, obj2, false);
 
 			// we could just simply compare byte arrays and be done, but i wanted something that makes it easier to diagnose problems
 

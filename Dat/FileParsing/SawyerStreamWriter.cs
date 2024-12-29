@@ -128,7 +128,7 @@ namespace OpenLoco.Dat.FileParsing
 			{
 				SawyerEncoding.Uncompressed => data.ToArray(),
 				SawyerEncoding.RunLengthSingle => EncodeRunLengthSingle(data),
-				SawyerEncoding.RunLengthMulti => EncodeRunLengthMulti(data),
+				SawyerEncoding.RunLengthMulti => EncodeRunLengthSingle(EncodeRunLengthMulti(data)),
 				SawyerEncoding.Rotate => EncodeRotate(data),
 				_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
 			};
@@ -144,11 +144,6 @@ namespace OpenLoco.Dat.FileParsing
 
 			while (srcPtr < srcLen - 1)
 			{
-				if (buffer.Position > 111460)
-				{
-					//Debugger.Break();
-				}
-
 				if ((count != 0 && src[srcPtr] == src[srcPtr + 1]) || count > 125)
 				{
 					buffer.WriteByte((byte)(count - 1));

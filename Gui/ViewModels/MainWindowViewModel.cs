@@ -109,8 +109,11 @@ namespace OpenLoco.Gui.ViewModels
 			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.ProgramDataPath));
 			OpenG1 = ReactiveCommand.Create(LoadG1);
 			OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
-			OpenSoundEffect = ReactiveCommand.Create(LoadSoundEffects);
 			OpenMusic = ReactiveCommand.Create(LoadMusic);
+			OpenSoundEffect = ReactiveCommand.Create(LoadSoundEffects);
+			OpenTutorial = ReactiveCommand.Create(LoadTutorial);
+			OpenScores = ReactiveCommand.Create(LoadScores);
+			OpenLanguage = ReactiveCommand.Create(LoadLanguage);
 
 			UseDefaultPalette = ReactiveCommand.Create(LoadDefaultPalette);
 			UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
@@ -159,6 +162,8 @@ namespace OpenLoco.Gui.ViewModels
 #endif
 			#endregion
 		}
+
+
 
 		public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
 		{
@@ -265,6 +270,33 @@ namespace OpenLoco.Gui.ViewModels
 			if (fsi != null)
 			{
 				CurrentEditorModel = new SoundEffectsViewModel(fsi, Model);
+			}
+		}
+
+		async Task LoadTutorial()
+		{
+			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
+			if (fsi != null)
+			{
+				CurrentEditorModel = new TutorialViewModel(fsi, Model);
+			}
+		}
+
+		async Task LoadScores()
+		{
+			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
+			if (fsi != null)
+			{
+				CurrentEditorModel = new ScoresViewModel(fsi, Model);
+			}
+		}
+
+		async Task LoadLanguage()
+		{
+			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
+			if (fsi != null)
+			{
+				CurrentEditorModel = new LanguageViewModel(fsi, Model);
 			}
 		}
 

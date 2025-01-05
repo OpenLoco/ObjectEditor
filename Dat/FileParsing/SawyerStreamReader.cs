@@ -4,7 +4,6 @@ using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using OpenLoco.Dat.Types.SCV5;
-using System.Diagnostics;
 using System.Text;
 
 namespace OpenLoco.Dat.FileParsing
@@ -43,7 +42,9 @@ namespace OpenLoco.Dat.FileParsing
 
 			using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
 			using var reader = new BinaryReader(fileStream);
+
 			var data = reader.ReadBytes(S5Header.StructLength);
+
 			return data.Length != S5Header.StructLength
 				? throw new InvalidOperationException($"bytes read ({data.Length}) didn't match bytes expected ({S5Header.StructLength})")
 				: S5Header.Read(data);
@@ -83,7 +84,6 @@ namespace OpenLoco.Dat.FileParsing
 				logger?.Error(ex);
 				return (hdrs.S5, hdrs.Obj, []);
 			}
-			//remainingData = decodedData;
 
 			var headerFlag = BitConverter.GetBytes(hdrs.S5.Flags).AsSpan()[0..1];
 			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
@@ -329,7 +329,6 @@ namespace OpenLoco.Dat.FileParsing
 				BitConverter.ToUInt32(data[4..8]));
 
 			var g1ElementHeaders = data[8..];
-
 			var imageData = g1ElementHeaders[((int)g1Header.NumEntries * G1Element32.StructLength)..];
 			g1Header.ImageData = imageData.ToArray();
 			for (var i = 0; i < g1Header.NumEntries; ++i)
@@ -355,13 +354,8 @@ namespace OpenLoco.Dat.FileParsing
 				}
 				else
 				{
-					var nextOffset = GetNextNonDuplicateOffset(g1Element32s, i, (uint)g1Header.ImageData.Length);
+					var nextOffset = i == g1Header.NumEntries - 1 ? (uint)g1Header.ImageData.Length : g1Element32s[i + 1].Offset;
 					currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
-				}
-
-				if (i == 3894)
-				{
-					Debugger.Break();
 				}
 
 				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed))
@@ -371,16 +365,6 @@ namespace OpenLoco.Dat.FileParsing
 			}
 
 			return (g1Header, g1Element32s, G1Header.StructLength + g1ElementHeaders.Length + imageData.Length);
-
-			static uint GetNextNonDuplicateOffset(List<G1Element32> elements, int currentElement, uint imageDataLength)
-			{
-				while (++currentElement < elements.Count && elements[currentElement].Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
-				{ }
-
-				return currentElement >= elements.Count - 1
-					? imageDataLength // the last image in the file has an end offset that is the end of the file, which is the same as the total data length
-					: elements[currentElement].Offset;
-			}
 		}
 
 		public static byte[] DecodeRLEImageData(G1Element32 img)

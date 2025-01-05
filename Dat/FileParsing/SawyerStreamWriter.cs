@@ -461,7 +461,6 @@ namespace OpenLoco.Dat.FileParsing
 				foreach (var g1Element in g1Elements)
 				{
 					// this copies everything but it should be fine for now
-
 					var newElement = g1Element with
 					{
 						ImageData = g1Element.GetImageDataForSave(),

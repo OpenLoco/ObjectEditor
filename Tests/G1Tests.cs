@@ -16,42 +16,32 @@ namespace OpenLoco.Dat.Tests
 		public void LoadSaveLoadG1()
 		{
 			var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
+			ArgumentNullException.ThrowIfNull(g1);
+
 			var tempName = Path.GetTempFileName();
 			SawyerStreamWriter.SaveG1(tempName, g1);
 			var g1a = SawyerStreamReader.LoadG1(tempName, Logger);
 
-			Assert.That(g1.G1Header.NumEntries, Is.EqualTo(g1a.G1Header.NumEntries));
-			//Assert.That(g1.G1Header.TotalSize, Is.EqualTo(g1a.G1Header.TotalSize));
-			Assert.That(g1.G1Elements.Count, Is.EqualTo(g1a.G1Elements.Count));
+			ArgumentNullException.ThrowIfNull(g1a);
+			Assert.Multiple(() =>
+			{
+				Assert.That(g1.G1Header.NumEntries, Is.EqualTo(g1a.G1Header.NumEntries));
+				Assert.That(g1.G1Header.TotalSize, Is.EqualTo(g1a.G1Header.TotalSize));
+				Assert.That(g1.G1Elements, Has.Count.EqualTo(g1a.G1Elements.Count));
+			});
 
 			Assert.Multiple(() =>
 			{
 				foreach (var (expected, actual, i) in g1.G1Elements.Zip(g1a.G1Elements).Select((item, i) => (item.First, item.Second, i)))
 				{
-					// debugging
-					if (i == 3894)
-					{
-						var paletteFile = Path.Combine(ImagePaletteConversionTests.BasePalettePath, ImagePaletteConversionTests.PaletteFileName);
-						var pm = new PaletteMap(paletteFile);
-						if (pm.TryConvertG1ToRgba32Bitmap(g1.G1Elements[3894], out var i1))
-						{
-							i1.Save("i1.png");
-						}
-						if (pm.TryConvertG1ToRgba32Bitmap(g1a.G1Elements[3894], out var i2))
-						{
-							i2.Save("i2.png");
-						}
-					}
-					//
-
 					AssertG1ElementsEqual(expected, actual, i);
 				}
 			});
 		}
 
 		// These images have RLE runs/segment lengths > 127, which require special handling in the encode
-		// method. I split these out to initially debug why they weren't working but I will leave these tests
-		// in as they serve as a kind of documentation of this quirk of the g1 encoding.
+		// method. I split these out to initially debug why they weren't working. The code now works but
+		// I will leave these tests in as they serve as a kind of documentation of this quirk of the g1 encoding.
 		[TestCase(3539)]
 		[TestCase(3540)]
 		[TestCase(3541)]
@@ -69,7 +59,7 @@ namespace OpenLoco.Dat.Tests
 
 		public void AssertG1ElementsEqual(G1Element32 expected, G1Element32 actual, int i)
 		{
-			//Assert.That(a.Offset, Is.EqualTo(b.Offset), $"[{i}]");
+			Assert.That(actual.Offset, Is.EqualTo(expected.Offset), $"[{i}]");
 			Assert.That(actual.Width, Is.EqualTo(expected.Width), $"[{i}]");
 			Assert.That(actual.Height, Is.EqualTo(expected.Height), $"[{i}]");
 			Assert.That(actual.XOffset, Is.EqualTo(expected.XOffset), $"[{i}]");

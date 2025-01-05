@@ -104,7 +104,7 @@ namespace OpenLoco.Dat.Objects
 					arr = remainingData[1..size].ToArray();
 				}
 
-				AnimationSequences.Add(arr.ToList());
+				AnimationSequences.Add([.. arr]);
 				remainingData = remainingData[(size + 1)..];
 			}
 
@@ -125,9 +125,7 @@ namespace OpenLoco.Dat.Objects
 			{
 				var ptr_1F = 0;
 				while (remainingData[++ptr_1F] != 0xFF)
-				{
-					;
-				}
+				{ }
 
 				BuildingVariations.Add(remainingData[..ptr_1F].ToArray().ToList());
 				ptr_1F++;
@@ -232,19 +230,19 @@ namespace OpenLoco.Dat.Objects
 				// produced cargo
 				foreach (var obj in ProducedCargo.Fill(MaxProducedCargoType, S5Header.NullHeader))
 				{
-					ms.Write(obj.Write());
+					ms.Write(obj!.Write());
 				}
 
 				// required cargo
 				foreach (var obj in RequiredCargo.Fill(MaxRequiredCargoType, S5Header.NullHeader))
 				{
-					ms.Write(obj.Write());
+					ms.Write(obj!.Write());
 				}
 
 				// wall types
 				foreach (var obj in WallTypes.Fill(MaxWallTypeCount, S5Header.NullHeader))
 				{
-					ms.Write(obj.Write());
+					ms.Write(obj!.Write());
 				}
 
 				// wall type

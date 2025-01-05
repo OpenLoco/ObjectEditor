@@ -151,6 +151,7 @@ namespace OpenLoco.Dat.FileParsing
 					srcNormStart += count;
 					count = 0;
 				}
+
 				if (src[srcPtr] == src[srcPtr + 1])
 				{
 					for (; count < 125 && srcPtr + count < srcLen; count++)
@@ -160,6 +161,7 @@ namespace OpenLoco.Dat.FileParsing
 							break;
 						}
 					}
+
 					var a = (byte)(257 - count);
 					var b = src[srcPtr];
 					buffer.WriteByte(a);
@@ -174,10 +176,12 @@ namespace OpenLoco.Dat.FileParsing
 					srcPtr++;
 				}
 			}
+
 			if (srcPtr == srcLen - 1)
 			{
 				count++;
 			}
+
 			if (count != 0)
 			{
 				buffer.WriteByte((byte)(count - 1));
@@ -193,7 +197,6 @@ namespace OpenLoco.Dat.FileParsing
 		{
 			using var buffer = new MemoryStream();
 
-			var src = 0;
 			var srcLen = data.Length;
 			if (srcLen == 0)
 			{
@@ -202,7 +205,7 @@ namespace OpenLoco.Dat.FileParsing
 
 			// Need to emit at least one byte, otherwise there is nothing to repeat
 			buffer.WriteByte(0xFF);
-			buffer.WriteByte(data[src]);
+			buffer.WriteByte(data[0]);
 
 			// Iterate through remainder of the source buffer
 			for (var i = 1; i < srcLen;)
@@ -225,12 +228,12 @@ namespace OpenLoco.Dat.FileParsing
 						{
 							repeatCount++;
 						}
-
 						else
 						{
 							break;
 						}
 					}
+
 					if (repeatCount > bestRepeatCount)
 					{
 						bestRepeatIndex = repeatIndex;
@@ -359,7 +362,6 @@ namespace OpenLoco.Dat.FileParsing
 					ms.WriteByte((byte)count);
 					ms.WriteByte((byte)StartX);
 					ms.Write(RunBytes.ToArray());
-
 				}
 			}
 

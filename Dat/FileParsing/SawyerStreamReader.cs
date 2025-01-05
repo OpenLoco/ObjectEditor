@@ -169,19 +169,24 @@ namespace OpenLoco.Dat.FileParsing
 			}
 
 			LocoObject? newObj;
-			//try
-			//{
-			// some objects have graphics data
-			var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			logger.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			try
+			{
+				// some objects have graphics data
+				var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
+				logger.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+				newObj = new LocoObject(locoStruct, stringTable, imageTable);
+				remainingData = remainingData[imageTableBytesRead..];
+			}
+			catch (Exception ex)
+			{
+				newObj = new LocoObject(locoStruct, stringTable);
+				logger.Error(ex, "Error loading graphics table");
+			}
 
-			newObj = new LocoObject(locoStruct, stringTable, imageTable);
-			//}
-			//catch (Exception ex)
-			//{
-			//	newObj = new LocoObject(locoStruct, stringTable);
-			//	logger.Error(ex, "Error loading graphics table");
-			//}
+			if (remainingData.Length > 0)
+			{
+				logger.Debug($"\"{s5Header.Name}\" has {remainingData.Length} bytes unaccounted for. What is this extra data???");
+			}
 
 			// some objects have variable-sized data
 			if (loadExtra && locoStruct is ILocoStructPostLoad locoStructPostLoad)
@@ -356,11 +361,6 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					var nextOffset = GetNextNonDuplicateOffset(g1Element32s, i, (uint)g1Header.ImageData.Length);
 					currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
-
-					if (currElement.ImageData.Count() == 0)
-					{
-						throw new InvalidOperationException();
-					}
 				}
 
 				// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
@@ -371,7 +371,7 @@ namespace OpenLoco.Dat.FileParsing
 				}
 			}
 
-			return (g1Header, g1Element32s, G1Header.StructLength + g1ElementHeaders.Length + imageData.Length);
+			return (g1Header, g1Element32s, G1Header.StructLength + (int)g1Header.TotalSize);
 		}
 
 		static uint GetNextNonDuplicateOffset(List<G1Element32> g1Element32s, int i, uint imageDateLength)

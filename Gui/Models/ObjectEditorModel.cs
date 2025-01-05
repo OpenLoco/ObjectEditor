@@ -212,7 +212,12 @@ namespace OpenLoco.Gui.Models
 				}
 				else
 				{
-					var filename = Path.Combine(Settings.ObjDataDirectory, filesystemItem.Filename);
+					var filename = string.Empty;
+					if (File.Exists(filesystemItem.Filename))
+						filename = filesystemItem.Filename;
+					else
+						filename = Path.Combine(Settings.ObjDataDirectory, filesystemItem.Filename);
+
 					var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
 					if (obj != null)
 					{

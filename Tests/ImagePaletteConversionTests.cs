@@ -16,11 +16,11 @@ namespace OpenLoco.Dat.Tests
 		readonly ILogger Logger = new Logger();
 
 		[Test]
-		public void TestWrite00000000ToIndex0()
+		public void Write00000000ToIndex0()
 		{
 			var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 			var paletteMap = Image.Load<Rgba32>(paletteFile);
-			paletteMap[0, 0] = Color.Transparent;
+			paletteMap[0, 0] = PaletteMap.Transparent.Color;
 			paletteMap.SaveAsPng(paletteFile);
 		}
 
@@ -54,19 +54,27 @@ namespace OpenLoco.Dat.Tests
 			var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 			var paletteMap = new PaletteMap(paletteFile);
 			var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource), Logger);
-
-			// convert g1 data into an image, and then back
+			var g1Elements = obj!.Value!.LocoObject!.G1Elements;
 
 			Assert.Multiple(() =>
 			{
-				_ = Parallel.ForEach(obj.Value.LocoObject.G1Elements, (element, _, i) =>
+				//_ = Parallel.ForEach(g1Elements, (element, _, i) =>
+				//{
+				//	if (paletteMap.TryConvertG1ToRgba32Bitmap(element, out var image0))
+				//	{
+				//		var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0!, element.Flags);
+				//		Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i}]");
+				//	}
+				//});
+				var i = 0;
+				foreach (var element in g1Elements)
 				{
 					if (paletteMap.TryConvertG1ToRgba32Bitmap(element, out var image0))
 					{
 						var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0!, element.Flags);
-						Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i}]");
+						Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i++}]");
 					}
-				});
+				}
 			});
 		}
 	}

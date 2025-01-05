@@ -169,19 +169,19 @@ namespace OpenLoco.Dat.FileParsing
 			}
 
 			LocoObject? newObj;
-			try
-			{
-				// some objects have graphics data
-				var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-				logger.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
+			//try
+			//{
+			// some objects have graphics data
+			var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
+			logger.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
 
-				newObj = new LocoObject(locoStruct, stringTable, imageTable);
-			}
-			catch (Exception ex)
-			{
-				newObj = new LocoObject(locoStruct, stringTable);
-				logger.Error(ex, "Error loading graphics table");
-			}
+			newObj = new LocoObject(locoStruct, stringTable, imageTable);
+			//}
+			//catch (Exception ex)
+			//{
+			//	newObj = new LocoObject(locoStruct, stringTable);
+			//	logger.Error(ex, "Error loading graphics table");
+			//}
 
 			// some objects have variable-sized data
 			if (loadExtra && locoStruct is ILocoStructPostLoad locoStructPostLoad)
@@ -354,17 +354,40 @@ namespace OpenLoco.Dat.FileParsing
 				}
 				else
 				{
-					var nextOffset = i == g1Header.NumEntries - 1 ? (uint)g1Header.ImageData.Length : g1Element32s[i + 1].Offset;
+					var nextOffset = GetNextNonDuplicateOffset(g1Element32s, i, (uint)g1Header.ImageData.Length);
 					currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
+
+					if (currElement.ImageData.Count() == 0)
+					{
+						throw new InvalidOperationException();
+					}
 				}
 
-				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed))
+				// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
+				// image (which was also compressed) is now uncompressed, so we don't need do double-uncompress it.
+				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
 				{
 					currElement.ImageData = DecodeRLEImageData(currElement);
 				}
 			}
 
 			return (g1Header, g1Element32s, G1Header.StructLength + g1ElementHeaders.Length + imageData.Length);
+		}
+
+		static uint GetNextNonDuplicateOffset(List<G1Element32> g1Element32s, int i, uint imageDateLength)
+		{
+			uint nextOffset;
+			do
+			{
+				nextOffset = i == g1Element32s.Count - 1
+					? imageDateLength
+					: g1Element32s[i + 1].Offset;
+
+				i++;
+			}
+			while (i < g1Element32s.Count && g1Element32s[i].Flags.HasFlag(G1ElementFlags.DuplicatePrevious));
+
+			return nextOffset;
 		}
 
 		public static byte[] DecodeRLEImageData(G1Element32 img)

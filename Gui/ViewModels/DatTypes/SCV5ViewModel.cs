@@ -48,6 +48,7 @@ namespace OpenLoco.Gui.ViewModels
 				{
 					return CurrentS5File.TileElementMap[TileElementX, TileElementY].ToBindingList();
 				}
+
 				return [];
 			}
 		}

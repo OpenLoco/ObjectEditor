@@ -78,6 +78,8 @@ namespace OpenLoco.Gui.ViewModels
 				}
 			}
 
+			// todo: may be leftover bytes still
+
 			this.RaisePropertyChanged(nameof(TutorialInputs));
 		}
 

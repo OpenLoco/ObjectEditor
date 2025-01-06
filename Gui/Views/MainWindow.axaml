@@ -598,9 +598,6 @@
 		<DataTemplate DataType="vm:TutorialViewModel">
 			<ScrollViewer>
 				<ItemsRepeater ItemsSource="{Binding TutorialInputs}" Background="{DynamicResource ExpanderContentBackground}">
-					<!--<ItemsRepeater.Layout>
-						<UniformGridLayout Orientation="Vertical"/>
-					</ItemsRepeater.Layout>-->
 					<ItemsRepeater.ItemTemplate>
 						<DataTemplate>
 							<TextBlock Text="{Binding}"></TextBlock>

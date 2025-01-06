@@ -2,14 +2,33 @@ using OpenLoco.Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.IO;
 
 namespace OpenLoco.Gui.ViewModels
 {
+	public enum MouseButton : uint16_t
+	{
+		Released = 0,
+		LeftPressed = 1,
+		LeftReleased = 2,
+		RightPressed = 3,
+		RightReleased = 4,
+	};
+
+	public enum KeyModifier : uint8_t
+	{
+		None = 0,
+		Shift = 1 << 0,
+		Control = 1 << 1,
+		Unknown = 1 << 2,
+		Cheat = 1 << 7,
+		Invalid = 0xFF,
+	};
+
 	public interface ITutorialAction;
-	public record TutorialActionA(uint16_t Unk, uint16_t MouseX, uint16_t MouseY) : ITutorialAction;
-	public record TutorialActionB(uint16_t KeyModifier, uint16_t MouseX, uint16_t MouseY, uint16_t MouseButton) : ITutorialAction;
+	public record TutorialActionA(KeyModifier KeyModifier, uint16_t MouseX, uint16_t MouseY, MouseButton MouseButton) : ITutorialAction;
+	public record TutorialActionB(uint16_t Unk1, uint16_t Unk2, uint16_t Unk3) : ITutorialAction;
 
 	public class TutorialViewModel : BaseLocoFileViewModel
 	{
@@ -17,7 +36,7 @@ namespace OpenLoco.Gui.ViewModels
 			: base(currentFile, model) => Load();
 
 		[Reactive]
-		public BindingList<ITutorialAction> TutorialInputs { get; set; } = [];
+		public ObservableCollection<ITutorialAction> TutorialInputs { get; set; } = [];
 
 		public override void Load()
 		{
@@ -35,7 +54,7 @@ namespace OpenLoco.Gui.ViewModels
 						break;
 					}
 
-					var tAction = new TutorialActionA(
+					var tAction = new TutorialActionB(
 						BitConverter.ToUInt16(bytes[(i + 0)..(i + 2)]),
 						BitConverter.ToUInt16(bytes[(i + 2)..(i + 4)]),
 						BitConverter.ToUInt16(bytes[(i + 4)..(i + 6)]));
@@ -49,11 +68,11 @@ namespace OpenLoco.Gui.ViewModels
 						break;
 					}
 
-					var tAction = new TutorialActionB(
-						BitConverter.ToUInt16(bytes[(i + 0)..(i + 2)]),
+					var tAction = new TutorialActionA(
+						(KeyModifier)BitConverter.ToUInt16(bytes[(i + 0)..(i + 2)]),
 						BitConverter.ToUInt16(bytes[(i + 2)..(i + 4)]),
 						BitConverter.ToUInt16(bytes[(i + 4)..(i + 6)]),
-						BitConverter.ToUInt16(bytes[(i + 6)..(i + 8)]));
+						(MouseButton)BitConverter.ToUInt16(bytes[(i + 6)..(i + 8)]));
 					TutorialInputs.Add(tAction);
 					i += 8;
 				}

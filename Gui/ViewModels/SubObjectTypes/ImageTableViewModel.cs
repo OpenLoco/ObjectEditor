@@ -193,13 +193,18 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public int SelectedImageIndex { get; set; } = -1;
 
-		[Reactive]
+		//[Reactive]
 		public SelectionModel<Bitmap> SelectionModel { get; set; }
 
 		public UIG1Element32? SelectedG1Element
 			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0
 			? null
 			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
+
+		public void Dispose()
+		{
+			SelectionModel = null;
+		}
 
 		//todo: second half should be model
 		public async Task ImportImages()

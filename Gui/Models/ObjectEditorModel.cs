@@ -214,9 +214,13 @@ namespace OpenLoco.Gui.Models
 				{
 					var filename = string.Empty;
 					if (File.Exists(filesystemItem.Filename))
+					{
 						filename = filesystemItem.Filename;
+					}
 					else
+					{
 						filename = Path.Combine(Settings.ObjDataDirectory, filesystemItem.Filename);
+					}
 
 					var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
 					if (obj != null)
@@ -325,15 +329,35 @@ namespace OpenLoco.Gui.Models
 
 				var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.Filename);
 				var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-				if (objectIndexFilenames.Except(allFiles).Any() || allFiles.Except(objectIndexFilenames).Any())
+
+				var a = objectIndexFilenames.Except(allFiles);
+				var b = allFiles.Except(objectIndexFilenames);
+				if (a.Any() || b.Any())
 				{
-					Logger.Warning("Index file appears to be outdated - recreating now.");
-					await RecreateIndex(directory, progress).ConfigureAwait(false);
+					Logger.Warning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
+					Logger.Warning($"Objects in index but not on disk: {string.Join(',', a)}");
+					Logger.Warning($"Objects on disk but not in index: {string.Join(',', b)}");
+					await UpdateIndex(directory, progress, a.Concat(b)).ConfigureAwait(false);
 				}
 			}
 			else
 			{
 				await RecreateIndex(directory, progress).ConfigureAwait(false);
+			}
+
+			async Task UpdateIndex(string directory, IProgress<float> progress, IEnumerable<string> filesToAdd)
+			{
+				Logger.Info($"Updating index file for {directory}");
+				_ = ObjectIndex.UpdateIndex(directory, Logger, filesToAdd, progress);
+
+				if (string.IsNullOrEmpty(Settings.IndexFileName))
+				{
+					Logger.Error("Index filename was null or empty.");
+					return;
+				}
+
+				await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
+				Logger.Info($"Index was saved to {Settings.IndexFileName}");
 			}
 
 			async Task RecreateIndex(string directory, IProgress<float> progress)
@@ -343,7 +367,7 @@ namespace OpenLoco.Gui.Models
 
 				if (ObjectIndex == null)
 				{
-					Logger.Error("Object Index was unable to be created.");
+					Logger.Error("Index was unable to be created.");
 					return;
 				}
 

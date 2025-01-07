@@ -13,7 +13,7 @@ namespace OpenLoco.Common.Logging
 		public void Log(LogLevel level, string message, string callerMemberName = "", string sourceFilePath = "", int sourceLineNumber = 0)
 		{
 			// Get the class name using reflection
-			var frame = new StackFrame(1); // Skip the Log method itself
+			var frame = new StackFrame(2); // Skip the Log methods
 			var method = frame.GetMethod();
 			var className = method?.DeclaringType?.Name ?? "<unknown_class>";
 

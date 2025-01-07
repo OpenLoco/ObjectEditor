@@ -1,24 +1,22 @@
+using Common.Json;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 var builder = new DbContextOptionsBuilder<LocoDb>();
 const string connectionString = "Data Source=Q:\\Games\\Locomotion\\Database\\loco.db";
 _ = builder.UseSqlite(connectionString);
 var db = new LocoDb(builder.Options);
 
-var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
-
 Console.WriteLine("loading");
 
-var authors = JsonSerializer.Serialize<IEnumerable<string>>(db.Authors.Select(a => a.Name).ToList().Order(), jsonOptions);
-var tags = JsonSerializer.Serialize<IEnumerable<string>>(db.Tags.Select(t => t.Name).ToList().Order(), jsonOptions);
-var licences = JsonSerializer.Serialize<IEnumerable<LicenceJsonRecord>>(db.Licences.Select(l => new LicenceJsonRecord(l.Name, l.Text)).ToList().OrderBy(l => l.Name), jsonOptions);
-var objectPacks = JsonSerializer.Serialize<IEnumerable<ObjectPackJsonRecord>>(db.ObjectPacks.Select(m => new ObjectPackJsonRecord(m.Name, m.Description, m.Author)).ToList().OrderBy(m => m.Name), jsonOptions);
-//var scv5Files = JsonSerializer.Serialize<IEnumerable<?>>(db.Licences.Select(l => new LicenceJsonRecord(l.Name, l.Text)).ToList().OrderBy(l => l.Name), jsonOptions);
-//var scv5FilePacks = JsonSerializer.Serialize<IEnumerable<SCV5FilePackJsonRecord>>(db.ObjectPacks.Select(m => new SCV5FilePackJsonRecord(m.Name, m.Description, m.Author)).ToList().OrderBy(m => m.Name), jsonOptions);
+var authors = JsonSerializer.Serialize<IEnumerable<string>>(db.Authors.Select(a => a.Name).ToList().Order(), JsonFile.SerializerOptions);
+var tags = JsonSerializer.Serialize<IEnumerable<string>>(db.Tags.Select(t => t.Name).ToList().Order(), JsonFile.SerializerOptions);
+var licences = JsonSerializer.Serialize<IEnumerable<LicenceJsonRecord>>(db.Licences.Select(l => new LicenceJsonRecord(l.Name, l.Text)).ToList().OrderBy(l => l.Name), JsonFile.SerializerOptions);
+var objectPacks = JsonSerializer.Serialize<IEnumerable<ObjectPackJsonRecord>>(db.ObjectPacks.Select(m => new ObjectPackJsonRecord(m.Name, m.Description, m.Author)).ToList().OrderBy(m => m.Name), JsonFile.SerializerOptions);
+//var scv5Files = JsonSerializer.Serialize<IEnumerable<?>>(db.Licences.Select(l => new LicenceJsonRecord(l.Name, l.Text)).ToList().OrderBy(l => l.Name), JsonFile.SerializerOptions);
+//var scv5FilePacks = JsonSerializer.Serialize<IEnumerable<SCV5FilePackJsonRecord>>(db.ObjectPacks.Select(m => new SCV5FilePackJsonRecord(m.Name, m.Description, m.Author)).ToList().OrderBy(m => m.Name), JsonFile.SerializerOptions);
 
 var objs = new List<ObjectMetadata>();
 
@@ -42,7 +40,7 @@ foreach (var o in db.Objects
 	objs.Add(obj);
 }
 
-var objects = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objs, jsonOptions);
+var objects = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objs, JsonFile.SerializerOptions);
 
 Console.WriteLine("writing");
 

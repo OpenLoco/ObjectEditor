@@ -1,10 +1,18 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Common.Json
 {
 	public static class JsonFile
 	{
 		const int BufferSize = 4096;
+
+		[JsonIgnore]
+		public static JsonSerializerOptions SerializerOptions { get; } = new()
+		{
+			WriteIndented = true,
+			AllowTrailingCommas = true
+		};
 
 		public static async Task SerializeToFileAsync<T>(T obj, string filePath, JsonSerializerOptions? options = null)
 		{

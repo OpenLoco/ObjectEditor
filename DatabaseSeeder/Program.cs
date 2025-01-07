@@ -1,3 +1,4 @@
+using Common.Json;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -6,7 +7,6 @@ using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 using var db = Seed();
 
@@ -52,15 +52,13 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	Console.WriteLine("Seeding");
 	var logger = new Logger();
 
-	var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
-
 	// ...
 
 	if (!db.Authors.Any())
 	{
 		Console.WriteLine("Seeding Authors");
 
-		var authors = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\authors.json"), jsonOptions);
+		var authors = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\authors.json"), JsonFile.SerializerOptions);
 		if (authors != null)
 		{
 			db.AddRange(authors.Select(x => new TblAuthor() { Name = x }));
@@ -74,7 +72,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding Tags");
 
-		var tags = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\tags.json"), jsonOptions);
+		var tags = JsonSerializer.Deserialize<IEnumerable<string>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\tags.json"), JsonFile.SerializerOptions);
 		if (tags != null)
 		{
 			db.AddRange(tags.Select(x => new TblTag() { Name = x }));
@@ -88,7 +86,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding Licences");
 
-		var licences = JsonSerializer.Deserialize<IEnumerable<LicenceJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\licences.json"), jsonOptions);
+		var licences = JsonSerializer.Deserialize<IEnumerable<LicenceJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\licences.json"), JsonFile.SerializerOptions);
 		if (licences != null)
 		{
 			db.AddRange(licences.Select(x => new TblLicence() { Name = x.Name, Text = x.Text }));
@@ -102,7 +100,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	{
 		Console.WriteLine("Seeding ObjectPacks");
 
-		var modpacks = JsonSerializer.Deserialize<IEnumerable<ObjectPackJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectPacks.json"), jsonOptions);
+		var modpacks = JsonSerializer.Deserialize<IEnumerable<ObjectPackJsonRecord>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\objectPacks.json"), JsonFile.SerializerOptions);
 		if (modpacks != null)
 		{
 			db.AddRange(modpacks.Select(x => new TblLocoObjectPack() { Name = x.Name, Author = x.Author == null ? null : db.Authors.Single(a => a.Name == x.Author) }));
@@ -118,7 +116,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 		var progress = new Progress<float>();
 		var index = ObjectIndex.LoadOrCreateIndex(ObjDirectory, logger);
-		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions);
+		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), JsonFile.SerializerOptions);
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
 

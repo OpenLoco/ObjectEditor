@@ -30,6 +30,7 @@ using System.Text.Json;
 
 namespace OpenLoco.Gui.ViewModels
 {
+
 	public class MainWindowViewModel : ViewModelBase
 	{
 		public ObjectEditorModel Model { get; }
@@ -37,7 +38,7 @@ namespace OpenLoco.Gui.ViewModels
 		public FolderTreeViewModel FolderTreeViewModel { get; }
 
 		[Reactive]
-		public ILocoFileViewModel? CurrentEditorModel { get; set; }
+		public TabViewPageViewModel CurrentTabModel { get; set; } = new();
 
 		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; }
 
@@ -183,10 +184,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadDefaultPalette()
 		{
 			Model.PaletteMap = new PaletteMap(DefaultPaletteImage);
-			if (CurrentEditorModel != null)
-			{
-				_ = await CurrentEditorModel.ReloadCommand.Execute();
-			}
+			CurrentTabModel.ReloadAll();
 		}
 
 		async Task LoadCustomPalette()
@@ -204,13 +202,8 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			//
 			Model.PaletteMap = new PaletteMap(path);
-			// could use reactive here, but its simple for now so we won't. just reload the current model, which will in turn reload the images with the new palette
-			if (CurrentEditorModel != null)
-			{
-				_ = await CurrentEditorModel.ReloadCommand.Execute();
-			}
+			CurrentTabModel.ReloadAll();
 		}
 
 		public async Task LoadSingleObject()
@@ -235,14 +228,14 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		void SetObjectViewModel(FileSystemItemObject fsi)
-			=> CurrentEditorModel = new DatObjectEditorViewModel(fsi, Model);
+			=> CurrentTabModel.AddDocument(new DatObjectEditorViewModel(fsi, Model));
 
 		public async Task LoadG1()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentEditorModel = new G1ViewModel(fsi, Model);
+				CurrentTabModel.AddDocument(new G1ViewModel(fsi, Model));
 			}
 		}
 
@@ -251,7 +244,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.SCV5FileTypes);
 			if (fsi != null)
 			{
-				CurrentEditorModel = new SCV5ViewModel(fsi, Model);
+				CurrentTabModel.AddDocument(new SCV5ViewModel(fsi, Model));
 			}
 		}
 
@@ -260,7 +253,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentEditorModel = new MusicViewModel(fsi, Model);
+				CurrentTabModel.AddDocument(new MusicViewModel(fsi, Model));
 			}
 		}
 
@@ -269,7 +262,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentEditorModel = new SoundEffectsViewModel(fsi, Model);
+				CurrentTabModel.AddDocument(new SoundEffectsViewModel(fsi, Model));
 			}
 		}
 
@@ -278,7 +271,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentEditorModel = new TutorialViewModel(fsi, Model);
+				CurrentTabModel.AddDocument(new TutorialViewModel(fsi, Model));
 			}
 		}
 
@@ -287,7 +280,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentEditorModel = new ScoresViewModel(fsi, Model);
+				CurrentTabModel.AddDocument(new ScoresViewModel(fsi, Model));
 			}
 		}
 
@@ -296,7 +289,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentEditorModel = new LanguageViewModel(fsi, Model);
+				CurrentTabModel.AddDocument(new LanguageViewModel(fsi, Model));
 			}
 		}
 

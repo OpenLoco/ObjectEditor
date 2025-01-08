@@ -156,6 +156,7 @@
 						<TabControl.Styles>
 							<Style Selector="TabItem">
 								<Setter Property="Padding" Value="8"/>
+								<Setter Property="FontSize" Value="14"/>
 							</Style>
 						</TabControl.Styles>
 						<TabItem Header="Object">
@@ -301,6 +302,12 @@
 					</TabControl>
 					<GridSplitter Grid.Column="1" />
 					<TabControl Grid.Column="2">
+						<TabControl.Styles>
+							<Style Selector="TabItem">
+								<Setter Property="Padding" Value="8"/>
+								<Setter Property="FontSize" Value="14"/>
+							</Style>
+						</TabControl.Styles>
 						<TabItem Header="Headers">
 							<Border Margin="4" Background="{DynamicResource ExpanderContentBackground}">
 								<StackPanel Margin="4">
@@ -840,6 +847,7 @@
 			<TabControl.Styles>
 				<Style Selector="TabItem">
 					<Setter Property="Padding" Value="2, 0, 2, 0"/>
+					<Setter Property="FontSize" Value="14"/>
 				</Style>
 			</TabControl.Styles>
 			<TabControl.ItemTemplate>
@@ -847,7 +855,7 @@
 					<TabItem Margin="0" Padding="0" BorderThickness="0" MaxHeight="32">
 						<TabItem.Header>
 							<StackPanel Orientation="Horizontal" Background="{DynamicResource ButtonBackground}">
-								<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center" FontSize="12"/>
+								<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center"/>
 								<Button BorderThickness="0" FontSize="12" VerticalAlignment="Center" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}">X</Button>
 							</StackPanel>
 						</TabItem.Header>

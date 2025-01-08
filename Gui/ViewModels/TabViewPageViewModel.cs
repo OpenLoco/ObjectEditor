@@ -13,10 +13,15 @@ namespace OpenLoco.Gui.ViewModels
 
 		public void AddDocument(ILocoFileViewModel model)
 		{
-			if (!Documents.Contains(model) && !Documents.Any(x => x.CurrentFile.Filename == model.CurrentFile.Filename))
+			var existing = Documents.SingleOrDefault(x => x.CurrentFile.Filename == model.CurrentFile.Filename);
+			if (existing != null)
 			{
-				Documents.Add(model);
+				SelectedDocument = existing;
+				return;
 			}
+
+			Documents.Add(model);
+			SelectedDocument = model;
 		}
 
 		[Reactive]

@@ -153,6 +153,11 @@
 			<DockPanel DataContext="{Binding}" Margin="4">
 				<Grid ColumnDefinitions="*, Auto, 384">
 					<TabControl Grid.Column="0">
+						<TabControl.Styles>
+							<Style Selector="TabItem">
+								<Setter Property="Padding" Value="8"/>
+							</Style>
+						</TabControl.Styles>
 						<TabItem Header="Object">
 							<ScrollViewer>
 								<ContentControl Content="{Binding CurrentObjectViewModel}"></ContentControl>

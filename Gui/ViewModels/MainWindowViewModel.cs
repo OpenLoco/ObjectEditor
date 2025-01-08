@@ -38,7 +38,6 @@ namespace OpenLoco.Gui.ViewModels
 		public FolderTreeViewModel FolderTreeViewModel { get; }
 
 		[Reactive]
-		//public ILocoFileViewModel? CurrentEditorModel { get; set; }
 		public TabViewPageViewModel CurrentTabModel { get; set; } = new();
 
 		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; }
@@ -229,14 +228,14 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		void SetObjectViewModel(FileSystemItemObject fsi)
-			=> CurrentTabModel.Documents.Add(new DatObjectEditorViewModel(fsi, Model));
+			=> CurrentTabModel.AddDocument(new DatObjectEditorViewModel(fsi, Model));
 
 		public async Task LoadG1()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentTabModel.Documents.Add(new G1ViewModel(fsi, Model));
+				CurrentTabModel.AddDocument(new G1ViewModel(fsi, Model));
 			}
 		}
 
@@ -245,7 +244,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.SCV5FileTypes);
 			if (fsi != null)
 			{
-				CurrentTabModel.Documents.Add(new SCV5ViewModel(fsi, Model));
+				CurrentTabModel.AddDocument(new SCV5ViewModel(fsi, Model));
 			}
 		}
 
@@ -254,7 +253,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentTabModel.Documents.Add(new MusicViewModel(fsi, Model));
+				CurrentTabModel.AddDocument(new MusicViewModel(fsi, Model));
 			}
 		}
 
@@ -263,7 +262,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentTabModel.Documents.Add(new SoundEffectsViewModel(fsi, Model));
+				CurrentTabModel.AddDocument(new SoundEffectsViewModel(fsi, Model));
 			}
 		}
 
@@ -272,7 +271,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentTabModel.Documents.Add(new TutorialViewModel(fsi, Model));
+				CurrentTabModel.AddDocument(new TutorialViewModel(fsi, Model));
 			}
 		}
 
@@ -281,7 +280,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentTabModel.Documents.Add(new ScoresViewModel(fsi, Model));
+				CurrentTabModel.AddDocument(new ScoresViewModel(fsi, Model));
 			}
 		}
 
@@ -290,7 +289,7 @@ namespace OpenLoco.Gui.ViewModels
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 			if (fsi != null)
 			{
-				CurrentTabModel.Documents.Add(new LanguageViewModel(fsi, Model));
+				CurrentTabModel.AddDocument(new LanguageViewModel(fsi, Model));
 			}
 		}
 

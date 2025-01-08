@@ -1,6 +1,7 @@
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 
@@ -9,6 +10,14 @@ namespace OpenLoco.Gui.ViewModels
 	public class TabViewPageViewModel : ViewModelBase
 	{
 		public ObservableCollection<ILocoFileViewModel> Documents { get; }
+
+		public void AddDocument(ILocoFileViewModel model)
+		{
+			if (!Documents.Contains(model) && !Documents.Any(x => x.CurrentFile.Filename == model.CurrentFile.Filename))
+			{
+				Documents.Add(model);
+			}
+		}
 
 		[Reactive]
 		public ILocoFileViewModel? SelectedDocument { get; set; }
@@ -31,10 +40,6 @@ namespace OpenLoco.Gui.ViewModels
 
 		void RemoveTab(ILocoFileViewModel tabToRemove)
 		{
-			//if (tabToRemove is DatObjectEditorViewModel dvm && dvm.ExtraContentViewModel is ImageTableViewModel itvm)
-			//{
-			//	itvm.Dispose();
-			//}
 			_ = Documents.Remove(tabToRemove);
 		}
 	}

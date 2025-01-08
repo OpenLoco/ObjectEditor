@@ -61,50 +61,9 @@ namespace OpenLoco.Gui.ViewModels
 		readonly ILogger Logger;
 
 		public ColourSwatches[] ColourSwatchesArr { get; } = (ColourSwatches[])Enum.GetValues(typeof(ColourSwatches));
-		[Reactive] public ColourSwatches SelectedColourSwatch { get; set; } = ColourSwatches.PrimaryRemap;
 
-		public ImageTableViewModel(IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, IList<Image<Rgba32>> images, ILogger logger)
-		{
-			G1Provider = g1ElementProvider;
-			NameProvider = imageNameProvider;
-			PaletteMap = paletteMap;
-			Images = images;
-			Logger = logger;
-
-			_ = this.WhenAnyValue(o => o.G1Provider)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
-			_ = this.WhenAnyValue(o => o.PaletteMap)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
-			_ = this.WhenAnyValue(o => o.Zoom)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
-			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
-			_ = this.WhenAnyValue(o => o.SelectedBitmapPreview)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
-			_ = this.WhenAnyValue(o => o.Images)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
-			_ = this.WhenAnyValue(o => o.AnimationSpeed)
-				.Subscribe(_ => UpdateAnimationSpeed());
-
-			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
-			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
-			ReplaceImageCommand = ReactiveCommand.Create(ReplaceImage);
-
-			SelectionModel = new SelectionModel<Bitmap>
-			{
-				SingleSelect = false
-			};
-			SelectionModel.SelectionChanged += SelectionChanged;
-
-			// Set up the animation timer
-			animationTimer = new DispatcherTimer
-			{
-				Interval = TimeSpan.FromMilliseconds(25) // Adjust animation speed as needed
-			};
-			animationTimer.Tick += AnimationTimer_Tick;
-			animationTimer.Start();
-			Logger = logger;
-		}
+		[Reactive]
+		public ColourSwatches SelectedColourSwatch { get; set; } = ColourSwatches.PrimaryRemap;
 
 		readonly DispatcherTimer animationTimer;
 		int currentFrameIndex;
@@ -112,61 +71,14 @@ namespace OpenLoco.Gui.ViewModels
 		public IList<Bitmap> SelectedBitmaps { get; set; }
 
 		[Reactive] public Bitmap SelectedBitmapPreview { get; set; }
-		public Avalonia.Size SelectedBitmapPreviewBorder => SelectedBitmapPreview == null ? new Avalonia.Size() : new Avalonia.Size(SelectedBitmapPreview.Size.Width + 2, SelectedBitmapPreview.Size.Height + 2);
+		public Avalonia.Size SelectedBitmapPreviewBorder => SelectedBitmapPreview == null
+			? new Avalonia.Size()
+			: new Avalonia.Size(SelectedBitmapPreview.Size.Width + 2, SelectedBitmapPreview.Size.Height + 2);
 
 		[Reactive] public int AnimationWindowHeight { get; set; }
 
-		void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
-		{
-			var sm = (SelectionModel<Bitmap>)sender;
-
-			if (sm.SelectedIndexes.Count > 0)
-			{
-				SelectedImageIndex = sm.SelectedIndex;
-			}
-
-			if (sm.SelectedItems.Count == 0)
-			{
-				return;
-			}
-
-			// ... handle selection changed
-			SelectedBitmaps = sm.SelectedItems.Cast<Bitmap>().ToList();
-			AnimationWindowHeight = (int)SelectedBitmaps.Max(x => x.Size.Height) * 2;
-		}
-
 		[Reactive]
 		public int AnimationSpeed { get; set; } = 40;
-
-		void UpdateAnimationSpeed()
-		{
-			if (animationTimer == null)
-			{
-				return;
-			}
-
-			animationTimer.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed);
-		}
-
-		void AnimationTimer_Tick(object? sender, EventArgs e)
-		{
-			if (SelectedBitmaps == null || SelectedBitmaps.Count == 0 || SelectionModel.SelectedIndexes.Count == 0)
-			{
-				return;
-			}
-
-			if (currentFrameIndex >= SelectedBitmaps.Count)
-			{
-				currentFrameIndex = 0;
-			}
-
-			// Update the displayed image
-			SelectedBitmapPreview = SelectedBitmaps[currentFrameIndex];
-			SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex];
-
-			// Move to the next frame, looping back to the beginning if necessary
-			currentFrameIndex = (currentFrameIndex + 1) % SelectedBitmaps.Count;
-		}
 
 		[Reactive]
 		public PaletteMap PaletteMap { get; set; }
@@ -188,12 +100,13 @@ namespace OpenLoco.Gui.ViewModels
 		public IList<Image<Rgba32>> Images { get; set; }
 
 		// what is displaying on the ui
-		public IList<Bitmap?> Bitmaps => G1ImageConversion.CreateAvaloniaImages(Images).ToList();
+		[Reactive]
+		public IList<Bitmap?> Bitmaps { get; set; }
 
 		[Reactive]
 		public int SelectedImageIndex { get; set; } = -1;
 
-		//[Reactive]
+		[Reactive]
 		public SelectionModel<Bitmap> SelectionModel { get; set; }
 
 		public UIG1Element32? SelectedG1Element
@@ -201,12 +114,103 @@ namespace OpenLoco.Gui.ViewModels
 			? null
 			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
 
-		public void Dispose()
+		public ImageTableViewModel(IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, IList<Image<Rgba32>> images, ILogger logger)
 		{
-			SelectionModel = null;
+			G1Provider = g1ElementProvider;
+			NameProvider = imageNameProvider;
+			PaletteMap = paletteMap;
+			Images = images;
+			Logger = logger;
+
+			_ = this.WhenAnyValue(o => o.G1Provider)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+			_ = this.WhenAnyValue(o => o.PaletteMap)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+			_ = this.WhenAnyValue(o => o.Zoom)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+			_ = this.WhenAnyValue(o => o.Images)
+				.Subscribe(_ => Bitmaps = G1ImageConversion.CreateAvaloniaImages(Images).ToList());
+			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
+			_ = this.WhenAnyValue(o => o.SelectedBitmapPreview)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
+			_ = this.WhenAnyValue(o => o.AnimationSpeed)
+				.Subscribe(_ => UpdateAnimationSpeed());
+
+			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
+			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
+			ReplaceImageCommand = ReactiveCommand.Create(ReplaceImage);
+
+			CreateSelectionModel();
+
+			// Set up the animation timer
+			animationTimer = new DispatcherTimer
+			{
+				Interval = TimeSpan.FromMilliseconds(25) // Adjust animation speed as needed
+			};
+			animationTimer.Tick += AnimationTimer_Tick;
+			animationTimer.Start();
+			Logger = logger;
 		}
 
-		//todo: second half should be model
+		void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+		{
+			var sm = (SelectionModel<Bitmap>)sender;
+
+			if (sm.SelectedIndexes.Count > 0)
+			{
+				SelectedImageIndex = sm.SelectedIndex;
+			}
+
+			if (sm.SelectedItems.Count == 0)
+			{
+				return;
+			}
+
+			// ... handle selection changed
+			SelectedBitmaps = sm.SelectedItems.Cast<Bitmap>().ToList();
+			AnimationWindowHeight = (int)SelectedBitmaps.Max(x => x.Size.Height) * 2;
+		}
+
+		void UpdateAnimationSpeed()
+		{
+			if (animationTimer == null)
+			{
+				return;
+			}
+
+			animationTimer.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed);
+		}
+
+		void AnimationTimer_Tick(object? sender, EventArgs e)
+		{
+			if (SelectionModel == null || SelectedBitmaps == null || SelectedBitmaps.Count == 0 || SelectionModel.SelectedIndexes.Count == 0)
+			{
+				return;
+			}
+
+			if (currentFrameIndex >= SelectedBitmaps.Count)
+			{
+				currentFrameIndex = 0;
+			}
+
+			// Update the displayed image
+			SelectedBitmapPreview = SelectedBitmaps[currentFrameIndex];
+			SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex];
+
+			// Move to the next frame, looping back to the beginning if necessary
+			currentFrameIndex = (currentFrameIndex + 1) % SelectedBitmaps.Count;
+		}
+
+		void CreateSelectionModel()
+		{
+			SelectionModel = new SelectionModel<Bitmap>
+			{
+				SingleSelect = false
+			};
+			SelectionModel.SelectionChanged += SelectionChanged;
+		}
+
 		public async Task ImportImages()
 		{
 			animationTimer.Stop();

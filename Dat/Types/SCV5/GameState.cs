@@ -5,9 +5,9 @@ using System.ComponentModel;
 namespace OpenLoco.Dat.Types.SCV5
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
-	//[LocoStructOffset(0x13BA), LocoArrayLength((int)Limits.kMaxMessages)] public Message[] Messages { get; set; }
-	[LocoStructSize(StructLength)] // 4,851,268
-	public record GameState([property: LocoStructOffset(0x00), LocoArrayLength(2)] uint32_t[] Rng,
+	[LocoStructSize(0xB96C)]
+	public record GameStateA(
+		[property: LocoStructOffset(0x00), LocoArrayLength(2)] uint32_t[] Rng,
 		[property: LocoStructOffset(0x08), LocoArrayLength(2)] uint32_t[] UnkRng,
 		[property: LocoStructOffset(0x10)] uint32_t GameStateFlags,
 		[property: LocoStructOffset(0x14)] uint32_t CurrentDay,
@@ -113,6 +113,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x47C), LocoArrayLength(0x13B6 - 0x47C)] uint8_t[] var_047C,
 		[property: LocoStructOffset(0x13B6)] uint16_t NumMessages,
 		[property: LocoStructOffset(0x13B8)] uint16_t ActiveMessageIndex,
+		[property: LocoStructOffset(0x13BA), LocoArrayLength((int)Limits.kMaxMessages)] Message[] Messages,
 		[property: LocoStructOffset(0xB886), LocoArrayLength(0xB94C - 0xB886)] uint8_t[] var_B886,
 		[property: LocoStructOffset(0xB94C)] uint8_t var_B94C,
 		[property: LocoStructOffset(0xB94D), LocoArrayLength(0xB950 - 0xB94D)] uint8_t[] var_B94D,
@@ -126,23 +127,36 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0xB957), LocoArrayLength(0xB968 - 0xB957)] uint8_t[] var_B957,
 		[property: LocoStructOffset(0xB958)] uint8_t CurrentRainLevel,
 		[property: LocoStructOffset(0xB959), LocoArrayLength(0xB96C - 0xB969)] uint8_t[] var_B969
-		//[property: LocoStructOffset(0xB96C), LocoArrayLength((int)Limits.kMaxCompanies)] Company[] Companies,
-		//[property: LocoStructOffset(0x92444), LocoArrayLength((int)Limits.kMaxTowns)] Town[] Towns,
-		//[property: LocoStructOffset(0x9E744), LocoArrayLength((int)Limits.kMaxIndustries)] Industry[] Industries,
-		//[property: LocoStructOffset(0xC10C4), LocoArrayLength((int)Limits.kMaxStations)] Station[] Stations,
-		//[property: LocoStructOffset(0x1B58C4), LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities,
-		//[property: LocoStructOffset(0x4268C4), LocoArrayLength((int)Limits.kMaxAnimations)] Animation[] Animations,
-		//[property: LocoStructOffset(0x4328C4), LocoArrayLength((int)Limits.kMaxWaves)] Wave[] Waves
+		//[property: LocoStructOffset(0xB96C), LocoArrayLength((int)Limits.kMaxCompanies)] Company[] Companies // this isn't actually part of the data chunk in a scenario!
 		)
 		: ILocoStruct
 	{
-		public const int StructLength = 0x4A0644;
+		//public const int StructLength = 0x4A0644;
 
-		//		[LocoStructOffset(0x432A44), LocoArrayLength(Limits.kMaxUserStrings)] char[] UserStrings[32] { get; set; }
-		//	[LocoStructOffset(0x432A44), LocoArrayLength((int)Limits.kMaxUserStrings * 32)] public char[] UserStrings { get; set; }
-		//	[LocoStructOffset(0x442A44), LocoArrayLength(Limits.kMaxVehicles)] uint16_t[] Routings[Limits.kMaxRoutingsPerVehicle] { get; set; }
-		//[LocoStructOffset(0x442A44), LocoArrayLength((int)Limits.kMaxVehicles * (int)Limits.kMaxRoutingsPerVehicle)] public uint16_t[] Routings { get; set; }
-		//[LocoStructOffset(0x461E44), LocoArrayLength((int)Limits.kMaxOrders)] public uint8_t[] Orders { get; set; }
+		public bool Validate() => true;
+	}
+
+	[LocoStructSize(0x123480)]
+	public record GameStateB(
+
+		[property: LocoStructOffset(0x0), LocoArrayLength((int)Limits.kMaxTowns)] Town[] Towns,
+		[property: LocoStructOffset(0xC300), LocoArrayLength((int)Limits.kMaxIndustries)] Industry[] Industries,
+		[property: LocoStructOffset(0x2EC80), LocoArrayLength((int)Limits.kMaxStations)] Station[] Stations
+	//[property: LocoStructOffset(0x123480), LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities  // this isn't actually part of the data chunk in a scenario!
+	) : ILocoStruct
+	{
+		public bool Validate() => true;
+	}
+
+	[LocoStructSize(0x79D80)]
+	public record GameStateC(
+		[property: LocoStructOffset(0x0), LocoArrayLength((int)Limits.kMaxAnimations)] Animation[] Animations,
+		[property: LocoStructOffset(0xC000), LocoArrayLength((int)Limits.kMaxWaves)] Wave[] Waves,
+		[property: LocoStructOffset(0xC180), LocoArrayLength((int)Limits.kMaxUserStrings * 32)] uint8_t[] UserStrings,
+		[property: LocoStructOffset(0x1C180), LocoArrayLength((int)(Limits.kMaxVehicles * Limits.kMaxRoutingsPerVehicle))] uint16_t[] Routings,
+		[property: LocoStructOffset(0x3B580), LocoArrayLength((int)Limits.kMaxWaves)] uint8_t[] Orders
+	) : ILocoStruct
+	{
 		public bool Validate() => true;
 	}
 }

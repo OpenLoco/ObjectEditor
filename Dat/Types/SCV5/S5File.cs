@@ -11,7 +11,9 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x20)] ScenarioOptions? LandscapeOptions,
 		[property: LocoStructOffset(0x433A)] SaveDetails? SaveDetails,
 		[property: LocoStructOffset(0x10952), LocoArrayLength(S5File.RequiredObjectsCount), Browsable(false)] List<S5Header> RequiredObjects,
-		[property: LocoStructOffset(0x13F02)] GameState GameState,
+		[property: LocoStructOffset(0x13F02)] GameStateA GameStateA,
+		GameStateB GameStateB,
+		GameStateC GameStateC,
 		[property: LocoStructOffset(0x4B4546)] List<TileElement> TileElements,
 		List<(S5Header, byte[])> PackedObjects
 		)
@@ -65,15 +67,15 @@ namespace OpenLoco.Dat.Types.SCV5
 			}
 
 			// load game state
-			var gameState = SawyerStreamReader.ReadChunk<GameState>(ref data);
-			_ = SawyerStreamReader.ReadChunkCore(ref data);
-			_ = SawyerStreamReader.ReadChunkCore(ref data);
+			var gameStateA = SawyerStreamReader.ReadChunk<GameStateA>(ref data);
+			var gameStateB = SawyerStreamReader.ReadChunk<GameStateB>(ref data);
+			var gameStateC = SawyerStreamReader.ReadChunk<GameStateC>(ref data);
 
 			// tile elements
 			var tileElementData = SawyerStreamReader.ReadChunkCore(ref data);
 			var (tileElements, tileElementMap) = ParseTileElements(tileElementData);
 
-			return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameState, tileElements, packedObjects) { TileElementMap = tileElementMap };
+			return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameStateA, gameStateB, gameStateC, tileElements, packedObjects) { TileElementMap = tileElementMap };
 		}
 
 		static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData)

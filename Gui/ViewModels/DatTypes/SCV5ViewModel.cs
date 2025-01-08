@@ -29,7 +29,7 @@ namespace OpenLoco.Gui.ViewModels
 		public BindingList<S5HeaderViewModel>? PackedObjects { get; set; }
 
 		[Reactive]
-		public WriteableBitmap Map { get; set; }
+		public WriteableBitmap? Map { get; set; }
 
 		[Reactive]
 		public Dictionary<ElementType, Bitmap> Maps { get; set; }
@@ -44,7 +44,7 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			get
 			{
-				if (CurrentS5File != null && TileElementX >= 0 && TileElementX < 384 && TileElementY >= 0 && TileElementY < 384)
+				if (CurrentS5File.TileElementMap != null && CurrentS5File != null && TileElementX >= 0 && TileElementX < 384 && TileElementY >= 0 && TileElementY < 384)
 				{
 					return CurrentS5File.TileElementMap[TileElementX, TileElementY].ToBindingList();
 				}
@@ -66,13 +66,16 @@ namespace OpenLoco.Gui.ViewModels
 			_ = this.WhenAnyValue(o => o.TileElementY)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));
 
-			try
+			if (CurrentS5File.TileElementMap != null)
 			{
-				DrawMap();
-			}
-			catch (Exception ex)
-			{
-				Logger?.Error(ex);
+				try
+				{
+					DrawMap();
+				}
+				catch (Exception ex)
+				{
+					Logger?.Error(ex);
+				}
 			}
 		}
 

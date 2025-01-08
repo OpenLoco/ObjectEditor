@@ -14,7 +14,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x13F02)] GameStateA GameStateA,
 		GameStateB GameStateB,
 		GameStateC GameStateC,
-		[property: LocoStructOffset(0x4B4546)] List<TileElement> TileElements,
+		[property: LocoStructOffset(0x4B4546)] List<TileElement>? TileElements,
 		List<(S5Header, byte[])> PackedObjects
 		)
 		: ILocoStruct
@@ -24,7 +24,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		public const int RequiredObjectsCount = 859;
 
 		// convert the 1D TileElements into a more usable 2D array
-		public List<TileElement>[,] TileElementMap { get; set; }
+		public List<TileElement>[,]? TileElementMap { get; set; }
 
 		public static S5File Read(ReadOnlySpan<byte> data)
 		{
@@ -71,9 +71,14 @@ namespace OpenLoco.Dat.Types.SCV5
 			var gameStateB = SawyerStreamReader.ReadChunk<GameStateB>(ref data);
 			var gameStateC = SawyerStreamReader.ReadChunk<GameStateC>(ref data);
 
-			// tile elements
-			var tileElementData = SawyerStreamReader.ReadChunkCore(ref data);
-			var (tileElements, tileElementMap) = ParseTileElements(tileElementData);
+			List<TileElement>? tileElements = null;
+			List<TileElement>[,]? tileElementMap = null;
+			if (gameStateA.GameStateFlags.HasFlag(GameStateFlags.TileManagerLoaded))
+			{
+				// tile elements
+				var tileElementData = SawyerStreamReader.ReadChunkCore(ref data);
+				(tileElements, tileElementMap) = ParseTileElements(tileElementData);
+			}
 
 			return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameStateA, gameStateB, gameStateC, tileElements, packedObjects) { TileElementMap = tileElementMap };
 		}

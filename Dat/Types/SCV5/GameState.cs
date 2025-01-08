@@ -4,12 +4,21 @@ using System.ComponentModel;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
+	[Flags]
+	public enum GameStateFlags : uint32_t
+	{
+		None = 0,
+		TileManagerLoaded = 1 << 0, // true => tile elements exist, false => proc gen map
+		Unk2 = 1 << 1,
+		PreferredOwnerName = 1 << 2,
+	}
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xB96C)]
 	public record GameStateA(
 		[property: LocoStructOffset(0x00), LocoArrayLength(2)] uint32_t[] Rng,
 		[property: LocoStructOffset(0x08), LocoArrayLength(2)] uint32_t[] UnkRng,
-		[property: LocoStructOffset(0x10)] uint32_t GameStateFlags,
+		[property: LocoStructOffset(0x10)] GameStateFlags GameStateFlags,
 		[property: LocoStructOffset(0x14)] uint32_t CurrentDay,
 		[property: LocoStructOffset(0x18)] uint16_t DayCounter,
 		[property: LocoStructOffset(0x1A)] uint16_t CurrentYear,

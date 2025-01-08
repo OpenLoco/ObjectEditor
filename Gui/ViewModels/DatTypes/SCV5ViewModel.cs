@@ -66,6 +66,18 @@ namespace OpenLoco.Gui.ViewModels
 			_ = this.WhenAnyValue(o => o.TileElementY)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));
 
+			try
+			{
+				DrawMap();
+			}
+			catch (Exception ex)
+			{
+				Logger?.Error(ex);
+			}
+		}
+
+		void DrawMap()
+		{
 			Map = new WriteableBitmap(new Avalonia.PixelSize(384, 384), new Avalonia.Vector(92, 92), Avalonia.Platform.PixelFormat.Rgba8888);
 			using (var fb = Map.Lock())
 			{

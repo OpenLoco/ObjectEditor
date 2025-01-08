@@ -8,10 +8,12 @@ namespace OpenLoco.Dat.Types.SCV5
 	[LocoStructSize(StructLength)]
 	public record S5File(
 		[property: LocoStructOffset(0x00)] S5FileHeader Header,
-		[property: LocoStructOffset(0x20)] LandscapeDetails? LandscapeOptions,
+		[property: LocoStructOffset(0x20)] ScenarioOptions? LandscapeOptions,
 		[property: LocoStructOffset(0x433A)] SaveDetails? SaveDetails,
-		[property: LocoStructOffset(0x10952), LocoArrayLength(859), Browsable(false)] List<S5Header> RequiredObjects,
-		[property: LocoStructOffset(0x13F02)] GameState GameState,
+		[property: LocoStructOffset(0x10952), LocoArrayLength(S5File.RequiredObjectsCount), Browsable(false)] List<S5Header> RequiredObjects,
+		[property: LocoStructOffset(0x13F02)] GameStateA GameStateA,
+		GameStateB GameStateB,
+		GameStateC GameStateC,
 		[property: LocoStructOffset(0x4B4546)] List<TileElement> TileElements,
 		List<(S5Header, byte[])> PackedObjects
 		)
@@ -19,6 +21,7 @@ namespace OpenLoco.Dat.Types.SCV5
 	{
 		public bool Validate() => true;
 		public const int StructLength = 0x20;
+		public const int RequiredObjectsCount = 859;
 
 		// convert the 1D TileElements into a more usable 2D array
 		public List<TileElement>[,] TileElementMap { get; set; }
@@ -28,7 +31,7 @@ namespace OpenLoco.Dat.Types.SCV5
 			var header = SawyerStreamReader.ReadChunk<S5FileHeader>(ref data);
 
 			SaveDetails? saveDetails = null;
-			LandscapeDetails? landscapeDetails = null;
+			ScenarioOptions? scenarioOptions = null;
 
 			if (header.Flags.HasFlag(HeaderFlags.HasSaveDetails))
 			{
@@ -37,7 +40,7 @@ namespace OpenLoco.Dat.Types.SCV5
 
 			if (header.Type == S5Type.Scenario)
 			{
-				landscapeDetails = SawyerStreamReader.ReadChunk<LandscapeDetails>(ref data);
+				scenarioOptions = SawyerStreamReader.ReadChunk<ScenarioOptions>(ref data);
 			}
 
 			List<(S5Header, byte[])> packedObjects = [];
@@ -53,23 +56,30 @@ namespace OpenLoco.Dat.Types.SCV5
 			// read required objects
 			List<S5Header> requiredObjects = [];
 			var bytes = SawyerStreamReader.ReadChunkCore(ref data);
-			while (bytes.Length > 0)
+			for (var i = 0; i < RequiredObjectsCount; i++)
 			{
 				var obj = S5Header.Read(bytes[..S5Header.StructLength]);
-
 				if (obj.Checksum != uint.MaxValue)
 				{
 					requiredObjects.Add(obj);
 				}
-
 				bytes = bytes[S5Header.StructLength..];
 			}
 
 			// load game state
-			var gameState = SawyerStreamReader.ReadChunk<GameState>(ref data);
+			var gameStateA = SawyerStreamReader.ReadChunk<GameStateA>(ref data);
+			var gameStateB = SawyerStreamReader.ReadChunk<GameStateB>(ref data);
+			var gameStateC = SawyerStreamReader.ReadChunk<GameStateC>(ref data);
 
 			// tile elements
 			var tileElementData = SawyerStreamReader.ReadChunkCore(ref data);
+			var (tileElements, tileElementMap) = ParseTileElements(tileElementData);
+
+			return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameStateA, gameStateB, gameStateC, tileElements, packedObjects) { TileElementMap = tileElementMap };
+		}
+
+		static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData)
+		{
 			var numTileElements = tileElementData.Length / TileElement.StructLength;
 
 			List<TileElement> tileElements = [];
@@ -106,7 +116,7 @@ namespace OpenLoco.Dat.Types.SCV5
 				// see TileManager.cpp::updateTilePointers in OpenLoco
 			}
 
-			return new S5File(header, landscapeDetails, saveDetails, requiredObjects, gameState, tileElements, packedObjects) { TileElementMap = tileElementMap };
+			return (tileElements, tileElementMap);
 		}
 
 		//public ReadOnlySpan<byte> Write()

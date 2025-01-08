@@ -360,7 +360,11 @@
 				</TabItem>
 				<TabItem Header="GameState">
 					<ScrollViewer>
-						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						<StackPanel Orientation="Vertical">
+							<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameStateA" DataContext="{Binding CurrentS5File.GameStateA}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+							<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameStateB" DataContext="{Binding CurrentS5File.GameStateB}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+							<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameStateC" DataContext="{Binding CurrentS5File.GameStateC}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						</StackPanel>
 					</ScrollViewer>
 				</TabItem>
 				<TabItem Header="Required Objects">

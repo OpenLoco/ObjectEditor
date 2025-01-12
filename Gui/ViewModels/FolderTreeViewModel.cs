@@ -13,7 +13,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-
 namespace OpenLoco.Gui.ViewModels
 {
 	public class FolderTreeViewModel : ReactiveObject

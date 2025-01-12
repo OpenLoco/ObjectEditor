@@ -112,13 +112,6 @@ var groupVersioned = app
 	.RequireRateLimiting(tokenPolicy)
 	.WithTags("Versioned");
 
-_ = app.MapGet(Routes.GetDatFile, server.GetDatFile)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapGet(Routes.GetDatFile, server.GetDatFile)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapGet(Routes.GetObjectFile, server.GetObjectFile)
 var groupDeprecated = app
 	.MapGroup("")
 	.RequireRateLimiting(tokenPolicy)
@@ -148,9 +141,10 @@ static void MapRoutes(RouteGroupBuilder routeGroup, Server server)
 	_ = routeGroup.MapGet(Routes.ListObjects, Server.ListObjects);
 
 	_ = routeGroup.MapGet(Routes.GetDat, server.GetDat);
-	_ = routeGroup.MapGet(Routes.GetObject, server.GetObject);
 	_ = routeGroup.MapGet(Routes.GetDatFile, server.GetDatFile);
+	_ = routeGroup.MapGet(Routes.GetObject, server.GetObject);
 	_ = routeGroup.MapGet(Routes.GetObjectFile, server.GetObjectFile);
+	_ = routeGroup.MapGet(Routes.GetObjectImages, server.GetObjectImages);
 	_ = routeGroup.MapGet(Routes.ListScenarios, server.ListScenarios);
 	_ = routeGroup.MapGet(Routes.GetScenario, server.GetScenario);
 

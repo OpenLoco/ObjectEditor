@@ -7,6 +7,7 @@ using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using var db = Seed();
 
@@ -63,7 +64,8 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	Console.WriteLine("Seeding");
 	var logger = new Logger();
 
-	var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
+	var jsonOptions = JsonFile.SerializerOptions;
+	jsonOptions.Converters.Add(new JsonStringEnumConverter());
 
 	// ...
 

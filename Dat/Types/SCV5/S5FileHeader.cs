@@ -6,7 +6,7 @@ namespace OpenLoco.Dat.Types.SCV5
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]
 	public record S5FileHeader(
-		[property: LocoStructOffset(0x00)] S5FileType S5FileType,
+		[property: LocoStructOffset(0x00)] S5FileType Type,
 		[property: LocoStructOffset(0x01)] HeaderFlags Flags,
 		[property: LocoStructOffset(0x02)] uint16_t NumPackedObjects,
 		[property: LocoStructOffset(0x04)] uint32_t Version,

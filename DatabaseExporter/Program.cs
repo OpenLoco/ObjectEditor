@@ -11,9 +11,9 @@ var db = new LocoDb(builder.Options);
 
 Console.WriteLine("loading");
 
-var authors = JsonSerializer.Serialize<IEnumerable<string>>(db.Authors.Select(a => a.Name).ToList().Order(), jsonOptions);
-var tags = JsonSerializer.Serialize<IEnumerable<string>>(db.Tags.Select(t => t.Name).ToList().Order(), jsonOptions);
-var licences = JsonSerializer.Serialize<IEnumerable<LicenceJsonRecord>>(db.Licences.Select(l => new LicenceJsonRecord(l.Name, l.Text)).ToList().OrderBy(l => l.Name), jsonOptions);
+var authors = JsonSerializer.Serialize<IEnumerable<string>>(db.Authors.Select(a => a.Name).ToList().Order(), JsonFile.SerializerOptions);
+var tags = JsonSerializer.Serialize<IEnumerable<string>>(db.Tags.Select(t => t.Name).ToList().Order(), JsonFile.SerializerOptions);
+var licences = JsonSerializer.Serialize<IEnumerable<LicenceJsonRecord>>(db.Licences.Select(l => new LicenceJsonRecord(l.Name, l.Text)).ToList().OrderBy(l => l.Name), JsonFile.SerializerOptions);
 
 #region SC5 Files
 
@@ -39,7 +39,7 @@ foreach (var o in db.SC5Files
 	sc5Files.Add(obj);
 }
 
-var sc5FilesJson = JsonSerializer.Serialize<IEnumerable<SC5FileJsonRecord>>(sc5Files, jsonOptions);
+var sc5FilesJson = JsonSerializer.Serialize<IEnumerable<SC5FileJsonRecord>>(sc5Files, JsonFile.SerializerOptions);
 
 #endregion
 
@@ -66,7 +66,7 @@ foreach (var o in db.SC5FilePacks
 	sc5FilePacks.Add(obj);
 }
 
-var sc5FilePacksJson = JsonSerializer.Serialize<IEnumerable<SC5FilePackJsonRecord>>(sc5FilePacks, jsonOptions);
+var sc5FilePacksJson = JsonSerializer.Serialize<IEnumerable<SC5FilePackJsonRecord>>(sc5FilePacks, JsonFile.SerializerOptions);
 
 #endregion
 
@@ -93,7 +93,7 @@ foreach (var o in db.ObjectPacks
 	objectPacks.Add(objPack);
 }
 
-var objectPacksJson = JsonSerializer.Serialize<IEnumerable<ObjectPackJsonRecord>>(objectPacks, jsonOptions);
+var objectPacksJson = JsonSerializer.Serialize<IEnumerable<ObjectPackJsonRecord>>(objectPacks, JsonFile.SerializerOptions);
 
 #endregion
 
@@ -124,7 +124,7 @@ foreach (var o in db.Objects
 	objects.Add(obj);
 }
 
-var objectsJson = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objects, jsonOptions);
+var objectsJson = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objects, JsonFile.SerializerOptions);
 
 #endregion
 

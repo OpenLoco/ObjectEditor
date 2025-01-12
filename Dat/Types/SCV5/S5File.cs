@@ -36,7 +36,7 @@ namespace OpenLoco.Dat.Types.SCV5
 				saveDetails = SawyerStreamReader.ReadChunk<SaveDetails>(ref data);
 			}
 
-			if (header.S5FileType == S5FileType.Scenario)
+			if (header.Type == S5FileType.Scenario)
 			{
 				scenarioOptions = SawyerStreamReader.ReadChunk<ScenarioOptions>(ref data);
 			}
@@ -69,7 +69,7 @@ namespace OpenLoco.Dat.Types.SCV5
 			List<TileElement>[,]? tileElementMap = null;
 			IGameState gameState;
 
-			if (header.Type == S5Type.Scenario)
+			if (header.Type == S5FileType.Scenario)
 			{
 				var gameStateA = SawyerStreamReader.ReadChunk<GameStateScenarioA>(ref data);
 				var gameStateB = SawyerStreamReader.ReadChunk<GameStateScenarioB>(ref data);

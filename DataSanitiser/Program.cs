@@ -90,7 +90,7 @@ foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Vehicle)
 		var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.Filename), logger);
 		if (o?.LocoObject != null)
 		{
-			objectList.Add((o!.Value.DatFileInfo, o!.Value.LocoObject.Object! as VehicleObject));
+			objectList.Add((o.Value.DatFileInfo, (o.Value.LocoObject.Object as VehicleObject)!));
 		}
 	}
 	catch (Exception ex)

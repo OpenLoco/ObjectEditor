@@ -4,8 +4,8 @@ using OpenLoco.Dat;
 namespace OpenLoco.ObjectService
 {
 	/// <summary>
-	/// This class represents the folder structure for objects on the server.
-	///
+	/// <para>This class represents the folder structure for objects on the server.</para>
+	/// <para>
 	/// === structure ===
 	/// - GameData
 	///   - Graphics
@@ -29,7 +29,8 @@ namespace OpenLoco.ObjectService
 	///         - ...
 	///       - GoG
 	///         - ...
-	/// 
+	/// </para>
+	///
 	/// </summary>
 	public class ServerFolderManager
 	{

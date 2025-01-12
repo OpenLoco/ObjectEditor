@@ -61,6 +61,7 @@ namespace OpenLoco.Dat.Types.SCV5
 				{
 					requiredObjects.Add(obj);
 				}
+
 				bytes = bytes[S5Header.StructLength..];
 			}
 
@@ -88,7 +89,6 @@ namespace OpenLoco.Dat.Types.SCV5
 
 				var tileElementData = SawyerStreamReader.ReadChunkCore(ref data);
 				(tileElements, tileElementMap) = ParseTileElements(tileElementData);
-
 			}
 
 			return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameState, tileElements, packedObjects) { TileElementMap = tileElementMap };
@@ -124,6 +124,7 @@ namespace OpenLoco.Dat.Types.SCV5
 					{
 						y = (y + 1) % Limits.kMapRows;
 					}
+
 					x = (x + 1) % Limits.kMapColumns;
 				}
 

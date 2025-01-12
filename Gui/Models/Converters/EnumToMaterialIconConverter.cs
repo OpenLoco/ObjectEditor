@@ -26,6 +26,7 @@ namespace OpenLoco.Gui.Models.Converters
 				{
 					return icon2;
 				}
+
 				return null;
 			}
 		}

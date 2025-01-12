@@ -202,7 +202,6 @@ namespace OpenLoco.ObjectService
 						}
 					}
 				}
-
 			}
 
 			memoryStream.Position = 0; // Reset stream position for reading

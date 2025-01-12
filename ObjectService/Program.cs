@@ -1,9 +1,7 @@
 using Asp.Versioning;
-using Asp.Versioning.ApiExplorer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
@@ -19,20 +17,7 @@ var connectionString = builder.Configuration.GetConnectionString("SQLiteConnecti
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-	var provider = builder.Services.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>();
-	foreach (var description in provider.ApiVersionDescriptions)
-	{
-		options.SwaggerDoc(
-			description.GroupName,
-			new OpenApiInfo()
-			{
-				Title = $"ObjectService {description.ApiVersion}",
-				Version = description.ApiVersion.ToString(),
-			});
-	}
-});
+builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -77,8 +62,7 @@ _ = builder.Services.AddApiVersioning(options =>
 	options.ReportApiVersions = true;
 	options.DefaultApiVersion = new ApiVersion(1, 0);
 	options.AssumeDefaultVersionWhenUnspecified = true;
-	options.ApiVersionReader = ApiVersionReader.Combine(
-		new UrlSegmentApiVersionReader());
+	options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader());
 }).AddApiExplorer(options =>
 {
 	options.GroupNameFormat = "'v'VVV";

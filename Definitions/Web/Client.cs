@@ -71,13 +71,13 @@ namespace OpenLoco.Definitions.Web
 
 					if (string.IsNullOrEmpty(error))
 					{
-
 						logger.Error($"Posting {filename} failed. StatusCode={response.StatusCode} ReasonPhrase={response.ReasonPhrase}");
 					}
 					else
 					{
 						logger.Error($"Posting {filename} failed. Error={error}");
 					}
+
 					return;
 				}
 

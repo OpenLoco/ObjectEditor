@@ -33,7 +33,7 @@ namespace OpenLoco.Gui.ViewModels
 				? CurrentFile.Filename
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
-			Logger?.Info($"Saving sound effects to {savePath}");
+			logger?.Info($"Saving sound effects to {savePath}");
 			var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS(SoundViewModels.Select(x => (x.Header, x.Data)).ToList());
 			File.WriteAllBytes(savePath, bytes);
 		}
@@ -47,7 +47,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			var savePath = saveFile.Path.LocalPath;
-			Logger?.Info($"Saving sound effects to {savePath}");
+			logger?.Info($"Saving sound effects to {savePath}");
 			var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS(SoundViewModels.Select(x => (x.Header, x.Data)).ToList());
 			File.WriteAllBytes(savePath, bytes);
 		}

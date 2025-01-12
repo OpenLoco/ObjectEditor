@@ -40,7 +40,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void Load()
 		{
-			Logger?.Info($"Loading tutorial from {CurrentFile.Filename}");
+			logger?.Info($"Loading tutorial from {CurrentFile.Filename}");
 			var bytes = File.ReadAllBytes(CurrentFile.Filename).AsSpan();
 
 			// each tutorial action is 4 parts of 2 bytes each, so 8 bytes per action
@@ -93,7 +93,7 @@ namespace OpenLoco.Gui.ViewModels
 		public ScoresViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
-		public override void Load() => Logger?.Info($"Loading scores from {CurrentFile.Filename}");
+		public override void Load() => logger?.Info($"Loading scores from {CurrentFile.Filename}");
 
 		public override void Save() => throw new NotImplementedException();
 
@@ -105,7 +105,7 @@ namespace OpenLoco.Gui.ViewModels
 		public LanguageViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
-		public override void Load() => Logger?.Info($"Loading languages from {CurrentFile.Filename}");
+		public override void Load() => logger?.Info($"Loading languages from {CurrentFile.Filename}");
 
 		public override void Save() => throw new NotImplementedException();
 

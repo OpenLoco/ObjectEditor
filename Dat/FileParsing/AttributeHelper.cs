@@ -13,12 +13,13 @@ namespace OpenLoco.Dat.FileParsing
 		}
 
 		public static T? Get<T>(Type t) where T : Attribute
-			=> t.GetCustomAttribute(typeof(T), inherit: false) as T;
+			=> t.GetCustomAttribute<T>(inherit: false);
 
 		public static bool Has<T>(PropertyInfo p) where T : Attribute
-			=> p.GetCustomAttribute(typeof(T), inherit: false) is T;
+			=> p.GetCustomAttribute<T>(inherit: false) is not null;
+
 		public static bool Has<T>(Type t) where T : Attribute
-			=> t.GetCustomAttribute(typeof(T), inherit: false) is T;
+			=> t.GetCustomAttribute<T>(inherit: false) is not null;
 
 		public static IEnumerable<PropertyInfo> GetAllPropertiesWithAttribute<T>(Type t) where T : Attribute
 			=> t.GetProperties().Where(Has<T>);

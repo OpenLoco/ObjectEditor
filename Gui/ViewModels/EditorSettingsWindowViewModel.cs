@@ -2,7 +2,6 @@ using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
-using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {

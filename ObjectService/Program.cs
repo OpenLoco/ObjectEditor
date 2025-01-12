@@ -1,9 +1,11 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +20,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddSingleton<Server>();
+_ = builder.Services.Configure<ServerSettings>(builder.Configuration.GetSection("ObjectService"));
 builder.Services.AddHttpLogging(logging =>
 {
 	logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders
@@ -52,18 +57,21 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
-builder.Services.AddSingleton<Server>();
-var serviceSettings = builder.Services.Configure<ServerSettings>(builder.Configuration.GetSection("ObjectService"));
+_ = builder.Services.AddApiVersioning(options =>
+{
+	options.ReportApiVersions = true;
+	options.DefaultApiVersion = new ApiVersion(1, 0);
+	options.AssumeDefaultVersionWhenUnspecified = true;
+	options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader());
+}).AddApiExplorer(options =>
+{
+	options.GroupNameFormat = "'v'VVV";
+	options.SubstituteApiVersionInUrl = true;
+});
 
 var app = builder.Build();
 app.UseHttpLogging();
 app.UseRateLimiter();
-
-if (app.Environment.IsDevelopment())
-{
-	_ = app.UseSwagger();
-	_ = app.UseSwaggerUI();
-}
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
 var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];
@@ -71,46 +79,51 @@ ArgumentNullException.ThrowIfNull(objRoot);
 ArgumentNullException.ThrowIfNull(paletteMapFile);
 var server = new Server(new ServerSettings(objRoot, paletteMapFile));
 
-// GET
-_ = app.MapGet(Routes.ListObjects, Server.ListObjects)
-	.RequireRateLimiting(tokenPolicy);
+var apiSet = app.NewApiVersionSet().Build();
 
-_ = app.MapGet(Routes.SearchObjects, Server.SearchObjects)
-	.RequireRateLimiting(tokenPolicy);
+var groupVersioned = app
+	.MapGroup("v{version:apiVersion}")
+	.WithApiVersionSet(apiSet)
+	.RequireRateLimiting(tokenPolicy)
+	.WithTags("Versioned");
 
-_ = app.MapGet(Routes.GetDat, server.GetDat)
-	.RequireRateLimiting(tokenPolicy);
+MapRoutes(groupVersioned, server);
 
-_ = app.MapGet(Routes.GetObject, server.GetObject)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapGet(Routes.GetObjectImages, server.GetObjectImages)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapGet(Routes.GetDatFile, server.GetDatFile)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapGet(Routes.GetObjectFile, server.GetObjectFile)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapGet(Routes.ListScenarios, server.ListScenarios)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapGet(Routes.GetScenario, server.GetScenario)
-	.RequireRateLimiting(tokenPolicy);
-
-// PATCH
-_ = app.MapPatch(Routes.UpdateDat, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapPatch(Routes.UpdateObject, () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
-	.RequireRateLimiting(tokenPolicy);
-
-// POST
-_ = app.MapPost(Routes.UploadDat, server.UploadDat)
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapPost(Routes.UploadObject, /*Server.UploadDat*/ () => Results.Problem(statusCode: StatusCodes.Status501NotImplemented))
-	.RequireRateLimiting(tokenPolicy);
+if (app.Environment.IsDevelopment())
+{
+	_ = app.UseSwagger();
+	_ = app.UseSwaggerUI(
+		options =>
+		{
+			foreach (var description in app.DescribeApiVersions())
+			{
+				var url = $"/swagger/{description.GroupName}/swagger.json";
+				var name = description.GroupName.ToUpperInvariant();
+				options.SwaggerEndpoint(url, name);
+			}
+		});
+}
 
 app.Run();
+
+static void MapRoutes(RouteGroupBuilder routeGroup, Server server)
+{
+	// GET
+	_ = routeGroup.MapGet(Routes.ListObjects, Server.ListObjects);
+
+	_ = routeGroup.MapGet(Routes.GetDat, server.GetDat);
+	_ = routeGroup.MapGet(Routes.GetDatFile, server.GetDatFile);
+	_ = routeGroup.MapGet(Routes.GetObject, server.GetObject);
+	_ = routeGroup.MapGet(Routes.GetObjectFile, server.GetObjectFile);
+	_ = routeGroup.MapGet(Routes.GetObjectImages, server.GetObjectImages);
+	_ = routeGroup.MapGet(Routes.ListScenarios, server.ListScenarios);
+	_ = routeGroup.MapGet(Routes.GetScenario, server.GetScenario);
+
+	// POST
+	_ = routeGroup.MapPost(Routes.UploadDat, server.UploadDat);
+	_ = routeGroup.MapPost(Routes.UploadObject, server.UploadObject);
+
+	// PATCH
+	_ = routeGroup.MapPatch(Routes.UpdateDat, server.UpdateDat);
+	_ = routeGroup.MapPatch(Routes.UpdateObject, server.UpdateObject);
+}

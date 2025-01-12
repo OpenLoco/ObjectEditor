@@ -13,6 +13,7 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					throw new InvalidDataException($"uint8_t at offset {offset} had non-zero variable-load data. Value={val}");
 				}
+
 				return val;
 			}
 
@@ -23,6 +24,7 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					throw new InvalidDataException($"int8_t at offset {offset} had non-zero variable-load data. Value={val}");
 				}
+
 				return val;
 			}
 
@@ -33,6 +35,7 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					throw new InvalidDataException($"uint16_t at offset {offset} had non-zero variable-load data. Value={val}");
 				}
+
 				return val;
 			}
 
@@ -43,6 +46,7 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					throw new InvalidDataException($"int16_t at offset {offset} had non-zero variable-load data. Value={val}");
 				}
+
 				return val;
 			}
 
@@ -53,6 +57,7 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					throw new InvalidDataException($"uint32_t at offset {offset} had non-zero variable-load data. Value={val}");
 				}
+
 				return val;
 			}
 
@@ -63,6 +68,7 @@ namespace OpenLoco.Dat.FileParsing
 				{
 					throw new InvalidDataException($"int32_t at offset {offset} had non-zero variable-load data. Value={val}");
 				}
+
 				return val;
 			}
 
@@ -94,7 +100,7 @@ namespace OpenLoco.Dat.FileParsing
 			throw new NotImplementedException(t.ToString());
 		}
 
-		static object ReadArray(ReadOnlySpan<byte> data, Type t, int offset, int arrLength, bool isVariableLoad)
+		static Array ReadArray(ReadOnlySpan<byte> data, Type t, int offset, int arrLength, bool isVariableLoad)
 		{
 			var elementType = t.GetElementType() ?? throw new ArgumentNullException(t.Name);
 			var size = ByteHelpers.GetObjectSize(elementType);

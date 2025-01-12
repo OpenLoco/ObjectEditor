@@ -1,4 +1,0 @@
-namespace OpenLoco.Gui.Models
-{
-
-}

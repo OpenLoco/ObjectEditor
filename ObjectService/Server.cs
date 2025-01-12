@@ -36,40 +36,114 @@ namespace OpenLoco.ObjectService
 
 		Common.Logging.ILogger Logger { get; } = new Logger();
 
-		// eg: https://localhost:7230/objects/list
-		public static async Task<IResult> ListObjects(LocoDb db)
-			=> Results.Ok(
-				await db.Objects
+		#region GET
+
+		// eg: https://localhost:7230/v1/objects/list
+		public static async Task<IResult> ListObjects(
+			[FromQuery] string? objectName,
+			[FromQuery] uint? checksum,
+			[FromQuery] string? description,
+			[FromQuery] ObjectType? objectType,
+			[FromQuery] VehicleType? vehicleType,
+			[FromQuery] string? authorName,
+			[FromQuery] string? tagName,
+			[FromQuery] string? objectPackName,
+			[FromQuery] ObjectSource? objectSource,
+			LocoDb db)
+		{
+			var query = db.Objects.AsQueryable();
+
+			#region Query Construction
+
+			if (!string.IsNullOrEmpty(objectName))
+			{
+				query = query.Where(x => x.DatName.Contains(objectName));
+			}
+
+			if (checksum is not null and not 0)
+			{
+				query = query.Where(x => x.DatChecksum == checksum);
+			}
+
+			if (!string.IsNullOrEmpty(description))
+			{
+				query = query.Where(x => x.Description != null && x.Description.Contains(description));
+			}
+
+			if (objectType != null)
+			{
+				query = query.Where(x => x.ObjectType == objectType);
+			}
+
+			if (objectType == ObjectType.Vehicle && vehicleType != null)
+			{
+				// can only query vehicle type if it's a vehicle. if ObjectType is unspecified, that is fine
+				if (objectType is not null and not ObjectType.Vehicle)
+				{
+					return Results.BadRequest("Cannot query for a Vehicle type on non-Vehicle objects");
+				}
+
+				query = query.Where(x => x.VehicleType == vehicleType);
+			}
+
+			if (!string.IsNullOrEmpty(authorName))
+			{
+				query = query.Where(x => x.Authors.Select(a => a.Name).Contains(authorName));
+			}
+
+			if (!string.IsNullOrEmpty(tagName))
+			{
+				query = query.Where(x => x.Tags.Select(t => t.Name).Contains(tagName));
+			}
+
+			if (objectSource != null)
+			{
+				query = query.Where(x => x.ObjectSource == objectSource);
+			}
+
+			#endregion
+
+			try
+			{
+				var queryStringForDebug = query.ToQueryString();
+				var result = await query
 				.Select(x => new DtoObjectIndexEntry(
 					x.Id,
 					x.DatName,
 					x.DatChecksum,
-					x.ObjectType,
 					x.ObjectSource,
-					x.VehicleType)).ToListAsync());
-
-		// eg: https://localhost:7230/objects/search
-		public static async Task<IResult> SearchObjects(LocoDb db)
-		{
-			Console.WriteLine($"Object search requested");
-			return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
+					x.ObjectType,
+					x.VehicleType,
+					x.Availability,
+					x.Name,
+					x.Description,
+					x.CreationDate,
+					x.LastEditDate,
+					x.UploadDate
+					)).ToListAsync();
+				return Results.Ok(result);
+			}
+			catch (Exception ex)
+			{
+				return Results.Problem(ex.Message);
+			}
 		}
 
-		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		public async Task<IResult> GetDat(string objectName, uint checksum, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		// eg: https://localhost:7230/v1/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
+		public async Task<IResult> GetDat([FromQuery] string objectName, [FromQuery] uint checksum, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
-			Console.WriteLine($"Object [({objectName}, {checksum})] requested");
+			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", objectName, checksum);
 
 			var eObj = await db.Objects
 				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.ObjectPacks))
+				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
 		}
 
-		// eg: http://localhost:7229/objects/getobjectimages?uniqueObjectId=1
+		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
 		public async Task<IResult> GetObjectImages(int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested with images");
@@ -99,7 +173,7 @@ namespace OpenLoco.ObjectService
 			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 			{
 				logger.LogWarning("Indexed object is a vanilla object.");
-				return Results.BadRequest();
+				return Results.Forbid();
 			}
 
 			var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
@@ -128,7 +202,6 @@ namespace OpenLoco.ObjectService
 						}
 					}
 				}
-
 			}
 
 			memoryStream.Position = 0; // Reset stream position for reading
@@ -136,21 +209,21 @@ namespace OpenLoco.ObjectService
 			return Results.File(bytes, "application/zip", "images.zip");
 		}
 
-		// eg: https://localhost:7230/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
-		public async Task<IResult> GetObject(int uniqueObjectId, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		// eg: https://localhost:7230/v1/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
+		public async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
-			Console.WriteLine($"Object [{uniqueObjectId}] requested");
+			logger.LogInformation("Object [{UniqueObjectId}] requested", uniqueObjectId);
 
 			var eObj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTblLocoObject(x, x.Authors, x.Tags, x.ObjectPacks))
+				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
 		}
 
-		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTblLocoObject? eObj)
+		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTbl<TblLocoObject, TblLocoObjectPack>? eObj)
 		{
 			if (eObj == null || eObj.Object == null)
 			{
@@ -179,7 +252,7 @@ namespace OpenLoco.ObjectService
 
 			var dtoObject = new DtoDatObjectWithMetadata(
 				obj.Id,
-				obj.UniqueName,
+				obj.Name,
 				obj.DatName,
 				obj.DatChecksum,
 				bytes,
@@ -192,15 +265,15 @@ namespace OpenLoco.ObjectService
 				obj.LastEditDate,
 				obj.UploadDate,
 				eObj.Tags,
-				eObj.ObjectPacks,
+				eObj.Packs,
 				obj.Availability,
 				obj.Licence);
 
 			return Results.Ok(dtoObject);
 		}
 
-		// eg: https://localhost:7230/objects/originaldatfile?objectName=114&checksum=123
-		public async Task<IResult> GetDatFile(string objectName, uint checksum, LocoDb db)
+		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123
+		public async Task<IResult> GetDatFile([FromQuery] string objectName, [FromQuery] uint checksum, LocoDb db)
 		{
 			var obj = await db.Objects
 				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
@@ -209,8 +282,8 @@ namespace OpenLoco.ObjectService
 			return ReturnFile(obj);
 		}
 
-		// eg: https://localhost:7230/objects/getobjectfile?objectName=114&checksum=123
-		public async Task<IResult> GetObjectFile(int uniqueObjectId, LocoDb db)
+		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
+		public async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, LocoDb db)
 		{
 			var obj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
@@ -226,7 +299,7 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			if (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco)
+			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 			{
 				return Results.Forbid();
 			}
@@ -244,8 +317,8 @@ namespace OpenLoco.ObjectService
 				: Results.NotFound();
 		}
 
-		// eg: https://localhost:7230/scenarios/list
-		public async Task<IResult> ListScenarios(LocoDb db)
+		// eg: https://localhost:7230/v1/scenarios/list
+		public async Task<IResult> ListScenarios()
 			=> await Task.Run(() =>
 			{
 				var files = Directory.GetFiles(ServerFolderManager.ScenariosFolder, "*.SC5", SearchOption.AllDirectories);
@@ -254,14 +327,18 @@ namespace OpenLoco.ObjectService
 				return Results.Ok(filenames.ToList());
 			});
 
-		// eg: https://localhost:7230/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
-		public async Task<IResult> GetScenario(int uniqueScenarioId, bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		// eg: https://localhost:7230/v1/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
+		public async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
-			Console.WriteLine($"Scenario [{uniqueScenarioId}] requested");
+			logger.LogInformation("Scenario [{ScenarioId}] requested", uniqueScenarioId);
 			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 		}
 
-		// eg: <todo>
+		#endregion
+
+		#region POST
+
+		// eg: https://localhost:7230/v1/uploaddat/...
 		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Upload requested");
@@ -319,7 +396,7 @@ namespace OpenLoco.ObjectService
 			var saveFileName = Path.Combine(ServerFolderManager.ObjectsCustomFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
 
-			Console.WriteLine($"File accepted DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} PathOnDisk={saveFileName}");
+			logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
 
 			var creationTime = request.CreationDate;
 
@@ -331,7 +408,7 @@ namespace OpenLoco.ObjectService
 
 			var locoTbl = new TblLocoObject()
 			{
-				UniqueName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
+				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
 				DatName = hdrs.S5.Name,
 				DatChecksum = hdrs.S5.Checksum,
 				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
@@ -353,7 +430,31 @@ namespace OpenLoco.ObjectService
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();
 
-			return Results.Created($"Successfully added {locoTbl.UniqueName} with unique id {locoTbl.Id}", locoTbl.Id);
+			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
+
+		public async Task<IResult> UploadObject([FromServices] ILogger<Server> logger)
+		{
+			logger.LogWarning("[UploadDat] - not implemented");
+			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		}
+
+		#endregion
+
+		#region PATCH
+
+		public async Task<IResult> UpdateDat([FromServices] ILogger<Server> logger)
+		{
+			logger.LogWarning("[UploadDat] - not implemented");
+			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		}
+
+		public async Task<IResult> UpdateObject([FromServices] ILogger<Server> logger)
+		{
+			logger.LogWarning("[UploadDat] - not implemented");
+			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		}
+
+		#endregion
 	}
 }

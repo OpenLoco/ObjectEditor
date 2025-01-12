@@ -30,7 +30,6 @@ using System.Text.Json;
 
 namespace OpenLoco.Gui.ViewModels
 {
-
 	public class MainWindowViewModel : ViewModelBase
 	{
 		public ObjectEditorModel Model { get; }
@@ -164,8 +163,6 @@ namespace OpenLoco.Gui.ViewModels
 			#endregion
 		}
 
-
-
 		public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
 		{
 			var openFile = await PlatformSpecific.OpenFilePicker(filetypes);
@@ -182,10 +179,11 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		async Task LoadDefaultPalette()
-		{
-			Model.PaletteMap = new PaletteMap(DefaultPaletteImage);
-			CurrentTabModel.ReloadAll();
-		}
+			=> await Task.Run(() =>
+			{
+				Model.PaletteMap = new PaletteMap(DefaultPaletteImage);
+				CurrentTabModel.ReloadAll();
+			});
 
 		async Task LoadCustomPalette()
 		{
@@ -354,7 +352,7 @@ namespace OpenLoco.Gui.ViewModels
 		public static bool IsDarkTheme
 		{
 			get => Application.Current?.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
-			set => Application.Current.RequestedThemeVariant = Application.Current.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark
+			set => Application.Current!.RequestedThemeVariant = Application.Current.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark
 				? Avalonia.Styling.ThemeVariant.Light
 				: Avalonia.Styling.ThemeVariant.Dark;
 		}

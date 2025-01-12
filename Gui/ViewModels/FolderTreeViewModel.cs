@@ -13,7 +13,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-
 namespace OpenLoco.Gui.ViewModels
 {
 	public class FolderTreeViewModel : ReactiveObject
@@ -175,7 +174,7 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex).ConfigureAwait(false);
+			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
 			LocalDirectoryItems = ConstructTreeView(
 				Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
 				FilenameFilter,

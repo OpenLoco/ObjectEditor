@@ -19,12 +19,12 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void Load()
 		{
-			Logger?.Info($"Loading G1 from {CurrentFile.Filename}");
+			logger.Info($"Loading G1 from {CurrentFile.Filename}");
 			Model.G1 = SawyerStreamReader.LoadG1(CurrentFile.Filename, Model.Logger);
 
 			if (Model.G1 == null)
 			{
-				Logger?.Error($"G1 was unable to be loaded from {CurrentFile.Filename}");
+				logger.Error($"G1 was unable to be loaded from {CurrentFile.Filename}");
 				return;
 			}
 
@@ -44,17 +44,18 @@ namespace OpenLoco.Gui.ViewModels
 				{
 					Model.Logger.Error($"[{i}] - [e]", ex);
 				}
+
 				i++;
 			}
 
-			ImageTableViewModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, Logger);
+			ImageTableViewModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, logger);
 		}
 
 		public override void Save()
 		{
 			if (Model.G1 == null)
 			{
-				Logger?.Error("G1 was null and was unable to saved");
+				logger?.Error("G1 was null and was unable to saved");
 				return;
 			}
 
@@ -62,7 +63,7 @@ namespace OpenLoco.Gui.ViewModels
 				? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename)
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
-			Logger?.Info($"Saving G1.dat to {savePath}");
+			logger?.Info($"Saving G1.dat to {savePath}");
 			SawyerStreamWriter.SaveG1(savePath, Model.G1);
 		}
 
@@ -70,7 +71,7 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			if (Model.G1 == null)
 			{
-				Logger?.Error("G1 was null and was unable to saved");
+				logger?.Error("G1 was null and was unable to saved");
 				return;
 			}
 
@@ -81,7 +82,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			var savePath = saveFile.Path.LocalPath;
-			Logger?.Info($"Saving G1.dat to {savePath}");
+			logger?.Info($"Saving G1.dat to {savePath}");
 			SawyerStreamWriter.SaveG1(savePath, Model.G1);
 		}
 	}

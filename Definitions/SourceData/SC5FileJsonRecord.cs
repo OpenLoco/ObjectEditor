@@ -1,9 +1,10 @@
+using OpenLoco.Dat.Data;
 using System.Text.Json.Serialization;
 
 namespace OpenLoco.Definitions.SourceData
 {
 	[method: JsonConstructor]
-	public record ObjectPackJsonRecord(
+	public record SC5FileJsonRecord(
 		string Name,
 		string? Description,
 		List<string> Authors,
@@ -11,5 +12,6 @@ namespace OpenLoco.Definitions.SourceData
 		string? Licence,
 		DateTimeOffset? CreationDate,
 		DateTimeOffset? LastEditDate,
-		DateTimeOffset UploadDate);
+		DateTimeOffset UploadDate,
+		ObjectSource ObjectSource);
 }

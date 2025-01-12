@@ -46,7 +46,7 @@ namespace OpenLoco.Gui.ViewModels
 				? CurrentFile.Filename
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
-			Logger?.Info($"Saving music to {savePath}");
+			logger?.Info($"Saving music to {savePath}");
 			var bytes = SawyerStreamWriter.SaveMusicToDat(SoundViewModel.Header, SoundViewModel.Data);
 			File.WriteAllBytes(savePath, bytes);
 		}
@@ -60,7 +60,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			var savePath = saveFile.Path.LocalPath;
-			Logger?.Info($"Saving music to {savePath}");
+			logger?.Info($"Saving music to {savePath}");
 			var bytes = SawyerStreamWriter.SaveMusicToDat(SoundViewModel.Header, SoundViewModel.Data);
 			File.WriteAllBytes(savePath, bytes);
 		}

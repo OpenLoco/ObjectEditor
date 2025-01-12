@@ -7,6 +7,8 @@ namespace OpenLoco.Definitions.Web
 {
 	public static class Client
 	{
+		public const string Version = "v1";
+
 		public static async Task<IEnumerable<DtoObjectIndexEntry>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
 			=> await SendRequestAsync<IEnumerable<DtoObjectIndexEntry>?>(client, Routes.ListObjects, logger) ?? [];
 
@@ -26,7 +28,7 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				route = route.TrimStart('/');
+				route = string.Join(Version, route);
 				logger?.Debug($"Querying {client.BaseAddress}{route}");
 				using var response = await client.GetAsync(route);
 
@@ -69,13 +71,13 @@ namespace OpenLoco.Definitions.Web
 
 					if (string.IsNullOrEmpty(error))
 					{
-
 						logger.Error($"Posting {filename} failed. StatusCode={response.StatusCode} ReasonPhrase={response.ReasonPhrase}");
 					}
 					else
 					{
 						logger.Error($"Posting {filename} failed. Error={error}");
 					}
+
 					return;
 				}
 

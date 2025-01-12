@@ -35,7 +35,7 @@ namespace OpenLoco.Dat.FileParsing
 			byte[] fullData =
 			[
 				.. byteList[..runningCount],
-				.. SawyerStreamReader.Decode(objectHeader.Encoding, byteList[runningCount..(int)(runningCount + objectHeader.DataLength)]),
+				.. SawyerStreamReader.Decode(objectHeader.Encoding, byteList.AsSpan()[runningCount..(int)(runningCount + objectHeader.DataLength)]),
 			];
 
 			var locoStruct = SawyerStreamReader.GetLocoStruct(s5Header.ObjectType, fullData.AsSpan()[runningCount..]);

@@ -5,13 +5,22 @@ namespace OpenLoco.Definitions.Database
 {
 	public class LocoDb : DbContext
 	{
+		#region ReferenceData
+
 		public DbSet<TblAuthor> Authors => Set<TblAuthor>();
 		public DbSet<TblTag> Tags => Set<TblTag>();
+		public DbSet<TblLicence> Licences => Set<TblLicence>();
+
+		#endregion
+
+		#region UserData
+
 		public DbSet<TblLocoObject> Objects => Set<TblLocoObject>();
 		public DbSet<TblLocoObjectPack> ObjectPacks => Set<TblLocoObjectPack>();
-		public DbSet<TblLicence> Licences => Set<TblLicence>();
-		public DbSet<TblSCV5File> SCV5Files => Set<TblSCV5File>();
-		public DbSet<TblSCV5FilePack> SCV5FilePacks => Set<TblSCV5FilePack>();
+		public DbSet<TblSC5File> SC5Files => Set<TblSC5File>();
+		public DbSet<TblSC5FilePack> SC5FilePacks => Set<TblSC5FilePack>();
+
+		#endregion
 
 		public LocoDb()
 		{ }
@@ -23,7 +32,7 @@ namespace OpenLoco.Definitions.Database
 		{
 			if (!optionsBuilder.IsConfigured)
 			{
-				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Server\\loco-dev.db");
+				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Server\\loco.db");
 			}
 		}
 
@@ -32,7 +41,13 @@ namespace OpenLoco.Definitions.Database
 			_ = modelBuilder.Entity<TblLocoObject>()
 				.Property(b => b.UploadDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
-			_ = modelBuilder.Entity<TblSCV5File>()
+			_ = modelBuilder.Entity<TblSC5File>()
+				.Property(b => b.UploadDate)
+				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+			_ = modelBuilder.Entity<TblLocoObjectPack>()
+				.Property(b => b.UploadDate)
+				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+			_ = modelBuilder.Entity<TblSC5FilePack>()
 				.Property(b => b.UploadDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 		}

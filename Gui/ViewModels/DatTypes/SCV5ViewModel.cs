@@ -55,7 +55,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void Load()
 		{
-			Logger?.Info($"Loading scenario from {CurrentFile.Filename}");
+			logger?.Info($"Loading scenario from {CurrentFile.Filename}");
 			CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.Filename, Model.Logger);
 			RequiredObjects = new BindingList<S5HeaderViewModel>(CurrentS5File!.RequiredObjects.ConvertAll(x => new S5HeaderViewModel(x)));
 			PackedObjects = new BindingList<S5HeaderViewModel>(CurrentS5File!.PackedObjects.ConvertAll(x => new S5HeaderViewModel(x.Item1))); // note: cannot bind to this, but it'll allow us to display at least
@@ -74,7 +74,7 @@ namespace OpenLoco.Gui.ViewModels
 				}
 				catch (Exception ex)
 				{
-					Logger?.Error(ex);
+					logger?.Error(ex);
 				}
 			}
 		}
@@ -84,7 +84,7 @@ namespace OpenLoco.Gui.ViewModels
 			Map = new WriteableBitmap(new Avalonia.PixelSize(384, 384), new Avalonia.Vector(92, 92), Avalonia.Platform.PixelFormat.Rgba8888);
 			using (var fb = Map.Lock())
 			{
-				var teMap = CurrentS5File!.TileElementMap;
+				var teMap = CurrentS5File!.TileElementMap!;
 				for (var y = 0; y < teMap.GetLength(1); ++y)
 				{
 					for (var x = 0; x < teMap.GetLength(0); ++x)
@@ -171,8 +171,8 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		public override void Save() => Logger?.Error("Saving SC5/SV5 is not implemented yet");
+		public override void Save() => logger?.Error("Saving SC5/SV5 is not implemented yet");
 
-		public override void SaveAs() => Logger?.Error("Saving SC5/SV5 is not implemented yet");
+		public override void SaveAs() => logger?.Error("Saving SC5/SV5 is not implemented yet");
 	}
 }

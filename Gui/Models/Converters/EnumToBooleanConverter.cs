@@ -12,6 +12,7 @@ namespace OpenLoco.Gui.Models.Converters
 			{
 				return enumValue.Equals(enumParameter);
 			}
+
 			return false;
 		}
 
@@ -21,6 +22,7 @@ namespace OpenLoco.Gui.Models.Converters
 			{
 				return enumParameter;
 			}
+
 			return null;
 		}
 	}

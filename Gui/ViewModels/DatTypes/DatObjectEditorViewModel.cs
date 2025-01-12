@@ -90,7 +90,7 @@ namespace OpenLoco.Gui.ViewModels
 				svm.Dispose();
 			}
 
-			Logger.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.Filename}");
+			logger.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.Filename}");
 
 			if (Model.TryLoadObject(CurrentFile, out var newObj))
 			{
@@ -109,7 +109,7 @@ namespace OpenLoco.Gui.ViewModels
 						? new SoundViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
 						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
 
-					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), Logger, false);
+					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), logger, false);
 					CurrentHexAnnotations = new(treeView);
 					DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}
@@ -136,7 +136,7 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			if (CurrentFile.FileLocation != FileLocation.Local)
 			{
-				Logger.Error("Cannot delete non-local files");
+				logger.Error("Cannot delete non-local files");
 				return;
 			}
 
@@ -144,12 +144,12 @@ namespace OpenLoco.Gui.ViewModels
 			var path = Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename);
 			if (File.Exists(path))
 			{
-				Logger.Info($"Deleting file \"{path}\"");
+				logger.Info($"Deleting file \"{path}\"");
 				File.Delete(path);
 			}
 			else
 			{
-				Logger.Info($"File already deleted \"{path}\"");
+				logger.Info($"File already deleted \"{path}\"");
 			}
 
 			// remove from object index
@@ -177,13 +177,13 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			if (CurrentObject?.LocoObject == null)
 			{
-				Logger.Error("Cannot save - loco object was null");
+				logger.Error("Cannot save - loco object was null");
 				return;
 			}
 
 			if (string.IsNullOrEmpty(filename))
 			{
-				Logger.Error("Cannot save - filename was empty");
+				logger.Error("Cannot save - filename was empty");
 				return;
 			}
 
@@ -191,11 +191,11 @@ namespace OpenLoco.Gui.ViewModels
 
 			if (string.IsNullOrEmpty(saveDir) || !Directory.Exists(saveDir))
 			{
-				Logger.Error("Cannot save - directory is invalid");
+				logger.Error("Cannot save - directory is invalid");
 				return;
 			}
 
-			Logger.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
+			logger.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
 			StringTableViewModel?.WriteTableBackToObject();
 
 			if (CurrentObjectViewModel is not null and not GenericObjectViewModel)
@@ -208,7 +208,7 @@ namespace OpenLoco.Gui.ViewModels
 				S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
 				SawyerEncoding.Uncompressed, // todo: change based on what user selected
 				CurrentObject.LocoObject,
-				Logger,
+				logger,
 				Model.Settings.AllowSavingAsVanillaObject);
 		}
 

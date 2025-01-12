@@ -90,7 +90,7 @@ foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Vehicle)
 		var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.Filename), logger);
 		if (o?.LocoObject != null)
 		{
-			objectList.Add((o!.Value.DatFileInfo, o!.Value.LocoObject.Object! as VehicleObject));
+			objectList.Add((o.Value.DatFileInfo, (o.Value.LocoObject.Object as VehicleObject)!));
 		}
 	}
 	catch (Exception ex)
@@ -146,7 +146,7 @@ void AddNewObjectMetadataEntries()
 
 		if (!objectMetadata.ContainsKey(key))
 		{
-			objectMetadata.Add(key, new ObjectMetadata(Path.GetFileNameWithoutExtension(obj.Filename), obj.DatName, obj.DatChecksum, null, [], [], [], null, OpenLoco.Definitions.ObjectAvailability.AllGames, source));
+			objectMetadata.Add(key, new ObjectMetadata(Path.GetFileNameWithoutExtension(obj.Filename), obj.DatName, obj.DatChecksum, null, [], [], [], null, OpenLoco.Definitions.ObjectAvailability.AllGames, DateTimeOffset.Now, null, DateTimeOffset.Now, source));
 		}
 	}
 

@@ -32,13 +32,6 @@ builder.Services.AddSwaggerGen(options =>
 				Version = description.ApiVersion.ToString(),
 			});
 	}
-	options.SwaggerDoc(
-		"(pre-versioning)",
-		new OpenApiInfo()
-		{
-			Title = "ObjectService (pre-versioning)",
-			Version = "0.0",
-		});
 });
 builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -82,7 +75,7 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 _ = builder.Services.AddApiVersioning(options =>
 {
 	options.ReportApiVersions = true;
-	options.DefaultApiVersion = new ApiVersion(2, 0);
+	options.DefaultApiVersion = new ApiVersion(1, 0);
 	options.AssumeDefaultVersionWhenUnspecified = true;
 	options.ApiVersionReader = ApiVersionReader.Combine(
 		new UrlSegmentApiVersionReader());
@@ -107,16 +100,10 @@ var apiSet = app.NewApiVersionSet().Build();
 var groupVersioned = app
 	.MapGroup("v{version:apiVersion}")
 	.WithApiVersionSet(apiSet)
-	//.HasDeprecatedApiVersion(1.0)
-	.HasApiVersion(1.0)
 	.RequireRateLimiting(tokenPolicy)
 	.WithTags("Versioned");
 
-var groupDeprecated = app
-	.MapGroup("")
-	.RequireRateLimiting(tokenPolicy)
-	.WithTags("Non-Versioned");
-MapRoutes(groupDeprecated, server);
+MapRoutes(groupVersioned, server);
 
 if (app.Environment.IsDevelopment())
 {

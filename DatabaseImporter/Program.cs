@@ -230,7 +230,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				Name = meta!.UniqueName,
 				DatName = objIndex.DatName,
 				DatChecksum = objIndex.DatChecksum,
-				SourceGame = objIndex.ObjectSource,
+				ObjectSource = objIndex.ObjectSource,
 				ObjectType = objIndex.ObjectType,
 				VehicleType = objIndex.VehicleType,
 				Description = meta?.Description,

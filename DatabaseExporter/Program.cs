@@ -120,7 +120,7 @@ foreach (var o in db.Objects
 		o.Object.CreationDate,
 		o.Object.LastEditDate,
 		o.Object.UploadDate,
-		o.Object.SourceGame);
+		o.Object.ObjectSource);
 	objects.Add(obj);
 }
 

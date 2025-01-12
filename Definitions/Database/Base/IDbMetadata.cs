@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpenLoco.Definitions.Database
 {
-
 	public interface IDbMetadata
 	{
 		public ICollection<TblTag> Tags { get; set; }

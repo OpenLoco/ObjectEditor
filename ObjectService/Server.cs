@@ -98,7 +98,7 @@ namespace OpenLoco.ObjectService
 
 			if (sourceGame != null)
 			{
-				query = query.Where(x => x.SourceGame == sourceGame);
+				query = query.Where(x => x.ObjectSource == sourceGame);
 			}
 
 			#endregion
@@ -111,7 +111,7 @@ namespace OpenLoco.ObjectService
 					x.Id,
 					x.DatName,
 					x.DatChecksum,
-					x.SourceGame,
+					x.ObjectSource,
 					x.ObjectType,
 					x.VehicleType,
 					x.Availability,
@@ -173,7 +173,7 @@ namespace OpenLoco.ObjectService
 			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 			{
 				logger.LogWarning("Indexed object is a vanilla object.");
-				return Results.BadRequest();
+				return Results.Forbid();
 			}
 
 			var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
@@ -247,7 +247,7 @@ namespace OpenLoco.ObjectService
 				logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder.", pathOnDisk);
 			}
 
-			var bytes = (returnObjBytes ?? false) && (obj.SourceGame is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
+			var bytes = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
@@ -257,7 +257,7 @@ namespace OpenLoco.ObjectService
 				obj.DatName,
 				obj.DatChecksum,
 				bytes,
-				obj.SourceGame,
+				obj.ObjectSource,
 				obj.ObjectType,
 				obj.VehicleType,
 				obj.Description,
@@ -300,7 +300,7 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			if (obj.SourceGame is ObjectSource.Custom or ObjectSource.OpenLoco)
+			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 			{
 				return Results.Forbid();
 			}
@@ -412,7 +412,7 @@ namespace OpenLoco.ObjectService
 				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
 				DatName = hdrs.S5.Name,
 				DatChecksum = hdrs.S5.Checksum,
-				SourceGame = ObjectSource.Custom, // not possible to upload vanilla objects
+				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
 				ObjectType = hdrs.S5.ObjectType,
 				VehicleType = vehicleType,
 				Description = string.Empty,
@@ -426,7 +426,7 @@ namespace OpenLoco.ObjectService
 				Licence = null,
 			};
 
-			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.SourceGame, locoTbl.VehicleType));
+			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();

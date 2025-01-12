@@ -11,6 +11,8 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
+using SixLabors.ImageSharp;
+using System.IO.Compression;
 
 namespace OpenLoco.ObjectService
 {
@@ -20,6 +22,7 @@ namespace OpenLoco.ObjectService
 		{
 			Settings = settings;
 			ServerFolderManager = new ServerFolderManager(Settings.RootFolder)!;
+			PaletteMap = new PaletteMap(Settings.PaletteMapFile);
 		}
 
 		public Server(IOptions<ServerSettings> options) : this(options.Value)
@@ -28,6 +31,8 @@ namespace OpenLoco.ObjectService
 		ServerSettings Settings { get; init; }
 
 		ServerFolderManager ServerFolderManager { get; init; }
+
+		PaletteMap PaletteMap { get; init; }
 
 		Common.Logging.ILogger Logger { get; } = new Logger();
 
@@ -62,6 +67,73 @@ namespace OpenLoco.ObjectService
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
+		}
+
+		// eg: http://localhost:7229/objects/getobjectimages?uniqueObjectId=1
+		public async Task<IResult> GetObjectImages(int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
+		{
+			Console.WriteLine($"Object [{uniqueObjectId}] requested with images");
+
+			var obj = await db.Objects.Where(x => x.Id == uniqueObjectId).SingleOrDefaultAsync();
+
+			if (obj == null)
+			{
+				return Results.NotFound();
+			}
+
+			if (!ServerFolderManager.ObjectIndex.TryFind((obj.DatName, obj.DatChecksum), out var index))
+			{
+				return Results.NotFound();
+			}
+
+			var pathOnDisk = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
+			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
+
+			var fileExists = File.Exists(pathOnDisk);
+			if (!fileExists)
+			{
+				logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder.", pathOnDisk);
+				return Results.NotFound();
+			}
+
+			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+			{
+				logger.LogWarning("Indexed object is a vanilla object.");
+				return Results.BadRequest();
+			}
+
+			var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
+			var locoObj = SawyerStreamReader.LoadFullObjectFromFile(pathOnDisk, dummyLogger, true);
+
+			await using var memoryStream = new MemoryStream();
+			using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+			{
+				var count = 0;
+				foreach (var g1 in locoObj!.Value!.LocoObject!.G1Elements)
+				{
+					if (!PaletteMap.TryConvertG1ToRgba32Bitmap(g1, out var image))
+					{
+						continue;
+					}
+
+					await using (var pngStream = new MemoryStream())
+					{
+						await image.SaveAsPngAsync(pngStream);
+						pngStream.Position = 0;
+
+						var zipEntry = zipArchive.CreateEntry(count++ + ".png", CompressionLevel.Optimal);
+						await using (var zipEntryStream = zipEntry.Open())
+						{
+							await pngStream.CopyToAsync(zipEntryStream);
+						}
+					}
+				}
+
+			}
+
+			memoryStream.Position = 0; // Reset stream position for reading
+			var bytes = memoryStream.ToArray();
+			return Results.File(bytes, "application/zip", "images.zip");
 		}
 
 		// eg: https://localhost:7230/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false

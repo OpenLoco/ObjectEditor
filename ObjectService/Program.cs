@@ -66,8 +66,10 @@ if (app.Environment.IsDevelopment())
 }
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
+var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];
 ArgumentNullException.ThrowIfNull(objRoot);
-var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
+ArgumentNullException.ThrowIfNull(paletteMapFile);
+var server = new Server(new ServerSettings(objRoot, paletteMapFile));
 
 // GET
 _ = app.MapGet(Routes.ListObjects, Server.ListObjects)
@@ -80,6 +82,9 @@ _ = app.MapGet(Routes.GetDat, server.GetDat)
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapGet(Routes.GetObject, server.GetObject)
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapGet(Routes.GetObjectImages, server.GetObjectImages)
 	.RequireRateLimiting(tokenPolicy);
 
 _ = app.MapGet(Routes.GetDatFile, server.GetDatFile)

@@ -1,8 +1,6 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
 using PropertyModels.Extensions;
-using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -10,7 +8,7 @@ using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class IndustryViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
+	public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 	{
 		[Reactive] public uint8_t TotalOfTypeInScenario { get; set; } // Total industries of this type that can be created in a scenario Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.
 		[Reactive] public uint16_t DesignedYear { get; set; }
@@ -19,8 +17,8 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public Colour MapColour { get; set; }
 		[Reactive] public uint32_t Colours { get; set; } // bitset
 		[Reactive, Category("Production")] public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; set; }
-		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5Header> ProducedCargo { get; set; }
-		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5Header> RequiredCargo { get; set; }
+		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> ProducedCargo { get; set; }
+		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> RequiredCargo { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
@@ -34,9 +32,9 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Building")] public uint32_t BuildingSizeFlags { get; set; }
 		[Reactive, Category("Building")] public uint8_t ScaffoldingSegmentType { get; set; }
 		[Reactive, Category("Building")] public Colour ScaffoldingColour { get; set; }
-		[Reactive, Category("Building"), Length(0, IndustryObject.MaxWallTypeCount)] public BindingList<S5Header> WallTypes { get; set; }
-		[Reactive, Category("Building")] public S5Header? BuildingWall { get; set; }
-		[Reactive, Category("Building")] public S5Header? BuildingWallEntrance { get; set; }
+		[Reactive, Category("Building"), Length(0, IndustryObject.MaxWallTypeCount)] public BindingList<S5HeaderViewModel> WallTypes { get; set; }
+		[Reactive, Category("Building")] public S5HeaderViewModel? BuildingWall { get; set; }
+		[Reactive, Category("Building")] public S5HeaderViewModel? BuildingWallEntrance { get; set; }
 		[Reactive, Category("<unknown>")] public BindingList<IndustryObjectUnk38> var_38 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_E8 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_E9 { get; set; }
@@ -54,14 +52,14 @@ namespace OpenLoco.Gui.ViewModels
 			BuildingVariations = new(io.BuildingVariations.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
 			Buildings = new(io.Buildings);
 			BuildingSizeFlags = io.BuildingSizeFlags;
-			BuildingWall = io.BuildingWall;
-			BuildingWallEntrance = io.BuildingWallEntrance;
+			BuildingWall = io.BuildingWall == null ? null : new(io.BuildingWall);
+			BuildingWallEntrance = io.BuildingWallEntrance == null ? null : new(io.BuildingWallEntrance);
 			MinNumBuildings = io.MinNumBuildings;
 			MaxNumBuildings = io.MaxNumBuildings;
 			InitialProductionRate = new(io.InitialProductionRate);
-			ProducedCargo = new(io.ProducedCargo);
-			RequiredCargo = new(io.RequiredCargo);
-			WallTypes = new(io.WallTypes);
+			ProducedCargo = new(io.ProducedCargo.ConvertAll(x => new S5HeaderViewModel(x)));
+			RequiredCargo = new(io.RequiredCargo.ConvertAll(x => new S5HeaderViewModel(x)));
+			WallTypes = new(io.WallTypes.ConvertAll(x => new S5HeaderViewModel(x)));
 			Colours = io.Colours;
 			DesignedYear = io.DesignedYear;
 			ObsoleteYear = io.ObsoleteYear;
@@ -81,21 +79,21 @@ namespace OpenLoco.Gui.ViewModels
 			var_F3 = io.var_E8;
 		}
 
-		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
-			=> GetAsStruct((locoStruct as IndustryObject)!);
-
 		// validation:
 		// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-		public IndustryObject GetAsStruct(IndustryObject io)
+		public override IndustryObject GetAsStruct(IndustryObject io)
 			=> io with
 			{
 				BuildingSizeFlags = BuildingSizeFlags,
-				BuildingWall = BuildingWall,
-				BuildingWallEntrance = BuildingWallEntrance,
+				BuildingWall = BuildingWall?.GetAsUnderlyingType(),
+				BuildingWallEntrance = BuildingWallEntrance?.GetAsUnderlyingType(),
 				MinNumBuildings = MinNumBuildings,
 				MaxNumBuildings = MaxNumBuildings,
 				NumBuildingParts = (uint8_t)BuildingAnimations.Count,
 				NumBuildingVariations = (uint8_t)BuildingVariations.Count,
+				ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				WallTypes = WallTypes.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				Colours = Colours,
 				DesignedYear = DesignedYear,
 				ObsoleteYear = ObsoleteYear,

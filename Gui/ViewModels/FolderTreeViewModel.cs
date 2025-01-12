@@ -53,6 +53,8 @@ namespace OpenLoco.Gui.ViewModels
 
 		public ReactiveCommand<Unit, Task> RefreshDirectoryItems { get; }
 
+		public ReactiveCommand<Unit, Unit> OpenCurrentFolder { get; }
+
 		public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 
 		[Reactive]
@@ -93,32 +95,52 @@ namespace OpenLoco.Gui.ViewModels
 			Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = progress;
 
 			RefreshDirectoryItems = ReactiveCommand.Create(() => ReloadDirectoryAsync(false));
+			OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(CurrentLocalDirectory));
 
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
+				.Skip(1)
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
+
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
+				.Skip(1)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
+
 			_ = this.WhenAnyValue(o => o.DisplayMode)
 				.Throttle(TimeSpan.FromMilliseconds(1000))
+				.Skip(1)
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
+
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
+				.Skip(1)
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 
 			_ = this.WhenAnyValue(o => o.DirectoryItems)
+				.Skip(1)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
+
 			_ = this.WhenAnyValue(o => o.DirectoryItems)
+				.Skip(1)
 				.Subscribe(_ => CurrentlySelectedObject = null);
 
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
+				.Skip(1)
 				.Subscribe(_ => SwitchDirectoryItemsView());
+
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
+				.Skip(1)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(RecreateText)));
+
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
+				.Skip(1)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
+
 			_ = this.WhenAnyValue(o => o.LocalDirectoryItems)
+				//.Skip(1)
 				.Subscribe(_ => SwitchDirectoryItemsView());
+
 			_ = this.WhenAnyValue(o => o.OnlineDirectoryItems)
+				.Skip(1)
 				.Subscribe(_ => SwitchDirectoryItemsView());
 
 			// loads the last-viewed folder
@@ -171,12 +193,9 @@ namespace OpenLoco.Gui.ViewModels
 
 			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.WebClient != null)
 			{
-				Model.ObjectIndexOnline = new ObjectIndex()
-				{
-					Objects = (await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-						.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.SourceGame, x.VehicleType))
-						.ToList()
-				};
+				Model.ObjectIndexOnline = new ObjectIndex((await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
+					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.SourceGame, x.VehicleType))
+					.ToList());
 			}
 
 			if (Model.ObjectIndexOnline != null)

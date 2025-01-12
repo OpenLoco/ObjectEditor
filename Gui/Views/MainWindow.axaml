@@ -37,8 +37,17 @@
 	</Window.Resources>
 
 	<Window.Styles>
+		<!--<Style Selector="TabControl">
+			<Setter Property="Template">
+				<ControlTemplate>
+				</ControlTemplate>
+			</Setter>
+		</Style>-->
 		<Style Selector="TabItem">
-			<Setter Property="FontSize" Value="20"/>
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="Margin" Value="0"/>
+			<Setter Property="Height" Value="16"/>
+			<Setter Property="Padding" Value="8"/>
 		</Style>
 		<Style Selector="Border">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
@@ -133,41 +142,23 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:GenericObjectViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_ObjectVm" DataContext="{Binding Object}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+			<pgc:PropertyGrid  DataContext="{Binding Object}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:AirportViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_AirportVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:VehicleViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_VehicleVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:TownNamesViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_TownNamesVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:IndustryViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_IndustryVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:BuildingViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_BuildingVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:TrainStationViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_TrainStationVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:TrackViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_TrackVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+		<DataTemplate DataType="vm:IObjectViewModel">
+			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
-			<DockPanel DataContext="{Binding}" Margin="10">
+			<DockPanel DataContext="{Binding}" Margin="4">
 				<Grid ColumnDefinitions="*, Auto, 384">
 					<TabControl Grid.Column="0">
+						<TabControl.Styles>
+							<Style Selector="TabItem">
+								<Setter Property="Padding" Value="8"/>
+								<Setter Property="FontSize" Value="14"/>
+							</Style>
+						</TabControl.Styles>
 						<TabItem Header="Object">
 							<ScrollViewer>
 								<ContentControl Content="{Binding CurrentObjectViewModel}"></ContentControl>
@@ -311,6 +302,12 @@
 					</TabControl>
 					<GridSplitter Grid.Column="1" />
 					<TabControl Grid.Column="2">
+						<TabControl.Styles>
+							<Style Selector="TabItem">
+								<Setter Property="Padding" Value="8"/>
+								<Setter Property="FontSize" Value="14"/>
+							</Style>
+						</TabControl.Styles>
 						<TabItem Header="Headers">
 							<Border Margin="4" Background="{DynamicResource ExpanderContentBackground}">
 								<StackPanel Margin="4">
@@ -382,7 +379,9 @@
 				</TabItem>
 				<TabItem Header="GameState">
 					<ScrollViewer>
-						<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						<StackPanel Orientation="Vertical">
+							<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+						</StackPanel>
 					</ScrollViewer>
 				</TabItem>
 				<TabItem Header="Required Objects">
@@ -427,19 +426,25 @@
 				</TabItem>
 				<TabItem Header="Tile Elements">
 					<DockPanel>
-						<TextBlock Text="{Binding TileElements.Count}" DockPanel.Dock="Top" />
-						<ScrollViewer>
-							<ItemsRepeater ItemsSource="{Binding TileElements}">
+						<Image Source="{Binding Map}" RenderOptions.BitmapInterpolationMode="None" DockPanel.Dock="Right"/>
+						<StackPanel Orientation="Vertical" DockPanel.Dock="Left" MaxWidth="256">
+							<StackPanel Orientation="Horizontal" >
+								<TextBox Watermark="X" Text="{Binding TileElementX}"></TextBox>
+								<TextBox Watermark="Y" Text="{Binding TileElementY}"></TextBox>
+							</StackPanel>
+							<ItemsRepeater ItemsSource="{Binding CurrentTileElements}">
 								<ItemsRepeater.Layout>
-									<UniformGridLayout Orientation="Horizontal"/>
+									<UniformGridLayout Orientation="Vertical"/>
 								</ItemsRepeater.Layout>
 								<ItemsRepeater.ItemTemplate>
 									<DataTemplate>
-										<ContentControl Content="{Binding}"></ContentControl>
+										<Border Margin="4" BorderThickness="1">
+											<ContentControl Content="{Binding}"></ContentControl>
+										</Border>
 									</DataTemplate>
 								</ItemsRepeater.ItemTemplate>
 							</ItemsRepeater>
-						</ScrollViewer>
+						</StackPanel>
 					</DockPanel>
 				</TabItem>
 			</TabControl>
@@ -512,7 +517,13 @@
 								</ListBox.ItemsPanel>
 								<ListBox.ItemTemplate>
 									<DataTemplate>
-										<Image Source="{Binding}" Stretch="None" Margin="0" />
+										<Image Source="{Binding}" Stretch="None" Margin="0">
+											<Image.ContextMenu>
+												<ContextMenu>
+													<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
+												</ContextMenu>
+											</Image.ContextMenu>
+										</Image>
 									</DataTemplate>
 								</ListBox.ItemTemplate>
 							</ListBox>
@@ -590,6 +601,35 @@
 			</DockPanel>
 		</DataTemplate>
 
+		<!--<DataTemplate DataType ="vm:TutorialActionB">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="{Binding Unk, StringFormat='Unk: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseX, StringFormat='X: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseY, StringFormat='Y: {0}'}" Margin="4" Width="64"></TextBlock>
+			</StackPanel>
+		</DataTemplate>-->
+
+		<!--<DataTemplate DataType ="vm:TutorialActionA">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="{Binding KeyModifier, StringFormat='Key: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseX, StringFormat='X: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseY, StringFormat='Y: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseButton, StringFormat='MButton: {0}'}" Margin="4" Width="64"></TextBlock>
+			</StackPanel>
+		</DataTemplate>-->
+
+		<DataTemplate DataType="vm:TutorialViewModel">
+			<ScrollViewer>
+				<ItemsRepeater ItemsSource="{Binding TutorialInputs}" Background="{DynamicResource ExpanderContentBackground}">
+					<ItemsRepeater.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding}"></TextBlock>
+						</DataTemplate>
+					</ItemsRepeater.ItemTemplate>
+				</ItemsRepeater>
+			</ScrollViewer>
+		</DataTemplate>
+
 		<DataTemplate DataType="vm:SoundViewModel">
 			<Border BorderThickness="1">
 				<StackPanel Orientation="Vertical" Background="{DynamicResource ScrollBarTrackFill}">
@@ -649,6 +689,40 @@
 			</Border>
 		</DataTemplate>
 
+		<DataTemplate DataType="vm:ILocoFileViewModel">
+			<Border BorderThickness="1">
+				<DockPanel>
+					<DockPanel DockPanel.Dock="Top">
+						<Button Command="{Binding ReloadCommand}" Margin="4" Padding="2" DockPanel.Dock="Left">
+							<DockPanel>
+								<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
+								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
+							</DockPanel>
+						</Button>
+						<Button Command="{Binding SaveCommand}" Margin="4" Padding="2" DockPanel.Dock="Left">
+							<DockPanel>
+								<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
+								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
+							</DockPanel>
+						</Button>
+						<Button Command="{Binding SaveAsCommand}" Margin="4" Padding="2" DockPanel.Dock="Left">
+							<DockPanel>
+								<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
+								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
+							</DockPanel>
+						</Button>
+						<Button Command="{Binding DeleteLocalFileCommand}" HorizontalAlignment="Right" Margin="4" Padding="2" IsVisible="{Binding IsLocalMode}" IsEnabled="{Binding IsLocalMode}" Background="DarkRed" DockPanel.Dock="Right" ToolTip.Tip="WARNING: this will delete your local file without asking! Only click this if you're sure you want to delete this file!">
+							<DockPanel>
+								<materialIcons:MaterialIcon Kind="{Binding DeleteLocalFileIcon}" Width="24" Height="24" Margin="2" />
+								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding DeleteLocalFileText}"/>
+							</DockPanel>
+						</Button>
+					</DockPanel>
+					<ContentControl Content="{Binding}"/>
+				</DockPanel>
+			</Border>
+		</DataTemplate>
+
 	</Window.DataTemplates>
 
 	<DockPanel>
@@ -660,7 +734,7 @@
 					<MenuItem Header="Open scenario/save game/landscape (.SC5/.SV5)" Command="{Binding OpenSCV5}"/>
 					<MenuItem Header="Open music file (.DAT)" Command="{Binding OpenMusic}"/>
 					<MenuItem Header="Open sound effect file (.DAT)" Command="{Binding OpenSoundEffect}"/>
-					<MenuItem Header="Open tutorial (.DAT) (coming soon)" Command="{Binding OpenTutorial}" IsEnabled="False"/>
+					<MenuItem Header="Open tutorial (.DAT)" Command="{Binding OpenTutorial}"/>
 					<MenuItem Header="Open scores file (.DAT) (coming soon)" Command="{Binding OpenScores}" IsEnabled="False"/>
 					<MenuItem Header="Open language file (.DAT) (coming soon)" Command="{Binding OpenLanguage}" IsEnabled="False"/>
 				</MenuItem>
@@ -696,7 +770,7 @@
 			</ScrollViewer>
 		</Expander>
 		<DockPanel DataContext="{Binding FolderTreeViewModel}" Width="384" MinWidth="256" MaxWidth="512">
-			<TabStrip DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" Name="LocalOnlineTab">
+			<TabStrip DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" HorizontalAlignment="Center" Name="LocalOnlineTab">
 				<TabItem>
 					<TabItem.Header>
 						<DockPanel>
@@ -725,13 +799,21 @@
 				</Grid.RowDefinitions>
 				<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
-				<Button Grid.Row="2" Command="{Binding RefreshDirectoryItems}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
-					<DockPanel>
-						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
-						<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
-						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding RecreateText}" />
-					</DockPanel>
-				</Button>
+				<DockPanel Grid.Row="2">
+					<Button Command="{Binding RefreshDirectoryItems}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
+						<DockPanel>
+							<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
+							<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding RecreateText}" />
+						</DockPanel>
+					</Button>
+					<Button Command="{Binding OpenCurrentFolder}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Open folder">
+						<DockPanel>
+							<materialIcons:MaterialIcon Kind="FolderOpen" Width="24" Height="24" Margin="2" />
+							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Open folder" />
+						</DockPanel>
+					</Button>
+				</DockPanel>
 				<DockPanel Grid.Row="3" Margin="2" >
 					<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
 					<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />
@@ -759,30 +841,25 @@
 				</Border>
 			</Grid>
 		</DockPanel>
-		<Border Margin="8" BorderThickness="1">
-			<DockPanel DataContext="{Binding CurrentEditorModel}" Margin="4">
-				<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-					<Button Grid.Row="3" Command="{Binding ReloadCommand}" HorizontalAlignment="Stretch" Margin="4" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
-						</DockPanel>
-					</Button>
-					<Button Grid.Row="3" Command="{Binding SaveCommand}" HorizontalAlignment="Stretch" Margin="4" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
-						</DockPanel>
-					</Button>
-					<Button Grid.Row="3" Command="{Binding SaveAsCommand}" HorizontalAlignment="Stretch" Margin="4" Padding="2">
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
-						</DockPanel>
-					</Button>
-				</StackPanel>
-				<ContentControl Content="{Binding}"/>
-			</DockPanel>
-		</Border>
+		<TabControl DataContext="{Binding CurrentTabModel}" ItemsSource="{Binding Documents}" WrapSelection="True" SelectedItem="{Binding SelectedDocument}">
+			<TabControl.Styles>
+				<Style Selector="TabItem">
+					<Setter Property="Padding" Value="2, 0, 2, 0"/>
+					<Setter Property="FontSize" Value="14"/>
+				</Style>
+			</TabControl.Styles>
+			<TabControl.ItemTemplate>
+				<DataTemplate>
+					<TabItem Margin="0" Padding="0" BorderThickness="0" MaxHeight="32">
+						<TabItem.Header>
+							<StackPanel Orientation="Horizontal" Background="{DynamicResource ButtonBackground}">
+								<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center"/>
+								<Button BorderThickness="0" FontSize="12" VerticalAlignment="Center" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}">X</Button>
+							</StackPanel>
+						</TabItem.Header>
+					</TabItem>
+				</DataTemplate>
+			</TabControl.ItemTemplate>
+		</TabControl>
 	</DockPanel>
 </Window>

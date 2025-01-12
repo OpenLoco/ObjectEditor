@@ -1,3 +1,4 @@
+using OpenLoco.Common;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
@@ -79,9 +80,7 @@ namespace OpenLoco.Dat.Objects
 			{
 				var ptr_10 = 0;
 				while (remainingData[++ptr_10] != 0xFF)
-				{
-					;
-				}
+				{ }
 
 				BuildingVariations.Add(remainingData[..ptr_10].ToArray().ToList());
 				ptr_10++;
@@ -139,13 +138,13 @@ namespace OpenLoco.Dat.Objects
 			// produced cargo
 			foreach (var obj in ProducedCargo.Fill(MaxProducedCargoType, S5Header.NullHeader))
 			{
-				ms.Write(obj.Write());
+				ms.Write(obj!.Write());
 			}
 
 			// required cargo
 			foreach (var obj in RequiredCargo.Fill(MaxRequiredCargoType, S5Header.NullHeader))
 			{
-				ms.Write(obj.Write());
+				ms.Write(obj!.Write());
 			}
 
 			foreach (var unk in ElevatorHeightSequences)

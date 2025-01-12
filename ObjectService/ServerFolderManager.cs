@@ -41,25 +41,26 @@ namespace OpenLoco.ObjectService
 			var logger = new Logger();
 			ObjectIndex = ObjectIndex.LoadOrCreateIndex(Path.Combine(rootDirectory, ObjectsFolderName), logger)!;
 
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder));
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsCustomFolder));
+			// note these don't work on the linux box/server
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsCustomFolder));
 
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsOriginalFolder));
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsCustomFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsOriginalFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsCustomFolder));
 
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicOriginalFolder));
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicCustomFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicOriginalFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicCustomFolder));
 
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsOriginalFolder));
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsCustomFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsOriginalFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsCustomFolder));
 
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsOriginalFolder));
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsCustomFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsOriginalFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsCustomFolder));
 
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosOriginalFolder));
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosCustomFolder));
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosGoGFolder));
-			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosSteamFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosOriginalFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosCustomFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosGoGFolder));
+			// ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosSteamFolder));
 		}
 
 		public ObjectIndex ObjectIndex { get; init; }
@@ -74,6 +75,10 @@ namespace OpenLoco.ObjectService
 		public const string MusicFolderName = "Music";
 		public const string SoundEffectsFolderName = "SoundEffects";
 		public const string TutorialsFolderName = "Tutorials";
+
+		public const string LandscapesFolderName = "Landscapes";
+		public const string ScenariosFolderName = "Scenarios";
+		public const string SaveGamesFolderName = "SaveGames";
 
 		public const string OriginalFolderName = "Original";
 		public const string CustomFolderName = "Custom";
@@ -105,9 +110,10 @@ namespace OpenLoco.ObjectService
 
 		#endregion
 
-		#region SC5
+		#region SCV5
 
 		public string LandscapesFolder => Path.Combine(RootDirectory, LandscapesFolderName);
+		public string SaveGamesFolder => Path.Combine(RootDirectory, SaveGamesFolderName);
 		public string ScenariosFolder => Path.Combine(RootDirectory, ScenariosFolderName);
 
 		public string ScenariosOriginalFolder => Path.Combine(ScenariosFolder, OriginalFolderName);

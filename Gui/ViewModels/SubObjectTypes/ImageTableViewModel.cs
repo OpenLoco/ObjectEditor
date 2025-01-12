@@ -61,7 +61,58 @@ namespace OpenLoco.Gui.ViewModels
 		readonly ILogger Logger;
 
 		public ColourSwatches[] ColourSwatchesArr { get; } = (ColourSwatches[])Enum.GetValues(typeof(ColourSwatches));
-		[Reactive] public ColourSwatches SelectedColourSwatch { get; set; } = ColourSwatches.PrimaryRemap;
+
+		[Reactive]
+		public ColourSwatches SelectedColourSwatch { get; set; } = ColourSwatches.PrimaryRemap;
+
+		readonly DispatcherTimer animationTimer;
+		int currentFrameIndex;
+
+		public IList<Bitmap> SelectedBitmaps { get; set; }
+
+		[Reactive] public Bitmap SelectedBitmapPreview { get; set; }
+		public Avalonia.Size SelectedBitmapPreviewBorder => SelectedBitmapPreview == null
+			? new Avalonia.Size()
+			: new Avalonia.Size(SelectedBitmapPreview.Size.Width + 2, SelectedBitmapPreview.Size.Height + 2);
+
+		[Reactive] public int AnimationWindowHeight { get; set; }
+
+		[Reactive]
+		public int AnimationSpeed { get; set; } = 40;
+
+		[Reactive]
+		public PaletteMap PaletteMap { get; set; }
+
+		[Reactive]
+		public ICommand ReplaceImageCommand { get; set; }
+
+		[Reactive]
+		public ICommand ImportImagesCommand { get; set; }
+
+		[Reactive]
+		public ICommand ExportImagesCommand { get; set; }
+
+		[Reactive]
+		public int Zoom { get; set; } = 1;
+
+		// where the actual image data is stored
+		[Reactive]
+		public IList<Image<Rgba32>> Images { get; set; }
+
+		// what is displaying on the ui
+		[Reactive]
+		public IList<Bitmap?> Bitmaps { get; set; }
+
+		[Reactive]
+		public int SelectedImageIndex { get; set; } = -1;
+
+		[Reactive]
+		public SelectionModel<Bitmap> SelectionModel { get; set; }
+
+		public UIG1Element32? SelectedG1Element
+			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0
+			? null
+			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
 
 		public ImageTableViewModel(IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, IList<Image<Rgba32>> images, ILogger logger)
 		{
@@ -77,23 +128,20 @@ namespace OpenLoco.Gui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.Zoom)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+			_ = this.WhenAnyValue(o => o.Images)
+				.Subscribe(_ => Bitmaps = G1ImageConversion.CreateAvaloniaImages(Images).ToList());
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
 			_ = this.WhenAnyValue(o => o.SelectedBitmapPreview)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
-			_ = this.WhenAnyValue(o => o.Images)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.AnimationSpeed)
 				.Subscribe(_ => UpdateAnimationSpeed());
 
 			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
 			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
+			ReplaceImageCommand = ReactiveCommand.Create(ReplaceImage);
 
-			SelectionModel = new SelectionModel<Bitmap>
-			{
-				SingleSelect = false
-			};
-			SelectionModel.SelectionChanged += SelectionChanged;
+			CreateSelectionModel();
 
 			// Set up the animation timer
 			animationTimer = new DispatcherTimer
@@ -104,16 +152,6 @@ namespace OpenLoco.Gui.ViewModels
 			animationTimer.Start();
 			Logger = logger;
 		}
-
-		readonly DispatcherTimer animationTimer;
-		int currentFrameIndex;
-
-		public IList<Bitmap> SelectedBitmaps { get; set; }
-
-		[Reactive] public Bitmap SelectedBitmapPreview { get; set; }
-		public Avalonia.Size SelectedBitmapPreviewBorder => SelectedBitmapPreview == null ? new Avalonia.Size() : new Avalonia.Size(SelectedBitmapPreview.Size.Width + 2, SelectedBitmapPreview.Size.Height + 2);
-
-		[Reactive] public int AnimationWindowHeight { get; set; }
 
 		void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
 		{
@@ -134,9 +172,6 @@ namespace OpenLoco.Gui.ViewModels
 			AnimationWindowHeight = (int)SelectedBitmaps.Max(x => x.Size.Height) * 2;
 		}
 
-		[Reactive]
-		public int AnimationSpeed { get; set; } = 40;
-
 		void UpdateAnimationSpeed()
 		{
 			if (animationTimer == null)
@@ -149,7 +184,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		void AnimationTimer_Tick(object? sender, EventArgs e)
 		{
-			if (SelectedBitmaps == null || SelectedBitmaps.Count == 0 || SelectionModel.SelectedIndexes.Count == 0)
+			if (SelectionModel == null || SelectedBitmaps == null || SelectedBitmaps.Count == 0 || SelectionModel.SelectedIndexes.Count == 0)
 			{
 				return;
 			}
@@ -167,37 +202,15 @@ namespace OpenLoco.Gui.ViewModels
 			currentFrameIndex = (currentFrameIndex + 1) % SelectedBitmaps.Count;
 		}
 
-		[Reactive]
-		public PaletteMap PaletteMap { get; set; }
+		void CreateSelectionModel()
+		{
+			SelectionModel = new SelectionModel<Bitmap>
+			{
+				SingleSelect = false
+			};
+			SelectionModel.SelectionChanged += SelectionChanged;
+		}
 
-		[Reactive]
-		public ICommand ImportImagesCommand { get; set; }
-
-		[Reactive]
-		public ICommand ExportImagesCommand { get; set; }
-
-		[Reactive]
-		public int Zoom { get; set; } = 1;
-
-		// where the actual image data is stored
-		[Reactive]
-		public IList<Image<Rgba32>> Images { get; set; }
-
-		// what is displaying on the ui
-		public IList<Bitmap?> Bitmaps => G1ImageConversion.CreateAvaloniaImages(Images).ToList();
-
-		[Reactive]
-		public int SelectedImageIndex { get; set; } = -1;
-
-		[Reactive]
-		public SelectionModel<Bitmap> SelectionModel { get; set; }
-
-		public UIG1Element32? SelectedG1Element
-			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0
-			? null
-			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
-
-		//todo: second half should be model
 		public async Task ImportImages()
 		{
 			animationTimer.Stop();
@@ -294,18 +307,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 			else
 			{
-				var currG1 = G1Provider.G1Elements[index];
-				currG1 = currG1 with
-				{
-					Width = (int16_t)img.Width,
-					Height = (int16_t)img.Height,
-					Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
-					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
-					XOffset = offset?.X ?? currG1.XOffset,
-					YOffset = offset?.Y ?? currG1.YOffset
-				};
-				G1Provider.G1Elements[index] = currG1;
-				Images[index] = img; // update the UI
+				UpdateImage(img, index);
 			}
 		}
 
@@ -334,6 +336,50 @@ namespace OpenLoco.Gui.ViewModels
 				var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
 				await image.SaveAsPngAsync(path);
 			}
+		}
+
+		public async Task ReplaceImage()
+		{
+			if (SelectedImageIndex == -1)
+			{
+				return;
+			}
+
+			// file picker
+			var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.PngFileTypes);
+			if (openFile == null)
+			{
+				return;
+			}
+
+			var filename = openFile.SingleOrDefault()?.Path.LocalPath;
+			if (filename == null)
+			{
+				return;
+			}
+
+			// load image
+			UpdateImage(Image.Load<Rgba32>(filename), SelectedImageIndex);
+
+			this.RaisePropertyChanged(nameof(Bitmaps));
+			this.RaisePropertyChanged(nameof(SelectedG1Element));
+		}
+
+		void UpdateImage(Image<Rgba32> img, int index)
+		{
+			var currG1 = G1Provider.G1Elements[index];
+			currG1 = currG1 with
+			{
+				Width = (int16_t)img.Width,
+				Height = (int16_t)img.Height,
+				Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
+				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
+				XOffset = currG1.XOffset,
+				YOffset = currG1.YOffset
+			};
+			G1Provider.G1Elements[SelectedImageIndex] = currG1;
+			Images[SelectedImageIndex] = img;
+			Bitmaps[SelectedImageIndex] = G1ImageConversion.CreateAvaloniaImage(img);
 		}
 
 		public static string GetImageName(IImageTableNameProvider nameProvider, int counter)

@@ -1,3 +1,4 @@
+using Common.Json;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using System;
@@ -47,9 +48,6 @@ namespace OpenLoco.Gui
 		[JsonIgnore]
 		public const string DefaultFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
 
-		[JsonIgnore]
-		static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true, AllowTrailingCommas = true };
-
 		public static EditorSettings Load(string filename, ILogger logger)
 		{
 			if (!File.Exists(filename))
@@ -61,7 +59,7 @@ namespace OpenLoco.Gui
 			}
 
 			var text = File.ReadAllText(filename);
-			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: SerializerOptions); // todo: try-catch this for invalid settings files
+			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: JsonFile.SerializerOptions); // todo: try-catch this for invalid settings files
 			ArgumentNullException.ThrowIfNull(settings);
 			return settings;
 		}
@@ -71,7 +69,7 @@ namespace OpenLoco.Gui
 
 		static void Save(EditorSettings settings, string filename, ILogger logger)
 		{
-			var text = JsonSerializer.Serialize(settings, options: SerializerOptions);
+			var text = JsonSerializer.Serialize(settings, options: JsonFile.SerializerOptions);
 
 			var parentDir = Path.GetDirectoryName(filename);
 			if (parentDir != null && !Directory.Exists(parentDir))

@@ -1,4 +1,5 @@
 // 1. objectMetadata.json must contain a single record for every unique object we have
+using Common.Json;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
@@ -8,11 +9,10 @@ using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.SourceData;
 using System.Data;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 // directory maker
 var path = "Q:\\Games\\Locomotion\\OriginalObjects\\GoG\\objectIndex.json";
-var idx = ObjectIndex.LoadIndex(path);
+var idx = ObjectIndex.LoadIndexAsync(path).Result;
 var sourcePath = "C:\\Users\\bigba\\source\\repos\\OpenLoco\\OpenGraphics\\objects";
 var keepfile = Path.Combine(sourcePath, ".gitkeep");
 foreach (var objType in idx.Objects.GroupBy(x => x.ObjectType))
@@ -39,10 +39,10 @@ foreach (var objType in idx.Objects.GroupBy(x => x.ObjectType))
 		}
 	}
 }
+
 Environment.Exit(0);
 
-var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
-var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), jsonOptions)
+var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), JsonFile.SerializerOptions)
 	.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
 
 Console.WriteLine($"MetadataCount={objectMetadata.Count}");
@@ -150,11 +150,11 @@ void AddNewObjectMetadataEntries()
 		}
 	}
 
-	var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.DatName), jsonOptions);
+	var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.DatName), JsonFile.SerializerOptions);
 	File.WriteAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json", objs);
 }
 
-//var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.DatName), jsonOptions);
+//var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.DatName), JsonFile.SerializerOptions);
 //File.WriteAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json", objs);
 
 Console.ReadLine();

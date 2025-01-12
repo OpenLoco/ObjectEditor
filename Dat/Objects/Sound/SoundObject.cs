@@ -2,6 +2,7 @@ using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace OpenLoco.Dat.Objects.Sound
 {
@@ -17,9 +18,9 @@ namespace OpenLoco.Dat.Objects.Sound
 		[property: LocoStructOffset(0x08)] uint32_t Volume
 		) : ILocoStruct, ILocoStructVariableData
 	{
-		public SoundObjectData SoundObjectData { get; set; }
+		[Editable(false)] public SoundObjectData SoundObjectData { get; set; }
 
-		public byte[] PcmData { get; set; } = [];
+		[Browsable(false)] public byte[] PcmData { get; set; } = [];
 
 		uint numUnkStructs;
 		uint pcmDataLength;

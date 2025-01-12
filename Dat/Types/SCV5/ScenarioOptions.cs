@@ -5,7 +5,7 @@ namespace OpenLoco.Dat.Types.SCV5
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]
-	public record LandscapeDetails(
+	public record ScenarioOptions(
 		[property: LocoStructOffset(0x00)] EditorControllerStep EditorStep,
 		[property: LocoStructOffset(0x01)] uint8_t Difficulty,
 		[property: LocoStructOffset(0x02)] uint16_t ScenarioStartYear,
@@ -37,9 +37,15 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x418C)] ScenarioObjective Objective,
 		[property: LocoStructOffset(0x419D)] S5Header ObjectiveDeliveredCargo,
 		[property: LocoStructOffset(0x41AD)] S5Header Currency,
-		[property: LocoStructOffset(0x41B2)] LandGeneratorType Generator,
-		[property: LocoStructOffset(0x41B3)] uint8_t NumTerrainSmoothingPasses,
-		[property: LocoStructOffset(0x41B4), LocoArrayLength(347)] byte[] var_41BD) : ILocoStruct
+		// openloco-specific after this
+		[property: LocoStructOffset(0x41BD)] LandGeneratorType Generator,
+		[property: LocoStructOffset(0x41BE)] uint8_t NumTerrainSmoothingPasses,
+		[property: LocoStructOffset(0x41BF)] uint8_t NumRiverbeds,
+		[property: LocoStructOffset(0x41C0)] uint8_t MinRiverWidth,
+		[property: LocoStructOffset(0x41C1)] uint8_t MaxRiverWidth,
+		[property: LocoStructOffset(0x41C2)] uint8_t RiverbankWidth,
+		[property: LocoStructOffset(0x41C3)] uint8_t RiverMeanderRate,
+		[property: LocoStructOffset(0x41C4), LocoArrayLength(342)] byte[] var_41C4) : ILocoStruct
 	{
 		public const int StructLength = 0x431A;
 		public bool Validate() => true;

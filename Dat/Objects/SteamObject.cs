@@ -97,6 +97,8 @@ namespace OpenLoco.Dat.Objects
 			.Concat(new byte[] { 0xFF })
 			.Concat(SoundEffects.SelectMany(sfx => sfx.Write().ToArray()))
 			.ToArray();
-		public bool Validate() => true;
+
+		public bool Validate()
+			=> true;
 	}
 }

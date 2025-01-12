@@ -22,6 +22,7 @@ namespace OpenLoco.Dat.Objects
 		Junction = 1 << 10,
 	}
 
+	[Flags]
 	public enum TrackObjectFlags : uint16_t
 	{
 		None = 0,

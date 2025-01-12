@@ -42,7 +42,9 @@ namespace OpenLoco.Dat.FileParsing
 
 			using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
 			using var reader = new BinaryReader(fileStream);
+
 			var data = reader.ReadBytes(S5Header.StructLength);
+
 			return data.Length != S5Header.StructLength
 				? throw new InvalidOperationException($"bytes read ({data.Length}) didn't match bytes expected ({S5Header.StructLength})")
 				: S5Header.Read(data);
@@ -82,7 +84,6 @@ namespace OpenLoco.Dat.FileParsing
 				logger?.Error(ex);
 				return (hdrs.S5, hdrs.Obj, []);
 			}
-			//remainingData = decodedData;
 
 			var headerFlag = BitConverter.GetBytes(hdrs.S5.Flags).AsSpan()[0..1];
 			var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
@@ -173,13 +174,18 @@ namespace OpenLoco.Dat.FileParsing
 				// some objects have graphics data
 				var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
 				logger.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
-
 				newObj = new LocoObject(locoStruct, stringTable, imageTable);
+				remainingData = remainingData[imageTableBytesRead..];
 			}
 			catch (Exception ex)
 			{
 				newObj = new LocoObject(locoStruct, stringTable);
 				logger.Error(ex, "Error loading graphics table");
+			}
+
+			if (remainingData.Length > 0)
+			{
+				logger.Debug($"\"{s5Header.Name}\" has {remainingData.Length} bytes unaccounted for. What is this extra data???");
 			}
 
 			// some objects have variable-sized data
@@ -306,29 +312,15 @@ namespace OpenLoco.Dat.FileParsing
 			return s5FileHeader;
 		}
 
-		//public static S5File LoadScenario()
-		//{
-		//}
-
-		//public static S5File LoadSaveGame()
-		//{
-		//}
-
 		public static G1Dat? LoadG1(string filename, ILogger logger)
 		{
-			if (!File.Exists(filename))
-			{
-				logger.Debug($"File {filename} does not exist");
-				return null;
-			}
-
 			ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
 			var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
 			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
 			return new G1Dat(g1Header, imageTable);
 		}
 
-		public static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+		static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 		{
 			var g1Element32s = new List<G1Element32>();
 
@@ -342,7 +334,6 @@ namespace OpenLoco.Dat.FileParsing
 				BitConverter.ToUInt32(data[4..8]));
 
 			var g1ElementHeaders = data[8..];
-
 			var imageData = g1ElementHeaders[((int)g1Header.NumEntries * G1Element32.StructLength)..];
 			g1Header.ImageData = imageData.ToArray();
 			for (var i = 0; i < g1Header.NumEntries; ++i)
@@ -365,7 +356,6 @@ namespace OpenLoco.Dat.FileParsing
 					}
 
 					currElement.ImageData = [.. g1Element32s[i - 1].ImageData];
-					continue;
 				}
 				else
 				{
@@ -373,57 +363,47 @@ namespace OpenLoco.Dat.FileParsing
 					currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
 				}
 
-				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed))
+				// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
+				// image (which was also compressed) is now uncompressed, so we don't need do double-uncompress it.
+				if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
 				{
 					currElement.ImageData = DecodeRLEImageData(currElement);
 				}
 			}
 
-			return (g1Header, g1Element32s, G1Header.StructLength + g1ElementHeaders.Length + imageData.Length);
+			return (g1Header, g1Element32s, G1Header.StructLength + (int)g1Header.TotalSize);
+		}
 
-			static uint GetNextNonDuplicateOffset(List<G1Element32> elements, int currentElement, uint imageDataLength)
+		static uint GetNextNonDuplicateOffset(List<G1Element32> g1Element32s, int i, uint imageDateLength)
+		{
+			uint nextOffset;
+			do
 			{
-				while (++currentElement < elements.Count && elements[currentElement].Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
-				{ }
+				nextOffset = i == g1Element32s.Count - 1
+					? imageDateLength
+					: g1Element32s[i + 1].Offset;
 
-				return currentElement >= elements.Count - 1
-					? imageDataLength // the last image in the file has an end offset that is the end of the file, which is the same as the total data length
-					: elements[currentElement].Offset;
+				i++;
 			}
+			while (i < g1Element32s.Count && g1Element32s[i].Flags.HasFlag(G1ElementFlags.DuplicatePrevious));
+
+			return nextOffset;
 		}
 
 		public static byte[] DecodeRLEImageData(G1Element32 img)
 		{
-			var width = img.Width;
-			var height = img.Height;
-
-			var dstLineWidth = img.Width;
-			var dst0Index = 0;
-
 			var srcBuf = img.ImageData;
-			var dstBuf = new byte[img.Width * img.Height]; // Assuming a single byte per pixel
+			var dstBuf = new byte[img.Width * img.Height]; // Assuming a single byte per pixel - these are palette images
 
-			var srcY = 0;
-
-			// Move up to the first line of the image if source_y_start is negative. Why does this even occur?
-			if (srcY < 0)
+			// For every line/row in the image
+			for (var y = 0; y < img.Height; ++y)
 			{
-				srcY++;
-				height--;
-				dst0Index += dstLineWidth;
-			}
-
-			// For every line in the image
-			for (var i = 0; i < height; i++)
-			{
-				var y = srcY + i;
-
 				// The first part of the source pointer is a list of offsets to different lines
 				// This will move the pointer to the correct source line.
-				var nextRunIndex = srcBuf[y * 2] | (srcBuf[(y * 2) + 1] << 8);
-				var dstLineStartIndex = dst0Index + (dstLineWidth * i);
+				var nextRunIndex = srcBuf[y * 2] | (srcBuf[(y * 2) + 1] << 8); // takes 2 bytes and makes a uint16_t
+				var dstLineStartIndex = img.Width * y;
 
-				// For every data chunk in the line
+				// For every segment in the line
 				var isEndOfLine = false;
 				while (!isEndOfLine)
 				{
@@ -441,7 +421,7 @@ namespace OpenLoco.Dat.FileParsing
 
 					// If the end position is further out than the whole image
 					// end position then we need to shorten the line again
-					numPixels = Math.Min(numPixels, width - x);
+					numPixels = Math.Min(numPixels, img.Width - x);
 
 					var dstIndex = dstLineStartIndex + x;
 
@@ -502,14 +482,15 @@ namespace OpenLoco.Dat.FileParsing
 			};
 
 		// taken from openloco's SawyerStreamReader::readChunk
-		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue) => encoding switch
-		{
-			SawyerEncoding.Uncompressed => data.ToArray(),
-			SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data, minDecodedBytes),
-			SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
-			SawyerEncoding.Rotate => DecodeRotate(data),
-			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
-		};
+		public static byte[] Decode(SawyerEncoding encoding, ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue)
+			=> encoding switch
+			{
+				SawyerEncoding.Uncompressed => data.ToArray(),
+				SawyerEncoding.RunLengthSingle => DecodeRunLengthSingle(data, minDecodedBytes),
+				SawyerEncoding.RunLengthMulti => DecodeRunLengthMulti(DecodeRunLengthSingle(data)),
+				SawyerEncoding.Rotate => DecodeRotate(data),
+				_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
+			};
 
 		public static (RiffWavHeader header, byte[] data) LoadWavFile(string filename)
 			=> LoadWavFile(File.ReadAllBytes(filename));
@@ -578,7 +559,7 @@ namespace OpenLoco.Dat.FileParsing
 		// taken from openloco SawyerStreamReader::decodeRunLengthSingle
 		static byte[] DecodeRunLengthSingle(ReadOnlySpan<byte> data, int minDecodedBytes = int.MaxValue)
 		{
-			var ms = new MemoryStream();
+			using var ms = new MemoryStream();
 
 			for (var i = 0; i < data.Length; ++i)
 			{

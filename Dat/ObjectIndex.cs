@@ -1,19 +1,30 @@
+using Common.Json;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using System.Collections.Concurrent;
-using System.Text;
-using System.Text.Json;
+using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace OpenLoco.Dat
 {
 	public class ObjectIndex
 	{
-		public required IList<ObjectIndexEntry> Objects { get; init; } = [];
+		public ObservableCollection<ObjectIndexEntry> Objects { get; init; } = [];
 
+		[JsonIgnore]
 		public const string DefaultIndexFileName = "objectIndex.json";
+
+		public ObjectIndex()
+		{ }
+
+		public ObjectIndex(ObservableCollection<ObjectIndexEntry> objects)
+			=> Objects = objects;
+
+		public ObjectIndex(List<ObjectIndexEntry> objects)
+			=> Objects = [.. objects];
 
 		public bool TryFind((string name, uint checksum) key, out ObjectIndexEntry? entry)
 		{
@@ -21,14 +32,14 @@ namespace OpenLoco.Dat
 			return entry != null;
 		}
 
-		public void SaveIndex(string indexFile)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this));
+		public async Task SaveIndexAsync(string indexFile)
+			=> await JsonFile.SerializeToFileAsync(this, indexFile, JsonFile.SerializerOptions).ConfigureAwait(false);
 
-		public void SaveIndex(string indexFile, JsonSerializerOptions options)
-			=> File.WriteAllText(indexFile, JsonSerializer.Serialize(this, options));
+		public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
+			=> await JsonFile.DeserializeFromFileAsync<ObjectIndex?>(indexFile, JsonFile.SerializerOptions).ConfigureAwait(false);
 
-		public static async Task<ObjectIndexEntry?> GetDatFileInfoFromBytesAsync((string Filename, byte[] Data) file, ILogger logger)
-			=> await Task.Run(() => GetDatFileInfoFromBytes(file, logger)).ConfigureAwait(false);
+		public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
+			=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
 
 		public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 		{
@@ -36,106 +47,111 @@ namespace OpenLoco.Dat
 			ObjectIndex? index = null;
 			if (File.Exists(indexPath))
 			{
-				index = LoadIndex(indexPath);
+				index = await LoadIndexAsync(indexPath).ConfigureAwait(false);
 			}
 
 			if (index == null)
 			{
 				index = await CreateIndexAsync(directory, logger, progress).ConfigureAwait(false);
-				index.SaveIndex(indexPath);
+				await index.SaveIndexAsync(indexPath).ConfigureAwait(false);
 			}
 
 			return index;
 		}
 
-		public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
-			=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
+		public static Task<ObjectIndex> CreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
+			=> Task.Run(() => CreateIndex(directory, logger, progress));
 
-		public static async Task<ObjectIndex> CreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
+		public ObjectIndex UpdateIndex(string directory, ILogger logger, IEnumerable<string> filesToAdd, IProgress<float>? progress = null)
 		{
-			var files = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
+			var (succeeded, failed) = ReadFilesFromDisk(directory, logger, progress, filesToAdd.ToArray());
 
-			ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles = [];
-			ConcurrentQueue<ObjectIndexEntry> pendingIndices = [];
-			ConcurrentQueue<string> failedFiles = [];
-
-			var options = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
-			var producerTask = Parallel.ForEachAsync(files, options, async (f, ct) => pendingFiles.Enqueue((f, await File.ReadAllBytesAsync(Path.Combine(directory, f), ct).ConfigureAwait(false))));
-			var consumerTask = ConsumeInput(pendingIndices, pendingFiles, failedFiles, files.Length, progress, logger);
-
-			await producerTask.ConfigureAwait(false);
-			await consumerTask.ConfigureAwait(false);
-
-			await Task.WhenAll(producerTask, consumerTask).ConfigureAwait(false);
-			return new ObjectIndex() { Objects = [.. pendingIndices] };
-		}
-
-		static async Task ConsumeInput(ConcurrentQueue<ObjectIndexEntry> pendingIndices, ConcurrentQueue<(string Filename, byte[] Data)> pendingFiles, ConcurrentQueue<string> failedFiles, int totalFiles, IProgress<float>? progress, ILogger logger)
-		{
-			while ((pendingIndices.Count + failedFiles.Count) != totalFiles)
+			foreach (var s in succeeded)
 			{
-				if (pendingFiles.TryDequeue(out var content))
-				{
-					ObjectIndexEntry? entry = null;
-#pragma warning disable RCS1075 // Avoid empty catch clause that catches System.Exception. This is fine because on Exception,  `entry` will be null and that is handled afterwards
-					try
-					{
-						entry = await GetDatFileInfoFromBytesAsync(content, logger).ConfigureAwait(false);
-					}
-					catch (Exception)
-					{ }
-#pragma warning restore RCS1075 // Avoid empty catch clause that catches System.Exception
-
-					if (entry == null)
-					{
-						failedFiles.Enqueue(content.Filename);
-					}
-					else
-					{
-						pendingIndices.Enqueue(entry);
-					}
-
-					progress?.Report((pendingIndices.Count + failedFiles.Count) / (float)totalFiles);
-				}
+				Objects.Add(s);
 			}
+
+			foreach (var f in failed)
+			{
+				logger.Error($"Failed to load {f}");
+			}
+
+			return this;
 		}
 
 		public static ObjectIndex CreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
-			=> CreateIndexAsync(directory, logger, progress).Result;
+			=> new ObjectIndex().UpdateIndex(directory, logger, SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray(), progress);
 
-		public static ObjectIndex? LoadIndex(string indexFile)
-			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile));
-
-		public static ObjectIndex? LoadIndex(string indexFile, JsonSerializerOptions options)
-			=> JsonSerializer.Deserialize<ObjectIndex>(File.ReadAllText(indexFile), options);
-
-		public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
+		static (ConcurrentQueue<ObjectIndexEntry> succeeded, ConcurrentQueue<string> failed) ReadFilesFromDisk(string directory, ILogger logger, IProgress<float>? progress, string[] files)
 		{
-			await using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(await File.ReadAllTextAsync(indexFile).ConfigureAwait(false))))
+			ConcurrentQueue<ObjectIndexEntry> pendingIndices = [];
+			ConcurrentQueue<string> failedFiles = [];
+			_ = Parallel.ForEach(files, file => ParseFile(directory, file, pendingIndices, failedFiles, files.Length, progress, logger));
+			return (pendingIndices, failedFiles);
+		}
+
+		public void Delete(Func<ObjectIndexEntry, bool> predicate)
+		{
+			foreach (var d in Objects.Where(predicate).ToList())
 			{
-				return await JsonSerializer.DeserializeAsync<ObjectIndex>(stream).ConfigureAwait(false);
+				_ = Objects.Remove(d);
 			}
 		}
 
-		public static ObjectIndexEntry? GetDatFileInfoFromBytes((string Filename, byte[] Data) file, ILogger logger)
+		static void ParseFile(string directory, string filename, ConcurrentQueue<ObjectIndexEntry> pendingIndices, ConcurrentQueue<string> failedFiles, int totalFiles, IProgress<float>? progress, ILogger logger)
 		{
-			if (!SawyerStreamReader.TryGetHeadersFromBytes(file.Data, out var hdrs, logger))
+			var fullFilename = Path.Combine(directory, filename);
+
+			if (File.Exists(fullFilename))
 			{
-				logger.Error($"{file.Filename} must have valid S5 and Object headers to call this method", nameof(file));
+				var bytes = File.ReadAllBytes(fullFilename);
+				ObjectIndexEntry? entry = null;
+
+				try
+				{
+					entry = GetDatFileInfoFromBytes(filename, bytes, logger);
+				}
+				catch (Exception ex)
+				{
+					logger.Error(ex);
+				}
+
+				if (entry == null)
+				{
+					failedFiles.Enqueue(filename);
+				}
+				else
+				{
+					pendingIndices.Enqueue(entry);
+				}
+			}
+			else
+			{
+				failedFiles.Enqueue(filename);
+			}
+
+			progress?.Report((pendingIndices.Count + failedFiles.Count) / (float)totalFiles);
+		}
+
+		public static ObjectIndexEntry? GetDatFileInfoFromBytes(string filename, byte[] data, ILogger logger)
+		{
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(data, out var hdrs, logger))
+			{
+				logger.Error($"{filename} must have valid S5 and Object headers to call this method", nameof(filename));
 				return null;
 			}
 
-			var remainingData = file.Data[(S5Header.StructLength + ObjectHeader.StructLength)..];
+			var remainingData = data[(S5Header.StructLength + ObjectHeader.StructLength)..];
 			var source = OriginalObjectFiles.GetFileSource(hdrs.S5.Name, hdrs.S5.Checksum);
 
 			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
 			{
 				var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
-				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source, (VehicleType)decoded[3]);
+				return new ObjectIndexEntry(filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source, (VehicleType)decoded[3]);
 			}
 			else
 			{
-				return new ObjectIndexEntry(file.Filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source);
+				return new ObjectIndexEntry(filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source);
 			}
 		}
 	}

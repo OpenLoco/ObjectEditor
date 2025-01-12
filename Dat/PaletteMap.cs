@@ -156,7 +156,7 @@ namespace OpenLoco.Dat
 							// steam's g1.dat index 304 (the default palette) has this issue. 236x16 but should be 236x1 since it only has 236*3=708 bytes of data
 							break;
 						}
-						// rgb
+
 						var b = g1Element.ImageData[index++];
 						var g = g1Element.ImageData[index++];
 						var r = g1Element.ImageData[index++];
@@ -164,11 +164,9 @@ namespace OpenLoco.Dat
 					}
 					else
 					{
-						// palette
-
 						var paletteIndex = g1Element.ImageData[index];
 						image[x, y] = paletteIndex == 0 && g1Element.Flags.HasFlag(G1ElementFlags.HasTransparency)
-							? Color.Transparent
+							? Transparent.Color
 							: Palette[paletteIndex].Color;
 
 						index++;

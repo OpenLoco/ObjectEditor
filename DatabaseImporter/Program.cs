@@ -1,3 +1,4 @@
+using Common.Json;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -6,7 +7,6 @@ using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 using var db = Seed();
 
@@ -63,7 +63,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	Console.WriteLine("Seeding");
 	var logger = new Logger();
 
-	var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, AllowTrailingCommas = true };
+	var jsonOptions = new JsonSerializerOptions() { WriteIndented = true, Converters = { new JsonStringEnumConverter() }, };
 
 	// ...
 

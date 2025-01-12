@@ -25,8 +25,8 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x08), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0C), Browsable(false)] image_id UnkImage,
 		[property: LocoStructOffset(0x10)] DockObjectFlags Flags,
-		[property: LocoStructOffset(0x12), LocoPropertyMaybeUnused] uint8_t NumAux01,
-		[property: LocoStructOffset(0x13), LocoPropertyMaybeUnused] uint8_t NumAux02Ent, // must be 1 or 0
+		[property: LocoStructOffset(0x12), LocoPropertyMaybeUnused] uint8_t NumBuildingPartAnimations,
+		[property: LocoStructOffset(0x13), LocoPropertyMaybeUnused] uint8_t NumBuildingVariationParts, // must be 1 or 0
 		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> var_14,
 		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<uint16_t> BuildingPartAnimations,
 		[property: LocoStructOffset(0x1C), LocoStructVariableLoad] List<uint8_t> BuildingVariationParts,
@@ -42,20 +42,20 @@ namespace OpenLoco.Dat.Objects
 			BuildingVariationParts.Clear();
 
 			// var_14 - a list of uint8_t
-			var_14.AddRange(remainingData[..(NumAux01 * 1)]);
-			remainingData = remainingData[(NumAux01 * 1)..]; // sizeof(uint8_t)
+			var_14.AddRange(remainingData[..(NumBuildingPartAnimations * 1)]);
+			remainingData = remainingData[(NumBuildingPartAnimations * 1)..]; // sizeof(uint8_t)
 
 			// var_18 - a list of uint16_t
-			var bytearr = remainingData[..(NumAux01 * 2)].ToArray();
-			for (var i = 0; i < NumAux01; ++i)
+			var bytearr = remainingData[..(NumBuildingPartAnimations * 2)].ToArray();
+			for (var i = 0; i < NumBuildingPartAnimations; ++i)
 			{
 				BuildingPartAnimations.Add(BitConverter.ToUInt16(bytearr, i * 2)); // sizeof(uint16_t)
 			}
 
-			remainingData = remainingData[(NumAux01 * 2)..]; // sizeof(uint16_t)
+			remainingData = remainingData[(NumBuildingPartAnimations * 2)..]; // sizeof(uint16_t)
 
 			// parts
-			for (var i = 0; i < NumAux02Ent; ++i)
+			for (var i = 0; i < NumBuildingVariationParts; ++i)
 			{
 				var ptr_1C = 0;
 				while (remainingData[ptr_1C] != 0xFF)

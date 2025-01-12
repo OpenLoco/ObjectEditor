@@ -98,13 +98,13 @@ namespace OpenLoco.Dat.FileParsing
 			}
 		}
 
-		public static void Save(string filename, string objName, SourceGame sourceGame, ILocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
+		public static void Save(string filename, string objName, SourceGame sourceGame, SawyerEncoding encoding, ILocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
 		{
 			ArgumentNullException.ThrowIfNull(locoObject);
 
 			logger.Info($"Writing \"{objName}\" to {filename}");
 
-			var objBytes = WriteLocoObject(objName, sourceGame, logger, locoObject, allowWritingAsVanilla);
+			var objBytes = WriteLocoObject(objName, sourceGame, encoding, logger, locoObject, allowWritingAsVanilla);
 
 			try
 			{
@@ -123,43 +123,290 @@ namespace OpenLoco.Dat.FileParsing
 			logger.Info($"{objName} successfully saved to {filename}");
 		}
 
-		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
-		 => WriteLocoObjectStream(objName, sourceGame, logger, obj, allowWritingAsVanilla).ToArray();
+		public static byte[] Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
+			=> encoding switch
+			{
+				SawyerEncoding.Uncompressed => data.ToArray(),
+				SawyerEncoding.RunLengthSingle => EncodeRunLengthSingle(data),
+				SawyerEncoding.RunLengthMulti => EncodeRunLengthSingle(EncodeRunLengthMulti(data)),
+				SawyerEncoding.Rotate => EncodeRotate(data),
+				_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
+			};
 
-		public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+		static byte[] EncodeRunLengthSingle(ReadOnlySpan<byte> data)
 		{
-			using var objStream = new MemoryStream();
+			using var buffer = new MemoryStream();
+			var src = data;
+			var srcPtr = 0;
+			var srcLen = src.Length;
+			var srcNormStart = 0;
+			byte count = 0;
+
+			while (srcPtr < srcLen - 1)
+			{
+				if ((count != 0 && src[srcPtr] == src[srcPtr + 1]) || count > 125)
+				{
+					buffer.WriteByte((byte)(count - 1));
+					buffer.Write(src[srcNormStart..(srcNormStart + count)]);
+					srcNormStart += count;
+					count = 0;
+				}
+
+				if (src[srcPtr] == src[srcPtr + 1])
+				{
+					for (; count < 125 && srcPtr + count < srcLen; count++)
+					{
+						if (src[srcPtr] != src[srcPtr + count])
+						{
+							break;
+						}
+					}
+
+					var a = (byte)(257 - count);
+					var b = src[srcPtr];
+					buffer.WriteByte(a);
+					buffer.WriteByte(b);
+					srcPtr += count;
+					srcNormStart = srcPtr;
+					count = 0;
+				}
+				else
+				{
+					count++;
+					srcPtr++;
+				}
+			}
+
+			if (srcPtr == srcLen - 1)
+			{
+				count++;
+			}
+
+			if (count != 0)
+			{
+				buffer.WriteByte((byte)(count - 1));
+				buffer.Write(src[srcNormStart..(srcNormStart + count)]);
+			}
+
+			File.WriteAllBytes("SNDA1-editor.mem", buffer.ToArray());
+
+			return buffer.ToArray();
+		}
+
+		static byte[] EncodeRunLengthMulti(ReadOnlySpan<byte> data)
+		{
+			using var buffer = new MemoryStream();
+
+			var srcLen = data.Length;
+			if (srcLen == 0)
+			{
+				return [];
+			}
+
+			// Need to emit at least one byte, otherwise there is nothing to repeat
+			buffer.WriteByte(0xFF);
+			buffer.WriteByte(data[0]);
+
+			// Iterate through remainder of the source buffer
+			for (var i = 1; i < srcLen;)
+			{
+				var searchIndex = (i < 32) ? 0 : (i - 32);
+				var searchEnd = i - 1;
+
+				var bestRepeatIndex = 0;
+				var bestRepeatCount = 0;
+				for (var repeatIndex = searchIndex; repeatIndex <= searchEnd; repeatIndex++)
+				{
+					var repeatCount = 0;
+					var maxRepeatCount = Math.Min(Math.Min(7, searchEnd - repeatIndex), srcLen - i - 1);
+					// maxRepeatCount should not exceed srcLen
+					//assert(repeatIndex + maxRepeatCount < srcLen);
+					//assert(i + maxRepeatCount < srcLen);
+					for (size_t j = 0; j <= maxRepeatCount; j++)
+					{
+						if (data[(int)(repeatIndex + j)] == data[(int)(i + j)])
+						{
+							repeatCount++;
+						}
+						else
+						{
+							break;
+						}
+					}
+
+					if (repeatCount > bestRepeatCount)
+					{
+						bestRepeatIndex = repeatIndex;
+						bestRepeatCount = repeatCount;
+
+						// Maximum repeat count is 8
+						if (repeatCount == 8)
+						{
+							break;
+						}
+					}
+				}
+
+				if (bestRepeatCount == 0)
+				{
+					buffer.WriteByte(0xFF);
+					buffer.WriteByte(data[i]);
+					i++;
+				}
+				else
+				{
+					buffer.WriteByte((uint8_t)((bestRepeatCount - 1) | ((32 - (i - bestRepeatIndex)) << 3)));
+					i += bestRepeatCount;
+				}
+			}
+
+			return buffer.ToArray();
+		}
+
+		static byte[] EncodeRotate(ReadOnlySpan<byte> data)
+		{
+			using var buffer = new MemoryStream();
+
+			uint8_t code = 1;
+			for (var i = 0; i < data.Length; ++i)
+			{
+				buffer.WriteByte(RotateLeft(data[i], code));
+				code = (uint8_t)((code + 2) & 7);
+			}
+
+			return buffer.ToArray();
+		}
+
+		static uint8_t RotateLeft(uint8_t value, uint8_t shift)
+		{
+			shift &= 7; // Ensure shift is within 0-7 for 8-bit bytes
+			return (uint8_t)((value << shift) | (value >> (8 - shift)));
+		}
+
+		// this is ugly as all hell but it works. plenty of room for cleanup and optimisation
+		public static byte[] EncodeRLEImageData(G1Element32 img)
+		{
+			using var ms = new MemoryStream();
+
+			var lines = new List<List<(int StartX, List<byte> RunBytes)>>();
+
+			// calculate the segments per line in the input image
+			foreach (var line in img.ImageData.Chunk(img.Width))
+			{
+				List<(int StartX, List<byte> RunBytes)> segments = [];
+				for (var x = 0; x < img.Width;)
+				{
+					// find the start of a segment. previous pixel may be a segment
+					if (line[x] != 0x0)
+					{
+						// find the end
+						var startOfSegment = x;
+						List<byte> run = [];
+						while (x < img.Width && line[x] != 0x0 && run.Count < 127) // runs can only be 127 bytes in length. if the run is truly longer, then it gets split into multiple runs
+						{
+							run.Add(line[x]);
+							x++;
+						}
+
+						segments.Add((startOfSegment, run));
+					}
+					else
+					{
+						x++;
+					}
+				}
+
+				lines.Add(segments);
+			}
+
+			// write source pointers. will be (2 * img.Height) bytes. need to know RLE data first to know the offsets
+			var headerOffset = lines.Count * 2;
+			var bytesTotal = 0;
+			for (var yy = 0; yy < img.Height; ++yy)
+			{
+				// bytes per previous line is the sum of all the bytes in the runs plus the number of line segments * 2
+				var bytesPreviousLine = yy == 0
+					? 0
+					: lines[yy - 1].Sum(x => x.RunBytes.Count) + (Math.Max(1, lines[yy - 1].Count) * 2);
+				bytesTotal += bytesPreviousLine;
+
+				var value = headerOffset + bytesTotal;
+				var low = (byte)(value & 0xFF);
+				var high = (byte)((value >> 8) & 0xFF);
+				ms.WriteByte(low);
+				ms.WriteByte(high);
+			}
+
+			// write lines
+			foreach (var line in lines)
+			{
+				// if fully empty line
+				if (line.Count == 0)
+				{
+					ms.WriteByte(0x80);
+					ms.WriteByte(0x00);
+					continue;
+				}
+
+				// line has at least one segment
+				for (var i = 0; i < line.Count; ++i)
+				{
+					var (StartX, RunBytes) = line[i];
+
+					if (RunBytes.Count > 127)
+					{
+						throw new ArgumentException("Segment length cannot exceed 127 pixels");
+					}
+
+					var count = i == line.Count - 1 ? RunBytes.Count | 0x80 : RunBytes.Count;
+					ms.WriteByte((byte)count);
+					ms.WriteByte((byte)StartX);
+					ms.Write(RunBytes.ToArray());
+				}
+			}
+
+			return ms.ToArray();
+		}
+
+		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+			=> WriteLocoObjectStream(objName, sourceGame, encoding, logger, obj, allowWritingAsVanilla).ToArray();
+
+		public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+		{
+			using var rawObjStream = new MemoryStream();
 
 			// obj
 			var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
-			objStream.Write(objBytes);
+			rawObjStream.Write(objBytes);
 
 			// string table
 			foreach (var ste in obj.StringTable.Table)
 			{
 				foreach (var language in ste.Value.Where(str => !string.IsNullOrEmpty(str.Value))) // skip strings with empty content
 				{
-					objStream.WriteByte((byte)language.Key);
+					rawObjStream.WriteByte((byte)language.Key);
 
 					var strBytes = Encoding.Latin1.GetBytes(language.Value);
-					objStream.Write(strBytes, 0, strBytes.Length);
-					objStream.WriteByte((byte)'\0');
+					rawObjStream.Write(strBytes, 0, strBytes.Length);
+					rawObjStream.WriteByte((byte)'\0');
 				}
 
-				objStream.WriteByte(0xff);
+				rawObjStream.WriteByte(0xff);
 			}
 
 			// variable data
 			if (obj.Object is ILocoStructVariableData objV)
 			{
 				var variableBytes = objV.Save();
-				objStream.Write(variableBytes);
+				rawObjStream.Write(variableBytes);
 			}
 
 			// graphics data
-			SaveImageTable(obj.G1Elements, objStream);
+			SaveImageTable(obj.G1Elements, rawObjStream);
 
-			objStream.Flush();
+			rawObjStream.Flush();
+
+			using var encodedObjStream = new MemoryStream(Encode(encoding, rawObjStream.ToArray()));
 
 			// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
 
@@ -181,9 +428,9 @@ namespace OpenLoco.Dat.FileParsing
 			// calculate checksum
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
 			var asciiName = objName.PadRight(8, ' ').Take(8).Select(c => (byte)c).ToArray();
-			s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, objStream.ToArray());
+			s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, encodedObjStream.ToArray());
 
-			var objHeader = new ObjectHeader(SawyerEncoding.Uncompressed, (uint32_t)objStream.Length);
+			var objHeader = new ObjectHeader(encoding, (uint32_t)encodedObjStream.Length);
 
 			// actual writing
 			var headerStream = new MemoryStream();
@@ -195,13 +442,13 @@ namespace OpenLoco.Dat.FileParsing
 			headerStream.Write(objHeader.Write());
 
 			// loco object itself, including string and graphics table
-			headerStream.Write(objStream.ToArray());
+			headerStream.Write(encodedObjStream.ToArray());
 
 			// stream cleanup
 			headerStream.Flush();
 
 			headerStream.Close();
-			objStream.Close();
+			encodedObjStream.Close();
 
 			return headerStream;
 		}
@@ -210,28 +457,34 @@ namespace OpenLoco.Dat.FileParsing
 		{
 			if (g1Elements != null && g1Elements.Count != 0)
 			{
-				// write G1Header
-				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Count));
-				objStream.Write(BitConverter.GetBytes((uint32_t)g1Elements.Sum(x => x.ImageData.Length)));
-
+				// encode if necessary
+				List<G1Element32> encoded = [];
 				var offsetBytesIntoImageData = 0;
-				// write G1Element headers
 				foreach (var g1Element in g1Elements)
 				{
-					// we need to update the offsets of the image data
-					// and we're not going to compress the data on save, so make sure the RLECompressed flag is not set
+					// this copies everything but it should be fine for now
 					var newElement = g1Element with
 					{
+						ImageData = g1Element.GetImageDataForSave(),
 						Offset = (uint)offsetBytesIntoImageData,
-						Flags = g1Element.Flags & ~G1ElementFlags.IsRLECompressed
 					};
 
-					objStream.Write(newElement.Write());
-					offsetBytesIntoImageData += g1Element.ImageData.Length;
+					offsetBytesIntoImageData += newElement.ImageData.Length;
+					encoded.Add(newElement);
+				}
+
+				// write G1Header
+				objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Count));
+				objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Sum(x => x.ImageData.Length)));
+
+				// write G1Element headers
+				foreach (var g1Element in encoded)
+				{
+					objStream.Write(g1Element.Write());
 				}
 
 				// write G1Elements ImageData
-				foreach (var g1Element in g1Elements)
+				foreach (var g1Element in encoded)
 				{
 					objStream.Write(g1Element.ImageData);
 				}
@@ -245,98 +498,5 @@ namespace OpenLoco.Dat.FileParsing
 				SaveImageTable(g1.G1Elements, fs);
 			}
 		}
-
-		//public static ReadOnlySpan<byte> Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data, ILogger? logger = null)
-		//{
-		//	switch (encoding)
-		//	{
-		//		case SawyerEncoding.Uncompressed:
-		//			return data;
-		//		case SawyerEncoding.RunLengthSingle:
-		//			return EncodeRunLengthSingle(data);
-		//		//case SawyerEncoding.runLengthMulti:
-		//		//	return encodeRunLengthMulti(decodeRunLengthSingle(data));
-		//		//case SawyerEncoding.rotate:
-		//		//	return encodeRotate(data);
-		//		default:
-		//			logger?.Error("Unknown chunk encoding scheme");
-		//			throw new InvalidDataException("Unknown encoding");
-		//	}
-		//}
-
-		//public static void WriteToFile(string filename, ReadOnlySpan<byte> s5Header, ReadOnlySpan<byte> objectHeader, ReadOnlySpan<byte> encodedData)
-		//{
-		//	var stream = File.Create(filename);
-		//	stream.Write(s5Header);
-		//	stream.Write(objectHeader);
-		//	stream.Write(encodedData);
-		//	stream.Flush();
-		//	stream.Close();
-		//}
-
-		// taken from openloco SawyerStreamReader::encodeRunLengthSingle
-		// not sure why it doesn't work, but it doesn't work. gets the first 10 or so bytes correct for SIGC3.dat but then fails
-		//private static Span<byte> EncodeRunLengthSingle(ReadOnlySpan<byte> data)
-		//{
-		//	List<byte> buffer = [];
-		//	var src = 0; // ptr
-		//	var srcNormStart = 0; // ptr
-		//	var srcEnd = data.Length;
-		//	var count = 0;
-
-		//	while (src < srcEnd - 1)
-		//	{
-		//		if ((count != 0 && data[src] == data[src + 1]) || count > 125)
-		//		{
-		//			buffer.Add((byte)(count - 1));
-		//			buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
-		//			srcNormStart += count;
-		//			count = 0;
-		//		}
-
-		//		if (data[src] == data[src + 1])
-		//		{
-		//			for (; count < 125 && src + count < srcEnd; count++)
-		//			{
-		//				if (data[src] != data[count])
-		//				{
-		//					break;
-		//				}
-		//			}
-
-		//			buffer.Add((byte)(257 - count));
-		//			buffer.Add(data[src]);
-		//			src += count;
-		//			srcNormStart = src;
-		//			count = 0;
-		//		}
-		//		else
-		//		{
-		//			count++;
-		//			src++;
-		//		}
-		//	}
-
-		//	if (data[src] == data[srcEnd - 1])
-		//	{
-		//		count++;
-		//	}
-
-		//	if (count != 0)
-		//	{
-		//		buffer.Add((byte)(count - 1));
-		//		buffer.AddRange(Enumerable.Repeat(data[srcNormStart], count));
-		//	}
-
-		//	// convert to span
-		//	Span<byte> encodedSpan = new byte[buffer.Count];
-		//	var counter = 0;
-		//	foreach (var b in buffer)
-		//	{
-		//		encodedSpan[counter++] = b;
-		//	}
-
-		//	return encodedSpan;
-		//}
 	}
 }

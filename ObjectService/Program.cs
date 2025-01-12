@@ -97,8 +97,10 @@ app.UseHttpLogging();
 app.UseRateLimiter();
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
-ArgumentException.ThrowIfNullOrEmpty(objRoot, nameof(objRoot));
-var server = new Server(new ServerSettings(objRoot) { RootFolder = objRoot! });
+var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];
+ArgumentNullException.ThrowIfNull(objRoot);
+ArgumentNullException.ThrowIfNull(paletteMapFile);
+var server = new Server(new ServerSettings(objRoot, paletteMapFile));
 
 var apiSet = app.NewApiVersionSet().Build();
 
@@ -110,12 +112,17 @@ var groupVersioned = app
 	.RequireRateLimiting(tokenPolicy)
 	.WithTags("Versioned");
 
+_ = app.MapGet(Routes.GetDatFile, server.GetDatFile)
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapGet(Routes.GetDatFile, server.GetDatFile)
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapGet(Routes.GetObjectFile, server.GetObjectFile)
 var groupDeprecated = app
 	.MapGroup("")
 	.RequireRateLimiting(tokenPolicy)
 	.WithTags("Non-Versioned");
-
-MapRoutes(groupVersioned, server);
 MapRoutes(groupDeprecated, server);
 
 if (app.Environment.IsDevelopment())

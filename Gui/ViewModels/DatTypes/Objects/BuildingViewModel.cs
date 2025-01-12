@@ -1,8 +1,6 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
 using PropertyModels.Extensions;
-using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -10,7 +8,7 @@ using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class BuildingViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
+	public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 	{
 		[Reactive] public BuildingObjectFlags Flags { get; set; }
 		[Reactive] public uint32_t Colours { get; set; } // bitset
@@ -23,8 +21,8 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost")] public uint16_t SellCostFactor { get; set; }
-		[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5Header> ProducedCargo { get; set; }
-		[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5Header> RequiredCargo { get; set; }
+		[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> ProducedCargo { get; set; }
+		[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> RequiredCargo { get; set; }
 		[Reactive, Category("Production"), Length(1, BuildingObject.MaxProducedCargoType)] public BindingList<uint8_t> ProducedQuantity { get; set; }
 		[Reactive, Category("Building"), Length(1, BuildingObject.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
 		[Reactive, Category("Building"), Length(1, BuildingObject.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
@@ -50,8 +48,8 @@ namespace OpenLoco.Gui.ViewModels
 			ObsoleteYear = bo.ObsoleteYear;
 			CostIndex = bo.CostIndex;
 			SellCostFactor = bo.SellCostFactor;
-			ProducedCargo = new(bo.ProducedCargo);
-			RequiredCargo = new(bo.RequiredCargo);
+			ProducedCargo = new(bo.ProducedCargo.ConvertAll(x => new S5HeaderViewModel(x)));
+			RequiredCargo = new(bo.RequiredCargo.ConvertAll(x => new S5HeaderViewModel(x)));
 			ProducedQuantity = [.. bo.ProducedQuantity];
 			BuildingHeights = new(bo.BuildingHeights);
 			BuildingAnimations = new(bo.BuildingAnimations);
@@ -62,12 +60,9 @@ namespace OpenLoco.Gui.ViewModels
 			var_AC = bo.var_AC;
 		}
 
-		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
-		=> GetAsStruct((locoStruct as BuildingObject)!);
-
 		// validation:
 		// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-		public BuildingObject GetAsStruct(BuildingObject bo)
+		public override BuildingObject GetAsStruct(BuildingObject bo)
 			=> bo with
 			{
 				Flags = Flags,
@@ -82,9 +77,11 @@ namespace OpenLoco.Gui.ViewModels
 				CostIndex = CostIndex,
 				SellCostFactor = SellCostFactor,
 				var_AC = var_AC,
-				NumBuildingParts = (uint8_t)bo.BuildingAnimations.Count,
-				NumBuildingVariations = (uint8_t)bo.BuildingVariations.Count,
+				NumBuildingParts = (uint8_t)BuildingAnimations.Count,
+				NumBuildingVariations = (uint8_t)BuildingVariations.Count,
 				ProducedQuantity = [.. ProducedQuantity],
+				ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				//NumElevatorSequences = (uint8_t)bo.ElevatorHeightSequences.Count,
 			};
 	}

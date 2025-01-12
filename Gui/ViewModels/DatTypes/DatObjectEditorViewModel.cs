@@ -1,7 +1,7 @@
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using OpenLoco.Gui.Models;
@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
@@ -64,6 +65,23 @@ namespace OpenLoco.Gui.ViewModels
 				? GetDumpLines(currentByteList, positionValues.Start, positionValues.End).ToArray()
 				: GetDumpLines(currentByteList, null, null).ToArray();
 
+		public static IObjectViewModel<ILocoStruct> GetViewModelFromStruct(ILocoStruct locoStruct)
+		{
+			var asm = Assembly
+				.GetExecutingAssembly()
+				.GetTypes()
+				.SingleOrDefault(type
+					=> type.IsClass
+					&& !type.IsAbstract
+					&& type.BaseType?.IsGenericType == true
+					&& type.BaseType.GetGenericTypeDefinition() == typeof(LocoObjectViewModel<>)
+					&& type.BaseType.GenericTypeArguments.Single() == locoStruct.GetType());
+
+			return asm == null
+				? new GenericObjectViewModel() { Object = locoStruct }
+				: (Activator.CreateInstance(asm, locoStruct) as IObjectViewModel<ILocoStruct>)!;
+		}
+
 		public override void Load()
 		{
 			// this stops any currently-playing sounds
@@ -80,41 +98,13 @@ namespace OpenLoco.Gui.ViewModels
 
 				if (CurrentObject?.LocoObject != null)
 				{
-					if (CurrentObject.LocoObject.Object is VehicleObject veh)
-					{
-						CurrentObjectViewModel = new VehicleViewModel(veh);
-					}
-					else if (CurrentObject.LocoObject.Object is TownNamesObject tn)
-					{
-						CurrentObjectViewModel = new TownNamesViewModel(tn);
-					}
-					else if (CurrentObject.LocoObject.Object is AirportObject ao)
-					{
-						CurrentObjectViewModel = new AirportViewModel(ao);
-					}
-					else if (CurrentObject.LocoObject.Object is IndustryObject io)
-					{
-						CurrentObjectViewModel = new IndustryViewModel(io);
-					}
-					else if (CurrentObject.LocoObject.Object is BuildingObject bo)
-					{
-						CurrentObjectViewModel = new BuildingViewModel(bo);
-					}
-					else if (CurrentObject.LocoObject.Object is TrainStationObject ts)
-					{
-						CurrentObjectViewModel = new TrainStationViewModel(ts);
-					}
-					else if (CurrentObject.LocoObject.Object is TrackObject to)
-					{
-						CurrentObjectViewModel = new TrackViewModel(to);
-					}
-					else
-					{
-						CurrentObjectViewModel = new GenericObjectViewModel() { Object = CurrentObject.LocoObject.Object };
-					}
-
-					var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp) ? itnp : new DefaultImageTableNameProvider();
+					CurrentObjectViewModel = GetViewModelFromStruct(CurrentObject.LocoObject.Object);
 					StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
+
+					var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp)
+						? itnp
+						: new DefaultImageTableNameProvider();
+
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
 						? new SoundViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
 						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
@@ -140,6 +130,30 @@ namespace OpenLoco.Gui.ViewModels
 				CurrentObject = null;
 				CurrentObjectViewModel = null;
 			}
+		}
+
+		public override void Delete()
+		{
+			if (CurrentFile.FileLocation != FileLocation.Local)
+			{
+				Logger.Error("Cannot delete non-local files");
+				return;
+			}
+
+			// delete file
+			var path = Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename);
+			if (File.Exists(path))
+			{
+				Logger.Info($"Deleting file \"{path}\"");
+				File.Delete(path);
+			}
+			else
+			{
+				Logger.Info($"File already deleted \"{path}\"");
+			}
+
+			// remove from object index
+			Model.ObjectIndex.Delete(x => x.Filename == CurrentFile.Filename);
 		}
 
 		public override void Save()
@@ -192,6 +206,7 @@ namespace OpenLoco.Gui.ViewModels
 			SawyerStreamWriter.Save(filename,
 				S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
 				S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
+				SawyerEncoding.Uncompressed, // todo: change based on what user selected
 				CurrentObject.LocoObject,
 				Logger,
 				Model.Settings.AllowSavingAsVanillaObject);

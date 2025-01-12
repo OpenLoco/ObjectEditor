@@ -212,7 +212,16 @@ namespace OpenLoco.Gui.Models
 				}
 				else
 				{
-					var filename = Path.Combine(Settings.ObjDataDirectory, filesystemItem.Filename);
+					var filename = string.Empty;
+					if (File.Exists(filesystemItem.Filename))
+					{
+						filename = filesystemItem.Filename;
+					}
+					else
+					{
+						filename = Path.Combine(Settings.ObjDataDirectory, filesystemItem.Filename);
+					}
+
 					var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
 					if (obj != null)
 					{
@@ -256,14 +265,24 @@ namespace OpenLoco.Gui.Models
 
 		public async Task LoadObjDirectoryAsync(string directory, IProgress<float> progress, bool useExistingIndex)
 		{
-			await taskLock.WaitAsync();
+			// Check if a task is already running WITHOUT waiting on the semaphore
+			if (indexerTask?.IsCompleted == false)
+			{
+				// A task is already running, so just return the existing task
+				return; // Or return _indexerTask if you need to await it elsewhere
+			}
 
+			// Only acquire the semaphore if no task is running
+			await taskLock.WaitAsync();
 			try
 			{
-				if (indexerTask?.IsCompleted != false)
+				//Double check inside the lock
+				if (indexerTask?.IsCompleted == false)
 				{
-					indexerTask = Task.Run(async () => await LoadObjDirectoryAsyncCore(directory, progress, useExistingIndex));
+					return;
 				}
+
+				indexerTask = Task.Run(async () => await LoadObjDirectoryAsyncCore(directory, progress, useExistingIndex));
 			}
 			finally
 			{
@@ -290,7 +309,10 @@ namespace OpenLoco.Gui.Models
 
 				try
 				{
-					ObjectIndex = await ObjectIndex.LoadIndexAsync(Settings.IndexFileName) ?? ObjectIndex;
+					var index = await ObjectIndex.LoadIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
+					ArgumentNullException.ThrowIfNull(index, nameof(index));
+					ObjectIndex = index;
+					Logger.Info($"Loaded index for {directory} with {ObjectIndex.Objects.Count} objects.");
 				}
 				catch (Exception ex)
 				{
@@ -301,28 +323,62 @@ namespace OpenLoco.Gui.Models
 				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DatName))))
 				{
 					Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
-					await RecreateIndex(directory, progress);
+					await RecreateIndex(directory, progress).ConfigureAwait(false);
 					return;
 				}
 
 				var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.Filename);
 				var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-				if (objectIndexFilenames.Except(allFiles).Any() || allFiles.Except(objectIndexFilenames).Any())
+
+				var a = objectIndexFilenames.Except(allFiles);
+				var b = allFiles.Except(objectIndexFilenames);
+				if (a.Any() || b.Any())
 				{
-					Logger.Warning("Index file appears to be outdated - recreating now.");
-					await RecreateIndex(directory, progress);
+					Logger.Warning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
+					Logger.Warning($"Objects in index but not on disk: {string.Join(',', a)}");
+					Logger.Warning($"Objects on disk but not in index: {string.Join(',', b)}");
+					await UpdateIndex(directory, progress, a.Concat(b)).ConfigureAwait(false);
 				}
 			}
 			else
 			{
-				await RecreateIndex(directory, progress);
+				await RecreateIndex(directory, progress).ConfigureAwait(false);
+			}
+
+			async Task UpdateIndex(string directory, IProgress<float> progress, IEnumerable<string> filesToAdd)
+			{
+				Logger.Info($"Updating index file for {directory}");
+				_ = ObjectIndex.UpdateIndex(directory, Logger, filesToAdd, progress);
+
+				if (string.IsNullOrEmpty(Settings.IndexFileName))
+				{
+					Logger.Error("Index filename was null or empty.");
+					return;
+				}
+
+				await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
+				Logger.Info($"Index was saved to {Settings.IndexFileName}");
 			}
 
 			async Task RecreateIndex(string directory, IProgress<float> progress)
 			{
 				Logger.Info($"Recreating index file for {directory}");
-				ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress);
-				ObjectIndex?.SaveIndex(Settings.IndexFileName);
+				ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress).ConfigureAwait(false);
+
+				if (ObjectIndex == null)
+				{
+					Logger.Error("Index was unable to be created.");
+					return;
+				}
+
+				if (string.IsNullOrEmpty(Settings.IndexFileName))
+				{
+					Logger.Error("Index filename was null or empty.");
+					return;
+				}
+
+				await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
+				Logger.Info($"New index was saved to {Settings.IndexFileName}");
 			}
 		}
 

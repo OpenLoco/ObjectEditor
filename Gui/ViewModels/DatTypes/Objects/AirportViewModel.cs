@@ -1,7 +1,5 @@
 using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
 using PropertyModels.Extensions;
-using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +7,7 @@ using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class AirportViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
+	public class AirportViewModel : LocoObjectViewModel<AirportObject>
 	{
 		[Reactive] public uint16_t AllowedPlaneTypes { get; set; }
 		[Reactive] public int8_t MinX { get; set; }
@@ -54,31 +52,28 @@ namespace OpenLoco.Gui.ViewModels
 			var_B6 = [.. ao.var_B6];
 		}
 
-		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
-			=> GetAsStruct((locoStruct as AirportObject)!);
-
 		// validation:
 		// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-		public AirportObject GetAsStruct(AirportObject ao)
+		public override AirportObject GetAsStruct(AirportObject ao)
 			=> ao with
 			{
-				BuildCostFactor = ao.BuildCostFactor,
-				SellCostFactor = ao.SellCostFactor,
-				CostIndex = ao.CostIndex,
-				var_07 = ao.var_07,
-				AllowedPlaneTypes = ao.AllowedPlaneTypes,
-				LargeTiles = ao.LargeTiles,
-				MinX = ao.MinX,
-				MinY = ao.MinY,
-				MaxX = ao.MaxX,
-				MaxY = ao.MaxY,
-				DesignedYear = ao.DesignedYear,
-				ObsoleteYear = ao.ObsoleteYear,
-				NumBuildingParts = (uint8_t)ao.BuildingAnimations.Count,
-				NumBuildingVariations = (uint8_t)ao.BuildingVariations.Count,
-				NumMovementEdges = (uint8_t)ao.MovementEdges.Count,
-				NumMovementNodes = (uint8_t)ao.MovementNodes.Count,
-				var_B6 = [.. ao.var_B6],
+				BuildCostFactor = BuildCostFactor,
+				SellCostFactor = SellCostFactor,
+				CostIndex = CostIndex,
+				var_07 = var_07,
+				AllowedPlaneTypes = AllowedPlaneTypes,
+				LargeTiles = LargeTiles,
+				MinX = MinX,
+				MinY = MinY,
+				MaxX = MaxX,
+				MaxY = MaxY,
+				DesignedYear = DesignedYear,
+				ObsoleteYear = ObsoleteYear,
+				NumBuildingParts = (uint8_t)BuildingAnimations.Count,
+				NumBuildingVariations = (uint8_t)BuildingVariations.Count,
+				NumMovementEdges = (uint8_t)MovementEdges.Count,
+				NumMovementNodes = (uint8_t)MovementNodes.Count,
+				var_B6 = [.. var_B6],
 			};
 	}
 }

@@ -26,7 +26,7 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				route = route.TrimStart('/');
+				route = $"v1{route}";
 				logger?.Debug($"Querying {client.BaseAddress}{route}");
 				using var response = await client.GetAsync(route);
 

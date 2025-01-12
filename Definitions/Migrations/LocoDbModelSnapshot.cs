@@ -86,10 +86,10 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<byte>("ObjectType")
+                    b.Property<int>("ObjectSource")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("SourceGame")
+                    b.Property<byte>("ObjectType")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset>("UploadDate")
@@ -173,7 +173,7 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("SourceGame")
+                    b.Property<int>("ObjectSource")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset>("UploadDate")

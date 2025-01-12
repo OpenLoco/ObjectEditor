@@ -82,7 +82,7 @@ namespace Definitions.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     DatName = table.Column<string>(type: "TEXT", nullable: false),
                     DatChecksum = table.Column<uint>(type: "INTEGER", nullable: false),
-                    SourceGame = table.Column<int>(type: "INTEGER", nullable: false),
+                    ObjectSource = table.Column<int>(type: "INTEGER", nullable: false),
                     ObjectType = table.Column<byte>(type: "INTEGER", nullable: false),
                     VehicleType = table.Column<byte>(type: "INTEGER", nullable: true),
                     Availability = table.Column<int>(type: "INTEGER", nullable: false),
@@ -132,7 +132,7 @@ namespace Definitions.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    SourceGame = table.Column<int>(type: "INTEGER", nullable: false),
+                    ObjectSource = table.Column<int>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     LicenceId = table.Column<int>(type: "INTEGER", nullable: true),

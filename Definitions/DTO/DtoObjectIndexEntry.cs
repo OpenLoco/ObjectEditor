@@ -7,7 +7,7 @@ namespace OpenLoco.Definitions.DTO
 		int Id,
 		string DatName,
 		uint DatChecksum,
-		ObjectSource SourceGame,
+		ObjectSource ObjectSource,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
 		ObjectAvailability ObjectAvailability,

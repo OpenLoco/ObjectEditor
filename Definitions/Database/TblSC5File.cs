@@ -7,7 +7,7 @@ namespace OpenLoco.Definitions.Database
 	[Index(nameof(Name), IsUnique = true)]
 	public class TblSC5File : DbCoreObject
 	{
-		public ObjectSource SourceGame { get; set; }
+		public ObjectSource ObjectSource { get; set; }
 
 		public ICollection<TblSC5FilePack> SC5FilePacks { get; set; }
 	}

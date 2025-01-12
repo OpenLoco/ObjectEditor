@@ -34,7 +34,7 @@ foreach (var o in db.SC5Files
 		o.Object.CreationDate,
 		o.Object.LastEditDate,
 		o.Object.UploadDate,
-		o.Object.SourceGame);
+		o.Object.ObjectSource);
 
 	sc5Files.Add(obj);
 }

@@ -32,7 +32,7 @@ namespace OpenLoco.Definitions.Database
 		{
 			if (!optionsBuilder.IsConfigured)
 			{
-				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Database\\loco-exp.db");
+				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Server\\loco.db");
 			}
 		}
 

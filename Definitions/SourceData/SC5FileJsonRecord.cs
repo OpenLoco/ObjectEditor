@@ -13,5 +13,5 @@ namespace OpenLoco.Definitions.SourceData
 		DateTimeOffset? CreationDate,
 		DateTimeOffset? LastEditDate,
 		DateTimeOffset UploadDate,
-		ObjectSource SourceGame);
+		ObjectSource ObjectSource);
 }

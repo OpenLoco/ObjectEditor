@@ -48,7 +48,7 @@ namespace OpenLoco.ObjectService
 			[FromQuery] string? authorName,
 			[FromQuery] string? tagName,
 			[FromQuery] string? objectPackName,
-			[FromQuery] ObjectSource? sourceGame,
+			[FromQuery] ObjectSource? objectSource,
 			LocoDb db)
 		{
 			var query = db.Objects.AsQueryable();
@@ -96,9 +96,9 @@ namespace OpenLoco.ObjectService
 				query = query.Where(x => x.Tags.Select(t => t.Name).Contains(tagName));
 			}
 
-			if (sourceGame != null)
+			if (objectSource != null)
 			{
-				query = query.Where(x => x.ObjectSource == sourceGame);
+				query = query.Where(x => x.ObjectSource == objectSource);
 			}
 
 			#endregion

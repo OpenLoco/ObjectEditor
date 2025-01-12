@@ -38,7 +38,7 @@ namespace OpenLoco.ObjectService
 
 		#region GET
 
-		// eg: https://localhost:7230/objects/list
+		// eg: https://localhost:7230/v1/objects/list
 		public static async Task<IResult> ListObjects(
 			[FromQuery] string? objectName,
 			[FromQuery] uint? checksum,
@@ -129,7 +129,7 @@ namespace OpenLoco.ObjectService
 			}
 		}
 
-		// eg: https://localhost:7230/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
+		// eg: https://localhost:7230/v1/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
 		public async Task<IResult> GetDat([FromQuery] string objectName, [FromQuery] uint checksum, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", objectName, checksum);
@@ -143,7 +143,7 @@ namespace OpenLoco.ObjectService
 			return await ReturnObject(returnObjBytes, logger, eObj);
 		}
 
-		// eg: http://localhost:7229/objects/getobjectimages?uniqueObjectId=1
+		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
 		public async Task<IResult> GetObjectImages(int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested with images");
@@ -210,7 +210,7 @@ namespace OpenLoco.ObjectService
 			return Results.File(bytes, "application/zip", "images.zip");
 		}
 
-		// eg: https://localhost:7230/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
+		// eg: https://localhost:7230/v1/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
 		public async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Object [{UniqueObjectId}] requested", uniqueObjectId);
@@ -273,7 +273,7 @@ namespace OpenLoco.ObjectService
 			return Results.Ok(dtoObject);
 		}
 
-		// eg: https://localhost:7230/objects/originaldatfile?objectName=114&checksum=123
+		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123
 		public async Task<IResult> GetDatFile([FromQuery] string objectName, [FromQuery] uint checksum, LocoDb db)
 		{
 			var obj = await db.Objects
@@ -283,7 +283,7 @@ namespace OpenLoco.ObjectService
 			return ReturnFile(obj);
 		}
 
-		// eg: https://localhost:7230/objects/getobjectfile?objectName=114&checksum=123
+		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
 		public async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, LocoDb db)
 		{
 			var obj = await db.Objects
@@ -318,7 +318,7 @@ namespace OpenLoco.ObjectService
 				: Results.NotFound();
 		}
 
-		// eg: https://localhost:7230/scenarios/list
+		// eg: https://localhost:7230/v1/scenarios/list
 		public async Task<IResult> ListScenarios()
 			=> await Task.Run(() =>
 			{
@@ -328,7 +328,7 @@ namespace OpenLoco.ObjectService
 				return Results.Ok(filenames.ToList());
 			});
 
-		// eg: https://localhost:7230/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
+		// eg: https://localhost:7230/v1/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
 		public async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Scenario [{ScenarioId}] requested", uniqueScenarioId);
@@ -339,7 +339,7 @@ namespace OpenLoco.ObjectService
 
 		#region POST
 
-		// eg: <todo>
+		// eg: https://localhost:7230/v1/uploaddat/...
 		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Upload requested");

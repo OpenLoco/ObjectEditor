@@ -24,43 +24,39 @@ namespace OpenLoco.Dat.Objects
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			// unk
+			// required objects
 			RequiredObjects.Clear();
 			RequiredObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, RequiredObjectCount);
 			remainingData = remainingData[(S5Header.StructLength * RequiredObjectCount)..];
 
 			// dependent objects
 			DependentObjects.Clear();
-			var ptr = 0;
-			while (remainingData[ptr] != 0xFF)
+			while (remainingData[0] != 0xFF)
 			{
 				DependentObjects.Add(S5Header.Read(remainingData[..S5Header.StructLength]));
-				ptr += S5Header.StructLength;
+				remainingData = remainingData[S5Header.StructLength..];
 			}
 
-			ptr++;
-			return remainingData[ptr..];
+			return remainingData[1..];
 		}
 
 		public ReadOnlySpan<byte> Save()
 		{
 			var variableBytesLength = (S5Header.StructLength * (RequiredObjects.Count + DependentObjects.Count)) + 1;
-			var data = new byte[variableBytesLength];
-			var span = data.AsSpan();
+			var span = new byte[variableBytesLength].AsSpan();
 
-			var ptr = 0;
-			foreach (var reqObj in RequiredObjects.Concat(DependentObjects))
+			foreach (var obj in RequiredObjects.Concat(DependentObjects))
 			{
-				var bytes = reqObj.Write();
-				bytes.CopyTo(span[ptr..(ptr + S5Header.StructLength)]);
-				ptr += S5Header.StructLength;
+				var bytes = obj.Write();
+				bytes.CopyTo(span[..S5Header.StructLength]);
+				span = span[S5Header.StructLength..];
 			}
 
 			span[^1] = 0xFF;
-
-			return data;
+			return span;
 		}
 
-		public bool Validate() => true;
+		public bool Validate()
+			=> true;
 	}
 }

@@ -47,6 +47,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			var savePath = saveFile.Path.LocalPath;
+
 			logger?.Info($"Saving sound effects to {savePath}");
 			var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS(SoundViewModels.Select(x => (x.Header, x.Data)).ToList());
 			File.WriteAllBytes(savePath, bytes);

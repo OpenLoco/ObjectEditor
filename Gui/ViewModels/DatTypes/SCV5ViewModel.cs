@@ -10,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -57,6 +59,7 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			logger?.Info($"Loading scenario from {CurrentFile.Filename}");
 			CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.Filename, Model.Logger);
+
 			RequiredObjects = new BindingList<S5HeaderViewModel>(CurrentS5File!.RequiredObjects.ConvertAll(x => new S5HeaderViewModel(x)));
 			PackedObjects = new BindingList<S5HeaderViewModel>(CurrentS5File!.PackedObjects.ConvertAll(x => new S5HeaderViewModel(x.Item1))); // note: cannot bind to this, but it'll allow us to display at least
 
@@ -173,6 +176,24 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void Save() => logger?.Error("Saving SC5/SV5 is not implemented yet");
 
-		public override void SaveAs() => logger?.Error("Saving SC5/SV5 is not implemented yet");
+		public override void SaveAs()
+		{
+			var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.SCV5FileTypes)).Result;
+			if (saveFile == null)
+			{
+				return;
+			}
+
+			var savePath = saveFile.Path.LocalPath;
+			logger?.Info($"Saving scenario/save/landscape to {savePath}");
+
+			var newFile = CurrentS5File with
+			{
+				RequiredObjects = [.. RequiredObjects.Select(x => x.GetAsUnderlyingType())],
+			};
+
+			var bytes = CurrentS5File.Write();
+			File.WriteAllBytes(savePath, bytes);
+		}
 	}
 }

@@ -12,16 +12,16 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public TrackTraitFlags StationTrackPieces { get; set; }
 		[Reactive] public Speed16 CurveSpeed { get; set; }
 		[Reactive] public uint8_t DisplayOffset { get; set; }
-		[Reactive] public S5HeaderViewModel Tunnel { get; set; }
+		[Reactive] public S5HeaderViewModel CompatibleTunnel { get; set; }
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t TunnelCostFactor { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> Compatible { get; set; }
-		[Reactive, Category("Mods")] public BindingList<S5HeaderViewModel> Mods { get; set; }
-		[Reactive, Category("Signals")] public BindingList<S5HeaderViewModel> Signals { get; set; }
-		[Reactive, Category("Bridges")] public BindingList<S5HeaderViewModel> Bridges { get; set; }
-		[Reactive, Category("Stations")] public BindingList<S5HeaderViewModel> Stations { get; set; }
+		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleVehicles { get; set; }
+		[Reactive, Category("Mods")] public BindingList<S5HeaderViewModel> CompatibleTrackExtras { get; set; }
+		[Reactive, Category("Signals")] public BindingList<S5HeaderViewModel> CompatibleSignals { get; set; }
+		[Reactive, Category("Bridges")] public BindingList<S5HeaderViewModel> CompatibleBridges { get; set; }
+		[Reactive, Category("Stations")] public BindingList<S5HeaderViewModel> CompatibleStations { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_06 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_35 { get; set; }
 
@@ -36,12 +36,12 @@ namespace OpenLoco.Gui.ViewModels
 			SellCostFactor = to.SellCostFactor;
 			TunnelCostFactor = to.TunnelCostFactor;
 			CostIndex = to.CostIndex;
-			Compatible = new(to.Compatible.ConvertAll(x => new S5HeaderViewModel(x)));
-			Mods = new(to.Mods.ConvertAll(x => new S5HeaderViewModel(x)));
-			Signals = new(to.Signals.ConvertAll(x => new S5HeaderViewModel(x)));
-			Tunnel = new(to.Tunnel);
-			Bridges = new(to.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
-			Stations = new(to.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleVehicles = new(to.Vehicles.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleTrackExtras = new(to.TrackMods.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleSignals = new(to.Signals.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleTunnel = new(to.Tunnel);
+			CompatibleBridges = new(to.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleStations = new(to.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
 			var_06 = to.var_06;
 			var_35 = to.var_35;
 		}
@@ -60,17 +60,17 @@ namespace OpenLoco.Gui.ViewModels
 				SellCostFactor = SellCostFactor,
 				TunnelCostFactor = TunnelCostFactor,
 				CostIndex = CostIndex,
-				NumCompatible = (uint8_t)Compatible.Count,
-				Compatible = Compatible.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				NumMods = (uint8_t)Mods.Count,
-				Mods = Mods.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				NumSignals = (uint8_t)Signals.Count,
-				Signals = Signals.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				Tunnel = Tunnel.GetAsUnderlyingType(),
-				NumBridges = (uint8_t)Bridges.Count,
-				Bridges = Bridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				NumStations = (uint8_t)Stations.Count,
-				Stations = Stations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				NumCompatibleVehicles = (uint8_t)CompatibleVehicles.Count,
+				Vehicles = CompatibleVehicles.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				NumMods = (uint8_t)CompatibleTrackExtras.Count,
+				TrackMods = CompatibleTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				NumSignals = (uint8_t)CompatibleSignals.Count,
+				Signals = CompatibleSignals.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				Tunnel = CompatibleTunnel.GetAsUnderlyingType(),
+				NumBridges = (uint8_t)CompatibleBridges.Count,
+				Bridges = CompatibleBridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				NumStations = (uint8_t)CompatibleStations.Count,
+				Stations = CompatibleStations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				var_06 = var_06,
 				var_35 = var_35,
 			};

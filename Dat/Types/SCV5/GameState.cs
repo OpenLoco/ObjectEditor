@@ -302,7 +302,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x92444), LocoArrayLength((int)Limits.kMaxTowns)] Town[] Towns,
 		[property: LocoStructOffset(0x9E744), LocoArrayLength((int)Limits.kMaxIndustries)] Industry[] Industries,
 		[property: LocoStructOffset(0xC10C4), LocoArrayLength((int)Limits.kMaxStations)] Station[] Stations,
-		//[property: LocoStructOffset(0x1B58C4), LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities,
+		[property: LocoStructOffset(0x1B58C4), LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities,
 		[property: LocoStructOffset(0x4268C4), LocoArrayLength((int)Limits.kMaxAnimations)] Animation[] Animations,
 		[property: LocoStructOffset(0x4328C4), LocoArrayLength((int)Limits.kMaxWaves)] Wave[] Waves,
 		[property: LocoStructOffset(0x432A44), LocoArrayLength((int)Limits.kMaxUserStrings * 32)] uint8_t[] UserStrings,

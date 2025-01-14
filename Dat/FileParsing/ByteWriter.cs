@@ -1,4 +1,5 @@
 using OpenLoco.Dat.Types;
+using System.Diagnostics;
 
 namespace OpenLoco.Dat.FileParsing
 {
@@ -35,6 +36,10 @@ namespace OpenLoco.Dat.FileParsing
 				// string ids should always be 0 in the dat file - they're only set when loaded into memory and never saved
 				val = 0;
 				ByteWriterT.Write(data, offset, (string_id)(dynamic)val);
+			}
+			else if (t == typeof(bool))
+			{
+				ByteWriterT.Write(data, offset, (bool)(dynamic)val);
 			}
 			else if (t.IsArray)
 			{
@@ -82,6 +87,11 @@ namespace OpenLoco.Dat.FileParsing
 
 			foreach (var p in t.GetProperties())
 			{
+				if (p.Name == "Entities")
+				{
+					Debugger.Break();
+				}
+
 				// ignore non-loco properties on the records
 				var offsetAttr = AttributeHelper.Get<LocoStructOffsetAttribute>(p);
 				if (offsetAttr == null)

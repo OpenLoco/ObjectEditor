@@ -3,8 +3,11 @@ using OpenLoco.Dat.FileParsing;
 namespace OpenLoco.Dat.Types.SCV5
 {
 	[LocoStructSize(0x80)]
-	public class Entity
+	public class Entity : ILocoStruct
 	{
-		[LocoArrayLength(0x80)] public uint8_t[] var_0 { get; set; }
+		[LocoArrayLength(0x80)] public uint8_t[] var_0 { get; set; } = [];
+
+		public bool Validate()
+			=> throw new NotImplementedException();
 	};
 }

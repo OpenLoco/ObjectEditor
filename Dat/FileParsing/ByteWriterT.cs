@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.Dat.FileParsing
+namespace OpenLoco.Dat.FileParsing
 {
 	public static class ByteWriterT
 	{
@@ -7,6 +7,9 @@
 
 		public static void Write_int8t(Span<byte> data, int offset, int8_t val)
 			=> data[offset] = (byte)val;
+
+		public static void Write_bool(Span<byte> data, int offset, bool val)
+			=> BitConverter.TryWriteBytes(data[offset..(offset + 1)], val);
 
 		public static void Write_uint16t(Span<byte> data, int offset, uint16_t val)
 			=> BitConverter.TryWriteBytes(data[offset..(offset + 2)], val);
@@ -45,6 +48,10 @@
 			else if (typeof(T) == typeof(int32_t))
 			{
 				Write_int32t(data, offset, (int32_t)(dynamic)val);
+			}
+			else if (typeof(T) == typeof(bool))
+			{
+				Write_bool(data, offset, (bool)(dynamic)val);
 			}
 			else
 			{

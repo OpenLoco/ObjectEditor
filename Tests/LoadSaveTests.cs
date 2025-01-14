@@ -867,7 +867,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.Flags, Is.EqualTo(TrackObjectFlags.unk_00), nameof(struc.Flags));
 				// Mods
 				Assert.That(struc.NumBridges, Is.EqualTo(5), nameof(struc.NumBridges));
-				Assert.That(struc.NumCompatible, Is.EqualTo(7), nameof(struc.NumCompatible));
+				Assert.That(struc.NumCompatibleVehicles, Is.EqualTo(7), nameof(struc.NumCompatibleVehicles));
 				Assert.That(struc.NumMods, Is.EqualTo(2), nameof(struc.NumMods));
 				Assert.That(struc.NumSignals, Is.EqualTo(10), nameof(struc.NumSignals));
 				Assert.That(struc.NumStations, Is.EqualTo(5), nameof(struc.NumStations));

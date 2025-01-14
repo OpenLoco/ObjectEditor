@@ -371,6 +371,16 @@ namespace OpenLoco.Dat.FileParsing
 		public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
 			=> WriteLocoObjectStream(objName, sourceGame, encoding, logger, obj, allowWritingAsVanilla).ToArray();
 
+		public static ReadOnlySpan<byte> WriteChunk(ILocoStruct str, SawyerEncoding encoding)
+			=> WriteChunkCore(ByteWriter.WriteLocoStruct(str), encoding);
+
+		public static byte[] WriteChunkCore(ReadOnlySpan<byte> source, SawyerEncoding encoding)
+		{
+			var encoded = Encode(encoding, source);
+			var objHeader = new ObjectHeader(encoding, (uint)encoded.Length).Write();
+			return [.. objHeader.ToArray(), .. encoded];
+		}
+
 		public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
 		{
 			using var rawObjStream = new MemoryStream();

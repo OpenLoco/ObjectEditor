@@ -83,9 +83,9 @@ namespace OpenLoco.Gui.ViewModels
 			this.RaisePropertyChanged(nameof(TutorialInputs));
 		}
 
-		public override void Save() => throw new NotImplementedException();
+		public override void Save() => logger?.Warning("Save is not currently implemented");
 
-		public override void SaveAs() => throw new NotImplementedException();
+		public override void SaveAs() => logger?.Warning("SaveAs is not currently implemented");
 	}
 
 	public class ScoresViewModel : BaseLocoFileViewModel
@@ -95,9 +95,9 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void Load() => logger?.Info($"Loading scores from {CurrentFile.Filename}");
 
-		public override void Save() => throw new NotImplementedException();
+		public override void Save() => logger?.Warning("Save is not currently implemented");
 
-		public override void SaveAs() => throw new NotImplementedException();
+		public override void SaveAs() => logger?.Warning("SaveAs is not currently implemented");
 	}
 
 	public class LanguageViewModel : BaseLocoFileViewModel
@@ -107,8 +107,8 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void Load() => logger?.Info($"Loading languages from {CurrentFile.Filename}");
 
-		public override void Save() => throw new NotImplementedException();
+		public override void Save() => logger?.Warning("Save is not currently implemented");
 
-		public override void SaveAs() => throw new NotImplementedException();
+		public override void SaveAs() => logger?.Warning("SaveAs is not currently implemented");
 	}
 }

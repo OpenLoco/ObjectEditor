@@ -60,8 +60,8 @@ namespace OpenLoco.Gui.ViewModels
 			logger?.Info($"Loading scenario from {CurrentFile.Filename}");
 			CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.Filename, Model.Logger);
 
-			RequiredObjects = new BindingList<S5HeaderViewModel>(CurrentS5File!.RequiredObjects.ConvertAll(x => new S5HeaderViewModel(x)));
-			PackedObjects = new BindingList<S5HeaderViewModel>(CurrentS5File!.PackedObjects.ConvertAll(x => new S5HeaderViewModel(x.Item1))); // note: cannot bind to this, but it'll allow us to display at least
+			RequiredObjects = new BindingList<S5HeaderViewModel>([.. CurrentS5File!.RequiredObjects.Where(x => x.Checksum != 0).Select(x => new S5HeaderViewModel(x)).OrderBy(x => x.Name)]);
+			PackedObjects = new BindingList<S5HeaderViewModel>([.. CurrentS5File!.PackedObjects.ConvertAll(x => new S5HeaderViewModel(x.Item1)).OrderBy(x => x.Name)]); // note: cannot bind to this, but it'll allow us to display at least
 
 			_ = this.WhenAnyValue(o => o.TileElementX)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));
@@ -174,7 +174,8 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		public override void Save() => logger?.Error("Saving SC5/SV5 is not implemented yet");
+		public override void Save()
+			=> Save(CurrentFile.Filename);
 
 		public override void SaveAs()
 		{
@@ -184,16 +185,20 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			var savePath = saveFile.Path.LocalPath;
-			logger?.Info($"Saving scenario/save/landscape to {savePath}");
+			Save(saveFile.Path.LocalPath);
+		}
+
+		void Save(string filename)
+		{
+			logger?.Info($"Saving scenario/save/landscape to {filename}");
 
 			var newFile = CurrentS5File with
 			{
 				RequiredObjects = [.. RequiredObjects.Select(x => x.GetAsUnderlyingType())],
 			};
 
-			var bytes = CurrentS5File.Write();
-			File.WriteAllBytes(savePath, bytes);
+			var bytes = newFile.Write();
+			File.WriteAllBytes(filename, bytes);
 		}
 	}
 }

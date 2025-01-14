@@ -88,12 +88,7 @@ namespace OpenLoco.Dat.Types.SCV5
 
 		public static S5File Read(ReadOnlySpan<byte> data)
 		{
-			List<(string, int)> dataLengths = [];
-			var curr = data.Length;
-
 			var header = SawyerStreamReader.ReadChunk<S5FileHeader>(ref data);
-			dataLengths.Add(("header", curr - data.Length));
-			curr = data.Length;
 
 			SaveDetails? saveDetails = null;
 			ScenarioOptions? scenarioOptions = null;
@@ -101,17 +96,11 @@ namespace OpenLoco.Dat.Types.SCV5
 			if (header.Flags.HasFlag(HeaderFlags.HasSaveDetails))
 			{
 				saveDetails = SawyerStreamReader.ReadChunk<SaveDetails>(ref data);
-
-				dataLengths.Add(("save", curr - data.Length));
-				curr = data.Length;
 			}
 
 			if (header.Type == S5FileType.Scenario)
 			{
 				scenarioOptions = SawyerStreamReader.ReadChunk<ScenarioOptions>(ref data);
-
-				dataLengths.Add(("scenario", curr - data.Length));
-				curr = data.Length;
 			}
 
 			// packed objects
@@ -122,10 +111,6 @@ namespace OpenLoco.Dat.Types.SCV5
 				data = data[S5Header.StructLength..];
 
 				var chunkData = SawyerStreamReader.ReadChunkCore(ref data);
-
-				dataLengths.Add(("packed", curr - data.Length));
-				curr = data.Length;
-
 				packedObjects.Add((obj, chunkData.ToArray()));
 			}
 
@@ -143,9 +128,6 @@ namespace OpenLoco.Dat.Types.SCV5
 				bytes = bytes[S5Header.StructLength..];
 			}
 
-			dataLengths.Add(("required", curr - data.Length));
-			curr = data.Length;
-
 			// load game state
 			List<TileElement>? tileElements = null;
 			List<TileElement>[,]? tileElementMap = null;
@@ -157,44 +139,35 @@ namespace OpenLoco.Dat.Types.SCV5
 				var gameStateA = SawyerStreamReader.ReadChunk<GameStateScenarioA>(ref data);
 				var gameStateB = SawyerStreamReader.ReadChunk<GameStateScenarioB>(ref data);
 				var gameStateC = SawyerStreamReader.ReadChunk<GameStateScenarioC>(ref data);
+				var newFlags = gameStateA.FixFlags | S5FixFlags.FixFlag1;
+				gameStateA = gameStateA with { FixFlags = newFlags };
 				gameState = new GameStateScenario(gameStateA, gameStateB, gameStateC);
-
-				dataLengths.Add(("gamestate", curr - data.Length));
-				curr = data.Length;
+				FixState();
 
 				if (gameStateA.GameStateFlags.HasFlag(GameStateFlags.TileManagerLoaded))
 				{
 					tileElementData = SawyerStreamReader.ReadChunkCore(ref data).ToArray();
-
-					dataLengths.Add(("tileelements", curr - data.Length));
-					curr = data.Length;
-
 					(tileElements, tileElementMap) = ParseTileElements(tileElementData);
-
 				}
 			}
 			else
 			{
 				gameState = SawyerStreamReader.ReadChunk<GameStateSave>(ref data);
-
-				dataLengths.Add(("gamestate", curr - data.Length));
-				curr = data.Length;
+				FixState();
 
 				tileElementData = SawyerStreamReader.ReadChunkCore(ref data).ToArray();
-
-				dataLengths.Add(("tileelements", curr - data.Length));
-				curr = data.Length;
-
 				(tileElements, tileElementMap) = ParseTileElements(tileElementData);
 			}
 
 			var checksum = BitConverter.ToUInt32(data[0..4]);
 			data = data[4..];
 
-			dataLengths.Add(("checksum", curr - data.Length));
-			_ = data.Length;
-
 			return new S5File(header, scenarioOptions, saveDetails, requiredObjects, gameState, tileElements, packedObjects, checksum) { TileElementMap = tileElementMap, OriginalTileElementData = tileElementData };
+		}
+
+		static void FixState()
+		{
+
 		}
 
 		static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData)

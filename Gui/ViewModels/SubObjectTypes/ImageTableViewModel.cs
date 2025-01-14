@@ -1,6 +1,7 @@
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using DynamicData;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Types;
@@ -11,6 +12,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -101,7 +103,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		// what is displaying on the ui
 		[Reactive]
-		public IList<Bitmap?> Bitmaps { get; set; }
+		public ObservableCollection<Bitmap?> Bitmaps { get; set; }
 
 		[Reactive]
 		public int SelectedImageIndex { get; set; } = -1;
@@ -129,7 +131,7 @@ namespace OpenLoco.Gui.ViewModels
 			_ = this.WhenAnyValue(o => o.Zoom)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.Images)
-				.Subscribe(_ => Bitmaps = G1ImageConversion.CreateAvaloniaImages(Images).ToList());
+				.Subscribe(_ => Bitmaps = new ObservableCollection<Bitmap?>(G1ImageConversion.CreateAvaloniaImages(Images)));
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
 			_ = this.WhenAnyValue(o => o.SelectedBitmapPreview)
@@ -367,6 +369,11 @@ namespace OpenLoco.Gui.ViewModels
 
 		void UpdateImage(Image<Rgba32> img, int index)
 		{
+			if (index == -1)
+			{
+				return;
+			}
+
 			var currG1 = G1Provider.G1Elements[index];
 			currG1 = currG1 with
 			{
@@ -377,9 +384,9 @@ namespace OpenLoco.Gui.ViewModels
 				XOffset = currG1.XOffset,
 				YOffset = currG1.YOffset
 			};
-			G1Provider.G1Elements[SelectedImageIndex] = currG1;
-			Images[SelectedImageIndex] = img;
-			Bitmaps[SelectedImageIndex] = G1ImageConversion.CreateAvaloniaImage(img);
+			G1Provider.G1Elements[index] = currG1;
+			Images[index] = img;
+			Bitmaps[index] = G1ImageConversion.CreateAvaloniaImage(img);
 		}
 
 		public static string GetImageName(IImageTableNameProvider nameProvider, int counter)

@@ -1,5 +1,4 @@
 using OpenLoco.Dat.Types;
-using System.Diagnostics;
 
 namespace OpenLoco.Dat.FileParsing
 {
@@ -87,11 +86,6 @@ namespace OpenLoco.Dat.FileParsing
 
 			foreach (var p in t.GetProperties())
 			{
-				if (p.Name == "Entities")
-				{
-					Debugger.Break();
-				}
-
 				// ignore non-loco properties on the records
 				var offsetAttr = AttributeHelper.Get<LocoStructOffsetAttribute>(p);
 				if (offsetAttr == null)

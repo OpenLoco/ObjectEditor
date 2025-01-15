@@ -24,7 +24,7 @@ dotnet publish Gui/Gui.csproj -c Release -p:PublishSingleFile=true -p:Version=$v
 # 4. Create the ZIP and tar archives
 echo "Zipping"
 
-pushd "Gui/bin/Release/net8.0/"
+pushd "Gui/bin/Release/net9.0/"
 
 pushd "win-x64/publish"
 zip -r "object-editor-$version-win-x64.zip" .

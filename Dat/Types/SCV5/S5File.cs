@@ -1,10 +1,87 @@
-using OpenLoco.Common;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using System.ComponentModel;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
+	public static class ObjectManager
+	{
+		public static readonly S5Header FillHeader = new S5Header(uint.MaxValue, "ÿÿÿÿÿÿÿÿ", uint.MaxValue);
+
+		public static List<S5Header> GetStructuredHeaders(List<S5Header> allHeaders)
+		{
+			var structuredList = new List<S5Header>(S5File.RequiredObjectsCount);
+			var grouped = allHeaders.GroupBy(x => x.ObjectType).ToDictionary(x => x.Key, x => x.Select(y => y).ToList());
+
+			for (var i = 0; i < Limits.kMaxObjectTypes; ++i)
+			{
+				var ot = (ObjectType)i;
+				var count = GetMaxObjectCount(ot);
+
+				for (var hdr = 0; hdr < count; ++hdr)
+				{
+					if (grouped.TryGetValue(ot, out var hdrs))
+					{
+						var item = hdr < hdrs.Count ? hdrs[hdr] : FillHeader;
+						structuredList.Add(item);
+					}
+					else
+					{
+						structuredList.Add(FillHeader);
+					}
+				}
+			}
+
+			if (structuredList.Count != S5File.RequiredObjectsCount)
+			{
+				throw new ArgumentOutOfRangeException(nameof(allHeaders), $"The constructed list didn't have exactly {S5File.RequiredObjectsCount} objects, so it is invalid.");
+			}
+
+			return structuredList;
+		}
+
+		public static int GetMaxObjectCount(ObjectType objectType)
+			=> objectType switch
+			{
+				ObjectType.InterfaceSkin => 1,
+				ObjectType.Sound => 128,
+				ObjectType.Currency => 1,
+				ObjectType.Steam => 32,
+				ObjectType.CliffEdge => 8,
+				ObjectType.Water => 1,
+				ObjectType.Land => 32,
+				ObjectType.TownNames => 1,
+				ObjectType.Cargo => 32,
+				ObjectType.Wall => 32,
+				ObjectType.TrainSignal => 16,
+				ObjectType.LevelCrossing => 4,
+				ObjectType.StreetLight => 1,
+				ObjectType.Tunnel => 16,
+				ObjectType.Bridge => 8,
+				ObjectType.TrainStation => 16,
+				ObjectType.TrackExtra => 8,
+				ObjectType.Track => 8,
+				ObjectType.RoadStation => 16,
+				ObjectType.RoadExtra => 4,
+				ObjectType.Road => 8,
+				ObjectType.Airport => 8,
+				ObjectType.Dock => 8,
+				ObjectType.Vehicle => 224,
+				ObjectType.Tree => 64,
+				ObjectType.Snow => 1,
+				ObjectType.Climate => 1,
+				ObjectType.HillShapes => 1,
+				ObjectType.Building => 128,
+				ObjectType.Scaffolding => 1,
+				ObjectType.Industry => 16,
+				ObjectType.Region => 1,
+				ObjectType.Competitor => 32,
+				ObjectType.ScenarioText => 1,
+				_ => throw new NotImplementedException()
+			};
+	}
+
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]
 	public record S5File(
@@ -52,9 +129,9 @@ namespace OpenLoco.Dat.Types.SCV5
 			}
 
 			// required
-			var reqData = RequiredObjects.Fill(RequiredObjectsCount, S5Header.NullHeader).Select(x => x.Write().ToArray()).ToList();
-			ReadOnlySpan<byte> req = [.. reqData.SelectMany(x => x)];
-			var required = SawyerStreamWriter.WriteChunkCore(req, SawyerEncoding.Rotate);
+			var structured = ObjectManager.GetStructuredHeaders(RequiredObjects);
+			var reqData = structured.ConvertAll(x => x.Write().ToArray()).SelectMany(x => x);
+			var required = SawyerStreamWriter.WriteChunkCore([.. reqData], SawyerEncoding.Rotate);
 
 			// gamestate
 			byte[] gameState;
@@ -81,9 +158,9 @@ namespace OpenLoco.Dat.Types.SCV5
 
 			tiles = SawyerStreamWriter.WriteChunkCore(OriginalTileElementData, SawyerEncoding.RunLengthMulti);
 
-			var checksum = BitConverter.GetBytes((uint32_t)0);
-
-			return [.. hdr, .. save, .. scenario, .. packed, .. required, .. gameState, .. tiles, .. checksum];
+			byte[] data = [.. hdr, .. save, .. scenario, .. packed, .. required, .. gameState, .. tiles];
+			var checksum = data.Sum(x => x);
+			return [.. data, .. BitConverter.GetBytes((uint32_t)checksum)];
 		}
 
 		public static S5File Read(ReadOnlySpan<byte> data)

@@ -10,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -172,35 +174,35 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		public override void Save() => logger?.Warning("Save is not currently implemented");
+		//public override void Save() => logger?.Warning("Save is not currently implemented");
 
-		public override void SaveAs() => logger?.Warning("SaveAs is not currently implemented");
+		//public override void SaveAs() => logger?.Warning("SaveAs is not currently implemented");
 
-		//public override void Save()
-		//	=> Save(CurrentFile.Filename);
+		public override void Save()
+			=> Save(CurrentFile.Filename);
 
-		//public override void SaveAs()
-		//{
-		//	var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.SCV5FileTypes)).Result;
-		//	if (saveFile == null)
-		//	{
-		//		return;
-		//	}
+		public override void SaveAs()
+		{
+			var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.SCV5FileTypes)).Result;
+			if (saveFile == null)
+			{
+				return;
+			}
 
-		//	Save(saveFile.Path.LocalPath);
-		//}
+			Save(saveFile.Path.LocalPath);
+		}
 
-		//void Save(string filename)
-		//{
-		//	logger?.Info($"Saving scenario/save/landscape to {filename}");
+		void Save(string filename)
+		{
+			logger?.Info($"Saving scenario/save/landscape to {filename}");
 
-		//	var newFile = CurrentS5File with
-		//	{
-		//		RequiredObjects = [.. RequiredObjects.Select(x => x.GetAsUnderlyingType())],
-		//	};
+			var newFile = CurrentS5File with
+			{
+				RequiredObjects = [.. RequiredObjects.Select(x => x.GetAsUnderlyingType())],
+			};
 
-		//	var bytes = newFile.Write();
-		//	File.WriteAllBytes(filename, bytes);
-		//}
+			var bytes = newFile.Write();
+			File.WriteAllBytes(filename, bytes);
+		}
 	}
 }

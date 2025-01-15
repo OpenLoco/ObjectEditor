@@ -47,11 +47,13 @@ namespace OpenLoco.Dat
 			ObjectIndex? index = null;
 			if (File.Exists(indexPath))
 			{
+				logger.Info("Index file found - loading it");
 				index = await LoadIndexAsync(indexPath).ConfigureAwait(false);
 			}
 
 			if (index == null)
 			{
+				logger.Info("Index file not found - creating it");
 				index = await CreateIndexAsync(directory, logger, progress).ConfigureAwait(false);
 				await index.SaveIndexAsync(indexPath).ConfigureAwait(false);
 			}

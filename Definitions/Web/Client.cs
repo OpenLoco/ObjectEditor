@@ -28,7 +28,7 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				route = string.Join(Version, route);
+				route = string.Concat(Version, route);
 				logger?.Debug($"Querying {client.BaseAddress}{route}");
 				using var response = await client.GetAsync(route);
 

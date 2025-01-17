@@ -57,9 +57,12 @@ namespace OpenLoco.Dat.Types
 		}
 
 		public byte[] GetImageDataForSave()
-			=> Flags.HasFlag(G1ElementFlags.IsRLECompressed)
-				? SawyerStreamWriter.EncodeRLEImageData(this)
-				: ImageData;
+			=> GetImageDataForSave(Flags, ImageData, Width, Height);
+
+		public static byte[] GetImageDataForSave(G1ElementFlags flags, byte[] imageData, int width, int height)
+			=> flags.HasFlag(G1ElementFlags.IsRLECompressed)
+				? SawyerStreamWriter.EncodeRLEImageData(flags, imageData, width, height)
+				: imageData;
 
 		public bool Validate() => true;
 	}

@@ -283,18 +283,21 @@ namespace OpenLoco.Dat.FileParsing
 			return (uint8_t)((value << shift) | (value >> (8 - shift)));
 		}
 
-		// this is ugly as all hell but it works. plenty of room for cleanup and optimisation
 		public static byte[] EncodeRLEImageData(G1Element32 img)
+			=> EncodeRLEImageData(img.Flags, img.ImageData, img.Width, img.Height);
+
+		// this is ugly as all hell but it works. plenty of room for cleanup and optimisation
+		public static byte[] EncodeRLEImageData(G1ElementFlags flags, byte[] imageData, int width, int height)
 		{
 			using var ms = new MemoryStream();
 
 			var lines = new List<List<(int StartX, List<byte> RunBytes)>>();
 
 			// calculate the segments per line in the input image
-			foreach (var line in img.ImageData.Chunk(img.Width))
+			foreach (var line in imageData.Chunk(width))
 			{
 				List<(int StartX, List<byte> RunBytes)> segments = [];
-				for (var x = 0; x < img.Width;)
+				for (var x = 0; x < width;)
 				{
 					// find the start of a segment. previous pixel may be a segment
 					if (line[x] != 0x0)
@@ -302,7 +305,7 @@ namespace OpenLoco.Dat.FileParsing
 						// find the end
 						var startOfSegment = x;
 						List<byte> run = [];
-						while (x < img.Width && line[x] != 0x0 && run.Count < 127) // runs can only be 127 bytes in length. if the run is truly longer, then it gets split into multiple runs
+						while (x < width && line[x] != 0x0 && run.Count < 127) // runs can only be 127 bytes in length. if the run is truly longer, then it gets split into multiple runs
 						{
 							run.Add(line[x]);
 							x++;
@@ -322,7 +325,7 @@ namespace OpenLoco.Dat.FileParsing
 			// write source pointers. will be (2 * img.Height) bytes. need to know RLE data first to know the offsets
 			var headerOffset = lines.Count * 2;
 			var bytesTotal = 0;
-			for (var yy = 0; yy < img.Height; ++yy)
+			for (var yy = 0; yy < height; ++yy)
 			{
 				// bytes per previous line is the sum of all the bytes in the runs plus the number of line segments * 2
 				var bytesPreviousLine = yy == 0

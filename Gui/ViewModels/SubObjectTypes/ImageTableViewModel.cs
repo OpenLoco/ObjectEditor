@@ -379,7 +379,7 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				Width = (int16_t)img.Width,
 				Height = (int16_t)img.Height,
-				Flags = currG1.Flags & ~G1ElementFlags.IsRLECompressed, // SawyerStreamWriter::SaveImageTable does this anyways
+				Flags = currG1.Flags,
 				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
 				XOffset = currG1.XOffset,
 				YOffset = currG1.YOffset

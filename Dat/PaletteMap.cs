@@ -40,7 +40,9 @@ namespace OpenLoco.Dat
 		public (Color Color, byte Index)[] Palette { get; set; }
 
 		public static (Color Color, byte Index) Transparent
-			=> (Color.FromRgba(0, 0, 0, 0), 0); //Palette[0];
+			=> (TransparentPixel, 0); //Palette[0];
+
+		public static readonly Color TransparentPixel = Color.FromRgba(0, 0, 0, 0);
 
 		public (Color Color, byte Index)[] TextRendering
 			=> Palette[1..7];
@@ -179,6 +181,11 @@ namespace OpenLoco.Dat
 
 		byte ColorToPaletteIndex(Color c)
 		{
+			if (c.ToPixel<Rgba32>().A == 0)
+			{
+				c = TransparentPixel;
+			}
+
 			var reserved = ReservedColours.Where(cc => cc.Color == c);
 			if (reserved.Any())
 			{

@@ -823,6 +823,12 @@
 								<Button BorderThickness="0" FontSize="12" VerticalAlignment="Center" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}">X</Button>
 							</StackPanel>
 						</TabItem.Header>
+						<TabItem.ContextMenu>
+							<ContextMenu>
+								<MenuItem Header="Close All Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseAllTabsCommand}" />
+								<MenuItem Header="Close Other Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseOtherTabsCommand}" CommandParameter="{Binding}" />
+							</ContextMenu>
+						</TabItem.ContextMenu>
 					</TabItem>
 				</DataTemplate>
 			</TabControl.ItemTemplate>

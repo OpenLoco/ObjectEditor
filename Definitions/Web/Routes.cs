@@ -11,8 +11,18 @@ namespace OpenLoco.Definitions.Web
 		public const string GetObjectFile = "/objects/getobjectfile";
 		public const string GetObjectImages = "/objects/getobjectimages";
 
+		public const string ListObjectPacks = "/objectpacks/list";
+		public const string GetObjectPack = "/objectpacks/getpack";
+
 		public const string ListScenarios = "/scenarios/list";
 		public const string GetScenario = "/scenarios/getscenario";
+
+		public const string ListSC5FilePacks = "/sc5filepacks/list";
+		public const string GetSC5FilePack = "/sc5filepacks/getpack";
+
+		public const string ListAuthors = "/authors/list";
+		public const string ListLicences = "/licences/list";
+		public const string ListTags = "/tags/list";
 
 		// POST
 		public const string UploadDat = "/objects/uploaddat";

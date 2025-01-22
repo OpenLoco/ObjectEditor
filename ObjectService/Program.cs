@@ -116,8 +116,19 @@ static void MapRoutes(RouteGroupBuilder routeGroup, Server server)
 	_ = routeGroup.MapGet(Routes.GetObject, server.GetObject);
 	_ = routeGroup.MapGet(Routes.GetObjectFile, server.GetObjectFile);
 	_ = routeGroup.MapGet(Routes.GetObjectImages, server.GetObjectImages);
+
+	_ = routeGroup.MapGet(Routes.ListObjectPacks, server.ListObjectPacks);
+	_ = routeGroup.MapGet(Routes.GetObjectPack, server.GetObjectPack);
+
 	_ = routeGroup.MapGet(Routes.ListScenarios, server.ListScenarios);
 	_ = routeGroup.MapGet(Routes.GetScenario, server.GetScenario);
+
+	_ = routeGroup.MapGet(Routes.ListSC5FilePacks, server.ListSC5FilePacks);
+	_ = routeGroup.MapGet(Routes.GetSC5FilePack, server.GetSC5FilePack);
+
+	_ = routeGroup.MapGet(Routes.ListAuthors, server.ListAuthors);
+	_ = routeGroup.MapGet(Routes.ListLicences, server.ListLicences);
+	_ = routeGroup.MapGet(Routes.ListTags, server.ListTags);
 
 	// POST
 	_ = routeGroup.MapPost(Routes.UploadDat, server.UploadDat);

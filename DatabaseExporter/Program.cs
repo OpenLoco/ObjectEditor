@@ -49,7 +49,7 @@ var sc5FilePacks = new List<SC5FilePackJsonRecord>();
 
 foreach (var o in db.SC5FilePacks
 		.Include(l => l.Licence)
-		.Select(x => new ExpandedTblPack<TblSC5FilePack>(x, x.Authors, x.Tags))
+		.Select(x => new ExpandedTblPack<TblSC5FilePack, TblSC5File>(x, x.SC5Files, x.Authors, x.Tags))
 		.ToList()
 		.OrderBy(x => x.Pack.Name))
 {
@@ -76,7 +76,7 @@ var objectPacks = new List<ObjectPackJsonRecord>();
 
 foreach (var o in db.ObjectPacks
 		.Include(l => l.Licence)
-		.Select(x => new ExpandedTblPack<TblLocoObjectPack>(x, x.Authors, x.Tags))
+		.Select(x => new ExpandedTblPack<TblLocoObjectPack, TblLocoObject>(x, x.Objects, x.Authors, x.Tags))
 		.ToList()
 		.OrderBy(x => x.Pack.Name))
 {

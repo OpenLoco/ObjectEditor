@@ -30,7 +30,7 @@ namespace OpenLoco.Gui.Models
 
 		public ObjectIndex? ObjectIndexOnline { get; set; }
 
-		public Dictionary<int, DtoDatObjectWithMetadata> OnlineCache { get; } = [];
+		public Dictionary<int, DtoObjectDescriptorWithMetadata> OnlineCache { get; } = [];
 
 		public PaletteMap PaletteMap { get; set; }
 

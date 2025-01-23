@@ -47,7 +47,6 @@ namespace OpenLoco.ObjectService
 			[FromQuery] VehicleType? vehicleType,
 			[FromQuery] string? authorName,
 			[FromQuery] string? tagName,
-			[FromQuery] string? objectPackName,
 			[FromQuery] ObjectSource? objectSource,
 			LocoDb db)
 		{
@@ -105,22 +104,10 @@ namespace OpenLoco.ObjectService
 
 			try
 			{
-				var queryStringForDebug = query.ToQueryString();
 				var result = await query
-				.Select(x => new DtoObjectIndexEntry(
-					x.Id,
-					x.DatName,
-					x.DatChecksum,
-					x.ObjectSource,
-					x.ObjectType,
-					x.VehicleType,
-					x.Availability,
-					x.Name,
-					x.Description,
-					x.CreationDate,
-					x.LastEditDate,
-					x.UploadDate
-					)).ToListAsync();
+					.Select(x => x.ToDtoDescriptor())
+					.ToListAsync();
+
 				return Results.Ok(result);
 			}
 			catch (Exception ex)
@@ -250,7 +237,7 @@ namespace OpenLoco.ObjectService
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
-			var dtoObject = new DtoDatObjectWithMetadata(
+			var dtoObject = new DtoObjectDescriptorWithMetadata(
 				obj.Id,
 				obj.Name,
 				obj.DatName,
@@ -323,18 +310,73 @@ namespace OpenLoco.ObjectService
 			{
 				var files = Directory.GetFiles(ServerFolderManager.ScenariosFolder, "*.SC5", SearchOption.AllDirectories);
 				var count = 0;
-				var filenames = files.Select(x => new DtoScenarioIndexEntry(count++, Path.GetRelativePath(ServerFolderManager.ScenariosFolder, x)));
+				var filenames = files.Select(x => new DtoScenarioEntry(count++, Path.GetRelativePath(ServerFolderManager.ScenariosFolder, x)));
 				return Results.Ok(filenames.ToList());
 			});
 
 		// eg: https://localhost:7230/v1/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
 		public async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
-		{
-			logger.LogInformation("Scenario [{ScenarioId}] requested", uniqueScenarioId);
-			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-		}
+			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		#endregion
+
+		// eg: https://localhost:7230/v1/authors/list
+		public async Task<IResult> ListAuthors(LocoDb db)
+			=> Results.Ok(await db.Authors
+				.Select(x => new DtoAuthorEntry(x.Id, x.Name))
+				.ToListAsync());
+
+		// eg: https://localhost:7230/v1/licences/list
+		public async Task<IResult> ListLicences(LocoDb db)
+			=> Results.Ok(await db.Licences
+				.Select(x => new DtoLicenceEntry(x.Id, x.Name, x.Text))
+				.ToListAsync());
+
+		// eg: https://localhost:7230/v1/tags/list
+		public async Task<IResult> ListTags(LocoDb db)
+			=> Results.Ok(await db.Tags
+				.Select(x => new DtoTagEntry(x.Id, x.Name))
+				.ToListAsync());
+
+		// eg: https://localhost:7230/v1/objectpacks/list
+		public async Task<IResult> ListObjectPacks(LocoDb db)
+			=> Results.Ok(
+				(await db.ObjectPacks
+					.Include(l => l.Licence)
+					.ToListAsync())
+				.Select(x => x.ToDtoEntry())
+				.OrderBy(x => x.Name));
+
+		// eg: https://localhost:7230/v1/objectpacks/getpack?uniqueId=123
+		public async Task<IResult> GetObjectPack([FromQuery] int uniqueId, LocoDb db)
+			=> Results.Ok(
+				(await db.ObjectPacks
+					.Where(x => x.Id == uniqueId)
+					.Include(l => l.Licence)
+					.Select(x => new ExpandedTblPack<TblLocoObjectPack, TblLocoObject>(x, x.Objects, x.Authors, x.Tags))
+					.ToListAsync())
+				.Select(x => x.ToDtoDescriptor())
+				.OrderBy(x => x.Name));
+
+		// eg: https://localhost:7230/v1/sc5filepacks/list
+		public async Task<IResult> ListSC5FilePacks(LocoDb db)
+			=> Results.Ok(
+				(await db.SC5FilePacks
+					.Include(l => l.Licence)
+					.ToListAsync())
+				.Select(x => x.ToDtoEntry())
+				.OrderBy(x => x.Name));
+
+		// eg: https://localhost:7230/v1/sc5filepacks/getpack?uniqueId=123
+		public async Task<IResult> GetSC5FilePack([FromQuery] int uniqueId, LocoDb db)
+			=> Results.Ok(
+				(await db.SC5FilePacks
+					.Where(x => x.Id == uniqueId)
+					.Include(l => l.Licence)
+					.Select(x => new ExpandedTblPack<TblSC5FilePack, TblSC5File>(x, x.SC5Files, x.Authors, x.Tags))
+					.ToListAsync())
+				.Select(x => x.ToDtoDescriptor())
+				.OrderBy(x => x.Name));
 
 		#region POST
 

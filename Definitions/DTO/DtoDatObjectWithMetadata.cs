@@ -4,7 +4,7 @@ using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public record DtoDatObjectWithMetadata(
+	public record DtoObjectDescriptorWithMetadata(
 		int Id,
 		string UniqueName,
 		string DatName,

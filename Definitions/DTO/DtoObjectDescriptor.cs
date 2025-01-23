@@ -3,7 +3,7 @@ using OpenLoco.Dat.Objects;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public record DtoObjectIndexEntry(
+	public record DtoObjectDescriptor(
 		int Id,
 		string DatName,
 		uint DatChecksum,

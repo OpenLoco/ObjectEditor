@@ -65,9 +65,7 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Unit> DeleteLocalFileCommand { get; init; }
 
 		public abstract void Load();
-
 		public abstract void Save();
-
 		public abstract void SaveAs();
 		public virtual void Delete() { }
 

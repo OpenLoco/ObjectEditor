@@ -8,9 +8,10 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reactive.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -23,10 +24,10 @@ namespace OpenLoco.Gui.ViewModels
 		public S5File? CurrentS5File { get; set; }
 
 		[Reactive]
-		public BindingList<S5HeaderViewModel>? RequiredObjects { get; set; }
+		public ObservableCollection<S5HeaderViewModel>? RequiredObjects { get; set; }
 
 		[Reactive]
-		public BindingList<S5HeaderViewModel>? PackedObjects { get; set; }
+		public ObservableCollection<S5HeaderViewModel>? PackedObjects { get; set; }
 
 		[Reactive]
 		public WriteableBitmap? Map { get; set; }
@@ -40,26 +41,24 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Range(0, Limits.kMapRows - 1)]
 		public int TileElementY { get; set; }
 
-		public BindingList<TileElement> CurrentTileElements
-		{
-			get
-			{
-				if (CurrentS5File.TileElementMap != null && CurrentS5File != null && TileElementX >= 0 && TileElementX < 384 && TileElementY >= 0 && TileElementY < 384)
-				{
-					return CurrentS5File.TileElementMap[TileElementX, TileElementY].ToBindingList();
-				}
-
-				return [];
-			}
-		}
+		public ObservableCollection<TileElement> CurrentTileElements
+			=> CurrentS5File?.TileElementMap != null && TileElementX >= 0 && TileElementX < 384 && TileElementY >= 0 && TileElementY < 384
+				? [.. CurrentS5File.TileElementMap[TileElementX, TileElementY]]
+				: [];
 
 		public override void Load()
 		{
 			logger?.Info($"Loading scenario from {CurrentFile.Filename}");
 			CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.Filename, Model.Logger);
 
-			RequiredObjects = new BindingList<S5HeaderViewModel>([.. CurrentS5File!.RequiredObjects.Where(x => x.Checksum != 0).Select(x => new S5HeaderViewModel(x)).OrderBy(x => x.Name)]);
-			PackedObjects = new BindingList<S5HeaderViewModel>([.. CurrentS5File!.PackedObjects.ConvertAll(x => new S5HeaderViewModel(x.Item1)).OrderBy(x => x.Name)]); // note: cannot bind to this, but it'll allow us to display at least
+			if (CurrentS5File == null)
+			{
+				logger?.Error($"Unable to load {CurrentFile.Filename}");
+				return;
+			}
+
+			RequiredObjects = new ObservableCollection<S5HeaderViewModel>([.. CurrentS5File.RequiredObjects.Where(x => x.Checksum != 0).Select(x => new S5HeaderViewModel(x)).OrderBy(x => x.Name)]);
+			PackedObjects = new ObservableCollection<S5HeaderViewModel>([.. CurrentS5File.PackedObjects.ConvertAll(x => new S5HeaderViewModel(x.Item1)).OrderBy(x => x.Name)]); // note: cannot bind to this, but it'll allow us to display at least
 
 			_ = this.WhenAnyValue(o => o.TileElementX)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));

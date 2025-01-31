@@ -120,6 +120,10 @@
 			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeader" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
 		</DataTemplate>
 
+		<DataTemplate DataType="vm:DatObjectEditorViewModel">
+			<vi:DatObjectEditorView />
+		</DataTemplate>
+
 		<DataTemplate DataType="old5:TileElement">
 			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
 				<Grid.ColumnDefinitions>
@@ -660,7 +664,8 @@
 									</DockPanel>
 								</Button>
 							</DockPanel>
-							<vi:DatObjectEditorView/>
+							<ContentControl Content="{Binding}" />
+							<!--<vi:DatObjectEditorView/>-->
 						</DockPanel>
 					</Border>
 				</DataTemplate>

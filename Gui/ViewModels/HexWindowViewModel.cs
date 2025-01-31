@@ -14,23 +14,19 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class HexWindowViewModel : ViewModelBase
 	{
-		[Reactive]
-		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
+		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; } = [];
 
 		[Reactive]
 		public TreeNode? CurrentlySelectedHexAnnotation { get; set; }
 
 		[Reactive]
-		public HexAnnotationLine[]? CurrentHexDumpLines { get; set; }
+		public HexAnnotationLine[] CurrentHexDumpLines { get; set; } = [];
 
-		byte[] currentByteList;
+		byte[] currentByteList = [];
 
-		Dictionary<string, (int Start, int End)> DATDumpAnnotationIdentifiers = [];
+		readonly Dictionary<string, (int Start, int End)> DATDumpAnnotationIdentifiers = [];
 		const int bytesPerDumpLine = 32;
 		const int addressStringSizeBytes = 8;
-
-		//const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
-		//const int dumpWordSize = 4;
 
 		public HexWindowViewModel()
 		{ }
@@ -62,10 +58,12 @@ namespace OpenLoco.Gui.ViewModels
 			foreach (var b in byteList.Chunk(bytesPerDumpLine))
 			{
 				int? sStart = selectionStart != null && (selectionStart >= count || selectionEnd > count)
-					? (Math.Max(selectionStart.Value, count) * 2) - (count * 2) : null;
+					? (Math.Max(selectionStart.Value, count) * 2) - (count * 2)
+					: null;
 
 				int? sEnd = selectionEnd != null && sStart != null && selectionEnd >= count
-					? (Math.Min(selectionEnd.Value, count + bytesPerDumpLine) * 2) - (count * 2) : null;
+					? (Math.Min(selectionEnd.Value, count + bytesPerDumpLine) * 2) - (count * 2)
+					: null;
 
 				yield return new HexAnnotationLine(
 					string.Format("{0:X" + addressStringSizeBytes + "}", count),

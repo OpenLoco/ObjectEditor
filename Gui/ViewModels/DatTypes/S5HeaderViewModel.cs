@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OpenLoco.Gui.ViewModels
 {
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class S5HeaderViewModel : ReactiveObject
 	{
@@ -22,6 +23,7 @@ namespace OpenLoco.Gui.ViewModels
 			SourceGame = sourceGame;
 			ObjectType = objectType;
 		}
+
 		public S5HeaderViewModel(S5Header s5Header)
 		{
 			Name = s5Header.Name;
@@ -33,13 +35,13 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, MaxLength(8)]
 		public string Name { get; set; }
 
-		[Reactive]
+		[Reactive, ReadOnly(true)]
 		public uint32_t Checksum { get; set; }
 
 		[Reactive]
 		public SourceGame SourceGame { get; set; }
 
-		[Reactive]
+		[Reactive, ReadOnly(true)]
 		public ObjectType ObjectType { get; set; }
 
 		public S5Header GetAsUnderlyingType()

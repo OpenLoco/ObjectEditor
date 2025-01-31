@@ -1,8 +1,11 @@
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 using OpenLoco.Common.Logging;
 using OpenLoco.Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
+using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -50,7 +53,7 @@ namespace OpenLoco.Gui.ViewModels
 			ReloadCommand = ReactiveCommand.Create(Load);
 			SaveCommand = ReactiveCommand.Create(Save);
 			SaveAsCommand = ReactiveCommand.Create(SaveAs);
-			DeleteLocalFileCommand = ReactiveCommand.Create(Delete);
+			DeleteLocalFileCommand = ReactiveCommand.CreateFromTask(DeleteWrapper);
 		}
 
 		[Reactive]
@@ -67,6 +70,19 @@ namespace OpenLoco.Gui.ViewModels
 		public abstract void Load();
 		public abstract void Save();
 		public abstract void SaveAs();
+
+		async Task DeleteWrapper()
+		{
+			var box = MessageBoxManager
+				.GetMessageBoxStandard("Confirm Delete", "Are you sure you would like to delete?", ButtonEnum.YesNo);
+			var result = await box.ShowAsync();
+
+			if (result == ButtonResult.Yes)
+			{
+				Delete();
+			}
+		}
+
 		public virtual void Delete() { }
 
 		public string ReloadText => CurrentFile.FileLocation == FileLocation.Local ? "Reload" : "Redownload";

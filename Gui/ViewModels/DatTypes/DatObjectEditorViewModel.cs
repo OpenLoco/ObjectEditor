@@ -34,6 +34,9 @@ namespace OpenLoco.Gui.ViewModels
 		public S5HeaderViewModel? S5HeaderViewModel { get; set; }
 
 		[Reactive]
+		public ObjectHeaderViewModel? ObjectHeaderViewModel { get; set; }
+
+		[Reactive]
 		public UiDatLocoFile? CurrentObject { get; private set; }
 
 		public ReactiveCommand<Unit, Unit> ViewHexCommand { get; }
@@ -120,6 +123,7 @@ namespace OpenLoco.Gui.ViewModels
 				if (CurrentObject != null)
 				{
 					S5HeaderViewModel = new S5HeaderViewModel(CurrentObject.DatFileInfo.S5Header);
+					ObjectHeaderViewModel = new ObjectHeaderViewModel(CurrentObject.DatFileInfo.ObjectHeader);
 				}
 			}
 			else
@@ -204,7 +208,7 @@ namespace OpenLoco.Gui.ViewModels
 			SawyerStreamWriter.Save(filename,
 				S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
 				S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
-				SawyerEncoding.Uncompressed, // todo: change based on what user selected
+				ObjectHeaderViewModel?.Encoding ?? SawyerEncoding.Uncompressed,
 				CurrentObject.LocoObject,
 				logger,
 				Model.Settings.AllowSavingAsVanillaObject);

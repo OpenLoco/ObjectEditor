@@ -18,7 +18,8 @@ namespace OpenLoco.Gui.ViewModels
 	public class SCV5ViewModel : BaseLocoFileViewModel
 	{
 		public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-			: base(currentFile, model) => Load();
+			: base(currentFile, model)
+			=> Load();
 
 		[Reactive]
 		public S5File? CurrentS5File { get; set; }

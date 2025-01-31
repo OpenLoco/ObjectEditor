@@ -1,0 +1,138 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:OpenLoco.Gui.ViewModels"
+	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	x:Class="OpenLoco.Gui.Views.ImageTableView"
+	x:DataType="vm:ImageTableViewModel">
+
+	<UserControl.Resources>
+		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+	</UserControl.Resources>
+
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+			<Button Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import from Directory">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="FolderUpload" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import from Directory</TextBlock>
+				</DockPanel>
+			</Button>
+			<Button Command="{Binding ExportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export to Directory">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="FolderDownload" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export to Directory</TextBlock>
+				</DockPanel>
+			</Button>
+			<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select background colour">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Select background colour</TextBlock>
+				</DockPanel>
+				<Button.Flyout >
+					<Flyout>
+						<ColorView Name="ImageBackgroundColorView" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+					</Flyout>
+				</Button.Flyout>
+			</Button>
+			<!--<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedColourSwatch}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />-->
+		</StackPanel>
+		<Grid ColumnDefinitions="*, Auto, 384">
+			<ScrollViewer>
+				<Border BorderThickness="1">
+					<ListBox ItemsSource="{Binding Bitmaps}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<WrapPanel/>
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Image Source="{Binding}" Stretch="None" Margin="0">
+									<Image.ContextMenu>
+										<ContextMenu>
+											<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
+										</ContextMenu>
+									</Image.ContextMenu>
+								</Image>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</Border>
+			</ScrollViewer>
+			<GridSplitter Grid.Column="1" />
+			<Border BorderThickness="1" Grid.Column="2">
+				<DockPanel>
+					<StackPanel Orientation="Vertical" MaxHeight="512" DockPanel.Dock="Top">
+						<StackPanel Orientation="Horizontal">
+							<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select preview background colour">
+								<DockPanel>
+									<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Background</TextBlock>
+								</DockPanel>
+								<Button.Flyout >
+									<Flyout>
+										<ColorView Name="ImageColorViewPreviewBackground" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+									</Flyout>
+								</Button.Flyout>
+							</Button>
+							<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select border preview colour">
+								<DockPanel>
+									<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Border</TextBlock>
+								</DockPanel>
+								<Button.Flyout >
+									<Flyout>
+										<ColorView Name="ImageColorViewBorder" Palette="" Color="Gray" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+									</Flyout>
+								</Button.Flyout>
+							</Button>
+							<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select origin point colour">
+								<DockPanel>
+									<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Origin</TextBlock>
+								</DockPanel>
+								<Button.Flyout >
+									<Flyout>
+										<ColorView Name="ImageColorViewOriginPoint" Palette="" Color="Red" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+									</Flyout>
+								</Button.Flyout>
+							</Button>
+						</StackPanel>
+						<Grid>
+							<!-- Bounding box -->
+							<Rectangle Fill="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" Stroke="{Binding #ImageColorViewBorder.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" StrokeThickness="1.0" Width="{Binding SelectedBitmapPreviewBorder.Width}" Height="{Binding SelectedBitmapPreviewBorder.Height}" Opacity="1.0">
+								<Rectangle.RenderTransform>
+									<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+								</Rectangle.RenderTransform>
+							</Rectangle>
+							<Image Name="AnimationPreviewPP" Source="{Binding SelectedBitmapPreview}" RenderOptions.BitmapInterpolationMode="None" Stretch="None" Height="{Binding AnimationWindowHeight}" Width="256">
+								<Image.RenderTransform>
+									<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+								</Image.RenderTransform>
+							</Image>
+							<!--  Origin point -->
+							<Rectangle Fill="{Binding #ImageColorViewOriginPoint.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" Width="1" Height="1" Opacity="1.0">
+								<Rectangle.RenderTransform>
+									<ScaleTransform ScaleX="{Binding Zoom}" ScaleY="{Binding Zoom}" />
+								</Rectangle.RenderTransform>
+							</Rectangle>
+						</Grid>
+						<TextBlock HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
+						<Slider Minimum="1" Maximum="80" Value="{Binding AnimationSpeed}" />
+						<TextBlock HorizontalAlignment="Center" Text="{Binding Zoom, StringFormat='Zoom: {0}x'}"></TextBlock>
+						<Slider Minimum="1" Maximum="10" Value="{Binding Zoom}" />
+					</StackPanel>
+					<ScrollViewer>
+						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" Margin="8" MinWidth="256" DataContext="{Binding SelectedG1Element}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
+					</ScrollViewer>
+				</DockPanel>
+			</Border>
+		</Grid>
+	</DockPanel>
+</UserControl>

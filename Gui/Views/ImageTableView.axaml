@@ -44,7 +44,8 @@
 		</StackPanel>
 		<Grid ColumnDefinitions="*, Auto, 384">
 			<ScrollViewer>
-				<Border BorderThickness="1">
+				<DockPanel>
+					<Panel Width="12" DockPanel.Dock="Right"></Panel>
 					<ListBox ItemsSource="{Binding Bitmaps}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
@@ -63,7 +64,7 @@
 							</DataTemplate>
 						</ListBox.ItemTemplate>
 					</ListBox>
-				</Border>
+				</DockPanel>
 			</ScrollViewer>
 			<GridSplitter Grid.Column="1" />
 			<Border BorderThickness="1" Grid.Column="2">

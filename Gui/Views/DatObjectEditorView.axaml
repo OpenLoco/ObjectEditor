@@ -176,7 +176,7 @@
 				<TabItem Header="Hex Dump" >
 					<StackPanel Orientation="Vertical">
 						<Button Command="{Binding ViewHexCommand}">Hex Viewer</Button>
-						<Button Command="{Binding SelectObjectCommand}">Object Selector</Button>
+						<!--<Button Command="{Binding SelectObjectCommand}">Object Selector</Button>-->
 					</StackPanel>
 				</TabItem>
 			</TabControl>

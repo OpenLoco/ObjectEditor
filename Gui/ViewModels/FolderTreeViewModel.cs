@@ -59,8 +59,10 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public int SelectedTabIndex { get; set; }
 
-		public bool IsLocal => SelectedTabIndex == 0;
-		public string RecreateText => IsLocal ? "Recreate index" : "Download object list";
+		public bool IsLocal
+			=> SelectedTabIndex == 0;
+		public string RecreateText
+			=> IsLocal ? "Recreate index" : "Download object list";
 
 		public string DirectoryFileCount
 			=> $"Objects: {DirectoryItems.Sum(CountNodes)}";
@@ -95,7 +97,7 @@ namespace OpenLoco.Gui.ViewModels
 			Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = progress;
 
 			RefreshDirectoryItems = ReactiveCommand.Create(() => ReloadDirectoryAsync(false));
-			OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : Model.Settings.DownloadFolder));
+			OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : Model.Settings.DownloadFolder, Model.Logger));
 
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
 				.Skip(1)

@@ -1,17 +1,21 @@
-using OpenLoco.Common.Logging;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using OpenLoco.Gui.Models;
+using OpenLoco.Gui.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -32,38 +36,60 @@ namespace OpenLoco.Gui.ViewModels
 		public S5HeaderViewModel? S5HeaderViewModel { get; set; }
 
 		[Reactive]
+		public ObjectHeaderViewModel? ObjectHeaderViewModel { get; set; }
+
+		[Reactive]
 		public UiDatLocoFile? CurrentObject { get; private set; }
 
-		[Reactive]
-		public ObservableCollection<TreeNode> CurrentHexAnnotations { get; private set; }
+		public ReactiveCommand<Unit, Unit> ViewHexCommand { get; }
+		public Interaction<HexWindowViewModel, HexWindowViewModel?> HexViewerShowDialog { get; }
 
-		[Reactive]
-		public TreeNode? CurrentlySelectedHexAnnotation { get; set; }
-
-		[Reactive]
-		public HexAnnotationLine[]? CurrentHexDumpLines { get; set; }
-
-		byte[] currentByteList;
-
-		Dictionary<string, (int Start, int End)> DATDumpAnnotationIdentifiers = [];
-		const int bytesPerDumpLine = 32;
-		const int addressStringSizeBytes = 8;
-		//const int addressStringSizePrependBytes = addressStringSizeBytes + 2;
-		//const int dumpWordSize = 4;
+		public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
+		public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
 
 		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
 		{
-			_ = this.WhenAnyValue(o => o.CurrentlySelectedHexAnnotation)
-				.Subscribe(_ => UpdateHexDumpView());
-
 			Load();
+
+			HexViewerShowDialog = new();
+			_ = HexViewerShowDialog.RegisterHandler(DoShowDialogAsync<HexWindowViewModel, HexViewerWindow>);
+
+			ViewHexCommand = ReactiveCommand.CreateFromTask(async () =>
+			{
+				var filename = Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename);
+				var vm = new HexWindowViewModel(filename, logger);
+				_ = await HexViewerShowDialog.Handle(vm);
+			});
+
+			SelectObjectShowDialog = new();
+			_ = SelectObjectShowDialog.RegisterHandler(DoShowDialogAsync<ObjectSelectionWindowViewModel, ObjectSelectionWindow>);
+			SelectObjectCommand = ReactiveCommand.CreateFromTask(async () =>
+			{
+				var objects = model.ObjectIndex.Objects.Where(x => x.ObjectType == ObjectType.Tree);
+				var vm = new ObjectSelectionWindowViewModel(objects);
+				var result = await SelectObjectShowDialog.Handle(vm);
+				return result.SelectedObject;
+			});
 		}
 
-		public void UpdateHexDumpView()
-			=> CurrentHexDumpLines = CurrentlySelectedHexAnnotation != null && DATDumpAnnotationIdentifiers.TryGetValue(CurrentlySelectedHexAnnotation.Title, out var positionValues)
-				? GetDumpLines(currentByteList, positionValues.Start, positionValues.End).ToArray()
-				: GetDumpLines(currentByteList, null, null).ToArray();
+		static async Task DoShowDialogAsync<TViewModel, TWindow>(IInteractionContext<TViewModel, TViewModel?> interaction) where TWindow : Window, new()
+		{
+			var dialog = new TWindow
+			{
+				DataContext = interaction.Input
+			};
+
+			if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime app)
+			{
+				var parentWindow = app.MainWindow;
+				if (parentWindow != null)
+				{
+					var result = await dialog.ShowDialog<TViewModel?>(parentWindow);
+					interaction.SetOutput(result);
+				}
+			}
+		}
 
 		public static IObjectViewModel<ILocoStruct> GetViewModelFromStruct(ILocoStruct locoStruct)
 		{
@@ -108,10 +134,6 @@ namespace OpenLoco.Gui.ViewModels
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
 						? new SoundViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
 						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
-
-					var (treeView, annotationIdentifiers) = AnnotateFile(Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename), logger, false);
-					CurrentHexAnnotations = new(treeView);
-					DATDumpAnnotationIdentifiers = annotationIdentifiers;
 				}
 				else
 				{
@@ -122,6 +144,7 @@ namespace OpenLoco.Gui.ViewModels
 				if (CurrentObject != null)
 				{
 					S5HeaderViewModel = new S5HeaderViewModel(CurrentObject.DatFileInfo.S5Header);
+					ObjectHeaderViewModel = new ObjectHeaderViewModel(CurrentObject.DatFileInfo.ObjectHeader);
 				}
 			}
 			else
@@ -206,98 +229,10 @@ namespace OpenLoco.Gui.ViewModels
 			SawyerStreamWriter.Save(filename,
 				S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
 				S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
-				SawyerEncoding.Uncompressed, // todo: change based on what user selected
+				ObjectHeaderViewModel?.Encoding ?? SawyerEncoding.Uncompressed,
 				CurrentObject.LocoObject,
 				logger,
 				Model.Settings.AllowSavingAsVanillaObject);
-		}
-
-		(IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFile(string path, ILogger logger, bool isG1 = false)
-		{
-			if (!File.Exists(path))
-			{
-				return ([], []);
-			}
-
-			IList<HexAnnotation> annotations;
-			currentByteList = File.ReadAllBytes(path);
-
-			try
-			{
-				annotations = isG1
-					? ObjectAnnotator.AnnotateG1Data(currentByteList)
-					: ObjectAnnotator.Annotate(currentByteList);
-
-				return AnnotateFileCore(annotations);
-			}
-			catch (Exception ex)
-			{
-				logger.Error(ex);
-				return ([], []);
-			}
-		}
-
-		static (IList<TreeNode> treeView, Dictionary<string, (int, int)> annotationIdentifiers) AnnotateFileCore(IList<HexAnnotation> annotations)
-		{
-			var treeView = new List<TreeNode>();
-			var parents = new Dictionary<string, TreeNode>();
-			Dictionary<string, TreeNode> imageHeaderIndexToNode = [];
-			Dictionary<string, TreeNode> imageDataIndexToNode = [];
-			Dictionary<string, (int, int)> datDumpAnnotationIdentifiers = [];
-
-			foreach (var annotation in annotations)
-			{
-				var annotationText = annotation.Name;
-				parents[annotationText] = new TreeNode(annotation.Name, annotation.OffsetText);
-				datDumpAnnotationIdentifiers[annotationText] = (annotation.Start, annotation.End);
-				if (annotation.Parent == null)
-				{
-					treeView.Add(parents[annotation.Name]);
-				}
-				else if (parents.TryGetValue(annotation.Parent.Name, out var parentNode))
-				{
-					parentNode.Nodes.Add(parents[annotationText]);
-
-					if (annotation.Parent.Name == "Headers")
-					{
-						imageHeaderIndexToNode[annotation.Name] = parents[annotationText];
-					}
-
-					if (annotation.Parent.Name == "Images")
-					{
-						imageDataIndexToNode[annotation.Name] = parents[annotationText];
-					}
-				}
-			}
-
-			return (treeView, datDumpAnnotationIdentifiers);
-		}
-
-		static IEnumerable<HexAnnotationLine> GetDumpLines(byte[] byteList, int? selectionStart, int? selectionEnd)
-		{
-			if (byteList == null)
-			{
-				yield break;
-			}
-
-			var count = 0;
-
-			foreach (var b in byteList.Chunk(bytesPerDumpLine))
-			{
-				int? sStart = selectionStart != null && (selectionStart >= count || selectionEnd > count)
-					? (Math.Max(selectionStart.Value, count) * 2) - (count * 2) : null;
-
-				int? sEnd = selectionEnd != null && sStart != null && selectionEnd >= count
-					? (Math.Min(selectionEnd.Value, count + bytesPerDumpLine) * 2) - (count * 2) : null;
-
-				yield return new HexAnnotationLine(
-					string.Format("{0:X" + addressStringSizeBytes + "}", count),
-					string.Join(" ", b.Chunk(4).Select(x => string.Concat(x.Select(y => y.ToString("X2"))))),
-					sStart + (sStart / 8),
-					sEnd + (sEnd / 8));
-
-				count += bytesPerDumpLine;
-			}
 		}
 	}
 

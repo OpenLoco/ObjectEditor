@@ -51,6 +51,7 @@
     <PackageReference Include="bodong.Avalonia.PropertyGrid" Version="11.1.4.2" />
     <PackageReference Include="bodong.PropertyModels" Version="11.1.4.2" />
     <PackageReference Include="Material.Icons.Avalonia" Version="2.1.10" />
+    <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
     <PackageReference Include="ReactiveUI.Validation" Version="4.1.1" />
@@ -61,5 +62,11 @@
     <ProjectReference Include="..\Dat\Dat.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\DatObjectEditorView.axaml.cs">
+      <DependentUpon>DatObjectEditorView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

@@ -15,7 +15,8 @@ namespace OpenLoco.Gui.ViewModels
 		public G1ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
-		[Reactive] public ImageTableViewModel ImageTableViewModel { get; set; }
+		[Reactive]
+		public ImageTableViewModel ImageTableViewModel { get; set; }
 
 		public override void Load()
 		{

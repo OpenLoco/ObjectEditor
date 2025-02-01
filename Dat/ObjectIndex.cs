@@ -164,5 +164,8 @@ namespace OpenLoco.Dat
 		uint32_t DatChecksum,
 		ObjectType ObjectType,
 		ObjectSource ObjectSource,
-		VehicleType? VehicleType = null);
+		VehicleType? VehicleType = null)
+	{
+		public string SimpleText => $"{DatName} | {Filename}";
+	}
 }

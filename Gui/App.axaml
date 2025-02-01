@@ -3,12 +3,37 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:local="using:OpenLoco.Gui"
+	xmlns:vm="using:OpenLoco.Gui.ViewModels"
+	xmlns:vi="using:OpenLoco.Gui.Views"
+	xmlns:oldt="using:OpenLoco.Dat.Types"
+	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	x:Class="OpenLoco.Gui.App"
 	RequestedThemeVariant="Default">
 	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
 	<Application.DataTemplates>
 		<local:ViewLocator/>
+		<DataTemplate DataType="vm:S5HeaderViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_S5HeaderVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
+		</DataTemplate>
+		<DataTemplate DataType="vm:ObjectHeaderViewModel">
+			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeaderVm" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
+		</DataTemplate>
+		<DataTemplate DataType="oldt:S5Header">
+			<pgc:PropertyGrid x:Name="propertyGrid_S5Header" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
+		</DataTemplate>
+		<DataTemplate DataType="oldt:ObjectHeader">
+			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeader" DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
+		</DataTemplate>
+		<DataTemplate DataType="vm:SCV5ViewModel">
+			<vi:SCV5View />
+		</DataTemplate>
+		<DataTemplate DataType="vm:ImageTableViewModel">
+			<vi:ImageTableView />
+		</DataTemplate>
+		<DataTemplate DataType="vm:DatObjectEditorViewModel">
+			<vi:DatObjectEditorView />
+		</DataTemplate>
 	</Application.DataTemplates>
 
 	<Application.Styles>

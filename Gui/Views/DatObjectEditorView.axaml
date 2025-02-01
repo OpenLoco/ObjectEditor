@@ -1,0 +1,185 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:OpenLoco.Gui.ViewModels"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	x:Class="OpenLoco.Gui.Views.DatObjectEditorView"
+	x:DataType="vm:DatObjectEditorViewModel">
+	<DockPanel>
+		<Grid ColumnDefinitions="*, Auto, 384">
+			<TabControl Grid.Column="0">
+				<TabControl.Styles>
+					<Style Selector="TabItem">
+						<Setter Property="Padding" Value="8"/>
+						<Setter Property="FontSize" Value="14"/>
+					</Style>
+				</TabControl.Styles>
+				<TabItem Header="Object">
+					<ScrollViewer>
+						<ContentControl Content="{Binding CurrentObjectViewModel}"></ContentControl>
+					</ScrollViewer>
+				</TabItem>
+				<TabItem Header="String Table">
+					<DockPanel DataContext="{Binding StringTableViewModel}" >
+						<ListBox ItemsSource="{Binding Keys}" SelectedItem="{Binding SelectedKey}" DockPanel.Dock="Left" Background="{DynamicResource ScrollBarTrackFill}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+						<ItemsRepeater ItemsSource="{Binding SelectedInnerDictionary}" Background="{DynamicResource ExpanderContentBackground}">
+							<ItemsRepeater.Layout>
+								<UniformGridLayout Orientation="Vertical"/>
+							</ItemsRepeater.Layout>
+							<ItemsRepeater.ItemTemplate>
+								<DataTemplate>
+									<StackPanel Orientation="Horizontal" Margin="4">
+										<TextBlock Text="{Binding Language}" Margin="4" Width="128"></TextBlock>
+										<TextBox Text="{Binding Translation}" Width="256"></TextBox>
+									</StackPanel>
+								</DataTemplate>
+							</ItemsRepeater.ItemTemplate>
+						</ItemsRepeater>
+					</DockPanel>
+				</TabItem>
+				<TabItem Header="Image/Sound Table">
+					<DockPanel>
+						<ContentControl Content="{Binding ExtraContentViewModel}" />
+					</DockPanel>
+				</TabItem>
+				<TabItem Header="Metadata">
+					<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
+						<DockPanel Margin="8">
+							<Grid DataContext="{Binding CurrentObject.Metadata}" DockPanel.Dock="Left">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+								</Grid.RowDefinitions>
+								<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Original Name" Margin="4"/>
+								<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DatName}" IsReadOnly="True" Margin="4" />
+
+								<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Original Checksum" Margin="4"/>
+								<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DatChecksum}" IsReadOnly="True" Margin="4" />
+
+								<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="4"/>
+								<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="4" />
+
+								<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Creation Date" Margin="4" />
+								<DatePicker Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreationDate}" IsEnabled="False" Margin="4" />
+
+								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Last Edit Date" Margin="4"/>
+								<DatePicker Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding LastEditDate}" IsEnabled="False" Margin="4" />
+
+								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="4"/>
+								<DatePicker Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadDate}" IsEnabled="False" Margin="4" />
+
+								<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="4"/>
+								<TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="4" />
+
+								<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
+								<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="4" />
+							</Grid>
+							<StackPanel>
+								<Border BorderThickness="1" Margin="4" >
+									<StackPanel>
+										<TextBlock Margin="4">Authors</TextBlock>
+										<ListBox ItemsSource="{Binding CurrentObject.Metadata.Authors}">
+											<ListBox.ItemsPanel>
+												<ItemsPanelTemplate>
+													<WrapPanel/>
+												</ItemsPanelTemplate>
+											</ListBox.ItemsPanel>
+											<ListBox.ItemTemplate>
+												<DataTemplate>
+													<Border BorderThickness="2">
+														<StackPanel>
+															<TextBlock Margin="4" Text="{Binding Name}" />
+														</StackPanel>
+													</Border>
+												</DataTemplate>
+											</ListBox.ItemTemplate>
+										</ListBox >
+									</StackPanel>
+								</Border>
+								<Border BorderThickness="1" Margin="4" >
+									<StackPanel>
+										<TextBlock Margin="4">Tags</TextBlock>
+										<ListBox ItemsSource="{Binding CurrentObject.Metadata.Tags}">
+											<ListBox.ItemsPanel>
+												<ItemsPanelTemplate>
+													<WrapPanel/>
+												</ItemsPanelTemplate>
+											</ListBox.ItemsPanel>
+											<ListBox.ItemTemplate>
+												<DataTemplate>
+													<Border BorderThickness="2">
+														<TextBlock Margin="4" Text="{Binding Name}" />
+													</Border>
+												</DataTemplate>
+											</ListBox.ItemTemplate>
+										</ListBox >
+									</StackPanel>
+								</Border>
+								<Border BorderThickness="1" Margin="4" >
+									<StackPanel>
+										<TextBlock Margin="4">Object Packs</TextBlock>
+										<ListBox ItemsSource="{Binding CurrentObject.Metadata.ObjectPacks}">
+											<ListBox.ItemsPanel>
+												<ItemsPanelTemplate>
+													<WrapPanel/>
+												</ItemsPanelTemplate>
+											</ListBox.ItemsPanel>
+											<ListBox.ItemTemplate>
+												<DataTemplate>
+													<Border BorderThickness="2">
+														<TextBlock Margin="4" Text="{Binding Name}" />
+													</Border>
+												</DataTemplate>
+											</ListBox.ItemTemplate>
+										</ListBox >
+									</StackPanel>
+								</Border>
+							</StackPanel>
+						</DockPanel>
+					</Border>
+				</TabItem>
+			</TabControl>
+			<GridSplitter Grid.Column="1" />
+			<TabControl Grid.Column="2">
+				<TabControl.Styles>
+					<Style Selector="TabItem">
+						<Setter Property="Padding" Value="8"/>
+						<Setter Property="FontSize" Value="14"/>
+					</Style>
+				</TabControl.Styles>
+				<TabItem Header="Headers">
+					<Border Margin="4" Background="{DynamicResource ExpanderContentBackground}">
+						<StackPanel Margin="4">
+							<ContentControl Content="{Binding S5HeaderViewModel}"></ContentControl>
+							<ContentControl Content="{Binding ObjectHeaderViewModel}"></ContentControl>
+						</StackPanel>
+					</Border>
+				</TabItem>
+				<TabItem Header="Hex Dump" >
+					<StackPanel Orientation="Vertical">
+						<Button Command="{Binding ViewHexCommand}">Hex Viewer</Button>
+						<!--<Button Command="{Binding SelectObjectCommand}">Object Selector</Button>-->
+					</StackPanel>
+				</TabItem>
+			</TabControl>
+		</Grid>
+	</DockPanel>
+</UserControl>

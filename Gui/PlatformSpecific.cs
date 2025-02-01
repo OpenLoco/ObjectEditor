@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
+using OpenLoco.Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +13,19 @@ namespace OpenLoco.Gui
 {
 	public static class PlatformSpecific
 	{
-		public static void FolderOpenInDesktop(string directory)
+		public static void FolderOpenInDesktop(string directory, ILogger logger)
+		{
+			try
+			{
+				FolderOpenInDesktopCore(directory);
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex);
+			}
+		}
+
+		public static void FolderOpenInDesktopCore(string directory)
 		{
 			if (!Directory.Exists(directory))
 			{

@@ -166,15 +166,15 @@ namespace OpenLoco.Dat.Objects
 				var ptr = BitConverter.ToUInt16(remainingData[0..2]);
 				while (ptr != (uint16_t)CargoCategory.NULL)
 				{
-					var vehicleCargoCategory = (CargoCategory)BitConverter.ToUInt16(remainingData[0..2]);
+					var cargoCategory = (CargoCategory)BitConverter.ToUInt16(remainingData[0..2]);
 					remainingData = remainingData[2..]; // uint16_t
 
 					var cargoTypeSpriteOffset = remainingData[0];
 					remainingData = remainingData[1..]; // uint8_t
 
-					CompatibleCargoCategories[index].Add(vehicleCargoCategory);
+					CompatibleCargoCategories[index].Add(cargoCategory);
 
-					if (!CargoTypeSpriteOffsets.TryAdd(vehicleCargoCategory, cargoTypeSpriteOffset))
+					if (!CargoTypeSpriteOffsets.TryAdd(cargoCategory, cargoTypeSpriteOffset))
 					{
 						// invalid object - shouldn't have 2 cargo types that are the same
 					}
@@ -261,11 +261,14 @@ namespace OpenLoco.Dat.Objects
 			// cargo types
 			for (var i = 0; i < CompatibleCargoTypesLength; ++i) // CompatibleCargoTypesLength should == CompatibleCargoCategories.Length
 			{
-				ms.WriteByte(MaxCargo[i]);
-
-				if (MaxCargo[i] == 0)
+				if (MaxCargo.Count < i)
 				{
+					ms.WriteByte(0); // write a 0 for MaxCargo - this indicates no more cargo and we skip the rest
 					continue;
+				}
+				else
+				{
+					ms.WriteByte(MaxCargo[i]);
 				}
 
 				foreach (var cc in CompatibleCargoCategories[i])

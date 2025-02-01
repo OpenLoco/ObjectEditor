@@ -36,9 +36,11 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; set; }
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<SimpleAnimation> Animation { get; set; }
 		[Reactive, Category("Sprites")] public BindingList<S5HeaderViewModel> AnimationHeaders { get; set; }
-		[Reactive, Category("Cargo")] public BindingList<uint8_t> MaxCargo { get; set; }
-		[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories1 { get; set; }
-		[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories2 { get; set; }
+		//[Reactive, Category("Cargo")] public BindingList<uint8_t> MaxCargo { get; set; }
+		//[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories1 { get; set; }
+		//[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories2 { get; set; }
+		[Reactive, Category("Cargo")] public CompatibleCargo CompatibleCargo1 { get; set; }
+		[Reactive, Category("Cargo")] public CompatibleCargo CompatibleCargo2 { get; set; }
 		[Reactive, Category("Cargo"), Length(0, 32)] public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; set; } // this is a dictionary type
 		[Reactive, Category("Sound")] public S5HeaderViewModel? Sound { get; set; }
 		[Reactive, Category("Sound")] public DrivingSoundType SoundType { get; set; }
@@ -71,9 +73,8 @@ namespace OpenLoco.Gui.ViewModels
 			RackSpeed = vo.RackSpeed;
 			Weight = vo.Weight;
 			Flags = vo.Flags;
-			MaxCargo = new(vo.MaxCargo);
-			CompatibleCargoCategories1 = new(vo.CompatibleCargoCategories[0]);
-			CompatibleCargoCategories2 = new(vo.CompatibleCargoCategories[1]);
+			CompatibleCargo1 = new(vo.MaxCargo[0], new(vo.CompatibleCargoCategories[0]));
+			CompatibleCargo2 = new(vo.MaxCargo[1], new(vo.CompatibleCargoCategories[1]));
 			CargoTypeSpriteOffsets = new(vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList());
 			Animation = new(vo.Animation);
 			AnimationHeaders = new(vo.AnimationHeaders.ConvertAll(x => new S5HeaderViewModel(x)));
@@ -129,6 +130,9 @@ namespace OpenLoco.Gui.ViewModels
 				NumCompatibleVehicles = (uint8_t)CompatibleVehicles.Count,
 				NumRequiredTrackExtras = (uint8_t)RequiredTrackExtras.Count,
 				NumStartSounds = (uint8_t)StartSounds.Count,
+				MaxCargo = [CompatibleCargo1.MaxCargo, CompatibleCargo2.MaxCargo],
+				CompatibleCargoCategories1 = [.. CompatibleCargo1.CompatibleCargoCategories],
+				CompatibleCargoCategories2 = [.. CompatibleCargo2.CompatibleCargoCategories],
 			};
 		}
 	}
@@ -139,4 +143,7 @@ namespace OpenLoco.Gui.ViewModels
 		public CargoTypeSpriteOffset() : this(CargoCategory.NULL, 0)
 		{ }
 	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	public record CompatibleCargo(uint8_t MaxCargo, BindingList<CargoCategory> CompatibleCargoCategories);
 }

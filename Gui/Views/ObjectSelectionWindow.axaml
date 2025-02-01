@@ -1,0 +1,31 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:gui="using:OpenLoco.Gui"
+	xmlns:vm="using:OpenLoco.Gui.ViewModels"
+	mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="640"
+	x:Class="OpenLoco.Gui.Views.ObjectSelectionWindow"
+	x:DataType="vm:ObjectSelectionWindowViewModel"
+	Title="ObjectSelection"
+	WindowStartupLocation="CenterOwner"
+	SystemDecorations="Full"
+	Width="320"
+	Height="640"
+	ShowInTaskbar="False">
+	<DockPanel>
+		<TextBox DockPanel.Dock="Top" Watermark="Search" Text="{Binding SearchTerm}"></TextBox>
+		<UniformGrid Rows="1" Columns="2" DockPanel.Dock="Bottom">
+			<Button Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Confirm</Button>
+			<Button Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Cancel</Button>
+		</UniformGrid>
+		<ListBox SelectedItem="{Binding SelectedObject}" ItemsSource="{Binding ObjectView}" SelectionMode="Single">
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<TextBlock Margin="4" Text="{Binding SimpleText}" />
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+	</DockPanel>
+</Window>

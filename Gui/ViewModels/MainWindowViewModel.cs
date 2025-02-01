@@ -105,8 +105,8 @@ namespace OpenLoco.Gui.ViewModels
 			ObjDataItems.Insert(1, new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
 
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObject);
-			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder));
-			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.ProgramDataPath));
+			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder, Model.Logger));
+			OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.ProgramDataPath, Model.Logger));
 			OpenG1 = ReactiveCommand.Create(LoadG1);
 			OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
 			OpenMusic = ReactiveCommand.Create(LoadMusic);

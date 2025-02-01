@@ -1,5 +1,7 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects.Sound;
@@ -42,13 +44,16 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Unit> ViewHexCommand { get; }
 		public Interaction<HexWindowViewModel, HexWindowViewModel?> HexViewerShowDialog { get; }
 
+		public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
+		public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
+
 		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
 		{
 			Load();
 
 			HexViewerShowDialog = new();
-			_ = HexViewerShowDialog.RegisterHandler(DoShowDialogAsync);
+			_ = HexViewerShowDialog.RegisterHandler(DoShowDialogAsync<HexWindowViewModel, HexViewerWindow>);
 
 			ViewHexCommand = ReactiveCommand.CreateFromTask(async () =>
 			{
@@ -56,18 +61,34 @@ namespace OpenLoco.Gui.ViewModels
 				var vm = new HexWindowViewModel(filename, logger);
 				_ = await HexViewerShowDialog.Handle(vm);
 			});
+
+			SelectObjectShowDialog = new();
+			_ = SelectObjectShowDialog.RegisterHandler(DoShowDialogAsync<ObjectSelectionWindowViewModel, ObjectSelectionWindow>);
+			SelectObjectCommand = ReactiveCommand.CreateFromTask(async () =>
+			{
+				var objects = model.ObjectIndex.Objects.Where(x => x.ObjectType == ObjectType.Tree);
+				var vm = new ObjectSelectionWindowViewModel(objects);
+				var result = await SelectObjectShowDialog.Handle(vm);
+				return result.SelectedObject;
+			});
 		}
 
-		async Task DoShowDialogAsync(IInteractionContext<HexWindowViewModel, HexWindowViewModel?> interaction)
+		static async Task DoShowDialogAsync<TViewModel, TWindow>(IInteractionContext<TViewModel, TViewModel?> interaction) where TWindow : Window, new()
 		{
-			var dialog = new HexViewerWindow
+			var dialog = new TWindow
 			{
 				DataContext = interaction.Input
 			};
 
-			var parentWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow;
-			var result = await dialog.ShowDialog<HexWindowViewModel?>(parentWindow);
-			interaction.SetOutput(result);
+			if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime app)
+			{
+				var parentWindow = app.MainWindow;
+				if (parentWindow != null)
+				{
+					var result = await dialog.ShowDialog<TViewModel?>(parentWindow);
+					interaction.SetOutput(result);
+				}
+			}
 		}
 
 		public static IObjectViewModel<ILocoStruct> GetViewModelFromStruct(ILocoStruct locoStruct)

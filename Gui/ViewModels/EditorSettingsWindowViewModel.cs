@@ -7,10 +7,10 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class EditorSettingsWindowViewModel : ViewModelBase
 	{
+		EditorSettings _Settings { get; }
+
 		public EditorSettingsWindowViewModel()
 		{ }
-
-		EditorSettings _Settings { get; }
 
 		public EditorSettingsWindowViewModel(EditorSettings settings)
 		{

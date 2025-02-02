@@ -309,7 +309,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 			else
 			{
-				UpdateImage(img, index);
+				UpdateImage(img, index, offset);
 			}
 		}
 
@@ -367,7 +367,7 @@ namespace OpenLoco.Gui.ViewModels
 			this.RaisePropertyChanged(nameof(SelectedG1Element));
 		}
 
-		void UpdateImage(Image<Rgba32> img, int index)
+		void UpdateImage(Image<Rgba32> img, int index, SpriteOffset? offset = null)
 		{
 			if (index == -1)
 			{
@@ -381,8 +381,8 @@ namespace OpenLoco.Gui.ViewModels
 				Height = (int16_t)img.Height,
 				Flags = currG1.Flags,
 				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
-				XOffset = currG1.XOffset,
-				YOffset = currG1.YOffset
+				XOffset = offset?.X ?? currG1.XOffset,
+				YOffset = offset?.Y ?? currG1.YOffset,
 			};
 			G1Provider.G1Elements[index] = currG1;
 			Images[index] = img;

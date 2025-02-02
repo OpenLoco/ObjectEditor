@@ -14,14 +14,14 @@ using System.Windows.Input;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class SoundViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
+	public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
 	{
 		WaveOutEvent? CurrentWOEvent { get; set; }
 
-		public SoundViewModel(string soundName, WaveFormatEx pcmHeader, byte[] pcmData)
+		public AudioViewModel(string soundName, WaveFormatEx pcmHeader, byte[] pcmData)
 			: this(soundName, SawyerStreamWriter.WaveFormatExToRiff(pcmHeader, pcmData.Length), pcmData) { }
 
-		public SoundViewModel(string soundName, RiffWavHeader riffHeader, byte[] pcmData)
+		public AudioViewModel(string soundName, RiffWavHeader riffHeader, byte[] pcmData)
 		{
 			Name = soundName;
 			Header = riffHeader;

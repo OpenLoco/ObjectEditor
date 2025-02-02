@@ -111,7 +111,7 @@ namespace OpenLoco.Gui.ViewModels
 		public override void Load()
 		{
 			// this stops any currently-playing sounds
-			if (ExtraContentViewModel is SoundViewModel svm)
+			if (ExtraContentViewModel is AudioViewModel svm)
 			{
 				svm.Dispose();
 			}
@@ -132,7 +132,7 @@ namespace OpenLoco.Gui.ViewModels
 						: new DefaultImageTableNameProvider();
 
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
-						? new SoundViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
+						? new AudioViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
 						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
 				}
 				else
@@ -224,6 +224,20 @@ namespace OpenLoco.Gui.ViewModels
 			if (CurrentObjectViewModel is not null and not GenericObjectViewModel)
 			{
 				CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsUnderlyingType(CurrentObject.LocoObject.Object);
+			}
+
+			// this is hacky but it should work
+			if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject so)
+			{
+				CurrentObject.LocoObject.Object = so with
+				{
+					PcmData = avm.Data,
+					SoundObjectData = so.SoundObjectData with
+					{
+						PcmHeader = SawyerStreamWriter.RiffToWaveFormatEx(avm.Header),
+						Length = (uint)avm.Data.Length
+					}
+				};
 			}
 
 			SawyerStreamWriter.Save(filename,

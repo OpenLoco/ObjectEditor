@@ -195,7 +195,7 @@
 			</ScrollViewer>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:SoundViewModel">
+		<DataTemplate DataType="vm:AudioViewModel">
 			<Border BorderThickness="1">
 				<StackPanel Orientation="Vertical" Background="{DynamicResource ScrollBarTrackFill}">
 					<StackPanel Margin="4" Orientation="Horizontal">

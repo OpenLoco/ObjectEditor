@@ -16,7 +16,7 @@ namespace OpenLoco.Gui.ViewModels
 		public override void Load()
 		{
 			var (header, data) = SawyerStreamReader.LoadWavFile(CurrentFile.Filename);
-			SoundViewModel = new SoundViewModel(
+			SoundViewModel = new AudioViewModel(
 				GetDisplayName(CurrentFile.DisplayName),
 				header,
 				data);
@@ -38,7 +38,7 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		[Reactive]
-		public SoundViewModel SoundViewModel { get; set; }
+		public AudioViewModel SoundViewModel { get; set; }
 
 		public override void Save()
 		{

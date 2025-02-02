@@ -20,12 +20,12 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			var soundIdNames = Enum.GetValues<SoundId>();
 			SoundViewModels = SawyerStreamReader.LoadSoundEffectsFromCSS(CurrentFile.Filename)
-				.Select((x, i) => new SoundViewModel(soundIdNames[i].ToString(), x.header, x.data))
+				.Select((x, i) => new AudioViewModel(soundIdNames[i].ToString(), x.header, x.data))
 				.ToBindingList();
 		}
 
 		[Reactive]
-		public BindingList<SoundViewModel> SoundViewModels { get; set; } = [];
+		public BindingList<AudioViewModel> SoundViewModels { get; set; } = [];
 
 		public override void Save()
 		{

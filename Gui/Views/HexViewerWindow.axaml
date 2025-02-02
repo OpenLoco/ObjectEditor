@@ -5,15 +5,16 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:gui="using:OpenLoco.Gui"
 	xmlns:vm="using:OpenLoco.Gui.ViewModels"
-	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
 	x:Class="OpenLoco.Gui.Views.HexViewerWindow"
 	x:DataType="vm:HexWindowViewModel"
 	Title="HexViewerWindow"
 	WindowStartupLocation="CenterOwner"
 	SystemDecorations="Full"
-	Width="800"
-	Height="600"
-	ShowInTaskbar="False">
+	ShowInTaskbar="False"
+	MinWidth="1024"
+	Width="1260"
+	Height="768">
 
 	<DockPanel Background="{DynamicResource ExpanderContentBackground}">
 		<ScrollViewer>
@@ -39,11 +40,10 @@
 						<Grid DockPanel.Dock="Left" Margin="4" x:DataType="vm:HexAnnotationLine">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto"/>
-								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="768"/>
 							</Grid.ColumnDefinitions>
 							<Border Grid.Column="0" Grid.ColumnSpan="1" Background="{DynamicResource ButtonBackgroundPointerOver}">
 								<TextBlock Text="{Binding Address}" VerticalAlignment="Center" Margin="4" FontFamily="Courier New" FontWeight="Bold" />
-
 							</Border>
 							<SelectableTextBlock Grid.Column="1" Margin="4" Text="{Binding Data}" VerticalAlignment="Center" FontFamily="Courier New" SelectionStart="{Binding SelectionStart}" SelectionEnd="{Binding SelectionEnd}" />
 						</Grid>

@@ -26,7 +26,8 @@ namespace OpenLoco.Gui.ViewModels
 		public FileSystemItem CurrentFile { get; init; }
 
 		[Reactive]
-		public bool IsLocalMode => CurrentFile.FileLocation == FileLocation.Local;
+		public bool IsLocalMode
+			=> CurrentFile.FileLocation == FileLocation.Local;
 
 		public string ReloadText { get; }
 		public string SaveText { get; }

@@ -41,7 +41,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public SourceGame SourceGame { get; set; }
 
-		[Reactive, ReadOnly(true)]
+		[Reactive]
 		public ObjectType ObjectType { get; set; }
 
 		public S5Header GetAsUnderlyingType()

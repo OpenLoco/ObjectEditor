@@ -24,7 +24,9 @@
 	x:Class="OpenLoco.Gui.Views.MainWindow"
 	x:DataType="vm:MainWindowViewModel"
 	Icon="/Assets/loco_icon.png"
-	Title="{Binding WindowTitle}">
+	Title="{Binding WindowTitle}"
+	>
+	<!-- https://docs.avaloniaui.net/docs/0.10.x/tutorials/music-store-app/creating-a-modern-looking-window -->
 
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>

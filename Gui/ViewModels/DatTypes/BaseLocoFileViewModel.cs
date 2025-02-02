@@ -1,6 +1,7 @@
-﻿using MsBox.Avalonia;
+using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using OpenLoco.Common.Logging;
+using OpenLoco.Dat.Data;
 using OpenLoco.Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -17,7 +18,7 @@ namespace OpenLoco.Gui.ViewModels
 			Model = model;
 
 			ReloadCommand = ReactiveCommand.Create(Load);
-			SaveCommand = ReactiveCommand.Create(Save);
+			SaveCommand = ReactiveCommand.CreateFromTask(SaveWrapper);
 			SaveAsCommand = ReactiveCommand.Create(SaveAs);
 			DeleteLocalFileCommand = ReactiveCommand.CreateFromTask(DeleteWrapper);
 		}
@@ -36,11 +37,27 @@ namespace OpenLoco.Gui.ViewModels
 		public abstract void Load();
 		public abstract void Save();
 		public abstract void SaveAs();
+		public virtual void Delete() { }
+
+		async Task SaveWrapper()
+		{
+			if (CurrentFile is FileSystemItemObject fsio && fsio.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+			{
+				var box = MessageBoxManager.GetMessageBoxStandard("Confirm Save", "This is a vanilla loco file - are you sure you want to overwrite it?", ButtonEnum.YesNo);
+				var result = await box.ShowAsync();
+
+				if (result != ButtonResult.Yes)
+				{
+					return;
+				}
+			}
+
+			Save();
+		}
 
 		async Task DeleteWrapper()
 		{
-			var box = MessageBoxManager
-				.GetMessageBoxStandard("Confirm Delete", "Are you sure you would like to delete?", ButtonEnum.YesNo);
+			var box = MessageBoxManager.GetMessageBoxStandard("Confirm Delete", "Are you sure you would like to delete?", ButtonEnum.YesNo);
 			var result = await box.ShowAsync();
 
 			if (result == ButtonResult.Yes)
@@ -49,7 +66,6 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		public virtual void Delete() { }
 
 		public string ReloadText => CurrentFile.FileLocation == FileLocation.Local ? "Reload" : "Redownload";
 		public string SaveText => CurrentFile.FileLocation == FileLocation.Local ? "Save" : "Download";

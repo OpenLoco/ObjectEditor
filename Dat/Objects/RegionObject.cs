@@ -45,11 +45,12 @@ namespace OpenLoco.Dat.Objects
 			var variableBytesLength = (S5Header.StructLength * (RequiredObjects.Count + DependentObjects.Count)) + 1;
 			var span = new byte[variableBytesLength].AsSpan();
 
-			foreach (var obj in RequiredObjects.Concat(DependentObjects))
+			var ptr = 0;
+			foreach (var reqObj in RequiredObjects.Concat(DependentObjects))
 			{
-				var bytes = obj.Write();
-				bytes.CopyTo(span[..S5Header.StructLength]);
-				span = span[S5Header.StructLength..];
+				var bytes = reqObj.Write();
+				bytes.CopyTo(span[ptr..(ptr + S5Header.StructLength)]);
+				ptr += S5Header.StructLength;
 			}
 
 			span[^1] = 0xFF;

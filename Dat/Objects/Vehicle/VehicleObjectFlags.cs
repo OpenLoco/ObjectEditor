@@ -3,22 +3,28 @@ namespace OpenLoco.Dat.Objects
 	[Flags]
 	public enum VehicleObjectFlags : uint16_t
 	{
+		// See github issue https://github.com/OpenLoco/OpenLoco/issues/2877 for discussion on unnamed flags
 		None = 0,
-		unk_00 = 1 << 0,
-		unk_01 = 1 << 1,
-		unk_02 = 1 << 2, // rollable? APT Passenger carriage
-		unk_03 = 1 << 3, // rollable? APT Driving carriage
+		AlternatingDirection = 1 << 0, // sequential vehicles face alternating directions
+		TopAndTailPosition = 1 << 1,   // vehicle is forced to the rear of the train
+		JacobsBogieFront = 1 << 2,
+		JacobsBogieRear = 1 << 3,
 		unk_04 = 1 << 4,
-		unk_05 = 1 << 5,
+		CentrePosition = 1 << 5, // vehicle is forced to the middle of train
 		RackRail = 1 << 6,
-		unk_07 = 1 << 7,
+		// Alternates between sprite 0 and sprite 1 for each vehicle of this type in a train
+		// NOTE: This is for vehicles and not vehicle components (which can also do similar)
+		AlternatingCarSprite = 1 << 7,
 		unk_08 = 1 << 8,
-		unk_09 = 1 << 9, // any-track??
+		AircraftIsTailDragger = 1 << 8,
+		AnyRoadType = 1 << 9, // set on all road vehicles except trams
 		SpeedControl = 1 << 10,
-		CanCouple = 1 << 11,
-		unk_12 = 1 << 12, // dual-head??
-		IsHelicopter = 1 << 13,
+		CannotCoupleToSelf = 1 << 11,
+		AircraftFlaresLanding = 1 << 11, // set only on Concorde
+		MustHavePair = 1 << 12,          // train requires two or more of this vehicle
+		CanWheelSlip = 1 << 13,          // set on all steam locomotives
+		AircraftIsHelicopter = 1 << 13,
 		Refittable = 1 << 14,
-		unk_15 = 1 << 15, // no-announce??
+		QuietInvention = 1 << 15, // no newspaper announcement
 	};
 }

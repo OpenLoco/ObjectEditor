@@ -131,7 +131,7 @@ namespace OpenLoco.Dat.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// track type
-			if (!Flags.HasFlag(VehicleObjectFlags.unk_09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
+			if (!Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
 			{
 				TrackType = S5Header.Read(remainingData[..S5Header.StructLength]);
 				remainingData = remainingData[S5Header.StructLength..];
@@ -247,7 +247,7 @@ namespace OpenLoco.Dat.Objects
 			var ms = new MemoryStream();
 
 			// track type
-			if (!Flags.HasFlag(VehicleObjectFlags.unk_09) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
+			if (!Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
 			{
 				ms.Write(TrackType!.Write());
 			}
@@ -497,7 +497,7 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			if (Flags.HasFlag(VehicleObjectFlags.unk_09))
+			if (Flags.HasFlag(VehicleObjectFlags.AnyRoadType))
 			{
 				if (NumRequiredTrackExtras != 0)
 				{

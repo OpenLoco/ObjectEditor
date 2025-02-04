@@ -9,8 +9,6 @@ namespace OpenLoco.Gui.Views
 			=> InitializeComponent();
 
 		void Window_Closing(object? sender, WindowClosingEventArgs e)
-		{
-			((EditorSettingsWindowViewModel)DataContext).Commit();
-		}
+			=> (DataContext as EditorSettingsWindowViewModel)?.Commit();
 	}
 }

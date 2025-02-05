@@ -33,7 +33,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0xDC)] Speed16 RackSpeed,
 		[property: LocoStructOffset(0xDE)] uint16_t Weight,
 		[property: LocoStructOffset(0xE0)] VehicleObjectFlags Flags,
-		[property: LocoStructOffset(0xE2), LocoArrayLength(2), LocoStructVariableLoad] List<uint8_t> MaxCargo,
+		[property: LocoStructOffset(0xE2), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad] List<uint8_t> MaxCargo,
 		[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad, Browsable(false)] List<List<CargoCategory>> CompatibleCargoCategories,
 		[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObject.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets,
 		[property: LocoStructOffset(0x10C), LocoStructVariableLoad, Browsable(false)] uint8_t _NumSimultaneousCargoTypes,
@@ -163,8 +163,7 @@ namespace OpenLoco.Dat.Objects
 					continue;
 				}
 
-				var ptr = BitConverter.ToUInt16(remainingData[0..2]);
-				while (ptr != (uint16_t)CargoCategory.NULL)
+				while ((CargoCategory)BitConverter.ToUInt16(remainingData[0..2]) != CargoCategory.NULL)
 				{
 					var cargoCategory = (CargoCategory)BitConverter.ToUInt16(remainingData[0..2]);
 					remainingData = remainingData[2..]; // uint16_t
@@ -178,9 +177,6 @@ namespace OpenLoco.Dat.Objects
 					{
 						// invalid object - shouldn't have 2 cargo types that are the same
 					}
-
-					// advance ptr
-					ptr = BitConverter.ToUInt16(remainingData[0..2]);
 				}
 
 				remainingData = remainingData[2..]; // uint16_t, skips the 0xFFFF bytes
@@ -261,7 +257,7 @@ namespace OpenLoco.Dat.Objects
 			// cargo types
 			for (var i = 0; i < CompatibleCargoTypesLength; ++i) // CompatibleCargoTypesLength should == CompatibleCargoCategories.Length
 			{
-				if (MaxCargo.Count < i)
+				if (MaxCargo.Count < i || MaxCargo[i] == 0)
 				{
 					ms.WriteByte(0); // write a 0 for MaxCargo - this indicates no more cargo and we skip the rest
 					continue;
@@ -277,8 +273,7 @@ namespace OpenLoco.Dat.Objects
 					ms.WriteByte(CargoTypeSpriteOffsets[cc]);
 				}
 
-				ms.WriteByte(0xFF);
-				ms.WriteByte(0xFF);
+				ms.Write(BitConverter.GetBytes((uint16_t)CargoCategory.NULL));
 			}
 
 			// animation

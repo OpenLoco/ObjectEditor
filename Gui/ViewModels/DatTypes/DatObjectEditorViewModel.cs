@@ -41,6 +41,8 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public UiDatLocoFile? CurrentObject { get; private set; }
 
+		public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
+
 		public ReactiveCommand<Unit, Unit> ViewHexCommand { get; }
 		public Interaction<HexWindowViewModel, HexWindowViewModel?> HexViewerShowDialog { get; }
 
@@ -51,6 +53,8 @@ namespace OpenLoco.Gui.ViewModels
 			: base(currentFile, model)
 		{
 			Load();
+
+			ExportUncompressedCommand = ReactiveCommand.Create(SaveAsUncompressedDat);
 
 			HexViewerShowDialog = new();
 			_ = HexViewerShowDialog.RegisterHandler(DoShowDialogAsync<HexWindowViewModel, HexViewerWindow>);
@@ -188,15 +192,21 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		public override void SaveAs()
+			=> SaveAsCore();
+
+		void SaveAsUncompressedDat()
+			=> SaveAsCore(SawyerEncoding.Uncompressed);
+
+		void SaveAsCore(SawyerEncoding? encodingToUse = null)
 		{
 			var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
 			if (saveFile != null)
 			{
-				SaveCore(saveFile.Path.LocalPath);
+				SaveCore(saveFile.Path.LocalPath, encodingToUse);
 			}
 		}
 
-		void SaveCore(string filename)
+		void SaveCore(string filename, SawyerEncoding? encodingToUse = null)
 		{
 			if (CurrentObject?.LocoObject == null)
 			{
@@ -243,7 +253,7 @@ namespace OpenLoco.Gui.ViewModels
 			SawyerStreamWriter.Save(filename,
 				S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
 				S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
-				ObjectHeaderViewModel?.Encoding ?? SawyerEncoding.Uncompressed,
+				encodingToUse ?? ObjectHeaderViewModel?.Encoding ?? SawyerEncoding.Uncompressed,
 				CurrentObject.LocoObject,
 				logger,
 				Model.Settings.AllowSavingAsVanillaObject);

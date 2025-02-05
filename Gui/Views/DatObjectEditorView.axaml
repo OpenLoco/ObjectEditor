@@ -8,8 +8,12 @@
 	x:Class="OpenLoco.Gui.Views.DatObjectEditorView"
 	x:DataType="vm:DatObjectEditorViewModel">
 	<DockPanel>
-		<Grid ColumnDefinitions="*, Auto, 384">
-			<TabControl Grid.Column="0">
+		<Grid ColumnDefinitions="*, Auto, 384" RowDefinitions="Auto, *">
+			<StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Horizontal">
+				<Button Margin="4" Command="{Binding ExportUncompressedCommand}" ToolTip.Tip="Equivalent to saving the object with 'Uncompressed' encoding">Export as uncompressed DAT file</Button>
+				<Button Margin="4" Command="{Binding ViewHexCommand}">Hex Viewer</Button>
+			</StackPanel>
+			<TabControl Grid.Column="0" Grid.Row="1">
 				<TabControl.Styles>
 					<Style Selector="TabItem">
 						<Setter Property="Padding" Value="8"/>
@@ -157,8 +161,8 @@
 					</Border>
 				</TabItem>
 			</TabControl>
-			<GridSplitter Grid.Column="1" />
-			<TabControl Grid.Column="2">
+			<GridSplitter Grid.Column="1" Grid.Row="1" />
+			<TabControl Grid.Column="2" Grid.Row="1">
 				<TabControl.Styles>
 					<Style Selector="TabItem">
 						<Setter Property="Padding" Value="8"/>
@@ -172,12 +176,6 @@
 							<ContentControl Content="{Binding ObjectHeaderViewModel}"></ContentControl>
 						</StackPanel>
 					</Border>
-				</TabItem>
-				<TabItem Header="Hex Dump" >
-					<StackPanel Orientation="Vertical">
-						<Button Command="{Binding ViewHexCommand}">Hex Viewer</Button>
-						<!--<Button Command="{Binding SelectObjectCommand}">Object Selector</Button>-->
-					</StackPanel>
 				</TabItem>
 			</TabControl>
 		</Grid>

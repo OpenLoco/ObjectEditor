@@ -15,7 +15,6 @@ namespace OpenLoco.Dat.Objects
 		// Alternates between sprite 0 and sprite 1 for each vehicle of this type in a train
 		// NOTE: This is for vehicles and not vehicle components (which can also do similar)
 		AlternatingCarSprite = 1 << 7,
-		unk_08 = 1 << 8,
 		AircraftIsTailDragger = 1 << 8,
 		AnyRoadType = 1 << 9, // set on all road vehicles except trams
 		SpeedControl = 1 << 10,

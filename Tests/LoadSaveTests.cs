@@ -554,7 +554,6 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.CliffEdgeHeader1, Is.EqualTo(0), nameof(struc.CliffEdgeHeader1));
 				Assert.That(struc.CliffEdgeHeader2, Is.EqualTo(0), nameof(struc.CliffEdgeHeader2));
 				Assert.That(struc.CostFactor, Is.EqualTo(20), nameof(struc.CostFactor));
-				Assert.That(struc.var_09, Is.EqualTo(0), nameof(struc.var_09));
 				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
 				Assert.That(struc.CliffEdgeImage, Is.EqualTo(0), nameof(struc.CliffEdgeImage));
 				Assert.That(struc.MapPixelImage, Is.EqualTo(0), nameof(struc.MapPixelImage));
@@ -1078,7 +1077,6 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.CostIndex, Is.EqualTo(2), nameof(struc.CostIndex));
 				Assert.That(struc.var_03, Is.EqualTo(0), nameof(struc.var_03));
 				Assert.That(struc.CostFactor, Is.EqualTo(51), nameof(struc.CostFactor));
-				Assert.That(struc.var_05, Is.EqualTo(0), nameof(struc.var_05));
 				//Assert.That(struc.var_0A, Is.EqualTo(0), nameof(struc.var_0A));
 
 				Assert.That(obj.G1Elements, Has.Count.EqualTo(76));

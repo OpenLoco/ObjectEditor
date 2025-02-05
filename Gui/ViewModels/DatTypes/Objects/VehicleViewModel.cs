@@ -30,7 +30,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost"), Range(0, int16_t.MaxValue)] public int16_t RunCostFactor { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_04 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_113 { get; set; }
-		[Reactive, Category("Sprites")] public uint8_t SpecialColourSchemeIndex { get; set; } // called "ColourType" in the loco codebase
+		[Reactive, Category("Sprites")] public CompanyColourType SpecialColourSchemeIndex { get; set; } // called "ColourType" in the loco codebase
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<VehicleObjectCar> CarComponents { get; set; }
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; set; }
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; set; }

@@ -1006,7 +1006,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.Reliability, Is.EqualTo(88), nameof(struc.Reliability));
 				Assert.That(struc.RunCostIndex, Is.EqualTo(4), nameof(struc.RunCostIndex));
 				Assert.That(struc.RunCostFactor, Is.EqualTo(55), nameof(struc.RunCostFactor));
-				Assert.That(struc.SpecialColourSchemeIndex, Is.EqualTo(9), nameof(struc.SpecialColourSchemeIndex));
+				Assert.That(struc.SpecialColourSchemeIndex, Is.EqualTo(CompanyColourType.Airplane), nameof(struc.SpecialColourSchemeIndex));
 				Assert.That(struc.NumCompatibleVehicles, Is.EqualTo(0), nameof(struc.NumCompatibleVehicles));
 				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 8).ToArray(), struc.CompatibleVehicles, nameof(struc.CompatibleVehicles));
 				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 4).ToArray(), struc.RequiredTrackExtras, nameof(struc.RequiredTrackExtras));

@@ -5,6 +5,21 @@ using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects
 {
+	public enum CompanyColourType : uint8_t
+	{
+		None = 0,
+		SteamLoco = 1,
+		DieselLoco = 2,
+		ElectricLoco = 3,
+		MultipleUnit = 4,
+		PassengerRailcar = 5,
+		FreightRailcar = 6,
+		BusAndTram = 7,
+		FreightTruck = 8,
+		Airplane = 9,
+		Ship = 10,
+	}
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x15E)]
 	[LocoStructType(ObjectType.Vehicle)]
@@ -21,7 +36,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0A)] uint8_t Reliability,
 		[property: LocoStructOffset(0x0B)] uint8_t RunCostIndex,
 		[property: LocoStructOffset(0x0C)] int16_t RunCostFactor,
-		[property: LocoStructOffset(0x0E)] uint8_t SpecialColourSchemeIndex, // this is an instance property and doesn't need to be saved in the definition as it can be calculated from other properties
+		[property: LocoStructOffset(0x0E)] CompanyColourType SpecialColourSchemeIndex, // this is an instance property and doesn't need to be saved in the definition as it can be calculated from other properties
 		[property: LocoStructOffset(0x0F)] uint8_t NumCompatibleVehicles,
 		[property: LocoStructOffset(0x10), LocoArrayLength(8), LocoStructVariableLoad] List<S5Header> CompatibleVehicles,
 		[property: LocoStructOffset(0x20), LocoArrayLength(4), LocoStructVariableLoad] List<S5Header> RequiredTrackExtras,

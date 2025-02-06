@@ -18,11 +18,9 @@ namespace OpenLoco.Dat.Objects
 		AircraftIsTailDragger = 1 << 8,
 		AnyRoadType = 1 << 9, // set on all road vehicles except trams
 		SpeedControl = 1 << 10,
-		CannotCoupleToSelf = 1 << 11,
-		AircraftFlaresLanding = 1 << 11, // set only on Concorde
-		MustHavePair = 1 << 12,          // train requires two or more of this vehicle
-		CanWheelSlip = 1 << 13,          // set on all steam locomotives
-		AircraftIsHelicopter = 1 << 13,
+		CannotCoupleToSelf_AircraftFlaresLanding = 1 << 11, // set only on Concorde for aircraft
+		MustHavePair = 1 << 12, // train requires two or more of this vehicle
+		CanWheelSlip_AircraftIsHelicopter = 1 << 13, // set on all steam locomotives, or marks a helicopter for aircraft
 		Refittable = 1 << 14,
 		QuietInvention = 1 << 15, // no newspaper announcement
 	};

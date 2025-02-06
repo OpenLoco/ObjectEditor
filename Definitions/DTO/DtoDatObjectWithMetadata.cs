@@ -1,3 +1,4 @@
+using Definitions;
 using Definitions.Database.Objects;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;

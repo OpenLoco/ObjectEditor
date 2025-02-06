@@ -1,5 +1,5 @@
+using Definitions;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Definitions.DTO;
 
 namespace OpenLoco.Definitions.Database
 {

@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Definitions;
+using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO;
 using SixLabors.ImageSharp;
 
 namespace ObjectService.TableHandlers

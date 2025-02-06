@@ -1,3 +1,4 @@
+using Definitions;
 using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO

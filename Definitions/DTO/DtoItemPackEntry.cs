@@ -1,4 +1,4 @@
-﻿using OpenLoco.Definitions.Database;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
@@ -9,5 +9,5 @@ namespace OpenLoco.Definitions.DTO
 		DateTimeOffset? CreationDate,
 		DateTimeOffset? LastEditDate,
 		DateTimeOffset UploadDate,
-		TblLicence? Licence);
+		TblLicence? Licence) : IHasId;
 }

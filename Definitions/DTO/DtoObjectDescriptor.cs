@@ -15,5 +15,5 @@ namespace OpenLoco.Definitions.DTO
 		string? Description,
 		DateTimeOffset? CreationDate,
 		DateTimeOffset? LastEditDate,
-		DateTimeOffset UploadDate);
+		DateTimeOffset UploadDate) : IHasId;
 }

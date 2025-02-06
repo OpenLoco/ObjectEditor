@@ -1,3 +1,4 @@
+using Definitions.Database.Objects;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 
@@ -77,5 +78,23 @@ namespace OpenLoco.Definitions.DTO
 				x.Pack.UploadDate,
 				x.Tags,
 				x.Pack.Licence);
+
+		public static DtoAuthorEntry ToDtoEntry(this TblAuthor table)
+			=> new(table.Id, table.Name);
+
+		public static TblAuthor ToTable(this DtoAuthorEntry dto)
+			=> new() { Name = dto.Name, Id = dto.Id };
+
+		public static DtoTagEntry ToDtoEntry(this TblTag table)
+			=> new(table.Id, table.Name);
+
+		public static TblTag ToTable(this DtoTagEntry dto)
+			=> new() { Name = dto.Name, Id = dto.Id };
+
+		public static DtoLicenceEntry ToDtoEntry(this TblLicence table)
+			=> new(table.Id, table.Name, table.Text);
+
+		public static TblLicence ToTable(this DtoLicenceEntry dto)
+			=> new() { Name = dto.Name, Id = dto.Id, Text = dto.LicenceText };
 	}
 }

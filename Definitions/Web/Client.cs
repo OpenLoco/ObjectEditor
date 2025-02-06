@@ -10,19 +10,19 @@ namespace OpenLoco.Definitions.Web
 		public const string Version = "v1";
 
 		public static async Task<IEnumerable<DtoObjectDescriptor>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
-			=> await SendRequestAsync<IEnumerable<DtoObjectDescriptor>?>(client, Routes.ListObjects, logger) ?? [];
+			=> await SendRequestAsync<IEnumerable<DtoObjectDescriptor>?>(client, OldRoutes.ListObjects, logger) ?? [];
 
 		public static async Task<DtoObjectDescriptorWithMetadata?> GetDatAsync(HttpClient client, string objectName, uint checksum, bool returnObjBytes, ILogger? logger = null)
-			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.GetDat + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}&{nameof(returnObjBytes)}={returnObjBytes}", logger);
+			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, OldRoutes.GetDat + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}&{nameof(returnObjBytes)}={returnObjBytes}", logger);
 
 		public static async Task<DtoObjectDescriptorWithMetadata?> GetObjectAsync(HttpClient client, int uniqueObjectId, bool returnObjBytes, ILogger? logger = null)
-			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.GetObject + $"?{nameof(uniqueObjectId)}={uniqueObjectId}&{nameof(returnObjBytes)}={returnObjBytes}", logger);
+			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, OldRoutes.GetObject + $"?{nameof(uniqueObjectId)}={uniqueObjectId}&{nameof(returnObjBytes)}={returnObjBytes}", logger);
 
 		public static async Task<DtoObjectDescriptorWithMetadata?> GetDatFileAsync(HttpClient client, string objectName, uint checksum, ILogger? logger = null)
-			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.GetDatFile + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}", logger);
+			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, OldRoutes.GetDatFile + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}", logger);
 
 		public static async Task<DtoObjectDescriptorWithMetadata?> GetObjectFileAsync(HttpClient client, int uniqueObjectId, ILogger? logger = null)
-			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.GetDatFile + $"?{nameof(uniqueObjectId)}={uniqueObjectId}", logger);
+			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, OldRoutes.GetDatFile + $"?{nameof(uniqueObjectId)}={uniqueObjectId}", logger);
 
 		static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, ILogger? logger = null)
 		{
@@ -60,10 +60,10 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				var route = $"{client.BaseAddress?.OriginalString}{Routes.UploadDat}";
+				var route = $"{client.BaseAddress?.OriginalString}{OldRoutes.UploadDat}";
 				logger.Debug($"Posting {filename} to {route}");
 				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate);
-				var response = await client.PostAsJsonAsync(Routes.UploadDat, request);
+				var response = await client.PostAsJsonAsync(OldRoutes.UploadDat, request);
 
 				if (!response.IsSuccessStatusCode)
 				{

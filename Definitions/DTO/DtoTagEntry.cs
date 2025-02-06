@@ -1,6 +1,6 @@
-﻿namespace OpenLoco.Definitions.DTO
+namespace OpenLoco.Definitions.DTO
 {
 	public record DtoTagEntry(
 		int Id,
-		string Name);
+		string Name) : IHasId;
 }

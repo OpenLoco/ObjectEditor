@@ -5,13 +5,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace OpenLoco.Definitions.Database
 {
 	[Index(nameof(Name), IsUnique = true)]
-	public abstract class DbCoreObject : IDbStandardData, IDbMetadata
+	public abstract class DbCoreObject : DbReferenceObject, IDbStandardData, IDbMetadata
 	{
 		#region IDbStandardInfo
-
-		public int Id { get; set; }
-
-		public required string Name { get; set; }
 
 		public string? Description { get; set; }
 

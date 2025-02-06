@@ -1,9 +1,11 @@
+using Definitions.Database.Objects;
+using Microsoft.EntityFrameworkCore;
+
 namespace OpenLoco.Definitions.Database
 {
-	public class TblAuthor
+	[Index(nameof(Name), IsUnique = true)]
+	public class TblAuthor : DbReferenceObject
 	{
-		public int Id { get; set; }
-		public required string Name { get; set; }
 		public ICollection<TblLocoObject> Objects { get; set; }
 		public ICollection<TblLocoObjectPack> ObjectPacks { get; set; }
 		public ICollection<TblSC5File> SC5Files { get; set; }

@@ -1,7 +1,8 @@
 namespace OpenLoco.Definitions.Web
 {
-	public static class Routes
+	public static class OldRoutes
 	{
+
 		// GET
 		public const string ListObjects = "/objects/list";
 
@@ -20,10 +21,6 @@ namespace OpenLoco.Definitions.Web
 		public const string ListSC5FilePacks = "/sc5filepacks/list";
 		public const string GetSC5FilePack = "/sc5filepacks/getpack";
 
-		public const string ListAuthors = "/authors/list";
-		public const string ListLicences = "/licences/list";
-		public const string ListTags = "/tags/list";
-
 		// POST
 		public const string UploadDat = "/objects/uploaddat";
 		public const string UploadObject = "/objects/uploadobject";
@@ -31,5 +28,27 @@ namespace OpenLoco.Definitions.Web
 		// PATCH
 		public const string UpdateDat = "/objects/updatedat";
 		public const string UpdateObject = "/objects/updateobject";
+	}
+
+	public static class Routes
+	{
+		public const string Authors = "/authors";
+		public const string Tags = "/tags";
+		public const string Licences = "/licences";
+
+		public static string MakePostRoute(string baseRoute)
+			=> baseRoute;
+
+		public static string MakeGetRoute(string baseRoute)
+			=> $"{baseRoute}/{{id}}";
+
+		public static string MakePutRoute(string baseRoute)
+			=> $"{baseRoute}/{{id}}";
+
+		public static string MakeDeleteRoute(string baseRoute)
+			=> $"{baseRoute}/{{id}}";
+
+		public static string MakeListRoute(string baseRoute)
+			=> baseRoute;
 	}
 }

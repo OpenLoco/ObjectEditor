@@ -1,6 +1,8 @@
+using Definitions.Database.Objects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using ObjectService.TableHandlers;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
@@ -35,6 +37,44 @@ namespace OpenLoco.ObjectService
 		PaletteMap PaletteMap { get; init; }
 
 		Common.Logging.ILogger Logger { get; } = new Logger();
+
+		public AuthorRequestHandler AuthorHandler { get; init; } = new();
+		public TagRequestHandler TagHandler { get; init; } = new();
+		public LicenceRequestHandler LicenceHandler { get; init; } = new();
+
+		public void MapRoutes(RouteGroupBuilder routeGroup)
+		{
+			// GET
+			_ = routeGroup.MapGet(OldRoutes.ListObjects, Server.ListObjects);
+
+			_ = routeGroup.MapGet(OldRoutes.GetDat, GetDat);
+			_ = routeGroup.MapGet(OldRoutes.GetDatFile, GetDatFile);
+			_ = routeGroup.MapGet(OldRoutes.GetObject, GetObject);
+			_ = routeGroup.MapGet(OldRoutes.GetObjectFile, GetObjectFile);
+			_ = routeGroup.MapGet(OldRoutes.GetObjectImages, GetObjectImages);
+
+			_ = routeGroup.MapGet(OldRoutes.ListObjectPacks, ListObjectPacks);
+			_ = routeGroup.MapGet(OldRoutes.GetObjectPack, GetObjectPack);
+
+			_ = routeGroup.MapGet(OldRoutes.ListScenarios, ListScenarios);
+			_ = routeGroup.MapGet(OldRoutes.GetScenario, GetScenario);
+
+			_ = routeGroup.MapGet(OldRoutes.ListSC5FilePacks, ListSC5FilePacks);
+			_ = routeGroup.MapGet(OldRoutes.GetSC5FilePack, GetSC5FilePack);
+
+
+			// POST
+			_ = routeGroup.MapPost(OldRoutes.UploadDat, UploadDat);
+			_ = routeGroup.MapPost(OldRoutes.UploadObject, UploadObject);
+
+			// PATCH
+			_ = routeGroup.MapPatch(OldRoutes.UpdateDat, UpdateDat);
+			_ = routeGroup.MapPatch(OldRoutes.UpdateObject, UpdateObject);
+
+			AuthorHandler.MapRoutes(routeGroup);
+			TagHandler.MapRoutes(routeGroup);
+			LicenceHandler.MapRoutes(routeGroup);
+		}
 
 		#region GET
 
@@ -319,12 +359,6 @@ namespace OpenLoco.ObjectService
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		#endregion
-
-		// eg: https://localhost:7230/v1/authors/list
-		public async Task<IResult> ListAuthors(LocoDb db)
-			=> Results.Ok(await db.Authors
-				.Select(x => new DtoAuthorEntry(x.Id, x.Name))
-				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/licences/list
 		public async Task<IResult> ListLicences(LocoDb db)

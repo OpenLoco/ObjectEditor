@@ -5,9 +5,9 @@ using OpenLoco.Definitions.Web;
 
 namespace ObjectService.TableHandlers
 {
-	public class AuthorRequestHandler : BaseTableRequestHandler<DtoAuthorEntry, TblAuthor>
+	public class AuthorRequestHandler : BaseReferenceDataTableRequestHandler<DtoAuthorEntry, TblAuthor>
 	{
-		protected override string BaseRoute
+		public override string BaseRoute
 			=> Routes.Authors;
 
 		protected override DbSet<TblAuthor> GetTable(LocoDb db)

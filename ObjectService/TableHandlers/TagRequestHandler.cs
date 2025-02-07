@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
 
 namespace ObjectService.TableHandlers
 {
-	public class TagRequestHandler : BaseTableRequestHandler<DtoTagEntry, TblTag>
+	public class TagRequestHandler : BaseReferenceDataTableRequestHandler<DtoTagEntry, TblTag>
 	{
-		protected override string BaseRoute
+		public override string BaseRoute
 			=> Routes.Tags;
 
 		protected override DbSet<TblTag> GetTable(LocoDb db)

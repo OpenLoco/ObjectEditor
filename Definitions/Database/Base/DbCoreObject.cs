@@ -17,9 +17,9 @@ namespace OpenLoco.Definitions.Database
 
 		public TblLicence? Licence { get; set; }
 
-		public ICollection<TblAuthor> Authors { get; set; }
+		public ICollection<TblAuthor> Authors { get; set; } = [];
 
-		public ICollection<TblTag> Tags { get; set; }
+		public ICollection<TblTag> Tags { get; set; } = [];
 
 		public DateTimeOffset? CreationDate { get; set; }
 

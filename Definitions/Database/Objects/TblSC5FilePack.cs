@@ -4,6 +4,6 @@ namespace Definitions.Database.Objects
 {
 	public class TblSC5FilePack : DbCoreObject
 	{
-		public ICollection<TblSC5File> SC5Files { get; set; }
+		public ICollection<TblSC5File> SC5Files { get; set; } = [];
 	}
 }

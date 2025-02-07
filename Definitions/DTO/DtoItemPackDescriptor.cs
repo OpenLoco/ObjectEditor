@@ -1,5 +1,4 @@
 using Definitions;
-using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
@@ -8,10 +7,10 @@ namespace OpenLoco.Definitions.DTO
 		string Name,
 		string? Description,
 		ICollection<T> Items,
-		ICollection<TblAuthor> Authors,
+		ICollection<DtoAuthorEntry> Authors,
 		DateTimeOffset? CreationDate,
 		DateTimeOffset? LastEditDate,
 		DateTimeOffset UploadDate,
-		ICollection<TblTag> Tags,
-		TblLicence? Licence) : IHasId;
+		ICollection<DtoTagEntry> Tags,
+		DtoLicenceEntry? Licence) : IHasId;
 }

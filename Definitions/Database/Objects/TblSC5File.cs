@@ -10,6 +10,6 @@ namespace Definitions.Database.Objects
 	{
 		public ObjectSource ObjectSource { get; set; }
 
-		public ICollection<TblSC5FilePack> SC5FilePacks { get; set; }
+		public ICollection<TblSC5FilePack> SC5FilePacks { get; set; } = [];
 	}
 }

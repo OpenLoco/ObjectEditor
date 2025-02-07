@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
 
 namespace ObjectService.TableHandlers
 {
-	public class LicenceRequestHandler : BaseTableRequestHandler<DtoLicenceEntry, TblLicence>
+	public class LicenceRequestHandler : BaseReferenceDataTableRequestHandler<DtoLicenceEntry, TblLicence>
 	{
-		protected override string BaseRoute
+		public override string BaseRoute
 			=> Routes.Licences;
 
 		protected override DbSet<TblLicence> GetTable(LocoDb db)

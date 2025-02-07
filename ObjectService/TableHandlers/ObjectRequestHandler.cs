@@ -17,7 +17,7 @@ using System.IO.Compression;
 
 namespace ObjectService.TableHandlers
 {
-	public class ObjectRequestHandler : BaseTableRequestHandler<DtoObjectEntry>
+	public class ObjectRequestHandler : BaseTableRequestHandler<DtoObjectDescriptor>
 	{
 		ServerFolderManager ServerFolderManager { get; init; }
 		PaletteMap PaletteMap { get; init; }
@@ -31,21 +31,16 @@ namespace ObjectService.TableHandlers
 		public override string BaseRoute
 			=> Routes.Objects;
 
-		public override async Task<IResult> CreateAsync(DtoObjectEntry request, LocoDb db)
+		public override async Task<IResult> CreateAsync(DtoObjectDescriptor request, LocoDb db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		public override void MapAdditionalRoutes(RouteGroupBuilder routeGroup)
 		{
-			//_ = routeGroup.MapGet(OldRoutes.ListObjects, Server.ListObjects);
-			//_ = routeGroup.MapGet(OldRoutes.GetObject, GetObject);
-			//_ = routeGroup.MapPost(OldRoutes.UploadObject, UploadObject);
-			//_ = routeGroup.MapPatch(OldRoutes.UpdateObject, UpdateObject);
-
-			_ = routeGroup.MapGet(OldRoutes.GetDat, GetDat);
-			_ = routeGroup.MapGet(OldRoutes.GetDatFile, GetDatFile);
-			_ = routeGroup.MapGet(OldRoutes.GetObjectFile, GetObjectFile);
-			_ = routeGroup.MapGet(OldRoutes.GetObjectImages, GetObjectImages);
-			_ = routeGroup.MapPost(OldRoutes.UploadDat, UploadDat);
+			//_ = routeGroup.MapGet(OldRoutes.GetDat, GetDat);
+			//_ = routeGroup.MapGet(OldRoutes.GetDatFile, GetDatFile);
+			_ = routeGroup.MapGet(Routes.ObjectFile, GetObjectFile);
+			_ = routeGroup.MapGet(Routes.ObjectImages, GetObjectImages);
+			//_ = routeGroup.MapPost(OldRoutes.UploadDat, UploadDat);
 		}
 
 		public override async Task<IResult> ReadAsync(int id, LocoDb db)
@@ -56,74 +51,31 @@ namespace ObjectService.TableHandlers
 				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
-			return await ReturnObject(true, eObj, ServerFolderManager);
+			return await ReturnObject(eObj);
 		}
 
-		public override async Task<IResult> UpdateAsync(DtoObjectEntry request, LocoDb db)
+		public override async Task<IResult> UpdateAsync(DtoObjectDescriptor request, LocoDb db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
-			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+			=> Results.Ok(await db.Objects
+				.Select(x => x.ToDtoDescriptor())
+				.ToListAsync());
 
 		public override async Task<IResult> ListAsync(LocoDb db)
 			=> Results.Ok(
 				await db.Objects
 					.Include(l => l.Licence)
-					.Select(x => x.ToDtoEntry())
-					.OrderBy(x => x.DatName)
+					.Select(x => x.ToDtoDescriptor())
 					.ToListAsync());
 
-		public static async Task<IResult> ReturnObject(bool? returnObjBytes, ExpandedTbl<TblLocoObject, TblLocoObjectPack>? eObj, ServerFolderManager sfm)
-		{
-			if (eObj == null || eObj.Object == null)
-			{
-				return Results.NotFound();
-			}
-
-			if (!sfm.ObjectIndex.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
-			{
-				return Results.NotFound();
-			}
-
-			var obj = eObj!.Object;
-
-			var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
-																			   //logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
-
-			var fileExists = File.Exists(pathOnDisk);
-			if (!fileExists)
-			{
-				//logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder.", pathOnDisk);
-			}
-
-			var bytes = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
-				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
-				: null;
-
-			var dtoObject = new DtoObjectDescriptorWithMetadata(
-				obj.Id,
-				obj.Name,
-				obj.DatName,
-				obj.DatChecksum,
-				bytes,
-				obj.ObjectSource,
-				obj.ObjectType,
-				obj.VehicleType,
-				obj.Description,
-				eObj.Authors,
-				obj.CreationDate,
-				obj.LastEditDate,
-				obj.UploadDate,
-				eObj.Tags,
-				eObj.Packs,
-				obj.Availability,
-				obj.Licence);
-
-			return Results.Ok(dtoObject);
-		}
+		public static async Task<IResult> ReturnObject(ExpandedTbl<TblLocoObject, TblLocoObjectPack>? eObj)
+			=> eObj == null || eObj.Object == null
+				? Results.NotFound()
+				: Results.Ok(eObj.ToDtoDescriptor());
 
 		// eg: https://localhost:7230/v1/objects/list
-		public static async Task<IResult> ListObjects(
+		public static async Task<IResult> SearchObjects(
 			[FromQuery] string? objectName,
 			[FromQuery] uint? checksum,
 			[FromQuery] string? description,
@@ -201,7 +153,7 @@ namespace ObjectService.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		public async Task<IResult> GetDat([FromQuery] string objectName, [FromQuery] uint checksum, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetDat([FromQuery] string objectName, [FromQuery] uint checksum, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			//logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", objectName, checksum);
 
@@ -211,7 +163,7 @@ namespace ObjectService.TableHandlers
 				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
-			return await ReturnObject(returnObjBytes, eObj, ServerFolderManager);
+			return await ReturnObject(eObj);
 		}
 
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
@@ -280,20 +232,6 @@ namespace ObjectService.TableHandlers
 			return Results.File(bytes, "application/zip", "images.zip");
 		}
 
-		// eg: https://localhost:7230/v1/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
-		public async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
-		{
-			//logger.LogInformation("Object [{UniqueObjectId}] requested", uniqueObjectId);
-
-			var eObj = await db.Objects
-				.Where(x => x.Id == uniqueObjectId)
-				.Include(x => x.Licence)
-				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
-				.SingleOrDefaultAsync();
-
-			return await ReturnObject(returnObjBytes, eObj, ServerFolderManager);
-		}
-
 		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123
 		public async Task<IResult> GetDatFile([FromQuery] string objectName, [FromQuery] uint checksum, LocoDb db)
 		{
@@ -305,10 +243,10 @@ namespace ObjectService.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
-		public async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, LocoDb db)
+		public async Task<IResult> GetObjectFile([FromRoute] int id, LocoDb db)
 		{
 			var obj = await db.Objects
-				.Where(x => x.Id == uniqueObjectId)
+				.Where(x => x.Id == id)
 				.SingleOrDefaultAsync();
 
 			return ReturnFile(obj);

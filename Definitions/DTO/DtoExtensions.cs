@@ -6,6 +6,31 @@ namespace OpenLoco.Definitions.DTO
 {
 	public static class DtoExtensions
 	{
+		public static DtoObjectDescriptorWithMetadata ToDtoDescriptor(this ExpandedTbl<TblLocoObject, TblLocoObjectPack> x)
+		{
+			var obj = x!.Object;
+
+			var dtoObject = new DtoObjectDescriptorWithMetadata(
+				obj.Id,
+				obj.Name,
+				obj.DatName,
+				obj.DatChecksum,
+				obj.ObjectSource,
+				obj.ObjectType,
+				obj.VehicleType,
+				obj.Description,
+				x.Authors,
+				obj.CreationDate,
+				obj.LastEditDate,
+				obj.UploadDate,
+				x.Tags,
+				x.Packs,
+				obj.Availability,
+				obj.Licence);
+
+			return dtoObject;
+		}
+
 		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this ExpandedTblPack<TblLocoObjectPack, TblLocoObject> x)
 			=> new(
 				x.Pack.Id,

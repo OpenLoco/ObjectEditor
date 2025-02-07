@@ -11,7 +11,6 @@ namespace OpenLoco.Definitions.DTO
 		string UniqueName,
 		string DatName,
 		uint DatChecksum,
-		string? DatBytes, // base64-encoded
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,

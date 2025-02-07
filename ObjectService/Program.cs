@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -87,7 +86,7 @@ var groupVersioned = app
 	.RequireRateLimiting(tokenPolicy)
 	.WithTags("Versioned");
 
-MapRoutes(groupVersioned, server);
+server.MapRoutes(groupVersioned);
 
 if (app.Environment.IsDevelopment())
 {
@@ -105,36 +104,3 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
-
-static void MapRoutes(RouteGroupBuilder routeGroup, Server server)
-{
-	// GET
-	_ = routeGroup.MapGet(Routes.ListObjects, Server.ListObjects);
-
-	_ = routeGroup.MapGet(Routes.GetDat, server.GetDat);
-	_ = routeGroup.MapGet(Routes.GetDatFile, server.GetDatFile);
-	_ = routeGroup.MapGet(Routes.GetObject, server.GetObject);
-	_ = routeGroup.MapGet(Routes.GetObjectFile, server.GetObjectFile);
-	_ = routeGroup.MapGet(Routes.GetObjectImages, server.GetObjectImages);
-
-	_ = routeGroup.MapGet(Routes.ListObjectPacks, server.ListObjectPacks);
-	_ = routeGroup.MapGet(Routes.GetObjectPack, server.GetObjectPack);
-
-	_ = routeGroup.MapGet(Routes.ListScenarios, server.ListScenarios);
-	_ = routeGroup.MapGet(Routes.GetScenario, server.GetScenario);
-
-	_ = routeGroup.MapGet(Routes.ListSC5FilePacks, server.ListSC5FilePacks);
-	_ = routeGroup.MapGet(Routes.GetSC5FilePack, server.GetSC5FilePack);
-
-	_ = routeGroup.MapGet(Routes.ListAuthors, server.ListAuthors);
-	_ = routeGroup.MapGet(Routes.ListLicences, server.ListLicences);
-	_ = routeGroup.MapGet(Routes.ListTags, server.ListTags);
-
-	// POST
-	_ = routeGroup.MapPost(Routes.UploadDat, server.UploadDat);
-	_ = routeGroup.MapPost(Routes.UploadObject, server.UploadObject);
-
-	// PATCH
-	_ = routeGroup.MapPatch(Routes.UpdateDat, server.UpdateDat);
-	_ = routeGroup.MapPatch(Routes.UpdateObject, server.UpdateObject);
-}

@@ -1,3 +1,5 @@
+using Definitions;
+using Definitions.Database.Objects;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Definitions.Database;
@@ -9,7 +11,6 @@ namespace OpenLoco.Definitions.DTO
 		string UniqueName,
 		string DatName,
 		uint DatChecksum,
-		string? DatBytes, // base64-encoded
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
@@ -21,5 +22,5 @@ namespace OpenLoco.Definitions.DTO
 		ICollection<TblTag> Tags,
 		ICollection<TblLocoObjectPack> ObjectPacks,
 		ObjectAvailability Availability,
-		TblLicence? Licence);
+		TblLicence? Licence) : IHasId;
 }

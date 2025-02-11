@@ -7,7 +7,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OpenLoco.Gui.ViewModels
 {
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class S5HeaderViewModel : ReactiveObject
 	{

@@ -419,7 +419,6 @@ namespace OpenLoco.Dat.FileParsing
 
 			rawObjStream.Flush();
 
-			using var encodedObjStream = new MemoryStream(Encode(encoding, rawObjStream.ToArray()));
 
 			// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
 
@@ -441,8 +440,10 @@ namespace OpenLoco.Dat.FileParsing
 			// calculate checksum
 			var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
 			var asciiName = objName.PadRight(8, ' ').Take(8).Select(c => (byte)c).ToArray();
-			s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, encodedObjStream.ToArray());
+			var rawObjBytes = rawObjStream.ToArray();
+			s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, rawObjBytes);
 
+			using var encodedObjStream = new MemoryStream(Encode(encoding, rawObjBytes));
 			var objHeader = new ObjectHeader(encoding, (uint32_t)encodedObjStream.Length);
 
 			// actual writing

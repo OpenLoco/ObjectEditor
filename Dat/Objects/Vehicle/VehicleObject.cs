@@ -5,7 +5,6 @@ using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects
 {
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x15E)]
 	[LocoStructType(ObjectType.Vehicle)]
@@ -93,9 +92,9 @@ namespace OpenLoco.Dat.Objects
 			}
 		}
 
-		public Engine1Sound? SoundPropertyEngine1
+		public SimpleMotorSound? SoundPropertyEngine1
 		{
-			get => DrivingSoundType == DrivingSoundType.Engine1 ? GetSoundAs<Engine1Sound>() : null;
+			get => DrivingSoundType == DrivingSoundType.SimpleMotor ? GetSoundAs<SimpleMotorSound>() : null;
 			set
 			{
 				if (value != null)
@@ -105,9 +104,9 @@ namespace OpenLoco.Dat.Objects
 			}
 		}
 
-		public Engine2Sound? SoundPropertyEngine2
+		public GearboxMotorSound? SoundPropertyEngine2
 		{
-			get => DrivingSoundType == DrivingSoundType.Engine2 ? GetSoundAs<Engine2Sound>() : null;
+			get => DrivingSoundType == DrivingSoundType.GearboxMotor ? GetSoundAs<GearboxMotorSound>() : null;
 			set
 			{
 				if (value != null)

@@ -7,7 +7,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OpenLoco.Gui.ViewModels
 {
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class S5HeaderViewModel : ReactiveObject
 	{
@@ -35,7 +34,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, MaxLength(8)]
 		public string Name { get; set; }
 
-		[Reactive, ReadOnly(true)]
+		[Reactive]
 		public uint32_t Checksum { get; set; }
 
 		[Reactive]

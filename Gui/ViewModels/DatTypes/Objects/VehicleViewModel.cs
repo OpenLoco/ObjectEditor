@@ -47,8 +47,8 @@ namespace OpenLoco.Gui.ViewModels
 		// SoundPropertiesData
 		// these next 3 properties are a union in the dat file
 		[Reactive, Category("Sound")] public FrictionSound? FrictionSound { get; set; }
-		[Reactive, Category("Sound")] public Engine1Sound? Engine1Sound { get; set; }
-		[Reactive, Category("Sound")] public Engine2Sound? Engine2Sound { get; set; }
+		[Reactive, Category("Sound")] public SimpleMotorSound? SimpleMotorSound { get; set; }
+		[Reactive, Category("Sound")] public GearboxMotorSound? GearboxMotorSound { get; set; }
 		[Reactive, Category("Sound")] public BindingList<S5HeaderViewModel> StartSounds { get; set; }
 
 		public VehicleViewModel(VehicleObject vo)
@@ -86,8 +86,8 @@ namespace OpenLoco.Gui.ViewModels
 			StartSounds = new(vo.StartSounds.ConvertAll(x => new S5HeaderViewModel(x)));
 			SoundType = vo.DrivingSoundType;
 			FrictionSound = vo.SoundPropertyFriction;
-			Engine1Sound = vo.SoundPropertyEngine1;
-			Engine2Sound = vo.SoundPropertyEngine2;
+			SimpleMotorSound = vo.SoundPropertyEngine1;
+			GearboxMotorSound = vo.SoundPropertyEngine2;
 		}
 
 		public override VehicleObject GetAsStruct(VehicleObject vo)
@@ -125,8 +125,8 @@ namespace OpenLoco.Gui.ViewModels
 				AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				DrivingSoundType = SoundType,
 				SoundPropertyFriction = FrictionSound,
-				SoundPropertyEngine1 = Engine1Sound,
-				SoundPropertyEngine2 = Engine2Sound,
+				SoundPropertyEngine1 = SimpleMotorSound,
+				SoundPropertyEngine2 = GearboxMotorSound,
 				NumCompatibleVehicles = (uint8_t)CompatibleVehicles.Count,
 				NumRequiredTrackExtras = (uint8_t)RequiredTrackExtras.Count,
 				NumStartSounds = (uint8_t)StartSounds.Count,

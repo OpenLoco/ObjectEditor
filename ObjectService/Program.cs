@@ -1,9 +1,9 @@
-using Asp.Versioning;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.ObjectService;
+using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -14,9 +14,9 @@ builder.Logging.AddConsole();
 
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
-// Add services to the container.
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
+_ = builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHealthChecks();
 builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -30,18 +30,21 @@ builder.Services.AddHttpLogging(logging =>
 });
 
 var tokenPolicy = "token";
-var myOptions = new RateLimitOptions();
-builder.Configuration.GetSection(RateLimitOptions.Name).Bind(myOptions);
+
+var rateLimiterSection = builder.Configuration.GetSection("ObjectService:RateLimiter");
+ArgumentNullException.ThrowIfNull(rateLimiterSection);
+var rateLimiter = new RateLimitOptions();
+rateLimiterSection.Bind(rateLimiter);
 
 builder.Services.AddRateLimiter(rlOptions => rlOptions
 	.AddTokenBucketLimiter(policyName: tokenPolicy, options =>
 	{
-		options.TokenLimit = myOptions.TokenLimit;
+		options.TokenLimit = rateLimiter.TokenLimit;
 		options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-		options.QueueLimit = myOptions.QueueLimit;
-		options.ReplenishmentPeriod = TimeSpan.FromSeconds(myOptions.ReplenishmentPeriod);
-		options.TokensPerPeriod = myOptions.TokensReplenishedPerPeriod;
-		options.AutoReplenishment = myOptions.AutoReplenishment;
+		options.QueueLimit = rateLimiter.QueueLimit;
+		options.ReplenishmentPeriod = TimeSpan.FromSeconds(rateLimiter.ReplenishmentPeriod);
+		options.TokensPerPeriod = rateLimiter.TokensReplenishedPerPeriod;
+		options.AutoReplenishment = rateLimiter.AutoReplenishment;
 		rlOptions.OnRejected = (context, cancellationToken) =>
 		{
 			if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
@@ -56,18 +59,6 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
-_ = builder.Services.AddApiVersioning(options =>
-{
-	options.ReportApiVersions = true;
-	options.DefaultApiVersion = new ApiVersion(1, 0);
-	options.AssumeDefaultVersionWhenUnspecified = true;
-	options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader());
-}).AddApiExplorer(options =>
-{
-	options.GroupNameFormat = "'v'VVV";
-	options.SubstituteApiVersionInUrl = true;
-});
-
 var app = builder.Build();
 app.UseHttpLogging();
 app.UseRateLimiter();
@@ -78,29 +69,18 @@ ArgumentNullException.ThrowIfNull(objRoot);
 ArgumentNullException.ThrowIfNull(paletteMapFile);
 var server = new Server(new ServerSettings(objRoot, paletteMapFile));
 
-var apiSet = app.NewApiVersionSet().Build();
+_ = app
+	.MapServerRoutes(server)
+	.MapHealthChecks("/health")
+	.RequireRateLimiting(tokenPolicy);
 
-var groupVersioned = app
-	.MapGroup("v{version:apiVersion}")
-	.WithApiVersionSet(apiSet)
-	.RequireRateLimiting(tokenPolicy)
-	.WithTags("Versioned");
 
-server.MapRoutes(groupVersioned);
-
-if (app.Environment.IsDevelopment())
+var showSwagger = builder.Configuration.GetValue<bool?>("ObjectService:ShowSwagger");
+ArgumentNullException.ThrowIfNull(showSwagger);
+if (showSwagger == true)
 {
-	_ = app.UseSwagger();
-	_ = app.UseSwaggerUI(
-		options =>
-		{
-			foreach (var description in app.DescribeApiVersions())
-			{
-				var url = $"/swagger/{description.GroupName}/swagger.json";
-				var name = description.GroupName.ToUpperInvariant();
-				options.SwaggerEndpoint(url, name);
-			}
-		});
+	_ = app.MapOpenApi();
+	_ = app.MapScalarApiReference();
 }
 
 app.Run();

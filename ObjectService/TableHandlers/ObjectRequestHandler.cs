@@ -34,13 +34,11 @@ namespace ObjectService.TableHandlers
 		public override async Task<IResult> CreateAsync(DtoObjectDescriptor request, LocoDb db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override void MapAdditionalRoutes(RouteGroupBuilder routeGroup)
+		public override void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 		{
-			//_ = routeGroup.MapGet(OldRoutes.GetDat, GetDat);
-			//_ = routeGroup.MapGet(OldRoutes.GetDatFile, GetDatFile);
-			_ = routeGroup.MapGet(Routes.ObjectFile, GetObjectFile);
-			_ = routeGroup.MapGet(Routes.ObjectImages, GetObjectImages);
-			//_ = routeGroup.MapPost(OldRoutes.UploadDat, UploadDat);
+			var resourceRoute = parentRoute.MapGroup(Routes.ResourceRoute);
+			_ = resourceRoute.MapGet(Routes.File, GetObjectFile);
+			_ = resourceRoute.MapGet(Routes.Images, GetObjectImages);
 		}
 
 		public override async Task<IResult> ReadAsync(int id, LocoDb db)

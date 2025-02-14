@@ -73,10 +73,10 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				var route = $"{client.BaseAddress?.OriginalString}{OldRoutes.UploadDat}";
+				var route = $"{client.BaseAddress?.OriginalString}{Routes.Objects}";
 				logger.Debug($"Posting {filename} to {route}");
 				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate);
-				var response = await client.PostAsJsonAsync(OldRoutes.UploadDat, request);
+				var response = await client.PostAsJsonAsync(Routes.Objects, request);
 
 				if (!response.IsSuccessStatusCode)
 				{

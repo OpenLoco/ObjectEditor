@@ -9,8 +9,8 @@ namespace ObjectService.TableHandlers
 	{
 		string BaseRoute { get; }
 
-		void MapRoutes(RouteGroupBuilder routeGroup);
-		void MapAdditionalRoutes(RouteGroupBuilder routeGroup);
+		void MapRoutes(IEndpointRouteBuilder parentRoute);
+		void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute);
 
 		Task<IResult> CreateAsync(TDto request, LocoDb db);
 
@@ -28,18 +28,22 @@ namespace ObjectService.TableHandlers
 	{
 		public abstract string BaseRoute { get; }
 
-		public void MapRoutes(RouteGroupBuilder routeGroup)
+		public void MapRoutes(IEndpointRouteBuilder parentRoute)
 		{
-			_ = routeGroup.MapPost(Routes.MakePostRoute(BaseRoute), CreateAsync);
-			_ = routeGroup.MapGet(Routes.MakeGetRoute(BaseRoute), ReadAsync);
-			_ = routeGroup.MapPut(Routes.MakePutRoute(BaseRoute), UpdateAsync);
-			_ = routeGroup.MapDelete(Routes.MakeDeleteRoute(BaseRoute), DeleteAsync);
-			_ = routeGroup.MapGet(Routes.MakeListRoute(BaseRoute), ListAsync);
+			var baseRoute = parentRoute.MapGroup(BaseRoute);
 
-			MapAdditionalRoutes(routeGroup);
+			_ = baseRoute.MapGet(string.Empty, ListAsync);
+			_ = baseRoute.MapPost(string.Empty, CreateAsync);
+
+			var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
+			_ = resourceRoute.MapGet(string.Empty, ReadAsync);
+			_ = resourceRoute.MapPut(string.Empty, UpdateAsync);
+			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync);
+
+			MapAdditionalRoutes(baseRoute);
 		}
 
-		public virtual void MapAdditionalRoutes(RouteGroupBuilder routeGroup) { }
+		public virtual void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute) { }
 		public abstract Task<IResult> CreateAsync(TDto request, LocoDb db);
 		public abstract Task<IResult> ReadAsync(int id, LocoDb db);
 		public abstract Task<IResult> UpdateAsync(TDto request, LocoDb db);

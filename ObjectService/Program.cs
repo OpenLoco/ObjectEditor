@@ -74,13 +74,18 @@ _ = app
 	.MapHealthChecks("/health")
 	.RequireRateLimiting(tokenPolicy);
 
-
 var showSwagger = builder.Configuration.GetValue<bool?>("ObjectService:ShowSwagger");
 ArgumentNullException.ThrowIfNull(showSwagger);
 if (showSwagger == true)
 {
 	_ = app.MapOpenApi();
-	_ = app.MapScalarApiReference();
+	_ = app.MapScalarApiReference(options =>
+	{
+		_ = options
+		.WithTitle("OpenLoco Object Service")
+		.WithTheme(ScalarTheme.Solarized)
+		.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+	});
 }
 
 app.Run();

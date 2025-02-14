@@ -49,7 +49,7 @@ namespace ObjectService.TableHandlers
 				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
-			return await ReturnObject(eObj);
+			return ReturnObject(eObj);
 		}
 
 		public override async Task<IResult> UpdateAsync(DtoObjectDescriptor request, LocoDb db)
@@ -67,7 +67,7 @@ namespace ObjectService.TableHandlers
 					.Select(x => x.ToDtoDescriptor())
 					.ToListAsync());
 
-		public static async Task<IResult> ReturnObject(ExpandedTbl<TblLocoObject, TblLocoObjectPack>? eObj)
+		public static IResult ReturnObject(ExpandedTbl<TblLocoObject, TblLocoObjectPack>? eObj)
 			=> eObj == null || eObj.Object == null
 				? Results.NotFound()
 				: Results.Ok(eObj.ToDtoDescriptor());
@@ -161,7 +161,7 @@ namespace ObjectService.TableHandlers
 				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
-			return await ReturnObject(eObj);
+			return ReturnObject(eObj);
 		}
 
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1

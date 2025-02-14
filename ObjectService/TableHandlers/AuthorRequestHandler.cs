@@ -5,6 +5,7 @@ using OpenLoco.Definitions.Web;
 
 namespace ObjectService.TableHandlers
 {
+	[Tags("AuthorRequestHandler")]
 	public class AuthorRequestHandler : BaseReferenceDataTableRequestHandler<DtoAuthorEntry, TblAuthor>
 	{
 		public override string BaseRoute

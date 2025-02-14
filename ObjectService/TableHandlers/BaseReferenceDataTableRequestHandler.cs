@@ -31,6 +31,10 @@ namespace ObjectService.TableHandlers
 		public void MapRoutes(IEndpointRouteBuilder parentRoute)
 		{
 			var baseRoute = parentRoute.MapGroup(BaseRoute);
+			_ = baseRoute.WithMetadata(
+			[
+				new TagsAttribute(MakeNicePlural(GetType().Name)),
+			]);
 
 			_ = baseRoute.MapGet(string.Empty, ListAsync);
 			_ = baseRoute.MapPost(string.Empty, CreateAsync);
@@ -41,6 +45,9 @@ namespace ObjectService.TableHandlers
 			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync);
 
 			MapAdditionalRoutes(baseRoute);
+
+			static string MakeNicePlural(string name)
+				=> $"{name.Replace("RequestHandler", string.Empty)}s";
 		}
 
 		public virtual void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute) { }
@@ -65,39 +72,71 @@ namespace ObjectService.TableHandlers
 		protected abstract bool TryValidateCreate(TDto request, LocoDb db, out IResult result);
 
 		public override async Task<IResult> CreateAsync(TDto request, LocoDb db)
-		{
-			if (!TryValidateCreate(request, db, out var result))
-			{
-				return result;
-			}
-			var row = ToRowFunc(request);
-			_ = await GetTable(db).AddAsync(row);
-			_ = await db.SaveChangesAsync();
-			return Results.Created($"{BaseRoute}/{row.Id}", ToDtoFunc(row));
-		}
+			=> await BaseReferenceDataTableRequestHandlerImpl.CreateAsync(
+				GetTable(db),
+				ToDtoFunc,
+				ToRowFunc,
+				request,
+				() => (TryValidateCreate(request, db, out var result), result),
+				BaseRoute,
+				db);
 
 		public override async Task<IResult> ReadAsync(int id, LocoDb db)
-			=> await GetTable(db).FindAsync(id) is TRow row
-				? Results.Ok(ToDtoFunc(row))
-				: Results.NotFound();
+			=> await BaseReferenceDataTableRequestHandlerImpl.ReadAsync(GetTable(db), ToDtoFunc, id, db);
 
 		public override async Task<IResult> UpdateAsync(TDto request, LocoDb db)
+			=> await BaseReferenceDataTableRequestHandlerImpl.UpdateAsync(GetTable(db), ToDtoFunc, UpdateFunc, request, db);
+
+		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
+			=> await BaseReferenceDataTableRequestHandlerImpl.DeleteAsync(GetTable(db), ToDtoFunc, id, db);
+
+		public override async Task<IResult> ListAsync(LocoDb db)
+			=> await BaseReferenceDataTableRequestHandlerImpl.ListAsync(GetTable(db), ToDtoFunc);
+	}
+
+	public static class BaseReferenceDataTableRequestHandlerImpl
+	{
+		public static async Task<IResult> CreateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, LocoDb db)
+			where TDto : class, IHasId
+			where TRow : class, IHasId
 		{
-			var table = GetTable(db);
+			var (Success, ErrorMessage) = tryValidateFunc();
+			if (!Success)
+			{
+				return ErrorMessage!;
+			}
+			var row = rowConverter(request);
+			_ = await table.AddAsync(row);
+			_ = await db.SaveChangesAsync();
+			return Results.Created($"{baseRoute}/{row.Id}", dtoConverter(row));
+		}
+
+		public static async Task<IResult> ReadAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, int id, LocoDb db)
+			where TDto : class, IHasId
+			where TRow : class, IHasId
+			=> await table.FindAsync(id) is TRow row
+				? Results.Ok(dtoConverter(row))
+				: Results.NotFound();
+
+		public static async Task<IResult> UpdateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Action<TDto, TRow> updateFunc, TDto request, LocoDb db)
+			where TDto : class, IHasId
+			where TRow : class, IHasId
+		{
 			if (await table.FindAsync(request.Id) is not TRow row)
 			{
 				return Results.NotFound();
 			}
 
-			UpdateFunc(request, row);
+			updateFunc(request, row);
 
 			_ = await db.SaveChangesAsync();
 			return Results.NoContent();
 		}
 
-		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
+		public static async Task<IResult> DeleteAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, int id, LocoDb db)
+			where TDto : class, IHasId
+			where TRow : class, IHasId
 		{
-			var table = GetTable(db);
 			if (await table.FindAsync(id) is TRow row)
 			{
 				_ = table.Remove(row);
@@ -108,9 +147,11 @@ namespace ObjectService.TableHandlers
 			return Results.NotFound();
 		}
 
-		public override async Task<IResult> ListAsync(LocoDb db)
-			=> Results.Ok(await GetTable(db)
-				.Select(x => ToDtoFunc(x))
+		public static async Task<IResult> ListAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter)
+			where TDto : class, IHasId
+			where TRow : class, IHasId
+			=> Results.Ok(await table
+				.Select(x => dtoConverter(x))
 				.ToListAsync());
 	}
 }

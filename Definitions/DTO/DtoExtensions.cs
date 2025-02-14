@@ -19,12 +19,12 @@ namespace OpenLoco.Definitions.DTO
 				obj.ObjectType,
 				obj.VehicleType,
 				obj.Description,
-				x.Authors,
+				x.Authors.Select(x => x.ToDtoEntry()).ToList(),
 				obj.CreationDate,
 				obj.LastEditDate,
 				obj.UploadDate,
-				x.Tags,
-				x.Packs,
+				x.Tags.Select(x => x.ToDtoEntry()).ToList(),
+				x.Packs.Select(x => x.ToDtoEntry()).ToList(),
 				obj.Availability,
 				obj.Licence);
 

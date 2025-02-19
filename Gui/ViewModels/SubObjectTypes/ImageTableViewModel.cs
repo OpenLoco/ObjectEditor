@@ -74,11 +74,10 @@ namespace OpenLoco.Gui.ViewModels
 		public IList<Bitmap> SelectedBitmaps { get; set; }
 
 		[Reactive] public Bitmap SelectedBitmapPreview { get; set; }
-		public Avalonia.Size SelectedBitmapPreviewBorder => SelectedBitmapPreview == null
-			? new Avalonia.Size()
-			: new Avalonia.Size(SelectedBitmapPreview.Size.Width + 2, SelectedBitmapPreview.Size.Height + 2);
-
-		[Reactive] public int AnimationWindowHeight { get; set; }
+		public Avalonia.Size SelectedBitmapPreviewBorder
+			=> SelectedBitmapPreview == null
+				? new Avalonia.Size()
+				: new Avalonia.Size(SelectedBitmapPreview.Size.Width + 2, SelectedBitmapPreview.Size.Height + 2);
 
 		[Reactive]
 		public int AnimationSpeed { get; set; } = 40;
@@ -120,6 +119,15 @@ namespace OpenLoco.Gui.ViewModels
 			? null
 			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
 
+		public Avalonia.Point SelectedG1ElementOffset
+			=> SelectedG1Element == null
+				? new Avalonia.Point()
+				: new Avalonia.Point(-SelectedG1Element?.G1Element.XOffset ?? 0, -SelectedG1Element?.G1Element.YOffset ?? 0);
+		public Avalonia.Size SelectedG1ElementSize
+			=> SelectedG1Element == null
+				? new Avalonia.Size()
+				: new Avalonia.Size(SelectedG1Element?.G1Element.Width ?? 0, SelectedG1Element?.G1Element.Height ?? 0);
+
 		public ImageTableViewModel(IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, IList<Image<Rgba32>> images, ILogger logger)
 		{
 			G1Provider = g1ElementProvider;
@@ -138,6 +146,10 @@ namespace OpenLoco.Gui.ViewModels
 				.Subscribe(_ => Bitmaps = new ObservableCollection<Bitmap?>(G1ImageConversion.CreateAvaloniaImages(Images)));
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
+			_ = this.WhenAnyValue(o => o.SelectedG1Element)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1ElementOffset)));
+			_ = this.WhenAnyValue(o => o.SelectedG1Element)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1ElementSize)));
 			_ = this.WhenAnyValue(o => o.SelectedBitmapPreview)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
 			_ = this.WhenAnyValue(o => o.AnimationSpeed)
@@ -176,7 +188,6 @@ namespace OpenLoco.Gui.ViewModels
 
 			// ... handle selection changed
 			SelectedBitmaps = sm.SelectedItems.Cast<Bitmap>().ToList();
-			AnimationWindowHeight = (int)SelectedBitmaps.Max(x => x.Size.Height) * 2;
 		}
 
 		void UpdateAnimationSpeed()
@@ -429,9 +440,7 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		void UpdateImage(Image<Rgba32> img, int index, SpriteOffset? offset = null)
-		{
-			UpdateImage(img, index, offset?.X, offset?.Y);
-		}
+			=> UpdateImage(img, index, offset?.X, offset?.Y);
 
 		void UpdateImage(Image<Rgba32> img, int index, short? xOffset, short? yOffset)
 		{

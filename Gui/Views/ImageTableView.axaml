@@ -40,6 +40,12 @@
 					</Flyout>
 				</Button.Flyout>
 			</Button>
+			<Button Command="{Binding CropAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Crops all images and adjusts offsets">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="Crop" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Crop all images</TextBlock>
+				</DockPanel>
+			</Button>
 			<!--<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedColourSwatch}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />-->
 		</StackPanel>
 		<Grid ColumnDefinitions="*, Auto, 384">

@@ -187,12 +187,12 @@ namespace OpenLoco.Gui.Models
 						metadata = new MetadataModel(locoObj.UniqueName, locoObj.DatName, locoObj.DatChecksum)
 						{
 							Description = locoObj.Description,
-							Authors = locoObj.Authors,
+							Authors = locoObj.Authors.Select(x => x.ToTable()).ToList(),
 							CreationDate = locoObj.CreationDate,
 							LastEditDate = locoObj.LastEditDate,
 							UploadDate = locoObj.UploadDate,
-							Tags = locoObj.Tags,
-							ObjectPacks = locoObj.ObjectPacks,
+							Tags = locoObj.Tags.Select(x => x.ToTable()).ToList(),
+							ObjectPacks = locoObj.ObjectPacks.Select(x => x.ToTable()).ToList(),
 							Availability = locoObj.Availability,
 							Licence = locoObj.Licence,
 						};

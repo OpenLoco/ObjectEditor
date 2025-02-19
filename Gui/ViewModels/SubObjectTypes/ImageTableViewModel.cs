@@ -10,6 +10,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -95,6 +96,9 @@ namespace OpenLoco.Gui.ViewModels
 		public ICommand ExportImagesCommand { get; set; }
 
 		[Reactive]
+		public ICommand CropAllImagesCommand { get; set; }
+
+		[Reactive]
 		public int Zoom { get; set; } = 1;
 
 		// where the actual image data is stored
@@ -142,6 +146,7 @@ namespace OpenLoco.Gui.ViewModels
 			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
 			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
 			ReplaceImageCommand = ReactiveCommand.Create(ReplaceImage);
+			CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
 
 			CreateSelectionModel();
 
@@ -340,6 +345,62 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
+		public void CropAllImages()
+		{
+			for (var i = 0; i < Images.Count; ++i)
+			{
+				var image = Images[i];
+
+				var cropRegion = FindCropRegion(image);
+
+				if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
+				{
+					image.Mutate(i => i.Crop(new Rectangle(0, 0, 1, 1)));
+					UpdateImage(image, i, 0, 0);
+				}
+				else
+				{
+					image.Mutate(i => i.Crop(cropRegion));
+					var currG1 = G1Provider.G1Elements[i];
+
+					// set to bitmaps
+					UpdateImage(image, i, (short)(currG1.XOffset + cropRegion.Left), (short)(currG1.YOffset + cropRegion.Top));
+				}
+			}
+
+			this.RaisePropertyChanged(nameof(Bitmaps));
+			this.RaisePropertyChanged(nameof(SelectedG1Element));
+		}
+
+		static Rectangle FindCropRegion(Image<Rgba32> image)
+		{
+			var minX = image.Width;
+			var maxX = 0;
+			var minY = image.Height;
+			var maxY = 0;
+
+			for (var y = 0; y < image.Height; y++)
+			{
+				for (var x = 0; x < image.Width; x++)
+				{
+					var pixel = image[x, y];
+
+					if (pixel.A > 0)
+					{
+						minX = Math.Min(minX, x);
+						maxX = Math.Max(maxX, x);
+						minY = Math.Min(minY, y);
+						maxY = Math.Max(maxY, y);
+					}
+				}
+			}
+
+			// Calculate the crop area. Ensure it is within image bounds.
+			var width = Math.Max(0, Math.Min(maxX - minX + 1, image.Width - minX));
+			var height = Math.Max(0, Math.Min(maxY - minY + 1, image.Height - minY));
+			return new Rectangle(minX, minY, width, height);
+		}
+
 		public async Task ReplaceImage()
 		{
 			if (SelectedImageIndex == -1)
@@ -369,6 +430,11 @@ namespace OpenLoco.Gui.ViewModels
 
 		void UpdateImage(Image<Rgba32> img, int index, SpriteOffset? offset = null)
 		{
+			UpdateImage(img, index, offset?.X, offset?.Y);
+		}
+
+		void UpdateImage(Image<Rgba32> img, int index, short? xOffset, short? yOffset)
+		{
 			if (index == -1)
 			{
 				return;
@@ -381,8 +447,8 @@ namespace OpenLoco.Gui.ViewModels
 				Height = (int16_t)img.Height,
 				Flags = currG1.Flags,
 				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
-				XOffset = offset?.X ?? currG1.XOffset,
-				YOffset = offset?.Y ?? currG1.YOffset,
+				XOffset = xOffset ?? currG1.XOffset,
+				YOffset = yOffset ?? currG1.YOffset,
 			};
 			G1Provider.G1Elements[index] = currG1;
 			Images[index] = img;

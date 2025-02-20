@@ -2,6 +2,7 @@ using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using DynamicData;
+using OpenLoco.Common;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Types;
@@ -19,7 +20,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Image = SixLabors.ImageSharp.Image;
@@ -55,7 +55,10 @@ namespace OpenLoco.Gui.ViewModels
 	public record SpriteOffset(
 		[property: JsonPropertyName("path")] string Path,
 		[property: JsonPropertyName("x")] int16_t X,
-		[property: JsonPropertyName("y")] int16_t Y);
+		[property: JsonPropertyName("y")] int16_t Y)
+	{
+		public static SpriteOffset Zero => new SpriteOffset(string.Empty, 0, 0);
+	}
 
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	{
@@ -249,42 +252,55 @@ namespace OpenLoco.Gui.ViewModels
 
 				try
 				{
+					Logger.Debug($"{G1Provider.G1Elements.Count} images in current object");
+
+					// count files in dir and check naming
+					var files = Directory.GetFiles(dirPath, "*.png", SearchOption.AllDirectories);
+
+					Logger.Debug($"{files.Length} files in current directory");
+
+					IEnumerable<SpriteOffset> offsets;
+
+					// check for offsets file
 					var offsetsFile = Path.Combine(dirPath, "sprites.json");
 					if (File.Exists(offsetsFile))
 					{
-						// found blender folder
-						var offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+						offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 						ArgumentNullException.ThrowIfNull(offsets);
-						Logger.Debug("Found sprites.json file, using that");
-
-						if (offsets.Count != G1Provider.G1Elements.Count)
-						{
-							Logger.Warning($"Expected {G1Provider.G1Elements.Count} offsets, got {offsets.Count} offsets. Continue at your peril.");
-						}
-
-						foreach (var offset in offsets)
-						{
-							var filename = Path.Combine(dirPath, offset.Path);
-							LoadSprite(filename, offset);
-						}
+						Logger.Debug("Found sprites.json file; using that");
 					}
 					else
 					{
-						Logger.Debug("No sprites.json file found");
-						var files = Directory.GetFiles(dirPath, "*", SearchOption.AllDirectories);
+						offsets = G1Provider.G1Elements.Select((x, i) => new SpriteOffset($"{i}.png", x.XOffset, x.YOffset));
+						Logger.Debug("Didn't find sprites.json; using existing G1Element32 offsets");
+					}
 
-						if (files.Length != G1Provider.G1Elements.Count)
+					offsets = offsets.Fill(files.Length, SpriteOffset.Zero);
+
+					// clear existing images
+					Logger.Info("Clearing current G1Element32s and existing object images");
+					G1Provider.G1Elements.Clear();
+					Images.Clear();
+					Bitmaps.Clear();
+
+					// load files
+					var offsetList = offsets.ToList();
+					for (var i = 0; i < files.Length; ++i)
+					{
+						var filename = Path.Combine(dirPath, $"{i}.png");
+
+						if (i < G1Provider.G1Elements.Count)
 						{
-							Logger.Warning($"Expected {G1Provider.G1Elements.Count} images, got {files.Length} images. Continue at your peril.");
+							var g1 = G1Provider.G1Elements[i];
+							LoadSprite(filename, 0, offsetList[i].X, offsetList[i].Y, g1.Flags, g1.ZoomOffset);
 						}
-
-						foreach (var filename in files)
+						else
 						{
-							LoadSprite(filename);
+							LoadSprite(filename, 0, offsetList[i].X, offsetList[i].Y, G1ElementFlags.None, 0);
 						}
 					}
 
-					Logger.Debug("Import successful");
+					Logger.Debug($"Imported {G1Provider.G1Elements.Count} images successfully");
 					this.RaisePropertyChanged(nameof(Bitmaps));
 				}
 				catch (Exception ex)
@@ -294,38 +310,25 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			animationTimer.Start();
-		}
 
-		void LoadSprite(string filename, SpriteOffset? offset = null)
-		{
-			if (!Path.Exists(filename))
+			void LoadSprite(string filename, uint imageOffset, short xOffset, short yOffset, G1ElementFlags flags, short zoomOffset)
 			{
-				Logger.Error($"File doesn't exist: \"{filename}\"");
-				return;
-			}
-
-			var match = Regex.Match(Path.GetFileNameWithoutExtension(filename), @".*?(\d+).*?");
-			if (!match.Success)
-			{
-				Logger.Error($"Couldn't parse sprite index from filename: \"{filename}\"");
-				return;
-			}
-
-			var index = int.Parse(match.Groups[1].Value);
-			var img = Image.Load<Rgba32>(filename);
-
-			if (index >= G1Provider.G1Elements.Count)
-			{
-				var newElement = new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, 0, 0, G1ElementFlags.None, 0)
+				if (!Path.Exists(filename))
 				{
-					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, G1ElementFlags.None)
+					Logger.Error($"File doesn't exist: \"{filename}\"");
+					return;
+				}
+
+				var img = Image.Load<Rgba32>(filename);
+
+				var newElement = new G1Element32(imageOffset, (int16_t)img.Width, (int16_t)img.Height, xOffset, yOffset, flags, zoomOffset)
+				{
+					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags)
 				};
-				G1Provider.G1Elements.Insert(index, newElement);
-				Images.Insert(index, img); // update the UI
-			}
-			else
-			{
-				UpdateImage(img, index, offset);
+
+				G1Provider.G1Elements.Add(newElement);
+				Images.Add(img);
+				Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
 			}
 		}
 

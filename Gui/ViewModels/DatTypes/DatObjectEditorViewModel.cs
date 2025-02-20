@@ -222,9 +222,14 @@ namespace OpenLoco.Gui.ViewModels
 
 			var saveDir = Path.GetDirectoryName(filename);
 
-			if (string.IsNullOrEmpty(saveDir) || !Directory.Exists(saveDir))
+			if (string.IsNullOrEmpty(saveDir))
 			{
-				logger.Error("Cannot save - directory is invalid");
+				logger.Error("Cannot save - directory is null or empty");
+				return;
+			}
+			else if (!Directory.Exists(saveDir))
+			{
+				logger.Error($"Cannot save - directory does not exist: \"{saveDir}\"");
 				return;
 			}
 

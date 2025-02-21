@@ -299,7 +299,9 @@ namespace OpenLoco.Gui.ViewModels
 			using (var ms = new MemoryStream())
 			{
 				stream!.CopyTo(ms);
-				return Version.Parse(Encoding.ASCII.GetString(ms.ToArray()));
+				var versionString = Encoding.ASCII.GetString(ms.ToArray());
+				versionString = versionString.Split('-')[0];
+				return Version.Parse(versionString);
 			}
 		}
 

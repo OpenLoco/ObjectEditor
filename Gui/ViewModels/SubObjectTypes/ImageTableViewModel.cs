@@ -66,10 +66,13 @@ namespace OpenLoco.Gui.ViewModels
 		readonly IImageTableNameProvider NameProvider;
 		readonly ILogger Logger;
 
-		public ColourSwatches[] ColourSwatchesArr { get; } = (ColourSwatches[])Enum.GetValues(typeof(ColourSwatches));
+		public ColourSwatches[] ColourSwatchesArr { get; } = Enum.GetValues<ColourSwatches>();
 
 		[Reactive]
-		public ColourSwatches SelectedColourSwatch { get; set; } = ColourSwatches.PrimaryRemap;
+		public ColourSwatches SelectedPrimarySwatch { get; set; } = ColourSwatches.PrimaryRemap;
+
+		[Reactive]
+		public ColourSwatches SelectedSecondarySwatch { get; set; } = ColourSwatches.SecondaryRemap;
 
 		readonly DispatcherTimer animationTimer;
 		int currentFrameIndex;

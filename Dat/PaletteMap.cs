@@ -186,6 +186,19 @@ namespace OpenLoco.Dat
 				c = TransparentPixel;
 			}
 
+			var primaryRemap = PrimaryRemapColours.Where(cc => cc.Color == c);
+			if (primaryRemap.Any())
+			{
+				// todo: if a remap swatch is passed in, use that instead of PrimaryRemapColours swatch
+				return primaryRemap.First().Index;
+			}
+
+			var secondaryRemap = SecondaryRemapColours.Where(cc => cc.Color == c);
+			if (secondaryRemap.Any())
+			{
+				return secondaryRemap.First().Index;
+			}
+
 			var reserved = ReservedColours.Where(cc => cc.Color == c);
 			if (reserved.Any())
 			{

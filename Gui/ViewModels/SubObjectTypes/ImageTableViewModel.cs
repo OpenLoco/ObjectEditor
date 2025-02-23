@@ -26,32 +26,6 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public enum ColourSwatches
-	{
-		Black,
-		Bronze,
-		Copper,
-		Yellow,
-		Rose,
-		GrassGreen,
-		AvocadoGreen,
-		Green,
-		Brass,
-		Lavender,
-		Blue,
-		SeaGreen,
-		Purple,
-		Red,
-		Orange,
-		Teal,
-		Brown,
-		Amber,
-		MiscGrey,
-		MiscYellow,
-		PrimaryRemap,
-		SecondaryRemap,
-	}
-
 	public record SpriteOffset(
 		[property: JsonPropertyName("path")] string Path,
 		[property: JsonPropertyName("x")] int16_t X,
@@ -66,13 +40,13 @@ namespace OpenLoco.Gui.ViewModels
 		readonly IImageTableNameProvider NameProvider;
 		readonly ILogger Logger;
 
-		public ColourSwatches[] ColourSwatchesArr { get; } = Enum.GetValues<ColourSwatches>();
+		public ColourSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourSwatch>();
 
 		[Reactive]
-		public ColourSwatches SelectedPrimarySwatch { get; set; } = ColourSwatches.PrimaryRemap;
+		public ColourSwatch SelectedPrimarySwatch { get; set; } = ColourSwatch.PrimaryRemap;
 
 		[Reactive]
-		public ColourSwatches SelectedSecondarySwatch { get; set; } = ColourSwatches.SecondaryRemap;
+		public ColourSwatch SelectedSecondarySwatch { get; set; } = ColourSwatch.SecondaryRemap;
 
 		readonly DispatcherTimer animationTimer;
 		int currentFrameIndex;
@@ -102,9 +76,6 @@ namespace OpenLoco.Gui.ViewModels
 
 		[Reactive]
 		public ICommand CropAllImagesCommand { get; set; }
-
-		[Reactive]
-		public int Zoom { get; set; } = 1;
 
 		// where the actual image data is stored
 		[Reactive]
@@ -146,10 +117,12 @@ namespace OpenLoco.Gui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.PaletteMap)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
-			_ = this.WhenAnyValue(o => o.Zoom)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+			_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
+				.Subscribe(_ => RecalcImages());
+			_ = this.WhenAnyValue(o => o.SelectedSecondarySwatch).Skip(1)
+				.Subscribe(_ => RecalcImages());
 			_ = this.WhenAnyValue(o => o.Images)
-				.Subscribe(_ => Bitmaps = new ObservableCollection<Bitmap?>(G1ImageConversion.CreateAvaloniaImages(Images)));
+				.Subscribe(_ => Bitmaps = [.. G1ImageConversion.CreateAvaloniaImages(Images)]);
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
 			_ = this.WhenAnyValue(o => o.SelectedG1Element)
@@ -326,13 +299,39 @@ namespace OpenLoco.Gui.ViewModels
 
 				var newElement = new G1Element32(imageOffset, (int16_t)img.Width, (int16_t)img.Height, xOffset, yOffset, flags, zoomOffset)
 				{
-					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags)
+					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags, SelectedPrimarySwatch, SelectedSecondarySwatch)
 				};
 
 				G1Provider.G1Elements.Add(newElement);
 				Images.Add(img);
 				Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
 			}
+		}
+
+		public void RecalcImages()
+		{
+			// clear existing images
+			Logger.Info("Clearing current G1Element32s and existing object images");
+			Images.Clear();
+			Bitmaps.Clear();
+
+			foreach (var g1 in G1Provider.G1Elements)
+			{
+				if (PaletteMap.TryConvertG1ToRgba32Bitmap(g1, SelectedPrimarySwatch, SelectedSecondarySwatch, out var img))
+				{
+					Images.Add(img);
+					Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
+				}
+				else
+				{
+					Logger.Error("Unable to convert G1 to image");
+				}
+			}
+
+
+			this.RaisePropertyChanged(nameof(Bitmaps));
+			this.RaisePropertyChanged(nameof(Images));
+			this.RaisePropertyChanged(nameof(SelectedG1Element));
 		}
 
 		// todo: second half should be in model
@@ -461,7 +460,7 @@ namespace OpenLoco.Gui.ViewModels
 				Width = (int16_t)img.Width,
 				Height = (int16_t)img.Height,
 				Flags = currG1.Flags,
-				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
+				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags, SelectedPrimarySwatch, SelectedSecondarySwatch),
 				XOffset = xOffset ?? currG1.XOffset,
 				YOffset = yOffset ?? currG1.YOffset,
 			};

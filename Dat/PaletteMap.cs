@@ -1,9 +1,36 @@
 using OpenLoco.Dat.Types;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Diagnostics;
 
 namespace OpenLoco.Dat
 {
+	public enum ColourSwatch
+	{
+		Black,
+		Bronze,
+		Copper,
+		Yellow,
+		Rose,
+		GrassGreen,
+		AvocadoGreen,
+		Green,
+		Brass,
+		Lavender,
+		Blue,
+		SeaGreen,
+		Purple,
+		Red,
+		Orange,
+		Teal,
+		Brown,
+		Amber,
+		MiscGrey,
+		MiscYellow,
+		PrimaryRemap,
+		SecondaryRemap,
+	}
+
 	public class PaletteMap
 	{
 		public PaletteMap(string filename)
@@ -47,10 +74,10 @@ namespace OpenLoco.Dat
 		public (Color Color, byte Index)[] TextRendering
 			=> Palette[1..7];
 
-		public (Color Color, byte Index)[] PrimaryRemapColours
+		public (Color Color, byte Index)[] PrimaryRemap
 			=> [.. Palette[7..10], .. Palette[246..255]];
 
-		public (Color Color, byte Index)[] SecondaryRemapColours
+		public (Color Color, byte Index)[] SecondaryRemap
 			=> Palette[202..214];
 
 		public (Color Color, byte Index) ChunkedTransparent
@@ -60,7 +87,7 @@ namespace OpenLoco.Dat
 			=> [.. Palette[10..202], .. Palette[214..246]];
 
 		public (Color Color, byte Index)[] ReservedColours
-			=> [Transparent, .. TextRendering, .. PrimaryRemapColours, .. SecondaryRemapColours, ChunkedTransparent];
+			=> [Transparent, .. TextRendering, .. PrimaryRemap, .. SecondaryRemap, ChunkedTransparent];
 
 		#region Colour Swatches
 
@@ -112,7 +139,7 @@ namespace OpenLoco.Dat
 
 		#endregion
 
-		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags)
+		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags, ColourSwatch primary, ColourSwatch secondary)
 		{
 			var pixels = img.Width * img.Height;
 			var isBgr = flags.HasFlag(G1ElementFlags.IsBgr24);
@@ -141,7 +168,35 @@ namespace OpenLoco.Dat
 			return bytes;
 		}
 
-		public bool TryConvertG1ToRgba32Bitmap(G1Element32 g1Element, out Image<Rgba32>? image)
+		public (Color Color, byte Index)[] GetSwatchFromName(ColourSwatch swatch)
+			=> swatch switch
+			{
+				ColourSwatch.Black => Black,
+				ColourSwatch.Bronze => Bronze,
+				ColourSwatch.Copper => Copper,
+				ColourSwatch.Yellow => Yellow,
+				ColourSwatch.Rose => Rose,
+				ColourSwatch.GrassGreen => GrassGreen,
+				ColourSwatch.AvocadoGreen => AvocadoGreen,
+				ColourSwatch.Green => Green,
+				ColourSwatch.Brass => Brass,
+				ColourSwatch.Lavender => Lavender,
+				ColourSwatch.Blue => Blue,
+				ColourSwatch.SeaGreen => SeaGreen,
+				ColourSwatch.Purple => Purple,
+				ColourSwatch.Red => Red,
+				ColourSwatch.Orange => Orange,
+				ColourSwatch.Teal => Teal,
+				ColourSwatch.Brown => Brown,
+				ColourSwatch.Amber => Amber,
+				ColourSwatch.MiscGrey => MiscGrey,
+				ColourSwatch.MiscYellow => MiscYellow,
+				ColourSwatch.PrimaryRemap => PrimaryRemap,
+				ColourSwatch.SecondaryRemap => SecondaryRemap,
+				_ => throw new NotImplementedException(),
+			};
+
+		public bool TryConvertG1ToRgba32Bitmap(G1Element32 g1Element, ColourSwatch primary, ColourSwatch secondary, out Image<Rgba32>? image)
 		{
 			image = new Image<Rgba32>(g1Element.Width, g1Element.Height);
 
@@ -167,10 +222,33 @@ namespace OpenLoco.Dat
 					else
 					{
 						var paletteIndex = g1Element.ImageData[index];
-						image[x, y] = paletteIndex == 0 && g1Element.Flags.HasFlag(G1ElementFlags.HasTransparency)
-							? Transparent.Color
-							: Palette[paletteIndex].Color;
+						Color colour;
 
+						if (SecondaryRemap.Any(x => x.Index == paletteIndex))
+						{
+							Debugger.Break();
+						}
+
+						if (paletteIndex == 0 && g1Element.Flags.HasFlag(G1ElementFlags.HasTransparency))
+						{
+							colour = Transparent.Color;
+						}
+						else if (PrimaryRemap.Index().SingleOrDefault(x => x.Item.Index == paletteIndex) is (int, (Color, byte)) itemP)
+						{
+							var swatch = GetSwatchFromName(primary);
+							colour = swatch[itemP.Index].Color;
+						}
+						else if (SecondaryRemap.Index().SingleOrDefault(x => x.Item.Index == paletteIndex) is (int, (Color, byte)) itemS)
+						{
+							var swatch = GetSwatchFromName(secondary);
+							colour = swatch[itemS.Index].Color;
+						}
+						else
+						{
+							colour = Palette[paletteIndex].Color;
+						}
+
+						image[x, y] = colour;
 						index++;
 					}
 				}
@@ -184,19 +262,6 @@ namespace OpenLoco.Dat
 			if (c.ToPixel<Rgba32>().A == 0)
 			{
 				c = TransparentPixel;
-			}
-
-			var primaryRemap = PrimaryRemapColours.Where(cc => cc.Color == c);
-			if (primaryRemap.Any())
-			{
-				// todo: if a remap swatch is passed in, use that instead of PrimaryRemapColours swatch
-				return primaryRemap.First().Index;
-			}
-
-			var secondaryRemap = SecondaryRemapColours.Where(cc => cc.Color == c);
-			if (secondaryRemap.Any())
-			{
-				return secondaryRemap.First().Index;
 			}
 
 			var reserved = ReservedColours.Where(cc => cc.Color == c);

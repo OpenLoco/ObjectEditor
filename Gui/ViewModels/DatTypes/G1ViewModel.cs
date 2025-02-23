@@ -1,3 +1,4 @@
+using OpenLoco.Dat;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Gui.Models;
 using ReactiveUI.Fody.Helpers;
@@ -36,7 +37,7 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				try
 				{
-					if (Model.PaletteMap.TryConvertG1ToRgba32Bitmap(e, out var image))
+					if (Model.PaletteMap.TryConvertG1ToRgba32Bitmap(e, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image))
 					{
 						images.Add(image!);
 					}

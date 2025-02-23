@@ -37,7 +37,7 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				try
 				{
-					if (Model.PaletteMap.TryConvertG1ToRgba32Bitmap(e, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image))
+					if (Model.PaletteMap.TryConvertG1ToRgba32Bitmap(e, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 					{
 						images.Add(image!);
 					}

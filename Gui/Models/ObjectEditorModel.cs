@@ -244,7 +244,7 @@ namespace OpenLoco.Gui.Models
 						{
 							foreach (var i in locoObject.G1Elements)
 							{
-								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image))
+								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 								{
 									images.Add(image!);
 								}
@@ -275,7 +275,7 @@ namespace OpenLoco.Gui.Models
 						{
 							foreach (var i in locoObject.G1Elements)
 							{
-								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image))
+								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 								{
 									images.Add(image!);
 								}

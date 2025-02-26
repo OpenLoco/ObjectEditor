@@ -13,7 +13,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] TransportMode Mode,
 		[property: LocoStructOffset(0x03)] VehicleType Type,
-		[property: LocoStructOffset(0x04)] uint8_t var_04,
+		[property: LocoStructOffset(0x04)] uint8_t NumCarComponents,
 		[property: LocoStructOffset(0x05), LocoStructVariableLoad, Browsable(false)] object_id TrackTypeId,
 		[property: LocoStructOffset(0x06)] uint8_t NumRequiredTrackExtras,
 		[property: LocoStructOffset(0x07)] uint8_t CostIndex,

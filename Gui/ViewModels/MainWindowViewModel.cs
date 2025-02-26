@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using NuGet.Versioning;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
@@ -66,7 +67,8 @@ namespace OpenLoco.Gui.ViewModels
 		public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
 		[Reactive]
-		public Version ApplicationVersion { get; set; }
+		public SemanticVersion ApplicationVersion { get; set; }
+		public static readonly SemanticVersion UnknownVersion = new(0, 0, 0, "unknown");
 
 		[Reactive]
 		public string LatestVersionText { get; set; } = "Development build";
@@ -291,21 +293,22 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		static Version GetCurrentAppVersion(Assembly assembly)
+		static SemanticVersion GetCurrentAppVersion(Assembly assembly)
 		{
-			// grab current appl version from assembly
+			// grab current app version from assembly
 			const string versionFilename = "Gui.version.txt";
 			using (var stream = assembly.GetManifestResourceStream(versionFilename))
 			using (var ms = new MemoryStream())
 			{
 				stream!.CopyTo(ms);
-				return Version.Parse(Encoding.ASCII.GetString(ms.ToArray()));
+				var versionText = Encoding.ASCII.GetString(ms.ToArray());
+				return GetVersionFromText(versionText);
 			}
 		}
 
 #if !DEBUG
 		// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
-		Version GetLatestAppVersion()
+		SemanticVersion GetLatestAppVersion()
 		{
 			var client = new HttpClient();
 			client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(GithubApplicationName, ApplicationVersion.ToString()));
@@ -314,11 +317,8 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				var jsonResponse = response.Content.ReadAsStringAsync().Result;
 				var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
-				var tagName = body?.TagName;
-				if (tagName != null)
-				{
-					return Version.Parse(tagName);
-				}
+				var versionText = body?.TagName;
+				return GetVersionFromText(versionText);
 			}
 
 #pragma warning disable CA2201 // Do not raise reserved exception types
@@ -326,6 +326,19 @@ namespace OpenLoco.Gui.ViewModels
 #pragma warning restore CA2201 // Do not raise reserved exception types
 		}
 #endif
+
+		static SemanticVersion GetVersionFromText(string? versionText)
+		{
+			if (string.IsNullOrEmpty(versionText))
+			{
+				return UnknownVersion;
+			}
+
+			return
+				SemanticVersion.TryParse(versionText.Trim(), out var version)
+				? version
+				: UnknownVersion;
+		}
 
 		public async Task SelectNewFolder()
 		{

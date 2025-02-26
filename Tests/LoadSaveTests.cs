@@ -998,7 +998,7 @@ namespace OpenLoco.Dat.Tests
 
 				Assert.That(struc.Mode, Is.EqualTo(TransportMode.Air), nameof(struc.Mode));
 				Assert.That(struc.Type, Is.EqualTo(VehicleType.Aircraft), nameof(struc.Type));
-				Assert.That(struc.var_04, Is.EqualTo(1), nameof(struc.var_04));
+				Assert.That(struc.NumCarComponents, Is.EqualTo(1), nameof(struc.NumCarComponents));
 				// Assert.That(struc.TrackType, Is.EqualTo(0xFF), nameof(struc.TrackType)); // is changed after load from 0 to 255
 				Assert.That(struc.NumRequiredTrackExtras, Is.EqualTo(0), nameof(struc.NumRequiredTrackExtras));
 				Assert.That(struc.CostIndex, Is.EqualTo(8), nameof(struc.CostIndex));

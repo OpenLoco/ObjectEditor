@@ -6,24 +6,24 @@ namespace OpenLoco.Dat
 {
 	public enum ColourRemapSwatch
 	{
-		Black,
-		Bronze,
-		Copper,
-		Yellow,
-		Rose,
-		GrassGreen,
+		Amber,
 		AvocadoGreen,
-		Green,
-		Brass,
-		Lavender,
+		Black,
 		Blue,
-		SeaGreen,
+		Brass,
+		Bronze,
+		Brown,
+		Copper,
+		GrassGreen,
+		Green,
+		Lavender,
+		Orange,
 		Purple,
 		Red,
-		Orange,
+		Rose,
+		SeaGreen,
 		Teal,
-		Brown,
-		Amber,
+		Yellow,
 		//MiscGrey,
 		//MiscYellow,
 		PrimaryRemap,
@@ -192,6 +192,7 @@ namespace OpenLoco.Dat
 				ColourRemapSwatch.SecondaryRemap => SecondaryRemap,
 				_ => default,
 			};
+
 
 		public bool TryConvertG1ToRgba32Bitmap(G1Element32 g1Element, ColourRemapSwatch primary, ColourRemapSwatch secondary, out Image<Rgba32>? image)
 		{

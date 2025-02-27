@@ -22,13 +22,13 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public VehicleObjectFlags Flags { get; set; }
 		[Reactive] public S5HeaderViewModel? TrackType { get; set; }
 		[Reactive] public S5HeaderViewModel? RackRail { get; set; }
+		[Reactive, Range(0, 4)] public uint8_t NumCarComponents { get; set; }
 		[Reactive, Length(0, 8)] public BindingList<S5HeaderViewModel> CompatibleVehicles { get; set; }
 		[Reactive, Length(0, 4)] public BindingList<S5HeaderViewModel> RequiredTrackExtras { get; set; }
 		[Reactive, Category("Cost"), Range(0, 32)] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost"), Range(1, int16_t.MaxValue)] public int16_t CostFactor { get; set; }
 		[Reactive, Category("Cost"), Range(0, 32)] public uint8_t RunCostIndex { get; set; }
 		[Reactive, Category("Cost"), Range(0, int16_t.MaxValue)] public int16_t RunCostFactor { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_04 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_113 { get; set; }
 		[Reactive, Category("Sprites")] public CompanyColourType SpecialColourSchemeIndex { get; set; } // called "ColourType" in the loco codebase
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<VehicleObjectCar> CarComponents { get; set; }
@@ -55,7 +55,7 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			Mode = vo.Mode;
 			Type = vo.Type;
-			var_04 = vo.var_04;
+			NumCarComponents = vo.NumCarComponents;
 			TrackType = vo.TrackType == null ? null : new(vo.TrackType);
 			CostIndex = vo.CostIndex;
 			CostFactor = vo.CostFactor;
@@ -101,7 +101,7 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				Mode = Mode,
 				Type = Type,
-				var_04 = var_04,
+				NumCarComponents = NumCarComponents,
 				TrackType = TrackType?.GetAsUnderlyingType(),
 				CostIndex = CostIndex,
 				CostFactor = CostFactor,

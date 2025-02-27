@@ -17,7 +17,7 @@ namespace OpenLoco.Dat.Objects
 		AlternatingCarSprite = 1 << 7,
 		AircraftIsTailDragger = 1 << 8,
 		AnyRoadType = 1 << 9, // set on all road vehicles except trams
-		SpeedControl = 1 << 10,
+		unk_10 = 1 << 10, // speed control?
 		CannotCoupleToSelf_AircraftFlaresLanding = 1 << 11, // set only on Concorde for aircraft
 		MustHavePair = 1 << 12, // train requires two or more of this vehicle
 		CanWheelSlip_AircraftIsHelicopter = 1 << 13, // set on all steam locomotives, or marks a helicopter for aircraft

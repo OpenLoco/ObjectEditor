@@ -92,7 +92,7 @@ namespace OpenLoco.Gui.ViewModels
 		public SelectionModel<Bitmap> SelectionModel { get; set; }
 
 		public UIG1Element32? SelectedG1Element
-			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0
+			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0 || SelectedImageIndex >= G1Provider.G1Elements.Count
 			? null
 			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
 
@@ -310,6 +310,9 @@ namespace OpenLoco.Gui.ViewModels
 
 		public void RecalcImages()
 		{
+			// unfortunately no way to "copy" the selection from old to new
+			var existing = SelectionModel;
+
 			// clear existing images
 			Logger.Info("Clearing current G1Element32s and existing object images");
 			Images.Clear();
@@ -328,10 +331,10 @@ namespace OpenLoco.Gui.ViewModels
 				}
 			}
 
-
 			this.RaisePropertyChanged(nameof(Bitmaps));
 			this.RaisePropertyChanged(nameof(Images));
-			this.RaisePropertyChanged(nameof(SelectedG1Element));
+			//SelectedImageIndex = -1;
+			SelectionModel = existing;
 		}
 
 		// todo: second half should be in model

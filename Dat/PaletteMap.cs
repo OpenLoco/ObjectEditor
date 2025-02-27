@@ -4,6 +4,32 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace OpenLoco.Dat
 {
+	public enum ColourRemapSwatch
+	{
+		Amber,
+		AvocadoGreen,
+		Black,
+		Blue,
+		Brass,
+		Bronze,
+		Brown,
+		Copper,
+		GrassGreen,
+		Green,
+		Lavender,
+		Orange,
+		Purple,
+		Red,
+		Rose,
+		SeaGreen,
+		Teal,
+		Yellow,
+		//MiscGrey,
+		//MiscYellow,
+		PrimaryRemap,
+		SecondaryRemap,
+	}
+
 	public class PaletteMap
 	{
 		public PaletteMap(string filename)
@@ -47,10 +73,10 @@ namespace OpenLoco.Dat
 		public (Color Color, byte Index)[] TextRendering
 			=> Palette[1..7];
 
-		public (Color Color, byte Index)[] PrimaryRemapColours
+		public (Color Color, byte Index)[] PrimaryRemap
 			=> [.. Palette[7..10], .. Palette[246..255]];
 
-		public (Color Color, byte Index)[] SecondaryRemapColours
+		public (Color Color, byte Index)[] SecondaryRemap
 			=> Palette[202..214];
 
 		public (Color Color, byte Index) ChunkedTransparent
@@ -60,7 +86,7 @@ namespace OpenLoco.Dat
 			=> [.. Palette[10..202], .. Palette[214..246]];
 
 		public (Color Color, byte Index)[] ReservedColours
-			=> [Transparent, .. TextRendering, .. PrimaryRemapColours, .. SecondaryRemapColours, ChunkedTransparent];
+			=> [Transparent, .. TextRendering, .. PrimaryRemap, .. SecondaryRemap, ChunkedTransparent];
 
 		#region Colour Swatches
 
@@ -112,7 +138,7 @@ namespace OpenLoco.Dat
 
 		#endregion
 
-		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags)
+		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags, ColourRemapSwatch primary, ColourRemapSwatch secondary)
 		{
 			var pixels = img.Width * img.Height;
 			var isBgr = flags.HasFlag(G1ElementFlags.IsBgr24);
@@ -141,7 +167,34 @@ namespace OpenLoco.Dat
 			return bytes;
 		}
 
-		public bool TryConvertG1ToRgba32Bitmap(G1Element32 g1Element, out Image<Rgba32>? image)
+		public (Color Color, byte Index)[]? GetRemapSwatchFromName(ColourRemapSwatch swatch)
+			=> swatch switch
+			{
+				ColourRemapSwatch.Black => Black,
+				ColourRemapSwatch.Bronze => Bronze,
+				ColourRemapSwatch.Copper => Copper,
+				ColourRemapSwatch.Yellow => Yellow,
+				ColourRemapSwatch.Rose => Rose,
+				ColourRemapSwatch.GrassGreen => GrassGreen,
+				ColourRemapSwatch.AvocadoGreen => AvocadoGreen,
+				ColourRemapSwatch.Green => Green,
+				ColourRemapSwatch.Brass => Brass,
+				ColourRemapSwatch.Lavender => Lavender,
+				ColourRemapSwatch.Blue => Blue,
+				ColourRemapSwatch.SeaGreen => SeaGreen,
+				ColourRemapSwatch.Purple => Purple,
+				ColourRemapSwatch.Red => Red,
+				ColourRemapSwatch.Orange => Orange,
+				ColourRemapSwatch.Teal => Teal,
+				ColourRemapSwatch.Brown => Brown,
+				ColourRemapSwatch.Amber => Amber,
+				ColourRemapSwatch.PrimaryRemap => PrimaryRemap,
+				ColourRemapSwatch.SecondaryRemap => SecondaryRemap,
+				_ => default,
+			};
+
+
+		public bool TryConvertG1ToRgba32Bitmap(G1Element32 g1Element, ColourRemapSwatch primary, ColourRemapSwatch secondary, out Image<Rgba32>? image)
 		{
 			image = new Image<Rgba32>(g1Element.Width, g1Element.Height);
 
@@ -167,10 +220,35 @@ namespace OpenLoco.Dat
 					else
 					{
 						var paletteIndex = g1Element.ImageData[index];
-						image[x, y] = paletteIndex == 0 && g1Element.Flags.HasFlag(G1ElementFlags.HasTransparency)
-							? Transparent.Color
-							: Palette[paletteIndex].Color;
+						Color? colour = null;
 
+						if (SecondaryRemap.Any(x => x.Index == paletteIndex))
+						{
+							//Debugger.Break();
+						}
+
+						if (paletteIndex == 0 && g1Element.Flags.HasFlag(G1ElementFlags.HasTransparency))
+						{
+							colour = Transparent.Color;
+						}
+						else if (PrimaryRemap.Index().SingleOrDefault(x => x.Item.Index == paletteIndex) is (int, (Color, byte)) itemP && itemP.Index != 0)
+						{
+							var swatch = GetRemapSwatchFromName(primary);
+							if (swatch != null)
+							{
+								colour = swatch[itemP.Index].Color;
+							}
+						}
+						else if (SecondaryRemap.Index().SingleOrDefault(x => x.Item.Index == paletteIndex) is (int, (Color, byte)) itemS && itemS.Index != 0)
+						{
+							var swatch = GetRemapSwatchFromName(secondary);
+							if (swatch != null)
+							{
+								colour = swatch[itemS.Index].Color;
+							}
+						}
+
+						image[x, y] = colour ?? Palette[paletteIndex].Color;
 						index++;
 					}
 				}

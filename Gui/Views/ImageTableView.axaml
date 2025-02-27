@@ -41,6 +41,8 @@
 					</Flyout>
 				</Button.Flyout>
 			</Button>
+			<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedPrimarySwatch}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Primary remap swatch" />
+			<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedSecondarySwatch}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Secondary remap swatch" />
 			<Button Command="{Binding CropAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Crops all images and adjusts offsets">
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="Crop" Width="24" Height="24" Margin="2" />

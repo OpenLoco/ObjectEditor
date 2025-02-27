@@ -172,7 +172,7 @@ namespace OpenLoco.ObjectService
 				var count = 0;
 				foreach (var g1 in locoObj!.Value!.LocoObject!.G1Elements)
 				{
-					if (!PaletteMap.TryConvertG1ToRgba32Bitmap(g1, out var image))
+					if (!PaletteMap.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 					{
 						continue;
 					}

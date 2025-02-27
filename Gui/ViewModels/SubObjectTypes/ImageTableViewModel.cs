@@ -26,32 +26,6 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public enum ColourSwatches
-	{
-		Black,
-		Bronze,
-		Copper,
-		Yellow,
-		Rose,
-		GrassGreen,
-		AvocadoGreen,
-		Green,
-		Brass,
-		Lavender,
-		Blue,
-		SeaGreen,
-		Purple,
-		Red,
-		Orange,
-		Teal,
-		Brown,
-		Amber,
-		MiscGrey,
-		MiscYellow,
-		PrimaryRemap,
-		SecondaryRemap,
-	}
-
 	public record SpriteOffset(
 		[property: JsonPropertyName("path")] string Path,
 		[property: JsonPropertyName("x")] int16_t X,
@@ -66,10 +40,13 @@ namespace OpenLoco.Gui.ViewModels
 		readonly IImageTableNameProvider NameProvider;
 		readonly ILogger Logger;
 
-		public ColourSwatches[] ColourSwatchesArr { get; } = (ColourSwatches[])Enum.GetValues(typeof(ColourSwatches));
+		public ColourRemapSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourRemapSwatch>();
 
 		[Reactive]
-		public ColourSwatches SelectedColourSwatch { get; set; } = ColourSwatches.PrimaryRemap;
+		public ColourRemapSwatch SelectedPrimarySwatch { get; set; } = ColourRemapSwatch.PrimaryRemap;
+
+		[Reactive]
+		public ColourRemapSwatch SelectedSecondarySwatch { get; set; } = ColourRemapSwatch.SecondaryRemap;
 
 		readonly DispatcherTimer animationTimer;
 		int currentFrameIndex;
@@ -100,9 +77,6 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public ICommand CropAllImagesCommand { get; set; }
 
-		[Reactive]
-		public int Zoom { get; set; } = 1;
-
 		// where the actual image data is stored
 		[Reactive]
 		public IList<Image<Rgba32>> Images { get; set; }
@@ -118,7 +92,7 @@ namespace OpenLoco.Gui.ViewModels
 		public SelectionModel<Bitmap> SelectionModel { get; set; }
 
 		public UIG1Element32? SelectedG1Element
-			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0
+			=> SelectedImageIndex == -1 || G1Provider.G1Elements.Count == 0 || SelectedImageIndex >= G1Provider.G1Elements.Count
 			? null
 			: new UIG1Element32(SelectedImageIndex, GetImageName(NameProvider, SelectedImageIndex), G1Provider.G1Elements[SelectedImageIndex]);
 
@@ -143,10 +117,12 @@ namespace OpenLoco.Gui.ViewModels
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
 			_ = this.WhenAnyValue(o => o.PaletteMap)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
-			_ = this.WhenAnyValue(o => o.Zoom)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(Images)));
+			_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
+				.Subscribe(_ => RecalcImages());
+			_ = this.WhenAnyValue(o => o.SelectedSecondarySwatch).Skip(1)
+				.Subscribe(_ => RecalcImages());
 			_ = this.WhenAnyValue(o => o.Images)
-				.Subscribe(_ => Bitmaps = new ObservableCollection<Bitmap?>(G1ImageConversion.CreateAvaloniaImages(Images)));
+				.Subscribe(_ => Bitmaps = [.. G1ImageConversion.CreateAvaloniaImages(Images)]);
 			_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
 			_ = this.WhenAnyValue(o => o.SelectedG1Element)
@@ -323,13 +299,41 @@ namespace OpenLoco.Gui.ViewModels
 
 				var newElement = new G1Element32(imageOffset, (int16_t)img.Width, (int16_t)img.Height, xOffset, yOffset, flags, zoomOffset)
 				{
-					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags)
+					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags, SelectedPrimarySwatch, SelectedSecondarySwatch)
 				};
 
 				G1Provider.G1Elements.Add(newElement);
 				Images.Add(img);
 				Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
 			}
+		}
+
+		public void RecalcImages()
+		{
+			// unfortunately no way to "copy" the selection from old to new
+			SelectionModel.Clear();
+
+			// clear existing images
+			Logger.Info("Clearing current G1Element32s and existing object images");
+			Images.Clear();
+			Bitmaps.Clear();
+
+			foreach (var g1 in G1Provider.G1Elements)
+			{
+				if (PaletteMap.TryConvertG1ToRgba32Bitmap(g1, SelectedPrimarySwatch, SelectedSecondarySwatch, out var img) && img != null)
+				{
+					Images.Add(img);
+					Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
+				}
+				else
+				{
+					Logger.Error("Unable to convert G1 to image");
+				}
+			}
+
+			this.RaisePropertyChanged(nameof(Bitmaps));
+			this.RaisePropertyChanged(nameof(Images));
+			SelectedImageIndex = -1;
 		}
 
 		// todo: second half should be in model
@@ -458,7 +462,7 @@ namespace OpenLoco.Gui.ViewModels
 				Width = (int16_t)img.Width,
 				Height = (int16_t)img.Height,
 				Flags = currG1.Flags,
-				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags),
+				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags, SelectedPrimarySwatch, SelectedSecondarySwatch),
 				XOffset = xOffset ?? currG1.XOffset,
 				YOffset = yOffset ?? currG1.YOffset,
 			};

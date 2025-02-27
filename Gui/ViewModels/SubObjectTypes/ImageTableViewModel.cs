@@ -311,7 +311,7 @@ namespace OpenLoco.Gui.ViewModels
 		public void RecalcImages()
 		{
 			// unfortunately no way to "copy" the selection from old to new
-			var existing = SelectionModel;
+			SelectionModel.Clear();
 
 			// clear existing images
 			Logger.Info("Clearing current G1Element32s and existing object images");
@@ -320,7 +320,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			foreach (var g1 in G1Provider.G1Elements)
 			{
-				if (PaletteMap.TryConvertG1ToRgba32Bitmap(g1, SelectedPrimarySwatch, SelectedSecondarySwatch, out var img))
+				if (PaletteMap.TryConvertG1ToRgba32Bitmap(g1, SelectedPrimarySwatch, SelectedSecondarySwatch, out var img) && img != null)
 				{
 					Images.Add(img);
 					Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
@@ -333,8 +333,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			this.RaisePropertyChanged(nameof(Bitmaps));
 			this.RaisePropertyChanged(nameof(Images));
-			//SelectedImageIndex = -1;
-			SelectionModel = existing;
+			SelectedImageIndex = -1;
 		}
 
 		// todo: second half should be in model

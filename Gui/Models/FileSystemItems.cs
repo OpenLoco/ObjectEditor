@@ -12,8 +12,24 @@ namespace OpenLoco.Gui.Models
 		Online,
 	}
 
-	public abstract record FileSystemItemBase(string Filename, string DisplayName, ObservableCollection<FileSystemItemBase>? SubNodes = null)
+	public abstract record FileSystemItemBase
 	{
+		protected FileSystemItemBase(string filename, string displayName, ObservableCollection<FileSystemItemBase>? subNodes)
+		{
+			//if (!File.Exists(filename))
+			//{
+			//throw new FileNotFoundException();
+			//}
+
+			Filename = filename ?? throw new ArgumentNullException(nameof(filename));
+			DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
+			SubNodes = subNodes;
+		}
+
+		public string Filename { get; set; }
+		public string DisplayName { get; set; }
+		public ObservableCollection<FileSystemItemBase>? SubNodes { get; set; }
+
 		public string NameComputed
 			=> $"{DisplayName}{(SubNodes == null ? string.Empty : $" ({SubNodes.Count})")}"; // nested interpolated string...what have i become
 	}
@@ -23,9 +39,6 @@ namespace OpenLoco.Gui.Models
 
 	public record FileSystemItemObject(string Filename, string DisplayName, FileLocation FileLocation, ObjectSource ObjectSource)
 		: FileSystemItem(Filename, DisplayName, FileLocation);
-
-	//public record FileSystemDatGroup(string Path, DatFileType DatFileType, ObservableCollection<FileSystemItemBase> SubNodes)
-	//	: FileSystemItemBase(Path, DatFileType.ToString(), SubNodes);
 
 	public record FileSystemItemGroup(string Filename, ObjectType ObjectType, ObservableCollection<FileSystemItemBase> SubNodes)
 		: FileSystemItemBase(Filename, ObjectType.ToString(), SubNodes);

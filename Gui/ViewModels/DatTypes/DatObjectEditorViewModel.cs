@@ -177,9 +177,9 @@ namespace OpenLoco.Gui.ViewModels
 				logger.Info($"File already deleted \"{CurrentFile.Filename}\"");
 			}
 
-			// remove from object index
-			// todo: reimplement with absolute path for CurrentFile.Filename
-			//Model.ObjectIndex.Delete(x => x.Filename == CurrentFile.Filename);
+			// note: it is not really possible to delete the entry from the index since if the user
+			// has changed objdata folders but still has this item tab open, then there is no way
+			// to delete. user can reindex to fix, or rely on automatic reindex at startup
 		}
 
 		public override void Save()

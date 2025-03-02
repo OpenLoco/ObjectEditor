@@ -180,6 +180,7 @@ namespace OpenLoco.Gui.ViewModels
 			await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
 			LocalDirectoryItems = ConstructTreeView(
 				Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
+				Model.Settings.ObjDataDirectory,
 				FilenameFilter,
 				DisplayMode,
 				FileLocation.Local);
@@ -204,13 +205,14 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				OnlineDirectoryItems = ConstructTreeView(
 					Model.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
+					Model.Settings.DownloadFolder,
 					FilenameFilter,
 					DisplayMode,
 					FileLocation.Online);
 			}
 		}
 
-		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
+		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
 		{
 			var result = new List<FileSystemItemBase>();
 
@@ -231,7 +233,7 @@ namespace OpenLoco.Gui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(o => new FileSystemItemObject(o.Filename, o.DatName, fileLocation, o.ObjectSource))
+							.Select(o => new FileSystemItemObject(Path.Combine(baseDirectory, o.Filename), o.DatName, fileLocation, o.ObjectSource))
 							.OrderBy(o => o.DisplayName));
 
 						if (vg.Key == null)
@@ -250,7 +252,7 @@ namespace OpenLoco.Gui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(o => new FileSystemItemObject(o.Filename, o.DatName, fileLocation, o.ObjectSource))
+						.Select(o => new FileSystemItemObject(Path.Combine(baseDirectory, o.Filename), o.DatName, fileLocation, o.ObjectSource))
 						.OrderBy(o => o.DisplayName));
 				}
 

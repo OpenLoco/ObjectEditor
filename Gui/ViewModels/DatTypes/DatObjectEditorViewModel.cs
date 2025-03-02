@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects.Sound;
@@ -46,7 +45,7 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Unit> ViewHexCommand { get; }
 		public Interaction<HexWindowViewModel, HexWindowViewModel?> HexViewerShowDialog { get; }
 
-		public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
+		//public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
 		public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
 
 		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
@@ -61,20 +60,20 @@ namespace OpenLoco.Gui.ViewModels
 
 			ViewHexCommand = ReactiveCommand.CreateFromTask(async () =>
 			{
-				var filename = Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename);
-				var vm = new HexWindowViewModel(filename, logger);
+				var vm = new HexWindowViewModel(CurrentFile.Filename, logger);
 				_ = await HexViewerShowDialog.Handle(vm);
 			});
 
 			SelectObjectShowDialog = new();
 			_ = SelectObjectShowDialog.RegisterHandler(DoShowDialogAsync<ObjectSelectionWindowViewModel, ObjectSelectionWindow>);
-			SelectObjectCommand = ReactiveCommand.CreateFromTask(async () =>
-			{
-				var objects = model.ObjectIndex.Objects.Where(x => x.ObjectType == ObjectType.Tree);
-				var vm = new ObjectSelectionWindowViewModel(objects);
-				var result = await SelectObjectShowDialog.Handle(vm);
-				return result.SelectedObject;
-			});
+
+			//SelectObjectCommand = ReactiveCommand.CreateFromTask(async () =>
+			//{
+			//	var objects = model.ObjectIndex.Objects.Where(x => x.ObjectType == ObjectType.Tree);
+			//	var vm = new ObjectSelectionWindowViewModel(objects);
+			//	var result = await SelectObjectShowDialog.Handle(vm);
+			//	return result.SelectedObject;
+			//});
 		}
 
 		static async Task DoShowDialogAsync<TViewModel, TWindow>(IInteractionContext<TViewModel, TViewModel?> interaction) where TWindow : Window, new()
@@ -168,25 +167,25 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			// delete file
-			var path = Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename);
-			if (File.Exists(path))
+			if (File.Exists(CurrentFile.Filename))
 			{
-				logger.Info($"Deleting file \"{path}\"");
-				File.Delete(path);
+				logger.Info($"Deleting file \"{CurrentFile.Filename}\"");
+				File.Delete(CurrentFile.Filename);
 			}
 			else
 			{
-				logger.Info($"File already deleted \"{path}\"");
+				logger.Info($"File already deleted \"{CurrentFile.Filename}\"");
 			}
 
-			// remove from object index
-			Model.ObjectIndex.Delete(x => x.Filename == CurrentFile.Filename);
+			// note: it is not really possible to delete the entry from the index since if the user
+			// has changed objdata folders but still has this item tab open, then there is no way
+			// to delete. user can reindex to fix, or rely on automatic reindex at startup
 		}
 
 		public override void Save()
 		{
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
-				? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename)
+				? CurrentFile.Filename
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 			SaveCore(savePath);
 		}

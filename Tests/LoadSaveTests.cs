@@ -383,7 +383,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(400), nameof(struc.BuildCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
-				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltAwayFromTown | IndustryObjectFlags.unk_18 | IndustryObjectFlags.unk_19), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltAwayFromTown | IndustryObjectFlags.CanIncreaseProduction | IndustryObjectFlags.CanDecreaseProduction), nameof(struc.Flags));
 				Assert.That(struc.InitialProductionRate[0].Min, Is.EqualTo(8));
 				Assert.That(struc.InitialProductionRate[0].Max, Is.EqualTo(12));
 				Assert.That(struc.InitialProductionRate[1].Min, Is.EqualTo(0));

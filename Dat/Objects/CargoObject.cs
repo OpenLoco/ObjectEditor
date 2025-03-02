@@ -5,6 +5,7 @@ using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects
 {
+	[Flags]
 	public enum CargoObjectFlags : uint8_t
 	{
 		None = 0,

@@ -6,6 +6,7 @@ using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Gui.Models;
+using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -97,6 +98,19 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						SetObjectViewModel(fsi);
 					}
+				});
+
+			_ = CurrentTabModel.WhenAnyValue(o => o.SelectedDocument)
+				.Subscribe((x) =>
+				{
+					//if (!CurrentTabModel.Documents.Contains(x => x.CurrentFile.Filename == FolderTreeViewModel?.CurrentlySelectedObject?.Filename))
+					//{
+					//	FolderTreeViewModel.CurrentlySelectedObject = null;
+					//}
+					//else
+					//{
+					FolderTreeViewModel.CurrentlySelectedObject = CurrentTabModel?.SelectedDocument?.CurrentFile;
+					//}
 				});
 
 			ObjDataItems = new ObservableCollection<MenuItemViewModel>(Model.Settings.ObjDataDirectories

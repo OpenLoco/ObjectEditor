@@ -34,6 +34,9 @@
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
 			<vi:DatObjectEditorView />
 		</DataTemplate>
+		<DataTemplate DataType="vm:FolderTreeViewModel">
+			<vi:FolderTreeView />
+		</DataTemplate>
 	</Application.DataTemplates>
 
 	<Application.Styles>

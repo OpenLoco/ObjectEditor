@@ -52,7 +52,7 @@
 							<DataTemplate>
 								<StackPanel>
 									<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-									<ContentControl Content="{Binding}"></ContentControl>
+									<ContentControl Content="{Binding}" />
 								</StackPanel>
 							</DataTemplate>
 						</ItemsRepeater.ItemTemplate>
@@ -72,7 +72,7 @@
 							<DataTemplate>
 								<StackPanel>
 									<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-									<ContentControl Content="{Binding}"></ContentControl>
+									<ContentControl Content="{Binding}" />
 								</StackPanel>
 							</DataTemplate>
 						</ItemsRepeater.ItemTemplate>
@@ -95,7 +95,7 @@
 						<ItemsRepeater.ItemTemplate>
 							<DataTemplate>
 								<Border Margin="4" BorderThickness="1">
-									<ContentControl Content="{Binding}"></ContentControl>
+									<ContentControl Content="{Binding}" />
 								</Border>
 							</DataTemplate>
 						</ItemsRepeater.ItemTemplate>

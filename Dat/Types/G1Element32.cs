@@ -29,6 +29,8 @@ namespace OpenLoco.Dat.Types
 	) : ILocoStruct
 	{
 		public static int StructLength => 0x10;
+
+		[Browsable(false)]
 		public byte[] ImageData { get; set; } = [];
 
 		public ReadOnlySpan<byte> Write()

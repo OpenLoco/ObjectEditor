@@ -283,16 +283,7 @@ namespace OpenLoco.Gui.ViewModels
 						var offsetPath = offsetList[i].Path;
 						var validPath = string.IsNullOrEmpty(offsetPath) ? $"{i}.png" : offsetPath;
 						var filename = Path.Combine(dirPath, validPath);
-
-						if (i < G1Provider.G1Elements.Count)
-						{
-							var g1 = G1Provider.G1Elements[i];
-							LoadSprite(filename, 0, offsetList[i].XOffset, offsetList[i].YOffset, g1.Flags, g1.ZoomOffset);
-						}
-						else
-						{
-							LoadSprite(filename, 0, offsetList[i].XOffset, offsetList[i].YOffset, G1ElementFlags.None, 0);
-						}
+						LoadSprite(filename, offsetList[i]);
 					}
 
 					Logger.Debug($"Imported {G1Provider.G1Elements.Count} images successfully");
@@ -306,7 +297,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			animationTimer.Start();
 
-			void LoadSprite(string filename, uint imageOffset, short xOffset, short yOffset, G1ElementFlags flags, short zoomOffset)
+			void LoadSprite(string filename, G1Element32Json ele)
 			{
 				if (!File.Exists(filename))
 				{
@@ -316,7 +307,8 @@ namespace OpenLoco.Gui.ViewModels
 
 				var img = Image.Load<Rgba32>(filename);
 
-				var newElement = new G1Element32(imageOffset, (int16_t)img.Width, (int16_t)img.Height, xOffset, yOffset, flags, zoomOffset)
+				var flags = ele.Flags ?? G1ElementFlags.None;
+				var newElement = new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, ele.XOffset, ele.YOffset, flags, ele.ZoomOffset ?? 0)
 				{
 					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags, SelectedPrimarySwatch, SelectedSecondarySwatch)
 				};

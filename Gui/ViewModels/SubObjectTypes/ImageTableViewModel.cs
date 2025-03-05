@@ -263,7 +263,9 @@ namespace OpenLoco.Gui.ViewModels
 					var offsetList = offsets.ToList();
 					for (var i = 0; i < files.Length; ++i)
 					{
-						var filename = Path.Combine(dirPath, $"{i}.png");
+						var offsetPath = offsetList[i].Path;
+						var validPath = string.IsNullOrEmpty(offsetPath) ? $"{i}.png" : offsetPath;
+						var filename = Path.Combine(dirPath, validPath);
 
 						if (i < G1Provider.G1Elements.Count)
 						{
@@ -289,7 +291,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			void LoadSprite(string filename, uint imageOffset, short xOffset, short yOffset, G1ElementFlags flags, short zoomOffset)
 			{
-				if (!Path.Exists(filename))
+				if (!File.Exists(filename))
 				{
 					Logger.Error($"File doesn't exist: \"{filename}\"");
 					return;

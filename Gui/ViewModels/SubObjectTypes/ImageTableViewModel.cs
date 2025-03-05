@@ -1,6 +1,7 @@
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Common.Json;
 using DynamicData;
 using OpenLoco.Common;
 using OpenLoco.Common.Logging;
@@ -134,9 +135,9 @@ namespace OpenLoco.Gui.ViewModels
 			_ = this.WhenAnyValue(o => o.AnimationSpeed)
 				.Subscribe(_ => UpdateAnimationSpeed());
 
-			ImportImagesCommand = ReactiveCommand.Create(ImportImages);
-			ExportImagesCommand = ReactiveCommand.Create(ExportImages);
-			ReplaceImageCommand = ReactiveCommand.Create(ReplaceImage);
+			ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
+			ExportImagesCommand = ReactiveCommand.CreateFromTask(ExportImages);
+			ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImage);
 			CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
 
 			CreateSelectionModel();
@@ -357,12 +358,24 @@ namespace OpenLoco.Gui.ViewModels
 			Logger.Info($"Saving images to {dirPath}");
 
 			var counter = 0;
+			var offsets = new List<SpriteOffset>();
+
 			foreach (var image in Images)
 			{
-				var imageName = counter++.ToString(); // todo: maybe use image name provider below (but number must still exist)
-				var path = Path.Combine(dir.Path.LocalPath, $"{imageName}.png");
+				var g1Element = G1Provider.G1Elements[counter];
+				var imageName = counter.ToString(); // todo: maybe use image name provider below (but number must still exist)
+				counter++;
+
+				var fileName = $"{imageName}.png";
+				var path = Path.Combine(dir.Path.LocalPath, fileName);
 				await image.SaveAsPngAsync(path);
+
+				offsets.Add(new SpriteOffset(fileName, g1Element.XOffset, g1Element.YOffset));
 			}
+
+			var offsetsFile = Path.Combine(dir.Path.LocalPath, "sprites.json");
+			Logger.Info($"Saving sprite offsets to {offsetsFile}");
+			await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
 		}
 
 		public void CropAllImages()

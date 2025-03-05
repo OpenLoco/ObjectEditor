@@ -101,10 +101,7 @@ namespace OpenLoco.Gui.ViewModels
 				});
 
 			_ = CurrentTabModel.WhenAnyValue(o => o.SelectedDocument)
-				.Subscribe((x) =>
-				{
-					FolderTreeViewModel.CurrentlySelectedObject = x?.CurrentFile;
-				});
+				.Subscribe((x) => FolderTreeViewModel.CurrentlySelectedObject = x?.CurrentFile);
 
 			ObjDataItems = new ObservableCollection<MenuItemViewModel>(Model.Settings.ObjDataDirectories
 				.Select(x => new MenuItemViewModel(

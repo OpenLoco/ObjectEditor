@@ -27,12 +27,28 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public record SpriteOffset(
+	public record G1Element32Json(
 		[property: JsonPropertyName("path")] string Path,
-		[property: JsonPropertyName("x")] int16_t X,
-		[property: JsonPropertyName("y")] int16_t Y)
+		[property: JsonPropertyName("x")] int16_t XOffset,
+		[property: JsonPropertyName("y")] int16_t YOffset,
+		[property: JsonPropertyName("zoomOffset")] int16_t? ZoomOffset,
+		[property: JsonPropertyName("flags")] G1ElementFlags? Flags
+		)
 	{
-		public static SpriteOffset Zero => new SpriteOffset(string.Empty, 0, 0);
+		public G1Element32Json()
+			: this("", 0, 0, null, null)
+		{ }
+
+		public G1Element32Json(string path, int16_t xOffset, int16_t yOffset)
+			: this(path, xOffset, yOffset, null, null)
+		{ }
+
+		public G1Element32Json(string path, G1Element32 g1Element)
+			: this(path, g1Element.XOffset, g1Element.YOffset, g1Element.ZoomOffset, g1Element.Flags)
+		{ }
+
+		public static G1Element32Json Zero
+			=> new G1Element32Json(string.Empty, 0, 0, 0, G1ElementFlags.None);
 	}
 
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
@@ -236,23 +252,23 @@ namespace OpenLoco.Gui.ViewModels
 
 					Logger.Debug($"{files.Length} files in current directory");
 
-					IEnumerable<SpriteOffset> offsets;
+					IEnumerable<G1Element32Json> offsets;
 
 					// check for offsets file
 					var offsetsFile = Path.Combine(dirPath, "sprites.json");
 					if (File.Exists(offsetsFile))
 					{
-						offsets = JsonSerializer.Deserialize<ICollection<SpriteOffset>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+						offsets = JsonSerializer.Deserialize<ICollection<G1Element32Json>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 						ArgumentNullException.ThrowIfNull(offsets);
 						Logger.Debug("Found sprites.json file; using that");
 					}
 					else
 					{
-						offsets = G1Provider.G1Elements.Select((x, i) => new SpriteOffset($"{i}.png", x.XOffset, x.YOffset));
+						offsets = G1Provider.G1Elements.Select((x, i) => new G1Element32Json($"{i}.png", x.XOffset, x.YOffset));
 						Logger.Debug("Didn't find sprites.json; using existing G1Element32 offsets");
 					}
 
-					offsets = offsets.Fill(files.Length, SpriteOffset.Zero);
+					offsets = offsets.Fill(files.Length, G1Element32Json.Zero);
 
 					// clear existing images
 					Logger.Info("Clearing current G1Element32s and existing object images");
@@ -271,11 +287,11 @@ namespace OpenLoco.Gui.ViewModels
 						if (i < G1Provider.G1Elements.Count)
 						{
 							var g1 = G1Provider.G1Elements[i];
-							LoadSprite(filename, 0, offsetList[i].X, offsetList[i].Y, g1.Flags, g1.ZoomOffset);
+							LoadSprite(filename, 0, offsetList[i].XOffset, offsetList[i].YOffset, g1.Flags, g1.ZoomOffset);
 						}
 						else
 						{
-							LoadSprite(filename, 0, offsetList[i].X, offsetList[i].Y, G1ElementFlags.None, 0);
+							LoadSprite(filename, 0, offsetList[i].XOffset, offsetList[i].YOffset, G1ElementFlags.None, 0);
 						}
 					}
 
@@ -358,7 +374,7 @@ namespace OpenLoco.Gui.ViewModels
 			Logger.Info($"Saving images to {dirPath}");
 
 			var counter = 0;
-			var offsets = new List<SpriteOffset>();
+			var offsets = new List<G1Element32Json>();
 
 			foreach (var image in Images)
 			{
@@ -370,7 +386,7 @@ namespace OpenLoco.Gui.ViewModels
 				var path = Path.Combine(dir.Path.LocalPath, fileName);
 				await image.SaveAsPngAsync(path);
 
-				offsets.Add(new SpriteOffset(fileName, g1Element.XOffset, g1Element.YOffset));
+				offsets.Add(new G1Element32Json(fileName, g1Element));
 			}
 
 			var offsetsFile = Path.Combine(dir.Path.LocalPath, "sprites.json");
@@ -397,7 +413,7 @@ namespace OpenLoco.Gui.ViewModels
 					var currG1 = G1Provider.G1Elements[i];
 
 					// set to bitmaps
-					UpdateImage(image, i, (short)(currG1.XOffset + cropRegion.Left), (short)(currG1.YOffset + cropRegion.Top));
+					UpdateImage(image, i, xOffset: (short)(currG1.XOffset + cropRegion.Left), yOffset: (short)(currG1.YOffset + cropRegion.Top));
 				}
 			}
 
@@ -461,29 +477,30 @@ namespace OpenLoco.Gui.ViewModels
 			this.RaisePropertyChanged(nameof(SelectedG1Element));
 		}
 
-		void UpdateImage(Image<Rgba32> img, int index, SpriteOffset? offset = null)
-			=> UpdateImage(img, index, offset?.X, offset?.Y);
+		void UpdateImage(Image<Rgba32> img, int index, G1Element32Json ele)
+			=> UpdateImage(img, index, ele.Flags, ele.XOffset, ele.YOffset, ele.ZoomOffset);
 
-		void UpdateImage(Image<Rgba32> img, int index, short? xOffset, short? yOffset)
+		void UpdateImage(Image<Rgba32> img, int index, G1ElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
 		{
 			if (index == -1)
 			{
 				return;
 			}
 
-			var currG1 = G1Provider.G1Elements[index];
-			currG1 = currG1 with
-			{
-				Width = (int16_t)img.Width,
-				Height = (int16_t)img.Height,
-				Flags = currG1.Flags,
-				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, currG1.Flags, SelectedPrimarySwatch, SelectedSecondarySwatch),
-				XOffset = xOffset ?? currG1.XOffset,
-				YOffset = yOffset ?? currG1.YOffset,
-			};
-			G1Provider.G1Elements[index] = currG1;
 			Images[index] = img;
 			Bitmaps[index] = G1ImageConversion.CreateAvaloniaImage(img);
+
+			var currG1 = G1Provider.G1Elements[index];
+			G1Provider.G1Elements[index] = (currG1 with
+			{
+				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags ?? currG1.Flags, SelectedPrimarySwatch, SelectedSecondarySwatch),
+				Width = (int16_t)img.Width,
+				Height = (int16_t)img.Height,
+				Flags = flags ?? currG1.Flags,
+				XOffset = xOffset ?? currG1.XOffset,
+				YOffset = yOffset ?? currG1.YOffset,
+				ZoomOffset = zoomOffset ?? currG1.ZoomOffset,
+			});
 		}
 
 		public static string GetImageName(IImageTableNameProvider nameProvider, int counter)

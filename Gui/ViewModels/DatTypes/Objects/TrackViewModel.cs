@@ -17,7 +17,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t TunnelCostFactor { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleVehicles { get; set; }
+		[Reactive, Category("Tracks and Roads")] public BindingList<S5HeaderViewModel> CompatibleTracksAndRoads { get; set; }
 		[Reactive, Category("Mods")] public BindingList<S5HeaderViewModel> CompatibleTrackExtras { get; set; }
 		[Reactive, Category("Signals")] public BindingList<S5HeaderViewModel> CompatibleSignals { get; set; }
 		[Reactive, Category("Bridges")] public BindingList<S5HeaderViewModel> CompatibleBridges { get; set; }
@@ -36,7 +36,7 @@ namespace OpenLoco.Gui.ViewModels
 			SellCostFactor = to.SellCostFactor;
 			TunnelCostFactor = to.TunnelCostFactor;
 			CostIndex = to.CostIndex;
-			CompatibleVehicles = new(to.Vehicles.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleTracksAndRoads = new(to.TracksAndRoads.ConvertAll(x => new S5HeaderViewModel(x)));
 			CompatibleTrackExtras = new(to.TrackMods.ConvertAll(x => new S5HeaderViewModel(x)));
 			CompatibleSignals = new(to.Signals.ConvertAll(x => new S5HeaderViewModel(x)));
 			CompatibleTunnel = new(to.Tunnel);
@@ -60,8 +60,8 @@ namespace OpenLoco.Gui.ViewModels
 				SellCostFactor = SellCostFactor,
 				TunnelCostFactor = TunnelCostFactor,
 				CostIndex = CostIndex,
-				NumCompatibleVehicles = (uint8_t)CompatibleVehicles.Count,
-				Vehicles = CompatibleVehicles.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				NumCompatibleTracksAndRoads = (uint8_t)CompatibleTracksAndRoads.Count,
+				TracksAndRoads = CompatibleTracksAndRoads.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				NumMods = (uint8_t)CompatibleTrackExtras.Count,
 				TrackMods = CompatibleTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				NumSignals = (uint8_t)CompatibleSignals.Count,

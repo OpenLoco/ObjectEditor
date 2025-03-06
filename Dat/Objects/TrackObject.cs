@@ -40,7 +40,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x02)] TrackTraitFlags TrackPieces,
 		[property: LocoStructOffset(0x04)] TrackTraitFlags StationTrackPieces,
 		[property: LocoStructOffset(0x06)] uint8_t var_06,
-		[property: LocoStructOffset(0x07)] uint8_t NumCompatibleVehicles,
+		[property: LocoStructOffset(0x07)] uint8_t NumCompatibleTracksAndRoads,
 		[property: LocoStructOffset(0x08)] uint8_t NumMods,
 		[property: LocoStructOffset(0x09)] uint8_t NumSignals,
 		[property: LocoStructOffset(0x0A), LocoArrayLength(TrackObject.MaxMods), LocoStructVariableLoad, Browsable(false)] object_id[] _Mods,
@@ -63,7 +63,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x35), Browsable(false)] uint8_t var_35
 		) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
-		public List<S5Header> Vehicles { get; set; } = [];
+		public List<S5Header> TracksAndRoads { get; set; } = [];
 		public List<S5Header> TrackMods { get; set; } = []; // aka TrackExtraObject
 		public List<S5Header> Signals { get; set; } = [];
 		public S5Header Tunnel { get; set; }
@@ -78,8 +78,8 @@ namespace OpenLoco.Dat.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible roads/tracks
-			Vehicles = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatibleVehicles);
-			remainingData = remainingData[(S5Header.StructLength * NumCompatibleVehicles)..];
+			TracksAndRoads = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatibleTracksAndRoads);
+			remainingData = remainingData[(S5Header.StructLength * NumCompatibleTracksAndRoads)..];
 
 			// mods
 			TrackMods = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumMods);
@@ -109,7 +109,7 @@ namespace OpenLoco.Dat.Objects
 
 		public ReadOnlySpan<byte> Save()
 		{
-			var headers = Vehicles
+			var headers = TracksAndRoads
 				.Concat(TrackMods)
 				.Concat(Signals)
 				.Concat(Enumerable.Repeat(Tunnel, 1))

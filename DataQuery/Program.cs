@@ -11,11 +11,49 @@ var logger = new Logger();
 var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
 
 //QueryCostIndices(dir, logger, index);
-QueryCargoCategories(dir, logger, index);
+//QueryCargoCategories(dir, logger, index);
+QueryVehicleBodyUnkSprites(dir, logger, index);
 
 Console.WriteLine("done");
 
 Console.ReadLine();
+
+static void QueryVehicleBodyUnkSprites(string dir, Logger logger, ObjectIndex index)
+{
+	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
+
+	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Vehicle && x.ObjectSource == ObjectSource.LocomotionSteam))
+	{
+		try
+		{
+			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.Filename), logger);
+			if (o?.LocoObject != null)
+			{
+				var struc = (VehicleObject)o.Value.LocoObject.Object;
+				var header = o.Value.DatFileInfo.S5Header;
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+
+				if (struc.BodySprites.Any(x => x.Flags.HasFlag(BodySpriteFlags.HasUnkSprites)))
+				{
+					results.Add((obj, source));
+				}
+
+				//results.Add((obj, struc.CargoCategory, o.Value.LocoObject.StringTable.Table["Name"][LanguageId.English_UK], source));
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"{obj.Filename} - {ex.Message}");
+		}
+	}
+
+	const string csvHeader = "DatName, ObjectSource";
+	var lines = results
+		.OrderBy(x => x.Obj.DatName)
+		.Select(x => string.Join(',', x.Obj.DatName, x.ObjectSource));
+
+	File.WriteAllLines("vehicleBodiesWithUnkSpritesFlag.csv", [csvHeader, .. lines]);
+}
 
 static void QueryCargoCategories(string dir, Logger logger, ObjectIndex index)
 {

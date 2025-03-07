@@ -22,7 +22,7 @@ static void QueryVehicleBodyUnkSprites(string dir, Logger logger, ObjectIndex in
 {
 	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
 
-	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Vehicle && x.ObjectSource == ObjectSource.LocomotionSteam))
+	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Vehicle))
 	{
 		try
 		{
@@ -33,12 +33,10 @@ static void QueryVehicleBodyUnkSprites(string dir, Logger logger, ObjectIndex in
 				var header = o.Value.DatFileInfo.S5Header;
 				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
 
-				if (struc.BodySprites.Any(x => x.Flags.HasFlag(BodySpriteFlags.HasUnkSprites)))
+				if (struc.Flags.HasFlag(VehicleObjectFlags.AlternatingCarSprite))
 				{
 					results.Add((obj, source));
 				}
-
-				//results.Add((obj, struc.CargoCategory, o.Value.LocoObject.StringTable.Table["Name"][LanguageId.English_UK], source));
 			}
 		}
 		catch (Exception ex)
@@ -46,6 +44,8 @@ static void QueryVehicleBodyUnkSprites(string dir, Logger logger, ObjectIndex in
 			Console.WriteLine($"{obj.Filename} - {ex.Message}");
 		}
 	}
+
+	Console.WriteLine(results.Count);
 
 	const string csvHeader = "DatName, ObjectSource";
 	var lines = results

@@ -167,7 +167,7 @@ namespace ObjectService.TableHandlers
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
 		public async Task<IResult> GetObjectImages(int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
-			//Console.WriteLine($"Object [{uniqueObjectId}] requested with images");
+			logger.LogInformation("Object [{uniqueObjectId}] requested with images", uniqueObjectId);
 
 			var obj = await db.Objects.Where(x => x.Id == uniqueObjectId).SingleOrDefaultAsync();
 
@@ -182,7 +182,7 @@ namespace ObjectService.TableHandlers
 			}
 
 			var pathOnDisk = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
-																							   //logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
+			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
 			var fileExists = File.Exists(pathOnDisk);
 			if (!fileExists)

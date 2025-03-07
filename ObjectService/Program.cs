@@ -82,9 +82,9 @@ if (showSwagger == true)
 	_ = app.MapScalarApiReference(options =>
 	{
 		_ = options
-		.WithTitle("OpenLoco Object Service")
-		.WithTheme(ScalarTheme.Solarized)
-		.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+			.WithTitle("OpenLoco Object Service")
+			.WithTheme(ScalarTheme.Solarized)
+			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
 	});
 }
 

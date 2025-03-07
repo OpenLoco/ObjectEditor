@@ -10,6 +10,7 @@ using OpenLoco.Definitions.Web;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -20,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.Models
 {
-	public class ObjectEditorModel
+	public class ObjectEditorModel : IDisposable
 	{
 		public EditorSettings Settings { get; private set; }
 
@@ -58,11 +59,15 @@ namespace OpenLoco.Gui.Models
 
 		public HttpClient? WebClient { get; }
 
+		readonly ConcurrentQueue<string> logQueue = new();
+		readonly SemaphoreSlim logFileLock = new(1, 1); // Allow only 1 concurrent write
+
 		public ObjectEditorModel()
 		{
 			Logger = new Logger();
 			LoggerObservableLogs = [];
 			Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
+			Logger.LogAdded += (sender, laea) => LogAsync(laea.Log.ToString()).ConfigureAwait(false);
 
 			LoadSettings();
 			InitialiseDownloadDirectory();
@@ -77,6 +82,43 @@ namespace OpenLoco.Gui.Models
 			else
 			{
 				Logger.Error($"Unable to parse object service address \"{serverAddress}\". Online functionality will work until the address is corrected and the editor is restarted.");
+			}
+		}
+
+		public async Task LogAsync(string message)
+		{
+			logQueue.Enqueue(message);
+			await WriteLogsToFileAsync(); // Start the async writing process
+		}
+
+		async Task WriteLogsToFileAsync()
+		{
+			if (logQueue.IsEmpty)
+			{
+				return; // Nothing to write
+			}
+
+			if (await logFileLock.WaitAsync(0)) // Non-blocking wait if available.
+			{
+				try
+				{
+					while (logQueue.TryDequeue(out var logMessage))
+					{
+						try
+						{
+							await File.AppendAllTextAsync(LoggingFile, logMessage + Environment.NewLine);
+						}
+						catch (Exception ex)
+						{
+							Console.WriteLine($"Error writing to log file: {ex.Message}");
+							// Consider logging to a separate error file or using a more robust logging framework
+						}
+					}
+				}
+				finally
+				{
+					_ = logFileLock.Release(); // Release the semaphore
+				}
 			}
 		}
 
@@ -201,7 +243,7 @@ namespace OpenLoco.Gui.Models
 						{
 							foreach (var i in locoObject.G1Elements)
 							{
-								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, out var image))
+								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 								{
 									images.Add(image!);
 								}
@@ -232,7 +274,7 @@ namespace OpenLoco.Gui.Models
 						{
 							foreach (var i in locoObject.G1Elements)
 							{
-								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, out var image))
+								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 								{
 									images.Add(image!);
 								}
@@ -429,5 +471,34 @@ namespace OpenLoco.Gui.Models
 			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), lastModifiedTime, Logger);
 			await Task.Delay(100); // wait 100ms, ie don't DoS the server
 		}
+
+		public async Task CloseAsync()
+		{
+			// Wait for any pending writes to complete.
+			await logFileLock.WaitAsync(); // Acquire the semaphore
+			_ = logFileLock.Release(); // Release it immediately after. This is just to wait.
+
+			// Process any remaining logs in the queue.
+			await WriteLogsToFileAsync(); // One last flush.
+
+			logFileLock.Dispose(); // Dispose of the semaphore
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this); // Important for proper disposal
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				// Wait for logging to complete synchronously.
+				Task.Run(CloseAsync).Wait(); // <--- Key change
+				logFileLock?.Dispose(); // Dispose of the semaphore
+			}
+		}
+
 	}
 }

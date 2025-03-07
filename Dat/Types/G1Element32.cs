@@ -19,7 +19,7 @@ namespace OpenLoco.Dat.Types
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x10)]
 	public record G1Element32(
-		[property: LocoStructOffset(0x00)] uint32_t Offset,
+		[property: LocoStructOffset(0x00), Browsable(false)] uint32_t Offset,
 		[property: LocoStructOffset(0x04)] int16_t Width,
 		[property: LocoStructOffset(0x06)] int16_t Height,
 		[property: LocoStructOffset(0x08)] int16_t XOffset,
@@ -29,6 +29,8 @@ namespace OpenLoco.Dat.Types
 	) : ILocoStruct
 	{
 		public static int StructLength => 0x10;
+
+		[Browsable(false)]
 		public byte[] ImageData { get; set; } = [];
 
 		public ReadOnlySpan<byte> Write()

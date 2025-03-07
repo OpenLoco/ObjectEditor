@@ -1,0 +1,93 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:OpenLoco.Gui.ViewModels"
+	xmlns:moc="using:OpenLoco.Gui.Models.Converters"
+	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+	mc:Ignorable="d" d:DesignWidth="384" d:DesignHeight="768"
+	Width="384"
+	MinWidth="256"
+	MaxWidth ="512"
+	x:Class="OpenLoco.Gui.Views.FolderTreeView"
+	x:DataType="vm:FolderTreeViewModel">
+
+	<UserControl.Resources>
+		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+	</UserControl.Resources>
+
+	<DockPanel>
+		<TabStrip DockPanel.Dock="Top" SelectedIndex="{Binding SelectedTabIndex}" HorizontalAlignment="Center" Name="LocalOnlineTab">
+			<TabItem>
+				<TabItem.Header>
+					<DockPanel>
+						<materialIcons:MaterialIcon Kind="DesktopClassic" Width="24" Height="24" Margin="2" />
+						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Local" />
+					</DockPanel>
+				</TabItem.Header>
+			</TabItem>
+			<TabItem>
+				<TabItem.Header>
+					<DockPanel>
+						<materialIcons:MaterialIcon Kind="Web" Width="24" Height="24" Margin="2" />
+						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Online" />
+					</DockPanel>
+				</TabItem.Header>
+			</TabItem>
+		</TabStrip>
+		<Grid DockPanel.Dock="Left" Margin="8">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+			<TextBox Grid.Row="0" Text="{Binding CurrentDirectory}" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+			<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
+			<DockPanel Grid.Row="2">
+				<Button Command="{Binding RefreshDirectoryItems}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
+					<DockPanel>
+						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
+						<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
+						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding RecreateText}" />
+					</DockPanel>
+				</Button>
+				<Button Command="{Binding OpenCurrentFolder}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Open folder">
+					<DockPanel>
+						<materialIcons:MaterialIcon Kind="FolderOpen" Width="24" Height="24" Margin="2" />
+						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Open folder" />
+					</DockPanel>
+				</Button>
+			</DockPanel>
+			<DockPanel Grid.Row="3" Margin="2" >
+				<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
+				<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />
+			</DockPanel>
+			<Border Grid.Row="4" BorderThickness="1" Margin="2">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="*"/>
+					</Grid.ColumnDefinitions>
+					<RadioButton Grid.Column="0" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="Vanilla" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Vanilla}}"/>
+					<RadioButton Grid.Column="1" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="Custom" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Custom}}"/>
+					<RadioButton Grid.Column="2" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
+				</Grid>
+			</Border>
+			<Border Grid.Row="5" BorderThickness="1" Margin="2">
+				<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" >
+					<TreeView.ItemTemplate>
+						<TreeDataTemplate ItemsSource="{Binding SubNodes}">
+							<ContentControl Content="{Binding}" />
+						</TreeDataTemplate>
+					</TreeView.ItemTemplate>
+				</TreeView>
+			</Border>
+		</Grid>
+	</DockPanel>
+
+</UserControl>

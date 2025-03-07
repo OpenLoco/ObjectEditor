@@ -166,6 +166,7 @@ namespace OpenLoco.Dat
 		ObjectSource ObjectSource,
 		VehicleType? VehicleType = null)
 	{
-		public string SimpleText => $"{DatName} | {Filename}";
+		public string SimpleText
+			=> $"{DatName} | {Filename}";
 	}
 }

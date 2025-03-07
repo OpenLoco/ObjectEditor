@@ -383,7 +383,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(400), nameof(struc.BuildCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
-				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltAwayFromTown | IndustryObjectFlags.unk_18 | IndustryObjectFlags.unk_19), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(IndustryObjectFlags.BuiltOnLowGround | IndustryObjectFlags.BuiltAwayFromTown | IndustryObjectFlags.CanIncreaseProduction | IndustryObjectFlags.CanDecreaseProduction), nameof(struc.Flags));
 				Assert.That(struc.InitialProductionRate[0].Min, Is.EqualTo(8));
 				Assert.That(struc.InitialProductionRate[0].Max, Is.EqualTo(12));
 				Assert.That(struc.InitialProductionRate[1].Min, Is.EqualTo(0));
@@ -866,7 +866,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.Flags, Is.EqualTo(TrackObjectFlags.unk_00), nameof(struc.Flags));
 				// Mods
 				Assert.That(struc.NumBridges, Is.EqualTo(5), nameof(struc.NumBridges));
-				Assert.That(struc.NumCompatibleVehicles, Is.EqualTo(7), nameof(struc.NumCompatibleVehicles));
+				Assert.That(struc.NumCompatibleTracksAndRoads, Is.EqualTo(7), nameof(struc.NumCompatibleTracksAndRoads));
 				Assert.That(struc.NumMods, Is.EqualTo(2), nameof(struc.NumMods));
 				Assert.That(struc.NumSignals, Is.EqualTo(10), nameof(struc.NumSignals));
 				Assert.That(struc.NumStations, Is.EqualTo(5), nameof(struc.NumStations));
@@ -998,7 +998,7 @@ namespace OpenLoco.Dat.Tests
 
 				Assert.That(struc.Mode, Is.EqualTo(TransportMode.Air), nameof(struc.Mode));
 				Assert.That(struc.Type, Is.EqualTo(VehicleType.Aircraft), nameof(struc.Type));
-				Assert.That(struc.var_04, Is.EqualTo(1), nameof(struc.var_04));
+				Assert.That(struc.NumCarComponents, Is.EqualTo(1), nameof(struc.NumCarComponents));
 				// Assert.That(struc.TrackType, Is.EqualTo(0xFF), nameof(struc.TrackType)); // is changed after load from 0 to 255
 				Assert.That(struc.NumRequiredTrackExtras, Is.EqualTo(0), nameof(struc.NumRequiredTrackExtras));
 				Assert.That(struc.CostIndex, Is.EqualTo(8), nameof(struc.CostIndex));

@@ -85,9 +85,9 @@ namespace OpenLoco.Gui.ViewModels
 			Sound = vo.Sound == null ? null : new(vo.Sound);
 			StartSounds = new(vo.StartSounds.ConvertAll(x => new S5HeaderViewModel(x)));
 			SoundType = vo.DrivingSoundType;
-			FrictionSound = vo.SoundPropertyFriction;
-			SimpleMotorSound = vo.SoundPropertyEngine1;
-			GearboxMotorSound = vo.SoundPropertyEngine2;
+			FrictionSound = vo.FrictionSound;
+			SimpleMotorSound = vo.SimpleMotorSound;
+			GearboxMotorSound = vo.GearboxMotorSound;
 		}
 
 		public override VehicleObject GetAsStruct(VehicleObject vo)
@@ -124,9 +124,9 @@ namespace OpenLoco.Gui.ViewModels
 				RequiredTrackExtras = RequiredTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				DrivingSoundType = SoundType,
-				SoundPropertyFriction = FrictionSound,
-				SoundPropertyEngine1 = SimpleMotorSound,
-				SoundPropertyEngine2 = GearboxMotorSound,
+				FrictionSound = FrictionSound,
+				SimpleMotorSound = SimpleMotorSound,
+				GearboxMotorSound = GearboxMotorSound,
 				NumCompatibleVehicles = (uint8_t)CompatibleVehicles.Count,
 				NumRequiredTrackExtras = (uint8_t)RequiredTrackExtras.Count,
 				NumStartSounds = (uint8_t)StartSounds.Count,

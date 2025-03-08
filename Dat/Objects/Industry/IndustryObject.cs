@@ -56,7 +56,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxWallTypeCount)] List<S5Header> WallTypes, // There can be up to 4 different wall types for an industry
 		[property: LocoStructOffset(0xF1), LocoStructVariableLoad, Browsable(false)] object_id _BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
 		[property: LocoStructOffset(0xF2), LocoStructVariableLoad, Browsable(false)] object_id _BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
-		[property: LocoStructOffset(0xF3)] uint8_t var_F3
+		[property: LocoStructOffset(0xF3)] uint8_t MonthlyClosureChance
 		) : ILocoStruct, ILocoStructVariableData
 	{
 		public const int AnimationSequencesCount = 4;

@@ -10,8 +10,8 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public BindingList<S5HeaderViewModel> RequiredObjects { get; set; }
 		[Reactive] public BindingList<S5HeaderViewModel> DependentObjects { get; set; }
 
-		[Reactive] public BindingList<uint8_t> var_06 { get; set; }
-		[Reactive] public BindingList<uint8_t> var_0D { get; set; }
+		[Reactive, Category("<unknown>")] public BindingList<uint8_t> var_06 { get; set; }
+		[Reactive, Category("<unknown>")] public BindingList<uint8_t> var_0D { get; set; }
 
 		public RegionViewModel(RegionObject ro)
 		{

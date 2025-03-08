@@ -413,7 +413,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.FarmGrowthStageWithNoProduction, Is.EqualTo(0), nameof(struc.FarmGrowthStageWithNoProduction));
 				Assert.That(struc.FarmIdealSize, Is.EqualTo(0), nameof(struc.FarmIdealSize));
 				Assert.That(struc.FarmNumStagesOfGrowth, Is.EqualTo(0), nameof(struc.FarmNumStagesOfGrowth));
-				Assert.That(struc.var_F3, Is.EqualTo(1), nameof(struc.var_F3));
+				Assert.That(struc.MonthlyClosureChance, Is.EqualTo(1), nameof(struc.MonthlyClosureChance));
 				// Walls
 				Assert.That(struc.WallTypes, Has.Count.EqualTo(0));
 				// WallTypes
@@ -498,7 +498,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.FarmGrowthStageWithNoProduction, Is.EqualTo(0), nameof(struc.FarmGrowthStageWithNoProduction));
 				Assert.That(struc.FarmIdealSize, Is.EqualTo(0), nameof(struc.FarmIdealSize));
 				Assert.That(struc.FarmNumStagesOfGrowth, Is.EqualTo(0), nameof(struc.FarmNumStagesOfGrowth));
-				Assert.That(struc.var_F3, Is.EqualTo(1), nameof(struc.var_F3));
+				Assert.That(struc.MonthlyClosureChance, Is.EqualTo(1), nameof(struc.MonthlyClosureChance));
 				// Walls
 				Assert.That(struc.WallTypes, Has.Count.EqualTo(0));
 				// WallTypes

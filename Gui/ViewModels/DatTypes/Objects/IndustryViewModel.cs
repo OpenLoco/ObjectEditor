@@ -19,6 +19,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Production")] public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; set; }
 		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> ProducedCargo { get; set; }
 		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> RequiredCargo { get; set; }
+		[Reactive, Category("Production")] public uint8_t MonthlyClosureChance { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
@@ -37,11 +38,10 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Building")] public S5HeaderViewModel? BuildingWallEntrance { get; set; }
 		[Reactive, Category("<unknown>")] public BindingList<IndustryObjectUnk38> var_38 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_E8 { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_E9 { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_EA { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_EB { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_EC { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_F3 { get; set; }
+		[Reactive, Category("Farm")] public uint8_t FarmTileNumImageAngles { get; set; }
+		[Reactive, Category("Farm")] public uint8_t FarmGrowthStageWithNoProduction { get; set; }
+		[Reactive, Category("Farm")] public uint8_t FarmIdealSize { get; set; }
+		[Reactive, Category("Farm")] public uint8_t FarmNumStagesOfGrowth { get; set; }
 
 		public IndustryViewModel(IndustryObject io)
 		{
@@ -72,11 +72,11 @@ namespace OpenLoco.Gui.ViewModels
 			MapColour = io.MapColour;
 			Flags = io.Flags;
 			var_E8 = io.var_E8;
-			var_E9 = io.FarmTileNumImageAngles;
-			var_EA = io.FarmGrowthStageWithNoProduction;
-			var_EB = io.FarmIdealSize;
-			var_EC = io.FarmNumStagesOfGrowth;
-			var_F3 = io.var_E8;
+			FarmTileNumImageAngles = io.FarmTileNumImageAngles;
+			FarmGrowthStageWithNoProduction = io.FarmGrowthStageWithNoProduction;
+			FarmIdealSize = io.FarmIdealSize;
+			FarmNumStagesOfGrowth = io.FarmNumStagesOfGrowth;
+			MonthlyClosureChance = io.MonthlyClosureChance;
 		}
 
 		// validation:
@@ -106,11 +106,11 @@ namespace OpenLoco.Gui.ViewModels
 				MapColour = MapColour,
 				Flags = Flags,
 				var_E8 = var_E8,
-				FarmTileNumImageAngles = var_E9,
-				FarmGrowthStageWithNoProduction = var_EA,
-				FarmIdealSize = var_EB,
-				FarmNumStagesOfGrowth = var_EC,
-				var_F3 = var_E8,
+				FarmTileNumImageAngles = FarmTileNumImageAngles,
+				FarmGrowthStageWithNoProduction = FarmGrowthStageWithNoProduction,
+				FarmIdealSize = FarmIdealSize,
+				FarmNumStagesOfGrowth = FarmNumStagesOfGrowth,
+				MonthlyClosureChance = MonthlyClosureChance,
 			};
 	}
 }

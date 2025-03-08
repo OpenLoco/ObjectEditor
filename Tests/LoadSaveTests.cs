@@ -409,10 +409,10 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.var_16, Is.EqualTo(40), nameof(struc.var_16));
 				Assert.That(struc.var_1A, Is.EqualTo(21), nameof(struc.var_1A));
 				Assert.That(struc.var_E8, Is.EqualTo(1), nameof(struc.var_E8));
-				Assert.That(struc.var_E9, Is.EqualTo(1), nameof(struc.var_E9));
-				Assert.That(struc.var_EA, Is.EqualTo(0), nameof(struc.var_EA));
-				Assert.That(struc.var_EB, Is.EqualTo(0), nameof(struc.var_EB));
-				Assert.That(struc.var_EC, Is.EqualTo(0), nameof(struc.var_EC));
+				Assert.That(struc.FarmTileNumImageAngles, Is.EqualTo(1), nameof(struc.FarmTileNumImageAngles));
+				Assert.That(struc.FarmGrowthStageWithNoProduction, Is.EqualTo(0), nameof(struc.FarmGrowthStageWithNoProduction));
+				Assert.That(struc.FarmIdealSize, Is.EqualTo(0), nameof(struc.FarmIdealSize));
+				Assert.That(struc.FarmNumStagesOfGrowth, Is.EqualTo(0), nameof(struc.FarmNumStagesOfGrowth));
 				Assert.That(struc.var_F3, Is.EqualTo(1), nameof(struc.var_F3));
 				// Walls
 				Assert.That(struc.WallTypes, Has.Count.EqualTo(0));
@@ -494,10 +494,10 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.var_16, Is.EqualTo(16), nameof(struc.var_16));
 				Assert.That(struc.var_1A, Is.EqualTo(21), nameof(struc.var_1A));
 				Assert.That(struc.var_E8, Is.EqualTo(1), nameof(struc.var_E8));
-				Assert.That(struc.var_E9, Is.EqualTo(1), nameof(struc.var_E9));
-				Assert.That(struc.var_EA, Is.EqualTo(0), nameof(struc.var_EA));
-				Assert.That(struc.var_EB, Is.EqualTo(0), nameof(struc.var_EB));
-				Assert.That(struc.var_EC, Is.EqualTo(0), nameof(struc.var_EC));
+				Assert.That(struc.FarmTileNumImageAngles, Is.EqualTo(1), nameof(struc.FarmTileNumImageAngles));
+				Assert.That(struc.FarmGrowthStageWithNoProduction, Is.EqualTo(0), nameof(struc.FarmGrowthStageWithNoProduction));
+				Assert.That(struc.FarmIdealSize, Is.EqualTo(0), nameof(struc.FarmIdealSize));
+				Assert.That(struc.FarmNumStagesOfGrowth, Is.EqualTo(0), nameof(struc.FarmNumStagesOfGrowth));
 				Assert.That(struc.var_F3, Is.EqualTo(1), nameof(struc.var_F3));
 				// Walls
 				Assert.That(struc.WallTypes, Has.Count.EqualTo(0));
@@ -548,13 +548,13 @@ namespace OpenLoco.Dat.Tests
 			void assertFunc(ILocoObject obj, LandObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.CostIndex, Is.EqualTo(2), nameof(struc.CostIndex));
-				Assert.That(struc.var_03, Is.EqualTo(5), nameof(struc.var_03));
-				Assert.That(struc.var_04, Is.EqualTo(1), nameof(struc.var_04));
+				Assert.That(struc.NumGrowthStages, Is.EqualTo(5), nameof(struc.NumGrowthStages));
+				Assert.That(struc.NumImageAngles, Is.EqualTo(1), nameof(struc.NumImageAngles));
 				Assert.That(struc.Flags, Is.EqualTo(LandObjectFlags.unk_00), nameof(struc.Flags));
 				Assert.That(struc.CliffEdgeHeader1, Is.EqualTo(0), nameof(struc.CliffEdgeHeader1));
 				Assert.That(struc.CliffEdgeHeader2, Is.EqualTo(0), nameof(struc.CliffEdgeHeader2));
 				Assert.That(struc.CostFactor, Is.EqualTo(20), nameof(struc.CostFactor));
-				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
+				Assert.That(struc.NumImagesPerGrowthStage, Is.EqualTo(0), nameof(struc.NumImagesPerGrowthStage));
 				Assert.That(struc.CliffEdgeImage, Is.EqualTo(0), nameof(struc.CliffEdgeImage));
 				Assert.That(struc.MapPixelImage, Is.EqualTo(0), nameof(struc.MapPixelImage));
 				Assert.That(struc.DistributionPattern, Is.EqualTo(0), nameof(struc.DistributionPattern));

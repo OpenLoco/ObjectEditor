@@ -72,10 +72,10 @@ namespace OpenLoco.Gui.ViewModels
 			MapColour = io.MapColour;
 			Flags = io.Flags;
 			var_E8 = io.var_E8;
-			var_E9 = io.var_E9;
-			var_EA = io.var_EA;
-			var_EB = io.var_EB;
-			var_EC = io.var_EC;
+			var_E9 = io.FarmTileNumImageAngles;
+			var_EA = io.FarmGrowthStageWithNoProduction;
+			var_EB = io.FarmIdealSize;
+			var_EC = io.FarmNumStagesOfGrowth;
 			var_F3 = io.var_E8;
 		}
 
@@ -106,10 +106,10 @@ namespace OpenLoco.Gui.ViewModels
 				MapColour = MapColour,
 				Flags = Flags,
 				var_E8 = var_E8,
-				var_E9 = var_E9,
-				var_EA = var_EA,
-				var_EB = var_EB,
-				var_EC = var_EC,
+				FarmTileNumImageAngles = var_E9,
+				FarmGrowthStageWithNoProduction = var_EA,
+				FarmIdealSize = var_EB,
+				FarmNumStagesOfGrowth = var_EC,
 				var_F3 = var_E8,
 			};
 	}

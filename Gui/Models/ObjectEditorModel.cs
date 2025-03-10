@@ -152,137 +152,27 @@ namespace OpenLoco.Gui.Models
 
 		public bool TryLoadObject(FileSystemItem filesystemItem, out UiDatLocoFile? uiLocoFile)
 		{
+			uiLocoFile = null;
+
 			if (string.IsNullOrEmpty(filesystemItem.Filename))
 			{
-				uiLocoFile = null;
 				return false;
 			}
 
-			DatFileInfo? fileInfo = null;
-			ILocoObject? locoObject = null;
-			MetadataModel? metadata = null;
-			uiLocoFile = null;
-			List<Image<Rgba32>> images = [];
-
 			try
 			{
-				if (filesystemItem.FileLocation == FileLocation.Online)
+				var result = filesystemItem.FileLocation == FileLocation.Online
+					? TryLoadOnlineFile(filesystemItem, out uiLocoFile)
+					: TryLoadLocalFile(filesystemItem, out uiLocoFile);
+
+				if (uiLocoFile?.DatFileInfo == null)
 				{
-					var uniqueObjectId = int.Parse(Path.GetFileName(filesystemItem.Filename));
-
-					if (!OnlineCache.TryGetValue(uniqueObjectId, out var locoObj))
-					{
-						if (WebClient == null)
-						{
-							Logger.Error("Web client is null");
-							return false;
-						}
-
-						Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {WebClient.BaseAddress}");
-						locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId, true)).Result;
-
-						if (locoObj == null)
-						{
-							Logger.Error($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no data");
-							return false;
-						}
-						else if (string.IsNullOrEmpty(locoObj.DatBytes))
-						{
-							Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
-						}
-						else if (locoObj.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
-						{
-							Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
-						}
-
-						Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");
-						Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", locoObj?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
-						OnlineCache.Add(uniqueObjectId, locoObj!);
-
-						if (!string.IsNullOrEmpty(locoObj!.DatBytes))
-						{
-							var filename = Path.Combine(Settings.DownloadFolder, $"{locoObj.UniqueName}.dat");
-							if (!File.Exists(filename))
-							{
-								File.WriteAllBytes(filename, Convert.FromBase64String(locoObj.DatBytes));
-								Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {filename}");
-							}
-						}
-					}
-					else
-					{
-						Logger.Debug($"Found object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - reusing it");
-					}
-
-					if (locoObj != null)
-					{
-						if (locoObj.DatBytes?.Length > 0)
-						{
-							var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
-							fileInfo = obj.DatFileInfo;
-							locoObject = obj.LocoObject;
-							if (obj.LocoObject == null)
-							{
-								Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
-							}
-						}
-
-						metadata = new MetadataModel(locoObj.UniqueName, locoObj.DatName, locoObj.DatChecksum)
-						{
-							Description = locoObj.Description,
-							Authors = locoObj.Authors,
-							CreationDate = locoObj.CreationDate,
-							LastEditDate = locoObj.LastEditDate,
-							UploadDate = locoObj.UploadDate,
-							Tags = locoObj.Tags,
-							ObjectPacks = locoObj.ObjectPacks,
-							Availability = locoObj.Availability,
-							Licence = locoObj.Licence,
-						};
-
-						if (locoObject != null)
-						{
-							foreach (var i in locoObject.G1Elements)
-							{
-								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
-								{
-									images.Add(image!);
-								}
-							}
-						}
-					}
+					Logger.Error($"Unable to load {filesystemItem.Filename}");
+					uiLocoFile = null;
+					return false;
 				}
-				else
-				{
-					var filename = string.Empty;
-					if (File.Exists(filesystemItem.Filename))
-					{
-						filename = filesystemItem.Filename;
-					}
-					else
-					{
-						filename = Path.Combine(Settings.ObjDataDirectory, filesystemItem.Filename);
-					}
 
-					var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
-					if (obj != null)
-					{
-						fileInfo = obj.Value.DatFileInfo;
-						locoObject = obj.Value.LocoObject;
-						metadata = null; // todo: look this up from internet anyways
-
-						if (locoObject != null)
-						{
-							foreach (var i in locoObject.G1Elements)
-							{
-								if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
-								{
-									images.Add(image!);
-								}
-							}
-						}
-					}
-				}
+				return result;
 			}
 			catch (Exception ex)
 			{
@@ -290,15 +180,138 @@ namespace OpenLoco.Gui.Models
 				uiLocoFile = null;
 				return false;
 			}
+		}
 
-			if (fileInfo == null)
+		bool TryLoadOnlineFile(FileSystemItem filesystemItem, out UiDatLocoFile? locoDatFile)
+		{
+			locoDatFile = null;
+
+			DatFileInfo? fileInfo = null;
+			ILocoObject? locoObject = null;
+			MetadataModel? metadata = null;
+			List<Image<Rgba32>> images = [];
+
+			var uniqueObjectId = int.Parse(Path.GetFileName(filesystemItem.Filename));
+
+			if (!OnlineCache.TryGetValue(uniqueObjectId, out var locoObj))
 			{
-				Logger.Error($"Unable to load {filesystemItem.Filename}");
-				uiLocoFile = null;
-				return false;
+				if (WebClient == null)
+				{
+					Logger.Error("Web client is null");
+					return false;
+				}
+
+				Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {WebClient.BaseAddress}");
+				locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId, true)).Result;
+
+				if (locoObj == null)
+				{
+					Logger.Error($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no data");
+					return false;
+				}
+				else if (string.IsNullOrEmpty(locoObj.DatBytes))
+				{
+					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
+				}
+				else if (locoObj.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+				{
+					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
+				}
+
+				Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");
+				Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", locoObj?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
+				OnlineCache.Add(uniqueObjectId, locoObj!);
+
+				if (!string.IsNullOrEmpty(locoObj!.DatBytes))
+				{
+					var filename = Path.Combine(Settings.DownloadFolder, $"{locoObj.UniqueName}.dat");
+					if (!File.Exists(filename))
+					{
+						File.WriteAllBytes(filename, Convert.FromBase64String(locoObj.DatBytes));
+						Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {filename}");
+					}
+				}
+			}
+			else
+			{
+				Logger.Debug($"Found object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - reusing it");
 			}
 
-			uiLocoFile = new UiDatLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata, Images = images };
+			if (locoObj != null)
+			{
+				if (locoObj.DatBytes?.Length > 0)
+				{
+					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
+					fileInfo = obj.DatFileInfo;
+					locoObject = obj.LocoObject;
+					if (obj.LocoObject == null)
+					{
+						Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
+					}
+				}
+
+				metadata = new MetadataModel(locoObj.UniqueName, locoObj.DatName, locoObj.DatChecksum)
+				{
+					Description = locoObj.Description,
+					Authors = locoObj.Authors,
+					CreationDate = locoObj.CreationDate,
+					LastEditDate = locoObj.LastEditDate,
+					UploadDate = locoObj.UploadDate,
+					Tags = locoObj.Tags,
+					ObjectPacks = locoObj.ObjectPacks,
+					Availability = locoObj.Availability,
+					Licence = locoObj.Licence,
+				};
+
+				if (locoObject != null)
+				{
+					foreach (var i in locoObject.G1Elements)
+					{
+						if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
+						{
+							images.Add(image!);
+						}
+					}
+				}
+			}
+
+			locoDatFile = new UiDatLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata, Images = images };
+			return true;
+		}
+
+		bool TryLoadLocalFile(FileSystemItem filesystemItem, out UiDatLocoFile? locoDatFile)
+		{
+			locoDatFile = null;
+
+			DatFileInfo? fileInfo = null;
+			ILocoObject? locoObject = null;
+			MetadataModel? metadata = null;
+			List<Image<Rgba32>> images = [];
+
+			var filename = File.Exists(filesystemItem.Filename)
+				? filesystemItem.Filename
+				: Path.Combine(Settings.ObjDataDirectory, filesystemItem.Filename);
+
+			var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
+			if (obj != null)
+			{
+				fileInfo = obj.Value.DatFileInfo;
+				locoObject = obj.Value.LocoObject;
+				metadata = null; // todo: look this up from internet anyways
+
+				if (locoObject != null)
+				{
+					foreach (var i in locoObject.G1Elements)
+					{
+						if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
+						{
+							images.Add(image!);
+						}
+					}
+				}
+			}
+
+			locoDatFile = new UiDatLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata, Images = images };
 			return true;
 		}
 

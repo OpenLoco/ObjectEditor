@@ -136,7 +136,7 @@ namespace OpenLoco.Gui.ViewModels
 
 					ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
 						? new AudioViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-						: new ImageTableViewModel(CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, CurrentObject.Images, Model.Logger);
+						: new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
 				}
 				else
 				{

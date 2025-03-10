@@ -44,7 +44,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0xD4)] uint8_t ScaffoldingSegmentType,
 		[property: LocoStructOffset(0xD5)] Colour ScaffoldingColour,
 		[property: LocoStructOffset(0xD6), LocoArrayLength(IndustryObject.InitialProductionRateCount)] IndustryObjectProductionRateRange[] InitialProductionRate,
-		[property: LocoStructOffset(0xDE), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxProducedCargoType)] List<S5Header> ProducedCargo,   // (0xFF = null)
+		[property: LocoStructOffset(0xDE), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxProducedCargoType)] List<S5Header> ProducedCargo, // (0xFF = null)
 		[property: LocoStructOffset(0xE0), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxRequiredCargoType)] List<S5Header> RequiredCargo, // (0xFF = null)
 		[property: LocoStructOffset(0xE3)] Colour MapColour,
 		[property: LocoStructOffset(0xE4)] IndustryObjectFlags Flags,

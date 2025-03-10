@@ -59,7 +59,7 @@ namespace OpenLoco.Gui
 			}
 
 			var text = File.ReadAllText(filename);
-			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: JsonFile.SerializerOptions); // todo: try-catch this for invalid settings files
+			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: JsonFile.DefaultSerializerOptions); // todo: try-catch this for invalid settings files
 			ArgumentNullException.ThrowIfNull(settings);
 			return settings;
 		}
@@ -69,7 +69,7 @@ namespace OpenLoco.Gui
 
 		static void Save(EditorSettings settings, string filename, ILogger logger)
 		{
-			var text = JsonSerializer.Serialize(settings, options: JsonFile.SerializerOptions);
+			var text = JsonSerializer.Serialize(settings, options: JsonFile.DefaultSerializerOptions);
 
 			var parentDir = Path.GetDirectoryName(filename);
 			if (parentDir != null && !Directory.Exists(parentDir))

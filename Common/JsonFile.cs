@@ -8,7 +8,7 @@ namespace Common.Json
 		const int BufferSize = 4096;
 
 		[JsonIgnore]
-		public static JsonSerializerOptions SerializerOptions { get; } = new()
+		public static JsonSerializerOptions DefaultSerializerOptions { get; } = new()
 		{
 			WriteIndented = true,
 			AllowTrailingCommas = true
@@ -24,7 +24,7 @@ namespace Common.Json
 				bufferSize: BufferSize,
 				useAsync: true))
 			{
-				await JsonSerializer.SerializeAsync(fileStream, obj, options).ConfigureAwait(false);
+				await JsonSerializer.SerializeAsync(fileStream, obj, options ?? DefaultSerializerOptions).ConfigureAwait(false);
 			}
 		}
 
@@ -38,7 +38,7 @@ namespace Common.Json
 				bufferSize: BufferSize,
 				useAsync: true))
 			{
-				return await JsonSerializer.DeserializeAsync<T?>(fileStream, options).ConfigureAwait(false);
+				return await JsonSerializer.DeserializeAsync<T?>(fileStream, options ?? DefaultSerializerOptions).ConfigureAwait(false);
 			}
 		}
 	}

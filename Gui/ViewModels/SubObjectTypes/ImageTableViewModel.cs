@@ -253,6 +253,7 @@ namespace OpenLoco.Gui.ViewModels
 					var numFiles = files.Length;
 
 					IEnumerable<G1Element32Json> offsets;
+					var usingJson = false;
 
 					// check for offsets file
 					var offsetsFile = Path.Combine(dirPath, "sprites.json");
@@ -262,6 +263,7 @@ namespace OpenLoco.Gui.ViewModels
 						ArgumentNullException.ThrowIfNull(offsets);
 						numFiles = offsets.Count();
 						Logger.Debug($"Found sprites.json file with {numFiles} images; using that");
+						usingJson = true;
 					}
 					else
 					{
@@ -283,6 +285,11 @@ namespace OpenLoco.Gui.ViewModels
 					for (var i = 0; i < numFiles; ++i)
 					{
 						var offsetPath = offsetList[i].Path;
+						if (usingJson && offsetPath == "")
+						{
+							CreateBlankImage(offsetList[i]);	
+							continue;
+						}
 						var validPath = string.IsNullOrEmpty(offsetPath) ? $"{i}.png" : offsetPath;
 						Logger.Debug($"Loading image {validPath} as sprite {i}");
 						var filename = Path.Combine(dirPath, validPath);
@@ -299,6 +306,21 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			animationTimer.Start();
+
+			void CreateBlankImage(G1Element32Json ele)
+			{
+				var img = new Image<Rgba32>(1, 1, new Rgba32(0, 0, 0, 0));
+
+				var flags = ele.Flags ?? G1ElementFlags.None;
+				var newElement = new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, ele.XOffset, ele.YOffset, flags, ele.ZoomOffset ?? 0)
+				{
+					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags, SelectedPrimarySwatch, SelectedSecondarySwatch)
+				};
+
+				G1Provider.G1Elements.Add(newElement);
+				Images.Add(img);
+				Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
+			}
 
 			void LoadSprite(string filename, G1Element32Json ele)
 			{

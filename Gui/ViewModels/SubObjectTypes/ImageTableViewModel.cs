@@ -16,6 +16,7 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -249,8 +250,7 @@ namespace OpenLoco.Gui.ViewModels
 
 					// count files in dir and check naming
 					var files = Directory.GetFiles(dirPath, "*.png", SearchOption.AllDirectories);
-
-					Logger.Debug($"{files.Length} files in current directory");
+					var numFiles = files.Length;
 
 					IEnumerable<G1Element32Json> offsets;
 
@@ -260,16 +260,18 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						offsets = JsonSerializer.Deserialize<ICollection<G1Element32Json>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 						ArgumentNullException.ThrowIfNull(offsets);
-						Logger.Debug("Found sprites.json file; using that");
+						numFiles = offsets.Count();
+						Logger.Debug($"Found sprites.json file with {numFiles} images; using that");
 					}
 					else
 					{
+						Logger.Debug($"{numFiles} files in current directory");
 						offsets = G1Provider.G1Elements.Select((x, i) => new G1Element32Json($"{i}.png", x.XOffset, x.YOffset));
 						Logger.Debug("Didn't find sprites.json; using existing G1Element32 offsets");
 					}
 
-					offsets = offsets.Fill(files.Length, G1Element32Json.Zero);
 
+					offsets = offsets.Fill(numFiles, G1Element32Json.Zero);
 					// clear existing images
 					Logger.Info("Clearing current G1Element32s and existing object images");
 					G1Provider.G1Elements.Clear();
@@ -278,10 +280,11 @@ namespace OpenLoco.Gui.ViewModels
 
 					// load files
 					var offsetList = offsets.ToList();
-					for (var i = 0; i < files.Length; ++i)
+					for (var i = 0; i < numFiles; ++i)
 					{
 						var offsetPath = offsetList[i].Path;
 						var validPath = string.IsNullOrEmpty(offsetPath) ? $"{i}.png" : offsetPath;
+						Logger.Debug($"Loading image {validPath} as sprite {i}");
 						var filename = Path.Combine(dirPath, validPath);
 						LoadSprite(filename, offsetList[i]);
 					}

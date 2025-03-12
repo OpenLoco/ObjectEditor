@@ -16,7 +16,6 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -49,7 +48,7 @@ namespace OpenLoco.Gui.ViewModels
 		{ }
 
 		public static G1Element32Json Zero
-			=> new G1Element32Json(string.Empty, 0, 0, 0, G1ElementFlags.None);
+			=> new(string.Empty, 0, 0, 0, G1ElementFlags.None);
 	}
 
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
@@ -248,12 +247,7 @@ namespace OpenLoco.Gui.ViewModels
 				{
 					Logger.Debug($"{G1Provider.G1Elements.Count} images in current object");
 
-					// count files in dir and check naming
-					var files = Directory.GetFiles(dirPath, "*.png", SearchOption.AllDirectories);
-					var numFiles = files.Length;
-
-					IEnumerable<G1Element32Json> offsets;
-					var usingJson = false;
+					ICollection<G1Element32Json> offsets;
 
 					// check for offsets file
 					var offsetsFile = Path.Combine(dirPath, "sprites.json");
@@ -261,39 +255,33 @@ namespace OpenLoco.Gui.ViewModels
 					{
 						offsets = JsonSerializer.Deserialize<ICollection<G1Element32Json>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 						ArgumentNullException.ThrowIfNull(offsets);
-						numFiles = offsets.Count();
-						Logger.Debug($"Found sprites.json file with {numFiles} images; using that");
-						usingJson = true;
+						Logger.Debug($"Found sprites.json file with {offsets.Count} images");
 					}
 					else
 					{
-						Logger.Debug($"{numFiles} files in current directory");
-						offsets = G1Provider.G1Elements.Select((x, i) => new G1Element32Json($"{i}.png", x.XOffset, x.YOffset));
-						Logger.Debug("Didn't find sprites.json; using existing G1Element32 offsets");
+						var files = Directory.GetFiles(dirPath, "*.png", SearchOption.AllDirectories);
+						offsets = G1Provider.G1Elements
+							.Select((x, i) => new G1Element32Json($"{i}.png", x.XOffset, x.YOffset))
+							.Fill(files.Length, G1Element32Json.Zero)
+							.ToList();
+						Logger.Debug($"Didn't find sprites.json file, using existing G1Element32 offsets with {offsets.Count} images");
 					}
 
-
-					offsets = offsets.Fill(numFiles, G1Element32Json.Zero);
 					// clear existing images
-					Logger.Info("Clearing current G1Element32s and existing object images");
+					Logger.Debug("Clearing current G1Element32s and existing object images");
 					G1Provider.G1Elements.Clear();
 					Images.Clear();
 					Bitmaps.Clear();
 
 					// load files
-					var offsetList = offsets.ToList();
-					for (var i = 0; i < numFiles; ++i)
+					foreach (var (offset, i) in offsets.Select((x, i) => (x, i)))
 					{
-						var offsetPath = offsetList[i].Path;
-						if (usingJson && offsetPath == "")
-						{
-							CreateBlankImage(offsetList[i]);	
-							continue;
-						}
-						var validPath = string.IsNullOrEmpty(offsetPath) ? $"{i}.png" : offsetPath;
-						Logger.Debug($"Loading image {validPath} as sprite {i}");
-						var filename = Path.Combine(dirPath, validPath);
-						LoadSprite(filename, offsetList[i]);
+						var img = string.IsNullOrEmpty(offset.Path) ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(dirPath, offset.Path));
+						var g1Element32 = G1Element32FromImage(offset, img);
+
+						G1Provider.G1Elements.Add(g1Element32);
+						Images.Add(img);
+						Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
 					}
 
 					Logger.Debug($"Imported {G1Provider.G1Elements.Count} images successfully");
@@ -307,42 +295,17 @@ namespace OpenLoco.Gui.ViewModels
 
 			animationTimer.Start();
 
-			void CreateBlankImage(G1Element32Json ele)
+			G1Element32 G1Element32FromImage(G1Element32Json ele, Image<Rgba32> img)
 			{
-				var img = new Image<Rgba32>(1, 1, new Rgba32(0, 0, 0, 0));
-
 				var flags = ele.Flags ?? G1ElementFlags.None;
-				var newElement = new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, ele.XOffset, ele.YOffset, flags, ele.ZoomOffset ?? 0)
+				return new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, ele.XOffset, ele.YOffset, flags, ele.ZoomOffset ?? 0)
 				{
 					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags, SelectedPrimarySwatch, SelectedSecondarySwatch)
 				};
-
-				G1Provider.G1Elements.Add(newElement);
-				Images.Add(img);
-				Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
-			}
-
-			void LoadSprite(string filename, G1Element32Json ele)
-			{
-				if (!File.Exists(filename))
-				{
-					Logger.Error($"File doesn't exist: \"{filename}\"");
-					return;
-				}
-
-				var img = Image.Load<Rgba32>(filename);
-
-				var flags = ele.Flags ?? G1ElementFlags.None;
-				var newElement = new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, ele.XOffset, ele.YOffset, flags, ele.ZoomOffset ?? 0)
-				{
-					ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags, SelectedPrimarySwatch, SelectedSecondarySwatch)
-				};
-
-				G1Provider.G1Elements.Add(newElement);
-				Images.Add(img);
-				Bitmaps.Add(G1ImageConversion.CreateAvaloniaImage(img));
 			}
 		}
+
+		static readonly Image<Rgba32> OnePixelTransparent = new(1, 1, PaletteMap.Transparent.Color);
 
 		public void RecalcImages()
 		{
@@ -494,9 +457,6 @@ namespace OpenLoco.Gui.ViewModels
 			this.RaisePropertyChanged(nameof(SelectedG1Element));
 		}
 
-		void UpdateImage(Image<Rgba32> img, int index, G1Element32Json ele)
-			=> UpdateImage(img, index, ele.Flags, ele.XOffset, ele.YOffset, ele.ZoomOffset);
-
 		void UpdateImage(Image<Rgba32> img, int index, G1ElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
 		{
 			if (index == -1)
@@ -508,7 +468,7 @@ namespace OpenLoco.Gui.ViewModels
 			Bitmaps[index] = G1ImageConversion.CreateAvaloniaImage(img);
 
 			var currG1 = G1Provider.G1Elements[index];
-			G1Provider.G1Elements[index] = (currG1 with
+			G1Provider.G1Elements[index] = currG1 with
 			{
 				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags ?? currG1.Flags, SelectedPrimarySwatch, SelectedSecondarySwatch),
 				Width = (int16_t)img.Width,
@@ -517,7 +477,7 @@ namespace OpenLoco.Gui.ViewModels
 				XOffset = xOffset ?? currG1.XOffset,
 				YOffset = yOffset ?? currG1.YOffset,
 				ZoomOffset = zoomOffset ?? currG1.ZoomOffset,
-			});
+			};
 		}
 
 		public static string GetImageName(IImageTableNameProvider nameProvider, int counter)

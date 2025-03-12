@@ -1,7 +1,11 @@
-# Set default behavior to automatically normalize line endings.
+# Set default behavior to automatically normalize line endings
 * text=auto
 
-# Force LF line endings for specific file types.
+# Force LF line endings for specific file types
 *.cs text eol=lf
 
 # Add any other file extensions that should use LF endings
+
+# Explicitly declare binary files to prevent line ending conversion
+*.exe binary
+*.dll binary

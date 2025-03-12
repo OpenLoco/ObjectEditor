@@ -62,11 +62,7 @@ namespace OpenLoco.Gui.ViewModels
 		public int SelectedImageIndex { get; set; } = -1;
 
 		[Reactive]
-		public SelectionModel<Bitmap> SelectionModel
-		{
-			get;
-			set;
-		}
+		public SelectionModel<Bitmap> SelectionModel { get; set; }
 
 		public UIG1Element32? SelectedG1Element
 			=> SelectedImageIndex == -1 || Model.G1Provider.G1Elements.Count == 0 || SelectedImageIndex >= Model.G1Provider.G1Elements.Count

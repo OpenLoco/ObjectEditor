@@ -19,6 +19,8 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	{
+		public string Name => "Image Table";
+
 		// used in the axaml to bind the combobox to the list of swatches
 		public ColourRemapSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourRemapSwatch>();
 

@@ -50,9 +50,9 @@
 						</ItemsRepeater>
 					</DockPanel>
 				</TabItem>
-				<TabItem Header="Image/Sound Table">
+				<TabItem DataContext="{Binding ExtraContentViewModel}" Header="{Binding Name}">
 					<DockPanel>
-						<ContentControl Content="{Binding ExtraContentViewModel}" />
+						<ContentControl Content="{Binding}" />
 					</DockPanel>
 				</TabItem>
 				<TabItem Header="Metadata">

@@ -48,7 +48,7 @@ namespace OpenLoco.Gui.ViewModels
 		{ }
 
 		public static G1Element32Json Zero
-			=> new G1Element32Json(string.Empty, 0, 0, 0, G1ElementFlags.None);
+			=> new(string.Empty, 0, 0, 0, G1ElementFlags.None);
 	}
 
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
@@ -469,9 +469,6 @@ namespace OpenLoco.Gui.ViewModels
 			this.RaisePropertyChanged(nameof(SelectedG1Element));
 		}
 
-		void UpdateImage(Image<Rgba32> img, int index, G1Element32Json ele)
-			=> UpdateImage(img, index, ele.Flags, ele.XOffset, ele.YOffset, ele.ZoomOffset);
-
 		void UpdateImage(Image<Rgba32> img, int index, G1ElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
 		{
 			if (index == -1)
@@ -483,7 +480,7 @@ namespace OpenLoco.Gui.ViewModels
 			Bitmaps[index] = G1ImageConversion.CreateAvaloniaImage(img);
 
 			var currG1 = G1Provider.G1Elements[index];
-			G1Provider.G1Elements[index] = (currG1 with
+			G1Provider.G1Elements[index] = currG1 with
 			{
 				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags ?? currG1.Flags, SelectedPrimarySwatch, SelectedSecondarySwatch),
 				Width = (int16_t)img.Width,
@@ -492,7 +489,7 @@ namespace OpenLoco.Gui.ViewModels
 				XOffset = xOffset ?? currG1.XOffset,
 				YOffset = yOffset ?? currG1.YOffset,
 				ZoomOffset = zoomOffset ?? currG1.ZoomOffset,
-			});
+			};
 		}
 
 		public static string GetImageName(IImageTableNameProvider nameProvider, int counter)

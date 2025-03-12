@@ -9,7 +9,7 @@ namespace OpenLoco.Dat.Objects
 	public record GearboxMotorSound(
 		[property: LocoStructOffset(0x00), Browsable(false)] uint8_t SoundObjectId,
 		[property: LocoStructOffset(0x01)] uint16_t IdleFrequency,
-		[property: LocoStructOffset(0x02)] uint8_t IdleVolume,
+		[property: LocoStructOffset(0x03)] uint8_t IdleVolume,
 		[property: LocoStructOffset(0x04)] uint16_t FirstGearFrequency, // All subsequent gears are based on this frequency
 		[property: LocoStructOffset(0x06)] Speed16 FirstGearSpeed,
 		[property: LocoStructOffset(0x08)] uint16_t SecondGearFrequencyOffset,

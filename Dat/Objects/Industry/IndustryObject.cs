@@ -19,10 +19,10 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id NameDownProduction,
 		[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id NameSingular,
 		[property: LocoStructOffset(0x0C), LocoString, Browsable(false)] string_id NamePlural,
-		[property: LocoStructOffset(0x0E), Browsable(false)] image_id _var_0E, // shadows image id base
-		[property: LocoStructOffset(0x12), Browsable(false)] image_id _var_12, // Base image id for building 0
-		[property: LocoStructOffset(0x16), Browsable(false)] image_id _var_16,
-		[property: LocoStructOffset(0x1A), Browsable(false)] image_id _var_1A,
+		[property: LocoStructOffset(0x0E), Browsable(false)] image_id BaseShadowImageId, // shadows image id base
+		[property: LocoStructOffset(0x12), Browsable(false)] image_id BaseBuildingImageId, // Base image id for building 0
+		[property: LocoStructOffset(0x16), Browsable(false)] image_id BaseFarmImageIds,
+		[property: LocoStructOffset(0x1A), Browsable(false)] uint32_t FarmImagesPerGrowthStage,
 		[property: LocoStructOffset(0x1E)] uint8_t NumBuildingParts,
 		[property: LocoStructOffset(0x1F)] uint8_t NumBuildingVariations,
 		[property: LocoStructOffset(0x20), LocoStructVariableLoad, LocoArrayLength(IndustryObject.BuildingHeightCount)] List<uint8_t> BuildingHeights,    // This is the height of a building image
@@ -49,14 +49,14 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0xE3)] Colour MapColour,
 		[property: LocoStructOffset(0xE4)] IndustryObjectFlags Flags,
 		[property: LocoStructOffset(0xE8)] uint8_t var_E8,
-		[property: LocoStructOffset(0xE9)] uint8_t var_E9,
-		[property: LocoStructOffset(0xEA)] uint8_t var_EA,
-		[property: LocoStructOffset(0xEB)] uint8_t var_EB,
-		[property: LocoStructOffset(0xEC)] uint8_t var_EC,
+		[property: LocoStructOffset(0xE9)] uint8_t FarmTileNumImageAngles, // How many viewing angles the farm tiles have
+		[property: LocoStructOffset(0xEA)] uint8_t FarmGrowthStageWithNoProduction, // At this stage of growth (except 0), a field tile produces nothing
+		[property: LocoStructOffset(0xEB)] uint8_t FarmIdealSize, // Max production is reached at farmIdealSize * 25 tiles
+		[property: LocoStructOffset(0xEC)] uint8_t FarmNumStagesOfGrowth, // How many growth stages there are sprites for
 		[property: LocoStructOffset(0xED), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxWallTypeCount)] List<S5Header> WallTypes, // There can be up to 4 different wall types for an industry
 		[property: LocoStructOffset(0xF1), LocoStructVariableLoad, Browsable(false)] object_id _BuildingWall, // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
 		[property: LocoStructOffset(0xF2), LocoStructVariableLoad, Browsable(false)] object_id _BuildingWallEntrance, // An alternative wall type that looks like a gate placed at random places in building perimeter
-		[property: LocoStructOffset(0xF3)] uint8_t var_F3
+		[property: LocoStructOffset(0xF3)] uint8_t MonthlyClosureChance
 		) : ILocoStruct, ILocoStructVariableData
 	{
 		public const int AnimationSequencesCount = 4;
@@ -177,7 +177,7 @@ namespace OpenLoco.Dat.Objects
 			}
 
 			var_16 = (NumBuildingParts * 4u) + var_12;
-			var_1A = var_E9 * 21u;
+			var_1A = FarmTileNumImageAngles * 21u;
 
 			return remainingData;
 		}
@@ -302,7 +302,7 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			switch (var_E9)
+			switch (FarmTileNumImageAngles)
 			{
 				case 1:
 				case 2:
@@ -312,12 +312,12 @@ namespace OpenLoco.Dat.Objects
 					return false;
 			}
 
-			if (var_EA is not 0xFF and > 7)
+			if (FarmGrowthStageWithNoProduction is not 0xFF and > 7)
 			{
 				return false;
 			}
 
-			if (var_EC > 8)
+			if (FarmNumStagesOfGrowth > 8)
 			{
 				return false;
 			}

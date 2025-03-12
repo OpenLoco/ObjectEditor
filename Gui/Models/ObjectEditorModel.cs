@@ -168,7 +168,7 @@ namespace OpenLoco.Gui.Models
 			{
 				if (filesystemItem.FileLocation == FileLocation.Online)
 				{
-					var uniqueObjectId = int.Parse(filesystemItem.Filename);
+					var uniqueObjectId = int.Parse(Path.GetFileName(filesystemItem.Filename));
 
 					if (!OnlineCache.TryGetValue(uniqueObjectId, out var locoObj))
 					{

@@ -13,7 +13,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x04)] uint16_t CoastingFrequency,
 		[property: LocoStructOffset(0x06)] uint8_t CoastingVolume,
 		[property: LocoStructOffset(0x07)] uint16_t AccelerationBaseFrequency,
-		[property: LocoStructOffset(0x08)] uint8_t AccelerationVolume,
+		[property: LocoStructOffset(0x09)] uint8_t AccelerationVolume,
 		[property: LocoStructOffset(0x0A)] uint16_t FreqIncreaseStep,
 		[property: LocoStructOffset(0x0C)] uint16_t FreqDecreaseStep,
 		[property: LocoStructOffset(0x0E)] uint8_t VolumeIncreaseStep,

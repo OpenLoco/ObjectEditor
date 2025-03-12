@@ -67,20 +67,10 @@ namespace OpenLoco.Dat.Objects
 		public VehicleObject() : this(0, TransportMode.Rail, VehicleType.Train, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, 0, 0, 0, VehicleObjectFlags.None, [], [[], []], [], 0, [], 0, 0, 0, 0, DrivingSoundType.None, [], [], 0, [])
 		{ }
 
-		//public static object? GetSoundAs(DrivingSoundType soundType, ReadOnlySpan<byte> soundPropertiesData)
-		//	=> soundType switch
-		//	{
-		//		DrivingSoundType.None => default,
-		//		DrivingSoundType.Friction => ByteReader.ReadLocoStruct<FrictionSound>(soundPropertiesData[..ObjectAttributes.StructSize<FrictionSound>()]),
-		//		DrivingSoundType.Engine1 => ByteReader.ReadLocoStruct<Engine1Sound>(soundPropertiesData[..ObjectAttributes.StructSize<Engine1Sound>()]),
-		//		DrivingSoundType.Engine2 => ByteReader.ReadLocoStruct<Engine2Sound>(soundPropertiesData[..ObjectAttributes.StructSize<Engine2Sound>()]),
-		//		_ => throw new ArgumentOutOfRangeException()
-		//	};
-
 		public T GetSoundAs<T>() where T : ILocoStruct
 			=> (T)ByteReader.ReadLocoStruct(SoundPropertiesData.AsSpan()[..ObjectAttributes.StructSize<T>()], typeof(T));
 
-		public FrictionSound? SoundPropertyFriction
+		public FrictionSound? FrictionSound
 		{
 			get => DrivingSoundType == DrivingSoundType.Friction ? GetSoundAs<FrictionSound>() : null;
 			set
@@ -92,7 +82,7 @@ namespace OpenLoco.Dat.Objects
 			}
 		}
 
-		public SimpleMotorSound? SoundPropertyEngine1
+		public SimpleMotorSound? SimpleMotorSound
 		{
 			get => DrivingSoundType == DrivingSoundType.SimpleMotor ? GetSoundAs<SimpleMotorSound>() : null;
 			set
@@ -104,7 +94,7 @@ namespace OpenLoco.Dat.Objects
 			}
 		}
 
-		public GearboxMotorSound? SoundPropertyEngine2
+		public GearboxMotorSound? GearboxMotorSound
 		{
 			get => DrivingSoundType == DrivingSoundType.GearboxMotor ? GetSoundAs<GearboxMotorSound>() : null;
 			set

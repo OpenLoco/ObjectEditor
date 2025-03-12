@@ -50,7 +50,7 @@ namespace OpenLoco.Gui.ViewModels
 				i++;
 			}
 
-			ImageTableViewModel = new ImageTableViewModel(Model.G1, Model.G1, Model.PaletteMap, images, logger);
+			ImageTableViewModel = new ImageTableViewModel(new ImageTableModel(images, Model.G1, Model.G1, Model.PaletteMap, logger));
 		}
 
 		public override void Save()

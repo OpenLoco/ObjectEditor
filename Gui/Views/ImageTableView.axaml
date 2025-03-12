@@ -49,7 +49,6 @@
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Crop all</TextBlock>
 				</DockPanel>
 			</Button>
-			<!--<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedColourSwatch}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />-->
 		</StackPanel>
 		<Grid ColumnDefinitions="*, Auto, 384">
 			<ScrollViewer>

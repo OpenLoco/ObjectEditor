@@ -42,7 +42,7 @@ foreach (var objType in idx.Objects.GroupBy(x => x.ObjectType))
 
 Environment.Exit(0);
 
-var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), JsonFile.SerializerOptions)
+var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText("Q:\\Games\\Locomotion\\Server\\Objects\\objectMetadata.json"), JsonFile.DefaultSerializerOptions)
 	.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
 
 Console.WriteLine($"MetadataCount={objectMetadata.Count}");
@@ -150,7 +150,7 @@ void AddNewObjectMetadataEntries()
 		}
 	}
 
-	var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.DatName), JsonFile.SerializerOptions);
+	var objs = JsonSerializer.Serialize<IEnumerable<ObjectMetadata>>(objectMetadata.Values.OrderBy(x => x.DatName), JsonFile.DefaultSerializerOptions);
 	File.WriteAllText("Q:\\Games\\Locomotion\\Server\\objectMetadata.json", objs);
 }
 

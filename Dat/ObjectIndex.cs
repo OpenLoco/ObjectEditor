@@ -33,10 +33,10 @@ namespace OpenLoco.Dat
 		}
 
 		public async Task SaveIndexAsync(string indexFile)
-			=> await JsonFile.SerializeToFileAsync(this, indexFile, JsonFile.SerializerOptions).ConfigureAwait(false);
+			=> await JsonFile.SerializeToFileAsync(this, indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
 
 		public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
-			=> await JsonFile.DeserializeFromFileAsync<ObjectIndex?>(indexFile, JsonFile.SerializerOptions).ConfigureAwait(false);
+			=> await JsonFile.DeserializeFromFileAsync<ObjectIndex?>(indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
 
 		public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
 			=> LoadOrCreateIndexAsync(directory, logger, progress).Result;

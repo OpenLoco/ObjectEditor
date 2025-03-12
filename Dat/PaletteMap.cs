@@ -138,7 +138,7 @@ namespace OpenLoco.Dat
 
 		#endregion
 
-		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags, ColourRemapSwatch primary, ColourRemapSwatch secondary)
+		public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags)
 		{
 			var pixels = img.Width * img.Height;
 			var isBgr = flags.HasFlag(G1ElementFlags.IsBgr24);
@@ -192,7 +192,6 @@ namespace OpenLoco.Dat
 				ColourRemapSwatch.SecondaryRemap => SecondaryRemap,
 				_ => default,
 			};
-
 
 		public bool TryConvertG1ToRgba32Bitmap(G1Element32 g1Element, ColourRemapSwatch primary, ColourRemapSwatch secondary, out Image<Rgba32>? image)
 		{

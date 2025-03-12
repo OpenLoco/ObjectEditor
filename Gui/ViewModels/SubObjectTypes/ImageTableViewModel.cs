@@ -250,7 +250,7 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			Model.UpdateImage(filename, SelectedPrimarySwatch, SelectedSecondarySwatch, SelectedImageIndex);
+			Model.UpdateImage(filename, SelectedImageIndex);
 			UpdateBitmaps();
 		}
 	}

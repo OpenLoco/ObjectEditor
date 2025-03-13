@@ -1,4 +1,5 @@
 using OpenLoco.Dat.Objects;
+using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.Linq;
@@ -7,14 +8,14 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 	{
-		[Reactive] public BridgeObjectFlags Flags { get; set; }
+		[Reactive, EnumProhibitValues<BridgeObjectFlags>(BridgeObjectFlags.None)] public BridgeObjectFlags Flags { get; set; }
 		[Reactive] public uint16_t ClearHeight { get; set; }
 		[Reactive] public int16_t DeckDepth { get; set; }
 		[Reactive] public uint8_t SpanLength { get; set; }
 		[Reactive] public uint8_t PillarSpacing { get; set; }
 		[Reactive] public Speed16 MaxSpeed { get; set; }
 		[Reactive] public MicroZ MaxHeight { get; set; }
-		[Reactive] public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
+		[Reactive, EnumProhibitValues<BridgeDisabledTrackFlags>(BridgeDisabledTrackFlags.None)] public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
 		[Reactive] public uint16_t DesignedYear { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost")] public int16_t BaseCostFactor { get; set; }

@@ -28,7 +28,7 @@ namespace OpenLoco.Dat.Objects
 	{
 		None = 0,
 		HasRoof = 1 << 0,
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x2C)]

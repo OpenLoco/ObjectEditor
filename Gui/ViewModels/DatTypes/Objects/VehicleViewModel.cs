@@ -1,4 +1,5 @@
 using OpenLoco.Dat.Objects;
+using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
@@ -19,7 +20,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Stats")] public uint16_t DesignedYear { get; set; }
 		[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 		[Reactive, Category("Stats")] public uint8_t Reliability { get; set; }
-		[Reactive] public VehicleObjectFlags Flags { get; set; }
+		[Reactive, EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None)] public VehicleObjectFlags Flags { get; set; }
 		[Reactive] public S5HeaderViewModel? TrackType { get; set; }
 		[Reactive] public S5HeaderViewModel? RackRail { get; set; }
 		[Reactive, Range(0, 4)] public uint8_t NumCarComponents { get; set; }

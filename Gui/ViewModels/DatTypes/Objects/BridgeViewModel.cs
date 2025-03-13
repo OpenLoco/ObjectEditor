@@ -8,6 +8,8 @@ namespace OpenLoco.Gui.ViewModels
 	public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 	{
 		[Reactive] public uint8_t NoRoof { get; set; }
+		[Reactive] public uint16_t ClearHeight { get; set; }
+		[Reactive] public int16_t DeckDepth { get; set; }
 		[Reactive] public uint8_t SpanLength { get; set; }
 		[Reactive] public uint8_t PillarSpacing { get; set; }
 		[Reactive] public Speed16 MaxSpeed { get; set; }
@@ -20,8 +22,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive] public BindingList<S5HeaderViewModel> TrackCompatibleMods { get; set; }
 		[Reactive] public BindingList<S5HeaderViewModel> RoadCompatibleMods { get; set; }
-		[Reactive, Category("<unknown>")] public uint16_t var_06 { get; set; }
-		[Reactive, Category("<unknown>")] public BindingList<uint8_t> var_03 { get; set; }
+		[Reactive, Category("<unknown>")] public uint8_t var_03 { get; set; }
 
 		public BridgeViewModel(BridgeObject bo)
 		{
@@ -38,8 +39,9 @@ namespace OpenLoco.Gui.ViewModels
 			DesignedYear = bo.DesignedYear;
 			TrackCompatibleMods = new(bo.TrackCompatibleMods.ConvertAll(x => new S5HeaderViewModel(x)));
 			RoadCompatibleMods = new(bo.RoadCompatibleMods.ConvertAll(x => new S5HeaderViewModel(x)));
-			var_03 = new(bo.var_03);
-			var_06 = bo.var_06;
+			var_03 = bo.var_03;
+			ClearHeight = bo.ClearHeight;
+			DeckDepth = bo.DeckDepth;
 		}
 
 		public override BridgeObject GetAsStruct(BridgeObject bro)
@@ -60,8 +62,9 @@ namespace OpenLoco.Gui.ViewModels
 				RoadCompatibleMods = RoadCompatibleMods.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				NumCompatibleTrackMods = (uint8_t)TrackCompatibleMods.Count,
 				NumCompatibleRoadMods = (uint8_t)RoadCompatibleMods.Count,
-				var_03 = [.. var_03],
-				var_06 = var_06,
+				var_03 = var_03,
+				ClearHeight = ClearHeight,
+				DeckDepth = DeckDepth,
 			};
 	}
 }

@@ -30,10 +30,11 @@ namespace OpenLoco.Dat.Objects
 	public record BridgeObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t NoRoof,
-		[property: LocoStructOffset(0x03), LocoStructVariableLoad, LocoArrayLength(BridgeObject._03PadSize), LocoPropertyMaybeUnused, Browsable(false)] uint8_t[] var_03,
-		[property: LocoStructOffset(0x06)] uint16_t var_06,
+		[property: LocoStructOffset(0x03), LocoStructVariableLoad] uint8_t var_03,
+		[property: LocoStructOffset(0x04)] uint16_t ClearHeight,
+		[property: LocoStructOffset(0x06)] int16_t DeckDepth,
 		[property: LocoStructOffset(0x08)] uint8_t SpanLength,
-		[property: LocoStructOffset(0x09)] uint8_t PillarSpacing,
+		[property: LocoStructOffset(0x09)] uint8_t PillarSpacing, // this is a bitfield, see https://discord.com/channels/689445672390361176/701513924545085530/1349599402867822633
 		[property: LocoStructOffset(0x0A)] Speed16 MaxSpeed,
 		[property: LocoStructOffset(0x0C)] MicroZ MaxHeight,
 		[property: LocoStructOffset(0x0D)] uint8_t CostIndex,
@@ -102,7 +103,7 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			if (var_06 is not 16 and not 32)
+			if (DeckDepth is not 16 and not 32)
 			{
 				return false;
 			}

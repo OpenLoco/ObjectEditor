@@ -126,7 +126,7 @@ namespace OpenLoco.Dat.Tests
 				// Assert.That(struc.var_03[1], Is.EqualTo(0), nameof(struc.var_03) + "[1]");
 				// Assert.That(struc.var_03[2], Is.EqualTo(0), nameof(struc.var_03) + "[2]");
 
-				Assert.That(struc.var_06, Is.EqualTo(16), nameof(struc.var_06));
+				Assert.That(struc.DeckDepth, Is.EqualTo(16), nameof(struc.DeckDepth));
 				Assert.That(struc.SpanLength, Is.EqualTo(1), nameof(struc.SpanLength));
 				Assert.That(struc.PillarSpacing, Is.EqualTo(255), nameof(struc.PillarSpacing));
 				Assert.That(struc.MaxSpeed, Is.EqualTo(60), nameof(struc.MaxSpeed));

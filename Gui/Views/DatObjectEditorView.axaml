@@ -50,9 +50,9 @@
 						</ItemsRepeater>
 					</DockPanel>
 				</TabItem>
-				<TabItem DataContext="{Binding ExtraContentViewModel}" Header="{Binding Name}">
+				<TabItem Header="{Binding ExtraContentViewModel.Name}">
 					<DockPanel>
-						<ContentControl Content="{Binding}" />
+						<ContentControl Content="{Binding ExtraContentViewModel}" />
 					</DockPanel>
 				</TabItem>
 				<TabItem Header="Metadata">

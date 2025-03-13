@@ -120,7 +120,7 @@ namespace OpenLoco.Dat.Tests
 		{
 			void assertFunc(ILocoObject obj, BridgeObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.NoRoof, Is.EqualTo(0), nameof(struc.NoRoof));
+				Assert.That(struc.Flags, Is.EqualTo(0), nameof(struc.Flags));
 
 				// Assert.That(struc.var_03[0], Is.EqualTo(0), nameof(struc.var_03) + "[0]");
 				// Assert.That(struc.var_03[1], Is.EqualTo(0), nameof(struc.var_03) + "[1]");

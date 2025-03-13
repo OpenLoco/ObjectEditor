@@ -23,13 +23,20 @@ namespace OpenLoco.Dat.Objects
 		Junction = 1 << 11,
 	}
 
+	[Flags]
+	public enum BridgeObjectFlags : uint8_t
+	{
+		None = 0,
+		HasRoof = 1 << 0,
+	};
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x2C)]
 	[LocoStructType(ObjectType.Bridge)]
 	[LocoStringTable("Name")]
 	public record BridgeObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] uint8_t NoRoof,
+		[property: LocoStructOffset(0x02)] BridgeObjectFlags Flags,
 		[property: LocoStructOffset(0x03), LocoStructVariableLoad] uint8_t var_03,
 		[property: LocoStructOffset(0x04)] uint16_t ClearHeight,
 		[property: LocoStructOffset(0x06)] int16_t DeckDepth,

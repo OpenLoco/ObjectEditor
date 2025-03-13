@@ -7,7 +7,7 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 	{
-		[Reactive] public uint8_t NoRoof { get; set; }
+		[Reactive] public BridgeObjectFlags Flags { get; set; }
 		[Reactive] public uint16_t ClearHeight { get; set; }
 		[Reactive] public int16_t DeckDepth { get; set; }
 		[Reactive] public uint8_t SpanLength { get; set; }
@@ -26,7 +26,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		public BridgeViewModel(BridgeObject bo)
 		{
-			NoRoof = bo.NoRoof;
+			Flags = bo.Flags;
 			SpanLength = bo.SpanLength;
 			PillarSpacing = bo.PillarSpacing;
 			MaxSpeed = bo.MaxSpeed;
@@ -47,7 +47,7 @@ namespace OpenLoco.Gui.ViewModels
 		public override BridgeObject GetAsStruct(BridgeObject bro)
 			=> bro with
 			{
-				NoRoof = NoRoof,
+				Flags = Flags,
 				SpanLength = SpanLength,
 				PillarSpacing = PillarSpacing,
 				MaxSpeed = MaxSpeed,

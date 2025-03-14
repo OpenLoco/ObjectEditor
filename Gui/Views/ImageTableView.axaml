@@ -131,7 +131,7 @@
 						<Slider Minimum="1" Maximum="80" Value="{Binding AnimationSpeed}" />
 					</StackPanel>
 					<ScrollViewer>
-						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" Margin="8" MinWidth="256" DataContext="{Binding SelectedG1Element}" DockPanel.Dock="Right" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
+						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" MinWidth="256" DataContext="{Binding SelectedG1Element}" DockPanel.Dock="Right" ShowStyle="Tiled"></pgc:PropertyGrid>
 					</ScrollViewer>
 				</DockPanel>
 			</Border>

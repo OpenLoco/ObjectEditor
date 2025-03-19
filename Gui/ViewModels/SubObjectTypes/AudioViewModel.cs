@@ -16,6 +16,8 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
 	{
+		public string Name => "Sound Table";
+
 		WaveOutEvent? CurrentWOEvent { get; set; }
 
 		public AudioViewModel(string soundName, WaveFormatEx pcmHeader, byte[] pcmData)
@@ -23,7 +25,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		public AudioViewModel(string soundName, RiffWavHeader riffHeader, byte[] pcmData)
 		{
-			Name = soundName;
+			SoundName = soundName;
 			Header = riffHeader;
 			Data = pcmData;
 			Duration = $"{CalculateDuration():0.##}s";
@@ -117,7 +119,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 		[Reactive]
-		public string Name { get; init; }
+		public string SoundName { get; init; }
 
 		[Reactive, Editable(false)]
 		public string Duration { get; set; }

@@ -1,5 +1,6 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
+using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
@@ -13,12 +14,13 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive] public uint8_t TotalOfTypeInScenario { get; set; } // Total industries of this type that can be created in a scenario Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.
 		[Reactive] public uint16_t DesignedYear { get; set; }
 		[Reactive] public uint16_t ObsoleteYear { get; set; }
-		[Reactive] public IndustryObjectFlags Flags { get; set; }
+		[Reactive, EnumProhibitValues<IndustryObjectFlags>(IndustryObjectFlags.None)] public IndustryObjectFlags Flags { get; set; }
 		[Reactive] public Colour MapColour { get; set; }
 		[Reactive] public uint32_t Colours { get; set; } // bitset
 		[Reactive, Category("Production")] public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; set; }
 		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> ProducedCargo { get; set; }
 		[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> RequiredCargo { get; set; }
+		[Reactive, Category("Production")] public uint8_t MonthlyClosureChance { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
@@ -37,11 +39,10 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Building")] public S5HeaderViewModel? BuildingWallEntrance { get; set; }
 		[Reactive, Category("<unknown>")] public BindingList<IndustryObjectUnk38> var_38 { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_E8 { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_E9 { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_EA { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_EB { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_EC { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_F3 { get; set; }
+		[Reactive, Category("Farm")] public uint8_t FarmTileNumImageAngles { get; set; }
+		[Reactive, Category("Farm")] public uint8_t FarmGrowthStageWithNoProduction { get; set; }
+		[Reactive, Category("Farm")] public uint8_t FarmIdealSize { get; set; }
+		[Reactive, Category("Farm")] public uint8_t FarmNumStagesOfGrowth { get; set; }
 
 		public IndustryViewModel(IndustryObject io)
 		{
@@ -72,11 +73,11 @@ namespace OpenLoco.Gui.ViewModels
 			MapColour = io.MapColour;
 			Flags = io.Flags;
 			var_E8 = io.var_E8;
-			var_E9 = io.var_E9;
-			var_EA = io.var_EA;
-			var_EB = io.var_EB;
-			var_EC = io.var_EC;
-			var_F3 = io.var_E8;
+			FarmTileNumImageAngles = io.FarmTileNumImageAngles;
+			FarmGrowthStageWithNoProduction = io.FarmGrowthStageWithNoProduction;
+			FarmIdealSize = io.FarmIdealSize;
+			FarmNumStagesOfGrowth = io.FarmNumStagesOfGrowth;
+			MonthlyClosureChance = io.MonthlyClosureChance;
 		}
 
 		// validation:
@@ -106,11 +107,11 @@ namespace OpenLoco.Gui.ViewModels
 				MapColour = MapColour,
 				Flags = Flags,
 				var_E8 = var_E8,
-				var_E9 = var_E9,
-				var_EA = var_EA,
-				var_EB = var_EB,
-				var_EC = var_EC,
-				var_F3 = var_E8,
+				FarmTileNumImageAngles = FarmTileNumImageAngles,
+				FarmGrowthStageWithNoProduction = FarmGrowthStageWithNoProduction,
+				FarmIdealSize = FarmIdealSize,
+				FarmNumStagesOfGrowth = FarmNumStagesOfGrowth,
+				MonthlyClosureChance = MonthlyClosureChance,
 			};
 	}
 }

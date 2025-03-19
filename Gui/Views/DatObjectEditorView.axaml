@@ -50,7 +50,7 @@
 						</ItemsRepeater>
 					</DockPanel>
 				</TabItem>
-				<TabItem Header="Image/Sound Table">
+				<TabItem Header="{Binding ExtraContentViewModel.Name}">
 					<DockPanel>
 						<ContentControl Content="{Binding ExtraContentViewModel}" />
 					</DockPanel>

@@ -1,4 +1,5 @@
 using OpenLoco.Dat.Objects;
+using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
@@ -19,7 +20,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Stats")] public uint16_t DesignedYear { get; set; }
 		[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 		[Reactive, Category("Stats")] public uint8_t Reliability { get; set; }
-		[Reactive] public VehicleObjectFlags Flags { get; set; }
+		[Reactive, EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None)] public VehicleObjectFlags Flags { get; set; }
 		[Reactive] public S5HeaderViewModel? TrackType { get; set; }
 		[Reactive] public S5HeaderViewModel? RackRail { get; set; }
 		[Reactive, Range(0, 4)] public uint8_t NumCarComponents { get; set; }
@@ -85,9 +86,9 @@ namespace OpenLoco.Gui.ViewModels
 			Sound = vo.Sound == null ? null : new(vo.Sound);
 			StartSounds = new(vo.StartSounds.ConvertAll(x => new S5HeaderViewModel(x)));
 			SoundType = vo.DrivingSoundType;
-			FrictionSound = vo.SoundPropertyFriction;
-			SimpleMotorSound = vo.SoundPropertyEngine1;
-			GearboxMotorSound = vo.SoundPropertyEngine2;
+			FrictionSound = vo.FrictionSound;
+			SimpleMotorSound = vo.SimpleMotorSound;
+			GearboxMotorSound = vo.GearboxMotorSound;
 		}
 
 		public override VehicleObject GetAsStruct(VehicleObject vo)
@@ -124,9 +125,9 @@ namespace OpenLoco.Gui.ViewModels
 				RequiredTrackExtras = RequiredTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				DrivingSoundType = SoundType,
-				SoundPropertyFriction = FrictionSound,
-				SoundPropertyEngine1 = SimpleMotorSound,
-				SoundPropertyEngine2 = GearboxMotorSound,
+				FrictionSound = FrictionSound,
+				SimpleMotorSound = SimpleMotorSound,
+				GearboxMotorSound = GearboxMotorSound,
 				NumCompatibleVehicles = (uint8_t)CompatibleVehicles.Count,
 				NumRequiredTrackExtras = (uint8_t)RequiredTrackExtras.Count,
 				NumStartSounds = (uint8_t)StartSounds.Count,

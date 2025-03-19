@@ -20,23 +20,23 @@
 	<TabControl>
 		<TabItem Header="Header">
 			<ScrollViewer>
-				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmHeader" DataContext="{Binding CurrentS5File.Header}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmHeader" DataContext="{Binding CurrentS5File.Header}" />
 			</ScrollViewer>
 		</TabItem>
 		<TabItem Header="Landscape">
 			<ScrollViewer>
-				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmLandscape" DataContext="{Binding CurrentS5File.LandscapeOptions}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmLandscape" DataContext="{Binding CurrentS5File.LandscapeOptions}" />
 			</ScrollViewer>
 		</TabItem>
 		<TabItem Header="SaveGame">
 			<ScrollViewer>
-				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmSave" DataContext="{Binding CurrentS5File.SaveDetails}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmSave" DataContext="{Binding CurrentS5File.SaveDetails}" />
 			</ScrollViewer>
 		</TabItem>
 		<TabItem Header="GameState">
 			<ScrollViewer>
 				<StackPanel Orientation="Vertical">
-					<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+					<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" />
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>

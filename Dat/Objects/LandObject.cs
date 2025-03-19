@@ -23,14 +23,14 @@ namespace OpenLoco.Dat.Objects
 	[LocoStringTable("Name")]
 	public record LandObject(
 		[property: LocoStructOffset(0x02)] uint8_t CostIndex,
-		[property: LocoStructOffset(0x03)] uint8_t var_03,
-		[property: LocoStructOffset(0x04), LocoPropertyMaybeUnused] uint8_t var_04,
+		[property: LocoStructOffset(0x03)] uint8_t NumGrowthStages,
+		[property: LocoStructOffset(0x04)] uint8_t NumImageAngles,
 		[property: LocoStructOffset(0x05)] LandObjectFlags Flags,
 		[property: LocoStructOffset(0x06), Browsable(false)] object_id CliffEdgeHeader1,
 		[property: LocoStructOffset(0x07), Browsable(false), LocoPropertyMaybeUnused] object_id CliffEdgeHeader2,
 		[property: LocoStructOffset(0x08)] int16_t CostFactor,
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E,
+		[property: LocoStructOffset(0x0E), Browsable(false)] uint32_t NumImagesPerGrowthStage,
 		[property: LocoStructOffset(0x12), Browsable(false)] image_id CliffEdgeImage,
 		[property: LocoStructOffset(0x16), Browsable(false)] image_id MapPixelImage,
 		[property: LocoStructOffset(0x1A)] uint8_t DistributionPattern,
@@ -84,17 +84,17 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			if (var_03 < 1)
+			if (NumGrowthStages < 1)
 			{
 				return false;
 			}
 
-			if (var_03 > 8)
+			if (NumGrowthStages > 8)
 			{
 				return false;
 			}
 
-			return var_04 is 1 or 2 or 4;
+			return NumImageAngles is 1 or 2 or 4;
 		}
 
 		public bool TryGetImageName(int id, out string? value)

@@ -65,7 +65,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 	Console.WriteLine("Seeding");
 	var logger = new Logger();
 
-	var jsonOptions = JsonFile.SerializerOptions;
+	var jsonOptions = JsonFile.DefaultSerializerOptions;
 	jsonOptions.Converters.Add(new JsonStringEnumConverter());
 
 	// ...

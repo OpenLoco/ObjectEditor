@@ -1,4 +1,7 @@
 namespace OpenLoco.Gui.ViewModels
 {
-	public interface IExtraContentViewModel;
+	public interface IExtraContentViewModel
+	{
+		public string Name { get; }
+	}
 }

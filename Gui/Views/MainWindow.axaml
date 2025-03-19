@@ -39,42 +39,6 @@
 		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
 	</Window.Resources>
 
-	<Window.Styles>
-		<!--<Style Selector="TabControl">
-			<Setter Property="Template">
-				<ControlTemplate>
-				</ControlTemplate>
-			</Setter>
-		</Style>-->
-		<Style Selector="TabItem">
-			<Setter Property="FontSize" Value="16"/>
-			<Setter Property="Margin" Value="0"/>
-			<Setter Property="Height" Value="16"/>
-			<Setter Property="Padding" Value="8"/>
-		</Style>
-		<Style Selector="Border">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
-			<Setter Property="CornerRadius" Value="4"/>
-			<Setter Property="Margin" Value="0"/>
-		</Style>
-		<Style Selector="Button">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
-		</Style>
-		<Style Selector="TextBox">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
-			<Setter Property="VerticalContentAlignment" Value="Center"/>
-		</Style>
-		<Style Selector="NumericUpDown">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
-		</Style>
-		<Style Selector="DataGrid">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
-		</Style>
-		<Style Selector="ComboBox">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
-		</Style>
-	</Window.Styles>
-
 	<Window.DataTemplates>
 		<!-- Mind the order of the Templates. Begin with the most specific first. -->
 
@@ -133,22 +97,22 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:GenericObjectViewModel">
-			<pgc:PropertyGrid  DataContext="{Binding Object}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False"></pgc:PropertyGrid>
+			<pgc:PropertyGrid DataContext="{Binding Object}" />
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:IObjectViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" Background="{DynamicResource ExpanderContentBackground}"></pgc:PropertyGrid>
+			<pgc:PropertyGrid DataContext="{Binding}" Background="{DynamicResource ExpanderContentBackground}" />
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:G1ViewModel">
-			<ContentControl Content="{Binding ImageTableViewModel}"/>
+			<ContentControl Content="{Binding ImageTableViewModel}" />
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:MusicViewModel">
 			<DockPanel>
-				<ContentControl Content="{Binding SoundViewModel}" DockPanel.Dock="Left"/>
+				<ContentControl Content="{Binding SoundViewModel}" DockPanel.Dock="Left" />
 				<ScrollViewer>
-					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding SoundViewModel.Header}" Margin="2" ShowTitle="False" AllowFilter="False" AllowQuickFilter="False" ShowStyle="Tiled"></pgc:PropertyGrid>
+					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding SoundViewModel.Header}" ShowStyle="Tiled" />
 				</ScrollViewer>
 			</DockPanel>
 		</DataTemplate>
@@ -161,7 +125,7 @@
 					</ItemsRepeater.Layout>
 					<ItemsRepeater.ItemTemplate>
 						<DataTemplate>
-							<ContentControl Content="{Binding}" Margin="4"/>
+							<ContentControl Content="{Binding}" Margin="4" />
 						</DataTemplate>
 					</ItemsRepeater.ItemTemplate>
 				</ItemsRepeater>

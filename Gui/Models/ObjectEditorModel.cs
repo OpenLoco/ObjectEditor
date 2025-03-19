@@ -193,7 +193,7 @@ namespace OpenLoco.Gui.Models
 
 			var uniqueObjectId = int.Parse(Path.GetFileName(filesystemItem.Filename));
 
-			if (!OnlineCache.TryGetValue(uniqueObjectId, out var locoObj))
+			if (!OnlineCache.TryGetValue(uniqueObjectId, out var cachedLocoObjDto))
 			{
 				if (WebClient == null)
 				{
@@ -202,32 +202,32 @@ namespace OpenLoco.Gui.Models
 				}
 
 				Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {WebClient.BaseAddress}");
-				locoObj = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId, true)).Result;
+				cachedLocoObjDto = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId, true)).Result;
 
-				if (locoObj == null)
+				if (cachedLocoObjDto == null)
 				{
 					Logger.Error($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no data");
 					return false;
 				}
-				else if (string.IsNullOrEmpty(locoObj.DatBytes))
+				else if (string.IsNullOrEmpty(cachedLocoObjDto.DatBytes))
 				{
 					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
 				}
-				else if (locoObj.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+				else if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 				{
 					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
 				}
 
 				Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");
-				Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", locoObj?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", locoObj?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", locoObj?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={locoObj?.Licence}");
-				OnlineCache.Add(uniqueObjectId, locoObj!);
+				Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={cachedLocoObjDto?.Licence}");
+				OnlineCache.Add(uniqueObjectId, cachedLocoObjDto!);
 
-				if (!string.IsNullOrEmpty(locoObj!.DatBytes))
+				if (!string.IsNullOrEmpty(cachedLocoObjDto!.DatBytes))
 				{
-					var filename = Path.Combine(Settings.DownloadFolder, $"{locoObj.UniqueName}.dat");
+					var filename = Path.Combine(Settings.DownloadFolder, $"{cachedLocoObjDto.UniqueName}.dat");
 					if (!File.Exists(filename))
 					{
-						File.WriteAllBytes(filename, Convert.FromBase64String(locoObj.DatBytes));
+						File.WriteAllBytes(filename, Convert.FromBase64String(cachedLocoObjDto.DatBytes));
 						Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {filename}");
 					}
 				}
@@ -237,11 +237,11 @@ namespace OpenLoco.Gui.Models
 				Logger.Debug($"Found object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - reusing it");
 			}
 
-			if (locoObj != null)
+			if (cachedLocoObjDto != null)
 			{
-				if (locoObj.DatBytes?.Length > 0)
+				if (cachedLocoObjDto.DatBytes?.Length > 0)
 				{
-					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(locoObj.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
+					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(cachedLocoObjDto.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
 					fileInfo = obj.DatFileInfo;
 					locoObject = obj.LocoObject;
 					if (obj.LocoObject == null)
@@ -250,17 +250,17 @@ namespace OpenLoco.Gui.Models
 					}
 				}
 
-				metadata = new MetadataModel(locoObj.UniqueName, locoObj.DatName, locoObj.DatChecksum)
+				metadata = new MetadataModel(cachedLocoObjDto.UniqueName, cachedLocoObjDto.DatName, cachedLocoObjDto.DatChecksum)
 				{
-					Description = locoObj.Description,
-					Authors = locoObj.Authors,
-					CreationDate = locoObj.CreationDate,
-					LastEditDate = locoObj.LastEditDate,
-					UploadDate = locoObj.UploadDate,
-					Tags = locoObj.Tags,
-					ObjectPacks = locoObj.ObjectPacks,
-					Availability = locoObj.Availability,
-					Licence = locoObj.Licence,
+					Description = cachedLocoObjDto.Description,
+					Authors = cachedLocoObjDto.Authors,
+					CreationDate = cachedLocoObjDto.CreationDate,
+					LastEditDate = cachedLocoObjDto.LastEditDate,
+					UploadDate = cachedLocoObjDto.UploadDate,
+					Tags = cachedLocoObjDto.Tags,
+					ObjectPacks = cachedLocoObjDto.ObjectPacks,
+					Availability = cachedLocoObjDto.Availability,
+					Licence = cachedLocoObjDto.Licence,
 				};
 
 				if (locoObject != null)

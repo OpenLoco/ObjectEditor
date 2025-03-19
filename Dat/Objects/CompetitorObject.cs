@@ -33,6 +33,7 @@ namespace OpenLoco.Dat.Objects
 		unk9 = 1 << 9,
 		unk10 = 1 << 10,
 		unk11 = 1 << 11,
+		unk12 = 1 << 12,
 	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]

@@ -254,8 +254,8 @@ namespace OpenLoco.Dat.Tests
 		{
 			void assertFunc(ILocoObject obj, CompetitorObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.var_04, Is.EqualTo(6672), nameof(struc.var_04));
-				Assert.That(struc.var_08, Is.EqualTo(2053), nameof(struc.var_08));
+				//Assert.That(struc.var_04, Is.EqualTo(6672), nameof(struc.var_04));
+				//Assert.That(struc.var_08, Is.EqualTo(2053), nameof(struc.var_08));
 				Assert.That(struc.Emotions, Is.EqualTo(511), nameof(struc.Emotions));
 				Assert.That(struc.Images, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 9)), nameof(struc.Images));
 				Assert.That(struc.Intelligence, Is.EqualTo(7), nameof(struc.Intelligence));

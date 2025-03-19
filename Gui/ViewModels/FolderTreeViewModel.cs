@@ -44,16 +44,16 @@ namespace OpenLoco.Gui.ViewModels
 		List<FileSystemItemBase> OnlineDirectoryItems { get; set; } = [];
 
 		[Reactive]
-		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; set; }
+		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; set; } = [];
 
 		[Reactive]
 		public float IndexOrDownloadProgress { get; set; }
 
 		Progress<float> Progress { get; } = new();
 
-		public ReactiveCommand<Unit, Task> RefreshDirectoryItems { get; }
+		public ReactiveCommand<Unit, Task>? RefreshDirectoryItems { get; }
 
-		public ReactiveCommand<Unit, Unit> OpenCurrentFolder { get; }
+		public ReactiveCommand<Unit, Unit>? OpenCurrentFolder { get; }
 
 		public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 
@@ -68,29 +68,9 @@ namespace OpenLoco.Gui.ViewModels
 		public string DirectoryFileCount
 			=> $"Objects: {DirectoryItems.Sum(CountNodes)}";
 
-		public static int CountNodes(FileSystemItemBase fib)
-		{
-			if (fib.SubNodes == null || fib.SubNodes.Count == 0)
-			{
-				return 0;
-			}
-
-			var count = 0;
-
-			foreach (var node in fib.SubNodes)
-			{
-				if (node is FileSystemItemObject)
-				{
-					count++;
-				}
-				else
-				{
-					count += CountNodes(node);
-				}
-			}
-
-			return count;
-		}
+		// used for design-time view
+		public FolderTreeViewModel()
+		{ }
 
 		public FolderTreeViewModel(ObjectEditorModel model)
 		{
@@ -148,6 +128,30 @@ namespace OpenLoco.Gui.ViewModels
 
 			// loads the last-viewed folder
 			CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
+		}
+
+		public static int CountNodes(FileSystemItemBase fib)
+		{
+			if (fib.SubNodes == null || fib.SubNodes.Count == 0)
+			{
+				return 0;
+			}
+
+			var count = 0;
+
+			foreach (var node in fib.SubNodes)
+			{
+				if (node is FileSystemItemObject)
+				{
+					count++;
+				}
+				else
+				{
+					count += CountNodes(node);
+				}
+			}
+
+			return count;
 		}
 
 		void SwitchDirectoryItemsView()

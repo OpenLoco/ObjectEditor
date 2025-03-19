@@ -13,6 +13,10 @@
 	x:Class="OpenLoco.Gui.Views.FolderTreeView"
 	x:DataType="vm:FolderTreeViewModel">
 
+	<Design.DataContext>
+		<vm:FolderTreeViewModel/>
+	</Design.DataContext>
+
 	<UserControl.Resources>
 		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
 	</UserControl.Resources>

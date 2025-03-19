@@ -254,8 +254,8 @@ namespace OpenLoco.Dat.Tests
 		{
 			void assertFunc(ILocoObject obj, CompetitorObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.var_04, Is.EqualTo(UnkCompetitorFlags.unk4 | UnkCompetitorFlags.unk9 | UnkCompetitorFlags.unk11 | UnkCompetitorFlags.unk12), nameof(struc.var_04));
-				Assert.That(struc.var_08, Is.EqualTo(UnkCompetitorFlags.unk0 | UnkCompetitorFlags.unk2 | UnkCompetitorFlags.unk11), nameof(struc.var_08));
+				Assert.That(struc.var_04, Is.EqualTo(UnkCompetitorFlags1.unk4 | UnkCompetitorFlags1.unk9 | UnkCompetitorFlags1.unk11 | UnkCompetitorFlags1.unk12), nameof(struc.var_04));
+				Assert.That(struc.var_08, Is.EqualTo(UnkCompetitorFlags2.unk0 | UnkCompetitorFlags2.unk2 | UnkCompetitorFlags2.unk11), nameof(struc.var_08));
 				Assert.That(struc.Emotions, Is.EqualTo(511), nameof(struc.Emotions));
 				Assert.That(struc.Images, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 9)), nameof(struc.Images));
 				Assert.That(struc.Intelligence, Is.EqualTo(7), nameof(struc.Intelligence));
@@ -1060,7 +1060,7 @@ namespace OpenLoco.Dat.Tests
 			void assertFunc(ILocoObject obj, WallObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.ToolId, Is.EqualTo(15), nameof(struc.ToolId));
-				Assert.That(struc.Flags, Is.EqualTo(WallObjectFlags.None), nameof(struc.Flags));
+				Assert.That(struc.Flags1, Is.EqualTo(WallObjectFlags1.None), nameof(struc.Flags1));
 				Assert.That(struc.Height, Is.EqualTo(2), nameof(struc.Height));
 				Assert.That(struc.Flags2, Is.EqualTo(WallObjectFlags2.Opaque), nameof(struc.Flags2));
 

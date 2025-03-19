@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace OpenLoco.Dat.Objects
 {
 	[Flags]
-	public enum WallObjectFlags : uint8_t
+	public enum WallObjectFlags1 : uint8_t
 	{
 		None = 0,
 		HasPrimaryColour = 1 << 0,
@@ -39,7 +39,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x06), LocoPropertyMaybeUnused] uint8_t ToolId,
-		[property: LocoStructOffset(0x07)] WallObjectFlags Flags,
+		[property: LocoStructOffset(0x07)] WallObjectFlags1 Flags1,
 		[property: LocoStructOffset(0x08)] uint8_t Height,
 		[property: LocoStructOffset(0x09), LocoPropertyMaybeUnused] WallObjectFlags2 Flags2 // none of these are used in Loco
 		) : ILocoStruct, IImageTableNameProvider

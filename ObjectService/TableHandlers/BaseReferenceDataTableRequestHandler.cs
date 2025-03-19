@@ -37,12 +37,16 @@ namespace ObjectService.TableHandlers
 			]);
 
 			_ = baseRoute.MapGet(string.Empty, ListAsync);
-			_ = baseRoute.MapPost(string.Empty, CreateAsync);
+
+			// todo: do not enable until user permissions are implemented
+			//_ = baseRoute.MapPost(string.Empty, CreateAsync);
 
 			var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
 			_ = resourceRoute.MapGet(string.Empty, ReadAsync);
-			_ = resourceRoute.MapPut(string.Empty, UpdateAsync);
-			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync);
+
+			// todo: do not enable until user permissions are implemented
+			//_ = resourceRoute.MapPut(string.Empty, UpdateAsync);
+			//_ = resourceRoute.MapDelete(string.Empty, DeleteAsync);
 
 			MapAdditionalRoutes(baseRoute);
 

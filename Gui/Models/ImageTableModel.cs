@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.Models
@@ -129,7 +128,7 @@ namespace OpenLoco.Gui.Models
 				var offsetsFile = Path.Combine(directory, "sprites.json");
 				if (File.Exists(offsetsFile))
 				{
-					offsets = JsonSerializer.Deserialize<ICollection<G1Element32Json>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+					offsets = await JsonFile.DeserializeFromFileAsync<ICollection<G1Element32Json>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 					ArgumentNullException.ThrowIfNull(offsets);
 					Logger.Debug($"Found sprites.json file with {offsets.Count} images");
 				}

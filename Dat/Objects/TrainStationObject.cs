@@ -31,7 +31,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0D)] uint8_t var_0D,
 		[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x12), LocoArrayLength(TrainStationObject.MaxImageOffsets)] uint32_t[] ImageOffsets,
-		[property: LocoStructOffset(0x22)] uint8_t NumCompatible,
+		[property: LocoStructOffset(0x22)] uint8_t CompatibleTrackObjectCount,
 		[property: LocoStructOffset(0x23), LocoArrayLength(TrainStationObject.MaxNumCompatible)] object_id[] _Compatible,
 		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear,
@@ -39,7 +39,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x3E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.ManualPowerLength), Browsable(false)] uint8_t[] _ManualPower
 	) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
-		public List<S5Header> Compatible { get; set; } = [];
+		public List<S5Header> CompatibleTrackObjects { get; set; } = [];
 
 		public const int MaxImageOffsets = 4;
 		public const int MaxNumCompatible = 7;
@@ -52,8 +52,8 @@ namespace OpenLoco.Dat.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible
-			Compatible = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
-			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
+			CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, CompatibleTrackObjectCount);
+			remainingData = remainingData[(S5Header.StructLength * CompatibleTrackObjectCount)..];
 
 			// cargo offsets (for drawing the cargo on the station)
 			CargoOffsetBytes = new byte[4][][];
@@ -105,7 +105,7 @@ namespace OpenLoco.Dat.Objects
 			using (var ms = new MemoryStream())
 			{
 				// compatible
-				foreach (var co in Compatible)
+				foreach (var co in CompatibleTrackObjects)
 				{
 					ms.Write(co.Write());
 				}
@@ -151,7 +151,7 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			return NumCompatible <= 7;
+			return CompatibleTrackObjectCount <= 7;
 		}
 
 		public bool TryGetImageName(int id, out string? value)

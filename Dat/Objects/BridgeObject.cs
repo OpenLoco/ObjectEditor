@@ -50,9 +50,9 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x12)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x14)] BridgeDisabledTrackFlags DisabledTrackFlags,
 		[property: LocoStructOffset(0x16), Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x1A)] uint8_t NumCompatibleTrackMods,
+		[property: LocoStructOffset(0x1A)] uint8_t CompatibleTrackObjectCount,
 		[property: LocoStructOffset(0x1B), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumTrackMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] TrackModHeaderIds,
-		[property: LocoStructOffset(0x22)] uint8_t NumCompatibleRoadMods,
+		[property: LocoStructOffset(0x22)] uint8_t CompatibleRoadObjectCount,
 		[property: LocoStructOffset(0x23), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumRoadMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] RoadModHeaderIds,
 		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear
 		) : ILocoStruct, ILocoStructVariableData
@@ -62,28 +62,28 @@ namespace OpenLoco.Dat.Objects
 		public const int MaxNumRoadMods = 7;
 
 		[LocoPropertyMaybeUnused]
-		public List<S5Header> TrackCompatibleMods { get; set; } = [];
+		public List<S5Header> CompatibleTrackObjects { get; set; } = [];
 
 		[LocoPropertyMaybeUnused]
-		public List<S5Header> RoadCompatibleMods { get; set; } = [];
+		public List<S5Header> CompatibleRoadObjects { get; set; } = [];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible tracks
-			TrackCompatibleMods = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatibleTrackMods);
-			remainingData = remainingData[(S5Header.StructLength * NumCompatibleTrackMods)..];
+			CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, CompatibleTrackObjectCount);
+			remainingData = remainingData[(S5Header.StructLength * CompatibleTrackObjectCount)..];
 
 			// compatible roads
-			RoadCompatibleMods = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatibleRoadMods);
-			remainingData = remainingData[(S5Header.StructLength * NumCompatibleRoadMods)..];
+			CompatibleRoadObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, CompatibleRoadObjectCount);
+			remainingData = remainingData[(S5Header.StructLength * CompatibleRoadObjectCount)..];
 
 			return remainingData;
 		}
 
 		public ReadOnlySpan<byte> Save()
 		{
-			var headers = TrackCompatibleMods
-				.Concat(RoadCompatibleMods);
+			var headers = CompatibleTrackObjects
+				.Concat(CompatibleRoadObjects);
 
 			return headers.SelectMany(h => h.Write().ToArray()).ToArray();
 		}
@@ -120,12 +120,12 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			if (NumCompatibleTrackMods > 7)
+			if (CompatibleTrackObjectCount > 7)
 			{
 				return false;
 			}
 
-			return NumCompatibleRoadMods <= 7;
+			return CompatibleRoadObjectCount <= 7;
 		}
 	}
 }

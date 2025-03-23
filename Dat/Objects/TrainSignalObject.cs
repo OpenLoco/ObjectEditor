@@ -29,7 +29,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0B)] uint8_t var_0B,
 		[property: LocoStructOffset(0x0C), LocoString, Browsable(false)] string_id Description,
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x12)] uint8_t NumCompatible,
+		[property: LocoStructOffset(0x12)] uint8_t CompatibleTrackObjectCount,
 		[property: LocoStructOffset(0x13), LocoArrayLength(TrainSignalObject.ModsLength), Browsable(false)] object_id[] ModHeaderIds,
 		[property: LocoStructOffset(0x1A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x1C)] uint16_t ObsoleteYear
@@ -37,16 +37,16 @@ namespace OpenLoco.Dat.Objects
 	{
 		public const int ModsLength = 7;
 
-		public List<S5Header> Mods { get; set; } = [];
+		public List<S5Header> CompatibleTrackObjects { get; set; } = [];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			Mods = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
-			return remainingData[(S5Header.StructLength * NumCompatible)..];
+			CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, CompatibleTrackObjectCount);
+			return remainingData[(S5Header.StructLength * CompatibleTrackObjectCount)..];
 		}
 
 		public ReadOnlySpan<byte> Save()
-			=> Mods
+			=> CompatibleTrackObjects
 			.SelectMany(mod => mod.Write().ToArray())
 			.ToArray();
 
@@ -96,7 +96,7 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			if (NumCompatible > 7)
+			if (CompatibleTrackObjectCount > 7)
 			{
 				return false;
 			}

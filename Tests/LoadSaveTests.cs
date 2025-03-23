@@ -661,7 +661,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
 				Assert.That(struc.Flags, Is.EqualTo(RoadStationObjectFlags.Passenger | RoadStationObjectFlags.RoadEnd), nameof(struc.Flags));
-				Assert.That(struc.NumCompatible, Is.EqualTo(0), nameof(struc.NumCompatible));
+				Assert.That(struc.CompatibleRoadObjectCount, Is.EqualTo(0), nameof(struc.CompatibleRoadObjectCount));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(1945), nameof(struc.ObsoleteYear));
 				Assert.That(struc.PaintStyle, Is.EqualTo(0), nameof(struc.PaintStyle));
 				Assert.That(struc.RoadPieces, Is.EqualTo(RoadTraitFlags.None), nameof(struc.RoadPieces));
@@ -901,7 +901,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.DesignedYear, Is.EqualTo(0), nameof(struc.DesignedYear));
 				Assert.That(struc.Flags, Is.EqualTo(TrainSignalObjectFlags.IsLeft), nameof(struc.Flags));
 				// Mods
-				Assert.That(struc.NumCompatible, Is.EqualTo(0), nameof(struc.NumCompatible));
+				Assert.That(struc.CompatibleTrackObjectCount, Is.EqualTo(0), nameof(struc.CompatibleTrackObjectCount));
 				Assert.That(struc.NumFrames, Is.EqualTo(7), nameof(struc.NumFrames));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(1955), nameof(struc.ObsoleteYear));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-3), nameof(struc.SellCostFactor));
@@ -926,7 +926,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.Flags, Is.EqualTo(TrainStationObjectFlags.None), nameof(struc.Flags));
 				// ManualPower
 				Assert.That(struc.Height, Is.EqualTo(0), nameof(struc.Height));
-				Assert.That(struc.NumCompatible, Is.EqualTo(0), nameof(struc.NumCompatible));
+				Assert.That(struc.CompatibleTrackObjectCount, Is.EqualTo(0), nameof(struc.CompatibleTrackObjectCount));
 				Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-7), nameof(struc.SellCostFactor));
 				Assert.That(struc.TrackPieces, Is.EqualTo(TrackTraitFlags.None), nameof(struc.TrackPieces));

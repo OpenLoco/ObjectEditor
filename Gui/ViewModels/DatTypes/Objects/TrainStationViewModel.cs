@@ -18,7 +18,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> Compatible { get; set; }
+		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleTrackObjects { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_0B { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_0D { get; set; }
 
@@ -40,7 +40,7 @@ namespace OpenLoco.Gui.ViewModels
 			ImageOffsets = new(tso.ImageOffsets);
 			var_0B = tso.var_0B;
 			var_0D = tso.var_0D;
-			Compatible = new(tso.Compatible.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleTrackObjects = new(tso.CompatibleTrackObjects.ConvertAll(x => new S5HeaderViewModel(x)));
 		}
 
 		// validation:
@@ -59,8 +59,8 @@ namespace OpenLoco.Gui.ViewModels
 				Flags = Flags,
 				var_0B = var_0B,
 				var_0D = var_0D,
-				NumCompatible = (uint8_t)Compatible.Count,
-				Compatible = Compatible.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				CompatibleTrackObjectCount = (uint8_t)CompatibleTrackObjects.Count,
+				CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 			};
 	}
 }

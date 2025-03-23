@@ -17,7 +17,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive, Category("Stats")] public uint16_t DesignedYear { get; set; }
 		[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
-		[Reactive, Length(0, TrainSignalObject.ModsLength)] public BindingList<S5HeaderViewModel> Mods { get; set; }
+		[Reactive, Length(0, TrainSignalObject.ModsLength)] public BindingList<S5HeaderViewModel> CompatibleTrackObjects { get; set; }
 
 		public TrainSignalViewModel(TrainSignalObject ro)
 		{
@@ -29,7 +29,7 @@ namespace OpenLoco.Gui.ViewModels
 			SellCostFactor = ro.SellCostFactor;
 			DesignedYear = ro.DesignedYear;
 			ObsoleteYear = ro.ObsoleteYear;
-			Mods = new(ro.Mods.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleTrackObjects = new(ro.CompatibleTrackObjects.ConvertAll(x => new S5HeaderViewModel(x)));
 		}
 
 		public override TrainSignalObject GetAsStruct(TrainSignalObject tso)
@@ -43,8 +43,8 @@ namespace OpenLoco.Gui.ViewModels
 				SellCostFactor = SellCostFactor,
 				DesignedYear = DesignedYear,
 				ObsoleteYear = ObsoleteYear,
-				Mods = Mods.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				NumCompatible = (uint8_t)Mods.Count,
+				CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				CompatibleTrackObjectCount = (uint8_t)CompatibleTrackObjects.Count,
 			};
 	}
 }

@@ -30,7 +30,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0B)] RoadStationObjectFlags Flags,
 		[property: LocoStructOffset(0x0C), LocoStructVariableLoad, Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxImageOffsets)] uint32_t[] ImageOffsets,
-		[property: LocoStructOffset(0x20)] uint8_t NumCompatible,
+		[property: LocoStructOffset(0x20)] uint8_t CompatibleRoadObjectCount,
 		[property: LocoStructOffset(0x21), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxNumCompatible)] object_id[] _Compatible,
 		[property: LocoStructOffset(0x28)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x2A)] uint16_t ObsoleteYear,
@@ -42,7 +42,7 @@ namespace OpenLoco.Dat.Objects
 		public const int MaxImageOffsets = 4;
 		public const int MaxNumCompatible = 7;
 		public const int CargoOffsetBytesSize = 16;
-		public List<S5Header> Compatible { get; set; } = [];
+		public List<S5Header> CompatibleRoadObjects { get; set; } = [];
 
 		public S5Header CargoType { get; set; }
 
@@ -51,8 +51,8 @@ namespace OpenLoco.Dat.Objects
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible
-			Compatible = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
-			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
+			CompatibleRoadObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, CompatibleRoadObjectCount);
+			remainingData = remainingData[(S5Header.StructLength * CompatibleRoadObjectCount)..];
 
 			// cargo
 			if (Flags.HasFlag(RoadStationObjectFlags.Passenger) || Flags.HasFlag(RoadStationObjectFlags.Freight))
@@ -92,7 +92,7 @@ namespace OpenLoco.Dat.Objects
 			using (var ms = new MemoryStream())
 			{
 				// compatible
-				foreach (var co in Compatible)
+				foreach (var co in CompatibleRoadObjects)
 				{
 					ms.Write(co.Write());
 				}
@@ -138,7 +138,7 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			if (NumCompatible > 7)
+			if (CompatibleRoadObjectCount > 7)
 			{
 				return false;
 			}

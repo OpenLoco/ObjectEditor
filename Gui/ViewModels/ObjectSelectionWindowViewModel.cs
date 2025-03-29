@@ -1,5 +1,5 @@
 using DynamicData;
-using OpenLoco.Dat;
+using OpenLoco.Definitions.Database;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;

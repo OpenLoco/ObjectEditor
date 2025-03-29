@@ -1,6 +1,6 @@
 using Avalonia.Controls;
-using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
+using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
 using OpenLoco.Gui.Models;
 using ReactiveUI;
@@ -33,6 +33,12 @@ namespace OpenLoco.Gui.ViewModels
 
 		[Reactive]
 		public string FilenameFilter { get; set; } = string.Empty;
+
+		[Reactive]
+		public string AuthorFilter { get; set; } = string.Empty;
+
+		[Reactive]
+		public string ModpackFilter { get; set; } = string.Empty;
 
 		[Reactive]
 		public ObjectDisplayMode DisplayMode { get; set; } = ObjectDisplayMode.All;
@@ -94,6 +100,16 @@ namespace OpenLoco.Gui.ViewModels
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 
 			_ = this.WhenAnyValue(o => o.FilenameFilter)
+				.Throttle(TimeSpan.FromMilliseconds(500))
+				.Skip(1)
+				.Subscribe(async _ => await ReloadDirectoryAsync(true));
+
+			_ = this.WhenAnyValue(o => o.AuthorFilter)
+				.Throttle(TimeSpan.FromMilliseconds(500))
+				.Skip(1)
+				.Subscribe(async _ => await ReloadDirectoryAsync(true));
+
+			_ = this.WhenAnyValue(o => o.ModpackFilter)
 				.Throttle(TimeSpan.FromMilliseconds(500))
 				.Skip(1)
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
@@ -187,6 +203,8 @@ namespace OpenLoco.Gui.ViewModels
 				Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
 				Model.Settings.ObjDataDirectory,
 				FilenameFilter,
+				AuthorFilter,
+				ModpackFilter,
 				DisplayMode,
 				FileLocation.Local);
 		}
@@ -212,18 +230,32 @@ namespace OpenLoco.Gui.ViewModels
 					Model.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
 					Model.Settings.DownloadFolder,
 					FilenameFilter,
+					AuthorFilter,
+					ModpackFilter,
 					DisplayMode,
 					FileLocation.Online);
 			}
 		}
 
-		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
+		static bool MatchesFilter(ObjectIndexEntry o, string filenameFilter, string authorFilter, string modpackFilter, ObjectDisplayMode displayMode)
+		{
+			var displayable = displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == (o.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG));
+
+			var filters =
+				   string.IsNullOrEmpty(filenameFilter) || o.DatName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase);
+			//&& (string.IsNullOrEmpty(authorFilter)   || o.Author.Contains(authorFilter, StringComparison.CurrentCultureIgnoreCase))
+			//&& (string.IsNullOrEmpty(modpackFilter)  || o.DatName.Contains(modpackFilter, StringComparison.CurrentCultureIgnoreCase));
+
+			return displayable && filters;
+		}
+
+		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, string authorFilter, string modpackFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
 		{
 			var result = new List<FileSystemItemBase>();
 
 			var groupedObjects = index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
-				.Where(o => (string.IsNullOrEmpty(filenameFilter) || o.DatName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase)) && (displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == (o.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG))))
+				.Where(o => MatchesFilter(o, filenameFilter, authorFilter, modpackFilter, displayMode))
 				.GroupBy(o => o.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 

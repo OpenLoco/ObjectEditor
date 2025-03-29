@@ -28,12 +28,26 @@ namespace OpenLoco.Definitions.Database
 		public LocoDb(DbContextOptions<LocoDb> options) : base(options)
 		{ }
 
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		public static string DefaultDb = "Q:\\Games\\Locomotion\\Server\\loco.db";
+
+		protected override void OnConfiguring(DbContextOptionsBuilder builder)
 		{
-			if (!optionsBuilder.IsConfigured)
+			if (!builder.IsConfigured)
 			{
-				_ = optionsBuilder.UseSqlite("Data Source=Q:\\Games\\Locomotion\\Server\\loco.db");
+				_ = builder.UseSqlite($"Data Source={DefaultDb}");
 			}
+		}
+
+		public static LocoDb? GetDbFromFile(string path) // path is the full/absolute file path
+		{
+			if (!string.IsNullOrEmpty(path) && File.Exists(path))
+			{
+				var builder = new DbContextOptionsBuilder<LocoDb>();
+				_ = builder.UseSqlite($"Data Source={path}");
+				return new LocoDb(builder.Options);
+			}
+
+			return null;
 		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,5 +1,5 @@
 using OpenLoco.Common.Logging;
-using OpenLoco.Dat;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.ObjectService
 {

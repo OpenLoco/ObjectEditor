@@ -4,10 +4,7 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
 
-var builder = new DbContextOptionsBuilder<LocoDb>();
-const string connectionString = "Data Source=Q:\\Games\\Locomotion\\Database\\loco.db";
-_ = builder.UseSqlite(connectionString);
-var db = new LocoDb(builder.Options);
+var db = LocoDb.GetDbFromFile(LocoDb.DefaultDb);
 
 Console.WriteLine("loading");
 

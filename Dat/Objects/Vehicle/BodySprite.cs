@@ -4,16 +4,6 @@ using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects
 {
-	public enum BodySpriteSlopeType
-	{
-		Flat,
-		Gentle,
-		Sloped,
-		Steep,
-		unk1,
-		unk2
-	};
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
 	public record BodySprite(
@@ -23,7 +13,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x03)] uint8_t NumCargoLoadFrames,
 		[property: LocoStructOffset(0x04)] uint8_t NumCargoFrames,
 		[property: LocoStructOffset(0x05)] uint8_t NumRollFrames,
-		[property: LocoStructOffset(0x06)] uint8_t HalfLength,// the longest distance from pivot of body to either end of car component (not strictly body half length see crocodile train car)
+		[property: LocoStructOffset(0x06)] uint8_t HalfLength, // 0x06 the distance from pivot of body to one end of car component (not strictly the visible body, see CE68 locomotive)
 		[property: LocoStructOffset(0x07)] BodySpriteFlags Flags,
 		[property: LocoStructOffset(0x08), LocoStructVariableLoad, Browsable(false)] uint8_t _Width,                // sprite width
 		[property: LocoStructOffset(0x09), LocoStructVariableLoad, Browsable(false)] uint8_t _HeightNegative,       // sprite height negative

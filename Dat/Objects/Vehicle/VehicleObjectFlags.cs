@@ -9,7 +9,7 @@ namespace OpenLoco.Dat.Objects
 		TopAndTailPosition = 1 << 1,   // vehicle is forced to the rear of the train
 		JacobsBogieFront = 1 << 2,
 		JacobsBogieRear = 1 << 3,
-		unk_04 = 1 << 4,
+		LargerBoundingBox = 1 << 4,
 		CentrePosition = 1 << 5, // vehicle is forced to the middle of train
 		RackRail = 1 << 6,
 		// Alternates between sprite 0 and sprite 1 for each vehicle of this type in a train

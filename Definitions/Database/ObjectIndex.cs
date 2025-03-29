@@ -20,6 +20,8 @@ namespace OpenLoco.Definitions.Database
 		[JsonIgnore]
 		public const string DefaultIndexDbFileName = "objectIndex.db";
 
+		public LocoDb Database { get; set; }
+
 		public ObjectIndex()
 		{ }
 

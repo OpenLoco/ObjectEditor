@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.Dat
+namespace OpenLoco.Definitions.Database
 {
 	public class ObjectIndex
 	{
@@ -16,6 +16,9 @@ namespace OpenLoco.Dat
 
 		[JsonIgnore]
 		public const string DefaultIndexFileName = "objectIndex.json";
+
+		[JsonIgnore]
+		public const string DefaultIndexDbFileName = "objectIndex.db";
 
 		public ObjectIndex()
 		{ }

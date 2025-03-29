@@ -12,7 +12,20 @@ namespace OpenLoco.Dat.Objects
 		None = 0,
 		Recolourable = 1 << 0,
 		NoGlass = 1 << 1,
-	};
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x06)]
+	public record CargoOffset(
+		[property: LocoStructOffset(0x00)] Pos3 A,
+		[property: LocoStructOffset(0x06)] Pos3 B
+		) : ILocoStruct
+	{
+		public CargoOffset() : this(new Pos3(), new Pos3())
+		{ }
+
+		public bool Validate() => true;
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xAE)]
@@ -30,30 +43,34 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0C)] TrainStationObjectFlags Flags,
 		[property: LocoStructOffset(0x0D)] uint8_t var_0D,
 		[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x12), LocoArrayLength(TrainStationObject.MaxImageOffsets)] uint32_t[] ImageOffsets,
-		[property: LocoStructOffset(0x22)] uint8_t NumCompatible,
-		[property: LocoStructOffset(0x23), LocoArrayLength(TrainStationObject.MaxNumCompatible)] object_id[] _Compatible,
+		[property: LocoStructOffset(0x12), LocoArrayLength(TrainStationObject.MaxImageOffsets), Browsable(false)] uint32_t[] ImageOffsets,
+		[property: LocoStructOffset(0x22)] uint8_t CompatibleTrackObjectCount,
+		[property: LocoStructOffset(0x23), LocoArrayLength(TrainStationObject.MaxNumCompatible), Browsable(false)] object_id[] _Compatible, // only used for runtime loco, this isn't part of object 'definition'
 		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear,
 		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes,
 		[property: LocoStructOffset(0x3E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.ManualPowerLength), Browsable(false)] uint8_t[] _ManualPower
 	) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
-		public List<S5Header> Compatible { get; set; } = [];
+		public List<S5Header> CompatibleTrackObjects { get; set; } = [];
 
 		public const int MaxImageOffsets = 4;
 		public const int MaxNumCompatible = 7;
 		public const int ManualPowerLength = 16;
 		public const int CargoOffsetBytesSize = 16;
+		public const int MaxStationCargoDensity = 15;
+
 		public uint8_t[][][] CargoOffsetBytes { get; set; }
 
 		public uint8_t[][] ManualPower { get; set; }
 
+		public CargoOffset[] CargoOffsets { get; init; } = Enumerable.Repeat(new CargoOffset(), 15).ToArray();
+
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible
-			Compatible = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
-			remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
+			CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, CompatibleTrackObjectCount);
+			remainingData = remainingData[(S5Header.StructLength * CompatibleTrackObjectCount)..];
 
 			// cargo offsets (for drawing the cargo on the station)
 			CargoOffsetBytes = new byte[4][][];
@@ -104,8 +121,8 @@ namespace OpenLoco.Dat.Objects
 		{
 			using (var ms = new MemoryStream())
 			{
-				// compatible
-				foreach (var co in Compatible)
+				// compatible track objects
+				foreach (var co in CompatibleTrackObjects)
 				{
 					ms.Write(co.Write());
 				}
@@ -151,7 +168,7 @@ namespace OpenLoco.Dat.Objects
 				return false;
 			}
 
-			return NumCompatible <= 7;
+			return CompatibleTrackObjectCount <= 7;
 		}
 
 		public bool TryGetImageName(int id, out string? value)

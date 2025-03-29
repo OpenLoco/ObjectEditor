@@ -188,8 +188,6 @@ namespace OpenLoco.Dat.FileParsing
 				buffer.Write(src[srcNormStart..(srcNormStart + count)]);
 			}
 
-			File.WriteAllBytes("SNDA1-editor.mem", buffer.ToArray());
-
 			return buffer.ToArray();
 		}
 

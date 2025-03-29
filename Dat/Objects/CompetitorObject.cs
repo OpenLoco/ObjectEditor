@@ -19,7 +19,25 @@ namespace OpenLoco.Dat.Objects
 	}
 
 	[Flags]
-	public enum UnkCompetitorFlags : uint32_t
+	public enum UnkCompetitorFlags1 : uint32_t
+	{
+		unk0 = 1 << 0,
+		unk1 = 1 << 1,
+		unk2 = 1 << 2,
+		unk3 = 1 << 3,
+		unk4 = 1 << 4,
+		unk5 = 1 << 5,
+		unk6 = 1 << 6,
+		unk7 = 1 << 7,
+		unk8 = 1 << 8,
+		unk9 = 1 << 9,
+		unk10 = 1 << 10,
+		unk11 = 1 << 11,
+		unk12 = 1 << 12,
+	}
+
+	[Flags]
+	public enum UnkCompetitorFlags2 : uint32_t
 	{
 		unk0 = 1 << 0,
 		unk1 = 1 << 1,
@@ -43,8 +61,8 @@ namespace OpenLoco.Dat.Objects
 	public record CompetitorObject(
 			[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id FullName,
 			[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id LastName,
-			[property: LocoStructOffset(0x04)] UnkCompetitorFlags var_04,
-			[property: LocoStructOffset(0x08)] UnkCompetitorFlags var_08,
+			[property: LocoStructOffset(0x04)] UnkCompetitorFlags1 var_04,
+			[property: LocoStructOffset(0x08)] UnkCompetitorFlags2 var_08,
 			[property: LocoStructOffset(0x0C)] uint32_t Emotions,
 			[property: LocoStructOffset(0x10), Browsable(false), LocoArrayLength(CompetitorObject.ImagesLength)] image_id[] Images,
 			[property: LocoStructOffset(0x34)] uint8_t Intelligence,

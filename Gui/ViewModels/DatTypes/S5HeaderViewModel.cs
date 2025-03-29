@@ -2,6 +2,7 @@ using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -29,6 +30,9 @@ namespace OpenLoco.Gui.ViewModels
 			Checksum = s5Header.Checksum;
 			SourceGame = s5Header.SourceGame;
 			ObjectType = s5Header.ObjectType;
+
+			_ = this.WhenAnyValue(o => o.Checksum)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(ChecksumHex)));
 		}
 
 		[Reactive, MaxLength(8)]
@@ -36,6 +40,9 @@ namespace OpenLoco.Gui.ViewModels
 
 		[Reactive]
 		public uint32_t Checksum { get; set; }
+
+		[MinLength(8), MaxLength(8)]
+		public string ChecksumHex => string.Format($"{Checksum:X}");
 
 		[Reactive]
 		public SourceGame SourceGame { get; set; }

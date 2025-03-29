@@ -35,8 +35,8 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t BaseCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t HeightCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
-		[Reactive] public BindingList<S5HeaderViewModel> TrackCompatibleMods { get; set; }
-		[Reactive] public BindingList<S5HeaderViewModel> RoadCompatibleMods { get; set; }
+		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleTrackObjects { get; set; }
+		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleRoadObjects { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_03 { get; set; }
 
 		public BridgeViewModel(BridgeObject bo)
@@ -52,8 +52,8 @@ namespace OpenLoco.Gui.ViewModels
 			SellCostFactor = bo.SellCostFactor;
 			DisabledTrackFlags = bo.DisabledTrackFlags;
 			DesignedYear = bo.DesignedYear;
-			TrackCompatibleMods = new(bo.TrackCompatibleMods.ConvertAll(x => new S5HeaderViewModel(x)));
-			RoadCompatibleMods = new(bo.RoadCompatibleMods.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleTrackObjects = new(bo.CompatibleTrackObjects.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleRoadObjects = new(bo.CompatibleRoadObjects.ConvertAll(x => new S5HeaderViewModel(x)));
 			var_03 = bo.var_03;
 			ClearHeight = bo.ClearHeight;
 			DeckDepth = bo.DeckDepth;
@@ -73,10 +73,10 @@ namespace OpenLoco.Gui.ViewModels
 				SellCostFactor = SellCostFactor,
 				DisabledTrackFlags = DisabledTrackFlags,
 				DesignedYear = DesignedYear,
-				TrackCompatibleMods = TrackCompatibleMods.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				RoadCompatibleMods = RoadCompatibleMods.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				NumCompatibleTrackMods = (uint8_t)TrackCompatibleMods.Count,
-				NumCompatibleRoadMods = (uint8_t)RoadCompatibleMods.Count,
+				CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				CompatibleTrackObjectCount = (uint8_t)CompatibleTrackObjects.Count,
+				CompatibleRoadObjectCount = (uint8_t)CompatibleRoadObjects.Count,
 				var_03 = var_03,
 				ClearHeight = ClearHeight,
 				DeckDepth = DeckDepth,

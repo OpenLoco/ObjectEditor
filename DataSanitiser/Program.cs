@@ -1,11 +1,11 @@
 // 1. objectMetadata.json must contain a single record for every unique object we have
 using Common.Json;
 using OpenLoco.Common.Logging;
-using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
+using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Data;
 using System.Text.Json;

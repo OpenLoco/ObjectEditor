@@ -18,7 +18,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> Compatible { get; set; }
+		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleRoadObjects { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_2D { get; set; }
 
 		public RoadStationViewModel(RoadStationObject ro)
@@ -34,7 +34,7 @@ namespace OpenLoco.Gui.ViewModels
 			Flags = ro.Flags;
 			ImageOffsets = new(ro.ImageOffsets);
 			var_2D = ro.var_2D;
-			Compatible = new(ro.Compatible.ConvertAll(x => new S5HeaderViewModel(x)));
+			CompatibleRoadObjects = new(ro.CompatibleRoadObjects.ConvertAll(x => new S5HeaderViewModel(x)));
 		}
 
 		public override RoadStationObject GetAsStruct(RoadStationObject ro)
@@ -50,8 +50,8 @@ namespace OpenLoco.Gui.ViewModels
 				CostIndex = CostIndex,
 				Flags = Flags,
 				var_2D = var_2D,
-				NumCompatible = (uint8_t)Compatible.Count,
-				Compatible = Compatible.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+				CompatibleRoadObjectCount = (uint8_t)CompatibleRoadObjects.Count,
+				CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 			};
 	}
 }

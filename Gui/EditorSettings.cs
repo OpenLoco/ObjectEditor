@@ -1,6 +1,6 @@
 using Common.Json;
 using OpenLoco.Common.Logging;
-using OpenLoco.Dat;
+using OpenLoco.Definitions.Database;
 using System;
 using System.Collections.Generic;
 using System.IO;

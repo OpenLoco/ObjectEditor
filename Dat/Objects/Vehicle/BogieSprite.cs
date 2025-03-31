@@ -4,13 +4,6 @@ using System.ComponentModel;
 
 namespace OpenLoco.Dat.Objects
 {
-	public enum BogieSpriteSlopeType
-	{
-		Flat,
-		Gentle,
-		Steep
-	}
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x12)]
 	public record BogieSprite(

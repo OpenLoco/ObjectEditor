@@ -15,4 +15,22 @@ namespace OpenLoco.Definitions.Web
 
 		public const string ResourceRoute = "/{id}";
 	}
+
+#if LEGACY_API
+	public static class LegacyRoutes
+	{
+		//public const string ListObjects = "/objects/list";
+		public const string ObjectList = "/list";
+
+		//public const string GetObjectImages = "/objects/getobjectimages";
+		public const string GetObjectImages = "/getobjectimages";
+
+		//public const string GetObject = "/objects/getobject";
+		public const string GetObject = "/getobject";
+
+		public const string GetDat = "/objects/getdat";
+		public const string GetDatFile = "/objects/getdatfile";
+		public const string GetObjectFile = "/objects/getobjectfile";
+	}
+#endif
 }

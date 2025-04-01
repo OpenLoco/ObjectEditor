@@ -36,6 +36,12 @@ namespace ObjectService.TableHandlers
 
 		public override void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 		{
+#if LEGACY_API
+			_ = parentRoute.MapGet(LegacyRoutes.ObjectList, ListAsync);
+			_ = parentRoute.MapGet(LegacyRoutes.GetObjectImages, GetObjectImagesLegacy);
+			_ = parentRoute.MapGet(LegacyRoutes.GetObject, GetObjectLegacy);
+#endif
+
 			var resourceRoute = parentRoute.MapGroup(Routes.ResourceRoute);
 			_ = resourceRoute.MapGet(Routes.File, GetObjectFile);
 			_ = resourceRoute.MapGet(Routes.Images, GetObjectImages);
@@ -164,7 +170,17 @@ namespace ObjectService.TableHandlers
 			return ReturnObject(eObj);
 		}
 
+#if LEGACY_API
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
+		public async Task<IResult> GetObjectImagesLegacy([FromQuery] int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
+			=> await GetObjectImages(uniqueObjectId, db, logger);
+
+		public async Task<IResult> GetObjectLegacy([FromQuery] int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
+			=> await ReadAsync(uniqueObjectId, db);
+
+#endif
+
+		// eg: http://localhost:7229/v1/objects/{id}/images
 		public async Task<IResult> GetObjectImages(int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Object [{uniqueObjectId}] requested with images", uniqueObjectId);

@@ -7,8 +7,6 @@ namespace OpenLoco.Definitions.Web
 {
 	public static class Client
 	{
-		public const string Version = "v1";
-
 		public static async Task<IEnumerable<DtoObjectDescriptor>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
 			=> await SendRequestAsync<IEnumerable<DtoObjectDescriptor>?>(client, Routes.Objects, ReadJsonContentAsync<IEnumerable<DtoObjectDescriptor>?>, logger) ?? [];
 
@@ -41,7 +39,6 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				route = string.Concat(Version, route);
 				logger?.Debug($"Querying {client.BaseAddress}{route}");
 				using var response = await client.GetAsync(route);
 

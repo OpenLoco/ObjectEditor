@@ -192,7 +192,7 @@ namespace OpenLoco.Gui.Models
 			MetadataModel? metadata = null;
 			List<Image<Rgba32>> images = [];
 
-			var uniqueObjectId = int.Parse(filesystemItem.Filename);
+			var uniqueObjectId = int.Parse(Path.GetFileNameWithoutExtension(filesystemItem.Filename));
 
 			if (!OnlineCache.TryGetValue(uniqueObjectId, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
 			{

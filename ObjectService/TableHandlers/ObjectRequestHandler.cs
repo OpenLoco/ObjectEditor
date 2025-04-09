@@ -164,17 +164,6 @@ namespace ObjectService.TableHandlers
 			return ReturnObject(eObj);
 		}
 
-#if LEGACY_API
-
-		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
-		public async Task<IResult> GetObjectImagesLegacy([FromQuery] int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
-			=> await GetObjectImages(uniqueObjectId, db, logger);
-
-		public async Task<IResult> GetObjectLegacy([FromQuery] int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
-			=> await ReadAsync(uniqueObjectId, db);
-
-#endif
-
 		// eg: http://localhost:7229/v1/objects/{id}/images
 		public async Task<IResult> GetObjectImages(int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
 		{

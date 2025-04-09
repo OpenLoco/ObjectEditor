@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Options;
 using ObjectService.TableHandlers;
 using OpenLoco.Dat;
-using OpenLoco.Definitions.Web;
 
 namespace OpenLoco.ObjectService
 {
@@ -44,16 +43,6 @@ namespace OpenLoco.ObjectService
 
 		public IEndpointRouteBuilder MapRoutes(IEndpointRouteBuilder routeGroup)
 		{
-#if LEGACY_API
-			var legacyRoute = routeGroup
-				.MapGroup("v1")
-				.WithTags("Legacy");
-
-			_ = legacyRoute.MapGet(LegacyRoutes.ListObjects, ObjectHandler.ListAsync);
-			_ = legacyRoute.MapGet(LegacyRoutes.GetObjectImages, ObjectHandler.GetObjectImagesLegacy);
-			_ = legacyRoute.MapGet(LegacyRoutes.GetObject, ObjectHandler.GetObjectLegacy);
-#endif
-
 			AuthorHandler.MapRoutes(routeGroup);
 			TagHandler.MapRoutes(routeGroup);
 			LicenceHandler.MapRoutes(routeGroup);

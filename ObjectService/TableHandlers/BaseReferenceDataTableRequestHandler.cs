@@ -30,11 +30,9 @@ namespace ObjectService.TableHandlers
 
 		public void MapRoutes(IEndpointRouteBuilder parentRoute)
 		{
-			var baseRoute = parentRoute.MapGroup(BaseRoute);
-			_ = baseRoute.WithMetadata(
-			[
-				new TagsAttribute(MakeNicePlural(GetType().Name)),
-			]);
+			var baseRoute = parentRoute
+				.MapGroup(BaseRoute)
+				.WithTags(MakeNicePlural(GetType().Name));
 
 			_ = baseRoute.MapGet(string.Empty, ListAsync);
 

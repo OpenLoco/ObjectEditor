@@ -36,15 +36,6 @@ namespace ObjectService.TableHandlers
 
 		public override void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 		{
-#if LEGACY_API
-			var legacyRoute = parentRoute
-				.MapGroup("")
-				.WithTags("Legacy");
-			_ = legacyRoute.MapGet(LegacyRoutes.ObjectList, ListAsync);
-			_ = legacyRoute.MapGet(LegacyRoutes.GetObjectImages, GetObjectImagesLegacy);
-			_ = legacyRoute.MapGet(LegacyRoutes.GetObject, GetObjectLegacy);
-#endif
-
 			var resourceRoute = parentRoute.MapGroup(Routes.ResourceRoute);
 			_ = resourceRoute.MapGet(Routes.File, GetObjectFile);
 			_ = resourceRoute.MapGet(Routes.Images, GetObjectImages);

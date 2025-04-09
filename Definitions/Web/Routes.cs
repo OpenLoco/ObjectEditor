@@ -19,15 +19,12 @@ namespace OpenLoco.Definitions.Web
 #if LEGACY_API
 	public static class LegacyRoutes
 	{
-		//public const string ListObjects = "/objects/list";
-		public const string ObjectList = "/list";
+		// used
+		public const string ListObjects = "/objects/list";
+		public const string GetObjectImages = "/objects/getobjectimages";
+		public const string GetObject = "/objects/getobject";
 
-		//public const string GetObjectImages = "/objects/getobjectimages";
-		public const string GetObjectImages = "/getobjectimages";
-
-		//public const string GetObject = "/objects/getobject";
-		public const string GetObject = "/getobject";
-
+		// unused
 		public const string GetDat = "/objects/getdat";
 		public const string GetDatFile = "/objects/getdatfile";
 		public const string GetObjectFile = "/objects/getobjectfile";

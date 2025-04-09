@@ -171,6 +171,7 @@ namespace ObjectService.TableHandlers
 		}
 
 #if LEGACY_API
+
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
 		public async Task<IResult> GetObjectImagesLegacy([FromQuery] int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
 			=> await GetObjectImages(uniqueObjectId, db, logger);

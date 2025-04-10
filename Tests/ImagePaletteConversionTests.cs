@@ -69,7 +69,7 @@ namespace OpenLoco.Dat.Tests
 				var i = 0;
 				foreach (var element in g1Elements)
 				{
-					if (paletteMap.TryConvertG1ToRgba32Bitmap(element, out var image0))
+					if (paletteMap.TryConvertG1ToRgba32Bitmap(element, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image0))
 					{
 						var g1Bytes = paletteMap.ConvertRgba32ImageToG1Data(image0!, element.Flags);
 						Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i++}]");

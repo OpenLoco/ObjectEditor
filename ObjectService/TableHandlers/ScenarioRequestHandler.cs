@@ -34,5 +34,8 @@ namespace ObjectService.TableHandlers
 				var filenames = files.Select(x => new DtoScenarioEntry(count++, Path.GetRelativePath(ScenarioFolderOnDisk, x)));
 				return Results.Ok(filenames.ToList());
 			});
+
+		public override async Task<IResult> SearchAsync(string requestJson, LocoDb db)
+			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 }

@@ -21,6 +21,12 @@ namespace ObjectService.TableHandlers
 		Task<IResult> DeleteAsync(int id, LocoDb db);
 
 		Task<IResult> ListAsync(LocoDb db);
+
+		// TDto is a record of the data type for this handler. The searchJson should
+		// be a (prop, op, param) list where the prop is the property name in the record,
+		// op operation, and param is the value to be used in the search
+		// note: op could be unary or binary
+		Task<IResult> SearchAsync(string searchJson, LocoDb db);
 	}
 
 	public abstract class BaseTableRequestHandler<TDto> : ITableRequestHandler<TDto>
@@ -35,6 +41,7 @@ namespace ObjectService.TableHandlers
 				.WithTags(MakeNicePlural(GetType().Name));
 
 			_ = baseRoute.MapGet(string.Empty, ListAsync);
+			_ = baseRoute.MapGet(string.Empty, SearchAsync);
 
 			// todo: do not enable until user permissions are implemented
 			//_ = baseRoute.MapPost(string.Empty, CreateAsync);
@@ -58,6 +65,7 @@ namespace ObjectService.TableHandlers
 		public abstract Task<IResult> UpdateAsync(TDto request, LocoDb db);
 		public abstract Task<IResult> DeleteAsync(int id, LocoDb db);
 		public abstract Task<IResult> ListAsync(LocoDb db);
+		public abstract Task<IResult> SearchAsync(string searchJson, LocoDb db);
 	}
 
 	public abstract class BaseReferenceDataTableRequestHandler<TDto, TRow> : BaseTableRequestHandler<TDto>
@@ -94,6 +102,9 @@ namespace ObjectService.TableHandlers
 
 		public override async Task<IResult> ListAsync(LocoDb db)
 			=> await BaseReferenceDataTableRequestHandlerImpl.ListAsync(GetTable(db), ToDtoFunc);
+
+		public override async Task<IResult> SearchAsync(string requestJson, LocoDb db)
+			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 
 	public static class BaseReferenceDataTableRequestHandlerImpl

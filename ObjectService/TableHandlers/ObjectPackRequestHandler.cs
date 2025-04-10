@@ -38,5 +38,8 @@ namespace ObjectService.TableHandlers
 					.ToListAsync())
 				.Select(x => x.ToDtoEntry())
 				.OrderBy(x => x.Name));
+
+		public override async Task<IResult> SearchAsync(string requestJson, LocoDb db)
+			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 }

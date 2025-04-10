@@ -67,6 +67,9 @@ namespace ObjectService.TableHandlers
 					.Select(x => x.ToDtoDescriptor())
 					.ToListAsync());
 
+		public override async Task<IResult> SearchAsync(string requestJson, LocoDb db)
+			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+
 		public static IResult ReturnObject(ExpandedTbl<TblLocoObject, TblLocoObjectPack>? eObj)
 			=> eObj == null || eObj.Object == null
 				? Results.NotFound()

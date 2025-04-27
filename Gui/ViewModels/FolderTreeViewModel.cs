@@ -1,5 +1,8 @@
 using Avalonia.Controls;
+using DynamicData.Alias;
+using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
 using OpenLoco.Gui.Models;
@@ -12,12 +15,49 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace OpenLoco.Gui.ViewModels
 {
+	public enum ComparisonOperation
+	{
+		EqualTo, LessThan, LessThanOrEqualTo, GreaterThan, GreaterThanOrEqualTo
+	}
+
+	// for example search for vanilla/custom/openloco types
+	// search by author
+	public class Filter
+	{
+		public PropertyInfo CurrentProperty { get; set; }
+		public ComparisonOperation Operation { get; set; } = ComparisonOperation.EqualTo;
+
+		// used in the axaml to bind the combobox to the list of swatches
+		public static ComparisonOperation[] OpsArr { get; } = Enum.GetValues<ComparisonOperation>();
+
+		public virtual void GetProperties()
+		{
+			// return generic properties, eg checksum, source, encoding
+			// subclasses override this to return the relevant ILocoStruct properties
+		}
+
+		//public
+	}
+
+	public class ObjectFilter<T> : Filter where T : ILocoStruct
+	{
+		public PropertyInfo Property { get; set; }
+
+		// dynamic lookup
+		public static PropertyInfo[] ObjectProperties { get; } = typeof(T).GetProperties(); // get only properties we can search by. ues attribute to define those?
+	}
+
 	public class FolderTreeViewModel : ReactiveObject
 	{
+		public ObservableCollection<Filter> Filters { get; set; }
+		public ICommand AddNewFilter { get; set; }
+
 		ObjectEditorModel Model { get; init; }
 
 		[Reactive]
@@ -85,6 +125,9 @@ namespace OpenLoco.Gui.ViewModels
 
 			RefreshDirectoryItems = ReactiveCommand.Create(() => ReloadDirectoryAsync(false));
 			OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : Model.Settings.DownloadFolder, Model.Logger));
+
+			Filters = new ObservableCollection<Filter>();
+			AddNewFilter = ReactiveCommand.Create(() => { Filters.Add(new Filter()); });
 
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
 				.Skip(1)

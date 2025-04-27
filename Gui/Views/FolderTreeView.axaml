@@ -66,9 +66,24 @@
 					</DockPanel>
 				</Button>
 			</DockPanel>
-			<DockPanel Grid.Row="3" Margin="2" >
-				<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
-				<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />
+			<DockPanel  Grid.Row="3" Margin="2" >
+				<Button DockPanel.Dock="Top" Command="{Binding AddNewFilter}">
+					<TextBlock> Add filter</TextBlock>
+				</Button>
+				<ListBox ItemsSource="{Binding Filters}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal">
+								<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
+								<TextBox Text="{Binding Property}" Watermark="Field" />
+								<ComboBox SelectedItem="{Binding Operation}" ItemsSource="{Binding OpsArr}" />
+								<Button>
+									<TextBlock>X</TextBlock>
+								</Button>
+							</StackPanel>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
 			</DockPanel>
 			<Border Grid.Row="4" BorderThickness="1" Margin="2">
 				<Grid>

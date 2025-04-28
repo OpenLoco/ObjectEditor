@@ -74,9 +74,9 @@ _ = app
 	.MapHealthChecks("/health")
 	.RequireRateLimiting(tokenPolicy);
 
-var showSwagger = builder.Configuration.GetValue<bool?>("ObjectService:ShowSwagger");
-ArgumentNullException.ThrowIfNull(showSwagger);
-if (showSwagger == true)
+var showScalar = builder.Configuration.GetValue<bool?>("ObjectService:ShowScalar");
+ArgumentNullException.ThrowIfNull(showScalar);
+if (showScalar == true)
 {
 	_ = app.MapOpenApi();
 	_ = app.MapScalarApiReference(options =>

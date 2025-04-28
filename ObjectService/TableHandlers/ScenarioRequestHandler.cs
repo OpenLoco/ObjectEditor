@@ -26,7 +26,7 @@ namespace ObjectService.TableHandlers
 		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ListAsync(LocoDb db)
+		public override async Task<IResult> ListAsync(HttpContext context, LocoDb db)
 			=> await Task.Run(() =>
 			{
 				var files = Directory.GetFiles(ScenarioFolderOnDisk, "*.SC5", SearchOption.AllDirectories);
@@ -34,8 +34,5 @@ namespace ObjectService.TableHandlers
 				var filenames = files.Select(x => new DtoScenarioEntry(count++, Path.GetRelativePath(ScenarioFolderOnDisk, x)));
 				return Results.Ok(filenames.ToList());
 			});
-
-		public override async Task<IResult> SearchAsync(string requestJson, LocoDb db)
-			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 }

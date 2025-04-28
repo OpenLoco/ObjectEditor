@@ -31,15 +31,12 @@ namespace ObjectService.TableHandlers
 		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ListAsync(LocoDb db)
+		public override async Task<IResult> ListAsync(HttpContext context, LocoDb db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Include(l => l.Licence)
 					.ToListAsync())
 				.Select(x => x.ToDtoEntry())
 				.OrderBy(x => x.Name));
-
-		public override async Task<IResult> SearchAsync(string requestJson, LocoDb db)
-			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 }

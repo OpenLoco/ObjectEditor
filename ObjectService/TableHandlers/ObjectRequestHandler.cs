@@ -60,15 +60,27 @@ namespace ObjectService.TableHandlers
 				.Select(x => x.ToDtoDescriptor())
 				.ToListAsync());
 
-		public override async Task<IResult> ListAsync(LocoDb db)
-			=> Results.Ok(
-				await db.Objects
-					.Include(l => l.Licence)
-					.Select(x => x.ToDtoDescriptor())
-					.ToListAsync());
+		public override async Task<IResult> ListAsync(HttpContext context, LocoDb db)
+		{
+			if (context.Request.Query.Count > 0)
+			{
+				// transform query into linq/db query
 
-		public override async Task<IResult> SearchAsync(string requestJson, LocoDb db)
-			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+				// s5 header query params
+				// object-specific query params
+				// metadata query params
+
+				return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
+			}
+			else
+			{
+				return Results.Ok(
+					await db.Objects
+						.Include(l => l.Licence)
+						.Select(x => x.ToDtoDescriptor())
+						.ToListAsync());
+			}
+		}
 
 		public static IResult ReturnObject(ExpandedTbl<TblLocoObject, TblLocoObjectPack>? eObj)
 			=> eObj == null || eObj.Object == null

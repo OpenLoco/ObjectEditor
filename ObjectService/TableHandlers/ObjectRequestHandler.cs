@@ -64,13 +64,63 @@ namespace ObjectService.TableHandlers
 		{
 			if (context.Request.Query.Count > 0)
 			{
+				var query = db.Objects.AsQueryable();
+				var filters = context.Request.Query;
+
+				if (!filters.TryGetValue("objectType", out var objectTypeStr) || !Enum.TryParse(objectTypeStr, out ObjectType objectType))
+				{
+					return Results.BadRequest();
+				}
+
+				query = query.Where(x => x.ObjectType == objectType);
+
+				var locoPropertiesForObject = ObjectTypeMapping
+					.TypeToStruct(objectType)
+					.GetProperties();
+
+				var metadataPropertiesForObject = typeof(ObjectMetadata).GetProperties();
+
+				var allProperties = locoPropertiesForObject.Union(metadataPropertiesForObject);
+
+				foreach (var filter in filters.Where(x => x.Key != "objectType" && !string.IsNullOrEmpty(x.Key) && !string.IsNullOrEmpty(x.Value)))
+				{
+					var key = filter.Key;
+					var value = filter.Value.FirstOrDefault();
+
+					if (!allProperties.Any(x => x.Name == key))
+					{
+						continue; // Skip disallowed keys
+					}
+
+					//query = query.Where("{key} == @0", value);
+
+					//switch (key)
+					//{
+					//	case "name":
+					//		query = query.Where("Name.Contains(@0)", value);
+					//		break;
+					//	case "age":
+					//		if (int.TryParse(value, out var age))
+					//		{
+					//			query = query.Where("Age == @0", age);
+					//		}
+					//		break;
+					//	case "category":
+					//		query = query.Where("Category == @0", value);
+					//		break;
+					//}
+				}
+
+				var results = await query.ToListAsync();
+				return Results.Ok(results);
+
 				// transform query into linq/db query
 
 				// s5 header query params
 				// object-specific query params
 				// metadata query params
 
-				return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
+				//return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
 			}
 			else
 			{

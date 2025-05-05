@@ -181,7 +181,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			return path == null
 				? null
-				: new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
+				: new FileSystemItem(path, Path.GetFileName(path), File.GetCreationTimeUtc(path), File.GetLastWriteTimeUtc(path), FileLocation.Local);
 		}
 
 		async Task LoadDefaultPalette()
@@ -218,11 +218,14 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			if (Model.TryLoadObject(new FileSystemItem(fsi.Filename, Path.GetFileName(fsi.Filename), FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
+			var createdTime = File.GetCreationTimeUtc(fsi.Filename);
+			var modifiedTime = File.GetLastWriteTimeUtc(fsi.Filename);
+
+			if (Model.TryLoadObject(new FileSystemItem(fsi.Filename, Path.GetFileName(fsi.Filename), createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 			{
 				Model.Logger.Warning($"Successfully loaded {fsi.Filename}");
 				var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.Checksum);
-				var fsi2 = new FileSystemItemObject(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, FileLocation.Local, source);
+				var fsi2 = new FileSystemItemObject(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, createdTime, modifiedTime, FileLocation.Local, source);
 				SetObjectViewModel(fsi2);
 			}
 			else

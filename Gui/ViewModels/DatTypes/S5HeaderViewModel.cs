@@ -41,7 +41,6 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public uint32_t Checksum { get; set; }
 
-		[MinLength(8), MaxLength(8)]
 		public string ChecksumHex => string.Format($"{Checksum:X}");
 
 		[Reactive]

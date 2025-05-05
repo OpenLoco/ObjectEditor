@@ -298,7 +298,7 @@ namespace OpenLoco.Gui.Models
 			{
 				fileInfo = obj.Value.DatFileInfo;
 				locoObject = obj.Value.LocoObject;
-				metadata = null; // todo: look this up from internet anyways
+				metadata = new MetadataModel("<unknown>", fileInfo.S5Header.Name, fileInfo.S5Header.Checksum) { CreationDate = filesystemItem.CreatedDate, LastEditDate = filesystemItem.ModifiedDate }; // todo: look up the rest of the data from internet
 
 				if (locoObject != null)
 				{
@@ -476,14 +476,16 @@ namespace OpenLoco.Gui.Models
 		{
 			Logger.Info($"Uploading {dat.Filename} to object repository");
 			var filename = Path.Combine(Settings.ObjDataDirectory, dat.Filename);
-			var lastModifiedTime = File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows
+			var creationDate = File.GetCreationTimeUtc(filename);
+			var modifiedDate = File.GetLastWriteTimeUtc(filename);
+
 			if (WebClient == null)
 			{
 				Logger.Error("Web client is null");
 				return;
 			}
 
-			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), lastModifiedTime, Logger);
+			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate, Logger);
 			await Task.Delay(100); // wait 100ms, ie don't DoS the server
 		}
 

@@ -220,7 +220,7 @@ namespace OpenLoco.Gui.ViewModels
 			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.WebClient != null)
 			{
 				Model.ObjectIndexOnline = new ObjectIndex((await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.ObjectSource, x.VehicleType))
+					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.ObjectSource, x.CreationDate, x.LastEditDate, x.VehicleType))
 					.ToList());
 			}
 
@@ -251,12 +251,24 @@ namespace OpenLoco.Gui.ViewModels
 
 		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, string authorFilter, string modpackFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
 		{
-			var result = new List<FileSystemItemBase>();
+			var sortByDate = false;
+			if (sortByDate)
+			{
+				return ConstructDateTreeView(index, baseDirectory, filenameFilter, authorFilter, modpackFilter, displayMode, fileLocation).ToList();
+			}
+			else
+			{
+				return ConstructGroupedTreeView(index, baseDirectory, filenameFilter, authorFilter, modpackFilter, displayMode, fileLocation);
+			}
+		}
 
+		static List<FileSystemItemBase> ConstructGroupedTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, string authorFilter, string modpackFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
+		{
+			var result = new List<FileSystemItemBase>();
 			var groupedObjects = index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
-				.Where(o => MatchesFilter(o, filenameFilter, authorFilter, modpackFilter, displayMode))
-				.GroupBy(o => o.ObjectType)
+				.Where(x => MatchesFilter(x, filenameFilter, authorFilter, modpackFilter, displayMode))
+				.GroupBy(x => x.ObjectType)
 				.OrderBy(fsg => fsg.Key.ToString());
 
 			foreach (var objGroup in groupedObjects)
@@ -270,8 +282,8 @@ namespace OpenLoco.Gui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(o => new FileSystemItemObject(Path.Combine(baseDirectory, o.Filename), o.DatName, fileLocation, o.ObjectSource))
-							.OrderBy(o => o.DisplayName));
+							.Select(x => new FileSystemItemObject(Path.Combine(baseDirectory, x.Filename), x.DatName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+							.OrderBy(x => x.DisplayName));
 
 						if (vg.Key == null)
 						{
@@ -289,17 +301,24 @@ namespace OpenLoco.Gui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(o => new FileSystemItemObject(Path.Combine(baseDirectory, o.Filename), o.DatName, fileLocation, o.ObjectSource))
-						.OrderBy(o => o.DisplayName));
+						.Select(x => new FileSystemItemObject(Path.Combine(baseDirectory, x.Filename), x.DatName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+						.OrderBy(x => x.DisplayName));
 				}
 
 				result.Add(new FileSystemItemGroup(
-						string.Empty,
-						objGroup.Key,
-						subNodes));
+					string.Empty,
+					objGroup.Key,
+					subNodes));
 			}
 
 			return result;
 		}
+
+		static IEnumerable<FileSystemItemBase> ConstructDateTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, string authorFilter, string modpackFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
+			=> index
+				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
+				.Where(x => MatchesFilter(x, filenameFilter, authorFilter, modpackFilter, displayMode))
+				.Select(x => new FileSystemItemObject(Path.Combine(baseDirectory, x.Filename), x.DatName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+				.OrderByDescending(x => x.ModifiedDate);
 	}
 }

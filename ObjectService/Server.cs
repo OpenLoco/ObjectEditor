@@ -440,7 +440,8 @@ namespace OpenLoco.ObjectService
 
 			logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
 
-			var creationTime = request.CreationDate;
+			var creationDate = request.CreationDate;
+			var modifiedDate = request.ModifiedDate;
 
 			VehicleType? vehicleType = null;
 			if (LocoObject?.Object is VehicleObject veh)
@@ -458,8 +459,8 @@ namespace OpenLoco.ObjectService
 				VehicleType = vehicleType,
 				Description = string.Empty,
 				Authors = [],
-				CreationDate = creationTime,
-				LastEditDate = null,
+				CreationDate = creationDate,
+				LastEditDate = modifiedDate,
 				UploadDate = DateTimeOffset.UtcNow,
 				Tags = [],
 				ObjectPacks = [],
@@ -467,7 +468,7 @@ namespace OpenLoco.ObjectService
 				Licence = null,
 			};
 
-			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.VehicleType));
+			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, creationDate, modifiedDate, locoTbl.VehicleType));
 
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();

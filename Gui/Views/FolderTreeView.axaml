@@ -5,6 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:OpenLoco.Gui.ViewModels"
 	xmlns:moc="using:OpenLoco.Gui.Models.Converters"
+	xmlns:mo="using:OpenLoco.Gui.Models"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	mc:Ignorable="d" d:DesignWidth="384" d:DesignHeight="768"
 	Width="384"
@@ -19,6 +20,7 @@
 
 	<UserControl.Resources>
 		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+		<moc:IsOfTypeConverter x:Key="IsOfTypeConverter" />
 	</UserControl.Resources>
 
 	<DockPanel>
@@ -86,7 +88,16 @@
 				<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" >
 					<TreeView.ItemTemplate>
 						<TreeDataTemplate ItemsSource="{Binding SubNodes}">
-							<ContentControl Content="{Binding}" />
+							<ContentControl Content="{Binding}">
+								<ContentControl.ContextMenu>
+									<ContextMenu>
+										<ContextMenu.IsVisible>
+											<Binding Converter="{StaticResource IsOfTypeConverter}" ConverterParameter="{x:Type mo:FileSystemItemObject}"/>
+										</ContextMenu.IsVisible>
+										<MenuItem Header="Open folder" Command="{Binding $parent[TreeView].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
+									</ContextMenu>
+								</ContentControl.ContextMenu>
+							</ContentControl>
 						</TreeDataTemplate>
 					</TreeView.ItemTemplate>
 				</TreeView>

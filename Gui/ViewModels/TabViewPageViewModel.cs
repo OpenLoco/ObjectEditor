@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Windows.Input;
+using System;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -53,6 +54,12 @@ namespace OpenLoco.Gui.ViewModels
 			RemoveTabCommand = ReactiveCommand.Create<ILocoFileViewModel>(RemoveTab);
 			CloseAllTabsCommand = ReactiveCommand.Create(CloseAllTabs);
 			CloseOtherTabsCommand = ReactiveCommand.Create<ILocoFileViewModel>(CloseOtherTabs);
+
+
+			_ = this.WhenAnyValue(o => o.SelectedDocument)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(OpenInNewTabIsVisible)));
+
+
 		}
 
 		public async void ReloadAll()

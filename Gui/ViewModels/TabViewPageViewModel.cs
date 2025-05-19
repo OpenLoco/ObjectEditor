@@ -12,13 +12,24 @@ namespace OpenLoco.Gui.ViewModels
 	{
 		public ObservableCollection<ILocoFileViewModel> Documents { get; }
 
+		public bool OpenInNewTab { get; set; }
+
+		public bool OpenInNewTabIsVisible => Documents.Any();
+
 		public void AddDocument(ILocoFileViewModel model)
 		{
-			var existing = Documents.SingleOrDefault(x => x.CurrentFile.Filename == model.CurrentFile.Filename);
-			if (existing != null)
+			if (OpenInNewTab)
 			{
-				SelectedDocument = existing;
-				return;
+				var existing = Documents.SingleOrDefault(x => x.CurrentFile.Filename == model.CurrentFile.Filename);
+				if (existing != null)
+				{
+					SelectedDocument = existing;
+					return;
+				}
+			}
+			else
+			{
+				CloseAllTabs();
 			}
 
 			Documents.Add(model);

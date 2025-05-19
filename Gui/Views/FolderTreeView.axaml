@@ -83,13 +83,14 @@
 				</Grid>
 			</Border>
 			<Border Grid.Row="5" BorderThickness="1" Margin="2">
-				<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" >
+				<!--<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" >
 					<TreeView.ItemTemplate>
 						<TreeDataTemplate ItemsSource="{Binding SubNodes}">
 							<ContentControl Content="{Binding}" />
 						</TreeDataTemplate>
 					</TreeView.ItemTemplate>
-				</TreeView>
+				</TreeView>-->
+				<TreeDataGrid Source="{Binding TreeDataGridSource}"/>
 			</Border>
 		</Grid>
 	</DockPanel>

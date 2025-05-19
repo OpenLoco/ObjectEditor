@@ -78,6 +78,8 @@
 			<Setter Property="AllowQuickFilter" Value="False"/>
 			<Setter Property="Margin" Value="2"/>
 		</Style>
+
+		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
 	</Application.Styles>
 
 	<!--<ResourceDictionary>

@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Models.TreeDataGrid;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
@@ -18,6 +19,9 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class FolderTreeViewModel : ReactiveObject
 	{
+		public HierarchicalTreeDataGridSource<FileSystemItemBase> TreeDataGridSource { get; set; }
+		private ObservableCollection<FileSystemItemBase> treeDataGridSource;
+
 		ObjectEditorModel Model { get; init; }
 
 		[Reactive]
@@ -207,6 +211,26 @@ namespace OpenLoco.Gui.ViewModels
 				ModpackFilter,
 				DisplayMode,
 				FileLocation.Local);
+
+			UpdateGrid(LocalDirectoryItems);
+		}
+
+		void UpdateGrid(List<FileSystemItemBase> items)
+		{
+
+			treeDataGridSource = [.. items];
+			TreeDataGridSource = new HierarchicalTreeDataGridSource<FileSystemItemBase>(treeDataGridSource)
+			{
+				Columns =
+				{
+					new HierarchicalExpanderColumn<FileSystemItemBase>(
+						new TextColumn<FileSystemItemBase, string>
+							("Object Type", x => x.DisplayName), x => x.SubNodes),
+					//new TextColumn<FileSystemItemBase, string>("Display Name", x => x.DisplayName),
+					//new TextColumn<Person, int>("Age", x => x.Age),
+				},
+			};
+			this.RaisePropertyChanged(nameof(TreeDataGridSource));
 		}
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
@@ -234,6 +258,8 @@ namespace OpenLoco.Gui.ViewModels
 					ModpackFilter,
 					DisplayMode,
 					FileLocation.Online);
+
+				UpdateGrid(OnlineDirectoryItems);
 			}
 		}
 

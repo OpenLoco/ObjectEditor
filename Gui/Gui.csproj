@@ -71,6 +71,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Avalonia.Controls.TreeDataGrid">
+      <HintPath>..\dlls\Avalonia.Controls.TreeDataGrid.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Views\DatObjectEditorView.axaml.cs">
       <DependentUpon>DatObjectEditorView.axaml</DependentUpon>
     </Compile>

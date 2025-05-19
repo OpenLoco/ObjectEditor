@@ -55,11 +55,8 @@ namespace OpenLoco.Gui.ViewModels
 			CloseAllTabsCommand = ReactiveCommand.Create(CloseAllTabs);
 			CloseOtherTabsCommand = ReactiveCommand.Create<ILocoFileViewModel>(CloseOtherTabs);
 
-
 			_ = this.WhenAnyValue(o => o.SelectedDocument)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(OpenInNewTabIsVisible)));
-
-
 		}
 
 		public async void ReloadAll()

@@ -268,9 +268,7 @@
 		</Expander>
 		<ContentControl Content="{Binding FolderTreeViewModel}" />
 		<DockPanel DataContext="{Binding CurrentTabModel}">
-
 			<ToggleSwitch Margin="4" IsVisible="{Binding OpenInNewTabIsVisible}" DockPanel.Dock="Top" IsChecked="{Binding OpenInNewTab, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=TabAdd}" OffContent="{materialIcons:MaterialIconExt Kind=Tab}" />
-
 			<TabControl ItemsSource="{Binding Documents}" WrapSelection="True" SelectedItem="{Binding SelectedDocument}">
 				<TabControl.Styles>
 					<Style Selector="TabItem">

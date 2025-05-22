@@ -80,7 +80,7 @@ namespace OpenLoco.Gui.ViewModels
 			Documents.Add(tabToKeep);
 		}
 
-		public bool DocumentExistsWithFile(FileSystemItem fsi)
+		public bool DocumentExistsWithFile(FileSystemItemBase fsi)
 			=> Documents.Any(x => x.CurrentFile == fsi);
 	}
 }

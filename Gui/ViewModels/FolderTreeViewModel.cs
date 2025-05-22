@@ -155,21 +155,14 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			if (fib.SubNodes == null || fib.SubNodes.Count == 0)
 			{
-				return 0;
+				return 1;
 			}
 
 			var count = 0;
 
 			foreach (var node in fib.SubNodes)
 			{
-				if (node is FileSystemItemBase)
-				{
-					count++;
-				}
-				else
-				{
-					count += CountNodes(node);
-				}
+				count += CountNodes(node);
 			}
 
 			return count;
@@ -238,7 +231,7 @@ namespace OpenLoco.Gui.ViewModels
 							}),
 						x => x.SubNodes),
 
-					new TextColumn<FileSystemItemBase, ObjectSource?>("Source", x => x.ObjectSource),
+					new TextColumn<FileSystemItemBase, string?>("Source", x => GetNiceObjectSource(x.ObjectSource)),
 					new TextColumn<FileSystemItemBase, FileLocation?>("Origin", x => x.FileLocation),
 					new TextColumn<FileSystemItemBase, string?>("Location", x => x.Filename),
 					new TextColumn<FileSystemItemBase, DateTimeOffset?>("Created", x => x.CreatedDate),
@@ -249,7 +242,18 @@ namespace OpenLoco.Gui.ViewModels
 			TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged;
 
 			this.RaisePropertyChanged(nameof(TreeDataGridSource));
+
 		}
+		string GetNiceObjectSource(ObjectSource? os)
+			=> os switch
+			{
+				ObjectSource.Custom => "Custom",
+				ObjectSource.LocomotionSteam => "Steam",
+				ObjectSource.LocomotionGoG => "GoG",
+				ObjectSource.OpenLoco => "OpenLoco",
+				null => string.Empty,
+				_ => throw new NotImplementedException(),
+			};
 
 		void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileSystemItemBase> e)
 		{

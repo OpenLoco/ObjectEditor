@@ -94,9 +94,9 @@ namespace OpenLoco.Gui.ViewModels
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe((x) =>
 				{
-					if (x is FileSystemItemBase fsi && fsi?.SubNodes?.Count == 0)
+					if (x != null && (x.SubNodes == null || x.SubNodes?.Count == 0))
 					{
-						SetObjectViewModel(fsi);
+						SetObjectViewModel(x);
 					}
 				});
 
@@ -234,7 +234,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		void SetObjectViewModel(FileSystemItemObject fsi)
+		void SetObjectViewModel(FileSystemItemBase fsi)
 		{
 			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{

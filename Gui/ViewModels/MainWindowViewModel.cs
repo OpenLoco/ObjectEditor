@@ -234,13 +234,18 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		void SetObjectViewModel(FileSystemItemBase fsi)
-			=> CurrentTabModel.AddDocument(new DatObjectEditorViewModel(fsi, Model));
+		void SetObjectViewModel(FileSystemItemObject fsi)
+		{
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
+			{
+				CurrentTabModel.AddDocument(new DatObjectEditorViewModel(fsi, Model));
+			}
+		}
 
 		public async Task LoadG1()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new G1ViewModel(fsi, Model));
 			}
@@ -249,7 +254,7 @@ namespace OpenLoco.Gui.ViewModels
 		public async Task LoadSCV5()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.SCV5FileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new SCV5ViewModel(fsi, Model));
 			}
@@ -258,7 +263,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadMusic()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new MusicViewModel(fsi, Model));
 			}
@@ -267,7 +272,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadSoundEffects()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new SoundEffectsViewModel(fsi, Model));
 			}
@@ -276,7 +281,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadTutorial()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new TutorialViewModel(fsi, Model));
 			}
@@ -285,7 +290,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadScores()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new ScoresViewModel(fsi, Model));
 			}
@@ -294,7 +299,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadLanguage()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new LanguageViewModel(fsi, Model));
 			}

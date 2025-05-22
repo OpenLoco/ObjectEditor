@@ -1,11 +1,12 @@
+using OpenLoco.Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Windows.Input;
-using System;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -16,26 +17,6 @@ namespace OpenLoco.Gui.ViewModels
 		public bool OpenInNewTab { get; set; }
 
 		public bool OpenInNewTabIsVisible => Documents.Any();
-
-		public void AddDocument(ILocoFileViewModel model)
-		{
-			if (OpenInNewTab)
-			{
-				var existing = Documents.SingleOrDefault(x => x.CurrentFile.Filename == model.CurrentFile.Filename);
-				if (existing != null)
-				{
-					SelectedDocument = existing;
-					return;
-				}
-			}
-			else
-			{
-				CloseAllTabs();
-			}
-
-			Documents.Add(model);
-			SelectedDocument = model;
-		}
 
 		[Reactive]
 		public ILocoFileViewModel? SelectedDocument { get; set; }
@@ -51,9 +32,9 @@ namespace OpenLoco.Gui.ViewModels
 		public TabViewPageViewModel()
 		{
 			Documents = [];
-			RemoveTabCommand = ReactiveCommand.Create<ILocoFileViewModel>(RemoveTab);
-			CloseAllTabsCommand = ReactiveCommand.Create(CloseAllTabs);
-			CloseOtherTabsCommand = ReactiveCommand.Create<ILocoFileViewModel>(CloseOtherTabs);
+			RemoveTabCommand = ReactiveCommand.Create<ILocoFileViewModel>(RemoveDocument);
+			CloseAllTabsCommand = ReactiveCommand.Create(ClearDocuments);
+			CloseOtherTabsCommand = ReactiveCommand.Create<ILocoFileViewModel>(ClearDocumentsExcept);
 
 			_ = this.WhenAnyValue(o => o.SelectedDocument)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(OpenInNewTabIsVisible)));
@@ -67,20 +48,39 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		void RemoveTab(ILocoFileViewModel tabToRemove)
+		public void AddDocument(ILocoFileViewModel model)
 		{
-			_ = Documents.Remove(tabToRemove);
+			if (OpenInNewTab)
+			{
+				var existing = Documents.SingleOrDefault(x => x.CurrentFile.Filename == model.CurrentFile.Filename);
+				if (existing != null)
+				{
+					SelectedDocument = existing;
+					return;
+				}
+			}
+			else
+			{
+				ClearDocuments();
+			}
+
+			Documents.Add(model);
+			SelectedDocument = model;
 		}
 
-		void CloseAllTabs()
-		{
-			Documents.Clear();
-		}
+		void RemoveDocument(ILocoFileViewModel tabToRemove)
+			=> _ = Documents.Remove(tabToRemove);
 
-		void CloseOtherTabs(ILocoFileViewModel tabToKeep)
+		void ClearDocuments()
+			=> Documents.Clear();
+
+		void ClearDocumentsExcept(ILocoFileViewModel tabToKeep)
 		{
 			Documents.Clear();
 			Documents.Add(tabToKeep);
 		}
+
+		public bool DocumentExistsWithFile(FileSystemItem fsi)
+			=> Documents.Any(x => x.CurrentFile == fsi);
 	}
 }

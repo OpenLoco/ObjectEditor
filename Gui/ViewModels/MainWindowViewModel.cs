@@ -94,7 +94,7 @@ namespace OpenLoco.Gui.ViewModels
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe((x) =>
 				{
-					if (x is FileSystemItemObject fsi)
+					if (x is FileSystemItemBase fsi && fsi?.SubNodes?.Count == 0)
 					{
 						SetObjectViewModel(fsi);
 					}
@@ -169,7 +169,7 @@ namespace OpenLoco.Gui.ViewModels
 			#endregion
 		}
 
-		public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
+		public static async Task<FileSystemItemBase?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
 		{
 			var openFile = await PlatformSpecific.OpenFilePicker(filetypes);
 			if (openFile == null)
@@ -181,7 +181,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			return path == null
 				? null
-				: new FileSystemItem(path, Path.GetFileName(path), File.GetCreationTimeUtc(path), File.GetLastWriteTimeUtc(path), FileLocation.Local);
+				: new FileSystemItemBase(path, Path.GetFileName(path), File.GetCreationTimeUtc(path), File.GetLastWriteTimeUtc(path), FileLocation.Local);
 		}
 
 		async Task LoadDefaultPalette()
@@ -221,11 +221,11 @@ namespace OpenLoco.Gui.ViewModels
 			var createdTime = File.GetCreationTimeUtc(fsi.Filename);
 			var modifiedTime = File.GetLastWriteTimeUtc(fsi.Filename);
 
-			if (Model.TryLoadObject(new FileSystemItem(fsi.Filename, Path.GetFileName(fsi.Filename), createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
+			if (Model.TryLoadObject(new FileSystemItemBase(fsi.Filename, Path.GetFileName(fsi.Filename), createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 			{
 				Model.Logger.Warning($"Successfully loaded {fsi.Filename}");
 				var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.Checksum);
-				var fsi2 = new FileSystemItemObject(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, createdTime, modifiedTime, FileLocation.Local, source);
+				var fsi2 = new FileSystemItemBase(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, createdTime, modifiedTime, FileLocation.Local, source);
 				SetObjectViewModel(fsi2);
 			}
 			else
@@ -234,7 +234,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		void SetObjectViewModel(FileSystemItemObject fsi)
+		void SetObjectViewModel(FileSystemItemBase fsi)
 			=> CurrentTabModel.AddDocument(new DatObjectEditorViewModel(fsi, Model));
 
 		public async Task LoadG1()

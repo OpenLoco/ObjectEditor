@@ -13,7 +13,7 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class G1ViewModel : BaseLocoFileViewModel
 	{
-		public G1ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+		public G1ViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
 		[Reactive]

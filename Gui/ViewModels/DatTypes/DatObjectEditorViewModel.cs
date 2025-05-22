@@ -48,7 +48,7 @@ namespace OpenLoco.Gui.ViewModels
 		//public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
 		public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
 
-		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
+		public DatObjectEditorViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
 		{
 			Load();

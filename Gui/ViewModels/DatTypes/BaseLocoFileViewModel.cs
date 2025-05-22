@@ -12,7 +12,7 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 	{
-		protected BaseLocoFileViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+		protected BaseLocoFileViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 		{
 			CurrentFile = currentFile;
 			Model = model;
@@ -24,7 +24,7 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		[Reactive]
-		public FileSystemItem CurrentFile { get; init; }
+		public FileSystemItemBase CurrentFile { get; init; }
 		public ObjectEditorModel Model { get; init; }
 
 		protected ILogger logger => Model.Logger;
@@ -42,7 +42,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task SaveWrapper()
 		{
 			// note - this is the DAT file source, not the true source...
-			if (CurrentFile is FileSystemItemObject fsio && fsio.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+			if (CurrentFile is FileSystemItemBase fsio && fsio.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 			{
 				var box = MessageBoxManager.GetMessageBoxStandard("Confirm Save", $"{CurrentFile.Filename} is a vanilla Locomotion file - are you sure you want to overwrite it?", ButtonEnum.YesNo);
 				var result = await box.ShowAsync();

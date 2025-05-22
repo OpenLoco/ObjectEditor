@@ -9,7 +9,7 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class MusicViewModel : BaseLocoFileViewModel
 	{
-		public MusicViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+		public MusicViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
 			=> Load();
 

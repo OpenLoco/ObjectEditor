@@ -4,6 +4,7 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:OpenLoco.Gui.ViewModels"
+	xmlns:mo="using:OpenLoco.Gui.Models"
 	xmlns:moc="using:OpenLoco.Gui.Models.Converters"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	mc:Ignorable="d" d:DesignWidth="384" d:DesignHeight="768"
@@ -19,6 +20,7 @@
 
 	<UserControl.Resources>
 		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+		<moc:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
 	</UserControl.Resources>
 
 	<DockPanel>
@@ -83,14 +85,33 @@
 				</Grid>
 			</Border>
 			<Border Grid.Row="5" BorderThickness="1" Margin="2">
-				<!--<TreeView ItemsSource="{Binding DirectoryItems}" SelectedItem="{Binding CurrentlySelectedObject}" >
-					<TreeView.ItemTemplate>
-						<TreeDataTemplate ItemsSource="{Binding SubNodes}">
-							<ContentControl Content="{Binding}" />
-						</TreeDataTemplate>
-					</TreeView.ItemTemplate>
-				</TreeView>-->
-				<TreeDataGrid Source="{Binding TreeDataGridSource}"/>
+				<TreeDataGrid Source="{Binding TreeDataGridSource}">
+					<TreeDataGrid.Styles>
+						<Style Selector="TreeDataGrid TreeDataGridRow:nth-child(2n)">
+							<Setter Property="Background"  Value="#20808080"/>
+						</Style>
+					</TreeDataGrid.Styles>
+					<TreeDataGrid.Resources>
+
+						<!-- Template for Name column cells -->
+						<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
+						<DataTemplate x:Key="Object" DataType="mo:FileSystemItemBase">
+							<StackPanel Orientation="Horizontal">
+								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
+								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+							</StackPanel>
+						</DataTemplate>
+
+						<!-- Edit template for Name column cells -->
+						<DataTemplate x:Key="Edit" DataType="mo:FileSystemItemBase">
+							<StackPanel Orientation="Horizontal">
+								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+							</StackPanel>
+						</DataTemplate>
+
+					</TreeDataGrid.Resources>
+				</TreeDataGrid>
 			</Border>
 		</Grid>
 	</DockPanel>

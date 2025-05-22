@@ -151,7 +151,7 @@ namespace OpenLoco.Gui.Models
 			}
 		}
 
-		public bool TryLoadObject(FileSystemItem filesystemItem, out UiDatLocoFile? uiLocoFile)
+		public bool TryLoadObject(FileSystemItemBase filesystemItem, out UiDatLocoFile? uiLocoFile)
 		{
 			uiLocoFile = null;
 
@@ -183,7 +183,7 @@ namespace OpenLoco.Gui.Models
 			}
 		}
 
-		bool TryLoadOnlineFile(FileSystemItem filesystemItem, out UiDatLocoFile? locoDatFile)
+		bool TryLoadOnlineFile(FileSystemItemBase filesystemItem, out UiDatLocoFile? locoDatFile)
 		{
 			locoDatFile = null;
 
@@ -280,7 +280,7 @@ namespace OpenLoco.Gui.Models
 			return true;
 		}
 
-		bool TryLoadLocalFile(FileSystemItem filesystemItem, out UiDatLocoFile? locoDatFile)
+		bool TryLoadLocalFile(FileSystemItemBase filesystemItem, out UiDatLocoFile? locoDatFile)
 		{
 			locoDatFile = null;
 

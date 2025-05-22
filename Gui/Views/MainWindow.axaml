@@ -42,33 +42,34 @@
 	<Window.DataTemplates>
 		<!-- Mind the order of the Templates. Begin with the most specific first. -->
 
-		<DataTemplate DataType="mo:FileSystemItemGroup">
+		<!--<DataTemplate DataType="mo:FileSystemItemGroup">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
-		</DataTemplate>
+		</DataTemplate>-->
 
-		<DataTemplate DataType="mo:FileSystemVehicleGroup">
+		<!--<DataTemplate DataType="mo:FileSystemItemBase">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
-		</DataTemplate>
+		</DataTemplate>-->
 
-		<DataTemplate DataType="mo:FileSystemItemObject">
+		<!--
+		<DataTemplate DataType="mo:FileSystemItemBase">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding ObjectSource, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
 			</StackPanel>
-		</DataTemplate>
+		</DataTemplate>-->
 
-		<DataTemplate DataType="mo:FileSystemItem">
+		<!--<DataTemplate DataType="mo:FileSystemItemBase">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
 			</StackPanel>
-		</DataTemplate>
+		</DataTemplate>-->
 
 		<DataTemplate DataType="old5:TileElement">
 			<Grid DataContext="{Binding}" DockPanel.Dock="Left">

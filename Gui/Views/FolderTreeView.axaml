@@ -87,8 +87,12 @@
 			<Border Grid.Row="5" BorderThickness="1" Margin="2">
 				<TreeDataGrid Source="{Binding TreeDataGridSource}">
 					<TreeDataGrid.Styles>
-						<Style Selector="TreeDataGrid TreeDataGridRow:nth-child(2n)">
-							<Setter Property="Background"  Value="#20808080"/>
+						<Style Selector="TreeDataGrid TreeDataGridRow">
+							<Setter Property="Height" Value="32"/>
+						</Style>
+						<Style Selector="TreeDataGrid TreeDataGridRow:nth-child(even)">
+							<Setter Property="Background" Value="#18808080"/>
+							<!-- ARGB in hex -->
 						</Style>
 					</TreeDataGrid.Styles>
 					<TreeDataGrid.Resources>
@@ -96,7 +100,7 @@
 						<!-- Template for Name column cells -->
 						<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
 						<DataTemplate x:Key="Object" DataType="mo:FileSystemItemBase">
-							<StackPanel Orientation="Horizontal">
+							<StackPanel Orientation="Horizontal" >
 								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
 								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 							</StackPanel>
@@ -104,7 +108,7 @@
 
 						<!-- Edit template for Name column cells -->
 						<DataTemplate x:Key="Edit" DataType="mo:FileSystemItemBase">
-							<StackPanel Orientation="Horizontal">
+							<StackPanel Orientation="Horizontal" >
 								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 							</StackPanel>

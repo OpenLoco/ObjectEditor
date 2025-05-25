@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using Avalonia.Threading;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
@@ -239,7 +240,10 @@ namespace OpenLoco.Gui.ViewModels
 				},
 			};
 
-			TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged;
+			Dispatcher.UIThread.Invoke(new Action(() =>
+			{
+				TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged;
+			}));
 
 			this.RaisePropertyChanged(nameof(TreeDataGridSource));
 

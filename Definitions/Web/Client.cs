@@ -10,14 +10,8 @@ namespace OpenLoco.Definitions.Web
 		public static async Task<IEnumerable<DtoObjectDescriptor>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
 			=> await SendRequestAsync<IEnumerable<DtoObjectDescriptor>?>(client, Routes.Objects, ReadJsonContentAsync<IEnumerable<DtoObjectDescriptor>?>, logger) ?? [];
 
-		//public static async Task<DtoObjectDescriptorWithMetadata?> GetDatAsync(HttpClient client, string objectName, uint checksum, ILogger? logger = null)
-		//	=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, OldRoutes.GetDat + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}", logger);
-
 		public static async Task<DtoObjectDescriptorWithMetadata?> GetObjectAsync(HttpClient client, int id, ILogger? logger = null)
 			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.Objects + $"/{id}", ReadJsonContentAsync<DtoObjectDescriptorWithMetadata?>, logger);
-
-		//public static async Task<DtoObjectDescriptorWithMetadata?> GetDatFileAsync(HttpClient client, string objectName, uint checksum, ILogger? logger = null)
-		//	=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, OldRoutes.GetDatFile + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}", logger);
 
 		public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, int id, ILogger? logger = null)
 			=> await SendRequestAsync<byte[]?>(client, Routes.Objects + $"/{id}/file", ReadBinaryContentAsync, logger);

@@ -7,41 +7,35 @@ namespace OpenLoco.Definitions.DTO
 	public static class DtoExtensions
 	{
 		public static DtoObjectDescriptorWithMetadata ToDtoDescriptor(this ExpandedTbl<TblLocoObject, TblLocoObjectPack> x)
-		{
-			var obj = x!.Object;
-
-			var dtoObject = new DtoObjectDescriptorWithMetadata(
-				obj.Id,
-				obj.Name,
-				obj.DatName,
-				obj.DatChecksum,
-				obj.ObjectSource,
-				obj.ObjectType,
-				obj.VehicleType,
-				obj.Description,
-				x.Authors.Select(x => x.ToDtoEntry()).ToList(),
-				obj.CreationDate,
-				obj.LastEditDate,
-				obj.UploadDate,
-				x.Tags.Select(x => x.ToDtoEntry()).ToList(),
-				x.Packs.Select(x => x.ToDtoEntry()).ToList(),
-				obj.Availability,
-				obj.Licence);
-
-			return dtoObject;
-		}
+			=> new DtoObjectDescriptorWithMetadata(
+				x!.Object.Id,
+				x!.Object.Name,
+				x!.Object.DatName,
+				x!.Object.DatChecksum,
+				x!.Object.ObjectSource,
+				x!.Object.ObjectType,
+				x!.Object.VehicleType,
+				x!.Object.Description,
+				[.. x.Authors.Select(x => x.ToDtoEntry())],
+				x!.Object.CreationDate,
+				x!.Object.LastEditDate,
+				x!.Object.UploadDate,
+				[.. x.Tags.Select(x => x.ToDtoEntry())],
+				[.. x.Packs.Select(x => x.ToDtoEntry())],
+				x!.Object.Availability,
+				x!.Object.Licence);
 
 		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this ExpandedTblPack<TblLocoObjectPack, TblLocoObject> x)
 			=> new(
 				x.Pack.Id,
 				x.Pack.Name,
 				x.Pack.Description,
-				x.Items.Select(x => x.ToDtoEntry()).ToList(),
-				x.Authors.Select(x => x.ToDtoEntry()).ToList(),
+				[.. x.Items.Select(x => x.ToDtoEntry())],
+				[.. x.Authors.Select(x => x.ToDtoEntry())],
 				x.Pack.CreationDate,
 				x.Pack.LastEditDate,
 				x.Pack.UploadDate,
-				x.Tags.Select(x => x.ToDtoEntry()).ToList(),
+				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				x.Pack.Licence?.ToDtoEntry());
 
 		public static DtoItemPackDescriptor<DtoScenarioEntry> ToDtoDescriptor(this ExpandedTblPack<TblSC5FilePack, TblSC5File> x)
@@ -49,12 +43,12 @@ namespace OpenLoco.Definitions.DTO
 				x.Pack.Id,
 				x.Pack.Name,
 				x.Pack.Description,
-				x.Items.Select(x => x.ToDtoEntry()).ToList(),
-				x.Authors.Select(x => x.ToDtoEntry()).ToList(),
+				[.. x.Items.Select(x => x.ToDtoEntry())],
+				[.. x.Authors.Select(x => x.ToDtoEntry())],
 				x.Pack.CreationDate,
 				x.Pack.LastEditDate,
 				x.Pack.UploadDate,
-				x.Tags.Select(x => x.ToDtoEntry()).ToList(),
+				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				x.Pack.Licence?.ToDtoEntry());
 
 		#region New
@@ -97,12 +91,12 @@ namespace OpenLoco.Definitions.DTO
 				x.Id,
 				x.Name,
 				x.Description,
-				x.Objects.Select(x => x.ToDtoEntry()).ToList(),
-				x.Authors.Select(x => x.ToDtoEntry()).ToList(),
+				[.. x.Objects.Select(x => x.ToDtoEntry())],
+				[.. x.Authors.Select(x => x.ToDtoEntry())],
 				x.CreationDate,
 				x.LastEditDate,
 				x.UploadDate,
-				x.Tags.Select(x => x.ToDtoEntry()).ToList(),
+				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				x.Licence?.ToDtoEntry());
 
 		public static TblLocoObjectPack ToTable(this DtoItemPackDescriptor<DtoObjectEntry> x)
@@ -111,12 +105,12 @@ namespace OpenLoco.Definitions.DTO
 				Id = x.Id,
 				Name = x.Name,
 				Description = x.Description,
-				Objects = x.Items.Select(x => x.ToTable()).ToList(),
-				Authors = x.Authors.Select(x => x.ToTable()).ToList(),
+				Objects = [.. x.Items.Select(x => x.ToTable())],
+				Authors = [.. x.Authors.Select(x => x.ToTable())],
 				CreationDate = x.CreationDate,
 				LastEditDate = x.LastEditDate,
 				UploadDate = x.UploadDate,
-				Tags = x.Tags.Select(x => x.ToTable()).ToList(),
+				Tags = [.. x.Tags.Select(x => x.ToTable())],
 				Licence = x.Licence?.ToTable()
 			};
 
@@ -125,12 +119,12 @@ namespace OpenLoco.Definitions.DTO
 				x.Id,
 				x.Name,
 				x.Description,
-				x.SC5Files.Select(x => x.ToDtoEntry()).ToList(),
-				x.Authors.Select(x => x.ToDtoEntry()).ToList(),
+				[.. x.SC5Files.Select(x => x.ToDtoEntry())],
+				[.. x.Authors.Select(x => x.ToDtoEntry())],
 				x.CreationDate,
 				x.LastEditDate,
 				x.UploadDate,
-				x.Tags.Select(x => x.ToDtoEntry()).ToList(),
+				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				x.Licence?.ToDtoEntry());
 
 		public static TblSC5FilePack ToTable(this DtoItemPackDescriptor<DtoScenarioEntry> x)
@@ -139,12 +133,12 @@ namespace OpenLoco.Definitions.DTO
 				Id = x.Id,
 				Name = x.Name,
 				Description = x.Description,
-				SC5Files = x.Items.Select(x => x.ToTable()).ToList(),
-				Authors = x.Authors.Select(x => x.ToTable()).ToList(),
+				SC5Files = [.. x.Items.Select(x => x.ToTable())],
+				Authors = [.. x.Authors.Select(x => x.ToTable())],
 				CreationDate = x.CreationDate,
 				LastEditDate = x.LastEditDate,
 				UploadDate = x.UploadDate,
-				Tags = x.Tags.Select(x => x.ToTable()).ToList(),
+				Tags = [.. x.Tags.Select(x => x.ToTable())],
 				Licence = x.Licence?.ToTable()
 			};
 

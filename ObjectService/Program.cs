@@ -67,6 +67,7 @@ var objRoot = builder.Configuration["ObjectService:RootFolder"];
 var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];
 ArgumentNullException.ThrowIfNull(objRoot);
 ArgumentNullException.ThrowIfNull(paletteMapFile);
+
 var server = new Server(new ServerSettings(objRoot, paletteMapFile));
 
 _ = app

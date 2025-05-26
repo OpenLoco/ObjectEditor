@@ -4,18 +4,6 @@ using OpenLoco.Dat;
 
 namespace OpenLoco.ObjectService
 {
-	// this is purely for the dependency--injection wrapper in Program.cs
-	public static class ServerRouteBuilderExtensions
-	{
-		public static IEndpointRouteBuilder MapServerRoutes(
-			this IEndpointRouteBuilder endpoints,
-			Server server)
-		{
-			ArgumentNullException.ThrowIfNull(endpoints);
-			return server.MapRoutes(endpoints);
-		}
-	}
-
 	public class Server
 	{
 		public Server(ServerSettings settings)
@@ -23,7 +11,9 @@ namespace OpenLoco.ObjectService
 			Settings = settings;
 			ServerFolderManager = new ServerFolderManager(Settings.RootFolder)!;
 			ScenarioHandler = new(ServerFolderManager.ScenariosFolder);
-			ObjectHandler = new(ServerFolderManager, new PaletteMap(Settings.PaletteMapFile));
+			var pm = new PaletteMap(Settings.PaletteMapFile);
+			ObjectHandler = new(ServerFolderManager, pm);
+			LegacyRouteHandler = new(ServerFolderManager, pm);
 		}
 
 		public Server(IOptions<ServerSettings> options) : this(options.Value)
@@ -41,6 +31,8 @@ namespace OpenLoco.ObjectService
 		public ScenarioRequestHandler ScenarioHandler { get; init; }
 		public ObjectRequestHandler ObjectHandler { get; init; }
 
+		public LegacyRouteHandler LegacyRouteHandler { get; init; }
+
 		public IEndpointRouteBuilder MapRoutes(IEndpointRouteBuilder routeGroup)
 		{
 			AuthorHandler.MapRoutes(routeGroup);
@@ -50,6 +42,8 @@ namespace OpenLoco.ObjectService
 			ScenarioHandler.MapRoutes(routeGroup);
 			SC5FilePackHandler.MapRoutes(routeGroup);
 			ObjectPackHandler.MapRoutes(routeGroup);
+
+			LegacyRouteHandler.MapRoutes(routeGroup);
 
 			return routeGroup;
 		}

@@ -60,11 +60,13 @@
 						</ItemsRepeater>
 					</DockPanel>
 				</TabItem>
-				<TabItem Header="{Binding ExtraContentViewModel.Name}">
+
+				<TabItem Header="{Binding ExtraContentViewModelTabName}">
 					<DockPanel>
 						<ContentControl Content="{Binding ExtraContentViewModel}" />
 					</DockPanel>
 				</TabItem>
+
 				<TabItem Header="Metadata">
 					<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
 						<DockPanel Margin="8">

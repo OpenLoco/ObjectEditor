@@ -182,10 +182,14 @@ namespace OpenLoco.Gui.ViewModels
 			else
 			{
 				// todo: show warnings here
+				// in online mode, vanilla objects won't be downloaded so they hit this case, which is a valid use-case
 				CurrentObject = null;
 				CurrentObjectViewModel = null;
 			}
 		}
+
+		public string ExtraContentViewModelTabName
+			=> ExtraContentViewModel == null ? "<no content>" : ExtraContentViewModel.Name;
 
 		public override void Delete()
 		{

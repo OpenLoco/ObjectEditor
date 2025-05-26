@@ -212,11 +212,15 @@ namespace OpenLoco.Gui.Models
 				}
 				else if (string.IsNullOrEmpty(cachedLocoObjDto.DatBytes))
 				{
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
+					if (cachedLocoObjDto.ObjectSource == ObjectSource.LocomotionSteam || cachedLocoObjDto.ObjectSource == ObjectSource.LocomotionGoG)
+					{
+						Logger.Warning($"This is a vanilla object. The DAT file cannot be downloaded due to copyright. Any available metadata will still be shown.");
+					}
+					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Any available metadata will still be shown.");
 				}
 				else if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 				{
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
+					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Any available metadata will still be shown.");
 				}
 
 				Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");

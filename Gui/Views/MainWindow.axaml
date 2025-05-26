@@ -326,7 +326,6 @@
 									</Button>
 								</DockPanel>
 								<ContentControl Content="{Binding}" />
-								<!--<vi:DatObjectEditorView/>-->
 							</DockPanel>
 						</Border>
 					</DataTemplate>

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using DynamicData;
 using NuGet.Versioning;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -41,7 +42,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public TabViewPageViewModel CurrentTabModel { get; set; } = new();
 
-		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; }
+		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; init; } = [];
 
 		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
@@ -103,12 +104,7 @@ namespace OpenLoco.Gui.ViewModels
 			_ = CurrentTabModel.WhenAnyValue(o => o.SelectedDocument)
 				.Subscribe((x) => FolderTreeViewModel.CurrentlySelectedObject = x?.CurrentFile);
 
-			ObjDataItems = new ObservableCollection<MenuItemViewModel>(Model.Settings.ObjDataDirectories
-				.Select(x => new MenuItemViewModel(
-					x,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
-			ObjDataItems.Insert(0, new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
-			ObjDataItems.Insert(1, new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
+			PopulateObjDataMenu();
 
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObject);
 			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder, Model.Logger));
@@ -167,6 +163,36 @@ namespace OpenLoco.Gui.ViewModels
 			}
 #endif
 			#endregion
+		}
+
+		void PopulateObjDataMenu()
+		{
+			ObjDataItems.Clear();
+
+			ObjDataItems.Add(new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
+			ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
+
+			if (Directory.Exists(Model.Settings.AppDataObjDataFolder))
+			{
+				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {Model.Settings.AppDataObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.AppDataObjDataFolder)));
+			}
+			if (Directory.Exists(Model.Settings.LocomotionObjDataFolder))
+			{
+				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.Locomotion)}] {Model.Settings.LocomotionObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionObjDataFolder)));
+			}
+			if (Directory.Exists(Model.Settings.OpenLocoObjDataFolder))
+			{
+				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.OpenLoco)}] {Model.Settings.OpenLocoObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.OpenLocoObjDataFolder)));
+			}
+
+			ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
+
+			// add the rest
+			ObjDataItems.AddRange(
+				Model.Settings.ObjDataDirectories
+					.Select(x => new MenuItemViewModel(
+						x,
+						ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
 		}
 
 		public static async Task<FileSystemItemBase?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
@@ -362,16 +388,40 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			if (Directory.Exists(dirPath) && !Model.Settings.ObjDataDirectories.Contains(dirPath))
-			{
-				FolderTreeViewModel.CurrentLocalDirectory = dirPath; // this will cause the reindexing
-				var menuItem = new MenuItemViewModel(
-					dirPath,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = dirPath)
-					/*ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count))*/);
 
-				ObjDataItems.Add(menuItem);
+			if (!Directory.Exists(dirPath))
+			{
+				Model.Logger.Warning("Directory doesn't exist");
+				return;
 			}
+			if (Model.Settings.ObjDataDirectories.Contains(dirPath))
+			{
+				Model.Logger.Warning("Object directory is already in the list");
+				return;
+			}
+			if (Model.Settings.AppDataObjDataFolder != dirPath)
+			{
+				Model.Logger.Warning("No need to add - this is the predefined AppData folder");
+				return;
+			}
+			if (Model.Settings.LocomotionObjDataFolder != dirPath)
+			{
+				Model.Logger.Warning("No need to add - this is the predefined Locomotion ObjData folder");
+				return;
+			}
+			if (Model.Settings.OpenLocoObjDataFolder != dirPath)
+			{
+				Model.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");
+				return;
+			}
+
+			FolderTreeViewModel.CurrentLocalDirectory = dirPath; // this will cause the reindexing
+			var menuItem = new MenuItemViewModel(
+				dirPath,
+				ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = dirPath)
+				/*ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count))*/);
+
+			ObjDataItems.Add(menuItem);
 		}
 
 		public static bool IsDarkTheme

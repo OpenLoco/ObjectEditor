@@ -7,28 +7,32 @@ namespace OpenLoco.Definitions.Web
 {
 	public static class Client
 	{
-		public const string Version = "v1";
-
 		public static async Task<IEnumerable<DtoObjectDescriptor>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
-			=> await SendRequestAsync<IEnumerable<DtoObjectDescriptor>?>(client, Routes.ListObjects, logger) ?? [];
+			=> await SendRequestAsync<IEnumerable<DtoObjectDescriptor>?>(client, Routes.Objects, ReadJsonContentAsync<IEnumerable<DtoObjectDescriptor>?>, logger) ?? [];
 
-		public static async Task<DtoObjectDescriptorWithMetadata?> GetDatAsync(HttpClient client, string objectName, uint checksum, bool returnObjBytes, ILogger? logger = null)
-			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.GetDat + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}&{nameof(returnObjBytes)}={returnObjBytes}", logger);
+		public static async Task<DtoObjectDescriptorWithMetadata?> GetObjectAsync(HttpClient client, int id, ILogger? logger = null)
+			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.Objects + $"/{id}", ReadJsonContentAsync<DtoObjectDescriptorWithMetadata?>, logger);
 
-		public static async Task<DtoObjectDescriptorWithMetadata?> GetObjectAsync(HttpClient client, int uniqueObjectId, bool returnObjBytes, ILogger? logger = null)
-			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.GetObject + $"?{nameof(uniqueObjectId)}={uniqueObjectId}&{nameof(returnObjBytes)}={returnObjBytes}", logger);
+		public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, int id, ILogger? logger = null)
+			=> await SendRequestAsync<byte[]?>(client, Routes.Objects + $"/{id}/file", ReadBinaryContentAsync, logger);
 
-		public static async Task<DtoObjectDescriptorWithMetadata?> GetDatFileAsync(HttpClient client, string objectName, uint checksum, ILogger? logger = null)
-			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.GetDatFile + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}", logger);
+		async static Task<T?> ReadJsonContentAsync<T>(HttpContent content)
+			=> await content.ReadFromJsonAsync<T?>();
 
-		public static async Task<DtoObjectDescriptorWithMetadata?> GetObjectFileAsync(HttpClient client, int uniqueObjectId, ILogger? logger = null)
-			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.GetDatFile + $"?{nameof(uniqueObjectId)}={uniqueObjectId}", logger);
+		async static Task<byte[]?> ReadBinaryContentAsync(HttpContent content)
+		{
+			await using (var stream = await content.ReadAsStreamAsync())
+			await using (var memoryStream = new MemoryStream())
+			{
+				await stream.CopyToAsync(memoryStream);  // Efficiently copy to memory stream
+				return memoryStream.ToArray(); // Get the byte array
+			}
+		}
 
-		static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, ILogger? logger = null)
+		static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, Func<HttpContent, Task<T?>> ContentReaderFunc, ILogger? logger = null)
 		{
 			try
 			{
-				route = string.Concat(Version, route);
 				logger?.Debug($"Querying {client.BaseAddress}{route}");
 				using var response = await client.GetAsync(route);
 
@@ -40,7 +44,7 @@ namespace OpenLoco.Definitions.Web
 
 				logger?.Debug("Main server queried successfully");
 
-				var data = await response.Content.ReadFromJsonAsync<T?>();
+				var data = await ContentReaderFunc(response.Content); // response.Content.ReadFromJsonAsync<T?>();
 				if (data == null)
 				{
 					logger?.Error($"Received data but couldn't parse it: {response}");
@@ -60,10 +64,10 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				var route = $"{client.BaseAddress?.OriginalString}{Routes.UploadDat}";
+				var route = $"{client.BaseAddress?.OriginalString}{Routes.Objects}";
 				logger.Debug($"Posting {filename} to {route}");
 				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate, modifiedDate);
-				var response = await client.PostAsJsonAsync(Routes.UploadDat, request);
+				var response = await client.PostAsJsonAsync(Routes.Objects, request);
 
 				if (!response.IsSuccessStatusCode)
 				{

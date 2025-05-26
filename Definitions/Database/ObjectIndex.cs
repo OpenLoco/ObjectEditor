@@ -69,7 +69,7 @@ namespace OpenLoco.Definitions.Database
 
 		public ObjectIndex UpdateIndex(string directory, ILogger logger, IEnumerable<string> filesToAdd, IProgress<float>? progress = null)
 		{
-			var (succeeded, failed) = ReadFilesFromDisk(directory, logger, progress, filesToAdd.ToArray());
+			var (succeeded, failed) = ReadFilesFromDisk(directory, logger, progress, [.. filesToAdd]);
 
 			foreach (var s in succeeded)
 			{

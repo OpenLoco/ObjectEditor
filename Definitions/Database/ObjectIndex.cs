@@ -114,7 +114,7 @@ namespace OpenLoco.Definitions.Database
 
 				try
 				{
-					entry = GetDatFileInfoFromBytes(filename, bytes, logger);
+					entry = GetDatFileInfoFromBytes(fullFilename, filename, bytes, logger);
 				}
 				catch (Exception ex)
 				{
@@ -138,25 +138,28 @@ namespace OpenLoco.Definitions.Database
 			progress?.Report((pendingIndices.Count + failedFiles.Count) / (float)totalFiles);
 		}
 
-		public static ObjectIndexEntry? GetDatFileInfoFromBytes(string filename, byte[] data, ILogger logger)
+		public static ObjectIndexEntry? GetDatFileInfoFromBytes(string absoluteFilename, string relativeFilename, byte[] data, ILogger logger)
 		{
 			if (!SawyerStreamReader.TryGetHeadersFromBytes(data, out var hdrs, logger))
 			{
-				logger.Error($"{filename} must have valid S5 and Object headers to call this method", nameof(filename));
+				logger.Error($"{relativeFilename} must have valid S5 and Object headers to call this method", nameof(relativeFilename));
 				return null;
 			}
 
 			var remainingData = data[(S5Header.StructLength + ObjectHeader.StructLength)..];
 			var source = OriginalObjectFiles.GetFileSource(hdrs.S5.Name, hdrs.S5.Checksum);
 
+			var createdTime = File.GetCreationTimeUtc(absoluteFilename);
+			var modifiedTime = File.GetLastWriteTimeUtc(absoluteFilename);
+
 			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
 			{
 				var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
-				return new ObjectIndexEntry(filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source, (VehicleType)decoded[3]);
+				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source, createdTime, modifiedTime, (VehicleType)decoded[3]);
 			}
 			else
 			{
-				return new ObjectIndexEntry(filename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source);
+				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source, createdTime, modifiedTime);
 			}
 		}
 	}
@@ -167,6 +170,8 @@ namespace OpenLoco.Definitions.Database
 		uint32_t DatChecksum,
 		ObjectType ObjectType,
 		ObjectSource ObjectSource,
+		DateTimeOffset? CreatedDate,
+		DateTimeOffset? ModifiedDate,
 		VehicleType? VehicleType = null)
 	{
 		public string SimpleText

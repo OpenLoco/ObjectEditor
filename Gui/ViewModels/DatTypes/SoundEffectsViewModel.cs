@@ -13,7 +13,7 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class SoundEffectsViewModel : BaseLocoFileViewModel
 	{
-		public SoundEffectsViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+		public SoundEffectsViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
 		public override void Load()

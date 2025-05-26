@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
+
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
 		[Reactive]
@@ -45,10 +46,16 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Unit> ViewHexCommand { get; }
 		public Interaction<HexWindowViewModel, HexWindowViewModel?> HexViewerShowDialog { get; }
 
+		public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; }
+		[Reactive]
+		public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.Locomotion;
+		[Reactive]
+		public string LastGameObjDataFolderText { get; set; } = "Copy to Locomotion game folder";
+
 		//public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
 		public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
 
-		public DatObjectEditorViewModel(FileSystemItemObject currentFile, ObjectEditorModel model)
+		public DatObjectEditorViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
 		{
 			Load();
@@ -62,6 +69,28 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				var vm = new HexWindowViewModel(CurrentFile.Filename, logger);
 				_ = await HexViewerShowDialog.Handle(vm);
+			});
+
+			CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) =>
+			{
+				var folder = model.Settings.GetGameObjDataFolder(targetFolder);
+				if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+				{
+					logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
+					return;
+				}
+
+				try
+				{
+					File.Copy(currentFile.Filename, Path.Combine(folder, Path.GetFileName(currentFile.Filename)));
+					logger.Info($"Copied {Path.GetFileName(currentFile.Filename)} to [[{targetFolder}]] {folder}");
+					LastGameObjDataFolder = targetFolder;
+					LastGameObjDataFolderText = $"Copy to {LastGameObjDataFolder} game folder";
+				}
+				catch (Exception ex)
+				{
+					logger.Error($"Could not copy {currentFile.Filename} to {folder}:", ex);
+				}
 			});
 
 			SelectObjectShowDialog = new();
@@ -153,10 +182,14 @@ namespace OpenLoco.Gui.ViewModels
 			else
 			{
 				// todo: show warnings here
+				// in online mode, vanilla objects won't be downloaded so they hit this case, which is a valid use-case
 				CurrentObject = null;
 				CurrentObjectViewModel = null;
 			}
 		}
+
+		public string ExtraContentViewModelTabName
+			=> ExtraContentViewModel == null ? "<no content>" : ExtraContentViewModel.Name;
 
 		public override void Delete()
 		{

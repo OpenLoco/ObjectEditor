@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using DynamicData;
 using NuGet.Versioning;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -41,7 +42,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive]
 		public TabViewPageViewModel CurrentTabModel { get; set; } = new();
 
-		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; }
+		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; init; } = [];
 
 		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
 
@@ -94,21 +95,16 @@ namespace OpenLoco.Gui.ViewModels
 			_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 				.Subscribe((x) =>
 				{
-					if (x is FileSystemItemObject fsi)
+					if (x != null && (x.SubNodes == null || x.SubNodes?.Count == 0))
 					{
-						SetObjectViewModel(fsi);
+						SetObjectViewModel(x);
 					}
 				});
 
 			_ = CurrentTabModel.WhenAnyValue(o => o.SelectedDocument)
 				.Subscribe((x) => FolderTreeViewModel.CurrentlySelectedObject = x?.CurrentFile);
 
-			ObjDataItems = new ObservableCollection<MenuItemViewModel>(Model.Settings.ObjDataDirectories
-				.Select(x => new MenuItemViewModel(
-					x,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
-			ObjDataItems.Insert(0, new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
-			ObjDataItems.Insert(1, new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
+			PopulateObjDataMenu();
 
 			OpenSingleObject = ReactiveCommand.Create(LoadSingleObject);
 			OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder, Model.Logger));
@@ -169,7 +165,37 @@ namespace OpenLoco.Gui.ViewModels
 			#endregion
 		}
 
-		public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
+		void PopulateObjDataMenu()
+		{
+			ObjDataItems.Clear();
+
+			ObjDataItems.Add(new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
+			ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
+
+			if (Directory.Exists(Model.Settings.AppDataObjDataFolder))
+			{
+				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {Model.Settings.AppDataObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.AppDataObjDataFolder)));
+			}
+			if (Directory.Exists(Model.Settings.LocomotionObjDataFolder))
+			{
+				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.Locomotion)}] {Model.Settings.LocomotionObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionObjDataFolder)));
+			}
+			if (Directory.Exists(Model.Settings.OpenLocoObjDataFolder))
+			{
+				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.OpenLoco)}] {Model.Settings.OpenLocoObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.OpenLocoObjDataFolder)));
+			}
+
+			ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
+
+			// add the rest
+			ObjDataItems.AddRange(
+				Model.Settings.ObjDataDirectories
+					.Select(x => new MenuItemViewModel(
+						x,
+						ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
+		}
+
+		public static async Task<FileSystemItemBase?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
 		{
 			var openFile = await PlatformSpecific.OpenFilePicker(filetypes);
 			if (openFile == null)
@@ -181,7 +207,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			return path == null
 				? null
-				: new FileSystemItem(path, Path.GetFileName(path), FileLocation.Local);
+				: new FileSystemItemBase(path, Path.GetFileName(path), File.GetCreationTimeUtc(path), File.GetLastWriteTimeUtc(path), FileLocation.Local);
 		}
 
 		async Task LoadDefaultPalette()
@@ -218,11 +244,14 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			if (Model.TryLoadObject(new FileSystemItem(fsi.Filename, Path.GetFileName(fsi.Filename), FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
+			var createdTime = File.GetCreationTimeUtc(fsi.Filename);
+			var modifiedTime = File.GetLastWriteTimeUtc(fsi.Filename);
+
+			if (Model.TryLoadObject(new FileSystemItemBase(fsi.Filename, Path.GetFileName(fsi.Filename), createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 			{
 				Model.Logger.Warning($"Successfully loaded {fsi.Filename}");
 				var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.Checksum);
-				var fsi2 = new FileSystemItemObject(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, FileLocation.Local, source);
+				var fsi2 = new FileSystemItemBase(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, createdTime, modifiedTime, FileLocation.Local, source);
 				SetObjectViewModel(fsi2);
 			}
 			else
@@ -231,13 +260,18 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		void SetObjectViewModel(FileSystemItemObject fsi)
-			=> CurrentTabModel.AddDocument(new DatObjectEditorViewModel(fsi, Model));
+		void SetObjectViewModel(FileSystemItemBase fsi)
+		{
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
+			{
+				CurrentTabModel.AddDocument(new DatObjectEditorViewModel(fsi, Model));
+			}
+		}
 
 		public async Task LoadG1()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new G1ViewModel(fsi, Model));
 			}
@@ -246,7 +280,7 @@ namespace OpenLoco.Gui.ViewModels
 		public async Task LoadSCV5()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.SCV5FileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new SCV5ViewModel(fsi, Model));
 			}
@@ -255,7 +289,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadMusic()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new MusicViewModel(fsi, Model));
 			}
@@ -264,7 +298,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadSoundEffects()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new SoundEffectsViewModel(fsi, Model));
 			}
@@ -273,7 +307,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadTutorial()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new TutorialViewModel(fsi, Model));
 			}
@@ -282,7 +316,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadScores()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new ScoresViewModel(fsi, Model));
 			}
@@ -291,7 +325,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task LoadLanguage()
 		{
 			var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-			if (fsi != null)
+			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{
 				CurrentTabModel.AddDocument(new LanguageViewModel(fsi, Model));
 			}
@@ -354,16 +388,40 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			if (Directory.Exists(dirPath) && !Model.Settings.ObjDataDirectories.Contains(dirPath))
-			{
-				FolderTreeViewModel.CurrentLocalDirectory = dirPath; // this will cause the reindexing
-				var menuItem = new MenuItemViewModel(
-					dirPath,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = dirPath)
-					/*ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count))*/);
 
-				ObjDataItems.Add(menuItem);
+			if (!Directory.Exists(dirPath))
+			{
+				Model.Logger.Warning("Directory doesn't exist");
+				return;
 			}
+			if (Model.Settings.ObjDataDirectories.Contains(dirPath))
+			{
+				Model.Logger.Warning("Object directory is already in the list");
+				return;
+			}
+			if (Model.Settings.AppDataObjDataFolder != dirPath)
+			{
+				Model.Logger.Warning("No need to add - this is the predefined AppData folder");
+				return;
+			}
+			if (Model.Settings.LocomotionObjDataFolder != dirPath)
+			{
+				Model.Logger.Warning("No need to add - this is the predefined Locomotion ObjData folder");
+				return;
+			}
+			if (Model.Settings.OpenLocoObjDataFolder != dirPath)
+			{
+				Model.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");
+				return;
+			}
+
+			FolderTreeViewModel.CurrentLocalDirectory = dirPath; // this will cause the reindexing
+			var menuItem = new MenuItemViewModel(
+				dirPath,
+				ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = dirPath)
+				/*ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count))*/);
+
+			ObjDataItems.Add(menuItem);
 		}
 
 		public static bool IsDarkTheme

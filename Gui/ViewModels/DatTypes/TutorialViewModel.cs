@@ -32,7 +32,7 @@ namespace OpenLoco.Gui.ViewModels
 
 	public class TutorialViewModel : BaseLocoFileViewModel
 	{
-		public TutorialViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+		public TutorialViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
 		[Reactive]
@@ -90,7 +90,7 @@ namespace OpenLoco.Gui.ViewModels
 
 	public class ScoresViewModel : BaseLocoFileViewModel
 	{
-		public ScoresViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+		public ScoresViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
 		public override void Load() => logger?.Info($"Loading scores from {CurrentFile.Filename}");
@@ -102,7 +102,7 @@ namespace OpenLoco.Gui.ViewModels
 
 	public class LanguageViewModel : BaseLocoFileViewModel
 	{
-		public LanguageViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+		public LanguageViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
 		public override void Load() => logger?.Info($"Loading languages from {CurrentFile.Filename}");

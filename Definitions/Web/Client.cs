@@ -66,13 +66,13 @@ namespace OpenLoco.Definitions.Web
 			}
 		}
 
-		public static async Task UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateTimeOffset creationDate, ILogger logger)
+		public static async Task UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateTimeOffset creationDate, DateTimeOffset modifiedDate, ILogger logger)
 		{
 			try
 			{
 				var route = $"{client.BaseAddress?.OriginalString}{Routes.Objects}";
 				logger.Debug($"Posting {filename} to {route}");
-				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate);
+				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate, modifiedDate);
 				var response = await client.PostAsJsonAsync(Routes.Objects, request);
 
 				if (!response.IsSuccessStatusCode)

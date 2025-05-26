@@ -42,33 +42,34 @@
 	<Window.DataTemplates>
 		<!-- Mind the order of the Templates. Begin with the most specific first. -->
 
-		<DataTemplate DataType="mo:FileSystemItemGroup">
+		<!--<DataTemplate DataType="mo:FileSystemItemGroup">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
-		</DataTemplate>
+		</DataTemplate>-->
 
-		<DataTemplate DataType="mo:FileSystemVehicleGroup">
+		<!--<DataTemplate DataType="mo:FileSystemItemBase">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 			</StackPanel>
-		</DataTemplate>
+		</DataTemplate>-->
 
-		<DataTemplate DataType="mo:FileSystemItemObject">
+		<!--
+		<DataTemplate DataType="mo:FileSystemItemBase">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding ObjectSource, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
 			</StackPanel>
-		</DataTemplate>
+		</DataTemplate>-->
 
-		<DataTemplate DataType="mo:FileSystemItem">
+		<!--<DataTemplate DataType="mo:FileSystemItemBase">
 			<StackPanel Orientation="Horizontal">
 				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
 			</StackPanel>
-		</DataTemplate>
+		</DataTemplate>-->
 
 		<DataTemplate DataType="old5:TileElement">
 			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
@@ -226,14 +227,14 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<MenuItem Header="Open single object (.DAT)" Command="{Binding OpenSingleObject}" />
-					<MenuItem Header="Open G1 (.DAT)" Command="{Binding OpenG1}" />
-					<MenuItem Header="Open scenario/save game/landscape (.SC5/.SV5)" Command="{Binding OpenSCV5}"/>
-					<MenuItem Header="Open music file (.DAT)" Command="{Binding OpenMusic}"/>
-					<MenuItem Header="Open sound effect file (.DAT)" Command="{Binding OpenSoundEffect}"/>
-					<MenuItem Header="Open tutorial (.DAT)" Command="{Binding OpenTutorial}"/>
-					<MenuItem Header="Open scores file (.DAT) (coming soon)" Command="{Binding OpenScores}" IsEnabled="False"/>
-					<MenuItem Header="Open language file (.DAT) (coming soon)" Command="{Binding OpenLanguage}" IsEnabled="False"/>
+					<MenuItem Header="Open single object (.DAT)" Command="{Binding OpenSingleObject}" HotKey="Ctrl+O" InputGesture="Ctrl+O" />
+					<MenuItem Header="Open G1 (.DAT)" Command="{Binding OpenG1}" HotKey="Ctrl+G" InputGesture="Ctrl+G" />
+					<MenuItem Header="Open scenario/save game/landscape (.SC5/.SV5)" Command="{Binding OpenSCV5}" HotKey="Ctrl+V" InputGesture="Ctrl+V"/>
+					<MenuItem Header="Open music file (.DAT)" Command="{Binding OpenMusic}" HotKey="Ctrl+M" InputGesture="Ctrl+M"/>
+					<MenuItem Header="Open sound effect file (.DAT)" Command="{Binding OpenSoundEffect}" HotKey="Ctrl+F" InputGesture="Ctrl+F"/>
+					<MenuItem Header="Open tutorial (.DAT)" Command="{Binding OpenTutorial}" HotKey="Ctrl+T" InputGesture="Ctrl+T"/>
+					<MenuItem Header="Open scores file (.DAT) (coming soon)" Command="{Binding OpenScores}" IsEnabled="False" HotKey="Ctrl+H" InputGesture="Ctrl+H"/>
+					<MenuItem Header="Open language file (.DAT) (coming soon)" Command="{Binding OpenLanguage}" IsEnabled="False" HotKey="Ctrl+L" InputGesture="Ctrl+L"/>
 				</MenuItem>
 				<MenuItem Header="_Objects" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
 					<MenuItem.Styles>
@@ -267,67 +268,69 @@
 			</ScrollViewer>
 		</Expander>
 		<ContentControl Content="{Binding FolderTreeViewModel}" />
-		<TabControl DataContext="{Binding CurrentTabModel}" ItemsSource="{Binding Documents}" WrapSelection="True" SelectedItem="{Binding SelectedDocument}">
-			<TabControl.Styles>
-				<Style Selector="TabItem">
-					<Setter Property="Padding" Value="2, 0, 2, 0"/>
-					<Setter Property="FontSize" Value="14"/>
-				</Style>
-			</TabControl.Styles>
-			<TabControl.ItemTemplate>
-				<DataTemplate>
-					<TabItem Margin="0" Padding="0" BorderThickness="0" MaxHeight="32">
-						<TabItem.Header>
-							<StackPanel Orientation="Horizontal" Background="{DynamicResource ButtonBackground}">
-								<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center" ToolTip.Tip="{Binding CurrentFile.Filename}" />
-								<Button BorderThickness="0" FontSize="12" VerticalAlignment="Center" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}">X</Button>
-							</StackPanel>
-						</TabItem.Header>
-						<TabItem.ContextMenu>
-							<ContextMenu>
-								<MenuItem Header="Close All Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseAllTabsCommand}" />
-								<MenuItem Header="Close Other Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseOtherTabsCommand}" CommandParameter="{Binding}" />
-							</ContextMenu>
-						</TabItem.ContextMenu>
-					</TabItem>
-				</DataTemplate>
-			</TabControl.ItemTemplate>
-			<TabControl.ContentTemplate>
-				<DataTemplate DataType="vm:ILocoFileViewModel">
-					<Border BorderThickness="1">
-						<DockPanel>
-							<DockPanel DockPanel.Dock="Top">
-								<Button Command="{Binding ReloadCommand}" Margin="4" Padding="2" DockPanel.Dock="Left">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
-									</DockPanel>
-								</Button>
-								<Button Command="{Binding SaveCommand}" Margin="4" Padding="2" DockPanel.Dock="Left">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
-									</DockPanel>
-								</Button>
-								<Button Command="{Binding SaveAsCommand}" Margin="4" Padding="2" DockPanel.Dock="Left">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
-									</DockPanel>
-								</Button>
-								<Button Command="{Binding DeleteLocalFileCommand}" HorizontalAlignment="Right" Margin="4" Padding="2" IsVisible="{Binding IsLocalMode}" IsEnabled="{Binding IsLocalMode}" Background="DarkRed" DockPanel.Dock="Right" ToolTip.Tip="WARNING: this will delete your local file without asking! Only click this if you're sure you want to delete this file!">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="{Binding DeleteLocalFileIcon}" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding DeleteLocalFileText}"/>
-									</DockPanel>
-								</Button>
+		<DockPanel DataContext="{Binding CurrentTabModel}">
+			<ToggleSwitch Margin="4" IsVisible="{Binding OpenInNewTabIsVisible}" DockPanel.Dock="Top" IsChecked="{Binding OpenInNewTab, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=TabAdd}" OffContent="{materialIcons:MaterialIconExt Kind=Tab}" />
+			<TabControl ItemsSource="{Binding Documents}" WrapSelection="True" SelectedItem="{Binding SelectedDocument}">
+				<TabControl.Styles>
+					<Style Selector="TabItem">
+						<Setter Property="Padding" Value="2, 0, 2, 0"/>
+						<Setter Property="FontSize" Value="14"/>
+					</Style>
+				</TabControl.Styles>
+				<TabControl.ItemTemplate>
+					<DataTemplate>
+						<TabItem Margin="0" Padding="0" BorderThickness="0" MaxHeight="32">
+							<TabItem.Header>
+								<StackPanel Orientation="Horizontal" Background="{DynamicResource ButtonBackground}">
+									<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center" ToolTip.Tip="{Binding CurrentFile.Filename}" />
+									<Button BorderThickness="0" FontSize="12" VerticalAlignment="Center" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}" HotKey="Ctrl+F4" ToolTip.Tip="(Ctrl+F4)">X</Button>
+								</StackPanel>
+							</TabItem.Header>
+							<TabItem.ContextMenu>
+								<ContextMenu>
+									<MenuItem Header="Close All Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseAllTabsCommand}" />
+									<MenuItem Header="Close Other Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseOtherTabsCommand}" CommandParameter="{Binding}" />
+								</ContextMenu>
+							</TabItem.ContextMenu>
+						</TabItem>
+					</DataTemplate>
+				</TabControl.ItemTemplate>
+				<TabControl.ContentTemplate>
+					<DataTemplate DataType="vm:ILocoFileViewModel">
+						<Border BorderThickness="1">
+							<DockPanel>
+								<DockPanel DockPanel.Dock="Top">
+									<Button Command="{Binding ReloadCommand}" Margin="4" Padding="2" DockPanel.Dock="Left" HotKey="F5" ToolTip.Tip="(F5)">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
+										</DockPanel>
+									</Button>
+									<Button Command="{Binding SaveCommand}" Margin="4" Padding="2" DockPanel.Dock="Left" HotKey="Ctrl+S" ToolTip.Tip="(Ctrl+S)">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
+										</DockPanel>
+									</Button>
+									<Button Command="{Binding SaveAsCommand}" Margin="4" Padding="2" DockPanel.Dock="Left" HotKey="Ctrl+Shift+S" ToolTip.Tip="(Ctrl+Shift+S)">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
+										</DockPanel>
+									</Button>
+									<Button Command="{Binding DeleteLocalFileCommand}" HorizontalAlignment="Right" Margin="4" Padding="2" HotKey="Ctrl+D" IsVisible="{Binding IsLocalMode}" IsEnabled="{Binding IsLocalMode}" Background="DarkRed" DockPanel.Dock="Right" ToolTip.Tip="(Ctrl+D) WARNING: this will delete your local file without asking! Only click this if you're sure you want to delete this file!">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="{Binding DeleteLocalFileIcon}" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding DeleteLocalFileText}"/>
+										</DockPanel>
+									</Button>
+								</DockPanel>
+								<ContentControl Content="{Binding}" />
 							</DockPanel>
-							<ContentControl Content="{Binding}" />
-							<!--<vi:DatObjectEditorView/>-->
-						</DockPanel>
-					</Border>
-				</DataTemplate>
-			</TabControl.ContentTemplate>
-		</TabControl>
+						</Border>
+					</DataTemplate>
+				</TabControl.ContentTemplate>
+			</TabControl>
+		</DockPanel>
 	</DockPanel>
 </Window>

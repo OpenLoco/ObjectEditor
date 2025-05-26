@@ -14,7 +14,8 @@ namespace OpenLoco.Gui.Models.Converters
 			return TryGetIcon(value, DatTypeMapping)
 				?? TryGetIcon(value, ObjectMapping)
 				?? TryGetIcon(value, VehicleMapping)
-				?? TryGetIcon(value, SourceGameMapping);
+				?? TryGetIcon(value, SourceGameMapping)
+				?? "CircleSmall";
 
 			static string? TryGetIcon<T>(object? value, Dictionary<T, string> mapping) where T : struct
 			{

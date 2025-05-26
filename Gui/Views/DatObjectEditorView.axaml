@@ -4,6 +4,7 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:OpenLoco.Gui.ViewModels"
+	xmlns:gui="using:OpenLoco.Gui"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 	x:Class="OpenLoco.Gui.Views.DatObjectEditorView"
 	x:DataType="vm:DatObjectEditorViewModel">
@@ -13,6 +14,15 @@
 			<StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Horizontal">
 				<Button Margin="4" Command="{Binding ExportUncompressedCommand}" ToolTip.Tip="Equivalent to saving the object with 'Uncompressed' encoding">Export as uncompressed DAT file</Button>
 				<Button Margin="4" Command="{Binding ViewHexCommand}">Hex Viewer</Button>
+				<SplitButton Content="{Binding LastGameObjDataFolderText}" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}" >
+					<SplitButton.Flyout>
+						<MenuFlyout Placement="Bottom">
+							<MenuItem Header="Copy to AppData game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.AppData}"/>
+							<MenuItem Header="Copy to Locomotion game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.Locomotion}"/>
+							<MenuItem Header="Copy to OpenLoco game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.OpenLoco}"/>
+						</MenuFlyout>
+					</SplitButton.Flyout>
+				</SplitButton>
 			</StackPanel>
 			<TabControl Grid.Column="0" Grid.Row="1">
 				<TabControl.Styles>
@@ -50,11 +60,13 @@
 						</ItemsRepeater>
 					</DockPanel>
 				</TabItem>
-				<TabItem Header="{Binding ExtraContentViewModel.Name}">
+
+				<TabItem Header="{Binding ExtraContentViewModelTabName}">
 					<DockPanel>
 						<ContentControl Content="{Binding ExtraContentViewModel}" />
 					</DockPanel>
 				</TabItem>
+
 				<TabItem Header="Metadata">
 					<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
 						<DockPanel Margin="8">

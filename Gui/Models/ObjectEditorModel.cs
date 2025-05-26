@@ -151,7 +151,7 @@ namespace OpenLoco.Gui.Models
 			}
 		}
 
-		public bool TryLoadObject(FileSystemItem filesystemItem, out UiDatLocoFile? uiLocoFile)
+		public bool TryLoadObject(FileSystemItemBase filesystemItem, out UiDatLocoFile? uiLocoFile)
 		{
 			uiLocoFile = null;
 
@@ -183,7 +183,7 @@ namespace OpenLoco.Gui.Models
 			}
 		}
 
-		bool TryLoadOnlineFile(FileSystemItem filesystemItem, out UiDatLocoFile? locoDatFile)
+		bool TryLoadOnlineFile(FileSystemItemBase filesystemItem, out UiDatLocoFile? locoDatFile)
 		{
 			locoDatFile = null;
 
@@ -212,14 +212,15 @@ namespace OpenLoco.Gui.Models
 				}
 				else if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 				{
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Will still show metadata");
+					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Any available metadata will still be shown.");
 				}
 
 				// download for real
 				var datFile = Task.Run(async () => await Client.GetObjectFileAsync(WebClient, uniqueObjectId, Logger)).Result;
+
 				if (datFile == null || datFile.Length == 0)
 				{
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Will still show metadata");
+					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Any available metadata will still be shown.");
 				}
 				else
 				{
@@ -279,7 +280,7 @@ namespace OpenLoco.Gui.Models
 			return true;
 		}
 
-		bool TryLoadLocalFile(FileSystemItem filesystemItem, out UiDatLocoFile? locoDatFile)
+		bool TryLoadLocalFile(FileSystemItemBase filesystemItem, out UiDatLocoFile? locoDatFile)
 		{
 			locoDatFile = null;
 
@@ -297,7 +298,7 @@ namespace OpenLoco.Gui.Models
 			{
 				fileInfo = obj.Value.DatFileInfo;
 				locoObject = obj.Value.LocoObject;
-				metadata = null; // todo: look this up from internet anyways
+				metadata = new MetadataModel("<unknown>", fileInfo.S5Header.Name, fileInfo.S5Header.Checksum) { CreationDate = filesystemItem.CreatedDate, LastEditDate = filesystemItem.ModifiedDate }; // todo: look up the rest of the data from internet
 
 				if (locoObject != null)
 				{
@@ -475,14 +476,16 @@ namespace OpenLoco.Gui.Models
 		{
 			Logger.Info($"Uploading {dat.Filename} to object repository");
 			var filename = Path.Combine(Settings.ObjDataDirectory, dat.Filename);
-			var lastModifiedTime = File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows
+			var creationDate = File.GetCreationTimeUtc(filename);
+			var modifiedDate = File.GetLastWriteTimeUtc(filename);
+
 			if (WebClient == null)
 			{
 				Logger.Error("Web client is null");
 				return;
 			}
 
-			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), lastModifiedTime, Logger);
+			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate, Logger);
 			await Task.Delay(100); // wait 100ms, ie don't DoS the server
 		}
 

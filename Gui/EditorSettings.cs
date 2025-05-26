@@ -38,6 +38,19 @@ namespace OpenLoco.Gui
 
 		public string DownloadFolder { get; set; } = string.Empty;
 
+		public string AppDataObjDataFolder { get; set; } = string.Empty;
+		public string LocomotionObjDataFolder { get; set; } = string.Empty;
+		public string OpenLocoObjDataFolder { get; set; } = string.Empty;
+
+		public string GetGameObjDataFolder(GameObjDataFolder folder)
+			=> folder switch
+			{
+				GameObjDataFolder.AppData => AppDataObjDataFolder,
+				GameObjDataFolder.Locomotion => LocomotionObjDataFolder,
+				GameObjDataFolder.OpenLoco => OpenLocoObjDataFolder,
+				_ => throw new NotImplementedException(),
+			};
+
 		[JsonIgnore]
 		public string IndexFileName
 			=> GetObjDataFullPath(ObjectIndex.DefaultIndexFileName);

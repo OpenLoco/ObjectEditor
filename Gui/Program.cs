@@ -11,8 +11,26 @@ namespace OpenLoco.Gui
 		// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
 		// yet and stuff might break.
 		[STAThread]
-		public static void Main(string[] args) => BuildAvaloniaApp()
-			.StartWithClassicDesktopLifetime(args);
+		public static void Main(string[] args)
+		{
+			PreventRunningAsAdmin();
+			_ = BuildAvaloniaApp()
+				.StartWithClassicDesktopLifetime(args);
+		}
+
+		static void PreventRunningAsAdmin()
+		{
+			if (PlatformSpecific.RunningAsAdmin())
+			{
+				const string errorMessage = "This application should not be run with elevated privileges. Please run it as a regular user.";
+
+				// show user a message. must be OS-independent
+				Console.Error.WriteLine(errorMessage);
+
+				// terminate current program
+				throw new UnauthorizedAccessException(errorMessage);
+			}
+		}
 
 		// Avalonia configuration, don't remove; also used by visual designer.
 		public static AppBuilder BuildAvaloniaApp()

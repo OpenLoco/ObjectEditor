@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
+
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
 		[Reactive]
@@ -45,6 +46,12 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Unit> ViewHexCommand { get; }
 		public Interaction<HexWindowViewModel, HexWindowViewModel?> HexViewerShowDialog { get; }
 
+		public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; }
+		[Reactive]
+		public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.Locomotion;
+		[Reactive]
+		public string LastGameObjDataFolderText { get; set; } = "Copy to Locomotion game folder";
+
 		//public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
 		public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
 
@@ -62,6 +69,28 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				var vm = new HexWindowViewModel(CurrentFile.Filename, logger);
 				_ = await HexViewerShowDialog.Handle(vm);
+			});
+
+			CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) =>
+			{
+				var folder = model.Settings.GetGameObjDataFolder(targetFolder);
+				if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+				{
+					logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
+					return;
+				}
+
+				try
+				{
+					File.Copy(currentFile.Filename, Path.Combine(folder, Path.GetFileName(currentFile.Filename)));
+					logger.Info($"Copied {Path.GetFileName(currentFile.Filename)} to [[{targetFolder}]] {folder}");
+					LastGameObjDataFolder = targetFolder;
+					LastGameObjDataFolderText = $"Copy to {LastGameObjDataFolder} game folder";
+				}
+				catch (Exception ex)
+				{
+					logger.Error($"Could not copy {currentFile.Filename} to {folder}:", ex);
+				}
 			});
 
 			SelectObjectShowDialog = new();

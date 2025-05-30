@@ -20,6 +20,5 @@ namespace OpenLoco.Definitions.DTO
 		DateTimeOffset UploadDate,
 		ICollection<TblTag> Tags,
 		ICollection<TblLocoObjectPack> ObjectPacks,
-		ObjectAvailability Availability,
 		TblLicence? Licence);
 }

@@ -264,7 +264,6 @@ namespace OpenLoco.Gui.Models
 					UploadDate = cachedLocoObjDto.UploadDate,
 					Tags = cachedLocoObjDto.Tags,
 					ObjectPacks = cachedLocoObjDto.ObjectPacks,
-					Availability = cachedLocoObjDto.Availability,
 					Licence = cachedLocoObjDto.Licence,
 				};
 

@@ -21,8 +21,6 @@ namespace OpenLoco.Definitions.Database
 
 		public VehicleType? VehicleType { get; set; }
 
-		public ObjectAvailability Availability { get; set; }
-
 		public ICollection<TblLocoObjectPack> ObjectPacks { get; set; } // aka modpack
 	}
 }

@@ -146,7 +146,7 @@ void AddNewObjectMetadataEntries()
 
 		if (!objectMetadata.ContainsKey(key))
 		{
-			objectMetadata.Add(key, new ObjectMetadata(Path.GetFileNameWithoutExtension(obj.Filename), obj.DatName, obj.DatChecksum, null, [], [], [], null, OpenLoco.Definitions.ObjectAvailability.AllGames, DateTimeOffset.Now, null, DateTimeOffset.Now, source));
+			objectMetadata.Add(key, new ObjectMetadata(Path.GetFileNameWithoutExtension(obj.Filename), obj.DatName, obj.DatChecksum, null, [], [], [], null, DateTimeOffset.Now, null, DateTimeOffset.Now, source));
 		}
 	}
 

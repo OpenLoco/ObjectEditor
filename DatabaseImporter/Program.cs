@@ -1,9 +1,7 @@
 using Common.Json;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
-using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
-using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
@@ -207,7 +205,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			var metadataKey = (objIndex.DatName, objIndex.DatChecksum);
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{
-				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), objIndex.DatName, objIndex.DatChecksum, null, [], [], [], null, ObjectAvailability.AllGames, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
+				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), objIndex.DatName, objIndex.DatChecksum, null, [], [], [], null, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
 				meta = newMetadata;
 				objectMetadataDict.Add((objIndex.DatName, objIndex.DatChecksum), newMetadata);
 			}
@@ -237,7 +235,6 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				UploadDate = DateTimeOffset.Now,
 				Tags = tags ?? [],
 				ObjectPacks = objectPacks ?? [],
-				Availability = meta!.ObjectAvailability,
 				Licence = licence,
 			};
 

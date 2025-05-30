@@ -31,6 +31,11 @@
 						<Setter Property="FontSize" Value="14"/>
 					</Style>
 				</TabControl.Styles>
+				<TabItem Header="{Binding ExtraContentViewModelTabName}">
+					<DockPanel>
+						<ContentControl Content="{Binding ExtraContentViewModel}" />
+					</DockPanel>
+				</TabItem>
 				<TabItem Header="Object">
 					<ScrollViewer>
 						<ContentControl Content="{Binding CurrentObjectViewModel}" />
@@ -61,11 +66,6 @@
 					</DockPanel>
 				</TabItem>
 
-				<TabItem Header="{Binding ExtraContentViewModelTabName}">
-					<DockPanel>
-						<ContentControl Content="{Binding ExtraContentViewModel}" />
-					</DockPanel>
-				</TabItem>
 
 				<TabItem Header="Metadata">
 					<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
@@ -102,9 +102,6 @@
 
 								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="4"/>
 								<DatePicker Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadDate}" IsEnabled="False" Margin="4" />
-
-								<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="4"/>
-								<TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="4" />
 
 								<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
 								<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="4" />

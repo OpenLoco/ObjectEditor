@@ -13,7 +13,6 @@ namespace OpenLoco.Definitions.DTO
 				x.ObjectSource,
 				x.ObjectType,
 				x.VehicleType,
-				x.Availability,
 				x.Name,
 				x.Description,
 				x.CreationDate,

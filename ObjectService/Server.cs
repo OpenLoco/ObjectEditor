@@ -6,7 +6,6 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
-using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.SourceData;
@@ -253,7 +252,6 @@ namespace OpenLoco.ObjectService
 				obj.UploadDate,
 				eObj.Tags,
 				eObj.Packs,
-				obj.Availability,
 				obj.Licence);
 
 			return Results.Ok(dtoObject);
@@ -464,7 +462,6 @@ namespace OpenLoco.ObjectService
 				UploadDate = DateTimeOffset.UtcNow,
 				Tags = [],
 				ObjectPacks = [],
-				Availability = LocoObject == null ? ObjectAvailability.Unavailable : ObjectAvailability.AllGames,
 				Licence = null,
 			};
 

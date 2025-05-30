@@ -10,7 +10,6 @@ namespace OpenLoco.Definitions.DTO
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
-		ObjectAvailability ObjectAvailability,
 		string InternalName,
 		string? Description,
 		DateTimeOffset? CreationDate,

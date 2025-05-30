@@ -1,4 +1,3 @@
-using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using System;
 using System.Collections.Generic;
@@ -31,8 +30,6 @@ namespace OpenLoco.Gui.Models
 
 		[Browsable(false)]
 		public ICollection<TblLocoObjectPack> ObjectPacks { get; set; }
-
-		public ObjectAvailability Availability { get; set; }
 
 		public TblLicence? Licence { get; set; }
 	}

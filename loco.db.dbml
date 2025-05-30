@@ -1,0 +1,148 @@
+Table __EFMigrationsHistory {
+  MigrationId TEXT pk
+  ProductVersion TEXT
+}
+Table Authors {
+  Id INTEGER pk
+  Name TEXT
+}
+Table Licences {
+  Id INTEGER pk
+  Name TEXT
+  Text TEXT
+}
+Table Tags {
+  Id INTEGER pk
+  Name TEXT
+}
+Table ObjectPacks {
+  Id INTEGER pk
+  Name TEXT
+  Description TEXT
+  LicenceId INTEGER
+  CreationDate TIMESTAMP
+  LastEditDate TIMESTAMP
+  UploadDate TIMESTAMP
+}
+Table Objects {
+  Id INTEGER pk
+  DatName TEXT
+  DatChecksum INTEGER
+  ObjectSource INTEGER
+  ObjectType INTEGER
+  VehicleType INTEGER
+  Availability INTEGER
+  Name TEXT
+  Description TEXT
+  LicenceId INTEGER
+  CreationDate TIMESTAMP
+  LastEditDate TIMESTAMP
+  UploadDate TIMESTAMP
+}
+Table SC5FilePacks {
+  Id INTEGER pk
+  Name TEXT
+  Description TEXT
+  LicenceId INTEGER
+  CreationDate TIMESTAMP
+  LastEditDate TIMESTAMP
+  UploadDate TIMESTAMP
+}
+Table SC5Files {
+  Id INTEGER pk
+  ObjectSource INTEGER
+  Name TEXT
+  Description TEXT
+  LicenceId INTEGER
+  CreationDate TIMESTAMP
+  LastEditDate TIMESTAMP
+  UploadDate TIMESTAMP
+}
+Table TblAuthorTblLocoObjectPack {
+  AuthorsId INTEGER pk
+  ObjectPacksId INTEGER pk
+}
+Table TblLocoObjectPackTblTag {
+  ObjectPacksId INTEGER pk
+  TagsId INTEGER pk
+}
+Table TblAuthorTblLocoObject {
+  AuthorsId INTEGER pk
+  ObjectsId INTEGER pk
+}
+Table TblLocoObjectTblLocoObjectPack {
+  ObjectPacksId INTEGER pk
+  ObjectsId INTEGER pk
+}
+Table TblLocoObjectTblTag {
+  ObjectsId INTEGER pk
+  TagsId INTEGER pk
+}
+Table TblAuthorTblSC5FilePack {
+  AuthorsId INTEGER pk
+  SC5FilePacksId INTEGER pk
+}
+Table TblSC5FilePackTblTag {
+  SC5FilePacksId INTEGER pk
+  TagsId INTEGER pk
+}
+Table TblAuthorTblSC5File {
+  AuthorsId INTEGER pk
+  SC5FilesId INTEGER pk
+}
+Table TblSC5FileTblSC5FilePack {
+  SC5FilePacksId INTEGER pk
+  SC5FilesId INTEGER pk
+}
+Table TblSC5FileTblTag {
+  SC5FilesId INTEGER pk
+  TagsId INTEGER pk
+}
+Table StringTable {
+  Id INTEGER pk
+  Language INTEGER
+  TableEntry INTEGER
+  Text TEXT
+}
+Table TblLocoObjectTblStringTable {
+  StringTableId INTEGER pk
+  ObjectId INTEGER pk
+}
+Table ObjectLookupFromDat {
+  Id INTEGER pk
+  DatName TEXT
+  DatChecksum INTEGER
+  xxHash3 INTEGER [unique] // its a byte[], but we can use 64bit int
+  ObjectId INTEGER pk
+
+  Indexes {
+    (DatName, DatChecksum) [unique]
+  }
+}
+Ref: ObjectPacks.LicenceId > Licences.Id
+Ref: Objects.LicenceId > Licences.Id
+Ref: SC5FilePacks.LicenceId > Licences.Id
+Ref: SC5Files.LicenceId > Licences.Id
+Ref: TblAuthorTblLocoObjectPack.ObjectPacksId > ObjectPacks.Id
+Ref: TblAuthorTblLocoObjectPack.AuthorsId > Authors.Id
+Ref: TblLocoObjectPackTblTag.TagsId > Tags.Id
+Ref: TblLocoObjectPackTblTag.ObjectPacksId > ObjectPacks.Id
+Ref: TblAuthorTblLocoObject.ObjectsId > Objects.Id
+Ref: TblAuthorTblLocoObject.AuthorsId > Authors.Id
+Ref: TblLocoObjectTblLocoObjectPack.ObjectsId > Objects.Id
+Ref: TblLocoObjectTblLocoObjectPack.ObjectPacksId > ObjectPacks.Id
+Ref: TblLocoObjectTblTag.TagsId > Tags.Id
+Ref: TblLocoObjectTblTag.ObjectsId > Objects.Id
+Ref: TblAuthorTblSC5FilePack.SC5FilePacksId > SC5FilePacks.Id
+Ref: TblAuthorTblSC5FilePack.AuthorsId > Authors.Id
+Ref: TblSC5FilePackTblTag.TagsId > Tags.Id
+Ref: TblSC5FilePackTblTag.SC5FilePacksId > SC5FilePacks.Id
+Ref: TblAuthorTblSC5File.SC5FilesId > SC5Files.Id
+Ref: TblAuthorTblSC5File.AuthorsId > Authors.Id
+Ref: TblSC5FileTblSC5FilePack.SC5FilesId > SC5Files.Id
+Ref: TblSC5FileTblSC5FilePack.SC5FilePacksId > SC5FilePacks.Id
+Ref: TblSC5FileTblTag.TagsId > Tags.Id
+Ref: TblSC5FileTblTag.SC5FilesId > SC5Files.Id
+Ref: TblLocoObjectTblStringTable.StringTableId > StringTable.Id
+Ref: TblLocoObjectTblStringTable.ObjectId > Objects.Id
+Ref: ObjectLookupFromDat.ObjectId > Objects.Id

@@ -6,7 +6,7 @@ root = true
 # General Whitespace Settings
 [*]
 charset = utf-8
-end_of_line = crlf
+end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion

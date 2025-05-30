@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.Dat.Objects
+namespace OpenLoco.Dat.Objects
 {
 	public enum TransportMode : uint8_t
 	{

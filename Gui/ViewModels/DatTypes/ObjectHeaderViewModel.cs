@@ -1,4 +1,4 @@
-﻿using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

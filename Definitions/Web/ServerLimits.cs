@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.Definitions.Web
+namespace OpenLoco.Definitions.Web
 {
 	public static class ServerLimits
 	{

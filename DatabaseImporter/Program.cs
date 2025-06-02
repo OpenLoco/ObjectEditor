@@ -242,8 +242,8 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			var locoLookupTbl = new TblObjectLookupFromDat()
 			{
 				DatName = objIndex.DatName,
-				DatChecksum = objIndex.DatChecksum,
-				xxHash3 = objIndex.xxHash3,
+				DatChecksum = objIndex.DatChecksum.Value,
+				xxHash3 = objIndex.xxHash3.Value,
 				ObjectId = addedObj.Entity.Id,
 				Object = tblLocoObject,
 			};

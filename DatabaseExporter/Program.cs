@@ -102,11 +102,10 @@ var objects = new List<ObjectMetadata>();
 foreach (var o in db.ObjectDatLookups
 		.Include(x => x.Object)
 		.Include(x => x.Object.Licence)
-		.Select(x => new ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>(x.Object, x, x.Object.Authors, x.Object.Tags, x.Object.ObjectPacks))
+		.Select(x => new ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>(x.Object, x.Object.LinkedDatObjects, x.Object.Authors, x.Object.Tags, x.Object.ObjectPacks))
 		.ToList()
 		.OrderBy(x => x.Object.Name))
 {
-
 	var obj = new ObjectMetadata(
 		o.Object.Name,
 		o.Object.Description,

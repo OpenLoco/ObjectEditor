@@ -107,7 +107,7 @@ namespace OpenLoco.ObjectService
 			{
 				var result = await query
 					.Include(x => x.Object)
-					.Select(x => x.ToDtoDescriptor(new List<DtoDatFileDetails>() { new(x.DatName, x.DatChecksum, x.xxHash3) })) // todo: find all linked objects, not just this one
+					.Select(x => x.ToDtoEntry())
 					.ToListAsync();
 
 				return Results.Ok(result);
@@ -123,26 +123,26 @@ namespace OpenLoco.ObjectService
 		{
 			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", objectName, checksum);
 
-			var lookup = await db.ObjectDatLookups
+			//var lookup = await db.ObjectDatLookups
+			//	.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
+			//	.ToListAsync();
+
+			//if (lookup.Count == 0)
+			//{
+			//	return Results.NotFound();
+			//}
+
+			//if (lookup.Count > 1)
+			//{
+			//	return Results.Conflict();
+			//}
+
+			var eObj = await db.ObjectDatLookups
 				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
-				.ToListAsync();
-
-			if (lookup.Count == 0)
-			{
-				return Results.NotFound();
-			}
-
-			if (lookup.Count > 1)
-			{
-				return Results.Conflict();
-			}
-
-			var singleLookupObj = lookup[0];
-
-			var eObj = await db.Objects
-				.Include(x => x.Licence)
-				.Where(x => x.Id == singleLookupObj.ObjectId)
-				.Select(x => new ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>(x, singleLookupObj, x.Authors, x.Tags, x.ObjectPacks))
+				.Include(x => x.Object)
+				.Include(x => x.Object.Licence)
+				//.Include(x => x.Object.LinkedDatObjects)
+				.Select(x => new ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>(x.Object, x.Object.LinkedDatObjects, x.Object.Authors, x.Object.Tags, x.Object.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
@@ -245,17 +245,17 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			return await ReturnObject(returnObjBytes, logger, new ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>(eObj.Object, lookup, eObj.Authors, eObj.Tags, eObj.Packs));
+			return await ReturnObject(returnObjBytes, logger, new ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>(eObj.Object, eObj.Object.LinkedDatObjects, eObj.Authors, eObj.Tags, eObj.Packs));
 		}
 
 		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>? eObj)
 		{
-			if (eObj == null || eObj.Object == null || eObj.Lookup == null)
+			if (eObj == null || eObj.Object == null || eObj.Lookups == null)
 			{
 				return Results.NotFound();
 			}
 
-			if (!ServerFolderManager.ObjectIndex.TryFind((eObj.Lookup.DatName, eObj.Lookup.DatChecksum), out var index))
+			if (!ServerFolderManager.ObjectIndex.TryFind((eObj.Lookups.First().DatName, eObj.Lookups.First().DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
@@ -271,26 +271,24 @@ namespace OpenLoco.ObjectService
 				logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder.", pathOnDisk);
 			}
 
-			var bytes = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
+			_ = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
-			var dtoObject = new DtoObjectDescriptorWithMetadata(
+			var dtoObject = new DtoObjectDescriptor(
 				obj.Id,
 				obj.Name,
-				eObj.Lookup.DatName,
-				eObj.Lookup.DatChecksum,
-				bytes,
+				obj.Description,
 				obj.ObjectSource,
 				obj.ObjectType,
 				obj.VehicleType,
-				obj.Description,
-				eObj.Authors,
 				obj.CreationDate,
 				obj.LastEditDate,
 				obj.UploadDate,
+				eObj.Authors,
 				eObj.Tags,
 				eObj.Packs,
+				[.. obj.LinkedDatObjects.Select(x => x.ToDtoDescriptor())],
 				obj.Licence);
 
 			return Results.Ok(dtoObject);
@@ -495,11 +493,11 @@ namespace OpenLoco.ObjectService
 
 			var locoTbl = new TblLocoObject()
 			{
-				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
+				Name = uuid.ToString(), // same as DB seeder name
 				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
 				ObjectType = hdrs.S5.ObjectType,
 				VehicleType = vehicleType,
-				Description = string.Empty,
+				Description = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}",
 				Authors = [],
 				CreationDate = creationDate,
 				LastEditDate = modifiedDate,
@@ -509,7 +507,7 @@ namespace OpenLoco.ObjectService
 				Licence = null,
 			};
 
-			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, hdrs.S5.Name, hdrs.S5.Checksum, request.xxHash3, locoTbl.ObjectType, locoTbl.ObjectSource, creationDate, modifiedDate, locoTbl.VehicleType));
+			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, hdrs.S5.Name, hdrs.S5.Checksum, request.xxHash3, uuid.ToString(), locoTbl.ObjectType, locoTbl.ObjectSource, creationDate, modifiedDate, locoTbl.VehicleType));
 			var addedObj = db.Objects.Add(locoTbl);
 
 			var locoLookupTbl = new TblObjectLookupFromDat()

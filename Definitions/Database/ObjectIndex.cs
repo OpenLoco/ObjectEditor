@@ -7,6 +7,7 @@ using OpenLoco.Dat.Types;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.IO.Hashing;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace OpenLoco.Definitions.Database
@@ -164,20 +165,60 @@ namespace OpenLoco.Definitions.Database
 			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
 			{
 				var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
-				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime, (VehicleType)decoded[3]);
+				var vType = (VehicleType)decoded[3];
+				var uniqueName = UniqueNameGenerator(source, hdrs.S5.ObjectType, vType, hdrs.S5.Name, null, null);
+				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, uniqueName, hdrs.S5.ObjectType, source, createdTime, modifiedTime, vType);
 			}
 			else
 			{
-				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime);
+				var uniqueName = UniqueNameGenerator(source, hdrs.S5.ObjectType, null, hdrs.S5.Name, null, null);
+				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, uniqueName, hdrs.S5.ObjectType, source, createdTime, modifiedTime);
 			}
+		}
+
+		public static string UniqueNameGenerator(ObjectSource source, ObjectType type, VehicleType? vType, string datName, string? author, string? salt)
+		{
+			var sb = new StringBuilder();
+
+			_ = sb.Append(source.ToString());
+
+			_ = sb.Append('.');
+			_ = sb.Append(type.ToString());
+
+			if (vType != null)
+			{
+				_ = sb.Append('.');
+				_ = sb.Append(vType.ToString());
+			}
+
+			if (!string.IsNullOrEmpty(datName) && datName.All(char.IsLetterOrDigit))
+			{
+				_ = sb.Append('.');
+				_ = sb.Append(datName);
+			}
+
+			if (!string.IsNullOrEmpty(author) && author.All(char.IsLetterOrDigit))
+			{
+				_ = sb.Append('.');
+				_ = sb.Append(author);
+			}
+
+			if (!string.IsNullOrEmpty(salt) && salt.All(char.IsLetterOrDigit))
+			{
+				_ = sb.Append('.');
+				_ = sb.Append(salt);
+			}
+
+			return sb.ToString();
 		}
 	}
 
 	public record ObjectIndexEntry(
 		string Filename,
-		string DatName,
-		uint32_t DatChecksum,
-		ulong xxHash3,
+		string? DatName,
+		uint32_t? DatChecksum,
+		ulong? xxHash3,
+		string? UniqueName,
 		ObjectType ObjectType,
 		ObjectSource ObjectSource,
 		DateTimeOffset? CreatedDate,

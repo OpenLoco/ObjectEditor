@@ -5,42 +5,29 @@ namespace OpenLoco.Definitions.DTO
 {
 	public static class DtoExtensions
 	{
-		public static DtoObjectLookupFromDatDescriptor ToDtoDescriptor(this TblObjectLookupFromDat x, ICollection<DtoDatFileDetails> DatObjects)
+		public static DtoObjectEntry ToDtoEntry(this TblLocoObject x)
 			=> new(
 				x.Id,
-				DatObjects,
-				x.Object.ObjectSource,
-				x.Object.ObjectType,
-				x.Object.VehicleType,
-				x.Object.Name,
-				x.Object.Description,
-				x.Object.CreationDate,
-				x.Object.LastEditDate,
-				x.Object.UploadDate);
-
-		public static DtoObjectDescriptor ToDtoDescriptor(this TblLocoObject x)
-			=> new(
-				x.Id,
+				x.Name,
+				x.Description,
 				x.ObjectSource,
 				x.ObjectType,
 				x.VehicleType,
-				x.Name,
-				x.Description,
 				x.CreationDate,
 				x.LastEditDate,
 				x.UploadDate);
 
-		public static DtoObjectEntry ToDtoEntry(this TblLocoObject x)
-			=> new(
-				x.Id);
+		public static DtoObjectEntry ToDtoEntry(this TblObjectLookupFromDat x)
+			=> x.Object.ToDtoEntry();
 
-		public static DtoObjectLookupFromDatEntry ToDtoEntry(this TblObjectLookupFromDat x)
+		public static DtoDatObjectEntry ToDtoDescriptor(this TblObjectLookupFromDat x)
 			=> new(
 				x.Id,
 				x.DatName,
 				x.DatChecksum,
 				x.xxHash3,
-				x.ObjectId);
+				x.ObjectId,
+				null);
 
 		public static DtoScenarioEntry ToDtoEntry(this TblSC5File x)
 			=> new(

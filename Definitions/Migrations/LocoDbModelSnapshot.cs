@@ -15,7 +15,7 @@ namespace Definitions.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
                 {
@@ -63,13 +63,6 @@ namespace Definitions.Migrations
                     b.Property<DateTimeOffset?>("CreationDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<uint>("DatChecksum")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("DatName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
@@ -103,10 +96,6 @@ namespace Definitions.Migrations
 
                     b.HasIndex("Name")
                         .IsUnique();
-
-                    b.HasIndex("DatName", "DatChecksum")
-                        .IsUnique()
-                        .IsDescending(true, false);
 
                     b.ToTable("Objects");
                 });
@@ -164,7 +153,7 @@ namespace Definitions.Migrations
                     b.Property<int>("ObjectId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("xxHash3")
+                    b.Property<ulong>("xxHash3")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -447,7 +436,7 @@ namespace Definitions.Migrations
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectLookupFromDat", b =>
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", "Object")
-                        .WithMany()
+                        .WithMany("LinkedDatObjects")
                         .HasForeignKey("ObjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -621,6 +610,11 @@ namespace Definitions.Migrations
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
+                {
+                    b.Navigation("LinkedDatObjects");
                 });
 #pragma warning restore 612, 618
         }

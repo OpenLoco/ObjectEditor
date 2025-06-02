@@ -233,6 +233,7 @@ namespace OpenLoco.Gui.ViewModels
 						x => x.SubNodes),
 
 					new TextColumn<FileSystemItemBase, string?>("Source", x => GetNiceObjectSource(x.ObjectSource)),
+					new TextColumn<FileSystemItemBase, string?>("UniqueName", x => x.UniqueName),
 					new TextColumn<FileSystemItemBase, FileLocation?>("Origin", x => x.FileLocation),
 					new TextColumn<FileSystemItemBase, string?>("Location", x => x.Filename),
 					new TextColumn<FileSystemItemBase, DateTimeOffset?>("Created", x => x.CreatedDate),
@@ -281,7 +282,7 @@ namespace OpenLoco.Gui.ViewModels
 			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.WebClient != null)
 			{
 				Model.ObjectIndexOnline = new ObjectIndex((await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatObjects.First().DatName, x.DatObjects.First().DatChecksum, x.DatObjects.First().xxHash3, x.ObjectType, x.ObjectSource, x.CreationDate, x.LastEditDate, x.VehicleType))
+					.Select(x => new ObjectIndexEntry(x.Id.ToString(), null, null, null, x.UniqueName, x.ObjectType, x.ObjectSource, x.CreationDate, x.LastEditDate, x.VehicleType))
 					.ToList());
 			}
 
@@ -345,7 +346,7 @@ namespace OpenLoco.Gui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+							.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.UniqueName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
 							.OrderBy(x => x.DisplayName));
 
 						if (vg.Key == null)
@@ -358,6 +359,7 @@ namespace OpenLoco.Gui.ViewModels
 						subNodes.Add(new FileSystemItemBase(
 							string.Empty,
 							vg.Key.Value.ToString(),
+							string.Empty,
 							VehicleType: vg.Key.Value,
 							SubNodes: vehicleSubNodes));
 					}
@@ -365,13 +367,14 @@ namespace OpenLoco.Gui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+						.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.UniqueName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
 						.OrderBy(x => x.DisplayName));
 				}
 
 				result.Add(new FileSystemItemBase(
 					string.Empty,
 					objGroup.Key.ToString(),
+					string.Empty,
 					ObjectType: objGroup.Key,
 					SubNodes: subNodes));
 			}
@@ -383,7 +386,7 @@ namespace OpenLoco.Gui.ViewModels
 			=> index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
 				.Where(x => MatchesFilter(x, filenameFilter, authorFilter, modpackFilter, displayMode))
-				.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+				.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.UniqueName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
 				.OrderByDescending(x => x.ModifiedDate);
 	}
 }

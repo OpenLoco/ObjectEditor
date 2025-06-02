@@ -1,9 +1,10 @@
 namespace OpenLoco.Definitions.DTO
 {
-	public record DtoObjectLookupFromDatEntry(
+	public record DtoDatObjectEntry(
 		int Id,
 		string DatName,
 		uint DatChecksum,
 		ulong xxHash3,
-		int ObjectId);
+		int ObjectId,
+		string? DatBytes);
 }

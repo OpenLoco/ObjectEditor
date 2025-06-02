@@ -1,4 +1,5 @@
 using Common.Json;
+
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
@@ -25,8 +26,8 @@ foreach (var o in db.SC5Files
 	var obj = new SC5FileJsonRecord(
 		o.Object.Name,
 		o.Object.Description,
-		o.Authors.Select(a => a.Name).ToList(),
-		o.Tags.Select(t => t.Name).ToList(),
+		[.. o.Authors.Select(a => a.Name)],
+		[.. o.Tags.Select(t => t.Name)],
 		o.Object.Licence?.Name,
 		o.Object.CreationDate,
 		o.Object.LastEditDate,
@@ -53,8 +54,8 @@ foreach (var o in db.SC5FilePacks
 	var obj = new SC5FilePackJsonRecord(
 		o.Pack.Name,
 		o.Pack.Description,
-		o.Authors.Select(a => a.Name).ToList(),
-		o.Tags.Select(t => t.Name).ToList(),
+		[.. o.Authors.Select(a => a.Name)],
+		[.. o.Tags.Select(t => t.Name)],
 		o.Pack.Licence?.Name,
 		o.Pack.CreationDate,
 		o.Pack.LastEditDate,
@@ -80,8 +81,8 @@ foreach (var o in db.ObjectPacks
 	var objPack = new ObjectPackJsonRecord(
 		o.Pack.Name,
 		o.Pack.Description,
-		o.Authors.Select(a => a.Name).ToList(),
-		o.Tags.Select(t => t.Name).ToList(),
+		[.. o.Authors.Select(a => a.Name)],
+		[.. o.Tags.Select(t => t.Name)],
 		o.Pack.Licence?.Name,
 		o.Pack.CreationDate,
 		o.Pack.LastEditDate,
@@ -98,20 +99,20 @@ var objectPacksJson = JsonSerializer.Serialize<IEnumerable<ObjectPackJsonRecord>
 
 var objects = new List<ObjectMetadata>();
 
-foreach (var o in db.Objects
-		.Include(l => l.Licence)
-		.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
+foreach (var o in db.ObjectDatLookups
+		.Include(x => x.Object)
+		.Include(x => x.Object.Licence)
+		.Select(x => new ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>(x.Object, x, x.Object.Authors, x.Object.Tags, x.Object.ObjectPacks))
 		.ToList()
 		.OrderBy(x => x.Object.Name))
 {
+
 	var obj = new ObjectMetadata(
 		o.Object.Name,
-		o.Object.DatName,
-		o.Object.DatChecksum,
 		o.Object.Description,
-		o.Authors.Select(a => a.Name).ToList(),
-		o.Tags.Select(t => t.Name).ToList(),
-		o.Packs.Select(m => m.Name).ToList(),
+		[.. o.Authors.Select(a => a.Name)],
+		[.. o.Tags.Select(t => t.Name)],
+		[.. o.Packs.Select(m => m.Name)],
 		o.Object.Licence?.Name,
 		o.Object.CreationDate,
 		o.Object.LastEditDate,

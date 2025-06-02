@@ -6,6 +6,7 @@ using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.IO.Hashing;
 using System.Text.Json.Serialization;
 
 namespace OpenLoco.Definitions.Database
@@ -32,6 +33,12 @@ namespace OpenLoco.Definitions.Database
 		public bool TryFind((string name, uint checksum) key, out ObjectIndexEntry? entry)
 		{
 			entry = Objects.FirstOrDefault(x => x.DatName == key.name && x.DatChecksum == key.checksum);
+			return entry != null;
+		}
+
+		public bool TryFind(ulong xxHash3, out ObjectIndexEntry? entry)
+		{
+			entry = Objects.FirstOrDefault(x => x.xxHash3 == xxHash3);
 			return entry != null;
 		}
 
@@ -140,6 +147,8 @@ namespace OpenLoco.Definitions.Database
 
 		public static ObjectIndexEntry? GetDatFileInfoFromBytes(string absoluteFilename, string relativeFilename, byte[] data, ILogger logger)
 		{
+			var xxHash3 = XxHash3.HashToUInt64(data);
+
 			if (!SawyerStreamReader.TryGetHeadersFromBytes(data, out var hdrs, logger))
 			{
 				logger.Error($"{relativeFilename} must have valid S5 and Object headers to call this method", nameof(relativeFilename));
@@ -155,11 +164,11 @@ namespace OpenLoco.Definitions.Database
 			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
 			{
 				var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
-				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source, createdTime, modifiedTime, (VehicleType)decoded[3]);
+				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime, (VehicleType)decoded[3]);
 			}
 			else
 			{
-				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectType, source, createdTime, modifiedTime);
+				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime);
 			}
 		}
 	}
@@ -168,6 +177,7 @@ namespace OpenLoco.Definitions.Database
 		string Filename,
 		string DatName,
 		uint32_t DatChecksum,
+		ulong xxHash3,
 		ObjectType ObjectType,
 		ObjectSource ObjectSource,
 		DateTimeOffset? CreatedDate,

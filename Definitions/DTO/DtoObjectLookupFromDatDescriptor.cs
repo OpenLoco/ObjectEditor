@@ -3,8 +3,9 @@ using OpenLoco.Dat.Objects;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public record DtoObjectDescriptor(
+	public record DtoObjectLookupFromDatDescriptor(
 		int Id,
+		ICollection<DtoDatFileDetails> DatObjects,
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,

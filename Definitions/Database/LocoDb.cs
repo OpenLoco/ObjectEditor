@@ -19,6 +19,7 @@ namespace OpenLoco.Definitions.Database
 		public DbSet<TblLocoObjectPack> ObjectPacks => Set<TblLocoObjectPack>();
 		public DbSet<TblSC5File> SC5Files => Set<TblSC5File>();
 		public DbSet<TblSC5FilePack> SC5FilePacks => Set<TblSC5FilePack>();
+		public DbSet<TblObjectLookupFromDat> ObjectDatLookups => Set<TblObjectLookupFromDat>();
 
 		#endregion
 
@@ -28,7 +29,7 @@ namespace OpenLoco.Definitions.Database
 		public LocoDb(DbContextOptions<LocoDb> options) : base(options)
 		{ }
 
-		public static string DefaultDb = "Q:\\Games\\Locomotion\\Server\\loco.db";
+		public static string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco.db";
 
 		protected override void OnConfiguring(DbContextOptionsBuilder builder)
 		{
@@ -73,13 +74,13 @@ namespace OpenLoco.Definitions.Database
 		{
 			// there's a unique constraint on the composite key index (DatName, DatChecksum), so check existence first so no exceptions
 			// this isn't necessary since we're already filtering in LINQ, but if we were adding to a non-empty database, this would be necessary
-			var existingEntityInDb = Objects
-				.FirstOrDefault(e => e.DatName == datName && e.DatChecksum == datChecksum);
+			var existingEntityInDb = ObjectDatLookups
+				.SingleOrDefault(e => e.DatName == datName && e.DatChecksum == datChecksum)?.Object;
 
 			var existingEntityInChangeTracker = ChangeTracker.Entries()
-				.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblLocoObject))
-				.Select(e => e.Entity as TblLocoObject)
-				.FirstOrDefault(e => e!.DatName == datName && e.DatChecksum == datChecksum);
+				.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblObjectLookupFromDat))
+				.Select(e => e.Entity as TblObjectLookupFromDat)
+				.SingleOrDefault(e => e!.DatName == datName && e.DatChecksum == datChecksum)?.Object;
 
 			existingObject = existingEntityInDb ?? existingEntityInChangeTracker;
 			return existingObject != null;

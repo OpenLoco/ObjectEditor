@@ -7,8 +7,8 @@ namespace OpenLoco.Definitions.DTO
 	public record DtoObjectDescriptorWithMetadata(
 		int Id,
 		string UniqueName,
-		string DatName,
-		uint DatChecksum,
+		string? DatName,
+		uint? DatChecksum,
 		string? DatBytes, // base64-encoded
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,

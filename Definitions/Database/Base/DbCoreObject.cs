@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace OpenLoco.Definitions.Database
 {
+
 	[Index(nameof(Name), IsUnique = true)]
 	public abstract class DbCoreObject : IDbStandardData, IDbMetadata
 	{

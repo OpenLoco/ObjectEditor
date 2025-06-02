@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using OpenLoco.Common.Logging;
 using OpenLoco.Definitions.DTO;
+using System.IO.Hashing;
 using System.Net.Http.Json;
 
 namespace OpenLoco.Definitions.Web
@@ -9,8 +10,8 @@ namespace OpenLoco.Definitions.Web
 	{
 		public const string Version = "v1";
 
-		public static async Task<IEnumerable<DtoObjectDescriptor>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
-			=> await SendRequestAsync<IEnumerable<DtoObjectDescriptor>?>(client, Routes.ListObjects, logger) ?? [];
+		public static async Task<IEnumerable<DtoObjectLookupFromDatDescriptor>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
+			=> await SendRequestAsync<IEnumerable<DtoObjectLookupFromDatDescriptor>?>(client, Routes.ListObjects, logger) ?? [];
 
 		public static async Task<DtoObjectDescriptorWithMetadata?> GetDatAsync(HttpClient client, string objectName, uint checksum, bool returnObjBytes, ILogger? logger = null)
 			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.GetDat + $"?{nameof(objectName)}={objectName}&{nameof(checksum)}={checksum}&{nameof(returnObjBytes)}={returnObjBytes}", logger);
@@ -60,9 +61,10 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
+				var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 				var route = $"{client.BaseAddress?.OriginalString}{Routes.UploadDat}";
 				logger.Debug($"Posting {filename} to {route}");
-				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate, modifiedDate);
+				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), xxHash3, creationDate, modifiedDate);
 				var response = await client.PostAsJsonAsync(Routes.UploadDat, request);
 
 				if (!response.IsSuccessStatusCode)

@@ -1,3 +1,4 @@
+
 using OpenLoco.Definitions.Database;
 using System;
 using System.Collections.Generic;
@@ -5,13 +6,13 @@ using System.ComponentModel;
 
 namespace OpenLoco.Gui.Models
 {
-	public class MetadataModel(string uniqueName, string datName, uint datChecksum)
+	public class MetadataModel(string uniqueName, string? datName, uint? datChecksum)
 	{
 		public string UniqueName { get; init; } = uniqueName;
 
-		public string DatName { get; init; } = datName;
+		public string? DatName { get; init; } = datName;
 
-		public uint DatChecksum { get; init; } = datChecksum;
+		public uint? DatChecksum { get; init; } = datChecksum;
 
 		public string? Description { get; set; }
 

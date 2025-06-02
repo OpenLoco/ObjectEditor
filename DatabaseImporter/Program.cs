@@ -197,17 +197,17 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var progress = new Progress<float>();
 		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText(objectMetadataJson), jsonOptions);
-		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
+		var objectMetadataDict = objectMetadata!.ToDictionary(x => x.UniqueName, x => x);
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
 
 		foreach (var objIndex in index!.Objects.DistinctBy(x => (x.DatName, x.DatChecksum)))
 		{
-			var metadataKey = (objIndex.DatName, objIndex.DatChecksum);
+			var metadataKey = objIndex.DatName; // should be UniqueName
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{
-				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), objIndex.DatName, objIndex.DatChecksum, null, [], [], [], null, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
+				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
 				meta = newMetadata;
-				objectMetadataDict.Add((objIndex.DatName, objIndex.DatChecksum), newMetadata);
+				objectMetadataDict.Add(objIndex.DatName, newMetadata);
 			}
 
 			var filename = Path.Combine(objDirectory, objIndex.Filename);
@@ -223,8 +223,6 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			var tblLocoObject = new TblLocoObject()
 			{
 				Name = meta!.UniqueName,
-				DatName = objIndex.DatName,
-				DatChecksum = objIndex.DatChecksum,
 				ObjectSource = objIndex.ObjectSource,
 				ObjectType = objIndex.ObjectType,
 				VehicleType = objIndex.VehicleType,
@@ -235,10 +233,23 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				UploadDate = DateTimeOffset.Now,
 				Tags = tags ?? [],
 				ObjectPacks = objectPacks ?? [],
+				LinkedDatObjects = [],
 				Licence = licence,
 			};
 
-			_ = db.Add(tblLocoObject);
+			var addedObj = db.Add(tblLocoObject);
+
+			var locoLookupTbl = new TblObjectLookupFromDat()
+			{
+				DatName = objIndex.DatName,
+				DatChecksum = objIndex.DatChecksum,
+				xxHash3 = objIndex.xxHash3,
+				ObjectId = addedObj.Entity.Id,
+				Object = tblLocoObject,
+			};
+			_ = db.ObjectDatLookups.Add(locoLookupTbl);
+
+			tblLocoObject.LinkedDatObjects.Add(locoLookupTbl);
 		}
 
 		_ = db.SaveChanges();

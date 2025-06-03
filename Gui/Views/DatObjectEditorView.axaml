@@ -31,6 +31,11 @@
 						<Setter Property="FontSize" Value="14"/>
 					</Style>
 				</TabControl.Styles>
+				<TabItem Header="{Binding ExtraContentViewModelTabName}">
+					<DockPanel>
+						<ContentControl Content="{Binding ExtraContentViewModel}" />
+					</DockPanel>
+				</TabItem>
 				<TabItem Header="Object">
 					<ScrollViewer>
 						<ContentControl Content="{Binding CurrentObjectViewModel}" />
@@ -61,11 +66,6 @@
 					</DockPanel>
 				</TabItem>
 
-				<TabItem Header="{Binding ExtraContentViewModelTabName}">
-					<DockPanel>
-						<ContentControl Content="{Binding ExtraContentViewModel}" />
-					</DockPanel>
-				</TabItem>
 
 				<TabItem Header="Metadata">
 					<Border Background="{DynamicResource ExpanderContentBackground}" Margin="8">
@@ -83,31 +83,24 @@
 									<RowDefinition Height="Auto"/>
 									<RowDefinition Height="Auto"/>
 									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
 								</Grid.RowDefinitions>
-								<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Original Name" Margin="4"/>
-								<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DatName}" IsReadOnly="True" Margin="4" />
+								<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="4"/>
+								<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="4" />
 
-								<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Original Checksum" Margin="4"/>
-								<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding DatChecksum}" IsReadOnly="True" Margin="4" />
+								<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Created Date" Margin="4" />
+								<DatePicker Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreatedDate}" IsEnabled="False" Margin="4" />
 
-								<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="4"/>
-								<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="4" />
+								<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Modified Date" Margin="4"/>
+								<DatePicker Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding ModifiedDate}" IsEnabled="False" Margin="4" />
 
-								<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Creation Date" Margin="4" />
-								<DatePicker Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreationDate}" IsEnabled="False" Margin="4" />
+								<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Uploaded Date" Margin="4"/>
+								<DatePicker Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadedDate}" IsEnabled="False" Margin="4" />
 
-								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Last Edit Date" Margin="4"/>
-								<DatePicker Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding LastEditDate}" IsEnabled="False" Margin="4" />
+								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
+								<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="4" />
 
-								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="4"/>
-								<DatePicker Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadDate}" IsEnabled="False" Margin="4" />
-
-								<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="4"/>
-								<TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="4" />
-
-								<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
-								<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="4" />
+								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
+								<ListBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DatObjects}"></ListBox>
 							</Grid>
 							<StackPanel>
 								<Border BorderThickness="1" Margin="4" >

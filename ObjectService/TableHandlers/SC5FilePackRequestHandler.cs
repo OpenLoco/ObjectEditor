@@ -1,4 +1,3 @@
-using Definitions.Database.Objects;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;

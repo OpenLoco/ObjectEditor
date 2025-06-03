@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using OpenLoco.Common.Logging;
 using OpenLoco.Definitions.DTO;
+using System.IO.Hashing;
 using System.Net.Http.Json;
 
 namespace OpenLoco.Definitions.Web
@@ -10,8 +11,8 @@ namespace OpenLoco.Definitions.Web
 		public static async Task<IEnumerable<DtoObjectDescriptor>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
 			=> await SendRequestAsync<IEnumerable<DtoObjectDescriptor>?>(client, Routes.Objects, ReadJsonContentAsync<IEnumerable<DtoObjectDescriptor>?>, logger) ?? [];
 
-		public static async Task<DtoObjectDescriptorWithMetadata?> GetObjectAsync(HttpClient client, int id, ILogger? logger = null)
-			=> await SendRequestAsync<DtoObjectDescriptorWithMetadata?>(client, Routes.Objects + $"/{id}", ReadJsonContentAsync<DtoObjectDescriptorWithMetadata?>, logger);
+		public static async Task<DtoObjectDescriptor?> GetObjectAsync(HttpClient client, int id, ILogger? logger = null)
+			=> await SendRequestAsync<DtoObjectDescriptor?>(client, Routes.Objects + $"/{id}", ReadJsonContentAsync<DtoObjectDescriptor?>, logger);
 
 		public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, int id, ILogger? logger = null)
 			=> await SendRequestAsync<byte[]?>(client, Routes.Objects + $"/{id}/file", ReadBinaryContentAsync, logger);
@@ -33,8 +34,13 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
-				logger?.Debug($"Querying {client.BaseAddress}{route}");
-				using var response = await client.GetAsync(route);
+				if (!Uri.TryCreate(client.BaseAddress, route, out var uri))
+				{
+					logger?.Error($"Unable to create a URI from base=\"{client.BaseAddress}\" and route=\"{route}\"");
+					return default;
+				}
+				logger?.Debug($"Querying {uri}");
+				using var response = await client.GetAsync(uri);
 
 				if (!response.IsSuccessStatusCode)
 				{
@@ -64,9 +70,10 @@ namespace OpenLoco.Definitions.Web
 		{
 			try
 			{
+				var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 				var route = $"{client.BaseAddress?.OriginalString}{Routes.Objects}";
 				logger.Debug($"Posting {filename} to {route}");
-				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), creationDate, modifiedDate);
+				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), xxHash3, creationDate, modifiedDate);
 				var response = await client.PostAsJsonAsync(Routes.Objects, request);
 
 				if (!response.IsSuccessStatusCode)

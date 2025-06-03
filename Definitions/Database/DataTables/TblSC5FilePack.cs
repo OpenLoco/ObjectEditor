@@ -1,6 +1,4 @@
-using OpenLoco.Definitions.Database;
-
-namespace Definitions.Database.Objects
+namespace OpenLoco.Definitions.Database
 {
 	public class TblSC5FilePack : DbCoreObject
 	{

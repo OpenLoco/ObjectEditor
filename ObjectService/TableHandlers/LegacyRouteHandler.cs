@@ -1,19 +1,19 @@
-using Definitions.Database.Objects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
-using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
+using OpenLoco.ObjectService;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
 
-namespace OpenLoco.ObjectService
+namespace ObjectService.TableHandlers
 {
 	public class LegacyRouteHandler
 	{
@@ -26,7 +26,7 @@ namespace OpenLoco.ObjectService
 			PaletteMap = paletteMap;
 		}
 
-		Common.Logging.ILogger Logger { get; } = new Common.Logging.Logger();
+		OpenLoco.Common.Logging.ILogger Logger { get; } = new Logger();
 
 		public void MapRoutes(IEndpointRouteBuilder parentRoute)
 		{
@@ -60,8 +60,8 @@ namespace OpenLoco.ObjectService
 
 		// eg: https://localhost:7230/v1/objects/list
 		public static async Task<IResult> ListObjects(
-			[FromQuery] string? objectName,
-			[FromQuery] uint? checksum,
+			[FromQuery] string? datName,
+			[FromQuery] uint? datChecksum,
 			[FromQuery] string? description,
 			[FromQuery] ObjectType? objectType,
 			[FromQuery] VehicleType? vehicleType,
@@ -70,18 +70,20 @@ namespace OpenLoco.ObjectService
 			[FromQuery] ObjectSource? objectSource,
 			LocoDb db)
 		{
-			var query = db.Objects.AsQueryable();
+			var query = db.Objects
+				.Include(x => x.DatObjects)
+				.AsQueryable();
 
 			#region Query Construction
 
-			if (!string.IsNullOrEmpty(objectName))
+			if (!string.IsNullOrEmpty(datName))
 			{
-				query = query.Where(x => x.DatName.Contains(objectName));
+				query = query.Where(x => x.DatObjects.Any(y => y.DatName.Contains(datName)));
 			}
 
-			if (checksum is not null and not 0)
+			if (datChecksum is not null and not 0)
 			{
-				query = query.Where(x => x.DatChecksum == checksum);
+				query = query.Where(x => x.DatObjects.Any(y => y.DatChecksum == datChecksum));
 			}
 
 			if (!string.IsNullOrEmpty(description))
@@ -125,7 +127,7 @@ namespace OpenLoco.ObjectService
 			try
 			{
 				var result = await query
-					.Select(x => x.ToDtoDescriptor())
+					.Select(x => x.ToDtoEntry())
 					.ToListAsync();
 
 				return Results.Ok(result);
@@ -137,14 +139,15 @@ namespace OpenLoco.ObjectService
 		}
 
 		// eg: https://localhost:7230/v1/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		public async Task<IResult> GetDat([FromQuery] string objectName, [FromQuery] uint checksum, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetDat([FromQuery] string datName, [FromQuery] uint datChecksum, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
-			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", objectName, checksum);
+			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", datName, datChecksum);
 
 			var eObj = await db.Objects
-				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
+				.Include(x => x.DatObjects)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
+				.Where(x => x.DatObjects.First().DatName == datName && x.DatObjects.First().DatChecksum == datChecksum)
+				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
@@ -155,14 +158,18 @@ namespace OpenLoco.ObjectService
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested with images");
 
-			var obj = await db.Objects.Where(x => x.Id == uniqueObjectId).SingleOrDefaultAsync();
+			var obj = await db.Objects
+				.Include(x => x.DatObjects)
+				.Where(x => x.Id == uniqueObjectId)
+				.SingleOrDefaultAsync();
 
 			if (obj == null)
 			{
 				return Results.NotFound();
 			}
 
-			if (!ServerFolderManager.ObjectIndex.TryFind((obj.DatName, obj.DatChecksum), out var index))
+			var dat = obj.DatObjects.First();
+			if (!ServerFolderManager.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
@@ -183,7 +190,7 @@ namespace OpenLoco.ObjectService
 				return Results.Forbid();
 			}
 
-			var dummyLogger = new Common.Logging.Logger(); // todo: make both libraries and server use a single logging interface
+			var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
 			var locoObj = SawyerStreamReader.LoadFullObjectFromFile(pathOnDisk, dummyLogger, true);
 
 			await using var memoryStream = new MemoryStream();
@@ -224,20 +231,22 @@ namespace OpenLoco.ObjectService
 			var eObj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
+				.Include(x => x.DatObjects)
+				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
 		}
 
-		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTbl<TblLocoObject, TblLocoObjectPack>? eObj)
+		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTbl<TblObject, TblObjectPack>? eObj)
 		{
 			if (eObj == null || eObj.Object == null)
 			{
 				return Results.NotFound();
 			}
 
-			if (!ServerFolderManager.ObjectIndex.TryFind((eObj.Object.DatName, eObj.Object.DatChecksum), out var index))
+			var dat = eObj.Object.DatObjects.First();
+			if (!ServerFolderManager.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
@@ -253,53 +262,62 @@ namespace OpenLoco.ObjectService
 				logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder.", pathOnDisk);
 			}
 
-			var bytes = (returnObjBytes ?? false) && (obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco) && fileExists
+			var bytes = (returnObjBytes ?? false) && obj.ObjectSource is ObjectSource.Custom or ObjectSource.OpenLoco && fileExists
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
-			var dtoObject = new DtoObjectDescriptorWithMetadata(
+			var dtoObject = new DtoObjectDescriptor(
 				obj.Id,
 				obj.Name,
-				obj.DatName,
-				obj.DatChecksum,
-				//bytes, // todo: this doesn't exist now
+				obj.Description,
 				obj.ObjectSource,
 				obj.ObjectType,
 				obj.VehicleType,
-				obj.Description,
+				obj.CreatedDate,
+				obj.ModifiedDate,
+				obj.UploadedDate,
 				[.. eObj.Authors.Select(x => x.ToDtoEntry())],
-				obj.CreationDate,
-				obj.LastEditDate,
-				obj.UploadDate,
 				[.. eObj.Tags.Select(x => x.ToDtoEntry())],
 				[.. eObj.Packs.Select(x => x.ToDtoEntry())],
-				obj.Availability,
-				obj.Licence);
+				[.. obj.DatObjects.Select(x => x.ToDtoEntry())],
+				obj.Licence?.ToDtoEntry());
 
 			return Results.Ok(eObj.ToDtoDescriptor());
 		}
 
 		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123
-		public async Task<IResult> GetDatFile([FromQuery] string objectName, [FromQuery] uint checksum, LocoDb db)
+		public async Task<IResult> GetDatFile([FromQuery] string datName, [FromQuery] uint datChecksum, LocoDb db)
 		{
-			var obj = await db.Objects
-				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
+			var obj = await db.DatObjects
+				.Include(x => x.Object)
+				.Where(x => x.DatName == datName && x.DatChecksum == datChecksum)
 				.SingleOrDefaultAsync();
 
-			return ReturnFile(obj);
+			if (obj == null)
+			{
+				return Results.NotFound();
+			}
+
+			return ReturnFile(obj.Object, (obj.DatName, obj.DatChecksum), obj.xxHash3);
 		}
 
 		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
 		public async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, LocoDb db)
 		{
-			var obj = await db.Objects
-				.Where(x => x.Id == uniqueObjectId)
-				.SingleOrDefaultAsync();
+			var obj = await db.DatObjects
+				.Include(x => x.Object)
+				.Where(x => x.Object.Id == uniqueObjectId)
+				.FirstOrDefaultAsync(); // may be more than one dat file associated with this object, so just get the first for now
 
-			return ReturnFile(obj);
+			if (obj == null)
+			{
+				return Results.NotFound();
+			}
+
+			return ReturnFile(obj.Object, (obj.DatName, obj.DatChecksum), obj.xxHash3);
 		}
 
-		IResult ReturnFile(TblLocoObject? obj)
+		IResult ReturnFile(TblObject? obj, (string objectName, uint checksum)? datDetails, ulong? xxHash3)
 		{
 			if (obj == null)
 			{
@@ -311,14 +329,19 @@ namespace OpenLoco.ObjectService
 				return Results.Forbid();
 			}
 
-			if (!ServerFolderManager.ObjectIndex.TryFind((obj.DatName, obj.DatChecksum), out var index))
+			ObjectIndexEntry? entry = null;
+			if (datDetails != null && !ServerFolderManager.ObjectIndex.TryFind(datDetails.Value, out entry))
+			{
+				return Results.NotFound();
+			}
+			else if (xxHash3 != null && !ServerFolderManager.ObjectIndex.TryFind(xxHash3.Value, out entry))
 			{
 				return Results.NotFound();
 			}
 
 			const string contentType = "application/octet-stream";
 
-			var path = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename);
+			var path = Path.Combine(ServerFolderManager.ObjectsFolder, entry!.Filename);
 			return obj != null && File.Exists(path)
 				? Results.File(path, contentType, Path.GetFileName(path))
 				: Results.NotFound();
@@ -373,7 +396,7 @@ namespace OpenLoco.ObjectService
 				(await db.ObjectPacks
 					.Where(x => x.Id == uniqueId)
 					.Include(l => l.Licence)
-					.Select(x => new ExpandedTblPack<TblLocoObjectPack, TblLocoObject>(x, x.Objects, x.Authors, x.Tags))
+					.Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags))
 					.ToListAsync())
 				.Select(x => x.ToDtoDescriptor())
 				.OrderBy(x => x.Name));
@@ -430,7 +453,7 @@ namespace OpenLoco.ObjectService
 				return Results.BadRequest("Unable to accept file sizes > 5MB");
 			}
 
-			var ssrLogger = new Common.Logging.Logger();
+			var ssrLogger = new Logger();
 			if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
 			{
 				return Results.BadRequest("Provided data had invalid dat file headers");
@@ -448,7 +471,7 @@ namespace OpenLoco.ObjectService
 
 			if (db.DoesObjectExist(hdrs.S5, out var existingObject))
 			{
-				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadDate={existingObject!.UploadDate}");
+				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
 			}
 
 			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
@@ -460,7 +483,7 @@ namespace OpenLoco.ObjectService
 
 			logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
 
-			var creationDate = request.CreationDate;
+			var createdDate = request.CreatedDate;
 			var modifiedDate = request.ModifiedDate;
 
 			VehicleType? vehicleType = null;
@@ -469,28 +492,37 @@ namespace OpenLoco.ObjectService
 				vehicleType = veh.Type;
 			}
 
-			var locoTbl = new TblLocoObject()
+			var locoTbl = new TblObject()
 			{
-				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
-				DatName = hdrs.S5.Name,
-				DatChecksum = hdrs.S5.Checksum,
+				Name = uuid.ToString(),
+				Description = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}",
 				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
 				ObjectType = hdrs.S5.ObjectType,
 				VehicleType = vehicleType,
-				Description = string.Empty,
+				CreatedDate = createdDate,
+				ModifiedDate = modifiedDate,
+				UploadedDate = DateTimeOffset.UtcNow,
 				Authors = [],
-				CreationDate = creationDate,
-				LastEditDate = modifiedDate,
-				UploadDate = DateTimeOffset.UtcNow,
 				Tags = [],
 				ObjectPacks = [],
-				Availability = LocoObject == null ? ObjectAvailability.Unavailable : ObjectAvailability.AllGames,
 				Licence = null,
 			};
 
-			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, locoTbl.DatName, locoTbl.DatChecksum, locoTbl.ObjectType, locoTbl.ObjectSource, creationDate, modifiedDate, locoTbl.VehicleType));
+			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, hdrs.S5.Name, hdrs.S5.Checksum, request.xxHash3, uuid.ToString(), locoTbl.ObjectType, locoTbl.ObjectSource, createdDate, modifiedDate, locoTbl.VehicleType));
+			var addedObj = db.Objects.Add(locoTbl);
 
-			_ = db.Objects.Add(locoTbl);
+			var locoLookupTbl = new TblDatObject()
+			{
+				DatName = hdrs.S5.Name,
+				DatChecksum = hdrs.S5.Checksum,
+				xxHash3 = request.xxHash3,
+				ObjectId = addedObj.Entity.Id,
+				Object = locoTbl,
+			};
+			_ = db.DatObjects.Add(locoLookupTbl);
+
+			locoTbl.DatObjects.Add(locoLookupTbl);
+
 			_ = await db.SaveChangesAsync();
 
 			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);

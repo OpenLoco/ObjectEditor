@@ -32,7 +32,7 @@ namespace OpenLoco.Gui.Models
 
 		public ObjectIndex? ObjectIndexOnline { get; set; }
 
-		public Dictionary<int, DtoObjectDescriptorWithMetadata> OnlineCache { get; } = [];
+		public Dictionary<int, DtoObjectDescriptor> OnlineCache { get; } = [];
 
 		public PaletteMap PaletteMap { get; set; }
 
@@ -210,10 +210,21 @@ namespace OpenLoco.Gui.Models
 					Logger.Error($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no data");
 					return false;
 				}
+				else if (string.IsNullOrEmpty(cachedLocoObjDto.DatObjects.FirstOrDefault()?.DatBytes))
+				{
+					if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+					{
+						Logger.Warning("This is a vanilla object. The DAT file cannot be downloaded due to copyright. Any available metadata will still be shown.");
+					}
+
+					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Any available metadata will still be shown.");
+				}
 				else if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 				{
 					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Any available metadata will still be shown.");
 				}
+
+				Logger.Debug(cachedLocoObjDto.ToString());
 
 				// download for real
 				var datFile = Task.Run(async () => await Client.GetObjectFileAsync(WebClient, uniqueObjectId, Logger)).Result;
@@ -224,7 +235,7 @@ namespace OpenLoco.Gui.Models
 				}
 				else
 				{
-					var filename = Path.Combine(Settings.DownloadFolder, $"{cachedLocoObjDto.UniqueName}.dat");
+					var filename = Path.Combine(Settings.DownloadFolder, $"{cachedLocoObjDto.InternalName}.dat");
 					if (!File.Exists(filename))
 					{
 						File.WriteAllBytes(filename, datFile);
@@ -251,17 +262,29 @@ namespace OpenLoco.Gui.Models
 
 			if (cachedLocoObjDto != null)
 			{
-				metadata = new MetadataModel(cachedLocoObjDto.UniqueName, cachedLocoObjDto.DatName, cachedLocoObjDto.DatChecksum)
+				var firstLinkedDatFile = cachedLocoObjDto!.DatObjects.First();
+				if (firstLinkedDatFile.DatBytes?.Length > 0)
+				{
+					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(firstLinkedDatFile.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
+					fileInfo = obj.DatFileInfo;
+					locoObject = obj.LocoObject;
+					if (obj.LocoObject == null)
+					{
+						Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
+					}
+				}
+
+				metadata = new MetadataModel(cachedLocoObjDto.InternalName)
 				{
 					Description = cachedLocoObjDto.Description,
-					Authors = cachedLocoObjDto.Authors.Select(x => x.ToTable()).ToList(),
-					CreationDate = cachedLocoObjDto.CreationDate,
-					LastEditDate = cachedLocoObjDto.LastEditDate,
-					UploadDate = cachedLocoObjDto.UploadDate,
-					Tags = cachedLocoObjDto.Tags.Select(x => x.ToTable()).ToList(),
-					ObjectPacks = cachedLocoObjDto.ObjectPacks.Select(x => x.ToTable()).ToList(),
-					Availability = cachedLocoObjDto.Availability,
-					Licence = cachedLocoObjDto.Licence,
+					Authors = [.. cachedLocoObjDto.Authors.Select(x => x.ToTable())],
+					CreatedDate = cachedLocoObjDto.CreatedDate,
+					ModifiedDate = cachedLocoObjDto.ModifiedDate,
+					UploadedDate = cachedLocoObjDto.UploadedDate,
+					Tags = [.. cachedLocoObjDto.Tags.Select(x => x.ToTable())],
+					ObjectPacks = [.. cachedLocoObjDto.ObjectPacks.Select(x => x.ToTable())],
+					DatObjects = [.. cachedLocoObjDto.DatObjects.Select(x => x.ToTable())],
+					Licence = cachedLocoObjDto.Licence?.ToTable(),
 				};
 
 				if (locoObject != null)
@@ -298,7 +321,11 @@ namespace OpenLoco.Gui.Models
 			{
 				fileInfo = obj.Value.DatFileInfo;
 				locoObject = obj.Value.LocoObject;
-				metadata = new MetadataModel("<unknown>", fileInfo.S5Header.Name, fileInfo.S5Header.Checksum) { CreationDate = filesystemItem.CreatedDate, LastEditDate = filesystemItem.ModifiedDate }; // todo: look up the rest of the data from internet
+				metadata = new MetadataModel("<unknown>")
+				{
+					CreatedDate = filesystemItem.CreatedDate,
+					ModifiedDate = filesystemItem.ModifiedDate
+				}; // todo: look up the rest of the data from internet
 
 				if (locoObject != null)
 				{

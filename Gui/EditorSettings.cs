@@ -28,7 +28,7 @@ namespace OpenLoco.Gui
 			get => objDataDirectories ??= [];
 			set => objDataDirectories = value;
 		}
-		HashSet<string> objDataDirectories;
+		HashSet<string> objDataDirectories = [];
 		public bool AllowSavingAsVanillaObject { get; set; }
 		public bool AutoObjectDiscoveryAndUpload { get; set; }
 

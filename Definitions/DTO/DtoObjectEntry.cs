@@ -1,9 +1,16 @@
-using Definitions;
+using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Objects;
 
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoObjectEntry(
 		int Id,
-		string DatName,
-		uint DatChecksum) : IHasId;
+		string InternalName,
+		string? Description,
+		ObjectSource ObjectSource,
+		ObjectType ObjectType,
+		VehicleType? VehicleType,
+		DateTimeOffset? CreatedDate,
+		DateTimeOffset? ModifiedDate,
+		DateTimeOffset UploadedDate);
 }

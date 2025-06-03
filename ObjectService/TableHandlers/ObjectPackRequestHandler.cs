@@ -1,4 +1,3 @@
-using Definitions.Database.Objects;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
@@ -20,7 +19,7 @@ namespace ObjectService.TableHandlers
 				(await db.ObjectPacks
 					.Where(x => x.Id == id)
 					.Include(l => l.Licence)
-					.Select(x => new ExpandedTblPack<TblLocoObjectPack, TblLocoObject>(x, x.Objects, x.Authors, x.Tags))
+					.Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags))
 					.ToListAsync())
 				.Select(x => x.ToDtoDescriptor())
 				.OrderBy(x => x.Name));

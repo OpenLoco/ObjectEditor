@@ -1,4 +1,3 @@
-using Definitions.Database.Objects;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 
@@ -6,35 +5,46 @@ namespace OpenLoco.Definitions.DTO
 {
 	public static class DtoExtensions
 	{
-		public static DtoObjectDescriptorWithMetadata ToDtoDescriptor(this ExpandedTbl<TblLocoObject, TblLocoObjectPack> x)
-			=> new DtoObjectDescriptorWithMetadata(
+		public static DtoObjectDescriptor ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x)
+			=> new DtoObjectDescriptor(
 				x!.Object.Id,
 				x!.Object.Name,
-				x!.Object.DatName,
-				x!.Object.DatChecksum,
+				x!.Object.Description,
 				x!.Object.ObjectSource,
 				x!.Object.ObjectType,
 				x!.Object.VehicleType,
-				x!.Object.Description,
+				x!.Object.CreatedDate,
+				x!.Object.ModifiedDate,
+				x!.Object.UploadedDate,
 				[.. x.Authors.Select(x => x.ToDtoEntry())],
-				x!.Object.CreationDate,
-				x!.Object.LastEditDate,
-				x!.Object.UploadDate,
 				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				[.. x.Packs.Select(x => x.ToDtoEntry())],
-				x!.Object.Availability,
-				x!.Object.Licence);
+				[.. x.Object.DatObjects.Select(x => x.ToDtoEntry())],
+				x!.Object.Licence?.ToDtoEntry());
 
-		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this ExpandedTblPack<TblLocoObjectPack, TblLocoObject> x)
+		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this TblObjectPack x)
+			=> new(
+				x.Id,
+				x.Name,
+				x.Description,
+				x.CreatedDate,
+				x.ModifiedDate,
+				x.UploadedDate,
+				[.. x.Objects.Select(x => x.ToDtoEntry())],
+				[.. x.Authors.Select(x => x.ToDtoEntry())],
+				[.. x.Tags.Select(x => x.ToDtoEntry())],
+				x.Licence?.ToDtoEntry());
+
+		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this ExpandedTblPack<TblObjectPack, TblObject> x)
 			=> new(
 				x.Pack.Id,
 				x.Pack.Name,
 				x.Pack.Description,
+				x.Pack.CreatedDate,
+				x.Pack.ModifiedDate,
+				x.Pack.UploadedDate,
 				[.. x.Items.Select(x => x.ToDtoEntry())],
 				[.. x.Authors.Select(x => x.ToDtoEntry())],
-				x.Pack.CreationDate,
-				x.Pack.LastEditDate,
-				x.Pack.UploadDate,
 				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				x.Pack.Licence?.ToDtoEntry());
 
@@ -43,24 +53,29 @@ namespace OpenLoco.Definitions.DTO
 				x.Pack.Id,
 				x.Pack.Name,
 				x.Pack.Description,
+				x.Pack.CreatedDate,
+				x.Pack.ModifiedDate,
+				x.Pack.UploadedDate,
 				[.. x.Items.Select(x => x.ToDtoEntry())],
 				[.. x.Authors.Select(x => x.ToDtoEntry())],
-				x.Pack.CreationDate,
-				x.Pack.LastEditDate,
-				x.Pack.UploadDate,
 				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				x.Pack.Licence?.ToDtoEntry());
 
 		#region New
 
-		public static DtoObjectDescriptor ToDtoDescriptor(this TblLocoObject table)
-			=> new(table.Id, table.DatName, table.DatChecksum, table.ObjectSource, table.ObjectType, table.VehicleType, table.Availability, table.Name, table.Description, table.CreationDate, table.LastEditDate, table.UploadDate);
+		//public static DtoObjectDescriptor ToDtoDescriptor(this TblObject table)
+		//	=> new(table.Id, table.DatName, table.DatChecksum, table.ObjectSource, table.ObjectType, table.VehicleType, table.Availability, table.Name, table.Description, table.CreatedDate, table.ModifiedDate, table.UploadedDate);
 
-		public static DtoObjectEntry ToDtoEntry(this TblLocoObject table)
-			=> new(table.Id, table.DatName, table.DatChecksum);
+		public static DtoDatObjectEntry ToDtoEntry(this TblDatObject table)
+			=> new(table.Id, table.DatName, table.DatChecksum, table.xxHash3, table.ObjectId, null);
+		public static TblDatObject ToTable(this DtoDatObjectEntry dto)
+			=> new() { Id = dto.Id, DatName = dto.DatName, DatChecksum = dto.DatChecksum, xxHash3 = dto.xxHash3, ObjectId = dto.ObjectId, Object = null };
 
-		public static TblLocoObject ToTable(this DtoObjectEntry dto)
-			=> new() { Name = dto.DatName, DatName = dto.DatName, Id = dto.Id, DatChecksum = dto.DatChecksum };
+		public static DtoObjectEntry ToDtoEntry(this TblObject table)
+			=> new(table.Id, table.Name, table.Description, table.ObjectSource, table.ObjectType, table.VehicleType, table.CreatedDate, table.ModifiedDate, table.UploadedDate);
+
+		public static TblObject ToTable(this DtoObjectEntry dto)
+			=> new() { Id = dto.Id, Name = dto.InternalName, Description = dto.Description, ObjectSource = dto.ObjectSource, ObjectType = dto.ObjectType, VehicleType = dto.VehicleType, CreatedDate = dto.CreatedDate, ModifiedDate = dto.ModifiedDate, UploadedDate = dto.UploadedDate };
 
 		public static DtoScenarioEntry ToDtoEntry(this TblSC5File table)
 			=> new(table.Id, table.Name);
@@ -86,20 +101,19 @@ namespace OpenLoco.Definitions.DTO
 		public static TblLicence ToTable(this DtoLicenceEntry dto)
 			=> new() { Name = dto.Name, Id = dto.Id, Text = dto.LicenceText };
 
-		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoEntry(this TblLocoObjectPack x)
+		public static DtoItemPackEntry ToDtoEntry(this TblObjectPack x)
 			=> new(
 				x.Id,
 				x.Name,
 				x.Description,
-				[.. x.Objects.Select(x => x.ToDtoEntry())],
-				[.. x.Authors.Select(x => x.ToDtoEntry())],
-				x.CreationDate,
-				x.LastEditDate,
-				x.UploadDate,
-				[.. x.Tags.Select(x => x.ToDtoEntry())],
+				x.CreatedDate,
+				x.ModifiedDate,
+				x.UploadedDate,
 				x.Licence?.ToDtoEntry());
+		public static TblObjectPack ToTable(this DtoItemPackEntry dto)
+			=> new() { Id = dto.Id, Name = dto.Name, Description = dto.Description, CreatedDate = dto.CreatedDate, ModifiedDate = dto.ModifiedDate, UploadedDate = dto.UploadedDate, Licence = dto.Licence?.ToTable() };
 
-		public static TblLocoObjectPack ToTable(this DtoItemPackDescriptor<DtoObjectEntry> x)
+		public static TblObjectPack ToTable(this DtoItemPackDescriptor<DtoObjectEntry> x)
 			=> new()
 			{
 				Id = x.Id,
@@ -107,9 +121,9 @@ namespace OpenLoco.Definitions.DTO
 				Description = x.Description,
 				Objects = [.. x.Items.Select(x => x.ToTable())],
 				Authors = [.. x.Authors.Select(x => x.ToTable())],
-				CreationDate = x.CreationDate,
-				LastEditDate = x.LastEditDate,
-				UploadDate = x.UploadDate,
+				CreatedDate = x.CreatedDate,
+				ModifiedDate = x.ModifiedDate,
+				UploadedDate = x.UploadedDate,
 				Tags = [.. x.Tags.Select(x => x.ToTable())],
 				Licence = x.Licence?.ToTable()
 			};
@@ -119,11 +133,11 @@ namespace OpenLoco.Definitions.DTO
 				x.Id,
 				x.Name,
 				x.Description,
+				x.CreatedDate,
+				x.ModifiedDate,
+				x.UploadedDate,
 				[.. x.SC5Files.Select(x => x.ToDtoEntry())],
 				[.. x.Authors.Select(x => x.ToDtoEntry())],
-				x.CreationDate,
-				x.LastEditDate,
-				x.UploadDate,
 				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				x.Licence?.ToDtoEntry());
 
@@ -135,9 +149,9 @@ namespace OpenLoco.Definitions.DTO
 				Description = x.Description,
 				SC5Files = [.. x.Items.Select(x => x.ToTable())],
 				Authors = [.. x.Authors.Select(x => x.ToTable())],
-				CreationDate = x.CreationDate,
-				LastEditDate = x.LastEditDate,
-				UploadDate = x.UploadDate,
+				CreatedDate = x.CreatedDate,
+				ModifiedDate = x.ModifiedDate,
+				UploadedDate = x.UploadedDate,
 				Tags = [.. x.Tags.Select(x => x.ToTable())],
 				Licence = x.Licence?.ToTable()
 			};

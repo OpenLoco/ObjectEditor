@@ -6,8 +6,8 @@ namespace OpenLoco.Definitions.DTO
 		int Id,
 		string Name,
 		string? Description,
-		DateTimeOffset? CreationDate,
-		DateTimeOffset? LastEditDate,
-		DateTimeOffset UploadDate,
+		DateTimeOffset? CreatedDate,
+		DateTimeOffset? ModifiedDate,
+		DateTimeOffset UploadedDate,
 		DtoLicenceEntry? Licence) : IHasId;
 }

@@ -15,6 +15,7 @@ namespace OpenLoco.Gui.Models
 	public record FileSystemItemBase(
 		string Filename,
 		string DisplayName,
+		string InternalName,
 		DateTimeOffset? CreatedDate = null,
 		DateTimeOffset? ModifiedDate = null,
 		FileLocation? FileLocation = null,

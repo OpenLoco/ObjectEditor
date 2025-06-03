@@ -6,15 +6,17 @@ namespace OpenLoco.Definitions.DTO
 {
 	public record DtoObjectDescriptor(
 		int Id,
-		string DatName,
-		uint DatChecksum,
+		string InternalName,
+		string? Description,
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
-		ObjectAvailability ObjectAvailability,
-		string InternalName,
-		string? Description,
-		DateTimeOffset? CreationDate,
-		DateTimeOffset? LastEditDate,
-		DateTimeOffset UploadDate) : IHasId;
+		DateTimeOffset? CreatedDate,
+		DateTimeOffset? ModifiedDate,
+		DateTimeOffset UploadedDate,
+		ICollection<DtoAuthorEntry> Authors,
+		ICollection<DtoTagEntry> Tags,
+		ICollection<DtoItemPackEntry> ObjectPacks,
+		ICollection<DtoDatObjectEntry> DatObjects,
+		DtoLicenceEntry? Licence) : IHasId;
 }

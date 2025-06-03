@@ -11,14 +11,14 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    [Migration("20250112060337_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250602004808_AddObjectLookup")]
+    partial class AddObjectLookup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
                 {
@@ -61,9 +61,6 @@ namespace Definitions.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Availability")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("CreatedDate")
@@ -152,6 +149,39 @@ namespace Definitions.Migrations
                         .IsUnique();
 
                     b.ToTable("ObjectPacks");
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectLookupFromDat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint>("DatChecksum")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DatName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ObjectId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("xxHash3")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObjectId");
+
+                    b.HasIndex("xxHash3")
+                        .IsUnique();
+
+                    b.HasIndex("DatName", "DatChecksum")
+                        .IsUnique()
+                        .IsDescending(true, false);
+
+                    b.ToTable("ObjectDatLookups");
                 });
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5File", b =>
@@ -415,6 +445,17 @@ namespace Definitions.Migrations
                         .HasForeignKey("LicenceId");
 
                     b.Navigation("Licence");
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectLookupFromDat", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblObject", "Object")
+                        .WithMany()
+                        .HasForeignKey("ObjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Object");
                 });
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5File", b =>

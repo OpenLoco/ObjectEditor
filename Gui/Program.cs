@@ -13,7 +13,7 @@ namespace OpenLoco.Gui
 		[STAThread]
 		public static void Main(string[] args)
 		{
-			PreventRunningAsAdmin();
+			//PreventRunningAsAdmin();
 			_ = BuildAvaloniaApp()
 				.StartWithClassicDesktopLifetime(args);
 		}

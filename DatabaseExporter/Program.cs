@@ -1,5 +1,5 @@
 using Common.Json;
-using Definitions.Database.Objects;
+
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
@@ -26,12 +26,12 @@ foreach (var o in db.SC5Files
 	var obj = new SC5FileJsonRecord(
 		o.Object.Name,
 		o.Object.Description,
-		o.Authors.Select(a => a.Name).ToList(),
-		o.Tags.Select(t => t.Name).ToList(),
+		[.. o.Authors.Select(a => a.Name)],
+		[.. o.Tags.Select(t => t.Name)],
 		o.Object.Licence?.Name,
-		o.Object.CreationDate,
-		o.Object.LastEditDate,
-		o.Object.UploadDate,
+		o.Object.CreatedDate,
+		o.Object.ModifiedDate,
+		o.Object.UploadedDate,
 		o.Object.ObjectSource);
 
 	sc5Files.Add(obj);
@@ -54,12 +54,12 @@ foreach (var o in db.SC5FilePacks
 	var obj = new SC5FilePackJsonRecord(
 		o.Pack.Name,
 		o.Pack.Description,
-		o.Authors.Select(a => a.Name).ToList(),
-		o.Tags.Select(t => t.Name).ToList(),
+		[.. o.Authors.Select(a => a.Name)],
+		[.. o.Tags.Select(t => t.Name)],
 		o.Pack.Licence?.Name,
-		o.Pack.CreationDate,
-		o.Pack.LastEditDate,
-		o.Pack.UploadDate);
+		o.Pack.CreatedDate,
+		o.Pack.ModifiedDate,
+		o.Pack.UploadedDate);
 
 	sc5FilePacks.Add(obj);
 }
@@ -74,19 +74,19 @@ var objectPacks = new List<ObjectPackJsonRecord>();
 
 foreach (var o in db.ObjectPacks
 		.Include(l => l.Licence)
-		.Select(x => new ExpandedTblPack<TblLocoObjectPack, TblLocoObject>(x, x.Objects, x.Authors, x.Tags))
+		.Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags))
 		.ToList()
 		.OrderBy(x => x.Pack.Name))
 {
 	var objPack = new ObjectPackJsonRecord(
 		o.Pack.Name,
 		o.Pack.Description,
-		o.Authors.Select(a => a.Name).ToList(),
-		o.Tags.Select(t => t.Name).ToList(),
+		[.. o.Authors.Select(a => a.Name)],
+		[.. o.Tags.Select(t => t.Name)],
 		o.Pack.Licence?.Name,
-		o.Pack.CreationDate,
-		o.Pack.LastEditDate,
-		o.Pack.UploadDate);
+		o.Pack.CreatedDate,
+		o.Pack.ModifiedDate,
+		o.Pack.UploadedDate);
 
 	objectPacks.Add(objPack);
 }
@@ -99,25 +99,23 @@ var objectPacksJson = JsonSerializer.Serialize<IEnumerable<ObjectPackJsonRecord>
 
 var objects = new List<ObjectMetadata>();
 
-foreach (var o in db.Objects
-		.Include(l => l.Licence)
-		.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
+foreach (var o in db.DatObjects
+		.Include(x => x.Object)
+		.Include(x => x.Object.Licence)
+		.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x.Object, x.Object.Authors, x.Object.Tags, x.Object.ObjectPacks))
 		.ToList()
 		.OrderBy(x => x.Object.Name))
 {
 	var obj = new ObjectMetadata(
 		o.Object.Name,
-		o.Object.DatName,
-		o.Object.DatChecksum,
 		o.Object.Description,
-		o.Authors.Select(a => a.Name).ToList(),
-		o.Tags.Select(t => t.Name).ToList(),
-		o.Packs.Select(m => m.Name).ToList(),
+		[.. o.Authors.Select(a => a.Name)],
+		[.. o.Tags.Select(t => t.Name)],
+		[.. o.Packs.Select(m => m.Name)],
 		o.Object.Licence?.Name,
-		o.Object.Availability,
-		o.Object.CreationDate,
-		o.Object.LastEditDate,
-		o.Object.UploadDate,
+		o.Object.CreatedDate,
+		o.Object.ModifiedDate,
+		o.Object.UploadedDate,
 		o.Object.ObjectSource);
 	objects.Add(obj);
 }

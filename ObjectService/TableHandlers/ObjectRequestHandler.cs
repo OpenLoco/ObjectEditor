@@ -40,6 +40,7 @@ namespace ObjectService.TableHandlers
 				.Where(x => x.Id == id)
 				.Include(x => x.Licence)
 				.Include(x => x.DatObjects)
+				.Include(x => x.StringTable)
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 

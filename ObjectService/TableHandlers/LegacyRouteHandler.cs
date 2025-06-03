@@ -267,7 +267,6 @@ namespace ObjectService.TableHandlers
 				: null;
 
 			var dtoObject = new DtoObjectDescriptor(
-
 				obj.Id,
 				obj.Name,
 				obj.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
@@ -278,11 +277,12 @@ namespace ObjectService.TableHandlers
 				obj.CreatedDate,
 				obj.ModifiedDate,
 				obj.UploadedDate,
+				obj.Licence?.ToDtoEntry(),
 				[.. eObj.Authors.Select(x => x.ToDtoEntry())],
 				[.. eObj.Tags.Select(x => x.ToDtoEntry())],
 				[.. eObj.Packs.Select(x => x.ToDtoEntry())],
 				[.. obj.DatObjects.Select(x => x.ToDtoEntry())],
-				obj.Licence?.ToDtoEntry());
+				obj.StringTable.ToDtoDescriptor(obj.Id));
 
 			return Results.Ok(eObj.ToDtoDescriptor());
 		}

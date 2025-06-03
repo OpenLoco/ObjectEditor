@@ -17,11 +17,24 @@ namespace OpenLoco.Definitions.DTO
 				x!.Object.CreatedDate,
 				x!.Object.ModifiedDate,
 				x!.Object.UploadedDate,
+				x!.Object.Licence?.ToDtoEntry(),
 				[.. x.Authors.Select(x => x.ToDtoEntry())],
 				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				[.. x.Packs.Select(x => x.ToDtoEntry())],
 				[.. x.Object.DatObjects.Select(x => x.ToDtoEntry())],
-				x!.Object.Licence?.ToDtoEntry());
+				x.Object.StringTable.ToDtoDescriptor(x.Object.Id));
+
+		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTable> x, int ObjectId)
+		{
+			var table = x
+				.Select(x => x.ToDtoEntry())
+				.GroupBy(x => x.RowName)
+				.ToDictionary(
+					x => x.Key,
+					x => x.ToDictionary(x => x.RowLanguage, x => x.RowText));
+
+			return new DtoStringTableDescriptor(table, ObjectId);
+		}
 
 		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this TblObjectPack x)
 			=> new(
@@ -64,11 +77,17 @@ namespace OpenLoco.Definitions.DTO
 
 		#region New
 
+		public static DtoStringTableEntry ToDtoEntry(this TblStringTable table)
+			=> new(table.Id, table.RowName, table.RowLanguage, table.RowText, table.ObjectId);
+
+		public static TblStringTable ToTable(this DtoStringTableEntry dto)
+			=> new() { Id = dto.Id, RowName = dto.RowName, RowLanguage = dto.RowLanguage, RowText = dto.RowText, ObjectId = dto.ObjectId };
+
 		public static DtoDatObjectEntry ToDtoEntry(this TblDatObject table)
 			=> new(table.Id, table.DatName, table.DatChecksum, table.xxHash3, table.ObjectId);
 
 		public static TblDatObject ToTable(this DtoDatObjectEntry dto)
-			=> new() { Id = dto.Id, DatName = dto.DatName, DatChecksum = dto.DatChecksum, xxHash3 = dto.xxHash3, ObjectId = dto.ObjectId, Object = null };
+			=> new() { Id = dto.Id, DatName = dto.DatName, DatChecksum = dto.DatChecksum, xxHash3 = dto.xxHash3, ObjectId = dto.ObjectId };
 
 		public static DtoObjectEntry ToDtoEntry(this TblObject table)
 			=> new(table.Id, table.Name, table.DatObjects.FirstOrDefault()?.DatName ?? "<--->", table.Description, table.ObjectSource, table.ObjectType, table.VehicleType, table.CreatedDate, table.ModifiedDate, table.UploadedDate);

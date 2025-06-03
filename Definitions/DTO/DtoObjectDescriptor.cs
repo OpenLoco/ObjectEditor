@@ -15,9 +15,10 @@ namespace OpenLoco.Definitions.DTO
 		DateTimeOffset? CreatedDate,
 		DateTimeOffset? ModifiedDate,
 		DateTimeOffset UploadedDate,
+		DtoLicenceEntry? Licence,
 		ICollection<DtoAuthorEntry> Authors,
 		ICollection<DtoTagEntry> Tags,
 		ICollection<DtoItemPackEntry> ObjectPacks,
 		ICollection<DtoDatObjectEntry> DatObjects,
-		DtoLicenceEntry? Licence) : IHasId;
+		DtoStringTableDescriptor StringTable) : IHasId;
 }

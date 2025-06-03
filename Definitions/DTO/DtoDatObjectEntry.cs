@@ -1,5 +1,6 @@
 namespace OpenLoco.Definitions.DTO
 {
+
 	public record DtoDatObjectEntry(
 		int Id,
 		string DatName,

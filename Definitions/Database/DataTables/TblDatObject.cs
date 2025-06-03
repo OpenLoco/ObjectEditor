@@ -16,6 +16,6 @@ namespace OpenLoco.Definitions.Database
 
 		public required int ObjectId { get; set; } // FK property
 
-		public required TblObject Object { get; set; } // navigation property. a DAT object must ALWAYS reference an OL object
+		public TblObject Object { get; set; } // navigation property. a DAT object must ALWAYS reference an OL object
 	}
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenLoco.Definitions.Database;
 
@@ -10,9 +11,11 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDb))]
-    partial class LocoDbModelSnapshot : ModelSnapshot
+    [Migration("20250603102909_StringTableRowName")]
+    partial class StringTableRowName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -256,17 +259,16 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<byte>("Language")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("ObjectId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte>("RowLanguage")
+                    b.Property<int>("StringIndex")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("RowName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RowText")
+                    b.Property<string>("Text")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -274,7 +276,7 @@ namespace Definitions.Migrations
 
                     b.HasIndex("ObjectId");
 
-                    b.HasIndex("RowText");
+                    b.HasIndex("Text");
 
                     b.ToTable("TblStringTable");
                 });

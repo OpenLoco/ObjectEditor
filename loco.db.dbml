@@ -1,4 +1,4 @@
-Table __EFMigrationsHistory {
+Table __EFMigrationsHistory {TblAuthorTblObjectPack
   MigrationId TEXT pk
   ProductVersion TEXT
 }
@@ -20,9 +20,9 @@ Table ObjectPacks {
   Name TEXT
   Description TEXT
   LicenceId INTEGER
-  CreationDate TIMESTAMP
-  LastEditDate TIMESTAMP
-  UploadDate TIMESTAMP
+  CreatedDate TIMESTAMP
+  ModifiedDate TIMESTAMP
+  UploadedDate TIMESTAMP
 }
 Table Objects {
   Id INTEGER pk
@@ -35,18 +35,18 @@ Table Objects {
   Name TEXT
   Description TEXT
   LicenceId INTEGER
-  CreationDate TIMESTAMP
-  LastEditDate TIMESTAMP
-  UploadDate TIMESTAMP
+  CreatedDate TIMESTAMP
+  ModifiedDate TIMESTAMP
+  UploadedDate TIMESTAMP
 }
 Table SC5FilePacks {
   Id INTEGER pk
   Name TEXT
   Description TEXT
   LicenceId INTEGER
-  CreationDate TIMESTAMP
-  LastEditDate TIMESTAMP
-  UploadDate TIMESTAMP
+  CreatedDate TIMESTAMP
+  ModifiedDate TIMESTAMP
+  UploadedDate TIMESTAMP
 }
 Table SC5Files {
   Id INTEGER pk
@@ -54,27 +54,27 @@ Table SC5Files {
   Name TEXT
   Description TEXT
   LicenceId INTEGER
-  CreationDate TIMESTAMP
-  LastEditDate TIMESTAMP
-  UploadDate TIMESTAMP
+  CreatedDate TIMESTAMP
+  ModifiedDate TIMESTAMP
+  UploadedDate TIMESTAMP
 }
-Table TblAuthorTblLocoObjectPack {
+Table TblAuthorTblObjectPack {
   AuthorsId INTEGER pk
   ObjectPacksId INTEGER pk
 }
-Table TblLocoObjectPackTblTag {
+Table TblObjectPackTblTag {
   ObjectPacksId INTEGER pk
   TagsId INTEGER pk
 }
-Table TblAuthorTblLocoObject {
+Table TblAuthorTblObject {
   AuthorsId INTEGER pk
   ObjectsId INTEGER pk
 }
-Table TblLocoObjectTblLocoObjectPack {
+Table TblObjectTblObjectPack {
   ObjectPacksId INTEGER pk
   ObjectsId INTEGER pk
 }
-Table TblLocoObjectTblTag {
+Table TblObjectTblTag {
   ObjectsId INTEGER pk
   TagsId INTEGER pk
 }
@@ -104,7 +104,7 @@ Table StringTable {
   TableEntry INTEGER
   Text TEXT
 }
-Table TblLocoObjectTblStringTable {
+Table TblObjectTblStringTable {
   StringTableId INTEGER pk
   ObjectId INTEGER pk
 }
@@ -123,16 +123,16 @@ Ref: ObjectPacks.LicenceId > Licences.Id
 Ref: Objects.LicenceId > Licences.Id
 Ref: SC5FilePacks.LicenceId > Licences.Id
 Ref: SC5Files.LicenceId > Licences.Id
-Ref: TblAuthorTblLocoObjectPack.ObjectPacksId > ObjectPacks.Id
-Ref: TblAuthorTblLocoObjectPack.AuthorsId > Authors.Id
-Ref: TblLocoObjectPackTblTag.TagsId > Tags.Id
-Ref: TblLocoObjectPackTblTag.ObjectPacksId > ObjectPacks.Id
-Ref: TblAuthorTblLocoObject.ObjectsId > Objects.Id
-Ref: TblAuthorTblLocoObject.AuthorsId > Authors.Id
-Ref: TblLocoObjectTblLocoObjectPack.ObjectsId > Objects.Id
-Ref: TblLocoObjectTblLocoObjectPack.ObjectPacksId > ObjectPacks.Id
-Ref: TblLocoObjectTblTag.TagsId > Tags.Id
-Ref: TblLocoObjectTblTag.ObjectsId > Objects.Id
+Ref: TblAuthorTblObjectPack.ObjectPacksId > ObjectPacks.Id
+Ref: TblAuthorTblObjectPack.AuthorsId > Authors.Id
+Ref: TblObjectPackTblTag.TagsId > Tags.Id
+Ref: TblObjectPackTblTag.ObjectPacksId > ObjectPacks.Id
+Ref: TblAuthorTblObject.ObjectsId > Objects.Id
+Ref: TblAuthorTblObject.AuthorsId > Authors.Id
+Ref: TblObjectTblObjectPack.ObjectsId > Objects.Id
+Ref: TblObjectTblObjectPack.ObjectPacksId > ObjectPacks.Id
+Ref: TblObjectTblTag.TagsId > Tags.Id
+Ref: TblObjectTblTag.ObjectsId > Objects.Id
 Ref: TblAuthorTblSC5FilePack.SC5FilePacksId > SC5FilePacks.Id
 Ref: TblAuthorTblSC5FilePack.AuthorsId > Authors.Id
 Ref: TblSC5FilePackTblTag.TagsId > Tags.Id
@@ -143,6 +143,6 @@ Ref: TblSC5FileTblSC5FilePack.SC5FilesId > SC5Files.Id
 Ref: TblSC5FileTblSC5FilePack.SC5FilePacksId > SC5FilePacks.Id
 Ref: TblSC5FileTblTag.TagsId > Tags.Id
 Ref: TblSC5FileTblTag.SC5FilesId > SC5Files.Id
-Ref: TblLocoObjectTblStringTable.StringTableId > StringTable.Id
-Ref: TblLocoObjectTblStringTable.ObjectId > Objects.Id
+Ref: TblObjectTblStringTable.StringTableId > StringTable.Id
+Ref: TblObjectTblStringTable.ObjectId > Objects.Id
 Ref: ObjectLookupFromDat.ObjectId > Objects.Id

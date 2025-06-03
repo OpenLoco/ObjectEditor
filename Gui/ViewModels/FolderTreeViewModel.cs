@@ -233,7 +233,6 @@ namespace OpenLoco.Gui.ViewModels
 						x => x.SubNodes),
 
 					new TextColumn<FileSystemItemBase, string?>("Source", x => GetNiceObjectSource(x.ObjectSource)),
-					new TextColumn<FileSystemItemBase, string?>("UniqueName", x => x.UniqueName),
 					new TextColumn<FileSystemItemBase, FileLocation?>("Origin", x => x.FileLocation),
 					new TextColumn<FileSystemItemBase, string?>("Location", x => x.Filename),
 					new TextColumn<FileSystemItemBase, DateTimeOffset?>("Created", x => x.CreatedDate),
@@ -282,7 +281,7 @@ namespace OpenLoco.Gui.ViewModels
 			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.WebClient != null)
 			{
 				Model.ObjectIndexOnline = new ObjectIndex((await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-					.Select(x => new ObjectIndexEntry(x.Id.ToString(), null, null, null, x.UniqueName, x.ObjectType, x.ObjectSource, x.CreationDate, x.LastEditDate, x.VehicleType))
+					.Select(x => new ObjectIndexEntry(x.Id.ToString(), null, null, null, x.UniqueName, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType))
 					.ToList());
 			}
 

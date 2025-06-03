@@ -15,11 +15,11 @@ namespace OpenLoco.Definitions.Database
 
 		#region UserData
 
-		public DbSet<TblLocoObject> Objects => Set<TblLocoObject>();
-		public DbSet<TblLocoObjectPack> ObjectPacks => Set<TblLocoObjectPack>();
+		public DbSet<TblObject> Objects => Set<TblObject>();
+		public DbSet<TblDatObject> DatObjects => Set<TblDatObject>();
+		public DbSet<TblObjectPack> ObjectPacks => Set<TblObjectPack>();
 		public DbSet<TblSC5File> SC5Files => Set<TblSC5File>();
 		public DbSet<TblSC5FilePack> SC5FilePacks => Set<TblSC5FilePack>();
-		public DbSet<TblObjectLookupFromDat> ObjectDatLookups => Set<TblObjectLookupFromDat>();
 
 		#endregion
 
@@ -53,33 +53,33 @@ namespace OpenLoco.Definitions.Database
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			_ = modelBuilder.Entity<TblLocoObject>()
-				.Property(b => b.UploadDate)
+			_ = modelBuilder.Entity<TblObject>()
+				.Property(b => b.UploadedDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 			_ = modelBuilder.Entity<TblSC5File>()
-				.Property(b => b.UploadDate)
+				.Property(b => b.UploadedDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
-			_ = modelBuilder.Entity<TblLocoObjectPack>()
-				.Property(b => b.UploadDate)
+			_ = modelBuilder.Entity<TblObjectPack>()
+				.Property(b => b.UploadedDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 			_ = modelBuilder.Entity<TblSC5FilePack>()
-				.Property(b => b.UploadDate)
+				.Property(b => b.UploadedDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
 		}
 
-		public bool DoesObjectExist(S5Header s5Header, out TblLocoObject? existingObject)
+		public bool DoesObjectExist(S5Header s5Header, out TblObject? existingObject)
 		 => DoesObjectExist(s5Header.Name, s5Header.Checksum, out existingObject);
 
-		public bool DoesObjectExist(string datName, uint datChecksum, out TblLocoObject? existingObject)
+		public bool DoesObjectExist(string datName, uint datChecksum, out TblObject? existingObject)
 		{
 			// there's a unique constraint on the composite key index (DatName, DatChecksum), so check existence first so no exceptions
 			// this isn't necessary since we're already filtering in LINQ, but if we were adding to a non-empty database, this would be necessary
-			var existingEntityInDb = ObjectDatLookups
+			var existingEntityInDb = DatObjects
 				.SingleOrDefault(e => e.DatName == datName && e.DatChecksum == datChecksum)?.Object;
 
 			var existingEntityInChangeTracker = ChangeTracker.Entries()
-				.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblObjectLookupFromDat))
-				.Select(e => e.Entity as TblObjectLookupFromDat)
+				.Where(e => e.State == EntityState.Added && e.Entity.GetType() == typeof(TblDatObject))
+				.Select(e => e.Entity as TblDatObject)
 				.SingleOrDefault(e => e!.DatName == datName && e.DatChecksum == datChecksum)?.Object;
 
 			existingObject = existingEntityInDb ?? existingEntityInChangeTracker;

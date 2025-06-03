@@ -10,7 +10,7 @@ async static void WritexxHash3()
 	var logger = new Logger();
 	var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
 
-	var objects = await db.ObjectDatLookups.Include(x => x.Object).ToListAsync();
+	var objects = await db.DatObjects.Include(x => x.Object).ToListAsync();
 
 	var count = 0;
 	foreach (var lookup in objects)

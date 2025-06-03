@@ -133,9 +133,9 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				Authors = [.. db.Authors.Where(a => x.Authors.Contains(a.Name))],
 				Tags = [.. db.Tags.Where(a => x.Tags.Contains(a.Name))],
 				Licence = x.Licence == null ? null : db.Licences.Single(l => l.Name == x.Licence),
-				CreationDate = x.CreationDate,
-				LastEditDate = x.LastEditDate,
-				UploadDate = x.UploadDate,
+				CreatedDate = x.CreatedDate,
+				ModifiedDate = x.ModifiedDate,
+				UploadedDate = x.UploadedDate,
 			}));
 
 			_ = db.SaveChanges();
@@ -173,16 +173,16 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var objectPacks = JsonSerializer.Deserialize<IEnumerable<ObjectPackJsonRecord>>(File.ReadAllText(objectPacksJson), jsonOptions);
 		if (objectPacks != null)
 		{
-			db.AddRange(objectPacks.Select(x => new TblLocoObjectPack()
+			db.AddRange(objectPacks.Select(x => new TblObjectPack()
 			{
 				Name = x.Name,
 				Description = x.Description,
 				Authors = [.. db.Authors.Where(a => x.Authors.Contains(a.Name))],
 				Tags = [.. db.Tags.Where(a => x.Tags.Contains(a.Name))],
 				Licence = x.Licence == null ? null : db.Licences.Single(l => l.Name == x.Licence),
-				CreationDate = null,
-				LastEditDate = null,
-				UploadDate = DateTimeOffset.Now
+				CreatedDate = null,
+				ModifiedDate = null,
+				UploadedDate = DateTimeOffset.Now
 			}));
 			_ = db.SaveChanges();
 		}
@@ -220,7 +220,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			var objectPacks = meta.ObjectPacks == null ? null : db.ObjectPacks.Where(x => meta.ObjectPacks.Contains(x.Name)).ToList();
 			var licence = meta.Licence == null ? null : db.Licences.Where(x => x.Name == meta.Licence).First();
 
-			var tblLocoObject = new TblLocoObject()
+			var tblLocoObject = new TblObject()
 			{
 				Name = meta!.UniqueName,
 				ObjectSource = objIndex.ObjectSource,
@@ -228,18 +228,18 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				VehicleType = objIndex.VehicleType,
 				Description = meta?.Description,
 				Authors = authors ?? [],
-				CreationDate = creationTime,
-				LastEditDate = null,
-				UploadDate = DateTimeOffset.Now,
+				CreatedDate = creationTime,
+				ModifiedDate = null,
+				UploadedDate = DateTimeOffset.Now,
 				Tags = tags ?? [],
 				ObjectPacks = objectPacks ?? [],
-				LinkedDatObjects = [],
+				DatObjects = [],
 				Licence = licence,
 			};
 
 			var addedObj = db.Add(tblLocoObject);
 
-			var locoLookupTbl = new TblObjectLookupFromDat()
+			var locoLookupTbl = new TblDatObject()
 			{
 				DatName = objIndex.DatName,
 				DatChecksum = objIndex.DatChecksum.Value,
@@ -247,9 +247,9 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				ObjectId = addedObj.Entity.Id,
 				Object = tblLocoObject,
 			};
-			_ = db.ObjectDatLookups.Add(locoLookupTbl);
+			_ = db.DatObjects.Add(locoLookupTbl);
 
-			tblLocoObject.LinkedDatObjects.Add(locoLookupTbl);
+			tblLocoObject.DatObjects.Add(locoLookupTbl);
 		}
 
 		_ = db.SaveChanges();

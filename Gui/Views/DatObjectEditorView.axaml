@@ -95,13 +95,13 @@
 								<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="4" />
 
 								<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Creation Date" Margin="4" />
-								<DatePicker Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreationDate}" IsEnabled="False" Margin="4" />
+								<DatePicker Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreatedDate}" IsEnabled="False" Margin="4" />
 
 								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Last Edit Date" Margin="4"/>
-								<DatePicker Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding LastEditDate}" IsEnabled="False" Margin="4" />
+								<DatePicker Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding ModifiedDate}" IsEnabled="False" Margin="4" />
 
 								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Upload Date" Margin="4"/>
-								<DatePicker Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadDate}" IsEnabled="False" Margin="4" />
+								<DatePicker Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadedDate}" IsEnabled="False" Margin="4" />
 
 								<TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
 								<TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="4" />

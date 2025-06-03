@@ -19,18 +19,18 @@ namespace OpenLoco.Gui.Models
 		[Browsable(false)]
 		public ICollection<TblAuthor> Authors { get; set; }
 
-		public DateTimeOffset? CreationDate { get; set; }
+		public DateTimeOffset? CreatedDate { get; set; }
 
-		public DateTimeOffset? LastEditDate { get; set; }
+		public DateTimeOffset? ModifiedDate { get; set; }
 
-		public DateTimeOffset UploadDate { get; set; }
+		public DateTimeOffset UploadedDate { get; set; }
 
 		[Browsable(false)]
 
 		public ICollection<TblTag> Tags { get; set; }
 
 		[Browsable(false)]
-		public ICollection<TblLocoObjectPack> ObjectPacks { get; set; }
+		public ICollection<TblObjectPack> ObjectPacks { get; set; }
 
 		public TblLicence? Licence { get; set; }
 	}

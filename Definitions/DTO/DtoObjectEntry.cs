@@ -10,7 +10,7 @@ namespace OpenLoco.Definitions.DTO
 	ObjectSource ObjectSource,
 	ObjectType ObjectType,
 	VehicleType? VehicleType,
-	DateTimeOffset? CreationDate,
-	DateTimeOffset? LastEditDate,
-	DateTimeOffset UploadDate);
+	DateTimeOffset? CreatedDate,
+	DateTimeOffset? ModifiedDate,
+	DateTimeOffset UploadedDate);
 }

@@ -2,8 +2,8 @@ namespace OpenLoco.Definitions.Database
 {
 	public interface IDbReferenceData
 	{
-		public int Id { get; set; }
+		int Id { get; set; }
 
-		public string Name { get; set; }
+		string Name { get; set; }
 	}
 }

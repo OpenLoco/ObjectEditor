@@ -11,12 +11,12 @@ namespace OpenLoco.Definitions.DTO
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
-		DateTimeOffset? CreationDate,
-		DateTimeOffset? LastEditDate,
-		DateTimeOffset UploadDate,
+		DateTimeOffset? CreatedDate,
+		DateTimeOffset? ModifiedDate,
+		DateTimeOffset UploadedDate,
 		ICollection<TblAuthor> Authors,
 		ICollection<TblTag> Tags,
-		ICollection<TblLocoObjectPack> ObjectPacks,
+		ICollection<TblObjectPack> ObjectPacks,
 		ICollection<DtoDatObjectEntry> LinkedDatObjects,
 		TblLicence? Licence);
 }

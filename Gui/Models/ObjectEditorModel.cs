@@ -261,9 +261,9 @@ namespace OpenLoco.Gui.Models
 				{
 					Description = cachedLocoObjDto.Description,
 					Authors = cachedLocoObjDto.Authors,
-					CreationDate = cachedLocoObjDto.CreationDate,
-					LastEditDate = cachedLocoObjDto.LastEditDate,
-					UploadDate = cachedLocoObjDto.UploadDate,
+					CreatedDate = cachedLocoObjDto.CreatedDate,
+					ModifiedDate = cachedLocoObjDto.ModifiedDate,
+					UploadedDate = cachedLocoObjDto.UploadedDate,
 					Tags = cachedLocoObjDto.Tags,
 					ObjectPacks = cachedLocoObjDto.ObjectPacks,
 					Licence = cachedLocoObjDto.Licence,
@@ -303,7 +303,7 @@ namespace OpenLoco.Gui.Models
 			{
 				fileInfo = obj.Value.DatFileInfo;
 				locoObject = obj.Value.LocoObject;
-				metadata = new MetadataModel("<unknown>", fileInfo.S5Header.Name, fileInfo.S5Header.Checksum) { CreationDate = filesystemItem.CreatedDate, LastEditDate = filesystemItem.ModifiedDate }; // todo: look up the rest of the data from internet
+				metadata = new MetadataModel("<unknown>", fileInfo.S5Header.Name, fileInfo.S5Header.Checksum) { CreatedDate = filesystemItem.CreatedDate, ModifiedDate = filesystemItem.ModifiedDate }; // todo: look up the rest of the data from internet
 
 				if (locoObject != null)
 				{

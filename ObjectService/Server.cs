@@ -50,7 +50,7 @@ namespace OpenLoco.ObjectService
 			[FromQuery] ObjectSource? objectSource,
 			LocoDb db)
 		{
-			var query = db.ObjectDatLookups
+			var query = db.DatObjects
 				.AsQueryable();
 
 			#region Query Construction
@@ -119,30 +119,15 @@ namespace OpenLoco.ObjectService
 		}
 
 		// eg: https://localhost:7230/v1/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		public async Task<IResult> GetDat([FromQuery] string objectName, [FromQuery] uint checksum, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetDat([FromQuery] string datName, [FromQuery] uint datChecksum, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
 		{
-			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", objectName, checksum);
+			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", datName, datChecksum);
 
-			//var lookup = await db.ObjectDatLookups
-			//	.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
-			//	.ToListAsync();
-
-			//if (lookup.Count == 0)
-			//{
-			//	return Results.NotFound();
-			//}
-
-			//if (lookup.Count > 1)
-			//{
-			//	return Results.Conflict();
-			//}
-
-			var eObj = await db.ObjectDatLookups
-				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
+			var eObj = await db.DatObjects
+				.Where(x => x.DatName == datName && x.DatChecksum == datChecksum)
 				.Include(x => x.Object)
 				.Include(x => x.Object.Licence)
-				//.Include(x => x.Object.LinkedDatObjects)
-				.Select(x => new ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>(x.Object, x.Object.LinkedDatObjects, x.Object.Authors, x.Object.Tags, x.Object.ObjectPacks))
+				.Select(x => new ExpandedTblLookup<TblObject, TblDatObject, TblObjectPack>(x.Object, x.Object.DatObjects, x.Object.Authors, x.Object.Tags, x.Object.ObjectPacks))
 				.SingleOrDefaultAsync();
 
 			return await ReturnObject(returnObjBytes, logger, eObj);
@@ -160,7 +145,7 @@ namespace OpenLoco.ObjectService
 				return Results.NotFound();
 			}
 
-			var lookup = await db.ObjectDatLookups.Where(x => x.ObjectId == obj.Id).SingleOrDefaultAsync();
+			var lookup = await db.DatObjects.Where(x => x.ObjectId == obj.Id).SingleOrDefaultAsync();
 			if (lookup == null)
 			{
 				return Results.NotFound();
@@ -228,27 +213,14 @@ namespace OpenLoco.ObjectService
 			var eObj = await db.Objects
 				.Where(x => x.Id == uniqueObjectId)
 				.Include(x => x.Licence)
-				.Select(x => new ExpandedTbl<TblLocoObject, TblLocoObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
+				.Include(x => x.DatObjects)
+				.Select(x => new ExpandedTblLookup<TblObject, TblDatObject, TblObjectPack>(x, x.DatObjects, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
-			if (eObj == null || eObj.Object == null)
-			{
-				return Results.NotFound();
-			}
-
-			var lookup = await db.ObjectDatLookups
-				.Where(x => x.ObjectId == eObj.Object.Id)
-				.SingleOrDefaultAsync();
-
-			if (lookup == null)
-			{
-				return Results.NotFound();
-			}
-
-			return await ReturnObject(returnObjBytes, logger, new ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>(eObj.Object, eObj.Object.LinkedDatObjects, eObj.Authors, eObj.Tags, eObj.Packs));
+			return await ReturnObject(returnObjBytes, logger, eObj);
 		}
 
-		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTblLookup<TblLocoObject, TblObjectLookupFromDat, TblLocoObjectPack>? eObj)
+		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<Server> logger, ExpandedTblLookup<TblObject, TblDatObject, TblObjectPack>? eObj)
 		{
 			if (eObj == null || eObj.Object == null || eObj.Lookups == null)
 			{
@@ -282,13 +254,13 @@ namespace OpenLoco.ObjectService
 				obj.ObjectSource,
 				obj.ObjectType,
 				obj.VehicleType,
-				obj.CreationDate,
-				obj.LastEditDate,
-				obj.UploadDate,
+				obj.CreatedDate,
+				obj.ModifiedDate,
+				obj.UploadedDate,
 				eObj.Authors,
 				eObj.Tags,
 				eObj.Packs,
-				[.. obj.LinkedDatObjects.Select(x => x.ToDtoDescriptor())],
+				[.. obj.DatObjects.Select(x => x.ToDtoDescriptor())],
 				obj.Licence);
 
 			return Results.Ok(dtoObject);
@@ -297,7 +269,7 @@ namespace OpenLoco.ObjectService
 		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=TTRUCK1&checksum=3787598413
 		public async Task<IResult> GetDatFile([FromQuery] string objectName, [FromQuery] uint checksum, LocoDb db)
 		{
-			var obj = await db.ObjectDatLookups
+			var obj = await db.DatObjects
 				.Include(x => x.Object)
 				.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
 				.SingleOrDefaultAsync();
@@ -308,7 +280,7 @@ namespace OpenLoco.ObjectService
 		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
 		public async Task<IResult> GetObjectFile([FromQuery] ulong? xxHash3, LocoDb db)
 		{
-			var obj = await db.ObjectDatLookups
+			var obj = await db.DatObjects
 				.Include(x => x.Object)
 				.Where(x => x.xxHash3 == xxHash3)
 				.SingleOrDefaultAsync();
@@ -316,7 +288,7 @@ namespace OpenLoco.ObjectService
 			return ReturnFile(obj?.Object, null, xxHash3);
 		}
 
-		IResult ReturnFile(TblLocoObject? obj, (string objectName, uint checksum)? datDetails, ulong? xxHash3)
+		IResult ReturnFile(TblObject? obj, (string objectName, uint checksum)? datDetails, ulong? xxHash3)
 		{
 			if (obj == null)
 			{
@@ -395,7 +367,7 @@ namespace OpenLoco.ObjectService
 				(await db.ObjectPacks
 					.Where(x => x.Id == uniqueId)
 					.Include(l => l.Licence)
-					.Select(x => new ExpandedTblPack<TblLocoObjectPack, TblLocoObject>(x, x.Objects, x.Authors, x.Tags))
+					.Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags))
 					.ToListAsync())
 				.Select(x => x.ToDtoDescriptor())
 				.OrderBy(x => x.Name));
@@ -470,7 +442,7 @@ namespace OpenLoco.ObjectService
 
 			if (db.DoesObjectExist(hdrs.S5, out var existingObject))
 			{
-				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadDate={existingObject!.UploadDate}");
+				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
 			}
 
 			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
@@ -482,7 +454,7 @@ namespace OpenLoco.ObjectService
 
 			logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
 
-			var creationDate = request.CreationDate;
+			var creationDate = request.CreatedDate;
 			var modifiedDate = request.ModifiedDate;
 
 			VehicleType? vehicleType = null;
@@ -491,7 +463,7 @@ namespace OpenLoco.ObjectService
 				vehicleType = veh.Type;
 			}
 
-			var locoTbl = new TblLocoObject()
+			var locoTbl = new TblObject()
 			{
 				Name = uuid.ToString(), // same as DB seeder name
 				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
@@ -499,9 +471,9 @@ namespace OpenLoco.ObjectService
 				VehicleType = vehicleType,
 				Description = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}",
 				Authors = [],
-				CreationDate = creationDate,
-				LastEditDate = modifiedDate,
-				UploadDate = DateTimeOffset.UtcNow,
+				CreatedDate = creationDate,
+				ModifiedDate = modifiedDate,
+				UploadedDate = DateTimeOffset.UtcNow,
 				Tags = [],
 				ObjectPacks = [],
 				Licence = null,
@@ -510,7 +482,7 @@ namespace OpenLoco.ObjectService
 			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, hdrs.S5.Name, hdrs.S5.Checksum, request.xxHash3, uuid.ToString(), locoTbl.ObjectType, locoTbl.ObjectSource, creationDate, modifiedDate, locoTbl.VehicleType));
 			var addedObj = db.Objects.Add(locoTbl);
 
-			var locoLookupTbl = new TblObjectLookupFromDat()
+			var locoLookupTbl = new TblDatObject()
 			{
 				DatName = hdrs.S5.Name,
 				DatChecksum = hdrs.S5.Checksum,
@@ -518,9 +490,9 @@ namespace OpenLoco.ObjectService
 				ObjectId = addedObj.Entity.Id,
 				Object = locoTbl,
 			};
-			_ = db.ObjectDatLookups.Add(locoLookupTbl);
+			_ = db.DatObjects.Add(locoLookupTbl);
 
-			locoTbl.LinkedDatObjects.Add(locoLookupTbl);
+			locoTbl.DatObjects.Add(locoLookupTbl);
 
 			_ = await db.SaveChangesAsync();
 

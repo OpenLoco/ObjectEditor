@@ -9,8 +9,8 @@ namespace OpenLoco.Definitions.SourceData
 		List<string> Tags,
 		List<string> ObjectPacks,
 		string? Licence,
-		DateTimeOffset? CreationDate,
-		DateTimeOffset? LastEditDate,
-		DateTimeOffset UploadDate,
+		DateTimeOffset? CreatedDate,
+		DateTimeOffset? ModifiedDate,
+		DateTimeOffset UploadedDate,
 		ObjectSource ObjectSource);
 }

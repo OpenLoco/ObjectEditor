@@ -5,7 +5,7 @@ namespace OpenLoco.Definitions.DTO
 {
 	public static class DtoExtensions
 	{
-		public static DtoObjectEntry ToDtoEntry(this TblLocoObject x)
+		public static DtoObjectEntry ToDtoEntry(this TblObject x)
 			=> new(
 				x.Id,
 				x.Name,
@@ -13,14 +13,14 @@ namespace OpenLoco.Definitions.DTO
 				x.ObjectSource,
 				x.ObjectType,
 				x.VehicleType,
-				x.CreationDate,
-				x.LastEditDate,
-				x.UploadDate);
+				x.CreatedDate,
+				x.ModifiedDate,
+				x.UploadedDate);
 
-		public static DtoObjectEntry ToDtoEntry(this TblObjectLookupFromDat x)
+		public static DtoObjectEntry ToDtoEntry(this TblDatObject x)
 			=> x.Object.ToDtoEntry();
 
-		public static DtoDatObjectEntry ToDtoDescriptor(this TblObjectLookupFromDat x)
+		public static DtoDatObjectEntry ToDtoDescriptor(this TblDatObject x)
 			=> new(
 				x.Id,
 				x.DatName,
@@ -39,31 +39,31 @@ namespace OpenLoco.Definitions.DTO
 				x.Id,
 				x.Name,
 				x.Description,
-				x.CreationDate,
-				x.LastEditDate,
-				x.UploadDate,
+				x.CreatedDate,
+				x.ModifiedDate,
+				x.UploadedDate,
 				x.Licence);
 
-		public static DtoItemPackEntry ToDtoEntry(this TblLocoObjectPack x)
+		public static DtoItemPackEntry ToDtoEntry(this TblObjectPack x)
 			=> new(
 				x.Id,
 				x.Name,
 				x.Description,
-				x.CreationDate,
-				x.LastEditDate,
-				x.UploadDate,
+				x.CreatedDate,
+				x.ModifiedDate,
+				x.UploadedDate,
 				x.Licence);
 
-		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this ExpandedTblPack<TblLocoObjectPack, TblLocoObject> x)
+		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this ExpandedTblPack<TblObjectPack, TblObject> x)
 			=> new(
 				x.Pack.Id,
 				x.Pack.Name,
 				x.Pack.Description,
+				x.Pack.CreatedDate,
+				x.Pack.ModifiedDate,
+				x.Pack.UploadedDate,
 				[.. x.Items.Select(x => x.ToDtoEntry())],
 				x.Authors,
-				x.Pack.CreationDate,
-				x.Pack.LastEditDate,
-				x.Pack.UploadDate,
 				x.Tags,
 				x.Pack.Licence);
 
@@ -72,11 +72,11 @@ namespace OpenLoco.Definitions.DTO
 				x.Pack.Id,
 				x.Pack.Name,
 				x.Pack.Description,
+				x.Pack.CreatedDate,
+				x.Pack.ModifiedDate,
+				x.Pack.UploadedDate,
 				[.. x.Items.Select(x => x.ToDtoEntry())],
 				x.Authors,
-				x.Pack.CreationDate,
-				x.Pack.LastEditDate,
-				x.Pack.UploadDate,
 				x.Tags,
 				x.Pack.Licence);
 	}

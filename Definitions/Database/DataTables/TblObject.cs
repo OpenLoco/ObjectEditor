@@ -14,5 +14,7 @@ namespace OpenLoco.Definitions.Database
 		public ICollection<TblObjectPack> ObjectPacks { get; set; } = []; // aka modpack
 
 		public ICollection<TblDatObject> DatObjects { get; set; } = []; // the DAT objects that created or reference this OpenLoco object. May be 0, may be multiple
+
+		public ICollection<TblStringTable> StringTable { get; set; } = [];
 	}
 }

@@ -267,8 +267,10 @@ namespace ObjectService.TableHandlers
 				: null;
 
 			var dtoObject = new DtoObjectDescriptor(
+
 				obj.Id,
 				obj.Name,
+				obj.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
 				obj.Description,
 				obj.ObjectSource,
 				obj.ObjectType,

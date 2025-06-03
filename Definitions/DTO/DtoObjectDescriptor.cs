@@ -7,6 +7,7 @@ namespace OpenLoco.Definitions.DTO
 	public record DtoObjectDescriptor(
 		int Id,
 		string InternalName,
+		string DisplayName,
 		string? Description,
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,

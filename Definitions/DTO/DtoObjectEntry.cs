@@ -6,6 +6,7 @@ namespace OpenLoco.Definitions.DTO
 	public record DtoObjectEntry(
 		int Id,
 		string InternalName,
+		string DisplayName,
 		string? Description,
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,

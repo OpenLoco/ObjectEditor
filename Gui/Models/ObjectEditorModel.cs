@@ -226,9 +226,7 @@ namespace OpenLoco.Gui.Models
 
 				Logger.Debug(cachedLocoObjDto.ToString());
 
-				// download for real
-				var datFile = Task.Run(async () => await Client.GetObjectFileAsync(WebClient, uniqueObjectId, Logger)).Result;
-
+				var datFile = Convert.FromBase64String(cachedLocoObjDto.DatObjects.First().DatBytes);
 				if (datFile == null || datFile.Length == 0)
 				{
 					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Any available metadata will still be shown.");
@@ -251,8 +249,9 @@ namespace OpenLoco.Gui.Models
 					}
 				}
 
-				Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");
+				Logger.Info($"Downloaded object \"{filesystemItem.DisplayName}\" with unique id {uniqueObjectId} and added it to the local cache");
 				Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={cachedLocoObjDto?.Licence}");
+
 				OnlineCache.Add(uniqueObjectId, cachedLocoObjDto!);
 			}
 			else
@@ -272,6 +271,10 @@ namespace OpenLoco.Gui.Models
 					{
 						Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
 					}
+				}
+				else
+				{
+					Logger.Error($"Caches object {filesystemItem.DisplayName} had no data in DatBytes");
 				}
 
 				metadata = new MetadataModel(cachedLocoObjDto.InternalName)
@@ -403,7 +406,7 @@ namespace OpenLoco.Gui.Models
 					exception = true;
 				}
 
-				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DatName))))
+				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DisplayName))))
 				{
 					Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
 					await RecreateIndex(directory, progress).ConfigureAwait(false);
@@ -475,8 +478,8 @@ namespace OpenLoco.Gui.Models
 			Logger.Debug("Comparing local objects to object repository");
 
 			var localButNotOnline = ObjectIndex.Objects.ExceptBy(ObjectIndexOnline.Objects.Select(
-				x => (x.DatName, x.DatChecksum)),
-				x => (x.DatName, x.DatChecksum)).ToList();
+				x => (x.DisplayName, x.DatChecksum)),
+				x => (x.DisplayName, x.DatChecksum)).ToList();
 
 			if (localButNotOnline.Count != 0)
 			{

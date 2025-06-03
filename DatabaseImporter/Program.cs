@@ -200,14 +200,14 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => x.InternalName, x => x);
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
 
-		foreach (var objIndex in index!.Objects.DistinctBy(x => (x.DatName, x.DatChecksum)))
+		foreach (var objIndex in index!.Objects.DistinctBy(x => (x.DisplayName, x.DatChecksum)))
 		{
-			var metadataKey = objIndex.DatName; // should be InternalName
+			var metadataKey = objIndex.DisplayName; // should be InternalName
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{
 				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
 				meta = newMetadata;
-				objectMetadataDict.Add(objIndex.DatName, newMetadata);
+				objectMetadataDict.Add(objIndex.DisplayName, newMetadata);
 			}
 
 			var filename = Path.Combine(objDirectory, objIndex.Filename);
@@ -241,7 +241,7 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 
 			var locoLookupTbl = new TblDatObject()
 			{
-				DatName = objIndex.DatName,
+				DatName = objIndex.DisplayName,
 				DatChecksum = objIndex.DatChecksum.Value,
 				xxHash3 = objIndex.xxHash3.Value,
 				ObjectId = addedObj.Entity.Id,

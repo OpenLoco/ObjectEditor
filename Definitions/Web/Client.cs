@@ -8,8 +8,8 @@ namespace OpenLoco.Definitions.Web
 {
 	public static class Client
 	{
-		public static async Task<IEnumerable<DtoObjectDescriptor>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
-			=> await SendRequestAsync<IEnumerable<DtoObjectDescriptor>?>(client, Routes.Objects, ReadJsonContentAsync<IEnumerable<DtoObjectDescriptor>?>, logger) ?? [];
+		public static async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
+			=> await SendRequestAsync<IEnumerable<DtoObjectEntry>?>(client, Routes.Objects, ReadJsonContentAsync<IEnumerable<DtoObjectEntry>?>, logger) ?? [];
 
 		public static async Task<DtoObjectDescriptor?> GetObjectAsync(HttpClient client, int id, ILogger? logger = null)
 			=> await SendRequestAsync<DtoObjectDescriptor?>(client, Routes.Objects + $"/{id}", ReadJsonContentAsync<DtoObjectDescriptor?>, logger);
@@ -17,10 +17,10 @@ namespace OpenLoco.Definitions.Web
 		public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, int id, ILogger? logger = null)
 			=> await SendRequestAsync<byte[]?>(client, Routes.Objects + $"/{id}/file", ReadBinaryContentAsync, logger);
 
-		async static Task<T?> ReadJsonContentAsync<T>(HttpContent content)
+		static async Task<T?> ReadJsonContentAsync<T>(HttpContent content)
 			=> await content.ReadFromJsonAsync<T?>();
 
-		async static Task<byte[]?> ReadBinaryContentAsync(HttpContent content)
+		static async Task<byte[]?> ReadBinaryContentAsync(HttpContent content)
 		{
 			await using (var stream = await content.ReadAsStreamAsync())
 			await using (var memoryStream = new MemoryStream())
@@ -39,6 +39,7 @@ namespace OpenLoco.Definitions.Web
 					logger?.Error($"Unable to create a URI from base=\"{client.BaseAddress}\" and route=\"{route}\"");
 					return default;
 				}
+
 				logger?.Debug($"Querying {uri}");
 				using var response = await client.GetAsync(uri);
 

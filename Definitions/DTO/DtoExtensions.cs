@@ -9,6 +9,7 @@ namespace OpenLoco.Definitions.DTO
 			=> new DtoObjectDescriptor(
 				x!.Object.Id,
 				x!.Object.Name,
+				x!.Object.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
 				x!.Object.Description,
 				x!.Object.ObjectSource,
 				x!.Object.ObjectType,
@@ -63,16 +64,14 @@ namespace OpenLoco.Definitions.DTO
 
 		#region New
 
-		//public static DtoObjectDescriptor ToDtoDescriptor(this TblObject table)
-		//	=> new(table.Id, table.DatName, table.DatChecksum, table.ObjectSource, table.ObjectType, table.VehicleType, table.Availability, table.Name, table.Description, table.CreatedDate, table.ModifiedDate, table.UploadedDate);
-
 		public static DtoDatObjectEntry ToDtoEntry(this TblDatObject table)
-			=> new(table.Id, table.DatName, table.DatChecksum, table.xxHash3, table.ObjectId, null);
+			=> new(table.Id, table.DatName, table.DatChecksum, table.xxHash3, table.ObjectId);
+
 		public static TblDatObject ToTable(this DtoDatObjectEntry dto)
 			=> new() { Id = dto.Id, DatName = dto.DatName, DatChecksum = dto.DatChecksum, xxHash3 = dto.xxHash3, ObjectId = dto.ObjectId, Object = null };
 
 		public static DtoObjectEntry ToDtoEntry(this TblObject table)
-			=> new(table.Id, table.Name, table.Description, table.ObjectSource, table.ObjectType, table.VehicleType, table.CreatedDate, table.ModifiedDate, table.UploadedDate);
+			=> new(table.Id, table.Name, table.DatObjects.FirstOrDefault()?.DatName ?? "<--->", table.Description, table.ObjectSource, table.ObjectType, table.VehicleType, table.CreatedDate, table.ModifiedDate, table.UploadedDate);
 
 		public static TblObject ToTable(this DtoObjectEntry dto)
 			=> new() { Id = dto.Id, Name = dto.InternalName, Description = dto.Description, ObjectSource = dto.ObjectSource, ObjectType = dto.ObjectType, VehicleType = dto.VehicleType, CreatedDate = dto.CreatedDate, ModifiedDate = dto.ModifiedDate, UploadedDate = dto.UploadedDate };

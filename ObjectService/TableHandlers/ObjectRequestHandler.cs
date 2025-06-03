@@ -118,15 +118,16 @@ namespace ObjectService.TableHandlers
 			{
 				return Results.Ok(
 					await db.Objects
+						.Include(x => x.DatObjects)
 						.Select(x => x.ToDtoEntry())
 						.ToListAsync());
 			}
 		}
 
-		public static IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj)
+		public IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj)
 			=> eObj == null || eObj.Object == null
 				? Results.NotFound()
-				: Results.Ok(eObj.ToDtoDescriptor());
+				: Results.Ok(FillInDatFile(eObj.ToDtoDescriptor()));
 
 		// eg: https://localhost:7230/v1/objects/list
 		//public static async Task<IResult> SearchObjects(
@@ -309,6 +310,29 @@ namespace ObjectService.TableHandlers
 				.SingleOrDefaultAsync();
 
 			return ReturnFile(obj);
+		}
+
+		DtoObjectDescriptor FillInDatFile(DtoObjectDescriptor obj)
+		{
+			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+			{
+				return obj;
+			}
+
+			foreach (var datObject in obj.DatObjects)
+			{
+				if (!ServerFolderManager.ObjectIndex.TryFind((datObject.DatName, datObject.DatChecksum), out var entry))
+				{
+					continue;
+				}
+
+				var path = Path.Combine(ServerFolderManager.ObjectsFolder, entry!.Filename);
+				datObject.DatBytes = obj != null && File.Exists(path)
+					? Convert.ToBase64String(File.ReadAllBytes(path))
+					: null;
+			}
+
+			return obj;
 		}
 
 		IResult ReturnFile(TblObject? obj)

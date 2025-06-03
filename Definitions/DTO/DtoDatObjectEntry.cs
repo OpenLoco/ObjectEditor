@@ -5,6 +5,8 @@ namespace OpenLoco.Definitions.DTO
 		string DatName,
 		uint DatChecksum,
 		ulong xxHash3,
-		int ObjectId,
-		string? DatBytes);
+		int ObjectId)
+	{
+		public string? DatBytes { get; set; }
+	}
 }

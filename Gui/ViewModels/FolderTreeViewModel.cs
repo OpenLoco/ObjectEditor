@@ -281,7 +281,7 @@ namespace OpenLoco.Gui.ViewModels
 			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.WebClient != null)
 			{
 				Model.ObjectIndexOnline = new ObjectIndex((await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-					.Select(x => new ObjectIndexEntry(x.Id.ToString(), null, null, null, x.InternalName, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType))
+					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DisplayName, null, null, x.InternalName, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType))
 					.ToList());
 			}
 
@@ -305,7 +305,7 @@ namespace OpenLoco.Gui.ViewModels
 			var displayable = displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == (o.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG));
 
 			var filters =
-				   string.IsNullOrEmpty(filenameFilter) || o.DatName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase);
+				   string.IsNullOrEmpty(filenameFilter) || o.DisplayName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase);
 			//&& (string.IsNullOrEmpty(authorFilter)   || o.Author.Contains(authorFilter, StringComparison.CurrentCultureIgnoreCase))
 			//&& (string.IsNullOrEmpty(modpackFilter)  || o.DatName.Contains(modpackFilter, StringComparison.CurrentCultureIgnoreCase));
 
@@ -345,7 +345,7 @@ namespace OpenLoco.Gui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+							.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DisplayName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
 							.OrderBy(x => x.DisplayName));
 
 						if (vg.Key == null)
@@ -366,7 +366,7 @@ namespace OpenLoco.Gui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+						.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DisplayName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
 						.OrderBy(x => x.DisplayName));
 				}
 
@@ -385,7 +385,7 @@ namespace OpenLoco.Gui.ViewModels
 			=> index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
 				.Where(x => MatchesFilter(x, filenameFilter, authorFilter, modpackFilter, displayMode))
-				.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+				.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DisplayName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
 				.OrderByDescending(x => x.ModifiedDate);
 	}
 }

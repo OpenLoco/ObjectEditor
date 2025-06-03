@@ -32,7 +32,7 @@ namespace OpenLoco.Definitions.Database
 
 		public bool TryFind((string datName, uint datChecksum) key, out ObjectIndexEntry? entry)
 		{
-			entry = Objects.FirstOrDefault(x => x.DatName == key.datName && x.DatChecksum == key.datChecksum);
+			entry = Objects.FirstOrDefault(x => x.DisplayName == key.datName && x.DatChecksum == key.datChecksum);
 			return entry != null;
 		}
 
@@ -184,7 +184,7 @@ namespace OpenLoco.Definitions.Database
 
 	public record ObjectIndexEntry(
 		string Filename,
-		string? DatName,
+		string? DisplayName, // DatName for DAT-only objects, or DisplayName for OpenLoco objects
 		uint32_t? DatChecksum,
 		ulong? xxHash3,
 		string? InternalName,
@@ -195,6 +195,6 @@ namespace OpenLoco.Definitions.Database
 		VehicleType? VehicleType = null)
 	{
 		public string SimpleText
-			=> $"{DatName} | {Filename}";
+			=> $"{DisplayName} | {Filename}";
 	}
 }

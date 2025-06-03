@@ -142,7 +142,7 @@ namespace OpenLoco.Dat.FileParsing
 			var locoStructType = locoStruct.GetType();
 			var stringTableStrings = AttributeHelper.Has<LocoStringTableAttribute>(locoStructType)
 				? AttributeHelper.Get<LocoStringTableAttribute>(locoStructType)!.Strings
-				: AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStructType).Select(s => s.Name).ToArray();
+				: [.. AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStructType).Select(s => s.Name)];
 
 			var i = 0;
 			foreach (var locoString in stringTableStrings)

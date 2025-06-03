@@ -43,8 +43,8 @@ namespace OpenLoco.Gui.ViewModels
 
 		public void UpdateHexDumpView()
 			=> CurrentHexDumpLines = CurrentlySelectedHexAnnotation != null && DATDumpAnnotationIdentifiers.TryGetValue(CurrentlySelectedHexAnnotation.Title, out var positionValues)
-				? GetDumpLines(currentByteList, positionValues.Start, positionValues.End).ToArray()
-				: GetDumpLines(currentByteList, null, null).ToArray();
+				? [.. GetDumpLines(currentByteList, positionValues.Start, positionValues.End)]
+				: [.. GetDumpLines(currentByteList, null, null)];
 
 		static IEnumerable<HexAnnotationLine> GetDumpLines(byte[] byteList, int? selectionStart, int? selectionEnd)
 		{

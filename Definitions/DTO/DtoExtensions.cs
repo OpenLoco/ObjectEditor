@@ -6,7 +6,7 @@ namespace OpenLoco.Definitions.DTO
 	public static class DtoExtensions
 	{
 		public static DtoObjectDescriptor ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x)
-			=> new DtoObjectDescriptor(
+			=> new(
 				x!.Object.Id,
 				x!.Object.Name,
 				x!.Object.DatObjects.FirstOrDefault()?.DatName ?? "<--->",

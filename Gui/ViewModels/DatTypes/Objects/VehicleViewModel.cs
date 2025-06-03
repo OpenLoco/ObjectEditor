@@ -76,7 +76,7 @@ namespace OpenLoco.Gui.ViewModels
 			Flags = vo.Flags;
 			CompatibleCargo1 = new(vo.MaxCargo[0], new(vo.CompatibleCargoCategories[0]));
 			CompatibleCargo2 = new(vo.MaxCargo[1], new(vo.CompatibleCargoCategories[1]));
-			CargoTypeSpriteOffsets = new(vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList());
+			CargoTypeSpriteOffsets = new([.. vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
 			Animation = new(vo.Animation);
 			AnimationHeaders = new(vo.AnimationHeaders.ConvertAll(x => new S5HeaderViewModel(x)));
 			var_113 = vo.var_113;

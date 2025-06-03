@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
-
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
 		[Reactive]

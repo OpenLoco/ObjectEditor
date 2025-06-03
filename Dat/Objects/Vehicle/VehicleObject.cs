@@ -325,7 +325,7 @@ namespace OpenLoco.Dat.Objects
 				bodySprite.NumFramesPerRotation = (byte)((bodySprite.NumAnimationFrames * bodySprite.NumCargoFrames * bodySprite.NumRollFrames) + (bodySprite.Flags.HasFlag(BodySpriteFlags.HasBrakingLights) ? 1 : 0)); // be careful of overflow here...
 				var numFlatFrames = (byte)(bodySprite.NumFramesPerRotation * bodySprite.NumFlatRotationFrames);
 				offset += numFlatFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-				bodySprite.ImageIds[BodySpriteSlopeType.Flat] = Enumerable.Range(curr, offset - curr).ToList();
+				bodySprite.ImageIds[BodySpriteSlopeType.Flat] = [.. Enumerable.Range(curr, offset - curr)];
 
 				if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasGentleSprites))
 				{
@@ -333,14 +333,14 @@ namespace OpenLoco.Dat.Objects
 					curr = offset;
 					var numGentleFrames = bodySprite.NumFramesPerRotation * 8;
 					offset += numGentleFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-					bodySprite.ImageIds[BodySpriteSlopeType.Gentle] = Enumerable.Range(curr, offset - curr).ToList();
+					bodySprite.ImageIds[BodySpriteSlopeType.Gentle] = [.. Enumerable.Range(curr, offset - curr)];
 
 					bodySprite.SlopedImageId = (uint)offset;
 					curr = offset;
 					bodySprite.SlopedYawAccuracy = GetYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
 					var numSlopedFrames = bodySprite.NumFramesPerRotation * bodySprite.NumSlopedRotationFrames * 2;
 					offset += numSlopedFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-					bodySprite.ImageIds[BodySpriteSlopeType.Sloped] = Enumerable.Range(curr, offset - curr).ToList();
+					bodySprite.ImageIds[BodySpriteSlopeType.Sloped] = [.. Enumerable.Range(curr, offset - curr)];
 
 					if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasSteepSprites))
 					{
@@ -348,14 +348,14 @@ namespace OpenLoco.Dat.Objects
 						curr = offset;
 						var numSteepFrames = bodySprite.NumFramesPerRotation * 8;
 						offset += numSteepFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-						bodySprite.ImageIds[BodySpriteSlopeType.Steep] = Enumerable.Range(curr, offset - curr).ToList();
+						bodySprite.ImageIds[BodySpriteSlopeType.Steep] = [.. Enumerable.Range(curr, offset - curr)];
 
 						// TODO: add these two together??
 						bodySprite.UnkImageId1 = (uint)offset;
 						curr = offset;
 						var numUnkFrames = bodySprite.NumSlopedRotationFrames * bodySprite.NumFramesPerRotation * 2;
 						offset += numUnkFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-						bodySprite.ImageIds[BodySpriteSlopeType.unk1] = Enumerable.Range(curr, offset - curr).ToList();
+						bodySprite.ImageIds[BodySpriteSlopeType.unk1] = [.. Enumerable.Range(curr, offset - curr)];
 					}
 				}
 
@@ -365,7 +365,7 @@ namespace OpenLoco.Dat.Objects
 					curr = offset;
 					var numUnkFrames = bodySprite.NumFlatRotationFrames * 3;
 					offset += numUnkFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-					bodySprite.ImageIds[BodySpriteSlopeType.unk2] = Enumerable.Range(curr, offset).ToList();
+					bodySprite.ImageIds[BodySpriteSlopeType.unk2] = [.. Enumerable.Range(curr, offset)];
 				}
 
 				bodySprite.NumImages = offset - initial; // (int)(offset - bodySprite.FlatImageId);
@@ -403,7 +403,7 @@ namespace OpenLoco.Dat.Objects
 
 				var numRollFrames = bogieSprite.NumRollSprites * 32;
 				offset += numRollFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
-				bogieSprite.ImageIds[BogieSpriteSlopeType.Flat] = Enumerable.Range(curr, offset - curr).ToList();
+				bogieSprite.ImageIds[BogieSpriteSlopeType.Flat] = [.. Enumerable.Range(curr, offset - curr)];
 
 				if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasGentleSprites))
 				{
@@ -411,7 +411,7 @@ namespace OpenLoco.Dat.Objects
 					curr = offset;
 					var numGentleFrames = bogieSprite.NumRollSprites * 64;
 					offset += numGentleFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
-					bogieSprite.ImageIds[BogieSpriteSlopeType.Gentle] = Enumerable.Range(curr, offset - curr).ToList();
+					bogieSprite.ImageIds[BogieSpriteSlopeType.Gentle] = [.. Enumerable.Range(curr, offset - curr)];
 
 					if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSteepSprites))
 					{
@@ -419,7 +419,7 @@ namespace OpenLoco.Dat.Objects
 						curr = offset;
 						var numSteepFrames = bogieSprite.NumRollSprites * 64;
 						offset += numSteepFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
-						bogieSprite.ImageIds[BogieSpriteSlopeType.Steep] = Enumerable.Range(curr, offset - curr).ToList();
+						bogieSprite.ImageIds[BogieSpriteSlopeType.Steep] = [.. Enumerable.Range(curr, offset - curr)];
 					}
 				}
 

@@ -10,10 +10,9 @@ namespace OpenLoco.Dat.Tests
 	[TestFixture]
 	public class IdempotenceTests
 	{
-		static string[] VanillaFiles => Directory
+		static string[] VanillaFiles => [.. Directory
 			.GetFiles(TestConstants.BaseObjDataPath, "*.dat")
-			.Select(x => Path.GetFileName(x))
-			.ToArray();
+			.Select(x => Path.GetFileName(x))];
 
 		[TestCaseSource(nameof(VanillaFiles))]
 		public void DecodeEncodeDecode(string filename)

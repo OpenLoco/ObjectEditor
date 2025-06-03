@@ -51,7 +51,7 @@ namespace OpenLoco.Definitions.Web
 
 				logger?.Debug("Main server queried successfully");
 
-				var data = await ContentReaderFunc(response.Content); // response.Content.ReadFromJsonAsync<T?>();
+				var data = await ContentReaderFunc(response.Content);
 				if (data == null)
 				{
 					logger?.Error($"Received data but couldn't parse it: {response}");

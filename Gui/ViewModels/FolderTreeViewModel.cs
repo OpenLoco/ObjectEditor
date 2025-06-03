@@ -240,15 +240,13 @@ namespace OpenLoco.Gui.ViewModels
 				},
 			};
 
-			Dispatcher.UIThread.Invoke(new Action(() =>
-			{
-				TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged;
-			}));
+			Dispatcher.UIThread.Invoke(new Action(() => TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged));
 
 			this.RaisePropertyChanged(nameof(TreeDataGridSource));
 
 		}
-		string GetNiceObjectSource(ObjectSource? os)
+
+		static string GetNiceObjectSource(ObjectSource? os)
 			=> os switch
 			{
 				ObjectSource.Custom => "Custom",
@@ -266,8 +264,6 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				CurrentlySelectedObject = e.SelectedItems[0];
 			}
-			//var selectedPath = GetRowSelection(Source).SelectedItem?.Path;
-			//this.RaiseAndSetIfChanged(ref _selectedPath, selectedPath, nameof(SelectedPath));
 		}
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
@@ -281,8 +277,7 @@ namespace OpenLoco.Gui.ViewModels
 			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.WebClient != null)
 			{
 				Model.ObjectIndexOnline = new ObjectIndex((await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DisplayName, null, null, x.InternalName, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType))
-					.ToList());
+					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DisplayName, null, null, x.InternalName, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
 			}
 
 			if (Model.ObjectIndexOnline != null)
@@ -317,7 +312,7 @@ namespace OpenLoco.Gui.ViewModels
 			var sortByDate = false;
 			if (sortByDate)
 			{
-				return ConstructDateTreeView(index, baseDirectory, filenameFilter, authorFilter, modpackFilter, displayMode, fileLocation).ToList();
+				return [.. ConstructDateTreeView(index, baseDirectory, filenameFilter, authorFilter, modpackFilter, displayMode, fileLocation)];
 			}
 			else
 			{

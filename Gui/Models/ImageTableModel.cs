@@ -135,10 +135,9 @@ namespace OpenLoco.Gui.Models
 				else
 				{
 					var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
-					offsets = G1Provider.G1Elements
+					offsets = [.. G1Provider.G1Elements
 						.Select((x, i) => new G1Element32Json($"{i}.png", x.XOffset, x.YOffset))
-						.Fill(files.Length, G1Element32Json.Zero)
-						.ToList();
+						.Fill(files.Length, G1Element32Json.Zero)];
 					Logger.Debug($"Didn't find sprites.json file, using existing G1Element32 offsets with {offsets.Count} images");
 				}
 

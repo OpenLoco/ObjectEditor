@@ -64,7 +64,7 @@ namespace OpenLoco.Dat.Objects
 
 		public uint8_t[][] ManualPower { get; set; }
 
-		public CargoOffset[] CargoOffsets { get; init; } = Enumerable.Repeat(new CargoOffset(), 15).ToArray();
+		public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset(), 15)];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{

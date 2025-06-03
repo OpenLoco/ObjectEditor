@@ -35,7 +35,7 @@ namespace OpenLoco.Gui.ViewModels
 			ConfirmCommand = ReactiveCommand.Create(() => { });
 			CancelCommand = ReactiveCommand.Create(() => { });
 
-			ObjectCache = objects.ToImmutableList();
+			ObjectCache = [.. objects];
 
 			_ = this.WhenAnyValue(o => o.SearchTerm)
 				.Throttle(TimeSpan.FromMilliseconds(250))

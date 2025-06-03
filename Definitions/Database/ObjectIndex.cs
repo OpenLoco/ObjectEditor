@@ -27,7 +27,7 @@ namespace OpenLoco.Definitions.Database
 		public ObjectIndex(ObservableCollection<ObjectIndexEntry> objects)
 			=> Objects = objects;
 
-		public ObjectIndex(List<ObjectIndexEntry> objects)
+		public ObjectIndex(IEnumerable<ObjectIndexEntry> objects)
 			=> Objects = [.. objects];
 
 		public bool TryFind((string datName, uint datChecksum) key, out ObjectIndexEntry? entry)
@@ -98,7 +98,7 @@ namespace OpenLoco.Definitions.Database
 		}
 
 		public static ObjectIndex CreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
-			=> new ObjectIndex().UpdateIndex(directory, logger, SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray(), progress);
+			=> new ObjectIndex().UpdateIndex(directory, logger, [.. SawyerStreamUtils.GetDatFilesInDirectory(directory)], progress);
 
 		static (ConcurrentQueue<ObjectIndexEntry> succeeded, ConcurrentQueue<string> failed) ReadFilesFromDisk(string directory, ILogger logger, IProgress<float>? progress, string[] files)
 		{

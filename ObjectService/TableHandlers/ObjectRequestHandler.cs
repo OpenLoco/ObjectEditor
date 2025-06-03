@@ -292,10 +292,10 @@ namespace ObjectService.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123
-		//public async Task<IResult> GetDatFile([FromQuery] string objectName, [FromQuery] uint checksum, LocoDb db)
+		//public async Task<IResult> GetDatFile([FromQuery] string datName, [FromQuery] uint datChecksum, LocoDb db)
 		//{
 		//	var obj = await db.Objects
-		//		.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
+		//		.Where(x => x.DatName == datName && x.DatChecksum == datChecksum)
 		//		.SingleOrDefaultAsync();
 
 		//	return ReturnFile(obj);

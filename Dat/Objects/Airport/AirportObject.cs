@@ -92,9 +92,7 @@ namespace OpenLoco.Dat.Objects
 
 			// movement edges
 			MovementEdges.Clear();
-			MovementEdges.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumMovementEdges * edgeSize)], typeof(MovementEdge), NumMovementEdges, edgeSize)
-				.Cast<MovementEdge>()
-				.ToList());
+			MovementEdges.AddRange([.. ByteReader.ReadLocoStructArray(remainingData[..(NumMovementEdges * edgeSize)], typeof(MovementEdge), NumMovementEdges, edgeSize).Cast<MovementEdge>()]);
 
 			return remainingData[(NumMovementEdges * edgeSize)..];
 		}

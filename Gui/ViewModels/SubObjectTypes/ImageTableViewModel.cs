@@ -142,7 +142,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			// ... handle selection changed
-			SelectedBitmaps = sm.SelectedItems.Cast<Bitmap>().ToList();
+			SelectedBitmaps = [.. sm.SelectedItems.Cast<Bitmap>()];
 		}
 
 		void UpdateAnimationSpeed()

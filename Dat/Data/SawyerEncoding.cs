@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.Dat.Data
+namespace OpenLoco.Dat.Data
 {
 	public enum SawyerEncoding : byte
 	{

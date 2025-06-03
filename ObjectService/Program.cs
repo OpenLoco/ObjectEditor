@@ -24,8 +24,7 @@ builder.Services.AddSingleton<Server>();
 _ = builder.Services.Configure<ServerSettings>(builder.Configuration.GetSection("ObjectService"));
 builder.Services.AddHttpLogging(logging =>
 {
-	logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders
-		| HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
+	logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
 	logging.CombineLogs = true;
 });
 

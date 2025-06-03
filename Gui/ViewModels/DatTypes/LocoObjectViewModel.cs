@@ -1,4 +1,4 @@
-﻿using OpenLoco.Dat.Types;
+using OpenLoco.Dat.Types;
 using ReactiveUI;
 
 namespace OpenLoco.Gui.ViewModels

@@ -1,4 +1,4 @@
-﻿namespace OpenLoco.Gui.ViewModels
+namespace OpenLoco.Gui.ViewModels
 {
 	public record HexAnnotationLine(string Address, string Data, int? SelectionStart, int? SelectionEnd);
 }

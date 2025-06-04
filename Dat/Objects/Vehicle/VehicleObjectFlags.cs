@@ -23,5 +23,5 @@ namespace OpenLoco.Dat.Objects
 		CanWheelSlip_AircraftIsHelicopter = 1 << 13, // set on all steam locomotives, or marks a helicopter for aircraft
 		Refittable = 1 << 14,
 		QuietInvention = 1 << 15, // no newspaper announcement
-	};
+	}
 }

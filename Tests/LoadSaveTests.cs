@@ -196,7 +196,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.CargoCategory, Is.EqualTo(CargoCategory.Liquids), nameof(struc.CargoCategory));
 				Assert.That(struc.Flags, Is.EqualTo(CargoObjectFlags.Delivering), nameof(struc.Flags));
 				Assert.That(struc.NumPlatformVariations, Is.EqualTo(1), nameof(struc.NumPlatformVariations));
-				Assert.That(struc.var_14, Is.EqualTo(4), nameof(struc.var_14));
+				Assert.That(struc.StationCargoDensity, Is.EqualTo(4), nameof(struc.StationCargoDensity));
 				Assert.That(struc.PremiumDays, Is.EqualTo(10), nameof(struc.PremiumDays));
 				Assert.That(struc.MaxNonPremiumDays, Is.EqualTo(30), nameof(struc.MaxNonPremiumDays));
 				Assert.That(struc.MaxPremiumRate, Is.EqualTo(128), nameof(struc.MaxPremiumRate));
@@ -242,7 +242,6 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.SeasonLengths[3], Is.EqualTo(80), nameof(struc.SeasonLengths) + "[3]");
 				Assert.That(struc.WinterSnowLine, Is.EqualTo(48), nameof(struc.WinterSnowLine));
 				Assert.That(struc.SummerSnowLine, Is.EqualTo(76), nameof(struc.SummerSnowLine));
-				Assert.That(struc.var_09, Is.EqualTo(0), nameof(struc.var_09));
 
 				Assert.That(obj.G1Elements, Is.Empty);
 			});
@@ -254,8 +253,8 @@ namespace OpenLoco.Dat.Tests
 		{
 			void assertFunc(ILocoObject obj, CompetitorObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.var_04, Is.EqualTo(UnkCompetitorFlags1.unk4 | UnkCompetitorFlags1.unk9 | UnkCompetitorFlags1.unk11 | UnkCompetitorFlags1.unk12), nameof(struc.var_04));
-				Assert.That(struc.var_08, Is.EqualTo(UnkCompetitorFlags2.unk0 | UnkCompetitorFlags2.unk2 | UnkCompetitorFlags2.unk11), nameof(struc.var_08));
+				Assert.That(struc.AvailableNamePrefixes, Is.EqualTo(CompetitorNamePrefix.unk4 | CompetitorNamePrefix.unk9 | CompetitorNamePrefix.unk11 | CompetitorNamePrefix.unk12), nameof(struc.AvailableNamePrefixes));
+				Assert.That(struc.AvailablePlaystyles, Is.EqualTo(CompetitorPlaystyle.unk0 | CompetitorPlaystyle.unk2 | CompetitorPlaystyle.unk11), nameof(struc.AvailablePlaystyles));
 				Assert.That(struc.Emotions, Is.EqualTo(511), nameof(struc.Emotions));
 				Assert.That(struc.Images, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 9)), nameof(struc.Images));
 				Assert.That(struc.Intelligence, Is.EqualTo(7), nameof(struc.Intelligence));
@@ -560,7 +559,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.DistributionPattern, Is.EqualTo(0), nameof(struc.DistributionPattern));
 				Assert.That(struc.NumVariations, Is.EqualTo(3), nameof(struc.NumVariations));
 				Assert.That(struc.VariationLikelihood, Is.EqualTo(10), nameof(struc.VariationLikelihood));
-				Assert.That(struc.var_1D, Is.EqualTo(0), nameof(struc.var_1D));
+				Assert.That(struc.pad_1D, Is.EqualTo(0), nameof(struc.pad_1D));
 
 				Assert.That(obj.G1Elements, Has.Count.EqualTo(417));
 			});
@@ -581,7 +580,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.ClosedFrames, Is.EqualTo(11), nameof(struc.ClosedFrames));
 
 				Assert.That(struc.var_0A, Is.EqualTo(3), nameof(struc.var_0A));
-				Assert.That(struc.var_0B, Is.EqualTo(0), nameof(struc.var_0B));
+				Assert.That(struc.pad_0B, Is.EqualTo(0), nameof(struc.pad_0B));
 
 				Assert.That(struc.DesignedYear, Is.EqualTo(1955), nameof(struc.DesignedYear));
 
@@ -595,10 +594,10 @@ namespace OpenLoco.Dat.Tests
 		{
 			void assertFunc(ILocoObject obj, RegionObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.var_06, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 2)), nameof(struc.var_06));
-				Assert.That(struc.RequiredObjectCount, Is.EqualTo(1), nameof(struc.RequiredObjectCount));
+				Assert.That(struc.pad_06, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 2)), nameof(struc.pad_06));
+				Assert.That(struc.NumCargoInfluenceObjects, Is.EqualTo(1), nameof(struc.NumCargoInfluenceObjects));
 				//CollectionAssert.AreEqual(struc.requiredObjects, Array.CreateInstance(typeof(byte), 4), nameof(struc.requiredObjects));
-				Assert.That(struc.var_0D, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 5)), nameof(struc.var_0D));
+				Assert.That(struc.CargoInfluenceTownFilter, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 5)), nameof(struc.CargoInfluenceTownFilter));
 
 				Assert.That(obj.G1Elements, Has.Count.EqualTo(1));
 			});
@@ -615,7 +614,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.PaintStyle, Is.EqualTo(1), nameof(struc.PaintStyle));
 				Assert.That(struc.RoadPieces, Is.EqualTo(RoadTraitFlags.SmallCurve | RoadTraitFlags.VerySmallCurve | RoadTraitFlags.Slope | RoadTraitFlags.SteepSlope | RoadTraitFlags.unk_04 | RoadTraitFlags.Turnaround | RoadTraitFlags.unk_06), nameof(struc.RoadPieces));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-3), nameof(struc.SellCostFactor));
-				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
+				Assert.That(struc.BaseImageOffset, Is.EqualTo(0), nameof(struc.BaseImageOffset));
 
 				Assert.That(obj.G1Elements, Has.Count.EqualTo(46));
 			});
@@ -695,7 +694,7 @@ namespace OpenLoco.Dat.Tests
 		{
 			void assertFunc(ILocoObject obj, ScenarioTextObject struc) => Assert.Multiple(() =>
 			{
-				Assert.That(struc.var_04, Is.EqualTo(0), nameof(struc.var_04));
+				Assert.That(struc.pad_04, Is.EqualTo(0), nameof(struc.pad_04));
 				Assert.That(obj.G1Elements, Is.Empty);
 			});
 			LoadSaveGenericTest<ScenarioTextObject>(objectName, assertFunc);
@@ -723,8 +722,8 @@ namespace OpenLoco.Dat.Tests
 			void assertFunc(ILocoObject obj, SoundObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.Name, Is.EqualTo(0), nameof(struc.Name));
-				Assert.That(struc.var_07, Is.EqualTo(0), nameof(struc.var_07));
-				Assert.That(struc.LoopCount, Is.EqualTo(1), nameof(struc.LoopCount));
+				Assert.That(struc.pad_07, Is.EqualTo(0), nameof(struc.pad_07));
+				Assert.That(struc.ShouldLoop, Is.EqualTo(1), nameof(struc.ShouldLoop));
 				Assert.That(struc.Volume, Is.EqualTo(0), nameof(struc.Volume));
 
 				Assert.That(struc.PcmData, Has.Length.EqualTo(119666), nameof(struc.PcmData.Length));
@@ -843,7 +842,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(2), nameof(struc.BuildCostFactor));
 				Assert.That(struc.SellCostFactor, Is.EqualTo(-1), nameof(struc.SellCostFactor));
-				Assert.That(struc.var_0E, Is.EqualTo(0), nameof(struc.var_0E));
+				Assert.That(struc.BaseImageOffset, Is.EqualTo(0), nameof(struc.BaseImageOffset));
 
 				Assert.That(obj.G1Elements, Has.Count.EqualTo(134));
 			});
@@ -948,7 +947,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.var_04, Is.EqualTo(27), nameof(struc.var_04));
 				Assert.That(struc.var_05, Is.EqualTo(83), nameof(struc.var_05));
 				Assert.That(struc.NumRotations, Is.EqualTo(1), nameof(struc.NumRotations));
-				Assert.That(struc.Growth, Is.EqualTo(4), nameof(struc.Growth));
+				Assert.That(struc.NumGrowthStages, Is.EqualTo(4), nameof(struc.NumGrowthStages));
 				Assert.That(struc.Flags, Is.EqualTo(TreeObjectFlags.HighAltitude | TreeObjectFlags.RequiresWater | TreeObjectFlags.HasShadow), nameof(struc.Flags));
 				Assert.That(struc.Sprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.Sprites));
 				Assert.That(struc.SnowSprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.SnowSprites));

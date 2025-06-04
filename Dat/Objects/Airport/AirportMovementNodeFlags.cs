@@ -12,5 +12,5 @@ namespace OpenLoco.Dat.Objects
 		TakeoffBegin = 1 << 6,
 		HeliTakeoffEnd = 1 << 7,
 		Touchdown = 1 << 8,
-	};
+	}
 }

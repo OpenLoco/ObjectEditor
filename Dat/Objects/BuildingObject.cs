@@ -14,7 +14,7 @@ namespace OpenLoco.Dat.Objects
 		MiscBuilding = 1 << 1,
 		Indestructible = 1 << 2,
 		IsHeadquarters = 1 << 3,
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xBE)]

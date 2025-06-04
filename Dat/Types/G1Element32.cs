@@ -14,7 +14,7 @@ namespace OpenLoco.Dat.Types
 		HasZoomSprites = 1 << 4,    // Use a different sprite for higher zoom levels
 		NoZoomDraw = 1 << 5,        // Does not get drawn at higher zoom levels (only zoom 0)
 		DuplicatePrevious = 1 << 6, // Duplicates the previous element but with adjusted x/y offsets
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x10)]

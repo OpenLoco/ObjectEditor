@@ -11,5 +11,5 @@ namespace OpenLoco.Dat.Objects
 		HasSteepSprites = 1 << 4,  // for steep slopes
 		HasBrakingLights = 1 << 5,
 		HasSpeedAnimation = 1 << 6, // Speed based animation (such as hydrofoil)
-	};
+	}
 }

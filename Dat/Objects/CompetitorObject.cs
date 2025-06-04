@@ -19,7 +19,7 @@ namespace OpenLoco.Dat.Objects
 	}
 
 	[Flags]
-	public enum UnkCompetitorFlags1 : uint32_t
+	public enum CompetitorNamePrefix : uint32_t
 	{
 		unk0 = 1 << 0,
 		unk1 = 1 << 1,
@@ -37,7 +37,7 @@ namespace OpenLoco.Dat.Objects
 	}
 
 	[Flags]
-	public enum UnkCompetitorFlags2 : uint32_t
+	public enum CompetitorPlaystyle : uint32_t
 	{
 		unk0 = 1 << 0,
 		unk1 = 1 << 1,
@@ -61,14 +61,14 @@ namespace OpenLoco.Dat.Objects
 	public record CompetitorObject(
 			[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id FullName,
 			[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id LastName,
-			[property: LocoStructOffset(0x04)] UnkCompetitorFlags1 var_04,
-			[property: LocoStructOffset(0x08)] UnkCompetitorFlags2 var_08,
+			[property: LocoStructOffset(0x04)] CompetitorNamePrefix AvailableNamePrefixes, // bitset
+			[property: LocoStructOffset(0x08)] CompetitorPlaystyle AvailablePlaystyles, // bitset
 			[property: LocoStructOffset(0x0C)] uint32_t Emotions,
 			[property: LocoStructOffset(0x10), Browsable(false), LocoArrayLength(CompetitorObject.ImagesLength)] image_id[] Images,
 			[property: LocoStructOffset(0x34)] uint8_t Intelligence,
 			[property: LocoStructOffset(0x35)] uint8_t Aggressiveness,
 			[property: LocoStructOffset(0x36)] uint8_t Competitiveness,
-			[property: LocoStructOffset(0x37)] uint8_t var_37
+			[property: LocoStructOffset(0x37), LocoPropertyMaybeUnused] uint8_t var_37
 		) : ILocoStruct, IImageTableNameProvider
 	{
 		public const int ImagesLength = 9;

@@ -15,7 +15,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x03), LocoArrayLength(ClimateObject.Seasons)] uint8_t[] SeasonLengths,
 		[property: LocoStructOffset(0x07)] uint8_t WinterSnowLine,
 		[property: LocoStructOffset(0x08)] uint8_t SummerSnowLine,
-		[property: LocoStructOffset(0x09)] uint8_t var_09
+		[property: LocoStructOffset(0x09), LocoPropertyMaybeUnused] uint8_t pad_09
 		) : ILocoStruct
 	{
 		public const int Seasons = 4;

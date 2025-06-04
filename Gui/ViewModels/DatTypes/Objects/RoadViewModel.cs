@@ -23,7 +23,6 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Stations")] public BindingList<S5HeaderViewModel> Stations { get; set; }
 		[Reactive, Category("Mods")] public BindingList<S5HeaderViewModel> Mods { get; set; }
 		[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> Compatible { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_2F { get; set; }
 
 		public RoadViewModel(RoadObject ro)
 		{
@@ -42,7 +41,6 @@ namespace OpenLoco.Gui.ViewModels
 			Mods = new(ro.Mods.ConvertAll(x => new S5HeaderViewModel(x)));
 			Bridges = new(ro.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
 			Stations = new(ro.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
-			var_2F = ro.var_2F;
 		}
 
 		public override RoadObject GetAsStruct(RoadObject ro)
@@ -67,7 +65,6 @@ namespace OpenLoco.Gui.ViewModels
 				Bridges = Bridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				NumStations = (uint8_t)Stations.Count,
 				Stations = Stations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-				var_2F = var_2F,
 			};
 	}
 }

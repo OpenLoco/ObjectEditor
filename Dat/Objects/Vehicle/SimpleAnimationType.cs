@@ -11,5 +11,5 @@ namespace OpenLoco.Dat.Objects
 		ElectricSpark2,
 		DieselExhaust2,
 		ShipWake
-	};
+	}
 }

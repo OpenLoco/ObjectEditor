@@ -6,5 +6,5 @@ namespace OpenLoco.Dat.Types.SCV5
 		None = (uint16_t)0U,
 		FixFlag0 = (uint16_t)1U << 0,
 		FixFlag1 = (uint16_t)1U << 1,
-	};
+	}
 }

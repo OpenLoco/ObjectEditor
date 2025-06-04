@@ -61,10 +61,7 @@ namespace OpenLoco.Dat.Objects
 		public const int MaxNumTrackMods = 7;
 		public const int MaxNumRoadMods = 7;
 
-		[LocoPropertyMaybeUnused]
 		public List<S5Header> CompatibleTrackObjects { get; set; } = [];
-
-		[LocoPropertyMaybeUnused]
 		public List<S5Header> CompatibleRoadObjects { get; set; } = [];
 
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)

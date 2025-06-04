@@ -13,7 +13,7 @@ namespace OpenLoco.Dat.Objects
 		DisperseOnCollision = 1 << 1,
 		unk_02 = 1 << 2,
 		unk_03 = 1 << 3,
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x02)]

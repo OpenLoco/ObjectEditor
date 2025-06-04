@@ -24,7 +24,6 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Bridges")] public BindingList<S5HeaderViewModel> CompatibleBridges { get; set; }
 		[Reactive, Category("Stations")] public BindingList<S5HeaderViewModel> CompatibleStations { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_06 { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_35 { get; set; }
 
 		public TrackViewModel(TrackObject to)
 		{
@@ -44,7 +43,6 @@ namespace OpenLoco.Gui.ViewModels
 			CompatibleBridges = new(to.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
 			CompatibleStations = new(to.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
 			var_06 = to.var_06;
-			var_35 = to.var_35;
 		}
 
 		// validation:
@@ -73,7 +71,6 @@ namespace OpenLoco.Gui.ViewModels
 				NumStations = (uint8_t)CompatibleStations.Count,
 				Stations = CompatibleStations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 				var_06 = var_06,
-				var_35 = var_35,
 			};
 	}
 }

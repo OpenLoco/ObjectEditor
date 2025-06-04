@@ -8,5 +8,5 @@ namespace OpenLoco.Dat.Objects
 		Steep,
 		unk1,
 		unk2
-	};
+	}
 }

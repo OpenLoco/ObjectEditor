@@ -14,7 +14,7 @@ namespace OpenLoco.Gui.ViewModels
 		LeftReleased = 2,
 		RightPressed = 3,
 		RightReleased = 4,
-	};
+	}
 
 	public enum KeyModifier : uint8_t
 	{
@@ -24,7 +24,7 @@ namespace OpenLoco.Gui.ViewModels
 		Unknown = 1 << 2,
 		Cheat = 1 << 7,
 		Invalid = 0xFF,
-	};
+	}
 
 	public interface ITutorialAction;
 	public record TutorialActionA(KeyModifier KeyModifier, uint16_t MouseX, uint16_t MouseY, MouseButton MouseButton) : ITutorialAction;

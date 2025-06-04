@@ -34,7 +34,7 @@ namespace OpenLoco.Dat.Data
 		Pink = 29,
 		MutedRed = 30,
 		MAX,
-	};
+	}
 
 	public enum ExtColour : uint8_t
 	{
@@ -187,5 +187,5 @@ namespace OpenLoco.Dat.Data
 		unk91,
 		unk92,
 		MAX,
-	};
+	}
 }

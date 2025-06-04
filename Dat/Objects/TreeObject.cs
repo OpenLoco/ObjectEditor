@@ -17,7 +17,18 @@ namespace OpenLoco.Dat.Objects
 		unk_05 = 1 << 5,
 		DroughtResistant = 1 << 6,
 		HasShadow = 1 << 7,
-	};
+	}
+
+	[Flags]
+	public enum UnkTreeFlags : uint8_t
+	{
+		unk_00 = 1 << 0,
+		unk_01 = 1 << 1,
+		unk_02 = 1 << 2,
+		unk_03 = 1 << 3,
+		unk_04 = 1 << 4,
+		unk_05 = 1 << 5,
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x4C)]
@@ -30,12 +41,12 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x04)] uint8_t var_04,
 		[property: LocoStructOffset(0x05)] uint8_t var_05,
 		[property: LocoStructOffset(0x06)] uint8_t NumRotations,
-		[property: LocoStructOffset(0x07)] uint8_t Growth,
+		[property: LocoStructOffset(0x07)] uint8_t NumGrowthStages,
 		[property: LocoStructOffset(0x08)] TreeObjectFlags Flags,
 		[property: LocoStructOffset(0x0A), LocoArrayLength(6), Browsable(false)] image_id[] Sprites,
 		[property: LocoStructOffset(0x22), LocoArrayLength(6), Browsable(false)] image_id[] SnowSprites,
-		[property: LocoStructOffset(0x3A)] uint16_t ShadowImageOffset,
-		[property: LocoStructOffset(0x3C)] uint8_t var_3C, // something with images
+		[property: LocoStructOffset(0x3A), Browsable(false)] uint16_t ShadowImageOffset,
+		[property: LocoStructOffset(0x3C)] UnkTreeFlags var_3C, // something with images
 		[property: LocoStructOffset(0x3D)] uint8_t SeasonState,
 		[property: LocoStructOffset(0x3E)] uint8_t Season,
 		[property: LocoStructOffset(0x3F)] uint8_t CostIndex,
@@ -69,7 +80,7 @@ namespace OpenLoco.Dat.Objects
 					break;
 			}
 
-			if (Growth is < 1 or > 8)
+			if (NumGrowthStages is < 1 or > 8)
 			{
 				return false;
 			}

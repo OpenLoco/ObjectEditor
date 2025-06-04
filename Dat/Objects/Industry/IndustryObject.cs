@@ -12,8 +12,7 @@ namespace OpenLoco.Dat.Objects
 	[LocoStringTable("Name", "var_02", "<unused>", "NameClosingDown", "NameUpProduction", "NameDownProduction", "NameSingular", "NamePlural")]
 	public record IndustryObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id var_02,
-		[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id _unused,
+		[property: LocoStructOffset(0x02), LocoString, Browsable(false), LocoPropertyMaybeUnused] string_id var_02,
 		[property: LocoStructOffset(0x04), LocoString, Browsable(false)] string_id NameClosingDown,
 		[property: LocoStructOffset(0x06), LocoString, Browsable(false)] string_id NameUpProduction,
 		[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id NameDownProduction,

@@ -13,7 +13,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		Wall,
 		Road,
 		Industry,
-	};
+	}
 
 	[LocoStructSize(StructLength)]
 	public abstract class TileElement

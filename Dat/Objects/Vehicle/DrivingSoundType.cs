@@ -6,5 +6,5 @@ namespace OpenLoco.Dat.Objects
 		Friction,
 		SimpleMotor,
 		GearboxMotor
-	};
+	}
 }

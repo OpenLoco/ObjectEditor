@@ -35,5 +35,5 @@ namespace OpenLoco.Dat.Data
 		Breakdown5 = 30,
 		Breakdown6 = 31,
 		NULL = 0xFF
-	};
+	}
 }

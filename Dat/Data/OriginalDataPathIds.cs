@@ -58,5 +58,5 @@ namespace OpenLoco.Dat.Data
 		_1tmp,
 		objects,
 		scenarios,
-	};
+	}
 }

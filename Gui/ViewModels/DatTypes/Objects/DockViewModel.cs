@@ -17,8 +17,8 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive, Category("Building")] public BindingList<uint16_t> BuildingPartAnimations { get; set; }
 		[Reactive, Category("Building")] public BindingList<uint8_t> BuildingVariationParts { get; set; }
+		[Reactive, Category("Building")] public BindingList<uint8_t> BuildingPartHeights { get; set; }
 		[Reactive, Category("<unknown>")] public uint8_t var_07 { get; set; }
-		[Reactive, Category("<unknown>")] public BindingList<uint8_t> var_14 { get; set; }
 
 		public DockViewModel(DockObject @do)
 		{
@@ -32,7 +32,7 @@ namespace OpenLoco.Gui.ViewModels
 			BuildingPartAnimations = new(@do.BuildingPartAnimations);
 			BuildingVariationParts = new(@do.BuildingVariationParts);
 			var_07 = @do.var_07;
-			var_14 = new(@do.var_14);
+			BuildingPartHeights = new(@do.BuildingPartHeights);
 		}
 
 		public override DockObject GetAsStruct(DockObject @do)

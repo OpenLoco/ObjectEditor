@@ -18,5 +18,5 @@ namespace OpenLoco.Dat.Data
 		Portuguese,
 		//blank = 254,
 		//end = 255
-	};
+	}
 }

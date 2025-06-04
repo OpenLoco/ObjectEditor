@@ -17,7 +17,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A), Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x0E), Browsable(false)] image_id var_0E
+		[property: LocoStructOffset(0x0E), Browsable(false)] image_id BaseImageOffset
 		) : ILocoStruct
 	{
 		public bool Validate()

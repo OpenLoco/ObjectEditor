@@ -10,7 +10,7 @@ namespace OpenLoco.Dat.Objects
 	{
 		None = 0,
 		HasShadows = 1 << 0,
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x28)]
@@ -21,13 +21,13 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
 		[property: LocoStructOffset(0x04)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x06)] uint8_t CostIndex,
-		[property: LocoStructOffset(0x07), LocoPropertyMaybeUnused] uint8_t var_07,
+		[property: LocoStructOffset(0x07), LocoPropertyMaybeUnused] uint8_t var_07, // probably padding
 		[property: LocoStructOffset(0x08), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x0C), Browsable(false)] image_id UnkImage,
 		[property: LocoStructOffset(0x10)] DockObjectFlags Flags,
-		[property: LocoStructOffset(0x12), LocoPropertyMaybeUnused] uint8_t NumBuildingPartAnimations,
-		[property: LocoStructOffset(0x13), LocoPropertyMaybeUnused] uint8_t NumBuildingVariationParts, // must be 1 or 0
-		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> var_14,
+		[property: LocoStructOffset(0x12)] uint8_t NumBuildingPartAnimations,
+		[property: LocoStructOffset(0x13)] uint8_t NumBuildingVariationParts, // must be 1 or 0
+		[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> BuildingPartHeights,
 		[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<uint16_t> BuildingPartAnimations,
 		[property: LocoStructOffset(0x1C), LocoStructVariableLoad] List<uint8_t> BuildingVariationParts,
 		[property: LocoStructOffset(0x20)] uint16_t DesignedYear,
@@ -37,12 +37,12 @@ namespace OpenLoco.Dat.Objects
 	{
 		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
 		{
-			var_14.Clear();
+			BuildingPartHeights.Clear();
 			BuildingPartAnimations.Clear();
 			BuildingVariationParts.Clear();
 
 			// var_14 - a list of uint8_t
-			var_14.AddRange(remainingData[..(NumBuildingPartAnimations * 1)]);
+			BuildingPartHeights.AddRange(remainingData[..(NumBuildingPartAnimations * 1)]);
 			remainingData = remainingData[(NumBuildingPartAnimations * 1)..]; // sizeof(uint8_t)
 
 			// var_18 - a list of uint16_t
@@ -72,7 +72,7 @@ namespace OpenLoco.Dat.Objects
 		}
 
 		public ReadOnlySpan<byte> Save()
-			=> var_14
+			=> BuildingPartHeights
 			.Concat(BuildingPartAnimations.SelectMany(BitConverter.GetBytes))
 			.Concat(BuildingVariationParts)
 			.Concat(new byte[] { 0xFF })

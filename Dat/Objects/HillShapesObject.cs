@@ -10,7 +10,7 @@ namespace OpenLoco.Dat.Objects
 	{
 		None = 0,
 		IsHeightMap = 1 << 0,
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0E)]

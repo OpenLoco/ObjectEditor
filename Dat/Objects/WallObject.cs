@@ -17,7 +17,7 @@ namespace OpenLoco.Dat.Objects
 		LongDoor_UNUSED = 1 << 5, // unused, setting it in loco does nothing
 		HasSecondaryColour = 1 << 6,
 		HasTertiaryColour_UNUSED = 1 << 7, // unused, setting it in loco does nothing
-	};
+	}
 
 	// this is copied from OpenRCT2: https://github.com/OpenRCT2/OpenRCT2/blob/develop/src/openrct2/object/WallSceneryEntry.h
 	[Flags]
@@ -29,7 +29,7 @@ namespace OpenLoco.Dat.Objects
 		DoorSoundShift = 1 << 2, // unused? only for rct2?
 		Opaque = 1 << 3, // unused? only for rct2?
 		Animated = 1 << 4, // unused? only for rct2?
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x0A)]
@@ -38,7 +38,7 @@ namespace OpenLoco.Dat.Objects
 	public record WallObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x06), LocoPropertyMaybeUnused] uint8_t ToolId,
+		[property: LocoStructOffset(0x06), LocoPropertyMaybeUnused] uint8_t ToolId, //  tool cursor type not used in Locomotion
 		[property: LocoStructOffset(0x07)] WallObjectFlags1 Flags1,
 		[property: LocoStructOffset(0x08)] uint8_t Height,
 		[property: LocoStructOffset(0x09), LocoPropertyMaybeUnused] WallObjectFlags2 Flags2 // none of these are used in Loco

@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace OpenLoco.Dat.FileParsing
 {
 	public static class ByteHelpers
@@ -16,6 +18,10 @@ namespace OpenLoco.Dat.FileParsing
 			else if (type == typeof(uint32_t) || type == typeof(int32_t))
 			{
 				size = 4;
+			}
+			else if (type.IsEnum)
+			{
+				size = Marshal.SizeOf(type.GetEnumUnderlyingType());
 			}
 			else
 			{

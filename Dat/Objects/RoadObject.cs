@@ -17,7 +17,7 @@ namespace OpenLoco.Dat.Objects
 		unk_05 = 1 << 5,
 		IsRoad = 1 << 6, // If not set this is tram track
 		unk_07 = 1 << 7,
-	};
+	}
 
 	[Flags]
 	public enum RoadTraitFlags : uint16_t
@@ -32,7 +32,7 @@ namespace OpenLoco.Dat.Objects
 		unk_06 = 1 << 6, // overtake?
 		unk_07 = 1 << 7,
 		unk_08 = 1 << 8, // streetlight?
-	};
+	}
 
 	public enum TownSize : uint8_t
 	{
@@ -41,7 +41,7 @@ namespace OpenLoco.Dat.Objects
 		Town,
 		City,
 		Metropolis,
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x30)]
@@ -70,7 +70,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x2A), Browsable(false)] uint16_t _CompatibleRoads, // bitset
 		[property: LocoStructOffset(0x2C), Browsable(false)] uint16_t _CompatibleTracks, // bitset
 		[property: LocoStructOffset(0x2E)] TownSize TargetTownSize,
-		[property: LocoStructOffset(0x2F)] uint8_t var_2F
+		[property: LocoStructOffset(0x2F), Browsable(false)] uint8_t pad_2F
 		) : ILocoStruct, ILocoStructVariableData
 	{
 		public List<S5Header> Compatible { get; set; } = [];

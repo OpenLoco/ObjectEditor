@@ -31,15 +31,15 @@
 						<Setter Property="FontSize" Value="14"/>
 					</Style>
 				</TabControl.Styles>
-				<TabItem Header="{Binding ExtraContentViewModelTabName}">
-					<DockPanel>
-						<ContentControl Content="{Binding ExtraContentViewModel}" />
-					</DockPanel>
-				</TabItem>
 				<TabItem Header="Object">
 					<ScrollViewer>
 						<ContentControl Content="{Binding CurrentObjectViewModel}" />
 					</ScrollViewer>
+				</TabItem>
+				<TabItem Header="{Binding ExtraContentViewModelTabName}">
+					<DockPanel>
+						<ContentControl Content="{Binding ExtraContentViewModel}" />
+					</DockPanel>
 				</TabItem>
 				<TabItem Header="String Table">
 					<DockPanel DataContext="{Binding StringTableViewModel}" >

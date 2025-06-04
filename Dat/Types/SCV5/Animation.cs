@@ -9,5 +9,5 @@ namespace OpenLoco.Dat.Types.SCV5
 
 		public bool Validate()
 			=> throw new NotImplementedException();
-	};
+	}
 }

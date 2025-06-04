@@ -15,7 +15,7 @@ namespace OpenLoco.Dat.Objects
 		NoTrees = 1 << 3,
 		unk_04 = 1 << 4,
 		unk_05 = 1 << 5,
-	};
+	}
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
@@ -36,7 +36,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x1A)] uint8_t DistributionPattern,
 		[property: LocoStructOffset(0x1B)] uint8_t NumVariations,
 		[property: LocoStructOffset(0x1C)] uint8_t VariationLikelihood,
-		[property: LocoStructOffset(0x1D)] uint8_t var_1D
+		[property: LocoStructOffset(0x1D), Browsable(false)] uint8_t pad_1D
 		) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
 		public S5Header CliffEdgeHeader { get; set; }

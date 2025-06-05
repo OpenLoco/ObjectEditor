@@ -596,8 +596,8 @@ namespace OpenLoco.Dat.Tests
 			{
 				Assert.That(struc.pad_06, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 2)), nameof(struc.pad_06));
 				Assert.That(struc.NumCargoInfluenceObjects, Is.EqualTo(1), nameof(struc.NumCargoInfluenceObjects));
-				//CollectionAssert.AreEqual(struc.requiredObjects, Array.CreateInstance(typeof(byte), 4), nameof(struc.requiredObjects));
-				Assert.That(struc.CargoInfluenceTownFilter, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 5)), nameof(struc.CargoInfluenceTownFilter));
+				Assert.That(struc.DependentObjects, Has.Count.EqualTo(239), nameof(struc.DependentObjects));
+				Assert.That(struc.CargoInfluenceTownFilter, Is.EquivalentTo(Enumerable.Repeat(CargoInfluenceTownFilterType.AllTowns, 4)), nameof(struc.CargoInfluenceTownFilter));
 
 				Assert.That(obj.G1Elements, Has.Count.EqualTo(1));
 			});
@@ -952,7 +952,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.Sprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.Sprites));
 				Assert.That(struc.SnowSprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.SnowSprites));
 				Assert.That(struc.ShadowImageOffset, Is.EqualTo(0), nameof(struc.ShadowImageOffset));
-				Assert.That(struc.var_3C, Is.EqualTo(15), nameof(struc.var_3C));
+				Assert.That(struc.var_3C, Is.EqualTo(UnkTreeFlags.unk_00 | UnkTreeFlags.unk_01 | UnkTreeFlags.unk_02 | UnkTreeFlags.unk_03), nameof(struc.var_3C));
 				Assert.That(struc.SeasonState, Is.EqualTo(3), nameof(struc.SeasonState));
 				Assert.That(struc.Season, Is.EqualTo(2), nameof(struc.Season));
 				Assert.That(struc.CostIndex, Is.EqualTo(3), nameof(struc.CostIndex));

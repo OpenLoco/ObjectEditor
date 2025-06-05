@@ -1,3 +1,4 @@
+using Dat.Objects;
 using OpenLoco.Dat.Objects;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;

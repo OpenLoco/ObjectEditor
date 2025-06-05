@@ -3,8 +3,71 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using System.ComponentModel;
 
-namespace OpenLoco.Dat.Objects
+namespace Dat.Objects
 {
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x04)]
+	public record AirportBuilding(
+		[property: LocoStructOffset(0x00)] uint8_t Index,
+		[property: LocoStructOffset(0x01)] uint8_t Rotation,
+		[property: LocoStructOffset(0x02)] int8_t X,
+		[property: LocoStructOffset(0x03)] int8_t Y
+		) : ILocoStruct
+	{
+		public AirportBuilding() : this(0, 0, 0, 0)
+		{ }
+
+		public bool Validate()
+			=> true;
+	}
+	public enum AirportMovementNodeFlags : uint16_t
+	{
+		None = 0,
+		Terminal = 1 << 0,
+		TakeoffEnd = 1 << 1,
+		Flag2 = 1 << 2,
+		Taxiing = 1 << 3,
+		InFlight = 1 << 4,
+		HeliTakeoffBegin = 1 << 5,
+		TakeoffBegin = 1 << 6,
+		HeliTakeoffEnd = 1 << 7,
+		Touchdown = 1 << 8,
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x0C)]
+	public record MovementEdge(
+		[property: LocoStructOffset(0x00)] uint8_t var_00,
+		[property: LocoStructOffset(0x01)] uint8_t CurrNode,
+		[property: LocoStructOffset(0x02)] uint8_t NextNode,
+		[property: LocoStructOffset(0x03)] uint8_t var_03,
+		[property: LocoStructOffset(0x04)] uint32_t MustBeClearEdges,    // Which edges must be clear to use the transition edge. should probably be some kind of flags?
+		[property: LocoStructOffset(0x08)] uint32_t AtLeastOneClearEdges // Which edges must have at least one clear to use transition edge. should probably be some kind of flags?
+		) : ILocoStruct
+	{
+		public MovementEdge() : this(0, 0, 0, 0, 0, 0)
+		{ }
+
+		public bool Validate()
+			=> true;
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x08)]
+	public record MovementNode(
+		[property: LocoStructOffset(0x00)] int16_t X,
+		[property: LocoStructOffset(0x02)] int16_t Y,
+		[property: LocoStructOffset(0x04)] int16_t Z,
+		[property: LocoStructOffset(0x06)] AirportMovementNodeFlags Flags
+		) : ILocoStruct
+	{
+		public MovementNode() : this(0, 0, 0, AirportMovementNodeFlags.None)
+		{ }
+
+		public bool Validate()
+			=> true;
+	}
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xBA)]
 	[LocoStructType(ObjectType.Airport)]

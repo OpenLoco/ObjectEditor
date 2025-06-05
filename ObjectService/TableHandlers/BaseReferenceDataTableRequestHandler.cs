@@ -71,7 +71,7 @@ namespace ObjectService.TableHandlers
 		protected abstract TRow ToRowFunc(TDto request);
 		protected abstract TDto ToDtoFunc(TRow request);
 
-		protected abstract bool TryValidateCreate(TDto request, LocoDb db, out IResult result);
+		protected abstract bool TryValidateCreate(TDto request, LocoDb db, out IResult? result);
 
 		public override async Task<IResult> CreateAsync(TDto request, LocoDb db)
 			=> await BaseReferenceDataTableRequestHandlerImpl.CreateAsync(
@@ -107,6 +107,7 @@ namespace ObjectService.TableHandlers
 			{
 				return ErrorMessage!;
 			}
+
 			var row = rowConverter(request);
 			_ = await table.AddAsync(row);
 			_ = await db.SaveChangesAsync();

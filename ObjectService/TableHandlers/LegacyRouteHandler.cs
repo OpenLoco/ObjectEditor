@@ -20,9 +20,9 @@ namespace ObjectService.TableHandlers
 		ServerFolderManager ServerFolderManager { get; init; }
 		PaletteMap PaletteMap { get; init; }
 
-		public LegacyRouteHandler(ServerFolderManager sfm, PaletteMap paletteMap)
+		public LegacyRouteHandler(ServerFolderManager serverFolderManager, PaletteMap paletteMap)
 		{
-			ServerFolderManager = sfm;
+			ServerFolderManager = serverFolderManager;
 			PaletteMap = paletteMap;
 		}
 

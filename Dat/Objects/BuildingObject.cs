@@ -1,3 +1,4 @@
+using Dat.Objects;
 using OpenLoco.Common;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;

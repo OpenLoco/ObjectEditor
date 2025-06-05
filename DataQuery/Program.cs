@@ -1,4 +1,5 @@
 // See https://aka.ms/new-console-template for more information
+using Dat.Objects;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;

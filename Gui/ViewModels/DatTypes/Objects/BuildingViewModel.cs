@@ -1,3 +1,4 @@
+using Dat.Objects;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 using PropertyModels.ComponentModel.DataAnnotations;

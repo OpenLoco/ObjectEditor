@@ -4,8 +4,91 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using System.ComponentModel;
 
-namespace OpenLoco.Dat.Objects
+namespace Dat.Objects
 {
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x02)]
+
+	public record BuildingPartAnimation(
+		[property: LocoStructOffset(0x00)] uint8_t NumFrames,     // Must be a power of 2 (0 = no part animation, could still have animation sequence)
+		[property: LocoStructOffset(0x01)] uint8_t AnimationSpeed // Also encodes in bit 7 if the animation is position modified
+		) : ILocoStruct
+	{
+		public BuildingPartAnimation() : this(0, 0)
+		{ }
+
+		public bool Validate()
+			=> IsPowerOfTwo(NumFrames);
+
+		static bool IsPowerOfTwo(uint8_t x)
+			=> (x & (x - 1)) == 0 && x > 0;
+	}
+
+	[Flags]
+	public enum IndustryObjectFlags : uint32_t
+	{
+		None = 0,
+		BuiltInClusters = 1 << 0,
+		BuiltOnHighGround = 1 << 1,
+		BuiltOnLowGround = 1 << 2,
+		BuiltOnSnow = 1 << 3,        // above summer snow line
+		BuiltBelowSnowLine = 1 << 4, // below winter snow line
+		BuiltOnFlatGround = 1 << 5,
+		BuiltNearWater = 1 << 6,
+		BuiltAwayFromWater = 1 << 7,
+		BuiltOnWater = 1 << 8,
+		BuiltNearTown = 1 << 9,
+		BuiltAwayFromTown = 1 << 10,
+		BuiltNearTrees = 1 << 11,
+		BuiltRequiresOpenSpace = 1 << 12,
+		Oilfield = 1 << 13,
+		Mines = 1 << 14,
+		NotRotatable = 1 << 15,
+		CanBeFoundedByPlayer = 1 << 16,
+		RequiresAllCargo = 1 << 17,
+		CanIncreaseProduction = 1 << 18,
+		CanDecreaseProduction = 1 << 19,
+		RequiresElectricityPylons = 1 << 20,
+		HasShadows = 1 << 21,
+		unk_22 = 1 << 22,
+		unk_23 = 1 << 23,
+		BuiltInDesert = 1 << 24,
+		BuiltNearDesert = 1 << 25,
+		unk_26 = 1 << 26,
+		unk_27 = 1 << 27,
+		unk_28 = 1 << 28,
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x04)]
+
+	public record IndustryObjectProductionRateRange(
+		[property: LocoStructOffset(0x00)] uint16_t Min,
+		[property: LocoStructOffset(0x02)] uint16_t Max
+		) : ILocoStruct
+	{
+		public IndustryObjectProductionRateRange() : this(0, 0)
+		{ }
+
+		public bool Validate()
+			=> true;
+	}
+
+	[TypeConverter(typeof(ExpandableObjectConverter))]
+	[LocoStructSize(0x02)]
+
+	public record IndustryObjectUnk38(
+		[property: LocoStructOffset(0x00)] uint8_t var_00,
+		[property: LocoStructOffset(0x01)] uint8_t var_01
+		) : ILocoStruct
+	{
+		public IndustryObjectUnk38() : this(0, 0)
+		{ }
+
+		public bool Validate()
+			=> true;
+	}
+
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xF4)]
 	[LocoStructType(ObjectType.Industry)]

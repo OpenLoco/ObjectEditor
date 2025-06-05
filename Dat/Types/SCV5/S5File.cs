@@ -6,7 +6,7 @@ namespace OpenLoco.Dat.Types.SCV5
 {
 	public static class ObjectManager
 	{
-		public static readonly S5Header FillHeader = new S5Header(uint.MaxValue, "ÿÿÿÿÿÿÿÿ", uint.MaxValue);
+		public static readonly S5Header FillHeader = new(uint.MaxValue, "ÿÿÿÿÿÿÿÿ", uint.MaxValue);
 
 		public static List<S5Header> GetStructuredHeaders(List<S5Header> allHeaders)
 		{
@@ -81,7 +81,6 @@ namespace OpenLoco.Dat.Types.SCV5
 			};
 	}
 
-
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]
 	public record S5File(
@@ -102,7 +101,7 @@ namespace OpenLoco.Dat.Types.SCV5
 
 		// convert the 1D TileElements into a more usable 2D array
 		public List<TileElement>[,]? TileElementMap { get; set; }
-		byte[] OriginalTileElementData { get; set; }
+		byte[] OriginalTileElementData { get; set; } = [];
 
 		public byte[] Write()
 		{
@@ -134,21 +133,22 @@ namespace OpenLoco.Dat.Types.SCV5
 			var required = SawyerStreamWriter.WriteChunkCore([.. reqData], SawyerEncoding.Rotate);
 
 			// gamestate
-			byte[] gameState;
+			byte[] gameState = [];
 			byte[] tiles = [];
 
-			if (Header.Type == S5FileType.Scenario)
+			if (Header.Type == S5FileType.Scenario && GameState is GameStateScenario gsc)
 			{
-				var gs = (GameStateScenario)GameState;
-				var gA = SawyerStreamWriter.WriteChunk(gs.StateA, SawyerEncoding.RunLengthSingle);
-				var gB = SawyerStreamWriter.WriteChunk(gs.StateB, SawyerEncoding.RunLengthSingle);
-				var gC = SawyerStreamWriter.WriteChunk(gs.StateC, SawyerEncoding.RunLengthSingle);
+				var gA = SawyerStreamWriter.WriteChunk(gsc.StateA, SawyerEncoding.RunLengthSingle);
+				var gB = SawyerStreamWriter.WriteChunk(gsc.StateB, SawyerEncoding.RunLengthSingle);
+				var gC = SawyerStreamWriter.WriteChunk(gsc.StateC, SawyerEncoding.RunLengthSingle);
 				gameState = [.. gA, .. gB, .. gC];
 			}
 			else
 			{
-				var gs = (GameStateSave)GameState;
-				gameState = [.. SawyerStreamWriter.WriteChunk(gs, SawyerEncoding.RunLengthSingle)];
+				if (GameState is GameStateSave gsv)
+				{
+					gameState = [.. SawyerStreamWriter.WriteChunk(gsv, SawyerEncoding.RunLengthSingle)];
+				}
 			}
 
 			if (Header.Flags.HasFlag(HeaderFlags.IsRaw))
@@ -243,9 +243,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		}
 
 		static void FixState()
-		{
-
-		}
+		{ }
 
 		static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData)
 		{

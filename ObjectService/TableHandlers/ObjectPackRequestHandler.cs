@@ -12,7 +12,7 @@ namespace ObjectService.TableHandlers
 			=> Routes.ObjectPacks;
 
 		public override async Task<IResult> CreateAsync(DtoItemPackDescriptor<DtoObjectEntry> request, LocoDb db)
-			=> throw new NotImplementedException();
+			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		public override async Task<IResult> ReadAsync(int id, LocoDb db)
 			=> Results.Ok(
@@ -25,10 +25,10 @@ namespace ObjectService.TableHandlers
 				.OrderBy(x => x.Name));
 
 		public override async Task<IResult> UpdateAsync(DtoItemPackDescriptor<DtoObjectEntry> request, LocoDb db)
-			=> throw new NotImplementedException();
+			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
-			=> throw new NotImplementedException();
+			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		public override async Task<IResult> ListAsync(HttpContext context, LocoDb db)
 			=> Results.Ok(

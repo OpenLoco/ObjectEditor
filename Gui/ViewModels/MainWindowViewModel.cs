@@ -176,10 +176,12 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {Model.Settings.AppDataObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.AppDataObjDataFolder)));
 			}
+
 			if (Directory.Exists(Model.Settings.LocomotionObjDataFolder))
 			{
 				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.Locomotion)}] {Model.Settings.LocomotionObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionObjDataFolder)));
 			}
+
 			if (Directory.Exists(Model.Settings.OpenLocoObjDataFolder))
 			{
 				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.OpenLoco)}] {Model.Settings.OpenLocoObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.OpenLocoObjDataFolder)));
@@ -394,21 +396,25 @@ namespace OpenLoco.Gui.ViewModels
 				Model.Logger.Warning("Directory doesn't exist");
 				return;
 			}
+
 			if (Model.Settings.ObjDataDirectories.Contains(dirPath))
 			{
 				Model.Logger.Warning("Object directory is already in the list");
 				return;
 			}
+
 			if (Model.Settings.AppDataObjDataFolder != dirPath)
 			{
 				Model.Logger.Warning("No need to add - this is the predefined AppData folder");
 				return;
 			}
+
 			if (Model.Settings.LocomotionObjDataFolder != dirPath)
 			{
 				Model.Logger.Warning("No need to add - this is the predefined Locomotion ObjData folder");
 				return;
 			}
+
 			if (Model.Settings.OpenLocoObjDataFolder != dirPath)
 			{
 				Model.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");

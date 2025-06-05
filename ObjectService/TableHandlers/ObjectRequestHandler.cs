@@ -333,7 +333,7 @@ namespace ObjectService.TableHandlers
 					: null;
 			}
 
-			return obj;
+			return obj!;
 		}
 
 		IResult ReturnFile(TblObject? obj)

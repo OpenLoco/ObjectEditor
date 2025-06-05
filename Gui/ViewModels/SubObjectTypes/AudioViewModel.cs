@@ -1,6 +1,6 @@
+using Dat.Objects;
 using NAudio.Wave;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

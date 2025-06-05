@@ -26,11 +26,11 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Range(0, 4)] public uint8_t NumCarComponents { get; set; }
 		[Reactive, Length(0, 8)] public BindingList<S5HeaderViewModel> CompatibleVehicles { get; set; }
 		[Reactive, Length(0, 4)] public BindingList<S5HeaderViewModel> RequiredTrackExtras { get; set; }
+		[Reactive, Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")] public uint8_t ShipWakeOffset { get; set; }
 		[Reactive, Category("Cost"), Range(0, 32)] public uint8_t CostIndex { get; set; }
 		[Reactive, Category("Cost"), Range(1, int16_t.MaxValue)] public int16_t CostFactor { get; set; }
 		[Reactive, Category("Cost"), Range(0, 32)] public uint8_t RunCostIndex { get; set; }
 		[Reactive, Category("Cost"), Range(0, int16_t.MaxValue)] public int16_t RunCostFactor { get; set; }
-		[Reactive, Category("<unknown>")] public uint8_t var_113 { get; set; }
 		[Reactive, Category("Sprites")] public CompanyColourType SpecialColourSchemeIndex { get; set; } // called "ColourType" in the loco codebase
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<VehicleObjectCar> CarComponents { get; set; }
 		[Reactive, Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; set; }
@@ -79,7 +79,7 @@ namespace OpenLoco.Gui.ViewModels
 			CargoTypeSpriteOffsets = new(vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList());
 			Animation = new(vo.Animation);
 			AnimationHeaders = new(vo.AnimationHeaders.ConvertAll(x => new S5HeaderViewModel(x)));
-			var_113 = vo.var_113;
+			ShipWakeOffset = vo.ShipWakeOffset;
 			DesignedYear = vo.DesignedYear;
 			ObsoleteYear = vo.ObsoleteYear;
 			RackRail = vo.RackRail == null ? null : new(vo.RackRail);
@@ -115,7 +115,7 @@ namespace OpenLoco.Gui.ViewModels
 				RackSpeed = RackSpeed,
 				Weight = Weight,
 				Flags = Flags,
-				var_113 = var_113,
+				ShipWakeOffset = ShipWakeOffset,
 				DesignedYear = DesignedYear,
 				ObsoleteYear = ObsoleteYear,
 				RackRail = RackRail?.GetAsUnderlyingType(),

@@ -12,19 +12,62 @@ using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
+using static ObjectService.TableHandlers.LegacyDtoExtensions;
 
 namespace ObjectService.TableHandlers
 {
-	public class LegacyRouteHandler
+	public static class LegacyDtoExtensions
 	{
-		ServerFolderManager ServerFolderManager { get; init; }
-		PaletteMap PaletteMap { get; init; }
+		public record LegacyDtoObjectDescriptor(
+			int Id,
+			string DatName,
+			uint DatChecksum,
+			ObjectSource ObjectSource,
+			ObjectType ObjectType,
+			VehicleType? VehicleType,
+			string InternalName,
+			string? Description,
+			DateTimeOffset? CreationDate,
+			DateTimeOffset? LastEditDate,
+			DateTimeOffset UploadDate);
 
-		public LegacyRouteHandler(ServerFolderManager serverFolderManager, PaletteMap paletteMap)
-		{
-			ServerFolderManager = serverFolderManager;
-			PaletteMap = paletteMap;
-		}
+		public static LegacyDtoObjectDescriptor ToDtoEntryLegacy(this TblObject table)
+			=> new(
+				table.Id,
+				table.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
+				table.DatObjects.FirstOrDefault()?.DatChecksum ?? 0,
+				table.ObjectSource,
+				table.ObjectType,
+				table.VehicleType,
+				table.Name,
+				table.Description,
+				table.CreatedDate,
+				table.ModifiedDate,
+				table.UploadedDate);
+
+		public record LegacyDtoObjectDescriptorWithMetadata(
+			int Id,
+			string UniqueName,
+			string DatName,
+			uint DatChecksum,
+			string? DatBytes, // base64-encoded
+			ObjectSource ObjectSource,
+			ObjectType ObjectType,
+			VehicleType? VehicleType,
+			string? Description,
+			ICollection<TblAuthor> Authors,
+			DateTimeOffset? CreationDate,
+			DateTimeOffset? LastEditDate,
+			DateTimeOffset UploadDate,
+			ICollection<TblTag> Tags,
+			ICollection<TblObjectPack> ObjectPacks,
+			TblLicence? Licence);
+	}
+
+	public class LegacyRouteHandler(ServerFolderManager serverFolderManager, PaletteMap paletteMap)
+	{
+		ServerFolderManager ServerFolderManager { get; init; } = serverFolderManager;
+		PaletteMap PaletteMap { get; init; } = paletteMap;
 
 		OpenLoco.Common.Logging.ILogger Logger { get; } = new Logger();
 
@@ -127,7 +170,7 @@ namespace ObjectService.TableHandlers
 			try
 			{
 				var result = await query
-					.Select(x => x.ToDtoEntry())
+					.Select(x => x.ToDtoEntryLegacy())
 					.ToListAsync();
 
 				return Results.Ok(result);
@@ -266,25 +309,25 @@ namespace ObjectService.TableHandlers
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
-			var dtoObject = new DtoObjectDescriptor(
+			var result = new LegacyDtoObjectDescriptorWithMetadata(
 				obj.Id,
 				obj.Name,
 				obj.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
-				obj.Description,
+				obj.DatObjects.FirstOrDefault()?.DatChecksum ?? 0,
+				bytes,
 				obj.ObjectSource,
 				obj.ObjectType,
 				obj.VehicleType,
+				obj.Description,
+				eObj.Authors,
 				obj.CreatedDate,
 				obj.ModifiedDate,
 				obj.UploadedDate,
-				obj.Licence?.ToDtoEntry(),
-				[.. eObj.Authors.Select(x => x.ToDtoEntry())],
-				[.. eObj.Tags.Select(x => x.ToDtoEntry())],
-				[.. eObj.Packs.Select(x => x.ToDtoEntry())],
-				[.. obj.DatObjects.Select(x => x.ToDtoEntry())],
-				obj.StringTable.ToDtoDescriptor(obj.Id));
+				eObj.Tags,
+				eObj.Packs,
+				obj.Licence);
 
-			return Results.Ok(eObj.ToDtoDescriptor());
+			return Results.Ok(result);
 		}
 
 		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123

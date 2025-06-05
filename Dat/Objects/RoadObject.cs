@@ -84,7 +84,7 @@ namespace OpenLoco.Dat.Objects
 		public const int MaxStations = 7;
 		public const int MaxMods = 2;
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible roads/tracks
 			Compatible = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatible);
@@ -112,7 +112,7 @@ namespace OpenLoco.Dat.Objects
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			//var data = new byte[S5Header.StructLength * (NumCompatible + NumMods + 1 + NumBridges + NumStations)];
 

@@ -61,7 +61,7 @@ namespace Dat.Objects
 		uint pcmDataLength;
 		byte[] unkData;
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// unknown structs
 			numUnkStructs = BitConverter.ToUInt32(remainingData[0..4]);
@@ -84,7 +84,7 @@ namespace Dat.Objects
 			return remainingData[remainingData.Length..];
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			using (var ms = new MemoryStream())
 			using (var br = new BinaryWriter(ms))

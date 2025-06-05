@@ -105,7 +105,7 @@ namespace Dat.Objects
 		public const int BuildingHeightCount = 4;
 		public const int BuildingAnimationCount = 2;
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// variation heights
 			BuildingHeights.Clear();
@@ -160,7 +160,7 @@ namespace Dat.Objects
 			return remainingData[(NumMovementEdges * edgeSize)..];
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			var ms = new MemoryStream();
 

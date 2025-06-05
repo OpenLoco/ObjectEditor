@@ -408,7 +408,7 @@ namespace OpenLoco.Dat.FileParsing
 			// variable data
 			if (obj.Object is ILocoStructVariableData objV)
 			{
-				var variableBytes = objV.Save();
+				var variableBytes = objV.SaveVariable();
 				rawObjStream.Write(variableBytes);
 			}
 

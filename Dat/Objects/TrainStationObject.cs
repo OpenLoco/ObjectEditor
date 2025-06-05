@@ -66,7 +66,7 @@ namespace OpenLoco.Dat.Objects
 
 		public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset(), 15)];
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible
 			CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, CompatibleTrackObjectCount);
@@ -117,7 +117,7 @@ namespace OpenLoco.Dat.Objects
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			using (var ms = new MemoryStream())
 			{

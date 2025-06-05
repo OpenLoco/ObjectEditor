@@ -161,7 +161,7 @@ namespace Dat.Objects
 		public image_id var_16 { get; private set; }
 		public image_id var_1A { get; private set; }
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// part heights
 			BuildingHeights.Clear();
@@ -264,7 +264,7 @@ namespace Dat.Objects
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			using (var ms = new MemoryStream())
 			{

@@ -56,7 +56,7 @@ namespace OpenLoco.Dat.Objects
 
 		public List<S5Header> SoundEffects { get; set; } = [];
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// frameInfoType0
 			FrameInfoType0.Clear();
@@ -90,7 +90,7 @@ namespace OpenLoco.Dat.Objects
 		}
 
 		// todo: optimise this with streams - this is quite slow as is
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 			=> FrameInfoType0.SelectMany(x => new byte[] { x.ImageOffset, x.Height })
 			.Concat(new byte[] { 0xFF })
 			.Concat(FrameInfoType1.SelectMany(x => new byte[] { x.ImageOffset, x.Height }))

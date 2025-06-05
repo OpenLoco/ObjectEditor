@@ -57,7 +57,7 @@ namespace OpenLoco.Dat.FileParsing
 			var currentRemainingData = remainingData.Length;
 			if (locoStruct is ILocoStructVariableData locoStructExtra)
 			{
-				remainingData = locoStructExtra.Load(remainingData);
+				remainingData = locoStructExtra.LoadVariable(remainingData);
 			}
 
 			annotations.Add(new HexAnnotation("Loco Variables", runningCount, currentRemainingData - remainingData.Length));

@@ -165,7 +165,7 @@ namespace OpenLoco.Dat.FileParsing
 			// some objects have variable-sized data
 			if (loadExtra && locoStruct is ILocoStructVariableData locoStructExtra)
 			{
-				remainingData = locoStructExtra.Load(remainingData);
+				remainingData = locoStructExtra.LoadVariable(remainingData);
 			}
 
 			LocoObject? newObj;
@@ -188,7 +188,7 @@ namespace OpenLoco.Dat.FileParsing
 				logger.Debug($"\"{s5Header.Name}\" has {remainingData.Length} bytes unaccounted for. What is this extra data???");
 			}
 
-			// some objects have variable-sized data
+			// some objects have extra computation that must be done after the object is fully loaded
 			if (loadExtra && locoStruct is ILocoStructPostLoad locoStructPostLoad)
 			{
 				locoStructPostLoad.PostLoad();

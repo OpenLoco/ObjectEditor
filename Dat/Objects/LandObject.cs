@@ -42,7 +42,7 @@ namespace OpenLoco.Dat.Objects
 		public S5Header CliffEdgeHeader { get; set; }
 		public S5Header UnkObjHeader { get; set; }
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// cliff edge header
 			CliffEdgeHeader = S5Header.Read(remainingData[..S5Header.StructLength]);
@@ -58,7 +58,7 @@ namespace OpenLoco.Dat.Objects
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			var variableDataSize = S5Header.StructLength + (Flags.HasFlag(LandObjectFlags.unk_01) ? S5Header.StructLength : 0);
 			_ = new byte[variableDataSize];

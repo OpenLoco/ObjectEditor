@@ -30,7 +30,7 @@ namespace OpenLoco.Dat.Objects
 		public List<S5Header> CargoInfluenceObjects { get; set; } = [];
 		public List<S5Header> DependentObjects { get; set; } = [];
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// cargo influence objects
 			CargoInfluenceObjects.Clear();
@@ -48,7 +48,7 @@ namespace OpenLoco.Dat.Objects
 			return remainingData[1..];
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			var variableBytesLength = (S5Header.StructLength * (CargoInfluenceObjects.Count + DependentObjects.Count)) + 1;
 			var span = new byte[variableBytesLength].AsSpan();

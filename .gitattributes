@@ -1,7 +1,5 @@
-# Set default behavior to automatically normalize line endings
-* text=auto
-
 # Force LF line endings for specific file types
+*.txt text
 *.cs text eol=lf
 
 # Add any other file extensions that should use LF endings

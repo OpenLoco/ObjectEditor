@@ -118,7 +118,7 @@ namespace OpenLoco.Dat.Objects
 
 		public List<S5Header> AnimationHeaders { get; set; } = [];
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// track type
 			if (!Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
@@ -228,7 +228,7 @@ namespace OpenLoco.Dat.Objects
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			var ms = new MemoryStream();
 

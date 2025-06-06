@@ -71,15 +71,33 @@ namespace OpenLoco.Definitions.Web
 			}
 		}
 
-		public static async Task UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateTimeOffset creationDate, DateTimeOffset modifiedDate, ILogger logger)
+		public static async Task<bool> Delete<T>(HttpClient client, string route, ILogger? logger = null)
+			=> await SendRequest(
+				client,
+				route,
+				() => client.DeleteAsync(route),
+				logger);
+
+		public static async Task<bool> Post<T>(HttpClient client, string route, T request, ILogger? logger = null)
+			=> await SendRequest(
+				client,
+				route,
+				() => client.PostAsJsonAsync(route, request),
+				logger);
+
+		public static async Task<bool> SendRequest(HttpClient client, string route, Func<Task<HttpResponseMessage>> httpFunc, ILogger? logger = null)
 		{
 			try
 			{
-				var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-				var route = $"{client.BaseAddress?.OriginalString}{Routes.Objects}";
-				logger.Debug($"Posting {filename} to {route}");
-				var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), xxHash3, creationDate, modifiedDate);
-				var response = await client.PostAsJsonAsync(Routes.Objects, request);
+				if (!Uri.TryCreate(client.BaseAddress, route, out var uri))
+				{
+					logger?.Error($"Unable to create a URI from base=\"{client.BaseAddress}\" and route=\"{route}\"");
+					return default;
+				}
+
+				logger?.Debug($"Sending to {uri}");
+
+				var response = await httpFunc();
 
 				if (!response.IsSuccessStatusCode)
 				{
@@ -87,22 +105,32 @@ namespace OpenLoco.Definitions.Web
 
 					if (string.IsNullOrEmpty(error))
 					{
-						logger.Error($"Posting {filename} failed. StatusCode={response.StatusCode} ReasonPhrase={response.ReasonPhrase}");
+						logger?.Error($"Failed. StatusCode={response.StatusCode} ReasonPhrase={response.ReasonPhrase}");
 					}
 					else
 					{
-						logger.Error($"Posting {filename} failed. Error={error}");
+						logger?.Error($"Failed. Error={error}");
 					}
 
-					return;
+					return false;
 				}
 
-				logger.Debug($"Uploaded {filename} to main server successfully");
+				logger?.Debug("Success");
+				return true;
 			}
 			catch (Exception ex)
 			{
-				logger.Error(ex);
+				logger?.Error(ex);
+				return false;
 			}
+		}
+
+		public static async Task UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateTimeOffset creationDate, DateTimeOffset modifiedDate, ILogger logger)
+		{
+			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
+			logger.Debug($"Posting {filename} to {client.BaseAddress?.OriginalString}{Routes.Objects}");
+			var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), xxHash3, creationDate, modifiedDate);
+			_ = await Post(client, Routes.Objects, request);
 		}
 	}
 }

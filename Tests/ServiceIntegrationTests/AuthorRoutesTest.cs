@@ -52,5 +52,56 @@ namespace OpenLoco.Tests.ServiceIntegrationTests
 			});
 		}
 
+		[Test]
+		public async Task Post()
+		{
+			// arrange
+			var preResults = await Client.Get<IEnumerable<DtoAuthorEntry>>(HttpClient!, Routes.Authors);
+			Assert.That(preResults.Count(), Is.Zero);
+
+			// act
+			var postResult = await Client.Post(HttpClient!, Routes.Authors, new DtoAuthorEntry(0, "Fred"));
+			Assert.That(postResult);
+
+			// act
+			var results = await Client.Get<DtoAuthorEntry>(HttpClient!, Routes.Authors + "/1");
+
+			// assert
+			Assert.Multiple(() =>
+			{
+				Assert.That(results, Is.Not.Null);
+				Assert.That(results.Id, Is.EqualTo(1));
+				Assert.That(results.Name, Is.EqualTo("Fred"));
+			});
+		}
+
+		[Test]
+		public async Task Delete()
+		{
+			// arrange
+			await SeedTestData(TestData);
+
+			// pre-assert
+			Assert.Multiple(async () =>
+			{
+				var results = await Client.Get<IEnumerable<DtoAuthorEntry>>(HttpClient!, Routes.Authors);
+				Assert.That(results, Is.Not.Null);
+				Assert.That(results.Count(), Is.EqualTo(2));
+				Assert.That(results.First().Name, Is.EqualTo("Alice"));
+				Assert.That(results.Last().Name, Is.EqualTo("Bob"));
+			});
+
+			// act
+			var results = await Client.Delete<DtoAuthorEntry>(HttpClient!, Routes.Authors + "/1");
+
+			// assert
+			Assert.Multiple(async () =>
+			{
+				var results = await Client.Get<IEnumerable<DtoAuthorEntry>>(HttpClient!, Routes.Authors);
+				Assert.That(results, Is.Not.Null);
+				Assert.That(results.Count(), Is.EqualTo(1));
+				Assert.That(results.Last().Name, Is.EqualTo("Bob"));
+			});
+		}
 	}
 }

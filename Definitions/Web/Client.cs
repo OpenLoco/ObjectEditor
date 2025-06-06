@@ -17,6 +17,10 @@ namespace OpenLoco.Definitions.Web
 		public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, int id, ILogger? logger = null)
 			=> await SendRequestAsync<byte[]?>(client, Routes.Objects + $"/{id}/file", ReadBinaryContentAsync, logger);
 
+		// generic method
+		public static async Task<T?> Get<T>(HttpClient client, string route, ILogger? logger = null)
+			=> await SendRequestAsync(client, route, ReadJsonContentAsync<T?>, logger) ?? default;
+
 		static async Task<T?> ReadJsonContentAsync<T>(HttpContent content)
 			=> await content.ReadFromJsonAsync<T?>();
 

@@ -9,7 +9,7 @@ using OpenLoco.Definitions.Database;
 
 namespace Definitions.Migrations
 {
-    [DbContext(typeof(LocoDb))]
+    [DbContext(typeof(LocoDbContext))]
     partial class LocoDbModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

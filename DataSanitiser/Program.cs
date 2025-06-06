@@ -6,7 +6,7 @@ using System.IO.Hashing;
 
 async static void WritexxHash3()
 {
-	var db = LocoDb.GetDbFromFile(LocoDb.DefaultDb);
+	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 	const string objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
 	var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
@@ -32,13 +32,13 @@ async static void WritexxHash3()
 	_ = await db.SaveChangesAsync();
 
 	// Note: The database must exist before this script works
-	Console.WriteLine($"Database path: {LocoDb.DefaultDb}");
+	Console.WriteLine($"Database path: {LocoDbContext.DefaultDb}");
 }
 //WritexxHash3();
 
 async static void WriteStringTable()
 {
-	var db = LocoDb.GetDbFromFile(LocoDb.DefaultDb);
+	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 	const string objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
 	var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
@@ -96,7 +96,7 @@ async static void WriteStringTable()
 	_ = await db.SaveChangesAsync();
 
 	// Note: The database must exist before this script works
-	Console.WriteLine($"Database path: {LocoDb.DefaultDb}");
+	Console.WriteLine($"Database path: {LocoDbContext.DefaultDb}");
 }
 //WriteStringTable();
 

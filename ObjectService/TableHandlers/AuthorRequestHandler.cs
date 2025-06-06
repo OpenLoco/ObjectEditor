@@ -11,7 +11,7 @@ namespace ObjectService.TableHandlers
 		public override string BaseRoute
 			=> Routes.Authors;
 
-		protected override DbSet<TblAuthor> GetTable(LocoDb db)
+		protected override DbSet<TblAuthor> GetTable(LocoDbContext db)
 			=> db.Authors;
 
 		protected override void UpdateFunc(DtoAuthorEntry request, TblAuthor row)
@@ -23,7 +23,7 @@ namespace ObjectService.TableHandlers
 		protected override DtoAuthorEntry ToDtoFunc(TblAuthor table)
 			=> table.ToDtoEntry();
 
-		protected override bool TryValidateCreate(DtoAuthorEntry request, LocoDb db, out IResult? result)
+		protected override bool TryValidateCreate(DtoAuthorEntry request, LocoDbContext db, out IResult? result)
 		{
 			if (string.IsNullOrWhiteSpace(request.Name))
 			{

@@ -10,7 +10,7 @@ namespace ObjectService.TableHandlers
 		public override string BaseRoute
 			=> Routes.Tags;
 
-		protected override DbSet<TblTag> GetTable(LocoDb db)
+		protected override DbSet<TblTag> GetTable(LocoDbContext db)
 			=> db.Tags;
 
 		protected override void UpdateFunc(DtoTagEntry request, TblTag row)
@@ -22,7 +22,7 @@ namespace ObjectService.TableHandlers
 		protected override DtoTagEntry ToDtoFunc(TblTag table)
 			=> table.ToDtoEntry();
 
-		protected override bool TryValidateCreate(DtoTagEntry request, LocoDb db, out IResult? result)
+		protected override bool TryValidateCreate(DtoTagEntry request, LocoDbContext db, out IResult? result)
 		{
 			if (string.IsNullOrWhiteSpace(request.Name))
 			{

@@ -11,10 +11,10 @@ namespace ObjectService.TableHandlers
 		public override string BaseRoute
 			=> Routes.SC5FilePacks;
 
-		public override async Task<IResult> CreateAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, LocoDb db)
+		public override async Task<IResult> CreateAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ReadAsync(int id, LocoDb db)
+		public override async Task<IResult> ReadAsync(int id, LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Where(x => x.Id == id)
@@ -24,13 +24,13 @@ namespace ObjectService.TableHandlers
 				.Select(x => x.ToDtoDescriptor())
 				.OrderBy(x => x.Name));
 
-		public override async Task<IResult> UpdateAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, LocoDb db)
+		public override async Task<IResult> UpdateAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
+		public override async Task<IResult> DeleteAsync(int id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ListAsync(HttpContext context, LocoDb db)
+		public override async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Include(l => l.Licence)

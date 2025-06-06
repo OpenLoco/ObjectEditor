@@ -31,10 +31,10 @@ namespace ObjectService.TableHandlers
 			_ = resourceRoute.MapGet(Routes.Images, GetObjectImages);
 		}
 
-		public override async Task<IResult> CreateAsync(DtoObjectDescriptor request, LocoDb db)
+		public override async Task<IResult> CreateAsync(DtoObjectDescriptor request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ReadAsync(int id, LocoDb db)
+		public override async Task<IResult> ReadAsync(int id, LocoDbContext db)
 		{
 			var eObj = await db.Objects
 				.Where(x => x.Id == id)
@@ -47,13 +47,13 @@ namespace ObjectService.TableHandlers
 			return ReturnObject(eObj);
 		}
 
-		public override async Task<IResult> UpdateAsync(DtoObjectDescriptor request, LocoDb db)
+		public override async Task<IResult> UpdateAsync(DtoObjectDescriptor request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
+		public override async Task<IResult> DeleteAsync(int id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ListAsync(HttpContext context, LocoDb db)
+		public override async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
 		{
 			if (context.Request.Query.Count > 0)
 			{
@@ -222,7 +222,7 @@ namespace ObjectService.TableHandlers
 		//}
 
 		// eg: http://localhost:7229/v1/objects/{id}/images
-		public async Task<IResult> GetObjectImages(int id, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetObjectImages(int id, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
 			// currently we MUST have a DAT backing object
 			logger.LogInformation("Object [{uniqueObjectId}] requested with images", id);
@@ -303,7 +303,7 @@ namespace ObjectService.TableHandlers
 		//}
 
 		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
-		public async Task<IResult> GetObjectFile([FromRoute] int id, LocoDb db)
+		public async Task<IResult> GetObjectFile([FromRoute] int id, LocoDbContext db)
 		{
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
@@ -362,7 +362,7 @@ namespace ObjectService.TableHandlers
 				: Results.NotFound();
 		}
 
-		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Upload requested");
 

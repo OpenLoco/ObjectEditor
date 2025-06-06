@@ -5,7 +5,7 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
 
-var db = LocoDb.GetDbFromFile(LocoDb.DefaultDb);
+var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 
 Console.WriteLine("loading");
 

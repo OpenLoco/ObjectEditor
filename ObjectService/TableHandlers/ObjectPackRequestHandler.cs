@@ -11,10 +11,10 @@ namespace ObjectService.TableHandlers
 		public override string BaseRoute
 			=> Routes.ObjectPacks;
 
-		public override async Task<IResult> CreateAsync(DtoItemPackDescriptor<DtoObjectEntry> request, LocoDb db)
+		public override async Task<IResult> CreateAsync(DtoItemPackDescriptor<DtoObjectEntry> request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ReadAsync(int id, LocoDb db)
+		public override async Task<IResult> ReadAsync(int id, LocoDbContext db)
 			=> Results.Ok(
 				(await db.ObjectPacks
 					.Where(x => x.Id == id)
@@ -24,13 +24,13 @@ namespace ObjectService.TableHandlers
 				.Select(x => x.ToDtoDescriptor())
 				.OrderBy(x => x.Name));
 
-		public override async Task<IResult> UpdateAsync(DtoItemPackDescriptor<DtoObjectEntry> request, LocoDb db)
+		public override async Task<IResult> UpdateAsync(DtoItemPackDescriptor<DtoObjectEntry> request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
+		public override async Task<IResult> DeleteAsync(int id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ListAsync(HttpContext context, LocoDb db)
+		public override async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
 			=> Results.Ok(
 				(await db.ObjectPacks
 					.Include(l => l.Licence)

@@ -3,7 +3,7 @@ using OpenLoco.Dat.Types;
 
 namespace OpenLoco.Definitions.Database
 {
-	public class LocoDb : DbContext
+	public class LocoDbContext : DbContext
 	{
 		#region ReferenceData
 
@@ -23,10 +23,10 @@ namespace OpenLoco.Definitions.Database
 
 		#endregion
 
-		public LocoDb()
+		public LocoDbContext()
 		{ }
 
-		public LocoDb(DbContextOptions<LocoDb> options) : base(options)
+		public LocoDbContext(DbContextOptions<LocoDbContext> options) : base(options)
 		{ }
 
 		public static string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco.db";
@@ -39,13 +39,13 @@ namespace OpenLoco.Definitions.Database
 			}
 		}
 
-		public static LocoDb? GetDbFromFile(string path) // path is the full/absolute file path
+		public static LocoDbContext? GetDbFromFile(string path) // path is the full/absolute file path
 		{
 			if (!string.IsNullOrEmpty(path) && File.Exists(path))
 			{
-				var builder = new DbContextOptionsBuilder<LocoDb>();
+				var builder = new DbContextOptionsBuilder<LocoDbContext>();
 				_ = builder.UseSqlite($"Data Source={path}");
-				return new LocoDb(builder.Options);
+				return new LocoDbContext(builder.Options);
 			}
 
 			return null;

@@ -14,19 +14,19 @@ namespace ObjectService.TableHandlers
 		public override string BaseRoute
 			=> Routes.Scenarios;
 
-		public override async Task<IResult> CreateAsync(DtoScenarioEntry request, LocoDb db)
+		public override async Task<IResult> CreateAsync(DtoScenarioEntry request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ReadAsync(int id, LocoDb db)
+		public override async Task<IResult> ReadAsync(int id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> UpdateAsync(DtoScenarioEntry request, LocoDb db)
+		public override async Task<IResult> UpdateAsync(DtoScenarioEntry request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> DeleteAsync(int id, LocoDb db)
+		public override async Task<IResult> DeleteAsync(int id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ListAsync(HttpContext context, LocoDb db)
+		public override async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
 			=> await Task.Run(() =>
 			{
 				var files = Directory.GetFiles(ScenarioFolderOnDisk, "*.SC5", SearchOption.AllDirectories);

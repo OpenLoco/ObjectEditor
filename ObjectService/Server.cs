@@ -43,6 +43,9 @@ namespace OpenLoco.ObjectService
 			SC5FilePackHandler.MapRoutes(routeGroup);
 			ObjectPackHandler.MapRoutes(routeGroup);
 
+			// StringTable
+			// DatLookup(?)
+
 			LegacyRouteHandler.MapRoutes(routeGroup);
 
 			return routeGroup;

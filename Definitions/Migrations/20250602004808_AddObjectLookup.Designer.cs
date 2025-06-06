@@ -10,7 +10,7 @@ using OpenLoco.Definitions.Database;
 
 namespace Definitions.Migrations
 {
-    [DbContext(typeof(LocoDb))]
+    [DbContext(typeof(LocoDbContext))]
     [Migration("20250602004808_AddObjectLookup")]
     partial class AddObjectLookup
     {

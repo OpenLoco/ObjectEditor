@@ -10,7 +10,7 @@ namespace ObjectService.TableHandlers
 		public override string BaseRoute
 			=> Routes.Licences;
 
-		protected override DbSet<TblLicence> GetTable(LocoDb db)
+		protected override DbSet<TblLicence> GetTable(LocoDbContext db)
 			=> db.Licences;
 
 		protected override void UpdateFunc(DtoLicenceEntry request, TblLicence row)
@@ -22,7 +22,7 @@ namespace ObjectService.TableHandlers
 		protected override DtoLicenceEntry ToDtoFunc(TblLicence table)
 			=> table.ToDtoEntry();
 
-		protected override bool TryValidateCreate(DtoLicenceEntry request, LocoDb db, out IResult? result)
+		protected override bool TryValidateCreate(DtoLicenceEntry request, LocoDbContext db, out IResult? result)
 		{
 			if (string.IsNullOrWhiteSpace(request.Name))
 			{

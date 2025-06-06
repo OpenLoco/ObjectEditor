@@ -10,7 +10,7 @@ using OpenLoco.Definitions.Database;
 
 namespace Definitions.Migrations
 {
-    [DbContext(typeof(LocoDb))]
+    [DbContext(typeof(LocoDbContext))]
     [Migration("20250112060337_InitialCreate")]
     partial class InitialCreate
     {

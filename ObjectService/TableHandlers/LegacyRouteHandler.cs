@@ -111,7 +111,7 @@ namespace ObjectService.TableHandlers
 			[FromQuery] string? authorName,
 			[FromQuery] string? tagName,
 			[FromQuery] ObjectSource? objectSource,
-			LocoDb db)
+			LocoDbContext db)
 		{
 			var query = db.Objects
 				.Include(x => x.DatObjects)
@@ -182,7 +182,7 @@ namespace ObjectService.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		public async Task<IResult> GetDat([FromQuery] string datName, [FromQuery] uint datChecksum, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetDat([FromQuery] string datName, [FromQuery] uint datChecksum, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", datName, datChecksum);
 
@@ -197,7 +197,7 @@ namespace ObjectService.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
-		public async Task<IResult> GetObjectImages(int uniqueObjectId, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetObjectImages(int uniqueObjectId, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested with images");
 
@@ -267,7 +267,7 @@ namespace ObjectService.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
-		public async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Object [{UniqueObjectId}] requested", uniqueObjectId);
 
@@ -331,7 +331,7 @@ namespace ObjectService.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123
-		public async Task<IResult> GetDatFile([FromQuery] string datName, [FromQuery] uint datChecksum, LocoDb db)
+		public async Task<IResult> GetDatFile([FromQuery] string datName, [FromQuery] uint datChecksum, LocoDbContext db)
 		{
 			var obj = await db.DatObjects
 				.Include(x => x.Object)
@@ -347,7 +347,7 @@ namespace ObjectService.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
-		public async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, LocoDb db)
+		public async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, LocoDbContext db)
 		{
 			var obj = await db.DatObjects
 				.Include(x => x.Object)
@@ -403,31 +403,31 @@ namespace ObjectService.TableHandlers
 			});
 
 		// eg: https://localhost:7230/v1/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
-		public async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<Server> logger)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		#endregion
 
 		// eg: https://localhost:7230/v1/authors/list
-		public async Task<IResult> ListAuthors(LocoDb db)
+		public async Task<IResult> ListAuthors(LocoDbContext db)
 			=> Results.Ok(await db.Authors
 				.Select(x => new DtoAuthorEntry(x.Id, x.Name))
 				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/licences/list
-		public async Task<IResult> ListLicences(LocoDb db)
+		public async Task<IResult> ListLicences(LocoDbContext db)
 			=> Results.Ok(await db.Licences
 				.Select(x => new DtoLicenceEntry(x.Id, x.Name, x.Text))
 				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/tags/list
-		public async Task<IResult> ListTags(LocoDb db)
+		public async Task<IResult> ListTags(LocoDbContext db)
 			=> Results.Ok(await db.Tags
 				.Select(x => new DtoTagEntry(x.Id, x.Name))
 				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/objectpacks/list
-		public async Task<IResult> ListObjectPacks(LocoDb db)
+		public async Task<IResult> ListObjectPacks(LocoDbContext db)
 			=> Results.Ok(
 				(await db.ObjectPacks
 					.Include(l => l.Licence)
@@ -436,7 +436,7 @@ namespace ObjectService.TableHandlers
 				.OrderBy(x => x.Name));
 
 		// eg: https://localhost:7230/v1/objectpacks/getpack?uniqueId=123
-		public async Task<IResult> GetObjectPack([FromQuery] int uniqueId, LocoDb db)
+		public async Task<IResult> GetObjectPack([FromQuery] int uniqueId, LocoDbContext db)
 			=> Results.Ok(
 				(await db.ObjectPacks
 					.Where(x => x.Id == uniqueId)
@@ -447,7 +447,7 @@ namespace ObjectService.TableHandlers
 				.OrderBy(x => x.Name));
 
 		// eg: https://localhost:7230/v1/sc5filepacks/list
-		public async Task<IResult> ListSC5FilePacks(LocoDb db)
+		public async Task<IResult> ListSC5FilePacks(LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Include(l => l.Licence)
@@ -456,7 +456,7 @@ namespace ObjectService.TableHandlers
 				.OrderBy(x => x.Name));
 
 		// eg: https://localhost:7230/v1/sc5filepacks/getpack?uniqueId=123
-		public async Task<IResult> GetSC5FilePack([FromQuery] int uniqueId, LocoDb db)
+		public async Task<IResult> GetSC5FilePack([FromQuery] int uniqueId, LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Where(x => x.Id == uniqueId)
@@ -469,7 +469,7 @@ namespace ObjectService.TableHandlers
 		#region POST
 
 		// eg: https://localhost:7230/v1/uploaddat/...
-		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDb db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
 			logger.LogInformation("Upload requested");
 

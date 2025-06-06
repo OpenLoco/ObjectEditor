@@ -12,12 +12,12 @@ using var db = Seed();
 Console.WriteLine("done");
 Console.ReadLine();
 
-static LocoDb Seed()
+static LocoDbContext Seed()
 {
-	var db = LocoDb.GetDbFromFile(LocoDb.DefaultDb);
+	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 
 	// Note: The database must exist before this script works
-	Console.WriteLine($"Database path: {LocoDb.DefaultDb}");
+	Console.WriteLine($"Database path: {LocoDbContext.DefaultDb}");
 
 	const bool seed = true;
 	const bool DeleteExisting = true;
@@ -30,7 +30,7 @@ static LocoDb Seed()
 	return db;
 }
 
-static void SeedDb(LocoDb db, bool deleteExisting)
+static void SeedDb(LocoDbContext db, bool deleteExisting)
 {
 	if (deleteExisting)
 	{

@@ -17,7 +17,7 @@ var connectionString = builder.Configuration.GetConnectionString("SQLiteConnecti
 builder.Services.AddOpenApi();
 _ = builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
-builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
+builder.Services.AddDbContext<LocoDbContext>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddSingleton<Server>();
@@ -89,3 +89,10 @@ if (showScalar == true)
 }
 
 app.Run();
+
+#pragma warning disable CA1050 // Declare types in namespaces
+
+// this is to enable unit testing in a top-level statement program
+public partial class Program;
+
+#pragma warning restore CA1050 // Declare types in namespaces

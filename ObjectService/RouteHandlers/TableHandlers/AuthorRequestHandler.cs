@@ -3,7 +3,7 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
 
-namespace ObjectService.TableHandlers
+namespace ObjectService.RouteHandlers.TableHandlers
 {
 	[Tags("AuthorRequestHandler")]
 	public class AuthorRequestHandler : BaseReferenceDataTableRequestHandler<DtoAuthorEntry, TblAuthor>

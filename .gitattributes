@@ -1,6 +1,7 @@
 # Force LF line endings for specific file types
-*.txt text
-*.cs text eol=lf
+*.cs eol=lf
+*.json eol=lf
+*.txt eol=lf
 
 # Add any other file extensions that should use LF endings
 

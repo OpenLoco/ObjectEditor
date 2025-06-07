@@ -12,9 +12,9 @@ using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
-using static ObjectService.TableHandlers.LegacyDtoExtensions;
+using static ObjectService.RouteHandlers.TableHandlers.LegacyDtoExtensions;
 
-namespace ObjectService.TableHandlers
+namespace ObjectService.RouteHandlers.TableHandlers
 {
 	public static class LegacyDtoExtensions
 	{

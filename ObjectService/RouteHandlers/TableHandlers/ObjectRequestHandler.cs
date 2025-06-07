@@ -14,7 +14,7 @@ using SixLabors.ImageSharp;
 using System.IO.Compression;
 using System.IO.Hashing;
 
-namespace ObjectService.TableHandlers
+namespace ObjectService.RouteHandlers.TableHandlers
 {
 	public class ObjectRequestHandler(ServerFolderManager sfm, PaletteMap paletteMap) : BaseTableRequestHandler<DtoObjectDescriptor>
 	{

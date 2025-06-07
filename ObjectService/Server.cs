@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using ObjectService.TableHandlers;
+using ObjectService.RouteHandlers.TableHandlers;
 using OpenLoco.Dat;
 
 namespace OpenLoco.ObjectService

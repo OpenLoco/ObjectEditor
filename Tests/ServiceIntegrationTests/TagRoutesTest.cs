@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using OpenLoco.Definitions.Database;
@@ -7,49 +8,19 @@ using OpenLoco.Definitions.Web;
 namespace OpenLoco.Tests.ServiceIntegrationTests
 {
 	[TestFixture]
-	public class TagRoutesTest : BaseServiceTestFixture
+	public class TagRoutesTest : BaseServiceTestFixture<DtoTagEntry, TblTag>
 	{
-		void TestData(LocoDbContext context)
-		{
-			_ = context.Tags.Add(new() { Name = "Wet" });
-			_ = context.Tags.Add(new() { Name = "Dry" });
-		}
+		protected override IEnumerable<DtoTagEntry> SeedData
+			=> [new(1, "Wet"),
+				new(2, "Dry")];
 
-		[Test]
-		public async Task TagsList()
-		{
-			// arrange
-			await SeedTestData(TestData);
+		public override string BaseRoute
+			=> Routes.Tags;
 
-			// act
-			var results = await Client.Get<IEnumerable<DtoTagEntry>>(HttpClient!, Routes.Tags);
+		protected override DbSet<TblTag> GetTable(LocoDbContext context)
+			=> context.Tags;
 
-			// assert
-			Assert.Multiple(() =>
-			{
-				Assert.That(results, Is.Not.Null);
-				Assert.That(results.Count(), Is.EqualTo(2));
-				Assert.That(results.First().Name, Is.EqualTo("Wet"));
-				Assert.That(results.Last().Name, Is.EqualTo("Dry"));
-			});
-		}
-
-		[Test]
-		public async Task Get()
-		{
-			// arrange
-			await SeedTestData(TestData);
-
-			// act
-			var results = await Client.Get<DtoTagEntry>(HttpClient!, Routes.Tags + "/2");
-
-			// assert
-			Assert.Multiple(() =>
-			{
-				Assert.That(results, Is.Not.Null);
-				Assert.That(results.Id, Is.EqualTo(2));
-				Assert.That(results.Name, Is.EqualTo("Dry"));
-			});
-		}
+		protected override TblTag ToRowFunc(DtoTagEntry request)
+			=> request.ToTable();
 	}
 }

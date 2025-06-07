@@ -4,7 +4,7 @@ using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
 
-namespace ObjectService.TableHandlers
+namespace ObjectService.RouteHandlers.TableHandlers
 {
 	public class SC5FilePackRequestHandler : BaseTableRequestHandler<DtoItemPackDescriptor<DtoScenarioEntry>>
 	{

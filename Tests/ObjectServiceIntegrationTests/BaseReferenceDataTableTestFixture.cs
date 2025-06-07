@@ -5,9 +5,9 @@ using NUnit.Framework;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
 
-namespace OpenLoco.Tests.ServiceIntegrationTests
+namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 {
-	public abstract class BaseServiceTestFixture<TDto, TRow>
+	public abstract class BaseReferenceDataTableTestFixture<TDto, TRow>
 		where TDto : class, IHasId
 		where TRow : class, IHasId
 	{
@@ -15,6 +15,8 @@ namespace OpenLoco.Tests.ServiceIntegrationTests
 		protected TestWebApplicationFactory<Program> _factory;
 
 		protected abstract IEnumerable<TDto> SeedData { get; }
+		protected abstract TDto ExtraSeedDatum { get; }
+
 		public abstract string BaseRoute { get; }
 		protected abstract DbSet<TRow> GetTable(LocoDbContext db);
 		protected abstract TRow ToRowFunc(TDto request);
@@ -59,7 +61,6 @@ namespace OpenLoco.Tests.ServiceIntegrationTests
 			// assert
 			Assert.Multiple(() =>
 			{
-				Assert.That(results, Is.Not.Null);
 				Assert.That(results.Count(), Is.EqualTo(2));
 				Assert.That(results, Is.EquivalentTo(SeedData));
 			});
@@ -73,10 +74,45 @@ namespace OpenLoco.Tests.ServiceIntegrationTests
 			var results = await Client.GetAsync<TDto>(HttpClient!, BaseRoute, id);
 
 			// assert
+			Assert.That(results, Is.EqualTo(SeedData.ToList()[id - 1]));
+		}
+
+		[Test]
+		public async Task DeleteAsync()
+		{
+			// act
+			const int id = 1;
+			var results = await Client.DeleteAsync(HttpClient!, BaseRoute, id);
+
+			// assert
+			Assert.Multiple(async () =>
+			{
+				var results = await Client.GetAsync<IEnumerable<TDto>>(HttpClient!, BaseRoute);
+				Assert.That(results.First(), Is.EqualTo(SeedData.ToList()[id]));
+			});
+		}
+
+		[Test]
+		public async Task PostAsync()
+		{
+			// act
+			var results = await Client.PostAsync(HttpClient!, BaseRoute, ExtraSeedDatum);
+
+			// assert
+			Assert.That(results, Is.EqualTo(ExtraSeedDatum));
+		}
+
+		[Test]
+		public async Task PutAsync()
+		{
+			// act
+			const int id = 1;
+			var results = await Client.PutAsync(HttpClient!, BaseRoute, id, ExtraSeedDatum);
+
+			// assert
 			Assert.Multiple(() =>
 			{
-				Assert.That(results, Is.Not.Null);
-				Assert.That(results, Is.EqualTo(SeedData.ToList()[id - 1]));
+				Assert.That(results.Id, Is.EqualTo(id));
 			});
 		}
 	}

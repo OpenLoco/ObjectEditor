@@ -29,11 +29,11 @@ namespace ObjectService.RouteHandlers
 				? Results.Ok(dtoConverter(row))
 				: Results.NotFound();
 
-		public static async Task<IResult> UpdateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, LocoDbContext db, Action<TDto, TRow> updateFunc)
+		public static async Task<IResult> UpdateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, int id, LocoDbContext db, Action<TDto, TRow> updateFunc)
 			where TDto : class, IHasId
 			where TRow : class, IHasId
 		{
-			if (await table.FindAsync(request.Id) is not TRow row)
+			if (await table.FindAsync(id) is not TRow row) // do not use Request.Id here, use the route id
 			{
 				return await CreateAsync(table, dtoConverter, rowConverter, request, tryValidateFunc, baseRoute, db);
 			}

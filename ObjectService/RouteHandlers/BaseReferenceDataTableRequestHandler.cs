@@ -28,7 +28,7 @@ namespace ObjectService.RouteHandlers
 		public override async Task<IResult> ReadAsync(int id, LocoDbContext db)
 			=> await BaseReferenceDataTableRequestHandlerImpl.ReadAsync(GetTable(db), ToDtoFunc, id, db);
 
-		public override async Task<IResult> UpdateAsync(TDto request, LocoDbContext db)
+		public override async Task<IResult> UpdateAsync(int id, TDto request, LocoDbContext db)
 			=> await BaseReferenceDataTableRequestHandlerImpl.UpdateAsync(
 				GetTable(db),
 				ToDtoFunc,
@@ -36,6 +36,7 @@ namespace ObjectService.RouteHandlers
 				request,
 				() => (TryValidateCreate(request, db, out var result), result),
 				BaseRoute,
+				id,
 				db,
 				UpdateFunc);
 

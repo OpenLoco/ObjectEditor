@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenLoco.Definitions.Database;
 
-namespace OpenLoco.Tests.ServiceIntegrationTests
+namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 {
 	public class TestWebApplicationFactory<TProgram>
 		: WebApplicationFactory<TProgram> where TProgram : class

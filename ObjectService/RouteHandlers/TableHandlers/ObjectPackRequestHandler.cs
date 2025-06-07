@@ -24,7 +24,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.Select(x => x.ToDtoDescriptor())
 				.OrderBy(x => x.Name));
 
-		public override async Task<IResult> UpdateAsync(DtoItemPackDescriptor<DtoObjectEntry> request, LocoDbContext db)
+		public override async Task<IResult> UpdateAsync(int id, DtoItemPackDescriptor<DtoObjectEntry> request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		public override async Task<IResult> DeleteAsync(int id, LocoDbContext db)

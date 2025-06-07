@@ -47,7 +47,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return ReturnObject(eObj);
 		}
 
-		public override async Task<IResult> UpdateAsync(DtoObjectDescriptor request, LocoDbContext db)
+		public override async Task<IResult> UpdateAsync(int id, DtoObjectDescriptor request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		public override async Task<IResult> DeleteAsync(int id, LocoDbContext db)

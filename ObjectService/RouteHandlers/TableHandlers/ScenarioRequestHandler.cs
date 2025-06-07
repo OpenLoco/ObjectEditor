@@ -20,7 +20,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		public override async Task<IResult> ReadAsync(int id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> UpdateAsync(DtoScenarioEntry request, LocoDbContext db)
+		public override async Task<IResult> UpdateAsync(int id, DtoScenarioEntry request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		public override async Task<IResult> DeleteAsync(int id, LocoDbContext db)

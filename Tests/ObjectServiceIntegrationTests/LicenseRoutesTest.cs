@@ -5,14 +5,17 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
 
-namespace OpenLoco.Tests.ServiceIntegrationTests
+namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 {
 	[TestFixture]
-	public class LicenseRoutesTest : BaseServiceTestFixture<DtoLicenceEntry, TblLicence>
+	public class LicenseRoutesTest : BaseReferenceDataTableTestFixture<DtoLicenceEntry, TblLicence>
 	{
 		protected override IEnumerable<DtoLicenceEntry> SeedData
 			=> [new(1, "Gandalf-EULA", "You shall not pass"),
 				new(2, "Vader-TOS", "I am your father")];
+
+		protected override DtoLicenceEntry ExtraSeedDatum
+			=> new(3, "Constitution", "Do no evil");
 
 		public override string BaseRoute
 			=> Routes.Licences;

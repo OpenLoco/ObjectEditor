@@ -5,14 +5,17 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
 using OpenLoco.Definitions.Web;
 
-namespace OpenLoco.Tests.ServiceIntegrationTests
+namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 {
 	[TestFixture]
-	public class TagRoutesTest : BaseServiceTestFixture<DtoTagEntry, TblTag>
+	public class TagRoutesTest : BaseReferenceDataTableTestFixture<DtoTagEntry, TblTag>
 	{
 		protected override IEnumerable<DtoTagEntry> SeedData
 			=> [new(1, "Wet"),
 				new(2, "Dry")];
+
+		protected override DtoTagEntry ExtraSeedDatum
+			=> new(3, "Rough");
 
 		public override string BaseRoute
 			=> Routes.Tags;

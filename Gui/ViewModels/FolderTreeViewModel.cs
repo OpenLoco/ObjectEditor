@@ -19,6 +19,19 @@ using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
+	public class DesignerFolderTreeViewModel : FolderTreeViewModel
+	{
+		public DesignerFolderTreeViewModel()
+		{
+			SelectedTabIndex = 0;
+			CurrentLocalDirectory = "test/directory";
+			LocalDirectoryItems = [new("local-filename1", "local-displayname1")];
+			OnlineDirectoryItems = [new("online-filename1", "online-displayname1")];
+
+			UpdateDirectoryItemsView();
+		}
+	}
+
 	public class FolderTreeViewModel : ReactiveObject
 	{
 		public HierarchicalTreeDataGridSource<FileSystemItemBase> TreeDataGridSource { get; set; }
@@ -50,13 +63,10 @@ namespace OpenLoco.Gui.ViewModels
 		public ObjectDisplayMode DisplayMode { get; set; } = ObjectDisplayMode.All;
 
 		[Reactive]
-		List<FileSystemItemBase> LocalDirectoryItems { get; set; } = [];
+		protected List<FileSystemItemBase> LocalDirectoryItems { get; set; } = [];
 
 		[Reactive]
-		List<FileSystemItemBase> OnlineDirectoryItems { get; set; } = [];
-
-		[Reactive]
-		public ObservableCollection<FileSystemItemBase> DirectoryItems { get; set; } = [];
+		protected List<FileSystemItemBase> OnlineDirectoryItems { get; set; } = [];
 
 		[Reactive]
 		public float IndexOrDownloadProgress { get; set; }
@@ -78,7 +88,7 @@ namespace OpenLoco.Gui.ViewModels
 			=> IsLocal ? "Recreate index" : "Download object list";
 
 		public string DirectoryFileCount
-			=> $"Objects: {DirectoryItems.Sum(CountNodes)}";
+			=> $"Objects: {CurrentDirectoryItems.Sum(CountNodes)}";
 
 		// used for design-time view
 		public FolderTreeViewModel()
@@ -120,17 +130,17 @@ namespace OpenLoco.Gui.ViewModels
 				.Skip(1)
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 
-			_ = this.WhenAnyValue(o => o.DirectoryItems)
-				.Skip(1)
-				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
+			//_ = this.WhenAnyValue(o => o.DirectoryItems)
+			//	.Skip(1)
+			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
 
-			_ = this.WhenAnyValue(o => o.DirectoryItems)
-				.Skip(1)
-				.Subscribe(_ => CurrentlySelectedObject = null);
+			//_ = this.WhenAnyValue(o => o.DirectoryItems)
+			//	.Skip(1)
+			//	.Subscribe(_ => CurrentlySelectedObject = null);
 
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
 				.Skip(1)
-				.Subscribe(_ => SwitchDirectoryItemsView());
+				.Subscribe(_ => UpdateDirectoryItemsView());
 
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
 				.Skip(1)
@@ -142,11 +152,11 @@ namespace OpenLoco.Gui.ViewModels
 
 			_ = this.WhenAnyValue(o => o.LocalDirectoryItems)
 				//.Skip(1)
-				.Subscribe(_ => SwitchDirectoryItemsView());
+				.Subscribe(_ => UpdateDirectoryItemsView());
 
 			_ = this.WhenAnyValue(o => o.OnlineDirectoryItems)
 				.Skip(1)
-				.Subscribe(_ => SwitchDirectoryItemsView());
+				.Subscribe(_ => UpdateDirectoryItemsView());
 
 			// loads the last-viewed folder
 			CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
@@ -169,10 +179,10 @@ namespace OpenLoco.Gui.ViewModels
 			return count;
 		}
 
-		void SwitchDirectoryItemsView()
-			=> DirectoryItems = SelectedTabIndex == 0
-				? new(LocalDirectoryItems)
-				: new(OnlineDirectoryItems);
+		List<FileSystemItemBase> CurrentDirectoryItems => IsLocal ? LocalDirectoryItems : OnlineDirectoryItems;
+
+		protected void UpdateDirectoryItemsView()
+			=> UpdateGrid(CurrentDirectoryItems);
 
 		async Task ReloadDirectoryAsync(bool useExistingIndex)
 		{

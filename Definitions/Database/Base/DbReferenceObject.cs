@@ -13,4 +13,12 @@ namespace OpenLoco.Definitions.Database
 
 		#endregion
 	}
+
+	[Index(nameof(Name), IsUnique = true)]
+	public abstract class DbReferenceObjectGuid
+	{
+		public Guid Id { get; set; }
+
+		public required string Name { get; set; }
+	}
 }

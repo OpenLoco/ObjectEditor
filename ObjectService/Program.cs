@@ -1,3 +1,4 @@
+using Definitions.Database.Identity;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +16,12 @@ builder.Logging.AddConsole();
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
 builder.Services.AddOpenApi();
-_ = builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddDbContext<LocoDbContext>(opt => opt.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddSingleton<Server>();
-_ = builder.Services.Configure<ServerSettings>(builder.Configuration.GetSection("ObjectService"));
 builder.Services.AddHttpLogging(logging =>
 {
 	logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
@@ -57,6 +57,10 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 			return new ValueTask();
 		};
 	}));
+
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthorizationBuilder()
+	.AddPolicy(AdminPolicy.Name, AdminPolicy.Build);
 
 var app = builder.Build();
 app.UseHttpLogging();

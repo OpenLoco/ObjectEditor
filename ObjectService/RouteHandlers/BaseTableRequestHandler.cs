@@ -1,4 +1,5 @@
 using Definitions;
+using Definitions.Database.Identity;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
 
@@ -21,11 +22,9 @@ namespace ObjectService.RouteHandlers
 			_ = resourceRoute.MapGet(string.Empty, ReadAsync);
 
 			// todo: do not enable until user permissions are implemented. for now, enable for testing
-#if DEBUG
-			_ = baseRoute.MapPost(string.Empty, CreateAsync);
-			_ = resourceRoute.MapPut(string.Empty, UpdateAsync);
-			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync);
-#endif
+			_ = baseRoute.MapPost(string.Empty, CreateAsync).RequireAuthorization(AdminPolicy.Name);
+			_ = resourceRoute.MapPut(string.Empty, UpdateAsync).RequireAuthorization(AdminPolicy.Name);
+			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync).RequireAuthorization(AdminPolicy.Name);
 
 			MapAdditionalRoutes(baseRoute);
 

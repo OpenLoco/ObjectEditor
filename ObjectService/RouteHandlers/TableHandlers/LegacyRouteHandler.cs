@@ -398,7 +398,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			{
 				var files = Directory.GetFiles(ServerFolderManager.ScenariosFolder, "*.SC5", SearchOption.AllDirectories);
 				var count = 0;
-				var filenames = files.Select(x => new DtoScenarioEntry(count++, Path.GetRelativePath(ServerFolderManager.ScenariosFolder, x)));
+				var filenames = files.Select(x => new DtoScenarioEntry(count++, Guid.Empty, Path.GetRelativePath(ServerFolderManager.ScenariosFolder, x)));
 				return Results.Ok(filenames.ToList());
 			});
 
@@ -411,19 +411,19 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		// eg: https://localhost:7230/v1/authors/list
 		public async Task<IResult> ListAuthors(LocoDbContext db)
 			=> Results.Ok(await db.Authors
-				.Select(x => new DtoAuthorEntry(x.Id, x.Name))
+				.Select(x => new DtoAuthorEntry(x.Id, x.GuidId, x.Name))
 				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/licences/list
 		public async Task<IResult> ListLicences(LocoDbContext db)
 			=> Results.Ok(await db.Licences
-				.Select(x => new DtoLicenceEntry(x.Id, x.Name, x.Text))
+				.Select(x => new DtoLicenceEntry(x.Id, x.GuidId, x.Name, x.Text))
 				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/tags/list
 		public async Task<IResult> ListTags(LocoDbContext db)
 			=> Results.Ok(await db.Tags
-				.Select(x => new DtoTagEntry(x.Id, x.Name))
+				.Select(x => new DtoTagEntry(x.Id, x.GuidId, x.Name))
 				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/objectpacks/list

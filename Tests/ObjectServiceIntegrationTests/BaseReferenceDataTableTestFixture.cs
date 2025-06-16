@@ -112,7 +112,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 			// assert
 			Assert.Multiple(() =>
 			{
-				Assert.That(results.Id, Is.EqualTo(id));
+				Assert.That(results.IntId, Is.EqualTo(id));
 			});
 		}
 	}

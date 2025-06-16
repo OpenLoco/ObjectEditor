@@ -4,6 +4,7 @@ namespace OpenLoco.Definitions.DTO
 {
 	public record DtoItemPackEntry(
 		int Id,
+		Guid? GuidId,
 		string Name,
 		string? Description,
 		DateTimeOffset? CreatedDate,

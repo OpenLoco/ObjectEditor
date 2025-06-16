@@ -1,4 +1,3 @@
-using Definitions;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Data;
 
@@ -6,10 +5,10 @@ namespace OpenLoco.Definitions.Database
 {
 	[Index(nameof(ObjectId))]
 	[Index(nameof(RowText))]
-	public class TblStringTable : IHasId
+	public class TblStringTable : DbIdObject
 	{
 		public int Id { get; set; }
-
+		public Guid GuidId { get; set; }
 		public required string RowName { get; set; }
 		public required LanguageId RowLanguage { get; set; }
 		public required string RowText { get; set; }

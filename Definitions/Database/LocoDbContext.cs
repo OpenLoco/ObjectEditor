@@ -26,6 +26,8 @@ namespace OpenLoco.Definitions.Database
 		public DbSet<TblTag> Tags => Set<TblTag>();
 		public DbSet<TblLicence> Licences => Set<TblLicence>();
 
+		public DbSet<TblStringTable> TblStringTable => Set<TblStringTable>();
+
 		#endregion
 
 		#region UserData
@@ -35,14 +37,6 @@ namespace OpenLoco.Definitions.Database
 		public DbSet<TblObjectPack> ObjectPacks => Set<TblObjectPack>();
 		public DbSet<TblSC5File> SC5Files => Set<TblSC5File>();
 		public DbSet<TblSC5FilePack> SC5FilePacks => Set<TblSC5FilePack>();
-
-		#endregion
-
-		#region Identity
-
-		//public DbSet<TblIdentityUser> IdentityUsers => Set<TblIdentityUser>();
-
-		//public DbSet<TblIdentityRole> IdentityRoles => Set<TblIdentityRole>();
 
 		#endregion
 
@@ -90,6 +84,52 @@ namespace OpenLoco.Definitions.Database
 			_ = modelBuilder.Entity<TblSC5FilePack>()
 				.Property(b => b.UploadedDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+
+			// for the int->guid pk transition
+			//_ = modelBuilder.Entity<TblDatObject>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblObject>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblObjectPack>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblSC5File>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblSC5FilePack>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblAuthor>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblLicence>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblTag>()
+			//	.HasAlternateKey(x => x.GuidId);
+
+			//_ = modelBuilder.Entity<TblStringTable>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblDatObject>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblObject>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblObjectPack>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblSC5File>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblSC5FilePack>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblAuthor>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblLicence>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblTag>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
 		}
 
 		public bool DoesObjectExist(S5Header s5Header, out TblObject? existingObject)

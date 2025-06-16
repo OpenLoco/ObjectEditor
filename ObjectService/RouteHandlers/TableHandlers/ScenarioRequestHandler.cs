@@ -31,7 +31,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			{
 				var files = Directory.GetFiles(ScenarioFolderOnDisk, "*.SC5", SearchOption.AllDirectories);
 				var count = 0;
-				var filenames = files.Select(x => new DtoScenarioEntry(count++, Path.GetRelativePath(ScenarioFolderOnDisk, x)));
+				var filenames = files.Select(x => new DtoScenarioEntry(count++, Guid.Empty, Path.GetRelativePath(ScenarioFolderOnDisk, x)));
 				return Results.Ok(filenames.ToList());
 			});
 	}

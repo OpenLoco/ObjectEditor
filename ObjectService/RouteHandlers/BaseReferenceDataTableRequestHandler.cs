@@ -1,8 +1,6 @@
 using Definitions;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.Web;
 
 namespace ObjectService.RouteHandlers
 {
@@ -49,34 +47,34 @@ namespace ObjectService.RouteHandlers
 			=> await BaseReferenceDataTableRequestHandlerImpl.ListAsync(context, GetTable(db), ToDtoFunc);
 	}
 
-	[Tags("RoleRequestHandler")]
-	public class RoleRequestHandler : BaseReferenceDataTableRequestHandler<DtoRoleCreate, TblUserRole>
-	{
-		public override string BaseRoute
-			=> Routes.Roles;
+	//[Tags("RoleRequestHandler")]
+	//public class RoleRequestHandler : BaseReferenceDataTableRequestHandler<DtoRoleCreate, TblUserRole>
+	//{
+	//	public override string BaseRoute
+	//		=> Routes.Roles;
 
-		protected override DbSet<TblUserRole> GetTable(LocoDbContext db)
-			=> db.Roles;
+	//	protected override DbSet<TblUserRole> GetTable(LocoDbContext db)
+	//		=> db.Roles;
 
-		protected override void UpdateFunc(DtoRoleCreate request, TblUserRole row)
-			=> row.Name = request.Name;
+	//	protected override void UpdateFunc(DtoRoleCreate request, TblUserRole row)
+	//		=> row.Name = request.Name;
 
-		protected override TblUserRole ToRowFunc(DtoRoleCreate request)
-			=> request.ToTable();
+	//	protected override TblUserRole ToRowFunc(DtoRoleCreate request)
+	//		=> request.ToTable();
 
-		protected override DtoRoleCreate ToDtoFunc(TblUserRole table)
-			=> table.ToDtoEntry();
+	//	protected override DtoRoleCreate ToDtoFunc(TblUserRole table)
+	//		=> table.ToDtoEntry();
 
-		protected override bool TryValidateCreate(DtoRoleCreate request, LocoDbContext db, out IResult? result)
-		{
-			if (string.IsNullOrWhiteSpace(request.Name))
-			{
-				result = Results.BadRequest("Cannot add an empty or whitespace-only name.");
-				return false;
-			}
+	//	protected override bool TryValidateCreate(DtoRoleCreate request, LocoDbContext db, out IResult? result)
+	//	{
+	//		if (string.IsNullOrWhiteSpace(request.Name))
+	//		{
+	//			result = Results.BadRequest("Cannot add an empty or whitespace-only name.");
+	//			return false;
+	//		}
 
-			result = null;
-			return true;
-		}
-	}
+	//		result = null;
+	//		return true;
+	//	}
+	//}
 }

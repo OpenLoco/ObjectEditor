@@ -4,9 +4,10 @@ namespace OpenLoco.Definitions.Database
 {
 	[Index(nameof(DatName), nameof(DatChecksum), IsDescending = [true, false], IsUnique = true)]
 	[Index(nameof(xxHash3), IsUnique = true)]
-	public class TblDatObject
+	public class TblDatObject : DbIdObject
 	{
 		public int Id { get; set; }
+		public Guid GuidId { get; set; }
 
 		public required string DatName { get; set; }
 

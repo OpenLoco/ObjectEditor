@@ -14,6 +14,10 @@ namespace OpenLoco.Definitions.Web
 		public const string Images = "/images";
 
 		public const string ResourceRoute = "/{id}";
+
+		// Identity
+		public const string Users = "/users";
+		public const string Roles = "/roles";
 	}
 
 	public static class LegacyRoutes

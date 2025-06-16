@@ -58,6 +58,8 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
+builder.Services.AddIdentityApiEndpoints<TblUser>()
+	.AddEntityFrameworkStores<LocoDbContext>();
 builder.Services.AddAuthentication().AddJwtBearer();
 builder.Services.AddAuthorizationBuilder()
 	.AddPolicy(AdminPolicy.Name, AdminPolicy.Build);
@@ -65,6 +67,10 @@ builder.Services.AddAuthorizationBuilder()
 var app = builder.Build();
 app.UseHttpLogging();
 app.UseRateLimiter();
+app.MapIdentityApi<TblUser>();
+
+// defining routes here, after MapIdentityApi, will overwrite them, allowing us to customise them
+//app.MapPost("/register", () => Results.Ok());
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
 var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];

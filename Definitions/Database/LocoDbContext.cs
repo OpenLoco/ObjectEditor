@@ -1,9 +1,24 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Types;
 
 namespace OpenLoco.Definitions.Database
 {
-	public class LocoDbContext : DbContext
+	public class TblUser : IdentityUser<Guid>
+	{ }
+
+	public class TblUserRole : IdentityRole<Guid>
+	{ }
+
+	public record DtoRoleCreate(
+		string Name);
+
+	public record DtoRoleModify(
+		Guid Id,
+		string Name);
+
+	public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, Guid>
 	{
 		#region ReferenceData
 
@@ -23,13 +38,21 @@ namespace OpenLoco.Definitions.Database
 
 		#endregion
 
+		#region Identity
+
+		//public DbSet<TblIdentityUser> IdentityUsers => Set<TblIdentityUser>();
+
+		//public DbSet<TblIdentityRole> IdentityRoles => Set<TblIdentityRole>();
+
+		#endregion
+
 		public LocoDbContext()
 		{ }
 
 		public LocoDbContext(DbContextOptions<LocoDbContext> options) : base(options)
 		{ }
 
-		public static string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco.db";
+		public static string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco-test.db";
 
 		protected override void OnConfiguring(DbContextOptionsBuilder builder)
 		{
@@ -53,6 +76,8 @@ namespace OpenLoco.Definitions.Database
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+			base.OnModelCreating(modelBuilder);
+
 			_ = modelBuilder.Entity<TblObject>()
 				.Property(b => b.UploadedDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite

@@ -2,6 +2,9 @@ using Definitions;
 
 namespace OpenLoco.Definitions.DTO.Identity
 {
+	public record DtoRegisterRequest(string UserName, string Password);
+	public record DtoLoginRequest(string UserName, string Password);
+
 	public abstract record DtoWithDbKey(DbKey Id) : IHasId;
 
 	public record DtoRoleEntry(DbKey Id, string Name) : IHasId;

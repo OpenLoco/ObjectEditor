@@ -125,6 +125,10 @@ namespace OpenLoco.Definitions.DTO
 			=> new(table.Id, table.UserName);
 		public static TblUser ToTable(this DtoUserEntry dto)
 			=> new() { UserName = dto.UserName, Id = dto.Id };
+		public static DtoRoleEntry ToDtoEntry(this TblUserRole table)
+			=> new(table.Id, table.Name);
+		public static TblUserRole ToTable(this DtoRoleEntry dto)
+			=> new() { Name = dto.Name, Id = dto.Id };
 
 		public static DtoItemPackEntry ToDtoEntry(this TblObjectPack x)
 			=> new(

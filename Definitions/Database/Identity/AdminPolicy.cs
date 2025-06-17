@@ -7,6 +7,6 @@ namespace Definitions.Database.Identity
 		public const string Name = "modification-requires-admin";
 
 		public static void Build(AuthorizationPolicyBuilder policyBuilder)
-			=> _ = policyBuilder.RequireRole("admin");
+			=> _ = policyBuilder.RequireRole("Admin");
 	}
 }

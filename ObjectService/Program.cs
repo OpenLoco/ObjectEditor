@@ -2,6 +2,7 @@ using Definitions.Database.Identity;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using ObjectService.RouteHandlers;
 using OpenLoco.Definitions.Database;
 using OpenLoco.ObjectService;
 using Scalar.AspNetCore;
@@ -67,7 +68,7 @@ builder.Services.AddAuthorizationBuilder()
 var app = builder.Build();
 app.UseHttpLogging();
 app.UseRateLimiter();
-app.MapIdentityApi<TblUser>();
+app.MapLocoIdentityApi<TblUser>();
 
 // defining routes here, after MapIdentityApi, will overwrite them, allowing us to customise them
 //app.MapPost("/register", () => Results.Ok());

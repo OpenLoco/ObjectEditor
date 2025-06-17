@@ -1,4 +1,6 @@
+using Definitions.Database.Identity;
 using OpenLoco.Definitions.Database;
+using OpenLoco.Definitions.DTO.Identity;
 using OpenLoco.Definitions.SourceData;
 
 namespace OpenLoco.Definitions.DTO
@@ -118,6 +120,11 @@ namespace OpenLoco.Definitions.DTO
 
 		public static TblLicence ToTable(this DtoLicenceEntry dto)
 			=> new() { Name = dto.Name, Id = dto.Id, Text = dto.LicenceText };
+
+		public static DtoUserEntry ToDtoEntry(this TblUser table)
+			=> new(table.Id, table.UserName);
+		public static TblUser ToTable(this DtoUserEntry dto)
+			=> new() { UserName = dto.UserName, Id = dto.Id };
 
 		public static DtoItemPackEntry ToDtoEntry(this TblObjectPack x)
 			=> new(

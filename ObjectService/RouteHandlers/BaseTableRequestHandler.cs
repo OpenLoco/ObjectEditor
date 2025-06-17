@@ -21,7 +21,6 @@ namespace ObjectService.RouteHandlers
 			var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
 			_ = resourceRoute.MapGet(string.Empty, ReadAsync);
 
-			// todo: do not enable until user permissions are implemented. for now, enable for testing
 			_ = baseRoute.MapPost(string.Empty, CreateAsync).RequireAuthorization(AdminPolicy.Name);
 			_ = resourceRoute.MapPut(string.Empty, UpdateAsync).RequireAuthorization(AdminPolicy.Name);
 			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync).RequireAuthorization(AdminPolicy.Name);

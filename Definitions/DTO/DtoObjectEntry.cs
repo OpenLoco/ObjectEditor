@@ -4,7 +4,7 @@ using OpenLoco.Dat.Objects;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoObjectEntry(
-		int Id,
+		DbKey Id,
 		string InternalName,
 		string DisplayName,
 		string? Description,

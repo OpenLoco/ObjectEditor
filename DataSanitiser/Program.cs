@@ -105,15 +105,15 @@ async static void SetGuids()
 	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 	var logger = new Logger();
 
-	await db.TblStringTable.ForEachAsync(x => x.GuidId = Guid.NewGuid());
-	await db.DatObjects.ForEachAsync(x => x.GuidId = Guid.NewGuid());
-	await db.Objects.ForEachAsync(x => x.GuidId = Guid.TryParse(x.Name.ToUpper(), out var guid) ? guid : Guid.NewGuid());
-	await db.ObjectPacks.ForEachAsync(x => x.GuidId = Guid.NewGuid());
-	await db.SC5Files.ForEachAsync(x => x.GuidId = Guid.NewGuid());
-	await db.SC5FilePacks.ForEachAsync(x => x.GuidId = Guid.NewGuid());
-	await db.Authors.ForEachAsync(x => x.GuidId = Guid.NewGuid());
-	await db.Licences.ForEachAsync(x => x.GuidId = Guid.NewGuid());
-	await db.Tags.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.StringTable.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.DatObjects.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.Objects.ForEachAsync(x => x.GuidId = Guid.TryParse(x.Name.ToUpper(), out var guid) ? guid : Guid.NewGuid());
+	//await db.ObjectPacks.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.SC5Files.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.SC5FilePacks.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.Authors.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.Licences.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.Tags.ForEachAsync(x => x.GuidId = Guid.NewGuid());
 
 	_ = await db.SaveChangesAsync();
 

@@ -1,24 +1,11 @@
-using Microsoft.AspNetCore.Identity;
+using Definitions.Database.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Types;
 
 namespace OpenLoco.Definitions.Database
 {
-	public class TblUser : IdentityUser<Guid>
-	{ }
-
-	public class TblUserRole : IdentityRole<Guid>
-	{ }
-
-	public record DtoRoleCreate(
-		string Name);
-
-	public record DtoRoleModify(
-		Guid Id,
-		string Name);
-
-	public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, Guid>
+	public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, DbKey>
 	{
 		#region ReferenceData
 
@@ -26,13 +13,12 @@ namespace OpenLoco.Definitions.Database
 		public DbSet<TblTag> Tags => Set<TblTag>();
 		public DbSet<TblLicence> Licences => Set<TblLicence>();
 
-		public DbSet<TblStringTable> TblStringTable => Set<TblStringTable>();
-
 		#endregion
 
-		#region UserData
+		#region ObjectData
 
 		public DbSet<TblObject> Objects => Set<TblObject>();
+		public DbSet<TblStringTable> StringTable => Set<TblStringTable>();
 		public DbSet<TblDatObject> DatObjects => Set<TblDatObject>();
 		public DbSet<TblObjectPack> ObjectPacks => Set<TblObjectPack>();
 		public DbSet<TblSC5File> SC5Files => Set<TblSC5File>();

@@ -11,8 +11,8 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
-    [Migration("20250616024149_AddGuid")]
-    partial class AddGuid
+    [Migration("20250617071719_intTolong")]
+    partial class intTolong
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -121,12 +121,9 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("GuidId")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -142,7 +139,7 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblDatObject", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -153,10 +150,7 @@ namespace Definitions.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("GuidId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ObjectId")
+                    b.Property<long>("ObjectId")
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("xxHash3")
@@ -178,12 +172,9 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblLicence", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("GuidId")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -203,7 +194,7 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -213,10 +204,7 @@ namespace Definitions.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("GuidId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LicenceId")
+                    b.Property<long?>("LicenceId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("ModifiedDate")
@@ -252,7 +240,7 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectPack", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -262,10 +250,7 @@ namespace Definitions.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("GuidId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LicenceId")
+                    b.Property<long?>("LicenceId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("ModifiedDate")
@@ -292,7 +277,7 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5File", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -302,10 +287,7 @@ namespace Definitions.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("GuidId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LicenceId")
+                    b.Property<long?>("LicenceId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("ModifiedDate")
@@ -335,7 +317,7 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5FilePack", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -345,10 +327,7 @@ namespace Definitions.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("GuidId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LicenceId")
+                    b.Property<long?>("LicenceId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTimeOffset?>("ModifiedDate")
@@ -375,14 +354,11 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblStringTable", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("GuidId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ObjectId")
+                    b.Property<long>("ObjectId")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("RowLanguage")
@@ -402,17 +378,14 @@ namespace Definitions.Migrations
 
                     b.HasIndex("RowText");
 
-                    b.ToTable("TblStringTable");
+                    b.ToTable("StringTable");
                 });
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblTag", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("GuidId")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -520,10 +493,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblAuthorTblObject", b =>
                 {
-                    b.Property<int>("AuthorsId")
+                    b.Property<long>("AuthorsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ObjectsId")
+                    b.Property<long>("ObjectsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("AuthorsId", "ObjectsId");
@@ -535,10 +508,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblAuthorTblObjectPack", b =>
                 {
-                    b.Property<int>("AuthorsId")
+                    b.Property<long>("AuthorsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ObjectPacksId")
+                    b.Property<long>("ObjectPacksId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("AuthorsId", "ObjectPacksId");
@@ -550,10 +523,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblAuthorTblSC5File", b =>
                 {
-                    b.Property<int>("AuthorsId")
+                    b.Property<long>("AuthorsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("SC5FilesId")
+                    b.Property<long>("SC5FilesId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("AuthorsId", "SC5FilesId");
@@ -565,10 +538,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblAuthorTblSC5FilePack", b =>
                 {
-                    b.Property<int>("AuthorsId")
+                    b.Property<long>("AuthorsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("SC5FilePacksId")
+                    b.Property<long>("SC5FilePacksId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("AuthorsId", "SC5FilePacksId");
@@ -580,10 +553,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblObjectPackTblTag", b =>
                 {
-                    b.Property<int>("ObjectPacksId")
+                    b.Property<long>("ObjectPacksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TagsId")
+                    b.Property<long>("TagsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ObjectPacksId", "TagsId");
@@ -595,10 +568,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblObjectTblObjectPack", b =>
                 {
-                    b.Property<int>("ObjectPacksId")
+                    b.Property<long>("ObjectPacksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ObjectsId")
+                    b.Property<long>("ObjectsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ObjectPacksId", "ObjectsId");
@@ -610,10 +583,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblObjectTblTag", b =>
                 {
-                    b.Property<int>("ObjectsId")
+                    b.Property<long>("ObjectsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TagsId")
+                    b.Property<long>("TagsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ObjectsId", "TagsId");
@@ -625,10 +598,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblSC5FilePackTblTag", b =>
                 {
-                    b.Property<int>("SC5FilePacksId")
+                    b.Property<long>("SC5FilePacksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TagsId")
+                    b.Property<long>("TagsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("SC5FilePacksId", "TagsId");
@@ -640,10 +613,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblSC5FileTblSC5FilePack", b =>
                 {
-                    b.Property<int>("SC5FilePacksId")
+                    b.Property<long>("SC5FilePacksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("SC5FilesId")
+                    b.Property<long>("SC5FilesId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("SC5FilePacksId", "SC5FilesId");
@@ -655,10 +628,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblSC5FileTblTag", b =>
                 {
-                    b.Property<int>("SC5FilesId")
+                    b.Property<long>("SC5FilesId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TagsId")
+                    b.Property<long>("TagsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("SC5FilesId", "TagsId");

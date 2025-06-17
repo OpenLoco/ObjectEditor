@@ -25,10 +25,10 @@ namespace ObjectService.RouteHandlers
 				BaseRoute,
 				db);
 
-		public override async Task<IResult> ReadAsync(int id, LocoDbContext db)
+		public override async Task<IResult> ReadAsync(DbKey id, LocoDbContext db)
 			=> await BaseReferenceDataTableRequestHandlerImpl.ReadAsync(GetTable(db), ToDtoFunc, id, db);
 
-		public override async Task<IResult> UpdateAsync(int id, TDto request, LocoDbContext db)
+		public override async Task<IResult> UpdateAsync(DbKey id, TDto request, LocoDbContext db)
 			=> await BaseReferenceDataTableRequestHandlerImpl.UpdateAsync(
 				GetTable(db),
 				ToDtoFunc,
@@ -40,7 +40,7 @@ namespace ObjectService.RouteHandlers
 				db,
 				UpdateFunc);
 
-		public override async Task<IResult> DeleteAsync(int id, LocoDbContext db)
+		public override async Task<IResult> DeleteAsync(DbKey id, LocoDbContext db)
 			=> await BaseReferenceDataTableRequestHandlerImpl.DeleteAsync(GetTable(db), ToDtoFunc, id, db);
 
 		public override async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)

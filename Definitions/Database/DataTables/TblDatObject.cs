@@ -6,8 +6,7 @@ namespace OpenLoco.Definitions.Database
 	[Index(nameof(xxHash3), IsUnique = true)]
 	public class TblDatObject : DbIdObject
 	{
-		public int Id { get; set; }
-		public Guid GuidId { get; set; }
+		public DbKey Id { get; set; }
 
 		public required string DatName { get; set; }
 
@@ -15,7 +14,7 @@ namespace OpenLoco.Definitions.Database
 
 		public required ulong xxHash3 { get; set; } // technically a byte[], but we'll use 64-bit int for faster comparison
 
-		public required int ObjectId { get; set; } // FK property
+		public required DbKey ObjectId { get; set; } // FK property
 
 		public TblObject Object { get; set; } // navigation property. a DAT object must ALWAYS reference an OL object
 	}

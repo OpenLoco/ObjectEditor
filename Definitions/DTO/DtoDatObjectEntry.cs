@@ -2,11 +2,11 @@ namespace OpenLoco.Definitions.DTO
 {
 
 	public record DtoDatObjectEntry(
-		int Id,
+		DbKey Id,
 		string DatName,
 		uint DatChecksum,
 		ulong xxHash3,
-		int ObjectId)
+		DbKey ObjectId)
 	{
 		public string? DatBytes { get; set; }
 	}

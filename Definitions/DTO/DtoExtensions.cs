@@ -8,7 +8,6 @@ namespace OpenLoco.Definitions.DTO
 		public static DtoObjectDescriptor ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x)
 			=> new(
 				x!.Object.Id,
-				x!.Object.GuidId,
 				x!.Object.Name,
 				x!.Object.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
 				x!.Object.Description,
@@ -25,7 +24,7 @@ namespace OpenLoco.Definitions.DTO
 				[.. x.Object.DatObjects.Select(x => x.ToDtoEntry())],
 				x.Object.StringTable.ToDtoDescriptor(x.Object.Id));
 
-		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTable> x, int ObjectId)
+		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTable> x, DbKey ObjectId)
 		{
 			var table = x
 				.Select(x => x.ToDtoEntry())
@@ -40,7 +39,6 @@ namespace OpenLoco.Definitions.DTO
 		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this TblObjectPack x)
 			=> new(
 				x.Id,
-				x.GuidId,
 				x.Name,
 				x.Description,
 				x.CreatedDate,
@@ -54,7 +52,6 @@ namespace OpenLoco.Definitions.DTO
 		public static DtoItemPackDescriptor<DtoObjectEntry> ToDtoDescriptor(this ExpandedTblPack<TblObjectPack, TblObject> x)
 			=> new(
 				x.Pack.Id,
-				x.Pack.GuidId,
 				x.Pack.Name,
 				x.Pack.Description,
 				x.Pack.CreatedDate,
@@ -68,7 +65,6 @@ namespace OpenLoco.Definitions.DTO
 		public static DtoItemPackDescriptor<DtoScenarioEntry> ToDtoDescriptor(this ExpandedTblPack<TblSC5FilePack, TblSC5File> x)
 			=> new(
 				x.Pack.Id,
-				x.Pack.GuidId,
 				x.Pack.Name,
 				x.Pack.Description,
 				x.Pack.CreatedDate,
@@ -100,25 +96,25 @@ namespace OpenLoco.Definitions.DTO
 			=> new() { Id = dto.Id, Name = dto.InternalName, Description = dto.Description, ObjectSource = dto.ObjectSource, ObjectType = dto.ObjectType, VehicleType = dto.VehicleType, CreatedDate = dto.CreatedDate, ModifiedDate = dto.ModifiedDate, UploadedDate = dto.UploadedDate };
 
 		public static DtoScenarioEntry ToDtoEntry(this TblSC5File table)
-			=> new(table.Id, table.GuidId, table.Name);
+			=> new(table.Id, table.Name);
 
 		public static TblSC5File ToTable(this DtoScenarioEntry dto)
 			=> new() { Name = dto.Name, Id = dto.Id };
 
 		public static DtoAuthorEntry ToDtoEntry(this TblAuthor table)
-			=> new(table.Id, table.GuidId, table.Name);
+			=> new(table.Id, table.Name);
 
 		public static TblAuthor ToTable(this DtoAuthorEntry dto)
 			=> new() { Name = dto.Name, Id = dto.Id };
 
 		public static DtoTagEntry ToDtoEntry(this TblTag table)
-			=> new(table.Id, table.GuidId, table.Name);
+			=> new(table.Id, table.Name);
 
 		public static TblTag ToTable(this DtoTagEntry dto)
 			=> new() { Name = dto.Name, Id = dto.Id };
 
 		public static DtoLicenceEntry ToDtoEntry(this TblLicence table)
-			=> new(table.Id, table.GuidId, table.Name, table.Text);
+			=> new(table.Id, table.Name, table.Text);
 
 		public static TblLicence ToTable(this DtoLicenceEntry dto)
 			=> new() { Name = dto.Name, Id = dto.Id, Text = dto.LicenceText };
@@ -126,7 +122,6 @@ namespace OpenLoco.Definitions.DTO
 		public static DtoItemPackEntry ToDtoEntry(this TblObjectPack x)
 			=> new(
 				x.Id,
-				x.GuidId,
 				x.Name,
 				x.Description,
 				x.CreatedDate,
@@ -154,7 +149,6 @@ namespace OpenLoco.Definitions.DTO
 		public static DtoItemPackDescriptor<DtoScenarioEntry> ToDtoEntry(this TblSC5FilePack x)
 			=> new(
 				x.Id,
-				x.GuidId,
 				x.Name,
 				x.Description,
 				x.CreatedDate,

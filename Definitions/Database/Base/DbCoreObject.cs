@@ -7,9 +7,7 @@ namespace OpenLoco.Definitions.Database
 	[Index(nameof(Name), IsUnique = true)]
 	public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMetadata, IDbDates
 	{
-		public int Id { get; set; }
-
-		public Guid GuidId { get; set; }
+		public DbKey Id { get; set; }
 
 		#region IDbName
 

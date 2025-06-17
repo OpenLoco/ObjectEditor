@@ -34,9 +34,9 @@ namespace ObjectService.RouteHandlers
 
 		public virtual void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute) { }
 		public abstract Task<IResult> CreateAsync(TDto request, LocoDbContext db);
-		public abstract Task<IResult> ReadAsync(int id, LocoDbContext db);
-		public abstract Task<IResult> UpdateAsync(int id, TDto request, LocoDbContext db);
-		public abstract Task<IResult> DeleteAsync(int id, LocoDbContext db);
+		public abstract Task<IResult> ReadAsync(DbKey id, LocoDbContext db);
+		public abstract Task<IResult> UpdateAsync(DbKey id, TDto request, LocoDbContext db);
+		public abstract Task<IResult> DeleteAsync(DbKey id, LocoDbContext db);
 		public abstract Task<IResult> ListAsync(HttpContext context, LocoDbContext db);
 	}
 }

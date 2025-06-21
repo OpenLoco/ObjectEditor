@@ -37,6 +37,9 @@
 		<DataTemplate DataType="vm:FolderTreeViewModel">
 			<vi:FolderTreeView />
 		</DataTemplate>
+		<DataTemplate DataType="vm:UIG1Element32">
+			<pgc:PropertyGrid DataContext="{Binding}" ShowStyle="Tiled"></pgc:PropertyGrid>
+		</DataTemplate>
 	</Application.DataTemplates>
 
 	<Application.Styles>
@@ -72,6 +75,7 @@
 		<Style Selector="ComboBox">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
 		</Style>
+
 		<Style Selector="pgc|PropertyGrid">
 			<Setter Property="ShowTitle" Value="False"/>
 			<Setter Property="AllowFilter" Value="False"/>

@@ -8,7 +8,7 @@
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
 	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
-	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="900"
 	x:Class="OpenLoco.Gui.Views.ImageTableView"
 	x:DataType="vm:ImageTableViewModel">
 
@@ -131,7 +131,7 @@
 						<Slider Minimum="1" Maximum="80" Value="{Binding AnimationSpeed}" />
 					</StackPanel>
 					<ScrollViewer>
-						<pgc:PropertyGrid x:Name="propertyGrid_imageProps" MinWidth="256" DataContext="{Binding SelectedG1Element}" DockPanel.Dock="Right" ShowStyle="Tiled"></pgc:PropertyGrid>
+						<ContentControl Content="{Binding SelectedG1Element}"></ContentControl>
 					</ScrollViewer>
 				</DockPanel>
 			</Border>

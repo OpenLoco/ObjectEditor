@@ -52,8 +52,10 @@ namespace OpenLoco.ObjectService
 			LegacyRouteHandler.MapRoutes(routeGroup);
 
 			// server/db management
-			//UserHandler.MapRoutes(routeGroup);
-			//RoleHandler.MapRoutes(routeGroup);
+#if DEBUG
+			UserHandler.MapRoutes(routeGroup);
+			RoleHandler.MapRoutes(routeGroup);
+#endif
 
 			return routeGroup;
 		}

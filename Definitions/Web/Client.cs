@@ -8,29 +8,26 @@ namespace OpenLoco.Definitions.Web
 {
 	public static class Client
 	{
-		#region Specific
-
 		public static async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
-			=> await GetAsync<IEnumerable<DtoObjectEntry>>(
+			=> await ClientHelpers.GetAsync<IEnumerable<DtoObjectEntry>>(
 				client,
 				Routes.Objects,
 				null,
 				logger) ?? [];
 
-
 		public static async Task<DtoObjectDescriptor?> GetObjectAsync(HttpClient client, int id, ILogger? logger = null)
-			=> await GetAsync<DtoObjectDescriptor>(
+			=> await ClientHelpers.GetAsync<DtoObjectDescriptor>(
 				client,
 				Routes.Objects,
 				id,
 				logger);
 
 		public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, int id, ILogger? logger = null)
-			=> await SendRequestAsync(
+			=> await ClientHelpers.SendRequestAsync(
 				client,
 				Routes.Objects + $"/{id}/file",
 				() => client.GetAsync(Routes.Objects + $"/{id}/file"),
-				ReadBinaryContentAsync,
+				ClientHelpers.ReadBinaryContentAsync,
 				logger) ?? default;
 
 		public static async Task UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateTimeOffset creationDate, DateTimeOffset modifiedDate, ILogger logger)
@@ -38,12 +35,14 @@ namespace OpenLoco.Definitions.Web
 			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 			logger.Debug($"Posting {filename} to {client.BaseAddress?.OriginalString}{Routes.Objects}");
 			var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), xxHash3, creationDate, modifiedDate);
-			_ = await PostAsync(client, Routes.Objects, request);
+			_ = await ClientHelpers.PostAsync(client, Routes.Objects, request);
 		}
+	}
 
-		#endregion
+	public static class ClientHelpers
+	{
 
-		static async Task<byte[]?> ReadBinaryContentAsync(HttpContent content)
+		public static async Task<byte[]?> ReadBinaryContentAsync(HttpContent content)
 		{
 			await using (var stream = await content.ReadAsStreamAsync())
 			await using (var memoryStream = new MemoryStream())
@@ -53,7 +52,7 @@ namespace OpenLoco.Definitions.Web
 			}
 		}
 
-		static async Task<T?> ReadJsonContentAsync<T>(HttpContent content)
+		internal static async Task<T?> ReadJsonContentAsync<T>(HttpContent content)
 			=> await content.ReadFromJsonAsync<T?>();
 
 		public static async Task<T?> GetAsync<T>(HttpClient client, string route, int? resourceId = null, ILogger? logger = null)
@@ -93,7 +92,7 @@ namespace OpenLoco.Definitions.Web
 				? baseRoute
 				: baseRoute + $"/{resourceId}";
 
-		static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, Func<Task<HttpResponseMessage>> httpFunc, Func<HttpContent, Task<T?>>? contentReaderFunc = null, ILogger? logger = null)
+		internal static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, Func<Task<HttpResponseMessage>> httpFunc, Func<HttpContent, Task<T?>>? contentReaderFunc = null, ILogger? logger = null)
 		{
 			try
 			{

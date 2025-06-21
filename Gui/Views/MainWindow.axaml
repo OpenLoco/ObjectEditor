@@ -113,7 +113,7 @@
 			<DockPanel>
 				<ContentControl Content="{Binding SoundViewModel}" DockPanel.Dock="Left" />
 				<ScrollViewer>
-					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding SoundViewModel.Header}" ShowStyle="Tiled" />
+					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding SoundViewModel.Header}"/>
 				</ScrollViewer>
 			</DockPanel>
 		</DataTemplate>

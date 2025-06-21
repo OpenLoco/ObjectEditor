@@ -81,10 +81,10 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, ConditionTarget, Category("Object Service"), DisplayName("Use HTTPS"), Description("Will use the HTTPS address instead of the HTTP address for Object Service connections.")]
 		public bool UseHttps { get; set; }
 
-		[Reactive, Category("Object Service"), DisplayName("HTTP"), VisibilityPropertyCondition(nameof(UseHttps), false)]
+		[Reactive, Category("Object Service"), DisplayName("HTTP"), PropertyVisibilityCondition(nameof(UseHttps), false)]
 		public string ServerAddressHttp { get; set; } = "http://openloco.leftofzen.dev/";
 
-		[Reactive, Category("Object Service"), DisplayName("HTTPS"), VisibilityPropertyCondition(nameof(UseHttps), true)]
+		[Reactive, Category("Object Service"), DisplayName("HTTPS"), PropertyVisibilityCondition(nameof(UseHttps), true)]
 		public string ServerAddressHttps { get; set; } = "https://openloco.leftofzen.dev/";
 
 		#endregion

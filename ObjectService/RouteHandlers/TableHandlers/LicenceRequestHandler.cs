@@ -5,25 +5,27 @@ using OpenLoco.Definitions.Web;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {
-	[Tags("LicenceRequestHandler")]
-	public class LicenceRequestHandler : BaseReferenceDataTableRequestHandler<DtoLicenceEntry, TblLicence>
+	[Tags("LicenceRouteHandler")]
+	public class LicenceRouteHandler
+		: BaseReferenceDataTableRequestHandler<LicenceRouteHandler, DtoLicenceEntry, TblLicence>
+		, ITableRequestConfig<DtoLicenceEntry, TblLicence>
 	{
-		public override string BaseRoute
+		public static string GetBaseRoute()
 			=> Routes.Licences;
 
-		protected override DbSet<TblLicence> GetTable(LocoDbContext db)
+		public static DbSet<TblLicence> GetTable(LocoDbContext db)
 			=> db.Licences;
 
-		protected override void UpdateFunc(DtoLicenceEntry request, TblLicence row)
-			=> row.Name = request.Name;
-
-		protected override TblLicence ToRowFunc(DtoLicenceEntry request)
-			=> request.ToTable();
-
-		protected override DtoLicenceEntry ToDtoFunc(TblLicence table)
+		public static DtoLicenceEntry ToDtoFunc(TblLicence table)
 			=> table.ToDtoEntry();
 
-		protected override bool TryValidateCreate(DtoLicenceEntry request, LocoDbContext db, out IResult? result)
+		public static void UpdateFunc(DtoLicenceEntry request, TblLicence row)
+			=> row.Name = request.Name;
+
+		public static TblLicence ToRowFunc(DtoLicenceEntry request)
+			=> request.ToTable();
+
+		public static bool TryValidateCreate(DtoLicenceEntry request, LocoDbContext db, out IResult? result)
 		{
 			if (string.IsNullOrWhiteSpace(request.Name))
 			{

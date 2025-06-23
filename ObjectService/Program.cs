@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using ObjectService.RouteHandlers;
+using ObjectService.RouteHandlers.TableHandlers;
 using OpenLoco.Definitions.Database;
+using OpenLoco.Definitions.DTO;
 using OpenLoco.ObjectService;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
@@ -115,6 +118,11 @@ _ = app
 	.MapServerRoutes(server)
 	.MapHealthChecks("/health")
 	.RequireRateLimiting(tokenPolicy);
+
+//_ = app.MapAuthors().RequireRateLimiting(tokenPolicy);
+_ = app.MapCrudRoutes<AuthorRouteHandler, DtoAuthorEntry, TblAuthor>();
+_ = app.MapCrudRoutes<LicenceRouteHandler, DtoLicenceEntry, TblLicence>();
+_ = app.MapCrudRoutes<TagRouteHandler, DtoTagEntry, TblTag>();
 
 var showScalar = builder.Configuration.GetValue<bool?>("ObjectService:ShowScalar");
 ArgumentNullException.ThrowIfNull(showScalar);

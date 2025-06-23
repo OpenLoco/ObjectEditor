@@ -10,9 +10,9 @@ namespace OpenLoco.ObjectService
 		{
 			Settings = settings;
 			ServerFolderManager = new ServerFolderManager(Settings.RootFolder)!;
-			ScenarioHandler = new(ServerFolderManager.ScenariosFolder);
+			//ScenarioHandler = new(ServerFolderManager.ScenariosFolder);
 			var pm = new PaletteMap(Settings.PaletteMapFile);
-			ObjectHandler = new(ServerFolderManager, pm);
+			//ObjectHandler = new(ServerFolderManager, pm);
 			LegacyRouteHandler = new(ServerFolderManager, pm);
 		}
 
@@ -22,29 +22,22 @@ namespace OpenLoco.ObjectService
 		ServerSettings Settings { get; init; }
 
 		ServerFolderManager ServerFolderManager { get; init; }
-
-		public AuthorRequestHandler AuthorHandler { get; init; } = new();
-		public TagRequestHandler TagHandler { get; init; } = new();
-		public LicenceRequestHandler LicenceHandler { get; init; } = new();
-		public ObjectPackRequestHandler ObjectPackHandler { get; init; } = new();
-		public SC5FilePackRequestHandler SC5FilePackHandler { get; init; } = new();
-		public ScenarioRequestHandler ScenarioHandler { get; init; }
-		public ObjectRequestHandler ObjectHandler { get; init; }
+		//public ObjectPackRequestHandler ObjectPackHandler { get; init; } = new();
+		//public SC5FilePackRequestHandler SC5FilePackHandler { get; init; } = new();
+		//public ScenarioRequestHandler ScenarioHandler { get; init; }
+		//public ObjectRequestHandler ObjectHandler { get; init; }
 
 		public LegacyRouteHandler LegacyRouteHandler { get; init; }
 
-		public UserRequestHandler UserHandler { get; init; } = new();
-		public RoleRequestHandler RoleHandler { get; init; } = new();
+		//public UserRequestHandler UserHandler { get; init; } = new();
+		//public RoleRequestHandler RoleHandler { get; init; } = new();
 
 		public IEndpointRouteBuilder MapRoutes(IEndpointRouteBuilder routeGroup)
 		{
-			AuthorHandler.MapRoutes(routeGroup);
-			TagHandler.MapRoutes(routeGroup);
-			LicenceHandler.MapRoutes(routeGroup);
-			ObjectHandler.MapRoutes(routeGroup);
-			ScenarioHandler.MapRoutes(routeGroup);
-			SC5FilePackHandler.MapRoutes(routeGroup);
-			ObjectPackHandler.MapRoutes(routeGroup);
+			//ObjectHandler.MapRoutes(routeGroup);
+			//ScenarioHandler.MapRoutes(routeGroup);
+			//SC5FilePackHandler.MapRoutes(routeGroup);
+			//ObjectPackHandler.MapRoutes(routeGroup);
 
 			// StringTable
 			// DatLookup(?)
@@ -53,8 +46,8 @@ namespace OpenLoco.ObjectService
 
 			// server/db management
 #if DEBUG
-			UserHandler.MapRoutes(routeGroup);
-			RoleHandler.MapRoutes(routeGroup);
+			//UserHandler.MapRoutes(routeGroup);
+			//RoleHandler.MapRoutes(routeGroup);
 #endif
 
 			return routeGroup;

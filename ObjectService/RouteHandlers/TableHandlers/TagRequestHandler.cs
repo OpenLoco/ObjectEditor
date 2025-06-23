@@ -5,25 +5,27 @@ using OpenLoco.Definitions.Web;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {
-	[Tags("TagRequestHandler")]
-	public class TagRequestHandler : BaseReferenceDataTableRequestHandler<DtoTagEntry, TblTag>
+	[Tags("TagRouteHandler")]
+	public class TagRouteHandler
+		: BaseReferenceDataTableRequestHandler<TagRouteHandler, DtoTagEntry, TblTag>
+		, ITableRequestConfig<DtoTagEntry, TblTag>
 	{
-		public override string BaseRoute
+		public static string GetBaseRoute()
 			=> Routes.Tags;
 
-		protected override DbSet<TblTag> GetTable(LocoDbContext db)
+		public static DbSet<TblTag> GetTable(LocoDbContext db)
 			=> db.Tags;
 
-		protected override void UpdateFunc(DtoTagEntry request, TblTag row)
-			=> row.Name = request.Name;
-
-		protected override TblTag ToRowFunc(DtoTagEntry request)
-			=> request.ToTable();
-
-		protected override DtoTagEntry ToDtoFunc(TblTag table)
+		public static DtoTagEntry ToDtoFunc(TblTag table)
 			=> table.ToDtoEntry();
 
-		protected override bool TryValidateCreate(DtoTagEntry request, LocoDbContext db, out IResult? result)
+		public static void UpdateFunc(DtoTagEntry request, TblTag row)
+			=> row.Name = request.Name;
+
+		public static TblTag ToRowFunc(DtoTagEntry request)
+			=> request.ToTable();
+
+		public static bool TryValidateCreate(DtoTagEntry request, LocoDbContext db, out IResult? result)
 		{
 			if (string.IsNullOrWhiteSpace(request.Name))
 			{

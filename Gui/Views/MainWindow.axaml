@@ -113,7 +113,7 @@
 			<DockPanel>
 				<ContentControl Content="{Binding SoundViewModel}" DockPanel.Dock="Left" />
 				<ScrollViewer>
-					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding SoundViewModel.Header}" ShowStyle="Tiled" />
+					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding SoundViewModel.Header}"/>
 				</ScrollViewer>
 			</DockPanel>
 		</DataTemplate>
@@ -229,7 +229,7 @@
 				<MenuItem Header="_File">
 					<MenuItem Header="Open single object (.DAT)" Command="{Binding OpenSingleObject}" HotKey="Ctrl+O" InputGesture="Ctrl+O" />
 					<MenuItem Header="Open G1 (.DAT)" Command="{Binding OpenG1}" HotKey="Ctrl+G" InputGesture="Ctrl+G" />
-					<MenuItem Header="Open scenario/save game/landscape (.SC5/.SV5)" Command="{Binding OpenSCV5}" HotKey="Ctrl+V" InputGesture="Ctrl+V"/>
+					<MenuItem Header="Open scenario/save game/landscape (.SC5/.SV5)" Command="{Binding OpenSCV5}" HotKey="Ctrl+H" InputGesture="Ctrl+H"/>
 					<MenuItem Header="Open music file (.DAT)" Command="{Binding OpenMusic}" HotKey="Ctrl+M" InputGesture="Ctrl+M"/>
 					<MenuItem Header="Open sound effect file (.DAT)" Command="{Binding OpenSoundEffect}" HotKey="Ctrl+F" InputGesture="Ctrl+F"/>
 					<MenuItem Header="Open tutorial (.DAT)" Command="{Binding OpenTutorial}" HotKey="Ctrl+T" InputGesture="Ctrl+T"/>

@@ -15,7 +15,7 @@
 	x:DataType="vm:FolderTreeViewModel">
 
 	<Design.DataContext>
-		<vm:FolderTreeViewModel/>
+		<vm:DesignerFolderTreeViewModel/>
 	</Design.DataContext>
 
 	<UserControl.Resources>

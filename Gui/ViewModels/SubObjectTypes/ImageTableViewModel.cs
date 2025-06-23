@@ -74,11 +74,11 @@ namespace OpenLoco.Gui.ViewModels
 		public Avalonia.Point SelectedG1ElementOffset
 			=> SelectedG1Element == null
 				? new Avalonia.Point()
-				: new Avalonia.Point(-SelectedG1Element?.G1Element.XOffset ?? 0, -SelectedG1Element?.G1Element.YOffset ?? 0);
+				: new Avalonia.Point(-SelectedG1Element?.XOffset ?? 0, -SelectedG1Element?.YOffset ?? 0);
 		public Avalonia.Size SelectedG1ElementSize
 			=> SelectedG1Element == null
 				? new Avalonia.Size()
-				: new Avalonia.Size(SelectedG1Element?.G1Element.Width ?? 0, SelectedG1Element?.G1Element.Height ?? 0);
+				: new Avalonia.Size(SelectedG1Element?.Width ?? 0, SelectedG1Element?.Height ?? 0);
 
 		ImageTableModel Model { get; init; }
 

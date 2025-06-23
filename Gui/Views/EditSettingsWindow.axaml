@@ -21,7 +21,7 @@
 	</Design.DataContext>
 
 	<ScrollViewer>
-		<pgc:PropertyGrid DataContext="{Binding}" ShowStyle="Category" AllowQuickFilter="True" AllowFilter="true"></pgc:PropertyGrid>
+		<pgc:PropertyGrid DataContext="{Binding}" IsQuickFilterVisible ="True" IsHeaderVisible ="true" IsCategoryVisible="False"></pgc:PropertyGrid>
 	</ScrollViewer>
 
 </Window>

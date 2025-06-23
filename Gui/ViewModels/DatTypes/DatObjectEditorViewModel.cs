@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Dat.Objects;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using OpenLoco.Gui.Models;
 using OpenLoco.Gui.Views;
@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
-
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{
 		[Reactive]

@@ -10,8 +10,8 @@ namespace OpenLoco.Definitions.SourceData
 		List<string> Authors,
 		List<string> Tags,
 		string? Licence,
-		DateTimeOffset? CreationDate,
-		DateTimeOffset? LastEditDate,
-		DateTimeOffset UploadDate,
+		DateTimeOffset? CreatedDate,
+		DateTimeOffset? ModifiedDate,
+		DateTimeOffset UploadedDate,
 		ObjectSource ObjectSource);
 }

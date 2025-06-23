@@ -7,7 +7,6 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.Web;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -16,7 +15,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,13 +24,13 @@ namespace OpenLoco.Gui.Models
 	{
 		public EditorSettings Settings { get; private set; }
 
-		public ILogger Logger;
+		public ILogger Logger { get; init; }
 
 		public ObjectIndex ObjectIndex { get; private set; }
 
 		public ObjectIndex? ObjectIndexOnline { get; set; }
 
-		public Dictionary<int, DtoObjectDescriptorWithMetadata> OnlineCache { get; } = [];
+		public Dictionary<int, DtoObjectDescriptor> OnlineCache { get; } = [];
 
 		public PaletteMap PaletteMap { get; set; }
 
@@ -58,7 +56,7 @@ namespace OpenLoco.Gui.Models
 
 		public ObservableCollection<LogLine> LoggerObservableLogs = [];
 
-		public HttpClient? WebClient { get; }
+		public ObjectServiceClient ObjectServiceClient { get; init; }
 
 		readonly ConcurrentQueue<string> logQueue = new();
 		readonly SemaphoreSlim logFileLock = new(1, 1); // Allow only 1 concurrent write
@@ -71,19 +69,12 @@ namespace OpenLoco.Gui.Models
 			Logger.LogAdded += (sender, laea) => LogAsync(laea.Log.ToString()).ConfigureAwait(false);
 
 			LoadSettings();
+
+			// settings must be loaded or else the rest of the app cannot start
+			ArgumentNullException.ThrowIfNull(Settings);
+
 			InitialiseDownloadDirectory();
-
-			var serverAddress = Settings!.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
-
-			if (Uri.TryCreate(serverAddress, new(), out var serverUri))
-			{
-				WebClient = new HttpClient() { BaseAddress = serverUri, };
-				Logger.Info($"Successfully registered object service with address \"{serverUri}\"");
-			}
-			else
-			{
-				Logger.Error($"Unable to parse object service address \"{serverAddress}\". Online functionality will work until the address is corrected and the editor is restarted.");
-			}
+			ObjectServiceClient = new(Settings, Logger);
 		}
 
 		public async Task LogAsync(string message)
@@ -192,30 +183,31 @@ namespace OpenLoco.Gui.Models
 			MetadataModel? metadata = null;
 			List<Image<Rgba32>> images = [];
 
-			var uniqueObjectId = int.Parse(Path.GetFileName(filesystemItem.Filename));
+			var uniqueObjectId = int.Parse(Path.GetFileNameWithoutExtension(filesystemItem.Filename));
 
-			if (!OnlineCache.TryGetValue(uniqueObjectId, out var cachedLocoObjDto))
+			if (!OnlineCache.TryGetValue(uniqueObjectId, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
 			{
-				if (WebClient == null)
+				if (ObjectServiceClient == null)
 				{
-					Logger.Error("Web client is null");
+					Logger.Error("Object service client is null");
 					return false;
 				}
 
-				Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {WebClient.BaseAddress}");
-				cachedLocoObjDto = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId, true)).Result;
+				Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {ObjectServiceClient.WebClient.BaseAddress}");
+				cachedLocoObjDto = Task.Run(async () => await ObjectServiceClient.GetObjectAsync(uniqueObjectId)).Result;
 
 				if (cachedLocoObjDto == null)
 				{
 					Logger.Error($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no data");
 					return false;
 				}
-				else if (string.IsNullOrEmpty(cachedLocoObjDto.DatBytes))
+				else if (string.IsNullOrEmpty(cachedLocoObjDto.DatObjects.FirstOrDefault()?.DatBytes))
 				{
-					if (cachedLocoObjDto.ObjectSource == ObjectSource.LocomotionSteam || cachedLocoObjDto.ObjectSource == ObjectSource.LocomotionGoG)
+					if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 					{
-						Logger.Warning($"This is a vanilla object. The DAT file cannot be downloaded due to copyright. Any available metadata will still be shown.");
+						Logger.Warning("This is a vanilla object. The DAT file cannot be downloaded due to copyright. Any available metadata will still be shown.");
 					}
+
 					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Any available metadata will still be shown.");
 				}
 				else if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
@@ -223,19 +215,35 @@ namespace OpenLoco.Gui.Models
 					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Any available metadata will still be shown.");
 				}
 
-				Logger.Info($"Downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} and added it to the local cache");
-				Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={cachedLocoObjDto?.Licence}");
-				OnlineCache.Add(uniqueObjectId, cachedLocoObjDto!);
+				Logger.Debug(cachedLocoObjDto.ToString());
 
-				if (!string.IsNullOrEmpty(cachedLocoObjDto!.DatBytes))
+				var datFile = Convert.FromBase64String(cachedLocoObjDto.DatObjects.First().DatBytes);
+				if (datFile == null || datFile.Length == 0)
 				{
-					var filename = Path.Combine(Settings.DownloadFolder, $"{cachedLocoObjDto.UniqueName}.dat");
+					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Any available metadata will still be shown.");
+				}
+				else
+				{
+					var filename = Path.Combine(Settings.DownloadFolder, $"{cachedLocoObjDto.InternalName}.dat");
 					if (!File.Exists(filename))
 					{
-						File.WriteAllBytes(filename, Convert.FromBase64String(cachedLocoObjDto.DatBytes));
+						File.WriteAllBytes(filename, datFile);
 						Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {filename}");
+
+						var obj = SawyerStreamReader.LoadFullObjectFromStream(datFile, Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
+						fileInfo = obj.DatFileInfo;
+						locoObject = obj.LocoObject;
+						if (obj.LocoObject == null)
+						{
+							Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
+						}
 					}
 				}
+
+				Logger.Info($"Downloaded object \"{filesystemItem.DisplayName}\" with unique id {uniqueObjectId} and added it to the local cache");
+				Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={cachedLocoObjDto?.Licence}");
+
+				OnlineCache.Add(uniqueObjectId, cachedLocoObjDto!);
 			}
 			else
 			{
@@ -244,9 +252,10 @@ namespace OpenLoco.Gui.Models
 
 			if (cachedLocoObjDto != null)
 			{
-				if (cachedLocoObjDto.DatBytes?.Length > 0)
+				var firstLinkedDatFile = cachedLocoObjDto!.DatObjects.First();
+				if (firstLinkedDatFile.DatBytes?.Length > 0)
 				{
-					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(cachedLocoObjDto.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
+					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(firstLinkedDatFile.DatBytes), Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
 					fileInfo = obj.DatFileInfo;
 					locoObject = obj.LocoObject;
 					if (obj.LocoObject == null)
@@ -254,17 +263,22 @@ namespace OpenLoco.Gui.Models
 						Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
 					}
 				}
+				else
+				{
+					Logger.Error($"Caches object {filesystemItem.DisplayName} had no data in DatBytes");
+				}
 
-				metadata = new MetadataModel(cachedLocoObjDto.UniqueName, cachedLocoObjDto.DatName, cachedLocoObjDto.DatChecksum)
+				metadata = new MetadataModel(cachedLocoObjDto.InternalName)
 				{
 					Description = cachedLocoObjDto.Description,
-					Authors = cachedLocoObjDto.Authors,
-					CreationDate = cachedLocoObjDto.CreationDate,
-					LastEditDate = cachedLocoObjDto.LastEditDate,
-					UploadDate = cachedLocoObjDto.UploadDate,
-					Tags = cachedLocoObjDto.Tags,
-					ObjectPacks = cachedLocoObjDto.ObjectPacks,
-					Licence = cachedLocoObjDto.Licence,
+					Authors = [.. cachedLocoObjDto.Authors.Select(x => x.ToTable())],
+					CreatedDate = cachedLocoObjDto.CreatedDate,
+					ModifiedDate = cachedLocoObjDto.ModifiedDate,
+					UploadedDate = cachedLocoObjDto.UploadedDate,
+					Tags = [.. cachedLocoObjDto.Tags.Select(x => x.ToTable())],
+					ObjectPacks = [.. cachedLocoObjDto.ObjectPacks.Select(x => x.ToTable())],
+					DatObjects = [.. cachedLocoObjDto.DatObjects.Select(x => x.ToTable())],
+					Licence = cachedLocoObjDto.Licence?.ToTable(),
 				};
 
 				if (locoObject != null)
@@ -301,7 +315,11 @@ namespace OpenLoco.Gui.Models
 			{
 				fileInfo = obj.Value.DatFileInfo;
 				locoObject = obj.Value.LocoObject;
-				metadata = new MetadataModel("<unknown>", fileInfo.S5Header.Name, fileInfo.S5Header.Checksum) { CreationDate = filesystemItem.CreatedDate, LastEditDate = filesystemItem.ModifiedDate }; // todo: look up the rest of the data from internet
+				metadata = new MetadataModel("<unknown>")
+				{
+					CreatedDate = filesystemItem.CreatedDate,
+					ModifiedDate = filesystemItem.ModifiedDate
+				}; // todo: look up the rest of the data from internet
 
 				if (locoObject != null)
 				{
@@ -379,7 +397,7 @@ namespace OpenLoco.Gui.Models
 					exception = true;
 				}
 
-				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DatName))))
+				if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.Filename) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DisplayName))))
 				{
 					Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
 					await RecreateIndex(directory, progress).ConfigureAwait(false);
@@ -451,8 +469,8 @@ namespace OpenLoco.Gui.Models
 			Logger.Debug("Comparing local objects to object repository");
 
 			var localButNotOnline = ObjectIndex.Objects.ExceptBy(ObjectIndexOnline.Objects.Select(
-				x => (x.DatName, x.DatChecksum)),
-				x => (x.DatName, x.DatChecksum)).ToList();
+				x => (x.DisplayName, x.DatChecksum)),
+				x => (x.DisplayName, x.DatChecksum)).ToList();
 
 			if (localButNotOnline.Count != 0)
 			{
@@ -482,13 +500,13 @@ namespace OpenLoco.Gui.Models
 			var creationDate = File.GetCreationTimeUtc(filename);
 			var modifiedDate = File.GetLastWriteTimeUtc(filename);
 
-			if (WebClient == null)
+			if (ObjectServiceClient == null)
 			{
-				Logger.Error("Web client is null");
+				Logger.Error("Object service client is null");
 				return;
 			}
 
-			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate, Logger);
+			await ObjectServiceClient.UploadDatFileAsync(dat.Filename, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate);
 			await Task.Delay(100); // wait 100ms, ie don't DoS the server
 		}
 
@@ -519,6 +537,5 @@ namespace OpenLoco.Gui.Models
 				logFileLock?.Dispose(); // Dispose of the semaphore
 			}
 		}
-
 	}
 }

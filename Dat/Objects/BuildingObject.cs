@@ -1,3 +1,4 @@
+using Dat.Objects;
 using OpenLoco.Common;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
@@ -60,7 +61,7 @@ namespace OpenLoco.Dat.Objects
 
 		// known issues:
 		// HOSPITL1.dat - loads without error but graphics are bugged
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// variation heights
 			BuildingHeights.Clear();
@@ -111,7 +112,7 @@ namespace OpenLoco.Dat.Objects
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			var ms = new MemoryStream();
 

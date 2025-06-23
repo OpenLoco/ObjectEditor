@@ -22,7 +22,7 @@ namespace OpenLoco.Gui.ViewModels
 		public string Name => "Image Table";
 
 		// used in the axaml to bind the combobox to the list of swatches
-		public ColourRemapSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourRemapSwatch>();
+		public static ColourRemapSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourRemapSwatch>();
 
 		[Reactive]
 		public ColourRemapSwatch SelectedPrimarySwatch { get; set; } = ColourRemapSwatch.PrimaryRemap;
@@ -142,7 +142,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			// ... handle selection changed
-			SelectedBitmaps = sm.SelectedItems.Cast<Bitmap>().ToList();
+			SelectedBitmaps = [.. sm.SelectedItems.Cast<Bitmap>()];
 		}
 
 		void UpdateAnimationSpeed()

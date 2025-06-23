@@ -4,7 +4,6 @@ using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.Web;
 using OpenLoco.Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -250,15 +249,13 @@ namespace OpenLoco.Gui.ViewModels
 				},
 			};
 
-			Dispatcher.UIThread.Invoke(new Action(() =>
-			{
-				TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged;
-			}));
+			Dispatcher.UIThread.Invoke(new Action(() => TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged));
 
 			this.RaisePropertyChanged(nameof(TreeDataGridSource));
 
 		}
-		string GetNiceObjectSource(ObjectSource? os)
+
+		static string GetNiceObjectSource(ObjectSource? os)
 			=> os switch
 			{
 				ObjectSource.Custom => "Custom",
@@ -276,8 +273,6 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				CurrentlySelectedObject = e.SelectedItems[0];
 			}
-			//var selectedPath = GetRowSelection(Source).SelectedItem?.Path;
-			//this.RaiseAndSetIfChanged(ref _selectedPath, selectedPath, nameof(SelectedPath));
 		}
 
 		async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
@@ -288,11 +283,10 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.WebClient != null)
+			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.ObjectServiceClient != null)
 			{
-				Model.ObjectIndexOnline = new ObjectIndex((await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
-					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DatName, x.DatChecksum, x.ObjectType, x.ObjectSource, x.CreationDate, x.LastEditDate, x.VehicleType))
-					.ToList());
+				Model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
+					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DisplayName, null, null, x.InternalName, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
 			}
 
 			if (Model.ObjectIndexOnline != null)
@@ -315,7 +309,7 @@ namespace OpenLoco.Gui.ViewModels
 			var displayable = displayMode == ObjectDisplayMode.All || (displayMode == ObjectDisplayMode.Vanilla == (o.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG));
 
 			var filters =
-				   string.IsNullOrEmpty(filenameFilter) || o.DatName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase);
+				   string.IsNullOrEmpty(filenameFilter) || o.DisplayName.Contains(filenameFilter, StringComparison.CurrentCultureIgnoreCase);
 			//&& (string.IsNullOrEmpty(authorFilter)   || o.Author.Contains(authorFilter, StringComparison.CurrentCultureIgnoreCase))
 			//&& (string.IsNullOrEmpty(modpackFilter)  || o.DatName.Contains(modpackFilter, StringComparison.CurrentCultureIgnoreCase));
 
@@ -327,7 +321,7 @@ namespace OpenLoco.Gui.ViewModels
 			var sortByDate = false;
 			if (sortByDate)
 			{
-				return ConstructDateTreeView(index, baseDirectory, filenameFilter, authorFilter, modpackFilter, displayMode, fileLocation).ToList();
+				return [.. ConstructDateTreeView(index, baseDirectory, filenameFilter, authorFilter, modpackFilter, displayMode, fileLocation)];
 			}
 			else
 			{
@@ -355,7 +349,7 @@ namespace OpenLoco.Gui.ViewModels
 						.OrderBy(vg => vg.Key.ToString()))
 					{
 						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+							.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DisplayName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
 							.OrderBy(x => x.DisplayName));
 
 						if (vg.Key == null)
@@ -368,6 +362,7 @@ namespace OpenLoco.Gui.ViewModels
 						subNodes.Add(new FileSystemItemBase(
 							string.Empty,
 							vg.Key.Value.ToString(),
+							string.Empty,
 							VehicleType: vg.Key.Value,
 							SubNodes: vehicleSubNodes));
 					}
@@ -375,13 +370,14 @@ namespace OpenLoco.Gui.ViewModels
 				else
 				{
 					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+						.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DisplayName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
 						.OrderBy(x => x.DisplayName));
 				}
 
 				result.Add(new FileSystemItemBase(
 					string.Empty,
 					objGroup.Key.ToString(),
+					string.Empty,
 					ObjectType: objGroup.Key,
 					SubNodes: subNodes));
 			}
@@ -393,7 +389,7 @@ namespace OpenLoco.Gui.ViewModels
 			=> index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
 				.Where(x => MatchesFilter(x, filenameFilter, authorFilter, modpackFilter, displayMode))
-				.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DatName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+				.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DisplayName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
 				.OrderByDescending(x => x.ModifiedDate);
 	}
 }

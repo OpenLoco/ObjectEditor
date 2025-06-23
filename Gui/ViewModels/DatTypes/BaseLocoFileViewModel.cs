@@ -67,7 +67,6 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-
 		public string ReloadText => CurrentFile.FileLocation == FileLocation.Local ? "Reload" : "Redownload";
 		public string SaveText => CurrentFile.FileLocation == FileLocation.Local ? "Save" : "Download";
 		public string SaveAsText => $"{SaveText} As";

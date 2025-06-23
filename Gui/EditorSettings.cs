@@ -28,13 +28,16 @@ namespace OpenLoco.Gui
 			get => objDataDirectories ??= [];
 			set => objDataDirectories = value;
 		}
-		HashSet<string> objDataDirectories;
+		HashSet<string> objDataDirectories = [];
 		public bool AllowSavingAsVanillaObject { get; set; }
 		public bool AutoObjectDiscoveryAndUpload { get; set; }
 
 		public bool UseHttps { get; set; }
 		public string ServerAddressHttp { get; set; } = "http://openloco.leftofzen.dev/";
 		public string ServerAddressHttps { get; set; } = "https://openloco.leftofzen.dev/";
+
+		public string ServerEmail { get; set; }
+		public string ServerPassword { get; set; }
 
 		public string DownloadFolder { get; set; } = string.Empty;
 

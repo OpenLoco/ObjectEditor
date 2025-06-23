@@ -5,13 +5,15 @@ using System.Diagnostics.CodeAnalysis;
 namespace OpenLoco.Definitions.Database
 {
 	[Index(nameof(Name), IsUnique = true)]
-	public abstract class DbCoreObject : IDbStandardData, IDbMetadata
+	public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMetadata, IDbDates
 	{
-		#region IDbStandardInfo
+		#region IDbName
 
-		public int Id { get; set; }
+		public required string Name { get; set; } // InternalName
 
-		public required string Name { get; set; }
+		#endregion
+
+		#region IDbDescription
 
 		public string? Description { get; set; }
 
@@ -21,16 +23,20 @@ namespace OpenLoco.Definitions.Database
 
 		public TblLicence? Licence { get; set; }
 
-		public ICollection<TblAuthor> Authors { get; set; }
+		public ICollection<TblAuthor> Authors { get; set; } = [];
 
-		public ICollection<TblTag> Tags { get; set; }
+		public ICollection<TblTag> Tags { get; set; } = [];
 
-		public DateTimeOffset? CreationDate { get; set; }
+		#endregion
 
-		public DateTimeOffset? LastEditDate { get; set; }
+		#region IDbDates
+
+		public DateTimeOffset? CreatedDate { get; set; }
+
+		public DateTimeOffset? ModifiedDate { get; set; }
 
 		[DatabaseGenerated(DatabaseGeneratedOption.Computed), NotNull]
-		public DateTimeOffset UploadDate { get; set; }
+		public DateTimeOffset UploadedDate { get; set; }
 
 		#endregion
 	}

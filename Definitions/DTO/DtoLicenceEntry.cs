@@ -1,7 +1,9 @@
+using Definitions;
+
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoLicenceEntry(
-		int Id,
+		DbKey Id,
 		string Name,
-		string LicenceText);
+		string LicenceText) : IHasId;
 }

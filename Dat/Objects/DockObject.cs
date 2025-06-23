@@ -35,7 +35,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x24)] Pos2 BoatPosition
 	) : ILocoStruct, ILocoStructVariableData
 	{
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			BuildingPartHeights.Clear();
 			BuildingPartAnimations.Clear();
@@ -71,7 +71,7 @@ namespace OpenLoco.Dat.Objects
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 			=> BuildingPartHeights
 			.Concat(BuildingPartAnimations.SelectMany(BitConverter.GetBytes))
 			.Concat(BuildingVariationParts)

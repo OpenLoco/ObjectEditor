@@ -1,13 +1,13 @@
-using OpenLoco.Definitions.Database;
+using Definitions;
 
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoItemPackEntry(
-		int Id,
+		DbKey Id,
 		string Name,
 		string? Description,
-		DateTimeOffset? CreationDate,
-		DateTimeOffset? LastEditDate,
-		DateTimeOffset UploadDate,
-		TblLicence? Licence);
+		DateTimeOffset? CreatedDate,
+		DateTimeOffset? ModifiedDate,
+		DateTimeOffset UploadedDate,
+		DtoLicenceEntry? Licence) : IHasId;
 }

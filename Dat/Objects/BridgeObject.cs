@@ -64,7 +64,7 @@ namespace OpenLoco.Dat.Objects
 		public List<S5Header> CompatibleTrackObjects { get; set; } = [];
 		public List<S5Header> CompatibleRoadObjects { get; set; } = [];
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// compatible tracks
 			CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, CompatibleTrackObjectCount);
@@ -77,7 +77,7 @@ namespace OpenLoco.Dat.Objects
 			return remainingData;
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 		{
 			var headers = CompatibleTrackObjects
 				.Concat(CompatibleRoadObjects);

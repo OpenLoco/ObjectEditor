@@ -30,7 +30,7 @@ namespace OpenLoco.Dat.Objects
 
 		byte[] tempUnkVariableData;
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			// town names is interesting - loco has not RE'd the whole object and there are no graphics, so we just
 			// skip the rest of the data/object
@@ -38,7 +38,7 @@ namespace OpenLoco.Dat.Objects
 			return remainingData[remainingData.Length..];
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 			=> tempUnkVariableData;
 
 		public bool Validate() => true;

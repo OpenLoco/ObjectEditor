@@ -23,7 +23,6 @@
 		<ListBox SelectedItem="{Binding SelectedObject}" ItemsSource="{Binding ObjectView}" SelectionMode="Single">
 			<ListBox.ItemTemplate>
 				<DataTemplate>
-					<TextBlock Margin="4" Text="{Binding SimpleText}" />
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 		</ListBox>

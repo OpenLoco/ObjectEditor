@@ -1,10 +1,12 @@
-using Asp.Versioning;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
+using Scalar.AspNetCore;
+using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -15,34 +17,36 @@ builder.Logging.AddConsole();
 
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
-// Add services to the container.
+builder.Services.AddOpenApi(options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<LocoDb>(opt => opt.UseSqlite(connectionString));
+builder.Services.AddHealthChecks();
+builder.Services.AddDbContext<LocoDbContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddSingleton<Server>();
-_ = builder.Services.Configure<ServerSettings>(builder.Configuration.GetSection("ObjectService"));
 builder.Services.AddHttpLogging(logging =>
 {
-	logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders
-		| HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
+	logging.LoggingFields = HttpLoggingFields.All;
+	//logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
 	logging.CombineLogs = true;
 });
 
 var tokenPolicy = "token";
-var myOptions = new RateLimitOptions();
-builder.Configuration.GetSection(RateLimitOptions.Name).Bind(myOptions);
+
+var rateLimiterSection = builder.Configuration.GetSection("ObjectService:RateLimiter");
+ArgumentNullException.ThrowIfNull(rateLimiterSection);
+var rateLimiter = new RateLimitOptions();
+rateLimiterSection.Bind(rateLimiter);
 
 builder.Services.AddRateLimiter(rlOptions => rlOptions
 	.AddTokenBucketLimiter(policyName: tokenPolicy, options =>
 	{
-		options.TokenLimit = myOptions.TokenLimit;
+		options.TokenLimit = rateLimiter.TokenLimit;
 		options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-		options.QueueLimit = myOptions.QueueLimit;
-		options.ReplenishmentPeriod = TimeSpan.FromSeconds(myOptions.ReplenishmentPeriod);
-		options.TokensPerPeriod = myOptions.TokensReplenishedPerPeriod;
-		options.AutoReplenishment = myOptions.AutoReplenishment;
+		options.QueueLimit = rateLimiter.QueueLimit;
+		options.ReplenishmentPeriod = TimeSpan.FromSeconds(rateLimiter.ReplenishmentPeriod);
+		options.TokensPerPeriod = rateLimiter.TokensReplenishedPerPeriod;
+		options.AutoReplenishment = rateLimiter.AutoReplenishment;
 		rlOptions.OnRejected = (context, cancellationToken) =>
 		{
 			if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
@@ -57,84 +61,83 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
-_ = builder.Services.AddApiVersioning(options =>
+builder.Services
+	.AddIdentityApiEndpoints<TblUser>()
+	.AddEntityFrameworkStores<LocoDbContext>();
+
+builder.Services.AddAuthentication(options =>
 {
-	options.ReportApiVersions = true;
-	options.DefaultApiVersion = new ApiVersion(1, 0);
-	options.AssumeDefaultVersionWhenUnspecified = true;
-	options.ApiVersionReader = ApiVersionReader.Combine(new UrlSegmentApiVersionReader());
-}).AddApiExplorer(options =>
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
 {
-	options.GroupNameFormat = "'v'VVV";
-	options.SubstituteApiVersionInUrl = true;
+	options.TokenValidationParameters = new TokenValidationParameters
+	{
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+		ValidAudience = builder.Configuration["JwtSettings:Audience"],
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+	};
 });
 
+//builder.Services.AddAuthorization();
+builder.Services
+	.AddAuthorizationBuilder()
+	.AddPolicy(AdminPolicy.Name, AdminPolicy.Build);
+
+// Used for the Identity stuff to send emails to users
+// disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
+//builder.Services.AddTransient<IEmailSender, EmailSender>();
+
 var app = builder.Build();
+
 app.UseHttpLogging();
 app.UseRateLimiter();
+//app.MapLocoIdentityApi<TblUser>();
+
+// defining routes here, after MapLocoIdentityApi, will overwrite them, allowing us to customise them
+//app.MapPost("/register", () => Results.Ok());
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
 var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];
 ArgumentNullException.ThrowIfNull(objRoot);
 ArgumentNullException.ThrowIfNull(paletteMapFile);
+
 var server = new Server(new ServerSettings(objRoot, paletteMapFile));
 
-var apiSet = app.NewApiVersionSet().Build();
+_ = app
+	.MapServerRoutes(server)
+	.MapHealthChecks("/health")
+	.RequireRateLimiting(tokenPolicy);
 
-var groupVersioned = app
-	.MapGroup("v{version:apiVersion}")
-	.WithApiVersionSet(apiSet)
-	.RequireRateLimiting(tokenPolicy)
-	.WithTags("Versioned");
+var showScalar = builder.Configuration.GetValue<bool?>("ObjectService:ShowScalar");
+ArgumentNullException.ThrowIfNull(showScalar);
 
-MapRoutes(groupVersioned, server);
-
-if (app.Environment.IsDevelopment())
+_ = app.MapOpenApi();
+if (showScalar == true)
 {
-	_ = app.UseSwagger();
-	_ = app.UseSwaggerUI(
-		options =>
-		{
-			foreach (var description in app.DescribeApiVersions())
-			{
-				var url = $"/swagger/{description.GroupName}/swagger.json";
-				var name = description.GroupName.ToUpperInvariant();
-				options.SwaggerEndpoint(url, name);
-			}
-		});
+	_ = app.MapScalarApiReference(options =>
+	{
+		_ = options
+			.WithTitle("OpenLoco Object Service")
+			.WithTheme(ScalarTheme.Solarized)
+			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+			.AddPreferredSecuritySchemes("Bearer");
+	});
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();
 
-static void MapRoutes(RouteGroupBuilder routeGroup, Server server)
-{
-	// GET
-	_ = routeGroup.MapGet(Routes.ListObjects, Server.ListObjects);
+#pragma warning disable CA1050 // Declare types in namespaces
 
-	_ = routeGroup.MapGet(Routes.GetDat, server.GetDat);
-	_ = routeGroup.MapGet(Routes.GetDatFile, server.GetDatFile);
-	_ = routeGroup.MapGet(Routes.GetObject, server.GetObject);
-	_ = routeGroup.MapGet(Routes.GetObjectFile, server.GetObjectFile);
-	_ = routeGroup.MapGet(Routes.GetObjectImages, server.GetObjectImages);
+// this is to enable unit testing in a top-level statement program
+public partial class Program;
 
-	_ = routeGroup.MapGet(Routes.ListObjectPacks, server.ListObjectPacks);
-	_ = routeGroup.MapGet(Routes.GetObjectPack, server.GetObjectPack);
-
-	_ = routeGroup.MapGet(Routes.ListScenarios, server.ListScenarios);
-	_ = routeGroup.MapGet(Routes.GetScenario, server.GetScenario);
-
-	_ = routeGroup.MapGet(Routes.ListSC5FilePacks, server.ListSC5FilePacks);
-	_ = routeGroup.MapGet(Routes.GetSC5FilePack, server.GetSC5FilePack);
-
-	_ = routeGroup.MapGet(Routes.ListAuthors, server.ListAuthors);
-	_ = routeGroup.MapGet(Routes.ListLicences, server.ListLicences);
-	_ = routeGroup.MapGet(Routes.ListTags, server.ListTags);
-
-	// POST
-	_ = routeGroup.MapPost(Routes.UploadDat, server.UploadDat);
-	_ = routeGroup.MapPost(Routes.UploadObject, server.UploadObject);
-
-	// PATCH
-	_ = routeGroup.MapPatch(Routes.UpdateDat, server.UpdateDat);
-	_ = routeGroup.MapPatch(Routes.UpdateObject, server.UpdateObject);
-}
+#pragma warning restore CA1050 // Declare types in namespaces

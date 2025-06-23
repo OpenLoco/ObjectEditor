@@ -12,12 +12,12 @@ using var db = Seed();
 Console.WriteLine("done");
 Console.ReadLine();
 
-static LocoDb Seed()
+static LocoDbContext Seed()
 {
-	var db = LocoDb.GetDbFromFile(LocoDb.DefaultDb);
+	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 
 	// Note: The database must exist before this script works
-	Console.WriteLine($"Database path: {LocoDb.DefaultDb}");
+	Console.WriteLine($"Database path: {LocoDbContext.DefaultDb}");
 
 	const bool seed = true;
 	const bool DeleteExisting = true;
@@ -30,7 +30,7 @@ static LocoDb Seed()
 	return db;
 }
 
-static void SeedDb(LocoDb db, bool deleteExisting)
+static void SeedDb(LocoDbContext db, bool deleteExisting)
 {
 	if (deleteExisting)
 	{
@@ -133,9 +133,9 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 				Authors = [.. db.Authors.Where(a => x.Authors.Contains(a.Name))],
 				Tags = [.. db.Tags.Where(a => x.Tags.Contains(a.Name))],
 				Licence = x.Licence == null ? null : db.Licences.Single(l => l.Name == x.Licence),
-				CreationDate = x.CreationDate,
-				LastEditDate = x.LastEditDate,
-				UploadDate = x.UploadDate,
+				CreatedDate = x.CreatedDate,
+				ModifiedDate = x.ModifiedDate,
+				UploadedDate = x.UploadedDate,
 			}));
 
 			_ = db.SaveChanges();
@@ -173,16 +173,16 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var objectPacks = JsonSerializer.Deserialize<IEnumerable<ObjectPackJsonRecord>>(File.ReadAllText(objectPacksJson), jsonOptions);
 		if (objectPacks != null)
 		{
-			db.AddRange(objectPacks.Select(x => new TblLocoObjectPack()
+			db.AddRange(objectPacks.Select(x => new TblObjectPack()
 			{
 				Name = x.Name,
 				Description = x.Description,
 				Authors = [.. db.Authors.Where(a => x.Authors.Contains(a.Name))],
 				Tags = [.. db.Tags.Where(a => x.Tags.Contains(a.Name))],
 				Licence = x.Licence == null ? null : db.Licences.Single(l => l.Name == x.Licence),
-				CreationDate = null,
-				LastEditDate = null,
-				UploadDate = DateTimeOffset.Now
+				CreatedDate = null,
+				ModifiedDate = null,
+				UploadedDate = DateTimeOffset.Now
 			}));
 			_ = db.SaveChanges();
 		}
@@ -197,17 +197,17 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 		var progress = new Progress<float>();
 		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText(objectMetadataJson), jsonOptions);
-		var objectMetadataDict = objectMetadata!.ToDictionary(x => (x.DatName, x.DatChecksum), x => x);
+		var objectMetadataDict = objectMetadata!.ToDictionary(x => x.InternalName, x => x);
 		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
 
-		foreach (var objIndex in index!.Objects.DistinctBy(x => (x.DatName, x.DatChecksum)))
+		foreach (var objIndex in index!.Objects.DistinctBy(x => (x.DisplayName, x.DatChecksum)))
 		{
-			var metadataKey = (objIndex.DatName, objIndex.DatChecksum);
+			var metadataKey = objIndex.DisplayName; // should be InternalName
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{
-				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), objIndex.DatName, objIndex.DatChecksum, null, [], [], [], null, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
+				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
 				meta = newMetadata;
-				objectMetadataDict.Add((objIndex.DatName, objIndex.DatChecksum), newMetadata);
+				objectMetadataDict.Add(objIndex.DisplayName, newMetadata);
 			}
 
 			var filename = Path.Combine(objDirectory, objIndex.Filename);
@@ -220,25 +220,36 @@ static void SeedDb(LocoDb db, bool deleteExisting)
 			var objectPacks = meta.ObjectPacks == null ? null : db.ObjectPacks.Where(x => meta.ObjectPacks.Contains(x.Name)).ToList();
 			var licence = meta.Licence == null ? null : db.Licences.Where(x => x.Name == meta.Licence).First();
 
-			var tblLocoObject = new TblLocoObject()
+			var tblLocoObject = new TblObject()
 			{
-				Name = meta!.UniqueName,
-				DatName = objIndex.DatName,
-				DatChecksum = objIndex.DatChecksum,
+				Name = meta!.InternalName,
 				ObjectSource = objIndex.ObjectSource,
 				ObjectType = objIndex.ObjectType,
 				VehicleType = objIndex.VehicleType,
 				Description = meta?.Description,
 				Authors = authors ?? [],
-				CreationDate = creationTime,
-				LastEditDate = null,
-				UploadDate = DateTimeOffset.Now,
+				CreatedDate = creationTime,
+				ModifiedDate = null,
+				UploadedDate = DateTimeOffset.Now,
 				Tags = tags ?? [],
 				ObjectPacks = objectPacks ?? [],
+				DatObjects = [],
 				Licence = licence,
 			};
 
-			_ = db.Add(tblLocoObject);
+			var addedObj = db.Add(tblLocoObject);
+
+			var locoLookupTbl = new TblDatObject()
+			{
+				DatName = objIndex.DisplayName,
+				DatChecksum = objIndex.DatChecksum.Value,
+				xxHash3 = objIndex.xxHash3.Value,
+				ObjectId = addedObj.Entity.Id,
+				Object = tblLocoObject,
+			};
+			_ = db.DatObjects.Add(locoLookupTbl);
+
+			tblLocoObject.DatObjects.Add(locoLookupTbl);
 		}
 
 		_ = db.SaveChanges();

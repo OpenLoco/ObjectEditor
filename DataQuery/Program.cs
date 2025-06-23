@@ -1,4 +1,5 @@
 // See https://aka.ms/new-console-template for more information
+using Dat.Objects;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
@@ -50,8 +51,8 @@ static void QueryIndustryHasShadows(string dir, Logger logger, ObjectIndex index
 
 	const string csvHeader = "DatName, ObjectSource";
 	var lines = results
-		.OrderBy(x => x.Obj.DatName)
-		.Select(x => string.Join(',', x.Obj.DatName, x.ObjectSource));
+		.OrderBy(x => x.Obj.DisplayName)
+		.Select(x => string.Join(',', x.Obj.DisplayName, x.ObjectSource));
 
 	File.WriteAllLines("vehicleBodiesWithUnkSpritesFlag.csv", [csvHeader, .. lines]);
 }
@@ -87,8 +88,8 @@ static void QueryVehicleBodyUnkSprites(string dir, Logger logger, ObjectIndex in
 
 	const string csvHeader = "DatName, ObjectSource";
 	var lines = results
-		.OrderBy(x => x.Obj.DatName)
-		.Select(x => string.Join(',', x.Obj.DatName, x.ObjectSource));
+		.OrderBy(x => x.Obj.DisplayName)
+		.Select(x => string.Join(',', x.Obj.DisplayName, x.ObjectSource));
 
 	File.WriteAllLines("vehicleBodiesWithUnkSpritesFlag.csv", [csvHeader, .. lines]);
 }
@@ -122,8 +123,8 @@ static void QueryCargoCategories(string dir, Logger logger, ObjectIndex index)
 
 	const string csvHeader = "DatName, CargoCategory, LocalisedName, ObjectSource";
 	var lines = results
-		.OrderBy(x => x.Obj.DatName)
-		.Select(x => string.Join(',', x.Obj.DatName, (int)x.CargoCategory, x.LocalisedName, x.ObjectSource));
+		.OrderBy(x => x.Obj.DisplayName)
+		.Select(x => string.Join(',', x.Obj.DisplayName, (int)x.CargoCategory, x.LocalisedName, x.ObjectSource));
 	File.WriteAllLines("cargoCategories.csv", [csvHeader, .. lines]);
 }
 
@@ -178,7 +179,7 @@ static void QueryCostIndices(string dir, Logger logger, ObjectIndex index)
 
 	const string header = "DatName, ObjectType, CostIndex, RunCostIndex";
 	var lines = results
-		.OrderBy(x => x.Obj.DatName)
-		.Select(x => string.Join(',', x.Obj.DatName, x.Obj.ObjectType, x.CostIndex, x.RunCostIndex));
+		.OrderBy(x => x.Obj.DisplayName)
+		.Select(x => string.Join(',', x.Obj.DisplayName, x.Obj.ObjectType, x.CostIndex, x.RunCostIndex));
 	File.WriteAllLines("costIndex.csv", [header, .. lines]);
 }

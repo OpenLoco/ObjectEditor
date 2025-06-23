@@ -15,7 +15,7 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Stats")] public uint16_t Weight { get; set; }
 		[Reactive, Category("Stats")] public uint16_t Power { get; set; }
 		[Reactive, Category("Stats")] public Speed16 Speed { get; set; }
-		[Reactive, Category("Stats")] public Speed16 RackSpeed { get; set; }
+		[Reactive, Category("Stats"), Description("Also used for Aircraft as their broken-down speed, landing speed, and approaching speed")] public Speed16 RackSpeed { get; set; }
 		[Reactive, Category("Stats")] public uint8_t RackRailType { get; set; }
 		[Reactive, Category("Stats")] public uint16_t DesignedYear { get; set; }
 		[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
@@ -76,7 +76,7 @@ namespace OpenLoco.Gui.ViewModels
 			Flags = vo.Flags;
 			CompatibleCargo1 = new(vo.MaxCargo[0], new(vo.CompatibleCargoCategories[0]));
 			CompatibleCargo2 = new(vo.MaxCargo[1], new(vo.CompatibleCargoCategories[1]));
-			CargoTypeSpriteOffsets = new(vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value)).ToList());
+			CargoTypeSpriteOffsets = new([.. vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
 			Animation = new(vo.Animation);
 			AnimationHeaders = new(vo.AnimationHeaders.ConvertAll(x => new S5HeaderViewModel(x)));
 			ShipWakeOffset = vo.ShipWakeOffset;

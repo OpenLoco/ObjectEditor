@@ -9,17 +9,213 @@ using OpenLoco.Definitions.Database;
 
 namespace Definitions.Migrations
 {
-    [DbContext(typeof(LocoDb))]
+    [DbContext(typeof(LocoDbContext))]
     partial class LocoDbModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
+
+            modelBuilder.Entity("Definitions.Database.Identity.TblUser", b =>
+                {
+                    b.Property<ulong>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong?>("AssociatedAuthorId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssociatedAuthorId");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Definitions.Database.Identity.TblUserRole", b =>
+                {
+                    b.Property<ulong>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<ulong>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong>("RoleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<ulong>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<ulong>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<ulong>", b =>
+                {
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("RoleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<ulong>", b =>
+                {
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -29,12 +225,48 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Authors");
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblDatObject", b =>
+                {
+                    b.Property<ulong>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint>("DatChecksum")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DatName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong>("ObjectId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("xxHash3")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObjectId");
+
+                    b.HasIndex("xxHash3")
+                        .IsUnique();
+
+                    b.HasIndex("DatName", "DatChecksum")
+                        .IsUnique()
+                        .IsDescending(true, false);
+
+                    b.ToTable("DatObjects");
                 });
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblLicence", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -54,33 +286,23 @@ namespace Definitions.Migrations
                     b.ToTable("Licences");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Availability")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTimeOffset?>("CreationDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<uint>("DatChecksum")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("DatName")
-                        .IsRequired()
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset?>("LastEditDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LicenceId")
+                    b.Property<ulong?>("LicenceId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("ModifiedDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -92,7 +314,7 @@ namespace Definitions.Migrations
                     b.Property<byte>("ObjectType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset>("UploadDate")
+                    b.Property<DateTimeOffset>("UploadedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
@@ -107,36 +329,32 @@ namespace Definitions.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.HasIndex("DatName", "DatChecksum")
-                        .IsUnique()
-                        .IsDescending(true, false);
-
                     b.ToTable("Objects");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObjectPack", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectPack", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("CreationDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset?>("LastEditDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LicenceId")
+                    b.Property<ulong?>("LicenceId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("ModifiedDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset>("UploadDate")
+                    b.Property<DateTimeOffset>("UploadedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
@@ -153,21 +371,21 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5File", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("CreationDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset?>("LastEditDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LicenceId")
+                    b.Property<ulong?>("LicenceId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("ModifiedDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -176,7 +394,7 @@ namespace Definitions.Migrations
                     b.Property<int>("ObjectSource")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset>("UploadDate")
+                    b.Property<DateTimeOffset>("UploadedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
@@ -193,27 +411,27 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5FilePack", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("CreationDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset?>("LastEditDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LicenceId")
+                    b.Property<ulong?>("LicenceId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("ModifiedDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset>("UploadDate")
+                    b.Property<DateTimeOffset>("UploadedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
@@ -228,9 +446,38 @@ namespace Definitions.Migrations
                     b.ToTable("SC5FilePacks");
                 });
 
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblStringTable", b =>
+                {
+                    b.Property<ulong>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("ObjectId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte>("RowLanguage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RowName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RowText")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ObjectId");
+
+                    b.HasIndex("RowText");
+
+                    b.ToTable("StringTable");
+                });
+
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblTag", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -246,42 +493,42 @@ namespace Definitions.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("TblAuthorTblLocoObject", b =>
+            modelBuilder.Entity("TblAuthorTblObject", b =>
                 {
-                    b.Property<int>("AuthorsId")
+                    b.Property<ulong>("AuthorsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ObjectsId")
+                    b.Property<ulong>("ObjectsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("AuthorsId", "ObjectsId");
 
                     b.HasIndex("ObjectsId");
 
-                    b.ToTable("TblAuthorTblLocoObject");
+                    b.ToTable("TblAuthorTblObject");
                 });
 
-            modelBuilder.Entity("TblAuthorTblLocoObjectPack", b =>
+            modelBuilder.Entity("TblAuthorTblObjectPack", b =>
                 {
-                    b.Property<int>("AuthorsId")
+                    b.Property<ulong>("AuthorsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ObjectPacksId")
+                    b.Property<ulong>("ObjectPacksId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("AuthorsId", "ObjectPacksId");
 
                     b.HasIndex("ObjectPacksId");
 
-                    b.ToTable("TblAuthorTblLocoObjectPack");
+                    b.ToTable("TblAuthorTblObjectPack");
                 });
 
             modelBuilder.Entity("TblAuthorTblSC5File", b =>
                 {
-                    b.Property<int>("AuthorsId")
+                    b.Property<ulong>("AuthorsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("SC5FilesId")
+                    b.Property<ulong>("SC5FilesId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("AuthorsId", "SC5FilesId");
@@ -293,10 +540,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblAuthorTblSC5FilePack", b =>
                 {
-                    b.Property<int>("AuthorsId")
+                    b.Property<ulong>("AuthorsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("SC5FilePacksId")
+                    b.Property<ulong>("SC5FilePacksId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("AuthorsId", "SC5FilePacksId");
@@ -306,57 +553,57 @@ namespace Definitions.Migrations
                     b.ToTable("TblAuthorTblSC5FilePack");
                 });
 
-            modelBuilder.Entity("TblLocoObjectPackTblTag", b =>
+            modelBuilder.Entity("TblObjectPackTblTag", b =>
                 {
-                    b.Property<int>("ObjectPacksId")
+                    b.Property<ulong>("ObjectPacksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TagsId")
+                    b.Property<ulong>("TagsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ObjectPacksId", "TagsId");
 
                     b.HasIndex("TagsId");
 
-                    b.ToTable("TblLocoObjectPackTblTag");
+                    b.ToTable("TblObjectPackTblTag");
                 });
 
-            modelBuilder.Entity("TblLocoObjectTblLocoObjectPack", b =>
+            modelBuilder.Entity("TblObjectTblObjectPack", b =>
                 {
-                    b.Property<int>("ObjectPacksId")
+                    b.Property<ulong>("ObjectPacksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ObjectsId")
+                    b.Property<ulong>("ObjectsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ObjectPacksId", "ObjectsId");
 
                     b.HasIndex("ObjectsId");
 
-                    b.ToTable("TblLocoObjectTblLocoObjectPack");
+                    b.ToTable("TblObjectTblObjectPack");
                 });
 
-            modelBuilder.Entity("TblLocoObjectTblTag", b =>
+            modelBuilder.Entity("TblObjectTblTag", b =>
                 {
-                    b.Property<int>("ObjectsId")
+                    b.Property<ulong>("ObjectsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TagsId")
+                    b.Property<ulong>("TagsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ObjectsId", "TagsId");
 
                     b.HasIndex("TagsId");
 
-                    b.ToTable("TblLocoObjectTblTag");
+                    b.ToTable("TblObjectTblTag");
                 });
 
             modelBuilder.Entity("TblSC5FilePackTblTag", b =>
                 {
-                    b.Property<int>("SC5FilePacksId")
+                    b.Property<ulong>("SC5FilePacksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TagsId")
+                    b.Property<ulong>("TagsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("SC5FilePacksId", "TagsId");
@@ -368,10 +615,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblSC5FileTblSC5FilePack", b =>
                 {
-                    b.Property<int>("SC5FilePacksId")
+                    b.Property<ulong>("SC5FilePacksId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("SC5FilesId")
+                    b.Property<ulong>("SC5FilesId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("SC5FilePacksId", "SC5FilesId");
@@ -383,10 +630,10 @@ namespace Definitions.Migrations
 
             modelBuilder.Entity("TblSC5FileTblTag", b =>
                 {
-                    b.Property<int>("SC5FilesId")
+                    b.Property<ulong>("SC5FilesId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("TagsId")
+                    b.Property<ulong>("TagsId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("SC5FilesId", "TagsId");
@@ -396,7 +643,78 @@ namespace Definitions.Migrations
                     b.ToTable("TblSC5FileTblTag");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObject", b =>
+            modelBuilder.Entity("Definitions.Database.Identity.TblUser", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "AssociatedAuthor")
+                        .WithMany()
+                        .HasForeignKey("AssociatedAuthorId");
+
+                    b.Navigation("AssociatedAuthor");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<ulong>", b =>
+                {
+                    b.HasOne("Definitions.Database.Identity.TblUserRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<ulong>", b =>
+                {
+                    b.HasOne("Definitions.Database.Identity.TblUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<ulong>", b =>
+                {
+                    b.HasOne("Definitions.Database.Identity.TblUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<ulong>", b =>
+                {
+                    b.HasOne("Definitions.Database.Identity.TblUserRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Definitions.Database.Identity.TblUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<ulong>", b =>
+                {
+                    b.HasOne("Definitions.Database.Identity.TblUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblDatObject", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblObject", "Object")
+                        .WithMany("DatObjects")
+                        .HasForeignKey("ObjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Object");
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
                         .WithMany()
@@ -405,7 +723,7 @@ namespace Definitions.Migrations
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLocoObjectPack", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectPack", b =>
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
                         .WithMany()
@@ -432,7 +750,18 @@ namespace Definitions.Migrations
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("TblAuthorTblLocoObject", b =>
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblStringTable", b =>
+                {
+                    b.HasOne("OpenLoco.Definitions.Database.TblObject", "Object")
+                        .WithMany("StringTable")
+                        .HasForeignKey("ObjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Object");
+                });
+
+            modelBuilder.Entity("TblAuthorTblObject", b =>
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
                         .WithMany()
@@ -440,14 +769,14 @@ namespace Definitions.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TblAuthorTblLocoObjectPack", b =>
+            modelBuilder.Entity("TblAuthorTblObjectPack", b =>
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
                         .WithMany()
@@ -455,7 +784,7 @@ namespace Definitions.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObjectPack", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblObjectPack", null)
                         .WithMany()
                         .HasForeignKey("ObjectPacksId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -492,9 +821,9 @@ namespace Definitions.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TblLocoObjectPackTblTag", b =>
+            modelBuilder.Entity("TblObjectPackTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObjectPack", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblObjectPack", null)
                         .WithMany()
                         .HasForeignKey("ObjectPacksId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -507,24 +836,24 @@ namespace Definitions.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TblLocoObjectTblLocoObjectPack", b =>
+            modelBuilder.Entity("TblObjectTblObjectPack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObjectPack", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblObjectPack", null)
                         .WithMany()
                         .HasForeignKey("ObjectPacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TblLocoObjectTblTag", b =>
+            modelBuilder.Entity("TblObjectTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLocoObject", null)
+                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -580,6 +909,13 @@ namespace Definitions.Migrations
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>
+                {
+                    b.Navigation("DatObjects");
+
+                    b.Navigation("StringTable");
                 });
 #pragma warning restore 612, 618
         }

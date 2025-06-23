@@ -39,13 +39,13 @@ namespace OpenLoco.Dat.Objects
 
 		public List<S5Header> CompatibleTrackObjects { get; set; } = [];
 
-		public ReadOnlySpan<byte> Load(ReadOnlySpan<byte> remainingData)
+		public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 		{
 			CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, CompatibleTrackObjectCount);
 			return remainingData[(S5Header.StructLength * CompatibleTrackObjectCount)..];
 		}
 
-		public ReadOnlySpan<byte> Save()
+		public ReadOnlySpan<byte> SaveVariable()
 			=> CompatibleTrackObjects
 			.SelectMany(mod => mod.Write().ToArray())
 			.ToArray();

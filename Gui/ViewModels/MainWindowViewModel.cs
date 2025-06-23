@@ -176,10 +176,12 @@ namespace OpenLoco.Gui.ViewModels
 			{
 				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {Model.Settings.AppDataObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.AppDataObjDataFolder)));
 			}
+
 			if (Directory.Exists(Model.Settings.LocomotionObjDataFolder))
 			{
 				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.Locomotion)}] {Model.Settings.LocomotionObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionObjDataFolder)));
 			}
+
 			if (Directory.Exists(Model.Settings.OpenLocoObjDataFolder))
 			{
 				ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.OpenLoco)}] {Model.Settings.OpenLocoObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.OpenLocoObjDataFolder)));
@@ -207,7 +209,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			return path == null
 				? null
-				: new FileSystemItemBase(path, Path.GetFileName(path), File.GetCreationTimeUtc(path), File.GetLastWriteTimeUtc(path), FileLocation.Local);
+				: new FileSystemItemBase(path, Path.GetFileName(path), string.Empty, File.GetCreationTimeUtc(path), File.GetLastWriteTimeUtc(path), FileLocation.Local);
 		}
 
 		async Task LoadDefaultPalette()
@@ -247,11 +249,11 @@ namespace OpenLoco.Gui.ViewModels
 			var createdTime = File.GetCreationTimeUtc(fsi.Filename);
 			var modifiedTime = File.GetLastWriteTimeUtc(fsi.Filename);
 
-			if (Model.TryLoadObject(new FileSystemItemBase(fsi.Filename, Path.GetFileName(fsi.Filename), createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
+			if (Model.TryLoadObject(new FileSystemItemBase(fsi.Filename, Path.GetFileName(fsi.Filename), fsi.InternalName, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 			{
 				Model.Logger.Warning($"Successfully loaded {fsi.Filename}");
 				var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.Checksum);
-				var fsi2 = new FileSystemItemBase(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, createdTime, modifiedTime, FileLocation.Local, source);
+				var fsi2 = new FileSystemItemBase(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, fsi.InternalName, createdTime, modifiedTime, FileLocation.Local, source);
 				SetObjectViewModel(fsi2);
 			}
 			else
@@ -394,21 +396,25 @@ namespace OpenLoco.Gui.ViewModels
 				Model.Logger.Warning("Directory doesn't exist");
 				return;
 			}
+
 			if (Model.Settings.ObjDataDirectories.Contains(dirPath))
 			{
 				Model.Logger.Warning("Object directory is already in the list");
 				return;
 			}
+
 			if (Model.Settings.AppDataObjDataFolder != dirPath)
 			{
 				Model.Logger.Warning("No need to add - this is the predefined AppData folder");
 				return;
 			}
+
 			if (Model.Settings.LocomotionObjDataFolder != dirPath)
 			{
 				Model.Logger.Warning("No need to add - this is the predefined Locomotion ObjData folder");
 				return;
 			}
+
 			if (Model.Settings.OpenLocoObjDataFolder != dirPath)
 			{
 				Model.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");

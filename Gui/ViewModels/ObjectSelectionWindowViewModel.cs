@@ -35,7 +35,7 @@ namespace OpenLoco.Gui.ViewModels
 			ConfirmCommand = ReactiveCommand.Create(() => { });
 			CancelCommand = ReactiveCommand.Create(() => { });
 
-			ObjectCache = objects.ToImmutableList();
+			ObjectCache = [.. objects];
 
 			_ = this.WhenAnyValue(o => o.SearchTerm)
 				.Throttle(TimeSpan.FromMilliseconds(250))
@@ -48,7 +48,7 @@ namespace OpenLoco.Gui.ViewModels
 		void UpdateObjectView()
 		{
 			ObjectView.Clear();
-			ObjectView.AddRange(ObjectCache.Where(x => string.IsNullOrEmpty(SearchTerm) || x.DatName.Contains(SearchTerm, StringComparison.InvariantCultureIgnoreCase)));
+			ObjectView.AddRange(ObjectCache.Where(x => string.IsNullOrEmpty(SearchTerm) || (!string.IsNullOrEmpty(x.DisplayName) && x.DisplayName.Contains(SearchTerm, StringComparison.InvariantCultureIgnoreCase))));
 		}
 	}
 }

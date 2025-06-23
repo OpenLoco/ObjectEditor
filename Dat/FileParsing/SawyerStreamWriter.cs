@@ -1,6 +1,6 @@
+using Dat.Objects;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects.Sound;
 using OpenLoco.Dat.Types;
 using System.Text;
 
@@ -408,7 +408,7 @@ namespace OpenLoco.Dat.FileParsing
 			// variable data
 			if (obj.Object is ILocoStructVariableData objV)
 			{
-				var variableBytes = objV.Save();
+				var variableBytes = objV.SaveVariable();
 				rawObjStream.Write(variableBytes);
 			}
 
@@ -416,7 +416,6 @@ namespace OpenLoco.Dat.FileParsing
 			SaveImageTable(obj.G1Elements, rawObjStream);
 
 			rawObjStream.Flush();
-
 
 			// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
 

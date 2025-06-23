@@ -1,16 +1,16 @@
-using OpenLoco.Definitions.Database;
+using Definitions;
 
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoItemPackDescriptor<T>(
-		int Id,
+		DbKey Id,
 		string Name,
 		string? Description,
+		DateTimeOffset? CreatedDate,
+		DateTimeOffset? ModifiedDate,
+		DateTimeOffset UploadedDate,
 		ICollection<T> Items,
-		ICollection<TblAuthor> Authors,
-		DateTimeOffset? CreationDate,
-		DateTimeOffset? LastEditDate,
-		DateTimeOffset UploadDate,
-		ICollection<TblTag> Tags,
-		TblLicence? Licence);
+		ICollection<DtoAuthorEntry> Authors,
+		ICollection<DtoTagEntry> Tags,
+		DtoLicenceEntry? Licence) : IHasId;
 }

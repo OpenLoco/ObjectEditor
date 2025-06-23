@@ -57,7 +57,7 @@ namespace OpenLoco.Dat.FileParsing
 			var currentRemainingData = remainingData.Length;
 			if (locoStruct is ILocoStructVariableData locoStructExtra)
 			{
-				remainingData = locoStructExtra.Load(remainingData);
+				remainingData = locoStructExtra.LoadVariable(remainingData);
 			}
 
 			annotations.Add(new HexAnnotation("Loco Variables", runningCount, currentRemainingData - remainingData.Length));
@@ -142,7 +142,7 @@ namespace OpenLoco.Dat.FileParsing
 			var locoStructType = locoStruct.GetType();
 			var stringTableStrings = AttributeHelper.Has<LocoStringTableAttribute>(locoStructType)
 				? AttributeHelper.Get<LocoStringTableAttribute>(locoStructType)!.Strings
-				: AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStructType).Select(s => s.Name).ToArray();
+				: [.. AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStructType).Select(s => s.Name)];
 
 			var i = 0;
 			foreach (var locoString in stringTableStrings)

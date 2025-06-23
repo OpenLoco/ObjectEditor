@@ -19,7 +19,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 	public static class LegacyDtoExtensions
 	{
 		public record LegacyDtoObjectDescriptor(
-			int Id,
+			DbKey Id,
 			string DatName,
 			uint DatChecksum,
 			ObjectSource ObjectSource,
@@ -46,7 +46,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				table.UploadedDate);
 
 		public record LegacyDtoObjectDescriptorWithMetadata(
-			int Id,
+			DbKey Id,
 			string UniqueName,
 			string DatName,
 			uint DatChecksum,
@@ -197,7 +197,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
-		public async Task<IResult> GetObjectImages(int uniqueObjectId, LocoDbContext db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetObjectImages(DbKey uniqueObjectId, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested with images");
 
@@ -272,7 +272,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			logger.LogInformation("Object [{UniqueObjectId}] requested", uniqueObjectId);
 
 			var eObj = await db.Objects
-				.Where(x => x.Id == uniqueObjectId)
+				.Where(x => (int)x.Id == uniqueObjectId)
 				.Include(x => x.Licence)
 				.Include(x => x.DatObjects)
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
@@ -351,7 +351,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		{
 			var obj = await db.DatObjects
 				.Include(x => x.Object)
-				.Where(x => x.Object.Id == uniqueObjectId)
+				.Where(x => (int)x.Object.Id == uniqueObjectId)
 				.FirstOrDefaultAsync(); // may be more than one dat file associated with this object, so just get the first for now
 
 			if (obj == null)
@@ -397,7 +397,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			=> await Task.Run(() =>
 			{
 				var files = Directory.GetFiles(ServerFolderManager.ScenariosFolder, "*.SC5", SearchOption.AllDirectories);
-				var count = 0;
+				var count = 0UL;
 				var filenames = files.Select(x => new DtoScenarioEntry(count++, Path.GetRelativePath(ServerFolderManager.ScenariosFolder, x)));
 				return Results.Ok(filenames.ToList());
 			});
@@ -439,7 +439,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		public async Task<IResult> GetObjectPack([FromQuery] int uniqueId, LocoDbContext db)
 			=> Results.Ok(
 				(await db.ObjectPacks
-					.Where(x => x.Id == uniqueId)
+					.Where(x => (int)x.Id == uniqueId)
 					.Include(l => l.Licence)
 					.Select(x => new ExpandedTblPack<TblObjectPack, TblObject>(x, x.Objects, x.Authors, x.Tags))
 					.ToListAsync())
@@ -459,7 +459,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		public async Task<IResult> GetSC5FilePack([FromQuery] int uniqueId, LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
-					.Where(x => x.Id == uniqueId)
+					.Where(x => (int)x.Id == uniqueId)
 					.Include(l => l.Licence)
 					.Select(x => new ExpandedTblPack<TblSC5FilePack, TblSC5File>(x, x.SC5Files, x.Authors, x.Tags))
 					.ToListAsync())

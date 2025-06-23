@@ -1,9 +1,11 @@
+using Definitions.Database.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Types;
 
 namespace OpenLoco.Definitions.Database
 {
-	public class LocoDbContext : DbContext
+	public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, DbKey>
 	{
 		#region ReferenceData
 
@@ -13,9 +15,10 @@ namespace OpenLoco.Definitions.Database
 
 		#endregion
 
-		#region UserData
+		#region ObjectData
 
 		public DbSet<TblObject> Objects => Set<TblObject>();
+		public DbSet<TblStringTable> StringTable => Set<TblStringTable>();
 		public DbSet<TblDatObject> DatObjects => Set<TblDatObject>();
 		public DbSet<TblObjectPack> ObjectPacks => Set<TblObjectPack>();
 		public DbSet<TblSC5File> SC5Files => Set<TblSC5File>();
@@ -29,7 +32,7 @@ namespace OpenLoco.Definitions.Database
 		public LocoDbContext(DbContextOptions<LocoDbContext> options) : base(options)
 		{ }
 
-		public static string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco.db";
+		public static string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco-test.db";
 
 		protected override void OnConfiguring(DbContextOptionsBuilder builder)
 		{
@@ -53,6 +56,8 @@ namespace OpenLoco.Definitions.Database
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+			base.OnModelCreating(modelBuilder);
+
 			_ = modelBuilder.Entity<TblObject>()
 				.Property(b => b.UploadedDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
@@ -65,6 +70,52 @@ namespace OpenLoco.Definitions.Database
 			_ = modelBuilder.Entity<TblSC5FilePack>()
 				.Property(b => b.UploadedDate)
 				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+
+			// for the int->guid pk transition
+			//_ = modelBuilder.Entity<TblDatObject>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblObject>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblObjectPack>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblSC5File>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblSC5FilePack>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblAuthor>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblLicence>()
+			//	.HasAlternateKey(x => x.GuidId);
+			//_ = modelBuilder.Entity<TblTag>()
+			//	.HasAlternateKey(x => x.GuidId);
+
+			//_ = modelBuilder.Entity<TblStringTable>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblDatObject>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblObject>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblObjectPack>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblSC5File>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblSC5FilePack>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblAuthor>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblLicence>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
+			//_ = modelBuilder.Entity<TblTag>()
+			//	.Property(x => x.GuidId)
+			//	.HasDefaultValueSql("NEWID()");
 		}
 
 		public bool DoesObjectExist(S5Header s5Header, out TblObject? existingObject)

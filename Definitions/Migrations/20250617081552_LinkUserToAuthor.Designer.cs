@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenLoco.Definitions.Database;
 
@@ -10,9 +11,11 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
-    partial class LocoDbModelSnapshot : ModelSnapshot
+    [Migration("20250617081552_LinkUserToAuthor")]
+    partial class LinkUserToAuthor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -26,7 +29,7 @@ namespace Definitions.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("INTEGER");
 
-                    b.Property<ulong?>("AssociatedAuthorId")
+                    b.Property<ulong>("AssociatedAuthorId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -75,7 +78,8 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssociatedAuthorId");
+                    b.HasIndex("AssociatedAuthorId")
+                        .IsUnique();
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -217,6 +221,9 @@ namespace Definitions.Migrations
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("AssociatedAuthorId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -646,8 +653,10 @@ namespace Definitions.Migrations
             modelBuilder.Entity("Definitions.Database.Identity.TblUser", b =>
                 {
                     b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "AssociatedAuthor")
-                        .WithMany()
-                        .HasForeignKey("AssociatedAuthorId");
+                        .WithOne("AssociatedUser")
+                        .HasForeignKey("Definitions.Database.Identity.TblUser", "AssociatedAuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("AssociatedAuthor");
                 });
@@ -909,6 +918,11 @@ namespace Definitions.Migrations
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
+                {
+                    b.Navigation("AssociatedUser");
                 });
 
             modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>

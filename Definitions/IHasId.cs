@@ -2,6 +2,6 @@ namespace Definitions
 {
 	public interface IHasId
 	{
-		int Id { get; }
+		DbKey Id { get; }
 	}
 }

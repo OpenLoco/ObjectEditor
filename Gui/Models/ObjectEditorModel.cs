@@ -7,7 +7,6 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.Web;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -16,7 +15,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,7 +24,7 @@ namespace OpenLoco.Gui.Models
 	{
 		public EditorSettings Settings { get; private set; }
 
-		public ILogger Logger;
+		public ILogger Logger { get; init; }
 
 		public ObjectIndex ObjectIndex { get; private set; }
 
@@ -58,7 +56,7 @@ namespace OpenLoco.Gui.Models
 
 		public ObservableCollection<LogLine> LoggerObservableLogs = [];
 
-		public HttpClient? WebClient { get; }
+		public ObjectServiceClient ObjectServiceClient { get; init; }
 
 		readonly ConcurrentQueue<string> logQueue = new();
 		readonly SemaphoreSlim logFileLock = new(1, 1); // Allow only 1 concurrent write
@@ -71,19 +69,12 @@ namespace OpenLoco.Gui.Models
 			Logger.LogAdded += (sender, laea) => LogAsync(laea.Log.ToString()).ConfigureAwait(false);
 
 			LoadSettings();
+
+			// settings must be loaded or else the rest of the app cannot start
+			ArgumentNullException.ThrowIfNull(Settings);
+
 			InitialiseDownloadDirectory();
-
-			var serverAddress = Settings!.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
-
-			if (Uri.TryCreate(serverAddress, new(), out var serverUri))
-			{
-				WebClient = new HttpClient() { BaseAddress = serverUri, };
-				Logger.Info($"Successfully registered object service with address \"{serverUri}\"");
-			}
-			else
-			{
-				Logger.Error($"Unable to parse object service address \"{serverAddress}\". Online functionality will work until the address is corrected and the editor is restarted.");
-			}
+			ObjectServiceClient = new(Settings, Logger);
 		}
 
 		public async Task LogAsync(string message)
@@ -196,14 +187,14 @@ namespace OpenLoco.Gui.Models
 
 			if (!OnlineCache.TryGetValue(uniqueObjectId, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
 			{
-				if (WebClient == null)
+				if (ObjectServiceClient == null)
 				{
-					Logger.Error("Web client is null");
+					Logger.Error("Object service client is null");
 					return false;
 				}
 
-				Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {WebClient.BaseAddress}");
-				cachedLocoObjDto = Task.Run(async () => await Client.GetObjectAsync(WebClient, uniqueObjectId)).Result;
+				Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {ObjectServiceClient.WebClient.BaseAddress}");
+				cachedLocoObjDto = Task.Run(async () => await ObjectServiceClient.GetObjectAsync(uniqueObjectId)).Result;
 
 				if (cachedLocoObjDto == null)
 				{
@@ -509,13 +500,13 @@ namespace OpenLoco.Gui.Models
 			var creationDate = File.GetCreationTimeUtc(filename);
 			var modifiedDate = File.GetLastWriteTimeUtc(filename);
 
-			if (WebClient == null)
+			if (ObjectServiceClient == null)
 			{
-				Logger.Error("Web client is null");
+				Logger.Error("Object service client is null");
 				return;
 			}
 
-			await Client.UploadDatFileAsync(WebClient, dat.Filename, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate, Logger);
+			await ObjectServiceClient.UploadDatFileAsync(dat.Filename, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate);
 			await Task.Delay(100); // wait 100ms, ie don't DoS the server
 		}
 

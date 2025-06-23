@@ -12,11 +12,11 @@ namespace ObjectService.RouteHandlers
 
 		Task<IResult> CreateAsync(TDto request, LocoDbContext db);
 
-		Task<IResult> ReadAsync(int id, LocoDbContext db);
+		Task<IResult> ReadAsync(DbKey id, LocoDbContext db);
 
-		Task<IResult> UpdateAsync(int id, TDto request, LocoDbContext db);
+		Task<IResult> UpdateAsync(DbKey id, TDto request, LocoDbContext db);
 
-		Task<IResult> DeleteAsync(int id, LocoDbContext db);
+		Task<IResult> DeleteAsync(DbKey id, LocoDbContext db);
 
 		Task<IResult> ListAsync(HttpContext context, LocoDbContext db);
 	}

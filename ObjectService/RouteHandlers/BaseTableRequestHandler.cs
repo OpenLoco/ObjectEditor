@@ -1,4 +1,5 @@
 using Definitions;
+using Definitions.Database.Identity;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
 
@@ -20,12 +21,9 @@ namespace ObjectService.RouteHandlers
 			var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
 			_ = resourceRoute.MapGet(string.Empty, ReadAsync);
 
-			// todo: do not enable until user permissions are implemented. for now, enable for testing
-#if DEBUG
-			_ = baseRoute.MapPost(string.Empty, CreateAsync);
-			_ = resourceRoute.MapPut(string.Empty, UpdateAsync);
-			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync);
-#endif
+			_ = baseRoute.MapPost(string.Empty, CreateAsync).RequireAuthorization(AdminPolicy.Name);
+			_ = resourceRoute.MapPut(string.Empty, UpdateAsync).RequireAuthorization(AdminPolicy.Name);
+			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync).RequireAuthorization(AdminPolicy.Name);
 
 			MapAdditionalRoutes(baseRoute);
 
@@ -35,9 +33,9 @@ namespace ObjectService.RouteHandlers
 
 		public virtual void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute) { }
 		public abstract Task<IResult> CreateAsync(TDto request, LocoDbContext db);
-		public abstract Task<IResult> ReadAsync(int id, LocoDbContext db);
-		public abstract Task<IResult> UpdateAsync(int id, TDto request, LocoDbContext db);
-		public abstract Task<IResult> DeleteAsync(int id, LocoDbContext db);
+		public abstract Task<IResult> ReadAsync(DbKey id, LocoDbContext db);
+		public abstract Task<IResult> UpdateAsync(DbKey id, TDto request, LocoDbContext db);
+		public abstract Task<IResult> DeleteAsync(DbKey id, LocoDbContext db);
 		public abstract Task<IResult> ListAsync(HttpContext context, LocoDbContext db);
 	}
 }

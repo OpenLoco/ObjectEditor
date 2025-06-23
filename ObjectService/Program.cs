@@ -1,9 +1,14 @@
+using Definitions.Database.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using ObjectService.Identity;
 using OpenLoco.Definitions.Database;
 using OpenLoco.ObjectService;
 using Scalar.AspNetCore;
+using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -14,17 +19,17 @@ builder.Logging.AddConsole();
 
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
-builder.Services.AddOpenApi();
-_ = builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddOpenApi(options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
-builder.Services.AddDbContext<LocoDbContext>(opt => opt.UseSqlite(connectionString));
+builder.Services.AddDbContext<LocoDbContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddSingleton<Server>();
-_ = builder.Services.Configure<ServerSettings>(builder.Configuration.GetSection("ObjectService"));
 builder.Services.AddHttpLogging(logging =>
 {
-	logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
+	logging.LoggingFields = HttpLoggingFields.All;
+	//logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
 	logging.CombineLogs = true;
 });
 
@@ -58,9 +63,46 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
+builder.Services
+	.AddIdentityApiEndpoints<TblUser>()
+	.AddEntityFrameworkStores<LocoDbContext>();
+
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+	options.TokenValidationParameters = new TokenValidationParameters
+	{
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+		ValidAudience = builder.Configuration["JwtSettings:Audience"],
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+	};
+});
+
+//builder.Services.AddAuthorization();
+builder.Services
+	.AddAuthorizationBuilder()
+	.AddPolicy(AdminPolicy.Name, AdminPolicy.Build);
+
+// Used for the Identity stuff to send emails to users
+// disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
+//builder.Services.AddTransient<IEmailSender, EmailSender>();
+
 var app = builder.Build();
+
 app.UseHttpLogging();
 app.UseRateLimiter();
+app.MapLocoIdentityApi<TblUser>();
+
+// defining routes here, after MapLocoIdentityApi, will overwrite them, allowing us to customise them
+//app.MapPost("/register", () => Results.Ok());
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
 var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];
@@ -76,17 +118,21 @@ _ = app
 
 var showScalar = builder.Configuration.GetValue<bool?>("ObjectService:ShowScalar");
 ArgumentNullException.ThrowIfNull(showScalar);
+_ = app.MapOpenApi();
 if (showScalar == true)
 {
-	_ = app.MapOpenApi();
 	_ = app.MapScalarApiReference(options =>
 	{
 		_ = options
 			.WithTitle("OpenLoco Object Service")
 			.WithTheme(ScalarTheme.Solarized)
-			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+			.AddPreferredSecuritySchemes("Bearer");
 	});
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();
 

@@ -4,7 +4,6 @@ using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using OpenLoco.Dat.Data;
 using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.Web;
 using OpenLoco.Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -274,9 +273,9 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.WebClient != null)
+			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.ObjectServiceClient != null)
 			{
-				Model.ObjectIndexOnline = new ObjectIndex((await Client.GetObjectListAsync(Model.WebClient, Model.Logger))
+				Model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
 					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DisplayName, null, null, x.InternalName, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
 			}
 

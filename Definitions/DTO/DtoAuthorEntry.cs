@@ -3,6 +3,6 @@ using Definitions;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoAuthorEntry(
-		int Id,
+		DbKey Id,
 		string Name) : IHasId;
 }

@@ -100,4 +100,26 @@ async static void WriteStringTable()
 }
 //WriteStringTable();
 
+async static void SetGuids()
+{
+	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
+	var logger = new Logger();
+
+	//await db.StringTable.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.DatObjects.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.Objects.ForEachAsync(x => x.GuidId = Guid.TryParse(x.Name.ToUpper(), out var guid) ? guid : Guid.NewGuid());
+	//await db.ObjectPacks.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.SC5Files.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.SC5FilePacks.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.Authors.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.Licences.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+	//await db.Tags.ForEachAsync(x => x.GuidId = Guid.NewGuid());
+
+	_ = await db.SaveChangesAsync();
+
+	// Note: The database must exist before this script works
+	Console.WriteLine($"Database path: {LocoDbContext.DefaultDb}");
+}
+//SetGuids();
+
 Console.ReadLine();

@@ -33,6 +33,9 @@ namespace OpenLoco.ObjectService
 
 		public LegacyRouteHandler LegacyRouteHandler { get; init; }
 
+		public UserRequestHandler UserHandler { get; init; } = new();
+		public RoleRequestHandler RoleHandler { get; init; } = new();
+
 		public IEndpointRouteBuilder MapRoutes(IEndpointRouteBuilder routeGroup)
 		{
 			AuthorHandler.MapRoutes(routeGroup);
@@ -47,6 +50,12 @@ namespace OpenLoco.ObjectService
 			// DatLookup(?)
 
 			LegacyRouteHandler.MapRoutes(routeGroup);
+
+			// server/db management
+#if DEBUG
+			UserHandler.MapRoutes(routeGroup);
+			RoleHandler.MapRoutes(routeGroup);
+#endif
 
 			return routeGroup;
 		}

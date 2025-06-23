@@ -34,7 +34,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		public override async Task<IResult> CreateAsync(DtoObjectDescriptor request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ReadAsync(int id, LocoDbContext db)
+		public override async Task<IResult> ReadAsync(DbKey id, LocoDbContext db)
 		{
 			var eObj = await db.Objects
 				.Where(x => x.Id == id)
@@ -47,10 +47,10 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return ReturnObject(eObj);
 		}
 
-		public override async Task<IResult> UpdateAsync(int id, DtoObjectDescriptor request, LocoDbContext db)
+		public override async Task<IResult> UpdateAsync(DbKey id, DtoObjectDescriptor request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> DeleteAsync(int id, LocoDbContext db)
+		public override async Task<IResult> DeleteAsync(DbKey id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		public override async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
@@ -222,7 +222,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		//}
 
 		// eg: http://localhost:7229/v1/objects/{id}/images
-		public async Task<IResult> GetObjectImages(int id, LocoDbContext db, [FromServices] ILogger<Server> logger)
+		public async Task<IResult> GetObjectImages(DbKey id, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
 			// currently we MUST have a DAT backing object
 			logger.LogInformation("Object [{uniqueObjectId}] requested with images", id);
@@ -303,7 +303,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		//}
 
 		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
-		public async Task<IResult> GetObjectFile([FromRoute] int id, LocoDbContext db)
+		public async Task<IResult> GetObjectFile([FromRoute] DbKey id, LocoDbContext db)
 		{
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)

@@ -1,4 +1,6 @@
+using Definitions.Database.Identity;
 using OpenLoco.Definitions.Database;
+using OpenLoco.Definitions.DTO.Identity;
 using OpenLoco.Definitions.SourceData;
 
 namespace OpenLoco.Definitions.DTO
@@ -24,7 +26,7 @@ namespace OpenLoco.Definitions.DTO
 				[.. x.Object.DatObjects.Select(x => x.ToDtoEntry())],
 				x.Object.StringTable.ToDtoDescriptor(x.Object.Id));
 
-		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTable> x, int ObjectId)
+		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTable> x, DbKey ObjectId)
 		{
 			var table = x
 				.Select(x => x.ToDtoEntry())
@@ -118,6 +120,18 @@ namespace OpenLoco.Definitions.DTO
 
 		public static TblLicence ToTable(this DtoLicenceEntry dto)
 			=> new() { Name = dto.Name, Id = dto.Id, Text = dto.LicenceText };
+
+		public static DtoUserEntry ToDtoEntry(this TblUser table)
+			=> new(table.Id, table.UserName);
+
+		public static TblUser ToTable(this DtoUserEntry dto)
+			=> new() { UserName = dto.UserName, Id = dto.Id };
+
+		public static DtoRoleEntry ToDtoEntry(this TblUserRole table)
+			=> new(table.Id, table.Name);
+
+		public static TblUserRole ToTable(this DtoRoleEntry dto)
+			=> new() { Name = dto.Name, Id = dto.Id };
 
 		public static DtoItemPackEntry ToDtoEntry(this TblObjectPack x)
 			=> new(

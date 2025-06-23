@@ -3,11 +3,11 @@ using Definitions;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoScenarioEntry(
-		int Id,
+		DbKey Id,
 		string Name) : IHasId;
 
 	public record DtoScenarioDescriptor(
-		int Id,
+		DbKey Id,
 		string Name,
 		string? Description) : IHasId;
 }

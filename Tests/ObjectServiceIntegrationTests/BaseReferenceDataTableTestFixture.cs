@@ -56,7 +56,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		public virtual async Task ListAsync()
 		{
 			// act
-			var results = await Client.GetAsync<IEnumerable<TDto>>(HttpClient!, BaseRoute);
+			var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, BaseRoute);
 
 			// assert
 			Assert.Multiple(() =>
@@ -71,7 +71,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		{
 			// act
 			const int id = 2;
-			var results = await Client.GetAsync<TDto>(HttpClient!, BaseRoute, id);
+			var results = await ClientHelpers.GetAsync<TDto>(HttpClient!, BaseRoute, id);
 
 			// assert
 			Assert.That(results, Is.EqualTo(SeedData.ToList()[id - 1]));
@@ -82,12 +82,12 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		{
 			// act
 			const int id = 1;
-			var results = await Client.DeleteAsync(HttpClient!, BaseRoute, id);
+			var results = await ClientHelpers.DeleteAsync(HttpClient!, BaseRoute, id);
 
 			// assert
 			Assert.Multiple(async () =>
 			{
-				var results = await Client.GetAsync<IEnumerable<TDto>>(HttpClient!, BaseRoute);
+				var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, BaseRoute);
 				Assert.That(results.First(), Is.EqualTo(SeedData.ToList()[id]));
 			});
 		}
@@ -96,7 +96,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		public async Task PostAsync()
 		{
 			// act
-			var results = await Client.PostAsync(HttpClient!, BaseRoute, ExtraSeedDatum);
+			var results = await ClientHelpers.PostAsync(HttpClient!, BaseRoute, ExtraSeedDatum);
 
 			// assert
 			Assert.That(results, Is.EqualTo(ExtraSeedDatum));
@@ -107,13 +107,10 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		{
 			// act
 			const int id = 1;
-			var results = await Client.PutAsync(HttpClient!, BaseRoute, id, ExtraSeedDatum);
+			var results = await ClientHelpers.PutAsync(HttpClient!, BaseRoute, id, ExtraSeedDatum);
 
 			// assert
-			Assert.Multiple(() =>
-			{
-				Assert.That(results.IntId, Is.EqualTo(id));
-			});
+			Assert.That(results.Id, Is.EqualTo(id));
 		}
 	}
 }

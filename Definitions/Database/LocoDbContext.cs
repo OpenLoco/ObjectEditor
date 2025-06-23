@@ -1,4 +1,3 @@
-using Definitions.Database.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Types;
@@ -32,7 +31,7 @@ namespace OpenLoco.Definitions.Database
 		public LocoDbContext(DbContextOptions<LocoDbContext> options) : base(options)
 		{ }
 
-		public static string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco-test.db";
+		public const string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco-test.db";
 
 		protected override void OnConfiguring(DbContextOptionsBuilder builder)
 		{

@@ -1,7 +1,7 @@
+using Definitions;
 using Microsoft.AspNetCore.Identity;
 
-namespace Definitions.Database.Identity
+namespace OpenLoco.Definitions.Database
 {
-	public class TblUserRole : IdentityRole<DbKey>, IHasId
-	{ }
+	public class TblUserRole : IdentityRole<DbKey>, IHasId;
 }

@@ -41,7 +41,6 @@ namespace OpenLoco.Definitions.Web
 
 	public static class ClientHelpers
 	{
-
 		public static async Task<byte[]?> ReadBinaryContentAsync(HttpContent content)
 		{
 			await using (var stream = await content.ReadAsStreamAsync())
@@ -144,9 +143,6 @@ namespace OpenLoco.Definitions.Web
 				logger?.Error(ex);
 				return default;
 			}
-
-			return default;
 		}
-
 	}
 }

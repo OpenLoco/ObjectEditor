@@ -1,4 +1,3 @@
-using Definitions.Database.Identity;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO.Identity;
 using OpenLoco.Definitions.SourceData;

@@ -1,5 +1,4 @@
 using Definitions;
-using Definitions.Database.Identity;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.Web;
 
@@ -21,9 +20,11 @@ namespace ObjectService.RouteHandlers
 			var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
 			_ = resourceRoute.MapGet(string.Empty, ReadAsync);
 
+#if DEBUG
 			_ = baseRoute.MapPost(string.Empty, CreateAsync).RequireAuthorization(AdminPolicy.Name);
 			_ = resourceRoute.MapPut(string.Empty, UpdateAsync).RequireAuthorization(AdminPolicy.Name);
 			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync).RequireAuthorization(AdminPolicy.Name);
+#endif
 
 			MapAdditionalRoutes(baseRoute);
 

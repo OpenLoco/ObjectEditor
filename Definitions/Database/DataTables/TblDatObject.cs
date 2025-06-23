@@ -6,8 +6,6 @@ namespace OpenLoco.Definitions.Database
 	[Index(nameof(xxHash3), IsUnique = true)]
 	public class TblDatObject : DbIdObject
 	{
-		public DbKey Id { get; set; }
-
 		public required string DatName { get; set; }
 
 		public required uint DatChecksum { get; set; }

@@ -1,10 +1,8 @@
-using Definitions.Database.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ObjectService.Identity;
 using OpenLoco.Definitions.Database;
 using OpenLoco.ObjectService;
 using Scalar.AspNetCore;
@@ -99,7 +97,7 @@ var app = builder.Build();
 
 app.UseHttpLogging();
 app.UseRateLimiter();
-app.MapLocoIdentityApi<TblUser>();
+//app.MapLocoIdentityApi<TblUser>();
 
 // defining routes here, after MapLocoIdentityApi, will overwrite them, allowing us to customise them
 //app.MapPost("/register", () => Results.Ok());
@@ -118,6 +116,7 @@ _ = app
 
 var showScalar = builder.Configuration.GetValue<bool?>("ObjectService:ShowScalar");
 ArgumentNullException.ThrowIfNull(showScalar);
+
 _ = app.MapOpenApi();
 if (showScalar == true)
 {

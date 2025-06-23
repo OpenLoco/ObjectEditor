@@ -7,8 +7,6 @@ namespace OpenLoco.Definitions.Database
 	[Index(nameof(Name), IsUnique = true)]
 	public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMetadata, IDbDates
 	{
-		public DbKey Id { get; set; }
-
 		#region IDbName
 
 		public required string Name { get; set; } // InternalName

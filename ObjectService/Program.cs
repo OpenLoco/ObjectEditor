@@ -1,12 +1,9 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using OpenLoco.Definitions.Database;
 using OpenLoco.ObjectService;
 using Scalar.AspNetCore;
-using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -17,7 +14,7 @@ builder.Logging.AddConsole();
 
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
-builder.Services.AddOpenApi(options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+//builder.Services.AddOpenApi(options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddDbContext<LocoDbContext>(options =>
@@ -66,33 +63,33 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
-builder.Services
-	.AddIdentityApiEndpoints<TblUser>()
-	.AddEntityFrameworkStores<LocoDbContext>();
+//builder.Services
+//.AddIdentityApiEndpoints<TblUser>()
+//.AddEntityFrameworkStores<LocoDbContext>();
 
-builder.Services.AddAuthentication(options =>
-{
-	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-	options.TokenValidationParameters = new TokenValidationParameters
-	{
-		ValidateIssuer = true,
-		ValidateAudience = true,
-		ValidateLifetime = true,
-		ValidateIssuerSigningKey = true,
-		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-		ValidAudience = builder.Configuration["JwtSettings:Audience"],
-		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-	};
-});
+//builder.Services.AddAuthentication(options =>
+//{
+//	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//})
+//.AddJwtBearer(options =>
+//{
+//	options.TokenValidationParameters = new TokenValidationParameters
+//	{
+//		ValidateIssuer = true,
+//		ValidateAudience = true,
+//		ValidateLifetime = true,
+//		ValidateIssuerSigningKey = true,
+//		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+//		ValidAudience = builder.Configuration["JwtSettings:Audience"],
+//		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+//	};
+//});
 
 //builder.Services.AddAuthorization();
-builder.Services
-	.AddAuthorizationBuilder()
-	.AddPolicy(AdminPolicy.Name, AdminPolicy.Build);
+//builder.Services
+//	.AddAuthorizationBuilder()
+//	.AddPolicy(AdminPolicy.Name, AdminPolicy.Build);
 
 // Used for the Identity stuff to send emails to users
 // disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
@@ -130,8 +127,8 @@ if (showScalar == true)
 		_ = options
 			.WithTitle("OpenLoco Object Service")
 			.WithTheme(ScalarTheme.Solarized)
-			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-			.AddPreferredSecuritySchemes("Bearer");
+			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+		//.AddPreferredSecuritySchemes("Bearer");
 	});
 }
 

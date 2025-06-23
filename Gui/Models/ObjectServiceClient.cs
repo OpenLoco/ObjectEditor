@@ -20,7 +20,7 @@ namespace OpenLoco.Gui.Models
 
 	public class ObjectServiceClient
 	{
-		public LocalUser LocoUser { get; set; }
+		//public LocalUser LocoUser { get; set; }
 
 		public HttpClient WebClient { get; }
 
@@ -48,7 +48,7 @@ namespace OpenLoco.Gui.Models
 
 			Logger = logger;
 
-			LocoUser = new LocalUser(settings.ServerEmail, settings.ServerPassword);
+			//LocoUser = new LocalUser(settings.ServerEmail, settings.ServerPassword);
 		}
 
 		//public async Task<DtoLoginRequest>

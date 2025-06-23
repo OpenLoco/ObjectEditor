@@ -36,8 +36,8 @@ namespace OpenLoco.Gui
 		public string ServerAddressHttp { get; set; } = "http://openloco.leftofzen.dev/";
 		public string ServerAddressHttps { get; set; } = "https://openloco.leftofzen.dev/";
 
-		public string ServerEmail { get; set; }
-		public string ServerPassword { get; set; }
+		//public string ServerEmail { get; set; }
+		//public string ServerPassword { get; set; }
 
 		public string DownloadFolder { get; set; } = string.Empty;
 

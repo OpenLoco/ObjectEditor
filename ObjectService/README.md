@@ -17,6 +17,14 @@ That's it. It's real basic right now but it should suffice for most purposes.
 ### Uploading objects
 You can technically manually call the `uploaddat` route but this is intended primarily for the Object Editor to use in an automated fashion. It isn't for individual use.
 
+## Server Admin
+- `sudo systemctl start objectservice.service`
+- `sudo systemctl restart objectservice.service`
+- `sudo systemctl stop objectservice.service`
+- `sudo journalctl --disk-usage`
+- `sudo journalctl --vacuum-time=5days`
+- `sudo journalctl -u objectservice.service`
+
 ## API
 
 ### GET

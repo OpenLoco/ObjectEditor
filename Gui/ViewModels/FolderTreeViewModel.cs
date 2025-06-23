@@ -24,8 +24,8 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			SelectedTabIndex = 0;
 			CurrentLocalDirectory = "test/directory";
-			LocalDirectoryItems = [new("local-filename1", "local-displayname1")];
-			OnlineDirectoryItems = [new("online-filename1", "online-displayname1")];
+			LocalDirectoryItems = [new("local-filename1", "local-displayname1", "local-internalname1")];
+			OnlineDirectoryItems = [new("online-filename1", "online-displayname1", "online-internalname1")];
 
 			UpdateDirectoryItemsView();
 		}

@@ -5,6 +5,7 @@ using OpenLoco.Definitions.Web;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {
+	[Tags("LicenceRequestHandler")]
 	public class LicenceRequestHandler : BaseReferenceDataTableRequestHandler<DtoLicenceEntry, TblLicence>
 	{
 		public override string BaseRoute

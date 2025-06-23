@@ -14,7 +14,7 @@ builder.Logging.AddConsole();
 
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
-//builder.Services.AddOpenApi(options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+builder.Services.AddOpenApi(); // (options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddDbContext<LocoDbContext>(options =>

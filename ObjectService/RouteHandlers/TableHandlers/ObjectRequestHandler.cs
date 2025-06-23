@@ -125,102 +125,6 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			}
 		}
 
-		public IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj)
-			=> eObj == null || eObj.Object == null
-				? Results.NotFound()
-				: Results.Ok(FillInDatFile(eObj.ToDtoDescriptor()));
-
-		// eg: https://localhost:7230/v1/objects/list
-		//public static async Task<IResult> SearchObjects(
-		//	[FromQuery] string? objectName,
-		//	[FromQuery] uint? checksum,
-		//	[FromQuery] string? description,
-		//	[FromQuery] ObjectType? objectType,
-		//	[FromQuery] VehicleType? vehicleType,
-		//	[FromQuery] string? authorName,
-		//	[FromQuery] string? tagName,
-		//	[FromQuery] ObjectSource? objectSource,
-		//	LocoDb db)
-		//{
-		//	var query = db.Objects.AsQueryable();
-
-		//	#region Query Construction
-
-		//	if (!string.IsNullOrEmpty(objectName))
-		//	{
-		//		query = query.Where(x => x.DatName.Contains(objectName));
-		//	}
-
-		//	if (checksum is not null and not 0)
-		//	{
-		//		query = query.Where(x => x.DatChecksum == checksum);
-		//	}
-
-		//	if (!string.IsNullOrEmpty(description))
-		//	{
-		//		query = query.Where(x => x.Description != null && x.Description.Contains(description));
-		//	}
-
-		//	if (objectType != null)
-		//	{
-		//		query = query.Where(x => x.ObjectType == objectType);
-		//	}
-
-		//	if (objectType == ObjectType.Vehicle && vehicleType != null)
-		//	{
-		//		// can only query vehicle type if it's a vehicle. if ObjectType is unspecified, that is fine
-		//		if (objectType is not null and not ObjectType.Vehicle)
-		//		{
-		//			return Results.BadRequest("Cannot query for a Vehicle type on non-Vehicle objects");
-		//		}
-
-		//		query = query.Where(x => x.VehicleType == vehicleType);
-		//	}
-
-		//	if (!string.IsNullOrEmpty(authorName))
-		//	{
-		//		query = query.Where(x => x.Authors.Select(a => a.Name).Contains(authorName));
-		//	}
-
-		//	if (!string.IsNullOrEmpty(tagName))
-		//	{
-		//		query = query.Where(x => x.Tags.Select(t => t.Name).Contains(tagName));
-		//	}
-
-		//	if (objectSource != null)
-		//	{
-		//		query = query.Where(x => x.ObjectSource == objectSource);
-		//	}
-
-		//	#endregion
-
-		//	try
-		//	{
-		//		var result = await query
-		//			.Select(x => x.ToDtoEntry())
-		//			.ToListAsync();
-
-		//		return Results.Ok(result);
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		return Results.Problem(ex.Message);
-		//	}
-		//}
-
-		// eg: https://localhost:7230/v1/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		//public async Task<IResult> GetDat([FromQuery] string objectName, [FromQuery] uint checksum, LocoDb db, [FromServices] ILogger<Server> logger)
-		//{
-		//	var eObj = await db.DatObjects
-		//		.Where(x => x.DatName == objectName && x.DatChecksum == checksum)
-		//		.Include(x => x.Object)
-		//		.Include(x => x.Object.Licence)
-		//		.Select(x => new ExpandedTblLookup<TblObject, TblDatObject, TblObjectPack>(x.Object, x.Object.DatObjects, x.Object.Authors, x.Object.Tags, x.Object.ObjectPacks))
-		//		.SingleOrDefaultAsync();
-
-		//	return ReturnObject(eObj);
-		//}
-
 		// eg: http://localhost:7229/v1/objects/{id}/images
 		public async Task<IResult> GetObjectImages(DbKey id, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
@@ -292,52 +196,59 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return Results.File(bytes, "application/zip", "images.zip");
 		}
 
-		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123
-		//public async Task<IResult> GetDatFile([FromQuery] string datName, [FromQuery] uint datChecksum, LocoDb db)
-		//{
-		//	var obj = await db.Objects
-		//		.Where(x => x.DatName == datName && x.DatChecksum == datChecksum)
-		//		.SingleOrDefaultAsync();
-
-		//	return ReturnFile(obj);
-		//}
-
-		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
-		public async Task<IResult> GetObjectFile([FromRoute] DbKey id, LocoDbContext db)
+		// eg: https://localhost:7230/objects/114
+		public async Task<IResult> GetObjectFile([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<Server> logger)
 		{
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Where(x => x.Id == id)
 				.SingleOrDefaultAsync();
 
-			return ReturnFile(obj);
+			return ReturnFile(obj, logger);
 		}
 
-		DtoObjectDescriptor FillInDatFile(DtoObjectDescriptor obj)
+		public IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj)
 		{
-			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+			Console.WriteLine("[ReturnObject]");
+
+			if (eObj == null || eObj.Object == null)
 			{
-				return obj;
+				return Results.NotFound();
 			}
 
-			foreach (var datObject in obj.DatObjects)
+			if (eObj.Object.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 			{
-				if (!ServerFolderManager.ObjectIndex.TryFind((datObject.DatName, datObject.DatChecksum), out var entry))
+				Console.WriteLine("User attempted to download a vanilla object");
+				return Results.Forbid();
+			}
+
+			var obj = eObj.ToDtoDescriptor();
+
+			foreach (var dat in obj.DatObjects)
+			{
+				if (!ServerFolderManager.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry))
 				{
+					Console.WriteLine("Object {datFile} didn't exist in the object index", dat);
 					continue;
 				}
 
 				var path = Path.Combine(ServerFolderManager.ObjectsFolder, entry!.Filename);
-				datObject.DatBytes = obj != null && File.Exists(path)
-					? Convert.ToBase64String(File.ReadAllBytes(path))
-					: null;
+
+				if (!File.Exists(path))
+				{
+					Console.WriteLine("Object {datFile} existed in the object index but not on disk. ExpectedPath=\"{path}\"", dat, path);
+				}
+
+				dat.DatBytes = Convert.ToBase64String(File.ReadAllBytes(path));
 			}
 
-			return obj!;
+			return Results.Ok(obj);
 		}
 
-		IResult ReturnFile(TblObject? obj)
+		IResult ReturnFile(TblObject? obj, ILogger<Server> logger)
 		{
+			logger.LogDebug("[ReturnFile]");
+
 			if (obj == null)
 			{
 				return Results.NotFound();
@@ -345,21 +256,27 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 			{
+				logger.LogDebug("User attempted to download a vanilla object");
 				return Results.Forbid();
 			}
 
 			var dat = obj.DatObjects.First();
 			if (!ServerFolderManager.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index))
 			{
+				logger.LogDebug("Object {datFile} didn't exist in the object index", dat);
 				return Results.NotFound();
 			}
 
 			const string contentType = "application/octet-stream";
 
 			var path = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename);
-			return obj != null && File.Exists(path)
-				? Results.File(path, contentType, Path.GetFileName(path))
-				: Results.NotFound();
+
+			if (!File.Exists(path))
+			{
+				logger.LogDebug("Object {datFile} existed in the object index but not on disk. ExpectedPath=\"{path}\"", dat, path);
+			}
+
+			return Results.File(path, contentType, Path.GetFileName(path));
 		}
 
 		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<Server> logger)

@@ -5,6 +5,7 @@ using OpenLoco.Definitions.Web;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {
+	[Tags("TagRequestHandler")]
 	public class TagRequestHandler : BaseReferenceDataTableRequestHandler<DtoTagEntry, TblTag>
 	{
 		public override string BaseRoute

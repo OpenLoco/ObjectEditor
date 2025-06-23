@@ -20,7 +20,12 @@ var connectionString = builder.Configuration.GetConnectionString("SQLiteConnecti
 builder.Services.AddOpenApi(options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
-builder.Services.AddDbContext<LocoDbContext>(options => options.UseSqlite(connectionString));
+builder.Services.AddDbContext<LocoDbContext>(options =>
+{
+	_ = options.UseSqlite(connectionString);
+	_ = options.EnableDetailedErrors();
+	_ = options.EnableSensitiveDataLogging();
+});
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddSingleton<Server>();

@@ -96,9 +96,6 @@
 
 								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
 								<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="4" />
-
-								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
-								<ListBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DatObjects}"></ListBox>
 							</Grid>
 							<StackPanel>
 								<Border BorderThickness="1" Margin="4" >
@@ -154,6 +151,29 @@
 												<DataTemplate>
 													<Border BorderThickness="2">
 														<TextBlock Margin="4" Text="{Binding Name}" />
+													</Border>
+												</DataTemplate>
+											</ListBox.ItemTemplate>
+										</ListBox >
+									</StackPanel>
+								</Border>
+								<Border BorderThickness="1" Margin="4" >
+									<StackPanel>
+										<TextBlock Margin="4">Dat Objects</TextBlock>
+										<ListBox ItemsSource="{Binding CurrentObject.Metadata.DatObjects}">
+											<ListBox.ItemsPanel>
+												<ItemsPanelTemplate>
+													<WrapPanel/>
+												</ItemsPanelTemplate>
+											</ListBox.ItemsPanel>
+											<ListBox.ItemTemplate>
+												<DataTemplate>
+													<Border BorderThickness="2">
+														<StackPanel Orientation="Horizontal">
+															<TextBlock Margin="4" Text="{Binding DatName}" />
+															<TextBlock Margin="4" Text="{Binding DatChecksum}" />
+															<TextBlock Margin="4" Text="{Binding xxHash3}" />
+														</StackPanel>
 													</Border>
 												</DataTemplate>
 											</ListBox.ItemTemplate>

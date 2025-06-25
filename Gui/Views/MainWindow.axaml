@@ -252,6 +252,7 @@
 					<MenuItem Header="Edit settings" Command="{Binding EditSettingsCommand}" />
 					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
 					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
+					<MenuItem Header="Show logs" Command="{Binding ShowLogsCommand}" />
 				</MenuItem>
 			</Menu>
 			<StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
@@ -262,11 +263,6 @@
 				<ToggleSwitch Margin="4" IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}" />
 			</StackPanel>
 		</DockPanel>
-		<Expander Header="Logs" Padding="0" ExpandDirection="Down" DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Margin="8" MaxHeight="512">
-			<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-				<DataGrid MinHeight="256" MaxHeight="1024" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False"/>
-			</ScrollViewer>
-		</Expander>
 		<ContentControl Content="{Binding FolderTreeViewModel}" />
 		<DockPanel DataContext="{Binding CurrentTabModel}">
 			<ToggleSwitch Margin="4" IsVisible="{Binding OpenInNewTabIsVisible}" DockPanel.Dock="Top" IsChecked="{Binding OpenInNewTab, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=TabAdd}" OffContent="{materialIcons:MaterialIconExt Kind=Tab}" />

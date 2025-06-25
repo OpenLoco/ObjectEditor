@@ -3,7 +3,6 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using NuGet.Versioning;
-using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Gui.Models;
@@ -44,8 +43,6 @@ namespace OpenLoco.Gui.ViewModels
 
 		public ObservableCollection<MenuItemViewModel> ObjDataItems { get; init; } = [];
 
-		public ObservableCollection<LogLine> Logs => Model.LoggerObservableLogs;
-
 		public ReactiveCommand<Unit, Unit> OpenDownloadFolder { get; }
 		public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
 		public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
@@ -59,6 +56,7 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Task> UseDefaultPalette { get; }
 		public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
 		public ReactiveCommand<Unit, Unit> EditSettingsCommand { get; }
+		public ReactiveCommand<Unit, Unit> ShowLogsCommand { get; }
 		public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
 
 		public const string GithubApplicationName = "ObjectEditor";
@@ -81,7 +79,9 @@ namespace OpenLoco.Gui.ViewModels
 		const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
 		Image<Rgba32> DefaultPaletteImage { get; init; }
 
-		public Interaction<EditorSettingsWindowViewModel, EditorSettingsWindowViewModel?> ShowDialog { get; }
+		public Interaction<EditorSettingsWindowViewModel, EditorSettingsWindowViewModel?> OpenEditorSettingsWindow { get; }
+
+		public Interaction<LogWindowViewModel, LogWindowViewModel?> OpenLogWindow { get; }
 
 		public MainWindowViewModel()
 		{
@@ -120,12 +120,19 @@ namespace OpenLoco.Gui.ViewModels
 			UseDefaultPalette = ReactiveCommand.Create(LoadDefaultPalette);
 			UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
 
-			ShowDialog = new();
+			OpenEditorSettingsWindow = new();
 			EditSettingsCommand = ReactiveCommand.CreateFromTask(async () =>
 			{
 				var vm = new EditorSettingsWindowViewModel(Model.Settings);
-				var result = await ShowDialog.Handle(vm);
+				var result = await OpenEditorSettingsWindow.Handle(vm);
 				Model.Settings.Save(ObjectEditorModel.SettingsFile, Model.Logger);
+			});
+
+			OpenLogWindow = new();
+			ShowLogsCommand = ReactiveCommand.CreateFromTask(async () =>
+			{
+				var vm = new LogWindowViewModel(Model.LoggerObservableLogs);
+				var result = await OpenLogWindow.Handle(vm);
 			});
 
 			OpenDownloadLink = ReactiveCommand.Create(() => Process.Start(new ProcessStartInfo(GithubLatestReleaseDownloadPage) { UseShellExecute = true }));

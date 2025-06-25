@@ -9,7 +9,7 @@
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	mc:Ignorable="d" d:DesignWidth="384" d:DesignHeight="768"
 	Width="384"
-	MinWidth="256"
+	MinWidth="384"
 	MaxWidth ="512"
 	x:Class="OpenLoco.Gui.Views.FolderTreeView"
 	x:DataType="vm:FolderTreeViewModel">

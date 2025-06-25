@@ -129,13 +129,13 @@ namespace OpenLoco.Gui.ViewModels
 				.Skip(1)
 				.Subscribe(async _ => await ReloadDirectoryAsync(true));
 
-			//_ = this.WhenAnyValue(o => o.DirectoryItems)
-			//	.Skip(1)
-			//	.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
+			_ = this.WhenAnyValue(o => o.TreeDataGridSource)
+				.Skip(1)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
 
-			//_ = this.WhenAnyValue(o => o.DirectoryItems)
-			//	.Skip(1)
-			//	.Subscribe(_ => CurrentlySelectedObject = null);
+			_ = this.WhenAnyValue(o => o.TreeDataGridSource)
+				.Skip(1)
+				.Subscribe(_ => CurrentlySelectedObject = null);
 
 			_ = this.WhenAnyValue(o => o.SelectedTabIndex)
 				.Skip(1)

@@ -80,7 +80,6 @@
 			<Setter Property="IsTitleVisible" Value="False"/>
 			<Setter Property="IsHeaderVisible" Value="False"/>
 			<Setter Property="IsQuickFilterVisible" Value="False"/>
-			<Setter Property="Margin" Value="4"/>
 		</Style>
 
 		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>

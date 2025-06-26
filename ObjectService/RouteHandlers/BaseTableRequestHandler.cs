@@ -21,9 +21,9 @@ namespace ObjectService.RouteHandlers
 			_ = resourceRoute.MapGet(string.Empty, ReadAsync);
 
 #if DEBUG
-			_ = baseRoute.MapPost(string.Empty, CreateAsync).RequireAuthorization(AdminPolicy.Name);
-			_ = resourceRoute.MapPut(string.Empty, UpdateAsync).RequireAuthorization(AdminPolicy.Name);
-			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync).RequireAuthorization(AdminPolicy.Name);
+			_ = baseRoute.MapPost(string.Empty, CreateAsync); //.RequireAuthorization(AdminPolicy.Name);
+			_ = resourceRoute.MapPut(string.Empty, UpdateAsync); //.RequireAuthorization(AdminPolicy.Name);
+			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync); //.RequireAuthorization(AdminPolicy.Name);
 #endif
 
 			MapAdditionalRoutes(baseRoute);

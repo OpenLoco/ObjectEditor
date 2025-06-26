@@ -85,7 +85,7 @@ namespace OpenLoco.Dat.Types.SCV5
 	[LocoStructSize(StructLength)]
 	public record S5File(
 		[property: LocoStructOffset(0x00)] S5FileHeader Header,
-		[property: LocoStructOffset(0x20)] ScenarioOptions? LandscapeOptions,
+		[property: LocoStructOffset(0x20)] ScenarioOptions? ScenarioOptions,
 		[property: LocoStructOffset(0x433A)] SaveDetails? SaveDetails,
 		[property: LocoStructOffset(0x10952), LocoArrayLength(S5File.RequiredObjectsCount), Browsable(false)] List<S5Header> RequiredObjects,
 		IGameState? GameState,
@@ -115,7 +115,7 @@ namespace OpenLoco.Dat.Types.SCV5
 
 			if (Header.Type == S5FileType.Scenario)
 			{
-				scenario = SawyerStreamWriter.WriteChunk(LandscapeOptions, SawyerEncoding.Rotate);
+				scenario = SawyerStreamWriter.WriteChunk(ScenarioOptions, SawyerEncoding.Rotate);
 			}
 
 			// packed

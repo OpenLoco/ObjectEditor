@@ -14,8 +14,8 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x08)] uint8_t MadeAnyChanges,
 		[property: LocoStructOffset(0x09)] uint8_t var_9,
 		[property: LocoStructOffset(0x0A), LocoArrayLength(32)] LandDistributionPattern LandDistributionPatterns,
-		[property: LocoStructOffset(0x2A), LocoArrayLength(64)] char_t[] ScenarioName, // this is a string
-		[property: LocoStructOffset(0x6A), LocoArrayLength(256)] char_t[] ScenarioDetails, // this is a string
+		[property: LocoStructOffset(0x2A), LocoArrayLength(64), Browsable(false)] char_t[] ScenarioName, // this is a string
+		[property: LocoStructOffset(0x6A), LocoArrayLength(256), Browsable(false)] char_t[] ScenarioDetails, // this is a string
 		[property: LocoStructOffset(0x16A)] S5Header ScenarioText,
 		[property: LocoStructOffset(0x17A)] uint16_t NumberOfForests,
 		[property: LocoStructOffset(0x17C)] uint8_t MinForestRadius,
@@ -31,7 +31,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x187)] uint8_t NumberOfTowns,
 		[property: LocoStructOffset(0x188)] uint8_t MaxTownSize,
 		[property: LocoStructOffset(0x189)] uint8_t NumberOfIndustries,
-		[property: LocoStructOffset(0x18A), LocoArrayLength(128 * 128)] uint8_t[] Preview,
+		[property: LocoStructOffset(0x18A), LocoArrayLength(128 * 128), Browsable(false)] uint8_t[] Preview,
 		[property: LocoStructOffset(0x418A)] uint8_t MaxCompetingCompanies,
 		[property: LocoStructOffset(0x418B)] uint8_t CompetitorStartDelay,
 		[property: LocoStructOffset(0x418C)] ScenarioObjective Objective,
@@ -45,7 +45,7 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x41C1)] uint8_t MaxRiverWidth,
 		[property: LocoStructOffset(0x41C2)] uint8_t RiverbankWidth,
 		[property: LocoStructOffset(0x41C3)] uint8_t RiverMeanderRate,
-		[property: LocoStructOffset(0x41C4), LocoArrayLength(342)] byte[] var_41C4) : ILocoStruct
+		[property: LocoStructOffset(0x41C4), LocoArrayLength(342), Browsable(false)] byte[] var_41C4) : ILocoStruct
 	{
 		public const int StructLength = 0x431A;
 		public bool Validate() => true;

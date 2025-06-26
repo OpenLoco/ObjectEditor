@@ -78,9 +78,9 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x1B2)] uint8_t LastWallOption,
 		[property: LocoStructOffset(0x1B3)] uint8_t ProduceAICompanyTimeout,
 		[property: LocoStructOffset(0x1B4), LocoArrayLength(2)] uint32_t[] TickStartPrngState,
-		[property: LocoStructOffset(0x1BC), LocoArrayLength(256)] char_t[] ScenarioFileName,
-		[property: LocoStructOffset(0x2BC), LocoArrayLength(64)] char_t[] ScenarioName,
-		[property: LocoStructOffset(0x2FC), LocoArrayLength(256)] char_t[] ScenarioDetails,
+		[property: LocoStructOffset(0x1BC), LocoArrayLength(256), Browsable(false)] char_t[] ScenarioFileName,
+		[property: LocoStructOffset(0x2BC), LocoArrayLength(64), Browsable(false)] char_t[] ScenarioName,
+		[property: LocoStructOffset(0x2FC), LocoArrayLength(256), Browsable(false)] char_t[] ScenarioDetails,
 		[property: LocoStructOffset(0x3FC)] uint8_t CompetitorStartDelay,
 		[property: LocoStructOffset(0x3FD)] uint8_t PreferredAIIntelligence,
 		[property: LocoStructOffset(0x3FE)] uint8_t PreferredAIAggressiveness,
@@ -125,13 +125,13 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0x474)] uint16_t LastMapWindowVar88A,
 		[property: LocoStructOffset(0x476)] uint16_t LastMapWindowVar88C,
 		[property: LocoStructOffset(0x478)] uint32_t var_478,
-		[property: LocoStructOffset(0x47C), LocoArrayLength(0x13B6 - 0x47C)] uint8_t[] var_047C,
+		[property: LocoStructOffset(0x47C), LocoArrayLength(0x13B6 - 0x47C), Browsable(false)] uint8_t[] var_047C,
 		[property: LocoStructOffset(0x13B6)] uint16_t NumMessages,
 		[property: LocoStructOffset(0x13B8)] uint16_t ActiveMessageIndex,
 		[property: LocoStructOffset(0x13BA), LocoArrayLength((int)Limits.kMaxMessages)] Message[] Messages,
-		[property: LocoStructOffset(0xB886), LocoArrayLength(0xB94C - 0xB886)] uint8_t[] var_B886,
+		[property: LocoStructOffset(0xB886), LocoArrayLength(0xB94C - 0xB886), Browsable(false)] uint8_t[] var_B886,
 		[property: LocoStructOffset(0xB94C)] uint8_t var_B94C,
-		[property: LocoStructOffset(0xB94D), LocoArrayLength(0xB950 - 0xB94D)] uint8_t[] var_B94D,
+		[property: LocoStructOffset(0xB94D), LocoArrayLength(0xB950 - 0xB94D), Browsable(false)] uint8_t[] var_B94D,
 		[property: LocoStructOffset(0xB950)] uint8_t var_B950,
 		[property: LocoStructOffset(0xB951)] uint8_t var_B951,
 		[property: LocoStructOffset(0xB952)] uint8_t var_B952,
@@ -139,9 +139,9 @@ namespace OpenLoco.Dat.Types.SCV5
 		[property: LocoStructOffset(0xB954)] uint8_t var_B954,
 		[property: LocoStructOffset(0xB955)] uint8_t var_B955,
 		[property: LocoStructOffset(0xB956)] uint8_t var_B956,
-		[property: LocoStructOffset(0xB957), LocoArrayLength(0xB968 - 0xB957)] uint8_t[] var_B957,
+		[property: LocoStructOffset(0xB957), LocoArrayLength(0xB968 - 0xB957), Browsable(false)] uint8_t[] var_B957,
 		[property: LocoStructOffset(0xB958)] uint8_t CurrentRainLevel,
-		[property: LocoStructOffset(0xB959), LocoArrayLength(0xB96C - 0xB969)] uint8_t[] var_B969
+		[property: LocoStructOffset(0xB959), LocoArrayLength(0xB96C - 0xB969), Browsable(false)] uint8_t[] var_B969
 		//[property: LocoStructOffset(0xB96C), LocoArrayLength((int)Limits.kMaxCompanies)] Company[] Companies // this isn't actually part of the data chunk in a scenario!
 		)
 		: ILocoStruct
@@ -155,9 +155,9 @@ namespace OpenLoco.Dat.Types.SCV5
 	[LocoStructSize(0x123480)]
 	public record GameStateScenarioB(
 
-		[property: LocoStructOffset(0x0), LocoArrayLength((int)Limits.kMaxTowns)] Town[] Towns,
-		[property: LocoStructOffset(0xC300), LocoArrayLength((int)Limits.kMaxIndustries)] Industry[] Industries,
-		[property: LocoStructOffset(0x2EC80), LocoArrayLength((int)Limits.kMaxStations)] Station[] Stations
+		[property: LocoStructOffset(0x0), LocoArrayLength((int)Limits.kMaxTowns), Browsable(false)] Town[] Towns,
+		[property: LocoStructOffset(0xC300), LocoArrayLength((int)Limits.kMaxIndustries), Browsable(false)] Industry[] Industries,
+		[property: LocoStructOffset(0x2EC80), LocoArrayLength((int)Limits.kMaxStations), Browsable(false)] Station[] Stations
 	//[property: LocoStructOffset(0x123480), LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities  // this isn't actually part of the data chunk in a scenario!
 	) : ILocoStruct
 	{
@@ -167,11 +167,11 @@ namespace OpenLoco.Dat.Types.SCV5
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x79D80)]
 	public record GameStateScenarioC(
-		[property: LocoStructOffset(0x0), LocoArrayLength((int)Limits.kMaxAnimations)] Animation[] Animations,
-		[property: LocoStructOffset(0xC000), LocoArrayLength((int)Limits.kMaxWaves)] Wave[] Waves,
-		[property: LocoStructOffset(0xC180), LocoArrayLength((int)Limits.kMaxUserStrings * 32)] uint8_t[] UserStrings,
-		[property: LocoStructOffset(0x1C180), LocoArrayLength((int)(Limits.kMaxVehicles * Limits.kMaxRoutingsPerVehicle))] uint16_t[] Routings,
-		[property: LocoStructOffset(0x3B580), LocoArrayLength((int)Limits.kMaxWaves)] uint8_t[] Orders
+		[property: LocoStructOffset(0x0), LocoArrayLength((int)Limits.kMaxAnimations), Browsable(false)] Animation[] Animations,
+		[property: LocoStructOffset(0xC000), LocoArrayLength((int)Limits.kMaxWaves), Browsable(false)] Wave[] Waves,
+		[property: LocoStructOffset(0xC180), LocoArrayLength((int)Limits.kMaxUserStrings * 32), Browsable(false)] uint8_t[] UserStrings,
+		[property: LocoStructOffset(0x1C180), LocoArrayLength((int)(Limits.kMaxVehicles * Limits.kMaxRoutingsPerVehicle)), Browsable(false)] uint16_t[] Routings,
+		[property: LocoStructOffset(0x3B580), LocoArrayLength((int)Limits.kMaxWaves), Browsable(false)] uint8_t[] Orders
 	) : ILocoStruct
 	{
 		public bool Validate() => true;

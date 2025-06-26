@@ -187,13 +187,14 @@ namespace OpenLoco.Gui.Models
 
 			if (!OnlineCache.TryGetValue(uniqueObjectId, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
 			{
+				Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {ObjectServiceClient.WebClient.BaseAddress}");
+
 				if (ObjectServiceClient == null)
 				{
 					Logger.Error("Object service client is null");
 					return false;
 				}
 
-				Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {uniqueObjectId} in cache - downloading it from {ObjectServiceClient.WebClient.BaseAddress}");
 				cachedLocoObjDto = Task.Run(async () => await ObjectServiceClient.GetObjectAsync(uniqueObjectId)).Result;
 
 				if (cachedLocoObjDto == null)
@@ -201,47 +202,50 @@ namespace OpenLoco.Gui.Models
 					Logger.Error($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no data");
 					return false;
 				}
-				else if (string.IsNullOrEmpty(cachedLocoObjDto.DatObjects.FirstOrDefault()?.DatBytes))
+
+				Logger.Debug(cachedLocoObjDto.ToString());
+				Logger.Info($"Object {filesystemItem.DisplayName} with unique id {uniqueObjectId} has {cachedLocoObjDto.DatObjects} attached DAT objects");
+
+				foreach (var datObject in cachedLocoObjDto.DatObjects)
 				{
 					if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 					{
-						Logger.Warning("This is a vanilla object. The DAT file cannot be downloaded due to copyright. Any available metadata will still be shown.");
+						Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Any available metadata will still be shown");
+						continue;
 					}
 
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Any available metadata will still be shown.");
-				}
-				else if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
-				{
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Any available metadata will still be shown.");
-				}
-
-				Logger.Debug(cachedLocoObjDto.ToString());
-
-				var datFile = Convert.FromBase64String(cachedLocoObjDto.DatObjects.First().DatBytes);
-				if (datFile == null || datFile.Length == 0)
-				{
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Any available metadata will still be shown.");
-				}
-				else
-				{
-					var filename = Path.Combine(Settings.DownloadFolder, $"{cachedLocoObjDto.InternalName}.dat");
-					if (!File.Exists(filename))
+					if (string.IsNullOrEmpty(datObject.DatBytes))
 					{
-						File.WriteAllBytes(filename, datFile);
-						Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {filename}");
+						Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received no DAT object data. Any available metadata will still be shown");
+						continue;
+					}
 
-						var obj = SawyerStreamReader.LoadFullObjectFromStream(datFile, Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
-						fileInfo = obj.DatFileInfo;
-						locoObject = obj.LocoObject;
-						if (obj.LocoObject == null)
-						{
-							Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
-						}
+					var datFile = Convert.FromBase64String(datObject.DatBytes);
+					if (datFile == null || datFile.Length == 0)
+					{
+						Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {uniqueObjectId} from online - received DAT object data, but it was unable to be decoded. Any available metadata will still be shown");
+						continue;
+					}
+
+					var filename = $"{cachedLocoObjDto.DisplayName}-{cachedLocoObjDto.Id}.dat";
+					var pathname = Path.Combine(Settings.DownloadFolder, filename);
+					if (!File.Exists(pathname))
+					{
+						File.WriteAllBytes(pathname, datFile);
+						Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {uniqueObjectId} as {pathname}");
+
+						//var obj = SawyerStreamReader.LoadFullObjectFromStream(datFile, Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
+						//fileInfo = obj.DatFileInfo;
+						//locoObject = obj.LocoObject;
+						//if (obj.LocoObject == null)
+						//{
+						//	Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
+						//}
 					}
 				}
 
 				Logger.Info($"Downloaded object \"{filesystemItem.DisplayName}\" with unique id {uniqueObjectId} and added it to the local cache");
-				Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={cachedLocoObjDto?.Licence}");
+				Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={cachedLocoObjDto?.Licence} datobjects=[{string.Join(",", cachedLocoObjDto?.DatObjects?.Select(x => x.DatName) ?? [])}]");
 
 				OnlineCache.Add(uniqueObjectId, cachedLocoObjDto!);
 			}
@@ -265,7 +269,13 @@ namespace OpenLoco.Gui.Models
 				}
 				else
 				{
-					Logger.Error($"Caches object {filesystemItem.DisplayName} had no data in DatBytes");
+					Logger.Warning($"Cached object {filesystemItem.DisplayName} had no data in DatBytes");
+					var fakeS5Header = new S5Header(0, firstLinkedDatFile.DatName, firstLinkedDatFile.DatChecksum)
+					{
+						ObjectType = cachedLocoObjDto.ObjectType,
+						SourceGame = cachedLocoObjDto.ObjectSource.ToSourceGame()
+					};
+					fileInfo = new DatFileInfo(fakeS5Header, ObjectHeader.NullHeader);
 				}
 
 				metadata = new MetadataModel(cachedLocoObjDto.InternalName)

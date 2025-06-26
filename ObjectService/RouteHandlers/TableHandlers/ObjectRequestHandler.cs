@@ -216,12 +216,6 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				return Results.NotFound();
 			}
 
-			if (eObj.Object.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
-			{
-				Console.WriteLine("User attempted to download a vanilla object");
-				return Results.Forbid();
-			}
-
 			var obj = eObj.ToDtoDescriptor();
 
 			foreach (var dat in obj.DatObjects)
@@ -239,7 +233,16 @@ namespace ObjectService.RouteHandlers.TableHandlers
 					Console.WriteLine("Object {datFile} existed in the object index but not on disk. ExpectedPath=\"{path}\"", dat, path);
 				}
 
-				dat.DatBytes = Convert.ToBase64String(File.ReadAllBytes(path));
+				if (eObj.Object.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+				{
+					Console.WriteLine("User attempted to download a vanilla object");
+					dat.DatBytes = null;
+				}
+				else
+				{
+					dat.DatBytes = Convert.ToBase64String(File.ReadAllBytes(path));
+				}
+
 			}
 
 			return Results.Ok(obj);

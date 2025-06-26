@@ -7,6 +7,7 @@ namespace OpenLoco.Definitions.DTO
 		DbKey Id,
 		string InternalName,
 		string DisplayName,
+		uint? DatChecksum,
 		string? Description,
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,

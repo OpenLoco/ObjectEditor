@@ -1,7 +1,9 @@
 using OpenLoco.Dat.FileParsing;
+using System.ComponentModel;
 
 namespace OpenLoco.Dat.Types.SCV5
 {
+	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xD4)]
 	public class Message : ILocoStruct
 	{

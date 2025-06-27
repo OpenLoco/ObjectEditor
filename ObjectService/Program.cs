@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using ObjectService.RouteHandlers;
+using OpenLoco.Dat;
 using OpenLoco.Definitions.Database;
 using OpenLoco.ObjectService;
 using Scalar.AspNetCore;
@@ -25,7 +27,21 @@ builder.Services.AddDbContext<LocoDbContext>(options =>
 });
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-builder.Services.AddSingleton<Server>();
+
+var objRoot = builder.Configuration["ObjectService:RootFolder"];
+var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];
+ArgumentNullException.ThrowIfNull(objRoot);
+ArgumentNullException.ThrowIfNull(paletteMapFile);
+
+var serverFolderManager = new ServerFolderManager(objRoot);
+var paletteMap = new PaletteMap(paletteMapFile);
+
+builder.Services.AddSingleton(serverFolderManager);
+builder.Services.AddSingleton(paletteMap);
+
+//var server = new Server(new ServerSettings(objRoot, paletteMapFile));
+//builder.Services.AddSingleton(server);
+
 builder.Services.AddHttpLogging(logging =>
 {
 	logging.LoggingFields = HttpLoggingFields.All;
@@ -104,16 +120,18 @@ app.UseRateLimiter();
 // defining routes here, after MapLocoIdentityApi, will overwrite them, allowing us to customise them
 //app.MapPost("/register", () => Results.Ok());
 
-var objRoot = builder.Configuration["ObjectService:RootFolder"];
-var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];
-ArgumentNullException.ThrowIfNull(objRoot);
-ArgumentNullException.ThrowIfNull(paletteMapFile);
-
-var server = new Server(new ServerSettings(objRoot, paletteMapFile));
-
 _ = app
-	.MapServerRoutes(server)
 	.MapHealthChecks("/health")
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapLegacyRoutes("/v1")
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapServerRoutes("/v2")
+	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapAdminRoutes("/v2")
+	.RequireAuthorization()
 	.RequireRateLimiting(tokenPolicy);
 
 var showScalar = builder.Configuration.GetValue<bool?>("ObjectService:ShowScalar");

@@ -16,25 +16,123 @@ using System.IO.Hashing;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {
-	public class ObjectRequestHandler(ServerFolderManager sfm, PaletteMap paletteMap) : BaseTableRequestHandler<DtoObjectDescriptor>
+	public class ObjectRouteHandler : ITableRouteHandler
 	{
-		ServerFolderManager ServerFolderManager { get; init; } = sfm;
-		PaletteMap PaletteMap { get; init; } = paletteMap;
+		public static string BaseRoute => RoutesV2.Objects;
+		public static Delegate ListDelegate => ListAsync;
+		public static Delegate CreateDelegate => CreateAsync;
+		public static Delegate ReadDelegate => ReadAsync;
+		public static Delegate UpdateDelegate => UpdateAsync;
+		public static Delegate DeleteDelegate => DeleteAsync;
 
-		public override string BaseRoute
-			=> Routes.Objects;
+		public static void MapRoutes(IEndpointRouteBuilder endpoints)
+			=> BaseTableRouteHandler.MapRoutes<ObjectRouteHandler>(endpoints);
 
-		public override void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
+		public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 		{
-			var resourceRoute = parentRoute.MapGroup(Routes.ResourceRoute);
-			_ = resourceRoute.MapGet(Routes.File, GetObjectFile);
-			_ = resourceRoute.MapGet(Routes.Images, GetObjectImages);
+			var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
+			_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFile);
+			_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImages);
 		}
 
-		public override async Task<IResult> CreateAsync(DtoObjectDescriptor request, LocoDbContext db)
-			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		static async Task<IResult> CreateAsync(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
+		{
+			logger.LogInformation("Upload requested");
 
-		public override async Task<IResult> ReadAsync(DbKey id, LocoDbContext db)
+			if (string.IsNullOrEmpty(request.DatBytesAsBase64))
+			{
+				return Results.BadRequest($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.");
+			}
+
+			byte[]? datFileBytes;
+			try
+			{
+				datFileBytes = Convert.FromBase64String(request.DatBytesAsBase64);
+			}
+			catch (FormatException ex)
+			{
+				return Results.BadRequest(ex.Message);
+			}
+
+			if (datFileBytes == null || datFileBytes.Length == 0)
+			{
+				return Results.BadRequest($"Unable to decode {nameof(request.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.");
+			}
+
+			if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)
+			{
+				return Results.BadRequest("Unable to accept file sizes > 5MB");
+			}
+
+			var ssrLogger = new Logger();
+			if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
+			{
+				return Results.BadRequest("Provided data had invalid dat file headers");
+			}
+
+			if (hdrs.S5.IsVanilla())
+			{
+				return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
+			}
+
+			if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
+			{
+				return Results.BadRequest("Invalid DAT file.");
+			}
+
+			if (db.DoesObjectExist(hdrs.S5, out var existingObject))
+			{
+				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
+			}
+
+			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
+
+			var sfm = sp.GetRequiredService<ServerFolderManager>();
+
+			var (_, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
+			var uuid = Guid.NewGuid();
+			var saveFileName = Path.Combine(sfm.ObjectsCustomFolder, $"{uuid}.dat");
+			File.WriteAllBytes(saveFileName, datFileBytes);
+
+			logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
+
+			var creationTime = request.CreatedDate;
+
+			VehicleType? vehicleType = null;
+			if (LocoObject?.Object is VehicleObject veh)
+			{
+				vehicleType = veh.Type;
+			}
+
+			var locoTbl = new TblObject()
+			{
+				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
+				Description = string.Empty,
+				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
+				ObjectType = hdrs.S5.ObjectType,
+				VehicleType = vehicleType,
+				CreatedDate = creationTime,
+				ModifiedDate = null,
+				UploadedDate = DateTimeOffset.UtcNow,
+				Authors = [],
+				Tags = [],
+				ObjectPacks = [],
+				DatObjects = [],
+				Licence = null,
+			};
+
+			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
+
+			sfm.ObjectIndex.Objects.Add(
+				new ObjectIndexEntry(saveFileName, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, uuid.ToString(), locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.CreatedDate, locoTbl.UploadedDate, locoTbl.VehicleType));
+
+			_ = db.Objects.Add(locoTbl);
+			_ = await db.SaveChangesAsync();
+
+			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
+		}
+
+		static async Task<IResult> ReadAsync([FromRoute] DbKey id, LocoDbContext db, [FromServices] IServiceProvider sp)
 		{
 			var eObj = await db.Objects
 				.Where(x => x.Id == id)
@@ -44,16 +142,17 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
-			return ReturnObject(eObj);
+			var sfm = sp.GetRequiredService<ServerFolderManager>();
+			return ReturnObject(eObj, sfm);
 		}
 
-		public override async Task<IResult> UpdateAsync(DbKey id, DtoObjectDescriptor request, LocoDbContext db)
+		static async Task<IResult> UpdateAsync([FromRoute] DbKey id, DtoObjectDescriptor request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> DeleteAsync(DbKey id, LocoDbContext db)
+		static async Task<IResult> DeleteAsync([FromRoute] DbKey id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public override async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
+		static async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
 		{
 			if (context.Request.Query.Count > 0)
 			{
@@ -126,7 +225,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/{id}/images
-		public async Task<IResult> GetObjectImages(DbKey id, LocoDbContext db, [FromServices] ILogger<Server> logger)
+		static async Task<IResult> GetObjectImages([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			// currently we MUST have a DAT backing object
 			logger.LogInformation("Object [{uniqueObjectId}] requested with images", id);
@@ -141,13 +240,16 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				return Results.NotFound();
 			}
 
+			var sfm = sp.GetRequiredService<ServerFolderManager>();
+			var pm = sp.GetRequiredService<PaletteMap>();
+
 			var dat = obj.DatObjects.First();
-			if (!ServerFolderManager.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index))
+			if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index))
 			{
 				return Results.NotFound();
 			}
 
-			var pathOnDisk = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
+			var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
 			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
 			var fileExists = File.Exists(pathOnDisk);
@@ -172,7 +274,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				var count = 0;
 				foreach (var g1 in locoObj!.Value!.LocoObject!.G1Elements)
 				{
-					if (!PaletteMap.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
+					if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 					{
 						continue;
 					}
@@ -197,17 +299,18 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/objects/114
-		public async Task<IResult> GetObjectFile([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<Server> logger)
+		static async Task<IResult> GetObjectFile([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Where(x => x.Id == id)
 				.SingleOrDefaultAsync();
 
-			return ReturnFile(obj, logger);
+			var sfm = sp.GetRequiredService<ServerFolderManager>();
+			return ReturnFile(obj, logger, sfm);
 		}
 
-		public IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj)
+		static IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj, ServerFolderManager sfm)
 		{
 			Console.WriteLine("[ReturnObject]");
 
@@ -220,13 +323,13 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			foreach (var dat in obj.DatObjects)
 			{
-				if (!ServerFolderManager.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry))
+				if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry))
 				{
 					Console.WriteLine("Object {datFile} didn't exist in the object index", dat);
 					continue;
 				}
 
-				var path = Path.Combine(ServerFolderManager.ObjectsFolder, entry!.Filename);
+				var path = Path.Combine(sfm.ObjectsFolder, entry!.Filename);
 
 				if (!File.Exists(path))
 				{
@@ -248,7 +351,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return Results.Ok(obj);
 		}
 
-		IResult ReturnFile(TblObject? obj, ILogger<Server> logger)
+		static IResult ReturnFile(TblObject? obj, ILogger<ObjectRouteHandler> logger, ServerFolderManager sfm)
 		{
 			logger.LogDebug("[ReturnFile]");
 
@@ -264,7 +367,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			}
 
 			var dat = obj.DatObjects.First();
-			if (!ServerFolderManager.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index))
+			if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index))
 			{
 				logger.LogDebug("Object {datFile} didn't exist in the object index", dat);
 				return Results.NotFound();
@@ -272,7 +375,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			const string contentType = "application/octet-stream";
 
-			var path = Path.Combine(ServerFolderManager.ObjectsFolder, index!.Filename);
+			var path = Path.Combine(sfm.ObjectsFolder, index!.Filename);
 
 			if (!File.Exists(path))
 			{
@@ -280,100 +383,6 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			}
 
 			return Results.File(path, contentType, Path.GetFileName(path));
-		}
-
-		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<Server> logger)
-		{
-			logger.LogInformation("Upload requested");
-
-			if (string.IsNullOrEmpty(request.DatBytesAsBase64))
-			{
-				return Results.BadRequest($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.");
-			}
-
-			byte[]? datFileBytes;
-			try
-			{
-				datFileBytes = Convert.FromBase64String(request.DatBytesAsBase64);
-			}
-			catch (FormatException ex)
-			{
-				return Results.BadRequest(ex.Message);
-			}
-
-			if (datFileBytes == null || datFileBytes.Length == 0)
-			{
-				return Results.BadRequest($"Unable to decode {nameof(request.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.");
-			}
-
-			if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)
-			{
-				return Results.BadRequest("Unable to accept file sizes > 5MB");
-			}
-
-			var ssrLogger = new Logger();
-			if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
-			{
-				return Results.BadRequest("Provided data had invalid dat file headers");
-			}
-
-			if (hdrs.S5.IsVanilla())
-			{
-				return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
-			}
-
-			if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
-			{
-				return Results.BadRequest("Invalid DAT file.");
-			}
-
-			if (db.DoesObjectExist(hdrs.S5, out var existingObject))
-			{
-				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
-			}
-
-			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
-
-			var (_, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
-			var uuid = Guid.NewGuid();
-			var saveFileName = Path.Combine(ServerFolderManager.ObjectsCustomFolder, $"{uuid}.dat");
-			File.WriteAllBytes(saveFileName, datFileBytes);
-
-			logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
-
-			var creationTime = request.CreatedDate;
-
-			VehicleType? vehicleType = null;
-			if (LocoObject?.Object is VehicleObject veh)
-			{
-				vehicleType = veh.Type;
-			}
-
-			var locoTbl = new TblObject()
-			{
-				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
-				Description = string.Empty,
-				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
-				ObjectType = hdrs.S5.ObjectType,
-				VehicleType = vehicleType,
-				CreatedDate = creationTime,
-				ModifiedDate = null,
-				UploadedDate = DateTimeOffset.UtcNow,
-				Authors = [],
-				Tags = [],
-				ObjectPacks = [],
-				DatObjects = [],
-				Licence = null,
-			};
-
-			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-
-			ServerFolderManager.ObjectIndex.Objects.Add(new ObjectIndexEntry(saveFileName, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, uuid.ToString(), locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.CreatedDate, locoTbl.UploadedDate, locoTbl.VehicleType));
-
-			_ = db.Objects.Add(locoTbl);
-			_ = await db.SaveChangesAsync();
-
-			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 	}
 }

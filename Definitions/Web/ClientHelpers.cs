@@ -19,42 +19,42 @@ namespace OpenLoco.Definitions.Web
 		internal static async Task<T?> ReadJsonContentAsync<T>(HttpContent content)
 			=> await content.ReadFromJsonAsync<T?>();
 
-		public static async Task<T?> GetAsync<T>(HttpClient client, string route, int? resourceId = null, ILogger? logger = null)
+		public static async Task<T?> GetAsync<T>(HttpClient client, string apiRoute, string route, int? resourceId = null, ILogger? logger = null)
 			=> await SendRequestAsync(
 				client,
-				FormRoute(route, resourceId),
-				() => client.GetAsync(FormRoute(route, resourceId)),
+				FormRoute(apiRoute, route, resourceId),
+				() => client.GetAsync(FormRoute(apiRoute, route, resourceId)),
 				ReadJsonContentAsync<T?>,
 				logger) ?? default;
 
-		public static async Task<bool> DeleteAsync(HttpClient client, string route, int resourceId, ILogger? logger = null)
+		public static async Task<bool> DeleteAsync(HttpClient client, string apiRoute, string route, int resourceId, ILogger? logger = null)
 			=> await SendRequestAsync<bool?>(
 				client,
-				FormRoute(route, resourceId),
-				() => client.DeleteAsync(FormRoute(route, resourceId)),
+				FormRoute(apiRoute, route, resourceId),
+				() => client.DeleteAsync(FormRoute(apiRoute, route, resourceId)),
 				null,
 				logger) != null;
 
-		public static async Task<T?> PostAsync<T>(HttpClient client, string route, T request, ILogger? logger = null)
+		public static async Task<T?> PostAsync<T>(HttpClient client, string apiRoute, string route, T request, ILogger? logger = null)
 			=> await SendRequestAsync(
 				client,
-				FormRoute(route, null),
-				() => client.PostAsJsonAsync(FormRoute(route, null), request),
+				FormRoute(apiRoute, route, null),
+				() => client.PostAsJsonAsync(FormRoute(apiRoute, route, null), request),
 				ReadJsonContentAsync<T?>,
 				logger) ?? default;
 
-		public static async Task<T?> PutAsync<T>(HttpClient client, string route, int resourceId, T request, ILogger? logger = null)
+		public static async Task<T?> PutAsync<T>(HttpClient client, string apiRoute, string route, int resourceId, T request, ILogger? logger = null)
 			=> await SendRequestAsync(
 				client,
-				FormRoute(route, resourceId),
-				() => client.PutAsJsonAsync(FormRoute(route, resourceId), request),
+				FormRoute(apiRoute, route, resourceId),
+				() => client.PutAsJsonAsync(FormRoute(apiRoute, route, resourceId), request),
 				ReadJsonContentAsync<T?>,
 				logger) ?? default;
 
-		static string FormRoute(string baseRoute, int? resourceId)
+		static string FormRoute(string apiRoute, string baseRoute, int? resourceId)
 			=> resourceId == null
-				? baseRoute
-				: baseRoute + $"/{resourceId}";
+				? apiRoute + baseRoute
+				: apiRoute + baseRoute + $"/{resourceId}";
 
 		internal static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, Func<Task<HttpResponseMessage>> httpFunc, Func<HttpContent, Task<T?>>? contentReaderFunc = null, ILogger? logger = null)
 		{
@@ -85,7 +85,7 @@ namespace OpenLoco.Definitions.Web
 					return default;
 				}
 
-				logger?.Debug("Received success response");
+				logger?.Debug($"Received success response: {response.StatusCode}");
 
 				if (contentReaderFunc != null)
 				{

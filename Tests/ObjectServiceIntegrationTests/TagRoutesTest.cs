@@ -18,7 +18,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 			=> new(3, "Rough");
 
 		public override string BaseRoute
-			=> Routes.Tags;
+			=> RoutesV2.Tags;
 
 		protected override DbSet<TblTag> GetTable(LocoDbContext context)
 			=> context.Tags;

@@ -17,7 +17,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 			=> new(3, "Charles");
 
 		public override string BaseRoute
-			=> Routes.Authors;
+			=> RoutesV2.Authors;
 
 		protected override DbSet<TblAuthor> GetTable(LocoDbContext context)
 			=> context.Authors;

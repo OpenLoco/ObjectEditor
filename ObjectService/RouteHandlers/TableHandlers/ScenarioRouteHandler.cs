@@ -5,36 +5,16 @@ using OpenLoco.ObjectService;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {
-	public class ScenarioRequestHandler : BaseRouteHandler<ScenarioRequestHandler> //, ITableRouteHandler
+	public class ScenarioRouteHandler : ITableRouteHandler
 	{
-		public override string BaseRoute => Routes.Scenarios;
-		public override Delegate ListDelegate => ListAsync;
-		public override Delegate CreateDelegate => CreateAsync;
-
-		public override Delegate ReadDelegate => ReadAsync;
-
-		public override Delegate UpdateDelegate => UpdateAsync;
-
-		public override Delegate DeleteDelegate => DeleteAsync;
-
-		//protected override void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute) => throw new NotImplementedException();
-		//		public static void MapRoutes(IEndpointRouteBuilder parentRoute)
-		//		{
-		//			var baseRoute = parentRoute
-		//				.MapGroup(BaseRoute)
-		//				.WithTags(RouteHelpers.MakeNicePlural(nameof(ScenarioRequestHandler)));
-
-		//			_ = baseRoute.MapGet(string.Empty, ListAsync);
-
-		//			var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
-		//			_ = resourceRoute.MapGet(string.Empty, ReadAsync);
-
-		//#if DEBUG
-		//			_ = baseRoute.MapPost(string.Empty, CreateAsync); //.RequireAuthorization(AdminPolicy.Name);
-		//			_ = resourceRoute.MapPut(string.Empty, UpdateAsync); //.RequireAuthorization(AdminPolicy.Name);
-		//			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync); //.RequireAuthorization(AdminPolicy.Name);
-		//#endif
-		//		}
+		public static string BaseRoute => RoutesV2.Scenarios;
+		public static Delegate ListDelegate => ListAsync;
+		public static Delegate CreateDelegate => CreateAsync;
+		public static Delegate ReadDelegate => ReadAsync;
+		public static Delegate UpdateDelegate => UpdateAsync;
+		public static Delegate DeleteDelegate => DeleteAsync;
+		public static void MapRoutes(IEndpointRouteBuilder endpoints)
+			=> BaseTableRouteHandler.MapRoutes<ScenarioRouteHandler>(endpoints);
 
 		static async Task<IResult> ListAsync([FromServices] IServiceProvider sp)
 			=> await Task.Run(() =>

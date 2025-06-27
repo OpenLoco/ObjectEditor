@@ -66,32 +66,32 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 	public class LegacyRouteHandler()
 	{
-		public void MapRoutes(IEndpointRouteBuilder parentRoute)
+		public static void MapRoutes(IEndpointRouteBuilder parentRoute)
 		{
 			// GET
-			_ = parentRoute.MapGet(LegacyRoutes.ListObjects, LegacyRouteHandler.ListObjects);
-			_ = parentRoute.MapGet(LegacyRoutes.GetDat, GetDat);
-			_ = parentRoute.MapGet(LegacyRoutes.GetDatFile, GetDatFile);
-			_ = parentRoute.MapGet(LegacyRoutes.GetObject, GetObject);
-			_ = parentRoute.MapGet(LegacyRoutes.GetObjectFile, GetObjectFile);
-			_ = parentRoute.MapGet(LegacyRoutes.GetObjectImages, GetObjectImages);
-			_ = parentRoute.MapGet(LegacyRoutes.ListObjectPacks, ListObjectPacks);
-			_ = parentRoute.MapGet(LegacyRoutes.GetObjectPack, GetObjectPack);
-			_ = parentRoute.MapGet(LegacyRoutes.ListScenarios, ListScenarios);
-			_ = parentRoute.MapGet(LegacyRoutes.GetScenario, GetScenario);
-			_ = parentRoute.MapGet(LegacyRoutes.ListSC5FilePacks, ListSC5FilePacks);
-			_ = parentRoute.MapGet(LegacyRoutes.GetSC5FilePack, GetSC5FilePack);
-			_ = parentRoute.MapGet(LegacyRoutes.ListAuthors, ListAuthors);
-			_ = parentRoute.MapGet(LegacyRoutes.ListLicences, ListLicences);
-			_ = parentRoute.MapGet(LegacyRoutes.ListTags, ListTags);
+			_ = parentRoute.MapGet(RoutesV1.ListObjects, ListObjects);
+			_ = parentRoute.MapGet(RoutesV1.GetDat, GetDat);
+			_ = parentRoute.MapGet(RoutesV1.GetDatFile, GetDatFile);
+			_ = parentRoute.MapGet(RoutesV1.GetObject, GetObject);
+			_ = parentRoute.MapGet(RoutesV1.GetObjectFile, GetObjectFile);
+			_ = parentRoute.MapGet(RoutesV1.GetObjectImages, GetObjectImages);
+			_ = parentRoute.MapGet(RoutesV1.ListObjectPacks, ListObjectPacks);
+			_ = parentRoute.MapGet(RoutesV1.GetObjectPack, GetObjectPack);
+			_ = parentRoute.MapGet(RoutesV1.ListScenarios, ListScenarios);
+			_ = parentRoute.MapGet(RoutesV1.GetScenario, GetScenario);
+			_ = parentRoute.MapGet(RoutesV1.ListSC5FilePacks, ListSC5FilePacks);
+			_ = parentRoute.MapGet(RoutesV1.GetSC5FilePack, GetSC5FilePack);
+			_ = parentRoute.MapGet(RoutesV1.ListAuthors, ListAuthors);
+			_ = parentRoute.MapGet(RoutesV1.ListLicences, ListLicences);
+			_ = parentRoute.MapGet(RoutesV1.ListTags, ListTags);
 
 			// POST
-			_ = parentRoute.MapPost(LegacyRoutes.UploadDat, UploadDat);
-			_ = parentRoute.MapPost(LegacyRoutes.UploadObject, UploadObject);
+			_ = parentRoute.MapPost(RoutesV1.UploadDat, UploadDat);
+			_ = parentRoute.MapPost(RoutesV1.UploadObject, UploadObject);
 
 			// PATCH
-			_ = parentRoute.MapPatch(LegacyRoutes.UpdateDat, UpdateDat);
-			_ = parentRoute.MapPatch(LegacyRoutes.UpdateObject, UpdateObject);
+			_ = parentRoute.MapPatch(RoutesV1.UpdateDat, UpdateDat);
+			_ = parentRoute.MapPatch(RoutesV1.UpdateObject, UpdateObject);
 		}
 
 		#region GET
@@ -177,7 +177,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		public async Task<IResult> GetDat([FromQuery] string datName, [FromQuery] uint datChecksum, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetDat([FromQuery] string datName, [FromQuery] uint datChecksum, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", datName, datChecksum);
 
@@ -193,7 +193,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
-		public async Task<IResult> GetObjectImages(DbKey uniqueObjectId, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetObjectImages(DbKey uniqueObjectId, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			Console.WriteLine($"Object [{uniqueObjectId}] requested with images");
 
@@ -266,7 +266,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
-		public async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("Object [{UniqueObjectId}] requested", uniqueObjectId);
 
@@ -281,7 +281,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return await ReturnObject(returnObjBytes, logger, eObj, sfm);
 		}
 
-		async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<LegacyRouteHandler> logger, ExpandedTbl<TblObject, TblObjectPack>? eObj, ServerFolderManager sfm)
+		static async Task<IResult> ReturnObject(bool? returnObjBytes, ILogger<LegacyRouteHandler> logger, ExpandedTbl<TblObject, TblObjectPack>? eObj, ServerFolderManager sfm)
 		{
 			if (eObj == null || eObj.Object == null)
 			{
@@ -331,7 +331,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123
-		public async Task<IResult> GetDatFile([FromQuery] string datName, [FromQuery] uint datChecksum, LocoDbContext db, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetDatFile([FromQuery] string datName, [FromQuery] uint datChecksum, LocoDbContext db, [FromServices] IServiceProvider sp)
 		{
 			var obj = await db.DatObjects
 				.Include(x => x.Object)
@@ -348,7 +348,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
-		public async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, LocoDbContext db, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, LocoDbContext db, [FromServices] IServiceProvider sp)
 		{
 			var obj = await db.DatObjects
 				.Include(x => x.Object)
@@ -364,7 +364,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return ReturnFile(obj.Object, (obj.DatName, obj.DatChecksum), obj.xxHash3, sfm);
 		}
 
-		IResult ReturnFile(TblObject? obj, (string objectName, uint checksum)? datDetails, ulong? xxHash3, ServerFolderManager sfm)
+		static IResult ReturnFile(TblObject? obj, (string objectName, uint checksum)? datDetails, ulong? xxHash3, ServerFolderManager sfm)
 		{
 			if (obj == null)
 			{
@@ -395,7 +395,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/scenarios/list
-		public async Task<IResult> ListScenarios([FromServices] IServiceProvider sp)
+		public static async Task<IResult> ListScenarios([FromServices] IServiceProvider sp)
 			=> await Task.Run(() =>
 			{
 				var sfm = sp.GetRequiredService<ServerFolderManager>();
@@ -406,31 +406,31 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			});
 
 		// eg: https://localhost:7230/v1/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
-		public async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger)
+		public static async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		#endregion
 
 		// eg: https://localhost:7230/v1/authors/list
-		public async Task<IResult> ListAuthors(LocoDbContext db)
+		public static async Task<IResult> ListAuthors(LocoDbContext db)
 			=> Results.Ok(await db.Authors
 				.Select(x => new DtoAuthorEntry(x.Id, x.Name))
 				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/licences/list
-		public async Task<IResult> ListLicences(LocoDbContext db)
+		public static async Task<IResult> ListLicences(LocoDbContext db)
 			=> Results.Ok(await db.Licences
 				.Select(x => new DtoLicenceEntry(x.Id, x.Name, x.Text))
 				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/tags/list
-		public async Task<IResult> ListTags(LocoDbContext db)
+		public static async Task<IResult> ListTags(LocoDbContext db)
 			=> Results.Ok(await db.Tags
 				.Select(x => new DtoTagEntry(x.Id, x.Name))
 				.ToListAsync());
 
 		// eg: https://localhost:7230/v1/objectpacks/list
-		public async Task<IResult> ListObjectPacks(LocoDbContext db)
+		public static async Task<IResult> ListObjectPacks(LocoDbContext db)
 			=> Results.Ok(
 				(await db.ObjectPacks
 					.Include(l => l.Licence)
@@ -439,7 +439,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.OrderBy(x => x.Name));
 
 		// eg: https://localhost:7230/v1/objectpacks/getpack?uniqueId=123
-		public async Task<IResult> GetObjectPack([FromQuery] int uniqueId, LocoDbContext db)
+		public static async Task<IResult> GetObjectPack([FromQuery] int uniqueId, LocoDbContext db)
 			=> Results.Ok(
 				(await db.ObjectPacks
 					.Where(x => (int)x.Id == uniqueId)
@@ -450,7 +450,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.OrderBy(x => x.Name));
 
 		// eg: https://localhost:7230/v1/sc5filepacks/list
-		public async Task<IResult> ListSC5FilePacks(LocoDbContext db)
+		public static async Task<IResult> ListSC5FilePacks(LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Include(l => l.Licence)
@@ -459,7 +459,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.OrderBy(x => x.Name));
 
 		// eg: https://localhost:7230/v1/sc5filepacks/getpack?uniqueId=123
-		public async Task<IResult> GetSC5FilePack([FromQuery] int uniqueId, LocoDbContext db)
+		public static async Task<IResult> GetSC5FilePack([FromQuery] int uniqueId, LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Where(x => (int)x.Id == uniqueId)
@@ -472,7 +472,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		#region POST
 
 		// eg: https://localhost:7230/v1/uploaddat/...
-		public async Task<IResult> UploadDat(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> UploadDat(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("Upload requested");
 
@@ -580,7 +580,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 
-		public async Task<IResult> UploadObject([FromServices] ILogger<LegacyRouteHandler> logger)
+		public static async Task<IResult> UploadObject([FromServices] ILogger<LegacyRouteHandler> logger)
 		{
 			logger.LogWarning("[UploadDat] - not implemented");
 			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
@@ -590,13 +590,13 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 		#region PATCH
 
-		public async Task<IResult> UpdateDat([FromServices] ILogger<LegacyRouteHandler> logger)
+		public static async Task<IResult> UpdateDat([FromServices] ILogger<LegacyRouteHandler> logger)
 		{
 			logger.LogWarning("[UploadDat] - not implemented");
 			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 		}
 
-		public async Task<IResult> UpdateObject([FromServices] ILogger<LegacyRouteHandler> logger)
+		public static async Task<IResult> UpdateObject([FromServices] ILogger<LegacyRouteHandler> logger)
 		{
 			logger.LogWarning("[UploadDat] - not implemented");
 			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));

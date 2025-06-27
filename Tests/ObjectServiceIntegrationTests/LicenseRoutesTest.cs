@@ -18,7 +18,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 			=> new(3, "Constitution", "Do no evil");
 
 		public override string BaseRoute
-			=> Routes.Licences;
+			=> RoutesV2.Licences;
 
 		protected override DbSet<TblLicence> GetTable(LocoDbContext context)
 			=> context.Licences;

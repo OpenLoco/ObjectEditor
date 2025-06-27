@@ -4,7 +4,56 @@ using OpenLoco.Definitions.Database;
 
 namespace ObjectService.RouteHandlers
 {
-	public static class BaseReferenceDataTableRequestHandlerImpl
+	public abstract class BaseDataTableRouteHandler<THandler, TDto, TRow> : ITableRouteHandler
+		where TDto : class, IHasId
+		where TRow : class, IHasId
+		where THandler : ITableRouteConfig<TDto, TRow>
+	{
+		public static string BaseRoute => THandler.GetBaseRoute();
+
+		public static Delegate ListDelegate => ListAsync;
+
+		public static Delegate CreateDelegate => CreateAsync;
+
+		public static Delegate ReadDelegate => ReadAsync;
+
+		public static Delegate UpdateDelegate => UpdateAsync;
+
+		public static Delegate DeleteDelegate => DeleteAsync;
+
+		public static async Task<IResult> CreateAsync(TDto request, LocoDbContext db)
+			=> await BaseDataTableRouteHandlerImpl.CreateAsync(
+				THandler.GetTable(db),
+				THandler.ToDtoFunc,
+				THandler.ToRowFunc,
+				request,
+				() => (THandler.TryValidateCreate(request, db, out var result), result),
+				THandler.GetBaseRoute(),
+				db);
+
+		public static async Task<IResult> ReadAsync(DbKey id, LocoDbContext db)
+			=> await BaseDataTableRouteHandlerImpl.ReadAsync(THandler.GetTable(db), THandler.ToDtoFunc, id, db);
+
+		public static async Task<IResult> UpdateAsync(DbKey id, TDto request, LocoDbContext db)
+			=> await BaseDataTableRouteHandlerImpl.UpdateAsync(
+				THandler.GetTable(db),
+				THandler.ToDtoFunc,
+				THandler.ToRowFunc,
+				request,
+				() => (THandler.TryValidateCreate(request, db, out var result), result),
+				THandler.GetBaseRoute(),
+				id,
+				db,
+				THandler.UpdateFunc);
+
+		public static async Task<IResult> DeleteAsync(DbKey id, LocoDbContext db)
+			=> await BaseDataTableRouteHandlerImpl.DeleteAsync(THandler.GetTable(db), THandler.ToDtoFunc, id, db);
+
+		public static async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
+			=> await BaseDataTableRouteHandlerImpl.ListAsync(context, THandler.GetTable(db), THandler.ToDtoFunc);
+	}
+
+	public static class BaseDataTableRouteHandlerImpl
 	{
 		public static async Task<IResult> CreateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, LocoDbContext db)
 			where TDto : class, IHasId

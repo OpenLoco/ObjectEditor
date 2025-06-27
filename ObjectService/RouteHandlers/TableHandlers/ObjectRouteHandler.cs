@@ -16,32 +16,26 @@ using System.IO.Hashing;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {
-	public class ObjectRequestHandler : ITableRouteHandler
+	public class ObjectRouteHandler : ITableRouteHandler
 	{
-		public const string BaseRoute = Routes.Objects;
+		public static string BaseRoute => RoutesV2.Objects;
+		public static Delegate ListDelegate => ListAsync;
+		public static Delegate CreateDelegate => CreateAsync;
+		public static Delegate ReadDelegate => ReadAsync;
+		public static Delegate UpdateDelegate => UpdateAsync;
+		public static Delegate DeleteDelegate => DeleteAsync;
 
-		public static void MapRoutes(IEndpointRouteBuilder parentRoute)
+		public static void MapRoutes(IEndpointRouteBuilder endpoints)
+			=> BaseTableRouteHandler.MapRoutes<ObjectRouteHandler>(endpoints);
+
+		public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 		{
-			var baseRoute = parentRoute
-				.MapGroup(BaseRoute)
-				.WithTags(RouteHelpers.MakeNicePlural(nameof(ObjectRequestHandler)));
-
-			_ = baseRoute.MapGet(string.Empty, ListAsync);
-
-			var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
-			_ = resourceRoute.MapGet(string.Empty, ReadAsync);
-
-#if DEBUG
-			_ = baseRoute.MapPost(string.Empty, CreateAsync); //.RequireAuthorization(AdminPolicy.Name);
-			_ = resourceRoute.MapPut(string.Empty, UpdateAsync); //.RequireAuthorization(AdminPolicy.Name);
-			_ = resourceRoute.MapDelete(string.Empty, DeleteAsync); //.RequireAuthorization(AdminPolicy.Name);
-#endif
-
-			_ = resourceRoute.MapGet(Routes.File, GetObjectFile);
-			_ = resourceRoute.MapGet(Routes.Images, GetObjectImages);
+			var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
+			_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFile);
+			_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImages);
 		}
 
-		static async Task<IResult> CreateAsync(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<ObjectRequestHandler> logger, [FromServices] IServiceProvider sp)
+		static async Task<IResult> CreateAsync(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("Upload requested");
 
@@ -138,7 +132,6 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 
-		// temporary
 		static async Task<IResult> ReadAsync([FromRoute] DbKey id, LocoDbContext db, [FromServices] IServiceProvider sp)
 		{
 			var eObj = await db.Objects
@@ -232,7 +225,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/{id}/images
-		static async Task<IResult> GetObjectImages([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<ObjectRequestHandler> logger, [FromServices] IServiceProvider sp)
+		static async Task<IResult> GetObjectImages([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			// currently we MUST have a DAT backing object
 			logger.LogInformation("Object [{uniqueObjectId}] requested with images", id);
@@ -306,7 +299,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/objects/114
-		static async Task<IResult> GetObjectFile([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<ObjectRequestHandler> logger, [FromServices] IServiceProvider sp)
+		static async Task<IResult> GetObjectFile([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
@@ -358,7 +351,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return Results.Ok(obj);
 		}
 
-		static IResult ReturnFile(TblObject? obj, ILogger<ObjectRequestHandler> logger, ServerFolderManager sfm)
+		static IResult ReturnFile(TblObject? obj, ILogger<ObjectRouteHandler> logger, ServerFolderManager sfm)
 		{
 			logger.LogDebug("[ReturnFile]");
 

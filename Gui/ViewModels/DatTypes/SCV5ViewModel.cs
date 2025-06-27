@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace OpenLoco.Gui.ViewModels
 {
@@ -54,107 +55,7 @@ namespace OpenLoco.Gui.ViewModels
 			: base(currentFile, model)
 		{
 			Load();
-
-			DownloadMissingObjectsToGameObjDataCommand = ReactiveCommand.CreateFromTask<GameObjDataFolder, Unit>(async targetFolder =>
-			{
-				var folder = model.Settings.GetGameObjDataFolder(targetFolder);
-				if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
-				{
-					logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
-					return default;
-				}
-
-				LastGameObjDataFolder = targetFolder;
-
-				if (CurrentS5File == null)
-				{
-					logger.Error("Current S5File is null");
-					return default;
-				}
-
-				if (model.ObjectServiceClient == null)
-				{
-					logger.Error("The object service client is null");
-					return default;
-				}
-
-				var gameFolderIndex = ObjectIndex.LoadOrCreateIndex(folder, logger);
-
-				if (model.ObjectIndexOnline == null)
-				{
-					// need to download the index, ie call /objects/list
-					logger.Info("Online index doesn't exist - downloading now");
-
-					model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
-						.Select(x => new ObjectIndexEntry(x.DisplayName, null, x.Id, x.DatChecksum, null, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
-
-					logger.Info("Index downloaded");
-					// technically should check if the index is downloaded and valid now
-				}
-
-				foreach (var obj in CurrentS5File.RequiredObjects)
-				{
-					if (gameFolderIndex.Objects.Contains(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum))
-					{
-						continue;
-					}
-
-					// obj is missing - we need to download
-					logger.Info($"Scenario {currentFile.DisplayName} has missing {obj.ObjectType} \"{obj.Name}\" with checksum {obj.Checksum}");
-
-					var onlineObj = model.ObjectIndexOnline
-						.Objects
-						.FirstOrDefault(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum); // ideally would be SingleOrDefault but unfortunately DAT is not unique
-
-					if (onlineObj == null)
-					{
-						logger.Error("Couldn't find a matching object in the online index");
-						continue;
-					}
-
-					if (onlineObj.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
-					{
-						logger.Warning("This is a vanilla object. Cannot download from Object Service - your base game installation may be corrupt");
-						continue;
-					}
-
-					if (!UniqueObjectId.TryParse(onlineObj.FileName, out var id))
-					{
-						// couldn't get the id from the name, which is set into Filename. see FolderTreeViewModel::LoadOnlineDirectoryAsync() for more details
-						logger.Error("Couldn't get object id from its filename");
-						continue;
-					}
-
-					// download actual file
-					var downloadedObjBytes = await model.ObjectServiceClient.GetObjectFileAsync(id);
-
-					if (downloadedObjBytes == null)
-					{
-						logger.Error("Downloaded bytes was null");
-						continue;
-					}
-
-					// write file to the selected directory
-					var filename = $"{Path.Combine(folder, onlineObj.DisplayName ?? onlineObj.FileName)}-{onlineObj.Id}.dat";
-
-					if (File.Exists(filename))
-					{
-						logger.Warning($"{filename} already exists - will NOT overwrite it");
-						continue;
-					}
-
-					logger.Info($"Writing file to {filename}");
-
-					await File.WriteAllBytesAsync(filename, downloadedObjBytes);
-				}
-
-				return default;
-			});
-		}
-
-		void DownloadMissingObjectsToGameFolder(GameObjDataFolder targetFolder)
-		{
-
+			DownloadMissingObjectsToGameObjDataCommand = ReactiveCommand.CreateFromTask<GameObjDataFolder>(DownloadMissingObjects);
 		}
 
 		public override void Load()
@@ -188,6 +89,102 @@ namespace OpenLoco.Gui.ViewModels
 					logger?.Error(ex);
 				}
 			}
+		}
+
+		async Task DownloadMissingObjects(GameObjDataFolder targetFolder)
+		{
+			var folder = Model.Settings.GetGameObjDataFolder(targetFolder);
+
+			if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+			{
+				logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
+				return;
+			}
+
+			LastGameObjDataFolder = targetFolder;
+
+			if (CurrentS5File == null)
+			{
+				logger.Error("Current S5File is null");
+				return;
+			}
+
+			if (Model.ObjectServiceClient == null)
+			{
+				logger.Error("The object service client is null");
+				return;
+			}
+
+			var gameFolderIndex = ObjectIndex.LoadOrCreateIndex(folder, logger);
+
+			if (Model.ObjectIndexOnline == null)
+			{
+				// need to download the index, ie call /objects/list
+				logger.Info("Online index doesn't exist - downloading now");
+
+				Model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
+					.Select(x => new ObjectIndexEntry(x.DisplayName, null, x.Id, x.DatChecksum, null, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
+
+				logger.Info("Index downloaded");
+				// technically should check if the index is downloaded and valid now
+			}
+
+			foreach (var obj in CurrentS5File.RequiredObjects)
+			{
+				if (OriginalObjectFiles.GetFileSource(obj.Name, obj.Checksum) is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+				{
+					continue;
+				}
+
+				if (gameFolderIndex.Objects.Contains(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum))
+				{
+					continue;
+				}
+
+				// obj is missing - we need to download
+				logger.Info($"Scenario {CurrentFile.DisplayName} has missing {obj.ObjectType} \"{obj.Name}\" with checksum {obj.Checksum}");
+
+				var onlineObj = Model.ObjectIndexOnline
+					.Objects
+					.FirstOrDefault(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum); // ideally would be SingleOrDefault but unfortunately DAT is not unique
+
+				if (onlineObj == null)
+				{
+					logger.Error("Couldn't find a matching object in the online index");
+					continue;
+				}
+
+				if (onlineObj.Id == null)
+				{
+					logger.Error("Downloaded object had no Id - this is a problem with the server");
+					continue;
+				}
+
+				// download actual file
+				var downloadedObjBytes = await Model.ObjectServiceClient.GetObjectFileAsync(onlineObj.Id.Value);
+
+				if (downloadedObjBytes == null)
+				{
+					logger.Error("Downloaded bytes was null");
+					continue;
+				}
+
+				// write file to the selected directory
+				var filename = $"{onlineObj.DisplayName ?? onlineObj.FileName}-{onlineObj.Id}.dat";
+				filename = Path.Combine(folder, filename);
+
+				if (File.Exists(filename))
+				{
+					logger.Warning($"{filename} already exists - will NOT overwrite it");
+					continue;
+				}
+
+				logger.Info($"Writing file to {filename}");
+
+				await File.WriteAllBytesAsync(filename, downloadedObjBytes);
+			}
+
+			return;
 		}
 
 		void DrawMap()

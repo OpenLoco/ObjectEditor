@@ -387,19 +387,24 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			}
 
 			var dat = obj.DatObjects.First();
-			if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index))
+			if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
 			{
 				logger.LogDebug("Object {datFile} didn't exist in the object index", dat);
 				return Results.NotFound();
 			}
 
-			const string contentType = "application/octet-stream";
+			if (string.IsNullOrEmpty(entry.FileName))
+			{
+				logger.LogWarning("Object {datFile} has a null filename - suggest re-indexing the current folder", dat);
+				return Results.NotFound();
+			}
 
-			var path = Path.Combine(sfm.ObjectsFolder, index!.FileName);
+			var path = Path.Combine(sfm.ObjectsFolder, entry.FileName);
+			const string contentType = "application/octet-stream";
 
 			if (!File.Exists(path))
 			{
-				logger.LogDebug("Object {datFile} existed in the object index but not on disk. ExpectedPath=\"{path}\"", dat, path);
+				logger.LogWarning("Object {datFile} existed in the object index but not on disk. ExpectedPath=\"{path}\"", dat, path);
 			}
 
 			return Results.File(path, contentType, Path.GetFileName(path));

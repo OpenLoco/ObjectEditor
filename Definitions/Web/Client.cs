@@ -29,7 +29,7 @@ namespace OpenLoco.Definitions.Web
 			=> await ClientHelpers.SendRequestAsync(
 				client,
 				ApiVersion + RoutesV2.Objects + $"/{id}/file",
-				() => client.GetAsync(RoutesV2.Objects + $"/{id}/file"),
+				() => client.GetAsync(ApiVersion + RoutesV2.Objects + $"/{id}/file"),
 				ClientHelpers.ReadBinaryContentAsync,
 				logger) ?? default;
 

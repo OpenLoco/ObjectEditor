@@ -3,6 +3,11 @@ using OpenLoco.Definitions.Database;
 
 namespace ObjectService.RouteHandlers
 {
+	public interface ITableRouteHandler
+	{
+		static abstract void MapRoutes(IEndpointRouteBuilder parentRoute);
+	}
+
 	public interface ITableRequestHandler<TDto> where TDto : class, IHasId
 	{
 		string BaseRoute { get; }

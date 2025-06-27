@@ -85,7 +85,7 @@ namespace OpenLoco.Definitions.Web
 					return default;
 				}
 
-				logger?.Debug("Received success response");
+				logger?.Debug($"Received success response: {response.StatusCode}");
 
 				if (contentReaderFunc != null)
 				{

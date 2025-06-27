@@ -4,12 +4,43 @@ using OpenLoco.Definitions.Web;
 
 namespace ObjectService.RouteHandlers
 {
+	public abstract class BaseRouteHandler<THandler>
+	{
+		public abstract string BaseRoute { get; }
+		public abstract Delegate ListDelegate { get; }
+		public abstract Delegate CreateDelegate { get; }
+		public abstract Delegate ReadDelegate { get; }
+		public abstract Delegate UpdateDelegate { get; }
+		public abstract Delegate DeleteDelegate { get; }
+
+		protected virtual void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute) { }
+
+		public void MapRoutes(IEndpointRouteBuilder parentRoute)
+		{
+			var baseRoute = parentRoute
+				.MapGroup(BaseRoute)
+				.WithTags(RouteHelpers.MakeNicePlural(typeof(THandler).Name));
+
+			_ = baseRoute.MapGet(string.Empty, ListDelegate);
+
+			var resourceRoute = baseRoute.MapGroup(Routes.ResourceRoute);
+			_ = resourceRoute.MapGet(string.Empty, ReadDelegate);
+
+#if DEBUG
+			_ = baseRoute.MapPost(string.Empty, CreateDelegate); //.RequireAuthorization(AdminPolicy.Name);
+			_ = resourceRoute.MapPut(string.Empty, UpdateDelegate); //.RequireAuthorization(AdminPolicy.Name);
+			_ = resourceRoute.MapDelete(string.Empty, DeleteDelegate); //.RequireAuthorization(AdminPolicy.Name);
+#endif
+			MapAdditionalRoutes(parentRoute);
+		}
+	}
+
 	public abstract class BaseTableRequestHandler<TDto> : ITableRequestHandler<TDto>
 		where TDto : class, IHasId
 	{
 		public abstract string BaseRoute { get; }
 
-		public void MapRoutes(IEndpointRouteBuilder parentRoute)
+		public virtual void MapRoutes(IEndpointRouteBuilder parentRoute)
 		{
 			var baseRoute = parentRoute
 				.MapGroup(BaseRoute)

@@ -3,7 +3,7 @@ using Definitions;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoLicenceEntry(
-		DbKey Id,
+		UniqueObjectId Id,
 		string Name,
 		string LicenceText) : IHasId;
 }

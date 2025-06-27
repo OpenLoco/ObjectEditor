@@ -32,7 +32,7 @@ namespace OpenLoco.Gui.ViewModels
 
 	public class TutorialViewModel : BaseLocoFileViewModel
 	{
-		public TutorialViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public TutorialViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
 		[Reactive]
@@ -40,8 +40,8 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void Load()
 		{
-			logger?.Info($"Loading tutorial from {CurrentFile.Filename}");
-			var bytes = File.ReadAllBytes(CurrentFile.Filename).AsSpan();
+			logger?.Info($"Loading tutorial from {CurrentFile.FileName}");
+			var bytes = File.ReadAllBytes(CurrentFile.FileName).AsSpan();
 
 			// each tutorial action is 4 parts of 2 bytes each, so 8 bytes per action
 			for (var i = 0; i < bytes.Length;)
@@ -90,10 +90,10 @@ namespace OpenLoco.Gui.ViewModels
 
 	public class ScoresViewModel : BaseLocoFileViewModel
 	{
-		public ScoresViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public ScoresViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
-		public override void Load() => logger?.Info($"Loading scores from {CurrentFile.Filename}");
+		public override void Load() => logger?.Info($"Loading scores from {CurrentFile.FileName}");
 
 		public override void Save() => logger?.Warning("Save is not currently implemented");
 
@@ -102,10 +102,10 @@ namespace OpenLoco.Gui.ViewModels
 
 	public class LanguageViewModel : BaseLocoFileViewModel
 	{
-		public LanguageViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public LanguageViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
-		public override void Load() => logger?.Info($"Loading languages from {CurrentFile.Filename}");
+		public override void Load() => logger?.Info($"Loading languages from {CurrentFile.FileName}");
 
 		public override void Save() => logger?.Warning("Save is not currently implemented");
 

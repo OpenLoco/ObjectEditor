@@ -24,8 +24,8 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			SelectedTabIndex = 0;
 			CurrentLocalDirectory = "test/directory";
-			LocalDirectoryItems = [new("local-filename1", "local-displayname1", "local-internalname1")];
-			OnlineDirectoryItems = [new("online-filename1", "online-displayname1", "online-internalname1")];
+			LocalDirectoryItems = [new("local-displayname1", "local-filename1", null)];
+			OnlineDirectoryItems = [new("online-displayname1", null, 123)];
 
 			UpdateDirectoryItemsView();
 		}
@@ -33,8 +33,8 @@ namespace OpenLoco.Gui.ViewModels
 
 	public class FolderTreeViewModel : ReactiveObject
 	{
-		public HierarchicalTreeDataGridSource<FileSystemItemBase> TreeDataGridSource { get; set; }
-		ObservableCollection<FileSystemItemBase> treeDataGridSource;
+		public HierarchicalTreeDataGridSource<FileSystemItem> TreeDataGridSource { get; set; }
+		ObservableCollection<FileSystemItem> treeDataGridSource;
 
 		ObjectEditorModel Model { get; init; }
 
@@ -47,7 +47,7 @@ namespace OpenLoco.Gui.ViewModels
 				: Model.Settings.ServerAddressHttp;
 
 		[Reactive]
-		public FileSystemItemBase? CurrentlySelectedObject { get; set; }
+		public FileSystemItem? CurrentlySelectedObject { get; set; }
 
 		[Reactive]
 		public string FilenameFilter { get; set; } = string.Empty;
@@ -62,10 +62,10 @@ namespace OpenLoco.Gui.ViewModels
 		public ObjectDisplayMode DisplayMode { get; set; } = ObjectDisplayMode.All;
 
 		[Reactive]
-		protected List<FileSystemItemBase> LocalDirectoryItems { get; set; } = [];
+		protected List<FileSystemItem> LocalDirectoryItems { get; set; } = [];
 
 		[Reactive]
-		protected List<FileSystemItemBase> OnlineDirectoryItems { get; set; } = [];
+		protected List<FileSystemItem> OnlineDirectoryItems { get; set; } = [];
 
 		[Reactive]
 		public float IndexOrDownloadProgress { get; set; }
@@ -161,7 +161,7 @@ namespace OpenLoco.Gui.ViewModels
 			CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
 		}
 
-		public static int CountNodes(FileSystemItemBase fib)
+		public static int CountNodes(FileSystemItem fib)
 		{
 			if (fib.SubNodes == null || fib.SubNodes.Count == 0)
 			{
@@ -178,7 +178,7 @@ namespace OpenLoco.Gui.ViewModels
 			return count;
 		}
 
-		List<FileSystemItemBase> CurrentDirectoryItems => IsLocal ? LocalDirectoryItems : OnlineDirectoryItems;
+		List<FileSystemItem> CurrentDirectoryItems => IsLocal ? LocalDirectoryItems : OnlineDirectoryItems;
 
 		protected void UpdateDirectoryItemsView()
 			=> UpdateGrid(CurrentDirectoryItems);
@@ -219,15 +219,15 @@ namespace OpenLoco.Gui.ViewModels
 			UpdateGrid(LocalDirectoryItems);
 		}
 
-		void UpdateGrid(List<FileSystemItemBase> items)
+		void UpdateGrid(List<FileSystemItem> items)
 		{
 			treeDataGridSource = [.. items];
-			TreeDataGridSource = new HierarchicalTreeDataGridSource<FileSystemItemBase>(treeDataGridSource)
+			TreeDataGridSource = new HierarchicalTreeDataGridSource<FileSystemItem>(treeDataGridSource)
 			{
 				Columns =
 				{
-					new HierarchicalExpanderColumn<FileSystemItemBase>(
-						new TemplateColumn<FileSystemItemBase>(
+					new HierarchicalExpanderColumn<FileSystemItem>(
+						new TemplateColumn<FileSystemItem>(
 							string.Empty, // the column name
 							"Object",
 							"Edit",
@@ -241,11 +241,11 @@ namespace OpenLoco.Gui.ViewModels
 							}),
 						x => x.SubNodes),
 
-					new TextColumn<FileSystemItemBase, string?>("Source", x => GetNiceObjectSource(x.ObjectSource)),
-					new TextColumn<FileSystemItemBase, FileLocation?>("Origin", x => x.FileLocation),
-					new TextColumn<FileSystemItemBase, string?>("Location", x => x.Filename),
-					new TextColumn<FileSystemItemBase, DateTimeOffset?>("Created", x => x.CreatedDate),
-					new TextColumn<FileSystemItemBase, DateTimeOffset?>("Modified", x => x.ModifiedDate),
+					new TextColumn<FileSystemItem, string?>("Source", x => GetNiceObjectSource(x.ObjectSource)),
+					new TextColumn<FileSystemItem, FileLocation?>("Origin", x => x.FileLocation),
+					new TextColumn<FileSystemItem, string?>("Location", x => x.FileName),
+					new TextColumn<FileSystemItem, DateTimeOffset?>("Created", x => x.CreatedDate),
+					new TextColumn<FileSystemItem, DateTimeOffset?>("Modified", x => x.ModifiedDate),
 				},
 			};
 
@@ -266,7 +266,7 @@ namespace OpenLoco.Gui.ViewModels
 				_ => throw new NotImplementedException(),
 			};
 
-		void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileSystemItemBase> e)
+		void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileSystemItem> e)
 		{
 			CurrentlySelectedObject = null;
 			if (e.SelectedItems.Count == 1)
@@ -286,7 +286,17 @@ namespace OpenLoco.Gui.ViewModels
 			if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.ObjectServiceClient != null)
 			{
 				Model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
-					.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DisplayName, x.DatChecksum, null, x.InternalName, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
+					.Select(x => new ObjectIndexEntry(
+						x.DisplayName,
+						null,
+						x.Id,
+						x.DatChecksum,
+						null,
+						x.ObjectType,
+						x.ObjectSource,
+						x.CreatedDate,
+						x.ModifiedDate,
+						x.VehicleType)));
 			}
 
 			if (Model.ObjectIndexOnline != null)
@@ -316,22 +326,18 @@ namespace OpenLoco.Gui.ViewModels
 			return displayable && filters;
 		}
 
-		static List<FileSystemItemBase> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, string authorFilter, string modpackFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
+		public static FileSystemItem IndexEntryToFileSystemItem(ObjectIndexEntry x, string baseDirectory, FileLocation fileLocation)
 		{
-			var sortByDate = false;
-			if (sortByDate)
-			{
-				return [.. ConstructDateTreeView(index, baseDirectory, filenameFilter, authorFilter, modpackFilter, displayMode, fileLocation)];
-			}
-			else
-			{
-				return ConstructGroupedTreeView(index, baseDirectory, filenameFilter, authorFilter, modpackFilter, displayMode, fileLocation);
-			}
+			var computedFileName = fileLocation == FileLocation.Online ? $"{x.DisplayName}-{x.Id}.dat" : x.FileName;
+			// fallback - DisplayName is never null
+			computedFileName ??= x.DisplayName;
+
+			return new FileSystemItem(x.DisplayName, Path.Combine(baseDirectory, computedFileName), x.Id, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource);
 		}
 
-		static List<FileSystemItemBase> ConstructGroupedTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, string authorFilter, string modpackFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
+		static List<FileSystemItem> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, string authorFilter, string modpackFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
 		{
-			var result = new List<FileSystemItemBase>();
+			var result = new List<FileSystemItem>();
 			var groupedObjects = index
 				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
 				.Where(x => MatchesFilter(x, filenameFilter, authorFilter, modpackFilter, displayMode))
@@ -340,7 +346,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			foreach (var objGroup in groupedObjects)
 			{
-				ObservableCollection<FileSystemItemBase> subNodes;
+				ObservableCollection<FileSystemItem> subNodes;
 				if (objGroup.Key == ObjectType.Vehicle)
 				{
 					subNodes = [];
@@ -348,8 +354,8 @@ namespace OpenLoco.Gui.ViewModels
 						.GroupBy(o => o.VehicleType)
 						.OrderBy(vg => vg.Key.ToString()))
 					{
-						var vehicleSubNodes = new ObservableCollection<FileSystemItemBase>(vg
-							.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DisplayName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+						var vehicleSubNodes = new ObservableCollection<FileSystemItem>(vg
+							.Select(x => IndexEntryToFileSystemItem(x, baseDirectory, fileLocation))
 							.OrderBy(x => x.DisplayName));
 
 						if (vg.Key == null)
@@ -359,37 +365,30 @@ namespace OpenLoco.Gui.ViewModels
 							continue;
 						}
 
-						subNodes.Add(new FileSystemItemBase(
-							string.Empty,
+						subNodes.Add(new FileSystemItem(
 							vg.Key.Value.ToString(),
-							string.Empty,
+							null,
+							null,
 							VehicleType: vg.Key.Value,
 							SubNodes: vehicleSubNodes));
 					}
 				}
 				else
 				{
-					subNodes = new ObservableCollection<FileSystemItemBase>(objGroup
-						.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DisplayName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
+					subNodes = new ObservableCollection<FileSystemItem>(objGroup
+						.Select(x => IndexEntryToFileSystemItem(x, baseDirectory, fileLocation))
 						.OrderBy(x => x.DisplayName));
 				}
 
-				result.Add(new FileSystemItemBase(
-					string.Empty,
+				result.Add(new FileSystemItem(
 					objGroup.Key.ToString(),
-					string.Empty,
+					null,
+					null,
 					ObjectType: objGroup.Key,
 					SubNodes: subNodes));
 			}
 
 			return result;
 		}
-
-		static IEnumerable<FileSystemItemBase> ConstructDateTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, string filenameFilter, string authorFilter, string modpackFilter, ObjectDisplayMode displayMode, FileLocation fileLocation)
-			=> index
-				.OfType<ObjectIndexEntry>() // this won't show errored files - should we??
-				.Where(x => MatchesFilter(x, filenameFilter, authorFilter, modpackFilter, displayMode))
-				.Select(x => new FileSystemItemBase(Path.Combine(baseDirectory, x.Filename), x.DisplayName, x.InternalName, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource))
-				.OrderByDescending(x => x.ModifiedDate);
 	}
 }

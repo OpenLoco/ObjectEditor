@@ -5,7 +5,7 @@ using OpenLoco.Dat.Objects;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoObjectDescriptor(
-		DbKey Id,
+		UniqueObjectId Id,
 		string InternalName,
 		string DisplayName,
 		uint? DatChecksum,

@@ -9,13 +9,13 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class MusicViewModel : BaseLocoFileViewModel
 	{
-		public MusicViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public MusicViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
 			=> Load();
 
 		public override void Load()
 		{
-			var (header, data) = SawyerStreamReader.LoadWavFile(CurrentFile.Filename);
+			var (header, data) = SawyerStreamReader.LoadWavFile(CurrentFile.FileName);
 			SoundViewModel = new AudioViewModel(
 				GetDisplayName(CurrentFile.DisplayName),
 				header,
@@ -43,7 +43,7 @@ namespace OpenLoco.Gui.ViewModels
 		public override void Save()
 		{
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
-				? CurrentFile.Filename
+				? CurrentFile.FileName
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 			logger?.Info($"Saving music to {savePath}");

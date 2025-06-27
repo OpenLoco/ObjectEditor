@@ -99,7 +99,7 @@
 
 						<!-- Template for Name column cells -->
 						<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
-						<DataTemplate x:Key="Object" DataType="mo:FileSystemItemBase">
+						<DataTemplate x:Key="Object" DataType="mo:FileSystemItem">
 							<StackPanel Orientation="Horizontal" >
 								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
 								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
@@ -107,7 +107,7 @@
 						</DataTemplate>
 
 						<!-- Edit template for Name column cells -->
-						<DataTemplate x:Key="Edit" DataType="mo:FileSystemItemBase">
+						<DataTemplate x:Key="Edit" DataType="mo:FileSystemItem">
 							<StackPanel Orientation="Horizontal" >
 								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>

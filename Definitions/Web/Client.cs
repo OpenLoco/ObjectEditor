@@ -1,3 +1,4 @@
+using Definitions;
 using OpenLoco.Common.Logging;
 using OpenLoco.Definitions.DTO;
 using System.IO.Hashing;
@@ -16,7 +17,7 @@ namespace OpenLoco.Definitions.Web
 				null,
 				logger) ?? [];
 
-		public static async Task<DtoObjectDescriptor?> GetObjectAsync(HttpClient client, int id, ILogger? logger = null)
+		public static async Task<DtoObjectDescriptor?> GetObjectAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
 			=> await ClientHelpers.GetAsync<DtoObjectDescriptor>(
 				client,
 				ApiVersion,
@@ -24,7 +25,7 @@ namespace OpenLoco.Definitions.Web
 				id,
 				logger);
 
-		public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, int id, ILogger? logger = null)
+		public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
 			=> await ClientHelpers.SendRequestAsync(
 				client,
 				ApiVersion + RoutesV2.Objects + $"/{id}/file",
@@ -36,7 +37,7 @@ namespace OpenLoco.Definitions.Web
 		{
 			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 			logger.Debug($"Posting {filename} to {client.BaseAddress?.OriginalString}{RoutesV2.Objects}");
-			var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), xxHash3, creationDate, modifiedDate);
+			var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), xxHash3, ObjectAvailability.Available, creationDate, modifiedDate);
 			_ = await ClientHelpers.PostAsync(
 				client,
 				ApiVersion,

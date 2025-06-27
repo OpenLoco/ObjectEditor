@@ -5,6 +5,6 @@ namespace OpenLoco.Definitions.Database
 	//[Index(nameof(GuidId), IsUnique = true)]
 	public abstract class DbIdObject : IHasId
 	{
-		public DbKey Id { get; set; }
+		public UniqueObjectId Id { get; set; }
 	}
 }

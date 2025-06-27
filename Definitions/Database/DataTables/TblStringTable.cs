@@ -11,7 +11,7 @@ namespace OpenLoco.Definitions.Database
 		public required LanguageId RowLanguage { get; set; }
 		public required string RowText { get; set; }
 
-		public required DbKey ObjectId { get; set; } // FK, the TblObject that owns this string
+		public required UniqueObjectId ObjectId { get; set; } // FK, the TblObject that owns this string
 		public TblObject Object { get; set; } // navigation property. a stringtable object must ALWAYS reference an OL object
 	}
 }

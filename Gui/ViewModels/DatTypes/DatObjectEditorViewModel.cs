@@ -53,7 +53,7 @@ namespace OpenLoco.Gui.ViewModels
 		//public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
 		public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
 
-		public DatObjectEditorViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public DatObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
 		{
 			Load();
@@ -65,7 +65,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			ViewHexCommand = ReactiveCommand.CreateFromTask(async () =>
 			{
-				var vm = new HexWindowViewModel(CurrentFile.Filename, logger);
+				var vm = new HexWindowViewModel(CurrentFile.FileName, logger);
 				_ = await HexViewerShowDialog.Handle(vm);
 			});
 
@@ -82,12 +82,12 @@ namespace OpenLoco.Gui.ViewModels
 
 				try
 				{
-					File.Copy(currentFile.Filename, Path.Combine(folder, Path.GetFileName(currentFile.Filename)));
-					logger.Info($"Copied {Path.GetFileName(currentFile.Filename)} to [[{targetFolder}]] {folder}");
+					File.Copy(currentFile.FileName, Path.Combine(folder, Path.GetFileName(currentFile.FileName)));
+					logger.Info($"Copied {Path.GetFileName(currentFile.FileName)} to [[{targetFolder}]] {folder}");
 				}
 				catch (Exception ex)
 				{
-					logger.Error($"Could not copy {currentFile.Filename} to {folder}:", ex);
+					logger.Error($"Could not copy {currentFile.FileName} to {folder}:", ex);
 				}
 			});
 
@@ -146,7 +146,7 @@ namespace OpenLoco.Gui.ViewModels
 				svm.Dispose();
 			}
 
-			logger.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.Filename}");
+			logger.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.FileName}");
 
 			if (Model.TryLoadObject(CurrentFile, out var newObj))
 			{
@@ -198,14 +198,14 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			// delete file
-			if (File.Exists(CurrentFile.Filename))
+			if (File.Exists(CurrentFile.FileName))
 			{
-				logger.Info($"Deleting file \"{CurrentFile.Filename}\"");
-				File.Delete(CurrentFile.Filename);
+				logger.Info($"Deleting file \"{CurrentFile.FileName}\"");
+				File.Delete(CurrentFile.FileName);
 			}
 			else
 			{
-				logger.Info($"File already deleted \"{CurrentFile.Filename}\"");
+				logger.Info($"File already deleted \"{CurrentFile.FileName}\"");
 			}
 
 			// note: it is not really possible to delete the entry from the index since if the user
@@ -216,8 +216,8 @@ namespace OpenLoco.Gui.ViewModels
 		public override void Save()
 		{
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
-				? CurrentFile.Filename
-				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+				? CurrentFile.FileName
+				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".dat"));
 			SaveCore(savePath);
 		}
 

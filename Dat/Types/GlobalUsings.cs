@@ -3,7 +3,7 @@
 
 global using char_t = System.Byte;
 global using coord_t = System.Int16;
-global using DbKey = System.UInt64;
+global using UniqueObjectId = System.UInt64;
 global using image_id = System.UInt32;
 global using int16_t = System.Int16;
 global using int32_t = System.Int32;

@@ -2,6 +2,7 @@ using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 using System;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace OpenLoco.Gui.Models
 {
@@ -12,18 +13,19 @@ namespace OpenLoco.Gui.Models
 		Online,
 	}
 
-	public record FileSystemItemBase(
-		string Filename,
+	public record FileSystemItem(
 		string DisplayName,
-		string InternalName,
+		string? FileName, // only available in local mode
+		UniqueObjectId? Id, // only available in online-mode
 		DateTimeOffset? CreatedDate = null,
 		DateTimeOffset? ModifiedDate = null,
 		FileLocation? FileLocation = null,
 		ObjectSource? ObjectSource = null,
 		ObjectType? ObjectType = null,
 		VehicleType? VehicleType = null,
-		ObservableCollection<FileSystemItemBase>? SubNodes = null)
+		ObservableCollection<FileSystemItem>? SubNodes = null)
 	{
+		[JsonIgnore]
 		public string NameComputed
 			=> $"{DisplayName}{(SubNodes == null ? string.Empty : $" ({SubNodes.Count})")}"; // nested interpolated string...what have i become
 	}

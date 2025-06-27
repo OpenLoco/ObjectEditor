@@ -204,7 +204,7 @@ namespace OpenLoco.Gui.ViewModels
 						ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
 		}
 
-		public static async Task<FileSystemItemBase?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
+		public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
 		{
 			var openFile = await PlatformSpecific.OpenFilePicker(filetypes);
 			if (openFile == null)
@@ -216,7 +216,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			return path == null
 				? null
-				: new FileSystemItemBase(path, Path.GetFileName(path), string.Empty, File.GetCreationTimeUtc(path), File.GetLastWriteTimeUtc(path), FileLocation.Local);
+				: new FileSystemItem(Path.GetFileName(path), path, null, File.GetCreationTimeUtc(path), File.GetLastWriteTimeUtc(path), FileLocation.Local);
 		}
 
 		async Task LoadDefaultPalette()
@@ -253,23 +253,23 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			var createdTime = File.GetCreationTimeUtc(fsi.Filename);
-			var modifiedTime = File.GetLastWriteTimeUtc(fsi.Filename);
+			var createdTime = File.GetCreationTimeUtc(fsi.FileName);
+			var modifiedTime = File.GetLastWriteTimeUtc(fsi.FileName);
 
-			if (Model.TryLoadObject(new FileSystemItemBase(fsi.Filename, Path.GetFileName(fsi.Filename), fsi.InternalName, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
+			if (Model.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 			{
-				Model.Logger.Warning($"Successfully loaded {fsi.Filename}");
+				Model.Logger.Warning($"Successfully loaded {fsi.FileName}");
 				var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.Checksum);
-				var fsi2 = new FileSystemItemBase(fsi.Filename, uiLocoFile!.DatFileInfo.S5Header.Name, fsi.InternalName, createdTime, modifiedTime, FileLocation.Local, source);
+				var fsi2 = new FileSystemItem(uiLocoFile!.DatFileInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
 				SetObjectViewModel(fsi2);
 			}
 			else
 			{
-				Model.Logger.Warning($"Unable to load {fsi.Filename}");
+				Model.Logger.Warning($"Unable to load {fsi.FileName}");
 			}
 		}
 
-		void SetObjectViewModel(FileSystemItemBase fsi)
+		void SetObjectViewModel(FileSystemItem fsi)
 		{
 			if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 			{

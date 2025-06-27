@@ -10,7 +10,7 @@ namespace OpenLoco.Gui.ViewModels
 	public interface ILocoFileViewModelControl
 	{
 		[Reactive]
-		public FileSystemItemBase CurrentFile { get; init; }
+		public FileSystemItem CurrentFile { get; init; }
 
 		ListObservable<FileViewButton> Buttons { get; }
 	}
@@ -23,7 +23,7 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Unit> DeleteLocalFileCommand { get; init; }
 
 		[Reactive]
-		public FileSystemItemBase CurrentFile { get; init; }
+		public FileSystemItem CurrentFile { get; init; }
 
 		[Reactive]
 		public bool IsLocalMode

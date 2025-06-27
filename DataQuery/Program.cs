@@ -28,7 +28,7 @@ static void QueryIndustryHasShadows(string dir, Logger logger, ObjectIndex index
 	{
 		try
 		{
-			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.Filename), logger);
+			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
 			if (o?.LocoObject != null)
 			{
 				var struc = (IndustryObject)o.Value.LocoObject.Object;
@@ -43,7 +43,7 @@ static void QueryIndustryHasShadows(string dir, Logger logger, ObjectIndex index
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"{obj.Filename} - {ex.Message}");
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
 		}
 	}
 
@@ -65,7 +65,7 @@ static void QueryVehicleBodyUnkSprites(string dir, Logger logger, ObjectIndex in
 	{
 		try
 		{
-			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.Filename), logger);
+			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
 			if (o?.LocoObject != null)
 			{
 				var struc = (VehicleObject)o.Value.LocoObject.Object;
@@ -80,7 +80,7 @@ static void QueryVehicleBodyUnkSprites(string dir, Logger logger, ObjectIndex in
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"{obj.Filename} - {ex.Message}");
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
 		}
 	}
 
@@ -102,7 +102,7 @@ static void QueryCargoCategories(string dir, Logger logger, ObjectIndex index)
 	{
 		try
 		{
-			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.Filename), logger);
+			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
 			if (o?.LocoObject != null)
 			{
 				var struc = (CargoObject)o.Value.LocoObject.Object;
@@ -115,7 +115,7 @@ static void QueryCargoCategories(string dir, Logger logger, ObjectIndex index)
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"{obj.Filename} - {ex.Message}");
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
 		}
 	}
 
@@ -136,7 +136,7 @@ static void QueryCostIndices(string dir, Logger logger, ObjectIndex index)
 	{
 		try
 		{
-			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.Filename), logger);
+			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
 			if (o?.LocoObject != null)
 			{
 				var struc = o.Value.LocoObject.Object;
@@ -171,7 +171,7 @@ static void QueryCostIndices(string dir, Logger logger, ObjectIndex index)
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"{obj.Filename} - {ex.Message}");
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
 		}
 	}
 

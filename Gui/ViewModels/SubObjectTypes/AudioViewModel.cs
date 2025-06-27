@@ -104,7 +104,7 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			var (header, pcmData) = SawyerStreamReader.LoadWavFile(fsi.Filename);
+			var (header, pcmData) = SawyerStreamReader.LoadWavFile(fsi.FileName);
 			Header = header;
 			Data = pcmData;
 			Duration = $"{CalculateDuration():0.##}s";

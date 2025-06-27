@@ -4,7 +4,7 @@ using OpenLoco.Dat.Types;
 
 namespace OpenLoco.Definitions.Database
 {
-	public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, DbKey>
+	public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjectId>
 	{
 		#region ReferenceData
 

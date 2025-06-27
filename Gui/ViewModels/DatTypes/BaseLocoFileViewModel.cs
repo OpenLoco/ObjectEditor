@@ -12,7 +12,7 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 	{
-		protected BaseLocoFileViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		protected BaseLocoFileViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		{
 			CurrentFile = currentFile;
 			Model = model;
@@ -24,7 +24,7 @@ namespace OpenLoco.Gui.ViewModels
 		}
 
 		[Reactive]
-		public FileSystemItemBase CurrentFile { get; init; }
+		public FileSystemItem CurrentFile { get; init; }
 		public ObjectEditorModel Model { get; init; }
 
 		protected ILogger logger => Model.Logger;
@@ -42,9 +42,9 @@ namespace OpenLoco.Gui.ViewModels
 		async Task SaveWrapper()
 		{
 			// note - this is the DAT file source, not the true source...
-			if (CurrentFile is FileSystemItemBase fsio && fsio.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+			if (CurrentFile is FileSystemItem fsio && fsio.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 			{
-				var box = MessageBoxManager.GetMessageBoxStandard("Confirm Save", $"{CurrentFile.Filename} is a vanilla Locomotion file - are you sure you want to overwrite it?", ButtonEnum.YesNo);
+				var box = MessageBoxManager.GetMessageBoxStandard("Confirm Save", $"{CurrentFile.FileName} is a vanilla Locomotion file - are you sure you want to overwrite it?", ButtonEnum.YesNo);
 				var result = await box.ShowAsync();
 
 				if (result != ButtonResult.Yes)
@@ -58,7 +58,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		async Task DeleteWrapper()
 		{
-			var box = MessageBoxManager.GetMessageBoxStandard("Confirm Delete", $"Are you sure you would like to delete {CurrentFile.Filename}?", ButtonEnum.YesNo);
+			var box = MessageBoxManager.GetMessageBoxStandard("Confirm Delete", $"Are you sure you would like to delete {CurrentFile.FileName}?", ButtonEnum.YesNo);
 			var result = await box.ShowAsync();
 
 			if (result == ButtonResult.Yes)

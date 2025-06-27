@@ -3,13 +3,13 @@ using OpenLoco.Dat.Data;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoStringTableEntry(
-		DbKey Id,
+		UniqueObjectId Id,
 		string RowName,
 		LanguageId RowLanguage,
 		string RowText,
-		DbKey ObjectId);
+		UniqueObjectId ObjectId);
 
 	public record DtoStringTableDescriptor(
 		Dictionary<string, Dictionary<LanguageId, string>> Table,
-		DbKey ObjectId);
+		UniqueObjectId ObjectId);
 }

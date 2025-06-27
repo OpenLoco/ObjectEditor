@@ -32,7 +32,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		public static async Task<IResult> CreateAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public static async Task<IResult> ReadAsync(DbKey id, LocoDbContext db)
+		public static async Task<IResult> ReadAsync(UniqueObjectId id, LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Where(x => x.Id == id)
@@ -42,10 +42,10 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.Select(x => x.ToDtoDescriptor())
 				.OrderBy(x => x.Name));
 
-		public static async Task<IResult> UpdateAsync(DbKey id, DtoItemPackDescriptor<DtoScenarioEntry> request, LocoDbContext db)
+		public static async Task<IResult> UpdateAsync(UniqueObjectId id, DtoItemPackDescriptor<DtoScenarioEntry> request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public static async Task<IResult> DeleteAsync(DbKey id, LocoDbContext db)
+		public static async Task<IResult> DeleteAsync(UniqueObjectId id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 }

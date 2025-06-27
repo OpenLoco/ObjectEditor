@@ -3,7 +3,7 @@ using Definitions;
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoItemPackEntry(
-		DbKey Id,
+		UniqueObjectId Id,
 		string Name,
 		string? Description,
 		DateTimeOffset? CreatedDate,

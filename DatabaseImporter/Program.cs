@@ -211,7 +211,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 				objectMetadataDict.Add(objIndex.DisplayName, newMetadata);
 			}
 
-			var filename = Path.Combine(objDirectory, objIndex.Filename);
+			var filename = Path.Combine(objDirectory, objIndex.FileName);
 			var creationTime = objIndex.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG
 				? gameReleaseDate
 				: File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows

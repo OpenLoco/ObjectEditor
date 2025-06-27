@@ -18,7 +18,7 @@ async static void WritexxHash3()
 	{
 		if (index.TryFind((lookup.DatName, lookup.DatChecksum), out var entry))
 		{
-			var filename = Path.Combine(objDirectory, entry.Filename);
+			var filename = Path.Combine(objDirectory, entry.FileName);
 			var bytes = File.ReadAllBytes(filename);
 			lookup.xxHash3 = XxHash3.HashToUInt64(bytes);
 		}
@@ -53,7 +53,7 @@ async static void WriteStringTable()
 	{
 		if (index.TryFind((obj.DatObjects.First().DatName, obj.DatObjects.First().DatChecksum), out var entry))
 		{
-			var filename = Path.Combine(objDirectory, entry.Filename);
+			var filename = Path.Combine(objDirectory, entry.FileName);
 			var bytes = File.ReadAllBytes(filename);
 
 			try
@@ -62,7 +62,7 @@ async static void WriteStringTable()
 
 				if (dat == null)
 				{
-					Console.WriteLine($"Failed to read {entry.Filename}");
+					Console.WriteLine($"Failed to read {entry.FileName}");
 					continue;
 				}
 
@@ -82,7 +82,7 @@ async static void WriteStringTable()
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"Exception, failed to read {entry.Filename}, exception={ex}");
+				Console.WriteLine($"Exception, failed to read {entry.FileName}, exception={ex}");
 				continue;
 			}
 		}

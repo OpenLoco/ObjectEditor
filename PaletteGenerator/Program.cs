@@ -3,6 +3,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System.Text;
 
 // this should really be in OpenLoco/OpenGraphics
+// this program takes as input, a png image, and generates files in specific palette file formats, depending on the method you call.
 
 var baseDir = "Q:\\Games\\Locomotion\\Palettes";
 var paletteFile = Path.Combine(baseDir, "palette.png");

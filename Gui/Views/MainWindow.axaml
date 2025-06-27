@@ -278,7 +278,7 @@
 						<TabItem Margin="0" Padding="0" BorderThickness="0" MaxHeight="32">
 							<TabItem.Header>
 								<StackPanel Orientation="Horizontal" Background="{DynamicResource ButtonBackground}">
-									<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center" ToolTip.Tip="{Binding CurrentFile.Filename}" />
+									<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center" ToolTip.Tip="{Binding CurrentFile.FileName}" />
 									<Button BorderThickness="0" FontSize="12" VerticalAlignment="Center" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}" HotKey="Ctrl+F4" ToolTip.Tip="(Ctrl+F4)">X</Button>
 								</StackPanel>
 							</TabItem.Header>

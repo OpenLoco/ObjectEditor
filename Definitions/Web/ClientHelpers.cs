@@ -26,7 +26,7 @@ namespace OpenLoco.Definitions.Web
 		//	return options;
 		//}
 
-		public static async Task<T?> GetAsync<T>(HttpClient client, string apiRoute, string route, int? resourceId = null, ILogger? logger = null)
+		public static async Task<T?> GetAsync<T>(HttpClient client, string apiRoute, string route, UniqueObjectId? resourceId = null, ILogger? logger = null)
 			=> await SendRequestAsync(
 				client,
 				FormRoute(apiRoute, route, resourceId),
@@ -34,7 +34,7 @@ namespace OpenLoco.Definitions.Web
 				ReadJsonContentAsync<T?>,
 				logger) ?? default;
 
-		public static async Task<bool> DeleteAsync(HttpClient client, string apiRoute, string route, int resourceId, ILogger? logger = null)
+		public static async Task<bool> DeleteAsync(HttpClient client, string apiRoute, string route, UniqueObjectId resourceId, ILogger? logger = null)
 			=> await SendRequestAsync<bool?>(
 				client,
 				FormRoute(apiRoute, route, resourceId),
@@ -50,7 +50,7 @@ namespace OpenLoco.Definitions.Web
 				ReadJsonContentAsync<T?>,
 				logger) ?? default;
 
-		public static async Task<T?> PutAsync<T>(HttpClient client, string apiRoute, string route, int resourceId, T request, ILogger? logger = null)
+		public static async Task<T?> PutAsync<T>(HttpClient client, string apiRoute, string route, UniqueObjectId resourceId, T request, ILogger? logger = null)
 			=> await SendRequestAsync(
 				client,
 				FormRoute(apiRoute, route, resourceId),
@@ -58,7 +58,7 @@ namespace OpenLoco.Definitions.Web
 				ReadJsonContentAsync<T?>,
 				logger) ?? default;
 
-		static string FormRoute(string apiRoute, string baseRoute, int? resourceId)
+		static string FormRoute(string apiRoute, string baseRoute, UniqueObjectId? resourceId)
 			=> resourceId == null
 				? apiRoute + baseRoute
 				: apiRoute + baseRoute + $"/{resourceId}";

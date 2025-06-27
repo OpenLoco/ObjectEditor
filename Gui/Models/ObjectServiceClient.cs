@@ -56,10 +56,10 @@ namespace OpenLoco.Gui.Models
 		public async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync()
 			=> await Client.GetObjectListAsync(WebClient, Logger);
 
-		public async Task<DtoObjectDescriptor?> GetObjectAsync(int id)
+		public async Task<DtoObjectDescriptor?> GetObjectAsync(UniqueObjectId id)
 			=> await Client.GetObjectAsync(WebClient, id, Logger);
 
-		public async Task<byte[]?> GetObjectFileAsync(int id)
+		public async Task<byte[]?> GetObjectFileAsync(UniqueObjectId id)
 			=> await Client.GetObjectFileAsync(WebClient, id, Logger);
 
 		public async Task UploadDatFileAsync(string filename, byte[] datFileBytes, DateTimeOffset creationDate, DateTimeOffset modifiedDate)

@@ -42,11 +42,11 @@ namespace OpenLoco.Definitions.Database
 			return entry != null;
 		}
 
-		public bool TryFind(string internalName, out ObjectIndexEntry? entry)
-		{
-			entry = Objects.FirstOrDefault(x => x.InternalName == internalName);
-			return entry != null;
-		}
+		//public bool TryFind(string internalName, out ObjectIndexEntry? entry)
+		//{
+		//	entry = Objects.FirstOrDefault(x => x.InternalName == internalName);
+		//	return entry != null;
+		//}
 
 		public async Task SaveIndexAsync(string indexFile)
 			=> await JsonFile.SerializeToFileAsync(this, indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
@@ -167,34 +167,33 @@ namespace OpenLoco.Definitions.Database
 			var createdTime = File.GetCreationTimeUtc(absoluteFilename);
 			var modifiedTime = File.GetLastWriteTimeUtc(absoluteFilename);
 
-			var internalName = Guid.NewGuid().ToString();
-
 			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
 			{
 				var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
 				var vType = (VehicleType)decoded[3];
-				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, internalName, hdrs.S5.ObjectType, source, createdTime, modifiedTime, vType);
+				return new ObjectIndexEntry(hdrs.S5.Name, relativeFilename, null, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime, vType);
 			}
 			else
 			{
-				return new ObjectIndexEntry(relativeFilename, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, internalName, hdrs.S5.ObjectType, source, createdTime, modifiedTime);
+				return new ObjectIndexEntry(hdrs.S5.Name, relativeFilename, null, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime);
 			}
 		}
 	}
 
 	public record ObjectIndexEntry(
-		string Filename,
-		string? DisplayName, // DatName for DAT-only objects, or DisplayName for OpenLoco objects
+		string DisplayName,
+		string? FileName, // only available in local mode
+		UniqueObjectId? Id, // only available in online-mode
 		uint32_t? DatChecksum,
 		ulong? xxHash3,
-		string? InternalName,
 		ObjectType ObjectType,
 		ObjectSource ObjectSource,
 		DateTimeOffset? CreatedDate,
 		DateTimeOffset? ModifiedDate,
 		VehicleType? VehicleType = null)
 	{
+		[JsonIgnore]
 		public string SimpleText
-			=> $"{DisplayName} | {Filename}";
+			=> $"{DisplayName} | {FileName}";
 	}
 }

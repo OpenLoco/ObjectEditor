@@ -13,13 +13,13 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class SoundEffectsViewModel : BaseLocoFileViewModel
 	{
-		public SoundEffectsViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public SoundEffectsViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
 		public override void Load()
 		{
 			var soundIdNames = Enum.GetValues<SoundId>();
-			SoundViewModels = SawyerStreamReader.LoadSoundEffectsFromCSS(CurrentFile.Filename)
+			SoundViewModels = SawyerStreamReader.LoadSoundEffectsFromCSS(CurrentFile.FileName)
 				.Select((x, i) => new AudioViewModel(soundIdNames[i].ToString(), x.header, x.data))
 				.ToBindingList();
 		}
@@ -30,7 +30,7 @@ namespace OpenLoco.Gui.ViewModels
 		public override void Save()
 		{
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
-				? CurrentFile.Filename
+				? CurrentFile.FileName
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 			logger?.Info($"Saving sound effects to {savePath}");

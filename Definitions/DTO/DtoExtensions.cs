@@ -27,7 +27,7 @@ namespace OpenLoco.Definitions.DTO
 				[.. x.Object.DatObjects.Select(x => x.ToDtoEntry())],
 				x.Object.StringTable.ToDtoDescriptor(x.Object.Id));
 
-		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTable> x, DbKey ObjectId)
+		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTable> x, UniqueObjectId ObjectId)
 		{
 			var table = x
 				.Select(x => x.ToDtoEntry())

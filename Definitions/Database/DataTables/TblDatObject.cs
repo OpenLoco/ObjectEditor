@@ -12,7 +12,7 @@ namespace OpenLoco.Definitions.Database
 
 		public required ulong xxHash3 { get; set; } // technically a byte[], but we'll use 64-bit int for faster comparison
 
-		public required DbKey ObjectId { get; set; } // FK property
+		public required UniqueObjectId ObjectId { get; set; } // FK property
 
 		public TblObject Object { get; set; } // navigation property. a DAT object must ALWAYS reference an OL object
 	}

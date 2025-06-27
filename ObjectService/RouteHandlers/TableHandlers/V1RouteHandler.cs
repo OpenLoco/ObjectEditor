@@ -19,7 +19,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 	public static class V1DtoExtensions
 	{
 		public record V1DtoObjectDescriptor(
-			DbKey Id,
+			UniqueObjectId Id,
 			string DatName,
 			uint DatChecksum,
 			ObjectSource ObjectSource,
@@ -46,7 +46,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				table.UploadedDate);
 
 		public record V1DtoObjectDescriptorWithMetadata(
-			DbKey Id,
+			UniqueObjectId Id,
 			string UniqueName,
 			string DatName,
 			uint DatChecksum,
@@ -193,9 +193,9 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
-		public static async Task<IResult> GetObjectImages(DbKey uniqueObjectId, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetObjectImages(UniqueObjectId uniqueObjectId, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
-			Console.WriteLine($"Object [{uniqueObjectId}] requested with images");
+			logger.LogDebug($"Object [{uniqueObjectId}] requested with images");
 
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
@@ -215,7 +215,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				return Results.NotFound();
 			}
 
-			var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
+			var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.FileName); // handle windows paths by replacing path separator
 			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
 			var fileExists = File.Exists(pathOnDisk);
@@ -296,7 +296,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			var obj = eObj!.Object;
 
-			var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
+			var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.FileName); // handle windows paths by replacing path separator
 			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
 			var fileExists = File.Exists(pathOnDisk);
@@ -388,7 +388,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			const string contentType = "application/octet-stream";
 
-			var path = Path.Combine(sfm.ObjectsFolder, entry!.Filename);
+			var path = Path.Combine(sfm.ObjectsFolder, entry!.FileName);
 			return obj != null && File.Exists(path)
 				? Results.File(path, contentType, Path.GetFileName(path))
 				: Results.NotFound();
@@ -550,6 +550,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
 				ObjectType = hdrs.S5.ObjectType,
 				VehicleType = vehicleType,
+				Availability = request.InitialAvailability,
 				CreatedDate = createdDate,
 				ModifiedDate = modifiedDate,
 				UploadedDate = DateTimeOffset.UtcNow,
@@ -558,9 +559,6 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				ObjectPacks = [],
 				Licence = null,
 			};
-
-			sfm.ObjectIndex.Objects.Add(
-				new ObjectIndexEntry(saveFileName, hdrs.S5.Name, hdrs.S5.Checksum, request.xxHash3, uuid.ToString(), locoTbl.ObjectType, locoTbl.ObjectSource, createdDate, modifiedDate, locoTbl.VehicleType));
 			var addedObj = db.Objects.Add(locoTbl);
 
 			var locoLookupTbl = new TblDatObject()
@@ -571,11 +569,13 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				ObjectId = addedObj.Entity.Id,
 				Object = locoTbl,
 			};
-			_ = db.DatObjects.Add(locoLookupTbl);
-
 			locoTbl.DatObjects.Add(locoLookupTbl);
 
+			_ = db.DatObjects.Add(locoLookupTbl);
 			_ = await db.SaveChangesAsync();
+
+			sfm.ObjectIndex.Objects.Add(
+				new ObjectIndexEntry(hdrs.S5.Name, saveFileName, locoTbl.Id, hdrs.S5.Checksum, request.xxHash3, locoTbl.ObjectType, locoTbl.ObjectSource, createdDate, modifiedDate, locoTbl.VehicleType));
 
 			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}

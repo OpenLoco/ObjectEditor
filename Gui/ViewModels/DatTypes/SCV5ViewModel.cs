@@ -50,7 +50,7 @@ namespace OpenLoco.Gui.ViewModels
 		public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.Locomotion;
 		public ReactiveCommand<GameObjDataFolder, Unit> DownloadMissingObjectsToGameObjDataCommand { get; }
 
-		public SCV5ViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model)
 		{
 			Load();
@@ -86,7 +86,7 @@ namespace OpenLoco.Gui.ViewModels
 					logger.Info("Online index doesn't exist - downloading now");
 
 					model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
-						.Select(x => new ObjectIndexEntry(x.Id.ToString(), x.DisplayName, x.DatChecksum, null, x.InternalName, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
+						.Select(x => new ObjectIndexEntry(x.DisplayName, null, x.Id, x.DatChecksum, null, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
 
 					logger.Info("Index downloaded");
 					// technically should check if the index is downloaded and valid now
@@ -118,7 +118,7 @@ namespace OpenLoco.Gui.ViewModels
 						continue;
 					}
 
-					if (!int.TryParse(onlineObj.Filename, out var id))
+					if (!UniqueObjectId.TryParse(onlineObj.FileName, out var id))
 					{
 						// couldn't get the id from the name, which is set into Filename. see FolderTreeViewModel::LoadOnlineDirectoryAsync() for more details
 						logger.Error("Couldn't get object id from its filename");
@@ -135,7 +135,7 @@ namespace OpenLoco.Gui.ViewModels
 					}
 
 					// write file to the selected directory
-					var filename = $"{Path.Combine(folder, onlineObj.DisplayName ?? onlineObj.InternalName ?? onlineObj.Filename)}.dat";
+					var filename = $"{Path.Combine(folder, onlineObj.DisplayName ?? onlineObj.FileName)}-{onlineObj.Id}.dat";
 
 					if (File.Exists(filename))
 					{
@@ -159,12 +159,12 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void Load()
 		{
-			logger?.Info($"Loading scenario from {CurrentFile.Filename}");
-			CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.Filename, Model.Logger);
+			logger?.Info($"Loading scenario from {CurrentFile.FileName}");
+			CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.FileName, Model.Logger);
 
 			if (CurrentS5File == null)
 			{
-				logger?.Error($"Unable to load {CurrentFile.Filename}");
+				logger?.Error($"Unable to load {CurrentFile.FileName}");
 				return;
 			}
 

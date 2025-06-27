@@ -31,10 +31,10 @@ namespace ObjectService.RouteHandlers
 				THandler.GetBaseRoute(),
 				db);
 
-		public static async Task<IResult> ReadAsync(DbKey id, LocoDbContext db)
+		public static async Task<IResult> ReadAsync(UniqueObjectId id, LocoDbContext db)
 			=> await BaseDataTableRouteHandlerImpl.ReadAsync(THandler.GetTable(db), THandler.ToDtoFunc, id, db);
 
-		public static async Task<IResult> UpdateAsync(DbKey id, TDto request, LocoDbContext db)
+		public static async Task<IResult> UpdateAsync(UniqueObjectId id, TDto request, LocoDbContext db)
 			=> await BaseDataTableRouteHandlerImpl.UpdateAsync(
 				THandler.GetTable(db),
 				THandler.ToDtoFunc,
@@ -46,7 +46,7 @@ namespace ObjectService.RouteHandlers
 				db,
 				THandler.UpdateFunc);
 
-		public static async Task<IResult> DeleteAsync(DbKey id, LocoDbContext db)
+		public static async Task<IResult> DeleteAsync(UniqueObjectId id, LocoDbContext db)
 			=> await BaseDataTableRouteHandlerImpl.DeleteAsync(THandler.GetTable(db), THandler.ToDtoFunc, id, db);
 
 		public static async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
@@ -71,14 +71,14 @@ namespace ObjectService.RouteHandlers
 			return Results.Created($"{baseRoute}/{row.Id}", dtoConverter(row));
 		}
 
-		public static async Task<IResult> ReadAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, DbKey id, LocoDbContext db)
+		public static async Task<IResult> ReadAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, UniqueObjectId id, LocoDbContext db)
 			where TDto : class, IHasId
 			where TRow : class, IHasId
 			=> await table.FindAsync(id) is TRow row
 				? Results.Ok(dtoConverter(row))
 				: Results.NotFound();
 
-		public static async Task<IResult> UpdateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, DbKey id, LocoDbContext db, Action<TDto, TRow> updateFunc)
+		public static async Task<IResult> UpdateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, UniqueObjectId id, LocoDbContext db, Action<TDto, TRow> updateFunc)
 			where TDto : class, IHasId
 			where TRow : class, IHasId
 		{
@@ -92,7 +92,7 @@ namespace ObjectService.RouteHandlers
 			return Results.Accepted($"{baseRoute}/{row.Id}", dtoConverter(row));
 		}
 
-		public static async Task<IResult> DeleteAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, DbKey id, LocoDbContext db)
+		public static async Task<IResult> DeleteAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, UniqueObjectId id, LocoDbContext db)
 			where TDto : class, IHasId
 			where TRow : class, IHasId
 		{

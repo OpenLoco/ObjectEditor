@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace OpenLoco.Definitions.Database
 {
-	public class TblUser : IdentityUser<DbKey>, IHasId
+	public class TblUser : IdentityUser<UniqueObjectId>, IHasId
 	{
-		public DbKey? AssociatedAuthorId { get; set; }
+		public UniqueObjectId? AssociatedAuthorId { get; set; }
 		public TblAuthor? AssociatedAuthor { get; set; }
 	}
 }

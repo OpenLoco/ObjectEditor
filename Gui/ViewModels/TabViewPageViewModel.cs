@@ -52,7 +52,7 @@ namespace OpenLoco.Gui.ViewModels
 		{
 			if (OpenInNewTab)
 			{
-				var existing = Documents.SingleOrDefault(x => x.CurrentFile.Filename == model.CurrentFile.Filename);
+				var existing = Documents.SingleOrDefault(x => x.CurrentFile.FileName == model.CurrentFile.FileName);
 				if (existing != null)
 				{
 					SelectedDocument = existing;
@@ -80,7 +80,7 @@ namespace OpenLoco.Gui.ViewModels
 			Documents.Add(tabToKeep);
 		}
 
-		public bool DocumentExistsWithFile(FileSystemItemBase fsi)
+		public bool DocumentExistsWithFile(FileSystemItem fsi)
 			=> Documents.Any(x => x.CurrentFile == fsi);
 	}
 }

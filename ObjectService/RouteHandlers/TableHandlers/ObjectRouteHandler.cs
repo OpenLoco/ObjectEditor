@@ -106,11 +106,12 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			var locoTbl = new TblObject()
 			{
-				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name
+				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name. this is NOT unique
 				Description = string.Empty,
 				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
 				ObjectType = hdrs.S5.ObjectType,
 				VehicleType = vehicleType,
+				Availability = request.InitialAvailability,
 				CreatedDate = creationTime,
 				ModifiedDate = null,
 				UploadedDate = DateTimeOffset.UtcNow,
@@ -123,16 +124,16 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 
-			sfm.ObjectIndex.Objects.Add(
-				new ObjectIndexEntry(saveFileName, hdrs.S5.Name, hdrs.S5.Checksum, xxHash3, uuid.ToString(), locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.CreatedDate, locoTbl.UploadedDate, locoTbl.VehicleType));
-
 			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();
+
+			sfm.ObjectIndex.Objects.Add(
+				new ObjectIndexEntry(hdrs.S5.Name, saveFileName, locoTbl.Id, hdrs.S5.Checksum, xxHash3, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.CreatedDate, locoTbl.UploadedDate, locoTbl.VehicleType));
 
 			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 
-		static async Task<IResult> ReadAsync([FromRoute] DbKey id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			var eObj = await db.Objects
 				.Where(x => x.Id == id)
@@ -146,10 +147,10 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return ReturnObject(eObj, sfm, logger);
 		}
 
-		static async Task<IResult> UpdateAsync([FromRoute] DbKey id, DtoObjectDescriptor request, LocoDbContext db)
+		static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		static async Task<IResult> DeleteAsync([FromRoute] DbKey id, LocoDbContext db)
+		static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 		static async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
@@ -225,7 +226,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/{id}/images
-		static async Task<IResult> GetObjectImages([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
+		static async Task<IResult> GetObjectImages([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			// currently we MUST have a DAT backing object
 			logger.LogInformation("Object [{uniqueObjectId}] requested with images", id);
@@ -255,7 +256,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				return Results.NotFound();
 			}
 
-			var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.Filename); // handle windows paths by replacing path separator
+			var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.FileName); // handle windows paths by replacing path separator
 			logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
 			var fileExists = File.Exists(pathOnDisk);
@@ -272,6 +273,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			}
 
 			var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
+
 			var locoObj = SawyerStreamReader.LoadFullObjectFromFile(pathOnDisk, dummyLogger, true);
 
 			await using var memoryStream = new MemoryStream();
@@ -305,7 +307,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/objects/114
-		static async Task<IResult> GetObjectFile([FromRoute] DbKey id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
+		static async Task<IResult> GetObjectFile([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
@@ -318,7 +320,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 		static IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 		{
-			Console.WriteLine("[ReturnObject]");
+			logger.LogTrace("[ReturnObject]");
 
 			if (eObj == null || eObj.Object == null)
 			{
@@ -327,7 +329,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			if (eObj.Object.Availability == Definitions.ObjectAvailability.Unavailable)
 			{
-				logger.LogWarning("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", eObj.Object.Id, eObj.Object.Name);
+				logger.LogError("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", eObj.Object.Id, eObj.Object.Name);
 				return Results.Forbid();
 			}
 
@@ -335,29 +337,35 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			foreach (var dat in obj.DatObjects)
 			{
-				if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry))
+				if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
 				{
-					Console.WriteLine("Object {datFile} didn't exist in the object index", dat);
+					logger.LogWarning("Object {datFile} didn't exist in the object index", dat);
 					continue;
 				}
 
-				var path = Path.Combine(sfm.ObjectsFolder, entry!.Filename);
+				if (entry.FileName == null)
+				{
+					logger.LogWarning("Object {datFile} has a null filename - suggest re-indexing the current folder", dat);
+					continue;
+				}
+
+				var path = Path.Combine(sfm.ObjectsFolder, entry.FileName);
 
 				if (!File.Exists(path))
 				{
-					Console.WriteLine("Object {datFile} existed in the object index but not on disk. ExpectedPath=\"{path}\"", dat, path);
+					logger.LogWarning("Object {datFile} existed in the object index but not on disk. ExpectedPath=\"{path}\"", dat, path);
+					continue;
 				}
 
 				if (eObj.Object.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 				{
-					Console.WriteLine("User attempted to download a vanilla object");
+					logger.LogWarning("User attempted to download a vanilla object");
 					dat.DatBytes = null;
 				}
 				else
 				{
 					dat.DatBytes = Convert.ToBase64String(File.ReadAllBytes(path));
 				}
-
 			}
 
 			return Results.Ok(obj);
@@ -387,7 +395,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			const string contentType = "application/octet-stream";
 
-			var path = Path.Combine(sfm.ObjectsFolder, index!.Filename);
+			var path = Path.Combine(sfm.ObjectsFolder, index!.FileName);
 
 			if (!File.Exists(path))
 			{

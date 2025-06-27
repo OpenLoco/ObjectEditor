@@ -30,13 +30,13 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		static async Task<IResult> CreateAsync(DtoScenarioEntry request)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		static async Task<IResult> ReadAsync([FromRoute] DbKey Id)
+		static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId Id)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		static async Task<IResult> UpdateAsync([FromRoute] DbKey Id, DtoScenarioEntry request)
+		static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId Id, DtoScenarioEntry request)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		static async Task<IResult> DeleteAsync([FromRoute] DbKey Id)
+		static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId Id)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 }

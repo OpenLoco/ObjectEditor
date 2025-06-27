@@ -12,7 +12,7 @@ namespace OpenLoco.Gui.ViewModels
 {
 	public class G1ViewModel : BaseLocoFileViewModel
 	{
-		public G1ViewModel(FileSystemItemBase currentFile, ObjectEditorModel model)
+		public G1ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 			: base(currentFile, model) => Load();
 
 		[Reactive]
@@ -20,12 +20,12 @@ namespace OpenLoco.Gui.ViewModels
 
 		public override void Load()
 		{
-			logger.Info($"Loading G1 from {CurrentFile.Filename}");
-			Model.G1 = SawyerStreamReader.LoadG1(CurrentFile.Filename, Model.Logger);
+			logger.Info($"Loading G1 from {CurrentFile.FileName}");
+			Model.G1 = SawyerStreamReader.LoadG1(CurrentFile.FileName, Model.Logger);
 
 			if (Model.G1 == null)
 			{
-				logger.Error($"G1 was unable to be loaded from {CurrentFile.Filename}");
+				logger.Error($"G1 was unable to be loaded from {CurrentFile.FileName}");
 				return;
 			}
 
@@ -61,7 +61,7 @@ namespace OpenLoco.Gui.ViewModels
 			}
 
 			var savePath = CurrentFile.FileLocation == FileLocation.Local
-				? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.Filename)
+				? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.FileName)
 				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 			logger?.Info($"Saving G1.dat to {savePath}");

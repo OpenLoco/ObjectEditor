@@ -1,3 +1,4 @@
+using Definitions;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 
@@ -10,6 +11,8 @@ namespace OpenLoco.Definitions.Database
 		public ObjectType ObjectType { get; set; }
 
 		public VehicleType? VehicleType { get; set; }
+
+		public ObjectAvailability Availability { get; set; }
 
 		public ICollection<TblObjectPack> ObjectPacks { get; set; } = []; // aka modpack
 

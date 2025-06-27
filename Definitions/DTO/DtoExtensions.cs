@@ -11,10 +11,12 @@ namespace OpenLoco.Definitions.DTO
 				x!.Object.Id,
 				x!.Object.Name,
 				x!.Object.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
+				x!.Object.DatObjects.FirstOrDefault()?.DatChecksum ?? 0,
 				x!.Object.Description,
 				x!.Object.ObjectSource,
 				x!.Object.ObjectType,
 				x!.Object.VehicleType,
+				x!.Object.Availability,
 				x!.Object.CreatedDate,
 				x!.Object.ModifiedDate,
 				x!.Object.UploadedDate,
@@ -91,7 +93,7 @@ namespace OpenLoco.Definitions.DTO
 			=> new() { Id = dto.Id, DatName = dto.DatName, DatChecksum = dto.DatChecksum, xxHash3 = dto.xxHash3, ObjectId = dto.ObjectId };
 
 		public static DtoObjectEntry ToDtoEntry(this TblObject table)
-			=> new(table.Id, table.Name, table.DatObjects.FirstOrDefault()?.DatName ?? "<--->", table.DatObjects.FirstOrDefault()?.DatChecksum, table.Description, table.ObjectSource, table.ObjectType, table.VehicleType, table.CreatedDate, table.ModifiedDate, table.UploadedDate);
+			=> new(table.Id, table.Name, table.DatObjects.FirstOrDefault()?.DatName ?? "<--->", table.DatObjects.FirstOrDefault()?.DatChecksum, table.Description, table.ObjectSource, table.ObjectType, table.VehicleType, table.Availability, table.CreatedDate, table.ModifiedDate, table.UploadedDate);
 
 		public static TblObject ToTable(this DtoObjectEntry dto)
 			=> new() { Id = dto.Id, Name = dto.InternalName, Description = dto.Description, ObjectSource = dto.ObjectSource, ObjectType = dto.ObjectType, VehicleType = dto.VehicleType, CreatedDate = dto.CreatedDate, ModifiedDate = dto.ModifiedDate, UploadedDate = dto.UploadedDate };

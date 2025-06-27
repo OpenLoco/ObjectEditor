@@ -1,4 +1,5 @@
 using Common.Json;
+using Definitions;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
@@ -205,7 +206,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 			var metadataKey = objIndex.DisplayName; // should be InternalName
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{
-				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
+				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, ObjectAvailability.Available, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
 				meta = newMetadata;
 				objectMetadataDict.Add(objIndex.DisplayName, newMetadata);
 			}

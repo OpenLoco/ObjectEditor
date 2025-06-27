@@ -113,6 +113,7 @@ foreach (var o in db.DatObjects
 		[.. o.Tags.Select(t => t.Name)],
 		[.. o.Packs.Select(m => m.Name)],
 		o.Object.Licence?.Name,
+		o.Object.Availability,
 		o.Object.CreatedDate,
 		o.Object.ModifiedDate,
 		o.Object.UploadedDate,

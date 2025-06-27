@@ -289,6 +289,7 @@ namespace OpenLoco.Gui.Models
 					ObjectPacks = [.. cachedLocoObjDto.ObjectPacks.Select(x => x.ToTable())],
 					DatObjects = [.. cachedLocoObjDto.DatObjects.Select(x => x.ToTable())],
 					Licence = cachedLocoObjDto.Licence?.ToTable(),
+					Availability = cachedLocoObjDto.Availability,
 				};
 
 				if (locoObject != null)

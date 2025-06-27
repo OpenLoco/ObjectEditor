@@ -1,3 +1,4 @@
+using Definitions;
 using OpenLoco.Dat.Data;
 
 namespace OpenLoco.Definitions.SourceData
@@ -9,6 +10,7 @@ namespace OpenLoco.Definitions.SourceData
 		List<string> Tags,
 		List<string> ObjectPacks,
 		string? Licence,
+		ObjectAvailability Availability,
 		DateTimeOffset? CreatedDate,
 		DateTimeOffset? ModifiedDate,
 		DateTimeOffset UploadedDate,

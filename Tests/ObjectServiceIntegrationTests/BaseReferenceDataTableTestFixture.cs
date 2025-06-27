@@ -56,7 +56,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		public virtual async Task ListAsync()
 		{
 			// act
-			var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, BaseRoute);
+			var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute);
 
 			// assert
 			Assert.Multiple(() =>
@@ -71,7 +71,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		{
 			// act
 			const int id = 2;
-			var results = await ClientHelpers.GetAsync<TDto>(HttpClient!, BaseRoute, id);
+			var results = await ClientHelpers.GetAsync<TDto>(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute, id);
 
 			// assert
 			Assert.That(results, Is.EqualTo(SeedData.ToList()[id - 1]));
@@ -82,12 +82,12 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		{
 			// act
 			const int id = 1;
-			var results = await ClientHelpers.DeleteAsync(HttpClient!, BaseRoute, id);
+			var results = await ClientHelpers.DeleteAsync(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute, id);
 
 			// assert
 			Assert.Multiple(async () =>
 			{
-				var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, BaseRoute);
+				var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute);
 				Assert.That(results.First(), Is.EqualTo(SeedData.ToList()[id]));
 			});
 		}
@@ -96,7 +96,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		public async Task PostAsync()
 		{
 			// act
-			var results = await ClientHelpers.PostAsync(HttpClient!, BaseRoute, ExtraSeedDatum);
+			var results = await ClientHelpers.PostAsync(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute, ExtraSeedDatum);
 
 			// assert
 			Assert.That(results, Is.EqualTo(ExtraSeedDatum));
@@ -107,7 +107,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		{
 			// act
 			const int id = 1;
-			var results = await ClientHelpers.PutAsync(HttpClient!, BaseRoute, id, ExtraSeedDatum);
+			var results = await ClientHelpers.PutAsync(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute, id, ExtraSeedDatum);
 
 			// assert
 			Assert.That(results.Id, Is.EqualTo(id));

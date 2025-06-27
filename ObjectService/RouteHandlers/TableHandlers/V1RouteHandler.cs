@@ -12,13 +12,13 @@ using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
-using static ObjectService.RouteHandlers.TableHandlers.LegacyDtoExtensions;
+using static ObjectService.RouteHandlers.TableHandlers.V1DtoExtensions;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {
-	public static class LegacyDtoExtensions
+	public static class V1DtoExtensions
 	{
-		public record LegacyDtoObjectDescriptor(
+		public record V1DtoObjectDescriptor(
 			DbKey Id,
 			string DatName,
 			uint DatChecksum,
@@ -31,7 +31,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			DateTimeOffset? LastEditDate,
 			DateTimeOffset UploadDate);
 
-		public static LegacyDtoObjectDescriptor ToDtoEntryLegacy(this TblObject table)
+		public static V1DtoObjectDescriptor ToDtoEntryLegacy(this TblObject table)
 			=> new(
 				table.Id,
 				table.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
@@ -45,7 +45,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				table.ModifiedDate,
 				table.UploadedDate);
 
-		public record LegacyDtoObjectDescriptorWithMetadata(
+		public record V1DtoObjectDescriptorWithMetadata(
 			DbKey Id,
 			string UniqueName,
 			string DatName,
@@ -184,7 +184,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			var eObj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Include(x => x.Licence)
-				.Where(x => x.DatObjects.First().DatName == datName && x.DatObjects.First().DatChecksum == datChecksum)
+				.Where(x => x.DatObjects.First().DatName == datName && x.DatObjects.First().DatChecksum == datChecksum && x.Availability == Definitions.ObjectAvailability.Available)
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
@@ -199,7 +199,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
-				.Where(x => x.Id == uniqueObjectId)
+				.Where(x => x.Id == uniqueObjectId && x.Availability == Definitions.ObjectAvailability.Available)
 				.SingleOrDefaultAsync();
 
 			if (obj == null)
@@ -271,7 +271,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			logger.LogInformation("Object [{UniqueObjectId}] requested", uniqueObjectId);
 
 			var eObj = await db.Objects
-				.Where(x => (int)x.Id == uniqueObjectId)
+				.Where(x => (int)x.Id == uniqueObjectId && x.Availability == Definitions.ObjectAvailability.Available)
 				.Include(x => x.Licence)
 				.Include(x => x.DatObjects)
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
@@ -309,7 +309,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				? Convert.ToBase64String(await File.ReadAllBytesAsync(pathOnDisk))
 				: null;
 
-			var result = new LegacyDtoObjectDescriptorWithMetadata(
+			var result = new V1DtoObjectDescriptorWithMetadata(
 				obj.Id,
 				obj.Name,
 				obj.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
@@ -335,7 +335,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		{
 			var obj = await db.DatObjects
 				.Include(x => x.Object)
-				.Where(x => x.DatName == datName && x.DatChecksum == datChecksum)
+				.Where(x => x.DatName == datName && x.DatChecksum == datChecksum && x.Object.Availability == Definitions.ObjectAvailability.Available)
 				.SingleOrDefaultAsync();
 
 			if (obj == null)
@@ -352,7 +352,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		{
 			var obj = await db.DatObjects
 				.Include(x => x.Object)
-				.Where(x => (int)x.Object.Id == uniqueObjectId)
+				.Where(x => (int)x.Object.Id == uniqueObjectId && x.Object.Availability == Definitions.ObjectAvailability.Available)
 				.FirstOrDefaultAsync(); // may be more than one dat file associated with this object, so just get the first for now
 
 			if (obj == null)

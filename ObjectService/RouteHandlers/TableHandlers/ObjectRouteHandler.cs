@@ -132,7 +132,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 		}
 
-		static async Task<IResult> ReadAsync([FromRoute] DbKey id, LocoDbContext db, [FromServices] IServiceProvider sp)
+		static async Task<IResult> ReadAsync([FromRoute] DbKey id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			var eObj = await db.Objects
 				.Where(x => x.Id == id)
@@ -143,7 +143,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.SingleOrDefaultAsync();
 
 			var sfm = sp.GetRequiredService<ServerFolderManager>();
-			return ReturnObject(eObj, sfm);
+			return ReturnObject(eObj, sfm, logger);
 		}
 
 		static async Task<IResult> UpdateAsync([FromRoute] DbKey id, DtoObjectDescriptor request, LocoDbContext db)
@@ -240,6 +240,12 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				return Results.NotFound();
 			}
 
+			if (obj.Availability == Definitions.ObjectAvailability.Unavailable)
+			{
+				logger.LogWarning("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", obj.Id, obj.Name);
+				return Results.Forbid();
+			}
+
 			var sfm = sp.GetRequiredService<ServerFolderManager>();
 			var pm = sp.GetRequiredService<PaletteMap>();
 
@@ -255,13 +261,13 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			var fileExists = File.Exists(pathOnDisk);
 			if (!fileExists)
 			{
-				//logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder.", pathOnDisk);
+				logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder", pathOnDisk);
 				return Results.NotFound();
 			}
 
 			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 			{
-				//logger.LogWarning("Indexed object is a vanilla object.");
+				logger.LogWarning("Indexed object is a vanilla object");
 				return Results.Forbid();
 			}
 
@@ -307,16 +313,22 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.SingleOrDefaultAsync();
 
 			var sfm = sp.GetRequiredService<ServerFolderManager>();
-			return ReturnFile(obj, logger, sfm);
+			return ReturnFile(obj, sfm, logger);
 		}
 
-		static IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj, ServerFolderManager sfm)
+		static IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 		{
 			Console.WriteLine("[ReturnObject]");
 
 			if (eObj == null || eObj.Object == null)
 			{
 				return Results.NotFound();
+			}
+
+			if (eObj.Object.Availability == Definitions.ObjectAvailability.Unavailable)
+			{
+				logger.LogWarning("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", eObj.Object.Id, eObj.Object.Name);
+				return Results.Forbid();
 			}
 
 			var obj = eObj.ToDtoDescriptor();
@@ -351,7 +363,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return Results.Ok(obj);
 		}
 
-		static IResult ReturnFile(TblObject? obj, ILogger<ObjectRouteHandler> logger, ServerFolderManager sfm)
+		static IResult ReturnFile(TblObject? obj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogDebug("[ReturnFile]");
 

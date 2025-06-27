@@ -1,3 +1,4 @@
+using Definitions;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 
@@ -12,6 +13,7 @@ namespace OpenLoco.Definitions.DTO
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
+		ObjectAvailability Availability,
 		DateTimeOffset? CreatedDate,
 		DateTimeOffset? ModifiedDate,
 		DateTimeOffset UploadedDate);

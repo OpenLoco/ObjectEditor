@@ -81,6 +81,7 @@
 									<RowDefinition Height="Auto"/>
 									<RowDefinition Height="Auto"/>
 									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
 								</Grid.RowDefinitions>
 								<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="4"/>
 								<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="4" />
@@ -96,6 +97,9 @@
 
 								<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
 								<TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="4" />
+
+								<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="4"/>
+								<TextBox Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="4" />
 							</Grid>
 							<StackPanel>
 								<Border BorderThickness="1" Margin="4" >

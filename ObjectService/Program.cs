@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +6,6 @@ using OpenLoco.Dat;
 using OpenLoco.Definitions.Database;
 using OpenLoco.ObjectService;
 using Scalar.AspNetCore;
-using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,8 +26,8 @@ builder.Services.AddDbContext<LocoDbContext>(options =>
 });
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-//builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+// this breaks the client side, even if the same converter is added...
+//builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 var objRoot = builder.Configuration["ObjectService:RootFolder"];
 var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];

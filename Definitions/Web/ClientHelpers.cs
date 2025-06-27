@@ -19,6 +19,13 @@ namespace OpenLoco.Definitions.Web
 		internal static async Task<T?> ReadJsonContentAsync<T>(HttpContent content)
 			=> await content.ReadFromJsonAsync<T?>();
 
+		//static JsonSerializerOptions GetDefaultSerializerOptions()
+		//{
+		//	var options = new JsonSerializerOptions();
+		//	//options.Converters.Add(new JsonStringEnumConverter());
+		//	return options;
+		//}
+
 		public static async Task<T?> GetAsync<T>(HttpClient client, string apiRoute, string route, int? resourceId = null, ILogger? logger = null)
 			=> await SendRequestAsync(
 				client,

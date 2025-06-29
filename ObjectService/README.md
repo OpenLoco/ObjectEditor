@@ -26,50 +26,8 @@ You can technically manually call the `uploaddat` route but this is intended pri
 - `sudo journalctl -u objectservice.service`
 
 ## API
-
-### GET
-- `/objects/list`
-  - Description: Returns a list of all objects indexed/available to view/download from the repository. Primary purpose is for all consumers to do object discovery.
-  - Example: `https://openloco.leftofzen.dev/objects/list`
-- `/objects/getdat?{objectName}&{checksum}&{returnObjBytes}`
-  - Description: Returns a specific object keyed off its object name and checksum. Primary purpose is for the Object Editor to retrieve objects and metadata.
-  - Parameters:
-      - `objectName`: the name of the object as per it's S5Header::Name property.
-      - `checksum`: the checksum of the file as per its S5Header::Checksum property.
-     - `returnObjBytes`: an optional parameter. `true` is you want the original byte[] for the object to be included, `false` if not.
-  - Example: `https://openloco.leftofzen.dev/objects/getdat?objectName=M6SBO&checksum=2032077333&returnObjBytes=false`
-- `/objects/getobject?{uniqueObjectId}&{returnObjBytes}`
-  - Description: Returns a specific object keyed off its unique ID in the repository.  Primary purpose is for the Object Editor to retrieve objects and metadata.
-  - Parameters:
-      - `uniqueObjectId`: the unique ID of an object in the repository.
-     - `returnObjBytes`: an optional parameter. `true` is you want the original byte[] for the object to be included, `false` if not.
-  - Example: `https://openloco.leftofzen.dev/objects/getobject?uniqueObjectId=1024&returnObjBytes=false`
-- `/objects/getdatfile?{objectName}&{checksum}`
-  - Description: Returns a dat file keyed off its object name and checksum. Primary purpose is for OpenLoco to download specific objects.
-  - Parameters:
-      - `objectName`: the name of the object as per it's S5Header::Name property.
-      - `checksum`: the checksum of the file as per its S5Header::Checksum property.
-  - Example: `https://openloco.leftofzen.dev/objects/getdatfile?objectName=M6SBO&checksum=2032077333`
-- `/objects/getobjectfile?{uniqueObjectId}`
-  - Description: Returns a dat file keyed off its unique ID in the repository. Primary purpose is for OpenLoco to download specific objects.
-  - Parameters:
-      - `uniqueObjectId`: the unique ID of an object in the repository.
-  - Example: `https://openloco.leftofzen.dev/objects/getobjectfile?uniqueObjectId=1024`
-
-### POST
-- `/objects/uploaddat`
-  - Uploads a given dat file to the object repository.
-  - Content type: `application/json`
-  - Parameters:
-    -  `datBytesAsBase64`: a string that is the base64 encoding of the raw bytes of the dat file
-    - `creationDate`: a `DateTimeOffset` representing the creation date of the dat file. If using the Object Editor, it will use [`File.GetLastWriteTimeUtc()`](https://learn.microsoft.com/en-us/dotnet/api/system.io.file.getlastwritetimeutc?view=net-8.0), which on Windows is the "Modified" time for a file. For historical dat files, this is the only way to get a creation date and it may be incorrect or inaccurate.
-  - Example request body:
-    ```
-    {
-      "datBytesAsBase64": "c29tZSBraW5kIG9mIGVhc3RlciBlZ2c=",
-      "creationDate": "2024-08-29T08:52:17.372Z"
-    }
-    ```
+- See https://openloco.leftofzen.dev/api/
+- To check status of the service, query https://openloco.leftofzen.dev/health/
 
 ## Technical Details
 

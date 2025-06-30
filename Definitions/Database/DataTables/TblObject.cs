@@ -18,6 +18,6 @@ namespace OpenLoco.Definitions.Database
 
 		public ICollection<TblDatObject> DatObjects { get; set; } = []; // the DAT objects that created or reference this OpenLoco object. May be 0, may be multiple
 
-		public ICollection<TblStringTable> StringTable { get; set; } = [];
+		public ICollection<TblStringTableRow> StringTable { get; set; } = [];
 	}
 }

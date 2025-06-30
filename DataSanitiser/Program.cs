@@ -43,7 +43,7 @@ async static void WriteStringTable()
 	var logger = new Logger();
 	var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
 
-	var objects = await db.Objects
+	var objects = await db.ObjHeader
 		.Include(x => x.DatObjects)
 		.Include(x => x.StringTable)
 		.ToListAsync();
@@ -70,11 +70,11 @@ async static void WriteStringTable()
 				{
 					foreach (var t in s.Value)
 					{
-						obj.StringTable.Add(new TblStringTable()
+						obj.StringTable.Add(new TblStringTableRow()
 						{
-							RowName = s.Key,
-							RowLanguage = t.Key,
-							RowText = t.Value,
+							Name = s.Key,
+							Language = t.Key,
+							Text = t.Value,
 							ObjectId = obj.Id,
 						});
 					}

@@ -14,7 +14,7 @@ var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
 //QueryCostIndices(dir, logger, index);
 //QueryCargoCategories(dir, logger, index);
 //QueryVehicleBodyUnkSprites(dir, logger, index);
-QueryIndustryHasShadows(dir, logger, index);
+//QueryIndustryHasShadows(dir, logger, index);
 
 Console.WriteLine("done");
 

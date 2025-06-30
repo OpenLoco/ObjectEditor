@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenLoco.Definitions.Database;
 
@@ -10,9 +11,11 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
-    partial class LocoDbModelSnapshot : ModelSnapshot
+    [Migration("20250630053246_SubObjectFKIndex")]
+    partial class SubObjectFKIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
@@ -342,28 +345,7 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte>("FirstSeason")
-                        .HasColumnType("INTEGER");
-
                     b.Property<ulong>("ParentId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("SeasonLength1")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("SeasonLength2")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("SeasonLength3")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("SeasonLength4")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("SummerSnowLine")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("WinterSnowLine")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");

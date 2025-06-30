@@ -124,7 +124,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 
-			_ = db.ObjHeader.Add(locoTbl);
+			_ = db.Objects.Add(locoTbl);
 			_ = await db.SaveChangesAsync();
 
 			sfm.ObjectIndex.Objects.Add(
@@ -135,7 +135,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 		static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
-			var eObj = await db.ObjHeader
+			var eObj = await db.Objects
 				.Where(x => x.Id == id)
 				.Include(x => x.Licence)
 				.Include(x => x.DatObjects)
@@ -157,7 +157,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		{
 			if (context.Request.Query.Count > 0)
 			{
-				var query = db.ObjHeader.AsQueryable();
+				var query = db.Objects.AsQueryable();
 				var filters = context.Request.Query;
 
 				if (!filters.TryGetValue("objectType", out var objectTypeStr) || !Enum.TryParse(objectTypeStr, out ObjectType objectType))
@@ -218,7 +218,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			else
 			{
 				return Results.Ok(
-					await db.ObjHeader
+					await db.Objects
 						.Include(x => x.DatObjects)
 						.Select(x => x.ToDtoEntry())
 						.ToListAsync());
@@ -231,7 +231,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			// currently we MUST have a DAT backing object
 			logger.LogInformation("Object [{uniqueObjectId}] requested with images", id);
 
-			var obj = await db.ObjHeader
+			var obj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Where(x => x.Id == id)
 				.SingleOrDefaultAsync();
@@ -309,7 +309,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		// eg: https://localhost:7230/objects/114
 		static async Task<IResult> GetObjectFile([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
-			var obj = await db.ObjHeader
+			var obj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Where(x => x.Id == id)
 				.SingleOrDefaultAsync();

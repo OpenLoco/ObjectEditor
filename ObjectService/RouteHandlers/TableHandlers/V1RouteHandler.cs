@@ -108,7 +108,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			[FromQuery] ObjectSource? objectSource,
 			LocoDbContext db)
 		{
-			var query = db.ObjHeader
+			var query = db.Objects
 				.Include(x => x.DatObjects)
 				.AsQueryable();
 
@@ -181,7 +181,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		{
 			logger.LogInformation("Object [({ObjectName}, {Checksum})] requested", datName, datChecksum);
 
-			var eObj = await db.ObjHeader
+			var eObj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Include(x => x.Licence)
 				.Where(x => x.DatObjects.First().DatName == datName && x.DatObjects.First().DatChecksum == datChecksum && x.Availability == Definitions.ObjectAvailability.Available)
@@ -197,7 +197,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		{
 			logger.LogDebug($"Object [{uniqueObjectId}] requested with images");
 
-			var obj = await db.ObjHeader
+			var obj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Where(x => x.Id == uniqueObjectId && x.Availability == Definitions.ObjectAvailability.Available)
 				.SingleOrDefaultAsync();
@@ -270,7 +270,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		{
 			logger.LogInformation("Object [{UniqueObjectId}] requested", uniqueObjectId);
 
-			var eObj = await db.ObjHeader
+			var eObj = await db.Objects
 				.Where(x => (int)x.Id == uniqueObjectId && x.Availability == Definitions.ObjectAvailability.Available)
 				.Include(x => x.Licence)
 				.Include(x => x.DatObjects)
@@ -559,7 +559,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				ObjectPacks = [],
 				Licence = null,
 			};
-			var addedObj = db.ObjHeader.Add(locoTbl);
+			var addedObj = db.Objects.Add(locoTbl);
 
 			var locoLookupTbl = new TblDatObject()
 			{

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenLoco.Definitions.Database;
 
@@ -10,9 +11,11 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
-    partial class LocoDbModelSnapshot : ModelSnapshot
+    [Migration("20250630053103_SubObjectFK")]
+    partial class SubObjectFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
@@ -252,9 +255,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjAirport");
@@ -270,9 +270,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -290,9 +287,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjBuilding");
@@ -308,9 +302,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -328,9 +319,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjCliffEdge");
@@ -342,34 +330,10 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte>("FirstSeason")
-                        .HasColumnType("INTEGER");
-
                     b.Property<ulong>("ParentId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte>("SeasonLength1")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("SeasonLength2")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("SeasonLength3")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("SeasonLength4")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("SummerSnowLine")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("WinterSnowLine")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -387,9 +351,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjCompetitor");
@@ -405,9 +366,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -425,9 +383,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjDock");
@@ -443,9 +398,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -463,9 +415,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjIndustry");
@@ -481,9 +430,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -501,9 +447,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjLand");
@@ -519,9 +462,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -576,9 +516,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjRegion");
@@ -594,9 +531,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -614,9 +548,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjRoadExtra");
@@ -632,9 +563,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -652,9 +580,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjScaffolding");
@@ -670,9 +595,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -690,9 +612,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjSnow");
@@ -708,9 +627,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -728,9 +644,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjSteam");
@@ -746,9 +659,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -766,9 +676,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjTownNames");
@@ -784,9 +691,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -804,9 +708,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjTrackExtra");
@@ -822,9 +723,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -842,9 +740,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjTrackStation");
@@ -860,9 +755,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -880,9 +772,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjTunnel");
@@ -898,9 +787,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 
@@ -918,9 +804,6 @@ namespace Definitions.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
 
                     b.ToTable("ObjWall");
@@ -936,9 +819,6 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("ParentId");
 

@@ -41,7 +41,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 		_ = db.SC5Files.ExecuteDelete();
 		_ = db.Tags.ExecuteDelete();
 		_ = db.Authors.ExecuteDelete();
-		_ = db.ObjHeader.ExecuteDelete();
+		_ = db.Objects.ExecuteDelete();
 		_ = db.Licences.ExecuteDelete();
 		_ = db.SaveChanges(); // not necessary since ExecuteDelete auto-saves
 	}
@@ -191,7 +191,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 
 	// ...
 
-	if (!db.ObjHeader.Any())
+	if (!db.Objects.Any())
 	{
 		Console.WriteLine("Seeding Objects");
 

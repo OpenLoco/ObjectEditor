@@ -9,7 +9,7 @@ namespace OpenLoco.Definitions.Database
 	{
 		#region IDbName
 
-		public required string Name { get; set; } // InternalName
+		public required string Name { get; set; }
 
 		#endregion
 

@@ -10,7 +10,16 @@ namespace OpenLoco.Definitions.Database
 
 	public class TblObjectCliffEdge : DbSubObject;
 
-	public class TblObjectClimate : DbSubObject;
+	public class TblObjectClimate : DbSubObject
+	{
+		public uint8_t FirstSeason { get; set; }
+		public uint8_t WinterSnowLine { get; set; }
+		public uint8_t SummerSnowLine { get; set; }
+		public uint8_t SeasonLength1 { get; set; }
+		public uint8_t SeasonLength2 { get; set; }
+		public uint8_t SeasonLength3 { get; set; }
+		public uint8_t SeasonLength4 { get; set; }
+	}
 
 	public class TblObjectCompetitor : DbSubObject;
 
@@ -61,6 +70,8 @@ namespace OpenLoco.Definitions.Database
 	public class TblObjectTree : DbSubObject;
 
 	public class TblObjectTunnel : DbSubObject;
+
+	public class TblObjectVehicle : DbSubObject;
 
 	public class TblObjectWall : DbSubObject;
 

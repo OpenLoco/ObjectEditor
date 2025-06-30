@@ -6,9 +6,11 @@ namespace OpenLoco.Definitions.Database
 {
 	public class TblObject : DbCoreObject
 	{
-		public ObjectSource ObjectSource { get; set; }
+		public UniqueObjectId SubObjectId { get; set; } // FK id
 
-		public ObjectType ObjectType { get; set; }
+		public ObjectType ObjectType { get; set; } // FK object type
+
+		public ObjectSource ObjectSource { get; set; }
 
 		public VehicleType? VehicleType { get; set; }
 

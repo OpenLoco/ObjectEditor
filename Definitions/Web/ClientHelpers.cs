@@ -63,7 +63,7 @@ namespace OpenLoco.Definitions.Web
 				? apiRoute + baseRoute
 				: apiRoute + baseRoute + $"/{resourceId}";
 
-		internal static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, Func<Task<HttpResponseMessage>> httpFunc, Func<HttpContent, Task<T?>>? contentReaderFunc = null, ILogger? logger = null)
+		public static async Task<T?> SendRequestAsync<T>(HttpClient client, string route, Func<Task<HttpResponseMessage>> httpFunc, Func<HttpContent, Task<T?>>? contentReaderFunc = null, ILogger? logger = null)
 		{
 			try
 			{

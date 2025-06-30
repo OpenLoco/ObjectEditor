@@ -7,7 +7,7 @@ namespace OpenLoco.Definitions.Web
 {
 	public static class Client
 	{
-		public const string ApiVersion = ApiVersionRoutePrefix.V2;
+		public const string ApiVersion = RoutesV2.Prefix;
 
 		public static async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
 			=> await ClientHelpers.GetAsync<IEnumerable<DtoObjectEntry>>(

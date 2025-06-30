@@ -18,6 +18,7 @@ var connectionString = builder.Configuration.GetConnectionString("SQLiteConnecti
 builder.Services.AddOpenApi(); // (options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
+builder.Services.AddProblemDetails();
 builder.Services.AddDbContext<LocoDbContext>(options =>
 {
 	_ = options.UseSqlite(connectionString);
@@ -125,28 +126,26 @@ _ = app
 	.MapHealthChecks("/health")
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapLegacyRoutes("/v1")
+_ = app.MapV2Routes()
 	.RequireRateLimiting(tokenPolicy);
 
-_ = app.MapServerRoutes("/v2")
-	.RequireRateLimiting(tokenPolicy);
-
-_ = app.MapAdminRoutes("/v2")
-	.RequireAuthorization()
+_ = app.MapV1Routes()
 	.RequireRateLimiting(tokenPolicy);
 
 var showScalar = builder.Configuration.GetValue<bool?>("ObjectService:ShowScalar");
 ArgumentNullException.ThrowIfNull(showScalar);
 
 _ = app.MapOpenApi();
+
 if (showScalar == true)
 {
-	_ = app.MapScalarApiReference(options =>
+	_ = app.MapScalarApiReference("/api", options =>
 	{
 		_ = options
 			.WithTitle("OpenLoco Object Service")
 			.WithTheme(ScalarTheme.Solarized)
 			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+
 		//.AddPreferredSecuritySchemes("Bearer");
 	});
 }

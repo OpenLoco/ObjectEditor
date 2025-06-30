@@ -2,6 +2,8 @@ namespace OpenLoco.Definitions.Web
 {
 	public static class RoutesV1
 	{
+		public const string Prefix = "/v1";
+
 		// GET
 		public const string ListObjects = "/objects/list";
 

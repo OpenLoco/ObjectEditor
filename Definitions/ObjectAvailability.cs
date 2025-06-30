@@ -2,7 +2,7 @@ namespace Definitions
 {
 	public enum ObjectAvailability
 	{
-		Available,
-		Unavailable
+		Unavailable,
+		Available
 	}
 }

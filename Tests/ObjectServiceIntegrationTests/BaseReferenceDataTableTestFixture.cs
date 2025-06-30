@@ -27,6 +27,14 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 			_factory = new TestWebApplicationFactory<Program>();
 			HttpClient = _factory.CreateClient();
 			await SeedDataCore();
+			var healthResponse = await HttpClient.GetAsync("/health");
+			var health = await healthResponse.Content.ReadAsStringAsync();
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(healthResponse.IsSuccessStatusCode, Is.True);
+				Assert.That(health, Is.EqualTo("Healthy"));
+			});
 		}
 
 		[TearDown]
@@ -56,7 +64,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		public virtual async Task ListAsync()
 		{
 			// act
-			var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute);
+			var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, RoutesV2.Prefix, BaseRoute);
 
 			// assert
 			Assert.Multiple(() =>
@@ -71,7 +79,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		{
 			// act
 			const int id = 2;
-			var results = await ClientHelpers.GetAsync<TDto>(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute, id);
+			var results = await ClientHelpers.GetAsync<TDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
 
 			// assert
 			Assert.That(results, Is.EqualTo(SeedData.ToList()[id - 1]));
@@ -82,12 +90,12 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		{
 			// act
 			const int id = 1;
-			var results = await ClientHelpers.DeleteAsync(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute, id);
+			var results = await ClientHelpers.DeleteAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
 
 			// assert
 			Assert.Multiple(async () =>
 			{
-				var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute);
+				var results = await ClientHelpers.GetAsync<IEnumerable<TDto>>(HttpClient!, RoutesV2.Prefix, BaseRoute);
 				Assert.That(results.First(), Is.EqualTo(SeedData.ToList()[id]));
 			});
 		}
@@ -96,7 +104,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		public async Task PostAsync()
 		{
 			// act
-			var results = await ClientHelpers.PostAsync(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute, ExtraSeedDatum);
+			var results = await ClientHelpers.PostAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, ExtraSeedDatum);
 
 			// assert
 			Assert.That(results, Is.EqualTo(ExtraSeedDatum));
@@ -107,7 +115,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		{
 			// act
 			const int id = 1;
-			var results = await ClientHelpers.PutAsync(HttpClient!, ApiVersionRoutePrefix.V2, BaseRoute, id, ExtraSeedDatum);
+			var results = await ClientHelpers.PutAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id, ExtraSeedDatum);
 
 			// assert
 			Assert.That(results.Id, Is.EqualTo(id));

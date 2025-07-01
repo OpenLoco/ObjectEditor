@@ -335,7 +335,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 		static IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 		{
-			logger.LogTrace("[ReturnObject]");
+			logger.LogDebug("[ReturnObject]");
 
 			if (eObj == null || eObj.Object == null)
 			{

@@ -63,7 +63,7 @@ namespace OpenLoco.Dat.Objects
 			[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id LastName,
 			[property: LocoStructOffset(0x04)] CompetitorNamePrefix AvailableNamePrefixes, // bitset
 			[property: LocoStructOffset(0x08)] CompetitorPlaystyle AvailablePlaystyles, // bitset
-			[property: LocoStructOffset(0x0C)] uint32_t Emotions,
+			[property: LocoStructOffset(0x0C)] uint32_t Emotions, // bitset
 			[property: LocoStructOffset(0x10), Browsable(false), LocoArrayLength(CompetitorObject.ImagesLength)] image_id[] Images,
 			[property: LocoStructOffset(0x34)] uint8_t Intelligence,
 			[property: LocoStructOffset(0x35)] uint8_t Aggressiveness,

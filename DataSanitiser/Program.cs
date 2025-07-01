@@ -36,6 +36,54 @@ async static void WritexxHash3()
 }
 //WritexxHash3();
 
+async static void FixObjectDescriptions()
+{
+	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
+	const string objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
+	var logger = new Logger();
+	var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
+
+	var objects = await db.Objects
+		.Include(x => x.DatObjects)
+		.ToListAsync();
+
+	var count = 0;
+	foreach (var obj in objects)
+	{
+		if (index.TryFind((obj.DatObjects.First().DatName, obj.DatObjects.First().DatChecksum), out var entry))
+		{
+			var filename = Path.Combine(objDirectory, entry.FileName);
+			var bytes = File.ReadAllBytes(filename);
+
+			try
+			{
+				var dat = SawyerStreamReader.LoadFullObjectFromFile(filename, logger);
+
+				if (dat == null)
+				{
+					Console.WriteLine($"Failed to read {entry.FileName}");
+					continue;
+				}
+
+				obj.Description = dat.Value.LocoObject.StringTable.Table.First().Value[OpenLoco.Dat.Data.LanguageId.English_UK];
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Exception, failed to read {entry.FileName}, exception={ex}");
+				continue;
+			}
+		}
+
+		if (++count % 200 == 0)
+		{
+			Console.WriteLine(count);
+		}
+	}
+
+	_ = await db.SaveChangesAsync();
+}
+FixObjectDescriptions();
+
 async static void WriteStringTable()
 {
 	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);

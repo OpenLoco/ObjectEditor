@@ -35,9 +35,9 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImages);
 		}
 
-		static async Task<IResult> CreateAsync(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
+		static async Task<IResult> CreateAsync(DtoUploadDat request, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
-			logger.LogInformation("Upload requested");
+			logger.LogInformation("[CreateAsync] Upload requested");
 
 			if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 			{
@@ -135,6 +135,8 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 		static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
+			logger.LogInformation("[ReadAsync] Read requested for object {ObjectId}", id);
+
 			var eObj = await db.Objects
 				.Where(x => x.Id == id)
 				.Include(x => x.Licence)
@@ -147,16 +149,35 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return ReturnObject(eObj, sfm, logger);
 		}
 
-		static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, LocoDbContext db)
-			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-
-		static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, LocoDbContext db)
-			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
-
-		static async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
+		static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
-			if (context.Request.Query.Count > 0)
+			logger.LogInformation("[UpdateAsync] Update requested for object {ObjectId}", id);
+			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		}
+
+		static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+		{
+			logger.LogInformation("[DeleteAsync] Delete requested for object {ObjectId}", id);
+			// for now we could soft-delete by marking an object as Unavailable?
+			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		}
+
+		static async Task<IResult> ListAsync(HttpContext context, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+		{
+			logger.LogInformation("[ListAsync] List requested for object");
+
+			if (context.Request.Query.Count == 0)
 			{
+				return Results.Ok(
+					await db.Objects
+						.Include(x => x.DatObjects)
+						.Select(x => x.ToDtoEntry())
+						.ToListAsync());
+			}
+			else
+			{
+				logger.LogInformation("[ListAsync] Request had {ParamCount} query params {Params}", context.Request.Query.Count, context.Request.Query.ToString());
+
 				var query = db.Objects.AsQueryable();
 				var filters = context.Request.Query;
 
@@ -215,22 +236,14 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 				//return Results.Problem(statusCode: StatusCodes.Status501NotImplemented);
 			}
-			else
-			{
-				return Results.Ok(
-					await db.Objects
-						.Include(x => x.DatObjects)
-						.Select(x => x.ToDtoEntry())
-						.ToListAsync());
-			}
 		}
 
 		// eg: http://localhost:7229/v1/objects/{id}/images
-		static async Task<IResult> GetObjectImages([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
+		static async Task<IResult> GetObjectImages([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
-			// currently we MUST have a DAT backing object
-			logger.LogInformation("Object [{uniqueObjectId}] requested with images", id);
+			logger.LogInformation("[GetObjectImages] Get requested for object {ObjectId}", id);
 
+			// currently we MUST have a DAT backing object
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Where(x => x.Id == id)
@@ -239,6 +252,12 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			if (obj == null)
 			{
 				return Results.NotFound();
+			}
+
+			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+			{
+				logger.LogWarning("Indexed object is a vanilla object");
+				return Results.Forbid();
 			}
 
 			if (obj.Availability == Definitions.ObjectAvailability.Unavailable)
@@ -264,12 +283,6 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			{
 				logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder", pathOnDisk);
 				return Results.NotFound();
-			}
-
-			if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
-			{
-				logger.LogWarning("Indexed object is a vanilla object");
-				return Results.Forbid();
 			}
 
 			var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
@@ -307,8 +320,10 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/objects/114
-		static async Task<IResult> GetObjectFile([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IServiceProvider sp)
+		static async Task<IResult> GetObjectFile([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
+			logger.LogInformation("[GetObjectFile] Get requested for object {ObjectId}", id);
+
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Where(x => x.Id == id)

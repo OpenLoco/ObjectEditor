@@ -162,23 +162,161 @@ namespace OpenLoco.Definitions.Database
 		public HillShapeFlags Flags { get; set; }
 	}
 
-	public class TblObjectIndustry : DbSubObject;
+	public class TblObjectIndustry : DbSubObject
+	{
+		public uint32_t FarmImagesPerGrowthStage { get; set; }
+		public uint8_t MinNumBuildings { get; set; }
+		public uint8_t MaxNumBuildings { get; set; }
+		public uint32_t Colours { get; set; }  // bitset
+		public uint32_t BuildingSizeFlags { get; set; } // flags indicating the building types size 1:large4x4 { get; set; } 0:small1x1
+		public uint16_t DesignedYear { get; set; }
+		public uint16_t ObsoleteYear { get; set; }
+		public uint8_t TotalOfTypeInScenario { get; set; } // Total industries of this type that can be created in a scenario Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.
+		public uint8_t CostIndex { get; set; }
+		public int16_t BuildCostFactor { get; set; }
+		public int16_t SellCostFactor { get; set; }
+		public uint8_t ScaffoldingSegmentType { get; set; }
+		public Colour ScaffoldingColour { get; set; }
+		public Colour MapColour { get; set; }
+		public IndustryObjectFlags Flags { get; set; }
+		public uint8_t FarmTileNumImageAngles { get; set; } // How many viewing angles the farm tiles have
+		public uint8_t FarmGrowthStageWithNoProduction { get; set; } // At this stage of growth (except 0) { get; set; } a field tile produces nothing
+		public uint8_t FarmIdealSize { get; set; } // Max production is reached at farmIdealSize * 25 tiles
+		public uint8_t FarmNumStagesOfGrowth { get; set; } // How many growth stages there are sprites for
+		public uint8_t MonthlyClosureChance { get; set; }
 
-	public class TblObjectInterface : DbSubObject;
+		// could actually FK to TblObjectWall instead of using UniqueOjectId? but we'd need it to be TblObject<TblObjectWall> kind of
+		public UniqueObjectId BuildingWall { get; set; } // Selection of wall types isn't completely random from the 4 it is biased into 2 groups of 2 (wall and entrance)
+		public UniqueObjectId BuildingWallEntrance { get; set; } // An alternative wall type that looks like a gate placed at random places in building perimeter
 
-	public class TblObjectLand : DbSubObject;
+		//public uint8_t NumBuildingParts { get; set; }
+		//public uint8_t NumBuildingVariations { get; set; }
+		//public List<uint8_t> BuildingHeights { get; set; }    // This is the height of a building image
+		//public List<BuildingPartAnimation> BuildingAnimations { get; set; }
+		//public List<List<uint8_t>> AnimationSequences { get; set; } // Access with getAnimationSequence helper method
+		//public List<IndustryObjectUnk38> var_38 { get; set; }    // Access with getUnk38 helper method
+		//public List<List<uint8_t>> BuildingVariations { get; set; }  // Access with getBuildingParts helper method
+		//public List<uint8_t> Buildings { get; set; }
+		//public IndustryObjectProductionRateRange[] InitialProductionRate { get; set; }
+		//public List<S5Header> ProducedCargo { get; set; } // (0xFF = null)
+		//public List<S5Header> RequiredCargo { get; set; } // (0xFF = null)
+		//public uint8_t var_E8 { get; set; }
+		//public List<S5Header> WallTypes { get; set; } // There can be up to 4 different wall types for an industry
+	}
 
-	public class TblObjectLevelCrossing : DbSubObject;
+	public class TblObjectInterface : DbSubObject
+	{
+		public Colour MapTooltipObjectColour { get; set; }
+		public Colour MapTooltipCargoColour { get; set; }
+		public Colour TooltipColour { get; set; }
+		public Colour ErrorColour { get; set; }
+		public Colour WindowPlayerColor { get; set; }
+		public Colour WindowTitlebarColour { get; set; }
+		public Colour WindowColour { get; set; }
+		public Colour WindowConstructionColour { get; set; }
+		public Colour WindowTerraFormColour { get; set; }
+		public Colour WindowMapColour { get; set; }
+		public Colour WindowOptionsColour { get; set; }
+		public Colour Colour_11 { get; set; }
+		public Colour TopToolbarPrimaryColour { get; set; }
+		public Colour TopToolbarSecondaryColour { get; set; }
+		public Colour TopToolbarTertiaryColour { get; set; }
+		public Colour TopToolbarQuaternaryColour { get; set; }
+		public Colour PlayerInfoToolbarColour { get; set; }
+		public Colour TimeToolbarColour { get; set; }
+	}
 
-	public class TblObjectRegion : DbSubObject;
+	public class TblObjectLand : DbSubObject
+	{
+		public uint8_t CostIndex { get; set; }
+		public uint8_t NumGrowthStages { get; set; }
+		public uint8_t NumImageAngles { get; set; }
+		public LandObjectFlags Flags { get; set; }
+		public int16_t CostFactor { get; set; }
+		public uint32_t NumImagesPerGrowthStage { get; set; }
+		public uint8_t DistributionPattern { get; set; }
+		public uint8_t NumVariations { get; set; }
+		public uint8_t VariationLikelihood { get; set; }
+		public UniqueObjectId CliffEdgeHeader1 { get; set; }
+		public UniqueObjectId CliffEdgeHeader2 { get; set; }
+	}
 
-	public class TblObjectRoadExtra : DbSubObject;
+	public class TblObjectLevelCrossing : DbSubObject
+	{
+		public int16_t CostFactor { get; set; }
+		public int16_t SellCostFactor { get; set; }
+		public uint8_t CostIndex { get; set; }
+		public uint8_t AnimationSpeed { get; set; }
+		public uint8_t ClosingFrames { get; set; }
+		public uint8_t ClosedFrames { get; set; }
+		public uint16_t DesignedYear { get; set; }
 
-	public class TblObjectRoad : DbSubObject;
+		//public uint8_t var_0A { get; set; } // something like IdleAnimationFrames or something
+	}
 
-	public class TblObjectRoadStation : DbSubObject;
+	public class TblObjectRegion : DbSubObject
+	{
+		//public uint8_t NumCargoInfluenceObjects { get; set; }
+		//public object_id[] _CargoInfluenceObjectIds { get; set; }
+		//public CargoInfluenceTownFilterType[] CargoInfluenceTownFilter { get; set; }
+	}
 
-	public class TblObjectScaffolding : DbSubObject;
+	public class TblObjectRoadExtra : DbSubObject
+	{
+		public RoadTraitFlags RoadPieces { get; set; }
+		public uint8_t PaintStyle { get; set; }
+		public uint8_t CostIndex { get; set; }
+		public int16_t BuildCostFactor { get; set; }
+		public int16_t SellCostFactor { get; set; }
+	}
+
+	public class TblObjectRoad : DbSubObject
+	{
+		public RoadTraitFlags RoadPieces { get; set; }
+		public int16_t BuildCostFactor { get; set; }
+		public int16_t SellCostFactor { get; set; }
+		public int16_t TunnelCostFactor { get; set; }
+		public uint8_t CostIndex { get; set; }
+		public Speed16 MaxSpeed { get; set; }
+		public RoadObjectFlags Flags { get; set; }
+		public uint8_t PaintStyle { get; set; }
+		public uint8_t DisplayOffset { get; set; }
+		public TownSize TargetTownSize { get; set; }
+
+		//public uint16_t _CompatibleRoads { get; set; } // bitset
+		//public uint16_t _CompatibleTracks { get; set; } // bitset
+
+		public UniqueObjectId Tunnel { get; set; }
+		public ICollection<UniqueObjectId> Bridges { get; set; }
+		public ICollection<UniqueObjectId> Mods { get; set; }
+		public ICollection<UniqueObjectId> RoadsAndTracks { get; set; }
+		public ICollection<UniqueObjectId> Stations { get; set; }
+	}
+
+	public class TblObjectRoadStation : DbSubObject
+	{
+		public uint8_t PaintStyle { get; set; }
+		public uint8_t Height { get; set; }
+		public RoadTraitFlags RoadPieces { get; set; }
+		public int16_t BuildCostFactor { get; set; }
+		public int16_t SellCostFactor { get; set; }
+		public uint8_t CostIndex { get; set; }
+		public RoadStationObjectFlags Flags { get; set; }
+		public uint8_t CompatibleRoadObjectCount { get; set; }
+		public uint16_t DesignedYear { get; set; }
+		public uint16_t ObsoleteYear { get; set; }
+		public UniqueObjectId CargoTypeId { get; set; }
+		public ICollection<uint32_t> ImageOffsets { get; set; }
+		public ICollection<uint8_t> _CargoOffsets { get; set; }
+		public ICollection<UniqueObjectId> CompatibleRoads { get; set; }
+	}
+
+
+	public class TblObjectScaffolding : DbSubObject
+	{
+		//public ICollection<uint16_t> SegmentHeights { get; set; }
+		//public ICollection<uint16_t> RoofHeights { get; set; }
+	}
 
 	public class TblObjectScenarioText : DbSubObject;
 
@@ -206,7 +344,18 @@ namespace OpenLoco.Definitions.Database
 
 	public class TblObjectVehicle : DbSubObject;
 
-	public class TblObjectWall : DbSubObject;
+	public class TblObjectWall : DbSubObject
+	{
+		public uint8_t Height { get; set; }
+		public WallObjectFlags1 Flags1 { get; set; }
+		public WallObjectFlags2 Flags2 { get; set; }
+		public uint8_t ToolId { get; set; } //  tool cursor type - not used in Locomotion - set to 0 in DB?
+	}
 
-	public class TblObjectWater : DbSubObject;
+	public class TblObjectWater : DbSubObject
+	{
+		public uint8_t CostIndex { get; set; }
+		public int16_t CostFactor { get; set; }
+		//public uint8_t var_03 { get; set; }
+	}
 }

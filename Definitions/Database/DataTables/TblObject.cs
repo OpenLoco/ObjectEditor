@@ -4,11 +4,11 @@ using OpenLoco.Dat.Objects;
 
 namespace OpenLoco.Definitions.Database
 {
-	public class TblObject : DbCoreObject
+	public class TblObject : DbCoreObject //<T> : DbCoreObject where T : DbSubObject
 	{
 		public UniqueObjectId SubObjectId { get; set; } // FK id
 
-		public ObjectType ObjectType { get; set; } // FK object type
+		public ObjectType ObjectType { get; set; } // don't need to set explicitly - can be inferred from T type
 
 		public ObjectSource ObjectSource { get; set; }
 
@@ -16,7 +16,7 @@ namespace OpenLoco.Definitions.Database
 
 		public ObjectAvailability Availability { get; set; }
 
-		public ICollection<TblObjectPack> ObjectPacks { get; set; } = []; // aka modpack
+		public ICollection<TblObjectPack> ObjectPacks { get; set; } = [];
 
 		public ICollection<TblDatObject> DatObjects { get; set; } = []; // the DAT objects that created or reference this OpenLoco object. May be 0, may be multiple
 

@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace OpenLoco.Dat.Objects
 {
 	[Flags]
-	public enum TrainSignalObjectFlags : uint16_t
+	public enum TrackSignalObjectFlags : uint16_t
 	{
 		None = 0 << 0,
 		IsLeft = 1 << 0,
@@ -16,11 +16,11 @@ namespace OpenLoco.Dat.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]
-	[LocoStructType(ObjectType.TrainSignal)]
+	[LocoStructType(ObjectType.TrackSignal)]
 	[LocoStringTable("Name", "Description")]
-	public record TrainSignalObject(
+	public record TrackSignalObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02)] TrainSignalObjectFlags Flags,
+		[property: LocoStructOffset(0x02)] TrackSignalObjectFlags Flags,
 		[property: LocoStructOffset(0x04)] uint8_t AnimationSpeed,
 		[property: LocoStructOffset(0x05)] uint8_t NumFrames,
 		[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
@@ -30,7 +30,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x0C), LocoString, Browsable(false)] string_id Description,
 		[property: LocoStructOffset(0x0E), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x12)] uint8_t CompatibleTrackObjectCount,
-		[property: LocoStructOffset(0x13), LocoArrayLength(TrainSignalObject.ModsLength), Browsable(false)] object_id[] ModHeaderIds,
+		[property: LocoStructOffset(0x13), LocoArrayLength(TrackSignalObject.ModsLength), Browsable(false)] object_id[] ModHeaderIds,
 		[property: LocoStructOffset(0x1A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x1C)] uint16_t ObsoleteYear
 	) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider

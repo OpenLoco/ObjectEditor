@@ -7,9 +7,9 @@ using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class TrainSignalViewModel : LocoObjectViewModel<TrainSignalObject>
+	public class TrainSignalViewModel : LocoObjectViewModel<TrackSignalObject>
 	{
-		[Reactive, EnumProhibitValues<TrainSignalObjectFlags>(TrainSignalObjectFlags.None)] public TrainSignalObjectFlags Flags { get; set; }
+		[Reactive, EnumProhibitValues<TrackSignalObjectFlags>(TrackSignalObjectFlags.None)] public TrackSignalObjectFlags Flags { get; set; }
 		[Reactive] public uint8_t AnimationSpeed { get; set; }
 		[Reactive] public uint8_t NumFrames { get; set; }
 		[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
@@ -17,9 +17,9 @@ namespace OpenLoco.Gui.ViewModels
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 		[Reactive, Category("Stats")] public uint16_t DesignedYear { get; set; }
 		[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
-		[Reactive, Length(0, TrainSignalObject.ModsLength)] public BindingList<S5HeaderViewModel> CompatibleTrackObjects { get; set; }
+		[Reactive, Length(0, TrackSignalObject.ModsLength)] public BindingList<S5HeaderViewModel> CompatibleTrackObjects { get; set; }
 
-		public TrainSignalViewModel(TrainSignalObject ro)
+		public TrainSignalViewModel(TrackSignalObject ro)
 		{
 			Flags = ro.Flags;
 			AnimationSpeed = ro.AnimationSpeed;
@@ -32,7 +32,7 @@ namespace OpenLoco.Gui.ViewModels
 			CompatibleTrackObjects = new(ro.CompatibleTrackObjects.ConvertAll(x => new S5HeaderViewModel(x)));
 		}
 
-		public override TrainSignalObject GetAsStruct(TrainSignalObject tso)
+		public override TrackSignalObject GetAsStruct(TrackSignalObject tso)
 			=> tso with
 			{
 				Flags = Flags,

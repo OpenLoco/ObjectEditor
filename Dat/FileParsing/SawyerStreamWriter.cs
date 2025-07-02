@@ -1,6 +1,6 @@
-using Dat.Objects;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
+using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
 using System.Text;
 

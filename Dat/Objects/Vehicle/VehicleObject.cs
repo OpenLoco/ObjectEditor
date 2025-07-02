@@ -41,7 +41,7 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x113)] uint8_t ShipWakeOffset, // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 		[property: LocoStructOffset(0x114)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x116)] uint16_t ObsoleteYear,
-		[property: LocoStructOffset(0x118), LocoStructVariableLoad, Browsable(false)] object_id RackRailType, // also airport taxi speed
+		[property: LocoStructOffset(0x118), LocoStructVariableLoad, Browsable(false)] object_id RackRailType,
 		[property: LocoStructOffset(0x119)] DrivingSoundType DrivingSoundType,
 		// this is a union...length is the length of the longest union struct, which is Engine2Sound. make the byte[] not visible in editor
 		[property: LocoStructOffset(0x11A), LocoArrayLength(VehicleObject.MaxUnionSoundStructLength), Browsable(false)] byte[] SoundPropertiesData,

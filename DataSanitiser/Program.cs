@@ -1,9 +1,195 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
+using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Definitions.Database;
 using System.IO.Hashing;
+using System.Reflection;
+
+static void QueryIndustryHasShadows()
+{
+	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
+	var logger = new Logger();
+	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+
+	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
+
+	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Industry))
+	{
+		try
+		{
+			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
+			if (o?.LocoObject != null)
+			{
+				var struc = (IndustryObject)o.Value.LocoObject.Object;
+				var header = o.Value.DatFileInfo.S5Header;
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+
+				if (struc.Flags.HasFlag(IndustryObjectFlags.HasShadows))
+				{
+					results.Add((obj, source));
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
+		}
+	}
+
+	Console.WriteLine(results.Count);
+
+	const string csvHeader = "DatName, ObjectSource";
+	var lines = results
+		.OrderBy(x => x.Obj.DisplayName)
+		.Select(x => string.Join(',', x.Obj.DisplayName, x.ObjectSource));
+
+	File.WriteAllLines("vehicleBodiesWithUnkSpritesFlag.csv", [csvHeader, .. lines]);
+}
+//QueryIndustryHasShadows();
+
+static void QueryVehicleBodyUnkSprites()
+{
+	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
+	var logger = new Logger();
+	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+
+	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
+
+	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Vehicle))
+	{
+		try
+		{
+			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
+			if (o?.LocoObject != null)
+			{
+				var struc = (VehicleObject)o.Value.LocoObject.Object;
+				var header = o.Value.DatFileInfo.S5Header;
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+
+				if (struc.Flags.HasFlag(VehicleObjectFlags.AlternatingCarSprite))
+				{
+					results.Add((obj, source));
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
+		}
+	}
+
+	Console.WriteLine(results.Count);
+
+	const string csvHeader = "DatName, ObjectSource";
+	var lines = results
+		.OrderBy(x => x.Obj.DisplayName)
+		.Select(x => string.Join(',', x.Obj.DisplayName, x.ObjectSource));
+
+	File.WriteAllLines("vehicleBodiesWithUnkSpritesFlag.csv", [csvHeader, .. lines]);
+}
+//QueryVehicleBodyUnkSprites();
+
+static void QueryCargoCategories()
+{
+	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
+	var logger = new Logger();
+	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+
+	var results = new List<(ObjectIndexEntry Obj, CargoCategory CargoCategory, string LocalisedName, ObjectSource ObjectSource)>();
+
+	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Cargo))
+	{
+		try
+		{
+			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
+			if (o?.LocoObject != null)
+			{
+				var struc = (CargoObject)o.Value.LocoObject.Object;
+
+				var header = o.Value.DatFileInfo.S5Header;
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+
+				results.Add((obj, struc.CargoCategory, o.Value.LocoObject.StringTable.Table["Name"][LanguageId.English_UK], source));
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
+		}
+	}
+
+	Console.WriteLine("writing to file");
+
+	const string csvHeader = "DatName, CargoCategory, LocalisedName, ObjectSource";
+	var lines = results
+		.OrderBy(x => x.Obj.DisplayName)
+		.Select(x => string.Join(',', x.Obj.DisplayName, (int)x.CargoCategory, x.LocalisedName, x.ObjectSource));
+	File.WriteAllLines("cargoCategories.csv", [csvHeader, .. lines]);
+}
+//QueryCargoCategories();
+
+static void QueryCostIndices()
+{
+	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
+	var logger = new Logger();
+	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+
+	var results = new List<(ObjectIndexEntry Obj, byte CostIndex, short? RunCostIndex)>();
+
+	foreach (var obj in index.Objects)
+	{
+		try
+		{
+			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
+			if (o?.LocoObject != null)
+			{
+				var struc = o.Value.LocoObject.Object;
+				var type = struc.GetType();
+
+				var costIndexProperty = type.GetProperty("CostIndex", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+				var paymentIndexProperty = type.GetProperty("PaymentIndex", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+				var runCostIndexProperty = type.GetProperty("RunCostIndex", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+
+				byte? costIndex = null;
+				byte? runCostIndex = null;
+
+				if (costIndexProperty?.PropertyType == typeof(byte) && costIndexProperty.GetValue(struc) is byte costIndexValue)
+				{
+					costIndex = costIndexValue;
+				}
+				else if (paymentIndexProperty?.PropertyType == typeof(byte) && paymentIndexProperty.GetValue(struc) is byte paymentIndexValue)
+				{
+					costIndex = paymentIndexValue;
+				}
+
+				if (runCostIndexProperty?.PropertyType == typeof(byte) && runCostIndexProperty.GetValue(struc) is byte runCostIndexValue)
+				{
+					runCostIndex = runCostIndexValue;
+				}
+
+				if (costIndex != null)
+				{
+					results.Add((obj, costIndex.Value, runCostIndex));
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
+		}
+	}
+
+	Console.WriteLine("writing to file");
+
+	const string header = "DatName, ObjectType, CostIndex, RunCostIndex";
+	var lines = results
+		.OrderBy(x => x.Obj.DisplayName)
+		.Select(x => string.Join(',', x.Obj.DisplayName, x.Obj.ObjectType, x.CostIndex, x.RunCostIndex));
+	File.WriteAllLines("costIndex.csv", [header, .. lines]);
+}
+//QueryCostIndices();
 
 async static void WritexxHash3()
 {
@@ -83,7 +269,7 @@ async static void FixObjectDescriptions()
 
 	_ = await db.SaveChangesAsync();
 }
-FixObjectDescriptions();
+//FixObjectDescriptions();
 
 async static void WriteStringTable()
 {
@@ -171,6 +357,15 @@ async static void SetGuids()
 }
 //SetGuids();
 
+//async static void SyncSubObjectParents()
+//{
+//	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
+//	foreach (var obj in await db.ObjAirport.ToListAsync())
+//	{
+
+//	}
+//}
+
 async static void SetupSubObjects()
 {
 	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
@@ -183,105 +378,44 @@ async static void SetupSubObjects()
 		.Include(x => x.DatObjects)
 		.ToListAsync();
 
-	foreach (var obj in objects)
+	foreach (var objGroup in objects.GroupBy(x => x.ObjectType))
 	{
-		var firstDatObj = obj.DatObjects.First();
-		if (!index.TryFind((firstDatObj.DatName, firstDatObj.DatChecksum), out var entry))
+		Console.WriteLine($"=== {objGroup.Key} ===");
+
+		foreach (var obj in objGroup)
 		{
-			continue;
+			var firstDatObj = obj.DatObjects.First();
+			if (!index.TryFind((firstDatObj.DatName, firstDatObj.DatChecksum), out var entry))
+			{
+				Console.WriteLine($"Couldn't find in index {firstDatObj.DatName} - {obj.Name}");
+				continue;
+			}
+
+			if (entry?.FileName is null)
+			{
+				Console.WriteLine($"Filename was null {firstDatObj.DatName} - {obj.Name}");
+				continue;
+			}
+
+			try
+			{
+				var _o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, entry.FileName), logger);
+				if (_o?.LocoObject == null)
+				{
+					Console.WriteLine($"Loco object was null {firstDatObj.DatName} - {obj.Name}");
+					continue;
+				}
+
+				var result = await DbSubObjectUpdater.Update(db, obj, _o.Value.LocoObject.Object);
+				Console.WriteLine($"{result} data for {firstDatObj.DatName} - {obj.Name}");
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
 		}
 
-		switch (obj.ObjectType)
-		{
-			case OpenLoco.Dat.Data.ObjectType.Airport:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Bridge:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Building:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Cargo:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.CliffEdge:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Climate:
-				var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, entry.FileName), logger);
-				if (o?.LocoObject != null)
-				{
-					var struc = (ClimateObject)o.Value.LocoObject.Object;
-					var dbObj = new TblObjectClimate()
-					{
-						Parent = obj,
-						FirstSeason = struc.FirstSeason,
-						WinterSnowLine = struc.WinterSnowLine,
-						SummerSnowLine = struc.SummerSnowLine,
-						SeasonLength1 = struc.SeasonLengths[0],
-						SeasonLength2 = struc.SeasonLengths[1],
-						SeasonLength3 = struc.SeasonLengths[2],
-						SeasonLength4 = struc.SeasonLengths[3]
-					};
-					_ = await db.ObjClimate.AddAsync(dbObj);
-					Console.WriteLine($"Added data for {firstDatObj.DatName} - {obj.Name}");
-				}
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Competitor:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Currency:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Dock:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.HillShapes:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Industry:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.InterfaceSkin:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Land:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.LevelCrossing:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Region:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.RoadExtra:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Road:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.RoadStation:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Scaffolding:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.ScenarioText:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Snow:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Sound:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Steam:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.StreetLight:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.TownNames:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.TrackExtra:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Track:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.TrainSignal:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.TrainStation:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Tree:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Tunnel:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Vehicle:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Water:
-				break;
-			case OpenLoco.Dat.Data.ObjectType.Wall:
-				break;
-			default:
-				break;
-		}
+		//break; // early exit for testing
 	}
 
 	_ = await db.SaveChangesAsync();
@@ -307,6 +441,7 @@ async static void QuerySubObjects()
 
 	Console.WriteLine("done");
 }
-QuerySubObjects();
+//QuerySubObjects();
 
+Console.WriteLine("Finished");
 Console.ReadLine();

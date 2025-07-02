@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenLoco.Definitions.Database;
 
@@ -10,9 +11,11 @@ using OpenLoco.Definitions.Database;
 namespace Definitions.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
-    partial class LocoDbModelSnapshot : ModelSnapshot
+    [Migration("20250701061712_SubObjectAll")]
+    partial class SubObjectAll
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
@@ -668,6 +671,12 @@ namespace Definitions.Migrations
                     b.Property<uint>("BuildingSizeFlags")
                         .HasColumnType("INTEGER");
 
+                    b.Property<ulong>("BuildingWall")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("BuildingWallEntrance")
+                        .HasColumnType("INTEGER");
+
                     b.Property<uint>("Colours")
                         .HasColumnType("INTEGER");
 
@@ -812,6 +821,12 @@ namespace Definitions.Migrations
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("CliffEdgeHeader1")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("CliffEdgeHeader2")
                         .HasColumnType("INTEGER");
 
                     b.Property<short>("CostFactor")
@@ -986,6 +1001,9 @@ namespace Definitions.Migrations
                     b.Property<byte>("TargetTownSize")
                         .HasColumnType("INTEGER");
 
+                    b.Property<ulong>("Tunnel")
+                        .HasColumnType("INTEGER");
+
                     b.Property<short>("TunnelCostFactor")
                         .HasColumnType("INTEGER");
 
@@ -1040,6 +1058,9 @@ namespace Definitions.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<short>("BuildCostFactor")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("CargoTypeId")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte>("CompatibleRoadObjectCount")
@@ -1145,13 +1166,13 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<uint>("Length")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Offset")
+                        .HasColumnType("INTEGER");
+
                     b.Property<ulong>("ParentId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte>("ShouldLoop")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<uint>("Volume")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -1269,6 +1290,9 @@ namespace Definitions.Migrations
                     b.Property<ushort>("TrackPieces")
                         .HasColumnType("INTEGER");
 
+                    b.Property<ulong>("Tunnel")
+                        .HasColumnType("INTEGER");
+
                     b.Property<short>("TunnelCostFactor")
                         .HasColumnType("INTEGER");
 
@@ -1368,6 +1392,14 @@ namespace Definitions.Migrations
                     b.Property<short>("BuildCostFactor")
                         .HasColumnType("INTEGER");
 
+                    b.PrimitiveCollection<string>("CargoOffsetBytes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("CompatibleTrack")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<byte>("CostIndex")
                         .HasColumnType("INTEGER");
 
@@ -1379,6 +1411,10 @@ namespace Definitions.Migrations
 
                     b.Property<byte>("Height")
                         .HasColumnType("INTEGER");
+
+                    b.PrimitiveCollection<string>("ManualPower")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<ushort>("ObsoleteYear")
                         .HasColumnType("INTEGER");
@@ -1527,6 +1563,9 @@ namespace Definitions.Migrations
                     b.Property<ushort>("Power")
                         .HasColumnType("INTEGER");
 
+                    b.Property<ulong>("RackRailType")
+                        .HasColumnType("INTEGER");
+
                     b.Property<short>("RackSpeed")
                         .HasColumnType("INTEGER");
 
@@ -1573,10 +1612,16 @@ namespace Definitions.Migrations
                     b.Property<byte>("Flags1")
                         .HasColumnType("INTEGER");
 
+                    b.Property<byte>("Flags2")
+                        .HasColumnType("INTEGER");
+
                     b.Property<byte>("Height")
                         .HasColumnType("INTEGER");
 
                     b.Property<ulong>("ParentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte>("ToolId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");

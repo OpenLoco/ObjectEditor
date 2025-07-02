@@ -4,7 +4,7 @@ using OpenLoco.Dat.Types;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Dat.Objects
+namespace OpenLoco.Dat.Objects
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x1E)]

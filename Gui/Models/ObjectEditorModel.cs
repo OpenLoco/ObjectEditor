@@ -7,6 +7,7 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.DTO.Mappers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;

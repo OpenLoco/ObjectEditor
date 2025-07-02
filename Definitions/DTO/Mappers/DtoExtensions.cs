@@ -2,7 +2,7 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO.Identity;
 using OpenLoco.Definitions.SourceData;
 
-namespace OpenLoco.Definitions.DTO
+namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoExtensions
 	{

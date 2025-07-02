@@ -8,7 +8,7 @@ using OpenLoco.Definitions.Database;
 
 #nullable disable
 
-namespace Definitions.Migrations
+namespace OpenLoco.Definitions.Database.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
     [Migration("20250603100806_AddStringTable")]

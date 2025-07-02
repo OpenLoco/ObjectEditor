@@ -3,6 +3,7 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.DTO.Mappers;
 using OpenLoco.Definitions.Web;
 
 namespace OpenLoco.Tests.ObjectServiceIntegrationTests

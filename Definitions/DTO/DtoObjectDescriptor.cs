@@ -1,4 +1,3 @@
-using Definitions;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 

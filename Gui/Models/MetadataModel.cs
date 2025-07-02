@@ -1,4 +1,4 @@
-using Definitions;
+using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using System;
 using System.Collections.Generic;

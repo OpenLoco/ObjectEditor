@@ -1,5 +1,3 @@
-using Definitions;
-
 namespace OpenLoco.Definitions.Database
 {
 	public abstract class DbIdObject : IHasId

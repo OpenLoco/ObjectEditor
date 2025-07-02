@@ -1,13 +1,12 @@
 using Common.Json;
-using Definitions;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
+using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
 using var db = Seed();
 
 Console.WriteLine("done");

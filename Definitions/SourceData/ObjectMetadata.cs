@@ -1,4 +1,3 @@
-using Definitions;
 using OpenLoco.Dat.Data;
 
 namespace OpenLoco.Definitions.SourceData

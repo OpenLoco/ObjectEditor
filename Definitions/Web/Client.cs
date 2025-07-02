@@ -1,4 +1,3 @@
-using Definitions;
 using OpenLoco.Common.Logging;
 using OpenLoco.Definitions.DTO;
 using System.IO.Hashing;

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Definitions.Migrations
+namespace OpenLoco.Definitions.Database.Migrations
 {
     /// <inheritdoc />
     public partial class AddObjectLookup : Migration

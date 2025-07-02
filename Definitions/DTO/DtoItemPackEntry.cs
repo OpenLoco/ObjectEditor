@@ -1,5 +1,3 @@
-using Definitions;
-
 namespace OpenLoco.Definitions.DTO
 {
 	public record DtoItemPackEntry(

@@ -9,12 +9,15 @@ using OpenLoco.Definitions.Web;
 namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 {
 	[TestFixture]
-	public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<DtoAuthorEntry, TblAuthor>
+	public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<DtoAuthorEntry, DtoAuthorEntry, TblAuthor>
 	{
-		protected override IEnumerable<DtoAuthorEntry> SeedData
-			=> [new(1, "Alice"), new(2, "Bob")];
+		protected override IEnumerable<TblAuthor> DbSeedData =>
+		[
+			new() { Id = 1, Name = "Alice" },
+			new() { Id = 2, Name = "Bob" },
+		];
 
-		protected override DtoAuthorEntry ExtraSeedDatum
+		protected override DtoAuthorEntry PutDto
 			=> new(3, "Charles");
 
 		public override string BaseRoute
@@ -25,5 +28,8 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 
 		protected override TblAuthor ToRowFunc(DtoAuthorEntry request)
 			=> request.ToTable();
+
+		protected override DtoAuthorEntry ToDtoEntryFunc(TblAuthor row)
+			=> row.ToDtoEntry();
 	}
 }

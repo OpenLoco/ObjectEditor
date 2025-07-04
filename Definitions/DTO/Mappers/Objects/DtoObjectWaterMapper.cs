@@ -4,25 +4,20 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectWaterMapper
 	{
-		public static DtoObjectWater ToDto(this TblObjectWater tblobjectwater)
+		public static DtoObjectWater ToDto(this TblObjectWater tblobjectwater) => new()
 		{
-			return new DtoObjectWater
-			{
-				CostIndex = tblobjectwater.CostIndex,
-				CostFactor = tblobjectwater.CostFactor,
-				Id = tblobjectwater.Id,
-			};
-		}
+			CostIndex = tblobjectwater.CostIndex,
+			CostFactor = tblobjectwater.CostFactor,
+			Id = tblobjectwater.Id,
+		};
 
-		public static TblObjectWater ToTblObjectWaterEntity(this DtoObjectWater model)
+		public static TblObjectWater ToTblObjectWaterEntity(this DtoObjectWater model, TblObject parent) => new()
 		{
-			return new TblObjectWater
-			{
-				CostIndex = model.CostIndex,
-				CostFactor = model.CostFactor,
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			CostIndex = model.CostIndex,
+			CostFactor = model.CostFactor,
+			Id = model.Id,
+		};
 
 	}
 }

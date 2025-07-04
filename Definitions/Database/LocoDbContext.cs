@@ -145,16 +145,16 @@ namespace OpenLoco.Definitions.Database
 
 			_ = modelBuilder.Entity<TblObject>()
 				.Property(b => b.UploadedDate)
-				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+				.HasDefaultValueSql("datetime('now')"); // this is necessary, it seems like a bug in sqlite
 			_ = modelBuilder.Entity<TblSC5File>()
 				.Property(b => b.UploadedDate)
-				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+				.HasDefaultValueSql("datetime('now')"); // this is necessary, it seems like a bug in sqlite
 			_ = modelBuilder.Entity<TblObjectPack>()
 				.Property(b => b.UploadedDate)
-				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+				.HasDefaultValueSql("datetime('now')"); // this is necessary, it seems like a bug in sqlite
 			_ = modelBuilder.Entity<TblSC5FilePack>()
 				.Property(b => b.UploadedDate)
-				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+				.HasDefaultValueSql("datetime('now')"); // this is necessary, it seems like a bug in sqlite
 		}
 
 		public bool DoesObjectExist(S5Header s5Header, out TblObject? existingObject)

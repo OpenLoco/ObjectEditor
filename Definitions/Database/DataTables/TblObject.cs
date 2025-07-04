@@ -5,6 +5,13 @@ namespace OpenLoco.Definitions.Database
 {
 	public class TblObject : DbCoreObject //<T> : DbCoreObject where T : DbSubObject
 	{
+		//[NotMapped]
+		//public DbSubObject SubObject => GetSubObject<T>
+
+		public async Task<T> GetSubObject<T>(LocoDbContext context)
+			where T : DbSubObject
+			=> (T)await DbSubObjectHelper.GetDbSetForType(context, ObjectType);
+
 		public UniqueObjectId SubObjectId { get; set; } // FK id
 
 		public ObjectType ObjectType { get; set; } // don't need to set explicitly - can be inferred from T type

@@ -4,35 +4,30 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectLevelCrossingMapper
 	{
-		public static DtoObjectLevelCrossing ToDto(this TblObjectLevelCrossing tblobjectlevelcrossing)
+		public static DtoObjectLevelCrossing ToDto(this TblObjectLevelCrossing tblobjectlevelcrossing) => new()
 		{
-			return new DtoObjectLevelCrossing
-			{
-				CostFactor = tblobjectlevelcrossing.CostFactor,
-				SellCostFactor = tblobjectlevelcrossing.SellCostFactor,
-				CostIndex = tblobjectlevelcrossing.CostIndex,
-				AnimationSpeed = tblobjectlevelcrossing.AnimationSpeed,
-				ClosingFrames = tblobjectlevelcrossing.ClosingFrames,
-				ClosedFrames = tblobjectlevelcrossing.ClosedFrames,
-				DesignedYear = tblobjectlevelcrossing.DesignedYear,
-				Id = tblobjectlevelcrossing.Id,
-			};
-		}
+			CostFactor = tblobjectlevelcrossing.CostFactor,
+			SellCostFactor = tblobjectlevelcrossing.SellCostFactor,
+			CostIndex = tblobjectlevelcrossing.CostIndex,
+			AnimationSpeed = tblobjectlevelcrossing.AnimationSpeed,
+			ClosingFrames = tblobjectlevelcrossing.ClosingFrames,
+			ClosedFrames = tblobjectlevelcrossing.ClosedFrames,
+			DesignedYear = tblobjectlevelcrossing.DesignedYear,
+			Id = tblobjectlevelcrossing.Id,
+		};
 
-		public static TblObjectLevelCrossing ToTblObjectLevelCrossingEntity(this DtoObjectLevelCrossing model)
+		public static TblObjectLevelCrossing ToTblObjectLevelCrossingEntity(this DtoObjectLevelCrossing model, TblObject parent) => new()
 		{
-			return new TblObjectLevelCrossing
-			{
-				CostFactor = model.CostFactor,
-				SellCostFactor = model.SellCostFactor,
-				CostIndex = model.CostIndex,
-				AnimationSpeed = model.AnimationSpeed,
-				ClosingFrames = model.ClosingFrames,
-				ClosedFrames = model.ClosedFrames,
-				DesignedYear = model.DesignedYear,
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			CostFactor = model.CostFactor,
+			SellCostFactor = model.SellCostFactor,
+			CostIndex = model.CostIndex,
+			AnimationSpeed = model.AnimationSpeed,
+			ClosingFrames = model.ClosingFrames,
+			ClosedFrames = model.ClosedFrames,
+			DesignedYear = model.DesignedYear,
+			Id = model.Id,
+		};
 
 	}
 }

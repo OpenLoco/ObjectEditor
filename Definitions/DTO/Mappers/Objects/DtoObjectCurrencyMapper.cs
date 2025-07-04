@@ -4,25 +4,20 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectCurrencyMapper
 	{
-		public static DtoObjectCurrency ToDto(this TblObjectCurrency tblobjectcurrency)
+		public static DtoObjectCurrency ToDto(this TblObjectCurrency tblobjectcurrency) => new()
 		{
-			return new DtoObjectCurrency
-			{
-				Separator = tblobjectcurrency.Separator,
-				Factor = tblobjectcurrency.Factor,
-				Id = tblobjectcurrency.Id,
-			};
-		}
+			Separator = tblobjectcurrency.Separator,
+			Factor = tblobjectcurrency.Factor,
+			Id = tblobjectcurrency.Id,
+		};
 
-		public static TblObjectCurrency ToTblObjectCurrencyEntity(this DtoObjectCurrency model)
+		public static TblObjectCurrency ToTblObjectCurrencyEntity(this DtoObjectCurrency model, TblObject parent) => new()
 		{
-			return new TblObjectCurrency
-			{
-				Separator = model.Separator,
-				Factor = model.Factor,
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			Separator = model.Separator,
+			Factor = model.Factor,
+			Id = model.Id,
+		};
 
 	}
 }

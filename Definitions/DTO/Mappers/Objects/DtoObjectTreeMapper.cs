@@ -4,49 +4,44 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectTreeMapper
 	{
-		public static DtoObjectTree ToDto(this TblObjectTree tblobjecttree)
+		public static DtoObjectTree ToDto(this TblObjectTree tblobjecttree) => new()
 		{
-			return new DtoObjectTree
-			{
-				Clearance = tblobjecttree.Clearance,
-				Height = tblobjecttree.Height,
-				NumRotations = tblobjecttree.NumRotations,
-				NumGrowthStages = tblobjecttree.NumGrowthStages,
-				Flags = tblobjecttree.Flags,
-				ShadowImageOffset = tblobjecttree.ShadowImageOffset,
-				SeasonState = tblobjecttree.SeasonState,
-				Season = tblobjecttree.Season,
-				CostIndex = tblobjecttree.CostIndex,
-				BuildCostFactor = tblobjecttree.BuildCostFactor,
-				ClearCostFactor = tblobjecttree.ClearCostFactor,
-				Colours = tblobjecttree.Colours,
-				Rating = tblobjecttree.Rating,
-				DemolishRatingReduction = tblobjecttree.DemolishRatingReduction,
-				Id = tblobjecttree.Id,
-			};
-		}
+			Clearance = tblobjecttree.Clearance,
+			Height = tblobjecttree.Height,
+			NumRotations = tblobjecttree.NumRotations,
+			NumGrowthStages = tblobjecttree.NumGrowthStages,
+			Flags = tblobjecttree.Flags,
+			ShadowImageOffset = tblobjecttree.ShadowImageOffset,
+			SeasonState = tblobjecttree.SeasonState,
+			Season = tblobjecttree.Season,
+			CostIndex = tblobjecttree.CostIndex,
+			BuildCostFactor = tblobjecttree.BuildCostFactor,
+			ClearCostFactor = tblobjecttree.ClearCostFactor,
+			Colours = tblobjecttree.Colours,
+			Rating = tblobjecttree.Rating,
+			DemolishRatingReduction = tblobjecttree.DemolishRatingReduction,
+			Id = tblobjecttree.Id,
+		};
 
-		public static TblObjectTree ToTblObjectTreeEntity(this DtoObjectTree model)
+		public static TblObjectTree ToTblObjectTreeEntity(this DtoObjectTree model, TblObject parent) => new()
 		{
-			return new TblObjectTree
-			{
-				Clearance = model.Clearance,
-				Height = model.Height,
-				NumRotations = model.NumRotations,
-				NumGrowthStages = model.NumGrowthStages,
-				Flags = model.Flags,
-				ShadowImageOffset = model.ShadowImageOffset,
-				SeasonState = model.SeasonState,
-				Season = model.Season,
-				CostIndex = model.CostIndex,
-				BuildCostFactor = model.BuildCostFactor,
-				ClearCostFactor = model.ClearCostFactor,
-				Colours = model.Colours,
-				Rating = model.Rating,
-				DemolishRatingReduction = model.DemolishRatingReduction,
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			Clearance = model.Clearance,
+			Height = model.Height,
+			NumRotations = model.NumRotations,
+			NumGrowthStages = model.NumGrowthStages,
+			Flags = model.Flags,
+			ShadowImageOffset = model.ShadowImageOffset,
+			SeasonState = model.SeasonState,
+			Season = model.Season,
+			CostIndex = model.CostIndex,
+			BuildCostFactor = model.BuildCostFactor,
+			ClearCostFactor = model.ClearCostFactor,
+			Colours = model.Colours,
+			Rating = model.Rating,
+			DemolishRatingReduction = model.DemolishRatingReduction,
+			Id = model.Id,
+		};
 
 	}
 }

@@ -4,29 +4,24 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectRoadExtraMapper
 	{
-		public static DtoObjectRoadExtra ToDto(this TblObjectRoadExtra tblobjectroadextra)
+		public static DtoObjectRoadExtra ToDto(this TblObjectRoadExtra tblobjectroadextra) => new()
 		{
-			return new DtoObjectRoadExtra
-			{
-				PaintStyle = tblobjectroadextra.PaintStyle,
-				CostIndex = tblobjectroadextra.CostIndex,
-				BuildCostFactor = tblobjectroadextra.BuildCostFactor,
-				SellCostFactor = tblobjectroadextra.SellCostFactor,
-				Id = tblobjectroadextra.Id,
-			};
-		}
+			PaintStyle = tblobjectroadextra.PaintStyle,
+			CostIndex = tblobjectroadextra.CostIndex,
+			BuildCostFactor = tblobjectroadextra.BuildCostFactor,
+			SellCostFactor = tblobjectroadextra.SellCostFactor,
+			Id = tblobjectroadextra.Id,
+		};
 
-		public static TblObjectRoadExtra ToTblObjectRoadExtraEntity(this DtoObjectRoadExtra model)
+		public static TblObjectRoadExtra ToTblObjectRoadExtraEntity(this DtoObjectRoadExtra model, TblObject parent) => new()
 		{
-			return new TblObjectRoadExtra
-			{
-				PaintStyle = model.PaintStyle,
-				CostIndex = model.CostIndex,
-				BuildCostFactor = model.BuildCostFactor,
-				SellCostFactor = model.SellCostFactor,
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			PaintStyle = model.PaintStyle,
+			CostIndex = model.CostIndex,
+			BuildCostFactor = model.BuildCostFactor,
+			SellCostFactor = model.SellCostFactor,
+			Id = model.Id,
+		};
 
 	}
 }

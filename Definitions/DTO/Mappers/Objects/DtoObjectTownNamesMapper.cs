@@ -4,21 +4,16 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectTownNamesMapper
 	{
-		public static DtoObjectTownNames ToDto(this TblObjectTownNames tblobjecttownnames)
+		public static DtoObjectTownNames ToDto(this TblObjectTownNames tblobjecttownnames) => new()
 		{
-			return new DtoObjectTownNames
-			{
-				Id = tblobjecttownnames.Id,
-			};
-		}
+			Id = tblobjecttownnames.Id,
+		};
 
-		public static TblObjectTownNames ToTblObjectTownNamesEntity(this DtoObjectTownNames model)
+		public static TblObjectTownNames ToTblObjectTownNamesEntity(this DtoObjectTownNames model, TblObject parent) => new()
 		{
-			return new TblObjectTownNames
-			{
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			Id = model.Id,
+		};
 
 	}
 }

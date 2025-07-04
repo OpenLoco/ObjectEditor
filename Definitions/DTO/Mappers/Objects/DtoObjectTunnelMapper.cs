@@ -4,21 +4,16 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectTunnelMapper
 	{
-		public static DtoObjectTunnel ToDto(this TblObjectTunnel tblobjecttunnel)
+		public static DtoObjectTunnel ToDto(this TblObjectTunnel tblobjecttunnel) => new()
 		{
-			return new DtoObjectTunnel
-			{
-				Id = tblobjecttunnel.Id,
-			};
-		}
+			Id = tblobjecttunnel.Id,
+		};
 
-		public static TblObjectTunnel ToTblObjectTunnelEntity(this DtoObjectTunnel model)
+		public static TblObjectTunnel ToTblObjectTunnelEntity(this DtoObjectTunnel model, TblObject parent) => new()
 		{
-			return new TblObjectTunnel
-			{
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			Id = model.Id,
+		};
 
 	}
 }

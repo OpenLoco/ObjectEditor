@@ -5,8 +5,10 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.DTO.Mappers;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
@@ -187,7 +189,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			var eObj = await db.Objects
 				.Include(x => x.DatObjects)
 				.Include(x => x.Licence)
-				.Where(x => x.DatObjects.First().DatName == datName && x.DatObjects.First().DatChecksum == datChecksum && x.Availability == Definitions.ObjectAvailability.Available)
+				.Where(x => x.DatObjects.First().DatName == datName && x.DatObjects.First().DatChecksum == datChecksum && x.Availability == ObjectAvailability.Available)
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
@@ -202,7 +204,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			var obj = await db.Objects
 				.Include(x => x.DatObjects)
-				.Where(x => x.Id == uniqueObjectId && x.Availability == Definitions.ObjectAvailability.Available)
+				.Where(x => x.Id == uniqueObjectId && x.Availability == ObjectAvailability.Available)
 				.SingleOrDefaultAsync();
 
 			if (obj == null)
@@ -274,7 +276,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			logger.LogInformation("[GetObject] Object [{ObjectId}] requested", uniqueObjectId);
 
 			var eObj = await db.Objects
-				.Where(x => (int)x.Id == uniqueObjectId && x.Availability == Definitions.ObjectAvailability.Available)
+				.Where(x => (int)x.Id == uniqueObjectId && x.Availability == ObjectAvailability.Available)
 				.Include(x => x.Licence)
 				.Include(x => x.DatObjects)
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
@@ -340,7 +342,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			var obj = await db.DatObjects
 				.Include(x => x.Object)
-				.Where(x => x.DatName == datName && x.DatChecksum == datChecksum && x.Object.Availability == Definitions.ObjectAvailability.Available)
+				.Where(x => x.DatName == datName && x.DatChecksum == datChecksum && x.Object.Availability == ObjectAvailability.Available)
 				.SingleOrDefaultAsync();
 
 			if (obj == null)
@@ -359,7 +361,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			var obj = await db.DatObjects
 				.Include(x => x.Object)
-				.Where(x => (int)x.Object.Id == uniqueObjectId && x.Object.Availability == Definitions.ObjectAvailability.Available)
+				.Where(x => (int)x.Object.Id == uniqueObjectId && x.Object.Availability == ObjectAvailability.Available)
 				.FirstOrDefaultAsync(); // may be more than one dat file associated with this object, so just get the first for now
 
 			if (obj == null)

@@ -4,25 +4,20 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectSoundMapper
 	{
-		public static DtoObjectSound ToDto(this TblObjectSound tblobjectsound)
+		public static DtoObjectSound ToDto(this TblObjectSound tblobjectsound) => new()
 		{
-			return new DtoObjectSound
-			{
-				ShouldLoop = tblobjectsound.ShouldLoop,
-				Volume = tblobjectsound.Volume,
-				Id = tblobjectsound.Id,
-			};
-		}
+			ShouldLoop = tblobjectsound.ShouldLoop,
+			Volume = tblobjectsound.Volume,
+			Id = tblobjectsound.Id,
+		};
 
-		public static TblObjectSound ToTblObjectSoundEntity(this DtoObjectSound model)
+		public static TblObjectSound ToTblObjectSoundEntity(this DtoObjectSound model, TblObject parent) => new()
 		{
-			return new TblObjectSound
-			{
-				ShouldLoop = model.ShouldLoop,
-				Volume = model.Volume,
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			ShouldLoop = model.ShouldLoop,
+			Volume = model.Volume,
+			Id = model.Id,
+		};
 
 	}
 }

@@ -5,7 +5,7 @@ namespace OpenLoco.Definitions.DTO
 {
 	public record DtoObjectDescriptor(
 		UniqueObjectId Id,
-		string InternalName,
+		string Name,
 		string DisplayName,
 		uint? DatChecksum,
 		string? Description,

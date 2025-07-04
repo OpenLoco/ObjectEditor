@@ -406,7 +406,7 @@ async static void SetupSubObjects()
 					continue;
 				}
 
-				var result = await DbSubObjectUpdater.Update(db, obj, _o.Value.LocoObject.Object);
+				var result = await DbSubObjectHelper.Update(db, obj, _o.Value.LocoObject.Object);
 				Console.WriteLine($"{result} data for {firstDatObj.DatName} - {obj.Name}");
 			}
 			catch (Exception ex)

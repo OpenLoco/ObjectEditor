@@ -282,7 +282,7 @@ namespace OpenLoco.Gui.Models
 					fileInfo = new DatFileInfo(fakeS5Header, ObjectHeader.NullHeader);
 				}
 
-				metadata = new MetadataModel(cachedLocoObjDto.InternalName)
+				metadata = new MetadataModel(cachedLocoObjDto.Name)
 				{
 					Description = cachedLocoObjDto.Description,
 					Authors = [.. cachedLocoObjDto.Authors.Select(x => x.ToTable())],

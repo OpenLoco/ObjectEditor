@@ -15,5 +15,5 @@ namespace OpenLoco.Definitions.DTO
 		ObjectAvailability Availability,
 		DateTimeOffset? CreatedDate,
 		DateTimeOffset? ModifiedDate,
-		DateTimeOffset UploadedDate);
+		DateTimeOffset UploadedDate) : IHasId;
 }

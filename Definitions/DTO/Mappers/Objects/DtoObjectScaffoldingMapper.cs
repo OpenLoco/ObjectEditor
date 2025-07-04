@@ -4,21 +4,16 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectScaffoldingMapper
 	{
-		public static DtoObjectScaffolding ToDto(this TblObjectScaffolding tblobjectscaffolding)
+		public static DtoObjectScaffolding ToDto(this TblObjectScaffolding tblobjectscaffolding) => new()
 		{
-			return new DtoObjectScaffolding
-			{
-				Id = tblobjectscaffolding.Id,
-			};
-		}
+			Id = tblobjectscaffolding.Id,
+		};
 
-		public static TblObjectScaffolding ToTblObjectScaffoldingEntity(this DtoObjectScaffolding model)
+		public static TblObjectScaffolding ToTblObjectScaffoldingEntity(this DtoObjectScaffolding model, TblObject parent) => new()
 		{
-			return new TblObjectScaffolding
-			{
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			Id = model.Id,
+		};
 
 	}
 }

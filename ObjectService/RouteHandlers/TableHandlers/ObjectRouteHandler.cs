@@ -5,8 +5,10 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.DTO.Mappers;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
@@ -88,8 +90,15 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
 
 			var sfm = sp.GetRequiredService<ServerFolderManager>();
+			var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
 
-			var (_, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
+			if (LocoObject == null)
+			{
+				return Results.BadRequest("Could not parse DAT object from request");
+
+				// cannot proceed
+			}
+
 			var uuid = Guid.NewGuid();
 			var saveFileName = Path.Combine(sfm.ObjectsCustomFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
@@ -99,12 +108,13 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			var creationTime = request.CreatedDate;
 
 			VehicleType? vehicleType = null;
-			if (LocoObject?.Object is VehicleObject veh)
+			if (LocoObject.Object is VehicleObject veh)
 			{
 				vehicleType = veh.Type;
 			}
 
-			var locoTbl = new TblObject()
+			// make object header
+			var tblObject = new TblObject()
 			{
 				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name. this is NOT unique
 				Description = string.Empty,
@@ -119,18 +129,53 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				Tags = [],
 				ObjectPacks = [],
 				DatObjects = [],
+				StringTable = [],
+				SubObjectId = 0,
 				Licence = null,
 			};
 
-			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-
-			_ = db.Objects.Add(locoTbl);
+			// must save here to obtain the id for the new object, to link the dependent tables
+			_ = await db.Objects.AddAsync(tblObject);
 			_ = await db.SaveChangesAsync();
 
-			sfm.ObjectIndex.Objects.Add(
-				new ObjectIndexEntry(hdrs.S5.Name, saveFileName, locoTbl.Id, hdrs.S5.Checksum, xxHash3, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.CreatedDate, locoTbl.UploadedDate, locoTbl.VehicleType));
+			// make string table
+			foreach (var s in LocoObject.StringTable.Table)
+			{
+				foreach (var t in s.Value)
+				{
+					tblObject.StringTable.Add(new TblStringTableRow()
+					{
+						Name = s.Key,
+						Language = t.Key,
+						Text = t.Value,
+						ObjectId = tblObject.Id,
+					});
+				}
+			}
 
-			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
+			// make dat objects
+			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
+			tblObject.DatObjects.Add(new TblDatObject()
+			{
+				ObjectId = tblObject.Id,
+				DatName = DatFileInfo.S5Header.Name,
+				DatChecksum = DatFileInfo.S5Header.Checksum,
+				xxHash3 = xxHash3,
+				Object = tblObject,
+			});
+
+			// make sub object
+			_ = await DbSubObjectHelper.Update(db, tblObject, LocoObject.Object);
+
+			// save again
+			_ = await db.SaveChangesAsync();
+
+			// update server index
+			sfm.ObjectIndex.Objects.Add(
+				new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
+
+			_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
+			return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
 		}
 
 		static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
@@ -145,8 +190,12 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
+			//var linkedObj = await db.
+
+			var descriptor = eObj?.ToDtoDescriptor();
+
 			var sfm = sp.GetRequiredService<ServerFolderManager>();
-			return ReturnObject(eObj, sfm, logger);
+			return ReturnObject(descriptor, sfm, logger);
 		}
 
 		static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
@@ -260,7 +309,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				return Results.Forbid();
 			}
 
-			if (obj.Availability == Definitions.ObjectAvailability.Unavailable)
+			if (obj.Availability == ObjectAvailability.Unavailable)
 			{
 				logger.LogWarning("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", obj.Id, obj.Name);
 				return Results.Forbid();
@@ -333,24 +382,22 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return ReturnFile(obj, sfm, logger);
 		}
 
-		static IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
+		static IResult ReturnObject(DtoObjectDescriptor? dtoDescriptor, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogDebug("[ReturnObject]");
 
-			if (eObj == null || eObj.Object == null)
+			if (dtoDescriptor == null)
 			{
 				return Results.NotFound();
 			}
 
-			if (eObj.Object.Availability == Definitions.ObjectAvailability.Unavailable)
+			if (dtoDescriptor.Availability == ObjectAvailability.Unavailable)
 			{
-				logger.LogError("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", eObj.Object.Id, eObj.Object.Name);
+				logger.LogError("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", dtoDescriptor.Id, dtoDescriptor);
 				return Results.Forbid();
 			}
 
-			var obj = eObj.ToDtoDescriptor();
-
-			foreach (var dat in obj.DatObjects)
+			foreach (var dat in dtoDescriptor.DatObjects)
 			{
 				if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
 				{
@@ -372,7 +419,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 					continue;
 				}
 
-				if (eObj.Object.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+				if (dtoDescriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 				{
 					logger.LogWarning("User attempted to download a vanilla object");
 					dat.DatBytes = null;
@@ -383,7 +430,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				}
 			}
 
-			return Results.Ok(obj);
+			return Results.Ok(dtoDescriptor);
 		}
 
 		static IResult ReturnFile(TblObject? obj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)

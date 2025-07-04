@@ -4,21 +4,16 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectStreetLightMapper
 	{
-		public static DtoObjectStreetLight ToDto(this TblObjectStreetLight tblobjectstreetlight)
+		public static DtoObjectStreetLight ToDto(this TblObjectStreetLight tblobjectstreetlight) => new()
 		{
-			return new DtoObjectStreetLight
-			{
-				Id = tblobjectstreetlight.Id,
-			};
-		}
+			Id = tblobjectstreetlight.Id,
+		};
 
-		public static TblObjectStreetLight ToTblObjectStreetLightEntity(this DtoObjectStreetLight model)
+		public static TblObjectStreetLight ToTblObjectStreetLightEntity(this DtoObjectStreetLight model, TblObject parent) => new()
 		{
-			return new TblObjectStreetLight
-			{
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			Id = model.Id,
+		};
 
 	}
 }

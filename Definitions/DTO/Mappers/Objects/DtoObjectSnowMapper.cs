@@ -4,21 +4,16 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectSnowMapper
 	{
-		public static DtoObjectSnow ToDto(this TblObjectSnow tblobjectsnow)
+		public static DtoObjectSnow ToDto(this TblObjectSnow tblobjectsnow) => new()
 		{
-			return new DtoObjectSnow
-			{
-				Id = tblobjectsnow.Id,
-			};
-		}
+			Id = tblobjectsnow.Id,
+		};
 
-		public static TblObjectSnow ToTblObjectSnowEntity(this DtoObjectSnow model)
+		public static TblObjectSnow ToTblObjectSnowEntity(this DtoObjectSnow model, TblObject parent) => new()
 		{
-			return new TblObjectSnow
-			{
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			Id = model.Id,
+		};
 
 	}
 }

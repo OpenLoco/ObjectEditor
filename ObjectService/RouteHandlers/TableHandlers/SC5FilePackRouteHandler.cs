@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.DTO.Mappers;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
 

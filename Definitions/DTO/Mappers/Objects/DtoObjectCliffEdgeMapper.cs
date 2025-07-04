@@ -4,21 +4,16 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectCliffEdgeMapper
 	{
-		public static DtoObjectCliffEdge ToDto(this TblObjectCliffEdge tblobjectcliffedge)
+		public static DtoObjectCliffEdge ToDto(this TblObjectCliffEdge tblobjectcliffedge) => new()
 		{
-			return new DtoObjectCliffEdge
-			{
-				Id = tblobjectcliffedge.Id,
-			};
-		}
+			Id = tblobjectcliffedge.Id,
+		};
 
-		public static TblObjectCliffEdge ToTblObjectCliffEdgeEntity(this DtoObjectCliffEdge model)
+		public static TblObjectCliffEdge ToTblObjectCliffEdgeEntity(this DtoObjectCliffEdge model, TblObject parent) => new()
 		{
-			return new TblObjectCliffEdge
-			{
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			Id = model.Id,
+		};
 
 	}
 }

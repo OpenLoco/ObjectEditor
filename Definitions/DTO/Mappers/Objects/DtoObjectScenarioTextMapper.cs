@@ -4,21 +4,16 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectScenarioTextMapper
 	{
-		public static DtoObjectScenarioText ToDto(this TblObjectScenarioText tblobjectscenariotext)
+		public static DtoObjectScenarioText ToDto(this TblObjectScenarioText tblobjectscenariotext) => new()
 		{
-			return new DtoObjectScenarioText
-			{
-				Id = tblobjectscenariotext.Id,
-			};
-		}
+			Id = tblobjectscenariotext.Id,
+		};
 
-		public static TblObjectScenarioText ToTblObjectScenarioTextEntity(this DtoObjectScenarioText model)
+		public static TblObjectScenarioText ToTblObjectScenarioTextEntity(this DtoObjectScenarioText model, TblObject parent) => new()
 		{
-			return new TblObjectScenarioText
-			{
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			Id = model.Id,
+		};
 
 	}
 }

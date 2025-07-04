@@ -9,13 +9,15 @@ using OpenLoco.Definitions.Web;
 namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 {
 	[TestFixture]
-	public class LicenseRoutesTest : BaseReferenceDataTableTestFixture<DtoLicenceEntry, TblLicence>
+	public class LicenseRoutesTest : BaseReferenceDataTableTestFixture<DtoLicenceEntry, DtoLicenceEntry, TblLicence>
 	{
-		protected override IEnumerable<DtoLicenceEntry> SeedData
-			=> [new(1, "Gandalf-EULA", "You shall not pass"),
-				new(2, "Vader-TOS", "I am your father")];
+		protected override IEnumerable<TblLicence> DbSeedData =>
+		[
+			new() { Id = 1, Name = "Gandalf-EULA", Text="You shall not pass" },
+			new() { Id = 2, Name = "Vader-TOS", Text="I am your father" },
+		];
 
-		protected override DtoLicenceEntry ExtraSeedDatum
+		protected override DtoLicenceEntry PutDto
 			=> new(3, "Constitution", "Do no evil");
 
 		public override string BaseRoute
@@ -26,5 +28,8 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 
 		protected override TblLicence ToRowFunc(DtoLicenceEntry request)
 			=> request.ToTable();
+
+		protected override DtoLicenceEntry ToDtoEntryFunc(TblLicence row)
+			=> row.ToDtoEntry();
 	}
 }

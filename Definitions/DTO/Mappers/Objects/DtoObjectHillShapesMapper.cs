@@ -4,27 +4,22 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoObjectHillShapesMapper
 	{
-		public static DtoObjectHillShapes ToDto(this TblObjectHillShapes tblobjecthillshapes)
+		public static DtoObjectHillShapes ToDto(this TblObjectHillShapes tblobjecthillshapes) => new()
 		{
-			return new DtoObjectHillShapes
-			{
-				HillHeightMapCount = tblobjecthillshapes.HillHeightMapCount,
-				MountainHeightMapCount = tblobjecthillshapes.MountainHeightMapCount,
-				Flags = tblobjecthillshapes.Flags,
-				Id = tblobjecthillshapes.Id,
-			};
-		}
+			HillHeightMapCount = tblobjecthillshapes.HillHeightMapCount,
+			MountainHeightMapCount = tblobjecthillshapes.MountainHeightMapCount,
+			Flags = tblobjecthillshapes.Flags,
+			Id = tblobjecthillshapes.Id,
+		};
 
-		public static TblObjectHillShapes ToTblObjectHillShapesEntity(this DtoObjectHillShapes model)
+		public static TblObjectHillShapes ToTblObjectHillShapesEntity(this DtoObjectHillShapes model, TblObject parent) => new()
 		{
-			return new TblObjectHillShapes
-			{
-				HillHeightMapCount = model.HillHeightMapCount,
-				MountainHeightMapCount = model.MountainHeightMapCount,
-				Flags = model.Flags,
-				Id = model.Id,
-			};
-		}
+			Parent = parent,
+			HillHeightMapCount = model.HillHeightMapCount,
+			MountainHeightMapCount = model.MountainHeightMapCount,
+			Flags = model.Flags,
+			Id = model.Id,
+		};
 
 	}
 }

@@ -10,13 +10,30 @@ namespace OpenLoco.Definitions.Database
 		static abstract TTable FromObject(TblObject tblObj, TDat datObo);
 	}
 
-	[Index(nameof(Id), IsUnique = true)]
-	public abstract class DbSubObject : DbIdObject
+	public interface IDtoSubObject
 	{
-		public required TblObject Parent { get; set; }
+		//IDbSubObject ToTbl();
 	}
 
-	public static class DbSubObjectUpdater
+	public interface IDbSubObject
+	{
+		//IDtoSubObject ToDto();
+	}
+
+	[Index(nameof(Id), IsUnique = true)]
+	public abstract class DbSubObject : DbIdObject, IDbSubObject
+	{
+		public required TblObject Parent { get; set; }
+
+		//public abstract IDtoSubObject ToDto();
+	}
+
+	public abstract class DtoSubObject : DbIdObject, IDtoSubObject
+	{
+		//public abstract IDbSubObject ToTbl();
+	}
+
+	public static class DbSubObjectHelper
 	{
 		static async Task<string> AddOrUpdate<TSubObject, TDat>(LocoDbContext db, DbSet<TSubObject> subObjTable, TblObject parentObj, ILocoStruct datObj)
 			where TSubObject : DbSubObject, IConvertibleToTable<TSubObject, TDat>
@@ -80,6 +97,46 @@ namespace OpenLoco.Definitions.Database
 				ObjectType.Vehicle => await AddOrUpdate<TblObjectVehicle, VehicleObject>(db, db.ObjVehicle, obj, (VehicleObject)locoStruct),
 				ObjectType.Water => await AddOrUpdate<TblObjectWater, WaterObject>(db, db.ObjWater, obj, (WaterObject)locoStruct),
 				ObjectType.Wall => await AddOrUpdate<TblObjectWall, WallObject>(db, db.ObjWall, obj, (WallObject)locoStruct),
+				_ => "unknown object type",
+			};
+
+		public static async Task<dynamic> GetDbSetForType(LocoDbContext db, ObjectType objectType)
+			=> objectType switch
+			{
+				ObjectType.Airport => db.ObjAirport,
+				ObjectType.Bridge => db.ObjBridge,
+				ObjectType.Building => db.ObjBuilding,
+				ObjectType.Cargo => db.ObjCargo,
+				ObjectType.CliffEdge => db.ObjCliffEdge,
+				ObjectType.Climate => db.ObjClimate,
+				ObjectType.Competitor => db.ObjCompetitor,
+				ObjectType.Currency => db.ObjCurrency,
+				ObjectType.Dock => db.ObjDock,
+				ObjectType.HillShapes => db.ObjHillShapes,
+				ObjectType.Industry => db.ObjIndustry,
+				ObjectType.InterfaceSkin => db.ObjInterface,
+				ObjectType.Land => db.ObjLand,
+				ObjectType.LevelCrossing => db.ObjLevelCrossing,
+				ObjectType.Region => db.ObjRegion,
+				ObjectType.RoadExtra => db.ObjRoadExtra,
+				ObjectType.Road => db.ObjRoad,
+				ObjectType.RoadStation => db.ObjRoadStation,
+				ObjectType.Scaffolding => db.ObjScaffolding,
+				ObjectType.ScenarioText => db.ObjScenarioText,
+				ObjectType.Snow => db.ObjSnow,
+				ObjectType.Sound => db.ObjSound,
+				ObjectType.Steam => db.ObjSteam,
+				ObjectType.StreetLight => db.ObjStreetLight,
+				ObjectType.TownNames => db.ObjTownNames,
+				ObjectType.TrackExtra => db.ObjTrackExtra,
+				ObjectType.Track => db.ObjTrack,
+				ObjectType.TrackSignal => db.ObjTrackSignal,
+				ObjectType.TrackStation => db.ObjTrackStation,
+				ObjectType.Tree => db.ObjTree,
+				ObjectType.Tunnel => db.ObjTunnel,
+				ObjectType.Vehicle => db.ObjVehicle,
+				ObjectType.Water => db.ObjWater,
+				ObjectType.Wall => db.ObjWall,
 				_ => "unknown object type",
 			};
 	}

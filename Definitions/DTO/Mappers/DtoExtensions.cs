@@ -6,7 +6,7 @@ namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoExtensions
 	{
-		public static DtoObjectDescriptor ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x)
+		public static DtoObjectDescriptor ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x, IDtoSubObject SubObject)
 			=> new(
 				x!.Object.Id,
 				x!.Object.Name,
@@ -25,7 +25,8 @@ namespace OpenLoco.Definitions.DTO.Mappers
 				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				[.. x.Packs.Select(x => x.ToDtoEntry())],
 				[.. x.Object.DatObjects.Select(x => x.ToDtoEntry())],
-				x.Object.StringTable.ToDtoDescriptor(x.Object.Id));
+				x.Object.StringTable.ToDtoDescriptor(x.Object.Id),
+				SubObject);
 
 		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTableRow> x, UniqueObjectId ObjectId)
 		{

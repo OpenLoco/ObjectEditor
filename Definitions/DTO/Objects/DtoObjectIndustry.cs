@@ -1,9 +1,10 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectIndustry : IHasId
+	public class DtoObjectIndustry : IDtoSubObject
 	{
 		public uint32_t FarmImagesPerGrowthStage { get; set; }
 		public uint8_t MinNumBuildings { get; set; }

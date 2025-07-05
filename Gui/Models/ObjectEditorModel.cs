@@ -8,7 +8,6 @@ using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.DTO.Mappers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -287,9 +286,9 @@ namespace OpenLoco.Gui.Models
 				{
 					Description = cachedLocoObjDto.Description,
 					Authors = [.. cachedLocoObjDto.Authors],
-					CreatedDate = cachedLocoObjDto.CreatedDate,
-					ModifiedDate = cachedLocoObjDto.ModifiedDate,
-					UploadedDate = cachedLocoObjDto.UploadedDate,
+					CreatedDate = cachedLocoObjDto.CreatedDate?.ToDateTimeOffset(),
+					ModifiedDate = cachedLocoObjDto.ModifiedDate?.ToDateTimeOffset(),
+					UploadedDate = cachedLocoObjDto.UploadedDate.ToDateTimeOffset(),
 					Tags = [.. cachedLocoObjDto.Tags],
 					ObjectPacks = [.. cachedLocoObjDto.ObjectPacks],
 					DatObjects = [.. cachedLocoObjDto.DatObjects],
@@ -334,8 +333,8 @@ namespace OpenLoco.Gui.Models
 				locoObject = obj.Value.LocoObject;
 				metadata = new MetadataModel("<unknown>")
 				{
-					CreatedDate = filesystemItem.CreatedDate,
-					ModifiedDate = filesystemItem.ModifiedDate
+					CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
+					ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset()
 				}; // todo: look up the rest of the data from internet
 
 				if (locoObject != null)

@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectCargo : IHasId
+	public class DtoObjectCargo : IDtoSubObject
 	{
 		public uint16_t CargoTransferTime { get; set; }
 		public CargoCategory CargoCategory { get; set; }

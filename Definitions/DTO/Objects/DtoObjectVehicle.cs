@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectVehicle : IHasId
+	public class DtoObjectVehicle : IDtoSubObject
 	{
 		public TransportMode Mode { get; set; }
 		public VehicleType Type { get; set; }

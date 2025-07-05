@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
+using OpenLoco.Definitions.DTO.Mappers;
 
 namespace OpenLoco.Definitions.Database
 {
@@ -10,12 +11,12 @@ namespace OpenLoco.Definitions.Database
 		static abstract TTable FromObject(TblObject tblObj, TDat datObo);
 	}
 
-	public interface IDtoSubObject
+	public interface IDtoSubObject : IHasId
 	{
 		//IDbSubObject ToTbl();
 	}
 
-	public interface IDbSubObject
+	public interface IDbSubObject : IHasId
 	{
 		//IDtoSubObject ToDto();
 	}
@@ -100,44 +101,84 @@ namespace OpenLoco.Definitions.Database
 				_ => "unknown object type",
 			};
 
-		public static dynamic GetDbSetForType(LocoDbContext db, ObjectType objectType)
+		public static IDtoSubObject GetDbSubForType(LocoDbContext db, ObjectType objectType, UniqueObjectId parentId)
 			=> objectType switch
 			{
-				ObjectType.Airport => db.ObjAirport,
-				ObjectType.Bridge => db.ObjBridge,
-				ObjectType.Building => db.ObjBuilding,
-				ObjectType.Cargo => db.ObjCargo,
-				ObjectType.CliffEdge => db.ObjCliffEdge,
-				ObjectType.Climate => db.ObjClimate,
-				ObjectType.Competitor => db.ObjCompetitor,
-				ObjectType.Currency => db.ObjCurrency,
-				ObjectType.Dock => db.ObjDock,
-				ObjectType.HillShapes => db.ObjHillShapes,
-				ObjectType.Industry => db.ObjIndustry,
-				ObjectType.InterfaceSkin => db.ObjInterface,
-				ObjectType.Land => db.ObjLand,
-				ObjectType.LevelCrossing => db.ObjLevelCrossing,
-				ObjectType.Region => db.ObjRegion,
-				ObjectType.RoadExtra => db.ObjRoadExtra,
-				ObjectType.Road => db.ObjRoad,
-				ObjectType.RoadStation => db.ObjRoadStation,
-				ObjectType.Scaffolding => db.ObjScaffolding,
-				ObjectType.ScenarioText => db.ObjScenarioText,
-				ObjectType.Snow => db.ObjSnow,
-				ObjectType.Sound => db.ObjSound,
-				ObjectType.Steam => db.ObjSteam,
-				ObjectType.StreetLight => db.ObjStreetLight,
-				ObjectType.TownNames => db.ObjTownNames,
-				ObjectType.TrackExtra => db.ObjTrackExtra,
-				ObjectType.Track => db.ObjTrack,
-				ObjectType.TrackSignal => db.ObjTrackSignal,
-				ObjectType.TrackStation => db.ObjTrackStation,
-				ObjectType.Tree => db.ObjTree,
-				ObjectType.Tunnel => db.ObjTunnel,
-				ObjectType.Vehicle => db.ObjVehicle,
-				ObjectType.Water => db.ObjWater,
-				ObjectType.Wall => db.ObjWall,
-				_ => "unknown object type",
+				ObjectType.Airport => DtoObjectAirportMapper.ToDto(db.ObjAirport.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Bridge => DtoObjectBridgeMapper.ToDto(db.ObjBridge.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Building => DtoObjectBuildingMapper.ToDto(db.ObjBuilding.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Cargo => DtoObjectCargoMapper.ToDto(db.ObjCargo.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.CliffEdge => DtoObjectCliffEdgeMapper.ToDto(db.ObjCliffEdge.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Climate => DtoObjectClimateMapper.ToDto(db.ObjClimate.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Competitor => DtoObjectCompetitorMapper.ToDto(db.ObjCompetitor.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Currency => DtoObjectCurrencyMapper.ToDto(db.ObjCurrency.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Dock => DtoObjectDockMapper.ToDto(db.ObjDock.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.HillShapes => DtoObjectHillShapesMapper.ToDto(db.ObjHillShapes.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Industry => DtoObjectIndustryMapper.ToDto(db.ObjIndustry.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.InterfaceSkin => DtoObjectInterfaceMapper.ToDto(db.ObjInterface.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Land => DtoObjectLandMapper.ToDto(db.ObjLand.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.LevelCrossing => DtoObjectLevelCrossingMapper.ToDto(db.ObjLevelCrossing.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Region => DtoObjectRegionMapper.ToDto(db.ObjRegion.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.RoadExtra => DtoObjectRoadExtraMapper.ToDto(db.ObjRoadExtra.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Road => DtoObjectRoadMapper.ToDto(db.ObjRoad.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.RoadStation => DtoObjectRoadStationMapper.ToDto(db.ObjRoadStation.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Scaffolding => DtoObjectScaffoldingMapper.ToDto(db.ObjScaffolding.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.ScenarioText => DtoObjectScenarioTextMapper.ToDto(db.ObjScenarioText.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Snow => DtoObjectSnowMapper.ToDto(db.ObjSnow.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Sound => DtoObjectSoundMapper.ToDto(db.ObjSound.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Steam => DtoObjectSteamMapper.ToDto(db.ObjSteam.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.StreetLight => DtoObjectStreetLightMapper.ToDto(db.ObjStreetLight.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.TownNames => DtoObjectTownNamesMapper.ToDto(db.ObjTownNames.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.TrackExtra => DtoObjectTrackExtraMapper.ToDto(db.ObjTrackExtra.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Track => DtoObjectTrackMapper.ToDto(db.ObjTrack.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.TrackSignal => DtoObjectTrackSignalMapper.ToDto(db.ObjTrackSignal.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.TrackStation => DtoObjectTrackStationMapper.ToDto(db.ObjTrackStation.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Tree => DtoObjectTreeMapper.ToDto(db.ObjTree.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Tunnel => DtoObjectTunnelMapper.ToDto(db.ObjTunnel.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Vehicle => DtoObjectVehicleMapper.ToDto(db.ObjVehicle.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Water => DtoObjectWaterMapper.ToDto(db.ObjWater.SingleOrDefault(x => x.Parent.Id == parentId)),
+				ObjectType.Wall => DtoObjectWallMapper.ToDto(db.ObjWall.SingleOrDefault(x => x.Parent.Id == parentId)),
+				_ => throw new NotImplementedException(),
 			};
+
+		public static dynamic GetDbSetForType(LocoDbContext db, ObjectType objectType)
+		=> objectType switch
+		{
+			ObjectType.Airport => db.ObjAirport,
+			ObjectType.Bridge => db.ObjBridge,
+			ObjectType.Building => db.ObjBuilding,
+			ObjectType.Cargo => db.ObjCargo,
+			ObjectType.CliffEdge => db.ObjCliffEdge,
+			ObjectType.Climate => db.ObjClimate,
+			ObjectType.Competitor => db.ObjCompetitor,
+			ObjectType.Currency => db.ObjCurrency,
+			ObjectType.Dock => db.ObjDock,
+			ObjectType.HillShapes => db.ObjHillShapes,
+			ObjectType.Industry => db.ObjIndustry,
+			ObjectType.InterfaceSkin => db.ObjInterface,
+			ObjectType.Land => db.ObjLand,
+			ObjectType.LevelCrossing => db.ObjLevelCrossing,
+			ObjectType.Region => db.ObjRegion,
+			ObjectType.RoadExtra => db.ObjRoadExtra,
+			ObjectType.Road => db.ObjRoad,
+			ObjectType.RoadStation => db.ObjRoadStation,
+			ObjectType.Scaffolding => db.ObjScaffolding,
+			ObjectType.ScenarioText => db.ObjScenarioText,
+			ObjectType.Snow => db.ObjSnow,
+			ObjectType.Sound => db.ObjSound,
+			ObjectType.Steam => db.ObjSteam,
+			ObjectType.StreetLight => db.ObjStreetLight,
+			ObjectType.TownNames => db.ObjTownNames,
+			ObjectType.TrackExtra => db.ObjTrackExtra,
+			ObjectType.Track => db.ObjTrack,
+			ObjectType.TrackSignal => db.ObjTrackSignal,
+			ObjectType.TrackStation => db.ObjTrackStation,
+			ObjectType.Tree => db.ObjTree,
+			ObjectType.Tunnel => db.ObjTunnel,
+			ObjectType.Vehicle => db.ObjVehicle,
+			ObjectType.Water => db.ObjWater,
+			ObjectType.Wall => db.ObjWall,
+			_ => throw new NotImplementedException(),
+		};
 	}
 }

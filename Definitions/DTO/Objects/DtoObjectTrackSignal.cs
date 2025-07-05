@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectTrackSignal : IHasId
+	public class DtoObjectTrackSignal : IDtoSubObject
 	{
 		public TrackSignalObjectFlags Flags { get; set; }
 		public uint8_t AnimationSpeed { get; set; }

@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace OpenLoco.Gui.Models
 {
-	public class MetadataModel(string internalName) : IDbDates
+	public class MetadataModel(string internalName)
 	{
 		public string InternalName { get; init; } = internalName;
 
@@ -15,11 +15,11 @@ namespace OpenLoco.Gui.Models
 
 		public ObjectAvailability Availability { get; set; }
 
-		public DateOnly? CreatedDate { get; set; }
+		public DateTimeOffset? CreatedDate { get; set; }
 
-		public DateOnly? ModifiedDate { get; set; }
+		public DateTimeOffset? ModifiedDate { get; set; }
 
-		public DateOnly UploadedDate { get; set; }
+		public DateTimeOffset UploadedDate { get; set; }
 
 		public DtoLicenceEntry? Licence { get; set; }
 
@@ -36,6 +36,6 @@ namespace OpenLoco.Gui.Models
 		public ICollection<DtoDatObjectEntry> DatObjects { get; set; } = [];
 
 		[Browsable(false)]
-		public IDbSubObject? SubObject { get; set; }
+		public IDtoSubObject? SubObject { get; set; }
 	}
 }

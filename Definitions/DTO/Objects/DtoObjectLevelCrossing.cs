@@ -1,6 +1,8 @@
+using OpenLoco.Definitions.Database;
+
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectLevelCrossing : IHasId
+	public class DtoObjectLevelCrossing : IDtoSubObject
 	{
 		public int16_t CostFactor { get; set; }
 		public int16_t SellCostFactor { get; set; }

@@ -1,6 +1,8 @@
+using OpenLoco.Definitions.Database;
+
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectAirport : IHasId
+	public class DtoObjectAirport : IDtoSubObject
 	{
 		public int16_t BuildCostFactor { get; set; }
 		public int16_t SellCostFactor { get; set; }

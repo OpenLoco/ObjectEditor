@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectTree : IHasId
+	public class DtoObjectTree : IDtoSubObject
 	{
 		public uint8_t Clearance { get; set; }
 		public uint8_t Height { get; set; }

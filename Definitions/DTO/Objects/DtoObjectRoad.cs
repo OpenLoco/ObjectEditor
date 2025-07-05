@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectRoad : IHasId
+	public class DtoObjectRoad : IDtoSubObject
 	{
 		public RoadTraitFlags RoadPieces { get; set; }
 		public int16_t BuildCostFactor { get; set; }

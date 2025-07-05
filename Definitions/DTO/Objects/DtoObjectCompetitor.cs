@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectCompetitor : IHasId
+	public class DtoObjectCompetitor : IDtoSubObject
 	{
 		public CompetitorNamePrefix AvailableNamePrefixes { get; set; }
 		public CompetitorPlaystyle AvailablePlaystyles { get; set; }

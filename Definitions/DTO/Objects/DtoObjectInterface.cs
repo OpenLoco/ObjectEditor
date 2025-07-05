@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Data;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectInterface : IHasId
+	public class DtoObjectInterface : IDtoSubObject
 	{
 		public Colour MapTooltipObjectColour { get; set; }
 		public Colour MapTooltipCargoColour { get; set; }

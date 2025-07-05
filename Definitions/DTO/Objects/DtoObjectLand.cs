@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectLand : IHasId
+	public class DtoObjectLand : IDtoSubObject
 	{
 		public uint8_t CostIndex { get; set; }
 		public uint8_t NumGrowthStages { get; set; }

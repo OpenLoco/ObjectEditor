@@ -191,9 +191,8 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
-			//var linkedObj = await db.
-
-			var descriptor = eObj?.ToDtoDescriptor();
+			var subObject = DbSubObjectHelper.GetDbSubForType(db, eObj.Object.ObjectType, id);
+			var descriptor = eObj?.ToDtoDescriptor(subObject);
 
 			var sfm = sp.GetRequiredService<ServerFolderManager>();
 			return ReturnObject(descriptor, sfm, logger);

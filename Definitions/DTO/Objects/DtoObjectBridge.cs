@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectBridge : IHasId
+	public class DtoObjectBridge : IDtoSubObject
 	{
 		public BridgeObjectFlags Flags { get; set; }
 		public uint16_t ClearHeight { get; set; }

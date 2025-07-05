@@ -1,6 +1,8 @@
+using OpenLoco.Definitions.Database;
+
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectSound : IHasId
+	public class DtoObjectSound : IDtoSubObject
 	{
 		public uint8_t ShouldLoop { get; set; }
 		public uint32_t Volume { get; set; }

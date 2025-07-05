@@ -1,9 +1,10 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectBuilding : IHasId
+	public class DtoObjectBuilding : IDtoSubObject
 	{
 		public uint16_t DesignedYear { get; set; }
 		public uint16_t ObsoleteYear { get; set; }

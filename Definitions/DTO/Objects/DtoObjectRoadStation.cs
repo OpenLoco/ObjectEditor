@@ -1,8 +1,9 @@
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectRoadStation : IHasId
+	public class DtoObjectRoadStation : IDtoSubObject
 	{
 		public uint8_t PaintStyle { get; set; }
 		public uint8_t Height { get; set; }

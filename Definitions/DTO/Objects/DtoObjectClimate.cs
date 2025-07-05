@@ -1,6 +1,8 @@
+using OpenLoco.Definitions.Database;
+
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectClimate : IHasId
+	public class DtoObjectClimate : IDtoSubObject
 	{
 		public uint8_t FirstSeason { get; set; }
 		public uint8_t WinterSnowLine { get; set; }

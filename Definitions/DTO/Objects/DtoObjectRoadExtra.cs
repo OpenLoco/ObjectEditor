@@ -1,6 +1,8 @@
+using OpenLoco.Definitions.Database;
+
 namespace OpenLoco.Definitions.DTO
 {
-	public class DtoObjectRoadExtra : IHasId
+	public class DtoObjectRoadExtra : IDtoSubObject
 	{
 		public uint8_t PaintStyle { get; set; }
 		public uint8_t CostIndex { get; set; }

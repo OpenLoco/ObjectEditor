@@ -1,3 +1,4 @@
+using Common;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using OpenLoco.Dat.Data;
@@ -21,7 +22,7 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		];
 
 		protected override DtoObjectEntry PutDto
-			=> new(3, "test-name-3", "display-name-3", 123, "456", ObjectSource.Custom, ObjectType.Vehicle, Dat.Objects.VehicleType.Bus, Definitions.ObjectAvailability.Available, null, null, DateTimeOffset.UtcNow);
+			=> new(3, "test-name-3", "display-name-3", 123, "456", ObjectSource.Custom, ObjectType.Vehicle, Dat.Objects.VehicleType.Bus, Definitions.ObjectAvailability.Available, null, null, DateOnly.Now);
 
 		//protected override async Task SeedDataCoreAsync(LocoDbContext db)
 		//{
@@ -39,6 +40,6 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 			=> request.ToTable();
 
 		protected override DtoObjectEntry ToDtoEntryFunc(TblObject row)
-			=> row.ToDtoEntry() with { UploadedDate = new DateTimeOffset(DateTime.Now - DateTimeOffset.Now.Offset, DateTimeOffset.Now.Offset) }; // new DateTimeOffset(row.UploadedDate.DateTime, row.UploadedDate.Offset) };
+			=> row.ToDtoEntry();
 	}
 }

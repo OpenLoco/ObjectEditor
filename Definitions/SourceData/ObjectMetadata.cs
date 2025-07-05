@@ -1,4 +1,5 @@
 using OpenLoco.Dat.Data;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.SourceData
 {
@@ -10,8 +11,8 @@ namespace OpenLoco.Definitions.SourceData
 		List<string> ObjectPacks,
 		string? Licence,
 		ObjectAvailability Availability,
-		DateTimeOffset? CreatedDate,
-		DateTimeOffset? ModifiedDate,
-		DateTimeOffset UploadedDate,
-		ObjectSource ObjectSource);
+		DateOnly? CreatedDate,
+		DateOnly? ModifiedDate,
+		DateOnly UploadedDate,
+		ObjectSource ObjectSource) : IDbDates;
 }

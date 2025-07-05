@@ -1,3 +1,4 @@
+using Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
@@ -29,9 +30,9 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			VehicleType? VehicleType,
 			string InternalName,
 			string? Description,
-			DateTimeOffset? CreationDate,
-			DateTimeOffset? LastEditDate,
-			DateTimeOffset UploadDate);
+			DateOnly? CreationDate,
+			DateOnly? LastEditDate,
+			DateOnly UploadDate);
 
 		public static V1DtoObjectDescriptor ToDtoEntryLegacy(this TblObject table)
 			=> new(
@@ -58,9 +59,9 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			VehicleType? VehicleType,
 			string? Description,
 			ICollection<TblAuthor> Authors,
-			DateTimeOffset? CreationDate,
-			DateTimeOffset? LastEditDate,
-			DateTimeOffset UploadDate,
+			DateOnly? CreationDate,
+			DateOnly? LastEditDate,
+			DateOnly UploadDate,
 			ICollection<TblTag> Tags,
 			ICollection<TblObjectPack> ObjectPacks,
 			TblLicence? Licence);
@@ -565,7 +566,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				Availability = request.InitialAvailability,
 				CreatedDate = createdDate,
 				ModifiedDate = modifiedDate,
-				UploadedDate = DateTimeOffset.UtcNow,
+				UploadedDate = DateOnly.Now,
 				Authors = [],
 				Tags = [],
 				ObjectPacks = [],

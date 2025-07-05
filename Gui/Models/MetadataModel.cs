@@ -1,12 +1,13 @@
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
+using OpenLoco.Definitions.DTO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace OpenLoco.Gui.Models
 {
-	public class MetadataModel(string internalName)
+	public class MetadataModel(string internalName) : IDbDates
 	{
 		public string InternalName { get; init; } = internalName;
 
@@ -14,24 +15,27 @@ namespace OpenLoco.Gui.Models
 
 		public ObjectAvailability Availability { get; set; }
 
-		public DateTimeOffset? CreatedDate { get; set; }
+		public DateOnly? CreatedDate { get; set; }
 
-		public DateTimeOffset? ModifiedDate { get; set; }
+		public DateOnly? ModifiedDate { get; set; }
 
-		public DateTimeOffset UploadedDate { get; set; }
+		public DateOnly UploadedDate { get; set; }
 
-		public TblLicence? Licence { get; set; }
-
-		[Browsable(false)]
-		public ICollection<TblAuthor> Authors { get; set; } = [];
+		public DtoLicenceEntry? Licence { get; set; }
 
 		[Browsable(false)]
-		public ICollection<TblTag> Tags { get; set; } = [];
+		public ICollection<DtoAuthorEntry> Authors { get; set; } = [];
 
 		[Browsable(false)]
-		public ICollection<TblObjectPack> ObjectPacks { get; set; } = [];
+		public ICollection<DtoTagEntry> Tags { get; set; } = [];
 
 		[Browsable(false)]
-		public ICollection<TblDatObject> DatObjects { get; set; } = [];
+		public ICollection<DtoItemPackEntry> ObjectPacks { get; set; } = [];
+
+		[Browsable(false)]
+		public ICollection<DtoDatObjectEntry> DatObjects { get; set; } = [];
+
+		[Browsable(false)]
+		public IDbSubObject? SubObject { get; set; }
 	}
 }

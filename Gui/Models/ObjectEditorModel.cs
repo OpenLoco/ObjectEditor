@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using Common;
 using DynamicData;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -285,15 +286,16 @@ namespace OpenLoco.Gui.Models
 				metadata = new MetadataModel(cachedLocoObjDto.Name)
 				{
 					Description = cachedLocoObjDto.Description,
-					Authors = [.. cachedLocoObjDto.Authors.Select(x => x.ToTable())],
+					Authors = [.. cachedLocoObjDto.Authors],
 					CreatedDate = cachedLocoObjDto.CreatedDate,
 					ModifiedDate = cachedLocoObjDto.ModifiedDate,
 					UploadedDate = cachedLocoObjDto.UploadedDate,
-					Tags = [.. cachedLocoObjDto.Tags.Select(x => x.ToTable())],
-					ObjectPacks = [.. cachedLocoObjDto.ObjectPacks.Select(x => x.ToTable())],
-					DatObjects = [.. cachedLocoObjDto.DatObjects.Select(x => x.ToTable())],
-					Licence = cachedLocoObjDto.Licence?.ToTable(),
+					Tags = [.. cachedLocoObjDto.Tags],
+					ObjectPacks = [.. cachedLocoObjDto.ObjectPacks],
+					DatObjects = [.. cachedLocoObjDto.DatObjects],
+					Licence = cachedLocoObjDto.Licence,
 					Availability = cachedLocoObjDto.Availability,
+					SubObject = cachedLocoObjDto.SubObject,
 				};
 
 				if (locoObject != null)
@@ -512,8 +514,8 @@ namespace OpenLoco.Gui.Models
 		{
 			Logger.Info($"Uploading {dat.FileName} to object repository");
 			var filename = Path.Combine(Settings.ObjDataDirectory, dat.FileName);
-			var creationDate = File.GetCreationTimeUtc(filename);
-			var modifiedDate = File.GetLastWriteTimeUtc(filename);
+			var creationDate = DateOnly.FromDateTime(File.GetCreationTimeUtc(filename));
+			var modifiedDate = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(filename));
 
 			if (ObjectServiceClient == null)
 			{

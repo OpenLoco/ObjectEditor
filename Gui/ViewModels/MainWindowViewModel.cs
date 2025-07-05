@@ -216,7 +216,7 @@ namespace OpenLoco.Gui.ViewModels
 
 			return path == null
 				? null
-				: new FileSystemItem(Path.GetFileName(path), path, null, File.GetCreationTimeUtc(path), File.GetLastWriteTimeUtc(path), FileLocation.Local);
+				: new FileSystemItem(Path.GetFileName(path), path, null, DateOnly.FromDateTime(File.GetCreationTimeUtc(path)), DateOnly.FromDateTime(File.GetLastWriteTimeUtc(path)), FileLocation.Local);
 		}
 
 		async Task LoadDefaultPalette()
@@ -253,8 +253,8 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			var createdTime = File.GetCreationTimeUtc(fsi.FileName);
-			var modifiedTime = File.GetLastWriteTimeUtc(fsi.FileName);
+			var createdTime = DateOnly.FromDateTime(File.GetCreationTimeUtc(fsi.FileName));
+			var modifiedTime = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(fsi.FileName));
 
 			if (Model.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 			{

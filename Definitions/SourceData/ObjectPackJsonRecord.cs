@@ -1,3 +1,4 @@
+using OpenLoco.Definitions.Database;
 using System.Text.Json.Serialization;
 
 namespace OpenLoco.Definitions.SourceData
@@ -9,7 +10,7 @@ namespace OpenLoco.Definitions.SourceData
 		List<string> Authors,
 		List<string> Tags,
 		string? Licence,
-		DateTimeOffset? CreatedDate,
-		DateTimeOffset? ModifiedDate,
-		DateTimeOffset UploadedDate);
+		DateOnly? CreatedDate,
+		DateOnly? ModifiedDate,
+		DateOnly UploadedDate) : IDbDates;
 }

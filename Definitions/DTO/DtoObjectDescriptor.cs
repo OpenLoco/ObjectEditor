@@ -1,5 +1,6 @@
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
@@ -13,13 +14,14 @@ namespace OpenLoco.Definitions.DTO
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
 		ObjectAvailability Availability,
-		DateTimeOffset? CreatedDate,
-		DateTimeOffset? ModifiedDate,
-		DateTimeOffset UploadedDate,
+		DateOnly? CreatedDate,
+		DateOnly? ModifiedDate,
+		DateOnly UploadedDate,
 		DtoLicenceEntry? Licence,
 		ICollection<DtoAuthorEntry> Authors,
 		ICollection<DtoTagEntry> Tags,
 		ICollection<DtoItemPackEntry> ObjectPacks,
 		ICollection<DtoDatObjectEntry> DatObjects,
-		DtoStringTableDescriptor StringTable) : IHasId;
+		DtoStringTableDescriptor StringTable,
+		IDbSubObject SubObject) : IHasId, IDbDates;
 }

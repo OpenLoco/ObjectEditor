@@ -1,3 +1,4 @@
+using Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
@@ -124,7 +125,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				Availability = request.InitialAvailability,
 				CreatedDate = creationTime,
 				ModifiedDate = null,
-				UploadedDate = DateTimeOffset.UtcNow,
+				UploadedDate = DateOnly.Now,
 				Authors = [],
 				Tags = [],
 				ObjectPacks = [],

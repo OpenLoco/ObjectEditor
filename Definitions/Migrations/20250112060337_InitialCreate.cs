@@ -59,9 +59,9 @@ namespace OpenLoco.Definitions.Database.Migrations
 					Name = table.Column<string>(type: "TEXT", nullable: false),
 					Description = table.Column<string>(type: "TEXT", nullable: true),
 					LicenceId = table.Column<int>(type: "INTEGER", nullable: true),
-					CreatedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-					ModifiedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-					UploadedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: false, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')")
+					CreatedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+					ModifiedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+					UploadedDate = table.Column<DateOnly>(type: "TEXT", nullable: false, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')")
 				},
 				constraints: table =>
 				{
@@ -88,9 +88,9 @@ namespace OpenLoco.Definitions.Database.Migrations
 					Name = table.Column<string>(type: "TEXT", nullable: false),
 					Description = table.Column<string>(type: "TEXT", nullable: true),
 					LicenceId = table.Column<int>(type: "INTEGER", nullable: true),
-					CreatedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-					ModifiedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-					UploadedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: false, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')")
+					CreatedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+					ModifiedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+					UploadedDate = table.Column<DateOnly>(type: "TEXT", nullable: false, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')")
 				},
 				constraints: table =>
 				{
@@ -111,9 +111,9 @@ namespace OpenLoco.Definitions.Database.Migrations
 					Name = table.Column<string>(type: "TEXT", nullable: false),
 					Description = table.Column<string>(type: "TEXT", nullable: true),
 					LicenceId = table.Column<int>(type: "INTEGER", nullable: true),
-					CreatedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-					ModifiedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-					UploadedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: false, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')")
+					CreatedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+					ModifiedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+					UploadedDate = table.Column<DateOnly>(type: "TEXT", nullable: false, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')")
 				},
 				constraints: table =>
 				{
@@ -135,9 +135,9 @@ namespace OpenLoco.Definitions.Database.Migrations
 					Name = table.Column<string>(type: "TEXT", nullable: false),
 					Description = table.Column<string>(type: "TEXT", nullable: true),
 					LicenceId = table.Column<int>(type: "INTEGER", nullable: true),
-					CreatedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-					ModifiedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-					UploadedDate = table.Column<DateTimeOffset>(type: "TEXT", nullable: false, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')")
+					CreatedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+					ModifiedDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+					UploadedDate = table.Column<DateOnly>(type: "TEXT", nullable: false, defaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')")
 				},
 				constraints: table =>
 				{

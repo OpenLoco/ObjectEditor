@@ -164,8 +164,8 @@ namespace OpenLoco.Definitions.Database
 			var remainingData = data[(S5Header.StructLength + ObjectHeader.StructLength)..];
 			var source = OriginalObjectFiles.GetFileSource(hdrs.S5.Name, hdrs.S5.Checksum);
 
-			var createdTime = File.GetCreationTimeUtc(absoluteFilename);
-			var modifiedTime = File.GetLastWriteTimeUtc(absoluteFilename);
+			var createdTime = DateOnly.FromDateTime(File.GetCreationTimeUtc(absoluteFilename));
+			var modifiedTime = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(absoluteFilename));
 
 			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
 			{
@@ -188,8 +188,8 @@ namespace OpenLoco.Definitions.Database
 		ulong? xxHash3,
 		ObjectType ObjectType,
 		ObjectSource ObjectSource,
-		DateTimeOffset? CreatedDate,
-		DateTimeOffset? ModifiedDate,
+		DateOnly? CreatedDate,
+		DateOnly? ModifiedDate,
 		VehicleType? VehicleType = null)
 	{
 		[JsonIgnore]

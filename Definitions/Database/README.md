@@ -34,9 +34,9 @@ TblObject {
   ulong Id
   string Name
   string Description
-  DateTimeOffset CreateDate
-  DateTimeOffset ModifiedDate
-  DateTimeOffset UploadedDate
+  DateOnly CreateDate
+  DateOnly ModifiedDate
+  DateOnly UploadedDate
   ObjectSource ObjectSource
   ObjectType ObjectType
   VehicleType VehicleType
@@ -47,9 +47,9 @@ TblObjectPack {
   ulong Id
   string Name
   string Description
-  DateTimeOffset CreateDate
-  DateTimeOffset ModifiedDate
-  DateTimeOffset UploadedDate
+  DateOnly CreateDate
+  DateOnly ModifiedDate
+  DateOnly UploadedDate
 }
 
 TblDatObject {
@@ -70,9 +70,9 @@ TblSC5File {
   ulong Id
   string Name
   string Description
-  DateTimeOffset CreateDate
-  DateTimeOffset ModifiedDate
-  DateTimeOffset UploadedDate
+  DateOnly CreateDate
+  DateOnly ModifiedDate
+  DateOnly UploadedDate
   ObjectSource ObjectSource
 }
 
@@ -80,9 +80,9 @@ TblSC5FilePack {
   ulong Id
   string Name
   string Description
-  DateTimeOffset CreateDate
-  DateTimeOffset ModifiedDate
-  DateTimeOffset UploadedDate
+  DateOnly CreateDate
+  DateOnly ModifiedDate
+  DateOnly UploadedDate
 }
 
 

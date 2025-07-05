@@ -32,7 +32,7 @@ namespace OpenLoco.Definitions.Web
 				ClientHelpers.ReadBinaryContentAsync,
 				logger) ?? default;
 
-		public static async Task UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateTimeOffset creationDate, DateTimeOffset modifiedDate, ILogger logger)
+		public static async Task UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate, ILogger logger)
 		{
 			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 			logger.Debug($"Posting {filename} to {client.BaseAddress?.OriginalString}{RoutesV2.Objects}");

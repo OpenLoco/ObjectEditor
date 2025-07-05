@@ -4,6 +4,6 @@ namespace OpenLoco.Definitions.DTO
 		string DatBytesAsBase64,
 		ulong xxHash3,
 		ObjectAvailability InitialAvailability,
-		DateTimeOffset CreatedDate,
-		DateTimeOffset ModifiedDate);
+		DateOnly CreatedDate,
+		DateOnly ModifiedDate);
 }

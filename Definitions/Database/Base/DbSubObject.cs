@@ -100,7 +100,7 @@ namespace OpenLoco.Definitions.Database
 				_ => "unknown object type",
 			};
 
-		public static async Task<dynamic> GetDbSetForType(LocoDbContext db, ObjectType objectType)
+		public static dynamic GetDbSetForType(LocoDbContext db, ObjectType objectType)
 			=> objectType switch
 			{
 				ObjectType.Airport => db.ObjAirport,

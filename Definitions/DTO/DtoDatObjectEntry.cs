@@ -8,6 +8,6 @@ namespace OpenLoco.Definitions.DTO
 		ulong xxHash3,
 		UniqueObjectId ObjectId)
 	{
-		public string? DatBytes { get; set; }
+		public string? DatBytesAsBase64 { get; set; }
 	}
 }

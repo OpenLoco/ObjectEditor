@@ -4,11 +4,11 @@ namespace OpenLoco.Definitions.Database
 {
 	public interface IDbDates
 	{
-		DateTimeOffset? CreatedDate { get; set; }
+		DateOnly? CreatedDate { get; }
 
-		DateTimeOffset? ModifiedDate { get; set; }
+		DateOnly? ModifiedDate { get; }
 
 		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-		DateTimeOffset UploadedDate { get; set; }
+		DateOnly UploadedDate { get; }
 	}
 }

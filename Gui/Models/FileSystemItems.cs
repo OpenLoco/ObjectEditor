@@ -17,8 +17,8 @@ namespace OpenLoco.Gui.Models
 		string DisplayName,
 		string? FileName, // only available in local mode
 		UniqueObjectId? Id, // only available in online-mode
-		DateTimeOffset? CreatedDate = null,
-		DateTimeOffset? ModifiedDate = null,
+		DateOnly? CreatedDate = null,
+		DateOnly? ModifiedDate = null,
 		FileLocation? FileLocation = null,
 		ObjectSource? ObjectSource = null,
 		ObjectType? ObjectType = null,

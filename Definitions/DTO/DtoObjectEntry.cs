@@ -1,6 +1,6 @@
-using Definitions;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
@@ -14,7 +14,7 @@ namespace OpenLoco.Definitions.DTO
 		ObjectType ObjectType,
 		VehicleType? VehicleType,
 		ObjectAvailability Availability,
-		DateTimeOffset? CreatedDate,
-		DateTimeOffset? ModifiedDate,
-		DateTimeOffset UploadedDate);
+		DateOnly? CreatedDate,
+		DateOnly? ModifiedDate,
+		DateOnly UploadedDate) : IHasId, IDbDates;
 }

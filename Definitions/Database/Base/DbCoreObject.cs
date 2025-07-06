@@ -9,7 +9,7 @@ namespace OpenLoco.Definitions.Database
 	{
 		#region IDbName
 
-		public required string Name { get; set; } // InternalName
+		public required string Name { get; set; }
 
 		#endregion
 
@@ -31,12 +31,12 @@ namespace OpenLoco.Definitions.Database
 
 		#region IDbDates
 
-		public DateTimeOffset? CreatedDate { get; set; }
+		public DateOnly? CreatedDate { get; set; }
 
-		public DateTimeOffset? ModifiedDate { get; set; }
+		public DateOnly? ModifiedDate { get; set; }
 
 		[DatabaseGenerated(DatabaseGeneratedOption.Computed), NotNull]
-		public DateTimeOffset UploadedDate { get; set; }
+		public DateOnly UploadedDate { get; set; }
 
 		#endregion
 	}

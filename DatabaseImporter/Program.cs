@@ -1,13 +1,13 @@
+using Common;
 using Common.Json;
-using Definitions;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
+using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.SourceData;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
 using var db = Seed();
 
 Console.WriteLine("done");
@@ -183,7 +183,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 				Licence = x.Licence == null ? null : db.Licences.Single(l => l.Name == x.Licence),
 				CreatedDate = null,
 				ModifiedDate = null,
-				UploadedDate = DateTimeOffset.Now
+				UploadedDate = DateOnly.Today,
 			}));
 			_ = db.SaveChanges();
 		}
@@ -199,14 +199,14 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText(objectMetadataJson), jsonOptions);
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => x.InternalName, x => x);
-		var gameReleaseDate = new DateTimeOffset(2004, 09, 07, 0, 0, 0, TimeSpan.Zero);
+		var gameReleaseDate = new DateOnly(2004, 09, 07);
 
 		foreach (var objIndex in index!.Objects.DistinctBy(x => (x.DisplayName, x.DatChecksum)))
 		{
 			var metadataKey = objIndex.DisplayName; // should be InternalName
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{
-				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, ObjectAvailability.Available, DateTimeOffset.Now, null, DateTimeOffset.Now, ObjectSource.Custom);
+				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, ObjectAvailability.Available, DateOnly.Today, null, DateOnly.Today, ObjectSource.Custom);
 				meta = newMetadata;
 				objectMetadataDict.Add(objIndex.DisplayName, newMetadata);
 			}
@@ -214,7 +214,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 			var filename = Path.Combine(objDirectory, objIndex.FileName);
 			var creationTime = objIndex.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG
 				? gameReleaseDate
-				: File.GetLastWriteTimeUtc(filename); // this is the "Modified" time as shown in Windows
+				: DateOnly.FromDateTime(File.GetLastWriteTimeUtc(filename)); // this is the "Modified" time as shown in Windows
 
 			var authors = meta.Authors == null ? null : db.Authors.Where(x => meta.Authors.Contains(x.Name)).ToList();
 			var tags = meta.Tags == null ? null : db.Tags.Where(x => meta.Tags.Contains(x.Name)).ToList();
@@ -231,7 +231,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 				Authors = authors ?? [],
 				CreatedDate = creationTime,
 				ModifiedDate = null,
-				UploadedDate = DateTimeOffset.Now,
+				UploadedDate = DateOnly.Today,
 				Tags = tags ?? [],
 				ObjectPacks = objectPacks ?? [],
 				DatObjects = [],

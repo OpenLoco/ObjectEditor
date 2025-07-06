@@ -1,4 +1,3 @@
-using Dat.Objects;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
 using OpenLoco.Dat.Types;
@@ -59,8 +58,8 @@ namespace OpenLoco.Dat.FileParsing
 				ObjectType.TownNames => typeof(TownNamesObject),
 				ObjectType.TrackExtra => typeof(TrackExtraObject),
 				ObjectType.Track => typeof(TrackObject),
-				ObjectType.TrainSignal => typeof(TrainSignalObject),
-				ObjectType.TrainStation => typeof(TrainStationObject),
+				ObjectType.TrackSignal => typeof(TrackSignalObject),
+				ObjectType.TrackStation => typeof(TrackStationObject),
 				ObjectType.Tree => typeof(TreeObject),
 				ObjectType.Tunnel => typeof(TunnelObject),
 				ObjectType.Vehicle => typeof(VehicleObject),

@@ -244,8 +244,8 @@ namespace OpenLoco.Gui.ViewModels
 					new TextColumn<FileSystemItem, string?>("Source", x => GetNiceObjectSource(x.ObjectSource)),
 					new TextColumn<FileSystemItem, FileLocation?>("Origin", x => x.FileLocation),
 					new TextColumn<FileSystemItem, string?>("Location", x => x.FileName),
-					new TextColumn<FileSystemItem, DateTimeOffset?>("Created", x => x.CreatedDate),
-					new TextColumn<FileSystemItem, DateTimeOffset?>("Modified", x => x.ModifiedDate),
+					new TextColumn<FileSystemItem, DateOnly?>("Created", x => x.CreatedDate),
+					new TextColumn<FileSystemItem, DateOnly?>("Modified", x => x.ModifiedDate),
 				},
 			};
 

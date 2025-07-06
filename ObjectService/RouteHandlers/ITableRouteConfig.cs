@@ -1,5 +1,5 @@
-using Definitions;
 using Microsoft.EntityFrameworkCore;
+using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 
 namespace ObjectService.RouteHandlers

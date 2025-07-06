@@ -1,5 +1,4 @@
 // See https://aka.ms/new-console-template for more information
-using Dat.Objects;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
@@ -14,7 +13,7 @@ var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
 //QueryCostIndices(dir, logger, index);
 //QueryCargoCategories(dir, logger, index);
 //QueryVehicleBodyUnkSprites(dir, logger, index);
-QueryIndustryHasShadows(dir, logger, index);
+//QueryIndustryHasShadows(dir, logger, index);
 
 Console.WriteLine("done");
 

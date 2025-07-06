@@ -1,4 +1,4 @@
-using Definitions;
+using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.Definitions.DTO
 {
@@ -6,11 +6,11 @@ namespace OpenLoco.Definitions.DTO
 		UniqueObjectId Id,
 		string Name,
 		string? Description,
-		DateTimeOffset? CreatedDate,
-		DateTimeOffset? ModifiedDate,
-		DateTimeOffset UploadedDate,
+		DateOnly? CreatedDate,
+		DateOnly? ModifiedDate,
+		DateOnly UploadedDate,
 		ICollection<T> Items,
 		ICollection<DtoAuthorEntry> Authors,
 		ICollection<DtoTagEntry> Tags,
-		DtoLicenceEntry? Licence) : IHasId;
+		DtoLicenceEntry? Licence) : IHasId, IDbDates;
 }

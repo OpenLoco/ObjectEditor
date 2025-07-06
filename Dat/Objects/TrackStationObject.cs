@@ -1,4 +1,3 @@
-
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Types;
@@ -7,7 +6,7 @@ using System.ComponentModel;
 namespace OpenLoco.Dat.Objects
 {
 	[Flags]
-	public enum TrainStationObjectFlags : uint8_t
+	public enum TrackStationObjectFlags : uint8_t
 	{
 		None = 0,
 		Recolourable = 1 << 0,
@@ -29,9 +28,9 @@ namespace OpenLoco.Dat.Objects
 
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0xAE)]
-	[LocoStructType(ObjectType.TrainStation)]
+	[LocoStructType(ObjectType.TrackStation)]
 	[LocoStringTable("Name")]
-	public record TrainStationObject(
+	public record TrackStationObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
 		[property: LocoStructOffset(0x03)] uint8_t Height,
@@ -40,16 +39,16 @@ namespace OpenLoco.Dat.Objects
 		[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 		[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x0B)] uint8_t var_0B,
-		[property: LocoStructOffset(0x0C)] TrainStationObjectFlags Flags,
+		[property: LocoStructOffset(0x0C)] TrackStationObjectFlags Flags,
 		[property: LocoStructOffset(0x0D)] uint8_t var_0D,
 		[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x12), LocoArrayLength(TrainStationObject.MaxImageOffsets), Browsable(false)] uint32_t[] ImageOffsets,
+		[property: LocoStructOffset(0x12), LocoArrayLength(TrackStationObject.MaxImageOffsets), Browsable(false)] uint32_t[] ImageOffsets,
 		[property: LocoStructOffset(0x22)] uint8_t CompatibleTrackObjectCount,
-		[property: LocoStructOffset(0x23), LocoArrayLength(TrainStationObject.MaxNumCompatible), Browsable(false)] object_id[] _Compatible, // only used for runtime loco, this isn't part of object 'definition'
+		[property: LocoStructOffset(0x23), LocoArrayLength(TrackStationObject.MaxNumCompatible), Browsable(false)] object_id[] _Compatible, // only used for runtime loco, this isn't part of object 'definition'
 		[property: LocoStructOffset(0x2A)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear,
-		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes,
-		[property: LocoStructOffset(0x3E), LocoStructVariableLoad, LocoArrayLength(TrainStationObject.ManualPowerLength), Browsable(false)] uint8_t[] _ManualPower
+		[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(TrackStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes,
+		[property: LocoStructOffset(0x3E), LocoStructVariableLoad, LocoArrayLength(TrackStationObject.ManualPowerLength), Browsable(false)] uint8_t[] _ManualPower
 	) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
 	{
 		public List<S5Header> CompatibleTrackObjects { get; set; } = [];

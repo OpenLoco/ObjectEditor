@@ -8,7 +8,7 @@ using OpenLoco.Definitions.Database;
 
 #nullable disable
 
-namespace Definitions.Migrations
+namespace OpenLoco.Definitions.Database.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
     [Migration("20250603102909_StringTableRowName")]
@@ -99,7 +99,7 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("CreatedDate")
+                    b.Property<DateOnly?>("CreatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -108,7 +108,7 @@ namespace Definitions.Migrations
                     b.Property<int?>("LicenceId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("ModifiedDate")
+                    b.Property<DateOnly?>("ModifiedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -121,7 +121,7 @@ namespace Definitions.Migrations
                     b.Property<byte>("ObjectType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset>("UploadedDate")
+                    b.Property<DateOnly>("UploadedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
@@ -145,7 +145,7 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("CreatedDate")
+                    b.Property<DateOnly?>("CreatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -154,14 +154,14 @@ namespace Definitions.Migrations
                     b.Property<int?>("LicenceId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("ModifiedDate")
+                    b.Property<DateOnly?>("ModifiedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset>("UploadedDate")
+                    b.Property<DateOnly>("UploadedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
@@ -182,7 +182,7 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("CreatedDate")
+                    b.Property<DateOnly?>("CreatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -191,7 +191,7 @@ namespace Definitions.Migrations
                     b.Property<int?>("LicenceId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("ModifiedDate")
+                    b.Property<DateOnly?>("ModifiedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -201,7 +201,7 @@ namespace Definitions.Migrations
                     b.Property<int>("ObjectSource")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset>("UploadedDate")
+                    b.Property<DateOnly>("UploadedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");
@@ -222,7 +222,7 @@ namespace Definitions.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("CreatedDate")
+                    b.Property<DateOnly?>("CreatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -231,14 +231,14 @@ namespace Definitions.Migrations
                     b.Property<int?>("LicenceId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("ModifiedDate")
+                    b.Property<DateOnly?>("ModifiedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTimeOffset>("UploadedDate")
+                    b.Property<DateOnly>("UploadedDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')");

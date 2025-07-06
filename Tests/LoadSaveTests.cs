@@ -1,4 +1,3 @@
-using Dat.Objects;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using OpenLoco.Dat.Data;
@@ -889,7 +888,7 @@ namespace OpenLoco.Dat.Tests
 		[TestCase("SIGSUS.DAT")]
 		public void TrainSignalObject(string objectName)
 		{
-			void assertFunc(ILocoObject obj, TrainSignalObject struc) => Assert.Multiple(() =>
+			void assertFunc(ILocoObject obj, TrackSignalObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.Name, Is.Zero);
 				Assert.That(struc.Image, Is.Zero);
@@ -898,7 +897,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(4), nameof(struc.BuildCostFactor));
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.Zero, nameof(struc.DesignedYear));
-				Assert.That(struc.Flags, Is.EqualTo(TrainSignalObjectFlags.IsLeft), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(TrackSignalObjectFlags.IsLeft), nameof(struc.Flags));
 				// Mods
 				Assert.That(struc.CompatibleTrackObjectCount, Is.Zero, nameof(struc.CompatibleTrackObjectCount));
 				Assert.That(struc.NumFrames, Is.EqualTo(7), nameof(struc.NumFrames));
@@ -908,13 +907,13 @@ namespace OpenLoco.Dat.Tests
 
 				Assert.That(obj.G1Elements, Has.Count.EqualTo(56));
 			});
-			LoadSaveGenericTest<TrainSignalObject>(objectName, assertFunc);
+			LoadSaveGenericTest<TrackSignalObject>(objectName, assertFunc);
 		}
 
 		[TestCase("TRSTAT1.DAT")]
 		public void TrainStationObject(string objectName)
 		{
-			void assertFunc(ILocoObject obj, TrainStationObject struc) => Assert.Multiple(() =>
+			void assertFunc(ILocoObject obj, TrackStationObject struc) => Assert.Multiple(() =>
 			{
 				Assert.That(struc.BuildCostFactor, Is.EqualTo(7), nameof(struc.BuildCostFactor));
 				// CargoOffsetBytes
@@ -922,7 +921,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.DesignedYear, Is.EqualTo(1960), nameof(struc.DesignedYear));
 				Assert.That(struc.PaintStyle, Is.Zero, nameof(struc.PaintStyle));
-				Assert.That(struc.Flags, Is.EqualTo(TrainStationObjectFlags.None), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(TrackStationObjectFlags.None), nameof(struc.Flags));
 				// ManualPower
 				Assert.That(struc.Height, Is.Zero, nameof(struc.Height));
 				Assert.That(struc.CompatibleTrackObjectCount, Is.Zero, nameof(struc.CompatibleTrackObjectCount));
@@ -934,7 +933,7 @@ namespace OpenLoco.Dat.Tests
 
 				Assert.That(obj.G1Elements, Has.Count.EqualTo(36));
 			});
-			LoadSaveGenericTest<TrainStationObject>(objectName, assertFunc);
+			LoadSaveGenericTest<TrackStationObject>(objectName, assertFunc);
 		}
 
 		[TestCase("BEECH.DAT")]
@@ -948,7 +947,7 @@ namespace OpenLoco.Dat.Tests
 				Assert.That(struc.var_05, Is.EqualTo(83), nameof(struc.var_05));
 				Assert.That(struc.NumRotations, Is.EqualTo(1), nameof(struc.NumRotations));
 				Assert.That(struc.NumGrowthStages, Is.EqualTo(4), nameof(struc.NumGrowthStages));
-				Assert.That(struc.Flags, Is.EqualTo(TreeObjectFlags.HighAltitude | TreeObjectFlags.RequiresWater | TreeObjectFlags.HasShadow), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(TreeObjectFlags.LowAltitude | TreeObjectFlags.RequiresWater | TreeObjectFlags.HasShadow), nameof(struc.Flags));
 				Assert.That(struc.Sprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.Sprites));
 				Assert.That(struc.SnowSprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.SnowSprites));
 				Assert.That(struc.ShadowImageOffset, Is.Zero, nameof(struc.ShadowImageOffset));

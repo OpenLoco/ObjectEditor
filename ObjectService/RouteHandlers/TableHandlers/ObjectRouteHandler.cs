@@ -1,3 +1,4 @@
+using Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Common.Logging;
@@ -5,8 +6,10 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
+using OpenLoco.Definitions.DTO.Mappers;
 using OpenLoco.Definitions.SourceData;
 using OpenLoco.Definitions.Web;
 using OpenLoco.ObjectService;
@@ -20,7 +23,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 	{
 		public static string BaseRoute => RoutesV2.Objects;
 		public static Delegate ListDelegate => ListAsync;
-		public static Delegate CreateDelegate => CreateAsync;
+		public static Delegate CreateDelegate => CreateDatAsync;
 		public static Delegate ReadDelegate => ReadAsync;
 		public static Delegate UpdateDelegate => UpdateAsync;
 		public static Delegate DeleteDelegate => DeleteAsync;
@@ -30,12 +33,156 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 		public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 		{
+			//_ = parentRoute.MapPost(RoutesV2.Authors, CreateDatAsync); // old dat route
+
 			var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
-			_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFile);
-			_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImages);
+			_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);
+			_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImagesAsync);
 		}
 
-		static async Task<IResult> CreateAsync(DtoUploadDat request, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+		//static async Task<IResult> CreateAsync(DtoObjectDescriptor request, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+		//{
+		//	logger.LogInformation("[CreateAsync] Upload requested");
+
+		//	var dtoDatObjectEntry = request.DatObjects.First();
+		//	if (string.IsNullOrEmpty(dtoDatObjectEntry.DatBytesAsBase64))
+		//	{
+		//		return Results.BadRequest($"{nameof(dtoDatObjectEntry.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.");
+		//	}
+
+		//	byte[]? datFileBytes;
+		//	try
+		//	{
+		//		datFileBytes = Convert.FromBase64String(dtoDatObjectEntry.DatBytesAsBase64);
+		//	}
+		//	catch (FormatException ex)
+		//	{
+		//		return Results.BadRequest(ex.Message);
+		//	}
+
+		//	if (datFileBytes == null || datFileBytes.Length == 0)
+		//	{
+		//		return Results.BadRequest($"Unable to decode {nameof(dtoDatObjectEntry.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.");
+		//	}
+
+		//	if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)
+		//	{
+		//		return Results.BadRequest("Unable to accept file sizes > 5MB");
+		//	}
+
+		//	var ssrLogger = new Logger();
+		//	if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
+		//	{
+		//		return Results.BadRequest("Provided data had invalid dat file headers");
+		//	}
+
+		//	if (hdrs.S5.IsVanilla())
+		//	{
+		//		return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
+		//	}
+
+		//	if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
+		//	{
+		//		return Results.BadRequest("Invalid DAT file.");
+		//	}
+
+		//	if (db.DoesObjectExist(hdrs.S5, out var existingObject))
+		//	{
+		//		return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
+		//	}
+
+		//	// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
+
+		//	var sfm = sp.GetRequiredService<ServerFolderManager>();
+		//	var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
+
+		//	if (LocoObject == null)
+		//	{
+		//		return Results.BadRequest("Could not parse DAT object from request");
+
+		//		// cannot proceed
+		//	}
+
+		//	var uuid = Guid.NewGuid();
+		//	var saveFileName = Path.Combine(sfm.ObjectsCustomFolder, $"{uuid}.dat");
+		//	File.WriteAllBytes(saveFileName, datFileBytes);
+
+		//	logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
+
+		//	var creationTime = request.CreatedDate;
+
+		//	VehicleType? vehicleType = null;
+		//	if (LocoObject.Object is VehicleObject veh)
+		//	{
+		//		vehicleType = veh.Type;
+		//	}
+
+		//	// make object header
+		//	var tblObject = new TblObject()
+		//	{
+		//		Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name. this is NOT unique
+		//		Description = string.Empty,
+		//		ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
+		//		ObjectType = hdrs.S5.ObjectType,
+		//		VehicleType = vehicleType,
+		//		Availability = request.Availability,
+		//		CreatedDate = creationTime,
+		//		ModifiedDate = null,
+		//		UploadedDate = DateOnly.Now,
+		//		Authors = [],
+		//		Tags = [],
+		//		ObjectPacks = [],
+		//		DatObjects = [],
+		//		StringTable = [],
+		//		SubObjectId = 0,
+		//		Licence = null,
+		//	};
+
+		//	// must save here to obtain the id for the new object, to link the dependent tables
+		//	_ = await db.Objects.AddAsync(tblObject);
+		//	_ = await db.SaveChangesAsync();
+
+		//	// make string table
+		//	foreach (var s in LocoObject.StringTable.Table)
+		//	{
+		//		foreach (var t in s.Value)
+		//		{
+		//			tblObject.StringTable.Add(new TblStringTableRow()
+		//			{
+		//				Name = s.Key,
+		//				Language = t.Key,
+		//				Text = t.Value,
+		//				ObjectId = tblObject.Id,
+		//			});
+		//		}
+		//	}
+
+		//	// make dat objects
+		//	var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
+		//	tblObject.DatObjects.Add(new TblDatObject()
+		//	{
+		//		ObjectId = tblObject.Id,
+		//		DatName = DatFileInfo.S5Header.Name,
+		//		DatChecksum = DatFileInfo.S5Header.Checksum,
+		//		xxHash3 = xxHash3,
+		//		Object = tblObject,
+		//	});
+
+		//	// make sub object
+		//	_ = await DbSubObjectHelper.AddOrUpdate(db, tblObject, LocoObject.Object);
+
+		//	// save again
+		//	_ = await db.SaveChangesAsync();
+
+		//	// update server index
+		//	sfm.ObjectIndex.Objects.Add(
+		//		new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
+
+		//	_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
+		//	return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
+		//}
+
+		static async Task<IResult> CreateDatAsync(DtoUploadDat request, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[CreateAsync] Upload requested");
 
@@ -80,16 +227,32 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				return Results.BadRequest("Invalid DAT file.");
 			}
 
+			// todo: check the nested DAT objects and update appropriately, even if this top object exists already
+			var objName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}";
+			var existing = await db.Objects.FirstOrDefaultAsync(x => x.Name == objName);
+			if (existing != null)
+			{
+				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existing!.UploadedDate}");
+			}
+
 			if (db.DoesObjectExist(hdrs.S5, out var existingObject))
 			{
 				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
 			}
 
+
 			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
 
 			var sfm = sp.GetRequiredService<ServerFolderManager>();
+			var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
 
-			var (_, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
+			if (LocoObject == null)
+			{
+				return Results.BadRequest("Could not parse DAT object from request");
+
+				// cannot proceed
+			}
+
 			var uuid = Guid.NewGuid();
 			var saveFileName = Path.Combine(sfm.ObjectsCustomFolder, $"{uuid}.dat");
 			File.WriteAllBytes(saveFileName, datFileBytes);
@@ -99,14 +262,15 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			var creationTime = request.CreatedDate;
 
 			VehicleType? vehicleType = null;
-			if (LocoObject?.Object is VehicleObject veh)
+			if (LocoObject.Object is VehicleObject veh)
 			{
 				vehicleType = veh.Type;
 			}
 
-			var locoTbl = new TblObject()
+			// make object header
+			var tblObject = new TblObject()
 			{
-				Name = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}", // same as DB seeder name. this is NOT unique
+				Name = objName, // same as DB seeder name. this is NOT unique
 				Description = string.Empty,
 				ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
 				ObjectType = hdrs.S5.ObjectType,
@@ -114,23 +278,58 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				Availability = request.InitialAvailability,
 				CreatedDate = creationTime,
 				ModifiedDate = null,
-				UploadedDate = DateTimeOffset.UtcNow,
+				UploadedDate = DateOnly.Today,
 				Authors = [],
 				Tags = [],
 				ObjectPacks = [],
 				DatObjects = [],
+				StringTable = [],
+				SubObjectId = 0,
 				Licence = null,
 			};
 
-			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-
-			_ = db.Objects.Add(locoTbl);
+			// must save here to obtain the id for the new object, to link the dependent tables
+			_ = await db.Objects.AddAsync(tblObject);
 			_ = await db.SaveChangesAsync();
 
-			sfm.ObjectIndex.Objects.Add(
-				new ObjectIndexEntry(hdrs.S5.Name, saveFileName, locoTbl.Id, hdrs.S5.Checksum, xxHash3, locoTbl.ObjectType, locoTbl.ObjectSource, locoTbl.CreatedDate, locoTbl.UploadedDate, locoTbl.VehicleType));
+			// make string table
+			foreach (var s in LocoObject.StringTable.Table)
+			{
+				foreach (var t in s.Value)
+				{
+					tblObject.StringTable.Add(new TblStringTableRow()
+					{
+						Name = s.Key,
+						Language = t.Key,
+						Text = t.Value,
+						ObjectId = tblObject.Id,
+					});
+				}
+			}
 
-			return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
+			// make dat objects
+			var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
+			tblObject.DatObjects.Add(new TblDatObject()
+			{
+				ObjectId = tblObject.Id,
+				DatName = DatFileInfo.S5Header.Name,
+				DatChecksum = DatFileInfo.S5Header.Checksum,
+				xxHash3 = xxHash3,
+				Object = tblObject,
+			});
+
+			// make sub object
+			_ = await DbSubObjectHelper.AddOrUpdate(db, tblObject, LocoObject.Object);
+
+			// save again
+			_ = await db.SaveChangesAsync();
+
+			// update server index
+			sfm.ObjectIndex.Objects.Add(
+				new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
+
+			_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
+			return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
 		}
 
 		static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
@@ -145,8 +344,11 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
 				.SingleOrDefaultAsync();
 
+			//var subObject = DbSubObjectHelper.GetDbSubForType(db, eObj.Object.ObjectType, id);
+			var descriptor = eObj?.ToDtoDescriptor(/*subObject*/);
+
 			var sfm = sp.GetRequiredService<ServerFolderManager>();
-			return ReturnObject(eObj, sfm, logger);
+			return ReturnObject(descriptor, sfm, logger);
 		}
 
 		static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
@@ -239,7 +441,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/{id}/images
-		static async Task<IResult> GetObjectImages([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[GetObjectImages] Get requested for object {ObjectId}", id);
 
@@ -260,7 +462,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				return Results.Forbid();
 			}
 
-			if (obj.Availability == Definitions.ObjectAvailability.Unavailable)
+			if (obj.Availability == ObjectAvailability.Unavailable)
 			{
 				logger.LogWarning("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", obj.Id, obj.Name);
 				return Results.Forbid();
@@ -320,7 +522,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/objects/114
-		static async Task<IResult> GetObjectFile([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> GetObjectFileAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[GetObjectFile] Get requested for object {ObjectId}", id);
 
@@ -333,24 +535,22 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return ReturnFile(obj, sfm, logger);
 		}
 
-		static IResult ReturnObject(ExpandedTbl<TblObject, TblObjectPack>? eObj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
+		static IResult ReturnObject(DtoObjectDescriptor? dtoDescriptor, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 		{
-			logger.LogTrace("[ReturnObject]");
+			logger.LogDebug("[ReturnObject]");
 
-			if (eObj == null || eObj.Object == null)
+			if (dtoDescriptor == null)
 			{
 				return Results.NotFound();
 			}
 
-			if (eObj.Object.Availability == Definitions.ObjectAvailability.Unavailable)
+			if (dtoDescriptor.Availability == ObjectAvailability.Unavailable)
 			{
-				logger.LogError("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", eObj.Object.Id, eObj.Object.Name);
+				logger.LogError("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", dtoDescriptor.Id, dtoDescriptor);
 				return Results.Forbid();
 			}
 
-			var obj = eObj.ToDtoDescriptor();
-
-			foreach (var dat in obj.DatObjects)
+			foreach (var dat in dtoDescriptor.DatObjects)
 			{
 				if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
 				{
@@ -372,18 +572,18 @@ namespace ObjectService.RouteHandlers.TableHandlers
 					continue;
 				}
 
-				if (eObj.Object.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
+				if (dtoDescriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 				{
 					logger.LogWarning("User attempted to download a vanilla object");
-					dat.DatBytes = null;
+					dat.DatBytesAsBase64 = null;
 				}
 				else
 				{
-					dat.DatBytes = Convert.ToBase64String(File.ReadAllBytes(path));
+					dat.DatBytesAsBase64 = Convert.ToBase64String(File.ReadAllBytes(path));
 				}
 			}
 
-			return Results.Ok(obj);
+			return Results.Ok(dtoDescriptor);
 		}
 
 		static IResult ReturnFile(TblObject? obj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)

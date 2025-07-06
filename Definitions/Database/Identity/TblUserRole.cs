@@ -1,4 +1,3 @@
-using Definitions;
 using Microsoft.AspNetCore.Identity;
 
 namespace OpenLoco.Definitions.Database

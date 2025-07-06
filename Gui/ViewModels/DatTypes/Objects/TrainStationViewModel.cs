@@ -6,14 +6,14 @@ using System.Linq;
 
 namespace OpenLoco.Gui.ViewModels
 {
-	public class TrainStationViewModel : LocoObjectViewModel<TrainStationObject>
+	public class TrainStationViewModel : LocoObjectViewModel<TrackStationObject>
 	{
 		[Reactive] public uint8_t PaintStyle { get; set; }
 		[Reactive] public uint8_t Height { get; set; }
 		[Reactive, EnumProhibitValues<TrackTraitFlags>(TrackTraitFlags.None)] public TrackTraitFlags TrackPieces { get; set; }
 		[Reactive] public uint16_t DesignedYear { get; set; }
 		[Reactive] public uint16_t ObsoleteYear { get; set; }
-		[Reactive, EnumProhibitValues<TrainStationObjectFlags>(TrainStationObjectFlags.None)] public TrainStationObjectFlags Flags { get; set; }
+		[Reactive, EnumProhibitValues<TrackStationObjectFlags>(TrackStationObjectFlags.None)] public TrackStationObjectFlags Flags { get; set; }
 		[Reactive] public BindingList<uint32_t> ImageOffsets { get; set; }
 		[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 		[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
@@ -26,7 +26,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		//public uint8_t[][] ManualPower { get; set; }
 
-		public TrainStationViewModel(TrainStationObject tso)
+		public TrainStationViewModel(TrackStationObject tso)
 		{
 			PaintStyle = tso.PaintStyle;
 			Height = tso.Height;
@@ -45,7 +45,7 @@ namespace OpenLoco.Gui.ViewModels
 
 		// validation:
 		// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-		public override TrainStationObject GetAsStruct(TrainStationObject tso)
+		public override TrackStationObject GetAsStruct(TrackStationObject tso)
 			=> tso with
 			{
 				PaintStyle = PaintStyle,

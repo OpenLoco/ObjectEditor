@@ -2,11 +2,11 @@ using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO.Identity;
 using OpenLoco.Definitions.SourceData;
 
-namespace OpenLoco.Definitions.DTO
+namespace OpenLoco.Definitions.DTO.Mappers
 {
 	public static class DtoExtensions
 	{
-		public static DtoObjectDescriptor ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x)
+		public static DtoObjectDescriptor ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x /*, IDtoSubObject SubObject*/)
 			=> new(
 				x!.Object.Id,
 				x!.Object.Name,
@@ -25,9 +25,11 @@ namespace OpenLoco.Definitions.DTO
 				[.. x.Tags.Select(x => x.ToDtoEntry())],
 				[.. x.Packs.Select(x => x.ToDtoEntry())],
 				[.. x.Object.DatObjects.Select(x => x.ToDtoEntry())],
-				x.Object.StringTable.ToDtoDescriptor(x.Object.Id));
+				x.Object.StringTable.ToDtoDescriptor(x.Object.Id)
+				//SubObject
+				);
 
-		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTable> x, UniqueObjectId ObjectId)
+		public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTableRow> x, UniqueObjectId ObjectId)
 		{
 			var table = x
 				.Select(x => x.ToDtoEntry())
@@ -80,11 +82,11 @@ namespace OpenLoco.Definitions.DTO
 
 		#region New
 
-		public static DtoStringTableEntry ToDtoEntry(this TblStringTable table)
-			=> new(table.Id, table.RowName, table.RowLanguage, table.RowText, table.ObjectId);
+		public static DtoStringTableEntry ToDtoEntry(this TblStringTableRow table)
+			=> new(table.Id, table.Name, table.Language, table.Text, table.ObjectId);
 
-		public static TblStringTable ToTable(this DtoStringTableEntry dto)
-			=> new() { Id = dto.Id, RowName = dto.RowName, RowLanguage = dto.RowLanguage, RowText = dto.RowText, ObjectId = dto.ObjectId };
+		public static TblStringTableRow ToTable(this DtoStringTableEntry dto)
+			=> new() { Id = dto.Id, Name = dto.RowName, Language = dto.RowLanguage, Text = dto.RowText, ObjectId = dto.ObjectId };
 
 		public static DtoDatObjectEntry ToDtoEntry(this TblDatObject table)
 			=> new(table.Id, table.DatName, table.DatChecksum, table.xxHash3, table.ObjectId);

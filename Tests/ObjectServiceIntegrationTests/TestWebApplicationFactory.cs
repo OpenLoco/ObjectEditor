@@ -2,18 +2,34 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using OpenLoco.Definitions.Database;
+using OpenLoco.ObjectService;
 
 namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 {
 	public class TestWebApplicationFactory<TProgram>
 		: WebApplicationFactory<TProgram> where TProgram : class
 	{
+		// This will hold the specific overrides for *this instance* of the factory
+		Dictionary<string, string?> testConfiguration = [];
+
+		public TestWebApplicationFactory<TProgram> WithConfiguration(string key, string value)
+		{
+			testConfiguration[key] = value;
+			return this;
+		}
+
 		protected override void ConfigureWebHost(IWebHostBuilder builder)
-			=> _ = builder.ConfigureServices(services =>
+		{
+			_ = builder.ConfigureServices(services =>
 			{
+				services.RemoveAll<ServerFolderManager>();
+				services.AddSingleton(new ServerFolderManager(Path.GetTempPath()));
+
 				// Remove the app's original DbContext registration
 				var descriptor = services.SingleOrDefault(
 					d => d.ServiceType == typeof(DbContextOptions<LocoDbContext>));
@@ -52,5 +68,18 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 					_ = db.Database.EnsureCreated(); // Ensure the database is created for each test run
 				}
 			});
+
+			_ = builder.ConfigureAppConfiguration(config =>
+			{
+				config.Sources.Clear();
+
+				testConfiguration = new()
+				{
+					{ "ObjectService:RootFolder", Path.GetTempPath() },
+					{ "ObjectService:ShowScalar", "false" }
+				};
+				_ = config.AddInMemoryCollection(testConfiguration);
+			});
+		}
 	}
 }

@@ -1,4 +1,4 @@
-namespace Definitions
+namespace OpenLoco.Definitions
 {
 	public interface IHasId
 	{

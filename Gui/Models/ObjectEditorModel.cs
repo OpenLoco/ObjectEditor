@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using Common;
 using DynamicData;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat;
@@ -217,13 +218,13 @@ namespace OpenLoco.Gui.Models
 						continue;
 					}
 
-					if (string.IsNullOrEmpty(datObject.DatBytes))
+					if (string.IsNullOrEmpty(datObject.DatBytesAsBase64))
 					{
 						Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} from online - received no DAT object data. Any available metadata will still be shown");
 						continue;
 					}
 
-					var datFile = Convert.FromBase64String(datObject.DatBytes);
+					var datFile = Convert.FromBase64String(datObject.DatBytesAsBase64);
 					if (datFile == null || datFile.Length == 0)
 					{
 						Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} from online - received DAT object data, but it was unable to be decoded. Any available metadata will still be shown");
@@ -260,9 +261,9 @@ namespace OpenLoco.Gui.Models
 			if (cachedLocoObjDto != null)
 			{
 				var firstLinkedDatFile = cachedLocoObjDto!.DatObjects.First();
-				if (firstLinkedDatFile.DatBytes?.Length > 0)
+				if (firstLinkedDatFile.DatBytesAsBase64?.Length > 0)
 				{
-					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(firstLinkedDatFile.DatBytes), Logger, $"{filesystemItem.FileName}-{filesystemItem.DisplayName}", true);
+					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(firstLinkedDatFile.DatBytesAsBase64), Logger, $"{filesystemItem.FileName}-{filesystemItem.DisplayName}", true);
 					fileInfo = obj.DatFileInfo;
 					locoObject = obj.LocoObject;
 					if (obj.LocoObject == null)
@@ -281,18 +282,19 @@ namespace OpenLoco.Gui.Models
 					fileInfo = new DatFileInfo(fakeS5Header, ObjectHeader.NullHeader);
 				}
 
-				metadata = new MetadataModel(cachedLocoObjDto.InternalName)
+				metadata = new MetadataModel(cachedLocoObjDto.Name)
 				{
 					Description = cachedLocoObjDto.Description,
-					Authors = [.. cachedLocoObjDto.Authors.Select(x => x.ToTable())],
-					CreatedDate = cachedLocoObjDto.CreatedDate,
-					ModifiedDate = cachedLocoObjDto.ModifiedDate,
-					UploadedDate = cachedLocoObjDto.UploadedDate,
-					Tags = [.. cachedLocoObjDto.Tags.Select(x => x.ToTable())],
-					ObjectPacks = [.. cachedLocoObjDto.ObjectPacks.Select(x => x.ToTable())],
-					DatObjects = [.. cachedLocoObjDto.DatObjects.Select(x => x.ToTable())],
-					Licence = cachedLocoObjDto.Licence?.ToTable(),
+					Authors = [.. cachedLocoObjDto.Authors],
+					CreatedDate = cachedLocoObjDto.CreatedDate?.ToDateTimeOffset(),
+					ModifiedDate = cachedLocoObjDto.ModifiedDate?.ToDateTimeOffset(),
+					UploadedDate = cachedLocoObjDto.UploadedDate.ToDateTimeOffset(),
+					Tags = [.. cachedLocoObjDto.Tags],
+					ObjectPacks = [.. cachedLocoObjDto.ObjectPacks],
+					DatObjects = [.. cachedLocoObjDto.DatObjects],
+					Licence = cachedLocoObjDto.Licence,
 					Availability = cachedLocoObjDto.Availability,
+					//SubObject = cachedLocoObjDto.SubObject,
 				};
 
 				if (locoObject != null)
@@ -331,8 +333,8 @@ namespace OpenLoco.Gui.Models
 				locoObject = obj.Value.LocoObject;
 				metadata = new MetadataModel("<unknown>")
 				{
-					CreatedDate = filesystemItem.CreatedDate,
-					ModifiedDate = filesystemItem.ModifiedDate
+					CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
+					ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset()
 				}; // todo: look up the rest of the data from internet
 
 				if (locoObject != null)
@@ -511,8 +513,8 @@ namespace OpenLoco.Gui.Models
 		{
 			Logger.Info($"Uploading {dat.FileName} to object repository");
 			var filename = Path.Combine(Settings.ObjDataDirectory, dat.FileName);
-			var creationDate = File.GetCreationTimeUtc(filename);
-			var modifiedDate = File.GetLastWriteTimeUtc(filename);
+			var creationDate = DateOnly.FromDateTime(File.GetCreationTimeUtc(filename));
+			var modifiedDate = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(filename));
 
 			if (ObjectServiceClient == null)
 			{

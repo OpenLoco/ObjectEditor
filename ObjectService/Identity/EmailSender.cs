@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // https://github.com/dotnet/aspnetcore/blob/c9027726579d953496ce3c43546d1b69f77385a5/src/Identity/Core/src/EmailSender.cs
-
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Net;
 using System.Net.Mail;

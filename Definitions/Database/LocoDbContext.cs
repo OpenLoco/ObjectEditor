@@ -17,8 +17,85 @@ namespace OpenLoco.Definitions.Database
 		#region ObjectData
 
 		public DbSet<TblObject> Objects => Set<TblObject>();
-		public DbSet<TblStringTable> StringTable => Set<TblStringTable>();
+		public DbSet<TblStringTableRow> StringTable => Set<TblStringTableRow>();
 		public DbSet<TblDatObject> DatObjects => Set<TblDatObject>();
+
+		#region Objects
+
+		public DbSet<TblObjectAirport> ObjAirport => Set<TblObjectAirport>();
+
+		public DbSet<TblObjectBridge> ObjBridge => Set<TblObjectBridge>();
+
+		public DbSet<TblObjectBuilding> ObjBuilding => Set<TblObjectBuilding>();
+
+		public DbSet<TblObjectCargo> ObjCargo => Set<TblObjectCargo>();
+
+		public DbSet<TblObjectCliffEdge> ObjCliffEdge => Set<TblObjectCliffEdge>();
+
+		public DbSet<TblObjectClimate> ObjClimate => Set<TblObjectClimate>();
+
+		public DbSet<TblObjectCompetitor> ObjCompetitor => Set<TblObjectCompetitor>();
+
+		public DbSet<TblObjectCurrency> ObjCurrency => Set<TblObjectCurrency>();
+
+		public DbSet<TblObjectDock> ObjDock => Set<TblObjectDock>();
+
+		public DbSet<TblObjectHillShapes> ObjHillShapes => Set<TblObjectHillShapes>();
+
+		public DbSet<TblObjectIndustry> ObjIndustry => Set<TblObjectIndustry>();
+
+		public DbSet<TblObjectInterface> ObjInterface => Set<TblObjectInterface>();
+
+		public DbSet<TblObjectLand> ObjLand => Set<TblObjectLand>();
+
+		public DbSet<TblObjectLevelCrossing> ObjLevelCrossing => Set<TblObjectLevelCrossing>();
+
+		public DbSet<TblObjectRegion> ObjRegion => Set<TblObjectRegion>();
+
+		public DbSet<TblObjectRoadExtra> ObjRoadExtra => Set<TblObjectRoadExtra>();
+
+		public DbSet<TblObjectRoad> ObjRoad => Set<TblObjectRoad>();
+
+		public DbSet<TblObjectRoadStation> ObjRoadStation => Set<TblObjectRoadStation>();
+
+		public DbSet<TblObjectScaffolding> ObjScaffolding => Set<TblObjectScaffolding>();
+
+		public DbSet<TblObjectScenarioText> ObjScenarioText => Set<TblObjectScenarioText>();
+
+		public DbSet<TblObjectSnow> ObjSnow => Set<TblObjectSnow>();
+
+		public DbSet<TblObjectSound> ObjSound => Set<TblObjectSound>();
+
+		public DbSet<TblObjectSteam> ObjSteam => Set<TblObjectSteam>();
+
+		public DbSet<TblObjectStreetLight> ObjStreetLight => Set<TblObjectStreetLight>();
+
+		public DbSet<TblObjectTownNames> ObjTownNames => Set<TblObjectTownNames>();
+
+		public DbSet<TblObjectTrackExtra> ObjTrackExtra => Set<TblObjectTrackExtra>();
+
+		public DbSet<TblObjectTrack> ObjTrack => Set<TblObjectTrack>();
+
+		public DbSet<TblObjectTrackSignal> ObjTrackSignal => Set<TblObjectTrackSignal>();
+
+		public DbSet<TblObjectTrackStation> ObjTrackStation => Set<TblObjectTrackStation>();
+
+		public DbSet<TblObjectTree> ObjTree => Set<TblObjectTree>();
+
+		public DbSet<TblObjectTunnel> ObjTunnel => Set<TblObjectTunnel>();
+
+		public DbSet<TblObjectVehicle> ObjVehicle => Set<TblObjectVehicle>();
+
+		public DbSet<TblObjectWall> ObjWall => Set<TblObjectWall>();
+
+		public DbSet<TblObjectWater> ObjWater => Set<TblObjectWater>();
+
+		#endregion
+
+		#endregion
+
+		#region Other
+
 		public DbSet<TblObjectPack> ObjectPacks => Set<TblObjectPack>();
 		public DbSet<TblSC5File> SC5Files => Set<TblSC5File>();
 		public DbSet<TblSC5FilePack> SC5FilePacks => Set<TblSC5FilePack>();
@@ -57,64 +134,27 @@ namespace OpenLoco.Definitions.Database
 		{
 			base.OnModelCreating(modelBuilder);
 
+			//_ = modelBuilder.Entity<TblObject>()
+			//	.HasAlternateKey(o => new { o.SubObjectId, o.ObjectType });
+
+			// Configure the one-to-many relationship
+			//modelBuilder.Entity<OrderItem>()
+			//	.HasOne(oi => oi.Order) // OrderItem has one Order
+			//	.WithMany(o => o.OrderItems) // Order has many OrderItems
+			//	.HasForeignKey(oi => new { oi.OrderNumber, oi.CustomerCode }); // The composite foreign key on OrderItem
+
 			_ = modelBuilder.Entity<TblObject>()
 				.Property(b => b.UploadedDate)
-				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+				.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
 			_ = modelBuilder.Entity<TblSC5File>()
 				.Property(b => b.UploadedDate)
-				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+				.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
 			_ = modelBuilder.Entity<TblObjectPack>()
 				.Property(b => b.UploadedDate)
-				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
+				.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
 			_ = modelBuilder.Entity<TblSC5FilePack>()
 				.Property(b => b.UploadedDate)
-				.HasDefaultValueSql("datetime(datetime('now', 'localtime'), 'utc')"); // this is necessary, it seems like a bug in sqlite
-
-			// for the int->guid pk transition
-			//_ = modelBuilder.Entity<TblDatObject>()
-			//	.HasAlternateKey(x => x.GuidId);
-			//_ = modelBuilder.Entity<TblObject>()
-			//	.HasAlternateKey(x => x.GuidId);
-			//_ = modelBuilder.Entity<TblObjectPack>()
-			//	.HasAlternateKey(x => x.GuidId);
-			//_ = modelBuilder.Entity<TblSC5File>()
-			//	.HasAlternateKey(x => x.GuidId);
-			//_ = modelBuilder.Entity<TblSC5FilePack>()
-			//	.HasAlternateKey(x => x.GuidId);
-			//_ = modelBuilder.Entity<TblAuthor>()
-			//	.HasAlternateKey(x => x.GuidId);
-			//_ = modelBuilder.Entity<TblLicence>()
-			//	.HasAlternateKey(x => x.GuidId);
-			//_ = modelBuilder.Entity<TblTag>()
-			//	.HasAlternateKey(x => x.GuidId);
-
-			//_ = modelBuilder.Entity<TblStringTable>()
-			//	.Property(x => x.GuidId)
-			//	.HasDefaultValueSql("NEWID()");
-			//_ = modelBuilder.Entity<TblDatObject>()
-			//	.Property(x => x.GuidId)
-			//	.HasDefaultValueSql("NEWID()");
-			//_ = modelBuilder.Entity<TblObject>()
-			//	.Property(x => x.GuidId)
-			//	.HasDefaultValueSql("NEWID()");
-			//_ = modelBuilder.Entity<TblObjectPack>()
-			//	.Property(x => x.GuidId)
-			//	.HasDefaultValueSql("NEWID()");
-			//_ = modelBuilder.Entity<TblSC5File>()
-			//	.Property(x => x.GuidId)
-			//	.HasDefaultValueSql("NEWID()");
-			//_ = modelBuilder.Entity<TblSC5FilePack>()
-			//	.Property(x => x.GuidId)
-			//	.HasDefaultValueSql("NEWID()");
-			//_ = modelBuilder.Entity<TblAuthor>()
-			//	.Property(x => x.GuidId)
-			//	.HasDefaultValueSql("NEWID()");
-			//_ = modelBuilder.Entity<TblLicence>()
-			//	.Property(x => x.GuidId)
-			//	.HasDefaultValueSql("NEWID()");
-			//_ = modelBuilder.Entity<TblTag>()
-			//	.Property(x => x.GuidId)
-			//	.HasDefaultValueSql("NEWID()");
+				.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
 		}
 
 		public bool DoesObjectExist(S5Header s5Header, out TblObject? existingObject)

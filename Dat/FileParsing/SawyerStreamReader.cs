@@ -1,4 +1,3 @@
-using Dat.Objects;
 using OpenLoco.Common.Logging;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.Objects;
@@ -471,8 +470,8 @@ namespace OpenLoco.Dat.FileParsing
 				ObjectType.TownNames => ByteReader.ReadLocoStruct<TownNamesObject>(data),
 				ObjectType.TrackExtra => ByteReader.ReadLocoStruct<TrackExtraObject>(data),
 				ObjectType.Track => ByteReader.ReadLocoStruct<TrackObject>(data),
-				ObjectType.TrainSignal => ByteReader.ReadLocoStruct<TrainSignalObject>(data),
-				ObjectType.TrainStation => ByteReader.ReadLocoStruct<TrainStationObject>(data),
+				ObjectType.TrackSignal => ByteReader.ReadLocoStruct<TrackSignalObject>(data),
+				ObjectType.TrackStation => ByteReader.ReadLocoStruct<TrackStationObject>(data),
 				ObjectType.Tree => ByteReader.ReadLocoStruct<TreeObject>(data),
 				ObjectType.Tunnel => ByteReader.ReadLocoStruct<TunnelObject>(data),
 				ObjectType.Vehicle => ByteReader.ReadLocoStruct<VehicleObject>(data),

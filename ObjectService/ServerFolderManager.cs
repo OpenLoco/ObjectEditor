@@ -50,7 +50,17 @@ namespace OpenLoco.ObjectService
 		{
 			RootDirectory = rootDirectory;
 			var logger = new Logger();
-			ObjectIndex = ObjectIndex.LoadOrCreateIndex(Path.Combine(rootDirectory, ObjectsFolderName), logger)!;
+
+			var indexFile = Path.Combine(rootDirectory, ObjectsFolderName);
+			try
+			{
+				ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
+			}
+			catch (Exception ex)
+			{
+				File.Delete(indexFile);
+				ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!; // try again, recreating the index
+			}
 
 			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder));
 			ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsCustomFolder));

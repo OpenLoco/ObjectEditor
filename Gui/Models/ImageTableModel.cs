@@ -128,7 +128,7 @@ namespace OpenLoco.Gui.Models
 				var offsetsFile = Path.Combine(directory, "sprites.json");
 				if (File.Exists(offsetsFile))
 				{
-					offsets = await JsonFile.DeserializeFromFileAsync<ICollection<G1Element32Json>>(File.ReadAllText(offsetsFile)); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+					offsets = await JsonFile.DeserializeFromFileAsync<ICollection<G1Element32Json>>(offsetsFile); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 					ArgumentNullException.ThrowIfNull(offsets);
 					Logger.Debug($"Found sprites.json file with {offsets.Count} images");
 				}

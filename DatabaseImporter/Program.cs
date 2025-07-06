@@ -183,7 +183,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 				Licence = x.Licence == null ? null : db.Licences.Single(l => l.Name == x.Licence),
 				CreatedDate = null,
 				ModifiedDate = null,
-				UploadedDate = DateOnly.Now,
+				UploadedDate = DateOnly.Today,
 			}));
 			_ = db.SaveChanges();
 		}
@@ -206,7 +206,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 			var metadataKey = objIndex.DisplayName; // should be InternalName
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))
 			{
-				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, ObjectAvailability.Available, DateOnly.Now, null, DateOnly.Now, ObjectSource.Custom);
+				var newMetadata = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, ObjectAvailability.Available, DateOnly.Today, null, DateOnly.Today, ObjectSource.Custom);
 				meta = newMetadata;
 				objectMetadataDict.Add(objIndex.DisplayName, newMetadata);
 			}
@@ -231,7 +231,7 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 				Authors = authors ?? [],
 				CreatedDate = creationTime,
 				ModifiedDate = null,
-				UploadedDate = DateOnly.Now,
+				UploadedDate = DateOnly.Today,
 				Tags = tags ?? [],
 				ObjectPacks = objectPacks ?? [],
 				DatObjects = [],

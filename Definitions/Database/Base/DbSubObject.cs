@@ -18,6 +18,7 @@ namespace OpenLoco.Definitions.Database
 
 	public interface IDbSubObject : IHasId
 	{
+		public abstract TblObject Parent { get; set; }
 		//IDtoSubObject ToDto();
 	}
 
@@ -37,11 +38,17 @@ namespace OpenLoco.Definitions.Database
 	public static class DbSubObjectHelper
 	{
 		static async Task<string> AddOrUpdate<TSubObject, TDat>(LocoDbContext db, DbSet<TSubObject> subObjTable, TblObject parentObj, ILocoStruct datObj)
-			where TSubObject : DbSubObject, IConvertibleToTable<TSubObject, TDat>
+			where TSubObject : class, IDbSubObject, IConvertibleToTable<TSubObject, TDat>
 			where TDat : ILocoStruct
 		{
 			var subObj = TSubObject.FromObject(parentObj, (TDat)datObj);
+			return await AddOrUpdateCore<TSubObject, TDat>(db, subObjTable, parentObj, subObj);
+		}
 
+		static async Task<string> AddOrUpdateCore<TSubObject, TDat>(LocoDbContext db, DbSet<TSubObject> subObjTable, TblObject parentObj, TSubObject subObj)
+			where TSubObject : class, IDbSubObject, IConvertibleToTable<TSubObject, TDat>
+			where TDat : ILocoStruct
+		{
 			var existingSubObj = await subObjTable.SingleOrDefaultAsync(x => x.Id == parentObj.SubObjectId);
 			if (existingSubObj != null)
 			{
@@ -61,7 +68,47 @@ namespace OpenLoco.Definitions.Database
 			}
 		}
 
-		public static async Task<string> Update(LocoDbContext db, TblObject obj, ILocoStruct locoStruct)
+		public static async Task<string> AddOrUpdate(LocoDbContext db, TblObject obj, IDbSubObject locoStruct)
+			=> obj.ObjectType switch
+			{
+				ObjectType.Airport => await AddOrUpdateCore<TblObjectAirport, AirportObject>(db, db.ObjAirport, obj, (TblObjectAirport)locoStruct),
+				ObjectType.Bridge => await AddOrUpdateCore<TblObjectBridge, BridgeObject>(db, db.ObjBridge, obj, (TblObjectBridge)locoStruct),
+				ObjectType.Building => await AddOrUpdateCore<TblObjectBuilding, BuildingObject>(db, db.ObjBuilding, obj, (TblObjectBuilding)locoStruct),
+				ObjectType.Cargo => await AddOrUpdateCore<TblObjectCargo, CargoObject>(db, db.ObjCargo, obj, (TblObjectCargo)locoStruct),
+				ObjectType.CliffEdge => await AddOrUpdateCore<TblObjectCliffEdge, CliffEdgeObject>(db, db.ObjCliffEdge, obj, (TblObjectCliffEdge)locoStruct),
+				ObjectType.Climate => await AddOrUpdateCore<TblObjectClimate, ClimateObject>(db, db.ObjClimate, obj, (TblObjectClimate)locoStruct),
+				ObjectType.Competitor => await AddOrUpdateCore<TblObjectCompetitor, CompetitorObject>(db, db.ObjCompetitor, obj, (TblObjectCompetitor)locoStruct),
+				ObjectType.Currency => await AddOrUpdateCore<TblObjectCurrency, CurrencyObject>(db, db.ObjCurrency, obj, (TblObjectCurrency)locoStruct),
+				ObjectType.Dock => await AddOrUpdateCore<TblObjectDock, DockObject>(db, db.ObjDock, obj, (TblObjectDock)locoStruct),
+				ObjectType.HillShapes => await AddOrUpdateCore<TblObjectHillShapes, HillShapesObject>(db, db.ObjHillShapes, obj, (TblObjectHillShapes)locoStruct),
+				ObjectType.Industry => await AddOrUpdateCore<TblObjectIndustry, IndustryObject>(db, db.ObjIndustry, obj, (TblObjectIndustry)locoStruct),
+				ObjectType.InterfaceSkin => await AddOrUpdateCore<TblObjectInterface, InterfaceSkinObject>(db, db.ObjInterface, obj, (TblObjectInterface)locoStruct),
+				ObjectType.Land => await AddOrUpdateCore<TblObjectLand, LandObject>(db, db.ObjLand, obj, (TblObjectLand)locoStruct),
+				ObjectType.LevelCrossing => await AddOrUpdateCore<TblObjectLevelCrossing, LevelCrossingObject>(db, db.ObjLevelCrossing, obj, (TblObjectLevelCrossing)locoStruct),
+				ObjectType.Region => await AddOrUpdateCore<TblObjectRegion, RegionObject>(db, db.ObjRegion, obj, (TblObjectRegion)locoStruct),
+				ObjectType.RoadExtra => await AddOrUpdateCore<TblObjectRoadExtra, RoadExtraObject>(db, db.ObjRoadExtra, obj, (TblObjectRoadExtra)locoStruct),
+				ObjectType.Road => await AddOrUpdateCore<TblObjectRoad, RoadObject>(db, db.ObjRoad, obj, (TblObjectRoad)locoStruct),
+				ObjectType.RoadStation => await AddOrUpdateCore<TblObjectRoadStation, RoadStationObject>(db, db.ObjRoadStation, obj, (TblObjectRoadStation)locoStruct),
+				ObjectType.Scaffolding => await AddOrUpdateCore<TblObjectScaffolding, ScaffoldingObject>(db, db.ObjScaffolding, obj, (TblObjectScaffolding)locoStruct),
+				ObjectType.ScenarioText => await AddOrUpdateCore<TblObjectScenarioText, ScenarioTextObject>(db, db.ObjScenarioText, obj, (TblObjectScenarioText)locoStruct),
+				ObjectType.Snow => await AddOrUpdateCore<TblObjectSnow, SnowObject>(db, db.ObjSnow, obj, (TblObjectSnow)locoStruct),
+				ObjectType.Sound => await AddOrUpdateCore<TblObjectSound, SoundObject>(db, db.ObjSound, obj, (TblObjectSound)locoStruct),
+				ObjectType.Steam => await AddOrUpdateCore<TblObjectSteam, SteamObject>(db, db.ObjSteam, obj, (TblObjectSteam)locoStruct),
+				ObjectType.StreetLight => await AddOrUpdateCore<TblObjectStreetLight, StreetLightObject>(db, db.ObjStreetLight, obj, (TblObjectStreetLight)locoStruct),
+				ObjectType.TownNames => await AddOrUpdateCore<TblObjectTownNames, TownNamesObject>(db, db.ObjTownNames, obj, (TblObjectTownNames)locoStruct),
+				ObjectType.TrackExtra => await AddOrUpdateCore<TblObjectTrackExtra, TrackExtraObject>(db, db.ObjTrackExtra, obj, (TblObjectTrackExtra)locoStruct),
+				ObjectType.Track => await AddOrUpdateCore<TblObjectTrack, TrackObject>(db, db.ObjTrack, obj, (TblObjectTrack)locoStruct),
+				ObjectType.TrackSignal => await AddOrUpdateCore<TblObjectTrackSignal, TrackSignalObject>(db, db.ObjTrackSignal, obj, (TblObjectTrackSignal)locoStruct),
+				ObjectType.TrackStation => await AddOrUpdateCore<TblObjectTrackStation, TrackStationObject>(db, db.ObjTrackStation, obj, (TblObjectTrackStation)locoStruct),
+				ObjectType.Tree => await AddOrUpdateCore<TblObjectTree, TreeObject>(db, db.ObjTree, obj, (TblObjectTree)locoStruct),
+				ObjectType.Tunnel => await AddOrUpdateCore<TblObjectTunnel, TunnelObject>(db, db.ObjTunnel, obj, (TblObjectTunnel)locoStruct),
+				ObjectType.Vehicle => await AddOrUpdateCore<TblObjectVehicle, VehicleObject>(db, db.ObjVehicle, obj, (TblObjectVehicle)locoStruct),
+				ObjectType.Water => await AddOrUpdateCore<TblObjectWater, WaterObject>(db, db.ObjWater, obj, (TblObjectWater)locoStruct),
+				ObjectType.Wall => await AddOrUpdateCore<TblObjectWall, WallObject>(db, db.ObjWall, obj, (TblObjectWall)locoStruct),
+				_ => throw new NotImplementedException(),
+			};
+
+		public static async Task<string> AddOrUpdate(LocoDbContext db, TblObject obj, ILocoStruct locoStruct)
 			=> obj.ObjectType switch
 			{
 				ObjectType.Airport => await AddOrUpdate<TblObjectAirport, AirportObject>(db, db.ObjAirport, obj, (AirportObject)locoStruct),
@@ -98,7 +145,7 @@ namespace OpenLoco.Definitions.Database
 				ObjectType.Vehicle => await AddOrUpdate<TblObjectVehicle, VehicleObject>(db, db.ObjVehicle, obj, (VehicleObject)locoStruct),
 				ObjectType.Water => await AddOrUpdate<TblObjectWater, WaterObject>(db, db.ObjWater, obj, (WaterObject)locoStruct),
 				ObjectType.Wall => await AddOrUpdate<TblObjectWall, WallObject>(db, db.ObjWall, obj, (WallObject)locoStruct),
-				_ => "unknown object type",
+				_ => throw new NotImplementedException(),
 			};
 
 		public static IDtoSubObject GetDbSubForType(LocoDbContext db, ObjectType objectType, UniqueObjectId parentId)

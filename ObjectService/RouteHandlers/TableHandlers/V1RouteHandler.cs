@@ -566,7 +566,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				Availability = request.InitialAvailability,
 				CreatedDate = createdDate,
 				ModifiedDate = modifiedDate,
-				UploadedDate = DateOnly.Now,
+				UploadedDate = DateOnly.Today,
 				Authors = [],
 				Tags = [],
 				ObjectPacks = [],

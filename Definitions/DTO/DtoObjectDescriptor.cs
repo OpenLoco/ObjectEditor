@@ -22,6 +22,7 @@ namespace OpenLoco.Definitions.DTO
 		ICollection<DtoTagEntry> Tags,
 		ICollection<DtoItemPackEntry> ObjectPacks,
 		ICollection<DtoDatObjectEntry> DatObjects,
-		DtoStringTableDescriptor StringTable,
-		IDtoSubObject SubObject) : IHasId, IDbDates;
+		DtoStringTableDescriptor StringTable
+		//IDtoSubObject SubObject
+		) : IHasId, IDbDates;
 }

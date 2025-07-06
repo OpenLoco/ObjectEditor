@@ -3,6 +3,16 @@ using OpenLoco.Definitions.Database;
 
 namespace OpenLoco.ObjectService
 {
+	public interface IServerFolderManager
+	{
+		//string RootDirectory { get; init; }
+	}
+
+	public class TestServerFolderManager : IServerFolderManager
+	{
+		//string RootDirectory { get; init; }
+	}
+
 	/// <summary>
 	/// <para>This class represents the folder structure for objects on the server.</para>
 	/// <para>
@@ -32,7 +42,7 @@ namespace OpenLoco.ObjectService
 	/// </para>
 	///
 	/// </summary>
-	public class ServerFolderManager
+	public class ServerFolderManager : IServerFolderManager
 	{
 		string RootDirectory { get; init; }
 

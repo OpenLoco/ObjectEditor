@@ -218,13 +218,13 @@ namespace OpenLoco.Gui.Models
 						continue;
 					}
 
-					if (string.IsNullOrEmpty(datObject.DatBytes))
+					if (string.IsNullOrEmpty(datObject.DatBytesAsBase64))
 					{
 						Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} from online - received no DAT object data. Any available metadata will still be shown");
 						continue;
 					}
 
-					var datFile = Convert.FromBase64String(datObject.DatBytes);
+					var datFile = Convert.FromBase64String(datObject.DatBytesAsBase64);
 					if (datFile == null || datFile.Length == 0)
 					{
 						Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} from online - received DAT object data, but it was unable to be decoded. Any available metadata will still be shown");
@@ -261,9 +261,9 @@ namespace OpenLoco.Gui.Models
 			if (cachedLocoObjDto != null)
 			{
 				var firstLinkedDatFile = cachedLocoObjDto!.DatObjects.First();
-				if (firstLinkedDatFile.DatBytes?.Length > 0)
+				if (firstLinkedDatFile.DatBytesAsBase64?.Length > 0)
 				{
-					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(firstLinkedDatFile.DatBytes), Logger, $"{filesystemItem.FileName}-{filesystemItem.DisplayName}", true);
+					var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(firstLinkedDatFile.DatBytesAsBase64), Logger, $"{filesystemItem.FileName}-{filesystemItem.DisplayName}", true);
 					fileInfo = obj.DatFileInfo;
 					locoObject = obj.LocoObject;
 					if (obj.LocoObject == null)
@@ -294,7 +294,7 @@ namespace OpenLoco.Gui.Models
 					DatObjects = [.. cachedLocoObjDto.DatObjects],
 					Licence = cachedLocoObjDto.Licence,
 					Availability = cachedLocoObjDto.Availability,
-					SubObject = cachedLocoObjDto.SubObject,
+					//SubObject = cachedLocoObjDto.SubObject,
 				};
 
 				if (locoObject != null)

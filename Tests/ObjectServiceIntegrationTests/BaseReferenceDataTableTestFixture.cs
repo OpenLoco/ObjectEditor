@@ -38,8 +38,10 @@ namespace OpenLoco.Tests.ObjectServiceIntegrationTests
 		[SetUp]
 		public async Task SetUp()
 		{
-			_factory = new TestWebApplicationFactory<Program>();
+			_factory = new TestWebApplicationFactory<Program>()
+				.WithConfiguration("ObjectService:RootFolder", Path.GetTempPath());
 			HttpClient = _factory.CreateClient();
+
 			await SeedDataAsync();
 			var healthResponse = await HttpClient.GetAsync("/health");
 			var health = await healthResponse.Content.ReadAsStringAsync();

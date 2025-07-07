@@ -37,6 +37,10 @@ namespace OpenLoco.Gui
 			=> AppBuilder.Configure<App>()
 				.UsePlatformDetect()
 				.WithInterFont()
+				.With(new Win32PlatformOptions
+				{
+					RenderingMode = [Win32RenderingMode.Vulkan]
+				})
 				.LogToTrace(LogEventLevel.Verbose, LogArea.Binding)
 				.UseReactiveUI();
 	}

@@ -189,7 +189,7 @@
 					</Border>
 				</TabItem>
 			</TabControl>
-			<GridSplitter Grid.Column="1" Grid.Row="1" />
+			<GridSplitter Grid.Column="1" Grid.Row="1" Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" />
 			<TabControl Grid.Column="2" Grid.Row="1">
 				<TabControl.Styles>
 					<Style Selector="TabItem">

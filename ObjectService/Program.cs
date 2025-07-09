@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using ObjectService.RouteHandlers;
 using OpenLoco.Dat;
 using OpenLoco.Definitions.Database;
@@ -16,7 +17,25 @@ builder.Logging.AddConsole();
 
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
-builder.Services.AddOpenApi(); // (options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+builder.Services.AddOpenApi(options =>
+{
+	_ = options.AddDocumentTransformer((document, context, cancellationToken) =>
+	{
+		document.Info.Title = "OpenLoco Object Service";
+		document.Info.Version = "2.0";
+		document.Info.Contact = new OpenApiContact
+		{
+			Name = "Left of Zen",
+			Email = "leftofzen@openloco.io"
+		};
+		document.Servers.Clear();
+		document.Servers.Add(new OpenApiServer() { Url = "https://openloco.leftofzen.dev" });
+
+		return Task.CompletedTask;
+	});
+});
+
+// (options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddProblemDetails();

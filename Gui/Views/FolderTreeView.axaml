@@ -20,7 +20,7 @@
 		<moc:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
 	</UserControl.Resources>
 
-	<Border BorderThickness="1" Margin="2" Background="{DynamicResource ExpanderContentBackground}">
+	<Border BorderThickness="0" Margin="2">
 		<DockPanel Margin="2" >
 			<TabStrip DockPanel.Dock="Top"  Margin="2" SelectedIndex="{Binding SelectedTabIndex}" HorizontalAlignment="Center" Name="LocalOnlineTab">
 				<TabItem>

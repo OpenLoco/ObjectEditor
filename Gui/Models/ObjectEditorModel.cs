@@ -284,6 +284,7 @@ namespace OpenLoco.Gui.Models
 
 				metadata = new MetadataModel(cachedLocoObjDto.Name)
 				{
+					UniqueObjectId = cachedLocoObjDto.Id,
 					Description = cachedLocoObjDto.Description,
 					Authors = [.. cachedLocoObjDto.Authors],
 					CreatedDate = cachedLocoObjDto.CreatedDate?.ToDateTimeOffset(),
@@ -334,7 +335,9 @@ namespace OpenLoco.Gui.Models
 				metadata = new MetadataModel("<unknown>")
 				{
 					CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
-					ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset()
+					ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset(),
+					Availability = Definitions.ObjectAvailability.Available,
+					//DatObjects = [new(0)],
 				}; // todo: look up the rest of the data from internet
 
 				if (locoObject != null)

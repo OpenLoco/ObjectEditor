@@ -338,7 +338,7 @@ dotnet_diagnostic.CS8032.severity = none
 dotnet_diagnostic.CS8602.severity = warning # do not change: DAT treats this as error so we need to match it
 
 dotnet_diagnostic.IDE0004.severity = suggestion
-dotnet_diagnostic.IDE0005.severity = error
+dotnet_diagnostic.IDE0005.severity = warning
 dotnet_diagnostic.IDE0009.severity = suggestion
 dotnet_diagnostic.IDE0010.severity = error
 dotnet_diagnostic.IDE0011.severity = suggestion

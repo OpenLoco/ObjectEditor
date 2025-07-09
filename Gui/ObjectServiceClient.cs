@@ -6,17 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.Models
+namespace OpenLoco.Gui
 {
-	public class LocalUser(string Email, string Password)
-	{
-		public string Email { get; } = Email;
-		public string Password { get; } = Password;
-		public string UserName { get; set; } // set when user logs in
-		public TblAuthor? AssociatedAuthor { get; set; }
-	}
+	//public class LocalUser(string Email, string Password)
+	//{
+	//	public string Email { get; } = Email;
+	//	public string Password { get; } = Password;
+	//	public string UserName { get; set; } // set when user logs in
+	//	public TblAuthor? AssociatedAuthor { get; set; }
+	//}
 
 	public class ObjectServiceClient
 	{
@@ -38,7 +39,12 @@ namespace OpenLoco.Gui.Models
 			{
 				CookieContainer = new CookieContainer();
 				var handler = new HttpClientHandler() { CookieContainer = CookieContainer };
-				WebClient = new HttpClient(handler) { BaseAddress = serverUri, };
+
+				WebClient = new HttpClient(handler) { BaseAddress = serverUri };
+
+				var currentAppVersion = VersionHelpers.GetCurrentAppVersion();
+				WebClient.DefaultRequestHeaders.UserAgent.ParseAdd($"ObjectEditor/{currentAppVersion}");
+
 				Logger?.Info($"Successfully registered object service with address \"{serverUri}\"");
 			}
 			else

@@ -8,7 +8,9 @@
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
 	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
-	mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="900"
+	mc:Ignorable="d"
+	d:DesignWidth="1200"
+	d:DesignHeight="900"
 	x:Class="OpenLoco.Gui.Views.ImageTableView"
 	x:DataType="vm:ImageTableViewModel">
 

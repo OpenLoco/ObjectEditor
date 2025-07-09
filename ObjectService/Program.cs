@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using ObjectService.RouteHandlers;
@@ -58,6 +59,11 @@ ArgumentNullException.ThrowIfNull(rateLimiterSection);
 var rateLimiter = new RateLimitOptions();
 rateLimiterSection.Bind(rateLimiter);
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+	options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
+
 builder.Services.AddRateLimiter(rlOptions => rlOptions
 	.AddTokenBucketLimiter(policyName: tokenPolicy, options =>
 	{
@@ -115,6 +121,7 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseHttpLogging();
 app.UseRateLimiter();
 //app.MapLocoIdentityApi<TblUser>();

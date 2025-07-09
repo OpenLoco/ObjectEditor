@@ -31,6 +31,9 @@
 		<DataTemplate DataType="vm:ImageTableViewModel">
 			<vi:ImageTableView />
 		</DataTemplate>
+		<DataTemplate DataType="vm:MetadataViewModel">
+			<vi:MetadataView />
+		</DataTemplate>
 		<DataTemplate DataType="vm:DatObjectEditorViewModel">
 			<vi:DatObjectEditorView />
 		</DataTemplate>

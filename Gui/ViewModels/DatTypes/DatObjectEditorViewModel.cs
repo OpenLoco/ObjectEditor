@@ -38,6 +38,9 @@ namespace OpenLoco.Gui.ViewModels
 		public ObjectHeaderViewModel? ObjectHeaderViewModel { get; set; }
 
 		[Reactive]
+		public MetadataViewModel? MetadataViewModel { get; set; }
+
+		[Reactive]
 		public UiDatLocoFile? CurrentObject { get; private set; }
 
 		public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
@@ -176,13 +179,18 @@ namespace OpenLoco.Gui.ViewModels
 					S5HeaderViewModel = new S5HeaderViewModel(CurrentObject.DatFileInfo.S5Header);
 					ObjectHeaderViewModel = new ObjectHeaderViewModel(CurrentObject.DatFileInfo.ObjectHeader);
 				}
-			}
-			else
-			{
-				// todo: show warnings here
-				// in online mode, vanilla objects won't be downloaded so they hit this case, which is a valid use-case
-				CurrentObject = null;
-				CurrentObjectViewModel = null;
+
+				if (CurrentObject?.Metadata != null)
+				{
+					MetadataViewModel = new MetadataViewModel(CurrentObject.Metadata);
+				}
+				else
+				{
+					// todo: show warnings here
+					// in online mode, vanilla objects won't be downloaded so they hit this case, which is a valid use-case
+					CurrentObject = null;
+					CurrentObjectViewModel = null;
+				}
 			}
 		}
 

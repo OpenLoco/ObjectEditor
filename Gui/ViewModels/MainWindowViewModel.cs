@@ -59,16 +59,10 @@ namespace OpenLoco.Gui.ViewModels
 		public ReactiveCommand<Unit, Unit> ShowLogsCommand { get; }
 		public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
 
-		public const string GithubApplicationName = "ObjectEditor";
-		public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
-		public const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
-		public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
-
 		public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
 		[Reactive]
 		public SemanticVersion ApplicationVersion { get; set; }
-		public static readonly SemanticVersion UnknownVersion = new(0, 0, 0, "unknown");
 
 		[Reactive]
 		public string LatestVersionText { get; set; } = "Development build";
@@ -135,7 +129,7 @@ namespace OpenLoco.Gui.ViewModels
 				var result = await OpenLogWindow.Handle(vm);
 			});
 
-			OpenDownloadLink = ReactiveCommand.Create(() => Process.Start(new ProcessStartInfo(GithubLatestReleaseDownloadPage) { UseShellExecute = true }));
+			OpenDownloadLink = ReactiveCommand.Create(VersionHelpers.OpenDownloadPage);
 
 			#region Version
 
@@ -144,15 +138,12 @@ namespace OpenLoco.Gui.ViewModels
 			_ = this.WhenAnyValue(o => o.LatestVersionText)
 				.Subscribe(_ => this.RaisePropertyChanged(nameof(WindowTitle)));
 
-			var assembly = Assembly.GetExecutingAssembly();
-
-			ApplicationVersion = GetCurrentAppVersion(assembly);
+			ApplicationVersion = VersionHelpers.GetCurrentAppVersion();
 
 #if !DEBUG
-
 			try
 			{
-				var latestVersion = GetLatestAppVersion();
+				var latestVersion = VersionHelpers.GetLatestAppVersion(ApplicationVersion);
 				if (latestVersion > ApplicationVersion)
 				{
 					LatestVersionText = $"newer version exists: {latestVersion}";
@@ -169,6 +160,7 @@ namespace OpenLoco.Gui.ViewModels
 				Model.Logger.Error(ex);
 			}
 #endif
+
 			#endregion
 		}
 
@@ -340,53 +332,6 @@ namespace OpenLoco.Gui.ViewModels
 			}
 		}
 
-		static SemanticVersion GetCurrentAppVersion(Assembly assembly)
-		{
-			// grab current app version from assembly
-			const string versionFilename = "Gui.version.txt";
-			using (var stream = assembly.GetManifestResourceStream(versionFilename))
-			using (var ms = new MemoryStream())
-			{
-				stream!.CopyTo(ms);
-				var versionText = Encoding.ASCII.GetString(ms.ToArray());
-				return GetVersionFromText(versionText);
-			}
-		}
-
-#if !DEBUG
-		// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
-		SemanticVersion GetLatestAppVersion()
-		{
-			var client = new HttpClient();
-			client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(GithubApplicationName, ApplicationVersion.ToString()));
-			var response = client.GetAsync(GithubLatestReleaseAPI).Result;
-			if (response.IsSuccessStatusCode)
-			{
-				var jsonResponse = response.Content.ReadAsStringAsync().Result;
-				var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
-				var versionText = body?.TagName;
-				return GetVersionFromText(versionText);
-			}
-
-#pragma warning disable CA2201 // Do not raise reserved exception types
-			throw new Exception($"Unable to get latest version. Error={response.StatusCode}");
-#pragma warning restore CA2201 // Do not raise reserved exception types
-		}
-#endif
-
-		static SemanticVersion GetVersionFromText(string? versionText)
-		{
-			if (string.IsNullOrEmpty(versionText))
-			{
-				return UnknownVersion;
-			}
-
-			return
-				SemanticVersion.TryParse(versionText.Trim(), out var version)
-				? version
-				: UnknownVersion;
-		}
-
 		public async Task SelectNewFolder()
 		{
 			var folders = await PlatformSpecific.OpenFolderPicker();
@@ -410,19 +355,19 @@ namespace OpenLoco.Gui.ViewModels
 				return;
 			}
 
-			if (Model.Settings.AppDataObjDataFolder != dirPath)
+			if (Model.Settings.AppDataObjDataFolder == dirPath)
 			{
 				Model.Logger.Warning("No need to add - this is the predefined AppData folder");
 				return;
 			}
 
-			if (Model.Settings.LocomotionObjDataFolder != dirPath)
+			if (Model.Settings.LocomotionObjDataFolder == dirPath)
 			{
 				Model.Logger.Warning("No need to add - this is the predefined Locomotion ObjData folder");
 				return;
 			}
 
-			if (Model.Settings.OpenLocoObjDataFolder != dirPath)
+			if (Model.Settings.OpenLocoObjDataFolder == dirPath)
 			{
 				Model.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");
 				return;

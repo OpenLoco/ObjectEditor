@@ -9,6 +9,8 @@ namespace OpenLoco.Gui.Models
 {
 	public class MetadataModel(string internalName)
 	{
+		public UniqueObjectId UniqueObjectId { get; init; }
+
 		public string InternalName { get; init; } = internalName;
 
 		public string? Description { get; set; }

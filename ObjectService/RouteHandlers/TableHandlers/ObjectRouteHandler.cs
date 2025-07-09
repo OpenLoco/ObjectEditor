@@ -237,9 +237,9 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			if (db.DoesObjectExist(hdrs.S5, out var existingObject))
 			{
+				// todo: if we get here - the object doesn't exist but the dat object does - we should then link them
 				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
 			}
-
 
 			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
 
@@ -259,8 +259,6 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 			logger.LogInformation("File accepted DatName={DatName} DatChecksum={DatChecksum} PathOnDisk={SaveFileName}", hdrs.S5.Name, hdrs.S5.Checksum, saveFileName);
 
-			var creationTime = request.CreatedDate;
-
 			VehicleType? vehicleType = null;
 			if (LocoObject.Object is VehicleObject veh)
 			{
@@ -276,8 +274,8 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				ObjectType = hdrs.S5.ObjectType,
 				VehicleType = vehicleType,
 				Availability = request.InitialAvailability,
-				CreatedDate = creationTime,
-				ModifiedDate = null,
+				CreatedDate = request.CreatedDate,
+				ModifiedDate = request.ModifiedDate,
 				UploadedDate = DateOnly.Today,
 				Authors = [],
 				Tags = [],

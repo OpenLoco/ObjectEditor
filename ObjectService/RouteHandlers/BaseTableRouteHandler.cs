@@ -18,9 +18,9 @@ namespace ObjectService.RouteHandlers
 			_ = resourceRoute.MapGet(string.Empty, THandler.ReadDelegate);
 
 #if DEBUG
-			_ = baseRoute.MapPost(string.Empty, THandler.CreateDelegate); //.RequireAuthorization(AdminPolicy.Name);
-			_ = resourceRoute.MapPut(string.Empty, THandler.UpdateDelegate); //.RequireAuthorization(AdminPolicy.Name);
-			_ = resourceRoute.MapDelete(string.Empty, THandler.DeleteDelegate); //.RequireAuthorization(AdminPolicy.Name);
+			//_ = baseRoute.MapPost(string.Empty, THandler.CreateDelegate); //.RequireAuthorization(AdminPolicy.Name);
+			//_ = resourceRoute.MapPut(string.Empty, THandler.UpdateDelegate); //.RequireAuthorization(AdminPolicy.Name);
+			//_ = resourceRoute.MapDelete(string.Empty, THandler.DeleteDelegate); //.RequireAuthorization(AdminPolicy.Name);
 #endif
 			THandler.MapAdditionalRoutes(baseRoute);
 		}

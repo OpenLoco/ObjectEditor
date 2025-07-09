@@ -33,7 +33,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 
 		public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 		{
-			//_ = parentRoute.MapPost(RoutesV2.Authors, CreateDatAsync); // old dat route
+			_ = parentRoute.MapPost(string.Empty, CreateDatAsync); // old dat route
 
 			var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
 			_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);

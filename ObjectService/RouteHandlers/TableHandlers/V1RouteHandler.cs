@@ -183,7 +183,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getdat?objectName=114&checksum=123$returnObjBytes=false
-		public static async Task<IResult> GetDat([FromQuery] string datName, [FromQuery] uint datChecksum, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetDat([FromQuery] string datName, [FromQuery] uint datChecksum, [FromQuery] bool? returnObjBytes, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("[GetDat] Object [({ObjectName}, {Checksum})] requested", datName, datChecksum);
 
@@ -199,7 +199,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/getobjectimages?uniqueObjectId=1
-		public static async Task<IResult> GetObjectImages(UniqueObjectId uniqueObjectId, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetObjectImages(UniqueObjectId uniqueObjectId, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("[GetObjectImages] Object [{ObjectId}] requested with images", uniqueObjectId);
 
@@ -272,7 +272,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getobject?uniqueObjectId=246263256&returnObjBytes=false
-		public static async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetObject([FromQuery] int uniqueObjectId, [FromQuery] bool? returnObjBytes, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("[GetObject] Object [{ObjectId}] requested", uniqueObjectId);
 
@@ -337,7 +337,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/originaldatfile?objectName=114&checksum=123
-		public static async Task<IResult> GetDatFile([FromQuery] string datName, [FromQuery] uint datChecksum, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetDatFile([FromQuery] string datName, [FromQuery] uint datChecksum, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("[GetDatFile] DatName={DatName} DatChecksum={DatChecksum}", datName, datChecksum);
 
@@ -356,7 +356,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/v1/objects/getobjectfile?objectName=114&checksum=123
-		public static async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> GetObjectFile([FromQuery] int uniqueObjectId, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("[GetObjectFile] Object [{ObjectId}] requested", uniqueObjectId);
 
@@ -416,7 +416,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			});
 
 		// eg: https://localhost:7230/v1/scenarios/getscenario?uniqueScenarioId=246263256&returnObjBytes=false
-		public static async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger)
+		public static async Task<IResult> GetScenario([FromQuery] int uniqueScenarioId, [FromQuery] bool? returnObjBytes, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger)
 		{
 			logger.LogInformation("[GetScenario] Scenario [{ScenarioId}] requested", uniqueScenarioId);
 			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
@@ -452,7 +452,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.OrderBy(x => x.Name));
 
 		// eg: https://localhost:7230/v1/objectpacks/getpack?uniqueId=123
-		public static async Task<IResult> GetObjectPack([FromQuery] int uniqueId, LocoDbContext db)
+		public static async Task<IResult> GetObjectPack([FromQuery] int uniqueId, [FromServices] LocoDbContext db)
 			=> Results.Ok(
 				(await db.ObjectPacks
 					.Where(x => (int)x.Id == uniqueId)
@@ -472,7 +472,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.OrderBy(x => x.Name));
 
 		// eg: https://localhost:7230/v1/sc5filepacks/getpack?uniqueId=123
-		public static async Task<IResult> GetSC5FilePack([FromQuery] int uniqueId, LocoDbContext db)
+		public static async Task<IResult> GetSC5FilePack([FromQuery] int uniqueId, [FromServices] LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Where(x => (int)x.Id == uniqueId)
@@ -485,7 +485,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		#region POST
 
 		// eg: https://localhost:7230/v1/uploaddat/...
-		public static async Task<IResult> UploadDat(DtoUploadDat request, LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+		public static async Task<IResult> UploadDat(DtoUploadDat request, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 		{
 			logger.LogInformation("[UploadDat] Upload requested");
 

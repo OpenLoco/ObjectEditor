@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
@@ -22,7 +23,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 		{ }
 
-		public static async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
+		public static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Include(l => l.Licence)
@@ -30,10 +31,10 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.Select(x => x.ToDtoEntry())
 				.OrderBy(x => x.Name));
 
-		public static async Task<IResult> CreateAsync(DtoItemPackDescriptor<DtoScenarioEntry> request, LocoDbContext db)
+		public static async Task<IResult> CreateAsync([FromBody] DtoItemPackDescriptor<DtoScenarioEntry> request, [FromServices] LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public static async Task<IResult> ReadAsync(UniqueObjectId id, LocoDbContext db)
+		public static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db)
 			=> Results.Ok(
 				(await db.SC5FilePacks
 					.Where(x => x.Id == id)
@@ -43,10 +44,10 @@ namespace ObjectService.RouteHandlers.TableHandlers
 				.Select(x => x.ToDtoDescriptor())
 				.OrderBy(x => x.Name));
 
-		public static async Task<IResult> UpdateAsync(UniqueObjectId id, DtoItemPackDescriptor<DtoScenarioEntry> request, LocoDbContext db)
+		public static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoItemPackDescriptor<DtoScenarioEntry> request, [FromServices] LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-		public static async Task<IResult> DeleteAsync(UniqueObjectId id, LocoDbContext db)
+		public static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db)
 			=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 }

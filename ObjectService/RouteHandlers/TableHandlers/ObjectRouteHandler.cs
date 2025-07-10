@@ -6,6 +6,7 @@ using OpenLoco.Dat;
 using OpenLoco.Dat.Data;
 using OpenLoco.Dat.FileParsing;
 using OpenLoco.Dat.Objects;
+using OpenLoco.Dat.Types;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
@@ -35,12 +36,82 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		{
 			_ = parentRoute.MapPost(string.Empty, CreateDatAsync); // old dat route
 
+			_ = parentRoute.MapGet(RoutesV2.Missing, ListMissingObjects);
+			_ = parentRoute.MapPost(RoutesV2.Missing, AddMissingObject);
+
 			var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
 			_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);
 			_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImagesAsync);
 		}
+		static async Task<IResult> ListMissingObjects([FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+		{
+			logger.LogInformation("[ListMissingObjects] List requested for missing objects");
 
-		//static async Task<IResult> CreateAsync(DtoObjectDescriptor request, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+			return Results.Ok(
+				await db.Objects
+					.Include(x => x.DatObjects)
+					.Where(x => x.Availability == ObjectAvailability.Missing)
+					.Select(x => x.ToDtoEntry())
+					.ToListAsync());
+		}
+
+		static async Task<IResult> AddMissingObject([FromBody] DtoMissingObjectEntry entry, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+		{
+			var objName = $"{entry.DatName}_{entry.DatChecksum}";
+			var existing = await db.Objects.FirstOrDefaultAsync(x => x.Name == objName);
+			if (existing != null)
+			{
+				return Results.Conflict($"Object already exists in the database. DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existing!.UploadedDate}");
+			}
+
+			// double check it's missing
+			if (db.DoesObjectExist(entry.DatName, entry.DatChecksum, out var existingObject) && existingObject != null)
+			{
+				return Results.Conflict($"Object already exists in the database. UniqueId={existingObject.Id} DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existingObject!.UploadedDate}");
+			}
+
+			// save to db if true
+			var tblObject = new TblObject()
+			{
+				Name = $"{entry.DatName}_{entry.DatChecksum}",
+				Description = string.Empty,
+				ObjectSource = ObjectSource.Custom,
+				ObjectType = entry.ObjectType,
+				VehicleType = null,
+				Availability = ObjectAvailability.Missing,
+				CreatedDate = null,
+				ModifiedDate = null,
+				UploadedDate = DateOnly.Today,
+				Authors = [],
+				Tags = [],
+				ObjectPacks = [],
+				DatObjects = [],
+				StringTable = [],
+				SubObjectId = 0,
+				Licence = null,
+			};
+
+
+			_ = await db.Objects.AddAsync(tblObject);
+			_ = await db.SaveChangesAsync();
+
+			// make dat objects
+			//var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
+			tblObject.DatObjects.Add(new TblDatObject()
+			{
+				ObjectId = tblObject.Id,
+				DatName = entry.DatName,
+				DatChecksum = entry.DatChecksum,
+				xxHash3 = 0,
+				Object = tblObject,
+			});
+
+			// save again
+			_ = await db.SaveChangesAsync();
+			return Results.Created($"Successfully added 'missing' DAT object {tblObject.Name} with checksum {entry.DatChecksum} and unique id {tblObject.Id}", tblObject.Id);
+		}
+
+		//static async Task<IResult> CreateAsync(DtoObjectDescriptor request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		//{
 		//	logger.LogInformation("[CreateAsync] Upload requested");
 
@@ -182,7 +253,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		//	return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
 		//}
 
-		static async Task<IResult> CreateDatAsync(DtoUploadDat request, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> CreateDatAsync(DtoUploadDat request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[CreateAsync] Upload requested");
 
@@ -330,7 +401,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
 		}
 
-		static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[ReadAsync] Read requested for object {ObjectId}", id);
 
@@ -349,20 +420,20 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			return ReturnObject(descriptor, sfm, logger);
 		}
 
-		static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[UpdateAsync] Update requested for object {ObjectId}", id);
 			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 		}
 
-		static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[DeleteAsync] Delete requested for object {ObjectId}", id);
 			// for now we could soft-delete by marking an object as Unavailable?
 			return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 		}
 
-		static async Task<IResult> ListAsync(HttpContext context, LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[ListAsync] List requested for object");
 
@@ -439,7 +510,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: http://localhost:7229/v1/objects/{id}/images
-		static async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[GetObjectImages] Get requested for object {ObjectId}", id);
 
@@ -520,7 +591,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		}
 
 		// eg: https://localhost:7230/objects/114
-		static async Task<IResult> GetObjectFileAsync([FromRoute] UniqueObjectId id, LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+		static async Task<IResult> GetObjectFileAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 		{
 			logger.LogInformation("[GetObjectFile] Get requested for object {ObjectId}", id);
 

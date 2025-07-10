@@ -12,8 +12,10 @@ namespace OpenLoco.Definitions.Web
 		public const string Tags = "/tags";
 		public const string Licences = "/licences";
 
+		// extra Objects routes
 		public const string File = "/file";
 		public const string Images = "/images";
+		public const string Missing = "/missing";
 
 		public const string ResourceRoute = "/{id}";
 

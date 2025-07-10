@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
@@ -14,6 +15,6 @@ namespace ObjectService.RouteHandlers
 		static abstract TDto ToDtoFunc(TRow request);
 		static abstract void UpdateFunc(TDto request, TRow row);
 
-		static abstract bool TryValidateCreate(TDto request, LocoDbContext db, out IResult? result);
+		static abstract bool TryValidateCreate(TDto request, [FromServices] LocoDbContext db, out IResult? result);
 	}
 }

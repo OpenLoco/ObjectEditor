@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions;
 using OpenLoco.Definitions.Database;
@@ -21,7 +22,7 @@ namespace ObjectService.RouteHandlers
 
 		public static Delegate DeleteDelegate => DeleteAsync;
 
-		public static async Task<IResult> CreateAsync(TDto request, LocoDbContext db)
+		public static async Task<IResult> CreateAsync(TDto request, [FromServices] LocoDbContext db)
 			=> await BaseDataTableRouteHandlerImpl.CreateAsync(
 				THandler.GetTable(db),
 				THandler.ToDtoFunc,
@@ -31,10 +32,10 @@ namespace ObjectService.RouteHandlers
 				THandler.GetBaseRoute(),
 				db);
 
-		public static async Task<IResult> ReadAsync(UniqueObjectId id, LocoDbContext db)
+		public static async Task<IResult> ReadAsync(UniqueObjectId id, [FromServices] LocoDbContext db)
 			=> await BaseDataTableRouteHandlerImpl.ReadAsync(THandler.GetTable(db), THandler.ToDtoFunc, id, db);
 
-		public static async Task<IResult> UpdateAsync(UniqueObjectId id, TDto request, LocoDbContext db)
+		public static async Task<IResult> UpdateAsync(UniqueObjectId id, TDto request, [FromServices] LocoDbContext db)
 			=> await BaseDataTableRouteHandlerImpl.UpdateAsync(
 				THandler.GetTable(db),
 				THandler.ToDtoFunc,
@@ -46,16 +47,16 @@ namespace ObjectService.RouteHandlers
 				db,
 				THandler.UpdateFunc);
 
-		public static async Task<IResult> DeleteAsync(UniqueObjectId id, LocoDbContext db)
+		public static async Task<IResult> DeleteAsync(UniqueObjectId id, [FromServices] LocoDbContext db)
 			=> await BaseDataTableRouteHandlerImpl.DeleteAsync(THandler.GetTable(db), THandler.ToDtoFunc, id, db);
 
-		public static async Task<IResult> ListAsync(HttpContext context, LocoDbContext db)
+		public static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db)
 			=> await BaseDataTableRouteHandlerImpl.ListAsync(context, THandler.GetTable(db), THandler.ToDtoFunc);
 	}
 
 	public static class BaseDataTableRouteHandlerImpl
 	{
-		public static async Task<IResult> CreateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, LocoDbContext db)
+		public static async Task<IResult> CreateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, [FromServices] LocoDbContext db)
 			where TDto : class, IHasId
 			where TRow : class, IHasId
 		{
@@ -71,14 +72,14 @@ namespace ObjectService.RouteHandlers
 			return Results.Created($"{baseRoute}/{row.Id}", dtoConverter(row));
 		}
 
-		public static async Task<IResult> ReadAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, UniqueObjectId id, LocoDbContext db)
+		public static async Task<IResult> ReadAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, UniqueObjectId id, [FromServices] LocoDbContext db)
 			where TDto : class, IHasId
 			where TRow : class, IHasId
 			=> await table.FindAsync(id) is TRow row
 				? Results.Ok(dtoConverter(row))
 				: Results.NotFound();
 
-		public static async Task<IResult> UpdateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, UniqueObjectId id, LocoDbContext db, Action<TDto, TRow> updateFunc)
+		public static async Task<IResult> UpdateAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, Func<TDto, TRow> rowConverter, TDto request, Func<(bool Success, IResult? ErrorMessage)> tryValidateFunc, string baseRoute, UniqueObjectId id, [FromServices] LocoDbContext db, Action<TDto, TRow> updateFunc)
 			where TDto : class, IHasId
 			where TRow : class, IHasId
 		{
@@ -92,7 +93,7 @@ namespace ObjectService.RouteHandlers
 			return Results.Accepted($"{baseRoute}/{row.Id}", dtoConverter(row));
 		}
 
-		public static async Task<IResult> DeleteAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, UniqueObjectId id, LocoDbContext db)
+		public static async Task<IResult> DeleteAsync<TDto, TRow>(DbSet<TRow> table, Func<TRow, TDto> dtoConverter, UniqueObjectId id, [FromServices] LocoDbContext db)
 			where TDto : class, IHasId
 			where TRow : class, IHasId
 		{

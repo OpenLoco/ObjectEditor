@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenLoco.Definitions.Database;
 using OpenLoco.Definitions.DTO;
@@ -28,7 +29,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 		public static TblLicence ToRowFunc(DtoLicenceEntry request)
 			=> request.ToTable();
 
-		public static bool TryValidateCreate(DtoLicenceEntry request, LocoDbContext db, out IResult? result)
+		public static bool TryValidateCreate([FromBody] DtoLicenceEntry request, [FromServices] LocoDbContext db, out IResult? result)
 		{
 			if (string.IsNullOrWhiteSpace(request.Name))
 			{

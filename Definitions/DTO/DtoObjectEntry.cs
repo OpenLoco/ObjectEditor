@@ -8,7 +8,7 @@ namespace OpenLoco.Definitions.DTO
 		UniqueObjectId Id,
 		string InternalName,
 		string DisplayName,
-		uint? DatChecksum,
+		uint32_t? DatChecksum,
 		string? Description,
 		ObjectSource ObjectSource,
 		ObjectType ObjectType,

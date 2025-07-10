@@ -43,11 +43,11 @@ namespace OpenLoco.Gui
 			return false;
 		}
 
-		public static void FolderOpenInDesktop(string directory, ILogger logger)
+		public static void FolderOpenInDesktop(string directory, ILogger logger, string? filename = null)
 		{
 			try
 			{
-				FolderOpenInDesktopCore(directory);
+				FolderOpenInDesktopCore(directory, filename);
 			}
 			catch (Exception ex)
 			{
@@ -55,7 +55,7 @@ namespace OpenLoco.Gui
 			}
 		}
 
-		public static void FolderOpenInDesktopCore(string directory)
+		static void FolderOpenInDesktopCore(string directory, string? filename = null)
 		{
 			if (!Directory.Exists(directory))
 			{
@@ -87,7 +87,7 @@ namespace OpenLoco.Gui
 			var processStartInfo = new ProcessStartInfo
 			{
 				FileName = command,
-				Arguments = directory,
+				Arguments = filename == null ? directory : $"/select, \"{Path.Combine(directory, filename)}\"",
 				UseShellExecute = true // Use the shell for proper handling on each OS
 			};
 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using ObjectService.RouteHandlers;
 using OpenLoco.Dat;
 using OpenLoco.Definitions.Database;
@@ -16,7 +17,25 @@ builder.Logging.AddConsole();
 
 var connectionString = builder.Configuration.GetConnectionString("SQLiteConnection");
 
-builder.Services.AddOpenApi(); // (options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+builder.Services.AddOpenApi(options =>
+{
+	_ = options.AddDocumentTransformer((document, context, cancellationToken) =>
+	{
+		document.Info.Title = "OpenLoco Object Service";
+		document.Info.Version = "2.0";
+		document.Info.Contact = new OpenApiContact
+		{
+			Name = "Left of Zen",
+			Email = "leftofzen@openloco.io"
+		};
+		document.Servers.Clear();
+		document.Servers.Add(new OpenApiServer() { Url = "https://openloco.leftofzen.dev" });
+
+		return Task.CompletedTask;
+	});
+});
+
+// (options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.AddProblemDetails();
@@ -26,6 +45,7 @@ builder.Services.AddDbContext<LocoDbContext>(options =>
 	_ = options.EnableDetailedErrors();
 	_ = options.EnableSensitiveDataLogging();
 });
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // this breaks the client side, even if the same converter is added...
@@ -47,6 +67,16 @@ builder.Services.AddSingleton(paletteMap);
 
 builder.Services.AddHttpLogging(logging =>
 {
+	// these are marked [redacted] in the logs unless specified here
+	logging.RequestHeaders.Add("Cdn-Loop");
+	logging.RequestHeaders.Add("Cf-Connecting-Ip");
+	logging.RequestHeaders.Add("Cf-Ipcountry");
+	logging.RequestHeaders.Add("Cf-Ray");
+	logging.RequestHeaders.Add("Cf-Visitor");
+	logging.RequestHeaders.Add("Cf-Warp-Tag-Id");
+	logging.RequestHeaders.Add("X-Forwarded-For");
+	logging.RequestHeaders.Add("X-Forwarded-Proto");
+
 	logging.LoggingFields = HttpLoggingFields.All;
 	//logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
 	logging.CombineLogs = true;

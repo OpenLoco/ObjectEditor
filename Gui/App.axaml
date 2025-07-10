@@ -79,6 +79,10 @@
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
 		</Style>
 
+		<Style Selector="GridSplitter">
+			<Setter Property="Background" Value="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" />
+		</Style>
+
 		<Style Selector="pgc|PropertyGrid">
 			<Setter Property="IsTitleVisible" Value="False"/>
 			<Setter Property="IsHeaderVisible" Value="False"/>

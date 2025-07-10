@@ -45,6 +45,7 @@ builder.Services.AddDbContext<LocoDbContext>(options =>
 	_ = options.EnableDetailedErrors();
 	_ = options.EnableSensitiveDataLogging();
 });
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // this breaks the client side, even if the same converter is added...
@@ -66,6 +67,16 @@ builder.Services.AddSingleton(paletteMap);
 
 builder.Services.AddHttpLogging(logging =>
 {
+	// these are marked [redacted] in the logs unless specified here
+	logging.RequestHeaders.Add("Cdn-Loop");
+	logging.RequestHeaders.Add("Cf-Connecting-Ip");
+	logging.RequestHeaders.Add("Cf-Ipcountry");
+	logging.RequestHeaders.Add("Cf-Ray");
+	logging.RequestHeaders.Add("Cf-Visitor");
+	logging.RequestHeaders.Add("Cf-Warp-Tag-Id");
+	logging.RequestHeaders.Add("X-Forwarded-For");
+	logging.RequestHeaders.Add("X-Forwarded-Proto");
+
 	logging.LoggingFields = HttpLoggingFields.All;
 	//logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`
 	logging.CombineLogs = true;

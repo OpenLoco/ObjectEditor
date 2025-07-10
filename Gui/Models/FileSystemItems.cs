@@ -26,6 +26,15 @@ namespace OpenLoco.Gui.Models
 		ObservableCollection<FileSystemItem>? SubNodes = null)
 	{
 		[JsonIgnore]
+		public bool HasChildren
+			=> SubNodes != null && SubNodes.Count > 0;
+
+		[JsonIgnore]
+		public bool IsLeafNode
+			=> !HasChildren;
+
+
+		[JsonIgnore]
 		public string NameComputed
 			=> $"{DisplayName}{(SubNodes == null ? string.Empty : $" ({SubNodes.Count})")}"; // nested interpolated string...what have i become
 	}

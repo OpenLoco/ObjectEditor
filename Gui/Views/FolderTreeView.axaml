@@ -99,6 +99,11 @@
 								<StackPanel Orientation="Horizontal" >
 									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
 									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+									<StackPanel.ContextMenu>
+										<ContextMenu IsVisible="{Binding IsLeafNode}">
+											<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
+										</ContextMenu>
+									</StackPanel.ContextMenu>
 								</StackPanel>
 							</DataTemplate>
 
@@ -107,6 +112,11 @@
 								<StackPanel Orientation="Horizontal" >
 									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+									<StackPanel.ContextMenu>
+										<ContextMenu IsVisible="{Binding IsLeafNode}">
+											<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
+										</ContextMenu>
+									</StackPanel.ContextMenu>
 								</StackPanel>
 							</DataTemplate>
 

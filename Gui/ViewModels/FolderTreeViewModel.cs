@@ -76,6 +76,8 @@ namespace OpenLoco.Gui.ViewModels
 
 		public ReactiveCommand<Unit, Unit>? OpenCurrentFolder { get; }
 
+		public ReactiveCommand<FileSystemItem, Unit>? OpenFolderFor { get; }
+
 		public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 
 		[Reactive]
@@ -100,6 +102,20 @@ namespace OpenLoco.Gui.ViewModels
 
 			RefreshDirectoryItems = ReactiveCommand.Create(() => ReloadDirectoryAsync(false));
 			OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : Model.Settings.DownloadFolder, Model.Logger));
+
+			OpenFolderFor = ReactiveCommand.Create((FileSystemItem clickedOn) =>
+			{
+				if (IsLocal
+				&& clickedOn is FileSystemItem clickedOnObject
+				&& clickedOnObject.FileLocation == FileLocation.Local
+				&& (clickedOnObject.SubNodes == null || clickedOnObject.SubNodes.Count == 0)
+				&& File.Exists(clickedOnObject.FileName))
+				{
+					var dir = Directory.GetParent(clickedOnObject.FileName)?.FullName;
+					PlatformSpecific.FolderOpenInDesktop(dir, Model.Logger, Path.GetFileName(clickedOnObject.FileName));
+
+				}
+			});
 
 			_ = this.WhenAnyValue(o => o.CurrentLocalDirectory)
 				.Skip(1)

@@ -301,8 +301,16 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			// todo: check the nested DAT objects and update appropriately, even if this top object exists already
 			var objName = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}";
 			var existing = await db.Objects.FirstOrDefaultAsync(x => x.Name == objName);
+
 			if (existing != null)
 			{
+				if (existing.Availability == ObjectAvailability.Missing)
+				{
+					// we've found a missing object! it will already have an entry so we need to update it, not make a new entry
+					// see #196
+					//return UpdateAsync(existing.Id, request.ToDtoDescriptor(), db, logger);
+				}
+
 				return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existing!.UploadedDate}");
 			}
 

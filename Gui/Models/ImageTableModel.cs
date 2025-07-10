@@ -103,6 +103,12 @@ namespace OpenLoco.Gui.Models
 				? value
 				: index.ToString();
 
+		public static string TrimZeroes(string str)
+		{
+			var result = str.Trim().TrimStart('0');
+			return result.Length == 0 ? "0" : result;
+		}
+
 		public async Task ImportImages(string directory, ColourRemapSwatch primary, ColourRemapSwatch secondary)
 		{
 			if (string.IsNullOrEmpty(directory))
@@ -135,8 +141,9 @@ namespace OpenLoco.Gui.Models
 				else
 				{
 					var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
+					var sanitised = files.Select(TrimZeroes).ToList();
 					offsets = [.. G1Provider.G1Elements
-						.Select((x, i) => new G1Element32Json($"{i}.png", x.XOffset, x.YOffset))
+						.Select((x, i) => new G1Element32Json($"{sanitised[i]}.png", x.XOffset, x.YOffset))
 						.Fill(files.Length, G1Element32Json.Zero)];
 					Logger.Debug($"Didn't find sprites.json file, using existing G1Element32 offsets with {offsets.Count} images");
 				}

@@ -42,7 +42,7 @@ namespace OpenLoco.Gui.ViewModels
 		async Task SaveWrapper()
 		{
 			// note - this is the DAT file source, not the true source...
-			if (CurrentFile is FileSystemItem fsio && fsio.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+			if (CurrentFile.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 			{
 				var box = MessageBoxManager.GetMessageBoxStandard("Confirm Save", $"{CurrentFile.FileName} is a vanilla Locomotion file - are you sure you want to overwrite it?", ButtonEnum.YesNo);
 				var result = await box.ShowAsync();

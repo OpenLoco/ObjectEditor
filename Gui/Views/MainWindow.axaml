@@ -265,37 +265,37 @@
 		</DockPanel>
 		<Grid ColumnDefinitions="384, Auto, *" RowDefinitions="*">
 			<ContentControl Grid.Column="0" Content="{Binding FolderTreeViewModel}" Margin="8"/>
-			<GridSplitter Grid.Column="1" Grid.Row="1" Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" />
-			<Border Grid.Column="2" BorderThickness="1" Margin="8">
-				<DockPanel DataContext="{Binding CurrentTabModel}" >
-					<ToggleSwitch Margin="4" IsVisible="{Binding OpenInNewTabIsVisible}" DockPanel.Dock="Top" IsChecked="{Binding OpenInNewTab, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=TabAdd}" OffContent="{materialIcons:MaterialIconExt Kind=Tab}" />
-					<TabControl ItemsSource="{Binding Documents}" WrapSelection="True" SelectedItem="{Binding SelectedDocument}">
-						<TabControl.Styles>
-							<Style Selector="TabItem">
-								<Setter Property="Padding" Value="2, 0, 2, 0"/>
-								<Setter Property="FontSize" Value="14"/>
-							</Style>
-						</TabControl.Styles>
-						<TabControl.ItemTemplate>
-							<DataTemplate>
-								<TabItem Margin="0" Padding="0" BorderThickness="0" MaxHeight="32">
-									<TabItem.Header>
-										<StackPanel Orientation="Horizontal" Background="{DynamicResource ButtonBackground}">
-											<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center" ToolTip.Tip="{Binding CurrentFile.FileName}" />
-											<Button BorderThickness="0" FontSize="12" VerticalAlignment="Center" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}" HotKey="Ctrl+F4" ToolTip.Tip="(Ctrl+F4)">X</Button>
-										</StackPanel>
-									</TabItem.Header>
-									<TabItem.ContextMenu>
-										<ContextMenu>
-											<MenuItem Header="Close All Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseAllTabsCommand}" />
-											<MenuItem Header="Close Other Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseOtherTabsCommand}" CommandParameter="{Binding}" />
-										</ContextMenu>
-									</TabItem.ContextMenu>
-								</TabItem>
-							</DataTemplate>
-						</TabControl.ItemTemplate>
-						<TabControl.ContentTemplate>
-							<DataTemplate DataType="vm:ILocoFileViewModel">
+			<GridSplitter Grid.Column="1" Grid.Row="1" />
+			<DockPanel Grid.Column="2" DataContext="{Binding CurrentTabModel}" Margin="8" >
+				<ToggleSwitch Margin="4" IsVisible="{Binding OpenInNewTabIsVisible}" DockPanel.Dock="Top" IsChecked="{Binding OpenInNewTab, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=TabAdd}" OffContent="{materialIcons:MaterialIconExt Kind=Tab}" />
+				<TabControl ItemsSource="{Binding Documents}" WrapSelection="True" SelectedItem="{Binding SelectedDocument}">
+					<TabControl.Styles>
+						<Style Selector="TabItem">
+							<Setter Property="Padding" Value="2, 0, 2, 0"/>
+							<Setter Property="FontSize" Value="14"/>
+						</Style>
+					</TabControl.Styles>
+					<TabControl.ItemTemplate>
+						<DataTemplate>
+							<TabItem Margin="0" Padding="0" BorderThickness="0" MaxHeight="32">
+								<TabItem.Header>
+									<StackPanel Orientation="Horizontal" Background="{DynamicResource ButtonBackground}">
+										<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center" ToolTip.Tip="{Binding CurrentFile.FileName}" />
+										<Button BorderThickness="0" FontSize="12" VerticalAlignment="Center" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}" HotKey="Ctrl+F4" ToolTip.Tip="(Ctrl+F4)">X</Button>
+									</StackPanel>
+								</TabItem.Header>
+								<TabItem.ContextMenu>
+									<ContextMenu>
+										<MenuItem Header="Close All Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseAllTabsCommand}" />
+										<MenuItem Header="Close Other Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseOtherTabsCommand}" CommandParameter="{Binding}" />
+									</ContextMenu>
+								</TabItem.ContextMenu>
+							</TabItem>
+						</DataTemplate>
+					</TabControl.ItemTemplate>
+					<TabControl.ContentTemplate>
+						<DataTemplate DataType="vm:ILocoFileViewModel">
+							<Border BorderThickness="1" Margin="8">
 								<DockPanel>
 									<DockPanel DockPanel.Dock="Top">
 										<Button Command="{Binding ReloadCommand}" Margin="4" Padding="2" DockPanel.Dock="Left" HotKey="F5" ToolTip.Tip="(F5)">
@@ -325,11 +325,11 @@
 									</DockPanel>
 									<ContentControl Content="{Binding}" />
 								</DockPanel>
-							</DataTemplate>
-						</TabControl.ContentTemplate>
-					</TabControl>
-				</DockPanel>
-			</Border>
+							</Border>
+						</DataTemplate>
+					</TabControl.ContentTemplate>
+				</TabControl>
+			</DockPanel>
 		</Grid>
 	</DockPanel>
 </Window>

@@ -15,6 +15,10 @@ namespace OpenLoco.Gui
 		{
 			//PreventRunningAsAdmin();
 			_ = BuildAvaloniaApp()
+				.With(new Win32PlatformOptions()
+				{
+					RenderingMode = [Win32RenderingMode.Software],
+				})
 				.StartWithClassicDesktopLifetime(args);
 		}
 

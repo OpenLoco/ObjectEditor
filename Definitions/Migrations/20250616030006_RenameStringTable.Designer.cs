@@ -8,8 +8,8 @@ using Definitions.Database;
 
 #nullable disable
 
-namespace Definitions.Database.Migrations
-{
+namespace Definitions.Database.Migrations;
+
     [DbContext(typeof(LocoDbContext))]
     [Migration("20250616030006_RenameStringTable")]
     partial class RenameStringTable
@@ -936,4 +936,3 @@ namespace Definitions.Database.Migrations
 #pragma warning restore 612, 618
         }
     }
-}

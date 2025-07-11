@@ -1,9 +1,8 @@
-namespace Dat.Types.SCV5
+namespace Dat.Types.SCV5;
+
+public enum LandGeneratorType : uint8_t
 {
-	public enum LandGeneratorType : uint8_t
-	{
-		Original,
-		Simplex,
-		PngHeightMap,
-	}
+	Original,
+	Simplex,
+	PngHeightMap,
 }

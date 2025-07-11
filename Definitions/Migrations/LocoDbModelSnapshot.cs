@@ -7,8 +7,8 @@ using Definitions.Database;
 
 #nullable disable
 
-namespace Definitions.Database.Migrations
-{
+namespace Definitions.Database.Migrations;
+
     [DbContext(typeof(LocoDbContext))]
     partial class LocoDbModelSnapshot : ModelSnapshot
     {
@@ -2636,4 +2636,3 @@ namespace Definitions.Database.Migrations
 #pragma warning restore 612, 618
         }
     }
-}

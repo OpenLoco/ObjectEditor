@@ -1,14 +1,13 @@
 using Dat.FileParsing;
 using System.ComponentModel;
 
-namespace Dat.Types.SCV5
-{
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	[LocoStructSize(0xD4)]
-	public class Message : ILocoStruct
-	{
-		[LocoArrayLength(0xD4)] public uint8_t[] var_0 { get; set; }
+namespace Dat.Types.SCV5;
 
-		public bool Validate() => throw new NotImplementedException();
-	}
+[TypeConverter(typeof(ExpandableObjectConverter))]
+[LocoStructSize(0xD4)]
+public class Message : ILocoStruct
+{
+	[LocoArrayLength(0xD4)] public uint8_t[] var_0 { get; set; }
+
+	public bool Validate() => throw new NotImplementedException();
 }

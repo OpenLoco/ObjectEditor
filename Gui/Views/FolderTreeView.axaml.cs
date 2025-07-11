@@ -1,12 +1,11 @@
 using Avalonia.Controls;
 
-namespace Gui.Views
+namespace Gui.Views;
+
+public partial class FolderTreeView : UserControl
 {
-	public partial class FolderTreeView : UserControl
+	public FolderTreeView()
 	{
-		public FolderTreeView()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
 }

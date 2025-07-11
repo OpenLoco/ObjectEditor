@@ -1,7 +1,6 @@
-namespace Definitions.Database
+namespace Definitions.Database;
+
+public interface IDbDescription
 {
-	public interface IDbDescription
-	{
-		string? Description { get; set; }
-	}
+	string? Description { get; set; }
 }

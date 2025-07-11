@@ -1,13 +1,12 @@
-namespace Definitions.DTO.Identity
-{
-	public record DtoRegisterRequest(string Email, string UserName, string Password);
-	public record DtoLoginRequest(string Email, string Password);
+namespace Definitions.DTO.Identity;
 
-	public record DtoInfoResponse(string UserName, string Email, bool EmailIsConfirmed);
+public record DtoRegisterRequest(string Email, string UserName, string Password);
+public record DtoLoginRequest(string Email, string Password);
 
-	public record DtoRoleEntry(UniqueObjectId Id, string Name) : IHasId;
-	//public record DtoRoleDescriptor(UniqueObjectId Id, string Name) : DtoWithDbKey(Id), IHasId { }
+public record DtoInfoResponse(string UserName, string Email, bool EmailIsConfirmed);
 
-	public record DtoUserEntry(UniqueObjectId Id, string UserName) : IHasId;
-	//public record DtoUserDescriptor(UniqueObjectId Id, string Username, string Password) : DtoWithDbKey(Id), IHasId { }
-}
+public record DtoRoleEntry(UniqueObjectId Id, string Name) : IHasId;
+//public record DtoRoleDescriptor(UniqueObjectId Id, string Name) : DtoWithDbKey(Id), IHasId { }
+
+public record DtoUserEntry(UniqueObjectId Id, string UserName) : IHasId;
+//public record DtoUserDescriptor(UniqueObjectId Id, string Username, string Password) : DtoWithDbKey(Id), IHasId { }

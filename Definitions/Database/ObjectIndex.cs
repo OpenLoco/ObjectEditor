@@ -9,191 +9,190 @@ using System.Collections.ObjectModel;
 using System.IO.Hashing;
 using System.Text.Json.Serialization;
 
-namespace Definitions.Database
+namespace Definitions.Database;
+
+public class ObjectIndex
 {
-	public class ObjectIndex
+	public ObservableCollection<ObjectIndexEntry> Objects { get; init; } = [];
+
+	[JsonIgnore]
+	public const string DefaultIndexFileName = "objectIndex.json";
+
+	[JsonIgnore]
+	public const string DefaultIndexDbFileName = "objectIndex.db";
+
+	public ObjectIndex()
+	{ }
+
+	public ObjectIndex(ObservableCollection<ObjectIndexEntry> objects)
+		=> Objects = objects;
+
+	public ObjectIndex(IEnumerable<ObjectIndexEntry> objects)
+		=> Objects = [.. objects];
+
+	public bool TryFind((string datName, uint datChecksum) key, out ObjectIndexEntry? entry)
 	{
-		public ObservableCollection<ObjectIndexEntry> Objects { get; init; } = [];
+		entry = Objects.FirstOrDefault(x => x.DisplayName == key.datName && x.DatChecksum == key.datChecksum);
+		return entry != null;
+	}
 
-		[JsonIgnore]
-		public const string DefaultIndexFileName = "objectIndex.json";
+	public bool TryFind(ulong xxHash3, out ObjectIndexEntry? entry)
+	{
+		entry = Objects.FirstOrDefault(x => x.xxHash3 == xxHash3);
+		return entry != null;
+	}
 
-		[JsonIgnore]
-		public const string DefaultIndexDbFileName = "objectIndex.db";
+	//public bool TryFind(string internalName, out ObjectIndexEntry? entry)
+	//{
+	//	entry = Objects.FirstOrDefault(x => x.InternalName == internalName);
+	//	return entry != null;
+	//}
 
-		public ObjectIndex()
-		{ }
+	public async Task SaveIndexAsync(string indexFile)
+		=> await JsonFile.SerializeToFileAsync(this, indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
 
-		public ObjectIndex(ObservableCollection<ObjectIndexEntry> objects)
-			=> Objects = objects;
+	public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
+		=> await JsonFile.DeserializeFromFileAsync<ObjectIndex?>(indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
 
-		public ObjectIndex(IEnumerable<ObjectIndexEntry> objects)
-			=> Objects = [.. objects];
+	public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
+		=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
 
-		public bool TryFind((string datName, uint datChecksum) key, out ObjectIndexEntry? entry)
+	public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
+	{
+		var indexPath = Path.Combine(directory, DefaultIndexFileName);
+		ObjectIndex? index = null;
+		if (File.Exists(indexPath))
 		{
-			entry = Objects.FirstOrDefault(x => x.DisplayName == key.datName && x.DatChecksum == key.datChecksum);
-			return entry != null;
+			logger.Info("Index file found - loading it");
+			index = await LoadIndexAsync(indexPath).ConfigureAwait(false);
 		}
 
-		public bool TryFind(ulong xxHash3, out ObjectIndexEntry? entry)
+		if (index == null)
 		{
-			entry = Objects.FirstOrDefault(x => x.xxHash3 == xxHash3);
-			return entry != null;
+			logger.Info("Index file not found - creating it");
+			index = await CreateIndexAsync(directory, logger, progress).ConfigureAwait(false);
+			await index.SaveIndexAsync(indexPath).ConfigureAwait(false);
 		}
 
-		//public bool TryFind(string internalName, out ObjectIndexEntry? entry)
-		//{
-		//	entry = Objects.FirstOrDefault(x => x.InternalName == internalName);
-		//	return entry != null;
-		//}
+		return index;
+	}
 
-		public async Task SaveIndexAsync(string indexFile)
-			=> await JsonFile.SerializeToFileAsync(this, indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
+	public static Task<ObjectIndex> CreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
+		=> Task.Run(() => CreateIndex(directory, logger, progress));
 
-		public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
-			=> await JsonFile.DeserializeFromFileAsync<ObjectIndex?>(indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
+	public ObjectIndex UpdateIndex(string directory, ILogger logger, IEnumerable<string> filesToAdd, IProgress<float>? progress = null)
+	{
+		var (succeeded, failed) = ReadFilesFromDisk(directory, logger, progress, [.. filesToAdd]);
 
-		public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
-			=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
-
-		public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
+		foreach (var s in succeeded)
 		{
-			var indexPath = Path.Combine(directory, DefaultIndexFileName);
-			ObjectIndex? index = null;
-			if (File.Exists(indexPath))
-			{
-				logger.Info("Index file found - loading it");
-				index = await LoadIndexAsync(indexPath).ConfigureAwait(false);
-			}
-
-			if (index == null)
-			{
-				logger.Info("Index file not found - creating it");
-				index = await CreateIndexAsync(directory, logger, progress).ConfigureAwait(false);
-				await index.SaveIndexAsync(indexPath).ConfigureAwait(false);
-			}
-
-			return index;
+			Objects.Add(s);
 		}
 
-		public static Task<ObjectIndex> CreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
-			=> Task.Run(() => CreateIndex(directory, logger, progress));
-
-		public ObjectIndex UpdateIndex(string directory, ILogger logger, IEnumerable<string> filesToAdd, IProgress<float>? progress = null)
+		foreach (var f in failed)
 		{
-			var (succeeded, failed) = ReadFilesFromDisk(directory, logger, progress, [.. filesToAdd]);
-
-			foreach (var s in succeeded)
-			{
-				Objects.Add(s);
-			}
-
-			foreach (var f in failed)
-			{
-				logger.Error($"Failed to load {f}");
-			}
-
-			return this;
+			logger.Error($"Failed to load {f}");
 		}
 
-		public static ObjectIndex CreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
-			=> new ObjectIndex().UpdateIndex(directory, logger, [.. SawyerStreamUtils.GetDatFilesInDirectory(directory)], progress);
+		return this;
+	}
 
-		static (ConcurrentQueue<ObjectIndexEntry> succeeded, ConcurrentQueue<string> failed) ReadFilesFromDisk(string directory, ILogger logger, IProgress<float>? progress, string[] files)
+	public static ObjectIndex CreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
+		=> new ObjectIndex().UpdateIndex(directory, logger, [.. SawyerStreamUtils.GetDatFilesInDirectory(directory)], progress);
+
+	static (ConcurrentQueue<ObjectIndexEntry> succeeded, ConcurrentQueue<string> failed) ReadFilesFromDisk(string directory, ILogger logger, IProgress<float>? progress, string[] files)
+	{
+		ConcurrentQueue<ObjectIndexEntry> pendingIndices = [];
+		ConcurrentQueue<string> failedFiles = [];
+		_ = Parallel.ForEach(files, file => ParseFile(directory, file, pendingIndices, failedFiles, files.Length, progress, logger));
+		return (pendingIndices, failedFiles);
+	}
+
+	public void Delete(Func<ObjectIndexEntry, bool> predicate)
+	{
+		foreach (var d in Objects.Where(predicate).ToList())
 		{
-			ConcurrentQueue<ObjectIndexEntry> pendingIndices = [];
-			ConcurrentQueue<string> failedFiles = [];
-			_ = Parallel.ForEach(files, file => ParseFile(directory, file, pendingIndices, failedFiles, files.Length, progress, logger));
-			return (pendingIndices, failedFiles);
+			_ = Objects.Remove(d);
 		}
+	}
 
-		public void Delete(Func<ObjectIndexEntry, bool> predicate)
+	static void ParseFile(string directory, string filename, ConcurrentQueue<ObjectIndexEntry> pendingIndices, ConcurrentQueue<string> failedFiles, int totalFiles, IProgress<float>? progress, ILogger logger)
+	{
+		var fullFilename = Path.Combine(directory, filename);
+
+		if (File.Exists(fullFilename))
 		{
-			foreach (var d in Objects.Where(predicate).ToList())
+			var bytes = File.ReadAllBytes(fullFilename);
+			ObjectIndexEntry? entry = null;
+
+			try
 			{
-				_ = Objects.Remove(d);
+				entry = GetDatFileInfoFromBytes(fullFilename, filename, bytes, logger);
 			}
-		}
-
-		static void ParseFile(string directory, string filename, ConcurrentQueue<ObjectIndexEntry> pendingIndices, ConcurrentQueue<string> failedFiles, int totalFiles, IProgress<float>? progress, ILogger logger)
-		{
-			var fullFilename = Path.Combine(directory, filename);
-
-			if (File.Exists(fullFilename))
+			catch (Exception ex)
 			{
-				var bytes = File.ReadAllBytes(fullFilename);
-				ObjectIndexEntry? entry = null;
-
-				try
-				{
-					entry = GetDatFileInfoFromBytes(fullFilename, filename, bytes, logger);
-				}
-				catch (Exception ex)
-				{
-					logger.Error(ex);
-				}
-
-				if (entry == null)
-				{
-					failedFiles.Enqueue(filename);
-				}
-				else
-				{
-					pendingIndices.Enqueue(entry);
-				}
+				logger.Error(ex);
 			}
-			else
+
+			if (entry == null)
 			{
 				failedFiles.Enqueue(filename);
 			}
-
-			progress?.Report((pendingIndices.Count + failedFiles.Count) / (float)totalFiles);
-		}
-
-		public static ObjectIndexEntry? GetDatFileInfoFromBytes(string absoluteFilename, string relativeFilename, byte[] data, ILogger logger)
-		{
-			var xxHash3 = XxHash3.HashToUInt64(data);
-
-			if (!SawyerStreamReader.TryGetHeadersFromBytes(data, out var hdrs, logger))
-			{
-				logger.Error($"{relativeFilename} must have valid S5 and Object headers to call this method", nameof(relativeFilename));
-				return null;
-			}
-
-			var remainingData = data[(S5Header.StructLength + ObjectHeader.StructLength)..];
-			var source = OriginalObjectFiles.GetFileSource(hdrs.S5.Name, hdrs.S5.Checksum);
-
-			var createdTime = DateOnly.FromDateTime(File.GetCreationTimeUtc(absoluteFilename));
-			var modifiedTime = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(absoluteFilename));
-
-			if (hdrs.S5.ObjectType == ObjectType.Vehicle)
-			{
-				var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
-				var vType = (VehicleType)decoded[3];
-				return new ObjectIndexEntry(hdrs.S5.Name, relativeFilename, null, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime, vType);
-			}
 			else
 			{
-				return new ObjectIndexEntry(hdrs.S5.Name, relativeFilename, null, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime);
+				pendingIndices.Enqueue(entry);
 			}
 		}
+		else
+		{
+			failedFiles.Enqueue(filename);
+		}
+
+		progress?.Report((pendingIndices.Count + failedFiles.Count) / (float)totalFiles);
 	}
 
-	public record ObjectIndexEntry(
-		string DisplayName,
-		string? FileName, // only available in local mode
-		UniqueObjectId? Id, // only available in online-mode
-		uint32_t? DatChecksum,
-		ulong? xxHash3,
-		ObjectType ObjectType,
-		ObjectSource ObjectSource,
-		DateOnly? CreatedDate,
-		DateOnly? ModifiedDate,
-		VehicleType? VehicleType = null)
+	public static ObjectIndexEntry? GetDatFileInfoFromBytes(string absoluteFilename, string relativeFilename, byte[] data, ILogger logger)
 	{
-		[JsonIgnore]
-		public string SimpleText
-			=> $"{DisplayName} | {FileName}";
+		var xxHash3 = XxHash3.HashToUInt64(data);
+
+		if (!SawyerStreamReader.TryGetHeadersFromBytes(data, out var hdrs, logger))
+		{
+			logger.Error($"{relativeFilename} must have valid S5 and Object headers to call this method", nameof(relativeFilename));
+			return null;
+		}
+
+		var remainingData = data[(S5Header.StructLength + ObjectHeader.StructLength)..];
+		var source = OriginalObjectFiles.GetFileSource(hdrs.S5.Name, hdrs.S5.Checksum);
+
+		var createdTime = DateOnly.FromDateTime(File.GetCreationTimeUtc(absoluteFilename));
+		var modifiedTime = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(absoluteFilename));
+
+		if (hdrs.S5.ObjectType == ObjectType.Vehicle)
+		{
+			var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData, 4); // only need 4 bytes since vehicle type is in the 4th byte of a vehicle object
+			var vType = (VehicleType)decoded[3];
+			return new ObjectIndexEntry(hdrs.S5.Name, relativeFilename, null, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime, vType);
+		}
+		else
+		{
+			return new ObjectIndexEntry(hdrs.S5.Name, relativeFilename, null, hdrs.S5.Checksum, xxHash3, hdrs.S5.ObjectType, source, createdTime, modifiedTime);
+		}
 	}
+}
+
+public record ObjectIndexEntry(
+	string DisplayName,
+	string? FileName, // only available in local mode
+	UniqueObjectId? Id, // only available in online-mode
+	uint32_t? DatChecksum,
+	ulong? xxHash3,
+	ObjectType ObjectType,
+	ObjectSource ObjectSource,
+	DateOnly? CreatedDate,
+	DateOnly? ModifiedDate,
+	VehicleType? VehicleType = null)
+{
+	[JsonIgnore]
+	public string SimpleText
+		=> $"{DisplayName} | {FileName}";
 }

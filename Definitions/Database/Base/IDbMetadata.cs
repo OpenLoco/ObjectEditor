@@ -1,11 +1,10 @@
-namespace Definitions.Database
+namespace Definitions.Database;
+
+public interface IDbMetadata
 {
-	public interface IDbMetadata
-	{
-		ICollection<TblTag> Tags { get; set; }
+	ICollection<TblTag> Tags { get; set; }
 
-		TblLicence? Licence { get; set; }
+	TblLicence? Licence { get; set; }
 
-		ICollection<TblAuthor> Authors { get; set; }
-	}
+	ICollection<TblAuthor> Authors { get; set; }
 }

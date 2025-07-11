@@ -1,9 +1,8 @@
 using Definitions.Database;
 
-namespace Definitions.DTO
+namespace Definitions.DTO;
+
+public class DtoObjectStreetLight : IDtoSubObject
 {
-	public class DtoObjectStreetLight : IDtoSubObject
-	{
-		public UniqueObjectId Id { get; set; }
-	}
+	public UniqueObjectId Id { get; set; }
 }

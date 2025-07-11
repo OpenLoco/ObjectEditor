@@ -8,8 +8,8 @@ using Definitions.Database;
 
 #nullable disable
 
-namespace Definitions.Database.Migrations
-{
+namespace Definitions.Database.Migrations;
+
     [DbContext(typeof(LocoDbContext))]
     [Migration("20250702021058_SubObjectUpdates")]
     partial class SubObjectUpdates
@@ -2639,4 +2639,3 @@ namespace Definitions.Database.Migrations
 #pragma warning restore 612, 618
         }
     }
-}

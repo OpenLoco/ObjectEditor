@@ -1,7 +1,6 @@
-namespace Definitions.Database
+namespace Definitions.Database;
+
+public abstract class DbIdObject : IHasId
 {
-	public abstract class DbIdObject : IHasId
-	{
-		public UniqueObjectId Id { get; set; }
-	}
+	public UniqueObjectId Id { get; set; }
 }

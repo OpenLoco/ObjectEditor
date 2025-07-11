@@ -1,10 +1,9 @@
-namespace Dat.Data
+namespace Dat.Data;
+
+public enum SawyerEncoding : byte
 {
-	public enum SawyerEncoding : byte
-	{
-		Uncompressed = 0,
-		RunLengthSingle = 1,
-		RunLengthMulti = 2,
-		Rotate = 3,
-	}
+	Uncompressed = 0,
+	RunLengthSingle = 1,
+	RunLengthMulti = 2,
+	Rotate = 3,
 }

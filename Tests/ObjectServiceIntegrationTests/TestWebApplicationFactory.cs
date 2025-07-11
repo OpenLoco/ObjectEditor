@@ -9,77 +9,76 @@ using Microsoft.Extensions.Logging;
 using Definitions.Database;
 using ObjectService;
 
-namespace Tests.ObjectServiceIntegrationTests
+namespace Tests.ObjectServiceIntegrationTests;
+
+public class TestWebApplicationFactory<TProgram>
+	: WebApplicationFactory<TProgram> where TProgram : class
 {
-	public class TestWebApplicationFactory<TProgram>
-		: WebApplicationFactory<TProgram> where TProgram : class
+	// This will hold the specific overrides for *this instance* of the factory
+	Dictionary<string, string?> testConfiguration = [];
+
+	public TestWebApplicationFactory<TProgram> WithConfiguration(string key, string value)
 	{
-		// This will hold the specific overrides for *this instance* of the factory
-		Dictionary<string, string?> testConfiguration = [];
+		testConfiguration[key] = value;
+		return this;
+	}
 
-		public TestWebApplicationFactory<TProgram> WithConfiguration(string key, string value)
+	protected override void ConfigureWebHost(IWebHostBuilder builder)
+	{
+		_ = builder.ConfigureServices(services =>
 		{
-			testConfiguration[key] = value;
-			return this;
-		}
+			services.RemoveAll<ServerFolderManager>();
+			services.AddSingleton(new ServerFolderManager(Path.GetTempPath()));
 
-		protected override void ConfigureWebHost(IWebHostBuilder builder)
-		{
-			_ = builder.ConfigureServices(services =>
+			// Remove the app's original DbContext registration
+			var descriptor = services.SingleOrDefault(
+				d => d.ServiceType == typeof(DbContextOptions<LocoDbContext>));
+
+			if (descriptor != null)
 			{
-				services.RemoveAll<ServerFolderManager>();
-				services.AddSingleton(new ServerFolderManager(Path.GetTempPath()));
+				_ = services.Remove(descriptor);
+			}
 
-				// Remove the app's original DbContext registration
-				var descriptor = services.SingleOrDefault(
-					d => d.ServiceType == typeof(DbContextOptions<LocoDbContext>));
+			// Create a SQLite in-memory connection
+			var connection = new SqliteConnection("DataSource=:memory:");
+			connection.Open();
 
-				if (descriptor != null)
-				{
-					_ = services.Remove(descriptor);
-				}
+			// Add DbContext using an in-memory SQLite database
+			_ = services.AddDbContext<LocoDbContext>(options => _ = options.UseSqlite(connection));
 
-				// Create a SQLite in-memory connection
-				var connection = new SqliteConnection("DataSource=:memory:");
-				connection.Open();
+			// Configure logging for tests ---
+			_ = services.AddLogging(loggingBuilder =>
+			{
+				// Clear all existing providers (like console, debug, etc.)
+				_ = loggingBuilder.ClearProviders();
 
-				// Add DbContext using an in-memory SQLite database
-				_ = services.AddDbContext<LocoDbContext>(options => _ = options.UseSqlite(connection));
+				// Optional: Add a specific provider if you want some logs, e.g., to a test output helper
 
-				// Configure logging for tests ---
-				_ = services.AddLogging(loggingBuilder =>
-				{
-					// Clear all existing providers (like console, debug, etc.)
-					_ = loggingBuilder.ClearProviders();
-
-					// Optional: Add a specific provider if you want some logs, e.g., to a test output helper
-
-					_ = loggingBuilder.SetMinimumLevel(LogLevel.Critical); // Only log critical errors
-				});
-
-				// Build the service provider.
-				var sp = services.BuildServiceProvider();
-
-				// Create a scope to obtain a reference to the database contexts
-				using (var scope = sp.CreateScope())
-				{
-					var scopedServices = scope.ServiceProvider;
-					var db = scopedServices.GetRequiredService<LocoDbContext>();
-					_ = db.Database.EnsureCreated(); // Ensure the database is created for each test run
-				}
+				_ = loggingBuilder.SetMinimumLevel(LogLevel.Critical); // Only log critical errors
 			});
 
-			_ = builder.ConfigureAppConfiguration(config =>
-			{
-				config.Sources.Clear();
+			// Build the service provider.
+			var sp = services.BuildServiceProvider();
 
-				testConfiguration = new()
-				{
-					{ "ObjectService:RootFolder", Path.GetTempPath() },
-					{ "ObjectService:ShowScalar", "false" }
-				};
-				_ = config.AddInMemoryCollection(testConfiguration);
-			});
-		}
+			// Create a scope to obtain a reference to the database contexts
+			using (var scope = sp.CreateScope())
+			{
+				var scopedServices = scope.ServiceProvider;
+				var db = scopedServices.GetRequiredService<LocoDbContext>();
+				_ = db.Database.EnsureCreated(); // Ensure the database is created for each test run
+			}
+		});
+
+		_ = builder.ConfigureAppConfiguration(config =>
+		{
+			config.Sources.Clear();
+
+			testConfiguration = new()
+			{
+				{ "ObjectService:RootFolder", Path.GetTempPath() },
+				{ "ObjectService:ShowScalar", "false" }
+			};
+			_ = config.AddInMemoryCollection(testConfiguration);
+		});
 	}
 }

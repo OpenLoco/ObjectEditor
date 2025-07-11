@@ -2,42 +2,41 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Definitions.Database
+namespace Definitions.Database;
+
+[Index(nameof(Name), IsUnique = true)]
+public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMetadata, IDbDates
 {
-	[Index(nameof(Name), IsUnique = true)]
-	public abstract class DbCoreObject : DbIdObject, IDbName, IDbDescription, IDbMetadata, IDbDates
-	{
-		#region IDbName
+	#region IDbName
 
-		public required string Name { get; set; }
+	public required string Name { get; set; }
 
-		#endregion
+	#endregion
 
-		#region IDbDescription
+	#region IDbDescription
 
-		public string? Description { get; set; }
+	public string? Description { get; set; }
 
-		#endregion
+	#endregion
 
-		#region IDbMetadata
+	#region IDbMetadata
 
-		public TblLicence? Licence { get; set; }
+	public TblLicence? Licence { get; set; }
 
-		public ICollection<TblAuthor> Authors { get; set; } = [];
+	public ICollection<TblAuthor> Authors { get; set; } = [];
 
-		public ICollection<TblTag> Tags { get; set; } = [];
+	public ICollection<TblTag> Tags { get; set; } = [];
 
-		#endregion
+	#endregion
 
-		#region IDbDates
+	#region IDbDates
 
-		public DateOnly? CreatedDate { get; set; }
+	public DateOnly? CreatedDate { get; set; }
 
-		public DateOnly? ModifiedDate { get; set; }
+	public DateOnly? ModifiedDate { get; set; }
 
-		[DatabaseGenerated(DatabaseGeneratedOption.Computed), NotNull]
-		public DateOnly UploadedDate { get; set; }
+	[DatabaseGenerated(DatabaseGeneratedOption.Computed), NotNull]
+	public DateOnly UploadedDate { get; set; }
 
-		#endregion
-	}
+	#endregion
 }

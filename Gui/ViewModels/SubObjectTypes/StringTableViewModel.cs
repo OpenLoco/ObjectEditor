@@ -8,49 +8,48 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Gui.ViewModels
+namespace Gui.ViewModels;
+
+public record LanguageTranslationModel(LanguageId Language, string Translation);
+
+public class StringTableViewModel : ReactiveObject
 {
-	public record LanguageTranslationModel(LanguageId Language, string Translation);
-
-	public class StringTableViewModel : ReactiveObject
+	public StringTableViewModel(StringTable table)
 	{
-		public StringTableViewModel(StringTable table)
+		OriginalTable = table;
+		SelectedKey = table.Table.Keys.FirstOrDefault();
+		Keys = table.Table.Keys.ToBindingList();
+
+		TableView = table.Table.ToDictionary(
+			x => x.Key,
+			x => x.Value.Select(y => new LanguageTranslationModel(y.Key, y.Value)).ToBindingList()
+		);
+
+		_ = this.WhenAnyValue(o => o.SelectedKey)
+			.Subscribe(_ => SelectedInnerDictionary = SelectedKey == null ? null : TableView[SelectedKey]);
+	}
+
+	[Reactive]
+	public Dictionary<string, BindingList<LanguageTranslationModel>> TableView { get; set; }
+
+	[Reactive]
+	public BindingList<LanguageTranslationModel>? SelectedInnerDictionary { get; set; }
+
+	[Reactive]
+	public string? SelectedKey { get; set; }
+
+	[Reactive]
+	public BindingList<string> Keys { get; init; }
+
+	StringTable OriginalTable { get; init; }
+
+	public void WriteTableBackToObject() // potentially could be done when SelectedInnerDictionary items change
+	{
+		foreach (var key in TableView)
 		{
-			OriginalTable = table;
-			SelectedKey = table.Table.Keys.FirstOrDefault();
-			Keys = table.Table.Keys.ToBindingList();
-
-			TableView = table.Table.ToDictionary(
-				x => x.Key,
-				x => x.Value.Select(y => new LanguageTranslationModel(y.Key, y.Value)).ToBindingList()
-			);
-
-			_ = this.WhenAnyValue(o => o.SelectedKey)
-				.Subscribe(_ => SelectedInnerDictionary = SelectedKey == null ? null : TableView[SelectedKey]);
-		}
-
-		[Reactive]
-		public Dictionary<string, BindingList<LanguageTranslationModel>> TableView { get; set; }
-
-		[Reactive]
-		public BindingList<LanguageTranslationModel>? SelectedInnerDictionary { get; set; }
-
-		[Reactive]
-		public string? SelectedKey { get; set; }
-
-		[Reactive]
-		public BindingList<string> Keys { get; init; }
-
-		StringTable OriginalTable { get; init; }
-
-		public void WriteTableBackToObject() // potentially could be done when SelectedInnerDictionary items change
-		{
-			foreach (var key in TableView)
+			foreach (var t in key.Value)
 			{
-				foreach (var t in key.Value)
-				{
-					OriginalTable[key.Key][t.Language] = t.Translation;
-				}
+				OriginalTable[key.Key][t.Language] = t.Translation;
 			}
 		}
 	}

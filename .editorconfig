@@ -164,6 +164,7 @@ csharp_style_allow_blank_lines_between_consecutive_braces_experimental = false:s
 csharp_style_allow_embedded_statements_on_same_line_experimental = false:warning
 
 csharp_style_prefer_top_level_statements = true:silent
+csharp_style_namespace_declarations = file_scoped:error
 
 #### C# Formatting Rules ####
 
@@ -398,7 +399,7 @@ dotnet_diagnostic.IDE0110.severity = suggestion
 dotnet_diagnostic.IDE0120.severity = suggestion
 dotnet_diagnostic.IDE0130.severity = silent
 dotnet_diagnostic.IDE0150.severity = suggestion
-dotnet_diagnostic.IDE0160.severity = suggestion
+dotnet_diagnostic.IDE0160.severity = error
 dotnet_diagnostic.IDE0161.severity = silent
 dotnet_diagnostic.IDE0170.severity = suggestion
 dotnet_diagnostic.IDE0180.severity = suggestion

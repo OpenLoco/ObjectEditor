@@ -1,13 +1,12 @@
 using Avalonia.ReactiveUI;
 using Gui.ViewModels;
 
-namespace Gui.Views
+namespace Gui.Views;
+
+public partial class ObjectSelectionWindow : ReactiveWindow<ObjectSelectionWindowViewModel>
 {
-	public partial class ObjectSelectionWindow : ReactiveWindow<ObjectSelectionWindowViewModel>
+	public ObjectSelectionWindow()
 	{
-		public ObjectSelectionWindow()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
 }

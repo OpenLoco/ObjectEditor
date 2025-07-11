@@ -1,9 +1,8 @@
 using Definitions.Database;
 
-namespace Definitions.DTO
+namespace Definitions.DTO;
+
+public class DtoObjectTunnel : IDtoSubObject
 {
-	public class DtoObjectTunnel : IDtoSubObject
-	{
-		public UniqueObjectId Id { get; set; }
-	}
+	public UniqueObjectId Id { get; set; }
 }

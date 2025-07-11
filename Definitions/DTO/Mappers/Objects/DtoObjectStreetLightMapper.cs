@@ -1,20 +1,19 @@
 using Definitions.Database;
 
-namespace Definitions.DTO.Mappers
+namespace Definitions.DTO.Mappers;
+
+public static class DtoObjectStreetLightMapper
 {
-	public static class DtoObjectStreetLightMapper
+	public static DtoObjectStreetLight ToDto(this TblObjectStreetLight tblobjectstreetlight) => new()
 	{
-		public static DtoObjectStreetLight ToDto(this TblObjectStreetLight tblobjectstreetlight) => new()
-		{
-			Id = tblobjectstreetlight.Id,
-		};
+		Id = tblobjectstreetlight.Id,
+	};
 
-		public static TblObjectStreetLight ToTblObjectStreetLightEntity(this DtoObjectStreetLight model, TblObject parent) => new()
-		{
-			Parent = parent,
-			Id = model.Id,
-		};
+	public static TblObjectStreetLight ToTblObjectStreetLightEntity(this DtoObjectStreetLight model, TblObject parent) => new()
+	{
+		Parent = parent,
+		Id = model.Id,
+	};
 
-	}
 }
 

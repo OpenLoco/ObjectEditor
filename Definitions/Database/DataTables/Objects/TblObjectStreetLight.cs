@@ -1,15 +1,14 @@
 using Dat.Objects;
 
-namespace Definitions.Database
-{
-	public class TblObjectStreetLight : DbSubObject, IConvertibleToTable<TblObjectStreetLight, StreetLightObject>
-	{
-		//public ICollection<uint16_t> DesignedYears { get; set; }
+namespace Definitions.Database;
 
-		public static TblObjectStreetLight FromObject(TblObject tbl, StreetLightObject obj)
-			=> new()
-			{
-				Parent = tbl,
-			};
-	}
+public class TblObjectStreetLight : DbSubObject, IConvertibleToTable<TblObjectStreetLight, StreetLightObject>
+{
+	//public ICollection<uint16_t> DesignedYears { get; set; }
+
+	public static TblObjectStreetLight FromObject(TblObject tbl, StreetLightObject obj)
+		=> new()
+		{
+			Parent = tbl,
+		};
 }

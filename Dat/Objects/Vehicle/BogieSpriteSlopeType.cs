@@ -1,9 +1,8 @@
-namespace Dat.Objects
+namespace Dat.Objects;
+
+public enum BogieSpriteSlopeType
 {
-	public enum BogieSpriteSlopeType
-	{
-		Flat,
-		Gentle,
-		Steep
-	}
+	Flat,
+	Gentle,
+	Steep
 }

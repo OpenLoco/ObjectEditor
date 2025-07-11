@@ -1,7 +1,6 @@
-namespace Definitions.Database
+namespace Definitions.Database;
+
+public class TblObjectPack : DbCoreObject
 {
-	public class TblObjectPack : DbCoreObject
-	{
-		public ICollection<TblObject> Objects { get; set; } = [];
-	}
+	public ICollection<TblObject> Objects { get; set; } = [];
 }

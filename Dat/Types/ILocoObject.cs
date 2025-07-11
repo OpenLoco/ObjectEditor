@@ -1,11 +1,10 @@
 using System.ComponentModel;
 
-namespace Dat.Types
+namespace Dat.Types;
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public interface ILocoObject : IHasG1Elements
 {
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public interface ILocoObject : IHasG1Elements
-	{
-		ILocoStruct Object { get; set; }
-		StringTable StringTable { get; set; }
-	}
+	ILocoStruct Object { get; set; }
+	StringTable StringTable { get; set; }
 }

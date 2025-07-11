@@ -6,30 +6,29 @@ using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.Web;
 
-namespace Tests.ObjectServiceIntegrationTests
+namespace Tests.ObjectServiceIntegrationTests;
+
+[TestFixture]
+public class LicenseRoutesTest : BaseReferenceDataTableTestFixture<DtoLicenceEntry, DtoLicenceEntry, TblLicence>
 {
-	[TestFixture]
-	public class LicenseRoutesTest : BaseReferenceDataTableTestFixture<DtoLicenceEntry, DtoLicenceEntry, TblLicence>
-	{
-		protected override IEnumerable<TblLicence> DbSeedData =>
-		[
-			new() { Id = 1, Name = "Gandalf-EULA", Text="You shall not pass" },
-			new() { Id = 2, Name = "Vader-TOS", Text="I am your father" },
-		];
+	protected override IEnumerable<TblLicence> DbSeedData =>
+	[
+		new() { Id = 1, Name = "Gandalf-EULA", Text="You shall not pass" },
+		new() { Id = 2, Name = "Vader-TOS", Text="I am your father" },
+	];
 
-		protected override DtoLicenceEntry PutDto
-			=> new(3, "Constitution", "Do no evil");
+	protected override DtoLicenceEntry PutDto
+		=> new(3, "Constitution", "Do no evil");
 
-		public override string BaseRoute
-			=> RoutesV2.Licences;
+	public override string BaseRoute
+		=> RoutesV2.Licences;
 
-		protected override DbSet<TblLicence> GetTable(LocoDbContext context)
-			=> context.Licences;
+	protected override DbSet<TblLicence> GetTable(LocoDbContext context)
+		=> context.Licences;
 
-		protected override TblLicence ToRowFunc(DtoLicenceEntry request)
-			=> request.ToTable();
+	protected override TblLicence ToRowFunc(DtoLicenceEntry request)
+		=> request.ToTable();
 
-		protected override DtoLicenceEntry ToDtoEntryFunc(TblLicence row)
-			=> row.ToDtoEntry();
-	}
+	protected override DtoLicenceEntry ToDtoEntryFunc(TblLicence row)
+		=> row.ToDtoEntry();
 }

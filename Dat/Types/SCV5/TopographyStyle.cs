@@ -1,11 +1,10 @@
-namespace Dat.Types.SCV5
+namespace Dat.Types.SCV5;
+
+public enum TopographyStyle : uint8_t
 {
-	public enum TopographyStyle : uint8_t
-	{
-		FlatLand,
-		SmallHills,
-		Mountains,
-		HalfMountainsHills,
-		HalfMountainsFlat,
-	}
+	FlatLand,
+	SmallHills,
+	Mountains,
+	HalfMountainsHills,
+	HalfMountainsFlat,
 }

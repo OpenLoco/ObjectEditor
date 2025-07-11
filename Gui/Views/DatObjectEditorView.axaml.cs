@@ -1,12 +1,11 @@
 using Avalonia.Controls;
 
-namespace Gui.Views
+namespace Gui.Views;
+
+public partial class DatObjectEditorView : UserControl
 {
-	public partial class DatObjectEditorView : UserControl
+	public DatObjectEditorView()
 	{
-		public DatObjectEditorView()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
 }

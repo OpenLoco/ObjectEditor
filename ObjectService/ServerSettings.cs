@@ -1,4 +1,3 @@
-namespace ObjectService
-{
-	public record ServerSettings(string RootFolder, string PaletteMapFile);
-}
+namespace ObjectService;
+
+public record ServerSettings(string RootFolder, string PaletteMapFile);

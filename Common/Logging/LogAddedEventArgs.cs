@@ -1,7 +1,6 @@
-namespace Common.Logging
+namespace Common.Logging;
+
+public class LogAddedEventArgs(LogLine log) : EventArgs
 {
-	public class LogAddedEventArgs(LogLine log) : EventArgs
-	{
-		public readonly LogLine Log = log;
-	}
+	public readonly LogLine Log = log;
 }

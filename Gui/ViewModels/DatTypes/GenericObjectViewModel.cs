@@ -3,15 +3,14 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 
-namespace Gui.ViewModels
-{
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class GenericObjectViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
-	{
-		[Reactive]
-		public required ILocoStruct Object { get; set; }
+namespace Gui.ViewModels;
 
-		public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
-			=> locoStruct;
-	}
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class GenericObjectViewModel : ReactiveObject, IObjectViewModel<ILocoStruct>
+{
+	[Reactive]
+	public required ILocoStruct Object { get; set; }
+
+	public ILocoStruct GetAsUnderlyingType(ILocoStruct locoStruct)
+		=> locoStruct;
 }

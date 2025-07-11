@@ -5,42 +5,41 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Net;
 using System.Net.Mail;
 
-namespace ObjectService.Identity
+namespace ObjectService.Identity;
+
+public class EmailSender : IEmailSender
 {
-	public class EmailSender : IEmailSender
+	readonly IConfiguration _configuration;
+
+	public EmailSender(IConfiguration configuration)
 	{
-		readonly IConfiguration _configuration;
+		_configuration = configuration;
+	}
 
-		public EmailSender(IConfiguration configuration)
+	public Task SendEmailAsync(string email, string subject, string htmlMessage)
+	{
+		// Get SMTP settings from appsettings.json
+		var smtpHost = _configuration["SmtpSettings:Host"];
+		var smtpPort = int.Parse(_configuration["SmtpSettings:Port"]);
+		var smtpUsername = _configuration["SmtpSettings:Username"];
+		var smtpPassword = _configuration["SmtpSettings:Password"];
+		var senderEmail = _configuration["SmtpSettings:SenderEmail"];
+
+		var client = new SmtpClient(smtpHost, smtpPort)
 		{
-			_configuration = configuration;
-		}
+			Credentials = new NetworkCredential(smtpUsername, smtpPassword),
+			EnableSsl = true // Use SSL/TLS for secure communication
+		};
 
-		public Task SendEmailAsync(string email, string subject, string htmlMessage)
+		var mailMessage = new MailMessage
 		{
-			// Get SMTP settings from appsettings.json
-			var smtpHost = _configuration["SmtpSettings:Host"];
-			var smtpPort = int.Parse(_configuration["SmtpSettings:Port"]);
-			var smtpUsername = _configuration["SmtpSettings:Username"];
-			var smtpPassword = _configuration["SmtpSettings:Password"];
-			var senderEmail = _configuration["SmtpSettings:SenderEmail"];
+			From = new MailAddress(senderEmail),
+			Subject = subject,
+			Body = htmlMessage,
+			IsBodyHtml = true
+		};
+		mailMessage.To.Add(email);
 
-			var client = new SmtpClient(smtpHost, smtpPort)
-			{
-				Credentials = new NetworkCredential(smtpUsername, smtpPassword),
-				EnableSsl = true // Use SSL/TLS for secure communication
-			};
-
-			var mailMessage = new MailMessage
-			{
-				From = new MailAddress(senderEmail),
-				Subject = subject,
-				Body = htmlMessage,
-				IsBodyHtml = true
-			};
-			mailMessage.To.Add(email);
-
-			return client.SendMailAsync(mailMessage);
-		}
+		return client.SendMailAsync(mailMessage);
 	}
 }

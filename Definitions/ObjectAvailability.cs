@@ -1,9 +1,8 @@
-namespace Definitions
+namespace Definitions;
+
+public enum ObjectAvailability
 {
-	public enum ObjectAvailability
-	{
-		Unavailable,
-		Available,
-		Missing
-	}
+	Unavailable,
+	Available,
+	Missing
 }

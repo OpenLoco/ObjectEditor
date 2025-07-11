@@ -1,16 +1,15 @@
 using NUnit.Framework;
 using Common;
 
-namespace Common.Tests
+namespace Common.Tests;
+
+[TestFixture]
+public class DateOnlyTests
 {
-	[TestFixture]
-	public class DateOnlyTests
+	[Test]
+	public void Today()
 	{
-		[Test]
-		public void Today()
-		{
-			var today = DateTimeOffset.UtcNow;
-			Assert.That(DateOnly.Today, Is.EqualTo(new DateOnly(today.Year, today.Month, today.Day)));
-		}
+		var today = DateTimeOffset.UtcNow;
+		Assert.That(DateOnly.Today, Is.EqualTo(new DateOnly(today.Year, today.Month, today.Day)));
 	}
 }

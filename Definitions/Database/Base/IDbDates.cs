@@ -1,14 +1,13 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Definitions.Database
+namespace Definitions.Database;
+
+public interface IDbDates
 {
-	public interface IDbDates
-	{
-		DateOnly? CreatedDate { get; }
+	DateOnly? CreatedDate { get; }
 
-		DateOnly? ModifiedDate { get; }
+	DateOnly? ModifiedDate { get; }
 
-		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-		DateOnly UploadedDate { get; }
-	}
+	[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+	DateOnly UploadedDate { get; }
 }

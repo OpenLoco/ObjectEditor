@@ -1,10 +1,9 @@
 using System.Text.Json.Serialization;
 
-namespace Common
+namespace Common;
+
+public class VersionCheckBody
 {
-	public class VersionCheckBody
-	{
-		[JsonPropertyName("tag_name")]
-		public required string TagName { get; set; }
-	}
+	[JsonPropertyName("tag_name")]
+	public required string TagName { get; set; }
 }

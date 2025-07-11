@@ -1,11 +1,10 @@
-namespace Definitions.DTO
-{
-	public record DtoScenarioEntry(
-		UniqueObjectId Id,
-		string Name) : IHasId;
+namespace Definitions.DTO;
 
-	public record DtoScenarioDescriptor(
-		UniqueObjectId Id,
-		string Name,
-		string? Description) : IHasId;
-}
+public record DtoScenarioEntry(
+	UniqueObjectId Id,
+	string Name) : IHasId;
+
+public record DtoScenarioDescriptor(
+	UniqueObjectId Id,
+	string Name,
+	string? Description) : IHasId;

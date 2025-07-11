@@ -2,15 +2,14 @@ using Avalonia.ReactiveUI;
 using Gui.ViewModels;
 using ReactiveUI;
 
-namespace Gui.Views
+namespace Gui.Views;
+
+public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
-	public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+	public MainWindow()
 	{
-		public MainWindow()
-		{
-			InitializeComponent();
-			_ = this.WhenActivated(action => action(ViewModel!.OpenEditorSettingsWindow.RegisterHandler(this.DoShowDialogAsync<EditorSettingsWindowViewModel, EditSettingsWindow>)));
-			_ = this.WhenActivated(action => action(ViewModel!.OpenLogWindow.RegisterHandler(this.DoShow<LogWindowViewModel, LogWindow>)));
-		}
+		InitializeComponent();
+		_ = this.WhenActivated(action => action(ViewModel!.OpenEditorSettingsWindow.RegisterHandler(this.DoShowDialogAsync<EditorSettingsWindowViewModel, EditSettingsWindow>)));
+		_ = this.WhenActivated(action => action(ViewModel!.OpenLogWindow.RegisterHandler(this.DoShow<LogWindowViewModel, LogWindow>)));
 	}
 }

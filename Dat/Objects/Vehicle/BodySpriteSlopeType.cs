@@ -1,12 +1,11 @@
-namespace Dat.Objects
+namespace Dat.Objects;
+
+public enum BodySpriteSlopeType
 {
-	public enum BodySpriteSlopeType
-	{
-		Flat,
-		Gentle,
-		Sloped,
-		Steep,
-		unk1,
-		unk2
-	}
+	Flat,
+	Gentle,
+	Sloped,
+	Steep,
+	unk1,
+	unk2
 }

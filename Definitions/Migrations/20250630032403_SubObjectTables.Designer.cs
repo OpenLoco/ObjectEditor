@@ -8,8 +8,8 @@ using Definitions.Database;
 
 #nullable disable
 
-namespace Definitions.Database.Migrations
-{
+namespace Definitions.Database.Migrations;
+
     [DbContext(typeof(LocoDbContext))]
     [Migration("20250630032403_SubObjectTables")]
     partial class SubObjectTables
@@ -1817,4 +1817,3 @@ namespace Definitions.Database.Migrations
 #pragma warning restore 612, 618
         }
     }
-}

@@ -1,15 +1,14 @@
-namespace Dat.Types.SCV5
+namespace Dat.Types.SCV5;
+
+public enum LandDistributionPattern : uint8_t
 {
-	public enum LandDistributionPattern : uint8_t
-	{
-		Everywhere,
-		Nowhere,
-		FarFromWater,
-		NearWater,
-		OnMountains,
-		FarFromMountains,
-		InSmallRandomAreas,
-		InLargeRandomAreas,
-		AroundCliffs,
-	}
+	Everywhere,
+	Nowhere,
+	FarFromWater,
+	NearWater,
+	OnMountains,
+	FarFromMountains,
+	InSmallRandomAreas,
+	InLargeRandomAreas,
+	AroundCliffs,
 }

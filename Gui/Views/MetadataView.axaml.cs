@@ -1,12 +1,11 @@
 using Avalonia.Controls;
 
-namespace Gui.Views
+namespace Gui.Views;
+
+public partial class MetadataView : UserControl
 {
-	public partial class MetadataView : UserControl
+	public MetadataView()
 	{
-		public MetadataView()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
 }

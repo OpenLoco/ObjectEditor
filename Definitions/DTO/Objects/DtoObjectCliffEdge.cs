@@ -1,9 +1,8 @@
 using Definitions.Database;
 
-namespace Definitions.DTO
+namespace Definitions.DTO;
+
+public class DtoObjectCliffEdge : IDtoSubObject
 {
-	public class DtoObjectCliffEdge : IDtoSubObject
-	{
-		public UniqueObjectId Id { get; set; }
-	}
+	public UniqueObjectId Id { get; set; }
 }

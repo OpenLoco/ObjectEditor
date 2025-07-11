@@ -1,7 +1,6 @@
-namespace Gui.ViewModels
+namespace Gui.ViewModels;
+
+public interface IExtraContentViewModel
 {
-	public interface IExtraContentViewModel
-	{
-		public string Name { get; }
-	}
+	public string Name { get; }
 }

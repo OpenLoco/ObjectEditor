@@ -1,10 +1,9 @@
-namespace Dat.Types.SCV5
+namespace Dat.Types.SCV5;
+
+public enum ObjectiveType : uint8_t
 {
-	public enum ObjectiveType : uint8_t
-	{
-		CompanyValue,
-		VehicleProfit,
-		PerformanceIndex,
-		CargoDelivery,
-	}
+	CompanyValue,
+	VehicleProfit,
+	PerformanceIndex,
+	CargoDelivery,
 }

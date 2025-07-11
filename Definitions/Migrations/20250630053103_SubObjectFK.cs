@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Definitions.Database.Migrations
-{
+namespace Definitions.Database.Migrations;
+
     /// <inheritdoc />
     public partial class SubObjectFK : Migration
     {
@@ -1522,4 +1522,3 @@ namespace Definitions.Database.Migrations
                 onDelete: ReferentialAction.Cascade);
         }
     }
-}

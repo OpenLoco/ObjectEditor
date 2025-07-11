@@ -1,4 +1,3 @@
-namespace Gui
-{
-	public enum GameObjDataFolder { AppData, Locomotion, OpenLoco }
-}
+namespace Gui;
+
+public enum GameObjDataFolder { AppData, Locomotion, OpenLoco }

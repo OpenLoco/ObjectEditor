@@ -1,7 +1,6 @@
 using NUnit.Framework;
 
-namespace Tests.Models
-{
-	[TestFixture]
-	public class ViewModelTests;
-}
+namespace Tests.Models;
+
+[TestFixture]
+public class ViewModelTests;

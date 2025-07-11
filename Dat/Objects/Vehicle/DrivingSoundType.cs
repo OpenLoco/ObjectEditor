@@ -1,10 +1,9 @@
-namespace Dat.Objects
+namespace Dat.Objects;
+
+public enum DrivingSoundType : uint8_t
 {
-	public enum DrivingSoundType : uint8_t
-	{
-		None,
-		Friction,
-		SimpleMotor,
-		GearboxMotor
-	}
+	None,
+	Friction,
+	SimpleMotor,
+	GearboxMotor
 }

@@ -8,8 +8,8 @@ using Definitions.Database;
 
 #nullable disable
 
-namespace Definitions.Database.Migrations
-{
+namespace Definitions.Database.Migrations;
+
     [DbContext(typeof(LocoDbContext))]
     [Migration("20250617085044_LinkUserToAuthor2")]
     partial class LinkUserToAuthor2
@@ -923,4 +923,3 @@ namespace Definitions.Database.Migrations
 #pragma warning restore 612, 618
         }
     }
-}

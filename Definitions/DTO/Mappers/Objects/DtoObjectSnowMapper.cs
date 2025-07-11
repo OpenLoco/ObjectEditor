@@ -1,20 +1,19 @@
 using Definitions.Database;
 
-namespace Definitions.DTO.Mappers
+namespace Definitions.DTO.Mappers;
+
+public static class DtoObjectSnowMapper
 {
-	public static class DtoObjectSnowMapper
+	public static DtoObjectSnow ToDto(this TblObjectSnow tblobjectsnow) => new()
 	{
-		public static DtoObjectSnow ToDto(this TblObjectSnow tblobjectsnow) => new()
-		{
-			Id = tblobjectsnow.Id,
-		};
+		Id = tblobjectsnow.Id,
+	};
 
-		public static TblObjectSnow ToTblObjectSnowEntity(this DtoObjectSnow model, TblObject parent) => new()
-		{
-			Parent = parent,
-			Id = model.Id,
-		};
+	public static TblObjectSnow ToTblObjectSnowEntity(this DtoObjectSnow model, TblObject parent) => new()
+	{
+		Parent = parent,
+		Id = model.Id,
+	};
 
-	}
 }
 

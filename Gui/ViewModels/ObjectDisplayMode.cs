@@ -1,10 +1,9 @@
-namespace Gui.ViewModels
+namespace Gui.ViewModels;
+
+public enum ObjectDisplayMode
 {
-	public enum ObjectDisplayMode
-	{
-		Vanilla,
-		Custom,
-		OpenLoco,
-		All
-	}
+	Vanilla,
+	Custom,
+	OpenLoco,
+	All
 }

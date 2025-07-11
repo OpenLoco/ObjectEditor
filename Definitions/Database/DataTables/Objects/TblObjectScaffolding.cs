@@ -1,16 +1,15 @@
 using Dat.Objects;
 
-namespace Definitions.Database
-{
-	public class TblObjectScaffolding : DbSubObject, IConvertibleToTable<TblObjectScaffolding, ScaffoldingObject>
-	{
-		//public ICollection<uint16_t> SegmentHeights { get; set; }
-		//public ICollection<uint16_t> RoofHeights { get; set; }
+namespace Definitions.Database;
 
-		public static TblObjectScaffolding FromObject(TblObject tbl, ScaffoldingObject obj)
-			=> new()
-			{
-				Parent = tbl,
-			};
-	}
+public class TblObjectScaffolding : DbSubObject, IConvertibleToTable<TblObjectScaffolding, ScaffoldingObject>
+{
+	//public ICollection<uint16_t> SegmentHeights { get; set; }
+	//public ICollection<uint16_t> RoofHeights { get; set; }
+
+	public static TblObjectScaffolding FromObject(TblObject tbl, ScaffoldingObject obj)
+		=> new()
+		{
+			Parent = tbl,
+		};
 }

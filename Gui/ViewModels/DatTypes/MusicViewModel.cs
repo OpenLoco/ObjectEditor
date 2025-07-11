@@ -5,64 +5,63 @@ using ReactiveUI.Fody.Helpers;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Gui.ViewModels
+namespace Gui.ViewModels;
+
+public class MusicViewModel : BaseLocoFileViewModel
 {
-	public class MusicViewModel : BaseLocoFileViewModel
+	public MusicViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+		: base(currentFile, model)
+		=> Load();
+
+	public override void Load()
 	{
-		public MusicViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-			: base(currentFile, model)
-			=> Load();
+		var (header, data) = SawyerStreamReader.LoadWavFile(CurrentFile.FileName);
+		SoundViewModel = new AudioViewModel(
+			GetDisplayName(CurrentFile.DisplayName),
+			header,
+			data);
+	}
 
-		public override void Load()
+	static string GetDisplayName(string filename)
+	{
+		if (OriginalDataFiles.Music.TryGetValue(filename, out var musicName))
 		{
-			var (header, data) = SawyerStreamReader.LoadWavFile(CurrentFile.FileName);
-			SoundViewModel = new AudioViewModel(
-				GetDisplayName(CurrentFile.DisplayName),
-				header,
-				data);
+			return $"{musicName} ({filename})";
 		}
 
-		static string GetDisplayName(string filename)
+		if (OriginalDataFiles.MiscellaneousTracks.TryGetValue(filename, out var miscTrackName))
 		{
-			if (OriginalDataFiles.Music.TryGetValue(filename, out var musicName))
-			{
-				return $"{musicName} ({filename})";
-			}
-
-			if (OriginalDataFiles.MiscellaneousTracks.TryGetValue(filename, out var miscTrackName))
-			{
-				return $"{miscTrackName} ({filename})";
-			}
-
-			return filename;
+			return $"{miscTrackName} ({filename})";
 		}
 
-		[Reactive]
-		public AudioViewModel SoundViewModel { get; set; }
+		return filename;
+	}
 
-		public override void Save()
+	[Reactive]
+	public AudioViewModel SoundViewModel { get; set; }
+
+	public override void Save()
+	{
+		var savePath = CurrentFile.FileLocation == FileLocation.Local
+			? CurrentFile.FileName
+			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+
+		logger?.Info($"Saving music to {savePath}");
+		var bytes = SawyerStreamWriter.SaveMusicToDat(SoundViewModel.Header, SoundViewModel.Data);
+		File.WriteAllBytes(savePath, bytes);
+	}
+
+	public override void SaveAs()
+	{
+		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+		if (saveFile == null)
 		{
-			var savePath = CurrentFile.FileLocation == FileLocation.Local
-				? CurrentFile.FileName
-				: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
-
-			logger?.Info($"Saving music to {savePath}");
-			var bytes = SawyerStreamWriter.SaveMusicToDat(SoundViewModel.Header, SoundViewModel.Data);
-			File.WriteAllBytes(savePath, bytes);
+			return;
 		}
 
-		public override void SaveAs()
-		{
-			var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
-			if (saveFile == null)
-			{
-				return;
-			}
-
-			var savePath = saveFile.Path.LocalPath;
-			logger?.Info($"Saving music to {savePath}");
-			var bytes = SawyerStreamWriter.SaveMusicToDat(SoundViewModel.Header, SoundViewModel.Data);
-			File.WriteAllBytes(savePath, bytes);
-		}
+		var savePath = saveFile.Path.LocalPath;
+		logger?.Info($"Saving music to {savePath}");
+		var bytes = SawyerStreamWriter.SaveMusicToDat(SoundViewModel.Header, SoundViewModel.Data);
+		File.WriteAllBytes(savePath, bytes);
 	}
 }

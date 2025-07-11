@@ -1,7 +1,6 @@
-namespace Definitions
+namespace Definitions;
+
+public interface IHasId
 {
-	public interface IHasId
-	{
-		UniqueObjectId Id { get; }
-	}
+	UniqueObjectId Id { get; }
 }

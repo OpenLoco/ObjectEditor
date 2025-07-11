@@ -1,11 +1,10 @@
-namespace Dat.Types.SCV5
+namespace Dat.Types.SCV5;
+
+public enum EditorControllerStep : int8_t
 {
-	public enum EditorControllerStep : int8_t
-	{
-		Null = -1,
-		ObjectSelection = 0,
-		LandscapeEditor = 1,
-		ScenarioOptions = 2,
-		SaveScenario = 3,
-	}
+	Null = -1,
+	ObjectSelection = 0,
+	LandscapeEditor = 1,
+	ScenarioOptions = 2,
+	SaveScenario = 3,
 }

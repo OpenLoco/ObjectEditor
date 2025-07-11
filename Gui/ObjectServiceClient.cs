@@ -9,66 +9,65 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Gui
+namespace Gui;
+
+//public class LocalUser(string Email, string Password)
+//{
+//	public string Email { get; } = Email;
+//	public string Password { get; } = Password;
+//	public string UserName { get; set; } // set when user logs in
+//	public TblAuthor? AssociatedAuthor { get; set; }
+//}
+
+public class ObjectServiceClient
 {
-	//public class LocalUser(string Email, string Password)
-	//{
-	//	public string Email { get; } = Email;
-	//	public string Password { get; } = Password;
-	//	public string UserName { get; set; } // set when user logs in
-	//	public TblAuthor? AssociatedAuthor { get; set; }
-	//}
+	//public LocalUser LocoUser { get; set; }
 
-	public class ObjectServiceClient
+	public HttpClient WebClient { get; }
+
+	public ILogger Logger { get; init; }
+
+	public CookieContainer CookieContainer { get; set; }
+
+	public ObjectServiceClient(EditorSettings settings, ILogger logger)
 	{
-		//public LocalUser LocoUser { get; set; }
+		var serverAddress = settings.UseHttps
+			? settings.ServerAddressHttps
+			: settings.ServerAddressHttp;
 
-		public HttpClient WebClient { get; }
-
-		public ILogger Logger { get; init; }
-
-		public CookieContainer CookieContainer { get; set; }
-
-		public ObjectServiceClient(EditorSettings settings, ILogger logger)
+		if (Uri.TryCreate(serverAddress, new(), out var serverUri))
 		{
-			var serverAddress = settings.UseHttps
-				? settings.ServerAddressHttps
-				: settings.ServerAddressHttp;
+			CookieContainer = new CookieContainer();
+			var handler = new HttpClientHandler() { CookieContainer = CookieContainer };
 
-			if (Uri.TryCreate(serverAddress, new(), out var serverUri))
-			{
-				CookieContainer = new CookieContainer();
-				var handler = new HttpClientHandler() { CookieContainer = CookieContainer };
+			WebClient = new HttpClient(handler) { BaseAddress = serverUri };
 
-				WebClient = new HttpClient(handler) { BaseAddress = serverUri };
+			var currentAppVersion = VersionHelpers.GetCurrentAppVersion();
+			WebClient.DefaultRequestHeaders.UserAgent.ParseAdd($"ObjectEditor/{currentAppVersion}");
 
-				var currentAppVersion = VersionHelpers.GetCurrentAppVersion();
-				WebClient.DefaultRequestHeaders.UserAgent.ParseAdd($"ObjectEditor/{currentAppVersion}");
-
-				Logger?.Info($"Successfully registered object service with address \"{serverUri}\"");
-			}
-			else
-			{
-				Logger?.Error($"Unable to parse object service address \"{serverAddress}\". Online functionality will not work until the address is corrected and the editor is restarted.");
-			}
-
-			Logger = logger;
-
-			//LocoUser = new LocalUser(settings.ServerEmail, settings.ServerPassword);
+			Logger?.Info($"Successfully registered object service with address \"{serverUri}\"");
+		}
+		else
+		{
+			Logger?.Error($"Unable to parse object service address \"{serverAddress}\". Online functionality will not work until the address is corrected and the editor is restarted.");
 		}
 
-		//public async Task<DtoLoginRequest>
+		Logger = logger;
 
-		public async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync()
-			=> await Client.GetObjectListAsync(WebClient, Logger);
-
-		public async Task<DtoObjectDescriptor?> GetObjectAsync(UniqueObjectId id)
-			=> await Client.GetObjectAsync(WebClient, id, Logger);
-
-		public async Task<byte[]?> GetObjectFileAsync(UniqueObjectId id)
-			=> await Client.GetObjectFileAsync(WebClient, id, Logger);
-
-		public async Task UploadDatFileAsync(string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate)
-			=> await Client.UploadDatFileAsync(WebClient, filename, datFileBytes, creationDate, modifiedDate, Logger);
+		//LocoUser = new LocalUser(settings.ServerEmail, settings.ServerPassword);
 	}
+
+	//public async Task<DtoLoginRequest>
+
+	public async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync()
+		=> await Client.GetObjectListAsync(WebClient, Logger);
+
+	public async Task<DtoObjectDescriptor?> GetObjectAsync(UniqueObjectId id)
+		=> await Client.GetObjectAsync(WebClient, id, Logger);
+
+	public async Task<byte[]?> GetObjectFileAsync(UniqueObjectId id)
+		=> await Client.GetObjectFileAsync(WebClient, id, Logger);
+
+	public async Task UploadDatFileAsync(string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate)
+		=> await Client.UploadDatFileAsync(WebClient, filename, datFileBytes, creationDate, modifiedDate, Logger);
 }

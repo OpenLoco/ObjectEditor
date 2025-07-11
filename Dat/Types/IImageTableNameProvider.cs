@@ -1,16 +1,15 @@
-namespace Dat.Types
-{
-	public interface IImageTableNameProvider
-	{
-		public bool TryGetImageName(int id, out string? value);
-	}
+namespace Dat.Types;
 
-	public class DefaultImageTableNameProvider : IImageTableNameProvider
+public interface IImageTableNameProvider
+{
+	public bool TryGetImageName(int id, out string? value);
+}
+
+public class DefaultImageTableNameProvider : IImageTableNameProvider
+{
+	public bool TryGetImageName(int id, out string? value)
 	{
-		public bool TryGetImageName(int id, out string? value)
-		{
-			value = id.ToString();
-			return true;
-		}
+		value = id.ToString();
+		return true;
 	}
 }

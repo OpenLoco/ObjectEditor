@@ -1,13 +1,12 @@
 using Avalonia.Controls;
 
-namespace Gui.Views
-{
+namespace Gui.Views;
 
-	public partial class SCV5View : UserControl
+
+public partial class SCV5View : UserControl
+{
+	public SCV5View()
 	{
-		public SCV5View()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
 }

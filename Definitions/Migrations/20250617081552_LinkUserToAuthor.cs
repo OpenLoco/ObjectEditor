@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Definitions.Database.Migrations
-{
+namespace Definitions.Database.Migrations;
+
     /// <inheritdoc />
     public partial class LinkUserToAuthor : Migration
     {
@@ -191,4 +191,3 @@ namespace Definitions.Database.Migrations
                 oldType: "INTEGER");
         }
     }
-}

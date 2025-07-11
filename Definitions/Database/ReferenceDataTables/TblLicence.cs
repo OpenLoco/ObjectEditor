@@ -1,10 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Definitions.Database
+namespace Definitions.Database;
+
+[Index(nameof(Name), IsUnique = true)]
+public class TblLicence : DbReferenceObject
 {
-	[Index(nameof(Name), IsUnique = true)]
-	public class TblLicence : DbReferenceObject
-	{
-		public required string Text { get; set; }
-	}
+	public required string Text { get; set; }
 }

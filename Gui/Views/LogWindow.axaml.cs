@@ -1,13 +1,12 @@
 using Avalonia.ReactiveUI;
 using Gui.ViewModels;
 
-namespace Gui.Views
+namespace Gui.Views;
+
+public partial class LogWindow : ReactiveWindow<LogWindowViewModel>
 {
-	public partial class LogWindow : ReactiveWindow<LogWindowViewModel>
+	public LogWindow()
 	{
-		public LogWindow()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
 }

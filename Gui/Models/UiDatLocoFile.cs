@@ -4,14 +4,13 @@ using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace Gui.Models
+namespace Gui.Models;
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class UiDatLocoFile
 {
-	[TypeConverter(typeof(ExpandableObjectConverter))]
-	public class UiDatLocoFile
-	{
-		public required DatFileInfo DatFileInfo { get; set; }
-		public ILocoObject? LocoObject { get; set; }
-		public IList<Image<Rgba32>> Images { get; set; } = [];
-		public MetadataModel? Metadata { get; set; }
-	}
+	public required DatFileInfo DatFileInfo { get; set; }
+	public ILocoObject? LocoObject { get; set; }
+	public IList<Image<Rgba32>> Images { get; set; } = [];
+	public MetadataModel? Metadata { get; set; }
 }

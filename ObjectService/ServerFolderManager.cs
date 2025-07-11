@@ -48,7 +48,13 @@ public class ServerFolderManager : IServerFolderManager
 
 	public ServerFolderManager(string rootDirectory)
 	{
+		if (!Directory.Exists(rootDirectory))
+		{
+			throw new DirectoryNotFoundException($"The specified root directory does not exist: {rootDirectory}");
+		}
+
 		RootDirectory = rootDirectory;
+
 		var logger = new Logger();
 
 		var indexFile = Path.Combine(rootDirectory, ObjectsFolderName);
@@ -62,25 +68,25 @@ public class ServerFolderManager : IServerFolderManager
 			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!; // try again, recreating the index
 		}
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsCustomFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder), nameof(ObjectsOriginalFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsCustomFolder), nameof(ObjectsCustomFolder));
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsCustomFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsOriginalFolder), nameof(GraphicsOriginalFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(GraphicsCustomFolder), nameof(GraphicsCustomFolder));
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicCustomFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicOriginalFolder), nameof(MusicOriginalFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(MusicCustomFolder), nameof(MusicCustomFolder));
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsCustomFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsOriginalFolder), nameof(SoundEffectsOriginalFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(SoundEffectsCustomFolder), nameof(SoundEffectsCustomFolder));
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsCustomFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsOriginalFolder), nameof(TutorialsOriginalFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(TutorialsCustomFolder), nameof(TutorialsCustomFolder));
 
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosOriginalFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosCustomFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosGoGFolder));
-		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosSteamFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosOriginalFolder), nameof(ScenariosOriginalFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosCustomFolder), nameof(ScenariosCustomFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosGoGFolder), nameof(ScenariosGoGFolder));
+		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ScenariosSteamFolder), nameof(ScenariosSteamFolder));
 	}
 
 	public ObjectIndex ObjectIndex { get; init; }

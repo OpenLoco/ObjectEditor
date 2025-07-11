@@ -42,20 +42,20 @@ public static class ClientHelpers
 			null,
 			logger) != null;
 
-	public static async Task<T?> PostAsync<T>(HttpClient client, string apiRoute, string route, T request, ILogger? logger = null)
+	public static async Task<TResponse?> PostAsync<TRequest, TResponse>(HttpClient client, string apiRoute, string route, TRequest request, ILogger? logger = null)
 		=> await SendRequestAsync(
 			client,
 			FormRoute(apiRoute, route, null),
 			() => client.PostAsJsonAsync(FormRoute(apiRoute, route, null), request),
-			ReadJsonContentAsync<T?>,
+			ReadJsonContentAsync<TResponse?>,
 			logger) ?? default;
 
-	public static async Task<T?> PutAsync<T>(HttpClient client, string apiRoute, string route, UniqueObjectId resourceId, T request, ILogger? logger = null)
+	public static async Task<TResponse?> PutAsync<TRequest, TResponse>(HttpClient client, string apiRoute, string route, UniqueObjectId resourceId, TRequest request, ILogger? logger = null)
 		=> await SendRequestAsync(
 			client,
 			FormRoute(apiRoute, route, resourceId),
 			() => client.PutAsJsonAsync(FormRoute(apiRoute, route, resourceId), request),
-			ReadJsonContentAsync<T?>,
+			ReadJsonContentAsync<TResponse?>,
 			logger) ?? default;
 
 	static string FormRoute(string apiRoute, string baseRoute, UniqueObjectId? resourceId)

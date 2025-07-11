@@ -12,7 +12,6 @@ using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.SourceData;
 using Definitions.Web;
-using ObjectService;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
 using static ObjectService.RouteHandlers.TableHandlers.V1DtoExtensions;

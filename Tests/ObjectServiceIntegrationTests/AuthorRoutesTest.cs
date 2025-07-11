@@ -6,10 +6,10 @@ using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.Web;
 
-namespace Tests.ObjectServiceIntegrationTests;
+namespace ObjectService.Tests.Integration;
 
 [TestFixture]
-public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<DtoAuthorEntry, DtoAuthorEntry, TblAuthor>
+public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<DtoAuthorEntry, DtoAuthorEntry, DtoAuthorEntry, TblAuthor>
 {
 	protected override IEnumerable<TblAuthor> DbSeedData =>
 	[
@@ -17,8 +17,18 @@ public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<DtoAuthorEntry
 		new() { Id = 2, Name = "Bob" },
 	];
 
-	protected override DtoAuthorEntry PutDto
+	protected override DtoAuthorEntry PostRequestDto
 		=> new(3, "Charles");
+
+	protected override DtoAuthorEntry PostResponseDto
+		=> new(3, "Charles");
+
+	protected override DtoAuthorEntry PutRequestDto
+		=> new(1, "Charles");
+
+	protected override DtoAuthorEntry PutResponseDto
+		=> new(1, "Charles");
+
 
 	public override string BaseRoute
 		=> RoutesV2.Authors;
@@ -31,4 +41,5 @@ public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<DtoAuthorEntry
 
 	protected override DtoAuthorEntry ToDtoEntryFunc(TblAuthor row)
 		=> row.ToDtoEntry();
+
 }

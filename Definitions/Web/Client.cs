@@ -32,12 +32,12 @@ public static class Client
 			ClientHelpers.ReadBinaryContentAsync,
 			logger) ?? default;
 
-	public static async Task UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate, ILogger logger)
+	public static async Task<DtoObjectDescriptor?> UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate, ILogger logger)
 	{
 		var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 		logger.Debug($"Posting {filename} to {client.BaseAddress?.OriginalString}{RoutesV2.Objects}");
 		var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), xxHash3, ObjectAvailability.Available, creationDate, modifiedDate);
-		_ = await ClientHelpers.PostAsync(
+		return await ClientHelpers.PostAsync<DtoUploadDat, DtoObjectDescriptor>(
 			client,
 			ApiVersion,
 			RoutesV2.Objects,

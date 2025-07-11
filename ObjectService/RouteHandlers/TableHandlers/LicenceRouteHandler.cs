@@ -24,7 +24,10 @@ public class LicenceRouteHandler
 		=> table.ToDtoEntry();
 
 	public static void UpdateFunc(DtoLicenceEntry request, TblLicence row)
-		=> row.Name = request.Name;
+	{
+		row.Name = request.Name;
+		row.Text = request.Text;
+	}
 
 	public static TblLicence ToRowFunc(DtoLicenceEntry request)
 		=> request.ToTable();

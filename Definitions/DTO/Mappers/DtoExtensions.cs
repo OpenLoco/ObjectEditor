@@ -122,7 +122,7 @@ public static class DtoExtensions
 		=> new(table.Id, table.Name, table.Text);
 
 	public static TblLicence ToTable(this DtoLicenceEntry dto)
-		=> new() { Name = dto.Name, Id = dto.Id, Text = dto.LicenceText };
+		=> new() { Name = dto.Name, Id = dto.Id, Text = dto.Text };
 
 	public static DtoUserEntry ToDtoEntry(this TblUser table)
 		=> new(table.Id, table.UserName);

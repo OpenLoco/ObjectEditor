@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Gui.Models;
 
-namespace Tests.Models;
+namespace Models.Tests;
 
 [TestFixture]
 public class ImageTableModelTests

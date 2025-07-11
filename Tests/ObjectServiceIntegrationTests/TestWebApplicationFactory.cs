@@ -1,35 +1,65 @@
+using Definitions.Database;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Definitions.Database;
-using ObjectService;
 
-namespace Tests.ObjectServiceIntegrationTests;
+namespace ObjectService.Tests.Integration;
 
 public class TestWebApplicationFactory<TProgram>
 	: WebApplicationFactory<TProgram> where TProgram : class
 {
-	// This will hold the specific overrides for *this instance* of the factory
-	Dictionary<string, string?> testConfiguration = [];
-
-	public TestWebApplicationFactory<TProgram> WithConfiguration(string key, string value)
+	DirectoryInfo? MakeServerFolderManagerTestDirectories()
 	{
-		testConfiguration[key] = value;
-		return this;
+		// parent dir
+		var testDirectory = Directory.CreateTempSubdirectory("ObjectServiceTest");
+
+		// sub dirs
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Objects"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Objects//Custom"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Objects//Original"));
+
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Custom"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Original"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Original//GoG"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Scenarios//Original//Steam"));
+
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "Landscapes"));
+
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Graphics//Custom"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Graphics//Original"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Music//Custom"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Music//Original"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//SoundEffects//Custom"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//SoundEffects//Original"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Tutorials//Custom"));
+		_ = Directory.CreateDirectory(Path.Combine(testDirectory.FullName, "GameData//Tutorials//Original"));
+
+		return testDirectory;
 	}
 
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
-		_ = builder.ConfigureServices(services =>
-		{
-			services.RemoveAll<ServerFolderManager>();
-			services.AddSingleton(new ServerFolderManager(Path.GetTempPath()));
+		var testFolder = MakeServerFolderManagerTestDirectories();
 
+		var testConfigurationBuilder =
+			new ConfigurationBuilder()
+				.AddInMemoryCollection(
+				[
+					new("ObjectService:RootFolder", testFolder?.FullName),
+					new("ObjectService:ShowScalar", "False"),
+				])
+				.Build();
+
+		_ = builder
+			.UseConfiguration(testConfigurationBuilder)
+			.ConfigureServices(services =>
+		{
 			// Remove the app's original DbContext registration
 			var descriptor = services.SingleOrDefault(
 				d => d.ServiceType == typeof(DbContextOptions<LocoDbContext>));
@@ -67,18 +97,6 @@ public class TestWebApplicationFactory<TProgram>
 				var db = scopedServices.GetRequiredService<LocoDbContext>();
 				_ = db.Database.EnsureCreated(); // Ensure the database is created for each test run
 			}
-		});
-
-		_ = builder.ConfigureAppConfiguration(config =>
-		{
-			config.Sources.Clear();
-
-			testConfiguration = new()
-			{
-				{ "ObjectService:RootFolder", Path.GetTempPath() },
-				{ "ObjectService:ShowScalar", "false" }
-			};
-			_ = config.AddInMemoryCollection(testConfiguration);
 		});
 	}
 }

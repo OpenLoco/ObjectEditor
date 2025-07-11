@@ -1,17 +1,18 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
-using NUnit.Framework.Internal;
 using Definitions;
 using Definitions.Database;
 using Definitions.Web;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
+using NUnit.Framework.Internal;
 
-namespace Tests.ObjectServiceIntegrationTests;
+namespace ObjectService.Tests.Integration;
 
 public abstract class BaseRouteHandlerTestFixture
 {
 	protected HttpClient? HttpClient;
-	protected TestWebApplicationFactory<Program> _factory;
+	protected TestWebApplicationFactory<Program> testWebAppFactory;
 
 	public abstract string BaseRoute { get; }
 
@@ -23,7 +24,7 @@ public abstract class BaseRouteHandlerTestFixture
 
 	async Task SeedDataAsync()
 	{
-		using (var scope = _factory.Services.CreateScope())
+		using (var scope = testWebAppFactory.Services.CreateScope())
 		{
 			var dbContext = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
 
@@ -38,9 +39,16 @@ public abstract class BaseRouteHandlerTestFixture
 	[SetUp]
 	public async Task SetUp()
 	{
-		_factory = new TestWebApplicationFactory<Program>()
-			.WithConfiguration("ObjectService:RootFolder", Path.GetTempPath());
-		HttpClient = _factory.CreateClient();
+		testWebAppFactory = new TestWebApplicationFactory<Program>();
+		Assert.Multiple(() =>
+		{
+			var config = testWebAppFactory.Services.GetRequiredService<IConfiguration>();
+			Assert.That(config["ObjectService:RootFolder"].StartsWith(Path.GetTempPath()));
+			Assert.That(Directory.Exists(config["ObjectService:RootFolder"]), Is.True);
+			Assert.That(config.GetValue<bool>("ObjectService:ShowScalar"), Is.False);
+		});
+
+		HttpClient = testWebAppFactory.CreateClient();
 
 		await SeedDataAsync();
 		var healthResponse = await HttpClient.GetAsync("/health");
@@ -57,13 +65,14 @@ public abstract class BaseRouteHandlerTestFixture
 	public void TearDown()
 	{
 		HttpClient?.Dispose();
-		_factory?.Dispose();
+		testWebAppFactory?.Dispose();
 	}
 }
 
-public abstract class BaseReferenceDataTableTestFixture<TGetDto, TPostDto, TRow> : BaseRouteHandlerTestFixture
+public abstract class BaseReferenceDataTableTestFixture<TGetDto, TRequestDto, TResponseDto, TRow> : BaseRouteHandlerTestFixture
 	where TGetDto : class, IHasId
-	where TPostDto : class, IHasId
+	where TRequestDto : class // POST doens't have an ID, and PUT has its id as part of the route, not the body/object
+	where TResponseDto : class, IHasId
 	where TRow : class, IHasId
 {
 	protected abstract DbSet<TRow> GetTable(LocoDbContext db);
@@ -71,7 +80,10 @@ public abstract class BaseReferenceDataTableTestFixture<TGetDto, TPostDto, TRow>
 	protected abstract TGetDto ToDtoEntryFunc(TRow row);
 
 	protected abstract IEnumerable<TRow> DbSeedData { get; }
-	protected abstract TGetDto PutDto { get; }
+	protected abstract TRequestDto PostRequestDto { get; }
+	protected abstract TResponseDto PostResponseDto { get; }
+	protected abstract TRequestDto PutRequestDto { get; }
+	protected abstract TResponseDto PutResponseDto { get; }
 
 	protected override async Task SeedDataCoreAsync(LocoDbContext db)
 	{
@@ -125,10 +137,10 @@ public abstract class BaseReferenceDataTableTestFixture<TGetDto, TPostDto, TRow>
 	public override async Task PostAsync()
 	{
 		// act
-		var results = await ClientHelpers.PostAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, PutDto);
+		var results = await ClientHelpers.PostAsync<TRequestDto, TResponseDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, PostRequestDto);
 
 		// assert
-		Assert.That(results, Is.EqualTo(PutDto));
+		Assert.That(results, Is.EqualTo(PostResponseDto));
 	}
 
 	[Test]
@@ -136,9 +148,9 @@ public abstract class BaseReferenceDataTableTestFixture<TGetDto, TPostDto, TRow>
 	{
 		// act
 		const int id = 1;
-		var results = await ClientHelpers.PutAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id, PutDto);
+		var results = await ClientHelpers.PutAsync<TRequestDto, TResponseDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, id, PutRequestDto);
 
 		// assert
-		Assert.That(results.Id, Is.EqualTo(id));
+		Assert.That(results, Is.EqualTo(PutResponseDto));
 	}
 }

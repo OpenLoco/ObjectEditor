@@ -13,7 +13,6 @@ using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.SourceData;
 using Definitions.Web;
-using ObjectService;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
 using System.IO.Hashing;
@@ -34,8 +33,6 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 	{
-		_ = parentRoute.MapPost(string.Empty, CreateDatAsync); // old dat route
-
 		_ = parentRoute.MapGet(RoutesV2.Missing, ListMissingObjects);
 		_ = parentRoute.MapPost(RoutesV2.Missing, AddMissingObject);
 
@@ -406,7 +403,9 @@ public class ObjectRouteHandler : ITableRouteHandler
 			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
 
 		_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
-		return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
+
+		var response = new ExpandedTbl<TblObject, TblObjectPack>(tblObject, [], [], []).ToDtoDescriptor();
+		return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", response);
 	}
 
 	static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)

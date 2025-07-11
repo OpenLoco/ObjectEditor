@@ -1,12 +1,10 @@
 using Common.Logging;
-using Definitions.Database;
 using Definitions.DTO;
 using Definitions.Web;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Gui;
@@ -68,6 +66,6 @@ public class ObjectServiceClient
 	public async Task<byte[]?> GetObjectFileAsync(UniqueObjectId id)
 		=> await Client.GetObjectFileAsync(WebClient, id, Logger);
 
-	public async Task UploadDatFileAsync(string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate)
+	public async Task<DtoObjectDescriptor?> UploadDatFileAsync(string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate)
 		=> await Client.UploadDatFileAsync(WebClient, filename, datFileBytes, creationDate, modifiedDate, Logger);
 }

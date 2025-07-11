@@ -1,33 +1,23 @@
 using Common;
-using Microsoft.EntityFrameworkCore;
-using NUnit.Framework;
 using Common.Logging;
 using Dat.Data;
+using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
+using Definitions.DTO.Comparers;
 using Definitions.DTO.Mappers;
 using Definitions.Web;
+using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
 using System.IO.Hashing;
 
-namespace Tests.ObjectServiceIntegrationTests;
+namespace ObjectService.Tests.Integration;
 
 [TestFixture]
-public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry, DtoObjectDescriptor, TblObject>
+public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry, DtoUploadDat, DtoObjectDescriptor, TblObject>
 {
 	public override string BaseRoute
 		=> RoutesV2.Objects;
-
-	//protected override async Task SeedDataCoreAsync(LocoDbContext db)
-	//{
-	//	foreach (var (tblObject, subObject) in DbSeedData.Zip(DbSeedDataSub))
-	//	{
-	//		var tblObj = await GetTable(db).AddAsync(tblObject);
-	//		//subObject.Parent = tblObj.Entity;
-	//		//_ = await db.ObjVehicle.AddAsync((TblObjectVehicle)subObject);
-	//	}
-
-	//	_ = db.SaveChanges();
-	//}
 
 	protected override IEnumerable<TblObject> DbSeedData =>
 	[
@@ -35,14 +25,25 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		new() { Id = 2, Name = "test-name-2", SubObjectId = 2, ObjectType = ObjectType.Vehicle, Availability = Definitions.ObjectAvailability.Available },
 	];
 
-	//IEnumerable<IDbSubObject> DbSeedDataSub =>
-	//[
-	//	new TblObjectVehicle() { Id = 1, Parent = DbSeedData.ElementAt(0) },
-	//	new TblObjectVehicle() { Id = 2, Parent = DbSeedData.ElementAt(1) },
-	//];
+	protected override DtoUploadDat PostRequestDto
+		=> throw new NotImplementedException();
 
-	protected override DtoObjectEntry PutDto
-		=> new(3, "test-name-3", "display-name-3", 123, "456", ObjectSource.Custom, ObjectType.Vehicle, Dat.Objects.VehicleType.Bus, Definitions.ObjectAvailability.Available, null, null, DateOnly.Today);
+	protected override DtoObjectDescriptor PostResponseDto
+		=> throw new NotImplementedException();
+
+	protected override DtoObjectDescriptor PutResponseDto
+		=> throw new NotImplementedException();
+
+	protected override DtoUploadDat PutRequestDto
+		=> throw new NotImplementedException();
+
+	//protected override DtoUploadDat PostRequestDto
+	//	=> new(3, "test-name-3", "display-name-3", 123, "456", ObjectSource.Custom, ObjectType.Vehicle, Dat.Objects.VehicleType.Bus, Definitions.ObjectAvailability.Available, null, null, DateOnly.Today);
+
+	//protected override DtoObjectDescriptor PostResponseDto
+	//	=> new(3, "test-name-3", "display-name-3", 123, "456", ObjectSource.Custom, ObjectType.Vehicle, Dat.Objects.VehicleType.Bus, Definitions.ObjectAvailability.Available, null, null, DateOnly.Today);
+
+	//protected override DtoObjectEntry PutDto
 
 	protected override DbSet<TblObject> GetTable(LocoDbContext context)
 		=> context.Objects;
@@ -76,6 +77,56 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 				//SubObject
 				);
 
+	static void AssertDtoObjectDescriptorsAreEqual(DtoObjectDescriptor? expected, DtoObjectDescriptor? actual)
+	{
+		Assert.Multiple(() =>
+		{
+			Assert.That(expected, Is.Not.Null);
+			Assert.That(actual, Is.Not.Null);
+
+			Assert.That(expected.Id, Is.EqualTo(actual.Id));
+			Assert.That(expected.Name, Is.EqualTo(actual.Name));
+			Assert.That(expected.DisplayName, Is.EqualTo(actual.DisplayName));
+			Assert.That(expected.DatChecksum, Is.EqualTo(actual.DatChecksum));
+			Assert.That(expected.Description, Is.EqualTo(actual.Description));
+			Assert.That(expected.ObjectSource, Is.EqualTo(actual.ObjectSource));
+			Assert.That(expected.ObjectType, Is.EqualTo(actual.ObjectType));
+			Assert.That(expected.VehicleType, Is.EqualTo(actual.VehicleType));
+			Assert.That(expected.Availability, Is.EqualTo(actual.Availability));
+			Assert.That(expected.CreatedDate, Is.EqualTo(actual.CreatedDate));
+			Assert.That(expected.ModifiedDate, Is.EqualTo(actual.ModifiedDate));
+			Assert.That(expected.UploadedDate, Is.EqualTo(actual.UploadedDate));
+
+			Assert.That(actual.Licence, Is.EqualTo(expected.Licence).Using(new DtoLicenceEntryComparer()));
+			Assert.That(actual.Authors, Is.EqualTo(expected.Authors).Using(new DtoAuthorEntryComparer()));
+			Assert.That(actual.Tags, Is.EqualTo(expected.Tags).Using(new DtoTagEntryComparer()));
+			Assert.That(actual.ObjectPacks, Is.EqualTo(expected.ObjectPacks).Using(new DtoItemPackEntryComparer()));
+			Assert.That(actual.DatObjects, Is.EqualTo(expected.DatObjects).Using(new DtoDatObjectEntryComparer()));
+		});
+
+		AssertDtoStringTableDescriptorsAreEqual(expected.StringTable, actual.StringTable);
+	}
+
+	static void AssertDtoStringTableDescriptorsAreEqual(DtoStringTableDescriptor? expected, DtoStringTableDescriptor? actual)
+		=> Assert.Multiple(() =>
+		{
+			Assert.That(expected, Is.Not.Null);
+			Assert.That(actual, Is.Not.Null);
+
+			Assert.That(expected.ObjectId, Is.EqualTo(actual.ObjectId), "Object Id");
+
+			foreach (var z1 in expected.Table.Zip(actual.Table))
+			{
+				Assert.That(z1.First.Key, Is.EqualTo(z1.Second.Key), "StringName");
+
+				foreach (var z2 in z1.First.Value.Zip(z1.Second.Value))
+				{
+					Assert.That(z2.First.Key, Is.EqualTo(z2.Second.Key), $"{z1.First.Key}-{z2.First.Key}-Language");
+					Assert.That(z2.First.Value, Is.EqualTo(z2.Second.Value), $"{z1.First.Key}-{z2.First.Key}-Text");
+				}
+			}
+		});
+
 	[Test]
 	public override async Task GetAsync()
 	{
@@ -83,35 +134,90 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		const int id = 2;
 		var results = await ClientHelpers.GetAsync<DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
 		var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.Today };
+
 		// assert
-		Assert.That(results, Is.EqualTo(descriptor));
+		AssertDtoObjectDescriptorsAreEqual(results, descriptor);
+	}
+	[Test]
+	public override async Task DeleteAsync()
+	{
+		// act
+		const int id = 1;
+		var results = await ClientHelpers.DeleteAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+
+		// assert
+		Assert.Multiple(async () =>
+		{
+			var results = await ClientHelpers.GetAsync<DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+			var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.Today };
+
+			// assert
+			AssertDtoObjectDescriptorsAreEqual(results, descriptor);
+		});
 	}
 
 	[Test]
 	public override async Task PostAsync()
 	{
-		var objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
+		var objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects"; // this is naughty for a test but it'll do
 		var logger = new Logger();
 		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
-		var entry = index.Objects.First();
+		_ = index.TryFind(7051740550869341430, out var entry); // randomly selected and hardcoded object
 
-		try
+		var filename = Path.Combine(objDirectory, entry.FileName);
+		var bytes = File.ReadAllBytes(filename);
+		var xxHash3 = XxHash3.HashToUInt64(bytes);
+		var base64Bytes = Convert.ToBase64String(bytes);
+
+		// act
+		var dtoUploadDat = new DtoUploadDat(base64Bytes, xxHash3, ObjectAvailability.Available, DateOnly.Today, DateOnly.Today);
+		var results = await ClientHelpers.PostAsync<DtoUploadDat, DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, dtoUploadDat);
+
+		// assert
+		var expectedStringTable = new Dictionary<string, Dictionary<LanguageId, string>>()
 		{
-			var filename = Path.Combine(objDirectory, entry.FileName);
-			var bytes = File.ReadAllBytes(filename);
-			var xxHash3 = XxHash3.HashToUInt64(bytes);
-			var base64Bytes = Convert.ToBase64String(bytes);
+			{
+				"Name",
+				new Dictionary<LanguageId, string>()
+				{
+					{ LanguageId.English_UK, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.English_US, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.French, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.German, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.Spanish, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.Italian, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.Dutch, string.Empty },
+					{ LanguageId.Swedish, string.Empty },
+					{ LanguageId.Japanese, string.Empty },
+					{ LanguageId.Korean, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.Chinese_Simplified, string.Empty },
+					{ LanguageId.Chinese_Traditional, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.id_12, string.Empty },
+					{ LanguageId.Portuguese, string.Empty },
+				}
+			},
+		};
 
-			// act
-			var dtoUploadDat = new DtoUploadDat(base64Bytes, xxHash3, Definitions.ObjectAvailability.Available, DateOnly.Today, DateOnly.Today);
-			var results = await ClientHelpers.PostAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, dtoUploadDat);
+		var expected = new DtoObjectDescriptor(
+			3,
+			"AZVOG15C_3072098364",
+			entry.DisplayName,
+			3072098364,
+			string.Empty,
+			ObjectSource.Custom,
+			ObjectType.Vehicle,
+			entry.VehicleType,
+			ObjectAvailability.Available,
+			DateOnly.Today,
+			DateOnly.Today,
+			DateOnly.Today,
+			null, // licence
+			[], // authors
+			[], // tags
+			[], // object packs
+			[new DtoDatObjectEntry(1, "AZVOG15C", 3072098364, 7051740550869341430, 3)], // dat objects
+			new DtoStringTableDescriptor(expectedStringTable, 3));
 
-			// assert
-			Assert.That(results, Is.Not.Null);
-		}
-		catch (Exception ex)
-		{
-			//Console.WriteLine($"{obj.FileName} - {ex.Message}");
-		}
+		AssertDtoObjectDescriptorsAreEqual(results, expected);
 	}
 }

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.Common
+namespace Common
 {
 	public class VersionCheckBody
 	{

@@ -3,7 +3,7 @@ using Avalonia.Logging;
 using Avalonia.ReactiveUI;
 using System;
 
-namespace OpenLoco.Gui
+namespace Gui
 {
 	class Program
 	{

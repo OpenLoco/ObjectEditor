@@ -1,4 +1,4 @@
-namespace OpenLoco.Definitions
+namespace Definitions
 {
 	public enum ObjectAvailability
 	{

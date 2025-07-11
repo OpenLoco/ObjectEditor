@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat.FileParsing
+namespace Dat.FileParsing
 {
 	public static class ByteWriterT
 	{

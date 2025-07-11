@@ -3,9 +3,9 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using NuGet.Versioning;
-using OpenLoco.Dat;
-using OpenLoco.Dat.Data;
-using OpenLoco.Gui.Models;
+using Dat;
+using Dat.Data;
+using Gui.Models;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -24,13 +24,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 #if !DEBUG
-using OpenLoco.Common;
+using Common;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 #endif
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class MainWindowViewModel : ViewModelBase
 	{

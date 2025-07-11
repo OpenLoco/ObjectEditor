@@ -3,7 +3,7 @@ using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class EditorSettingsWindowViewModel : ViewModelBase
 	{

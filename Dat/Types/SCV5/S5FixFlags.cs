@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat.Types.SCV5
+namespace Dat.Types.SCV5
 {
 	[Flags]
 	public enum S5FixFlags : uint16_t

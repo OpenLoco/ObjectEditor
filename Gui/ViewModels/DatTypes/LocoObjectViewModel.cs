@@ -1,7 +1,7 @@
-using OpenLoco.Dat.Types;
+using Dat.Types;
 using ReactiveUI;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public abstract class LocoObjectViewModel<T> : ReactiveObject, IObjectViewModel<ILocoStruct> where T : class, ILocoStruct
 	{

@@ -1,7 +1,7 @@
 using Common.Json;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.SourceData;
+using Definitions.Database;
+using Definitions.SourceData;
 using System.Text.Json;
 
 var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);

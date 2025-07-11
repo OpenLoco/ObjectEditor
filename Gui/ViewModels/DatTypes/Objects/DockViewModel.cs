@@ -1,10 +1,10 @@
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
+using Dat.Objects;
+using Dat.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class DockViewModel : LocoObjectViewModel<DockObject>
 	{

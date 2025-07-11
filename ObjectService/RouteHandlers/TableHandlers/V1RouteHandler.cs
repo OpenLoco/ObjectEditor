@@ -1,18 +1,18 @@
 using Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Definitions;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.DTO.Mappers;
-using OpenLoco.Definitions.SourceData;
-using OpenLoco.Definitions.Web;
-using OpenLoco.ObjectService;
+using Common.Logging;
+using Dat;
+using Dat.Data;
+using Dat.FileParsing;
+using Dat.Objects;
+using Definitions;
+using Definitions.Database;
+using Definitions.DTO;
+using Definitions.DTO.Mappers;
+using Definitions.SourceData;
+using Definitions.Web;
+using ObjectService;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
 using static ObjectService.RouteHandlers.TableHandlers.V1DtoExtensions;
@@ -538,7 +538,7 @@ namespace ObjectService.RouteHandlers.TableHandlers
 			// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
 
 			var sfm = sp.GetRequiredService<ServerFolderManager>();
-			var locoLogger = new OpenLoco.Common.Logging.Logger();
+			var locoLogger = new Logger();
 
 			var (_, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, locoLogger);
 			var uuid = Guid.NewGuid();

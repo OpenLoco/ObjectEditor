@@ -2,8 +2,8 @@ using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using DynamicData;
-using OpenLoco.Dat;
-using OpenLoco.Gui.Models;
+using Dat;
+using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -15,7 +15,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	{

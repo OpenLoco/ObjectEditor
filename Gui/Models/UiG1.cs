@@ -1,8 +1,8 @@
-using OpenLoco.Dat.Types;
+using Dat.Types;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace OpenLoco.Gui.Models
+namespace Gui.Models
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class UiG1 : IUiObject

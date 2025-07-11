@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
-namespace OpenLoco.Common.Logging
+namespace Common.Logging
 {
 	public class Logger : ILogger
 	{

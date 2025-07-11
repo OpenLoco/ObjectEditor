@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using ReactiveUI;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.Views
+namespace Gui.Views
 {
 	public static class WindowInteractionExtensions
 	{

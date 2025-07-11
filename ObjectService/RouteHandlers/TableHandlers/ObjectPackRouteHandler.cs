@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.DTO.Mappers;
-using OpenLoco.Definitions.SourceData;
-using OpenLoco.Definitions.Web;
+using Definitions.Database;
+using Definitions.DTO;
+using Definitions.DTO.Mappers;
+using Definitions.SourceData;
+using Definitions.Web;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {

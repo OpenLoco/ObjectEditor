@@ -1,13 +1,13 @@
 using Avalonia.Threading;
 using Common;
 using DynamicData;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Types;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO;
+using Common.Logging;
+using Dat;
+using Dat.Data;
+using Dat.FileParsing;
+using Dat.Types;
+using Definitions.Database;
+using Definitions.DTO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -19,7 +19,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.Models
+namespace Gui.Models
 {
 	public class ObjectEditorModel : IDisposable
 	{

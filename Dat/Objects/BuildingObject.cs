@@ -1,10 +1,10 @@
-using OpenLoco.Common;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Types;
+using Common;
+using Dat.Data;
+using Dat.FileParsing;
+using Dat.Types;
 using System.ComponentModel;
 
-namespace OpenLoco.Dat.Objects
+namespace Dat.Objects
 {
 	[Flags]
 	public enum BuildingObjectFlags : uint8_t

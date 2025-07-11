@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Common;
 
-namespace OpenLoco.Common.Tests
+namespace Common.Tests
 {
 	[TestFixture]
 	public class DateOnlyTests

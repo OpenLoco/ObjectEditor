@@ -1,8 +1,8 @@
-using OpenLoco.Dat.Objects;
+using Dat.Objects;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class WallViewModel : LocoObjectViewModel<WallObject>
 	{

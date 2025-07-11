@@ -1,7 +1,7 @@
-using OpenLoco.Dat.FileParsing;
+using Dat.FileParsing;
 using System.ComponentModel;
 
-namespace OpenLoco.Dat.Types.SCV5
+namespace Dat.Types.SCV5
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(StructLength)]

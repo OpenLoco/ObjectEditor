@@ -1,6 +1,6 @@
-using OpenLoco.Dat.FileParsing;
+using Dat.FileParsing;
 
-namespace OpenLoco.Dat.Types.SCV5
+namespace Dat.Types.SCV5
 {
 	[LocoStructSize(0x453)]
 	public class Industry : ILocoStruct

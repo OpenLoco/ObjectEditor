@@ -1,13 +1,13 @@
 using Common.Json;
-using OpenLoco.Common.Logging;
-using OpenLoco.Definitions.Database;
+using Common.Logging;
+using Definitions.Database;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.Gui
+namespace Gui
 {
 	public class EditorSettings
 	{

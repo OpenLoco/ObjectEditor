@@ -2,11 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using OpenLoco.Definitions;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.Web;
+using Definitions;
+using Definitions.Database;
+using Definitions.Web;
 
-namespace OpenLoco.Tests.ObjectServiceIntegrationTests
+namespace Tests.ObjectServiceIntegrationTests
 {
 	public abstract class BaseRouteHandlerTestFixture
 	{

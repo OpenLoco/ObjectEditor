@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat.Tests
+namespace Dat.Tests
 {
 	public static class TestConstants
 	{

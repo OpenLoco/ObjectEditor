@@ -2,7 +2,7 @@ using Avalonia.Data.Converters;
 using System;
 using System.Globalization;
 
-namespace OpenLoco.Gui.Models.Converters
+namespace Gui.Models.Converters
 {
 	public class EnumToBooleanConverter : IValueConverter
 	{

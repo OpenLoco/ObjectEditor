@@ -1,4 +1,4 @@
-namespace OpenLoco.Common.Logging
+namespace Common.Logging
 {
 	public class LogAddedEventArgs(LogLine log) : EventArgs
 	{

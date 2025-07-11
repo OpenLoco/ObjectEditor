@@ -3,12 +3,12 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:OpenLoco.Gui.ViewModels"
-	xmlns:mo="using:OpenLoco.Gui.Models"
-	xmlns:moc="using:OpenLoco.Gui.Models.Converters"
+	xmlns:vm="using:Gui.ViewModels"
+	xmlns:mo="using:Gui.Models"
+	xmlns:moc="using:Gui.Models.Converters"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	mc:Ignorable="d" d:DesignWidth="384" d:DesignHeight="768"
-	x:Class="OpenLoco.Gui.Views.FolderTreeView"
+	x:Class="Gui.Views.FolderTreeView"
 	x:DataType="vm:FolderTreeViewModel">
 
 	<Design.DataContext>

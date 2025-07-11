@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using OpenLoco.Gui.ViewModels;
+using Gui.ViewModels;
 using System;
 
-namespace OpenLoco.Gui
+namespace Gui
 {
 	public class ViewLocator : IDataTemplate
 	{

@@ -1,6 +1,6 @@
-using OpenLoco.Dat.FileParsing;
+using Dat.FileParsing;
 
-namespace OpenLoco.Dat.Types.SCV5
+namespace Dat.Types.SCV5
 {
 	[LocoStructSize(0x06)]
 	public class Animation : ILocoStruct

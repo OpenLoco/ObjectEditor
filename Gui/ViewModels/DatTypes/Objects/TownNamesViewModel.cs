@@ -1,9 +1,9 @@
-using OpenLoco.Dat.Objects;
+using Dat.Objects;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class TownNamesViewModel : LocoObjectViewModel<TownNamesObject>
 	{

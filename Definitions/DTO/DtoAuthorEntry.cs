@@ -1,4 +1,4 @@
-namespace OpenLoco.Definitions.DTO
+namespace Definitions.DTO
 {
 	public record DtoAuthorEntry(
 		UniqueObjectId Id,

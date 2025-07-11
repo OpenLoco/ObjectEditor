@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
-using OpenLoco.Definitions.DTO.Mappers;
+using Dat.Data;
+using Dat.Objects;
+using Dat.Types;
+using Definitions.DTO.Mappers;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	public interface IConvertibleToTable<TTable, TDat>
 	{

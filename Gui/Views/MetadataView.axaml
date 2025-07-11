@@ -3,12 +3,12 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:mo="using:OpenLoco.Gui.Models"
-	xmlns:vm="using:OpenLoco.Gui.ViewModels"
+	xmlns:mo="using:Gui.Models"
+	xmlns:vm="using:Gui.ViewModels"
 	mc:Ignorable="d"
 	d:DesignWidth="800"
 	d:DesignHeight="450"
-	x:Class="OpenLoco.Gui.Views.MetadataView"
+	x:Class="Gui.Views.MetadataView"
 	x:DataType="vm:MetadataViewModel">
 
 	<TabControl DataContext="{Binding Metadata}" Margin="8" Background="{DynamicResource ExpanderContentBackground}">

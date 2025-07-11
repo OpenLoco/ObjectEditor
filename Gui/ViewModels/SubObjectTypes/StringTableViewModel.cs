@@ -1,5 +1,5 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Types;
+using Dat.Data;
+using Dat.Types;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public record LanguageTranslationModel(LanguageId Language, string Translation);
 

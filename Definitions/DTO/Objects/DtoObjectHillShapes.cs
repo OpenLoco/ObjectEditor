@@ -1,7 +1,7 @@
-using OpenLoco.Dat.Objects;
-using OpenLoco.Definitions.Database;
+using Dat.Objects;
+using Definitions.Database;
 
-namespace OpenLoco.Definitions.DTO
+namespace Definitions.DTO
 {
 	public class DtoObjectHillShapes : IDtoSubObject
 	{

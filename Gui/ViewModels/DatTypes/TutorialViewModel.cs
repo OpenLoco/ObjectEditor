@@ -1,11 +1,11 @@
-using OpenLoco.Gui.Models;
+using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public enum MouseButton : uint16_t
 	{

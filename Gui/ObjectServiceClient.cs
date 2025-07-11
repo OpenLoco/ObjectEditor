@@ -1,7 +1,7 @@
-using OpenLoco.Common.Logging;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.Web;
+using Common.Logging;
+using Definitions.Database;
+using Definitions.DTO;
+using Definitions.Web;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui
+namespace Gui
 {
 	//public class LocalUser(string Email, string Password)
 	//{

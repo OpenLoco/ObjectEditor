@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Dat.Types;
+using Dat.Types;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjectId>
 	{

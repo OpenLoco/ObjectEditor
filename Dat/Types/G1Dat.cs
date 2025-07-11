@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace OpenLoco.Dat.Types
+namespace Dat.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class G1Dat(G1Header g1Header, List<G1Element32> g1Elements) : IHasG1Elements, IImageTableNameProvider

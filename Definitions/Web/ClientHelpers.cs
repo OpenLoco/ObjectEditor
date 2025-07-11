@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http;
-using OpenLoco.Common.Logging;
+using Common.Logging;
 using System.Net.Http.Json;
 
-namespace OpenLoco.Definitions.Web
+namespace Definitions.Web
 {
 	public static class ClientHelpers
 	{

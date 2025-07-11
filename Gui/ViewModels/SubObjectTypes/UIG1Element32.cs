@@ -1,7 +1,7 @@
-using OpenLoco.Dat.Types;
+using Dat.Types;
 using System.ComponentModel;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public record UIG1Element32(
 		[ReadOnly(true)] int ImageIndex,

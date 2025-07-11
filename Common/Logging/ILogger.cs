@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace OpenLoco.Common.Logging
+namespace Common.Logging
 {
 	public interface ILogger
 	{

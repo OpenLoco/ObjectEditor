@@ -1,7 +1,7 @@
 using NAudio.Wave;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
+using Dat.FileParsing;
+using Dat.Objects;
+using Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
 	{

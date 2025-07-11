@@ -1,7 +1,7 @@
-using OpenLoco.Dat.Data;
+using Dat.Data;
 using System.ComponentModel;
 
-namespace OpenLoco.Dat.Types
+namespace Dat.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class StringTable

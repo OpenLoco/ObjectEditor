@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 
-namespace OpenLoco.Gui
+namespace Gui
 {
 	public static class VersionHelpers
 	{

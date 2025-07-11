@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Definitions;
-using OpenLoco.Definitions.Database;
+using Definitions;
+using Definitions.Database;
 
 namespace ObjectService.RouteHandlers
 {

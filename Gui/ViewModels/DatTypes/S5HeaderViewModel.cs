@@ -1,12 +1,12 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Types;
+using Dat.Data;
+using Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class S5HeaderViewModel : ReactiveObject

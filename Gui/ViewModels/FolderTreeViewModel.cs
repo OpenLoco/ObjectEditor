@@ -2,9 +2,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
-using OpenLoco.Dat.Data;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Gui.Models;
+using Dat.Data;
+using Definitions.Database;
+using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -16,7 +16,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class DesignerFolderTreeViewModel : FolderTreeViewModel
 	{

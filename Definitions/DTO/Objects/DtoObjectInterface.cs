@@ -1,7 +1,7 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Definitions.Database;
+using Dat.Data;
+using Definitions.Database;
 
-namespace OpenLoco.Definitions.DTO
+namespace Definitions.DTO
 {
 	public class DtoObjectInterface : IDtoSubObject
 	{

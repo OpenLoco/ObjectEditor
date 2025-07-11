@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat.Objects
+namespace Dat.Objects
 {
 	[Flags]
 	public enum VehicleObjectFlags : uint16_t

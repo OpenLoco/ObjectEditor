@@ -1,6 +1,6 @@
-using OpenLoco.Dat.Objects;
+using Dat.Objects;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	public class TblObjectCurrency : DbSubObject, IConvertibleToTable<TblObjectCurrency, CurrencyObject>
 	{

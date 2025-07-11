@@ -1,15 +1,15 @@
 using Common.Json;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
+using Common.Logging;
+using Dat.Data;
+using Dat.FileParsing;
+using Dat.Objects;
+using Dat.Types;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.IO.Hashing;
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	public class ObjectIndex
 	{

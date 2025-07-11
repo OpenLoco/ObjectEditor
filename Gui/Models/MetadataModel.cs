@@ -1,11 +1,11 @@
-using OpenLoco.Definitions;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO;
+using Definitions;
+using Definitions.Database;
+using Definitions.DTO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace OpenLoco.Gui.Models
+namespace Gui.Models
 {
 	public class MetadataModel(string internalName)
 	{

@@ -4,7 +4,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.IO;
 
-namespace OpenLoco.Gui.Models
+namespace Gui.Models
 {
 	public static class G1ImageConversion
 	{

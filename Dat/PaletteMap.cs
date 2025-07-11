@@ -1,8 +1,8 @@
-using OpenLoco.Dat.Types;
+using Dat.Types;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace OpenLoco.Dat
+namespace Dat
 {
 	public enum ColourRemapSwatch
 	{

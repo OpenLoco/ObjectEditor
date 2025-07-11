@@ -1,4 +1,4 @@
-using OpenLoco.Definitions.Web;
+using Definitions.Web;
 
 namespace ObjectService.RouteHandlers
 {

@@ -1,4 +1,4 @@
-namespace OpenLoco.Common
+namespace Common
 {
 	public static class IEnumerableExtensions
 	{

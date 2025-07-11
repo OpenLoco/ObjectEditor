@@ -1,9 +1,9 @@
-using OpenLoco.Gui.Models;
+using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public record FileViewButton(ReactiveCommand<Unit, Unit> Command, string Text, string Icon);
 

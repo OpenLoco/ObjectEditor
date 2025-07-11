@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OpenLoco.Definitions.Database.Migrations
+namespace Definitions.Database.Migrations
 {
     /// <inheritdoc />
     public partial class DefaultDateTime : Migration

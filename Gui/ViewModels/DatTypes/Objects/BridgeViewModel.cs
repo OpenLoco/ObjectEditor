@@ -1,11 +1,11 @@
-using OpenLoco.Dat.Objects;
+using Dat.Objects;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
 using System.Linq;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	[Flags]
 	public enum SupportPillarSpacing : uint8_t

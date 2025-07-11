@@ -1,9 +1,9 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
+using Dat.Data;
+using Dat.Objects;
+using Dat.Types;
 using System.Reflection;
 
-namespace OpenLoco.Dat.FileParsing
+namespace Dat.FileParsing
 {
 	public static class AttributeHelper
 	{

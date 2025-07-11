@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Dat.Data;
+using Dat.Data;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	[Index(nameof(ObjectId))]
 	[Index(nameof(Text))]

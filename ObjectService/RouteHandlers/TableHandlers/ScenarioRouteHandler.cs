@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.Web;
-using OpenLoco.ObjectService;
+using Definitions.DTO;
+using Definitions.Web;
+using ObjectService;
 
 namespace ObjectService.RouteHandlers.TableHandlers
 {

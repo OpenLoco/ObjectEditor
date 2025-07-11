@@ -1,10 +1,10 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Types;
+using Dat.Data;
+using Dat.Types;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace OpenLoco.Dat.FileParsing
+namespace Dat.FileParsing
 {
 	public static class ObjectAnnotator
 	{

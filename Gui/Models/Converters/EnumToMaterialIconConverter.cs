@@ -1,11 +1,11 @@
 using Avalonia.Data.Converters;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
+using Dat.Data;
+using Dat.Objects;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace OpenLoco.Gui.Models.Converters
+namespace Gui.Models.Converters
 {
 	public class EnumToMaterialIconConverter : IValueConverter
 	{

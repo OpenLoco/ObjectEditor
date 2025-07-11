@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	[Index(nameof(DatName), nameof(DatChecksum), IsDescending = [true, false], IsUnique = true)]
 	[Index(nameof(xxHash3), IsUnique = true)]

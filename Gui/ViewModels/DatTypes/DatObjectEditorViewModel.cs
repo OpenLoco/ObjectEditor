@@ -1,12 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
-using OpenLoco.Gui.Models;
-using OpenLoco.Gui.Views;
+using Dat.Data;
+using Dat.FileParsing;
+using Dat.Objects;
+using Dat.Types;
+using Gui.Models;
+using Gui.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -18,7 +18,7 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	{

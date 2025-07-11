@@ -1,8 +1,8 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Definitions.Database;
+using Dat.Data;
+using Definitions.Database;
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.Definitions.SourceData
+namespace Definitions.SourceData
 {
 	[method: JsonConstructor]
 	public record SC5FileJsonRecord(

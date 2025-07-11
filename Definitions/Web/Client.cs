@@ -1,8 +1,8 @@
-using OpenLoco.Common.Logging;
-using OpenLoco.Definitions.DTO;
+using Common.Logging;
+using Definitions.DTO;
 using System.IO.Hashing;
 
-namespace OpenLoco.Definitions.Web
+namespace Definitions.Web
 {
 	public static class Client
 	{

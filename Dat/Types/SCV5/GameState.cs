@@ -1,8 +1,8 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
+using Dat.Data;
+using Dat.FileParsing;
 using System.ComponentModel;
 
-namespace OpenLoco.Dat.Types.SCV5
+namespace Dat.Types.SCV5
 {
 	[Flags]
 	public enum GameStateFlags : uint32_t

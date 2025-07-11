@@ -4,7 +4,7 @@
 //using Microsoft.AspNetCore.OpenApi; // Provides IOpenApiDocumentTransformer and OpenApiDocumentTransformerContext
 //using Microsoft.OpenApi.Models;
 
-//namespace OpenLoco.ObjectService
+//namespace ObjectService
 //{
 //	public class BearerSecuritySchemeTransformer : IOpenApiDocumentTransformer
 //	{

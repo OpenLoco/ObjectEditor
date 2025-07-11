@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	[Index(nameof(Name), IsUnique = true)]
 	public class TblLicence : DbReferenceObject

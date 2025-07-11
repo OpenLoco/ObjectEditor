@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	public class TblUserRole : IdentityRole<UniqueObjectId>, IHasId;
 }

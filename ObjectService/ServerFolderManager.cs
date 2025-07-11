@@ -1,7 +1,7 @@
-using OpenLoco.Common.Logging;
-using OpenLoco.Definitions.Database;
+using Common.Logging;
+using Definitions.Database;
 
-namespace OpenLoco.ObjectService
+namespace ObjectService
 {
 	public interface IServerFolderManager
 	{

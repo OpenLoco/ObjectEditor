@@ -1,4 +1,4 @@
-namespace OpenLoco.Gui.Models
+namespace Gui.Models
 {
 	public enum DatFileType
 	{

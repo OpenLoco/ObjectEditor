@@ -1,6 +1,6 @@
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat;
-using OpenLoco.Dat.FileParsing;
+using Common.Logging;
+using Dat;
+using Dat.FileParsing;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -10,7 +10,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class HexWindowViewModel : ViewModelBase
 	{

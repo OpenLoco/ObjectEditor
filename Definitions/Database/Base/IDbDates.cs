@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	public interface IDbDates
 	{

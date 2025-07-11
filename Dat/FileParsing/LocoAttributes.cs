@@ -1,6 +1,6 @@
-using OpenLoco.Dat.Data;
+using Dat.Data;
 
-namespace OpenLoco.Dat.FileParsing
+namespace Dat.FileParsing
 {
 	[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false)]
 	public class LocoArrayLengthAttribute(int length) : Attribute

@@ -3,13 +3,13 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:OpenLoco.Gui.ViewModels"
-	xmlns:moc="using:OpenLoco.Gui.Models.Converters"
+	xmlns:vm="using:Gui.ViewModels"
+	xmlns:moc="using:Gui.Models.Converters"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
-	xmlns:gui="using:OpenLoco.Gui"
+	xmlns:gui="using:Gui"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-	x:Class="OpenLoco.Gui.Views.SCV5View"
+	x:Class="Gui.Views.SCV5View"
 	x:DataType="vm:SCV5ViewModel">
 
 	<UserControl.Resources>

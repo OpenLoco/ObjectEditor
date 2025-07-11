@@ -1,5 +1,5 @@
 using DynamicData;
-using OpenLoco.Definitions.Database;
+using Definitions.Database;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class ObjectSelectionWindowViewModel : ViewModelBase
 	{

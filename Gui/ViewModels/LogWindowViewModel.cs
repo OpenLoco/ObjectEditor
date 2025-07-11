@@ -1,8 +1,8 @@
-using OpenLoco.Common.Logging;
+using Common.Logging;
 using System;
 using System.Collections.ObjectModel;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class DesignLogWindowViewModel : LogWindowViewModel
 	{

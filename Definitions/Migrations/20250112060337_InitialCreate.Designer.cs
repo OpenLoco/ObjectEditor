@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using OpenLoco.Definitions.Database;
+using Definitions.Database;
 
 #nullable disable
 
-namespace OpenLoco.Definitions.Database.Migrations
+namespace Definitions.Database.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
     [Migration("20250112060337_InitialCreate")]
@@ -20,7 +20,7 @@ namespace OpenLoco.Definitions.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
+            modelBuilder.Entity("Definitions.Database.TblAuthor", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -35,7 +35,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("Authors");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLicence", b =>
+            modelBuilder.Entity("Definitions.Database.TblLicence", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -57,7 +57,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("Licences");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>
+            modelBuilder.Entity("Definitions.Database.TblObject", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -117,7 +117,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("Objects");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectPack", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectPack", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -154,7 +154,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("ObjectPacks");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5File", b =>
+            modelBuilder.Entity("Definitions.Database.TblSC5File", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -194,7 +194,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("SC5Files");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5FilePack", b =>
+            modelBuilder.Entity("Definitions.Database.TblSC5FilePack", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -231,7 +231,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("SC5FilePacks");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblTag", b =>
+            modelBuilder.Entity("Definitions.Database.TblTag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -399,36 +399,36 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("TblSC5FileTblTag");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>
+            modelBuilder.Entity("Definitions.Database.TblObject", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
+                    b.HasOne("Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
 
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectPack", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectPack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
+                    b.HasOne("Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
 
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5File", b =>
+            modelBuilder.Entity("Definitions.Database.TblSC5File", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
+                    b.HasOne("Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
 
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5FilePack", b =>
+            modelBuilder.Entity("Definitions.Database.TblSC5FilePack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
+                    b.HasOne("Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
 
@@ -437,13 +437,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblAuthorTblObject", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                    b.HasOne("Definitions.Database.TblAuthor", null)
                         .WithMany()
                         .HasForeignKey("AuthorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -452,13 +452,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblAuthorTblObjectPack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                    b.HasOne("Definitions.Database.TblAuthor", null)
                         .WithMany()
                         .HasForeignKey("AuthorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblObjectPack", null)
+                    b.HasOne("Definitions.Database.TblObjectPack", null)
                         .WithMany()
                         .HasForeignKey("ObjectPacksId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -467,13 +467,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblAuthorTblSC5File", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                    b.HasOne("Definitions.Database.TblAuthor", null)
                         .WithMany()
                         .HasForeignKey("AuthorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5File", null)
+                    b.HasOne("Definitions.Database.TblSC5File", null)
                         .WithMany()
                         .HasForeignKey("SC5FilesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -482,13 +482,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblAuthorTblSC5FilePack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                    b.HasOne("Definitions.Database.TblAuthor", null)
                         .WithMany()
                         .HasForeignKey("AuthorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5FilePack", null)
+                    b.HasOne("Definitions.Database.TblSC5FilePack", null)
                         .WithMany()
                         .HasForeignKey("SC5FilePacksId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -497,13 +497,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblObjectPackTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObjectPack", null)
+                    b.HasOne("Definitions.Database.TblObjectPack", null)
                         .WithMany()
                         .HasForeignKey("ObjectPacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                    b.HasOne("Definitions.Database.TblTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -512,13 +512,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblObjectTblObjectPack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObjectPack", null)
+                    b.HasOne("Definitions.Database.TblObjectPack", null)
                         .WithMany()
                         .HasForeignKey("ObjectPacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -527,13 +527,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblObjectTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                    b.HasOne("Definitions.Database.TblTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -542,13 +542,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblSC5FilePackTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5FilePack", null)
+                    b.HasOne("Definitions.Database.TblSC5FilePack", null)
                         .WithMany()
                         .HasForeignKey("SC5FilePacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                    b.HasOne("Definitions.Database.TblTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -557,13 +557,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblSC5FileTblSC5FilePack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5FilePack", null)
+                    b.HasOne("Definitions.Database.TblSC5FilePack", null)
                         .WithMany()
                         .HasForeignKey("SC5FilePacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5File", null)
+                    b.HasOne("Definitions.Database.TblSC5File", null)
                         .WithMany()
                         .HasForeignKey("SC5FilesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -572,13 +572,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblSC5FileTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5File", null)
+                    b.HasOne("Definitions.Database.TblSC5File", null)
                         .WithMany()
                         .HasForeignKey("SC5FilesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                    b.HasOne("Definitions.Database.TblTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)

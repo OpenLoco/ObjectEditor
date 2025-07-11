@@ -1,7 +1,7 @@
-using OpenLoco.Definitions.Database;
+using Definitions.Database;
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.Definitions.SourceData
+namespace Definitions.SourceData
 {
 	[method: JsonConstructor]
 	public record ObjectPackJsonRecord(

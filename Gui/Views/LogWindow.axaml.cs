@@ -1,7 +1,7 @@
 using Avalonia.ReactiveUI;
-using OpenLoco.Gui.ViewModels;
+using Gui.ViewModels;
 
-namespace OpenLoco.Gui.Views
+namespace Gui.Views
 {
 	public partial class LogWindow : ReactiveWindow<LogWindowViewModel>
 	{

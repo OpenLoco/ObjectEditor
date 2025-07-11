@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat.Types
+namespace Dat.Types
 {
 	public interface IHasG1Elements
 	{

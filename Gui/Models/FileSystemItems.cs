@@ -1,10 +1,10 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
+using Dat.Data;
+using Dat.Objects;
 using System;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.Gui.Models
+namespace Gui.Models
 {
 	[Flags]
 	public enum FileLocation

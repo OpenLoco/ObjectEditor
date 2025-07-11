@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	public class AdminPolicy
 	{

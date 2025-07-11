@@ -1,7 +1,7 @@
 using NUnit.Framework;
-using OpenLoco.Gui.Models;
+using Gui.Models;
 
-namespace OpenLoco.Tests.Models
+namespace Tests.Models
 {
 	[TestFixture]
 	public class ImageTableModelTests

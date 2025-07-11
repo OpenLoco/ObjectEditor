@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.DTO.Mappers;
-using OpenLoco.Definitions.Web;
+using Definitions.Database;
+using Definitions.DTO;
+using Definitions.DTO.Mappers;
+using Definitions.Web;
 
-namespace OpenLoco.Tests.ObjectServiceIntegrationTests
+namespace Tests.ObjectServiceIntegrationTests
 {
 	[TestFixture]
 	public class LicenseRoutesTest : BaseReferenceDataTableTestFixture<DtoLicenceEntry, DtoLicenceEntry, TblLicence>

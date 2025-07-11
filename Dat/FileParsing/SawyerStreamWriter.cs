@@ -1,10 +1,10 @@
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
+using Common.Logging;
+using Dat.Data;
+using Dat.Objects;
+using Dat.Types;
 using System.Text;
 
-namespace OpenLoco.Dat.FileParsing
+namespace Dat.FileParsing
 {
 	public static class SawyerStreamWriter
 	{

@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat
+namespace Dat
 {
 	public class HexAnnotation
 	{

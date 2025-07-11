@@ -1,4 +1,4 @@
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public enum ObjectDisplayMode
 	{

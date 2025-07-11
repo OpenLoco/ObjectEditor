@@ -1,10 +1,10 @@
 using NUnit.Framework;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat.FileParsing;
+using Common.Logging;
+using Dat.FileParsing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace OpenLoco.Dat.Tests
+namespace Dat.Tests
 {
 	[TestFixture]
 	public class ImagePaletteConversionTests

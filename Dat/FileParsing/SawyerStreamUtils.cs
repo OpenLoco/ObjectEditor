@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace OpenLoco.Dat.FileParsing
+namespace Dat.FileParsing
 {
 	public static class SawyerStreamUtils
 	{

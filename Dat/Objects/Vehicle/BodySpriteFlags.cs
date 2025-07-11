@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat.Objects
+namespace Dat.Objects
 {
 	[Flags]
 	public enum BodySpriteFlags : uint8_t

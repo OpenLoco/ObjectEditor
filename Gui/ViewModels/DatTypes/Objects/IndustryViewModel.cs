@@ -1,5 +1,5 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
+using Dat.Data;
+using Dat.Objects;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 	{

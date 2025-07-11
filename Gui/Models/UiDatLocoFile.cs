@@ -1,10 +1,10 @@
-using OpenLoco.Dat.Types;
+using Dat.Types;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace OpenLoco.Gui.Models
+namespace Gui.Models
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public class UiDatLocoFile

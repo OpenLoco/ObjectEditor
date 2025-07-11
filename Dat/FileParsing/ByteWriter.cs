@@ -1,6 +1,6 @@
-using OpenLoco.Dat.Types;
+using Dat.Types;
 
-namespace OpenLoco.Dat.FileParsing
+namespace Dat.FileParsing
 {
 	public static class ByteWriter
 	{

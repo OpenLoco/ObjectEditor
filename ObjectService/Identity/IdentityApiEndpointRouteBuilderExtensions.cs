@@ -9,7 +9,7 @@
 //using Microsoft.AspNetCore.Identity.Data;
 //using Microsoft.AspNetCore.WebUtilities;
 //using Microsoft.Extensions.Options;
-//using OpenLoco.Definitions.DTO.Identity;
+//using Definitions.DTO.Identity;
 //using System.ComponentModel.DataAnnotations;
 //using System.Diagnostics;
 //using System.Security.Claims;

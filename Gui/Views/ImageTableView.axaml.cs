@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.PanAndZoom;
 using Avalonia.Input;
 
-namespace OpenLoco.Gui.Views
+namespace Gui.Views
 {
 	public partial class ImageTableView : UserControl
 	{

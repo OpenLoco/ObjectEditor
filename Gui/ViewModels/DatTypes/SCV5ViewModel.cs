@@ -1,9 +1,9 @@
 using Avalonia.Media.Imaging;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Types.SCV5;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Gui.Models;
+using Dat.Data;
+using Dat.FileParsing;
+using Dat.Types.SCV5;
+using Definitions.Database;
+using Gui.Models;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -17,7 +17,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class SCV5ViewModel : BaseLocoFileViewModel
 	{

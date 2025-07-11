@@ -1,8 +1,8 @@
 using Avalonia.ReactiveUI;
-using OpenLoco.Gui.ViewModels;
+using Gui.ViewModels;
 using ReactiveUI;
 
-namespace OpenLoco.Gui.Views
+namespace Gui.Views
 {
 	public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 	{

@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace OpenLoco.Dat.FileParsing
+namespace Dat.FileParsing
 {
 	public static class ByteHelpers
 	{

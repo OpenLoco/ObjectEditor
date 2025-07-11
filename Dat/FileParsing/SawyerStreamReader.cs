@@ -1,11 +1,11 @@
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
-using OpenLoco.Dat.Types.SCV5;
+using Common.Logging;
+using Dat.Data;
+using Dat.Objects;
+using Dat.Types;
+using Dat.Types.SCV5;
 using System.Text;
 
-namespace OpenLoco.Dat.FileParsing
+namespace Dat.FileParsing
 {
 	public static class SawyerStreamReader
 	{

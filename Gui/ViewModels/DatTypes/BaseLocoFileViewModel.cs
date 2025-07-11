@@ -1,14 +1,14 @@
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat.Data;
-using OpenLoco.Gui.Models;
+using Common.Logging;
+using Dat.Data;
+using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 	{

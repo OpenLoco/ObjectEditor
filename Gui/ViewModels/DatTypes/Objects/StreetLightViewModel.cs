@@ -1,9 +1,9 @@
-using OpenLoco.Dat.Objects;
+using Dat.Objects;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class StreetLightViewModel : LocoObjectViewModel<StreetLightObject>
 	{

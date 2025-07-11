@@ -1,7 +1,7 @@
-using OpenLoco.Gui.Models;
+using Gui.Models;
 using ReactiveUI;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class MetadataViewModel(MetadataModel metadata) : ReactiveObject
 	{

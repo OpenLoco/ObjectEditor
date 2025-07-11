@@ -1,7 +1,7 @@
-using OpenLoco.Dat.Types;
+using Dat.Types;
 using System.Text.Json.Serialization;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public record G1Element32Json(
 		[property: JsonPropertyName("path")] string Path,

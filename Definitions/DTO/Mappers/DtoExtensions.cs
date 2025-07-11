@@ -1,8 +1,8 @@
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO.Identity;
-using OpenLoco.Definitions.SourceData;
+using Definitions.Database;
+using Definitions.DTO.Identity;
+using Definitions.SourceData;
 
-namespace OpenLoco.Definitions.DTO.Mappers
+namespace Definitions.DTO.Mappers
 {
 	public static class DtoExtensions
 	{

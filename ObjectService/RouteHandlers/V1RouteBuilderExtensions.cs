@@ -1,5 +1,5 @@
 using ObjectService.RouteHandlers.TableHandlers;
-using OpenLoco.Definitions.Web;
+using Definitions.Web;
 
 namespace ObjectService.RouteHandlers
 {

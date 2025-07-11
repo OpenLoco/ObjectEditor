@@ -1,10 +1,10 @@
 using NUnit.Framework;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Types;
+using Common.Logging;
+using Dat.FileParsing;
+using Dat.Types;
 using SixLabors.ImageSharp;
 
-namespace OpenLoco.Dat.Tests
+namespace Dat.Tests
 {
 	[TestFixture]
 	public class G1Tests

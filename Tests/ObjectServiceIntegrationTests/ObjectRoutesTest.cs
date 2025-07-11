@@ -1,15 +1,15 @@
 using Common;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat.Data;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.DTO;
-using OpenLoco.Definitions.DTO.Mappers;
-using OpenLoco.Definitions.Web;
+using Common.Logging;
+using Dat.Data;
+using Definitions.Database;
+using Definitions.DTO;
+using Definitions.DTO.Mappers;
+using Definitions.Web;
 using System.IO.Hashing;
 
-namespace OpenLoco.Tests.ObjectServiceIntegrationTests
+namespace Tests.ObjectServiceIntegrationTests
 {
 	[TestFixture]
 	public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry, DtoObjectDescriptor, TblObject>

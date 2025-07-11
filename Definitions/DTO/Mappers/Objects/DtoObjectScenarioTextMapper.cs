@@ -1,6 +1,6 @@
-using OpenLoco.Definitions.Database;
+using Definitions.Database;
 
-namespace OpenLoco.Definitions.DTO.Mappers
+namespace Definitions.DTO.Mappers
 {
 	public static class DtoObjectScenarioTextMapper
 	{

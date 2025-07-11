@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using OpenLoco.Common.Logging;
+using Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui
+namespace Gui
 {
 	// For Unix-like systems (Linux, macOS)
 	static class UnixUserChecker

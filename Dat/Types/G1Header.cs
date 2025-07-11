@@ -1,7 +1,7 @@
-using OpenLoco.Dat.FileParsing;
+using Dat.FileParsing;
 using System.ComponentModel;
 
-namespace OpenLoco.Dat.Types
+namespace Dat.Types
 {
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	[LocoStructSize(0x08)]

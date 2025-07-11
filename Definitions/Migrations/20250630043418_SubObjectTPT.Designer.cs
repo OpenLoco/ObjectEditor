@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using OpenLoco.Definitions.Database;
+using Definitions.Database;
 
 #nullable disable
 
-namespace OpenLoco.Definitions.Database.Migrations
+namespace Definitions.Database.Migrations
 {
     [DbContext(typeof(LocoDbContext))]
     [Migration("20250630043418_SubObjectTPT")]
@@ -119,7 +119,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblAuthor", b =>
+            modelBuilder.Entity("Definitions.Database.TblAuthor", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -137,7 +137,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("Authors");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblDatObject", b =>
+            modelBuilder.Entity("Definitions.Database.TblDatObject", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -170,7 +170,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("DatObjects");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblLicence", b =>
+            modelBuilder.Entity("Definitions.Database.TblLicence", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -192,7 +192,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("Licences");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>
+            modelBuilder.Entity("Definitions.Database.TblObject", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -243,7 +243,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectPack", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectPack", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -280,7 +280,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("ObjectPacks");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5File", b =>
+            modelBuilder.Entity("Definitions.Database.TblSC5File", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -320,7 +320,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("SC5Files");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5FilePack", b =>
+            modelBuilder.Entity("Definitions.Database.TblSC5FilePack", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -357,7 +357,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("SC5FilePacks");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblStringTableRow", b =>
+            modelBuilder.Entity("Definitions.Database.TblStringTableRow", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -386,7 +386,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("StringTable");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblTag", b =>
+            modelBuilder.Entity("Definitions.Database.TblTag", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -404,7 +404,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblUser", b =>
+            modelBuilder.Entity("Definitions.Database.TblUser", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -474,7 +474,7 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblUserRole", b =>
+            modelBuilder.Entity("Definitions.Database.TblUserRole", b =>
                 {
                     b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
@@ -651,247 +651,247 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.ToTable("TblSC5FileTblTag");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectAirport", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectAirport", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjAirport");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectBridge", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectBridge", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjBridge");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectBuilding", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectBuilding", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjBuilding");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectCargo", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectCargo", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjCargo");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectCliffEdge", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectCliffEdge", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjCliffEdge");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectClimate", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectClimate", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjClimate");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectCompetitor", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectCompetitor", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjCompetitor");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectCurrency", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectCurrency", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjCurrency");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectDock", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectDock", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjDock");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectHillShapes", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectHillShapes", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjHillShapes");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectIndustry", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectIndustry", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjIndustry");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectInterface", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectInterface", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjInterface");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectLand", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectLand", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjLand");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectLevelCrossing", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectLevelCrossing", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjLevelCrossing");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectRegion", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectRegion", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjRegion");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectRoad", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectRoad", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjRoad");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectRoadExtra", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectRoadExtra", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjRoadExtra");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectRoadStation", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectRoadStation", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjRoadStation");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectScaffolding", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectScaffolding", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjScaffolding");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectScenarioText", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectScenarioText", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjScenarioText");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectSnow", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectSnow", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjSnow");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectSound", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectSound", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjSound");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectSteam", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectSteam", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjSteam");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectStreetLight", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectStreetLight", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjStreetLight");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTownNames", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTownNames", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjTownNames");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTrack", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTrack", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjTrack");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTrackExtra", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTrackExtra", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjTrackExtra");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTrackSignal", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTrackSignal", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjTrackSignal");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTrackStation", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTrackStation", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjTrackStation");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTree", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTree", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjTree");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTunnel", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTunnel", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjTunnel");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectVehicle", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectVehicle", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjVehicle");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectWall", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectWall", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjWall");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectWater", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectWater", b =>
                 {
-                    b.HasBaseType("OpenLoco.Definitions.Database.TblObject");
+                    b.HasBaseType("Definitions.Database.TblObject");
 
                     b.ToTable("ObjWater");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<ulong>", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblUserRole", null)
+                    b.HasOne("Definitions.Database.TblUserRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -900,7 +900,7 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<ulong>", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblUser", null)
+                    b.HasOne("Definitions.Database.TblUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -909,7 +909,7 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<ulong>", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblUser", null)
+                    b.HasOne("Definitions.Database.TblUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -918,13 +918,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<ulong>", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblUserRole", null)
+                    b.HasOne("Definitions.Database.TblUserRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblUser", null)
+                    b.HasOne("Definitions.Database.TblUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -933,16 +933,16 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<ulong>", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblUser", null)
+                    b.HasOne("Definitions.Database.TblUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblDatObject", b =>
+            modelBuilder.Entity("Definitions.Database.TblDatObject", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", "Object")
+                    b.HasOne("Definitions.Database.TblObject", "Object")
                         .WithMany("DatObjects")
                         .HasForeignKey("ObjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -951,45 +951,45 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.Navigation("Object");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>
+            modelBuilder.Entity("Definitions.Database.TblObject", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
+                    b.HasOne("Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
 
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectPack", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectPack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
+                    b.HasOne("Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
 
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5File", b =>
+            modelBuilder.Entity("Definitions.Database.TblSC5File", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
+                    b.HasOne("Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
 
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblSC5FilePack", b =>
+            modelBuilder.Entity("Definitions.Database.TblSC5FilePack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblLicence", "Licence")
+                    b.HasOne("Definitions.Database.TblLicence", "Licence")
                         .WithMany()
                         .HasForeignKey("LicenceId");
 
                     b.Navigation("Licence");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblStringTableRow", b =>
+            modelBuilder.Entity("Definitions.Database.TblStringTableRow", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", "Object")
+                    b.HasOne("Definitions.Database.TblObject", "Object")
                         .WithMany("StringTable")
                         .HasForeignKey("ObjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -998,9 +998,9 @@ namespace OpenLoco.Definitions.Database.Migrations
                     b.Navigation("Object");
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblUser", b =>
+            modelBuilder.Entity("Definitions.Database.TblUser", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", "AssociatedAuthor")
+                    b.HasOne("Definitions.Database.TblAuthor", "AssociatedAuthor")
                         .WithMany()
                         .HasForeignKey("AssociatedAuthorId");
 
@@ -1009,13 +1009,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblAuthorTblObject", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                    b.HasOne("Definitions.Database.TblAuthor", null)
                         .WithMany()
                         .HasForeignKey("AuthorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1024,13 +1024,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblAuthorTblObjectPack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                    b.HasOne("Definitions.Database.TblAuthor", null)
                         .WithMany()
                         .HasForeignKey("AuthorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblObjectPack", null)
+                    b.HasOne("Definitions.Database.TblObjectPack", null)
                         .WithMany()
                         .HasForeignKey("ObjectPacksId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1039,13 +1039,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblAuthorTblSC5File", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                    b.HasOne("Definitions.Database.TblAuthor", null)
                         .WithMany()
                         .HasForeignKey("AuthorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5File", null)
+                    b.HasOne("Definitions.Database.TblSC5File", null)
                         .WithMany()
                         .HasForeignKey("SC5FilesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1054,13 +1054,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblAuthorTblSC5FilePack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblAuthor", null)
+                    b.HasOne("Definitions.Database.TblAuthor", null)
                         .WithMany()
                         .HasForeignKey("AuthorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5FilePack", null)
+                    b.HasOne("Definitions.Database.TblSC5FilePack", null)
                         .WithMany()
                         .HasForeignKey("SC5FilePacksId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1069,13 +1069,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblObjectPackTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObjectPack", null)
+                    b.HasOne("Definitions.Database.TblObjectPack", null)
                         .WithMany()
                         .HasForeignKey("ObjectPacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                    b.HasOne("Definitions.Database.TblTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1084,13 +1084,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblObjectTblObjectPack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObjectPack", null)
+                    b.HasOne("Definitions.Database.TblObjectPack", null)
                         .WithMany()
                         .HasForeignKey("ObjectPacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1099,13 +1099,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblObjectTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithMany()
                         .HasForeignKey("ObjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                    b.HasOne("Definitions.Database.TblTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1114,13 +1114,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblSC5FilePackTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5FilePack", null)
+                    b.HasOne("Definitions.Database.TblSC5FilePack", null)
                         .WithMany()
                         .HasForeignKey("SC5FilePacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                    b.HasOne("Definitions.Database.TblTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1129,13 +1129,13 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblSC5FileTblSC5FilePack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5FilePack", null)
+                    b.HasOne("Definitions.Database.TblSC5FilePack", null)
                         .WithMany()
                         .HasForeignKey("SC5FilePacksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5File", null)
+                    b.HasOne("Definitions.Database.TblSC5File", null)
                         .WithMany()
                         .HasForeignKey("SC5FilesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1144,326 +1144,326 @@ namespace OpenLoco.Definitions.Database.Migrations
 
             modelBuilder.Entity("TblSC5FileTblTag", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblSC5File", null)
+                    b.HasOne("Definitions.Database.TblSC5File", null)
                         .WithMany()
                         .HasForeignKey("SC5FilesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OpenLoco.Definitions.Database.TblTag", null)
+                    b.HasOne("Definitions.Database.TblTag", null)
                         .WithMany()
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectAirport", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectAirport", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectAirport", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectAirport", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectBridge", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectBridge", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectBridge", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectBridge", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectBuilding", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectBuilding", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectBuilding", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectBuilding", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectCargo", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectCargo", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectCargo", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectCargo", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectCliffEdge", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectCliffEdge", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectCliffEdge", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectCliffEdge", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectClimate", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectClimate", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectClimate", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectClimate", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectCompetitor", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectCompetitor", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectCompetitor", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectCompetitor", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectCurrency", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectCurrency", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectCurrency", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectCurrency", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectDock", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectDock", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectDock", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectDock", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectHillShapes", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectHillShapes", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectHillShapes", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectHillShapes", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectIndustry", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectIndustry", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectIndustry", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectIndustry", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectInterface", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectInterface", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectInterface", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectInterface", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectLand", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectLand", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectLand", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectLand", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectLevelCrossing", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectLevelCrossing", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectLevelCrossing", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectLevelCrossing", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectRegion", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectRegion", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectRegion", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectRegion", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectRoad", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectRoad", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectRoad", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectRoad", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectRoadExtra", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectRoadExtra", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectRoadExtra", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectRoadExtra", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectRoadStation", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectRoadStation", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectRoadStation", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectRoadStation", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectScaffolding", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectScaffolding", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectScaffolding", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectScaffolding", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectScenarioText", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectScenarioText", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectScenarioText", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectScenarioText", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectSnow", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectSnow", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectSnow", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectSnow", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectSound", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectSound", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectSound", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectSound", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectSteam", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectSteam", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectSteam", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectSteam", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectStreetLight", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectStreetLight", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectStreetLight", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectStreetLight", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTownNames", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTownNames", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectTownNames", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectTownNames", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTrack", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTrack", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectTrack", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectTrack", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTrackExtra", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTrackExtra", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectTrackExtra", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectTrackExtra", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTrackSignal", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTrackSignal", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectTrackSignal", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectTrackSignal", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTrackStation", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTrackStation", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectTrackStation", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectTrackStation", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTree", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTree", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectTree", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectTree", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectTunnel", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectTunnel", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectTunnel", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectTunnel", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectVehicle", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectVehicle", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectVehicle", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectVehicle", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectWall", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectWall", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectWall", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectWall", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObjectWater", b =>
+            modelBuilder.Entity("Definitions.Database.TblObjectWater", b =>
                 {
-                    b.HasOne("OpenLoco.Definitions.Database.TblObject", null)
+                    b.HasOne("Definitions.Database.TblObject", null)
                         .WithOne()
-                        .HasForeignKey("OpenLoco.Definitions.Database.TblObjectWater", "Id")
+                        .HasForeignKey("Definitions.Database.TblObjectWater", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("OpenLoco.Definitions.Database.TblObject", b =>
+            modelBuilder.Entity("Definitions.Database.TblObject", b =>
                 {
                     b.Navigation("DatObjects");
 

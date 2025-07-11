@@ -1,7 +1,7 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
+using Dat.Data;
+using Dat.Objects;
 
-namespace OpenLoco.Definitions.Database
+namespace Definitions.Database
 {
 	public class TblObjectIndustry : DbSubObject, IConvertibleToTable<TblObjectIndustry, IndustryObject>
 	{

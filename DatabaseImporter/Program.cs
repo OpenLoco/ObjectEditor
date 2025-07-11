@@ -1,11 +1,11 @@
 using Common;
 using Common.Json;
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat.Data;
-using OpenLoco.Definitions;
-using OpenLoco.Definitions.Database;
-using OpenLoco.Definitions.SourceData;
+using Common.Logging;
+using Dat.Data;
+using Definitions;
+using Definitions.Database;
+using Definitions.SourceData;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using var db = Seed();

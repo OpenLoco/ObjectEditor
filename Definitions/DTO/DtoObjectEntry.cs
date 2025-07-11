@@ -1,8 +1,8 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Definitions.Database;
+using Dat.Data;
+using Dat.Objects;
+using Definitions.Database;
 
-namespace OpenLoco.Definitions.DTO
+namespace Definitions.DTO
 {
 	public record DtoObjectEntry(
 		UniqueObjectId Id,

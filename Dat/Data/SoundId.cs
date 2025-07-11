@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat.Data
+namespace Dat.Data
 {
 	public enum SoundId : uint16_t
 	{

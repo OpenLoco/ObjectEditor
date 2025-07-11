@@ -1,12 +1,12 @@
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Dat.Types;
-using Logger = OpenLoco.Common.Logging.Logger;
+using Dat.Data;
+using Dat.FileParsing;
+using Dat.Objects;
+using Dat.Types;
+using Logger = Common.Logging.Logger;
 
-namespace OpenLoco.Dat.Tests
+namespace Dat.Tests
 {
 	[TestFixture]
 	public class LoadSaveTests

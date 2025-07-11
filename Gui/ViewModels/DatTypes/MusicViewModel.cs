@@ -1,11 +1,11 @@
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Gui.Models;
+using Dat.Data;
+using Dat.FileParsing;
+using Gui.Models;
 using ReactiveUI.Fody.Helpers;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class MusicViewModel : BaseLocoFileViewModel
 	{

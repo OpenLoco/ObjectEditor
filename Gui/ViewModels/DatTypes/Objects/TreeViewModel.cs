@@ -1,9 +1,9 @@
-using OpenLoco.Dat.Objects;
+using Dat.Objects;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class TreeViewModel : LocoObjectViewModel<TreeObject>
 	{

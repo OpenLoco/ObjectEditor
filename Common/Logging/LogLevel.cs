@@ -1,4 +1,4 @@
-namespace OpenLoco.Common.Logging
+namespace Common.Logging
 {
 	public enum LogLevel { Debug2, Debug, Info, Warning, Error }
 }

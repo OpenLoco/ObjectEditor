@@ -1,9 +1,9 @@
 using Common.Json;
-using OpenLoco.Common;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat;
-using OpenLoco.Dat.Types;
-using OpenLoco.Gui.ViewModels;
+using Common;
+using Common.Logging;
+using Dat;
+using Dat.Types;
+using Gui.ViewModels;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -14,7 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.Models
+namespace Gui.Models
 {
 	public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, ILogger logger)
 	{

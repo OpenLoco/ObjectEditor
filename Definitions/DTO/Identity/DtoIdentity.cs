@@ -1,4 +1,4 @@
-namespace OpenLoco.Definitions.DTO.Identity
+namespace Definitions.DTO.Identity
 {
 	public record DtoRegisterRequest(string Email, string UserName, string Password);
 	public record DtoLoginRequest(string Email, string Password);

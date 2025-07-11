@@ -1,11 +1,11 @@
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Types;
+using Dat.FileParsing;
+using Dat.Types;
 using System.Text.Json;
-using Logger = OpenLoco.Common.Logging.Logger;
+using Logger = Common.Logging.Logger;
 
-namespace OpenLoco.Dat.Tests
+namespace Dat.Tests
 {
 	[TestFixture]
 	public class IdempotenceTests

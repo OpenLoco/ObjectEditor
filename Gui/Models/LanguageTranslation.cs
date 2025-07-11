@@ -1,8 +1,8 @@
-using OpenLoco.Dat.Data;
+using Dat.Data;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace OpenLoco.Gui.Models
+namespace Gui.Models
 {
 	public class LanguageTranslation(LanguageId language, string translation) : ReactiveObject
 	{

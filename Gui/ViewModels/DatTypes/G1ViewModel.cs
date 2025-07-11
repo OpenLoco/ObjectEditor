@@ -1,5 +1,5 @@
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Gui.Models;
+using Dat.FileParsing;
+using Gui.Models;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class G1ViewModel : BaseLocoFileViewModel
 	{

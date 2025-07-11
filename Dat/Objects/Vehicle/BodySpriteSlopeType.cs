@@ -1,4 +1,4 @@
-namespace OpenLoco.Dat.Objects
+namespace Dat.Objects
 {
 	public enum BodySpriteSlopeType
 	{

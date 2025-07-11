@@ -1,6 +1,6 @@
-using OpenLoco.Dat.Data;
+using Dat.Data;
 
-namespace OpenLoco.Definitions.DTO
+namespace Definitions.DTO
 {
 	public record DtoStringTableEntry(
 		UniqueObjectId Id,

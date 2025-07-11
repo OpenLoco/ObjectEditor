@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace OpenLoco.Gui.Views
+namespace Gui.Views
 {
 	public partial class DatObjectEditorView : UserControl
 	{

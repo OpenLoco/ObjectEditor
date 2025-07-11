@@ -1,4 +1,4 @@
-namespace OpenLoco.Definitions.DTO
+namespace Definitions.DTO
 {
 	public record DtoUploadDat(
 		string DatBytesAsBase64,

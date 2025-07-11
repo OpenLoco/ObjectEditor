@@ -2,12 +2,12 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-	xmlns:local="using:OpenLoco.Gui"
-	xmlns:vm="using:OpenLoco.Gui.ViewModels"
-	xmlns:vi="using:OpenLoco.Gui.Views"
-	xmlns:oldt="using:OpenLoco.Dat.Types"
+	xmlns:local="using:Gui"
+	xmlns:vm="using:Gui.ViewModels"
+	xmlns:vi="using:Gui.Views"
+	xmlns:oldt="using:Dat.Types"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
-	x:Class="OpenLoco.Gui.App"
+	x:Class="Gui.App"
 	RequestedThemeVariant="Default">
 	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 

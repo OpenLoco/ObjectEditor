@@ -1,6 +1,6 @@
-using OpenLoco.Definitions.Database;
+using Definitions.Database;
 
-namespace OpenLoco.Definitions.DTO
+namespace Definitions.DTO
 {
 	public class DtoObjectCurrency : IDtoSubObject
 	{

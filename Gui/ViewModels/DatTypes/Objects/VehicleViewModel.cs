@@ -1,4 +1,4 @@
-using OpenLoco.Dat.Objects;
+using Dat.Objects;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace OpenLoco.Gui.ViewModels
+namespace Gui.ViewModels
 {
 	public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	{

@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using OpenLoco.Common.Logging;
-using OpenLoco.Dat.Data;
-using OpenLoco.Dat.FileParsing;
-using OpenLoco.Dat.Objects;
-using OpenLoco.Definitions.Database;
+using Common.Logging;
+using Dat.Data;
+using Dat.FileParsing;
+using Dat.Objects;
+using Definitions.Database;
 using System.IO.Hashing;
 using System.Reflection;
 
@@ -252,7 +252,7 @@ async static void FixObjectDescriptions()
 					continue;
 				}
 
-				obj.Description = dat.Value.LocoObject.StringTable.Table.First().Value[OpenLoco.Dat.Data.LanguageId.English_UK];
+				obj.Description = dat.Value.LocoObject.StringTable.Table.First().Value[LanguageId.English_UK];
 			}
 			catch (Exception ex)
 			{

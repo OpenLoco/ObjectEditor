@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ObjectService.RouteHandlers;
-using OpenLoco.Dat;
-using OpenLoco.Definitions.Database;
-using OpenLoco.ObjectService;
+using Dat;
+using Definitions.Database;
+using ObjectService;
 using Scalar.AspNetCore;
 using System.Threading.RateLimiting;
 

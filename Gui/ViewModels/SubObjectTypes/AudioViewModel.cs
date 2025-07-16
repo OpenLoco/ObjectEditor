@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Common.Logging;
 using System.Reactive.Linq;
+using Avalonia.Media.Imaging;
 
 namespace Gui.ViewModels;
 
@@ -30,8 +31,7 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 	[Reactive]
 	public string SoundName { get; init; }
 
-	[Reactive, Editable(false)]
-	public string Duration { get; set; }
+	public string? Duration => $"Duration: {WaveStream?.TotalTime.ToString(@"mm\:ss\.ff")}";
 
 	[Reactive]
 	public ICommand PlaySoundCommand { get; set; }
@@ -80,7 +80,10 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 	public AudioViewModel(ILogger logger, string soundName)
 	{
 		_ = this.WhenAnyValue(o => o.WaveStream)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(Duration)));
+			.Subscribe(_ =>
+			{
+				this.RaisePropertyChanged(nameof(Duration));
+			});
 
 		Logger = logger;
 		SoundName = soundName;

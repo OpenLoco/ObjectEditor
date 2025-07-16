@@ -1,3 +1,4 @@
+
 <Window
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -111,16 +112,16 @@
 
 		<DataTemplate DataType="vm:MusicViewModel">
 			<DockPanel>
-				<ContentControl Content="{Binding SoundViewModel}" DockPanel.Dock="Left" />
+				<ContentControl Content="{Binding AudioViewModel}" DockPanel.Dock="Left" />
 				<ScrollViewer>
-					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding SoundViewModel.Header}"/>
+					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding AudioViewModel.WaveStream.WaveFormat}"/>
 				</ScrollViewer>
 			</DockPanel>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:SoundEffectsViewModel">
 			<ScrollViewer>
-				<ItemsRepeater ItemsSource="{Binding SoundViewModels}">
+				<ItemsRepeater ItemsSource="{Binding AudioViewModels}">
 					<ItemsRepeater.Layout>
 						<UniformGridLayout Orientation="Horizontal"/>
 					</ItemsRepeater.Layout>

@@ -164,9 +164,18 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 					? itnp
 					: new DefaultImageTableNameProvider();
 
-				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
-					? new AudioViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-					: new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
+				if (CurrentObject.LocoObject.Object is SoundObject soundObject)
+				{
+					ExtraContentViewModel = new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
+				}
+				else if (CurrentObject.LocoObject.Object is ImageTableViewModel imageObject)
+				{
+					ExtraContentViewModel = new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
+				}
+				else
+				{
+					throw new NotImplementedException("Unknown object type has no dedicated extra content view model");
+				}
 			}
 			else
 			{
@@ -282,13 +291,14 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 		// this is hacky but it should work
 		if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject so)
 		{
+			var ex = avm.GetAsDatWav();
 			CurrentObject.LocoObject.Object = so with
 			{
-				PcmData = avm.Data,
+				PcmData = ex.Data,
 				SoundObjectData = so.SoundObjectData with
 				{
-					PcmHeader = SawyerStreamWriter.RiffToWaveFormatEx(avm.Header),
-					Length = (uint)avm.Data.Length
+					PcmHeader = ex.Header,
+					Length = (uint)ex.Data.Length
 				}
 			};
 		}

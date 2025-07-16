@@ -19,13 +19,13 @@ public class SoundEffectsViewModel : BaseLocoFileViewModel
 	public override void Load()
 	{
 		var soundIdNames = Enum.GetValues<SoundId>();
-		SoundViewModels = SawyerStreamReader.LoadSoundEffectsFromCSS(CurrentFile.FileName)
-			.Select((x, i) => new AudioViewModel(soundIdNames[i].ToString(), x.header, x.data))
+		AudioViewModels = SawyerStreamReader.LoadSoundEffectsFromCSS(CurrentFile.FileName)
+			.Select((x, i) => new AudioViewModel(logger, soundIdNames[i].ToString(), x.header, x.data))
 			.ToBindingList();
 	}
 
 	[Reactive]
-	public BindingList<AudioViewModel> SoundViewModels { get; set; } = [];
+	public BindingList<AudioViewModel> AudioViewModels { get; set; } = [];
 
 	public override void Save()
 	{
@@ -34,7 +34,7 @@ public class SoundEffectsViewModel : BaseLocoFileViewModel
 			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 		logger?.Info($"Saving sound effects to {savePath}");
-		var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS([.. SoundViewModels.Select(x => (x.Header, x.Data))]);
+		var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS([.. AudioViewModels.Select(x => x.GetAsDatWav())]);
 		File.WriteAllBytes(savePath, bytes);
 	}
 
@@ -49,7 +49,7 @@ public class SoundEffectsViewModel : BaseLocoFileViewModel
 		var savePath = saveFile.Path.LocalPath;
 
 		logger?.Info($"Saving sound effects to {savePath}");
-		var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS([.. SoundViewModels.Select(x => (x.Header, x.Data))]);
+		var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS([.. AudioViewModels.Select(x => x.GetAsDatWav())]);
 		File.WriteAllBytes(savePath, bytes);
 	}
 }

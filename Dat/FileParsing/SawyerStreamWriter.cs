@@ -8,22 +8,22 @@ namespace Dat.FileParsing;
 
 public static class SawyerStreamWriter
 {
-	//public static RiffWavHeader WaveFormatExToRiff(LocoWaveFormat hdr, int pcmDataLength)
-	//	=> new(
-	//		0x46464952, // "RIFF"
-	//		(uint)(pcmDataLength + 36), // file size
-	//		0x45564157, // "WAVE"
-	//		0x20746d66, // "fmt "
-	//		16, // size of fmt chunk
-	//		1, // format tag
-	//		(ushort)hdr.Channels,
-	//		(uint)hdr.SampleRate,
-	//		(uint)hdr.AverageBytesPerSecond,
-	//		4, //(ushort)waveFHeader.BlockAlign,
-	//		16, //(ushort)waveFHeader.BitsPerSample,
-	//		0x61746164, // "data"
-	//		(uint)pcmDataLength // data size
-	//		);
+	public static RiffWavHeader LocoWaveFormatToRiff(LocoWaveFormat hdr, int pcmDataLength)
+		=> new(
+			0x46464952, // "RIFF"
+			(uint)(pcmDataLength + 36), // file size
+			0x45564157, // "WAVE"
+			0x20746d66, // "fmt "
+			16, // size of fmt chunk
+			1, // format tag
+			(ushort)hdr.Channels,
+			(uint)hdr.SampleRate,
+			(uint)hdr.AverageBytesPerSecond,
+			4, //(ushort)waveFHeader.BlockAlign,
+			16, //(ushort)waveFHeader.BitsPerSample,
+			0x61746164, // "data"
+			(uint)pcmDataLength // data size
+			);
 
 	//public static LocoWaveFormat RiffToWaveFormatEx(RiffWavHeader hdr)
 	//	=> new(1, (short)hdr.Channels, (int)hdr.SampleRate, (int)hdr.ByteRate, 2, 16, 0);
@@ -74,30 +74,20 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	//public static byte[] SaveMusicToDat(RiffWavHeader header, byte[] data)
-	//{
-	//	using (var ms = new MemoryStream())
-	//	using (var br = new BinaryWriter(ms))
-	//	{
-	//		br.Write(ByteWriter.WriteLocoStruct(header));
-	//		br.Write(data);
+	public static byte[] SaveMusicToDat(RiffWavHeader header, byte[] data)
+	{
+		using (var ms = new MemoryStream())
+		using (var br = new BinaryWriter(ms))
+		{
+			br.Write(ByteWriter.WriteLocoStruct(header));
+			br.Write(data);
 
-	//		ms.Flush();
-	//		ms.Close();
+			ms.Flush();
+			ms.Close();
 
-	//		return ms.ToArray();
-	//	}
-	//}
-
-	//public static void ExportMusicAsWave(string filename, RiffWavHeader header, byte[] pcmData)
-	//{
-	//	using (var stream = File.Create(filename))
-	//	{
-	//		stream.Write(ByteWriter.WriteLocoStruct(header));
-	//		stream.Write(pcmData);
-	//		stream.Flush();
-	//	}
-	//}
+			return ms.ToArray();
+		}
+	}
 
 	public static void Save(string filename, string objName, SourceGame sourceGame, SawyerEncoding encoding, ILocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
 	{

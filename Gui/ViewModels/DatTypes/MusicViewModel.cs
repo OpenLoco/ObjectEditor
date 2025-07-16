@@ -1,4 +1,5 @@
 using Dat.Data;
+using Dat.FileParsing;
 using Gui.Models;
 using ReactiveUI.Fody.Helpers;
 using System.IO;
@@ -46,8 +47,9 @@ public class MusicViewModel : BaseLocoFileViewModel
 			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 		logger?.Info($"Saving music to {savePath}");
-		//var bytes = SawyerStreamWriter.SaveMusicToDat(AudioViewModel.GetAsDatWav());
-		//File.WriteAllBytes(savePath, bytes);
+		var (header, data) = AudioViewModel.GetAsDatWav();
+		var bytes = SawyerStreamWriter.SaveMusicToDat(SawyerStreamWriter.LocoWaveFormatToRiff(header, data.Length), data);
+		File.WriteAllBytes(savePath, bytes);
 	}
 
 	public override void SaveAs()
@@ -59,8 +61,10 @@ public class MusicViewModel : BaseLocoFileViewModel
 		}
 
 		var savePath = saveFile.Path.LocalPath;
+
 		logger?.Info($"Saving music to {savePath}");
-		//var bytes = SawyerStreamWriter.SaveMusicToDat(AudioViewModel.GetAsDatWav());
-		//File.WriteAllBytes(savePath, bytes);
+		var (header, data) = AudioViewModel.GetAsDatWav();
+		var bytes = SawyerStreamWriter.SaveMusicToDat(SawyerStreamWriter.LocoWaveFormatToRiff(header, data.Length), data);
+		File.WriteAllBytes(savePath, bytes);
 	}
 }

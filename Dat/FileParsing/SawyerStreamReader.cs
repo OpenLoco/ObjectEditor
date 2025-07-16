@@ -491,30 +491,6 @@ public static class SawyerStreamReader
 			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
 		};
 
-	//public static (RiffWavHeader header, byte[] data) LoadWavFile(string filename)
-	//	=> LoadWavFile(File.ReadAllBytes(filename));
-
-	//public static (RiffWavHeader header, byte[] data) LoadWavFile(byte[] data)
-	//{
-	//	using (var ms = new MemoryStream(data))
-	//	{
-	//		return LoadWavFile(ms);
-	//	}
-	//}
-
-	//public static (RiffWavHeader header, byte[] data) LoadWavFile(Stream ms)
-	//{
-	//	using (var br = new BinaryReader(ms))
-	//	{
-	//		var headerBytes = br.ReadBytes(ObjectAttributes.StructSize<RiffWavHeader>());
-	//		var header = ByteReader.ReadLocoStruct<RiffWavHeader>(headerBytes);
-
-	//		var pcmData = new byte[header.DataLength];
-	//		_ = br.Read(pcmData);
-	//		return (header, pcmData);
-	//	}
-	//}
-
 	public static T ReadChunk<T>(ref ReadOnlySpan<byte> data) where T : class
 		=> ByteReader.ReadLocoStruct<T>(ReadChunkCore(ref data));
 

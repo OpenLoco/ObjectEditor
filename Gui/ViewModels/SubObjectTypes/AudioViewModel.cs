@@ -18,7 +18,8 @@ namespace Gui.ViewModels;
 
 public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
 {
-	public string Name => "Sound Table";
+	public string Name => "Sound Name";
+
 	ILogger Logger { get; init; }
 
 	WaveOutEvent? CurrentWOEvent { get; set; }
@@ -55,20 +56,17 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 
 	bool disposed;
 
-	//public AudioViewModel(ILogger logger, string soundName, WaveFormatEx pcmHeader, byte[] pcmData)
-	//	: this(logger, soundName, SawyerStreamWriter.WaveFormatExToRiff(pcmHeader, pcmData.Length), pcmData) { }
-
 	WaveFormat LocoWaveFormatToWaveFormat(LocoWaveFormat locoWaveFormat)
 		=> WaveFormat.CreateCustomFormat(
 			(WaveFormatEncoding)locoWaveFormat.WaveFormatTag,
 			locoWaveFormat.SampleRate,
 			locoWaveFormat.Channels,
 			locoWaveFormat.AverageBytesPerSecond,
-			4, //locoWaveFormat.BlockAlign,
+			2, //locoWaveFormat.BlockAlign,
 			16); //locoWaveFormat.BitsPerSample);
 
 	LocoWaveFormat WaveFormatToLocoWaveFormat(WaveFormat waveFormat)
-		=> new LocoWaveFormat
+		=> new()
 		{
 			WaveFormatTag = (int16_t)waveFormat.Encoding,
 			Channels = (int16_t)waveFormat.Channels,
@@ -99,11 +97,9 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 
 	public AudioViewModel(ILogger logger, string soundName, LocoWaveFormat locoWaveFormat, byte[] pcmData)
 		: this(logger, soundName)
-	{
-		WaveStream = new RawSourceWaveStream(
+		=> WaveStream = new RawSourceWaveStream(
 			new MemoryStream(pcmData),
 			LocoWaveFormatToWaveFormat(locoWaveFormat));
-	}
 
 	public (LocoWaveFormat Header, byte[] Data) GetAsDatWav()
 	{
@@ -112,6 +108,7 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 			throw new NullReferenceException(nameof(WaveStream));
 		}
 
+		WaveStream.Position = 0;
 		using var ms = new MemoryStream();
 		WaveStream?.CopyTo(ms);
 		var bytes = ms.ToArray();
@@ -240,9 +237,8 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.AudioFileExportTypes);
 		if (saveFile?.Path != null)
 		{
-			using var writer = new WaveFileWriter(saveFile.Path.LocalPath, WaveStream.WaveFormat);
-			WaveStream.CopyTo(writer);
-			writer.Flush();
+			WaveStream.Position = 0;
+			WaveFileWriter.CreateWaveFile(saveFile.Path.LocalPath, WaveStream);
 		}
 	}
 

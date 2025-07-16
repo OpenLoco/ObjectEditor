@@ -109,6 +109,65 @@
 		<DataTemplate DataType="vm:G1ViewModel">
 			<ContentControl Content="{Binding ImageTableViewModel}" />
 		</DataTemplate>
+		
+		<DataTemplate DataType="vm:AudioViewModel">
+			<Border BorderThickness="1">
+				<StackPanel Orientation="Vertical" Background="{DynamicResource ScrollBarTrackFill}">
+					<StackPanel Margin="4" Orientation="Horizontal">
+						<TextBlock Text="{Binding SoundName}" VerticalAlignment="Center" Margin="4"/>
+						<TextBlock Text="{Binding Duration}" VerticalAlignment="Center" Margin="4"/>
+					</StackPanel>
+					<OnPlatform>
+						<OnPlatform.Windows>
+							<StackPanel Orientation="Horizontal" Margin="4">
+								<Button Command="{Binding PlaySoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Play audio">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="Play" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Play</TextBlock>
+									</DockPanel>
+								</Button>
+								<Button Command="{Binding PauseSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Pause audio">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="Pause" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Pause</TextBlock>
+									</DockPanel>
+								</Button>
+								<Button Command="{Binding StopSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Stop audio">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="Stop" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Stop</TextBlock>
+									</DockPanel>
+								</Button>
+								<Button Command="{Binding ImportSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import audio">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="Import" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import</TextBlock>
+									</DockPanel>
+								</Button>
+								<Button Command="{Binding ExportSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export audio">
+									<DockPanel>
+										<materialIcons:MaterialIcon Kind="Export" Width="24" Height="24" Margin="2" />
+										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export</TextBlock>
+									</DockPanel>
+								</Button>
+							</StackPanel>
+						</OnPlatform.Windows>
+						<OnPlatform.Linux>
+							<TextBlock Margin="4">Linux audio not currently supported :(</TextBlock>
+						</OnPlatform.Linux>
+						<OnPlatform.macOS>
+							<TextBlock Margin="4">macOS audio not currently supported :(</TextBlock>
+						</OnPlatform.macOS>
+						<OnPlatform.Android>
+							<TextBlock Margin="4">Android audio not currently supported :(</TextBlock>
+						</OnPlatform.Android>
+						<OnPlatform.iOS>
+							<TextBlock Margin="4">iOS audio not currently supported :(</TextBlock>
+						</OnPlatform.iOS>
+					</OnPlatform>
+				</StackPanel>
+			</Border>
+		</DataTemplate>
 
 		<DataTemplate DataType="vm:MusicViewModel">
 			<DockPanel>
@@ -163,64 +222,6 @@
 			</ScrollViewer>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:AudioViewModel">
-			<Border BorderThickness="1">
-				<StackPanel Orientation="Vertical" Background="{DynamicResource ScrollBarTrackFill}">
-					<StackPanel Margin="4" Orientation="Horizontal">
-						<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="4"/>
-						<TextBlock Text="{Binding Duration}" VerticalAlignment="Center" Margin="4"/>
-					</StackPanel>
-					<OnPlatform>
-						<OnPlatform.Windows>
-							<StackPanel Orientation="Horizontal" Margin="4">
-								<Button Command="{Binding PlaySoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Play audio">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Play" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Play</TextBlock>
-									</DockPanel>
-								</Button>
-								<Button Command="{Binding PauseSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Pause audio">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Pause" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Pause</TextBlock>
-									</DockPanel>
-								</Button>
-								<Button Command="{Binding StopSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Stop audio">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Stop" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Stop</TextBlock>
-									</DockPanel>
-								</Button>
-								<Button Command="{Binding ImportSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import audio">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Import" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import</TextBlock>
-									</DockPanel>
-								</Button>
-								<Button Command="{Binding ExportSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export audio">
-									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Export" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export</TextBlock>
-									</DockPanel>
-								</Button>
-							</StackPanel>
-						</OnPlatform.Windows>
-						<OnPlatform.Linux>
-							<TextBlock Margin="4">Linux audio not currently supported :(</TextBlock>
-						</OnPlatform.Linux>
-						<OnPlatform.macOS>
-							<TextBlock Margin="4">macOS audio not currently supported :(</TextBlock>
-						</OnPlatform.macOS>
-						<OnPlatform.Android>
-							<TextBlock Margin="4">Android audio not currently supported :(</TextBlock>
-						</OnPlatform.Android>
-						<OnPlatform.iOS>
-							<TextBlock Margin="4">iOS audio not currently supported :(</TextBlock>
-						</OnPlatform.iOS>
-					</OnPlatform>
-				</StackPanel>
-			</Border>
-		</DataTemplate>
 
 	</Window.DataTemplates>
 

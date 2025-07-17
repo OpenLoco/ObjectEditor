@@ -114,7 +114,9 @@ public static class PlatformSpecific
 	public static readonly IReadOnlyList<FilePickerFileType> DatFileTypes = [new("Locomotion DAT Files") { Patterns = ["*.dat", "*.DAT"] }];
 	public static readonly IReadOnlyList<FilePickerFileType> PngFileTypes = [new("PNG Files") { Patterns = ["*.png", "*.PNG"] }];
 	public static readonly IReadOnlyList<FilePickerFileType> SCV5FileTypes = [new("SC5/SV5 Files") { Patterns = ["*.sc5", "*.SC5", "*.sv5", "*.SV5"] }];
-	public static readonly IReadOnlyList<FilePickerFileType> WavFileTypes = [new("WAV Files") { Patterns = ["*.wav", "*.WAV"] }];
+
+	public static readonly IReadOnlyList<FilePickerFileType> AudioFileImportTypes = [new("WAV Files") { Patterns = ["*.wav", "*.WAV"] }, new("MP3 Files") { Patterns = ["*.mp3", "*.MP3"] }];
+	public static readonly IReadOnlyList<FilePickerFileType> AudioFileExportTypes = [new("WAV Files") { Patterns = ["*.wav", "*.WAV"] }];
 
 	public static async Task<IReadOnlyList<IStorageFile>> OpenFilePicker(IReadOnlyList<FilePickerFileType> filetypes)
 	{

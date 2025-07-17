@@ -734,8 +734,8 @@ public class LoadSaveTests
 			Assert.That(struc.SoundObjectData.PcmHeader.AverageBytesPerSecond, Is.EqualTo(44100), nameof(struc.SoundObjectData.PcmHeader.AverageBytesPerSecond));
 			Assert.That(struc.SoundObjectData.PcmHeader.BitsPerSample, Is.EqualTo(4096), nameof(struc.SoundObjectData.PcmHeader.BitsPerSample));
 			Assert.That(struc.SoundObjectData.PcmHeader.BlockAlign, Is.EqualTo(512), nameof(struc.SoundObjectData.PcmHeader.BlockAlign));
-			Assert.That(struc.SoundObjectData.PcmHeader.CBSize, Is.Zero, nameof(struc.SoundObjectData.PcmHeader.CBSize));
-			Assert.That(struc.SoundObjectData.PcmHeader.NumberOfChannels, Is.EqualTo(1), nameof(struc.SoundObjectData.PcmHeader.NumberOfChannels));
+			Assert.That(struc.SoundObjectData.PcmHeader.ExtraSize, Is.Zero, nameof(struc.SoundObjectData.PcmHeader.ExtraSize));
+			Assert.That(struc.SoundObjectData.PcmHeader.Channels, Is.EqualTo(1), nameof(struc.SoundObjectData.PcmHeader.Channels));
 			Assert.That(struc.SoundObjectData.PcmHeader.SampleRate, Is.EqualTo(22050), nameof(struc.SoundObjectData.PcmHeader.SampleRate));
 			Assert.That(struc.SoundObjectData.PcmHeader.WaveFormatTag, Is.EqualTo(1), nameof(struc.SoundObjectData.PcmHeader.WaveFormatTag));
 

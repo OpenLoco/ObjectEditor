@@ -18,7 +18,7 @@ public static class OriginalDataFiles
 		{ "20s6.dat", "Sandy Track Blues" },
 		{ "40s1.dat", "A Traveller's Serenade" }, // todo: in loco its misspelt - Seranade
 		{ "40s2.dat", "Latino Trip" },
-		{ "40s3.dat", "Head To The Bop" },
+		{ "40s3.dat", "Hop To The Bop" },
 		{ "50s1.dat", "Gettin' On The Gas" },
 		{ "50s2.dat", "Jumpin' The Rails" },
 		{ "50s3.dat", "A Good Head Of Steam" },

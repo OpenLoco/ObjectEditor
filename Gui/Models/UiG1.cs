@@ -7,7 +7,7 @@ namespace Gui.Models;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class UiG1 : IUiObject
 {
-	public G1Dat G1 { get; set; }
+	public required G1Dat G1 { get; set; }
 
 	public List<G1Element32> G1Elements
 	{

@@ -2,6 +2,7 @@ using Common.Logging;
 using Dat.Data;
 using Dat.Objects;
 using Dat.Types;
+using Dat.Types.Audio;
 using Dat.Types.SCV5;
 using System.Text;
 
@@ -491,23 +492,6 @@ public static class SawyerStreamReader
 			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
 		};
 
-	public static (RiffWavHeader header, byte[] data) LoadWavFile(string filename)
-		=> LoadWavFile(File.ReadAllBytes(filename));
-
-	public static (RiffWavHeader header, byte[] data) LoadWavFile(byte[] data)
-	{
-		using (var ms = new MemoryStream(data))
-		using (var br = new BinaryReader(ms))
-		{
-			var headerBytes = br.ReadBytes(ObjectAttributes.StructSize<RiffWavHeader>());
-			var header = ByteReader.ReadLocoStruct<RiffWavHeader>(headerBytes);
-
-			var pcmData = new byte[header.DataLength];
-			_ = br.Read(pcmData);
-			return (header, pcmData);
-		}
-	}
-
 	public static T ReadChunk<T>(ref ReadOnlySpan<byte> data) where T : class
 		=> ByteReader.ReadLocoStruct<T>(ReadChunkCore(ref data));
 
@@ -523,12 +507,12 @@ public static class SawyerStreamReader
 		return Decode(chunk.Encoding, chunkBytes);
 	}
 
-	public static List<(WaveFormatEx header, byte[] data)> LoadSoundEffectsFromCSS(string filename)
+	public static List<(SoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(string filename)
 		=> LoadSoundEffectsFromCSS(File.ReadAllBytes(filename));
 
-	public static List<(WaveFormatEx header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
+	public static List<(SoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
 	{
-		var result = new List<(WaveFormatEx, byte[])>();
+		var result = new List<(SoundEffectWaveFormat, byte[])>();
 
 		using (var ms = new MemoryStream(data))
 		using (var br = new BinaryReader(ms))
@@ -545,7 +529,7 @@ public static class SawyerStreamReader
 			{
 				br.BaseStream.Position = soundOffsets[i];
 				var pcmLen = br.ReadUInt32();
-				var header = ByteReader.ReadLocoStruct<WaveFormatEx>(br.ReadBytes(ObjectAttributes.StructSize<WaveFormatEx>()));
+				var header = ByteReader.ReadLocoStruct<SoundEffectWaveFormat>(br.ReadBytes(ObjectAttributes.StructSize<SoundEffectWaveFormat>()));
 
 				var pcmData = br.ReadBytes((int)pcmLen);
 				result.Add((header, pcmData));

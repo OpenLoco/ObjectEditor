@@ -6,6 +6,7 @@ using Dat.FileParsing;
 using Dat.Objects;
 using Dat.Types;
 using Gui.Models;
+using Gui.Models.Audio;
 using Gui.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -164,9 +165,18 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 					? itnp
 					: new DefaultImageTableNameProvider();
 
-				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
-					? new AudioViewModel(CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-					: new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
+				if (CurrentObject.LocoObject.Object is SoundObject soundObject)
+				{
+					ExtraContentViewModel = new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
+				}
+				else if (CurrentObject.LocoObject.Object is ImageTableViewModel imageObject)
+				{
+					ExtraContentViewModel = new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
+				}
+				else
+				{
+					throw new NotImplementedException("Unknown object type has no dedicated extra content view model");
+				}
 			}
 			else
 			{
@@ -282,13 +292,19 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 		// this is hacky but it should work
 		if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject so)
 		{
+			var datWav = avm.GetAsDatWav(LocoAudioType.SoundEffect);
+			if (datWav == null)
+			{
+				logger.Error("AudioViewModel returned null data when trying to save as a sound object");
+				return;
+			}
 			CurrentObject.LocoObject.Object = so with
 			{
-				PcmData = avm.Data,
+				PcmData = datWav.Value.Data,
 				SoundObjectData = so.SoundObjectData with
 				{
-					PcmHeader = SawyerStreamWriter.RiffToWaveFormatEx(avm.Header),
-					Length = (uint)avm.Data.Length
+					PcmHeader = datWav.Value.Header,
+					Length = (uint)datWav.Value.Data.Length
 				}
 			};
 		}

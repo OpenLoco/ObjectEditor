@@ -1,3 +1,4 @@
+
 <Window
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -108,65 +109,12 @@
 		<DataTemplate DataType="vm:G1ViewModel">
 			<ContentControl Content="{Binding ImageTableViewModel}" />
 		</DataTemplate>
-
-		<DataTemplate DataType="vm:MusicViewModel">
-			<DockPanel>
-				<ContentControl Content="{Binding SoundViewModel}" DockPanel.Dock="Left" />
-				<ScrollViewer>
-					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding SoundViewModel.Header}"/>
-				</ScrollViewer>
-			</DockPanel>
-		</DataTemplate>
-
-		<DataTemplate DataType="vm:SoundEffectsViewModel">
-			<ScrollViewer>
-				<ItemsRepeater ItemsSource="{Binding SoundViewModels}">
-					<ItemsRepeater.Layout>
-						<UniformGridLayout Orientation="Horizontal"/>
-					</ItemsRepeater.Layout>
-					<ItemsRepeater.ItemTemplate>
-						<DataTemplate>
-							<ContentControl Content="{Binding}" Margin="4" />
-						</DataTemplate>
-					</ItemsRepeater.ItemTemplate>
-				</ItemsRepeater>
-			</ScrollViewer>
-		</DataTemplate>
-
-		<!--<DataTemplate DataType ="vm:TutorialActionB">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="{Binding Unk, StringFormat='Unk: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseX, StringFormat='X: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseY, StringFormat='Y: {0}'}" Margin="4" Width="64"></TextBlock>
-			</StackPanel>
-		</DataTemplate>-->
-
-		<!--<DataTemplate DataType ="vm:TutorialActionA">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="{Binding KeyModifier, StringFormat='Key: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseX, StringFormat='X: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseY, StringFormat='Y: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseButton, StringFormat='MButton: {0}'}" Margin="4" Width="64"></TextBlock>
-			</StackPanel>
-		</DataTemplate>-->
-
-		<DataTemplate DataType="vm:TutorialViewModel">
-			<ScrollViewer>
-				<ItemsRepeater ItemsSource="{Binding TutorialInputs}" Background="{DynamicResource ExpanderContentBackground}">
-					<ItemsRepeater.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding}"></TextBlock>
-						</DataTemplate>
-					</ItemsRepeater.ItemTemplate>
-				</ItemsRepeater>
-			</ScrollViewer>
-		</DataTemplate>
-
+		
 		<DataTemplate DataType="vm:AudioViewModel">
 			<Border BorderThickness="1">
 				<StackPanel Orientation="Vertical" Background="{DynamicResource ScrollBarTrackFill}">
 					<StackPanel Margin="4" Orientation="Horizontal">
-						<TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="4"/>
+						<TextBlock Text="{Binding SoundName}" VerticalAlignment="Center" Margin="4"/>
 						<TextBlock Text="{Binding Duration}" VerticalAlignment="Center" Margin="4"/>
 					</StackPanel>
 					<OnPlatform>
@@ -220,6 +168,60 @@
 				</StackPanel>
 			</Border>
 		</DataTemplate>
+
+		<DataTemplate DataType="vm:MusicViewModel">
+			<DockPanel>
+				<ContentControl Content="{Binding AudioViewModel}" DockPanel.Dock="Left" />
+				<ScrollViewer>
+					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding AudioViewModel.WaveStream.WaveFormat}"/>
+				</ScrollViewer>
+			</DockPanel>
+		</DataTemplate>
+
+		<DataTemplate DataType="vm:SoundEffectsViewModel">
+			<ScrollViewer>
+				<ItemsRepeater ItemsSource="{Binding AudioViewModels}">
+					<ItemsRepeater.Layout>
+						<UniformGridLayout Orientation="Horizontal"/>
+					</ItemsRepeater.Layout>
+					<ItemsRepeater.ItemTemplate>
+						<DataTemplate>
+							<ContentControl Content="{Binding}" Margin="4" />
+						</DataTemplate>
+					</ItemsRepeater.ItemTemplate>
+				</ItemsRepeater>
+			</ScrollViewer>
+		</DataTemplate>
+
+		<!--<DataTemplate DataType ="vm:TutorialActionB">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="{Binding Unk, StringFormat='Unk: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseX, StringFormat='X: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseY, StringFormat='Y: {0}'}" Margin="4" Width="64"></TextBlock>
+			</StackPanel>
+		</DataTemplate>-->
+
+		<!--<DataTemplate DataType ="vm:TutorialActionA">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="{Binding KeyModifier, StringFormat='Key: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseX, StringFormat='X: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseY, StringFormat='Y: {0}'}" Margin="4" Width="64"></TextBlock>
+				<TextBlock Text="{Binding MouseButton, StringFormat='MButton: {0}'}" Margin="4" Width="64"></TextBlock>
+			</StackPanel>
+		</DataTemplate>-->
+
+		<DataTemplate DataType="vm:TutorialViewModel">
+			<ScrollViewer>
+				<ItemsRepeater ItemsSource="{Binding TutorialInputs}" Background="{DynamicResource ExpanderContentBackground}">
+					<ItemsRepeater.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding}"></TextBlock>
+						</DataTemplate>
+					</ItemsRepeater.ItemTemplate>
+				</ItemsRepeater>
+			</ScrollViewer>
+		</DataTemplate>
+
 
 	</Window.DataTemplates>
 

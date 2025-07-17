@@ -61,7 +61,7 @@ public class G1ViewModel : BaseLocoFileViewModel
 		}
 
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
-			? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.FileName)
+			? Path.Combine(Model.Settings.CurrentObjDataDirectory, CurrentFile.FileName)
 			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 		logger?.Info($"Saving G1.dat to {savePath}");

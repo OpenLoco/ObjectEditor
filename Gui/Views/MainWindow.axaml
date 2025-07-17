@@ -238,13 +238,39 @@
 					<MenuItem Header="Open scores file (.DAT) (coming soon)" Command="{Binding OpenScores}" IsEnabled="False" HotKey="Ctrl+H" InputGesture="Ctrl+H"/>
 					<MenuItem Header="Open language file (.DAT) (coming soon)" Command="{Binding OpenLanguage}" IsEnabled="False" HotKey="Ctrl+L" InputGesture="Ctrl+L"/>
 				</MenuItem>
-				<MenuItem Header="_Objects" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
-					<MenuItem.Styles>
-						<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemViewModel">
-							<Setter Property="Header" Value="{Binding Name}"/>
-							<Setter Property="Command" Value="{Binding MenuCommand}"/>
-						</Style>
-					</MenuItem.Styles>
+				<MenuItem Header="_Objects" >
+					<MenuItem Header="Add custom folder" Command="{Binding SelectNewFolder}" />
+					<MenuItem Header="Custom folders" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
+						<MenuItem.ItemTemplate>
+							<DataTemplate>
+								<Grid ColumnDefinitions="32,*,32" RowDefinitions="Auto">
+									<materialIcons:MaterialIcon Grid.Column="0" Kind="{Binding IconName}" Width="24" Height="24" Margin="2" />
+									<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Text="{Binding Name}" Margin="2" />
+									<Button Grid.Column="2" Content="X" Margin="2" Command="{Binding DeleteCommand}" />
+								</Grid>
+							</DataTemplate>
+						</MenuItem.ItemTemplate>
+						<MenuItem.Styles>
+							<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemViewModel">
+								<Setter Property="Command" Value="{Binding MenuCommand}"/>
+							</Style>
+						</MenuItem.Styles>
+					</MenuItem>
+					<MenuItem Header="Game data folders" ItemsSource="{Binding GameObjDataItems}" Classes="SubItems" >
+						<MenuItem.ItemTemplate>
+							<DataTemplate>
+								<DockPanel>
+									<materialIcons:MaterialIcon DockPanel.Dock="Left" Kind="{Binding IconName}" Width="24" Height="24" Margin="2" />
+									<TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" Text="{Binding Name}" Margin="2" />
+								</DockPanel>
+							</DataTemplate>
+						</MenuItem.ItemTemplate>
+						<MenuItem.Styles>
+							<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemViewModel">
+								<Setter Property="Command" Value="{Binding MenuCommand}"/>
+							</Style>
+						</MenuItem.Styles>
+					</MenuItem>
 				</MenuItem>
 				<MenuItem Header="_Palette">
 					<MenuItem Header="Load default palette" Command="{Binding UseDefaultPalette}" />
@@ -264,7 +290,8 @@
 				<Panel Margin="4" Width="32"/>
 				<ToggleSwitch Margin="4" IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}" />
 			</StackPanel>
-		</DockPanel>
+		
+</DockPanel>
 		<Grid ColumnDefinitions="384, Auto, *" RowDefinitions="*">
 			<ContentControl Grid.Column="0" Content="{Binding FolderTreeViewModel}" Margin="8"/>
 			<GridSplitter Grid.Column="1" Grid.Row="1" />

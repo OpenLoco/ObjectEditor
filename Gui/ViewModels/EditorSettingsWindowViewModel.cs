@@ -22,7 +22,7 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		ServerAddressHttp = settings.ServerAddressHttp;
 		ServerAddressHttps = settings.ServerAddressHttps;
 		DownloadFolder = settings.DownloadFolder;
-		CurrentObjDataFolder = settings.ObjDataDirectory;
+		CurrentObjDataFolder = settings.CurrentObjDataDirectory;
 		ObjDataDirectories = settings.ObjDataDirectories.ToBindingList();
 
 		AppDataObjDataFolder = settings.AppDataObjDataFolder;
@@ -38,7 +38,7 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		_Settings.ServerAddressHttp = ServerAddressHttp;
 		_Settings.ServerAddressHttps = ServerAddressHttps;
 		_Settings.DownloadFolder = DownloadFolder;
-		_Settings.ObjDataDirectory = CurrentObjDataFolder;
+		_Settings.CurrentObjDataDirectory = CurrentObjDataFolder;
 		_Settings.ObjDataDirectories = [.. ObjDataDirectories];
 
 		_Settings.AppDataObjDataFolder = AppDataObjDataFolder;

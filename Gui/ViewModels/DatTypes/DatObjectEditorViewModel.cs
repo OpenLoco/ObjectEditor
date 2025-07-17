@@ -165,18 +165,9 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 					? itnp
 					: new DefaultImageTableNameProvider();
 
-				if (CurrentObject.LocoObject.Object is SoundObject soundObject)
-				{
-					ExtraContentViewModel = new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
-				}
-				else if (CurrentObject.LocoObject.Object is ImageTableViewModel imageObject)
-				{
-					ExtraContentViewModel = new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
-				}
-				else
-				{
-					throw new NotImplementedException("Unknown object type has no dedicated extra content view model");
-				}
+				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
+					? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
+					: new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
 			}
 			else
 			{

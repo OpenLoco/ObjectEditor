@@ -6,16 +6,17 @@ using Dat.Objects;
 using Definitions.Database;
 using System.IO.Hashing;
 using System.Reflection;
+using Definitions.Index;
 
 static void QueryIndustryHasShadows()
 {
 	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
-	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+	var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, dir, logger);
 
 	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
 
-	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Industry))
+	foreach (var obj in index.ObjectsIn(dir).Where(x => x.ObjectType == ObjectType.Industry))
 	{
 		try
 		{
@@ -53,11 +54,11 @@ static void QueryVehicleBodyUnkSprites()
 {
 	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
-	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+	var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, dir, logger);
 
 	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
 
-	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Vehicle))
+	foreach (var obj in index.ObjectsIn(dir).Where(x => x.ObjectType == ObjectType.Vehicle))
 	{
 		try
 		{
@@ -95,11 +96,11 @@ static void QueryCargoCategories()
 {
 	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
-	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+	var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, dir, logger);
 
 	var results = new List<(ObjectIndexEntry Obj, CargoCategory CargoCategory, string LocalisedName, ObjectSource ObjectSource)>();
 
-	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Cargo))
+	foreach (var obj in index.ObjectsIn(dir).Where(x => x.ObjectType == ObjectType.Cargo))
 	{
 		try
 		{
@@ -134,11 +135,11 @@ static void QueryCostIndices()
 {
 	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
-	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+	var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, dir, logger);
 
 	var results = new List<(ObjectIndexEntry Obj, byte CostIndex, short? RunCostIndex)>();
 
-	foreach (var obj in index.Objects)
+	foreach (var obj in index.ObjectsIn(dir))
 	{
 		try
 		{
@@ -196,7 +197,7 @@ async static void WritexxHash3()
 	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 	const string objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
-	var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
+	var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, objDirectory, logger);
 
 	var objects = await db.DatObjects.Include(x => x.Object).ToListAsync();
 
@@ -228,7 +229,7 @@ async static void FixObjectDescriptions()
 	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 	const string objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
-	var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
+	var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, objDirectory, logger);
 
 	var objects = await db.Objects
 		.Include(x => x.DatObjects)
@@ -276,7 +277,7 @@ async static void WriteStringTable()
 	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 	const string objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
-	var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
+	var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, objDirectory, logger);
 
 	var objects = await db.Objects
 		.Include(x => x.DatObjects)
@@ -370,7 +371,7 @@ async static void SetupSubObjects()
 {
 	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
 	var logger = new Logger();
-	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+	var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, dir, logger);
 	var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 
 	var objects = await db

@@ -8,6 +8,7 @@ using Definitions.Database;
 using Definitions.SourceData;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Definitions.Index;
 using var db = Seed();
 
 Console.WriteLine("done");
@@ -196,12 +197,12 @@ static void SeedDb(LocoDbContext db, bool deleteExisting)
 		Console.WriteLine("Seeding Objects");
 
 		var progress = new Progress<float>();
-		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
+		var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, objDirectory, logger, progress);
 		var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText(objectMetadataJson), jsonOptions);
 		var objectMetadataDict = objectMetadata!.ToDictionary(x => x.InternalName, x => x);
 		var gameReleaseDate = new DateOnly(2004, 09, 07);
 
-		foreach (var objIndex in index!.Objects.DistinctBy(x => (x.DisplayName, x.DatChecksum)))
+		foreach (var objIndex in index.ObjectsIn(objDirectory).DistinctBy(x => (x.DisplayName, x.DatChecksum)))
 		{
 			var metadataKey = objIndex.DisplayName; // should be InternalName
 			if (!objectMetadataDict.TryGetValue(metadataKey, out var meta))

@@ -39,6 +39,7 @@ public class MainWindowViewModel : ViewModelBase
 	[Reactive]
 	public TabViewPageViewModel CurrentTabModel { get; set; } = new();
 
+	public ObservableCollection<MenuItemViewModel> GameObjDataItems { get; init; } = [];
 	public ObservableCollection<MenuItemViewModel> ObjDataItems { get; init; } = [];
 
 	public ReactiveCommand<Unit, Unit> OpenDownloadFolder { get; }
@@ -57,7 +58,7 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Unit> ShowLogsCommand { get; }
 	public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
 
-	public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
+	public string WindowTitle => $"{Definitions.Constants.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
 	[Reactive]
 	public SemanticVersion ApplicationVersion { get; set; }
@@ -100,7 +101,7 @@ public class MainWindowViewModel : ViewModelBase
 
 		OpenSingleObject = ReactiveCommand.Create(LoadSingleObject);
 		OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder, Model.Logger));
-		OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.ProgramDataPath, Model.Logger));
+		OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Definitions.Constants.ProgramDataPath, Model.Logger));
 		OpenG1 = ReactiveCommand.Create(LoadG1);
 		OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
 		OpenMusic = ReactiveCommand.Create(LoadMusic);
@@ -117,7 +118,7 @@ public class MainWindowViewModel : ViewModelBase
 		{
 			var vm = new EditorSettingsWindowViewModel(Model.Settings);
 			var result = await OpenEditorSettingsWindow.Handle(vm);
-			Model.Settings.Save(ObjectEditorModel.SettingsFile, Model.Logger);
+			Model.Settings.Save(Definitions.Constants.EditorSettingsFile, Model.Logger);
 		});
 
 		OpenLogWindow = new();
@@ -162,36 +163,51 @@ public class MainWindowViewModel : ViewModelBase
 		#endregion
 	}
 
+	void RemoveMenuItem(string name)
+	{
+		var item = ObjDataItems.FirstOrDefault(x => x.Name == name);
+		if (item != null)
+		{
+			_ = ObjDataItems.Remove(item);
+		}
+
+		_ = Model.Settings.ObjDataDirectories.Remove(name);
+		Model.Settings.Save(Definitions.Constants.EditorSettingsFile, Model.Logger);
+	}
+
+	ReactiveCommand<Unit, Unit> CreateDeleteCommand(string name)
+		=> ReactiveCommand.Create(() => RemoveMenuItem(name));
+
 	void PopulateObjDataMenu()
 	{
+		GameObjDataItems.Clear();
 		ObjDataItems.Clear();
 
-		ObjDataItems.Add(new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
-		ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
+		var noOpCommand = ReactiveCommand.Create(() => { });
+		AddObjectFolder(GameObjDataItems, Model.Settings.AppDataObjDataFolder, "FolderAccount", GameObjDataFolder.AppData);
+		AddObjectFolder(GameObjDataItems, Model.Settings.LocomotionObjDataFolder, "Train", GameObjDataFolder.Locomotion);
+		AddObjectFolder(GameObjDataItems, Model.Settings.OpenLocoObjDataFolder, "TrainVariant", GameObjDataFolder.OpenLoco);
+		AddObjectFolder(GameObjDataItems, Model.Settings.DownloadFolder, "FolderDownload", GameObjDataFolder.Downloads);
 
-		if (Directory.Exists(Model.Settings.AppDataObjDataFolder))
+		void AddObjectFolder(ObservableCollection<MenuItemViewModel> items, string folder, string iconName, GameObjDataFolder type)
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {Model.Settings.AppDataObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.AppDataObjDataFolder)));
+			if (Directory.Exists(folder))
+			{
+				items.Add(new MenuItemViewModel(
+				$"[{type}] {folder}",
+				ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = folder),
+				iconName,
+				noOpCommand));
+			}
 		}
 
-		if (Directory.Exists(Model.Settings.LocomotionObjDataFolder))
-		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.Locomotion)}] {Model.Settings.LocomotionObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionObjDataFolder)));
-		}
-
-		if (Directory.Exists(Model.Settings.OpenLocoObjDataFolder))
-		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.OpenLoco)}] {Model.Settings.OpenLocoObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.OpenLocoObjDataFolder)));
-		}
-
-		ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
-
-		// add the rest
 		ObjDataItems.AddRange(
 			Model.Settings.ObjDataDirectories
 				.Select(x => new MenuItemViewModel(
 					x,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
+					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x),
+					"AccountBox",
+					CreateDeleteCommand(x))));
 	}
 
 	public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
@@ -374,8 +390,9 @@ public class MainWindowViewModel : ViewModelBase
 		FolderTreeViewModel.CurrentLocalDirectory = dirPath; // this will cause the reindexing
 		var menuItem = new MenuItemViewModel(
 			dirPath,
-			ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = dirPath)
-			/*ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count))*/);
+			ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = dirPath),
+			"AccountBox",
+			CreateDeleteCommand(dirPath));
 
 		ObjDataItems.Add(menuItem);
 	}

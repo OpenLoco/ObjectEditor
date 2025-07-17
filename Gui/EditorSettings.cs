@@ -1,22 +1,43 @@
 using Common.Json;
 using Common.Logging;
-using Definitions.Database;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Gui;
 
 public class EditorSettings
 {
-	public string ObjDataDirectory
+	public string AppDataObjDataFolder { get; set; } = string.Empty;
+	public string LocomotionObjDataFolder { get; set; } = string.Empty;
+	public string OpenLocoObjDataFolder { get; set; } = string.Empty;
+	public string DownloadFolder { get; set; } = string.Empty;
+
+	public string CurrentObjDataDirectory
 	{
 		get => objectDirectory;
 		set
 		{
 			objectDirectory = value;
+
+			if (objectDirectory == AppDataObjDataFolder)
+			{
+				return;
+			}
+			if (objectDirectory == LocomotionObjDataFolder)
+			{
+				return;
+			}
+			if (objectDirectory == OpenLocoObjDataFolder)
+			{
+				return;
+			}
+			if (objectDirectory == DownloadFolder)
+			{
+				return;
+			}
+
 			ObjDataDirectories ??= [];
 			_ = ObjDataDirectories.Add(objectDirectory);
 		}
@@ -39,12 +60,6 @@ public class EditorSettings
 	//public string ServerEmail { get; set; }
 	//public string ServerPassword { get; set; }
 
-	public string DownloadFolder { get; set; } = string.Empty;
-
-	public string AppDataObjDataFolder { get; set; } = string.Empty;
-	public string LocomotionObjDataFolder { get; set; } = string.Empty;
-	public string OpenLocoObjDataFolder { get; set; } = string.Empty;
-
 	public string GetGameObjDataFolder(GameObjDataFolder folder)
 		=> folder switch
 		{
@@ -54,15 +69,8 @@ public class EditorSettings
 			_ => throw new NotImplementedException(),
 		};
 
-	[JsonIgnore]
-	public string IndexFileName
-		=> GetObjDataFullPath(ObjectIndex.DefaultIndexFileName);
-
 	public string GetObjDataFullPath(string fileName)
-		=> Path.Combine(ObjDataDirectory, fileName);
-
-	[JsonIgnore]
-	public const string DefaultFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
+		=> Path.Combine(CurrentObjDataDirectory, fileName);
 
 	public static EditorSettings Load(string filename, ILogger logger)
 	{
@@ -105,15 +113,15 @@ public class EditorSettings
 
 	public bool Validate(ILogger logger)
 	{
-		if (string.IsNullOrEmpty(ObjDataDirectory))
+		if (string.IsNullOrEmpty(CurrentObjDataDirectory))
 		{
 			logger.Warning("Invalid settings file: Object directory was null or empty");
 			return false;
 		}
 
-		if (!Directory.Exists(ObjDataDirectory))
+		if (!Directory.Exists(CurrentObjDataDirectory))
 		{
-			logger.Warning($"Invalid settings file: Directory \"{ObjDataDirectory}\" does not exist");
+			logger.Warning($"Invalid settings file: Directory \"{CurrentObjDataDirectory}\" does not exist");
 			return false;
 		}
 

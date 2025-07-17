@@ -6,6 +6,7 @@ using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Comparers;
 using Definitions.DTO.Mappers;
+using Definitions.Index;
 using Definitions.Web;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
@@ -161,7 +162,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 	{
 		var objDirectory = "Q:\\Games\\Locomotion\\Server\\Objects"; // this is naughty for a test but it'll do
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
+		var index = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, objDirectory, logger);
 		_ = index.TryFind(7051740550869341430, out var entry); // randomly selected and hardcoded object
 
 		var filename = Path.Combine(objDirectory, entry.FileName);

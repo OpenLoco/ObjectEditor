@@ -1,13 +1,13 @@
 using Avalonia.Threading;
 using Common;
-using DynamicData;
 using Common.Logging;
 using Dat;
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
-using Definitions.Database;
 using Definitions.DTO;
+using Definitions.Index;
+using DynamicData;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -47,14 +47,6 @@ public class ObjectEditorModel : IDisposable
 
 	public Collection<string> MiscFiles { get; } = [];
 
-	public const string ApplicationName = "OpenLoco Object Editor";
-	public const string LoggingFileName = "objectEditor.log";
-
-	// stores settings.json, objectEditor.log, etc
-	public static string ProgramDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
-	public static string SettingsFile => Path.Combine(ProgramDataPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? EditorSettings.DefaultFileName);
-	public static string LoggingFile => Path.Combine(ProgramDataPath, LoggingFileName);
-
 	public ObservableCollection<LogLine> LoggerObservableLogs = [];
 
 	public ObjectServiceClient ObjectServiceClient { get; init; }
@@ -69,8 +61,9 @@ public class ObjectEditorModel : IDisposable
 		Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
 		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log.ToString()).ConfigureAwait(false);
 
-		LoadSettings();
-
+		Settings = EditorSettings.Load(Definitions.Constants.EditorSettingsFile, Logger);
+		ObjectIndex = ObjectIndex.LoadOrCreateIndex(Definitions.Constants.IndexFile, Logger);
+		//_ = ObjectIndex.LoadOrCreateIndexDirectory(Settings.ObjDataDirectory, Logger);
 		// settings must be loaded or else the rest of the app cannot start
 		ArgumentNullException.ThrowIfNull(Settings);
 
@@ -99,7 +92,7 @@ public class ObjectEditorModel : IDisposable
 				{
 					try
 					{
-						await File.AppendAllTextAsync(LoggingFile, logMessage + Environment.NewLine);
+						await File.AppendAllTextAsync(Definitions.Constants.LoggingFile, logMessage + Environment.NewLine);
 					}
 					catch (Exception ex)
 					{
@@ -115,25 +108,11 @@ public class ObjectEditorModel : IDisposable
 		}
 	}
 
-	void LoadSettings()
-	{
-		Settings = EditorSettings.Load(SettingsFile, Logger);
-
-		if (Settings.Validate(Logger))
-		{
-			Logger.Info("Settings loaded and validated successfully.");
-		}
-		else
-		{
-			Logger.Error("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
-		}
-	}
-
 	void InitialiseDownloadDirectory()
 	{
 		if (string.IsNullOrEmpty(Settings.DownloadFolder))
 		{
-			Settings.DownloadFolder = Path.Combine(ProgramDataPath, "downloads");
+			Settings.DownloadFolder = Definitions.Constants.DefaultDownloadsFolder;
 		}
 
 		if (!Directory.Exists(Settings.DownloadFolder))
@@ -325,7 +304,7 @@ public class ObjectEditorModel : IDisposable
 
 		var filename = File.Exists(filesystemItem.FileName)
 			? filesystemItem.FileName
-			: Path.Combine(Settings.ObjDataDirectory, filesystemItem.FileName);
+			: Path.Combine(Settings.CurrentObjDataDirectory, filesystemItem.FileName);
 
 		var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
 		if (obj != null)
@@ -396,70 +375,64 @@ public class ObjectEditorModel : IDisposable
 			return;
 		}
 
-		Settings.ObjDataDirectory = directory;
-		Settings.Save(SettingsFile, Logger);
+		Settings.CurrentObjDataDirectory = directory;
+		Settings.Save(Definitions.Constants.EditorSettingsFile, Logger);
 
-		if (useExistingIndex && File.Exists(Settings.IndexFileName))
-		{
-			var exception = false;
-
-			try
-			{
-				var index = await ObjectIndex.LoadIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-				ArgumentNullException.ThrowIfNull(index, nameof(index));
-				ObjectIndex = index;
-				Logger.Info($"Loaded index for {directory} with {ObjectIndex.Objects.Count} objects.");
-			}
-			catch (Exception ex)
-			{
-				Logger.Error(ex);
-				exception = true;
-			}
-
-			if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.FileName) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DisplayName))))
-			{
-				Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
-				await RecreateIndex(directory, progress).ConfigureAwait(false);
-				return;
-			}
-
-			var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.FileName);
-			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-
-			var a = objectIndexFilenames.Except(allFiles);
-			var b = allFiles.Except(objectIndexFilenames);
-			if (a.Any() || b.Any())
-			{
-				Logger.Warning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
-				Logger.Warning($"Objects in index but not on disk: {string.Join(',', a)}");
-				Logger.Warning($"Objects on disk but not in index: {string.Join(',', b)}");
-				await UpdateIndex(directory, progress, a.Concat(b)).ConfigureAwait(false);
-			}
-		}
-		else
+		var objects = ObjectIndex.ObjectsIn(directory);
+		if (objects == null || !useExistingIndex || !File.Exists(Definitions.Constants.IndexFile))
 		{
 			await RecreateIndex(directory, progress).ConfigureAwait(false);
+			return;
+		}
+
+		var exception = false;
+
+		try
+		{
+			var index = await ObjectIndex.LoadIndexAsync(Definitions.Constants.IndexFile).ConfigureAwait(false);
+			ArgumentNullException.ThrowIfNull(index, nameof(index));
+			ObjectIndex = index;
+			Logger.Info($"Loaded index for {directory} with {ObjectIndex.Indices.Count} objects.");
+		}
+		catch (Exception ex)
+		{
+			Logger.Error(ex);
+			exception = true;
+		}
+
+		if (exception || objects == null || objects.Any(x => string.IsNullOrEmpty(x.FileName) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DisplayName))))
+		{
+			Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
+			await RecreateIndex(directory, progress).ConfigureAwait(false);
+			return;
+		}
+
+		var objectIndexFilenames = objects.Select(x => x.FileName);
+		var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
+
+		var a = objectIndexFilenames.Except(allFiles);
+		var b = allFiles.Except(objectIndexFilenames);
+		if (a.Any() || b.Any())
+		{
+			Logger.Warning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
+			Logger.Warning($"Objects in index but not on disk: {string.Join(',', a)}");
+			Logger.Warning($"Objects on disk but not in index: {string.Join(',', b)}");
+			await UpdateIndex(directory, progress, a.Concat(b)).ConfigureAwait(false);
 		}
 
 		async Task UpdateIndex(string directory, IProgress<float> progress, IEnumerable<string> filesToAdd)
 		{
 			Logger.Info($"Updating index file for {directory}");
-			_ = ObjectIndex.UpdateIndex(directory, Logger, filesToAdd, progress);
+			_ = ObjectIndex.UpdateIndexDirectory(directory, Logger, filesToAdd, progress);
 
-			if (string.IsNullOrEmpty(Settings.IndexFileName))
-			{
-				Logger.Error("Index filename was null or empty.");
-				return;
-			}
-
-			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.Info($"Index was saved to {Settings.IndexFileName}");
+			await ObjectIndex.SaveIndexAsync(Definitions.Constants.IndexFile).ConfigureAwait(false);
+			Logger.Info($"Index was saved to {Definitions.Constants.IndexFile}");
 		}
 
 		async Task RecreateIndex(string directory, IProgress<float> progress)
 		{
 			Logger.Info($"Recreating index file for {directory}");
-			ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress).ConfigureAwait(false);
+			_ = await ObjectIndex.LoadOrCreateIndexDirectoryAsync(directory, Logger, progress).ConfigureAwait(false);
 
 			if (ObjectIndex == null)
 			{
@@ -467,27 +440,21 @@ public class ObjectEditorModel : IDisposable
 				return;
 			}
 
-			if (string.IsNullOrEmpty(Settings.IndexFileName))
-			{
-				Logger.Error("Index filename was null or empty.");
-				return;
-			}
-
-			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.Info($"New index was saved to {Settings.IndexFileName}");
+			await ObjectIndex.SaveIndexAsync(Definitions.Constants.IndexFile).ConfigureAwait(false);
+			Logger.Info($"New index was saved to {Definitions.Constants.IndexFile}");
 		}
 	}
 
 	public async Task CheckForDatFilesNotOnServer()
 	{
-		if (ObjectIndex == null || ObjectIndexOnline == null || ObjectIndexOnline.Objects.Count == 0)
+		if (ObjectIndex == null || ObjectIndexOnline == null || ObjectIndexOnline.Indices.Count == 0)
 		{
 			return;
 		}
 
 		Logger.Debug("Comparing local objects to object repository");
 
-		var localButNotOnline = ObjectIndex.Objects.ExceptBy(ObjectIndexOnline.Objects.Select(
+		var localButNotOnline = ObjectIndex.AllObjects.ExceptBy(ObjectIndexOnline.AllObjects.Select(
 			x => (x.DisplayName, x.DatChecksum)),
 			x => (x.DisplayName, x.DatChecksum)).ToList();
 
@@ -515,7 +482,7 @@ public class ObjectEditorModel : IDisposable
 	public async Task UploadDatToServer(ObjectIndexEntry dat)
 	{
 		Logger.Info($"Uploading {dat.FileName} to object repository");
-		var filename = Path.Combine(Settings.ObjDataDirectory, dat.FileName);
+		var filename = Path.Combine(Settings.CurrentObjDataDirectory, dat.FileName);
 		var creationDate = DateOnly.FromDateTime(File.GetCreationTimeUtc(filename));
 		var modifiedDate = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(filename));
 

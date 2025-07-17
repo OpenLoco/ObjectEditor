@@ -16,6 +16,7 @@ using Definitions.Web;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
 using System.IO.Hashing;
+using Definitions.Index;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
@@ -87,7 +88,6 @@ public class ObjectRouteHandler : ITableRouteHandler
 			SubObjectId = 0,
 			Licence = null,
 		};
-
 
 		_ = await db.Objects.AddAsync(tblObject);
 		_ = await db.SaveChangesAsync();
@@ -399,7 +399,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		_ = await db.SaveChangesAsync();
 
 		// update server index
-		sfm.ObjectIndex.Objects.Add(
+		sfm.ObjectIndex.ObjectsIn(sfm.ObjectsCustomFolder).Add(
 			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
 
 		_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);

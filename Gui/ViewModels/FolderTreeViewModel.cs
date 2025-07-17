@@ -3,7 +3,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using Dat.Data;
-using Definitions.Database;
+using Definitions.Index;
 using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -174,7 +174,7 @@ public class FolderTreeViewModel : ReactiveObject
 			.Subscribe(_ => UpdateDirectoryItemsView());
 
 		// loads the last-viewed folder
-		CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
+		CurrentLocalDirectory = Model.Settings.CurrentObjDataDirectory;
 	}
 
 	public static int CountNodes(FileSystemItem fib)
@@ -224,8 +224,8 @@ public class FolderTreeViewModel : ReactiveObject
 
 		await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
 		LocalDirectoryItems = ConstructTreeView(
-			Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
-			Model.Settings.ObjDataDirectory,
+			Model.ObjectIndex.ObjectsIn(directory).Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
+			Model.Settings.CurrentObjDataDirectory,
 			FilenameFilter,
 			AuthorFilter,
 			ModpackFilter,
@@ -301,7 +301,7 @@ public class FolderTreeViewModel : ReactiveObject
 
 		if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.ObjectServiceClient != null)
 		{
-			Model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
+			Model.ObjectIndexOnline = new ObjectIndex("<online>", (await Model.ObjectServiceClient.GetObjectListAsync())
 				.Select(x => new ObjectIndexEntry(
 					x.DisplayName,
 					null,
@@ -318,7 +318,7 @@ public class FolderTreeViewModel : ReactiveObject
 		if (Model.ObjectIndexOnline != null)
 		{
 			OnlineDirectoryItems = ConstructTreeView(
-				Model.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
+				Model.ObjectIndexOnline.AllObjects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes),
 				Model.Settings.DownloadFolder,
 				FilenameFilter,
 				AuthorFilter,

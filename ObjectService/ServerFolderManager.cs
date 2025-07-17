@@ -1,5 +1,5 @@
 using Common.Logging;
-using Definitions.Database;
+using Definitions.Index;
 
 namespace ObjectService;
 
@@ -57,15 +57,14 @@ public class ServerFolderManager : IServerFolderManager
 
 		var logger = new Logger();
 
-		var indexFile = Path.Combine(rootDirectory, ObjectsFolderName);
 		try
 		{
-			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
+			ObjectIndex = ObjectIndex.LoadOrCreateIndexFromDirectory(IndexFile, ObjectsFolder, logger)!;
 		}
 		catch (Exception ex)
 		{
-			File.Delete(indexFile);
-			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!; // try again, recreating the index
+			File.Delete(IndexFile);
+			ObjectIndex = ObjectIndex.LoadOrCreateIndexFromDirectory(IndexFile, ObjectsFolder, logger)!; // try again, recreating the index
 		}
 
 		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder), nameof(ObjectsOriginalFolder));
@@ -110,7 +109,7 @@ public class ServerFolderManager : IServerFolderManager
 
 	#region Objects
 
-	public string IndexFile => Path.Combine(RootDirectory, ObjectsFolderName, ObjectIndex.DefaultIndexFileName);
+	public string IndexFile => Path.Combine(RootDirectory, ObjectsFolderName, Definitions.Constants.IndexFileName);
 	public string ObjectsFolder => Path.Combine(RootDirectory, ObjectsFolderName);
 	public string ObjectsOriginalFolder => Path.Combine(ObjectsFolder, OriginalFolderName);
 	public string ObjectsCustomFolder => Path.Combine(ObjectsFolder, CustomFolderName);

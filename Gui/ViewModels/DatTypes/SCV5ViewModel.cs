@@ -2,7 +2,7 @@ using Avalonia.Media.Imaging;
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types.SCV5;
-using Definitions.Database;
+using Definitions.Index;
 using Gui.Models;
 using PropertyModels.Extensions;
 using ReactiveUI;
@@ -115,14 +115,14 @@ public class SCV5ViewModel : BaseLocoFileViewModel
 			return;
 		}
 
-		var gameFolderIndex = ObjectIndex.LoadOrCreateIndex(folder, logger);
+		var gameFolderIndex = ObjectIndex.LoadOrCreateIndexFromDirectory(Definitions.Constants.IndexFile, folder, logger);
 
 		if (Model.ObjectIndexOnline == null)
 		{
 			// need to download the index, ie call /objects/list
 			logger.Info("Online index doesn't exist - downloading now");
 
-			Model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
+			Model.ObjectIndexOnline = new ObjectIndex("<online>", (await Model.ObjectServiceClient.GetObjectListAsync())
 				.Select(x => new ObjectIndexEntry(x.DisplayName, null, x.Id, x.DatChecksum, null, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
 
 			logger.Info("Index downloaded");
@@ -136,7 +136,7 @@ public class SCV5ViewModel : BaseLocoFileViewModel
 				continue;
 			}
 
-			if (gameFolderIndex.Objects.Contains(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum))
+			if (gameFolderIndex.ObjectsIn(folder).Contains(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum))
 			{
 				continue;
 			}
@@ -145,7 +145,7 @@ public class SCV5ViewModel : BaseLocoFileViewModel
 			logger.Info($"Scenario {CurrentFile.DisplayName} has missing {obj.ObjectType} \"{obj.Name}\" with checksum {obj.Checksum}");
 
 			var onlineObj = Model.ObjectIndexOnline
-				.Objects
+				.AllObjects
 				.FirstOrDefault(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum); // ideally would be SingleOrDefault but unfortunately DAT is not unique
 
 			if (onlineObj == null)

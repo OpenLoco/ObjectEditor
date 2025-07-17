@@ -15,6 +15,7 @@ using Definitions.Web;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
 using static ObjectService.RouteHandlers.TableHandlers.V1DtoExtensions;
+using Definitions.Index;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
@@ -586,7 +587,7 @@ public class LegacyRouteHandler()
 		_ = db.DatObjects.Add(locoLookupTbl);
 		_ = await db.SaveChangesAsync();
 
-		sfm.ObjectIndex.Objects.Add(
+		sfm.ObjectIndex.ObjectsIn(sfm.ObjectsCustomFolder).Add(
 			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, locoTbl.Id, hdrs.S5.Checksum, request.xxHash3, locoTbl.ObjectType, locoTbl.ObjectSource, createdDate, modifiedDate, locoTbl.VehicleType));
 
 		return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);

@@ -1,19 +1,16 @@
+using Common.Logging;
+using Dat.Types.Audio;
+using Gui.Models.Audio;
 using NAudio.Wave;
-using Dat.FileParsing;
-using Dat.Objects;
-using Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Common.Logging;
-using System.Reactive.Linq;
-using Avalonia.Media.Imaging;
 
 namespace Gui.ViewModels;
 
@@ -56,34 +53,10 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 
 	bool disposed;
 
-	WaveFormat LocoWaveFormatToWaveFormat(LocoWaveFormat locoWaveFormat)
-		=> WaveFormat.CreateCustomFormat(
-			(WaveFormatEncoding)locoWaveFormat.WaveFormatTag,
-			locoWaveFormat.SampleRate,
-			locoWaveFormat.Channels,
-			locoWaveFormat.AverageBytesPerSecond,
-			2, //locoWaveFormat.BlockAlign,
-			16); //locoWaveFormat.BitsPerSample);
-
-	LocoWaveFormat WaveFormatToLocoWaveFormat(WaveFormat waveFormat)
-		=> new()
-		{
-			WaveFormatTag = (int16_t)waveFormat.Encoding,
-			Channels = (int16_t)waveFormat.Channels,
-			SampleRate = (int32_t)waveFormat.SampleRate,
-			AverageBytesPerSecond = (int32_t)waveFormat.AverageBytesPerSecond,
-			BlockAlign = (int16_t)waveFormat.BlockAlign,
-			BitsPerSample = (int16_t)waveFormat.BitsPerSample,
-			ExtraSize = (int16_t)waveFormat.ExtraSize
-		};
-
 	public AudioViewModel(ILogger logger, string soundName)
 	{
 		_ = this.WhenAnyValue(o => o.WaveStream)
-			.Subscribe(_ =>
-			{
-				this.RaisePropertyChanged(nameof(Duration));
-			});
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(Duration)));
 
 		Logger = logger;
 		SoundName = soundName;
@@ -98,26 +71,41 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 		: this(logger, soundName)
 		=> ImportSoundFromFile(filename);
 
-	public AudioViewModel(ILogger logger, string soundName, LocoWaveFormat locoWaveFormat, byte[] pcmData)
+	public AudioViewModel(ILogger logger, string soundName, SoundEffectWaveFormat locoWaveFormat, byte[] pcmData)
 		: this(logger, soundName)
 		=> WaveStream = new RawSourceWaveStream(
 			new MemoryStream(pcmData),
-			LocoWaveFormatToWaveFormat(locoWaveFormat));
+			AudioHelpers.SoundEffectFormatToWaveFormat(locoWaveFormat));
 
-	public (LocoWaveFormat Header, byte[] Data) GetAsDatWav()
+	// in future, this method needs to resample the audio to convert to the specific music or sfx format that loco uses
+	public (SoundEffectWaveFormat Header, byte[] Data)? GetAsDatWav(LocoAudioType format)
 	{
 		if (WaveStream == null)
 		{
-			throw new NullReferenceException(nameof(WaveStream));
+			throw new InvalidOperationException("Cannot export a null WaveStream");
 		}
 
-		WaveStream.Position = 0;
-		using var ms = new MemoryStream();
-		WaveStream?.CopyTo(ms);
-		var bytes = ms.ToArray();
-		var waveFormat = WaveFormatToLocoWaveFormat(WaveStream.WaveFormat);
-		return (waveFormat, bytes[44..]); // skip the wave header
+		try
+		{
+			CurrentWOEvent?.Stop();
+			WaveStream.Position = 0;
+
+			var outFormat = AudioHelpers.LocoAudioTypeToWaveFormat[format];
+			using var ms = new MemoryStream();
+			WaveStream.CopyTo(ms);
+			var bytes = ms.ToArray();
+			var waveFormat = AudioHelpers.WaveFormatToSoundEffectFormat(WaveStream.WaveFormat);
+			return (waveFormat, bytes[RiffHeaderSize..]); // skip the wave header
+
+		}
+		catch (Exception ex)
+		{
+			Logger.Error(ex, "Error while converting audio to Loco format");
+			return null;
+		}
 	}
+
+	const int RiffHeaderSize = 44;
 
 	public void PlaySound()
 	{
@@ -147,7 +135,7 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 			}
 		}
 
-		// do it asyncly to a) give user ui control and b) allow multiple sounds to play at once
+		// do it async to a) give user ui control and b) allow multiple sounds to play at once
 		_ = Task.Run(() =>
 		{
 			if (CurrentWOEvent?.PlaybackState == PlaybackState.Stopped)
@@ -172,7 +160,7 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 						break;
 					}
 
-					Thread.Sleep(50);
+					Thread.Sleep(100);
 				}
 			}
 
@@ -191,12 +179,11 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 		ImportSoundFromFile(fsi.FileName);
 	}
 
-	public void ImportSoundFromFile(string filename)
+	void ImportSoundFromFile(string filename)
 	{
 		// stop currently playing file
 		CurrentWOEvent?.Stop();
 		CurrentWOEvent = null;
-
 		try
 		{
 			WaveStream?.Dispose();
@@ -209,7 +196,7 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 			{
 				WaveStream = new Mp3FileReader(filename);
 			}
-			else if (extension == ".wav" || extension == ".dat")
+			else if (extension is ".wav" or ".dat")
 			{
 				WaveStream = new WaveFileReader(filename);
 			}
@@ -223,7 +210,7 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 			WaveStream.Position = 0;
 			Logger.Info($"Successfully loaded {filename}");
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
 			WaveStream?.Dispose();
 			WaveStream = null;

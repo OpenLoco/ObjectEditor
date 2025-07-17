@@ -1,6 +1,8 @@
 using Dat.Data;
 using Dat.FileParsing;
+using Dat.Types.Audio;
 using Gui.Models;
+using Gui.Models.Audio;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -14,10 +16,13 @@ namespace Gui.ViewModels;
 public class SoundEffectsViewModel : BaseLocoFileViewModel
 {
 	public SoundEffectsViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model) => Load();
+		: base(currentFile, model)
+		=> Load();
 
 	public override void Load()
 	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(CurrentFile?.FileName, nameof(CurrentFile.FileName));
+
 		var soundIdNames = Enum.GetValues<SoundId>();
 		AudioViewModels = SawyerStreamReader.LoadSoundEffectsFromCSS(CurrentFile.FileName)
 			.Select((x, i) => new AudioViewModel(logger, soundIdNames[i].ToString(), x.header, x.data))
@@ -33,23 +38,50 @@ public class SoundEffectsViewModel : BaseLocoFileViewModel
 			? CurrentFile.FileName
 			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
-		logger?.Info($"Saving sound effects to {savePath}");
-		var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS([.. AudioViewModels.Select(x => x.GetAsDatWav())]);
-		File.WriteAllBytes(savePath, bytes);
+		if (savePath == null)
+		{
+			return;
+		}
+
+		SaveCore(savePath);
 	}
 
 	public override void SaveAs()
 	{
 		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
-		if (saveFile == null)
+		var savePath = saveFile?.Path.LocalPath;
+
+		if (savePath == null)
 		{
 			return;
 		}
 
-		var savePath = saveFile.Path.LocalPath;
+		SaveCore(savePath);
+	}
 
-		logger?.Info($"Saving sound effects to {savePath}");
-		var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS([.. AudioViewModels.Select(x => x.GetAsDatWav())]);
-		File.WriteAllBytes(savePath, bytes);
+	void SaveCore(string filename)
+	{
+		logger?.Info($"Saving sound effects to {filename}");
+
+		var sfx = AudioViewModels.Select(x => (x.Name, x.GetAsDatWav(LocoAudioType.SoundEffect)));
+
+		var failed = sfx.Where(x => x.Item2 == null).ToList();
+		if (failed.Count != 0)
+		{
+			foreach (var x in failed)
+			{
+				logger?.Error($"Failed to convert sound effect {x.Name} to the DAT format.");
+			}
+
+			logger?.Error($"Failed to convert {failed.Count} sound effects to the DAT format. Cannot save file.");
+			return;
+		}
+
+		var succeeded = sfx
+			.Select(x => x.Item2)
+			.Cast<(SoundEffectWaveFormat Header, byte[] Data)>();
+
+		var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS([.. succeeded]);
+		File.WriteAllBytes(filename, bytes);
 	}
 }

@@ -1,6 +1,7 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Dat.Types.Audio;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -12,49 +13,14 @@ public record SoundObjectData(
 	[property: LocoStructOffset(0x00)] int32_t var_00,
 	[property: LocoStructOffset(0x04)] int32_t Offset,
 	[property: LocoStructOffset(0x08)] uint32_t Length,
-	[property: LocoStructOffset(0x0C)] LocoWaveFormat PcmHeader
+	[property: LocoStructOffset(0x0C)] SoundEffectWaveFormat PcmHeader
 	) : ILocoStruct
 {
-	public SoundObjectData() : this(0, 0, 0, new LocoWaveFormat())
+	public SoundObjectData() : this(0, 0, 0, new SoundEffectWaveFormat())
 	{ }
 
 	public bool Validate()
 		=> Offset >= 0;
-}
-
-[TypeConverter(typeof(ExpandableObjectConverter))]
-[LocoStructSize(0x12)]
-public record LocoWaveFormat(
-	[property: LocoStructOffset(0x00)] int16_t WaveFormatTag,
-	[property: LocoStructOffset(0x02)] int16_t Channels,
-	[property: LocoStructOffset(0x04)] int32_t SampleRate,
-	[property: LocoStructOffset(0x08)] int32_t AverageBytesPerSecond,
-	[property: LocoStructOffset(0x0B)] int16_t BlockAlign,
-	[property: LocoStructOffset(0x0D)] int16_t BitsPerSample,
-	[property: LocoStructOffset(0x010)] int16_t ExtraSize
-	) : ILocoStruct
-{
-	public LocoWaveFormat() : this(0, 0, 0, 0, 0, 0, 0)
-	{ }
-
-	public ReadOnlySpan<byte> Write()
-	{
-		using var bs = new BinaryWriter(new MemoryStream());
-
-		bs.Write(BitConverter.GetBytes(WaveFormatTag));
-		bs.Write(BitConverter.GetBytes(Channels));
-		bs.Write(BitConverter.GetBytes(SampleRate));
-		bs.Write(BitConverter.GetBytes(AverageBytesPerSecond));
-		bs.Write(BitConverter.GetBytes(BlockAlign));
-		bs.Write(BitConverter.GetBytes(BitsPerSample));
-		bs.Write(BitConverter.GetBytes(ExtraSize));
-
-		bs.Flush();
-		return ((MemoryStream)bs.BaseStream).ToArray();
-	}
-
-	public bool Validate()
-		=> true;
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]

@@ -1,10 +1,10 @@
 using Dat.FileParsing;
-using System.IO;
 
-namespace Dat.Types;
+namespace Dat.Types.Audio;
 
+// this is essentially just a RIFF WAV format header
 [LocoStructSize(0x2C)]
-public record RiffWavHeader(
+public record MusicWaveFormat(
 	[property: LocoStructOffset(0x00)] uint32_t Signature, // ASCII, "RIFF"
 	[property: LocoStructOffset(0x04)] uint32_t Size,
 	[property: LocoStructOffset(0x08)] uint32_t RiffType, // ASCII, e.g. "WAVE"

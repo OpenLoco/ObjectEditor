@@ -62,7 +62,6 @@
     <PackageReference Include="PanAndZoom" Version="11.3.0.1" />
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
     <PackageReference Include="ReactiveUI.Validation" Version="4.1.1" />
-    <PackageReference Include="System.Text.Json" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>

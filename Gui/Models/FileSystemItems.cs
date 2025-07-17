@@ -33,7 +33,6 @@ public record FileSystemItem(
 	public bool IsLeafNode
 		=> !HasChildren;
 
-
 	[JsonIgnore]
 	public string NameComputed
 		=> $"{DisplayName}{(SubNodes == null ? string.Empty : $" ({SubNodes.Count})")}"; // nested interpolated string...what have i become

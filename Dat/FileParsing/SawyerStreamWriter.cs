@@ -1,14 +1,14 @@
 using Common.Logging;
 using Dat.Data;
-using Dat.Objects;
 using Dat.Types;
+using Dat.Types.Audio;
 using System.Text;
 
 namespace Dat.FileParsing;
 
 public static class SawyerStreamWriter
 {
-	public static RiffWavHeader LocoWaveFormatToRiff(LocoWaveFormat hdr, int pcmDataLength)
+	public static MusicWaveFormat LocoWaveFormatToRiff(SoundEffectWaveFormat hdr, int pcmDataLength)
 		=> new(
 			0x46464952, // "RIFF"
 			(uint)(pcmDataLength + 36), // file size
@@ -42,7 +42,7 @@ public static class SawyerStreamWriter
 	//(uint)pcmDataLength // data size
 	//);
 
-	public static byte[] SaveSoundEffectsToCSS(List<(LocoWaveFormat locoWaveHeader, byte[] data)> sounds)
+	public static byte[] SaveSoundEffectsToCSS(List<(SoundEffectWaveFormat locoWaveHeader, byte[] data)> sounds)
 	{
 		using (var ms = new MemoryStream())
 		using (var br = new BinaryWriter(ms))
@@ -56,7 +56,7 @@ public static class SawyerStreamWriter
 			foreach (var (header, data) in sounds)
 			{
 				br.Write((uint)currOffset);
-				currOffset += 4 + data.Length + ObjectAttributes.StructSize<LocoWaveFormat>();
+				currOffset += 4 + data.Length + ObjectAttributes.StructSize<SoundEffectWaveFormat>();
 			}
 
 			// pcm data
@@ -74,7 +74,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static byte[] SaveMusicToDat(RiffWavHeader header, byte[] data)
+	public static byte[] SaveMusicToDat(MusicWaveFormat header, byte[] data)
 	{
 		using (var ms = new MemoryStream())
 		using (var br = new BinaryWriter(ms))

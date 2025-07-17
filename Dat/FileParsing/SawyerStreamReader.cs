@@ -2,6 +2,7 @@ using Common.Logging;
 using Dat.Data;
 using Dat.Objects;
 using Dat.Types;
+using Dat.Types.Audio;
 using Dat.Types.SCV5;
 using System.Text;
 
@@ -506,12 +507,12 @@ public static class SawyerStreamReader
 		return Decode(chunk.Encoding, chunkBytes);
 	}
 
-	public static List<(LocoWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(string filename)
+	public static List<(SoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(string filename)
 		=> LoadSoundEffectsFromCSS(File.ReadAllBytes(filename));
 
-	public static List<(LocoWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
+	public static List<(SoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
 	{
-		var result = new List<(LocoWaveFormat, byte[])>();
+		var result = new List<(SoundEffectWaveFormat, byte[])>();
 
 		using (var ms = new MemoryStream(data))
 		using (var br = new BinaryReader(ms))
@@ -528,7 +529,7 @@ public static class SawyerStreamReader
 			{
 				br.BaseStream.Position = soundOffsets[i];
 				var pcmLen = br.ReadUInt32();
-				var header = ByteReader.ReadLocoStruct<LocoWaveFormat>(br.ReadBytes(ObjectAttributes.StructSize<LocoWaveFormat>()));
+				var header = ByteReader.ReadLocoStruct<SoundEffectWaveFormat>(br.ReadBytes(ObjectAttributes.StructSize<SoundEffectWaveFormat>()));
 
 				var pcmData = br.ReadBytes((int)pcmLen);
 				result.Add((header, pcmData));

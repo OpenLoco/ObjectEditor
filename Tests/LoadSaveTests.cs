@@ -629,7 +629,7 @@ public class LoadSaveTests
 			Assert.That(struc.BuildCostFactor, Is.EqualTo(22), nameof(struc.BuildCostFactor));
 			// Compatible
 			Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
-			Assert.That(struc.Flags, Is.EqualTo(RoadObjectFlags.unk_00 | RoadObjectFlags.unk_02 | RoadObjectFlags.unk_03 | RoadObjectFlags.unk_04 | RoadObjectFlags.IsRoad | RoadObjectFlags.unk_07), nameof(struc.Flags));
+			Assert.That(struc.Flags, Is.EqualTo(RoadObjectFlags.IsOneWay | RoadObjectFlags.unk_02 | RoadObjectFlags.unk_03 | RoadObjectFlags.unk_04 | RoadObjectFlags.IsRoad | RoadObjectFlags.unk_07), nameof(struc.Flags));
 			Assert.That(struc.MaxSpeed, Is.EqualTo(400), nameof(struc.MaxSpeed));
 			// Mods
 			Assert.That(struc.NumBridges, Is.EqualTo(5), nameof(struc.NumBridges));

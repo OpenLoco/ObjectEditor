@@ -9,7 +9,7 @@ namespace Dat.Objects;
 public enum RoadObjectFlags : uint16_t
 {
 	None = 0,
-	unk_00 = 1 << 0,
+	IsOneWay = 1 << 0,
 	unk_01 = 1 << 1,
 	unk_02 = 1 << 2,
 	unk_03 = 1 << 3, // Likely isTram

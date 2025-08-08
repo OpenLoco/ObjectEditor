@@ -20,16 +20,16 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 1. Click `Objects` -> `Add new folder`, which will open a folder browser window
 2. Navigate to a folder that contains Locomotion object files
 3. Click `Select Folder` to close the folder browser window
-4. The tool will load all objects in that folder (recursively) and display them in the tree view on the left of the tool
+4. The editor will load all objects in that folder (recursively) and display them in the tree view on the left of the editor
 
 ## 2. Select an object to view/edit
 1. Expand the tree-view of objects to one you wish to view or edit
 2. Click on the object
-3. It will appear in the editor view on the right side of the tool
+3. It will appear in the editor view on the right side of the editor
 
 ## 3. Play
 * Edit any of the properties and save the object to use in-game
-* Export images from objects with grahics
+* Export images from objects with graphics
 
 # Features
 
@@ -101,10 +101,10 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - Feel free to inspect it and change it if necessary, or even delete it if you mess things up too much - the editor will recreate a fresh one!
 
 ## Indexing
-- When the tool first loads a directory containing objects it will scan every file to make an index and save that into `objectIndex.json` in that folder
+- When the editor first loads a directory containing objects it will scan every file to make an index and save that into `objectIndex.json` in that folder
 - This indexing is relatively slow, but only needs to run once/when the folder contents change
-- On subsequent uses of the tool, the index file will be loaded instead, and this is fast
-- The tool will print a log message if it detects changes in the folder and thinks you need to reindex it
+- On subsequent uses of the editor, the index file will be loaded instead, and this is fast
+- The editor will print a log message if it detects changes in the folder and thinks you need to reindex it
 
 ## Unit Testing
 - All object types have a unit test which

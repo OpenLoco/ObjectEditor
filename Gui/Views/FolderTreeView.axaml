@@ -20,111 +20,109 @@
 		<moc:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
 	</UserControl.Resources>
 
-	<Border BorderThickness="0" Margin="2">
-		<DockPanel Margin="2" >
-			<TabStrip DockPanel.Dock="Top"  Margin="2" SelectedIndex="{Binding SelectedTabIndex}" HorizontalAlignment="Center" Name="LocalOnlineTab">
-				<TabItem>
-					<TabItem.Header>
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="DesktopClassic" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Local" />
-						</DockPanel>
-					</TabItem.Header>
-				</TabItem>
-				<TabItem>
-					<TabItem.Header>
-						<DockPanel>
-							<materialIcons:MaterialIcon Kind="Web" Width="24" Height="24" Margin="2" />
-							<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Online" />
-						</DockPanel>
-					</TabItem.Header>
-				</TabItem>
-			</TabStrip>
-
-			<Grid Margin="8" Background="{DynamicResource ExpanderHeaderBackground}">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="*"/>
-				</Grid.RowDefinitions>
-				<DockPanel Grid.Row="0">
-					<Button Command="{Binding OpenCurrentFolder}" DockPanel.Dock="Right" MaxWidth="47" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Open folder">
+	<DockPanel >
+		<TabStrip DockPanel.Dock="Top"  Margin="2" SelectedIndex="{Binding SelectedTabIndex}" HorizontalAlignment="Center" Name="LocalOnlineTab">
+			<TabItem>
+				<TabItem.Header>
+					<DockPanel>
+						<materialIcons:MaterialIcon Kind="DesktopClassic" Width="24" Height="24" Margin="2" />
+						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Local" />
+					</DockPanel>
+				</TabItem.Header>
+			</TabItem>
+			<TabItem>
+				<TabItem.Header>
+					<DockPanel>
+						<materialIcons:MaterialIcon Kind="Web" Width="24" Height="24" Margin="2" />
+						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Online" />
+					</DockPanel>
+				</TabItem.Header>
+			</TabItem>
+		</TabStrip>
+		<Grid Background="{DynamicResource ExpanderHeaderBackground}">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+			<Border Grid.Row="0" BorderThickness="1">
+				<DockPanel>
+					<Button Command="{Binding OpenCurrentFolder}" BorderThickness="0" DockPanel.Dock="Right" MinWidth="48" MaxWidth="48" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Open folder">
 						<materialIcons:MaterialIcon Kind="FolderOpen" Width="24" Height="24" Margin="2" />
 					</Button>
-					<TextBox Text="{Binding CurrentDirectory}" DockPanel.Dock="Right" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+					<TextBox Text="{Binding CurrentDirectory}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
-				<TextBox Grid.Row="1" Text="{Binding DirectoryFileCount}" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" Margin="2"/>
-				<Button Grid.Row="2" Command="{Binding RefreshDirectoryItems}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Recreate index">
-					<DockPanel>
-						<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
-						<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
-						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding RecreateText}" />
-					</DockPanel>
-				</Button>
-				<DockPanel Grid.Row="3" Margin="2" >
-					<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
-					<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />
+			</Border>
+			<Border Grid.Row="1" BorderThickness="1">
+				<DockPanel>
+					<Button Command="{Binding RefreshDirectoryItems}" BorderThickness="0" DockPanel.Dock="Right" MinWidth="48" MaxWidth="48" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="{Binding RecreateText}">
+						<DockPanel>
+							<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
+							<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
+						</DockPanel>
+					</Button>
+					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
-				<Border Grid.Row="4" BorderThickness="1" Margin="2">
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*"/>
-							<ColumnDefinition Width="*"/>
-							<ColumnDefinition Width="*"/>
-						</Grid.ColumnDefinitions>
-						<RadioButton Grid.Column="0" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="Vanilla" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Vanilla}}"/>
-						<RadioButton Grid.Column="1" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="Custom" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Custom}}"/>
-						<RadioButton Grid.Column="2" HorizontalAlignment="Center"  GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
-					</Grid>
-				</Border>
-				<Border Grid.Row="5" BorderThickness="1" Margin="2">
-					<TreeDataGrid Source="{Binding TreeDataGridSource}">
-						<TreeDataGrid.Styles>
-							<Style Selector="TreeDataGrid TreeDataGridRow">
-								<Setter Property="Height" Value="32"/>
-							</Style>
-							<Style Selector="TreeDataGrid TreeDataGridRow:nth-child(even)">
-								<Setter Property="Background" Value="#18808080"/>
-								<!-- ARGB in hex -->
-							</Style>
-						</TreeDataGrid.Styles>
-						<TreeDataGrid.Resources>
-
-							<!-- Template for Name column cells -->
-							<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
-							<DataTemplate x:Key="Object" DataType="mo:FileSystemItem">
-								<StackPanel Orientation="Horizontal" >
-									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
-									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-									<StackPanel.ContextMenu>
-										<ContextMenu IsVisible="{Binding IsLeafNode}">
-											<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
-										</ContextMenu>
-									</StackPanel.ContextMenu>
-								</StackPanel>
-							</DataTemplate>
-
-							<!-- Edit template for Name column cells -->
-							<DataTemplate x:Key="Edit" DataType="mo:FileSystemItem">
-								<StackPanel Orientation="Horizontal" >
-									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-									<StackPanel.ContextMenu>
-										<ContextMenu IsVisible="{Binding IsLeafNode}">
-											<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
-										</ContextMenu>
-									</StackPanel.ContextMenu>
-								</StackPanel>
-							</DataTemplate>
-
-						</TreeDataGrid.Resources>
-					</TreeDataGrid>
-				</Border>
-			</Grid>
-		</DockPanel>
-	</Border>
+			</Border>
+			<DockPanel Grid.Row="2">
+				<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
+				<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />
+			</DockPanel>
+			<Border Grid.Row="3" BorderThickness="1">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="*"/>
+					</Grid.ColumnDefinitions>
+					<RadioButton Grid.Column="0" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="Vanilla" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Vanilla}}"/>
+					<RadioButton Grid.Column="1" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="Custom" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Custom}}"/>
+					<RadioButton Grid.Column="2" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
+				</Grid>
+			</Border>
+			<Border Grid.Row="4" BorderThickness="1">
+				<TreeDataGrid Source="{Binding TreeDataGridSource}">
+					<TreeDataGrid.Styles>
+						<Style Selector="TreeDataGrid TreeDataGridRow">
+							<Setter Property="Height" Value="32"/>
+						</Style>
+						<Style Selector="TreeDataGrid TreeDataGridRow:nth-child(even)">
+							<Setter Property="Background" Value="#18808080"/>
+							<!-- ARGB in hex -->
+						</Style>
+					</TreeDataGrid.Styles>
+					<TreeDataGrid.Resources>
+						<!-- Template for Name column cells -->
+						<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
+						<DataTemplate x:Key="Object" DataType="mo:FileSystemItem">
+							<StackPanel Orientation="Horizontal" >
+								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
+								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+								<StackPanel.ContextMenu>
+									<ContextMenu IsVisible="{Binding IsLeafNode}">
+										<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
+									</ContextMenu>
+								</StackPanel.ContextMenu>
+							</StackPanel>
+						</DataTemplate>
+						<!-- Edit template for Name column cells -->
+						<DataTemplate x:Key="Edit" DataType="mo:FileSystemItem">
+							<StackPanel Orientation="Horizontal" >
+								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+								<StackPanel.ContextMenu>
+									<ContextMenu IsVisible="{Binding IsLeafNode}">
+										<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
+									</ContextMenu>
+								</StackPanel.ContextMenu>
+							</StackPanel>
+						</DataTemplate>
+					</TreeDataGrid.Resources>
+				</TreeDataGrid>
+			</Border>
+		</Grid>
+	</DockPanel>
 
 </UserControl>

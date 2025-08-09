@@ -266,11 +266,11 @@
 			</StackPanel>
 		</DockPanel>
 		<Grid ColumnDefinitions="384, Auto, *" RowDefinitions="*">
-			<ContentControl Grid.Column="0" Content="{Binding FolderTreeViewModel}" Margin="8"/>
-			<GridSplitter Grid.Column="1" Grid.Row="1" />
+			<ContentControl Grid.Column="0" Content="{Binding FolderTreeViewModel}" />
+			<GridSplitter Grid.Column="1" Grid.Row="1" Margin ="4, 0, 4, 0"/>
 			<DockPanel Grid.Column="2" DataContext="{Binding CurrentTabModel}" Margin="8" >
 				<ToggleSwitch Margin="4" IsVisible="{Binding OpenInNewTabIsVisible}" DockPanel.Dock="Top" IsChecked="{Binding OpenInNewTab, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=TabAdd}" OffContent="{materialIcons:MaterialIconExt Kind=Tab}" />
-				<TabControl ItemsSource="{Binding Documents}" WrapSelection="True" SelectedItem="{Binding SelectedDocument}">
+				<TabControl ItemsSource="{Binding Documents}" WrapSelection="True" SelectedItem="{Binding SelectedDocument}" Padding="0">
 					<TabControl.Styles>
 						<Style Selector="TabItem">
 							<Setter Property="Padding" Value="2, 0, 2, 0"/>
@@ -297,7 +297,7 @@
 					</TabControl.ItemTemplate>
 					<TabControl.ContentTemplate>
 						<DataTemplate DataType="vm:ILocoFileViewModel">
-							<Border BorderThickness="1" Margin="8">
+							<Border BorderThickness="1">
 								<DockPanel>
 									<DockPanel DockPanel.Dock="Top">
 										<Button Command="{Binding ReloadCommand}" Margin="4" Padding="2" DockPanel.Dock="Left" HotKey="F5" ToolTip.Tip="(F5)">

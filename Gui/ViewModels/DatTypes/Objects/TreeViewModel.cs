@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Tree;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
@@ -22,7 +22,7 @@ public class TreeViewModel : LocoObjectViewModel<TreeObject>
 	[Reactive, Category("Building")] public int16_t DemolishRatingReduction { get; set; }
 	[Reactive, Category("<unknown>")] public uint8_t var_04 { get; set; }
 	[Reactive, Category("<unknown>")] public uint8_t var_05 { get; set; }
-	[Reactive, Category("<unknown>")] public UnkTreeFlags var_3C { get; set; }
+	[Reactive, Category("<unknown>")] public TreeFlagsUnk var_3C { get; set; }
 
 	public TreeViewModel(TreeObject to)
 	{

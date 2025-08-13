@@ -1,5 +1,4 @@
-using Dat.Objects;
-using Dat.Types;
+using Definitions.ObjectModels.Objects.Dock;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;

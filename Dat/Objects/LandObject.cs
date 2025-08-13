@@ -1,12 +1,13 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [Flags]
-public enum LandObjectFlags : uint8_t
+public enum DatLandObjectFlags : uint8_t
 {
 	None = 0,
 	unk_00 = 1 << 0,
@@ -19,13 +20,12 @@ public enum LandObjectFlags : uint8_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x1E)]
-[LocoStructType(ObjectType.Land)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Land)]
 public record LandObject(
 	[property: LocoStructOffset(0x02)] uint8_t CostIndex,
 	[property: LocoStructOffset(0x03)] uint8_t NumGrowthStages,
 	[property: LocoStructOffset(0x04)] uint8_t NumImageAngles,
-	[property: LocoStructOffset(0x05)] LandObjectFlags Flags,
+	[property: LocoStructOffset(0x05)] DatLandObjectFlags Flags,
 	[property: LocoStructOffset(0x06), Browsable(false)] object_id CliffEdgeHeader1,
 	[property: LocoStructOffset(0x07), Browsable(false), LocoPropertyMaybeUnused] object_id CliffEdgeHeader2,
 	[property: LocoStructOffset(0x08)] int16_t CostFactor,
@@ -49,7 +49,7 @@ public record LandObject(
 		remainingData = remainingData[S5Header.StructLength..];
 
 		// unused obj
-		if (Flags.HasFlag(LandObjectFlags.unk_01))
+		if (Flags.HasFlag(DatLandObjectFlags.unk_01))
 		{
 			UnkObjHeader = S5Header.Read(remainingData[..S5Header.StructLength]);
 			remainingData = remainingData[S5Header.StructLength..];
@@ -60,11 +60,11 @@ public record LandObject(
 
 	public ReadOnlySpan<byte> SaveVariable()
 	{
-		var variableDataSize = S5Header.StructLength + (Flags.HasFlag(LandObjectFlags.unk_01) ? S5Header.StructLength : 0);
+		var variableDataSize = S5Header.StructLength + (Flags.HasFlag(DatLandObjectFlags.unk_01) ? S5Header.StructLength : 0);
 		_ = new byte[variableDataSize];
 		byte[]? data = [.. CliffEdgeHeader.Write()];
 
-		if (Flags.HasFlag(LandObjectFlags.unk_01))
+		if (Flags.HasFlag(DatLandObjectFlags.unk_01))
 		{
 			UnkObjHeader.Write().CopyTo(data.AsSpan()[S5Header.StructLength..]);
 		}

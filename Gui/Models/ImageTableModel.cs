@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Definitions.ObjectModels;
 
 namespace Gui.Models;
 
@@ -158,7 +159,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 			{
 				var is1Pixel = string.IsNullOrEmpty(offset.Path);
 				var img = is1Pixel ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
-				var newOffset = is1Pixel ? offset with { Flags = G1ElementFlags.HasTransparency } : offset;
+				var newOffset = is1Pixel ? offset with { Flags = DatG1ElementFlags.HasTransparency } : offset;
 				var g1Element32 = G1Element32FromImage(newOffset, img);
 
 				G1Provider.G1Elements.Add(g1Element32);
@@ -172,10 +173,10 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 			Logger.Error(ex);
 		}
 
-		G1Element32 G1Element32FromImage(G1Element32Json ele, Image<Rgba32> img)
+		DatG1Element32 G1Element32FromImage(G1Element32Json ele, Image<Rgba32> img)
 		{
-			var flags = ele.Flags ?? G1ElementFlags.None;
-			return new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, ele.XOffset, ele.YOffset, flags, ele.ZoomOffset ?? 0)
+			var flags = ele.Flags ?? DatG1ElementFlags.None;
+			return new DatG1Element32(0, (int16_t)img.Width, (int16_t)img.Height, ele.XOffset, ele.YOffset, flags, ele.ZoomOffset ?? 0)
 			{
 				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags)
 			};
@@ -184,7 +185,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 
 	static readonly Image<Rgba32> OnePixelTransparent = new(1, 1, PaletteMap.Transparent.Color);
 
-	public void UpdateImage(string filename, int index, G1ElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
+	public void UpdateImage(string filename, int index, DatG1ElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
 	{
 		if (string.IsNullOrEmpty(filename))
 		{
@@ -202,7 +203,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 		UpdateImage(img, index, flags, xOffset, yOffset, zoomOffset);
 	}
 
-	public void UpdateImage(Image<Rgba32> img, int index, G1ElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
+	public void UpdateImage(Image<Rgba32> img, int index, DatG1ElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
 	{
 		if (index == -1)
 		{

@@ -2,6 +2,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Dat.Types.Audio;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -25,8 +26,7 @@ public record SoundObjectData(
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x0C)]
-[LocoStructType(ObjectType.Sound)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Sound)]
 public record SoundObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), Browsable(false)] uint32_t SoundObjectDataPtr,

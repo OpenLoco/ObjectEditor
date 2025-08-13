@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Snow;
 
 namespace Definitions.Database;
 

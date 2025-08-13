@@ -1,4 +1,5 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Road;
+using Definitions.ObjectModels.Objects.RoadStation;
 
 namespace Definitions.Database;
 

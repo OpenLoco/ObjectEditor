@@ -1,8 +1,9 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Track;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.Linq;
+using TrackObject = Definitions.ObjectModels.Objects.Track.TrackObject;
 
 namespace Gui.ViewModels;
 
@@ -13,16 +14,16 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 	[Reactive, EnumProhibitValues<TrackTraitFlags>(TrackTraitFlags.None)] public TrackTraitFlags StationTrackPieces { get; set; }
 	[Reactive] public Speed16 CurveSpeed { get; set; }
 	[Reactive] public uint8_t DisplayOffset { get; set; }
-	[Reactive] public S5HeaderViewModel CompatibleTunnel { get; set; }
+	[Reactive] public ObjectModelHeaderViewModel CompatibleTunnel { get; set; }
 	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t TunnelCostFactor { get; set; }
 	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Reactive, Category("Tracks and Roads")] public BindingList<S5HeaderViewModel> CompatibleTracksAndRoads { get; set; }
-	[Reactive, Category("Mods")] public BindingList<S5HeaderViewModel> CompatibleTrackExtras { get; set; }
-	[Reactive, Category("Signals")] public BindingList<S5HeaderViewModel> CompatibleSignals { get; set; }
-	[Reactive, Category("Bridges")] public BindingList<S5HeaderViewModel> CompatibleBridges { get; set; }
-	[Reactive, Category("Stations")] public BindingList<S5HeaderViewModel> CompatibleStations { get; set; }
+	[Reactive, Category("Tracks and Roads")] public BindingList<ObjectModelHeaderViewModel> CompatibleTracksAndRoads { get; set; }
+	[Reactive, Category("Mods")] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackExtras { get; set; }
+	[Reactive, Category("Signals")] public BindingList<ObjectModelHeaderViewModel> CompatibleSignals { get; set; }
+	[Reactive, Category("Bridges")] public BindingList<ObjectModelHeaderViewModel> CompatibleBridges { get; set; }
+	[Reactive, Category("Stations")] public BindingList<ObjectModelHeaderViewModel> CompatibleStations { get; set; }
 	[Reactive, Category("<unknown>")] public uint8_t var_06 { get; set; }
 
 	public TrackViewModel(TrackObject to)

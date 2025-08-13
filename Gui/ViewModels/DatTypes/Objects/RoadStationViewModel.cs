@@ -1,4 +1,5 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Road;
+using Definitions.ObjectModels.Objects.RoadStation;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
@@ -17,7 +18,7 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleRoadObjects { get; set; }
+	[Reactive, Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
 
 	public RoadStationViewModel(RoadStationObject ro)
 	{

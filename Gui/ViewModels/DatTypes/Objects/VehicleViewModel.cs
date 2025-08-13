@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Vehicle;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -21,11 +21,11 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 	[Reactive, Category("Stats")] public uint8_t Reliability { get; set; }
 	[Reactive, EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None)] public VehicleObjectFlags Flags { get; set; }
-	[Reactive] public S5HeaderViewModel? TrackType { get; set; }
-	[Reactive] public S5HeaderViewModel? RackRail { get; set; }
+	[Reactive] public ObjectModelHeaderViewModel? TrackType { get; set; }
+	[Reactive] public ObjectModelHeaderViewModel? RackRail { get; set; }
 	[Reactive, Range(0, 4)] public uint8_t NumCarComponents { get; set; }
-	[Reactive, Length(0, 8)] public BindingList<S5HeaderViewModel> CompatibleVehicles { get; set; }
-	[Reactive, Length(0, 4)] public BindingList<S5HeaderViewModel> RequiredTrackExtras { get; set; }
+	[Reactive, Length(0, 8)] public BindingList<ObjectModelHeaderViewModel> CompatibleVehicles { get; set; }
+	[Reactive, Length(0, 4)] public BindingList<ObjectModelHeaderViewModel> RequiredTrackExtras { get; set; }
 	[Reactive, Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")] public uint8_t ShipWakeOffset { get; set; }
 	[Reactive, Category("Cost"), Range(0, 32)] public uint8_t CostIndex { get; set; }
 	[Reactive, Category("Cost"), Range(1, int16_t.MaxValue)] public int16_t CostFactor { get; set; }
@@ -36,21 +36,21 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	[Reactive, Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; set; }
 	[Reactive, Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; set; }
 	[Reactive, Category("Sprites"), Editable(false)] public BindingList<SimpleAnimation> Animation { get; set; }
-	[Reactive, Category("Sprites")] public BindingList<S5HeaderViewModel> AnimationHeaders { get; set; }
+	[Reactive, Category("Sprites")] public BindingList<ObjectModelHeaderViewModel> AnimationHeaders { get; set; }
 	//[Reactive, Category("Cargo")] public BindingList<uint8_t> MaxCargo { get; set; }
 	//[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories1 { get; set; }
 	//[Reactive, Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories2 { get; set; }
 	[Reactive, Category("Cargo")] public CompatibleCargo CompatibleCargo1 { get; set; }
 	[Reactive, Category("Cargo")] public CompatibleCargo CompatibleCargo2 { get; set; }
 	[Reactive, Category("Cargo"), Length(0, 32)] public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; set; } // this is a dictionary type
-	[Reactive, Category("Sound")] public S5HeaderViewModel? Sound { get; set; }
+	[Reactive, Category("Sound")] public ObjectModelHeaderViewModel? Sound { get; set; }
 	[Reactive, Category("Sound")] public DrivingSoundType SoundType { get; set; }
 	// SoundPropertiesData
 	// these next 3 properties are a union in the dat file
 	[Reactive, Category("Sound")] public FrictionSound? FrictionSound { get; set; }
 	[Reactive, Category("Sound")] public SimpleMotorSound? SimpleMotorSound { get; set; }
 	[Reactive, Category("Sound")] public GearboxMotorSound? GearboxMotorSound { get; set; }
-	[Reactive, Category("Sound")] public BindingList<S5HeaderViewModel> StartSounds { get; set; }
+	[Reactive, Category("Sound")] public BindingList<ObjectModelHeaderViewModel> StartSounds { get; set; }
 
 	public VehicleViewModel(VehicleObject vo)
 	{
@@ -139,11 +139,11 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public record CargoTypeSpriteOffset(CargoCategory CargoCategory, uint8_t Offset)
+public record CargoTypeSpriteOffset(DatCargoCategory CargoCategory, uint8_t Offset)
 {
-	public CargoTypeSpriteOffset() : this(CargoCategory.NULL, 0)
+	public CargoTypeSpriteOffset() : this(DatCargoCategory.NULL, 0)
 	{ }
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public record CompatibleCargo(uint8_t MaxCargo, BindingList<CargoCategory> CompatibleCargoCategories);
+public record CompatibleCargo(uint8_t MaxCargo, BindingList<DatCargoCategory> CompatibleCargoCategories);

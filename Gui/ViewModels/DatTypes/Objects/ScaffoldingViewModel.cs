@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Scaffolding;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;

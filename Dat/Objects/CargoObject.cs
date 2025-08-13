@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace Dat.Objects;
 
 [Flags]
-public enum CargoObjectFlags : uint8_t
+public enum DatCargoObjectFlags : uint8_t
 {
 	None = 0,
 	unk0 = 1 << 0,
@@ -15,7 +15,7 @@ public enum CargoObjectFlags : uint8_t
 	Delivering = 1 << 2,
 }
 
-public enum CargoCategory : uint16_t
+public enum DatCargoCategory : uint16_t
 {
 	None = 0,
 	Grain = 1,
@@ -37,8 +37,7 @@ public enum CargoCategory : uint16_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x1F)]
-[LocoStructType(ObjectType.Cargo)]
-[LocoStringTable("Name", "UnitsAndCargoName", "UnitNameSingular", "UnitNamePlural")]
+[LocoStructType(DatObjectType.Cargo)]
 public record CargoObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint16_t var_02,
@@ -47,8 +46,8 @@ public record CargoObject(
 	[property: LocoStructOffset(0x08), LocoString, Browsable(false)] string_id UnitNameSingular,
 	[property: LocoStructOffset(0x0A), LocoString, Browsable(false)] string_id UnitNamePlural,
 	[property: LocoStructOffset(0x0C), Browsable(false)] image_id UnitInlineSprite,
-	[property: LocoStructOffset(0x10)] CargoCategory CargoCategory,
-	[property: LocoStructOffset(0x12)] CargoObjectFlags Flags,
+	[property: LocoStructOffset(0x10)] DatCargoCategory CargoCategory,
+	[property: LocoStructOffset(0x12)] DatCargoObjectFlags Flags,
 	[property: LocoStructOffset(0x13)] uint8_t NumPlatformVariations,
 	[property: LocoStructOffset(0x14)] uint8_t StationCargoDensity,
 	[property: LocoStructOffset(0x15)] uint8_t PremiumDays,

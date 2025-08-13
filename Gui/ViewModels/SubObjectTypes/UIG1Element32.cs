@@ -10,10 +10,10 @@ public record UIG1Element32(
 	[ReadOnly(true)] int16_t Height,
 	int16_t XOffset,
 	int16_t YOffset,
-	G1ElementFlags Flags,
+	DatG1ElementFlags Flags,
 	int16_t ZoomOffset)
 {
-	public UIG1Element32(int imageIndex, string imageName, G1Element32 g1Element32)
+	public UIG1Element32(int imageIndex, string imageName, DatG1Element32 g1Element32)
 		: this(
 			imageIndex,
 			imageName,

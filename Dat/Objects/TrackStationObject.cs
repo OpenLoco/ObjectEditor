@@ -1,12 +1,30 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [Flags]
-public enum TrackStationObjectFlags : uint8_t
+public enum DatTrackTraitFlags : uint16_t
+{
+	None = 0,
+	Diagonal = 1 << 0,
+	LargeCurve = 1 << 1,
+	NormalCurve = 1 << 2,
+	SmallCurve = 1 << 3,
+	VerySmallCurve = 1 << 4,
+	Slope = 1 << 5,
+	SteepSlope = 1 << 6,
+	OneSided = 1 << 7,
+	SlopedCurve = 1 << 8,
+	SBend = 1 << 9,
+	Junction = 1 << 10,
+}
+
+[Flags]
+public enum DatTrackStationObjectFlags : uint8_t
 {
 	None = 0,
 	Recolourable = 1 << 0,
@@ -28,18 +46,17 @@ public record CargoOffset(
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0xAE)]
-[LocoStructType(ObjectType.TrackStation)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.TrackStation)]
 public record TrackStationObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
 	[property: LocoStructOffset(0x03)] uint8_t Height,
-	[property: LocoStructOffset(0x04)] TrackTraitFlags TrackPieces,
+	[property: LocoStructOffset(0x04)] DatTrackTraitFlags TrackPieces,
 	[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
 	[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 	[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
 	[property: LocoStructOffset(0x0B)] uint8_t var_0B,
-	[property: LocoStructOffset(0x0C)] TrackStationObjectFlags Flags,
+	[property: LocoStructOffset(0x0C)] DatTrackStationObjectFlags Flags,
 	[property: LocoStructOffset(0x0D)] uint8_t var_0D,
 	[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)] image_id Image,
 	[property: LocoStructOffset(0x12), LocoArrayLength(TrackStationObject.MaxImageOffsets), Browsable(false)] uint32_t[] ImageOffsets,

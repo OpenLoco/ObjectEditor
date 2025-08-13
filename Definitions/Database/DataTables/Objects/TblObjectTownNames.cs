@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.TownNames;
 
 namespace Definitions.Database;
 

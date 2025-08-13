@@ -1,14 +1,13 @@
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x06)]
-[LocoStructType(ObjectType.ScenarioText)]
-[LocoStringTable("Name", "Details")]
+[LocoStructType(DatObjectType.ScenarioText)]
 public record ScenarioTextObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id Details,

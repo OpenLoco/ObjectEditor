@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Bridge;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -35,8 +35,8 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 	[Reactive, Category("Cost")] public int16_t BaseCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t HeightCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleTrackObjects { get; set; }
-	[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleRoadObjects { get; set; }
+	[Reactive, Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
+	[Reactive, Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
 	[Reactive, Category("<unknown>")] public uint8_t var_03 { get; set; }
 
 	public BridgeViewModel(BridgeObject bo)

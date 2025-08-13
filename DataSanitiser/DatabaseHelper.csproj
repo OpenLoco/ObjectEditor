@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
+    <ProjectReference Include="..\Index\Index.csproj" />
   </ItemGroup>
 
 </Project>

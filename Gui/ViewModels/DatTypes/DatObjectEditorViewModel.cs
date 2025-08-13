@@ -5,6 +5,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Objects;
 using Dat.Types;
+using Definitions.ObjectModels;
 using Gui.Models;
 using Gui.Models.Audio;
 using Gui.Views;
@@ -33,7 +34,7 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	public IExtraContentViewModel? ExtraContentViewModel { get; set; }
 
 	[Reactive]
-	public S5HeaderViewModel? S5HeaderViewModel { get; set; }
+	public ObjectModelHeaderViewModel? S5HeaderViewModel { get; set; }
 
 	[Reactive]
 	public ObjectHeaderViewModel? ObjectHeaderViewModel { get; set; }
@@ -177,7 +178,7 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 
 			if (CurrentObject != null)
 			{
-				S5HeaderViewModel = new S5HeaderViewModel(CurrentObject.DatFileInfo.S5Header);
+				S5HeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatFileInfo.S5Header);
 				ObjectHeaderViewModel = new ObjectHeaderViewModel(CurrentObject.DatFileInfo.ObjectHeader);
 			}
 
@@ -302,7 +303,7 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 
 		SawyerStreamWriter.Save(filename,
 			S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
-			S5HeaderViewModel?.SourceGame ?? CurrentObject.DatFileInfo.S5Header.SourceGame,
+			S5HeaderViewModel?.ObjectSource ?? CurrentObject.DatFileInfo.S5Header.ObjectSource,
 			encodingToUse ?? ObjectHeaderViewModel?.Encoding ?? SawyerEncoding.Uncompressed,
 			CurrentObject.LocoObject,
 			logger,

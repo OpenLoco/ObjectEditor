@@ -1,18 +1,18 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x15E)]
-[LocoStructType(ObjectType.Vehicle)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Vehicle)]
 public record VehicleObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] TransportMode Mode,
-	[property: LocoStructOffset(0x03)] VehicleType Type,
+	[property: LocoStructOffset(0x02)] DatTransportMode Mode,
+	[property: LocoStructOffset(0x03)] DatVehicleType Type,
 	[property: LocoStructOffset(0x04)] uint8_t NumCarComponents,
 	[property: LocoStructOffset(0x05), LocoStructVariableLoad, Browsable(false)] object_id TrackTypeId,
 	[property: LocoStructOffset(0x06)] uint8_t NumRequiredTrackExtras,
@@ -21,7 +21,7 @@ public record VehicleObject(
 	[property: LocoStructOffset(0x0A)] uint8_t Reliability,
 	[property: LocoStructOffset(0x0B)] uint8_t RunCostIndex,
 	[property: LocoStructOffset(0x0C)] int16_t RunCostFactor,
-	[property: LocoStructOffset(0x0E)] CompanyColourType SpecialColourSchemeIndex, // this is an instance property and doesn't need to be saved in the definition as it can be calculated from other properties
+	[property: LocoStructOffset(0x0E)] DatCompanyColourType SpecialColourSchemeIndex, // this is an instance property and doesn't need to be saved in the definition as it can be calculated from other properties
 	[property: LocoStructOffset(0x0F)] uint8_t NumCompatibleVehicles,
 	[property: LocoStructOffset(0x10), LocoArrayLength(8), LocoStructVariableLoad] List<S5Header> CompatibleVehicles,
 	[property: LocoStructOffset(0x20), LocoArrayLength(4), LocoStructVariableLoad] List<S5Header> RequiredTrackExtras,
@@ -32,17 +32,17 @@ public record VehicleObject(
 	[property: LocoStructOffset(0xDA)] Speed16 Speed,
 	[property: LocoStructOffset(0xDC)] Speed16 RackSpeed,
 	[property: LocoStructOffset(0xDE)] uint16_t Weight,
-	[property: LocoStructOffset(0xE0)] VehicleObjectFlags Flags,
+	[property: LocoStructOffset(0xE0)] DatVehicleObjectFlags Flags,
 	[property: LocoStructOffset(0xE2), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad] List<uint8_t> MaxCargo,
-	[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad, Browsable(false)] List<List<CargoCategory>> CompatibleCargoCategories,
-	[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObject.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets,
+	[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad, Browsable(false)] List<List<DatCargoCategory>> CompatibleCargoCategories,
+	[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObject.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] Dictionary<DatCargoCategory, uint8_t> CargoTypeSpriteOffsets,
 	[property: LocoStructOffset(0x10C), LocoStructVariableLoad, Browsable(false)] uint8_t _NumSimultaneousCargoTypes,
 	[property: LocoStructOffset(0x10D), LocoArrayLength(VehicleObject.AnimationCount)] SimpleAnimation[] Animation,
 	[property: LocoStructOffset(0x113)] uint8_t ShipWakeOffset, // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 	[property: LocoStructOffset(0x114)] uint16_t DesignedYear,
 	[property: LocoStructOffset(0x116)] uint16_t ObsoleteYear,
 	[property: LocoStructOffset(0x118), LocoStructVariableLoad, Browsable(false)] object_id RackRailType,
-	[property: LocoStructOffset(0x119)] DrivingSoundType DrivingSoundType,
+	[property: LocoStructOffset(0x119)] DatDrivingSoundType DrivingSoundType,
 	// this is a union...length is the length of the longest union struct, which is Engine2Sound. make the byte[] not visible in editor
 	[property: LocoStructOffset(0x11A), LocoArrayLength(VehicleObject.MaxUnionSoundStructLength), Browsable(false)] byte[] SoundPropertiesData,
 	//union
@@ -64,7 +64,7 @@ public record VehicleObject(
 	public const int CompatibleCargoTypesLength = 2;
 	public const int CargoTypeSpriteOffsetsLength = 32;
 
-	public VehicleObject() : this(0, TransportMode.Rail, VehicleType.Train, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, 0, 0, 0, VehicleObjectFlags.None, [], [[], []], [], 0, [], 0, 0, 0, 0, DrivingSoundType.None, [], [], 0, [])
+	public VehicleObject() : this(0, DatTransportMode.Rail, DatVehicleType.Train, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, 0, 0, 0, DatVehicleObjectFlags.None, [], [[], []], [], 0, [], 0, 0, 0, 0, DatDrivingSoundType.None, [], [], 0, [])
 	{ }
 
 	public T GetSoundAs<T>() where T : ILocoStruct
@@ -72,7 +72,7 @@ public record VehicleObject(
 
 	public FrictionSound? FrictionSound
 	{
-		get => DrivingSoundType == DrivingSoundType.Friction ? GetSoundAs<FrictionSound>() : null;
+		get => DrivingSoundType == DatDrivingSoundType.Friction ? GetSoundAs<FrictionSound>() : null;
 		set
 		{
 			if (value != null)
@@ -84,7 +84,7 @@ public record VehicleObject(
 
 	public SimpleMotorSound? SimpleMotorSound
 	{
-		get => DrivingSoundType == DrivingSoundType.SimpleMotor ? GetSoundAs<SimpleMotorSound>() : null;
+		get => DrivingSoundType == DatDrivingSoundType.SimpleMotor ? GetSoundAs<SimpleMotorSound>() : null;
 		set
 		{
 			if (value != null)
@@ -96,7 +96,7 @@ public record VehicleObject(
 
 	public GearboxMotorSound? GearboxMotorSound
 	{
-		get => DrivingSoundType == DrivingSoundType.GearboxMotor ? GetSoundAs<GearboxMotorSound>() : null;
+		get => DrivingSoundType == DatDrivingSoundType.GearboxMotor ? GetSoundAs<GearboxMotorSound>() : null;
 		set
 		{
 			if (value != null)
@@ -107,8 +107,8 @@ public record VehicleObject(
 	}
 
 	// this hack is because winforms won't show a list of lists properly...
-	public List<CargoCategory> CompatibleCargoCategories1 { get => CompatibleCargoCategories[0]; set => CompatibleCargoCategories[0] = value; }
-	public List<CargoCategory> CompatibleCargoCategories2 { get => CompatibleCargoCategories[1]; set => CompatibleCargoCategories[1] = value; }
+	public List<DatCargoCategory> CompatibleCargoCategories1 { get => CompatibleCargoCategories[0]; set => CompatibleCargoCategories[0] = value; }
+	public List<DatCargoCategory> CompatibleCargoCategories2 { get => CompatibleCargoCategories[1]; set => CompatibleCargoCategories[1] = value; }
 
 	public uint8_t NumSimultaneousCargoTypes { get; set; }
 
@@ -121,7 +121,7 @@ public record VehicleObject(
 	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 	{
 		// track type
-		if (!Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
+		if (!Flags.HasFlag(DatVehicleObjectFlags.AnyRoadType) && (Mode == DatTransportMode.Rail || Mode == DatTransportMode.Road))
 		{
 			TrackType = S5Header.Read(remainingData[..S5Header.StructLength]);
 			remainingData = remainingData[S5Header.StructLength..];
@@ -153,9 +153,9 @@ public record VehicleObject(
 				continue;
 			}
 
-			while ((CargoCategory)BitConverter.ToUInt16(remainingData[0..2]) != CargoCategory.NULL)
+			while ((DatCargoCategory)BitConverter.ToUInt16(remainingData[0..2]) != DatCargoCategory.NULL)
 			{
-				var cargoCategory = (CargoCategory)BitConverter.ToUInt16(remainingData[0..2]);
+				var cargoCategory = (DatCargoCategory)BitConverter.ToUInt16(remainingData[0..2]);
 				remainingData = remainingData[2..]; // uint16_t
 
 				var cargoTypeSpriteOffset = remainingData[0];
@@ -185,7 +185,7 @@ public record VehicleObject(
 		AnimationHeaders.Clear();
 		foreach (var anim in Animation)
 		{
-			if (anim.Type == SimpleAnimationType.None)
+			if (anim.Type == DatSimpleAnimationType.None)
 			{
 				continue;
 			}
@@ -201,14 +201,14 @@ public record VehicleObject(
 		remainingData = remainingData[(S5Header.StructLength * NumCompatibleVehicles)..];
 
 		// rack rail
-		if (Flags.HasFlag(VehicleObjectFlags.RackRail))
+		if (Flags.HasFlag(DatVehicleObjectFlags.RackRail))
 		{
 			RackRail = S5Header.Read(remainingData[..S5Header.StructLength]);
 			remainingData = remainingData[S5Header.StructLength..];
 		}
 
 		// driving sound
-		if (DrivingSoundType != DrivingSoundType.None)
+		if (DrivingSoundType != DatDrivingSoundType.None)
 		{
 			Sound = S5Header.Read(remainingData[..S5Header.StructLength]);
 			remainingData = remainingData[S5Header.StructLength..];
@@ -233,7 +233,7 @@ public record VehicleObject(
 		var ms = new MemoryStream();
 
 		// track type
-		if (!Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (Mode == TransportMode.Rail || Mode == TransportMode.Road))
+		if (!Flags.HasFlag(DatVehicleObjectFlags.AnyRoadType) && (Mode == DatTransportMode.Rail || Mode == DatTransportMode.Road))
 		{
 			ms.Write(TrackType!.Write());
 		}
@@ -263,7 +263,7 @@ public record VehicleObject(
 				ms.WriteByte(CargoTypeSpriteOffsets[cc]);
 			}
 
-			ms.Write(BitConverter.GetBytes((uint16_t)CargoCategory.NULL));
+			ms.Write(BitConverter.GetBytes((uint16_t)DatCargoCategory.NULL));
 		}
 
 		// animation
@@ -285,13 +285,13 @@ public record VehicleObject(
 		}
 
 		// rack rail
-		if (Flags.HasFlag(VehicleObjectFlags.RackRail))
+		if (Flags.HasFlag(DatVehicleObjectFlags.RackRail))
 		{
 			ms.Write(RackRail!.Write());
 		}
 
 		// driving sound
-		if (DrivingSoundType != DrivingSoundType.None)
+		if (DrivingSoundType != DatDrivingSoundType.None)
 		{
 			ms.Write(Sound!.Write());
 		}
@@ -312,7 +312,7 @@ public record VehicleObject(
 		// setup body sprites
 		foreach (var bodySprite in BodySprites)
 		{
-			if (!bodySprite.Flags.HasFlag(BodySpriteFlags.HasSprites))
+			if (!bodySprite.Flags.HasFlag(DatBodySpriteFlags.HasSprites))
 			{
 				continue;
 			}
@@ -322,50 +322,50 @@ public record VehicleObject(
 			var curr = offset;
 			bodySprite.FlatYawAccuracy = GetYawAccuracyFlat(bodySprite.NumFlatRotationFrames);
 
-			bodySprite.NumFramesPerRotation = (byte)((bodySprite.NumAnimationFrames * bodySprite.NumCargoFrames * bodySprite.NumRollFrames) + (bodySprite.Flags.HasFlag(BodySpriteFlags.HasBrakingLights) ? 1 : 0)); // be careful of overflow here...
+			bodySprite.NumFramesPerRotation = (byte)((bodySprite.NumAnimationFrames * bodySprite.NumCargoFrames * bodySprite.NumRollFrames) + (bodySprite.Flags.HasFlag(DatBodySpriteFlags.HasBrakingLights) ? 1 : 0)); // be careful of overflow here...
 			var numFlatFrames = (byte)(bodySprite.NumFramesPerRotation * bodySprite.NumFlatRotationFrames);
-			offset += numFlatFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-			bodySprite.ImageIds[BodySpriteSlopeType.Flat] = [.. Enumerable.Range(curr, offset - curr)];
+			offset += numFlatFrames / (bodySprite.Flags.HasFlag(DatBodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+			bodySprite.ImageIds[DatBodySpriteSlopeType.Flat] = [.. Enumerable.Range(curr, offset - curr)];
 
-			if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasGentleSprites))
+			if (bodySprite.Flags.HasFlag(DatBodySpriteFlags.HasGentleSprites))
 			{
 				bodySprite.GentleImageId = (uint)offset;
 				curr = offset;
 				var numGentleFrames = bodySprite.NumFramesPerRotation * 8;
-				offset += numGentleFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-				bodySprite.ImageIds[BodySpriteSlopeType.Gentle] = [.. Enumerable.Range(curr, offset - curr)];
+				offset += numGentleFrames / (bodySprite.Flags.HasFlag(DatBodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+				bodySprite.ImageIds[DatBodySpriteSlopeType.Gentle] = [.. Enumerable.Range(curr, offset - curr)];
 
 				bodySprite.SlopedImageId = (uint)offset;
 				curr = offset;
 				bodySprite.SlopedYawAccuracy = GetYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
 				var numSlopedFrames = bodySprite.NumFramesPerRotation * bodySprite.NumSlopedRotationFrames * 2;
-				offset += numSlopedFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-				bodySprite.ImageIds[BodySpriteSlopeType.Sloped] = [.. Enumerable.Range(curr, offset - curr)];
+				offset += numSlopedFrames / (bodySprite.Flags.HasFlag(DatBodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+				bodySprite.ImageIds[DatBodySpriteSlopeType.Sloped] = [.. Enumerable.Range(curr, offset - curr)];
 
-				if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasSteepSprites))
+				if (bodySprite.Flags.HasFlag(DatBodySpriteFlags.HasSteepSprites))
 				{
 					bodySprite.SteepImageId = (uint)offset;
 					curr = offset;
 					var numSteepFrames = bodySprite.NumFramesPerRotation * 8;
-					offset += numSteepFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-					bodySprite.ImageIds[BodySpriteSlopeType.Steep] = [.. Enumerable.Range(curr, offset - curr)];
+					offset += numSteepFrames / (bodySprite.Flags.HasFlag(DatBodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+					bodySprite.ImageIds[DatBodySpriteSlopeType.Steep] = [.. Enumerable.Range(curr, offset - curr)];
 
 					// TODO: add these two together??
 					bodySprite.UnkImageId1 = (uint)offset;
 					curr = offset;
 					var numUnkFrames = bodySprite.NumSlopedRotationFrames * bodySprite.NumFramesPerRotation * 2;
-					offset += numUnkFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-					bodySprite.ImageIds[BodySpriteSlopeType.unk1] = [.. Enumerable.Range(curr, offset - curr)];
+					offset += numUnkFrames / (bodySprite.Flags.HasFlag(DatBodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+					bodySprite.ImageIds[DatBodySpriteSlopeType.unk1] = [.. Enumerable.Range(curr, offset - curr)];
 				}
 			}
 
-			if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasUnkSprites))
+			if (bodySprite.Flags.HasFlag(DatBodySpriteFlags.HasUnkSprites))
 			{
 				//bodySprite.UnkImageId2 = offset;
 				curr = offset;
 				var numUnkFrames = bodySprite.NumFlatRotationFrames * 3;
-				offset += numUnkFrames / (bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1);
-				bodySprite.ImageIds[BodySpriteSlopeType.unk2] = [.. Enumerable.Range(curr, offset)];
+				offset += numUnkFrames / (bodySprite.Flags.HasFlag(DatBodySpriteFlags.RotationalSymmetry) ? 2 : 1);
+				bodySprite.ImageIds[DatBodySpriteSlopeType.unk2] = [.. Enumerable.Range(curr, offset)];
 			}
 
 			bodySprite.NumImages = offset - initial; // (int)(offset - bodySprite.FlatImageId);
@@ -391,7 +391,7 @@ public record VehicleObject(
 		// setup bogie sprites
 		foreach (var bogieSprite in BogieSprites)
 		{
-			if (!bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSprites))
+			if (!bogieSprite.Flags.HasFlag(DatBogieSpriteFlags.HasSprites))
 			{
 				continue;
 			}
@@ -402,24 +402,24 @@ public record VehicleObject(
 			var curr = offset;
 
 			var numRollFrames = bogieSprite.NumRollSprites * 32;
-			offset += numRollFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
-			bogieSprite.ImageIds[BogieSpriteSlopeType.Flat] = [.. Enumerable.Range(curr, offset - curr)];
+			offset += numRollFrames / (bogieSprite.Flags.HasFlag(DatBogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
+			bogieSprite.ImageIds[DatBogieSpriteSlopeType.Flat] = [.. Enumerable.Range(curr, offset - curr)];
 
-			if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasGentleSprites))
+			if (bogieSprite.Flags.HasFlag(DatBogieSpriteFlags.HasGentleSprites))
 			{
 				//bogieSprite.GentleImageIds = offset;
 				curr = offset;
 				var numGentleFrames = bogieSprite.NumRollSprites * 64;
-				offset += numGentleFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
-				bogieSprite.ImageIds[BogieSpriteSlopeType.Gentle] = [.. Enumerable.Range(curr, offset - curr)];
+				offset += numGentleFrames / (bogieSprite.Flags.HasFlag(DatBogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
+				bogieSprite.ImageIds[DatBogieSpriteSlopeType.Gentle] = [.. Enumerable.Range(curr, offset - curr)];
 
-				if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSteepSprites))
+				if (bogieSprite.Flags.HasFlag(DatBogieSpriteFlags.HasSteepSprites))
 				{
 					//bogieSprite.SteepImageIds = offset;
 					curr = offset;
 					var numSteepFrames = bogieSprite.NumRollSprites * 64;
-					offset += numSteepFrames / (bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
-					bogieSprite.ImageIds[BogieSpriteSlopeType.Steep] = [.. Enumerable.Range(curr, offset - curr)];
+					offset += numSteepFrames / (bogieSprite.Flags.HasFlag(DatBogieSpriteFlags.RotationalSymmetry) ? 2 : 1);
+					bogieSprite.ImageIds[DatBogieSpriteSlopeType.Steep] = [.. Enumerable.Range(curr, offset - curr)];
 				}
 			}
 
@@ -482,14 +482,14 @@ public record VehicleObject(
 			return false;
 		}
 
-		if (Flags.HasFlag(VehicleObjectFlags.AnyRoadType))
+		if (Flags.HasFlag(DatVehicleObjectFlags.AnyRoadType))
 		{
 			if (NumRequiredTrackExtras != 0)
 			{
 				return false;
 			}
 
-			if (Flags.HasFlag(VehicleObjectFlags.RackRail))
+			if (Flags.HasFlag(DatVehicleObjectFlags.RackRail))
 			{
 				return false;
 			}
@@ -517,7 +517,7 @@ public record VehicleObject(
 
 		foreach (var bodySprite in BodySprites)
 		{
-			if (!bodySprite.Flags.HasFlag(BodySpriteFlags.HasSprites))
+			if (!bodySprite.Flags.HasFlag(DatBodySpriteFlags.HasSprites))
 			{
 				continue;
 			}
@@ -572,7 +572,7 @@ public record VehicleObject(
 
 		foreach (var bogieSprite in BogieSprites)
 		{
-			if (!bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSprites))
+			if (!bogieSprite.Flags.HasFlag(DatBogieSpriteFlags.HasSprites))
 			{
 				continue;
 			}

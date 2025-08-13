@@ -1,6 +1,6 @@
 using Dat.FileParsing;
-using Dat.Types;
 using System.ComponentModel;
+using Definitions.ObjectModels;
 
 namespace Dat.Objects;
 
@@ -14,7 +14,7 @@ public record BodySprite(
 	[property: LocoStructOffset(0x04)] uint8_t NumCargoFrames,
 	[property: LocoStructOffset(0x05)] uint8_t NumRollFrames,
 	[property: LocoStructOffset(0x06)] uint8_t HalfLength, // 0x06 the distance from pivot of body to one end of car component (not strictly the visible body, see CE68 locomotive)
-	[property: LocoStructOffset(0x07)] BodySpriteFlags Flags,
+	[property: LocoStructOffset(0x07)] DatBodySpriteFlags Flags,
 	[property: LocoStructOffset(0x08), LocoStructVariableLoad, Browsable(false)] uint8_t _Width,                // sprite width
 	[property: LocoStructOffset(0x09), LocoStructVariableLoad, Browsable(false)] uint8_t _HeightNegative,       // sprite height negative
 	[property: LocoStructOffset(0x0A), LocoStructVariableLoad, Browsable(false)] uint8_t _HeightPositive,       // sprite height positive
@@ -48,7 +48,7 @@ public record BodySprite(
 
 	//
 
-	public Dictionary<BodySpriteSlopeType, List<int>> ImageIds = [];
+	public Dictionary<DatBodySpriteSlopeType, List<int>> ImageIds = [];
 
 	public int NumImages { get; set; }
 

@@ -1,5 +1,5 @@
 using Dat.FileParsing;
-using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;

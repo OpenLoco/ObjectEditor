@@ -21,8 +21,8 @@ public record FileSystemItem(
 	DateOnly? ModifiedDate = null,
 	FileLocation? FileLocation = null,
 	ObjectSource? ObjectSource = null,
-	ObjectType? ObjectType = null,
-	VehicleType? VehicleType = null,
+	DatObjectType? ObjectType = null,
+	DatVehicleType? VehicleType = null,
 	ObservableCollection<FileSystemItem>? SubNodes = null)
 {
 	[JsonIgnore]

@@ -1,6 +1,5 @@
 using Common.Logging;
 using Dat;
-using Dat.FileParsing;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

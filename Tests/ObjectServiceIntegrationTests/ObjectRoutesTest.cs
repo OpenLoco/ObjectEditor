@@ -21,8 +21,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 
 	protected override IEnumerable<TblObject> DbSeedData =>
 	[
-		new() { Id = 1, Name = "test-name-1", SubObjectId = 1, ObjectType = ObjectType.Vehicle, Availability = Definitions.ObjectAvailability.Available },
-		new() { Id = 2, Name = "test-name-2", SubObjectId = 2, ObjectType = ObjectType.Vehicle, Availability = Definitions.ObjectAvailability.Available },
+		new() { Id = 1, Name = "test-name-1", SubObjectId = 1, ObjectType = DatObjectType.Vehicle, Availability = Definitions.ObjectAvailability.Available },
+		new() { Id = 2, Name = "test-name-2", SubObjectId = 2, ObjectType = DatObjectType.Vehicle, Availability = Definitions.ObjectAvailability.Available },
 	];
 
 	protected override DtoUploadDat PostRequestDto
@@ -205,7 +205,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			3072098364,
 			string.Empty,
 			ObjectSource.Custom,
-			ObjectType.Vehicle,
+			DatObjectType.Vehicle,
 			entry.VehicleType,
 			ObjectAvailability.Available,
 			DateOnly.Today,

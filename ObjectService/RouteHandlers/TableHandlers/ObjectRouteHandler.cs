@@ -2,18 +2,12 @@ using Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Common.Logging;
-using Dat;
-using Dat.Data;
-using Dat.FileParsing;
-using Dat.Objects;
-using Dat.Types;
 using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.SourceData;
 using Definitions.Web;
-using SixLabors.ImageSharp;
 using System.IO.Compression;
 using System.IO.Hashing;
 

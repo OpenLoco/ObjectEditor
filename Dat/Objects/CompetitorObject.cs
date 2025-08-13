@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace Dat.Objects;
 
-public enum Emotion
+public enum DatEmotion
 {
 	Neutral,
 	Happy,
@@ -20,7 +20,7 @@ public enum Emotion
 }
 
 [Flags]
-public enum CompetitorNamePrefix : uint32_t
+public enum DatCompetitorNamePrefix : uint32_t
 {
 	unk0 = 1 << 0,
 	unk1 = 1 << 1,
@@ -38,7 +38,7 @@ public enum CompetitorNamePrefix : uint32_t
 }
 
 [Flags]
-public enum CompetitorPlaystyle : uint32_t
+public enum DatCompetitorPlaystyle : uint32_t
 {
 	unk0 = 1 << 0,
 	unk1 = 1 << 1,
@@ -57,13 +57,12 @@ public enum CompetitorPlaystyle : uint32_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x38)]
-[LocoStructType(ObjectType.Competitor)]
-[LocoStringTable("Full Name", "Last Name")]
+[LocoStructType(DatObjectType.Competitor)]
 public record CompetitorObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id FullName,
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id LastName,
-		[property: LocoStructOffset(0x04)] CompetitorNamePrefix AvailableNamePrefixes, // bitset
-		[property: LocoStructOffset(0x08)] CompetitorPlaystyle AvailablePlaystyles, // bitset
+		[property: LocoStructOffset(0x04)] DatCompetitorNamePrefix AvailableNamePrefixes, // bitset
+		[property: LocoStructOffset(0x08)] DatCompetitorPlaystyle AvailablePlaystyles, // bitset
 		[property: LocoStructOffset(0x0C)] uint32_t Emotions, // bitset
 		[property: LocoStructOffset(0x10), Browsable(false), LocoArrayLength(CompetitorObject.ImagesLength)] image_id[] Images,
 		[property: LocoStructOffset(0x34)] uint8_t Intelligence,

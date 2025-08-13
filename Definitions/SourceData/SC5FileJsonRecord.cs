@@ -1,5 +1,5 @@
-using Dat.Data;
 using Definitions.Database;
+using Definitions.ObjectModels.Types;
 using System.Text.Json.Serialization;
 
 namespace Definitions.SourceData;

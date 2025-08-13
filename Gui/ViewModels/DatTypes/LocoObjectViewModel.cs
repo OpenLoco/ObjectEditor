@@ -1,5 +1,5 @@
-using Dat.Types;
 using ReactiveUI;
+using Definitions.ObjectModels;
 
 namespace Gui.ViewModels;
 

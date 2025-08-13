@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace Dat.Objects;
 
 [Flags]
-public enum BridgeDisabledTrackFlags : uint16_t
+public enum DatBridgeDisabledTrackFlags : uint16_t
 {
 	None = 0,
 	Slope = 1 << 0,
@@ -25,7 +25,7 @@ public enum BridgeDisabledTrackFlags : uint16_t
 }
 
 [Flags]
-public enum BridgeObjectFlags : uint8_t
+public enum DatBridgeObjectFlags : uint8_t
 {
 	None = 0,
 	HasRoof = 1 << 0,
@@ -33,11 +33,10 @@ public enum BridgeObjectFlags : uint8_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x2C)]
-[LocoStructType(ObjectType.Bridge)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Bridge)]
 public record BridgeObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] BridgeObjectFlags Flags,
+	[property: LocoStructOffset(0x02)] DatBridgeObjectFlags Flags,
 	[property: LocoStructOffset(0x03), LocoStructVariableLoad] uint8_t var_03,
 	[property: LocoStructOffset(0x04)] uint16_t ClearHeight,
 	[property: LocoStructOffset(0x06)] int16_t DeckDepth,
@@ -49,7 +48,7 @@ public record BridgeObject(
 	[property: LocoStructOffset(0x0E)] int16_t BaseCostFactor,
 	[property: LocoStructOffset(0x10)] int16_t HeightCostFactor,
 	[property: LocoStructOffset(0x12)] int16_t SellCostFactor,
-	[property: LocoStructOffset(0x14)] BridgeDisabledTrackFlags DisabledTrackFlags,
+	[property: LocoStructOffset(0x14)] DatBridgeDisabledTrackFlags DisabledTrackFlags,
 	[property: LocoStructOffset(0x16), Browsable(false)] image_id Image,
 	[property: LocoStructOffset(0x1A)] uint8_t CompatibleTrackObjectCount,
 	[property: LocoStructOffset(0x1B), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumTrackMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] TrackModHeaderIds,

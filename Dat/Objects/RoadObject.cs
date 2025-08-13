@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace Dat.Objects;
 
 [Flags]
-public enum RoadObjectFlags : uint16_t
+public enum DatRoadObjectFlags : uint16_t
 {
 	None = 0,
 	IsOneWay = 1 << 0,
@@ -20,7 +20,7 @@ public enum RoadObjectFlags : uint16_t
 	unk_07 = 1 << 7,
 }
 
-public enum TownSize : uint8_t
+public enum DatTownSize : uint8_t
 {
 	Hamlet,
 	Village,
@@ -29,13 +29,27 @@ public enum TownSize : uint8_t
 	Metropolis,
 }
 
+[Flags]
+public enum DatRoadTraitFlags : uint16_t
+{
+	None = 0,
+	SmallCurve = 1 << 0,
+	VerySmallCurve = 1 << 1,
+	Slope = 1 << 2,
+	SteepSlope = 1 << 3,
+	unk_04 = 1 << 4, // intersection?
+	Turnaround = 1 << 5,
+	unk_06 = 1 << 6, // overtake?
+	unk_07 = 1 << 7,
+	unk_08 = 1 << 8, // streetlight?
+}
+
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x30)]
-[LocoStructType(ObjectType.Road)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Road)]
 public record RoadObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] RoadTraitFlags RoadPieces,
+	[property: LocoStructOffset(0x02)] DatRoadTraitFlags RoadPieces,
 	[property: LocoStructOffset(0x04)] int16_t BuildCostFactor,
 	[property: LocoStructOffset(0x06)] int16_t SellCostFactor,
 	[property: LocoStructOffset(0x08)] int16_t TunnelCostFactor,
@@ -43,7 +57,7 @@ public record RoadObject(
 	[property: LocoStructOffset(0x0B), Browsable(false)] object_id _Tunnel,
 	[property: LocoStructOffset(0x0C)] Speed16 MaxSpeed,
 	[property: LocoStructOffset(0x0E), Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x12)] RoadObjectFlags Flags,
+	[property: LocoStructOffset(0x12)] DatRoadObjectFlags Flags,
 	[property: LocoStructOffset(0x14)] uint8_t NumBridges,
 	[property: LocoStructOffset(0x15), LocoArrayLength(RoadObject.MaxBridges), Browsable(false)] object_id[] _Bridges,
 	[property: LocoStructOffset(0x1C)] uint8_t NumStations,
@@ -55,7 +69,7 @@ public record RoadObject(
 	[property: LocoStructOffset(0x29)] uint8_t DisplayOffset,
 	[property: LocoStructOffset(0x2A), Browsable(false)] uint16_t _CompatibleRoads, // bitset
 	[property: LocoStructOffset(0x2C), Browsable(false)] uint16_t _CompatibleTracks, // bitset
-	[property: LocoStructOffset(0x2E)] TownSize TargetTownSize,
+	[property: LocoStructOffset(0x2E)] DatTownSize TargetTownSize,
 	[property: LocoStructOffset(0x2F), Browsable(false)] uint8_t pad_2F
 	) : ILocoStruct, ILocoStructVariableData
 {
@@ -144,7 +158,7 @@ public record RoadObject(
 			return false;
 		}
 
-		if (Flags.HasFlag(RoadObjectFlags.unk_03))
+		if (Flags.HasFlag(DatRoadObjectFlags.unk_03))
 		{
 			return NumMods == 0;
 		}

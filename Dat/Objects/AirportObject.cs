@@ -21,7 +21,8 @@ public record AirportBuilding(
 	public bool Validate()
 		=> true;
 }
-public enum AirportMovementNodeFlags : uint16_t
+
+public enum DatAirportMovementNodeFlags : uint16_t
 {
 	None = 0,
 	Terminal = 1 << 0,
@@ -59,10 +60,10 @@ public record MovementNode(
 	[property: LocoStructOffset(0x00)] int16_t X,
 	[property: LocoStructOffset(0x02)] int16_t Y,
 	[property: LocoStructOffset(0x04)] int16_t Z,
-	[property: LocoStructOffset(0x06)] AirportMovementNodeFlags Flags
+	[property: LocoStructOffset(0x06)] DatAirportMovementNodeFlags Flags
 	) : ILocoStruct
 {
-	public MovementNode() : this(0, 0, 0, AirportMovementNodeFlags.None)
+	public MovementNode() : this(0, 0, 0, DatAirportMovementNodeFlags.None)
 	{ }
 
 	public bool Validate()
@@ -71,8 +72,7 @@ public record MovementNode(
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0xBA)]
-[LocoStructType(ObjectType.Airport)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Airport)]
 public record AirportObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,

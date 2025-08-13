@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Streetlight;
 
 namespace Definitions.Database;
 

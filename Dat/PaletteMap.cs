@@ -138,10 +138,10 @@ public class PaletteMap
 
 	#endregion
 
-	public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, G1ElementFlags flags)
+	public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, DatG1ElementFlags flags)
 	{
 		var pixels = img.Width * img.Height;
-		var isBgr = flags.HasFlag(G1ElementFlags.IsBgr24);
+		var isBgr = flags.HasFlag(DatG1ElementFlags.IsBgr24);
 		var bytes = new byte[pixels * (isBgr ? 3 : 1)];
 
 		var index = 0;
@@ -193,7 +193,7 @@ public class PaletteMap
 			_ => default,
 		};
 
-	public bool TryConvertG1ToRgba32Bitmap(G1Element32 g1Element, ColourRemapSwatch primary, ColourRemapSwatch secondary, out Image<Rgba32>? image)
+	public bool TryConvertG1ToRgba32Bitmap(DatG1Element32 g1Element, ColourRemapSwatch primary, ColourRemapSwatch secondary, out Image<Rgba32>? image)
 	{
 		image = new Image<Rgba32>(g1Element.Width, g1Element.Height);
 
@@ -202,7 +202,7 @@ public class PaletteMap
 		{
 			for (var x = 0; x < g1Element.Width; x++)
 			{
-				if (g1Element.Flags.HasFlag(G1ElementFlags.IsBgr24))
+				if (g1Element.Flags.HasFlag(DatG1ElementFlags.IsBgr24))
 				{
 					if (index >= g1Element.ImageData.Length)
 					{
@@ -226,7 +226,7 @@ public class PaletteMap
 						//Debugger.Break();
 					}
 
-					if (paletteIndex == 0 && g1Element.Flags.HasFlag(G1ElementFlags.HasTransparency))
+					if (paletteIndex == 0 && g1Element.Flags.HasFlag(DatG1ElementFlags.HasTransparency))
 					{
 						colour = Transparent.Color;
 					}

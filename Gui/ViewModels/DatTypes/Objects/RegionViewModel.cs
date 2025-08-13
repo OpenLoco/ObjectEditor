@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Region;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.Linq;
@@ -7,8 +7,8 @@ namespace Gui.ViewModels;
 
 public class RegionViewModel : LocoObjectViewModel<RegionObject>
 {
-	[Reactive] public BindingList<S5HeaderViewModel> CargoInfluenceObjects { get; set; }
-	[Reactive] public BindingList<S5HeaderViewModel> DependentObjects { get; set; }
+	[Reactive] public BindingList<ObjectModelHeaderViewModel> CargoInfluenceObjects { get; set; }
+	[Reactive] public BindingList<ObjectModelHeaderViewModel> DependentObjects { get; set; }
 	[Reactive] public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; set; }
 
 	public RegionViewModel(RegionObject ro)

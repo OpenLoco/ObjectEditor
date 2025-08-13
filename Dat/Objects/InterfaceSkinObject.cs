@@ -8,29 +8,28 @@ namespace Dat.Objects;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x18)]
-[LocoStructType(ObjectType.InterfaceSkin)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.InterfaceSkin)]
 public record InterfaceSkinObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x06)] Colour MapTooltipObjectColour,
-	[property: LocoStructOffset(0x07)] Colour MapTooltipCargoColour,
-	[property: LocoStructOffset(0x08)] Colour TooltipColour,
-	[property: LocoStructOffset(0x09)] Colour ErrorColour,
-	[property: LocoStructOffset(0x0A)] Colour WindowPlayerColor,
-	[property: LocoStructOffset(0x0B)] Colour WindowTitlebarColour,
-	[property: LocoStructOffset(0x0C)] Colour WindowColour,
-	[property: LocoStructOffset(0x0D)] Colour WindowConstructionColour,
-	[property: LocoStructOffset(0x0E)] Colour WindowTerraFormColour,
-	[property: LocoStructOffset(0x0F)] Colour WindowMapColour,
-	[property: LocoStructOffset(0x10)] Colour WindowOptionsColour,
-	[property: LocoStructOffset(0x11)] Colour Colour_11,
-	[property: LocoStructOffset(0x12)] Colour TopToolbarPrimaryColour,
-	[property: LocoStructOffset(0x13)] Colour TopToolbarSecondaryColour,
-	[property: LocoStructOffset(0x14)] Colour TopToolbarTertiaryColour,
-	[property: LocoStructOffset(0x15)] Colour TopToolbarQuaternaryColour,
-	[property: LocoStructOffset(0x16)] Colour PlayerInfoToolbarColour,
-	[property: LocoStructOffset(0x17)] Colour TimeToolbarColour
+	[property: LocoStructOffset(0x06)] DatColour MapTooltipObjectColour,
+	[property: LocoStructOffset(0x07)] DatColour MapTooltipCargoColour,
+	[property: LocoStructOffset(0x08)] DatColour TooltipColour,
+	[property: LocoStructOffset(0x09)] DatColour ErrorColour,
+	[property: LocoStructOffset(0x0A)] DatColour WindowPlayerColor,
+	[property: LocoStructOffset(0x0B)] DatColour WindowTitlebarColour,
+	[property: LocoStructOffset(0x0C)] DatColour WindowColour,
+	[property: LocoStructOffset(0x0D)] DatColour WindowConstructionColour,
+	[property: LocoStructOffset(0x0E)] DatColour WindowTerraFormColour,
+	[property: LocoStructOffset(0x0F)] DatColour WindowMapColour,
+	[property: LocoStructOffset(0x10)] DatColour WindowOptionsColour,
+	[property: LocoStructOffset(0x11)] DatColour Colour_11,
+	[property: LocoStructOffset(0x12)] DatColour TopToolbarPrimaryColour,
+	[property: LocoStructOffset(0x13)] DatColour TopToolbarSecondaryColour,
+	[property: LocoStructOffset(0x14)] DatColour TopToolbarTertiaryColour,
+	[property: LocoStructOffset(0x15)] DatColour TopToolbarQuaternaryColour,
+	[property: LocoStructOffset(0x16)] DatColour PlayerInfoToolbarColour,
+	[property: LocoStructOffset(0x17)] DatColour TimeToolbarColour
 	) : ILocoStruct, IImageTableNameProvider
 {
 	public bool TryGetImageName(int id, out string? value)

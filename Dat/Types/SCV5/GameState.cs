@@ -1,5 +1,6 @@
 using Dat.Data;
 using Dat.FileParsing;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Types.SCV5;

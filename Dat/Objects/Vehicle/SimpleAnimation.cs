@@ -1,5 +1,5 @@
 using Dat.FileParsing;
-using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
@@ -9,7 +9,7 @@ namespace Dat.Objects;
 public record SimpleAnimation(
 	[property: LocoStructOffset(0x00), Browsable(false)] object_id ObjectId,
 	[property: LocoStructOffset(0x01)] uint8_t Height,
-	[property: LocoStructOffset(0x02)] SimpleAnimationType Type
+	[property: LocoStructOffset(0x02)] DatSimpleAnimationType Type
 	) : ILocoStruct
 {
 	public SimpleAnimation() : this(0, 0, 0)

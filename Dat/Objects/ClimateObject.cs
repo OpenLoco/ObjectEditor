@@ -1,6 +1,5 @@
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
 using Definitions.ObjectModels;
 using System.ComponentModel;
 
@@ -8,8 +7,7 @@ namespace Dat.Objects;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x0A)]
-[LocoStructType(ObjectType.Climate)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Climate)]
 public record ClimateObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint8_t FirstSeason,

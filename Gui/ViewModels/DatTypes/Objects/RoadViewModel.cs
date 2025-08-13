@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Road;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
@@ -14,15 +14,15 @@ public class RoadViewModel : LocoObjectViewModel<RoadObject>
 	[Reactive] public uint8_t PaintStyle { get; set; }
 	[Reactive] public uint8_t DisplayOffset { get; set; }
 	[Reactive] public TownSize TargetTownSize { get; set; }
-	[Reactive] public S5HeaderViewModel Tunnel { get; set; }
+	[Reactive] public ObjectModelHeaderViewModel Tunnel { get; set; }
 	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t TunnelCostFactor { get; set; }
 	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Reactive, Category("Bridges")] public BindingList<S5HeaderViewModel> Bridges { get; set; }
-	[Reactive, Category("Stations")] public BindingList<S5HeaderViewModel> Stations { get; set; }
-	[Reactive, Category("Mods")] public BindingList<S5HeaderViewModel> Mods { get; set; }
-	[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> Compatible { get; set; }
+	[Reactive, Category("Bridges")] public BindingList<ObjectModelHeaderViewModel> Bridges { get; set; }
+	[Reactive, Category("Stations")] public BindingList<ObjectModelHeaderViewModel> Stations { get; set; }
+	[Reactive, Category("Mods")] public BindingList<ObjectModelHeaderViewModel> Mods { get; set; }
+	[Reactive, Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> Compatible { get; set; }
 
 	public RoadViewModel(RoadObject ro)
 	{

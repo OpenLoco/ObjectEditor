@@ -2,12 +2,13 @@ using Common;
 using Common.Json;
 using Microsoft.EntityFrameworkCore;
 using Common.Logging;
-using Dat.Data;
 using Definitions;
 using Definitions.Database;
 using Definitions.SourceData;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Index;
+using Definitions.ObjectModels.Types;
 using var db = Seed();
 
 Console.WriteLine("done");

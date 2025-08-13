@@ -1,12 +1,12 @@
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [Flags]
-public enum TreeObjectFlags : uint16_t
+public enum DatTreeObjectFlags : uint16_t
 {
 	None = 0,
 	HasSnowVariation = 1 << 0,
@@ -20,7 +20,7 @@ public enum TreeObjectFlags : uint16_t
 }
 
 [Flags]
-public enum UnkTreeFlags : uint8_t
+public enum DatTreeFlagsUnk : uint8_t
 {
 	unk_00 = 1 << 0,
 	unk_01 = 1 << 1,
@@ -32,8 +32,7 @@ public enum UnkTreeFlags : uint8_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x4C)]
-[LocoStructType(ObjectType.Tree)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Tree)]
 public record TreeObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint8_t Clearance,
@@ -42,11 +41,11 @@ public record TreeObject(
 	[property: LocoStructOffset(0x05)] uint8_t var_05,
 	[property: LocoStructOffset(0x06)] uint8_t NumRotations,
 	[property: LocoStructOffset(0x07)] uint8_t NumGrowthStages,
-	[property: LocoStructOffset(0x08)] TreeObjectFlags Flags,
+	[property: LocoStructOffset(0x08)] DatTreeObjectFlags Flags,
 	[property: LocoStructOffset(0x0A), LocoArrayLength(6), Browsable(false)] image_id[] Sprites,
 	[property: LocoStructOffset(0x22), LocoArrayLength(6), Browsable(false)] image_id[] SnowSprites,
 	[property: LocoStructOffset(0x3A), Browsable(false)] uint16_t ShadowImageOffset,
-	[property: LocoStructOffset(0x3C)] UnkTreeFlags var_3C, // something with images
+	[property: LocoStructOffset(0x3C)] DatTreeFlagsUnk var_3C, // something with images
 	[property: LocoStructOffset(0x3D)] uint8_t SeasonState,
 	[property: LocoStructOffset(0x3E)] uint8_t Season,
 	[property: LocoStructOffset(0x3F)] uint8_t CostIndex,

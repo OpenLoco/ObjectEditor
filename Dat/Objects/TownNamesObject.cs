@@ -1,6 +1,7 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
@@ -18,8 +19,7 @@ public record Category(
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x1A)]
-[LocoStructType(ObjectType.TownNames)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.TownNames)]
 public record TownNamesObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), LocoArrayLength(6)] Category[] Categories

@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Definitions.ObjectModels;
@@ -17,5 +18,23 @@ public class StringTable
 	{
 		get => Table[key];
 		set => Table[key] = value;
+	}
+
+	public Dictionary<LanguageId, string> AddNewString(string str)
+	{
+		Table.Add(str, GetNewLanguageDictionary());
+		return Table[str];
+	}
+
+	// todo: move to StringTable class
+	static Dictionary<LanguageId, string> GetNewLanguageDictionary()
+	{
+		var languageDict = new Dictionary<LanguageId, string>();
+		foreach (var language in Enum.GetValues<LanguageId>())
+		{
+			languageDict.Add(language, string.Empty);
+		}
+
+		return languageDict;
 	}
 }

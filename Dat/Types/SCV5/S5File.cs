@@ -1,5 +1,6 @@
 using Dat.Data;
 using Dat.FileParsing;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Types.SCV5;
@@ -15,7 +16,7 @@ public static class ObjectManager
 
 		for (var i = 0; i < Limits.kMaxObjectTypes; ++i)
 		{
-			var ot = (ObjectType)i;
+			var ot = (DatObjectType)i;
 			var count = GetMaxObjectCount(ot);
 
 			for (var hdr = 0; hdr < count; ++hdr)
@@ -40,43 +41,43 @@ public static class ObjectManager
 		return structuredList;
 	}
 
-	public static int GetMaxObjectCount(ObjectType objectType)
+	public static int GetMaxObjectCount(DatObjectType objectType)
 		=> objectType switch
 		{
-			ObjectType.InterfaceSkin => 1,
-			ObjectType.Sound => 128,
-			ObjectType.Currency => 1,
-			ObjectType.Steam => 32,
-			ObjectType.CliffEdge => 8,
-			ObjectType.Water => 1,
-			ObjectType.Land => 32,
-			ObjectType.TownNames => 1,
-			ObjectType.Cargo => 32,
-			ObjectType.Wall => 32,
-			ObjectType.TrackSignal => 16,
-			ObjectType.LevelCrossing => 4,
-			ObjectType.StreetLight => 1,
-			ObjectType.Tunnel => 16,
-			ObjectType.Bridge => 8,
-			ObjectType.TrackStation => 16,
-			ObjectType.TrackExtra => 8,
-			ObjectType.Track => 8,
-			ObjectType.RoadStation => 16,
-			ObjectType.RoadExtra => 4,
-			ObjectType.Road => 8,
-			ObjectType.Airport => 8,
-			ObjectType.Dock => 8,
-			ObjectType.Vehicle => 224,
-			ObjectType.Tree => 64,
-			ObjectType.Snow => 1,
-			ObjectType.Climate => 1,
-			ObjectType.HillShapes => 1,
-			ObjectType.Building => 128,
-			ObjectType.Scaffolding => 1,
-			ObjectType.Industry => 16,
-			ObjectType.Region => 1,
-			ObjectType.Competitor => 32,
-			ObjectType.ScenarioText => 1,
+			DatObjectType.InterfaceSkin => 1,
+			DatObjectType.Sound => 128,
+			DatObjectType.Currency => 1,
+			DatObjectType.Steam => 32,
+			DatObjectType.CliffEdge => 8,
+			DatObjectType.Water => 1,
+			DatObjectType.Land => 32,
+			DatObjectType.TownNames => 1,
+			DatObjectType.Cargo => 32,
+			DatObjectType.Wall => 32,
+			DatObjectType.TrackSignal => 16,
+			DatObjectType.LevelCrossing => 4,
+			DatObjectType.StreetLight => 1,
+			DatObjectType.Tunnel => 16,
+			DatObjectType.Bridge => 8,
+			DatObjectType.TrackStation => 16,
+			DatObjectType.TrackExtra => 8,
+			DatObjectType.Track => 8,
+			DatObjectType.RoadStation => 16,
+			DatObjectType.RoadExtra => 4,
+			DatObjectType.Road => 8,
+			DatObjectType.Airport => 8,
+			DatObjectType.Dock => 8,
+			DatObjectType.Vehicle => 224,
+			DatObjectType.Tree => 64,
+			DatObjectType.Snow => 1,
+			DatObjectType.Climate => 1,
+			DatObjectType.HillShapes => 1,
+			DatObjectType.Building => 128,
+			DatObjectType.Scaffolding => 1,
+			DatObjectType.Industry => 16,
+			DatObjectType.Region => 1,
+			DatObjectType.Competitor => 32,
+			DatObjectType.ScenarioText => 1,
 			_ => throw new NotImplementedException()
 		};
 }

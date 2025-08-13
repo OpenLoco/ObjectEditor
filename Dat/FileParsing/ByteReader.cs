@@ -1,4 +1,5 @@
 using Dat.Types;
+using Definitions.ObjectModels;
 
 namespace Dat.FileParsing;
 

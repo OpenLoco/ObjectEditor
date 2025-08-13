@@ -1,29 +1,14 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Track;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [Flags]
-public enum TrackTraitFlags : uint16_t
-{
-	None = 0,
-	Diagonal = 1 << 0,
-	LargeCurve = 1 << 1,
-	NormalCurve = 1 << 2,
-	SmallCurve = 1 << 3,
-	VerySmallCurve = 1 << 4,
-	Slope = 1 << 5,
-	SteepSlope = 1 << 6,
-	OneSided = 1 << 7,
-	SlopedCurve = 1 << 8,
-	SBend = 1 << 9,
-	Junction = 1 << 10,
-}
-
-[Flags]
-public enum TrackObjectFlags : uint16_t
+public enum DatTrackObjectFlags : uint16_t
 {
 	None = 0,
 	unk_00 = 1 << 0,
@@ -33,8 +18,7 @@ public enum TrackObjectFlags : uint16_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x36)]
-[LocoStructType(ObjectType.Track)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Track)]
 public record TrackObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] TrackTraitFlags TrackPieces,
@@ -54,7 +38,7 @@ public record TrackObject(
 	[property: LocoStructOffset(0x1B), Browsable(false)] object_id _Tunnel,
 	[property: LocoStructOffset(0x1C)] Speed16 CurveSpeed,
 	[property: LocoStructOffset(0x1E), Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x22)] TrackObjectFlags Flags,
+	[property: LocoStructOffset(0x22)] DatTrackObjectFlags Flags,
 	[property: LocoStructOffset(0x24)] uint8_t NumBridges,
 	[property: LocoStructOffset(0x25), LocoArrayLength(TrackObject.MaxBridges), Browsable(false)] object_id[] _Bridges,       // 0x25
 	[property: LocoStructOffset(0x2C)] uint8_t NumStations,

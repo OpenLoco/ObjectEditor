@@ -1,7 +1,6 @@
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using Common.Logging;
-using Dat.Data;
 using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

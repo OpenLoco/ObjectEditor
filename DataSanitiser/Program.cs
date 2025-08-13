@@ -1,11 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Common.Logging;
-using Dat.Data;
 using Dat.FileParsing;
-using Dat.Objects;
 using Definitions.Database;
 using System.IO.Hashing;
 using System.Reflection;
+using Index;
+using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Objects.Industry;
+using IndustryObject = Definitions.ObjectModels.Objects.Industry.IndustryObject;
+using Definitions.ObjectModels.Objects.Vehicle;
+using VehicleObject = Definitions.ObjectModels.Objects.Vehicle.VehicleObject;
+using Dat.Data;
+using Definitions.ObjectModels.Objects.Cargo;
 
 static void QueryIndustryHasShadows()
 {

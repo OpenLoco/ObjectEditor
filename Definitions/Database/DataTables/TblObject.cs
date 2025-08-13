@@ -1,5 +1,5 @@
-using Dat.Data;
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Vehicle;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 

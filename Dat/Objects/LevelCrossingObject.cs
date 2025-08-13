@@ -1,14 +1,13 @@
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x12)]
-[LocoStructType(ObjectType.LevelCrossing)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.LevelCrossing)]
 public record LevelCrossingObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] int16_t CostFactor,

@@ -2,12 +2,13 @@ using Common;
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [Flags]
-public enum BuildingObjectFlags : uint8_t
+public enum DatBuildingObjectFlags : uint8_t
 {
 	None = 0,
 	LargeTile = 1 << 0, // 2x2 tile
@@ -18,8 +19,7 @@ public enum BuildingObjectFlags : uint8_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0xBE)]
-[LocoStructType(ObjectType.Building)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Building)]
 public record BuildingObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
@@ -31,11 +31,11 @@ public record BuildingObject(
 		[property: LocoStructOffset(0x90)] uint32_t Colours,
 		[property: LocoStructOffset(0x94)] uint16_t DesignedYear,
 		[property: LocoStructOffset(0x96)] uint16_t ObsoleteYear,
-		[property: LocoStructOffset(0x98)] BuildingObjectFlags Flags,
+		[property: LocoStructOffset(0x98)] DatBuildingObjectFlags Flags,
 		[property: LocoStructOffset(0x99)] uint8_t CostIndex,
 		[property: LocoStructOffset(0x9A)] uint16_t SellCostFactor,
 		[property: LocoStructOffset(0x9C)] uint8_t ScaffoldingSegmentType,
-		[property: LocoStructOffset(0x9D)] Colour ScaffoldingColour,
+		[property: LocoStructOffset(0x9D)] DatColour ScaffoldingColour,
 		[property: LocoStructOffset(0x9E)] uint8_t GeneratorFunction,
 		[property: LocoStructOffset(0x9F)] uint8_t AverageNumberOnMap,
 		[property: LocoStructOffset(0xA0), LocoArrayLength(BuildingObject.MaxProducedCargoType)] uint8_t[] ProducedQuantity,

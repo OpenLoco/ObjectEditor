@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Sound;
 
 namespace Definitions.Database;
 

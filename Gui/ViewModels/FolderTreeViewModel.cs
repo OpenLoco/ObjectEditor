@@ -3,7 +3,6 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using Dat.Data;
-using Definitions.Database;
 using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -363,7 +362,7 @@ public class FolderTreeViewModel : ReactiveObject
 		foreach (var objGroup in groupedObjects)
 		{
 			ObservableCollection<FileSystemItem> subNodes;
-			if (objGroup.Key == ObjectType.Vehicle)
+			if (objGroup.Key == DatObjectType.Vehicle)
 			{
 				subNodes = [];
 				foreach (var vg in objGroup

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using ObjectService.RouteHandlers;
-using Dat;
 using Definitions.Database;
 using ObjectService;
 using Scalar.AspNetCore;

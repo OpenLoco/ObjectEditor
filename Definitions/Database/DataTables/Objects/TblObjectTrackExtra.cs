@@ -1,4 +1,5 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Track;
+using Definitions.ObjectModels.Objects.TrackExtra;
 
 namespace Definitions.Database;
 

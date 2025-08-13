@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.TownNames;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

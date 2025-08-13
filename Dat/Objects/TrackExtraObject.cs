@@ -1,17 +1,17 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x12)]
-[LocoStructType(ObjectType.TrackExtra)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.TrackExtra)]
 public record TrackExtraObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] TrackTraitFlags TrackPieces,
+	[property: LocoStructOffset(0x02)] DatTrackTraitFlags TrackPieces,
 	[property: LocoStructOffset(0x04)] uint8_t PaintStyle,
 	[property: LocoStructOffset(0x05)] uint8_t CostIndex,
 	[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,

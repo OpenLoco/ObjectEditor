@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace Dat.Objects;
 
 [Flags]
-public enum DockObjectFlags : uint16_t
+public enum DatDockObjectFlags : uint16_t
 {
 	None = 0,
 	HasShadows = 1 << 0,
@@ -15,8 +15,7 @@ public enum DockObjectFlags : uint16_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x28)]
-[LocoStructType(ObjectType.Dock)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Dock)]
 public record DockObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
@@ -25,7 +24,7 @@ public record DockObject(
 	[property: LocoStructOffset(0x07), LocoPropertyMaybeUnused] uint8_t var_07, // probably padding
 	[property: LocoStructOffset(0x08), Browsable(false)] image_id Image,
 	[property: LocoStructOffset(0x0C), Browsable(false)] image_id UnkImage,
-	[property: LocoStructOffset(0x10)] DockObjectFlags Flags,
+	[property: LocoStructOffset(0x10)] DatDockObjectFlags Flags,
 	[property: LocoStructOffset(0x12)] uint8_t NumBuildingPartAnimations,
 	[property: LocoStructOffset(0x13)] uint8_t NumBuildingVariationParts, // must be 1 or 0
 	[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> BuildingPartHeights,

@@ -1,4 +1,5 @@
 using Dat.FileParsing;
+using Definitions.ObjectModels;
 
 namespace Dat.Types.SCV5;
 

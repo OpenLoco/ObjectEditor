@@ -1,5 +1,5 @@
-using Dat.Data;
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
@@ -22,8 +22,8 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 	[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 	[Reactive, Category("Cost")] public uint16_t SellCostFactor { get; set; }
-	[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> ProducedCargo { get; set; }
-	[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> RequiredCargo { get; set; }
+	[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<ObjectModelHeaderViewModel> ProducedCargo { get; set; }
+	[Reactive, Category("Production"), Length(0, BuildingObject.MaxProducedCargoType)] public BindingList<ObjectModelHeaderViewModel> RequiredCargo { get; set; }
 	[Reactive, Category("Production"), Length(1, BuildingObject.MaxProducedCargoType)] public BindingList<uint8_t> ProducedQuantity { get; set; }
 	[Reactive, Category("Building"), Length(1, BuildingObject.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
 	[Reactive, Category("Building"), Length(1, BuildingObject.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts

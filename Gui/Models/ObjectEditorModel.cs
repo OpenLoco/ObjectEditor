@@ -3,10 +3,8 @@ using Common;
 using DynamicData;
 using Common.Logging;
 using Dat;
-using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
-using Definitions.Database;
 using Definitions.DTO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -18,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Dat.Converters;
 
 namespace Gui.Models;
 
@@ -180,7 +179,7 @@ public class ObjectEditorModel : IDisposable
 		locoDatFile = null;
 
 		DatFileInfo? fileInfo = null;
-		ILocoObject? locoObject = null;
+		LocoObject? locoObject = null;
 		MetadataModel? metadata = null;
 		List<Image<Rgba32>> images = [];
 
@@ -277,7 +276,7 @@ public class ObjectEditorModel : IDisposable
 				var fakeS5Header = new S5Header(0, firstLinkedDatFile.DatName, firstLinkedDatFile.DatChecksum)
 				{
 					ObjectType = cachedLocoObjDto.ObjectType,
-					SourceGame = cachedLocoObjDto.ObjectSource.ToSourceGame()
+					ObjectSource = cachedLocoObjDto.ObjectSource.Convert()
 				};
 				fileInfo = new DatFileInfo(fakeS5Header, ObjectHeader.NullHeader);
 			}
@@ -319,7 +318,7 @@ public class ObjectEditorModel : IDisposable
 		locoDatFile = null;
 
 		DatFileInfo? fileInfo = null;
-		ILocoObject? locoObject = null;
+		LocoObject? locoObject = null;
 		MetadataModel? metadata = null;
 		List<Image<Rgba32>> images = [];
 

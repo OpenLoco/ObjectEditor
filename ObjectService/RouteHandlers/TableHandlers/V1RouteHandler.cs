@@ -2,19 +2,16 @@ using Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Common.Logging;
-using Dat;
-using Dat.Data;
-using Dat.FileParsing;
-using Dat.Objects;
 using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.SourceData;
 using Definitions.Web;
-using SixLabors.ImageSharp;
 using System.IO.Compression;
 using static ObjectService.RouteHandlers.TableHandlers.V1DtoExtensions;
+using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Objects.Vehicle;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 

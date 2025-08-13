@@ -9,7 +9,7 @@ public class UiG1 : IUiObject
 {
 	public required G1Dat G1 { get; set; }
 
-	public List<G1Element32> G1Elements
+	public List<DatG1Element32> G1Elements
 	{
 		get => G1.G1Elements;
 		set

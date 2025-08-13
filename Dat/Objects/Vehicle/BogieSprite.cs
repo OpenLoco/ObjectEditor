@@ -1,5 +1,5 @@
 using Dat.FileParsing;
-using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
@@ -8,7 +8,7 @@ namespace Dat.Objects;
 [LocoStructSize(0x12)]
 public record BogieSprite(
 	[property: LocoStructOffset(0x00)] uint8_t RollStates,      // valid values 1, 2, 4 related to bogie->var_46 (identical in value to numRollSprites)
-	[property: LocoStructOffset(0x01)] BogieSpriteFlags Flags,  // BogieSpriteFlags
+	[property: LocoStructOffset(0x01)] DatBogieSpriteFlags Flags,  // BogieSpriteFlags
 	[property: LocoStructOffset(0x02)] uint8_t Width,           // sprite width
 	[property: LocoStructOffset(0x03)] uint8_t HeightNegative,  // sprite height negative
 	[property: LocoStructOffset(0x04)] uint8_t HeightPositive,  // sprite height positive
@@ -23,7 +23,7 @@ public record BogieSprite(
 
 	public uint8_t NumRollSprites { get; set; }
 
-	public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds = [];
+	public Dictionary<DatBogieSpriteSlopeType, List<int>> ImageIds = [];
 	public int NumImages { get; set; }
 
 	public bool Validate() => true;

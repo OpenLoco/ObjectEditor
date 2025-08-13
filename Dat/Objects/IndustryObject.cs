@@ -26,7 +26,7 @@ public record BuildingPartAnimation(
 }
 
 [Flags]
-public enum IndustryObjectFlags : uint32_t
+public enum DatIndustryObjectFlags : uint32_t
 {
 	None = 0,
 	BuiltInClusters = 1 << 0,
@@ -92,8 +92,7 @@ public record IndustryObjectUnk38(
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0xF4)]
-[LocoStructType(ObjectType.Industry)]
-[LocoStringTable("Name", "var_02", "<unused>", "NameClosingDown", "NameUpProduction", "NameDownProduction", "NameSingular", "NamePlural")]
+[LocoStructType(DatObjectType.Industry)]
 public record IndustryObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), LocoString, Browsable(false), LocoPropertyMaybeUnused] string_id var_02,
@@ -125,12 +124,12 @@ public record IndustryObject(
 	[property: LocoStructOffset(0xD0)] int16_t BuildCostFactor,
 	[property: LocoStructOffset(0xD2)] int16_t SellCostFactor,
 	[property: LocoStructOffset(0xD4)] uint8_t ScaffoldingSegmentType,
-	[property: LocoStructOffset(0xD5)] Colour ScaffoldingColour,
+	[property: LocoStructOffset(0xD5)] DatColour ScaffoldingColour,
 	[property: LocoStructOffset(0xD6), LocoArrayLength(IndustryObject.InitialProductionRateCount)] IndustryObjectProductionRateRange[] InitialProductionRate,
 	[property: LocoStructOffset(0xDE), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxProducedCargoType)] List<S5Header> ProducedCargo, // (0xFF = null)
 	[property: LocoStructOffset(0xE0), LocoStructVariableLoad, LocoArrayLength(IndustryObject.MaxRequiredCargoType)] List<S5Header> RequiredCargo, // (0xFF = null)
-	[property: LocoStructOffset(0xE3)] Colour MapColour,
-	[property: LocoStructOffset(0xE4)] IndustryObjectFlags Flags,
+	[property: LocoStructOffset(0xE3)] DatColour MapColour,
+	[property: LocoStructOffset(0xE4)] DatIndustryObjectFlags Flags,
 	[property: LocoStructOffset(0xE8)] uint8_t var_E8,
 	[property: LocoStructOffset(0xE9)] uint8_t FarmTileNumImageAngles, // How many viewing angles the farm tiles have
 	[property: LocoStructOffset(0xEA)] uint8_t FarmGrowthStageWithNoProduction, // At this stage of growth (except 0), a field tile produces nothing
@@ -254,7 +253,7 @@ public record IndustryObject(
 		// image stuff, in openloco it happens after image table load, but only to get image offsets, which we can just set to 0 here
 		var_0E = 0;
 		var_12 = var_0E;
-		if (Flags.HasFlag(IndustryObjectFlags.HasShadows))
+		if (Flags.HasFlag(DatIndustryObjectFlags.HasShadows))
 		{
 			var_12 += NumBuildingVariations * 4u;
 		}

@@ -1,5 +1,5 @@
-using Dat.Data;
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Industry;
+using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
@@ -18,8 +18,8 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 	[Reactive] public Colour MapColour { get; set; }
 	[Reactive] public uint32_t Colours { get; set; } // bitset
 	[Reactive, Category("Production")] public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; set; }
-	[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> ProducedCargo { get; set; }
-	[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<S5HeaderViewModel> RequiredCargo { get; set; }
+	[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<ObjectModelHeaderViewModel> ProducedCargo { get; set; }
+	[Reactive, Category("Production"), Length(0, IndustryObject.MaxProducedCargoType)] public BindingList<ObjectModelHeaderViewModel> RequiredCargo { get; set; }
 	[Reactive, Category("Production")] public uint8_t MonthlyClosureChance { get; set; }
 	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
@@ -34,9 +34,9 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 	[Reactive, Category("Building")] public uint32_t BuildingSizeFlags { get; set; }
 	[Reactive, Category("Building")] public uint8_t ScaffoldingSegmentType { get; set; }
 	[Reactive, Category("Building")] public Colour ScaffoldingColour { get; set; }
-	[Reactive, Category("Building"), Length(0, IndustryObject.MaxWallTypeCount)] public BindingList<S5HeaderViewModel> WallTypes { get; set; }
-	[Reactive, Category("Building")] public S5HeaderViewModel? BuildingWall { get; set; }
-	[Reactive, Category("Building")] public S5HeaderViewModel? BuildingWallEntrance { get; set; }
+	[Reactive, Category("Building"), Length(0, IndustryObject.MaxWallTypeCount)] public BindingList<ObjectModelHeaderViewModel> WallTypes { get; set; }
+	[Reactive, Category("Building")] public ObjectModelHeaderViewModel? BuildingWall { get; set; }
+	[Reactive, Category("Building")] public ObjectModelHeaderViewModel? BuildingWallEntrance { get; set; }
 	[Reactive, Category("<unknown>")] public BindingList<IndustryObjectUnk38> var_38 { get; set; }
 	[Reactive, Category("<unknown>")] public uint8_t var_E8 { get; set; }
 	[Reactive, Category("Farm")] public uint8_t FarmTileNumImageAngles { get; set; }

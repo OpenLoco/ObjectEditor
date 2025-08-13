@@ -1,12 +1,13 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [Flags]
-public enum RoadStationObjectFlags : uint8_t
+public enum DatRoadStationObjectFlags : uint8_t
 {
 	None = 0,
 	Recolourable = 1 << 0,
@@ -17,17 +18,16 @@ public enum RoadStationObjectFlags : uint8_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x6E)]
-[LocoStructType(ObjectType.RoadStation)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.RoadStation)]
 public record RoadStationObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
 	[property: LocoStructOffset(0x03)] uint8_t Height,
-	[property: LocoStructOffset(0x04)] RoadTraitFlags RoadPieces,
+	[property: LocoStructOffset(0x04)] DatRoadTraitFlags RoadPieces,
 	[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
 	[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
 	[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
-	[property: LocoStructOffset(0x0B)] RoadStationObjectFlags Flags,
+	[property: LocoStructOffset(0x0B)] DatRoadStationObjectFlags Flags,
 	[property: LocoStructOffset(0x0C), LocoStructVariableLoad, Browsable(false)] image_id Image,
 	[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxImageOffsets)] uint32_t[] ImageOffsets,
 	[property: LocoStructOffset(0x20)] uint8_t CompatibleRoadObjectCount,
@@ -55,7 +55,7 @@ public record RoadStationObject(
 		remainingData = remainingData[(S5Header.StructLength * CompatibleRoadObjectCount)..];
 
 		// cargo
-		if (Flags.HasFlag(RoadStationObjectFlags.Passenger) || Flags.HasFlag(RoadStationObjectFlags.Freight))
+		if (Flags.HasFlag(DatRoadStationObjectFlags.Passenger) || Flags.HasFlag(DatRoadStationObjectFlags.Freight))
 		{
 			CargoType = S5Header.Read(remainingData[..S5Header.StructLength]);
 			remainingData = remainingData[(S5Header.StructLength * 1)..];
@@ -98,7 +98,7 @@ public record RoadStationObject(
 			}
 
 			// cargo
-			if (Flags.HasFlag(RoadStationObjectFlags.Passenger) || Flags.HasFlag(RoadStationObjectFlags.Freight))
+			if (Flags.HasFlag(DatRoadStationObjectFlags.Passenger) || Flags.HasFlag(DatRoadStationObjectFlags.Freight))
 			{
 				ms.Write(CargoType.Write());
 			}
@@ -143,7 +143,7 @@ public record RoadStationObject(
 			return false;
 		}
 
-		if (Flags.HasFlag(RoadStationObjectFlags.Passenger) && Flags.HasFlag(RoadStationObjectFlags.Freight))
+		if (Flags.HasFlag(DatRoadStationObjectFlags.Passenger) && Flags.HasFlag(DatRoadStationObjectFlags.Freight))
 		{
 			return false;
 		}

@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Steam;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
@@ -11,7 +11,7 @@ public class SteamViewModel : LocoObjectViewModel<SteamObject>
 	[Reactive] public uint8_t NumStationaryTicks { get; set; }
 	[Reactive, EnumProhibitValues<SteamObjectFlags>(SteamObjectFlags.None)] public SteamObjectFlags Flags { get; set; }
 	[Reactive] public uint32_t var_0A { get; set; }
-	[Reactive] public BindingList<S5HeaderViewModel> SoundEffects { get; set; }
+	[Reactive] public BindingList<ObjectModelHeaderViewModel> SoundEffects { get; set; }
 	[Reactive] public BindingList<ImageAndHeight> FrameInfoType0 { get; set; } // may need viewmodel for ImageAndHeight
 	[Reactive] public BindingList<ImageAndHeight> FrameInfoType1 { get; set; }
 

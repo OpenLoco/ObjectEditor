@@ -1,4 +1,4 @@
-using Dat.Data;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 

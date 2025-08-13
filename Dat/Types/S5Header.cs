@@ -1,3 +1,4 @@
+using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
 using System.ComponentModel;
@@ -30,20 +31,20 @@ public class S5Header
 	public uint32_t Checksum { get; set; }
 	public uint32_t Flags { get; set; }
 
-	public SourceGame SourceGame
+	public DatObjectSource ObjectSource
 	{
-		get => (SourceGame)((Flags >> 6) & 0x3u);
+		get => (DatObjectSource)((Flags >> 6) & 0x3u);
 		set => Flags |= (Flags & ~(0x3u << 6)) | (((uint)value & 0x3u) << 6);
 	}
 
-	public ObjectType ObjectType
+	public DatObjectType ObjectType
 	{
-		get => (ObjectType)(Flags & 0x3Fu);
+		get => (DatObjectType)(Flags & 0x3Fu);
 		set => Flags |= (Flags & ~0x3Fu) | ((uint)value & 0x3Fu);
 	}
 
 	public bool IsValid()
-		=> IsValid((int)SourceGame, (int)ObjectType);
+		=> IsValid((int)ObjectSource, (int)ObjectType);
 
 	public static bool IsValid(int sourceGame, int objectType)
 		=> sourceGame is >= 0 and <= 3 && objectType is >= 0 and < Limits.kMaxObjectTypes;
@@ -79,5 +80,5 @@ public class S5Header
 		=> IsVanilla(Name, Checksum);
 
 	public static bool IsVanilla(string name, uint checksum)
-		=> OriginalObjectFiles.GetFileSource(name, checksum) != ObjectSource.Custom;
+		=> OriginalObjectFiles.GetFileSource(name, checksum).Convert() != DatObjectSource.Custom;
 }

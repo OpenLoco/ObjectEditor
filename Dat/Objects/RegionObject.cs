@@ -1,6 +1,7 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
@@ -14,8 +15,7 @@ public enum CargoInfluenceTownFilterType : uint8_t
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x12)]
-[LocoStructType(ObjectType.Region)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Region)]
 public record RegionObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,

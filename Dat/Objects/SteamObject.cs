@@ -1,12 +1,13 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Objects;
 
 [Flags]
-public enum SteamObjectFlags : uint16_t
+public enum DatSteamObjectFlags : uint16_t
 {
 	None = 0,
 	ApplyWind = 1 << 0,
@@ -29,8 +30,7 @@ public record ImageAndHeight(
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x28)]
-[LocoStructType(ObjectType.Steam)]
-[LocoStringTable("Name")]
+[LocoStructType(DatObjectType.Steam)]
 public record SteamObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), LocoPropertyMaybeUnused] uint16_t NumImages, // this is simply the count of images in the graphics table
@@ -38,7 +38,7 @@ public record SteamObject(
 	[property: LocoStructOffset(0x05), LocoStructVariableLoad, Browsable(false)] uint8_t SpriteWidth,
 	[property: LocoStructOffset(0x06), LocoStructVariableLoad, Browsable(false)] uint8_t SpriteHeightNegative,
 	[property: LocoStructOffset(0x07), LocoStructVariableLoad, Browsable(false)] uint8_t SpriteHeightPositive,
-	[property: LocoStructOffset(0x08)] SteamObjectFlags Flags,
+	[property: LocoStructOffset(0x08)] DatSteamObjectFlags Flags,
 	[property: LocoStructOffset(0x0A)] uint32_t var_0A,
 	[property: LocoStructOffset(0x0E), Browsable(false)] image_id BaseImageId,
 	[property: LocoStructOffset(0x12), LocoStructVariableLoad, Browsable(false)] uint16_t _TotalNumFramesType0,

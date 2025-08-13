@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Dock;
 
 namespace Definitions.Database;
 
@@ -34,7 +34,7 @@ public class TblObjectDock : DbSubObject, IConvertibleToTable<TblObjectDock, Doc
 			NumBuildingVariationParts = obj.NumBuildingVariationParts,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
-			BoatPositionX = obj.BoatPosition.X,
-			BoatPositionY = obj.BoatPosition.Y,
+			BoatPositionX = obj.BoatPositionX,
+			BoatPositionY = obj.BoatPositionY,
 		};
 }

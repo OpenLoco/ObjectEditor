@@ -4,6 +4,7 @@ using Dat.Objects;
 using Dat.Types;
 using Dat.Types.Audio;
 using Dat.Types.SCV5;
+using Definitions.ObjectModels;
 using System.Text;
 
 namespace Dat.FileParsing;
@@ -150,12 +151,11 @@ public static class SawyerStreamReader
 		}
 
 		ReadOnlySpan<byte> remainingData = decodedData;
+		var locoStructSize = ObjectAttributes.StructSize(s5Header.ObjectType);
 
-		var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
+		var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData[..locoStructSize]);
 		ArgumentNullException.ThrowIfNull(locoStruct, paramName: filename);
 
-		var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
-		var locoStructSize = structSize!.Size;
 		remainingData = remainingData[locoStructSize..];
 
 		// every object has a string table
@@ -246,10 +246,10 @@ public static class SawyerStreamReader
 		return enc.GetString(data[0..(ptr - 1)]); // do -1 to exclude the \0
 	}
 
-	static Dictionary<LanguageId, string> GetNewLanguageDictionary()
+	static Dictionary<DatLanguageId, string> GetNewLanguageDictionary()
 	{
-		var languageDict = new Dictionary<LanguageId, string>();
-		foreach (var language in Enum.GetValues<LanguageId>())
+		var languageDict = new Dictionary<DatLanguageId, string>();
+		foreach (var language in Enum.GetValues<DatLanguageId>())
 		{
 			languageDict.Add(language, string.Empty);
 		}
@@ -278,7 +278,7 @@ public static class SawyerStreamReader
 			// read string
 			for (; ptr < data.Length && data[ptr] != 0xFF; ++ptr)
 			{
-				var lang = (LanguageId)data[ptr++];
+				var lang = (DatLanguageId)data[ptr++];
 				languageDict[lang] = CStringToString(data[ptr..], Encoding.Latin1);
 				ptr += languageDict[lang].Length;
 			}
@@ -459,7 +459,7 @@ public static class SawyerStreamReader
 			ObjectType.Land => ByteReader.ReadLocoStruct<LandObject>(data),
 			ObjectType.LevelCrossing => ByteReader.ReadLocoStruct<LevelCrossingObject>(data),
 			ObjectType.Region => ByteReader.ReadLocoStruct<RegionObject>(data),
-			ObjectType.RoadExtra => ByteReader.ReadLocoStruct<RoadExtraObject>(data),
+			ObjectType.RoadExtra => DatRoadExtraObject.Load(data),
 			ObjectType.Road => ByteReader.ReadLocoStruct<RoadObject>(data),
 			ObjectType.RoadStation => ByteReader.ReadLocoStruct<RoadStationObject>(data),
 			ObjectType.Scaffolding => ByteReader.ReadLocoStruct<ScaffoldingObject>(data),

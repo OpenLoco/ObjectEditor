@@ -171,7 +171,7 @@ public static class ObjectAnnotator
 
 			do
 			{
-				annotations.Add(new HexAnnotation(((LanguageId)fullData[runningCount]).ToString(), elementRoot, runningCount, 1));
+				annotations.Add(new HexAnnotation(((DatLanguageId)fullData[runningCount]).ToString(), elementRoot, runningCount, 1));
 				runningCount++;
 				var nullIndex = Array.IndexOf(fullData[runningCount..], (byte)0);
 

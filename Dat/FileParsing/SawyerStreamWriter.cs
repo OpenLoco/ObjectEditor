@@ -1,7 +1,10 @@
 using Common.Logging;
 using Dat.Data;
+using Dat.Objects;
 using Dat.Types;
 using Dat.Types.Audio;
+using Definitions.ObjectModels;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 namespace Dat.FileParsing;
@@ -373,131 +376,146 @@ public static class SawyerStreamWriter
 		return [.. objHeader.ToArray(), .. encoded];
 	}
 
+	static MemoryStream WriteLocoStructToStream(MemoryStream ms, ILocoStruct obj)
+	{
+		var objectType = obj.ObjectType;
+
+#pragma warning disable IDE0010 // Add missing cases
+		switch (objectType)
+		{
+			case ObjectType.RoadExtra:
+				return DatRoadExtraObject.Save(ms, (RoadExtraObject)obj);
+			default:
+				ms.Write(ByteWriter.WriteLocoStruct(obj));
+				return ms;
+		}
+#pragma warning restore IDE0010 // Add missing cases
+	}
+
 	public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+{
+	using var rawObjStream = new MemoryStream();
+
+	// obj
+	_ = WriteLocoStructToStream(rawObjStream, obj.Object);
+
+	// string table
+	foreach (var ste in obj.StringTable.Table)
 	{
-		using var rawObjStream = new MemoryStream();
-
-		// obj
-		var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
-		rawObjStream.Write(objBytes);
-
-		// string table
-		foreach (var ste in obj.StringTable.Table)
+		foreach (var language in ste.Value.Where(str => !string.IsNullOrEmpty(str.Value))) // skip strings with empty content
 		{
-			foreach (var language in ste.Value.Where(str => !string.IsNullOrEmpty(str.Value))) // skip strings with empty content
-			{
-				rawObjStream.WriteByte((byte)language.Key);
+			rawObjStream.WriteByte((byte)language.Key);
 
-				var strBytes = Encoding.Latin1.GetBytes(language.Value);
-				rawObjStream.Write(strBytes, 0, strBytes.Length);
-				rawObjStream.WriteByte((byte)'\0');
-			}
-
-			rawObjStream.WriteByte(0xff);
+			var strBytes = Encoding.Latin1.GetBytes(language.Value);
+			rawObjStream.Write(strBytes, 0, strBytes.Length);
+			rawObjStream.WriteByte((byte)'\0');
 		}
 
-		// variable data
-		if (obj.Object is ILocoStructVariableData objV)
-		{
-			var variableBytes = objV.SaveVariable();
-			rawObjStream.Write(variableBytes);
-		}
-
-		// graphics data
-		SaveImageTable(obj.G1Elements, rawObjStream);
-
-		rawObjStream.Flush();
-
-		// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
-
-		// s5 header
-		var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
-
-		if (sourceGame == SourceGame.Vanilla && !allowWritingAsVanilla)
-		{
-			sourceGame = SourceGame.Custom;
-			logger.Warning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
-		}
-
-		var s5Header = new S5Header(objName, 0)
-		{
-			SourceGame = sourceGame,
-			ObjectType = attr!.ObjectType
-		};
-
-		// calculate checksum
-		var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
-		var asciiName = objName.PadRight(8, ' ').Take(8).Select(c => (byte)c).ToArray();
-		var rawObjBytes = rawObjStream.ToArray();
-		s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, rawObjBytes);
-
-		using var encodedObjStream = new MemoryStream(Encode(encoding, rawObjBytes));
-		var objHeader = new ObjectHeader(encoding, (uint32_t)encodedObjStream.Length);
-
-		// actual writing
-		var headerStream = new MemoryStream();
-
-		// s5 header
-		headerStream.Write(s5Header.Write());
-
-		// obj header
-		headerStream.Write(objHeader.Write());
-
-		// loco object itself, including string and graphics table
-		headerStream.Write(encodedObjStream.ToArray());
-
-		// stream cleanup
-		headerStream.Flush();
-
-		headerStream.Close();
-		encodedObjStream.Close();
-
-		return headerStream;
+		rawObjStream.WriteByte(0xff);
 	}
 
-	static void SaveImageTable(List<G1Element32> g1Elements, Stream objStream)
+	// variable data
+	if (obj.Object is ILocoStructVariableData objV)
 	{
-		if (g1Elements != null && g1Elements.Count != 0)
-		{
-			// encode if necessary
-			List<G1Element32> encoded = [];
-			var offsetBytesIntoImageData = 0;
-			foreach (var g1Element in g1Elements)
-			{
-				// this copies everything but it should be fine for now
-				var newElement = g1Element with
-				{
-					ImageData = g1Element.GetImageDataForSave(),
-					Offset = (uint)offsetBytesIntoImageData,
-				};
-
-				offsetBytesIntoImageData += newElement.ImageData.Length;
-				encoded.Add(newElement);
-			}
-
-			// write G1Header
-			objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Count));
-			objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Sum(x => x.ImageData.Length)));
-
-			// write G1Element headers
-			foreach (var g1Element in encoded)
-			{
-				objStream.Write(g1Element.Write());
-			}
-
-			// write G1Elements ImageData
-			foreach (var g1Element in encoded)
-			{
-				objStream.Write(g1Element.ImageData);
-			}
-		}
+		var variableBytes = objV.SaveVariable();
+		rawObjStream.Write(variableBytes);
 	}
 
-	public static void SaveG1(string filename, G1Dat g1)
+	// graphics data
+	SaveImageTable(obj.G1Elements, rawObjStream);
+
+	rawObjStream.Flush();
+
+	// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
+
+	// s5 header
+	var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
+
+	if (sourceGame == SourceGame.Vanilla && !allowWritingAsVanilla)
 	{
-		using (var fs = File.OpenWrite(filename))
+		sourceGame = SourceGame.Custom;
+		logger.Warning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
+	}
+
+	var s5Header = new S5Header(objName, 0)
+	{
+		SourceGame = sourceGame,
+		ObjectType = attr!.ObjectType
+	};
+
+	// calculate checksum
+	var headerFlag = BitConverter.GetBytes(s5Header.Flags).AsSpan()[0..1];
+	var asciiName = objName.PadRight(8, ' ').Take(8).Select(c => (byte)c).ToArray();
+	var rawObjBytes = rawObjStream.ToArray();
+	s5Header.Checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, asciiName, rawObjBytes);
+
+	using var encodedObjStream = new MemoryStream(Encode(encoding, rawObjBytes));
+	var objHeader = new ObjectHeader(encoding, (uint32_t)encodedObjStream.Length);
+
+	// actual writing
+	var headerStream = new MemoryStream();
+
+	// s5 header
+	headerStream.Write(s5Header.Write());
+
+	// obj header
+	headerStream.Write(objHeader.Write());
+
+	// loco object itself, including string and graphics table
+	headerStream.Write(encodedObjStream.ToArray());
+
+	// stream cleanup
+	headerStream.Flush();
+
+	headerStream.Close();
+	encodedObjStream.Close();
+
+	return headerStream;
+}
+
+static void SaveImageTable(List<G1Element32> g1Elements, Stream objStream)
+{
+	if (g1Elements != null && g1Elements.Count != 0)
+	{
+		// encode if necessary
+		List<G1Element32> encoded = [];
+		var offsetBytesIntoImageData = 0;
+		foreach (var g1Element in g1Elements)
 		{
-			SaveImageTable(g1.G1Elements, fs);
+			// this copies everything but it should be fine for now
+			var newElement = g1Element with
+			{
+				ImageData = g1Element.GetImageDataForSave(),
+				Offset = (uint)offsetBytesIntoImageData,
+			};
+
+			offsetBytesIntoImageData += newElement.ImageData.Length;
+			encoded.Add(newElement);
+		}
+
+		// write G1Header
+		objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Count));
+		objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Sum(x => x.ImageData.Length)));
+
+		// write G1Element headers
+		foreach (var g1Element in encoded)
+		{
+			objStream.Write(g1Element.Write());
+		}
+
+		// write G1Elements ImageData
+		foreach (var g1Element in encoded)
+		{
+			objStream.Write(g1Element.ImageData);
 		}
 	}
+}
+
+public static void SaveG1(string filename, G1Dat g1)
+{
+	using (var fs = File.OpenWrite(filename))
+	{
+		SaveImageTable(g1.G1Elements, fs);
+	}
+}
 }

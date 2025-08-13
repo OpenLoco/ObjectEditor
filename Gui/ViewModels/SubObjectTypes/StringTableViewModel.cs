@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Gui.ViewModels;
 
-public record LanguageTranslationModel(LanguageId Language, string Translation);
+public record LanguageTranslationModel(DatLanguageId Language, string Translation);
 
 public class StringTableViewModel : ReactiveObject
 {

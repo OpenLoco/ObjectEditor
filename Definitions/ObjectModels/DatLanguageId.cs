@@ -1,6 +1,6 @@
-namespace Dat.Data;
+namespace Definitions.ObjectModels;
 
-public enum LanguageId : uint8_t
+public enum LanguageId : uint8_t // for now - simply copy the loco one
 {
 	English_UK,
 	English_US,

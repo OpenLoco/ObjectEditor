@@ -1,7 +1,6 @@
-using Dat.Data;
 using System.ComponentModel;
 
-namespace Dat.Types;
+namespace Definitions.ObjectModels;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class StringTable

@@ -4,10 +4,10 @@ using ReactiveUI.Fody.Helpers;
 
 namespace Gui.Models;
 
-public class LanguageTranslation(LanguageId language, string translation) : ReactiveObject
+public class LanguageTranslation(DatLanguageId language, string translation) : ReactiveObject
 {
 	[Reactive]
-	public LanguageId Language { get; set; } = language;
+	public DatLanguageId Language { get; set; } = language;
 
 	[Reactive]
 	public string Translation { get; set; } = translation;

@@ -1,10 +1,8 @@
-using System.ComponentModel;
+namespace Definitions.ObjectModels;
 
-namespace Dat.Types;
-
-[TypeConverter(typeof(ExpandableObjectConverter))]
 public interface ILocoObject : IHasG1Elements
 {
 	ILocoStruct Object { get; set; }
+
 	StringTable StringTable { get; set; }
 }

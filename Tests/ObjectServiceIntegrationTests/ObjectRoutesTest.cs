@@ -174,26 +174,26 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		var results = await ClientHelpers.PostAsync<DtoUploadDat, DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, dtoUploadDat);
 
 		// assert
-		var expectedStringTable = new Dictionary<string, Dictionary<LanguageId, string>>()
+		var expectedStringTable = new Dictionary<string, Dictionary<DatLanguageId, string>>()
 		{
 			{
 				"Name",
-				new Dictionary<LanguageId, string>()
+				new Dictionary<DatLanguageId, string>()
 				{
-					{ LanguageId.English_UK, "AZ Voith Gravita 15 BB Northrail" },
-					{ LanguageId.English_US, "AZ Voith Gravita 15 BB Northrail" },
-					{ LanguageId.French, "AZ Voith Gravita 15 BB Northrail" },
-					{ LanguageId.German, "AZ Voith Gravita 15 BB Northrail" },
-					{ LanguageId.Spanish, "AZ Voith Gravita 15 BB Northrail" },
-					{ LanguageId.Italian, "AZ Voith Gravita 15 BB Northrail" },
-					{ LanguageId.Dutch, string.Empty },
-					{ LanguageId.Swedish, string.Empty },
-					{ LanguageId.Japanese, string.Empty },
-					{ LanguageId.Korean, "AZ Voith Gravita 15 BB Northrail" },
-					{ LanguageId.Chinese_Simplified, string.Empty },
-					{ LanguageId.Chinese_Traditional, "AZ Voith Gravita 15 BB Northrail" },
-					{ LanguageId.id_12, string.Empty },
-					{ LanguageId.Portuguese, string.Empty },
+					{ DatLanguageId.English_UK, "AZ Voith Gravita 15 BB Northrail" },
+					{ DatLanguageId.English_US, "AZ Voith Gravita 15 BB Northrail" },
+					{ DatLanguageId.French, "AZ Voith Gravita 15 BB Northrail" },
+					{ DatLanguageId.German, "AZ Voith Gravita 15 BB Northrail" },
+					{ DatLanguageId.Spanish, "AZ Voith Gravita 15 BB Northrail" },
+					{ DatLanguageId.Italian, "AZ Voith Gravita 15 BB Northrail" },
+					{ DatLanguageId.Dutch, string.Empty },
+					{ DatLanguageId.Swedish, string.Empty },
+					{ DatLanguageId.Japanese, string.Empty },
+					{ DatLanguageId.Korean, "AZ Voith Gravita 15 BB Northrail" },
+					{ DatLanguageId.Chinese_Simplified, string.Empty },
+					{ DatLanguageId.Chinese_Traditional, "AZ Voith Gravita 15 BB Northrail" },
+					{ DatLanguageId.id_12, string.Empty },
+					{ DatLanguageId.Portuguese, string.Empty },
 				}
 			},
 		};

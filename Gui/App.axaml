@@ -13,7 +13,7 @@
 
 	<Application.DataTemplates>
 		<local:ViewLocator/>
-		<DataTemplate DataType="vm:S5HeaderViewModel">
+		<DataTemplate DataType="vm:ObjectModelHeaderViewModel">
 			<pgc:PropertyGrid x:Name="propertyGrid_S5HeaderVm" DataContext="{Binding}" IsCategoryVisible="False"></pgc:PropertyGrid>
 		</DataTemplate>
 		<DataTemplate DataType="vm:ObjectHeaderViewModel">

@@ -10,6 +10,13 @@ using Definitions.SourceData;
 using Definitions.Web;
 using System.IO.Compression;
 using System.IO.Hashing;
+using Definitions.ObjectModels.Types;
+using Dat.FileParsing;
+using Definitions.ObjectModels.Objects.Vehicle;
+using Index;
+using Dat.Converters;
+using Dat;
+using SixLabors.ImageSharp;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
@@ -81,7 +88,6 @@ public class ObjectRouteHandler : ITableRouteHandler
 			SubObjectId = 0,
 			Licence = null,
 		};
-
 
 		_ = await db.Objects.AddAsync(tblObject);
 		_ = await db.SaveChangesAsync();
@@ -305,7 +311,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existing!.UploadedDate}");
 		}
 
-		if (db.DoesObjectExist(hdrs.S5, out var existingObject))
+		if (db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObject))
 		{
 			// todo: if we get here - the object doesn't exist but the dat object does - we should then link them
 			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
@@ -341,7 +347,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			Name = objName, // same as DB seeder name. this is NOT unique
 			Description = string.Empty,
 			ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
-			ObjectType = hdrs.S5.ObjectType,
+			ObjectType = hdrs.S5.ObjectType.Convert(),
 			VehicleType = vehicleType,
 			Availability = request.InitialAvailability,
 			CreatedDate = request.CreatedDate,
@@ -565,7 +571,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
 		{
 			var count = 0;
-			foreach (var g1 in locoObj!.Value!.LocoObject!.G1Elements)
+			foreach (var g1 in locoObj!.Value!.LocoObject!.GraphicsElements)
 			{
 				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 				{

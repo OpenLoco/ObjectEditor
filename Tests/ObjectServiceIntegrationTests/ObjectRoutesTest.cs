@@ -7,6 +7,7 @@ using Definitions.DTO;
 using Definitions.DTO.Comparers;
 using Definitions.DTO.Mappers;
 using Definitions.Web;
+using Index;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using System.IO.Hashing;

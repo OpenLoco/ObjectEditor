@@ -37,19 +37,19 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 		SellCostFactor = to.SellCostFactor;
 		TunnelCostFactor = to.TunnelCostFactor;
 		CostIndex = to.CostIndex;
-		CompatibleTracksAndRoads = new(to.TracksAndRoads.ConvertAll(x => new S5HeaderViewModel(x)));
-		CompatibleTrackExtras = new(to.TrackMods.ConvertAll(x => new S5HeaderViewModel(x)));
-		CompatibleSignals = new(to.Signals.ConvertAll(x => new S5HeaderViewModel(x)));
-		CompatibleTunnel = new(to.Tunnel);
-		CompatibleBridges = new(to.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
-		CompatibleStations = new(to.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
-		var_06 = to.var_06;
+		//CompatibleTracksAndRoads = new(to.TracksAndRoads.ConvertAll(x => new S5HeaderViewModel(x)));
+		//CompatibleTrackExtras = new(to.TrackMods.ConvertAll(x => new S5HeaderViewModel(x)));
+		//CompatibleSignals = new(to.Signals.ConvertAll(x => new S5HeaderViewModel(x)));
+		//CompatibleTunnel = new(to.Tunnel);
+		//CompatibleBridges = new(to.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
+		//CompatibleStations = new(to.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
+		//var_06 = to.var_06;
 	}
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override TrackObject GetAsStruct(TrackObject to)
-		=> to with
+	public override TrackObject GetAsStruct()
+		=> new()
 		{
 			Flags = Flags,
 			TrackPieces = TrackPieces,
@@ -60,17 +60,17 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 			SellCostFactor = SellCostFactor,
 			TunnelCostFactor = TunnelCostFactor,
 			CostIndex = CostIndex,
-			NumCompatibleTracksAndRoads = (uint8_t)CompatibleTracksAndRoads.Count,
-			TracksAndRoads = CompatibleTracksAndRoads.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			NumMods = (uint8_t)CompatibleTrackExtras.Count,
-			TrackMods = CompatibleTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			NumSignals = (uint8_t)CompatibleSignals.Count,
-			Signals = CompatibleSignals.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			Tunnel = CompatibleTunnel.GetAsUnderlyingType(),
-			NumBridges = (uint8_t)CompatibleBridges.Count,
-			Bridges = CompatibleBridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			NumStations = (uint8_t)CompatibleStations.Count,
-			Stations = CompatibleStations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			var_06 = var_06,
+			//NumCompatibleTracksAndRoads = (uint8_t)CompatibleTracksAndRoads.Count,
+			//TracksAndRoads = CompatibleTracksAndRoads.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//NumMods = (uint8_t)CompatibleTrackExtras.Count,
+			//TrackMods = CompatibleTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//NumSignals = (uint8_t)CompatibleSignals.Count,
+			//Signals = CompatibleSignals.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//Tunnel = CompatibleTunnel.GetAsUnderlyingType(),
+			//NumBridges = (uint8_t)CompatibleBridges.Count,
+			//Bridges = CompatibleBridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//NumStations = (uint8_t)CompatibleStations.Count,
+			//Stations = CompatibleStations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//var_06 = var_06,
 		};
 }

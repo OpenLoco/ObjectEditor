@@ -1,0 +1,131 @@
+using Dat.Data;
+using Dat.FileParsing;
+using Definitions.ObjectModels;
+using System.ComponentModel;
+
+namespace Dat.Objects;
+
+public abstract class CompetitorObjectLoader : IDatObjectLoader
+{
+	public static class Constants
+	{ }
+
+	public static class Sizes
+	{ }
+
+	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
+	public static void Save(MemoryStream ms, LocoObject obj) => throw new NotImplementedException();
+}
+
+internal enum DatEmotion
+{
+	Neutral,
+	Happy,
+	Worried,
+	Thinking,
+	Dejected,
+	Surprised,
+	Scared,
+	Angry,
+	Disgusted,
+}
+
+[Flags]
+internal enum DatCompetitorNamePrefix : uint32_t
+{
+	unk0 = 1 << 0,
+	unk1 = 1 << 1,
+	unk2 = 1 << 2,
+	unk3 = 1 << 3,
+	unk4 = 1 << 4,
+	unk5 = 1 << 5,
+	unk6 = 1 << 6,
+	unk7 = 1 << 7,
+	unk8 = 1 << 8,
+	unk9 = 1 << 9,
+	unk10 = 1 << 10,
+	unk11 = 1 << 11,
+	unk12 = 1 << 12,
+}
+
+[Flags]
+internal enum DatCompetitorPlaystyle : uint32_t
+{
+	unk0 = 1 << 0,
+	unk1 = 1 << 1,
+	unk2 = 1 << 2,
+	unk3 = 1 << 3,
+	unk4 = 1 << 4,
+	unk5 = 1 << 5,
+	unk6 = 1 << 6,
+	unk7 = 1 << 7,
+	unk8 = 1 << 8,
+	unk9 = 1 << 9,
+	unk10 = 1 << 10,
+	unk11 = 1 << 11,
+	unk12 = 1 << 12,
+}
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+[LocoStructSize(0x38)]
+[LocoStructType(DatObjectType.Competitor)]
+internal record CompetitorObject(
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id FullName,
+		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id LastName,
+		[property: LocoStructOffset(0x04)] DatCompetitorNamePrefix AvailableNamePrefixes, // bitset
+		[property: LocoStructOffset(0x08)] DatCompetitorPlaystyle AvailablePlaystyles, // bitset
+		[property: LocoStructOffset(0x0C)] uint32_t Emotions, // bitset
+		[property: LocoStructOffset(0x10), Browsable(false), LocoArrayLength(CompetitorObject.ImagesLength)] image_id[] Images,
+		[property: LocoStructOffset(0x34)] uint8_t Intelligence,
+		[property: LocoStructOffset(0x35)] uint8_t Aggressiveness,
+		[property: LocoStructOffset(0x36)] uint8_t Competitiveness,
+		[property: LocoStructOffset(0x37), LocoPropertyMaybeUnused] uint8_t var_37
+	) : IImageTableNameProvider
+{
+	public const int ImagesLength = 9;
+
+	public bool Validate()
+	{
+		if ((Emotions & (1 << 0)) == 0)
+		{
+			return false;
+		}
+
+		if (Intelligence is < 1 or > 9)
+		{
+			return false;
+		}
+
+		if (Aggressiveness is < 1 or > 9)
+		{
+			return false;
+		}
+
+		return Competitiveness is >= 1 and <= 9;
+	}
+
+	public bool TryGetImageName(int id, out string? value)
+		=> ImageIdNameMap.TryGetValue(id, out value);
+
+	public static Dictionary<int, string> ImageIdNameMap = new()
+	{
+		{ 0, "smallNeutral" },
+		{ 1, "largeNeutral" },
+		{ 2, "smallHappy" },
+		{ 3, "largeHappy" },
+		{ 4, "smallWorried" },
+		{ 5, "largeWorried" },
+		{ 6, "smallThinking" },
+		{ 7, "largeThinking" },
+		{ 8, "smallDejected" },
+		{ 9, "largeDejected" },
+		{ 10, "smallSurprised" },
+		{ 11, "largeSurprised" },
+		{ 12, "smallScared" },
+		{ 13, "largeScared" },
+		{ 14, "smallAngry" },
+		{ 15, "largeAngry" },
+		{ 16, "smallDisgusted" },
+		{ 17, "largeDisgusted" },
+	};
+}

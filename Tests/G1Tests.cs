@@ -27,12 +27,12 @@ public class G1Tests
 		{
 			Assert.That(g1.G1Header.NumEntries, Is.EqualTo(g1a.G1Header.NumEntries));
 			Assert.That(g1.G1Header.TotalSize, Is.EqualTo(g1a.G1Header.TotalSize));
-			Assert.That(g1.G1Elements, Has.Count.EqualTo(g1a.G1Elements.Count));
+			Assert.That(g1.GraphicsElements, Has.Count.EqualTo(g1a.GraphicsElements.Count));
 		});
 
 		Assert.Multiple(() =>
 		{
-			foreach (var (expected, actual, i) in g1.G1Elements.Zip(g1a.G1Elements).Select((item, i) => (item.First, item.Second, i)))
+			foreach (var (expected, actual, i) in g1.GraphicsElements.Zip(g1a.GraphicsElements).Select((item, i) => (item.First, item.Second, i)))
 			{
 				AssertG1ElementsEqual(expected, actual, i);
 			}
@@ -51,7 +51,7 @@ public class G1Tests
 	public void LoadSaveLoadG1_RLERunsGreaterThan127(int element)
 	{
 		var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
-		var d1 = g1!.G1Elements[element];
+		var d1 = g1!.GraphicsElements[element];
 		var e1 = SawyerStreamWriter.EncodeRLEImageData(d1);
 		var d2 = SawyerStreamReader.DecodeRLEImageData(d1 with { ImageData = e1 });
 		Assert.That(d2, Is.EqualTo(d1.ImageData).AsCollection);

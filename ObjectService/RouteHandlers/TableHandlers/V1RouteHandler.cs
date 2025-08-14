@@ -12,6 +12,11 @@ using System.IO.Compression;
 using static ObjectService.RouteHandlers.TableHandlers.V1DtoExtensions;
 using Definitions.ObjectModels.Types;
 using Definitions.ObjectModels.Objects.Vehicle;
+using Dat.FileParsing;
+using Dat;
+using SixLabors.ImageSharp;
+using Index;
+using Dat.Converters;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
@@ -241,7 +246,7 @@ public class LegacyRouteHandler()
 		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
 		{
 			var count = 0;
-			foreach (var g1 in locoObj!.Value!.LocoObject!.G1Elements)
+			foreach (var g1 in locoObj!.Value!.LocoObject!.GraphicsElements)
 			{
 				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 				{
@@ -526,7 +531,7 @@ public class LegacyRouteHandler()
 			return Results.BadRequest("Invalid DAT file.");
 		}
 
-		if (db.DoesObjectExist(hdrs.S5, out var existingObject))
+		if (db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObject))
 		{
 			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
 		}
@@ -557,7 +562,7 @@ public class LegacyRouteHandler()
 			Name = uuid.ToString(),
 			Description = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}",
 			ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
-			ObjectType = hdrs.S5.ObjectType,
+			ObjectType = hdrs.S5.ObjectType.Convert(),
 			VehicleType = vehicleType,
 			Availability = request.InitialAvailability,
 			CreatedDate = createdDate,

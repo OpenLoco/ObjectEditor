@@ -6,8 +6,10 @@ using Dat.Types;
 using Dat.Types.Audio;
 using Dat.Types.SCV5;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Types;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Dat.FileParsing;
 
@@ -173,6 +175,17 @@ public static class SawyerStreamReader
 			return (new DatFileInfo(s5Header, objectHeader), null);
 		}
 
+		// new stream reader
+		using (var ms = new MemoryStream(decodedData))
+		{
+			var locoObject = GetLocoObject(s5Header.ObjectType, ms);
+			ValidateLocoStruct(s5Header, locoObject.Object, logger);
+			return new(new DatFileInfo(s5Header, objectHeader), locoObject);
+		}
+
+		/*
+	else // old readonlyspan reader
+	{
 		ReadOnlySpan<byte> remainingData = decodedData;
 		var locoStructSize = ObjectAttributes.StructSize(s5Header.ObjectType);
 
@@ -220,6 +233,8 @@ public static class SawyerStreamReader
 		ValidateLocoStruct(s5Header, locoStruct, logger);
 
 		return new(new DatFileInfo(s5Header, objectHeader), newObj);
+	}
+	*/
 	}
 
 	static void ValidateLocoStruct(S5Header s5Header, ILocoStruct locoStruct, ILogger? logger)
@@ -269,51 +284,44 @@ public static class SawyerStreamReader
 		return enc.GetString(data[0..(ptr - 1)]); // do -1 to exclude the \0
 	}
 
-	public static StringTable ReadStringTableStream(MemoryStream dataStream, string[] stringNames, ILogger? logger)
+	static string CStringToString(BinaryReader br, Encoding enc)
+	{
+		List<byte> data = [];
+		byte b;
+		while ((b = br.ReadByte()) != '\0')
+		{
+			data.Add(b);
+		}
+
+		return enc.GetString([.. data]); // do -1 to exclude the \0
+	}
+
+	public static StringTable ReadStringTableStream(MemoryStream stream, string[] stringNames, ILogger? logger)
 	{
 		var stringTable = new StringTable();
 
-		if (dataStream.Length == 0 || stringNames.Length == 0)
+		if (stream.Length == 0 || stringNames.Length == 0)
 		{
 			logger?.Warning("No data for language table");
 			return stringTable;
 		}
 
-		var ptr = 0;
-
-		foreach (var locoString in stringNames)
+		using (var br = new LocoBinaryReader(stream, leaveOpen: true))
 		{
-			// init language table
-			var languageDict = stringTable.AddNewString(locoString);
-
-			// read string
-			while (dataStream.Position < dataStream.Length)
+			foreach (var locoString in stringNames)
 			{
-				var currentByte = dataStream.ReadByte();
-				if (currentByte == -1 || currentByte == 0xFF)
+				// init language table
+				var languageDict = stringTable.AddNewString(locoString);
+
+				// read string
+				while (br.PeekByte() != 0xFF)
 				{
-					break;
+					var lang = ((DatLanguageId)br.ReadByte()).Convert();
+					languageDict[lang] = CStringToString(br, Encoding.Latin1);
 				}
 
-				var lang = ((DatLanguageId)currentByte).Convert();
-				var startPosition = dataStream.Position;
-
-				while (dataStream.Position < dataStream.Length && dataStream.ReadByte() != 0)
-				{
-					// Read until null terminator
-				}
-
-				var length = (int)(dataStream.Position - startPosition - 1);
-				dataStream.Position = startPosition;
-
-				var buffer = new byte[length];
-				dataStream.Read(buffer, 0, length);
-				languageDict[lang] = Encoding.Latin1.GetString(buffer);
-
-				ptr += length + 1; // Account for the null terminator
+				_ = br.ReadByte(); // read one because we skipped the 0xFF byte at the end
 			}
-
-			ptr++; // add one because we skipped the 0xFF byte at the end
 		}
 
 		return stringTable;
@@ -374,7 +382,7 @@ public static class SawyerStreamReader
 		return new G1Dat(g1Header, imageTable);
 	}
 
-	static (G1Header Header, List<GraphicsElement> Table, int BytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+	public static (G1Header Header, List<GraphicsElement> Table, int BytesRead) LoadImageTable(ReadOnlySpan<byte> data)
 	{
 		if (data.Length < ObjectAttributes.StructSize<G1Header>())
 		{
@@ -435,61 +443,53 @@ public static class SawyerStreamReader
 			return (new G1Header(0, 0), []);
 		}
 
-		var g1Element32s = new List<DatG1Element32>();
-
-		// Read G1Header
-		var headerBuffer = new byte[ObjectAttributes.StructSize<G1Header>()];
-		stream.Read(headerBuffer, 0, headerBuffer.Length);
-		var g1Header = new G1Header(
-			BitConverter.ToUInt32(headerBuffer, 0),
-			BitConverter.ToUInt32(headerBuffer, 4));
-
-		// Read G1Element headers
-		var g1ElementHeadersSize = (int)g1Header.NumEntries * DatG1Element32.StructLength;
-		var g1ElementHeaders = new byte[g1ElementHeadersSize];
-		stream.Read(g1ElementHeaders, 0, g1ElementHeadersSize);
-
-		// Read image data
-		var imageDataSize = (int)g1Header.TotalSize - g1ElementHeadersSize;
-		var imageData = new byte[imageDataSize];
-		stream.Read(imageData, 0, imageDataSize);
-		g1Header.ImageData = imageData;
-
-		for (var i = 0; i < g1Header.NumEntries; ++i)
+		using (var br = new LocoBinaryReader(stream, leaveOpen: true))
 		{
-			var g32ElementData = g1ElementHeaders[(i * DatG1Element32.StructLength)..((i + 1) * DatG1Element32.StructLength)];
-			var g32Element = ByteReader.ReadLocoStruct<DatG1Element32>(g32ElementData);
-			g1Element32s.Add(g32Element);
-		}
+			// read G1Header
+			var numEntries = br.ReadUInt32();
+			var totalSize = br.ReadUInt32();
+			var g1Header = new G1Header(numEntries, totalSize);
 
-		// Set image data
-		for (var i = 0; i < g1Header.NumEntries; ++i)
-		{
-			var currElement = g1Element32s[i];
-
-			if (currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
+			// read G1Element headers
+			var g1Element32s = new List<DatG1Element32>();
+			for (var i = 0; i < g1Header.NumEntries; ++i)
 			{
-				if (i == 0)
+				var g32Element = ByteReader.ReadLocoStruct<DatG1Element32>(br.ReadBytes(DatG1Element32.StructLength));
+				g1Element32s.Add(g32Element);
+			}
+
+			var imageData = br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position)); // read the remaining bytes entirely
+
+			// set image data
+			for (var i = 0; i < g1Header.NumEntries; ++i)
+			{
+				var currElement = g1Element32s[i];
+
+				if (currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
 				{
-					throw new ArgumentException("First image cannot have DuplicatePrevious flag since there is no previous image");
+					if (i == 0)
+					{
+						throw new ArgumentException("First image cannot have DuplicatePrevious flag since there is no previous image");
+					}
+
+					currElement.ImageData = [.. g1Element32s[i - 1].ImageData];
+				}
+				else
+				{
+					var nextOffset = GetNextNonDuplicateOffset(g1Element32s, i, (uint)g1Header.ImageData.Length);
+					currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
 				}
 
-				currElement.ImageData = [.. g1Element32s[i - 1].ImageData];
-			}
-			else
-			{
-				var nextOffset = GetNextNonDuplicateOffset(g1Element32s, i, (uint)g1Header.ImageData.Length);
-				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
+				// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
+				// image (which was also compressed) is now uncompressed, so we don't need do double-uncompress it.
+				if (currElement.Flags.HasFlag(DatG1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
+				{
+					currElement.ImageData = DecodeRLEImageData(currElement);
+				}
 			}
 
-			// If RLE compressed, uncompress it
-			if (currElement.Flags.HasFlag(DatG1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
-			{
-				currElement.ImageData = DecodeRLEImageData(currElement);
-			}
+			return (g1Header, g1Element32s.Select(x => x.Convert()).ToList());
 		}
-
-		return (g1Header, g1Element32s.Select(x => x.Convert()).ToList());
 	}
 
 	static uint GetNextNonDuplicateOffset(List<DatG1Element32> g1Element32s, int i, uint imageDateLength)
@@ -559,43 +559,43 @@ public static class SawyerStreamReader
 		return dstBuf;
 	}
 
-	public static ILocoStruct GetLocoStruct(DatObjectType objectType, ReadOnlySpan<byte> data)
+	public static LocoObject GetLocoObject(DatObjectType objectType, MemoryStream ms)
 		=> objectType switch
 		{
-			DatObjectType.Airport => ByteReader.ReadLocoStruct<AirportObject>(data),
-			DatObjectType.Bridge => ByteReader.ReadLocoStruct<BridgeObject>(data),
-			DatObjectType.Building => ByteReader.ReadLocoStruct<BuildingObject>(data),
-			DatObjectType.Cargo => ByteReader.ReadLocoStruct<CargoObject>(data),
-			DatObjectType.CliffEdge => ByteReader.ReadLocoStruct<CliffEdgeObject>(data),
-			DatObjectType.Climate => ByteReader.ReadLocoStruct<ClimateObject>(data),
-			DatObjectType.Competitor => ByteReader.ReadLocoStruct<CompetitorObject>(data),
-			DatObjectType.Currency => ByteReader.ReadLocoStruct<CurrencyObject>(data),
-			DatObjectType.Dock => ByteReader.ReadLocoStruct<DockObject>(data),
-			DatObjectType.HillShapes => ByteReader.ReadLocoStruct<HillShapesObject>(data),
-			DatObjectType.Industry => ByteReader.ReadLocoStruct<IndustryObject>(data),
-			DatObjectType.InterfaceSkin => ByteReader.ReadLocoStruct<InterfaceSkinObject>(data),
-			DatObjectType.Land => ByteReader.ReadLocoStruct<LandObject>(data),
-			DatObjectType.LevelCrossing => ByteReader.ReadLocoStruct<LevelCrossingObject>(data),
-			DatObjectType.Region => ByteReader.ReadLocoStruct<RegionObject>(data),
-			DatObjectType.RoadExtra => DatRoadExtraObject.Load(data),
-			DatObjectType.Road => ByteReader.ReadLocoStruct<RoadObject>(data),
-			DatObjectType.RoadStation => ByteReader.ReadLocoStruct<RoadStationObject>(data),
-			DatObjectType.Scaffolding => ByteReader.ReadLocoStruct<ScaffoldingObject>(data),
-			DatObjectType.ScenarioText => ByteReader.ReadLocoStruct<ScenarioTextObject>(data),
-			DatObjectType.Snow => ByteReader.ReadLocoStruct<SnowObject>(data),
-			DatObjectType.Sound => ByteReader.ReadLocoStruct<SoundObject>(data),
-			DatObjectType.Steam => ByteReader.ReadLocoStruct<SteamObject>(data),
-			DatObjectType.StreetLight => ByteReader.ReadLocoStruct<StreetLightObject>(data),
-			DatObjectType.TownNames => ByteReader.ReadLocoStruct<TownNamesObject>(data),
-			DatObjectType.TrackExtra => ByteReader.ReadLocoStruct<TrackExtraObject>(data),
-			DatObjectType.Track => ByteReader.ReadLocoStruct<TrackObject>(data),
-			DatObjectType.TrackSignal => DatTrackSignalObject.Load(data),
-			DatObjectType.TrackStation => ByteReader.ReadLocoStruct<TrackStationObject>(data),
-			DatObjectType.Tree => ByteReader.ReadLocoStruct<TreeObject>(data),
-			DatObjectType.Tunnel => ByteReader.ReadLocoStruct<TunnelObject>(data),
-			DatObjectType.Vehicle => ByteReader.ReadLocoStruct<VehicleObject>(data),
-			DatObjectType.Wall => ByteReader.ReadLocoStruct<WallObject>(data),
-			DatObjectType.Water => ByteReader.ReadLocoStruct<WaterObject>(data),
+			DatObjectType.Airport => AirportObjectLoader.Load(ms),
+			DatObjectType.RoadExtra => RoadExtraObjectLoader.Load(ms),
+			DatObjectType.TrackSignal => TrackSignalObjectLoader.Load(ms),
+			DatObjectType.Steam => SteamObjectLoader.Load(ms),
+			DatObjectType.InterfaceSkin => InterfaceSkinObjectLoader.Load(ms),
+			DatObjectType.Sound => SoundObjectLoader.Load(ms),
+			DatObjectType.Currency => CurrencyObjectLoader.Load(ms),
+			DatObjectType.CliffEdge => CliffEdgeObjectLoader.Load(ms),
+			DatObjectType.Water => WaterObjectLoader.Load(ms),
+			DatObjectType.Land => LandObjectLoader.Load(ms),
+			DatObjectType.TownNames => TownNamesObjectLoader.Load(ms),
+			DatObjectType.Cargo => CargoObjectLoader.Load(ms),
+			DatObjectType.Wall => WallObjectLoader.Load(ms),
+			DatObjectType.LevelCrossing => LevelCrossingObjectLoader.Load(ms),
+			DatObjectType.StreetLight => StreetLightObjectLoader.Load(ms),
+			DatObjectType.Tunnel => TunnelObjectLoader.Load(ms),
+			DatObjectType.Bridge => BridgeObjectLoader.Load(ms),
+			DatObjectType.TrackStation => TrackStationObjectLoader.Load(ms),
+			DatObjectType.TrackExtra => TrackExtraObjectLoader.Load(ms),
+			DatObjectType.Track => TrackObjectLoader.Load(ms),
+			DatObjectType.RoadStation => RoadStationObjectLoader.Load(ms),
+			DatObjectType.Road => RoadObjectLoader.Load(ms),
+			DatObjectType.Dock => DockObjectLoader.Load(ms),
+			DatObjectType.Vehicle => VehicleObjectLoader.Load(ms),
+			DatObjectType.Tree => TreeObjectLoader.Load(ms),
+			DatObjectType.Snow => SnowObjectLoader.Load(ms),
+			DatObjectType.Climate => ClimateObjectLoader.Load(ms),
+			DatObjectType.HillShapes => HillShapesObjectLoader.Load(ms),
+			DatObjectType.Building => BuildingObjectLoader.Load(ms),
+			DatObjectType.Scaffolding => ScaffoldingObjectLoader.Load(ms),
+			DatObjectType.Industry => IndustryObjectLoader.Load(ms),
+			DatObjectType.Region => RegionObjectLoader.Load(ms),
+			DatObjectType.Competitor => CompetitorObjectLoader.Load(ms),
+			DatObjectType.ScenarioText => ScenarioTextObjectLoader.Load(ms),
 			_ => throw new ArgumentOutOfRangeException(nameof(objectType), $"unknown object type {objectType}")
 		};
 

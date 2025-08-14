@@ -17,6 +17,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dat.Converters;
+using Index;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Types;
 
 namespace Gui.Models;
 
@@ -275,7 +278,7 @@ public class ObjectEditorModel : IDisposable
 				Logger.Warning($"Cached object {filesystemItem.DisplayName} had no data in DatBytes");
 				var fakeS5Header = new S5Header(0, firstLinkedDatFile.DatName, firstLinkedDatFile.DatChecksum)
 				{
-					ObjectType = cachedLocoObjDto.ObjectType,
+					ObjectType = cachedLocoObjDto.ObjectType.Convert(),
 					ObjectSource = cachedLocoObjDto.ObjectSource.Convert()
 				};
 				fileInfo = new DatFileInfo(fakeS5Header, ObjectHeader.NullHeader);
@@ -299,7 +302,7 @@ public class ObjectEditorModel : IDisposable
 
 			if (locoObject != null)
 			{
-				foreach (var i in locoObject.G1Elements)
+				foreach (var i in locoObject.GraphicsElements)
 				{
 					if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 					{
@@ -341,7 +344,7 @@ public class ObjectEditorModel : IDisposable
 
 			if (locoObject != null)
 			{
-				foreach (var i in locoObject.G1Elements)
+				foreach (var i in locoObject.GraphicsElements)
 				{
 					if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 					{

@@ -36,15 +36,15 @@ public class RoadViewModel : LocoObjectViewModel<RoadObject>
 		SellCostFactor = ro.SellCostFactor;
 		TunnelCostFactor = ro.TunnelCostFactor;
 		CostIndex = ro.CostIndex;
-		Tunnel = new(ro.Tunnel);
-		Compatible = new(ro.Compatible.ConvertAll(x => new S5HeaderViewModel(x)));
-		Mods = new(ro.Mods.ConvertAll(x => new S5HeaderViewModel(x)));
-		Bridges = new(ro.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
-		Stations = new(ro.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
+		//Tunnel = new(ro.Tunnel);
+		//Compatible = new(ro.Compatible.ConvertAll(x => new S5HeaderViewModel(x)));
+		//Mods = new(ro.Mods.ConvertAll(x => new S5HeaderViewModel(x)));
+		//Bridges = new(ro.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
+		//Stations = new(ro.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
 	}
 
-	public override RoadObject GetAsStruct(RoadObject ro)
-		=> ro with
+	public override RoadObject GetAsStruct()
+		=> new()
 		{
 			Flags = Flags,
 			RoadPieces = RoadPieces,
@@ -56,14 +56,14 @@ public class RoadViewModel : LocoObjectViewModel<RoadObject>
 			SellCostFactor = SellCostFactor,
 			TunnelCostFactor = TunnelCostFactor,
 			CostIndex = CostIndex,
-			NumCompatible = (uint8_t)Compatible.Count,
-			Compatible = Compatible.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			NumMods = (uint8_t)Mods.Count,
-			Mods = Mods.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			Tunnel = Tunnel.GetAsUnderlyingType(),
-			NumBridges = (uint8_t)Bridges.Count,
-			Bridges = Bridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			NumStations = (uint8_t)Stations.Count,
-			Stations = Stations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//NumCompatible = (uint8_t)Compatible.Count,
+			//Compatible = Compatible.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//NumMods = (uint8_t)Mods.Count,
+			//Mods = Mods.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//Tunnel = Tunnel.GetAsUnderlyingType(),
+			//NumBridges = (uint8_t)Bridges.Count,
+			//Bridges = Bridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//NumStations = (uint8_t)Stations.Count,
+			//Stations = Stations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 		};
 }

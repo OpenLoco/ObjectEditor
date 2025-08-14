@@ -30,11 +30,11 @@ public class TblObjectDock : DbSubObject, IConvertibleToTable<TblObjectDock, Doc
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
 			Flags = obj.Flags,
-			NumBuildingPartAnimations = obj.NumBuildingPartAnimations,
-			NumBuildingVariationParts = obj.NumBuildingVariationParts,
+			NumBuildingPartAnimations = (uint8_t)obj.BuildingPartAnimations.Count,
+			NumBuildingVariationParts = (uint8_t)obj.BuildingVariationParts.Count,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
-			BoatPositionX = obj.BoatPositionX,
-			BoatPositionY = obj.BoatPositionY,
+			BoatPositionX = obj.BoatPosition.X,
+			BoatPositionY = obj.BoatPosition.Y,
 		};
 }

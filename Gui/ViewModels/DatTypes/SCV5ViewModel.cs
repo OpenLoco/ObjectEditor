@@ -2,7 +2,9 @@ using Avalonia.Media.Imaging;
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types.SCV5;
+using Definitions.ObjectModels.Types;
 using Gui.Models;
+using Index;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -68,8 +70,8 @@ public class SCV5ViewModel : BaseLocoFileViewModel
 			return;
 		}
 
-		RequiredObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. CurrentS5File.RequiredObjects.Where(x => x.Checksum != 0).Select(x => new ObjectModelHeaderViewModel(x)).OrderBy(x => x.Name)]);
-		PackedObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. CurrentS5File.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1)).OrderBy(x => x.Name)]); // note: cannot bind to this, but it'll allow us to display at least
+		//RequiredObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. CurrentS5File.RequiredObjects.Where(x => x.Checksum != 0).Select(x => new ObjectModelHeaderViewModel(x)).OrderBy(x => x.Name)]);
+		//PackedObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. CurrentS5File.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1)).OrderBy(x => x.Name)]); // note: cannot bind to this, but it'll allow us to display at least
 
 		_ = this.WhenAnyValue(o => o.TileElementX)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));

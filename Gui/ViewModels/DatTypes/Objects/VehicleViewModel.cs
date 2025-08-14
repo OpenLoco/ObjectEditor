@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.Vehicle;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
@@ -57,59 +58,54 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		Mode = vo.Mode;
 		Type = vo.Type;
 		NumCarComponents = vo.NumCarComponents;
-		TrackType = vo.TrackType == null ? null : new(vo.TrackType);
+		//TrackType = vo.TrackType == null ? null : new(vo.TrackType);
 		CostIndex = vo.CostIndex;
 		CostFactor = vo.CostFactor;
 		Reliability = vo.Reliability;
 		RunCostIndex = vo.RunCostIndex;
 		RunCostFactor = vo.RunCostFactor;
-		SpecialColourSchemeIndex = vo.SpecialColourSchemeIndex;
-		CompatibleVehicles = new(vo.CompatibleVehicles.ConvertAll(x => new S5HeaderViewModel(x)));
-		RequiredTrackExtras = new(vo.RequiredTrackExtras.ConvertAll(x => new S5HeaderViewModel(x)));
-		CarComponents = new(vo.CarComponents);
-		BodySprites = new(vo.BodySprites);
-		BogieSprites = new(vo.BogieSprites);
+		//SpecialColourSchemeIndex = vo.SpecialColourSchemeIndex;
+		//CompatibleVehicles = new(vo.CompatibleVehicles.ConvertAll(x => new S5HeaderViewModel(x)));
+		//RequiredTrackExtras = new(vo.RequiredTrackExtras.ConvertAll(x => new S5HeaderViewModel(x)));
+		//CarComponents = new(vo.CarComponents);
+		//BodySprites = new(vo.BodySprites);
+		//BogieSprites = new(vo.BogieSprites);
 		Power = vo.Power;
 		Speed = vo.Speed;
 		RackSpeed = vo.RackSpeed;
 		Weight = vo.Weight;
 		Flags = vo.Flags;
-		CompatibleCargo1 = new(vo.MaxCargo[0], new(vo.CompatibleCargoCategories[0]));
-		CompatibleCargo2 = new(vo.MaxCargo[1], new(vo.CompatibleCargoCategories[1]));
-		CargoTypeSpriteOffsets = new([.. vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
-		Animation = new(vo.Animation);
-		AnimationHeaders = new(vo.AnimationHeaders.ConvertAll(x => new S5HeaderViewModel(x)));
+		//CompatibleCargo1 = new(vo.MaxCargo[0], new(vo.CompatibleCargoCategories[0]));
+		//CompatibleCargo2 = new(vo.MaxCargo[1], new(vo.CompatibleCargoCategories[1]));
+		//CargoTypeSpriteOffsets = new([.. vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
+		//Animation = new(vo.Animation);
+		//AnimationHeaders = new(vo.AnimationHeaders.ConvertAll(x => new S5HeaderViewModel(x)));
 		ShipWakeOffset = vo.ShipWakeOffset;
 		DesignedYear = vo.DesignedYear;
 		ObsoleteYear = vo.ObsoleteYear;
-		RackRail = vo.RackRail == null ? null : new(vo.RackRail);
-		Sound = vo.Sound == null ? null : new(vo.Sound);
-		StartSounds = new(vo.StartSounds.ConvertAll(x => new S5HeaderViewModel(x)));
-		SoundType = vo.DrivingSoundType;
-		FrictionSound = vo.FrictionSound;
-		SimpleMotorSound = vo.SimpleMotorSound;
-		GearboxMotorSound = vo.GearboxMotorSound;
+		//RackRail = vo.RackRail == null ? null : new(vo.RackRail);
+		//Sound = vo.Sound == null ? null : new(vo.Sound);
+		//StartSounds = new(vo.StartSounds.ConvertAll(x => new S5HeaderViewModel(x)));
+		//SoundType = vo.DrivingSoundType;
+		//FrictionSound = vo.FrictionSound;
+		//SimpleMotorSound = vo.SimpleMotorSound;
+		//GearboxMotorSound = vo.GearboxMotorSound;
 	}
 
-	public override VehicleObject GetAsStruct(VehicleObject vo)
+	public override VehicleObject GetAsStruct()
 	{
-		foreach (var ctso in CargoTypeSpriteOffsets)
-		{
-			vo.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
-		}
-
-		return vo with
+		var vo = new VehicleObject()
 		{
 			Mode = Mode,
 			Type = Type,
 			NumCarComponents = NumCarComponents,
-			TrackType = TrackType?.GetAsUnderlyingType(),
+			//TrackType = TrackType?.GetAsUnderlyingType(),
 			CostIndex = CostIndex,
 			CostFactor = CostFactor,
 			Reliability = Reliability,
 			RunCostIndex = RunCostIndex,
 			RunCostFactor = RunCostFactor,
-			SpecialColourSchemeIndex = SpecialColourSchemeIndex,
+			//SpecialColourSchemeIndex = SpecialColourSchemeIndex,
 			Power = Power,
 			Speed = Speed,
 			RackSpeed = RackSpeed,
@@ -118,32 +114,39 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 			ShipWakeOffset = ShipWakeOffset,
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
-			RackRail = RackRail?.GetAsUnderlyingType(),
-			Sound = Sound?.GetAsUnderlyingType(),
-			StartSounds = StartSounds.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			CompatibleVehicles = CompatibleVehicles.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			RequiredTrackExtras = RequiredTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//RackRail = RackRail?.GetAsUnderlyingType(),
+			//Sound = Sound?.GetAsUnderlyingType(),
+			//StartSounds = StartSounds.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//CompatibleVehicles = CompatibleVehicles.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//RequiredTrackExtras = RequiredTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 			DrivingSoundType = SoundType,
-			FrictionSound = FrictionSound,
-			SimpleMotorSound = SimpleMotorSound,
-			GearboxMotorSound = GearboxMotorSound,
+			//FrictionSound = FrictionSound,
+			//SimpleMotorSound = SimpleMotorSound,
+			//GearboxMotorSound = GearboxMotorSound,
 			NumCompatibleVehicles = (uint8_t)CompatibleVehicles.Count,
 			NumRequiredTrackExtras = (uint8_t)RequiredTrackExtras.Count,
-			NumStartSounds = (uint8_t)StartSounds.Count,
-			MaxCargo = [CompatibleCargo1.MaxCargo, CompatibleCargo2.MaxCargo],
-			CompatibleCargoCategories1 = [.. CompatibleCargo1.CompatibleCargoCategories],
-			CompatibleCargoCategories2 = [.. CompatibleCargo2.CompatibleCargoCategories],
+			//NumStartSounds = (uint8_t)StartSounds.Count,
+			//MaxCargo = [CompatibleCargo1.MaxCargo, CompatibleCargo2.MaxCargo],
+			//CompatibleCargoCategories1 = [.. CompatibleCargo1.CompatibleCargoCategories],
+			//CompatibleCargoCategories2 = [.. CompatibleCargo2.CompatibleCargoCategories],
 		};
+
+		foreach (var ctso in CargoTypeSpriteOffsets)
+		{
+			//vo.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
+		}
+
+		return vo;
 	}
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public record CargoTypeSpriteOffset(DatCargoCategory CargoCategory, uint8_t Offset)
+public record CargoTypeSpriteOffset(CargoCategory CargoCategory, uint8_t Offset)
 {
-	public CargoTypeSpriteOffset() : this(DatCargoCategory.NULL, 0)
+	public CargoTypeSpriteOffset() : this(CargoCategory.NULL, 0)
 	{ }
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public record CompatibleCargo(uint8_t MaxCargo, BindingList<DatCargoCategory> CompatibleCargoCategories);
+public record CompatibleCargo(uint8_t MaxCargo, BindingList<CargoCategory> CompatibleCargoCategories);

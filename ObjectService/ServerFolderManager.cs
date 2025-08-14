@@ -1,4 +1,5 @@
 using Common.Logging;
+using Index;
 
 namespace ObjectService;
 

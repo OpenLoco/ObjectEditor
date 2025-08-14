@@ -13,7 +13,6 @@
 		<Grid ColumnDefinitions="*, Auto, 384" RowDefinitions="Auto, *">
 			<StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Horizontal">
 				<Button Margin="4" Command="{Binding ExportUncompressedCommand}" ToolTip.Tip="Equivalent to saving the object with 'Uncompressed' encoding">Export as uncompressed DAT</Button>
-				<Button Margin="4" Command="{Binding ViewHexCommand}">Hex Viewer</Button>
 				<SplitButton Content="{Binding LastGameObjDataFolder, StringFormat='Copy to {0} object folder'}" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}" >
 					<SplitButton.Flyout>
 						<MenuFlyout Placement="Bottom">
@@ -80,7 +79,7 @@
 				<TabItem Header="Headers">
 					<Border Margin="4" Background="{DynamicResource ExpanderContentBackground}">
 						<StackPanel Margin="4">
-							<ContentControl Content="{Binding S5HeaderViewModel}" />
+							<ContentControl Content="{Binding ObjectModelHeaderViewModel}" />
 							<ContentControl Content="{Binding ObjectHeaderViewModel}" />
 						</StackPanel>
 					</Border>

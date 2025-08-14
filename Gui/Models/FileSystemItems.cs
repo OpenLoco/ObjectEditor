@@ -1,5 +1,5 @@
-using Dat.Data;
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Vehicle;
+using Definitions.ObjectModels.Types;
 using System;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
@@ -21,8 +21,8 @@ public record FileSystemItem(
 	DateOnly? ModifiedDate = null,
 	FileLocation? FileLocation = null,
 	ObjectSource? ObjectSource = null,
-	DatObjectType? ObjectType = null,
-	DatVehicleType? VehicleType = null,
+	ObjectType? ObjectType = null,
+	VehicleType? VehicleType = null,
 	ObservableCollection<FileSystemItem>? SubNodes = null)
 {
 	[JsonIgnore]

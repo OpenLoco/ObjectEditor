@@ -6,6 +6,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using System.Threading.Tasks;
+using Definitions.ObjectModels.Types;
 
 namespace Gui.ViewModels;
 

@@ -32,7 +32,7 @@ public class G1ViewModel : BaseLocoFileViewModel
 		var images = new List<Image<Rgba32>>();
 
 		var i = 0;
-		foreach (var e in Model.G1.G1Elements)
+		foreach (var e in Model.G1.GraphicsElements)
 		{
 			try
 			{

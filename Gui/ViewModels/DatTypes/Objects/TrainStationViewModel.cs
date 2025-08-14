@@ -38,16 +38,16 @@ public class TrainStationViewModel : LocoObjectViewModel<TrackStationObject>
 		SellCostFactor = tso.SellCostFactor;
 		CostIndex = tso.CostIndex;
 		Flags = tso.Flags;
-		ImageOffsets = new(tso.ImageOffsets);
-		var_0B = tso.var_0B;
-		var_0D = tso.var_0D;
-		CompatibleTrackObjects = new(tso.CompatibleTrackObjects.ConvertAll(x => new S5HeaderViewModel(x)));
+		//ImageOffsets = new(tso.ImageOffsets);
+		//var_0B = tso.var_0B;
+		//var_0D = tso.var_0D;
+		//CompatibleTrackObjects = new(tso.CompatibleTrackObjects.ConvertAll(x => new S5HeaderViewModel(x)));
 	}
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override TrackStationObject GetAsStruct(TrackStationObject tso)
-		=> tso with
+	public override TrackStationObject GetAsStruct()
+		=> new()
 		{
 			PaintStyle = PaintStyle,
 			Height = Height,
@@ -58,9 +58,9 @@ public class TrainStationViewModel : LocoObjectViewModel<TrackStationObject>
 			SellCostFactor = SellCostFactor,
 			CostIndex = CostIndex,
 			Flags = Flags,
-			var_0B = var_0B,
-			var_0D = var_0D,
-			CompatibleTrackObjectCount = (uint8_t)CompatibleTrackObjects.Count,
-			CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//var_0B = var_0B,
+			//var_0D = var_0D,
+			//CompatibleTrackObjectCount = (uint8_t)CompatibleTrackObjects.Count,
+			//CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 		};
 }

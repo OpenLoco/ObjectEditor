@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Dock;
+using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
@@ -28,14 +29,15 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 		BuildCostFactor = @do.BuildCostFactor;
 		SellCostFactor = @do.SellCostFactor;
 		BoatPosition = @do.BoatPosition;
+		var_07 = @do.var_07;
 		BuildingPartAnimations = new(@do.BuildingPartAnimations);
 		BuildingVariationParts = new(@do.BuildingVariationParts);
-		var_07 = @do.var_07;
 		BuildingPartHeights = new(@do.BuildingPartHeights);
 	}
 
-	public override DockObject GetAsStruct(DockObject @do)
-		=> @do with
+	public override DockObject GetAsStruct()
+	{
+		var dockObject = new DockObject()
 		{
 			Flags = Flags,
 			DesignedYear = DesignedYear,
@@ -47,7 +49,8 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 			var_07 = var_07,
 			BuildingPartAnimations = [.. BuildingPartAnimations],
 			BuildingVariationParts = [.. BuildingVariationParts],
-			NumBuildingPartAnimations = (uint8_t)BuildingPartAnimations.Count,
-			NumBuildingVariationParts = (uint8_t)BuildingVariationParts.Count,
+			BuildingPartHeights = [.. BuildingPartHeights]
 		};
+		return dockObject;
+	}
 }

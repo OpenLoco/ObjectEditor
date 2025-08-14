@@ -1,4 +1,11 @@
+using Definitions.ObjectModels.Types;
+
 namespace Definitions.ObjectModels;
+
+public interface IHasGraphicsElements
+{
+	public List<GraphicsElement> GraphicsElements { get; set; }
+}
 
 public interface IImageTableNameProvider
 {

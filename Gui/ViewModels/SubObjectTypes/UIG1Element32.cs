@@ -1,4 +1,4 @@
-using Dat.Types;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
@@ -10,10 +10,10 @@ public record UIG1Element32(
 	[ReadOnly(true)] int16_t Height,
 	int16_t XOffset,
 	int16_t YOffset,
-	DatG1ElementFlags Flags,
+	GraphicsElementFlags Flags,
 	int16_t ZoomOffset)
 {
-	public UIG1Element32(int imageIndex, string imageName, DatG1Element32 g1Element32)
+	public UIG1Element32(int imageIndex, string imageName, GraphicsElement g1Element32)
 		: this(
 			imageIndex,
 			imageName,

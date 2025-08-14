@@ -31,11 +31,11 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 		SellCostFactor = ro.SellCostFactor;
 		CostIndex = ro.CostIndex;
 		Flags = ro.Flags;
-		CompatibleRoadObjects = new(ro.CompatibleRoadObjects.ConvertAll(x => new S5HeaderViewModel(x)));
+		//CompatibleRoadObjects = new(ro.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 	}
 
-	public override RoadStationObject GetAsStruct(RoadStationObject ro)
-		=> ro with
+	public override RoadStationObject GetAsStruct()
+		=> new()
 		{
 			PaintStyle = PaintStyle,
 			Height = Height,
@@ -47,6 +47,6 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 			CostIndex = CostIndex,
 			Flags = Flags,
 			CompatibleRoadObjectCount = (uint8_t)CompatibleRoadObjects.Count,
-			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 		};
 }

@@ -44,8 +44,8 @@ public class TreeViewModel : LocoObjectViewModel<TreeObject>
 		var_3C = to.var_3C;
 	}
 
-	public override TreeObject GetAsStruct(TreeObject so)
-		=> so with
+	public override TreeObject GetAsStruct()
+		=> new()
 		{
 			Flags = Flags,
 			NumRotations = NumRotations,

@@ -32,8 +32,8 @@ public class TrackSignalViewModel : LocoObjectViewModel<TrackSignalObject>
 		CompatibleTrackObjects = new(ro.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 	}
 
-	public override TrackSignalObject GetAsStruct(TrackSignalObject tso)
-		=> tso with
+	public override TrackSignalObject GetAsStruct()
+		=> new()
 		{
 			Flags = Flags,
 			AnimationSpeed = AnimationSpeed,

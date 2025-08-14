@@ -1,3 +1,4 @@
+using Dat.Objects;
 using Definitions.ObjectModels.Objects.Airport;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
@@ -20,9 +21,9 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Reactive, Category("Building"), Length(1, AirportObject.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
-	[Reactive, Category("Building"), Length(1, AirportObject.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
-	[Reactive, Category("Building"), Length(1, AirportObject.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
+	[Reactive, Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
+	[Reactive, Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
+	[Reactive, Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
 	[Reactive, Category("Building")] public BindingList<AirportBuilding> BuildingPositions { get; set; }
 	[Reactive, Category("Movement")] public BindingList<MovementNode> MovementNodes { get; set; } // NumMovementNodes
 	[Reactive, Category("Movement")] public BindingList<MovementEdge> MovementEdges { get; set; } // NumMovementEdges
@@ -54,8 +55,8 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override AirportObject GetAsStruct(AirportObject ao)
-		=> ao with
+	public override AirportObject GetAsStruct()
+		=> new()
 		{
 			BuildCostFactor = BuildCostFactor,
 			SellCostFactor = SellCostFactor,
@@ -69,10 +70,6 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 			MaxY = MaxY,
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
-			NumBuildingParts = (uint8_t)BuildingAnimations.Count,
-			NumBuildingVariations = (uint8_t)BuildingVariations.Count,
-			NumMovementEdges = (uint8_t)MovementEdges.Count,
-			NumMovementNodes = (uint8_t)MovementNodes.Count,
 			var_B6 = [.. var_B6],
 		};
 }

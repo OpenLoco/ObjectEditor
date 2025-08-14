@@ -307,7 +307,7 @@ public class LoadSaveTests
 
 			Assert.That(struc.DesignedYear, Is.Zero, nameof(struc.DesignedYear));
 			Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
-			Assert.That(struc.BoatPosition, Is.EqualTo(new Pos2(48, 0)), nameof(struc.BoatPosition));
+			Assert.That(struc.BoatPosition, Is.EqualTo(new DatPos2(48, 0)), nameof(struc.BoatPosition));
 
 			Assert.That(obj.G1Elements, Has.Count.EqualTo(9));
 		});
@@ -642,7 +642,7 @@ public class LoadSaveTests
 
 		for (var i = 0; i < iterCount; ++i)
 		{
-			_ = DatRoadExtraObject.Load(data.Value.decodedData);
+			_ = RoadExtraObjectLoader.Load(data.Value.decodedData);
 		}
 
 		t1 = sw.ElapsedMilliseconds;

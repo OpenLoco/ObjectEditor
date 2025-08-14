@@ -13,6 +13,6 @@ public class TownNamesViewModel : LocoObjectViewModel<TownNamesObject>
 	public TownNamesViewModel(TownNamesObject tno)
 		=> Categories = new(tno.Categories);
 
-	public override TownNamesObject GetAsStruct(TownNamesObject tno)
-		=> tno;
+	public override TownNamesObject GetAsStruct()
+		=> new();
 }

@@ -11,12 +11,12 @@ public class StreetLightViewModel : LocoObjectViewModel<StreetLightObject>
 
 	public StreetLightViewModel(StreetLightObject ro)
 	{
-		DesignedYears = ro.DesignedYears.ToBindingList();
+		//DesignedYears = ro.DesignedYears.ToBindingList();
 	}
 
-	public override StreetLightObject GetAsStruct(StreetLightObject slo)
-		=> slo with
+	public override StreetLightObject GetAsStruct()
+		=> new()
 		{
-			DesignedYears = [.. DesignedYears]
+			//DesignedYears = [.. DesignedYears]
 		};
 }

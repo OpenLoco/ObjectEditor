@@ -13,14 +13,14 @@ public class ScaffoldingViewModel : LocoObjectViewModel<ScaffoldingObject>
 
 	public ScaffoldingViewModel(ScaffoldingObject so)
 	{
-		SegmentHeights = so.SegmentHeights.ToBindingList();
-		RoofHeights = so.RoofHeights.ToBindingList();
+		//SegmentHeights = so.SegmentHeights.ToBindingList();
+		//RoofHeights = so.RoofHeights.ToBindingList();
 	}
 
-	public override ScaffoldingObject GetAsStruct(ScaffoldingObject sco)
-		=> sco with
+	public override ScaffoldingObject GetAsStruct()
+		=> new()
 		{
-			SegmentHeights = [.. SegmentHeights],
-			RoofHeights = [.. RoofHeights]
+			//SegmentHeights = [.. SegmentHeights],
+			//RoofHeights = [.. RoofHeights]
 		};
 }

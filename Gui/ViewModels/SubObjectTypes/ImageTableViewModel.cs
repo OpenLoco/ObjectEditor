@@ -67,9 +67,9 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public SelectionModel<Bitmap> SelectionModel { get; set; }
 
 	public UIG1Element32? SelectedG1Element
-		=> SelectedImageIndex == -1 || Model.G1Provider.G1Elements.Count == 0 || SelectedImageIndex >= Model.G1Provider.G1Elements.Count
+		=> SelectedImageIndex == -1 || Model.G1Provider.GraphicsElements.Count == 0 || SelectedImageIndex >= Model.G1Provider.GraphicsElements.Count
 		? null
-		: new UIG1Element32(SelectedImageIndex, Model.GetImageName(SelectedImageIndex), Model.G1Provider.G1Elements[SelectedImageIndex]);
+		: new UIG1Element32(SelectedImageIndex, Model.GetImageName(SelectedImageIndex), Model.G1Provider.GraphicsElements[SelectedImageIndex]);
 
 	public Avalonia.Point SelectedG1ElementOffset
 		=> SelectedG1Element == null

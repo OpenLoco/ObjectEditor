@@ -1,4 +1,5 @@
 using Dat.Types;
+using Definitions.ObjectModels.Types;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -138,10 +139,10 @@ public class PaletteMap
 
 	#endregion
 
-	public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, DatG1ElementFlags flags)
+	public byte[] ConvertRgba32ImageToG1Data(Image<Rgba32> img, GraphicsElementFlags flags)
 	{
 		var pixels = img.Width * img.Height;
-		var isBgr = flags.HasFlag(DatG1ElementFlags.IsBgr24);
+		var isBgr = flags.HasFlag(GraphicsElementFlags.IsBgr24);
 		var bytes = new byte[pixels * (isBgr ? 3 : 1)];
 
 		var index = 0;
@@ -193,32 +194,32 @@ public class PaletteMap
 			_ => default,
 		};
 
-	public bool TryConvertG1ToRgba32Bitmap(DatG1Element32 g1Element, ColourRemapSwatch primary, ColourRemapSwatch secondary, out Image<Rgba32>? image)
+	public bool TryConvertG1ToRgba32Bitmap(GraphicsElement graphicsElement, ColourRemapSwatch primary, ColourRemapSwatch secondary, out Image<Rgba32>? image)
 	{
-		image = new Image<Rgba32>(g1Element.Width, g1Element.Height);
+		image = new Image<Rgba32>(graphicsElement.Width, graphicsElement.Height);
 
 		var index = 0;
-		for (var y = 0; y < g1Element.Height; y++)
+		for (var y = 0; y < graphicsElement.Height; y++)
 		{
-			for (var x = 0; x < g1Element.Width; x++)
+			for (var x = 0; x < graphicsElement.Width; x++)
 			{
-				if (g1Element.Flags.HasFlag(DatG1ElementFlags.IsBgr24))
+				if (graphicsElement.Flags.HasFlag(DatG1ElementFlags.IsBgr24))
 				{
-					if (index >= g1Element.ImageData.Length)
+					if (index >= graphicsElement.ImageData.Length)
 					{
 						// malformed image - didn't have enough bytes to cover the full dimensions
 						// steam's g1.dat index 304 (the default palette) has this issue. 236x16 but should be 236x1 since it only has 236*3=708 bytes of data
 						break;
 					}
 
-					var b = g1Element.ImageData[index++];
-					var g = g1Element.ImageData[index++];
-					var r = g1Element.ImageData[index++];
+					var b = graphicsElement.ImageData[index++];
+					var g = graphicsElement.ImageData[index++];
+					var r = graphicsElement.ImageData[index++];
 					image[x, y] = Color.FromRgb(r, g, b);
 				}
 				else
 				{
-					var paletteIndex = g1Element.ImageData[index];
+					var paletteIndex = graphicsElement.ImageData[index];
 					Color? colour = null;
 
 					if (SecondaryRemap.Any(x => x.Index == paletteIndex))
@@ -226,7 +227,7 @@ public class PaletteMap
 						//Debugger.Break();
 					}
 
-					if (paletteIndex == 0 && g1Element.Flags.HasFlag(DatG1ElementFlags.HasTransparency))
+					if (paletteIndex == 0 && graphicsElement.Flags.HasFlag(DatG1ElementFlags.HasTransparency))
 					{
 						colour = Transparent.Color;
 					}

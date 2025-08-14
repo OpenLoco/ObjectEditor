@@ -1,17 +1,18 @@
+using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Dat.Types;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class G1Dat(G1Header g1Header, List<GraphicsElement> g1Elements) : IImageTableNameProvider
+public class G1Dat(G1Header g1Header, List<GraphicsElement> g1Elements) : IHasGraphicsElements, IImageTableNameProvider
 {
 	public G1Header G1Header { get; set; } = g1Header;
 
-	public List<GraphicsElement> G1Elements { get; set; } = g1Elements;
+	public List<GraphicsElement> GraphicsElements { get; set; } = g1Elements;
 
 	public bool IsSteamG1
-		=> G1Elements.Count == 3896;
+		=> GraphicsElements.Count == 3896;
 
 	public bool TryGetImageName(int id, out string? value)
 		=> id < 3550

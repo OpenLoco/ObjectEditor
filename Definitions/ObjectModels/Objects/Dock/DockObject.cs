@@ -1,3 +1,5 @@
+using Definitions.ObjectModels.Types;
+
 namespace Definitions.ObjectModels.Objects.Dock;
 
 public class DockObject : ILocoStruct
@@ -5,15 +7,27 @@ public class DockObject : ILocoStruct
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
+	public uint8_t var_07 { get; set; } // probably padding, not used in the game
 	public DockObjectFlags Flags { get; set; }
-	public uint8_t NumBuildingPartAnimations { get; set; }
-	public uint8_t NumBuildingVariationParts { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
+	public required Pos2 BoatPosition { get; set; }
+	public List<uint16_t> BuildingPartAnimations { get; set; }
+	public List<uint8_t> BuildingVariationParts { get; set; }
+	public List<uint8_t> BuildingPartHeights { get; set; }
 
-	// these map to [Pos2 BoatPosition] in the Dock object
-	public coord_t BoatPositionX { get; set; }
-	public coord_t BoatPositionY { get; set; }
+	public bool Validate()
+	{
+		if (CostIndex > 32)
+		{
+			return false;
+		}
 
-	public bool Validate() => throw new NotImplementedException();
+		if (-SellCostFactor > BuildCostFactor)
+		{
+			return false;
+		}
+
+		return BuildCostFactor > 0;
+	}
 }

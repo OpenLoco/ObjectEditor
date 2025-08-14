@@ -1,4 +1,5 @@
-using Dat.Data;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Types;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -9,7 +10,7 @@ using System.Linq;
 
 namespace Gui.ViewModels;
 
-public record LanguageTranslationModel(DatLanguageId Language, string Translation);
+public record LanguageTranslationModel(LanguageId Language, string Translation);
 
 public class StringTableViewModel : ReactiveObject
 {

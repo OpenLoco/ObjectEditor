@@ -5,7 +5,6 @@ using Dat.Objects;
 using Dat.Types;
 using Dat.Types.Audio;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.RoadExtra;
 using Definitions.ObjectModels.Types;
 using System.Text;
 
@@ -94,13 +93,13 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static void Save(string filename, string objName, DatObjectSource sourceGame, SawyerEncoding encoding, LocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
+	public static void Save(string filename, string objName, ObjectSource objectSource, SawyerEncoding encoding, LocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
 	{
 		ArgumentNullException.ThrowIfNull(locoObject);
 
 		logger.Info($"Writing \"{objName}\" to {filename}");
 
-		var objBytes = WriteLocoObject(objName, sourceGame, encoding, logger, locoObject, allowWritingAsVanilla);
+		var objBytes = WriteLocoObject(objName, objectSource, encoding, logger, locoObject, allowWritingAsVanilla);
 
 		try
 		{
@@ -365,8 +364,8 @@ public static class SawyerStreamWriter
 		return ms.ToArray();
 	}
 
-	public static ReadOnlySpan<byte> WriteLocoObject(string objName, DatObjectSource sourceGame, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
-		=> WriteLocoObjectStream(objName, obj.ObjectType, sourceGame, encoding, logger, obj, allowWritingAsVanilla).ToArray();
+	public static ReadOnlySpan<byte> WriteLocoObject(string objName, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
+		=> WriteLocoObjectStream(objName, obj.ObjectType, objectSource, encoding, logger, obj, allowWritingAsVanilla).ToArray();
 
 	public static ReadOnlySpan<byte> WriteChunk(ILocoStruct str, SawyerEncoding encoding)
 		=> WriteChunkCore(ByteWriter.WriteLocoStruct(str), encoding);
@@ -384,7 +383,7 @@ public static class SawyerStreamWriter
 
 		if (objectType == ObjectType.RoadExtra)
 		{
-			_ = DatRoadExtraObject.Save(rawObjStream, obj);
+			RoadExtraObjectLoader.Save(rawObjStream, obj);
 		}
 		else // old method
 		{
@@ -392,13 +391,13 @@ public static class SawyerStreamWriter
 			rawObjStream.Write(ByteWriter.WriteLocoStruct(obj.Object));
 
 			// string table
-			_ = WriteImageTableStream(rawObjStream, obj.GraphicsElements);
+			WriteImageTableStream(rawObjStream, obj.GraphicsElements);
 
 			// variable data
-			_ = WriteVariableStream(rawObjStream, obj);
+			WriteVariableStream(rawObjStream, obj);
 
 			// graphics data
-			_ = WriteImageTableStream(rawObjStream, obj.GraphicsElements);
+			WriteImageTableStream(rawObjStream, obj.GraphicsElements);
 		}
 
 		rawObjStream.Flush();
@@ -449,18 +448,16 @@ public static class SawyerStreamWriter
 		return headerStream;
 	}
 
-	public static MemoryStream WriteVariableStream(MemoryStream ms, LocoObject obj)
+	public static void WriteVariableStream(Stream ms, LocoObject obj)
 	{
 		if (obj.Object is ILocoStructVariableData objV)
 		{
 			var variableBytes = objV.SaveVariable();
 			ms.Write(variableBytes);
 		}
-
-		return ms;
 	}
 
-	public static MemoryStream WriteStringTableStream(MemoryStream ms, StringTable table)
+	public static void WriteStringTableStream(Stream ms, StringTable table)
 	{
 		foreach (var ste in table.Table)
 		{
@@ -475,11 +472,9 @@ public static class SawyerStreamWriter
 
 			ms.WriteByte(0xff);
 		}
-
-		return ms;
 	}
 
-	public static MemoryStream WriteImageTableStream(MemoryStream ms, List<GraphicsElement> graphicsElements)
+	public static void WriteImageTableStream(Stream ms, List<GraphicsElement> graphicsElements)
 	{
 		var g1Elements = graphicsElements.Select(x => x.Convert()).ToList();
 
@@ -517,15 +512,13 @@ public static class SawyerStreamWriter
 				ms.Write(g1Element.ImageData);
 			}
 		}
-
-		return ms;
 	}
 
 	public static void SaveG1(string filename, G1Dat g1)
 	{
 		using (var fs = File.OpenWrite(filename))
 		{
-			SaveImageTableStream(fs, g1.G1Elements);
+			WriteImageTableStream(fs, g1.GraphicsElements);
 		}
 	}
 }

@@ -20,22 +20,22 @@ public class SteamViewModel : LocoObjectViewModel<SteamObject>
 		NumStationaryTicks = so.NumStationaryTicks;
 		Flags = so.Flags;
 		var_0A = so.var_0A;
-		SoundEffects = new(so.SoundEffects.ConvertAll(x => new S5HeaderViewModel(x)));
+		SoundEffects = new(so.SoundEffects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 		FrameInfoType0 = new(so.FrameInfoType0);
 		FrameInfoType1 = new(so.FrameInfoType1);
 	}
 
-	public override SteamObject GetAsStruct(SteamObject so)
-		=> so with
+	public override SteamObject GetAsStruct()
+		=> new()
 		{
 			NumStationaryTicks = NumStationaryTicks,
 			Flags = Flags,
 			var_0A = var_0A,
-			NumSoundEffects = (uint8_t)SoundEffects.Count,
+			//NumSoundEffects = (uint8_t)SoundEffects.Count,
 			SoundEffects = SoundEffects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			_TotalNumFramesType0 = (uint8_t)FrameInfoType0.Count,
+			//_TotalNumFramesType0 = (uint8_t)FrameInfoType0.Count,
 			FrameInfoType0 = [.. FrameInfoType0],
-			_TotalNumFramesType1 = (uint8_t)FrameInfoType1.Count,
+			//_TotalNumFramesType1 = (uint8_t)FrameInfoType1.Count,
 			FrameInfoType1 = [.. FrameInfoType1],
 		};
 }

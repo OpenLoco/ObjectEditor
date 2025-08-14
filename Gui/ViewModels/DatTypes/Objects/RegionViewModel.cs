@@ -13,16 +13,18 @@ public class RegionViewModel : LocoObjectViewModel<RegionObject>
 
 	public RegionViewModel(RegionObject ro)
 	{
-		CargoInfluenceObjects = new(ro.CargoInfluenceObjects.ConvertAll(x => new S5HeaderViewModel(x)));
-		DependentObjects = new(ro.DependentObjects.ConvertAll(x => new S5HeaderViewModel(x)));
+		CargoInfluenceObjects = new(ro.CargoInfluenceObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		DependentObjects = new(ro.DependentObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 		CargoInfluenceTownFilter = new(ro.CargoInfluenceTownFilter);
 	}
 
-	public override RegionObject GetAsStruct(RegionObject ro)
-		=> ro with
+	public override RegionObject GetAsStruct()
+	{ 
+		var regionObject = new RegionObject()
 		{
 			CargoInfluenceObjects = CargoInfluenceObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			NumCargoInfluenceObjects = (uint8_t)CargoInfluenceObjects.Count,
 			DependentObjects = DependentObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 		};
+		return regionObject;
+	}
 }

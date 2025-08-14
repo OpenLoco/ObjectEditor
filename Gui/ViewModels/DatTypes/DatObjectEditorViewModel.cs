@@ -1,11 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Objects;
-using Dat.Types;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models;
 using Gui.Models.Audio;
 using Gui.Views;
@@ -34,7 +34,7 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	public IExtraContentViewModel? ExtraContentViewModel { get; set; }
 
 	[Reactive]
-	public ObjectModelHeaderViewModel? S5HeaderViewModel { get; set; }
+	public ObjectModelHeaderViewModel? ObjectModelHeaderViewModel { get; set; }
 
 	[Reactive]
 	public ObjectHeaderViewModel? ObjectHeaderViewModel { get; set; }
@@ -46,9 +46,6 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	public UiDatLocoFile? CurrentObject { get; private set; }
 
 	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
-
-	public ReactiveCommand<Unit, Unit> ViewHexCommand { get; }
-	public Interaction<HexWindowViewModel, HexWindowViewModel?> HexViewerShowDialog { get; }
 
 	public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; }
 
@@ -64,15 +61,6 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 		Load();
 
 		ExportUncompressedCommand = ReactiveCommand.Create(SaveAsUncompressedDat);
-
-		HexViewerShowDialog = new();
-		_ = HexViewerShowDialog.RegisterHandler(DoShowDialogAsync<HexWindowViewModel, HexViewerWindow>);
-
-		ViewHexCommand = ReactiveCommand.CreateFromTask(async () =>
-		{
-			var vm = new HexWindowViewModel(CurrentFile.FileName, logger);
-			_ = await HexViewerShowDialog.Handle(vm);
-		});
 
 		CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) =>
 		{
@@ -166,9 +154,9 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 					? itnp
 					: new DefaultImageTableNameProvider();
 
-				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
-					? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-					: new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
+				//ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
+				//	? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
+				//	: new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
 			}
 			else
 			{
@@ -178,7 +166,7 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 
 			if (CurrentObject != null)
 			{
-				S5HeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatFileInfo.S5Header);
+				//ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatFileInfo.S5Header);
 				ObjectHeaderViewModel = new ObjectHeaderViewModel(CurrentObject.DatFileInfo.ObjectHeader);
 			}
 
@@ -290,20 +278,20 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 				logger.Error("AudioViewModel returned null data when trying to save as a sound object");
 				return;
 			}
-			CurrentObject.LocoObject.Object = so with
-			{
-				PcmData = datWav.Value.Data,
-				SoundObjectData = so.SoundObjectData with
-				{
-					PcmHeader = datWav.Value.Header,
-					Length = (uint)datWav.Value.Data.Length
-				}
-			};
+			//CurrentObject.LocoObject.Object = so with
+			//{
+			//	PcmData = datWav.Value.Data,
+			//	SoundObjectData = so.SoundObjectData with
+			//	{
+			//		PcmHeader = datWav.Value.Header,
+			//		Length = (uint)datWav.Value.Data.Length
+			//	}
+			//};
 		}
 
 		SawyerStreamWriter.Save(filename,
-			S5HeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
-			S5HeaderViewModel?.ObjectSource ?? CurrentObject.DatFileInfo.S5Header.ObjectSource,
+			ObjectModelHeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
+			ObjectModelHeaderViewModel?.ObjectSource ?? CurrentObject.DatFileInfo.S5Header.ObjectSource.Convert(),
 			encodingToUse ?? ObjectHeaderViewModel?.Encoding ?? SawyerEncoding.Uncompressed,
 			CurrentObject.LocoObject,
 			logger,

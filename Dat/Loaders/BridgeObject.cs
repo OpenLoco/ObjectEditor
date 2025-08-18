@@ -41,7 +41,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 		}
 	}
 
-	public static void Save(MemoryStream ms, LocoObject obj)
+	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 
 	}

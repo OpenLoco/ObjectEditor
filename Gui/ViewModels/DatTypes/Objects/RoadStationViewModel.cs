@@ -46,7 +46,7 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 			SellCostFactor = SellCostFactor,
 			CostIndex = CostIndex,
 			Flags = Flags,
-			CompatibleRoadObjectCount = (uint8_t)CompatibleRoadObjects.Count,
-			//CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			//CompatibleRoadObjectCount = (uint8_t)CompatibleRoadObjects.Count,
+			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 		};
 }

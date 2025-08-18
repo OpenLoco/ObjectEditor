@@ -1,3 +1,5 @@
+using Definitions.ObjectModels.Types;
+
 namespace Definitions.ObjectModels.Objects.Road;
 
 public class RoadObject : ILocoStruct
@@ -13,5 +15,50 @@ public class RoadObject : ILocoStruct
 	public uint8_t DisplayOffset { get; set; }
 	public TownSize TargetTownSize { get; set; }
 
-	public bool Validate() => throw new NotImplementedException();
+	public List<ObjectModelHeader> Compatible { get; set; } = [];
+	public List<ObjectModelHeader> Mods { get; set; } = [];
+	public ObjectModelHeader Tunnel { get; set; }
+	public List<ObjectModelHeader> Bridges { get; set; } = [];
+	public List<ObjectModelHeader> Stations { get; set; } = [];
+
+	public bool Validate()
+	{
+		// check missing in vanilla
+		if (CostIndex >= 32)
+		{
+			return false;
+		}
+
+		if (-SellCostFactor > BuildCostFactor)
+		{
+			return false;
+		}
+
+		if (BuildCostFactor <= 0)
+		{
+			return false;
+		}
+
+		if (TunnelCostFactor <= 0)
+		{
+			return false;
+		}
+
+		if (Bridges.Count > 7)
+		{
+			return false;
+		}
+
+		if (Mods.Count > 2)
+		{
+			return false;
+		}
+
+		if (Flags.HasFlag(RoadObjectFlags.unk_03))
+		{
+			return Mods.Count == 0;
+		}
+
+		return true;
+	}
 }

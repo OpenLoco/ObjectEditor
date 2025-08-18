@@ -167,57 +167,57 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		}
 	}
 
-	private static void SaveVariable(MemoryStream ms, AirportObject model)
+	private static void SaveVariable(MemoryStream stream, AirportObject model)
 	{
 		// heights
 		foreach (var x in model.BuildingHeights)
 		{
-			ms.WriteByte(x);
+			stream.WriteByte(x);
 		}
 
 		// animations
 		foreach (var x in model.BuildingAnimations)
 		{
-			ms.WriteByte(x.NumFrames);
-			ms.WriteByte(x.AnimationSpeed);
+			stream.WriteByte(x.NumFrames);
+			stream.WriteByte(x.AnimationSpeed);
 		}
 
 		// variations
 		foreach (var x in model.BuildingVariations)
 		{
-			ms.Write(x.ToArray());
-			ms.WriteByte(0xFF);
+			stream.Write(x.ToArray());
+			stream.WriteByte(0xFF);
 		}
 
 		// positions
 		foreach (var x in model.BuildingPositions)
 		{
-			ms.WriteByte(x.Index);
-			ms.WriteByte(x.Rotation);
-			ms.WriteByte((byte)x.X);
-			ms.WriteByte((byte)x.Y);
+			stream.WriteByte(x.Index);
+			stream.WriteByte(x.Rotation);
+			stream.WriteByte((byte)x.X);
+			stream.WriteByte((byte)x.Y);
 		}
 
-		ms.WriteByte(0xFF);
+		stream.WriteByte(0xFF);
 
 		// movement nodes
 		foreach (var x in model.MovementNodes)
 		{
-			ms.Write(BitConverter.GetBytes(x.X));
-			ms.Write(BitConverter.GetBytes(x.Y));
-			ms.Write(BitConverter.GetBytes(x.Z));
-			ms.Write(BitConverter.GetBytes((uint16_t)x.Flags));
+			stream.Write(BitConverter.GetBytes(x.X));
+			stream.Write(BitConverter.GetBytes(x.Y));
+			stream.Write(BitConverter.GetBytes(x.Z));
+			stream.Write(BitConverter.GetBytes((uint16_t)x.Flags));
 		}
 
 		// movement edges
 		foreach (var x in model.MovementEdges)
 		{
-			ms.WriteByte(x.var_00);
-			ms.WriteByte(x.CurrNode);
-			ms.WriteByte(x.NextNode);
-			ms.WriteByte(x.var_03);
-			ms.Write(BitConverter.GetBytes(x.MustBeClearEdges));
-			ms.Write(BitConverter.GetBytes(x.AtLeastOneClearEdges));
+			stream.WriteByte(x.var_00);
+			stream.WriteByte(x.CurrNode);
+			stream.WriteByte(x.NextNode);
+			stream.WriteByte(x.var_03);
+			stream.Write(BitConverter.GetBytes(x.MustBeClearEdges));
+			stream.Write(BitConverter.GetBytes(x.AtLeastOneClearEdges));
 		}
 	}
 }

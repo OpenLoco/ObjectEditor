@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Types;
-using System.Reflection.PortableExecutable;
 
 namespace Definitions.ObjectModels.Objects.Building;
 

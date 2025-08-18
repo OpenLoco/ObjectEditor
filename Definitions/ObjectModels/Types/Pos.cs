@@ -1,15 +1,5 @@
 namespace Definitions.ObjectModels.Types;
 
-public class Pos2
-{
-	public coord_t X { get; set; }
-	public coord_t Y { get; set; }
-}
+public record Pos2(coord_t X, coord_t Y);
 
-public class Pos3
-{
-	public coord_t X { get; set; }
-	public coord_t Y { get; set; }
-	public coord_t Z { get; set; }
-}
-
+public record Pos3(coord_t X, coord_t Y, coord_t Z);

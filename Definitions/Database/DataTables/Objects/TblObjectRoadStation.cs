@@ -32,7 +32,7 @@ public class TblObjectRoadStation : DbSubObject, IConvertibleToTable<TblObjectRo
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
 			Flags = obj.Flags,
-			CompatibleRoadObjectCount = obj.CompatibleRoadObjectCount,
+			CompatibleRoadObjectCount = (uint8_t)obj.CompatibleRoadObjects.Count,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
 			//CargoTypeId = obj.CargoTypeId,

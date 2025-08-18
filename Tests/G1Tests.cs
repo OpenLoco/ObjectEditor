@@ -3,6 +3,7 @@ using Common.Logging;
 using Dat.FileParsing;
 using Dat.Types;
 using SixLabors.ImageSharp;
+using Definitions.ObjectModels.Types;
 
 namespace Dat.Tests;
 
@@ -53,13 +54,17 @@ public class G1Tests
 		var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
 		var d1 = g1!.GraphicsElements[element];
 		var e1 = SawyerStreamWriter.EncodeRLEImageData(d1);
-		var d2 = SawyerStreamReader.DecodeRLEImageData(d1 with { ImageData = e1 });
+		var dd1 = new DatG1Element32(0, d1.Width, d1.Height, d1.XOffset, d1.YOffset, (DatG1ElementFlags)d1.Flags, d1.ZoomOffset)
+		{
+			ImageData = e1
+		};
+		var d2 = SawyerStreamReader.DecodeRLEImageData(dd1);
 		Assert.That(d2, Is.EqualTo(d1.ImageData).AsCollection);
 	}
 
-	public void AssertG1ElementsEqual(DatG1Element32 expected, DatG1Element32 actual, int i)
+	public void AssertG1ElementsEqual(GraphicsElement expected, GraphicsElement actual, int i)
 	{
-		Assert.That(actual.Offset, Is.EqualTo(expected.Offset), $"[{i}]");
+		//Assert.That(actual.Offset, Is.EqualTo(expected.Offset), $"[{i}]");
 		Assert.That(actual.Width, Is.EqualTo(expected.Width), $"[{i}]");
 		Assert.That(actual.Height, Is.EqualTo(expected.Height), $"[{i}]");
 		Assert.That(actual.XOffset, Is.EqualTo(expected.XOffset), $"[{i}]");

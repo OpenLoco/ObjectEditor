@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Definitions.ObjectModels;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
 

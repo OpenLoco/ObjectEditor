@@ -1,6 +1,3 @@
-using Definitions.ObjectModels;
-using System.ComponentModel;
-
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
 //[LocoStructSize(0x03)]

@@ -8,6 +8,7 @@ public class CompetitorObject : ILocoStruct, IImageTableNameProvider
 	public uint8_t Intelligence { get; set; }
 	public uint8_t Aggressiveness { get; set; }
 	public uint8_t Competitiveness { get; set; }
+	public uint8_t var_37 { get; set; }
 
 	public bool Validate()
 	{

@@ -2,6 +2,7 @@ namespace Definitions.ObjectModels.Objects.Water;
 public class WaterObject : ILocoStruct, IImageTableNameProvider
 {
 	public uint8_t CostIndex { get; set; }
+	public uint8_t var_03 { get; set; }
 	public int16_t CostFactor { get; set; }
 
 	public bool Validate()

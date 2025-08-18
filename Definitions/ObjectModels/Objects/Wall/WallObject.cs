@@ -3,6 +3,7 @@ namespace Definitions.ObjectModels.Objects.Wall;
 public class WallObject : ILocoStruct, IImageTableNameProvider
 {
 	public uint8_t Height { get; set; }
+	public uint8_t ToolId { get; set; }
 	public WallObjectFlags1 Flags1 { get; set; } = WallObjectFlags1.None;
 	public WallObjectFlags2 Flags2 { get; set; } = WallObjectFlags2.None;
 

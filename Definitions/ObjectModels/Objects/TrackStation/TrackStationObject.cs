@@ -20,6 +20,13 @@ public class TrackStationObject : ILocoStruct, IImageTableNameProvider
 	public TrackStationObjectFlags Flags { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
+	public uint8_t var_0B { get; set; }
+	public uint8_t var_0D { get; set; }
+
+	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
+	public uint8_t[][][] CargoOffsetBytes { get; set; }
+	public uint8_t[][] ManualPower { get; set; }
+	public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset(), 15)];
 
 	public bool Validate()
 	{

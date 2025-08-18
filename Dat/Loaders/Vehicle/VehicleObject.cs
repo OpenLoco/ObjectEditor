@@ -10,7 +10,7 @@ namespace Dat.Objects;
 public abstract class VehicleObjectLoader : IDatObjectLoader
 {
 	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream ms, LocoObject obj) => throw new NotImplementedException();
+	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
 }
 
 static class SimpleAnimationTypeConverter

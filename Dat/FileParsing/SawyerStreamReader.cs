@@ -177,66 +177,12 @@ public static class SawyerStreamReader
 			return (new DatFileInfo(s5Header, objectHeader), null);
 		}
 
-		// new stream reader
-		using (var ms = new MemoryStream(decodedData))
+		using (var stream = new MemoryStream(decodedData))
 		{
-			var locoObject = GetLocoObject(s5Header.ObjectType, ms);
+			var locoObject = ReadLocoObject(s5Header.ObjectType, stream);
 			ValidateLocoStruct(s5Header, locoObject.Object, logger);
 			return new(new DatFileInfo(s5Header, objectHeader), locoObject);
 		}
-
-		/*
-	else // old readonlyspan reader
-	{
-		ReadOnlySpan<byte> remainingData = decodedData;
-		var locoStructSize = ObjectAttributes.StructSize(s5Header.ObjectType);
-
-		var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData[..locoStructSize]);
-		ArgumentNullException.ThrowIfNull(locoStruct, paramName: filename);
-
-		remainingData = remainingData[locoStructSize..];
-
-		// every object has a string table
-		var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, s5Header.ObjectType, logger);
-		remainingData = remainingData[stringTableBytesRead..];
-
-		// some objects have variable-sized data
-		if (loadExtra && locoStruct is ILocoStructVariableData locoStructExtra)
-		{
-			remainingData = locoStructExtra.LoadVariable(remainingData);
-		}
-
-		LocoObject? newObj;
-		try
-		{
-			// some objects have graphics data
-			var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			logger.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
-			newObj = new LocoObject(s5Header.ObjectType.Convert(), locoStruct, stringTable, imageTable);
-			remainingData = remainingData[imageTableBytesRead..];
-		}
-		catch (Exception ex)
-		{
-			newObj = new LocoObject(s5Header.ObjectType.Convert(), locoStruct, stringTable);
-			logger.Error(ex, "Error loading graphics table");
-		}
-
-		if (remainingData.Length > 0)
-		{
-			logger.Debug($"\"{s5Header.Name}\" has {remainingData.Length} bytes unaccounted for. What is this extra data???");
-		}
-
-		// some objects have extra computation that must be done after the object is fully loaded
-		if (loadExtra && locoStruct is ILocoStructPostLoad locoStructPostLoad)
-		{
-			locoStructPostLoad.PostLoad();
-		}
-
-		ValidateLocoStruct(s5Header, locoStruct, logger);
-
-		return new(new DatFileInfo(s5Header, objectHeader), newObj);
-	}
-	*/
 	}
 
 	static void ValidateLocoStruct(S5Header s5Header, ILocoStruct locoStruct, ILogger? logger)
@@ -567,43 +513,43 @@ public static class SawyerStreamReader
 		return dstBuf;
 	}
 
-	public static LocoObject GetLocoObject(DatObjectType objectType, MemoryStream ms)
+	public static LocoObject ReadLocoObject(DatObjectType objectType, MemoryStream stream)
 		=> objectType switch
 		{
-			DatObjectType.Airport => AirportObjectLoader.Load(ms),
-			DatObjectType.Bridge => BridgeObjectLoader.Load(ms),
-			DatObjectType.Building => BuildingObjectLoader.Load(ms),
-			DatObjectType.Cargo => CargoObjectLoader.Load(ms),
-			DatObjectType.CliffEdge => CliffEdgeObjectLoader.Load(ms),
-			DatObjectType.Climate => ClimateObjectLoader.Load(ms),
-			DatObjectType.Competitor => CompetitorObjectLoader.Load(ms),
-			DatObjectType.Currency => CurrencyObjectLoader.Load(ms),
-			DatObjectType.Dock => DockObjectLoader.Load(ms),
-			DatObjectType.HillShapes => HillShapesObjectLoader.Load(ms),
-			DatObjectType.Industry => IndustryObjectLoader.Load(ms),
-			DatObjectType.InterfaceSkin => InterfaceSkinObjectLoader.Load(ms),
-			DatObjectType.Land => LandObjectLoader.Load(ms),
-			DatObjectType.LevelCrossing => LevelCrossingObjectLoader.Load(ms),
-			DatObjectType.Region => RegionObjectLoader.Load(ms),
-			DatObjectType.Road => RoadObjectLoader.Load(ms),
-			DatObjectType.RoadExtra => RoadExtraObjectLoader.Load(ms),
-			DatObjectType.RoadStation => RoadStationObjectLoader.Load(ms),
-			DatObjectType.Scaffolding => ScaffoldingObjectLoader.Load(ms),
-			DatObjectType.ScenarioText => ScenarioTextObjectLoader.Load(ms),
-			DatObjectType.Snow => SnowObjectLoader.Load(ms),
-			DatObjectType.Sound => SoundObjectLoader.Load(ms),
-			DatObjectType.Steam => SteamObjectLoader.Load(ms),
-			DatObjectType.StreetLight => StreetLightObjectLoader.Load(ms),
-			DatObjectType.TownNames => TownNamesObjectLoader.Load(ms),
-			DatObjectType.Track => TrackObjectLoader.Load(ms),
-			DatObjectType.TrackExtra => TrackExtraObjectLoader.Load(ms),
-			DatObjectType.TrackSignal => TrackSignalObjectLoader.Load(ms),
-			DatObjectType.TrackStation => TrackStationObjectLoader.Load(ms),
-			DatObjectType.Tree => TreeObjectLoader.Load(ms),
-			DatObjectType.Tunnel => TunnelObjectLoader.Load(ms),
-			DatObjectType.Vehicle => VehicleObjectLoader.Load(ms),
-			DatObjectType.Wall => WallObjectLoader.Load(ms),
-			DatObjectType.Water => WaterObjectLoader.Load(ms),
+			DatObjectType.Airport => AirportObjectLoader.Load(stream),
+			DatObjectType.Bridge => BridgeObjectLoader.Load(stream),
+			DatObjectType.Building => BuildingObjectLoader.Load(stream),
+			DatObjectType.Cargo => CargoObjectLoader.Load(stream),
+			DatObjectType.CliffEdge => CliffEdgeObjectLoader.Load(stream),
+			DatObjectType.Climate => ClimateObjectLoader.Load(stream),
+			DatObjectType.Competitor => CompetitorObjectLoader.Load(stream),
+			DatObjectType.Currency => CurrencyObjectLoader.Load(stream),
+			DatObjectType.Dock => DockObjectLoader.Load(stream),
+			DatObjectType.HillShapes => HillShapesObjectLoader.Load(stream),
+			DatObjectType.Industry => IndustryObjectLoader.Load(stream),
+			DatObjectType.InterfaceSkin => InterfaceSkinObjectLoader.Load(stream),
+			DatObjectType.Land => LandObjectLoader.Load(stream),
+			DatObjectType.LevelCrossing => LevelCrossingObjectLoader.Load(stream),
+			DatObjectType.Region => RegionObjectLoader.Load(stream),
+			DatObjectType.Road => RoadObjectLoader.Load(stream),
+			DatObjectType.RoadExtra => RoadExtraObjectLoader.Load(stream),
+			DatObjectType.RoadStation => RoadStationObjectLoader.Load(stream),
+			DatObjectType.Scaffolding => ScaffoldingObjectLoader.Load(stream),
+			DatObjectType.ScenarioText => ScenarioTextObjectLoader.Load(stream),
+			DatObjectType.Snow => SnowObjectLoader.Load(stream),
+			DatObjectType.Sound => SoundObjectLoader.Load(stream),
+			DatObjectType.Steam => SteamObjectLoader.Load(stream),
+			DatObjectType.StreetLight => StreetLightObjectLoader.Load(stream),
+			DatObjectType.TownNames => TownNamesObjectLoader.Load(stream),
+			DatObjectType.Track => TrackObjectLoader.Load(stream),
+			DatObjectType.TrackExtra => TrackExtraObjectLoader.Load(stream),
+			DatObjectType.TrackSignal => TrackSignalObjectLoader.Load(stream),
+			DatObjectType.TrackStation => TrackStationObjectLoader.Load(stream),
+			DatObjectType.Tree => TreeObjectLoader.Load(stream),
+			DatObjectType.Tunnel => TunnelObjectLoader.Load(stream),
+			DatObjectType.Vehicle => VehicleObjectLoader.Load(stream),
+			DatObjectType.Wall => WallObjectLoader.Load(stream),
+			DatObjectType.Water => WaterObjectLoader.Load(stream),
 			_ => throw new ArgumentOutOfRangeException(nameof(objectType), $"unknown object type {objectType}")
 		};
 

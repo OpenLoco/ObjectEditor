@@ -38,11 +38,11 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 		}
 	}
 
-	public static void Save(MemoryStream ms, LocoObject obj)
+	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var model = obj.Object as RoadExtraObject;
 
-		using (var bw = new LocoBinaryWriter(ms))
+		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
 			bw.Write((uint16_t)model.RoadPieces);
@@ -54,13 +54,13 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 			bw.WriteImageId(); // BaseImageOffset, not part of object definition
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(ms, obj.StringTable);
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
 			// N/A
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(ms, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
 }

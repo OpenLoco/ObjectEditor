@@ -6,6 +6,7 @@ using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Comparers;
 using Definitions.DTO.Mappers;
+using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Index;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +23,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 
 	protected override IEnumerable<TblObject> DbSeedData =>
 	[
-		new() { Id = 1, Name = "test-name-1", SubObjectId = 1, ObjectType = DatObjectType.Vehicle, Availability = Definitions.ObjectAvailability.Available },
-		new() { Id = 2, Name = "test-name-2", SubObjectId = 2, ObjectType = DatObjectType.Vehicle, Availability = Definitions.ObjectAvailability.Available },
+		new() { Id = 1, Name = "test-name-1", SubObjectId = 1, ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
+		new() { Id = 2, Name = "test-name-2", SubObjectId = 2, ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
 	];
 
 	protected override DtoUploadDat PostRequestDto
@@ -175,26 +176,26 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		var results = await ClientHelpers.PostAsync<DtoUploadDat, DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, dtoUploadDat);
 
 		// assert
-		var expectedStringTable = new Dictionary<string, Dictionary<DatLanguageId, string>>()
+		var expectedStringTable = new Dictionary<string, Dictionary<LanguageId, string>>()
 		{
 			{
 				"Name",
-				new Dictionary<DatLanguageId, string>()
+				new Dictionary<LanguageId, string>()
 				{
-					{ DatLanguageId.English_UK, "AZ Voith Gravita 15 BB Northrail" },
-					{ DatLanguageId.English_US, "AZ Voith Gravita 15 BB Northrail" },
-					{ DatLanguageId.French, "AZ Voith Gravita 15 BB Northrail" },
-					{ DatLanguageId.German, "AZ Voith Gravita 15 BB Northrail" },
-					{ DatLanguageId.Spanish, "AZ Voith Gravita 15 BB Northrail" },
-					{ DatLanguageId.Italian, "AZ Voith Gravita 15 BB Northrail" },
-					{ DatLanguageId.Dutch, string.Empty },
-					{ DatLanguageId.Swedish, string.Empty },
-					{ DatLanguageId.Japanese, string.Empty },
-					{ DatLanguageId.Korean, "AZ Voith Gravita 15 BB Northrail" },
-					{ DatLanguageId.Chinese_Simplified, string.Empty },
-					{ DatLanguageId.Chinese_Traditional, "AZ Voith Gravita 15 BB Northrail" },
-					{ DatLanguageId.id_12, string.Empty },
-					{ DatLanguageId.Portuguese, string.Empty },
+					{ LanguageId.English_UK, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.English_US, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.French, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.German, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.Spanish, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.Italian, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.Dutch, string.Empty },
+					{ LanguageId.Swedish, string.Empty },
+					{ LanguageId.Japanese, string.Empty },
+					{ LanguageId.Korean, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.Chinese_Simplified, string.Empty },
+					{ LanguageId.Chinese_Traditional, "AZ Voith Gravita 15 BB Northrail" },
+					{ LanguageId.id_12, string.Empty },
+					{ LanguageId.Portuguese, string.Empty },
 				}
 			},
 		};
@@ -206,7 +207,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			3072098364,
 			string.Empty,
 			ObjectSource.Custom,
-			DatObjectType.Vehicle,
+			ObjectType.Vehicle,
 			entry.VehicleType,
 			ObjectAvailability.Available,
 			DateOnly.Today,

@@ -4,6 +4,7 @@ using Dat.FileParsing;
 using Dat.Types;
 using System.Text.Json;
 using Logger = Common.Logging.Logger;
+using Dat.Converters;
 
 namespace Dat.Tests;
 
@@ -43,17 +44,18 @@ public class IdempotenceTests
 
 		var logger = new Logger();
 		var obj1 = SawyerStreamReader.LoadFullObjectFromFile(file, logger)!;
-		var ms = SawyerStreamWriter.WriteLocoObjectStream(
+		var stream = SawyerStreamWriter.WriteLocoObjectStream(
 			obj1.Value.DatFileInfo.S5Header.Name,
-			obj1.Value.DatFileInfo.S5Header.ObjectSource,
+			obj1.Value.DatFileInfo.S5Header.ObjectType.Convert(),
+			obj1.Value.DatFileInfo.S5Header.ObjectSource.Convert(),
 			obj1.Value.DatFileInfo.ObjectHeader.Encoding,
 			logger,
 			obj1!.Value!.LocoObject!,
 			true);
 
-		ms.Flush();
+		stream.Flush();
 
-		var obj2 = SawyerStreamReader.LoadFullObjectFromStream(ms.ToArray(), logger);
+		var obj2 = SawyerStreamReader.LoadFullObjectFromStream(stream.ToArray(), logger);
 
 		var o1 = obj1.Value.LocoObject;
 		var o2 = obj2.LocoObject;

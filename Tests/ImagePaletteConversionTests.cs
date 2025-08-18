@@ -54,7 +54,7 @@ public class ImagePaletteConversionTests
 		var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 		var paletteMap = new PaletteMap(paletteFile);
 		var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource), Logger);
-		var g1Elements = obj!.Value!.LocoObject!.G1Elements;
+		var g1Elements = obj!.Value!.LocoObject!.GraphicsElements;
 
 		Assert.Multiple(() =>
 		{

@@ -275,6 +275,8 @@ public static class SawyerStreamWriter
 		shift &= 7; // Ensure shift is within 0-7 for 8-bit bytes
 		return (uint8_t)((value << shift) | (value >> (8 - shift)));
 	}
+	public static byte[] EncodeRLEImageData(GraphicsElement img)
+		=> EncodeRLEImageData((DatG1ElementFlags)img.Flags, img.ImageData, img.Width, img.Height);
 
 	public static byte[] EncodeRLEImageData(DatG1Element32 img)
 		=> EncodeRLEImageData(img.Flags, img.ImageData, img.Width, img.Height);
@@ -377,13 +379,124 @@ public static class SawyerStreamWriter
 		return [.. objHeader.ToArray(), .. encoded];
 	}
 
+	public static void WriteLocoObject(LocoObject obj, MemoryStream stream)
+	{
+		switch (obj.ObjectType)
+		{
+			case ObjectType.Airport:
+				AirportObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Bridge:
+				BridgeObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Building:
+				BuildingObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Cargo:
+				CargoObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.CliffEdge:
+				CliffEdgeObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Climate:
+				ClimateObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Competitor:
+				CompetitorObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Currency:
+				CurrencyObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Dock:
+				DockObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.HillShapes:
+				HillShapesObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Industry:
+				IndustryObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.InterfaceSkin:
+				InterfaceSkinObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Land:
+				LandObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.LevelCrossing:
+				LevelCrossingObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Region:
+				RegionObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Road:
+				RoadObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.RoadExtra:
+				RoadExtraObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.RoadStation:
+				RoadStationObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Scaffolding:
+				ScaffoldingObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.ScenarioText:
+				ScenarioTextObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Snow:
+				SnowObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Sound:
+				SoundObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Steam:
+				SteamObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.StreetLight:
+				StreetLightObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.TownNames:
+				TownNamesObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Track:
+				TrackObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.TrackExtra:
+				TrackExtraObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.TrackSignal:
+				TrackSignalObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.TrackStation:
+				TrackStationObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Tree:
+				TreeObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Tunnel:
+				TunnelObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Vehicle:
+				VehicleObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Wall:
+				WallObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Water:
+				WaterObjectLoader.Save(stream, obj);
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(obj.ObjectType), $"unknown object type {obj.ObjectType}");
+		}
+	}
+
 	public static MemoryStream WriteLocoObjectStream(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
 	{
 		using var rawObjStream = new MemoryStream();
 
-		if (objectType == ObjectType.RoadExtra)
+		if (objectType is ObjectType.Airport or ObjectType.RoadExtra or ObjectType.Steam)
 		{
-			RoadExtraObjectLoader.Save(rawObjStream, obj);
+			WriteLocoObject(obj, rawObjStream);
 		}
 		else // old method
 		{

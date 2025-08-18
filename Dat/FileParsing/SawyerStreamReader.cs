@@ -438,58 +438,64 @@ public static class SawyerStreamReader
 
 	public static (G1Header Header, List<GraphicsElement> Table) ReadImageTableStream(MemoryStream stream)
 	{
-		if (stream.Length - stream.Position < ObjectAttributes.StructSize<G1Header>())
+		using (var br = new LocoBinaryReader(stream, leaveOpen: true))
+		{
+			return ReadImageTableStream(br);
+		}
+	}
+
+	public static (G1Header Header, List<GraphicsElement> Table) ReadImageTableStream(LocoBinaryReader br)
+	{
+		if (br.BaseStream.Length - br.BaseStream.Position < ObjectAttributes.StructSize<G1Header>())
 		{
 			return (new G1Header(0, 0), []);
 		}
 
-		using (var br = new LocoBinaryReader(stream, leaveOpen: true))
+		// read G1Header
+		var numEntries = br.ReadUInt32();
+		var totalSize = br.ReadUInt32();
+		var g1Header = new G1Header(numEntries, totalSize);
+
+		// read G1Element headers
+		var g1Element32s = new List<DatG1Element32>();
+		for (var i = 0; i < g1Header.NumEntries; ++i)
 		{
-			// read G1Header
-			var numEntries = br.ReadUInt32();
-			var totalSize = br.ReadUInt32();
-			var g1Header = new G1Header(numEntries, totalSize);
-
-			// read G1Element headers
-			var g1Element32s = new List<DatG1Element32>();
-			for (var i = 0; i < g1Header.NumEntries; ++i)
-			{
-				var g32Element = ByteReader.ReadLocoStruct<DatG1Element32>(br.ReadBytes(DatG1Element32.StructLength));
-				g1Element32s.Add(g32Element);
-			}
-
-			var imageData = br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position)); // read the remaining bytes entirely
-
-			// set image data
-			for (var i = 0; i < g1Header.NumEntries; ++i)
-			{
-				var currElement = g1Element32s[i];
-
-				if (currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
-				{
-					if (i == 0)
-					{
-						throw new ArgumentException("First image cannot have DuplicatePrevious flag since there is no previous image");
-					}
-
-					currElement.ImageData = [.. g1Element32s[i - 1].ImageData];
-				}
-				else
-				{
-					var nextOffset = GetNextNonDuplicateOffset(g1Element32s, i, (uint)g1Header.ImageData.Length);
-					currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
-				}
-
-				// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
-				// image (which was also compressed) is now uncompressed, so we don't need do double-uncompress it.
-				if (currElement.Flags.HasFlag(DatG1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
-				{
-					currElement.ImageData = DecodeRLEImageData(currElement);
-				}
-			}
-
-			return (g1Header, g1Element32s.Select(x => x.Convert()).ToList());
+			var g32Element = ByteReader.ReadLocoStruct<DatG1Element32>(br.ReadBytes(DatG1Element32.StructLength));
+			g1Element32s.Add(g32Element);
 		}
+
+		var imageData = br.ReadToEnd();
+		g1Header.ImageData = [.. imageData];
+
+		// set image data
+		for (var i = 0; i < g1Header.NumEntries; ++i)
+		{
+			var currElement = g1Element32s[i];
+
+			if (currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
+			{
+				if (i == 0)
+				{
+					throw new ArgumentException("First image cannot have DuplicatePrevious flag since there is no previous image");
+				}
+
+				currElement.ImageData = [.. g1Element32s[i - 1].ImageData];
+			}
+			else
+			{
+				var nextOffset = GetNextNonDuplicateOffset(g1Element32s, i, (uint)g1Header.ImageData.Length);
+				currElement.ImageData = [.. imageData[(int)currElement.Offset..(int)nextOffset]];
+			}
+
+			// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
+			// image (which was also compressed) is now uncompressed, so we don't need do double-uncompress it.
+			if (currElement.Flags.HasFlag(DatG1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
+			{
+				currElement.ImageData = DecodeRLEImageData(currElement);
+			}
+		}
+
+		return (g1Header, g1Element32s.Select(x => x.Convert()).ToList());
 	}
 
 	static uint GetNextNonDuplicateOffset(List<DatG1Element32> g1Element32s, int i, uint imageDateLength)
@@ -563,39 +569,39 @@ public static class SawyerStreamReader
 		=> objectType switch
 		{
 			DatObjectType.Airport => AirportObjectLoader.Load(ms),
-			DatObjectType.RoadExtra => RoadExtraObjectLoader.Load(ms),
-			DatObjectType.TrackSignal => TrackSignalObjectLoader.Load(ms),
-			DatObjectType.Steam => SteamObjectLoader.Load(ms),
-			DatObjectType.InterfaceSkin => InterfaceSkinObjectLoader.Load(ms),
-			DatObjectType.Sound => SoundObjectLoader.Load(ms),
-			DatObjectType.Currency => CurrencyObjectLoader.Load(ms),
-			DatObjectType.CliffEdge => CliffEdgeObjectLoader.Load(ms),
-			DatObjectType.Water => WaterObjectLoader.Load(ms),
-			DatObjectType.Land => LandObjectLoader.Load(ms),
-			DatObjectType.TownNames => TownNamesObjectLoader.Load(ms),
-			DatObjectType.Cargo => CargoObjectLoader.Load(ms),
-			DatObjectType.Wall => WallObjectLoader.Load(ms),
-			DatObjectType.LevelCrossing => LevelCrossingObjectLoader.Load(ms),
-			DatObjectType.StreetLight => StreetLightObjectLoader.Load(ms),
-			DatObjectType.Tunnel => TunnelObjectLoader.Load(ms),
 			DatObjectType.Bridge => BridgeObjectLoader.Load(ms),
-			DatObjectType.TrackStation => TrackStationObjectLoader.Load(ms),
-			DatObjectType.TrackExtra => TrackExtraObjectLoader.Load(ms),
-			DatObjectType.Track => TrackObjectLoader.Load(ms),
-			DatObjectType.RoadStation => RoadStationObjectLoader.Load(ms),
-			DatObjectType.Road => RoadObjectLoader.Load(ms),
-			DatObjectType.Dock => DockObjectLoader.Load(ms),
-			DatObjectType.Vehicle => VehicleObjectLoader.Load(ms),
-			DatObjectType.Tree => TreeObjectLoader.Load(ms),
-			DatObjectType.Snow => SnowObjectLoader.Load(ms),
-			DatObjectType.Climate => ClimateObjectLoader.Load(ms),
-			DatObjectType.HillShapes => HillShapesObjectLoader.Load(ms),
 			DatObjectType.Building => BuildingObjectLoader.Load(ms),
-			DatObjectType.Scaffolding => ScaffoldingObjectLoader.Load(ms),
-			DatObjectType.Industry => IndustryObjectLoader.Load(ms),
-			DatObjectType.Region => RegionObjectLoader.Load(ms),
+			DatObjectType.Cargo => CargoObjectLoader.Load(ms),
+			DatObjectType.CliffEdge => CliffEdgeObjectLoader.Load(ms),
+			DatObjectType.Climate => ClimateObjectLoader.Load(ms),
 			DatObjectType.Competitor => CompetitorObjectLoader.Load(ms),
+			DatObjectType.Currency => CurrencyObjectLoader.Load(ms),
+			DatObjectType.Dock => DockObjectLoader.Load(ms),
+			DatObjectType.HillShapes => HillShapesObjectLoader.Load(ms),
+			DatObjectType.Industry => IndustryObjectLoader.Load(ms),
+			DatObjectType.InterfaceSkin => InterfaceSkinObjectLoader.Load(ms),
+			DatObjectType.Land => LandObjectLoader.Load(ms),
+			DatObjectType.LevelCrossing => LevelCrossingObjectLoader.Load(ms),
+			DatObjectType.Region => RegionObjectLoader.Load(ms),
+			DatObjectType.Road => RoadObjectLoader.Load(ms),
+			DatObjectType.RoadExtra => RoadExtraObjectLoader.Load(ms),
+			DatObjectType.RoadStation => RoadStationObjectLoader.Load(ms),
+			DatObjectType.Scaffolding => ScaffoldingObjectLoader.Load(ms),
 			DatObjectType.ScenarioText => ScenarioTextObjectLoader.Load(ms),
+			DatObjectType.Snow => SnowObjectLoader.Load(ms),
+			DatObjectType.Sound => SoundObjectLoader.Load(ms),
+			DatObjectType.Steam => SteamObjectLoader.Load(ms),
+			DatObjectType.StreetLight => StreetLightObjectLoader.Load(ms),
+			DatObjectType.TownNames => TownNamesObjectLoader.Load(ms),
+			DatObjectType.Track => TrackObjectLoader.Load(ms),
+			DatObjectType.TrackExtra => TrackExtraObjectLoader.Load(ms),
+			DatObjectType.TrackSignal => TrackSignalObjectLoader.Load(ms),
+			DatObjectType.TrackStation => TrackStationObjectLoader.Load(ms),
+			DatObjectType.Tree => TreeObjectLoader.Load(ms),
+			DatObjectType.Tunnel => TunnelObjectLoader.Load(ms),
+			DatObjectType.Vehicle => VehicleObjectLoader.Load(ms),
+			DatObjectType.Wall => WallObjectLoader.Load(ms),
+			DatObjectType.Water => WaterObjectLoader.Load(ms),
 			_ => throw new ArgumentOutOfRangeException(nameof(objectType), $"unknown object type {objectType}")
 		};
 

@@ -1,4 +1,3 @@
-
 using Common;
 using Dat.Data;
 using Dat.FileParsing;
@@ -29,24 +28,27 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 	public static LocoObject Load(MemoryStream stream)
 	{
-		using (var br = new LocoBinaryReader(stream, System.Text.Encoding.UTF8, leaveOpen: true))
+		using (var br = new LocoBinaryReader(stream, leaveOpen: true))
 		{
 			var model = new AirportObject();
 			var stringTable = new StringTable();
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.BaseStream.Seek(0x02, SeekOrigin.Begin); // Skip name offset
+			_ = br.SkipStringId(); // Name offset, not part of object definition
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
 			model.var_07 = br.ReadByte();
-			_ = br.BaseStream.Seek(2, SeekOrigin.Current); // Skip image
-			_ = br.BaseStream.Seek(2, SeekOrigin.Current); // Skip image offset
+			_ = br.SkipImageId(); // Image, not part of object definition
+			_ = br.SkipImageId(); // Image offset, not part of object definition
 			model.AllowedPlaneTypes = br.ReadUInt16();
-			var numBuildingParts = br.Read();
-			var numBuildingVariations = br.Read();
-			_ = br.BaseStream.Seek(0xA0, SeekOrigin.Begin);
+			var numBuildingParts = br.ReadByte();
+			var numBuildingVariations = br.ReadByte();
+			_ = br.SkipPointer(); // BuildingHeights
+			_ = br.SkipPointer(); // BuildingAnimations
+			_ = br.SkipPointer(Constants.BuildingVariationCount); // BuildingVariations
+			_ = br.SkipPointer(); // BuildingPositions
 			model.LargeTiles = br.ReadUInt32();
 			model.MinX = br.ReadSByte();
 			model.MinY = br.ReadSByte();
@@ -56,13 +58,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			model.ObsoleteYear = br.ReadUInt16();
 			var numMovementNodes = br.ReadByte();
 			var numMovementEdges = br.ReadByte();
+			_ = br.SkipPointer(); // MovementNodes
+			_ = br.SkipPointer(); // MovementEdges
 			model.var_B6 = br.ReadBytes(0xBA - 0xB6);
-
-			//_ = br.BaseStream.Seek(0xB6, SeekOrigin.Begin);
-
-			// move to string table
-			var structSize = ObjectAttributes.StructSize(DatObjectType.Airport);
-			_ = br.BaseStream.Seek(structSize, SeekOrigin.Begin);
 
 			// string table
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Airport), null);
@@ -71,11 +69,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations, numMovementNodes, numMovementEdges);
 
 			// image table
-			var bytes = br.ReadToEnd();
-			imageTable = SawyerStreamReader.LoadImageTable(bytes).Table;
-			//imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
 
-			return new LocoObject(ObjectType.RoadExtra, model, stringTable, imageTable);
+			return new LocoObject(ObjectType.Airport, model, stringTable, imageTable);
 		}
 	}
 
@@ -115,14 +111,14 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		// movement nodes
 		var movementNodes = ByteReader.ReadLocoStructArray<MovementNode>(
 			br.ReadBytes(Sizes.MovementNode * numMovementNodes),
-			numBuildingParts,
+			numMovementNodes,
 			Sizes.MovementNode);
 		model.MovementNodes = [.. movementNodes.Cast<MovementNode>()];
 
 		// movement edges
 		var movementEdges = ByteReader.ReadLocoStructArray<MovementEdge>(
 			br.ReadBytes(Sizes.MovementEdge * numMovementEdges),
-			numBuildingParts,
+			numMovementEdges,
 			Sizes.MovementEdge);
 		model.MovementEdges = [.. movementEdges.Cast<MovementEdge>()];
 	}
@@ -133,20 +129,20 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(ms, System.Text.Encoding.UTF8, leaveOpen: true))
 		{
-			bw.Write((string_id)0);// Name offset, not part of object definition
+			bw.WriteStringId();// Name offset, not part of object definition
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
 			bw.Write(model.var_07);
-			bw.Write((image_id)0); // Image, not part of object definition
-			bw.Write((image_id)0); // Image offset, not part of object definition
+			bw.WriteImageId(); // Image, not part of object definition
+			bw.WriteImageId(); // Image offset, not part of object definition
 			bw.Write(model.AllowedPlaneTypes);
 			bw.Write(model.BuildingHeights.Count);
 			bw.Write(model.BuildingVariations.Count);
-
-			var buildingBytesToZero = 0xA0 - 0x14;
-			bw.WriteRepeated(0, buildingBytesToZero);
-
+			bw.WritePointer(); // BuildingHeights
+			bw.WritePointer(); // BuildingAnimations
+			bw.WritePointer(Constants.BuildingVariationCount); // BuildingVariations
+			bw.WritePointer(); // BuildingPositions
 			bw.Write(model.LargeTiles);
 			bw.Write(model.MinX);
 			bw.Write(model.MinY);
@@ -154,12 +150,10 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(model.MaxY);
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
-			bw.Write(model.MovementNodes.Count);
-			bw.Write(model.MovementEdges.Count);
-
-			var movementBytesToZero = 0xB6 - 0xAE;
-			bw.WriteRepeated(0, movementBytesToZero);
-
+			bw.Write((uint8_t)model.MovementNodes.Count);
+			bw.Write((uint8_t)model.MovementEdges.Count);
+			bw.WritePointer(); // MovementNodes
+			bw.WritePointer(); // MovementEdges
 			bw.Write(model.var_B6);
 
 			// string table

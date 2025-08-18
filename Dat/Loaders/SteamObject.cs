@@ -78,7 +78,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			bw.Write(0); // _FrameInfoType0Ptr, not used
 			bw.Write(0); // _FrameInfoType1Ptr, not used
 			bw.Write((uint8_t)model.SoundEffects.Count);
-			bw.WriteRepeated((object_id)0, Constants.MaxSoundEffects); // _SoundEffects, not used
+			bw.WriteByte((object_id)0, Constants.MaxSoundEffects); // _SoundEffects, not used
 
 			// string table
 

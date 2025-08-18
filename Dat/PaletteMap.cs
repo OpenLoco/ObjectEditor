@@ -203,7 +203,7 @@ public class PaletteMap
 		{
 			for (var x = 0; x < graphicsElement.Width; x++)
 			{
-				if (graphicsElement.Flags.HasFlag(DatG1ElementFlags.IsBgr24))
+				if (graphicsElement.Flags.HasFlag(GraphicsElementFlags.IsBgr24))
 				{
 					if (index >= graphicsElement.ImageData.Length)
 					{
@@ -227,7 +227,7 @@ public class PaletteMap
 						//Debugger.Break();
 					}
 
-					if (paletteIndex == 0 && graphicsElement.Flags.HasFlag(DatG1ElementFlags.HasTransparency))
+					if (paletteIndex == 0 && graphicsElement.Flags.HasFlag(GraphicsElementFlags.HasTransparency))
 					{
 						colour = Transparent.Color;
 					}

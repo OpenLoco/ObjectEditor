@@ -2,7 +2,7 @@ using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels;
 
-public class LocoObject
+public class LocoObject : IHasGraphicsElements
 {
 	public LocoObject(ObjectType objectType, ILocoStruct obj, StringTable stringTable, List<GraphicsElement> graphicsElements)
 	{

@@ -11,14 +11,14 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 {
 	public static LocoObject Load(MemoryStream stream)
 	{
-		using (var br = new LocoBinaryReader(stream, System.Text.Encoding.UTF8, leaveOpen: true))
+		using (var br = new LocoBinaryReader(stream, leaveOpen: true))
 		{
 			var model = new RoadExtraObject();
 			var stringTable = new StringTable();
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.BaseStream.Seek(0x02, SeekOrigin.Begin); // Skip name offset
+			_ = br.SkipStringId(); // Name offset, not part of object definition
 			model.RoadPieces = ((DatRoadTraitFlags)br.ReadUInt16()).Convert();
 			model.PaintStyle = br.ReadByte();
 			model.CostIndex = br.ReadByte();

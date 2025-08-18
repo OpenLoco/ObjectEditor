@@ -1,7 +1,10 @@
 namespace Definitions.ObjectModels.Objects.Streetlight;
 public class StreetLightObject : ILocoStruct, IImageTableNameProvider
 {
-	public bool Validate() => true;
+	public List<uint16_t> DesignedYears { get; set; } = [];
+
+	public bool Validate()
+		=> true;
 
 	public bool TryGetImageName(int id, out string? value)
 		=> ImageIdNameMap.TryGetValue(id, out value);

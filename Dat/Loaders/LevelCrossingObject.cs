@@ -1,6 +1,8 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.LevelCrossing;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Dat.Objects;
@@ -13,13 +15,73 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 	public static class Sizes
 	{ }
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream ms, LocoObject obj) => throw new NotImplementedException();
+	public static LocoObject Load(MemoryStream stream)
+	{
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new LevelCrossingObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+			model.CostFactor = br.ReadInt16();
+			model.SellCostFactor = br.ReadInt16();
+			model.CostIndex = br.ReadByte();
+			model.AnimationSpeed = br.ReadByte();
+			model.ClosingFrames = br.ReadByte();
+			model.ClosedFrames = br.ReadByte();
+			model.var_0A = br.ReadByte(); // something like IdleAnimationFrames or something
+			_ = br.SkipBytes(1); // pad_0B, unused
+			model.DesignedYear = br.ReadUInt16();
+			_ = br.SkipImageId();
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.LevelCrossing), null);
+
+			// variable
+			// N/A
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.LevelCrossing, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream ms, LocoObject obj)
+	{
+		var model = obj.Object as LevelCrossingObject;
+
+		using (var bw = new LocoBinaryWriter(ms))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write(model.CostFactor);
+			bw.Write(model.SellCostFactor);
+			bw.Write(model.CostIndex);
+			bw.Write(model.AnimationSpeed);
+			bw.Write(model.ClosingFrames);
+			bw.Write(model.ClosedFrames);
+			bw.Write(model.var_0A); // something like IdleAnimationFrames or something
+			bw.WriteByte(); // pad_0B, unused
+			bw.Write(model.DesignedYear);
+			bw.WriteImageId(); // Image offset, not part of object definition
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(ms, obj.StringTable);
+
+			// variable
+			// N/A
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(ms, obj.GraphicsElements);
+		}
+	}
 }
 
 [LocoStructSize(0x12)]
 [LocoStructType(DatObjectType.LevelCrossing)]
-internal record LevelCrossingObject(
+internal record DatLevelCrossingObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] int16_t CostFactor,
 	[property: LocoStructOffset(0x04)] int16_t SellCostFactor,
@@ -31,24 +93,5 @@ internal record LevelCrossingObject(
 	[property: LocoStructOffset(0x0B), LocoPropertyMaybeUnused] uint8_t pad_0B,
 	[property: LocoStructOffset(0x0C)] uint16_t DesignedYear,
 	[property: LocoStructOffset(0x0E), Browsable(false)] image_id Image
-	) : ILocoStruct
-{
-	public bool Validate()
-	{
-		if (-SellCostFactor > CostFactor)
-		{
-			return false;
-		}
-
-		if (CostFactor <= 0)
-		{
-			return false;
-		}
-
-		return ClosingFrames switch
-		{
-			1 or 2 or 4 or 8 or 16 or 32 => true,
-			_ => false,
-		};
-	}
-}
+	)
+{ }

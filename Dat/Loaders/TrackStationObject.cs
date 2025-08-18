@@ -54,7 +54,7 @@ internal enum DatTrackStationObjectFlags : uint8_t
 
 [LocoStructSize(0xAE)]
 [LocoStructType(DatObjectType.TrackStation)]
-internal record TrackStationObject(
+internal record DatTrackStationObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
 	[property: LocoStructOffset(0x03)] uint8_t Height,

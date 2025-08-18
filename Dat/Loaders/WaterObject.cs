@@ -18,7 +18,7 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 
 [LocoStructSize(0x0E)]
 [LocoStructType(DatObjectType.Water)]
-internal record WaterObject(
+internal record DatWaterObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint8_t CostIndex,
 	[property: LocoStructOffset(0x03), LocoPropertyMaybeUnused] uint8_t var_03,

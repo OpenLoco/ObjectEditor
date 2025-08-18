@@ -19,7 +19,7 @@ public abstract class SnowObjectLoader : IDatObjectLoader
 
 [LocoStructSize(0x06)]
 [LocoStructType(DatObjectType.Snow)]
-internal record SnowObject(
+internal record DatSnowObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), Browsable(false)] image_id Image
 	) : ILocoStruct, IImageTableNameProvider

@@ -21,7 +21,7 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 
 [LocoStructSize(0x0C)]
 [LocoStructType(DatObjectType.StreetLight)]
-public record StreetLightObject(
+public record DatStreetLightObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), LocoArrayLength(StreetLightObjectLoader.Constants.DesignedYearLength)] uint16_t[] DesignedYears
 )

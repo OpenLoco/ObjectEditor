@@ -37,7 +37,7 @@ internal record SoundObjectData(
 
 [LocoStructSize(0x0C)]
 [LocoStructType(DatObjectType.Sound)]
-internal record SoundObject(
+internal record DatSoundObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), Browsable(false)] uint32_t SoundObjectDataPtr,
 	[property: LocoStructOffset(0x06)] uint8_t ShouldLoop, // 0 means no loop, any other number means loop (usually 1)

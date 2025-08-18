@@ -19,7 +19,7 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 
 [LocoStructSize(0x18)]
 [LocoStructType(DatObjectType.InterfaceSkin)]
-internal record InterfaceSkinObject(
+internal record DatInterfaceSkinObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
 	[property: LocoStructOffset(0x06)] DatColour MapTooltipObjectColour,

@@ -9,7 +9,12 @@ namespace Dat.Objects;
 public abstract class RoadObjectLoader : IDatObjectLoader
 {
 	public static class Constants
-	{ }
+	{
+		public const int MaxTunnels = 1;
+		public const int MaxBridges = 7;
+		public const int MaxStations = 7;
+		public const int MaxMods = 2;
+	}
 
 	public static class Sizes
 	{ }
@@ -58,7 +63,7 @@ internal enum DatRoadTraitFlags : uint16_t
 
 [LocoStructSize(0x30)]
 [LocoStructType(DatObjectType.Road)]
-internal record RoadObject(
+internal record DatRoadObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] DatRoadTraitFlags RoadPieces,
 	[property: LocoStructOffset(0x04)] int16_t BuildCostFactor,
@@ -70,12 +75,12 @@ internal record RoadObject(
 	[property: LocoStructOffset(0x0E), Browsable(false)] image_id Image,
 	[property: LocoStructOffset(0x12)] DatRoadObjectFlags Flags,
 	[property: LocoStructOffset(0x14)] uint8_t NumBridges,
-	[property: LocoStructOffset(0x15), LocoArrayLength(RoadObject.MaxBridges), Browsable(false)] object_id[] _Bridges,
+	[property: LocoStructOffset(0x15), LocoArrayLength(RoadObjectLoader.Constants.MaxBridges), Browsable(false)] object_id[] _Bridges,
 	[property: LocoStructOffset(0x1C)] uint8_t NumStations,
-	[property: LocoStructOffset(0x1D), LocoArrayLength(RoadObject.MaxStations), Browsable(false)] object_id[] _Stations,
+	[property: LocoStructOffset(0x1D), LocoArrayLength(RoadObjectLoader.Constants.MaxStations), Browsable(false)] object_id[] _Stations,
 	[property: LocoStructOffset(0x24)] uint8_t PaintStyle,
 	[property: LocoStructOffset(0x25)] uint8_t NumMods,
-	[property: LocoStructOffset(0x26), LocoArrayLength(RoadObject.MaxMods), Browsable(false)] object_id[] _Mods,
+	[property: LocoStructOffset(0x26), LocoArrayLength(RoadObjectLoader.Constants.MaxMods), Browsable(false)] object_id[] _Mods,
 	[property: LocoStructOffset(0x28)] uint8_t NumCompatible,
 	[property: LocoStructOffset(0x29)] uint8_t DisplayOffset,
 	[property: LocoStructOffset(0x2A), Browsable(false)] uint16_t _CompatibleRoads, // bitset
@@ -90,11 +95,6 @@ internal record RoadObject(
 	public List<S5Header> Bridges { get; set; } = [];
 	public List<S5Header> Stations { get; set; } = [];
 
-	public const int MaxTunnels = 1;
-	public const int MaxBridges = 7;
-	public const int MaxStations = 7;
-	public const int MaxMods = 2;
-
 	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 	{
 		// compatible roads/tracks
@@ -106,8 +106,8 @@ internal record RoadObject(
 		remainingData = remainingData[(S5Header.StructLength * NumMods)..];
 
 		// tunnel
-		Tunnel = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, MaxTunnels)[0];
-		remainingData = remainingData[(S5Header.StructLength * MaxTunnels)..];
+		Tunnel = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, RoadObjectLoader.Constants.MaxTunnels)[0];
+		remainingData = remainingData[(S5Header.StructLength * RoadObjectLoader.Constants.MaxTunnels)..];
 
 		// bridges
 		Bridges = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumBridges);

@@ -42,9 +42,7 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.RoadExtra), null);
 
 			// variable
-			model.CompatibleTrackObjects = [.. SawyerStreamReader
-				.LoadVariableCountS5HeadersStream(stream, compatibleTrackCount)
-				.Select(x => new ObjectModelHeader(x.Name, x.Checksum, x.ObjectType.Convert(), x.ObjectSource.Convert()))];
+			model.CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5HeadersStream(stream, compatibleTrackCount);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -53,13 +51,13 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 		}
 	}
 
-	public static void Save(MemoryStream ms, LocoObject obj)
+	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var model = obj.Object as TrackSignalObject;
 
-		using (var bw = new LocoBinaryWriter(ms, System.Text.Encoding.UTF8, leaveOpen: true))
+		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.Write((string_id)0);// Name offset, not part of object definition
+			bw.WriteStringId();// Name offset, not part of object definition
 			bw.Write((uint16_t)model.Flags);
 			bw.Write(model.AnimationSpeed);
 			bw.Write(model.NumFrames);
@@ -73,13 +71,13 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			bw.Write(model.ObsoleteYear);
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(ms, obj.StringTable);
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
 			bw.WriteS5HeaderList(model.CompatibleTrackObjects);
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(ms, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
 

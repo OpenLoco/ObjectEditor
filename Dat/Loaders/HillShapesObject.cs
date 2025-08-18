@@ -27,7 +27,7 @@ internal enum DatHillShapeFlags : uint16_t
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x0E)]
 [LocoStructType(DatObjectType.HillShapes)]
-internal record HillShapesObject(
+internal record DatHillShapesObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint8_t HillHeightMapCount,
 	[property: LocoStructOffset(0x03)] uint8_t MountainHeightMapCount,

@@ -29,7 +29,7 @@ internal enum DatCargoInfluenceTownFilterType : uint8_t
 
 [LocoStructSize(0x12)]
 [LocoStructType(DatObjectType.Region)]
-internal record RegionObject(
+internal record DatRegionObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
 	[property: LocoStructOffset(0x06), Browsable(false), LocoArrayLength(0x8 - 0x6), LocoPropertyMaybeUnused] uint8_t[] pad_06,

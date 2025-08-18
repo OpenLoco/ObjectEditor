@@ -43,7 +43,7 @@ internal enum DatTreeFlagsUnk : uint8_t
 
 [LocoStructSize(0x4C)]
 [LocoStructType(DatObjectType.Tree)]
-internal record TreeObject(
+internal record DatTreeObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint8_t Clearance,
 	[property: LocoStructOffset(0x03)] uint8_t Height,

@@ -32,7 +32,7 @@ internal enum DatLandObjectFlags : uint8_t
 
 [LocoStructSize(0x1E)]
 [LocoStructType(DatObjectType.Land)]
-internal record LandObject(
+internal record DatLandObject(
 	[property: LocoStructOffset(0x02)] uint8_t CostIndex,
 	[property: LocoStructOffset(0x03)] uint8_t NumGrowthStages,
 	[property: LocoStructOffset(0x04)] uint8_t NumImageAngles,

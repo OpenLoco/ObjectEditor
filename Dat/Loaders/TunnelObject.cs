@@ -19,7 +19,7 @@ public abstract class TunnelObjectLoader : IDatObjectLoader
 
 [LocoStructSize(0x06)]
 [LocoStructType(DatObjectType.Tunnel)]
-internal record TunnelObject(
+internal record DatTunnelObject(
 	[property: LocoStructOffset(0x00), Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), Browsable(false)] image_id Image
 	)

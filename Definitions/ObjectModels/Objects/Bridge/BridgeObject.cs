@@ -15,5 +15,49 @@ public class BridgeObject : ILocoStruct
 	public int16_t SellCostFactor { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
-	public bool Validate() => throw new NotImplementedException();
+
+	public bool Validate()
+	{
+		if (CostIndex > 32)
+		{
+			return false;
+		}
+
+		if (-SellCostFactor > BaseCostFactor)
+		{
+			return false;
+		}
+
+		if (BaseCostFactor <= 0)
+		{
+			return false;
+		}
+
+		if (HeightCostFactor < 0)
+		{
+			return false;
+		}
+
+		if (DeckDepth is not 16 and not 32)
+		{
+			return false;
+		}
+
+		if (SpanLength is not 1 and not 2 and not 4)
+		{
+			return false;
+		}
+
+		//if (CompatibleTrackObjectCount > 7)
+		//{
+		//	return false;
+		//}
+
+		//if (CompatibleRoadObjectCount > 7)
+		//{
+		//	return false;
+		//}
+
+		return true;
+	}
 }

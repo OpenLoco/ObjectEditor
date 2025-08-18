@@ -6,29 +6,31 @@ using Dat.Types;
 using Dat.Types.Audio;
 using Dat.Types.SCV5;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Types;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Dat.FileParsing;
 
 public static class SawyerStreamReader
 {
-	public static List<S5Header> LoadVariableCountS5HeadersStream(MemoryStream ms, int count)
+	public static List<ObjectModelHeader> LoadVariableCountS5HeadersStream(Stream stream, int count)
 	{
-		using var br = new BinaryReader(ms);
+		using var br = new LocoBinaryReader(stream);
+		return LoadVariableCountS5HeadersStream(br, count);
+	}
 
-		List<S5Header> result = [];
+	public static List<ObjectModelHeader> LoadVariableCountS5HeadersStream(LocoBinaryReader br, int count)
+	{
+		List<ObjectModelHeader> result = [];
 		for (var i = 0; i < count; ++i)
 		{
-			if (br.PeekChar() != 0xFF)
+			if (br.PeekByte() != 0xFF)
 			{
 				var header = S5Header.Read(br.ReadBytes(S5Header.StructLength));
 				// vanilla objects will have sourcegameflag == 0 and checksum == 0. custom objects will have a checksum specified - may need custom handling
 				if (header.Checksum != 0 || header.Flags != 255)
 				{
-					result.Add(header);
+					result.Add(new ObjectModelHeader(header.Name, header.Checksum, header.ObjectType.Convert(), header.ObjectSource.Convert()));
 				}
 			}
 		}
@@ -306,7 +308,7 @@ public static class SawyerStreamReader
 			return stringTable;
 		}
 
-		using (var br = new LocoBinaryReader(stream, leaveOpen: true))
+		using (var br = new LocoBinaryReader(stream))
 		{
 			foreach (var locoString in stringNames)
 			{
@@ -425,8 +427,8 @@ public static class SawyerStreamReader
 				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
 			}
 
-			// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
-			// image (which was also compressed) is now uncompressed, so we don't need do double-uncompress it.
+			// if rleCompressed, decompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
+			// image (which was also compressed) is now uncompressed, so we don't need do double-decompress it.
 			if (currElement.Flags.HasFlag(DatG1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
 			{
 				currElement.ImageData = DecodeRLEImageData(currElement);
@@ -438,7 +440,7 @@ public static class SawyerStreamReader
 
 	public static (G1Header Header, List<GraphicsElement> Table) ReadImageTableStream(MemoryStream stream)
 	{
-		using (var br = new LocoBinaryReader(stream, leaveOpen: true))
+		using (var br = new LocoBinaryReader(stream))
 		{
 			return ReadImageTableStream(br);
 		}

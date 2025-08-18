@@ -70,7 +70,7 @@ internal enum DatIndustryObjectFlags : uint32_t
 
 [LocoStructSize(0xF4)]
 [LocoStructType(DatObjectType.Industry)]
-internal record IndustryObject(
+internal record DatIndustryObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), LocoString, Browsable(false), LocoPropertyMaybeUnused] string_id var_02,
 	[property: LocoStructOffset(0x04), LocoString, Browsable(false)] string_id NameClosingDown,

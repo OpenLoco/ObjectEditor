@@ -8,7 +8,9 @@ namespace Dat.Objects;
 public abstract class CompetitorObjectLoader : IDatObjectLoader
 {
 	public static class Constants
-	{ }
+	{
+		public const int ImagesLength = 9;
+	}
 
 	public static class Sizes
 	{ }
@@ -69,63 +71,16 @@ internal enum DatCompetitorPlaystyle : uint32_t
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x38)]
 [LocoStructType(DatObjectType.Competitor)]
-internal record CompetitorObject(
+internal record DatCompetitorObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id FullName,
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id LastName,
 		[property: LocoStructOffset(0x04)] DatCompetitorNamePrefix AvailableNamePrefixes, // bitset
 		[property: LocoStructOffset(0x08)] DatCompetitorPlaystyle AvailablePlaystyles, // bitset
 		[property: LocoStructOffset(0x0C)] uint32_t Emotions, // bitset
-		[property: LocoStructOffset(0x10), Browsable(false), LocoArrayLength(CompetitorObject.ImagesLength)] image_id[] Images,
+		[property: LocoStructOffset(0x10), Browsable(false), LocoArrayLength(CompetitorObjectLoader.Constants.ImagesLength)] image_id[] Images,
 		[property: LocoStructOffset(0x34)] uint8_t Intelligence,
 		[property: LocoStructOffset(0x35)] uint8_t Aggressiveness,
 		[property: LocoStructOffset(0x36)] uint8_t Competitiveness,
 		[property: LocoStructOffset(0x37), LocoPropertyMaybeUnused] uint8_t var_37
-	) : IImageTableNameProvider
-{
-	public const int ImagesLength = 9;
-
-	public bool Validate()
-	{
-		if ((Emotions & (1 << 0)) == 0)
-		{
-			return false;
-		}
-
-		if (Intelligence is < 1 or > 9)
-		{
-			return false;
-		}
-
-		if (Aggressiveness is < 1 or > 9)
-		{
-			return false;
-		}
-
-		return Competitiveness is >= 1 and <= 9;
-	}
-
-	public bool TryGetImageName(int id, out string? value)
-		=> ImageIdNameMap.TryGetValue(id, out value);
-
-	public static Dictionary<int, string> ImageIdNameMap = new()
-	{
-		{ 0, "smallNeutral" },
-		{ 1, "largeNeutral" },
-		{ 2, "smallHappy" },
-		{ 3, "largeHappy" },
-		{ 4, "smallWorried" },
-		{ 5, "largeWorried" },
-		{ 6, "smallThinking" },
-		{ 7, "largeThinking" },
-		{ 8, "smallDejected" },
-		{ 9, "largeDejected" },
-		{ 10, "smallSurprised" },
-		{ 11, "largeSurprised" },
-		{ 12, "smallScared" },
-		{ 13, "largeScared" },
-		{ 14, "smallAngry" },
-		{ 15, "largeAngry" },
-		{ 16, "smallDisgusted" },
-		{ 17, "largeDisgusted" },
-	};
-}
+	)
+{ }

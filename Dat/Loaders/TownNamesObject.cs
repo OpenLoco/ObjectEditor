@@ -25,7 +25,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 
 [LocoStructSize(0x1A)]
 [LocoStructType(DatObjectType.TownNames)]
-internal record TownNamesObject(
+internal record DatTownNamesObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), LocoArrayLength(6)] Category[] Categories
 ) : ILocoStruct, ILocoStructVariableData

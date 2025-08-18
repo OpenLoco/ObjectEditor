@@ -49,7 +49,7 @@ internal enum DatCargoCategory : uint16_t
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x1F)]
 [LocoStructType(DatObjectType.Cargo)]
-internal record CargoObject(
+internal record DatCargoObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint16_t var_02,
 	[property: LocoStructOffset(0x04)] uint16_t CargoTransferTime,

@@ -2,6 +2,8 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Bridge;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Dat.Objects;
@@ -16,8 +18,33 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 
 	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream ms, LocoObject obj) => throw new NotImplementedException();
+	public static LocoObject Load(MemoryStream stream)
+	{
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new BridgeObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Bridge), null);
+
+			// variable
+			//LoadVariable(br, model, numBuildingParts, numBuildingVariations, numMovementNodes, numMovementEdges);
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Bridge, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream ms, LocoObject obj)
+	{
+
+	}
 }
 
 [Flags]
@@ -47,7 +74,7 @@ internal enum DatBridgeObjectFlags : uint8_t
 
 [LocoStructSize(0x2C)]
 [LocoStructType(DatObjectType.Bridge)]
-internal record BridgeObject(
+internal record DatBridgeObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] DatBridgeObjectFlags Flags,
 	[property: LocoStructOffset(0x03), LocoStructVariableLoad] uint8_t var_03,
@@ -64,16 +91,12 @@ internal record BridgeObject(
 	[property: LocoStructOffset(0x14)] DatBridgeDisabledTrackFlags DisabledTrackFlags,
 	[property: LocoStructOffset(0x16), Browsable(false)] image_id Image,
 	[property: LocoStructOffset(0x1A)] uint8_t CompatibleTrackObjectCount,
-	[property: LocoStructOffset(0x1B), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumTrackMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] TrackModHeaderIds,
+	[property: LocoStructOffset(0x1B), LocoStructVariableLoad, LocoArrayLength(BridgeObjectLoader.Constants.MaxNumTrackMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] TrackModHeaderIds,
 	[property: LocoStructOffset(0x22)] uint8_t CompatibleRoadObjectCount,
-	[property: LocoStructOffset(0x23), LocoStructVariableLoad, LocoArrayLength(BridgeObject.MaxNumRoadMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] RoadModHeaderIds,
+	[property: LocoStructOffset(0x23), LocoStructVariableLoad, LocoArrayLength(BridgeObjectLoader.Constants.MaxNumRoadMods), LocoPropertyMaybeUnused, Browsable(false)] object_id[] RoadModHeaderIds,
 	[property: LocoStructOffset(0x2A)] uint16_t DesignedYear
 	) : ILocoStructVariableData
 {
-	public const int _03PadSize = 3;
-	public const int MaxNumTrackMods = 7;
-	public const int MaxNumRoadMods = 7;
-
 	public List<S5Header> CompatibleTrackObjects { get; set; } = [];
 	public List<S5Header> CompatibleRoadObjects { get; set; } = [];
 
@@ -96,45 +119,5 @@ internal record BridgeObject(
 			.Concat(CompatibleRoadObjects);
 
 		return headers.SelectMany(h => h.Write().ToArray()).ToArray();
-	}
-
-	public bool Validate()
-	{
-		if (CostIndex > 32)
-		{
-			return false;
-		}
-
-		if (-SellCostFactor > BaseCostFactor)
-		{
-			return false;
-		}
-
-		if (BaseCostFactor <= 0)
-		{
-			return false;
-		}
-
-		if (HeightCostFactor < 0)
-		{
-			return false;
-		}
-
-		if (DeckDepth is not 16 and not 32)
-		{
-			return false;
-		}
-
-		if (SpanLength is not 1 and not 2 and not 4)
-		{
-			return false;
-		}
-
-		if (CompatibleTrackObjectCount > 7)
-		{
-			return false;
-		}
-
-		return CompatibleRoadObjectCount <= 7;
 	}
 }

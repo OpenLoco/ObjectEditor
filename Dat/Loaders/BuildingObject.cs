@@ -37,7 +37,7 @@ internal enum DatBuildingObjectFlags : uint8_t
 
 [LocoStructSize(0xBE)]
 [LocoStructType(DatObjectType.Building)]
-internal record BuildingObject(
+internal record DatBuildingObject(
 		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
 		[property: LocoStructOffset(0x06)] uint8_t NumBuildingParts,

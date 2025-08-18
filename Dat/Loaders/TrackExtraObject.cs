@@ -19,7 +19,7 @@ public abstract class TrackExtraObjectLoader : IDatObjectLoader
 
 [LocoStructSize(0x12)]
 [LocoStructType(DatObjectType.TrackExtra)]
-internal record TrackExtraObject(
+internal record DatTrackExtraObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] DatTrackTraitFlags TrackPieces,
 	[property: LocoStructOffset(0x04)] uint8_t PaintStyle,

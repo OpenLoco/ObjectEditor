@@ -9,7 +9,11 @@ namespace Dat.Objects;
 public abstract class RoadStationObjectLoader : IDatObjectLoader
 {
 	public static class Constants
-	{ }
+	{
+		public const int MaxImageOffsets = 4;
+		public const int MaxNumCompatible = 7;
+		public const int CargoOffsetBytesSize = 16;
+	}
 
 	public static class Sizes
 	{ }
@@ -30,7 +34,7 @@ internal enum DatRoadStationObjectFlags : uint8_t
 
 [LocoStructSize(0x6E)]
 [LocoStructType(DatObjectType.RoadStation)]
-internal record RoadStationObject(
+internal record DatRoadStationObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
 	[property: LocoStructOffset(0x03)] uint8_t Height,
@@ -40,19 +44,16 @@ internal record RoadStationObject(
 	[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
 	[property: LocoStructOffset(0x0B)] DatRoadStationObjectFlags Flags,
 	[property: LocoStructOffset(0x0C), LocoStructVariableLoad, Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxImageOffsets)] uint32_t[] ImageOffsets,
+	[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(RoadStationObjectLoader.Constants.MaxImageOffsets)] uint32_t[] ImageOffsets,
 	[property: LocoStructOffset(0x20)] uint8_t CompatibleRoadObjectCount,
-	[property: LocoStructOffset(0x21), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.MaxNumCompatible)] object_id[] _Compatible,
+	[property: LocoStructOffset(0x21), LocoStructVariableLoad, LocoArrayLength(RoadStationObjectLoader.Constants.MaxNumCompatible)] object_id[] _Compatible,
 	[property: LocoStructOffset(0x28)] uint16_t DesignedYear,
 	[property: LocoStructOffset(0x2A)] uint16_t ObsoleteYear,
 	[property: LocoStructOffset(0x2C), LocoStructVariableLoad, Browsable(false)] object_id _CargoTypeId,
 	[property: LocoStructOffset(0x2D), Browsable(false)] uint8_t pad_2D,
-	[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(RoadStationObject.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes
-) : ILocoStruct, ILocoStructVariableData, IImageTableNameProvider
+	[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(RoadStationObjectLoader.Constants.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes
+)
 {
-	public const int MaxImageOffsets = 4;
-	public const int MaxNumCompatible = 7;
-	public const int CargoOffsetBytesSize = 16;
 	public List<S5Header> CompatibleRoadObjects { get; set; } = [];
 
 	public S5Header CargoType { get; set; }
@@ -126,56 +127,4 @@ internal record RoadStationObject(
 			return ms.ToArray();
 		}
 	}
-
-	public bool Validate()
-	{
-		if (CostIndex >= 32)
-		{
-			return false;
-		}
-
-		if (-SellCostFactor > BuildCostFactor)
-		{
-			return false;
-		}
-
-		if (BuildCostFactor <= 0)
-		{
-			return false;
-		}
-
-		if (PaintStyle >= 1)
-		{
-			return false;
-		}
-
-		if (CompatibleRoadObjectCount > 7)
-		{
-			return false;
-		}
-
-		if (Flags.HasFlag(DatRoadStationObjectFlags.Passenger) && Flags.HasFlag(DatRoadStationObjectFlags.Freight))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	public bool TryGetImageName(int id, out string? value)
-		=> ImageIdNameMap.TryGetValue(id, out value);
-
-	public static Dictionary<int, string> ImageIdNameMap = new()
-	{
-		{ 0, "preview_image" },
-		{ 1, "preview_image_windows" },
-		{ 2, "totalPreviewImages" },
-
-		// These are relative to ImageOffsets
-		// ImageOffsets is the imageIds per sequenceIndex (for start/middle/end of the platform)
-		//namespace Style0
-		//{
-		//	constexpr uint32_t totalNumImages = 8;
-		//}
-};
 }

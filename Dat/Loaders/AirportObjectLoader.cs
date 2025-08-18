@@ -28,7 +28,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 	public static LocoObject Load(MemoryStream stream)
 	{
-		using (var br = new LocoBinaryReader(stream, leaveOpen: true))
+		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new AirportObject();
 			var stringTable = new StringTable();
@@ -123,11 +123,11 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		model.MovementEdges = [.. movementEdges.Cast<MovementEdge>()];
 	}
 
-	public static void Save(MemoryStream ms, LocoObject obj)
+	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var model = obj.Object as AirportObject;
 
-		using (var bw = new LocoBinaryWriter(ms, System.Text.Encoding.UTF8, leaveOpen: true))
+		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId();// Name offset, not part of object definition
 			bw.Write(model.BuildCostFactor);
@@ -157,13 +157,13 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(model.var_B6);
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(ms, obj.StringTable);
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			SaveVariable(ms, model);
+			SaveVariable(stream, model);
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(ms, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
 

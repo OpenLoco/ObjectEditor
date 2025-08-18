@@ -35,7 +35,7 @@ internal enum DatTrackObjectFlags : uint16_t
 
 [LocoStructSize(0x36)]
 [LocoStructType(DatObjectType.Track)]
-internal record TrackObject(
+internal record DatTrackObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] TrackTraitFlags TrackPieces,
 	[property: LocoStructOffset(0x04)] TrackTraitFlags StationTrackPieces,

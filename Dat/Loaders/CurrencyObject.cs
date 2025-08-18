@@ -20,7 +20,7 @@ public abstract class CurrencyObjectLoader : IDatObjectLoader
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x0C)]
 [LocoStructType(DatObjectType.Currency)]
-internal record CurrencyObject(
+internal record DatCurrencyObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id PrefixSymbol,
 	[property: LocoStructOffset(0x04), LocoString, Browsable(false)] string_id SuffixSymbol,

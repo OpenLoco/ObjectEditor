@@ -28,7 +28,7 @@ internal enum DatDockObjectFlags : uint16_t
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x28)]
 [LocoStructType(DatObjectType.Dock)]
-internal record DockObject(
+internal record DatDockObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
 	[property: LocoStructOffset(0x04)] int16_t SellCostFactor,

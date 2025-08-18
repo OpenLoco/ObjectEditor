@@ -7,36 +7,30 @@ namespace Dat.FileParsing;
 
 public class LocoBinaryWriter : BinaryWriter
 {
-	public LocoBinaryWriter(Stream output) : base(output, Encoding.UTF8)
+	public LocoBinaryWriter(Stream output) : base(output, Encoding.UTF8, leaveOpen: true)
 	{ }
 
-	public LocoBinaryWriter(Stream output, Encoding encoding) : base(output, encoding)
-	{ }
+	public void WriteByte(uint8_t value = 0)
+		=> Write(value);
 
-	public LocoBinaryWriter(Stream output, Encoding encoding, bool leaveOpen) : base(output, encoding, leaveOpen)
-	{ }
+	public void WriteUint16(uint16_t value = 0)
+		=> Write(value);
 
-	public LocoBinaryWriter(Stream output, bool leaveOpen) : base(output, Encoding.UTF8, leaveOpen)
-	{ }
+	public void WriteStringId(string_id value = 0)
+		=> Write(value);
 
-	public void WriteStringId()
-		=> Write((string_id)0);
+	public void WriteImageId(image_id value = 0)
+		=> Write(value);
 
-	public void WriteImageId()
-		=> Write((image_id)0);
-
-	public void WriteObjectId()
-		=> Write((object_id)0);
-
-	public void WritePointer(int count = 1)
+	public void WriteObjectId(object_id value = 0, int count = 1)
 	{
 		for (var i = 0; i < count; i++)
 		{
-			Write((uint32_t)0);
+			Write(value);
 		}
 	}
 
-	public void WriteByte(byte value, int count)
+	public void WritePointer(uint32_t value = 0, int count = 1)
 	{
 		for (var i = 0; i < count; i++)
 		{

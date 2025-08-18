@@ -137,11 +137,11 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.WriteImageId(); // Image, not part of object definition
 			bw.WriteImageId(); // Image offset, not part of object definition
 			bw.Write(model.AllowedPlaneTypes);
-			bw.Write(model.BuildingHeights.Count);
-			bw.Write(model.BuildingVariations.Count);
+			bw.WriteByte((uint8_t)model.BuildingHeights.Count);
+			bw.WriteByte((uint8_t)model.BuildingVariations.Count);
 			bw.WritePointer(); // BuildingHeights
 			bw.WritePointer(); // BuildingAnimations
-			bw.WritePointer(Constants.BuildingVariationCount); // BuildingVariations
+			bw.WritePointer(0, Constants.BuildingVariationCount); // BuildingVariations
 			bw.WritePointer(); // BuildingPositions
 			bw.Write(model.LargeTiles);
 			bw.Write(model.MinX);

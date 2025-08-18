@@ -493,25 +493,22 @@ public static class SawyerStreamWriter
 	public static MemoryStream WriteLocoObjectStream(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
 	{
 		using var rawObjStream = new MemoryStream();
+		WriteLocoObject(obj, rawObjStream);
 
-		if (objectType is ObjectType.Airport or ObjectType.RoadExtra or ObjectType.Steam)
-		{
-			WriteLocoObject(obj, rawObjStream);
-		}
-		else // old method
-		{
-			// obj
-			rawObjStream.Write(ByteWriter.WriteLocoStruct(obj.Object));
+		// old method
+		//{
+		//	// obj
+		//	rawObjStream.Write(ByteWriter.WriteLocoStruct(obj.Object));
 
-			// string table
-			WriteImageTableStream(rawObjStream, obj.GraphicsElements);
+		//	// string table
+		//	WriteImageTableStream(rawObjStream, obj.GraphicsElements);
 
-			// variable data
-			WriteVariableStream(rawObjStream, obj);
+		//	// variable data
+		//	WriteVariableStream(rawObjStream, obj);
 
-			// graphics data
-			WriteImageTableStream(rawObjStream, obj.GraphicsElements);
-		}
+		//	// graphics data
+		//	WriteImageTableStream(rawObjStream, obj.GraphicsElements);
+		//}
 
 		rawObjStream.Flush();
 

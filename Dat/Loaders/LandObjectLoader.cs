@@ -2,7 +2,12 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Land;
+using Definitions.ObjectModels.Objects.Steam;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using static Dat.Loaders.LandObjectLoader;
+using static Dat.Loaders.SteamObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -12,22 +17,121 @@ public abstract class LandObjectLoader : IDatObjectLoader
 	{ }
 
 	public static class StructSizes
-	{ }
+	{
+		public const int Dat = 0x1E;
+	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new LandObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+			model.CostIndex = br.ReadByte();
+			model.NumGrowthStages = br.ReadByte();
+			model.NumImageAngles = br.ReadByte();
+			model.Flags = ((DatLandObjectFlags)br.ReadByte()).Convert();
+			_ = br.SkipObjectId(); // CliffEdgeHeader1, not part of object definition
+			_ = br.SkipObjectId(); // CliffEdgeHeader2, not part of object
+			model.CostFactor = br.ReadInt16();
+			_ = br.SkipImageId(); // Image offset, not part of object definition
+			model.NumImagesPerGrowthStage = br.ReadUInt32();
+			_ = br.SkipImageId(); // CliffEdgeImage, not part of object definition
+			_ = br.SkipImageId(); // MapPixelImage, not part of object definition
+			model.DistributionPattern = br.ReadByte();
+			model.NumVariations = br.ReadByte();
+			model.VariationLikelihood = br.ReadByte();
+			_ = br.SkipByte(); // pad
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Land), null);
+
+			// variable
+			model.CliffEdgeHeader = br.ReadS5Header();
+			if (model.Flags.HasFlag(LandObjectFlags.HasUnkObjectHeader))
+			{
+				model.UnkObjectHeader = br.ReadS5Header();
+			}
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Land, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+		var model = (LandObject)obj.Object;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write(model.CostIndex);
+			bw.Write(model.NumGrowthStages);
+			bw.Write(model.NumImageAngles);
+			bw.Write((uint8_t)model.Flags.Convert());
+			bw.WriteObjectId(); // CliffEdgeHeader1, not part of object definition
+			bw.WriteObjectId(); // CliffEdgeHeader2, not part of object definition
+			bw.Write(model.CostFactor);
+			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.Write(model.NumImagesPerGrowthStage);
+			bw.WriteImageId(); // CliffEdgeImage, not part of object definition
+			bw.WriteImageId(); // MapPixelImage, not part of object definition
+			bw.Write(model.DistributionPattern);
+			bw.Write(model.NumVariations);
+			bw.Write(model.VariationLikelihood);
+			bw.Write((uint8_t)0); // pad
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			bw.WriteS5Header(model.CliffEdgeHeader);
+			if (model.Flags.HasFlag(LandObjectFlags.HasUnkObjectHeader))
+			{
+				ArgumentNullException.ThrowIfNull(model.UnkObjectHeader); // cannot have flag set but no unk header
+				bw.WriteS5Header(model.UnkObjectHeader);
+			}
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
+
+	[Flags]
+	internal enum DatLandObjectFlags : uint8_t
+	{
+		None = 0,
+		unk_00 = 1 << 0,
+		HasUnkObjectHeader = 1 << 1,
+		IsDesert = 1 << 2,
+		NoTrees = 1 << 3,
+		unk_04 = 1 << 4,
+		unk_05 = 1 << 5,
+	}
 }
 
-[Flags]
-internal enum DatLandObjectFlags : uint8_t
+internal static class LandObjectFlagsConverter
 {
-	None = 0,
-	unk_00 = 1 << 0,
-	unk_01 = 1 << 1,
-	IsDesert = 1 << 2,
-	NoTrees = 1 << 3,
-	unk_04 = 1 << 4,
-	unk_05 = 1 << 5,
+	public static LandObjectFlags Convert(this DatLandObjectFlags datLandObjectFlags)
+		=> (LandObjectFlags)datLandObjectFlags;
+
+	public static DatLandObjectFlags Convert(this LandObjectFlags landObjectFlags)
+		=> (DatLandObjectFlags)landObjectFlags;
 }
 
 [LocoStructSize(0x1E)]
@@ -60,7 +164,7 @@ internal record DatLandObject(
 		remainingData = remainingData[S5Header.StructLength..];
 
 		// unused obj
-		if (Flags.HasFlag(DatLandObjectFlags.unk_01))
+		if (Flags.HasFlag(DatLandObjectFlags.HasUnkObjectHeader))
 		{
 			UnkObjHeader = S5Header.Read(remainingData[..S5Header.StructLength]);
 			remainingData = remainingData[S5Header.StructLength..];
@@ -71,11 +175,11 @@ internal record DatLandObject(
 
 	public ReadOnlySpan<byte> SaveVariable()
 	{
-		var variableDataSize = S5Header.StructLength + (Flags.HasFlag(DatLandObjectFlags.unk_01) ? S5Header.StructLength : 0);
+		var variableDataSize = S5Header.StructLength + (Flags.HasFlag(DatLandObjectFlags.HasUnkObjectHeader) ? S5Header.StructLength : 0);
 		_ = new byte[variableDataSize];
 		byte[]? data = [.. CliffEdgeHeader.Write()];
 
-		if (Flags.HasFlag(DatLandObjectFlags.unk_01))
+		if (Flags.HasFlag(DatLandObjectFlags.HasUnkObjectHeader))
 		{
 			UnkObjHeader.Write().CopyTo(data.AsSpan()[S5Header.StructLength..]);
 		}

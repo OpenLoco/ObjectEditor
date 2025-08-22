@@ -13,32 +13,7 @@ namespace Dat.FileParsing;
 
 public static class SawyerStreamReader
 {
-	public static List<ObjectModelHeader> LoadVariableCountS5HeadersStream(Stream stream, int count)
-	{
-		using var br = new LocoBinaryReader(stream);
-		return LoadVariableCountS5HeadersStream(br, count);
-	}
-
-	public static List<ObjectModelHeader> LoadVariableCountS5HeadersStream(LocoBinaryReader br, int count)
-	{
-		List<ObjectModelHeader> result = [];
-		for (var i = 0; i < count; ++i)
-		{
-			if (br.PeekByte() != 0xFF)
-			{
-				var header = S5Header.Read(br.ReadBytes(S5Header.StructLength));
-				// vanilla objects will have sourcegameflag == 0 and checksum == 0. custom objects will have a checksum specified - may need custom handling
-				if (header.Checksum != 0 || header.Flags != 255)
-				{
-					result.Add(new ObjectModelHeader(header.Name, header.Checksum, header.ObjectType.Convert(), header.ObjectSource.Convert()));
-				}
-			}
-		}
-
-		return result;
-	}
-
-	public static List<S5Header> LoadVariableCountS5Headers(ReadOnlySpan<byte> data, int count)
+	public static List<S5Header> ReadS5HeaderList(ReadOnlySpan<byte> data, int count)
 	{
 		List<S5Header> result = [];
 		for (var i = 0; i < count; ++i)
@@ -579,12 +554,12 @@ public static class SawyerStreamReader
 		return Decode(chunk.Encoding, chunkBytes);
 	}
 
-	public static List<(SoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(string filename)
+	public static List<(DatSoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(string filename)
 		=> LoadSoundEffectsFromCSS(File.ReadAllBytes(filename));
 
-	public static List<(SoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
+	public static List<(DatSoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
 	{
-		var result = new List<(SoundEffectWaveFormat, byte[])>();
+		var result = new List<(DatSoundEffectWaveFormat, byte[])>();
 
 		using (var ms = new MemoryStream(data))
 		using (var br = new BinaryReader(ms))
@@ -601,7 +576,7 @@ public static class SawyerStreamReader
 			{
 				br.BaseStream.Position = soundOffsets[i];
 				var pcmLen = br.ReadUInt32();
-				var header = ByteReader.ReadLocoStruct<SoundEffectWaveFormat>(br.ReadBytes(ObjectAttributes.StructSize<SoundEffectWaveFormat>()));
+				var header = ByteReader.ReadLocoStruct<DatSoundEffectWaveFormat>(br.ReadBytes(ObjectAttributes.StructSize<DatSoundEffectWaveFormat>()));
 
 				var pcmData = br.ReadBytes((int)pcmLen);
 				result.Add((header, pcmData));

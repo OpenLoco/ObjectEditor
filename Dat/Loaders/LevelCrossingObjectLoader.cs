@@ -14,11 +14,13 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 
 	public static class StructSizes
 	{
-		public const int DatStructSize = 0x12;
+		public const int Dat = 0x12;
 	}
 
 	public static LocoObject Load(MemoryStream stream)
 	{
+		var initialStreamPosition = stream.Position;
+
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new LevelCrossingObject();
@@ -39,7 +41,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			_ = br.SkipImageId();
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, StructSizes.DatStructSize, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.LevelCrossing), null);
@@ -56,6 +58,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
+		var initialStreamPosition = stream.Position;
 		var model = obj.Object as LevelCrossingObject;
 
 		using (var bw = new LocoBinaryWriter(stream))
@@ -68,12 +71,12 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			bw.Write(model.ClosingFrames);
 			bw.Write(model.ClosedFrames);
 			bw.Write(model.var_0A); // something like IdleAnimationFrames or something
-			bw.WriteByte(); // pad_0B, unused
+			bw.Write((uint8_t)0); // pad_0B, unused
 			bw.Write(model.DesignedYear);
 			bw.WriteImageId(); // Image offset, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, StructSizes.DatStructSize, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);

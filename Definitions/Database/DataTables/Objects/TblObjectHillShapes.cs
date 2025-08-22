@@ -6,7 +6,7 @@ public class TblObjectHillShapes : DbSubObject, IConvertibleToTable<TblObjectHil
 {
 	public uint8_t HillHeightMapCount { get; set; }
 	public uint8_t MountainHeightMapCount { get; set; }
-	public HillShapeFlags Flags { get; set; }
+	public bool IsHeightMap { get; set; }
 
 	public static TblObjectHillShapes FromObject(TblObject tbl, HillShapesObject obj)
 		=> new()
@@ -14,6 +14,6 @@ public class TblObjectHillShapes : DbSubObject, IConvertibleToTable<TblObjectHil
 			Parent = tbl,
 			HillHeightMapCount = obj.HillHeightMapCount,
 			MountainHeightMapCount = obj.MountainHeightMapCount,
-			Flags = obj.Flags,
+			IsHeightMap = obj.IsHeightMap,
 		};
 }

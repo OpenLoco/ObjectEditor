@@ -8,13 +8,15 @@ namespace Dat.Loaders;
 
 public abstract class SnowObjectLoader : IDatObjectLoader
 {
-	public static class StructSizes
+	internal static class StructSizes
 	{
-		public const int DatStructSize = 0x06;
+		public const int Dat = 0x06;
 	}
 
 	public static LocoObject Load(MemoryStream stream)
 	{
+		var initialStreamPosition = stream.Position;
+
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new SnowObject();
@@ -26,7 +28,7 @@ public abstract class SnowObjectLoader : IDatObjectLoader
 			_ = br.SkipImageId(); // Image offset, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, StructSizes.DatStructSize, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Snow), null);
@@ -43,10 +45,15 @@ public abstract class SnowObjectLoader : IDatObjectLoader
 
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
+		var initialStreamPosition = stream.Position;
+
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
 			bw.WriteImageId(); // Image offset, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);

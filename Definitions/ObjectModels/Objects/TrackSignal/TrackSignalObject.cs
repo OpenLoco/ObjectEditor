@@ -15,8 +15,6 @@ public class TrackSignalObject : ILocoStruct, IImageTableNameProvider
 	public uint16_t ObsoleteYear { get; set; }
 	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
 
-	public const int ModsLength = 7;
-
 	public bool Validate()
 	{
 		// animationSpeed must be 1 less than a power of 2 (its a mask)

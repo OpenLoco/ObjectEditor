@@ -4,7 +4,7 @@ public class HillShapesObject : ILocoStruct
 {
 	public uint8_t HillHeightMapCount { get; set; }
 	public uint8_t MountainHeightMapCount { get; set; }
-	public HillShapeFlags Flags { get; set; }
+	public bool IsHeightMap { get; set; }
 
-	public bool Validate() => throw new NotImplementedException();
+	public bool Validate() => true;
 }

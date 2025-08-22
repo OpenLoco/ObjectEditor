@@ -8,7 +8,7 @@ public static class DtoObjectHillShapesMapper
 	{
 		HillHeightMapCount = tblobjecthillshapes.HillHeightMapCount,
 		MountainHeightMapCount = tblobjecthillshapes.MountainHeightMapCount,
-		Flags = tblobjecthillshapes.Flags,
+		IsHeightMap = tblobjecthillshapes.IsHeightMap,
 		Id = tblobjecthillshapes.Id,
 	};
 
@@ -17,7 +17,7 @@ public static class DtoObjectHillShapesMapper
 		Parent = parent,
 		HillHeightMapCount = model.HillHeightMapCount,
 		MountainHeightMapCount = model.MountainHeightMapCount,
-		Flags = model.Flags,
+		IsHeightMap = model.IsHeightMap,
 		Id = model.Id,
 	};
 

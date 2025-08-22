@@ -1,44 +1,158 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Steam;
+using Definitions.ObjectModels.Objects.Tree;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using static Dat.Loaders.SteamObjectLoader;
+using static Dat.Loaders.TreeObjectLoader;
 
 namespace Dat.Loaders;
 public abstract class TreeObjectLoader : IDatObjectLoader
 {
 	public static class Constants
-	{ }
+	{
+		public const int ImageCount = 6;
+	}
 
 	public static class StructSizes
-	{ }
+	{
+		public const int Dat = 0x4C;
+	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new TreeObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+			model.Clearance = br.ReadByte();
+			model.Height = br.ReadByte();
+			model.var_04 = br.ReadByte();
+			model.var_05 = br.ReadByte();
+			model.NumRotations = br.ReadByte();
+			model.NumGrowthStages = br.ReadByte();
+			model.Flags = ((DatTreeObjectFlags)br.ReadUInt16()).Convert();
+			_ = br.SkipImageId(Constants.ImageCount); // Image sprites, not part of object definition
+			_ = br.SkipImageId(Constants.ImageCount); // Snow sprites, not part of object definition
+			model.ShadowImageOffset = br.ReadUInt16();
+			model.var_3C = ((DatTreeFlagsUnk)br.ReadByte()).Convert();
+			model.SeasonState = br.ReadByte();
+			model.Season = br.ReadByte();
+			model.CostIndex = br.ReadByte();
+			model.BuildCostFactor = br.ReadInt16();
+			model.ClearCostFactor = br.ReadInt16();
+			model.Colours = br.ReadUInt32();
+			model.Rating = br.ReadInt16();
+			model.DemolishRatingReduction = br.ReadInt16();
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Tree), null);
+
+			// variable
+			// N/A
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Tree, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+		var model = (TreeObject)obj.Object;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write(model.Clearance);
+			bw.Write(model.Height);
+			bw.Write(model.var_04);
+			bw.Write(model.var_05);
+			bw.Write(model.NumRotations);
+			bw.Write(model.NumGrowthStages);
+			bw.Write((uint16_t)model.Flags.Convert()); // Convert to DatTreeObjectFlags
+			bw.WriteImageId(Constants.ImageCount); // Image sprites, not part
+			bw.WriteImageId(Constants.ImageCount); // Snow sprites, not part of object definition
+			bw.Write(model.ShadowImageOffset);
+			bw.Write((uint8_t)model.var_3C.Convert()); // Convert to Dat
+			bw.Write(model.SeasonState);
+			bw.Write(model.Season);
+			bw.Write(model.CostIndex);
+			bw.Write(model.BuildCostFactor);
+			bw.Write(model.ClearCostFactor);
+			bw.Write(model.Colours);
+			bw.Write(model.Rating);
+			bw.Write(model.DemolishRatingReduction);
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			// N/A
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
+
+	[Flags]
+	internal enum DatTreeObjectFlags : uint16_t
+	{
+		None = 0,
+		HasSnowVariation = 1 << 0,
+		unk_01 = 1 << 1,
+		HighAltitude = 1 << 2,
+		LowAltitude = 1 << 3,
+		RequiresWater = 1 << 4,
+		unk_05 = 1 << 5,
+		DroughtResistant = 1 << 6,
+		HasShadow = 1 << 7,
+	}
+
+	[Flags]
+	internal enum DatTreeFlagsUnk : uint8_t
+	{
+		unk_00 = 1 << 0,
+		unk_01 = 1 << 1,
+		unk_02 = 1 << 2,
+		unk_03 = 1 << 3,
+		unk_04 = 1 << 4,
+		unk_05 = 1 << 5,
+	}
 }
 
-[Flags]
-internal enum DatTreeObjectFlags : uint16_t
+internal static class TreeObjectFlagsConverter
 {
-	None = 0,
-	HasSnowVariation = 1 << 0,
-	unk_01 = 1 << 1,
-	HighAltitude = 1 << 2,
-	LowAltitude = 1 << 3,
-	RequiresWater = 1 << 4,
-	unk_05 = 1 << 5,
-	DroughtResistant = 1 << 6,
-	HasShadow = 1 << 7,
+	public static TreeObjectFlags Convert(this DatTreeObjectFlags datTreeObjectFlags)
+		=> (TreeObjectFlags)datTreeObjectFlags;
+
+	public static DatTreeObjectFlags Convert(this TreeObjectFlags treeObjectFlags)
+		=> (DatTreeObjectFlags)treeObjectFlags;
 }
 
-[Flags]
-internal enum DatTreeFlagsUnk : uint8_t
+internal static class TreeFlagsUnkConverter
 {
-	unk_00 = 1 << 0,
-	unk_01 = 1 << 1,
-	unk_02 = 1 << 2,
-	unk_03 = 1 << 3,
-	unk_04 = 1 << 4,
-	unk_05 = 1 << 5,
+	public static TreeFlagsUnk Convert(this DatTreeFlagsUnk datTreeFlagsUnk)
+		=> (TreeFlagsUnk)datTreeFlagsUnk;
+
+	public static DatTreeFlagsUnk Convert(this TreeFlagsUnk treeFlagsUnk)
+		=> (DatTreeFlagsUnk)treeFlagsUnk;
 }
 
 [LocoStructSize(0x4C)]

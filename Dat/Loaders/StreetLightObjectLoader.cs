@@ -15,7 +15,9 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 	}
 
 	public static class StructSizes
-	{ }
+	{
+		public const int Dat = 0x0C;
+	}
 
 	public static LocoObject Load(MemoryStream stream)
 	{
@@ -54,7 +56,7 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 			bw.WriteStringId();// Name offset, not part of object definition
 			for (var i = 0; i < Constants.DesignedYearLength; ++i)
 			{
-				bw.WriteUInt16(model.DesignedYears[i]);
+				bw.Write(model.DesignedYears[i]);
 			}
 
 			// string table

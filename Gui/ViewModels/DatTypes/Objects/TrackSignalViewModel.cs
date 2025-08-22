@@ -1,3 +1,4 @@
+using Dat.Loaders;
 using Definitions.ObjectModels.Objects.TrackSignal;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
@@ -17,7 +18,7 @@ public class TrackSignalViewModel : LocoObjectViewModel<TrackSignalObject>
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Reactive, Category("Stats")] public uint16_t DesignedYear { get; set; }
 	[Reactive, Category("Stats")] public uint16_t ObsoleteYear { get; set; }
-	[Reactive, Length(0, TrackSignalObject.ModsLength)] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
+	[Reactive, Length(0, TrackSignalObjectLoader.Constants.ModsLength)] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
 
 	public TrackSignalViewModel(TrackSignalObject ro)
 	{

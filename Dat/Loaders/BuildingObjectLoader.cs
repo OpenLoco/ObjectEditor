@@ -4,6 +4,8 @@ using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Dat.Loaders;
@@ -18,11 +20,63 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		public const int MaxProducedCargoType = 2;
 		public const int MaxRequiredCargoType = 2;
 		public const int MaxElevatorHeightSequences = 4;
-
 	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
+	public static class StructSizes
+	{
+		public const int Dat = 0xBE;
+	}
+
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new BuildingObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Building), null);
+
+			// variable
+			// N/A
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Building, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			// N/A
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
 }
 
 [Flags]
@@ -99,12 +153,12 @@ internal record DatBuildingObject(
 
 		// produced cargo
 		ProducedCargo.Clear();
-		ProducedCargo.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, BuildingObjectLoader.Constants.MaxProducedCargoType));
+		ProducedCargo.AddRange(SawyerStreamReader.ReadS5HeaderList(remainingData, BuildingObjectLoader.Constants.MaxProducedCargoType));
 		remainingData = remainingData[(S5Header.StructLength * BuildingObjectLoader.Constants.MaxProducedCargoType)..];
 
 		// required cargo
 		RequiredCargo.Clear();
-		RequiredCargo.AddRange(SawyerStreamReader.LoadVariableCountS5Headers(remainingData, BuildingObjectLoader.Constants.MaxRequiredCargoType));
+		RequiredCargo.AddRange(SawyerStreamReader.ReadS5HeaderList(remainingData, BuildingObjectLoader.Constants.MaxRequiredCargoType));
 		remainingData = remainingData[(S5Header.StructLength * BuildingObjectLoader.Constants.MaxRequiredCargoType)..];
 
 		// animation sequences

@@ -2,7 +2,6 @@ using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Bridge;
-using Definitions.ObjectModels.Objects.TrackSignal;
 using Definitions.ObjectModels.Types;
 
 namespace Dat.Loaders;
@@ -18,7 +17,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 
 	public static class StructSizes
 	{
-		public const int DatStructSize = 0x2C;
+		public const int Dat = 0x2C;
 	}
 
 	public static LocoObject Load(MemoryStream stream)
@@ -54,14 +53,14 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			model.DesignedYear = br.ReadUInt16();
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.DatStructSize, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Bridge), null);
 
 			// variable
-			model.CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5HeadersStream(stream, compatibleTrackCount);
-			model.CompatibleRoadObjects = SawyerStreamReader.LoadVariableCountS5HeadersStream(stream, compatibleRoadCount);
+			model.CompatibleTrackObjects = br.ReadS5HeaderList(compatibleTrackCount);
+			model.CompatibleRoadObjects = br.ReadS5HeaderList(compatibleRoadCount);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -78,28 +77,28 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId();// Name offset, not part of object definition
-			bw.WriteByte((uint8_t)model.Flags);
-			bw.WriteByte(model.var_03);
-			bw.WriteUInt16(model.ClearHeight);
-			bw.WriteInt16(model.DeckDepth);
-			bw.WriteByte(model.SpanLength);
-			bw.WriteByte(model.PillarSpacing); // This is a bitfield, see https://
-			bw.WriteInt16(model.MaxSpeed);
-			bw.WriteByte(model.MaxHeight);
-			bw.WriteByte(model.CostIndex);
-			bw.WriteInt16(model.BaseCostFactor);
-			bw.WriteInt16(model.HeightCostFactor);
-			bw.WriteInt16(model.SellCostFactor);
-			bw.WriteUInt16((uint16_t)model.DisabledTrackFlags.Convert());
+			bw.Write((uint8_t)model.Flags);
+			bw.Write(model.var_03);
+			bw.Write(model.ClearHeight);
+			bw.Write(model.DeckDepth);
+			bw.Write(model.SpanLength);
+			bw.Write(model.PillarSpacing); // This is a bitfield, see https://
+			bw.Write(model.MaxSpeed);
+			bw.Write(model.MaxHeight);
+			bw.Write(model.CostIndex);
+			bw.Write(model.BaseCostFactor);
+			bw.Write(model.HeightCostFactor);
+			bw.Write(model.SellCostFactor);
+			bw.Write((uint16_t)model.DisabledTrackFlags.Convert());
 			bw.WriteImageId(); // Image offset, not part of object definition
-			bw.WriteByte((uint8_t)model.CompatibleTrackObjects.Count);
+			bw.Write((uint8_t)model.CompatibleTrackObjects.Count);
 			bw.WriteObjectId(Constants.MaxNumTrackMods); // Placeholder for track mods, not part of object definition
 			bw.Write((uint8_t)model.CompatibleRoadObjects.Count);
 			bw.WriteObjectId(Constants.MaxNumRoadMods); // Placeholder for road mods, not part of object definition
 			bw.Write(model.DesignedYear);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.DatStructSize, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);

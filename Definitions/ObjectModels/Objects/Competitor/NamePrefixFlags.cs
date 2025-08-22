@@ -1,7 +1,7 @@
 namespace Definitions.ObjectModels.Objects.Competitor;
 
 [Flags]
-public enum CompetitorPlaystyle : uint32_t
+public enum NamePrefixFlags : uint32_t
 {
 	unk0 = 1 << 0,
 	unk1 = 1 << 1,

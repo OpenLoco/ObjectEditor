@@ -79,7 +79,7 @@ public class SoundEffectsViewModel : BaseLocoFileViewModel
 
 		var succeeded = sfx
 			.Select(x => x.Item2)
-			.Cast<(SoundEffectWaveFormat Header, byte[] Data)>();
+			.Cast<(DatSoundEffectWaveFormat Header, byte[] Data)>();
 
 		var bytes = SawyerStreamWriter.SaveSoundEffectsToCSS([.. succeeded]);
 		File.WriteAllBytes(filename, bytes);

@@ -2,6 +2,8 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Dock;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Dat.Loaders;
@@ -12,10 +14,60 @@ public abstract class DockObjectLoader : IDatObjectLoader
 	{ }
 
 	public static class StructSizes
-	{ }
+	{
+		public const int Dat = 0x28;
+	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new DockObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Dock), null);
+
+			// variable
+			// N/A
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Dock, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			// N/A
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
 }
 
 [Flags]

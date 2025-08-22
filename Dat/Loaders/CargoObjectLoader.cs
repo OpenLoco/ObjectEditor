@@ -1,6 +1,8 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Cargo;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Dat.Loaders;
@@ -11,10 +13,95 @@ public abstract class CargoObjectLoader : IDatObjectLoader
 	{ }
 
 	public static class StructSizes
-	{ }
+	{
+		public const int Dat = 0x1F;
+	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new CargoObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+			model.var_02 = br.ReadUInt16(); // var_02, not used in Locomotion
+			model.CargoTransferTime = br.ReadUInt16();
+			_ = br.SkipStringId(); // UnitsAndCargoName, not part of object definition
+			_ = br.SkipStringId(); // UnitNameSingular, not part of object definition
+			_ = br.SkipStringId(); // UnitNamePlural, not part of object definition
+			_ = br.SkipImageId(); // UnitInlineSprite offset, not part of object definition
+			model.CargoCategory = (CargoCategory)br.ReadUInt16();
+			model.Flags = (CargoObjectFlags)br.ReadByte();
+			model.NumPlatformVariations = br.ReadByte();
+			model.StationCargoDensity = br.ReadByte();
+			model.PremiumDays = br.ReadByte();
+			model.MaxNonPremiumDays = br.ReadByte();
+			model.MaxPremiumRate = br.ReadUInt16();
+			model.PenaltyRate = br.ReadUInt16();
+			model.PaymentFactor = br.ReadUInt16();
+			model.PaymentIndex = br.ReadByte();
+			model.UnitSize = br.ReadByte();
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Cargo), null);
+
+			// variable
+			// N/A
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Cargo, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+		var model = (CargoObject)obj.Object;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write(model.var_02);
+			bw.Write(model.CargoTransferTime);
+			bw.WriteStringId(); // UnitsAndCargoName, not part of object definition
+			bw.WriteStringId(); // UnitNameSingular, not part of object definition
+			bw.WriteStringId(); // UnitNamePlural, not part of object definition
+			bw.WriteImageId(); // UnitInlineSprite offset, not part of object definition
+			bw.Write((uint16_t)model.CargoCategory);
+			bw.Write((uint8_t)model.Flags);
+			bw.Write(model.NumPlatformVariations);
+			bw.Write(model.StationCargoDensity);
+			bw.Write(model.PremiumDays);
+			bw.Write(model.MaxNonPremiumDays);
+			bw.Write(model.MaxPremiumRate);
+			bw.Write(model.PenaltyRate);
+			bw.Write(model.PaymentFactor);
+			bw.Write(model.PaymentIndex);
+			bw.Write(model.UnitSize);
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			// N/A
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
 }
 
 [Flags]

@@ -3,6 +3,7 @@ using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Track;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Dat.Loaders;
@@ -18,10 +19,60 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 	}
 
 	public static class StructSizes
-	{ }
+	{
+		public const int Dat = 0x36;
+	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new TrackObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Track), null);
+
+			// variable
+			// N/A
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Track, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			// N/A
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
 }
 
 [Flags]
@@ -73,27 +124,27 @@ internal record DatTrackObject(
 	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 	{
 		// compatible roads/tracks
-		TracksAndRoads = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCompatibleTracksAndRoads);
+		TracksAndRoads = SawyerStreamReader.ReadS5HeaderList(remainingData, NumCompatibleTracksAndRoads);
 		remainingData = remainingData[(S5Header.StructLength * NumCompatibleTracksAndRoads)..];
 
 		// mods
-		TrackMods = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumMods);
+		TrackMods = SawyerStreamReader.ReadS5HeaderList(remainingData, NumMods);
 		remainingData = remainingData[(S5Header.StructLength * NumMods)..];
 
 		// signals
-		Signals = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumSignals);
+		Signals = SawyerStreamReader.ReadS5HeaderList(remainingData, NumSignals);
 		remainingData = remainingData[(S5Header.StructLength * NumSignals)..];
 
 		// tunnel
-		Tunnel = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, TrackObjectLoader.Constants.MaxTunnels)[0];
+		Tunnel = SawyerStreamReader.ReadS5HeaderList(remainingData, TrackObjectLoader.Constants.MaxTunnels)[0];
 		remainingData = remainingData[(S5Header.StructLength * TrackObjectLoader.Constants.MaxTunnels)..];
 
 		// bridges
-		Bridges = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumBridges);
+		Bridges = SawyerStreamReader.ReadS5HeaderList(remainingData, NumBridges);
 		remainingData = remainingData[(S5Header.StructLength * NumBridges)..];
 
 		// stations
-		Stations = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumStations);
+		Stations = SawyerStreamReader.ReadS5HeaderList(remainingData, NumStations);
 		remainingData = remainingData[(S5Header.StructLength * NumStations)..];
 
 		// set _CompatibleRoads?

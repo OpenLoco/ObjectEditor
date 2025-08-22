@@ -1,6 +1,8 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Water;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Dat.Loaders;
@@ -10,10 +12,71 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 	{ }
 
 	public static class StructSizes
-	{ }
+	{
+		public const int Dat = 0x0E;
+	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new WaterObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+			model.CostIndex = br.ReadByte();
+			model.var_03 = br.ReadByte();
+			model.CostFactor = br.ReadInt16();
+			_ = br.SkipImageId(); // ImageId, not part of object definition
+			_ = br.SkipImageId(); // MapPixelImage, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Water), null);
+
+			// variable
+			// N/A
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Water, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+		var model = (WaterObject)obj.Object;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write(model.CostIndex);
+			bw.Write(model.var_03);
+			bw.Write(model.CostFactor);
+			bw.WriteImageId(); // ImageId, not part of object definition
+			bw.WriteImageId(); // MapPixelImage, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			// N/A
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
 }
 
 [LocoStructSize(0x0E)]

@@ -6,7 +6,7 @@ namespace Dat.Types.Audio;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x12)]
-public record SoundEffectWaveFormat(
+public record DatSoundEffectWaveFormat(
 	[property: LocoStructOffset(0x00)] int16_t WaveFormatTag,
 	[property: LocoStructOffset(0x02)] int16_t Channels,
 	[property: LocoStructOffset(0x04)] int32_t SampleRate,
@@ -16,7 +16,7 @@ public record SoundEffectWaveFormat(
 	[property: LocoStructOffset(0x010)] int16_t ExtraSize
 	) : ILocoStruct
 {
-	public SoundEffectWaveFormat() : this(0, 0, 0, 0, 0, 0, 0)
+	public DatSoundEffectWaveFormat() : this(0, 0, 0, 0, 0, 0, 0)
 	{ }
 
 	public ReadOnlySpan<byte> Write()

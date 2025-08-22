@@ -11,7 +11,7 @@ public class DockObject : ILocoStruct
 	public DockObjectFlags Flags { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-	public required Pos2 BoatPosition { get; set; }
+	public Pos2 BoatPosition { get; set; }
 	public List<uint16_t> BuildingPartAnimations { get; set; }
 	public List<uint8_t> BuildingVariationParts { get; set; }
 	public List<uint8_t> BuildingPartHeights { get; set; }

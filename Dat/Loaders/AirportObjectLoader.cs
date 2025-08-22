@@ -4,7 +4,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 
 namespace Dat.Loaders;
 
@@ -17,9 +16,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		public const int BuildingAnimationCount = 2;
 	}
 
-	public static class StructSizes
+	internal static class StructSizes
 	{
-		public const int DatStructSize = 0xBA;
+		public const int Dat = 0xBA;
 		public const int BuildingPartAnimation = 0x02;
 		public const int AirportBuilding = 0x04;
 		public const int MovementNode = 0x08;
@@ -65,7 +64,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			model.var_B6 = br.ReadBytes(0xBA - 0xB6);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.DatStructSize, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Airport), null);
@@ -143,8 +142,8 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.WriteImageId(); // Image, not part of object definition
 			bw.WriteImageId(); // Image offset, not part of object definition
 			bw.Write(model.AllowedPlaneTypes);
-			bw.WriteByte((uint8_t)model.BuildingHeights.Count);
-			bw.WriteByte((uint8_t)model.BuildingVariations.Count);
+			bw.Write((uint8_t)model.BuildingHeights.Count);
+			bw.Write((uint8_t)model.BuildingVariations.Count);
 			bw.WritePointer(); // BuildingHeights
 			bw.WritePointer(); // BuildingAnimations
 			bw.WritePointer(Constants.BuildingVariationCount); // BuildingVariations
@@ -163,7 +162,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(model.var_B6);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.DatStructSize, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
@@ -229,37 +228,4 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			stream.Write(BitConverter.GetBytes(x.AtLeastOneClearEdges));
 		}
 	}
-}
-
-[LocoStructSize(0xBA)]
-[LocoStructType(DatObjectType.Airport)]
-public record DatAirportObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
-	[property: LocoStructOffset(0x04)] int16_t SellCostFactor,
-	[property: LocoStructOffset(0x06)] uint8_t CostIndex,
-	[property: LocoStructOffset(0x07)] uint8_t var_07,
-	[property: LocoStructOffset(0x08), Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x0C), Browsable(false)] image_id ImageOffset,
-	[property: LocoStructOffset(0x10)] uint16_t AllowedPlaneTypes,
-	[property: LocoStructOffset(0x12)] uint8_t NumBuildingParts,
-	[property: LocoStructOffset(0x13)] uint8_t NumBuildingVariations,
-	[property: LocoStructOffset(0x14), LocoStructVariableLoad, LocoArrayLength(AirportObjectLoader.Constants.BuildingHeightCount)] List<uint8_t> BuildingHeights,
-	[property: LocoStructOffset(0x18), LocoStructVariableLoad, LocoArrayLength(AirportObjectLoader.Constants.BuildingAnimationCount)] List<BuildingPartAnimation> BuildingAnimations,
-	[property: LocoStructOffset(0x1C), LocoStructVariableLoad, LocoArrayLength(AirportObjectLoader.Constants.BuildingVariationCount)] List<List<uint8_t>> BuildingVariations,
-	[property: LocoStructOffset(0x9C), LocoStructVariableLoad] List<AirportBuilding> BuildingPositions,
-	[property: LocoStructOffset(0xA0)] uint32_t LargeTiles,
-	[property: LocoStructOffset(0xA4)] int8_t MinX,
-	[property: LocoStructOffset(0xA5)] int8_t MinY,
-	[property: LocoStructOffset(0xA6)] int8_t MaxX,
-	[property: LocoStructOffset(0xA7)] int8_t MaxY,
-	[property: LocoStructOffset(0xA8)] uint16_t DesignedYear,
-	[property: LocoStructOffset(0xAA)] uint16_t ObsoleteYear,
-	[property: LocoStructOffset(0xAC)] uint8_t NumMovementNodes,
-	[property: LocoStructOffset(0xAD)] uint8_t NumMovementEdges,
-	[property: LocoStructOffset(0xAE), LocoStructVariableLoad] List<MovementNode> MovementNodes,
-	[property: LocoStructOffset(0xB2), LocoStructVariableLoad] List<MovementEdge> MovementEdges,
-	[property: LocoStructOffset(0xB6), LocoArrayLength(0xBA - 0xB6)] uint8_t[] var_B6
-)
-{
 }

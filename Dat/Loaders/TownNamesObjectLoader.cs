@@ -2,7 +2,6 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Streetlight;
 using Definitions.ObjectModels.Objects.TownNames;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
@@ -19,7 +18,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 
 	public static class StructSizes
 	{
-		public const int Category = 0x04; // 4 bytes
+		public const int Category = 0x1A;
 	}
 
 	public static LocoObject Load(MemoryStream stream)
@@ -65,9 +64,9 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 			bw.WriteStringId();// Name offset, not part of object definition
 			for (var i = 0; i < Constants.Categories; ++i)
 			{
-				bw.WriteByte(model.Categories[i].Count);
-				bw.WriteByte(model.Categories[i].Bias);
-				bw.WriteUInt16(model.Categories[i].Offset);
+				bw.Write(model.Categories[i].Count);
+				bw.Write(model.Categories[i].Bias);
+				bw.Write(model.Categories[i].Offset);
 			}
 
 			// string table

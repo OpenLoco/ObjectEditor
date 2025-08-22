@@ -18,11 +18,14 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 
 	public static class StructSizes
 	{
+		public const int Dat = 0x28;
 		public const int ImageAndHeight = 2;
 	}
 
 	public static LocoObject Load(MemoryStream stream)
 	{
+		var initialStreamPosition = stream.Position;
+
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new SteamObject();
@@ -46,6 +49,9 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			var numSoundEffects = br.ReadByte();
 			_ = br.SkipObjectId(Constants.MaxSoundEffects);
 
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
 			// string table
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Steam), null);
 
@@ -65,51 +71,74 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 		{
 			model.FrameInfoType0.Add(new ImageAndHeight() { ImageOffset = br.ReadByte(), Height = br.ReadByte() });
 		}
+
 		_ = br.SkipByte(); // skip the 0xFF terminator
 
 		while (br.PeekByte() != 0xFF)
 		{
 			model.FrameInfoType1.Add(new ImageAndHeight() { ImageOffset = br.ReadByte(), Height = br.ReadByte() });
 		}
+
 		_ = br.SkipByte(); // skip the 0xFF terminator
 
-		model.SoundEffects = SawyerStreamReader.LoadVariableCountS5HeadersStream(br, numSoundEffects);
+		model.SoundEffects = br.ReadS5HeaderList(numSoundEffects);
 	}
 
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
+		var initialStreamPosition = stream.Position;
 		var model = obj.Object as SteamObject;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			// fixed
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write((uint16_t)0);
 			bw.Write(model.NumStationaryTicks);
-			bw.WriteByte(); // SpriteWidth, not used
-			bw.WriteByte(); // SpriteHeightNegative, not used
-			bw.WriteByte(); // SpriteHeightPositive, not used
+			bw.Write((uint8_t)0); // SpriteWidth, not used
+			bw.Write((uint8_t)0); // SpriteHeightNegative, not used
+			bw.Write((uint8_t)0); // SpriteHeightPositive, not used
 			bw.Write((uint16_t)model.Flags.Convert());
 			bw.Write(model.var_0A);
 			bw.WriteImageId(); // BaseImageId, not used
-			bw.WriteUInt16(); // _TotalNumFramesType0, not used
-			bw.WriteUInt16(); // _TotalNumFramesType1, not used
+			bw.Write((uint16_t)0); // _TotalNumFramesType0, not used
+			bw.Write((uint16_t)0); // _TotalNumFramesType1, not used
 			bw.WritePointer(); // _FrameInfoType0Ptr, not used
 			bw.WritePointer(); // _FrameInfoType1Ptr, not used
 			bw.Write((uint8_t)model.SoundEffects.Count);
 			bw.WriteObjectId(Constants.MaxSoundEffects); // _SoundEffects, not used
 
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
 			// string table
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			bw.Write(model.FrameInfoType0.SelectMany(x => new byte[] { x.ImageOffset, x.Height }).ToArray());
-			bw.Write(0xFF); // end of frame info type 0
-			bw.Write(model.FrameInfoType1.SelectMany(x => new byte[] { x.ImageOffset, x.Height }).ToArray());
-			bw.Write(0xFF); // end of frame info type 1
+			SaveVariable(model, bw);
 
 			// image table
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
+	}
+
+	private static void SaveVariable(SteamObject model, LocoBinaryWriter bw)
+	{
+		foreach (var fit in model.FrameInfoType0)
+		{
+			bw.Write(fit.ImageOffset);
+			bw.Write(fit.Height);
+		}
+		bw.Write((uint8_t)0xFF); // end of frame info type 0
+
+		foreach (var fit in model.FrameInfoType1)
+		{
+			bw.Write(fit.ImageOffset);
+			bw.Write(fit.Height);
+		}
+		bw.Write((uint8_t)0xFF); // end of frame info type 1
+
+		bw.WriteS5HeaderList(model.SoundEffects);
 	}
 
 	[Flags]
@@ -123,7 +152,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 	}
 }
 
-static class SteamObjectFlagsConverter
+internal static class SteamObjectFlagsConverter
 {
 	public static SteamObjectFlags Convert(this DatSteamObjectFlags datSteamObjectFlags)
 		=> (SteamObjectFlags)datSteamObjectFlags;
@@ -131,24 +160,3 @@ static class SteamObjectFlagsConverter
 	public static DatSteamObjectFlags Convert(this SteamObjectFlags steamObjectFlags)
 		=> (DatSteamObjectFlags)steamObjectFlags;
 }
-
-[LocoStructSize(0x28)]
-[LocoStructType(DatObjectType.Steam)]
-internal record DatSteamObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02), LocoPropertyMaybeUnused] uint16_t NumImages, // this is simply the count of images in the graphics table
-	[property: LocoStructOffset(0x04)] uint8_t NumStationaryTicks,
-	[property: LocoStructOffset(0x05), LocoStructVariableLoad, Browsable(false)] uint8_t SpriteWidth,
-	[property: LocoStructOffset(0x06), LocoStructVariableLoad, Browsable(false)] uint8_t SpriteHeightNegative,
-	[property: LocoStructOffset(0x07), LocoStructVariableLoad, Browsable(false)] uint8_t SpriteHeightPositive,
-	[property: LocoStructOffset(0x08)] DatSteamObjectFlags Flags,
-	[property: LocoStructOffset(0x0A)] uint32_t var_0A,
-	[property: LocoStructOffset(0x0E), Browsable(false)] image_id BaseImageId,
-	[property: LocoStructOffset(0x12), LocoStructVariableLoad, Browsable(false)] uint16_t _TotalNumFramesType0,
-	[property: LocoStructOffset(0x14), LocoStructVariableLoad, Browsable(false)] uint16_t _TotalNumFramesType1,
-	[property: LocoStructOffset(0x16)] uint32_t _FrameInfoType0Ptr,
-	[property: LocoStructOffset(0x1A)] uint32_t _FrameInfoType1Ptr,
-	[property: LocoStructOffset(0x1E)] uint8_t NumSoundEffects,
-	[property: LocoStructOffset(0x01F), LocoArrayLength(SteamObjectLoader.Constants.MaxSoundEffects), LocoStructVariableLoad, Browsable(false)] object_id[] _SoundEffects
-)
-{ }

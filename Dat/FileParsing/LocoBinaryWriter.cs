@@ -10,26 +10,35 @@ public class LocoBinaryWriter : BinaryWriter
 	public LocoBinaryWriter(Stream output) : base(output, Encoding.UTF8, leaveOpen: true)
 	{ }
 
-	public void WriteByte(uint8_t value = 0)
-		=> Write(value);
+	public void WriteBytes(int count = 1)
+	{
+		for (var i = 0; i < count; i++)
+		{
+			base.Write((uint8_t)0);
+		}
+	}
 
-	public void WriteUInt16(uint16_t value = 0)
-		=> Write(value);
+	public void WriteStringId(int count = 1)
+	{
+		for (var i = 0; i < count; i++)
+		{
+			base.Write((string_id)0);
+		}
+	}
 
-	public void WriteInt16(int16_t value = 0)
-		=> Write(value);
-
-	public void WriteStringId()
-		=> Write((string_id)0);
-
-	public void WriteImageId()
-		=> Write((image_id)0);
+	public void WriteImageId(int count = 1)
+	{
+		for (var i = 0; i < count; i++)
+		{
+			base.Write((image_id)0);
+		}
+	}
 
 	public void WriteObjectId(int count = 1)
 	{
 		for (var i = 0; i < count; i++)
 		{
-			Write((object_id)0);
+			base.Write((object_id)0);
 		}
 	}
 
@@ -37,7 +46,7 @@ public class LocoBinaryWriter : BinaryWriter
 	{
 		for (var i = 0; i < count; i++)
 		{
-			Write((uint32_t)0);
+			base.Write((uint32_t)0);
 		}
 	}
 
@@ -49,16 +58,21 @@ public class LocoBinaryWriter : BinaryWriter
 		}
 	}
 
+	public void WriteS5Header(ObjectModelHeader header)
+	{
+		var s5Header = new S5Header(header.Name, header.Checksum)
+		{
+			ObjectType = header.ObjectType.Convert(),
+			ObjectSource = header.ObjectSource.Convert()
+		};
+		Write(s5Header.Write());
+	}
+
 	public void WriteS5HeaderList(IEnumerable<ObjectModelHeader> headers)
 	{
-		foreach (var x in headers)
+		foreach (var header in headers)
 		{
-			var s5Header = new S5Header(x.Name, x.Checksum)
-			{
-				ObjectType = x.ObjectType.Convert(),
-				ObjectSource = x.ObjectSource.Convert()
-			};
-			Write(s5Header.Write());
+			WriteS5Header(header);
 		}
 	}
 }

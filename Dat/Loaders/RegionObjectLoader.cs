@@ -2,6 +2,8 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Region;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Dat.Loaders;
@@ -14,10 +16,83 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 	}
 
 	public static class StructSizes
-	{ }
+	{
+		public const int Dat = 0x12;
+		public const int CargoInfluenceTownFilterType = 0x01;
+	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new RegionObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+			_ = br.SkipImageId(); // Image offset, not part of object definition
+			_ = br.SkipBytes(0x08 - 0x06); // pad
+			var numCargoInfluenceObjects = br.ReadByte();
+			for (var i = 0; i < Constants.MaxCargoInfluenceObjects; ++i)
+			{
+				model.CargoInfluenceTownFilter.Add((CargoInfluenceTownFilterType)br.ReadByte()); // Cargo influence town filter
+			}
+			_ = br.SkipBytes(Constants.MaxCargoInfluenceObjects * StructSizes.CargoInfluenceTownFilterType); // Cargo influence town filter
+			_ = br.SkipByte(); // pad
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Region), null);
+
+			// variable
+			model.CargoInfluenceObjects = br.ReadS5HeaderList(numCargoInfluenceObjects);
+			model.DependentObjects = br.ReadS5HeaderList();
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Region, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+		var model = (RegionObject)obj.Object;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.Write((uint16_t)0); // pad
+			bw.Write((uint8_t)model.CargoInfluenceObjects.Count);
+			bw.WriteObjectId(Constants.MaxCargoInfluenceObjects);
+			for (var i = 0; i < Constants.MaxCargoInfluenceObjects; ++i)
+			{
+				bw.Write((uint8_t)model.CargoInfluenceTownFilter[i]); // Cargo influence town filter
+			}
+			bw.Write((uint8_t)0); // pad
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			bw.WriteS5HeaderList(model.CargoInfluenceObjects);
+			bw.WriteS5HeaderList(model.DependentObjects);
+			bw.Write((uint8_t)0xFF); // end of dependent objects
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
 }
 
 internal enum DatCargoInfluenceTownFilterType : uint8_t
@@ -46,7 +121,7 @@ internal record DatRegionObject(
 	{
 		// cargo influence objects
 		CargoInfluenceObjects.Clear();
-		CargoInfluenceObjects = SawyerStreamReader.LoadVariableCountS5Headers(remainingData, NumCargoInfluenceObjects);
+		CargoInfluenceObjects = SawyerStreamReader.ReadS5HeaderList(remainingData, NumCargoInfluenceObjects);
 		remainingData = remainingData[(S5Header.StructLength * NumCargoInfluenceObjects)..];
 
 		// dependent objects

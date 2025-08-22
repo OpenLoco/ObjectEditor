@@ -1,7 +1,10 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.HillShape;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using static Dat.Loaders.HillShapesObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -11,30 +14,76 @@ public abstract class HillShapesObjectLoader : IDatObjectLoader
 	{ }
 
 	public static class StructSizes
-	{ }
+	{
+		public const int Dat = 0x0E;
+	}
 
-	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
-	public static void Save(MemoryStream stream, LocoObject obj) => throw new NotImplementedException();
-}
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
 
-[Flags]
-internal enum DatHillShapeFlags : uint16_t
-{
-	None = 0,
-	IsHeightMap = 1 << 0,
-}
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new HillShapesObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
 
-[TypeConverter(typeof(ExpandableObjectConverter))]
-[LocoStructSize(0x0E)]
-[LocoStructType(DatObjectType.HillShapes)]
-internal record DatHillShapesObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] uint8_t HillHeightMapCount,
-	[property: LocoStructOffset(0x03)] uint8_t MountainHeightMapCount,
-	[property: LocoStructOffset(0x04), Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x08), Browsable(false)] image_id ImageHill,
-	[property: LocoStructOffset(0x0C)] DatHillShapeFlags Flags
-	) : ILocoStruct
-{
-	public bool Validate() => true;
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+			model.HillHeightMapCount = br.ReadByte();
+			model.MountainHeightMapCount = br.ReadByte();
+			_ = br.SkipImageId(); // Image, not part of object definition
+			_ = br.SkipImageId(); // ImageHill, not part of object definition
+			model.IsHeightMap = ((DatHillShapeFlags)br.ReadUInt16()).HasFlag(DatHillShapeFlags.IsHeightMap);
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.HillShapes), null);
+
+			// variable
+			// N/A
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.HillShapes, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+		var model = (HillShapesObject)obj.Object;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write(model.HillHeightMapCount);
+			bw.Write(model.MountainHeightMapCount);
+			bw.WriteImageId();
+			bw.WriteImageId();
+			bw.Write((uint16_t)(model.IsHeightMap ? DatHillShapeFlags.IsHeightMap : DatHillShapeFlags.None));
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			// N/A
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
+
+	[Flags]
+	internal enum DatHillShapeFlags : uint16_t
+	{
+		None = 0,
+		IsHeightMap = 1 << 0,
+	}
 }

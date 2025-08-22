@@ -7,7 +7,7 @@ using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Industry;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class IndustryObjectLoader : IDatObjectLoader
 {
@@ -23,10 +23,10 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		public const int MaxWallTypeCount = 4;
 	}
 
-	public static class Sizes
+	public static class StructSizes
 	{
-		public const int IndustryObjectProductionRateRange = 4; // 2 * uint16_t
-		public const int IndustryObjectUnk38 = 2; // 2 * uint8
+		public const int IndustryObjectProductionRateRange = 0x04;
+		public const int IndustryObjectUnk38 = 0x02;
 	}
 
 	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();
@@ -160,7 +160,7 @@ internal record DatIndustryObject(
 
 		// unk animation related
 		var_38.Clear();
-		var structSize = IndustryObjectLoader.Sizes.IndustryObjectUnk38;
+		var structSize = IndustryObjectLoader.StructSizes.IndustryObjectUnk38;
 		while (remainingData[0] != 0xFF)
 		{
 			var_38.Add(ByteReader.ReadLocoStruct<IndustryObjectUnk38>(remainingData[..structSize]));

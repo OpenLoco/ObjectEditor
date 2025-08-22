@@ -1,3 +1,5 @@
+using Definitions.ObjectModels.Types;
+
 namespace Definitions.ObjectModels.Objects.Bridge;
 
 public class BridgeObject : ILocoStruct
@@ -15,6 +17,10 @@ public class BridgeObject : ILocoStruct
 	public int16_t SellCostFactor { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
+	public uint8_t var_03 { get; set; } // unknown
+
+	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
+	public List<ObjectModelHeader> CompatibleRoadObjects { get; set; } = [];
 
 	public bool Validate()
 	{

@@ -4,7 +4,7 @@ using Dat.Types;
 using Definitions.ObjectModels;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class RoadObjectLoader : IDatObjectLoader
 {
@@ -16,7 +16,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 		public const int MaxMods = 2;
 	}
 
-	public static class Sizes
+	public static class StructSizes
 	{ }
 
 	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();

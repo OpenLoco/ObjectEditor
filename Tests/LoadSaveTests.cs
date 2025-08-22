@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Dat.FileParsing;
-using Dat.Objects;
+using Dat.Loaders;
 using Dat.Types;
 using Logger = Common.Logging.Logger;
 using System.Diagnostics;
@@ -661,6 +661,7 @@ public class LoadSaveTests
 		LoadSaveGenericTest<RoadExtraObject>(objectName, assertFunc);
 	}
 
+	[Explicit]
 	[TestCase("RDEXCAT1.DAT")]
 	public void PerformanceTest_RoadExtraObject(string objectName)
 	{

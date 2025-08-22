@@ -4,7 +4,7 @@ using Dat.Types;
 using Definitions.ObjectModels;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class RoadStationObjectLoader : IDatObjectLoader
 {
@@ -15,7 +15,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 		public const int CargoOffsetBytesSize = 16;
 	}
 
-	public static class Sizes
+	public static class StructSizes
 	{ }
 
 	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();

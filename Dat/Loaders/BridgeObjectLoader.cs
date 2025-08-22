@@ -1,0 +1,158 @@
+using Dat.Data;
+using Dat.FileParsing;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Bridge;
+using Definitions.ObjectModels.Objects.TrackSignal;
+using Definitions.ObjectModels.Types;
+
+namespace Dat.Loaders;
+
+public abstract class BridgeObjectLoader : IDatObjectLoader
+{
+	public static class Constants
+	{
+		public const int _03PadSize = 3;
+		public const int MaxNumTrackMods = 7;
+		public const int MaxNumRoadMods = 7;
+	}
+
+	public static class StructSizes
+	{
+		public const int DatStructSize = 0x2C;
+	}
+
+	public static LocoObject Load(MemoryStream stream)
+	{
+		var initialStreamPosition = stream.Position;
+
+		using (var br = new LocoBinaryReader(stream))
+		{
+			var model = new BridgeObject();
+			var stringTable = new StringTable();
+			var imageTable = new List<GraphicsElement>();
+
+			// fixed
+			_ = br.SkipStringId(); // Name offset, not part of object definition
+			model.Flags = ((DatBridgeObjectFlags)br.ReadByte()).Convert();
+			model.var_03 = br.ReadByte();
+			model.ClearHeight = br.ReadUInt16();
+			model.DeckDepth = br.ReadInt16();
+			model.SpanLength = br.ReadByte();
+			model.PillarSpacing = br.ReadByte(); // This is a bitfield, see https
+			model.MaxSpeed = (Speed16)br.ReadInt16();
+			model.MaxHeight = (MicroZ)br.ReadByte();
+			model.CostIndex = br.ReadByte();
+			model.BaseCostFactor = br.ReadInt16();
+			model.HeightCostFactor = br.ReadInt16();
+			model.SellCostFactor = br.ReadInt16();
+			model.DisabledTrackFlags = ((DatBridgeDisabledTrackFlags)br.ReadUInt16()).Convert();
+			_ = br.SkipImageId(); // Image offset, not part of object definition
+			var compatibleTrackCount = br.ReadByte();
+			_ = br.SkipObjectId(Constants.MaxNumTrackMods);  // Placeholder for track mods, not part of object definition
+			var compatibleRoadCount = br.ReadByte();
+			_ = br.SkipObjectId(Constants.MaxNumRoadMods);  // Placeholder for road mods, not part of object definition
+			model.DesignedYear = br.ReadUInt16();
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.DatStructSize, nameof(stream.Position));
+
+			// string table
+			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Bridge), null);
+
+			// variable
+			model.CompatibleTrackObjects = SawyerStreamReader.LoadVariableCountS5HeadersStream(stream, compatibleTrackCount);
+			model.CompatibleRoadObjects = SawyerStreamReader.LoadVariableCountS5HeadersStream(stream, compatibleRoadCount);
+
+			// image table
+			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+
+			return new LocoObject(ObjectType.Bridge, model, stringTable, imageTable);
+		}
+	}
+
+	public static void Save(MemoryStream stream, LocoObject obj)
+	{
+		var initialStreamPosition = stream.Position;
+		var model = obj.Object as BridgeObject;
+
+		using (var bw = new LocoBinaryWriter(stream))
+		{
+			bw.WriteStringId();// Name offset, not part of object definition
+			bw.WriteByte((uint8_t)model.Flags);
+			bw.WriteByte(model.var_03);
+			bw.WriteUInt16(model.ClearHeight);
+			bw.WriteInt16(model.DeckDepth);
+			bw.WriteByte(model.SpanLength);
+			bw.WriteByte(model.PillarSpacing); // This is a bitfield, see https://
+			bw.WriteInt16(model.MaxSpeed);
+			bw.WriteByte(model.MaxHeight);
+			bw.WriteByte(model.CostIndex);
+			bw.WriteInt16(model.BaseCostFactor);
+			bw.WriteInt16(model.HeightCostFactor);
+			bw.WriteInt16(model.SellCostFactor);
+			bw.WriteUInt16((uint16_t)model.DisabledTrackFlags.Convert());
+			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteByte((uint8_t)model.CompatibleTrackObjects.Count);
+			bw.WriteObjectId(Constants.MaxNumTrackMods); // Placeholder for track mods, not part of object definition
+			bw.Write((uint8_t)model.CompatibleRoadObjects.Count);
+			bw.WriteObjectId(Constants.MaxNumRoadMods); // Placeholder for road mods, not part of object definition
+			bw.Write(model.DesignedYear);
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.DatStructSize, nameof(stream.Position));
+
+			// string table
+			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+
+			// variable
+			bw.WriteS5HeaderList(model.CompatibleTrackObjects);
+			bw.WriteS5HeaderList(model.CompatibleRoadObjects);
+
+			// image table
+			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
+}
+
+static class BridgeFlagsConverter
+{
+	public static DatBridgeObjectFlags Convert(this BridgeObjectFlags bridgeObjectFlags)
+		=> (DatBridgeObjectFlags)bridgeObjectFlags;
+
+	public static BridgeObjectFlags Convert(this DatBridgeObjectFlags datBridgeObjectFlags)
+		=> (BridgeObjectFlags)datBridgeObjectFlags;
+}
+
+static class BridgeDisabledFlagsConverter
+{
+	public static DatBridgeDisabledTrackFlags Convert(this BridgeDisabledTrackFlags bridgeDisabledTrackFlags)
+		=> (DatBridgeDisabledTrackFlags)bridgeDisabledTrackFlags;
+
+	public static BridgeDisabledTrackFlags Convert(this DatBridgeDisabledTrackFlags datBridgeDisabledTrackFlags)
+		=> (BridgeDisabledTrackFlags)datBridgeDisabledTrackFlags;
+}
+
+[Flags]
+internal enum DatBridgeDisabledTrackFlags : uint16_t
+{
+	None = 0,
+	Slope = 1 << 0,
+	SteepSlope = 1 << 1,
+	CurveSlope = 1 << 2,
+	Diagonal = 1 << 3,
+	VerySmallCurve = 1 << 4,
+	SmallCurve = 1 << 5,
+	Curve = 1 << 6,
+	LargeCurve = 1 << 7,
+	SBendCurve = 1 << 8,
+	OneSided = 1 << 9,
+	StartsAtHalfHeight = 1 << 10, // Not used. From RCT2
+	Junction = 1 << 11,
+}
+
+[Flags]
+internal enum DatBridgeObjectFlags : uint8_t
+{
+	None = 0,
+	HasRoof = 1 << 0,
+}

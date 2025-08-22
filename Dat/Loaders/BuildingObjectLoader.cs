@@ -6,7 +6,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class BuildingObjectLoader : IDatObjectLoader
 {

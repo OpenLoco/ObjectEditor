@@ -5,10 +5,15 @@ using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadExtra;
 using Definitions.ObjectModels.Types;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class RoadExtraObjectLoader : IDatObjectLoader
 {
+	public static class StructSizes
+	{
+		public const int DatStructSize = 0x12;
+	}
+
 	public static LocoObject Load(MemoryStream stream)
 	{
 		using (var br = new LocoBinaryReader(stream))
@@ -24,6 +29,9 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 			model.CostIndex = br.ReadByte();
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, StructSizes.DatStructSize, nameof(stream.Position));
 
 			// string table
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.RoadExtra), null);

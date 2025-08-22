@@ -1,7 +1,7 @@
 using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
-using Dat.Objects;
+using Dat.Loaders;
 using Dat.Types;
 using Dat.Types.Audio;
 using Definitions.ObjectModels;

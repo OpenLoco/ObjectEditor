@@ -3,7 +3,7 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class CompetitorObjectLoader : IDatObjectLoader
 {
@@ -12,7 +12,7 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 		public const int ImagesLength = 9;
 	}
 
-	public static class Sizes
+	public static class StructSizes
 	{ }
 
 	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();

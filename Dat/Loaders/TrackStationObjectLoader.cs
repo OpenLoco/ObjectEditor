@@ -5,7 +5,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.TrackStation;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class TrackStationObjectLoader : IDatObjectLoader
 {
@@ -18,7 +18,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		public const int MaxStationCargoDensity = 15;
 	}
 
-	public static class Sizes
+	public static class StructSizes
 	{
 		public const int CargoOffset = 6;
 	}

@@ -5,15 +5,17 @@ using Definitions.ObjectModels.Objects.LevelCrossing;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 {
 	public static class Constants
 	{ }
 
-	public static class Sizes
-	{ }
+	public static class StructSizes
+	{
+		public const int DatStructSize = 0x12;
+	}
 
 	public static LocoObject Load(MemoryStream stream)
 	{
@@ -35,6 +37,9 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			_ = br.SkipBytes(1); // pad_0B, unused
 			model.DesignedYear = br.ReadUInt16();
 			_ = br.SkipImageId();
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, StructSizes.DatStructSize, nameof(stream.Position));
 
 			// string table
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.LevelCrossing), null);
@@ -66,6 +71,9 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			bw.WriteByte(); // pad_0B, unused
 			bw.Write(model.DesignedYear);
 			bw.WriteImageId(); // Image offset, not part of object definition
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, StructSizes.DatStructSize, nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);

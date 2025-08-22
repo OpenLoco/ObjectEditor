@@ -1,6 +1,6 @@
 using Definitions.ObjectModels;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public interface IDatObjectLoader
 {

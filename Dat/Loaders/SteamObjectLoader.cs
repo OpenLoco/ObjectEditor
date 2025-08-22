@@ -1,14 +1,13 @@
-using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
-using System.IO;
-using static Dat.Objects.SteamObjectLoader;
 
-namespace Dat.Objects;
+using static Dat.Loaders.SteamObjectLoader;
+
+namespace Dat.Loaders;
 
 public abstract class SteamObjectLoader : IDatObjectLoader
 {
@@ -17,7 +16,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 		public const int MaxSoundEffects = 9;
 	}
 
-	public static class Sizes
+	public static class StructSizes
 	{
 		public const int ImageAndHeight = 2;
 	}
@@ -92,8 +91,8 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			bw.Write((uint16_t)model.Flags.Convert());
 			bw.Write(model.var_0A);
 			bw.WriteImageId(); // BaseImageId, not used
-			bw.WriteUint16(); // _TotalNumFramesType0, not used
-			bw.WriteUint16(); // _TotalNumFramesType1, not used
+			bw.WriteUInt16(); // _TotalNumFramesType0, not used
+			bw.WriteUInt16(); // _TotalNumFramesType1, not used
 			bw.WritePointer(); // _FrameInfoType0Ptr, not used
 			bw.WritePointer(); // _FrameInfoType1Ptr, not used
 			bw.Write((uint8_t)model.SoundEffects.Count);

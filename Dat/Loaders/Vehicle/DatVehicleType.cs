@@ -1,4 +1,4 @@
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public enum DatVehicleType : uint8_t
 {

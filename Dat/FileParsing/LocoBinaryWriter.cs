@@ -13,28 +13,31 @@ public class LocoBinaryWriter : BinaryWriter
 	public void WriteByte(uint8_t value = 0)
 		=> Write(value);
 
-	public void WriteUint16(uint16_t value = 0)
+	public void WriteUInt16(uint16_t value = 0)
 		=> Write(value);
 
-	public void WriteStringId(string_id value = 0)
+	public void WriteInt16(int16_t value = 0)
 		=> Write(value);
 
-	public void WriteImageId(image_id value = 0)
-		=> Write(value);
+	public void WriteStringId()
+		=> Write((string_id)0);
 
-	public void WriteObjectId(object_id value = 0, int count = 1)
+	public void WriteImageId()
+		=> Write((image_id)0);
+
+	public void WriteObjectId(int count = 1)
 	{
 		for (var i = 0; i < count; i++)
 		{
-			Write(value);
+			Write((object_id)0);
 		}
 	}
 
-	public void WritePointer(uint32_t value = 0, int count = 1)
+	public void WritePointer(int count = 1)
 	{
 		for (var i = 0; i < count; i++)
 		{
-			Write(value);
+			Write((uint32_t)0);
 		}
 	}
 

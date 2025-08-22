@@ -5,7 +5,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Vehicle;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class VehicleObjectLoader : IDatObjectLoader
 {

@@ -6,14 +6,14 @@ using Definitions.ObjectModels;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class SoundObjectLoader : IDatObjectLoader
 {
 	public static class Constants
 	{ }
 
-	public static class Sizes
+	public static class StructSizes
 	{ }
 
 	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();

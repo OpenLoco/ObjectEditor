@@ -6,7 +6,7 @@ using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class AirportObjectLoader : IDatObjectLoader
 {
@@ -15,19 +15,21 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		public const int BuildingVariationCount = 32;
 		public const int BuildingHeightCount = 4;
 		public const int BuildingAnimationCount = 2;
-
 	}
 
-	public static class Sizes
+	public static class StructSizes
 	{
-		public const int BuildingPartAnimation = 2;
-		public const int AirportBuilding = 4;
-		public const int MovementNode = 8;
-		public const int MovementEdge = 12;
+		public const int DatStructSize = 0xBA;
+		public const int BuildingPartAnimation = 0x02;
+		public const int AirportBuilding = 0x04;
+		public const int MovementNode = 0x08;
+		public const int MovementEdge = 0x0C;
 	}
 
 	public static LocoObject Load(MemoryStream stream)
 	{
+		var initialStreamPosition = stream.Position;
+
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new AirportObject();
@@ -62,6 +64,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			_ = br.SkipPointer(); // MovementEdges
 			model.var_B6 = br.ReadBytes(0xBA - 0xB6);
 
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.DatStructSize, nameof(stream.Position));
+
 			// string table
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Airport), null);
 
@@ -82,9 +87,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 		// variation animations
 		var buildingAnimationStructs = ByteReader.ReadLocoStructArray<BuildingPartAnimation>(
-			br.ReadBytes(Sizes.BuildingPartAnimation * numBuildingParts),
+			br.ReadBytes(StructSizes.BuildingPartAnimation * numBuildingParts),
 			numBuildingParts,
-			Sizes.BuildingPartAnimation);
+			StructSizes.BuildingPartAnimation);
 		model.BuildingAnimations = [.. buildingAnimationStructs.Cast<BuildingPartAnimation>()];
 
 		// variation variations
@@ -103,28 +108,29 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		// building positions
 		while (br.PeekByte() != 0xFF)
 		{
-			var building = ByteReader.ReadLocoStruct<AirportBuilding>(br.ReadBytes(Sizes.AirportBuilding));
+			var building = ByteReader.ReadLocoStruct<AirportBuilding>(br.ReadBytes(StructSizes.AirportBuilding));
 			model.BuildingPositions.Add(building);
 		}
 		_ = br.ReadByte(); // Consume the 0xFF terminator
 
 		// movement nodes
 		var movementNodes = ByteReader.ReadLocoStructArray<MovementNode>(
-			br.ReadBytes(Sizes.MovementNode * numMovementNodes),
+			br.ReadBytes(StructSizes.MovementNode * numMovementNodes),
 			numMovementNodes,
-			Sizes.MovementNode);
+			StructSizes.MovementNode);
 		model.MovementNodes = [.. movementNodes.Cast<MovementNode>()];
 
 		// movement edges
 		var movementEdges = ByteReader.ReadLocoStructArray<MovementEdge>(
-			br.ReadBytes(Sizes.MovementEdge * numMovementEdges),
+			br.ReadBytes(StructSizes.MovementEdge * numMovementEdges),
 			numMovementEdges,
-			Sizes.MovementEdge);
+			StructSizes.MovementEdge);
 		model.MovementEdges = [.. movementEdges.Cast<MovementEdge>()];
 	}
 
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
+		var initialStreamPosition = stream.Position;
 		var model = obj.Object as AirportObject;
 
 		using (var bw = new LocoBinaryWriter(stream))
@@ -141,7 +147,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.WriteByte((uint8_t)model.BuildingVariations.Count);
 			bw.WritePointer(); // BuildingHeights
 			bw.WritePointer(); // BuildingAnimations
-			bw.WritePointer(0, Constants.BuildingVariationCount); // BuildingVariations
+			bw.WritePointer(Constants.BuildingVariationCount); // BuildingVariations
 			bw.WritePointer(); // BuildingPositions
 			bw.Write(model.LargeTiles);
 			bw.Write(model.MinX);
@@ -155,6 +161,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.WritePointer(); // MovementNodes
 			bw.WritePointer(); // MovementEdges
 			bw.Write(model.var_B6);
+
+			// sanity check
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.DatStructSize, nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);

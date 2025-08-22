@@ -5,9 +5,9 @@ using Dat.Types;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.TrackSignal;
 using Definitions.ObjectModels.Types;
-using static Dat.Objects.TrackSignalObjectLoader;
+using static Dat.Loaders.TrackSignalObjectLoader;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class TrackSignalObjectLoader : IDatObjectLoader
 {
@@ -95,23 +95,9 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 static class TrackSignalFlagsConverter
 {
 	public static DatTrackSignalObjectFlags Convert(this TrackSignalObjectFlags trackSignalFlags)
-		=> trackSignalFlags switch
-		{
-			TrackSignalObjectFlags.None => DatTrackSignalObjectFlags.None,
-			TrackSignalObjectFlags.IsLeft => DatTrackSignalObjectFlags.IsLeft,
-			TrackSignalObjectFlags.HasLights => DatTrackSignalObjectFlags.HasLights,
-			TrackSignalObjectFlags.unk_02 => DatTrackSignalObjectFlags.unk_02,
-			_ => throw new ArgumentOutOfRangeException(nameof(trackSignalFlags), trackSignalFlags, "Unknown Track Signal Flags")
-		};
+		=> (DatTrackSignalObjectFlags)trackSignalFlags;
 
 	public static TrackSignalObjectFlags Convert(this DatTrackSignalObjectFlags datTrackSignalFlags)
-		=> datTrackSignalFlags switch
-		{
-			DatTrackSignalObjectFlags.None => TrackSignalObjectFlags.None,
-			DatTrackSignalObjectFlags.IsLeft => TrackSignalObjectFlags.IsLeft,
-			DatTrackSignalObjectFlags.HasLights => TrackSignalObjectFlags.HasLights,
-			DatTrackSignalObjectFlags.unk_02 => TrackSignalObjectFlags.unk_02,
-			_ => throw new ArgumentOutOfRangeException(nameof(datTrackSignalFlags), datTrackSignalFlags, "Unknown Dat Track Signal Flags")
-		};
+		=> (TrackSignalObjectFlags)datTrackSignalFlags;
 }
 

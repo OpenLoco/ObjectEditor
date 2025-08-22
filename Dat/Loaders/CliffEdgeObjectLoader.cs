@@ -3,14 +3,14 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class CliffEdgeObjectLoader : IDatObjectLoader
 {
 	public static class Constants
 	{ }
 
-	public static class Sizes
+	public static class StructSizes
 	{ }
 
 	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();

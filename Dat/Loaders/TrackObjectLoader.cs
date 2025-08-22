@@ -5,7 +5,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Track;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class TrackObjectLoader : IDatObjectLoader
 {
@@ -17,7 +17,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 		public const int MaxMods = 4;
 	}
 
-	public static class Sizes
+	public static class StructSizes
 	{ }
 
 	public static LocoObject Load(MemoryStream stream) => throw new NotImplementedException();

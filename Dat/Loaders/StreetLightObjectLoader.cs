@@ -5,7 +5,7 @@ using Definitions.ObjectModels.Objects.Streetlight;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
-namespace Dat.Objects;
+namespace Dat.Loaders;
 
 public abstract class StreetLightObjectLoader : IDatObjectLoader
 {
@@ -14,7 +14,7 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 		public const int DesignedYearLength = 3;
 	}
 
-	public static class Sizes
+	public static class StructSizes
 	{ }
 
 	public static LocoObject Load(MemoryStream stream)
@@ -54,7 +54,7 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 			bw.WriteStringId();// Name offset, not part of object definition
 			for (var i = 0; i < Constants.DesignedYearLength; ++i)
 			{
-				bw.WriteUint16(model.DesignedYears[i]);
+				bw.WriteUInt16(model.DesignedYears[i]);
 			}
 
 			// string table

@@ -81,17 +81,17 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 	private static void LoadVariable(LocoBinaryReader br, AirportObject model, int numBuildingParts, int numBuildingVariations, byte numMovementNodes, byte numMovementEdges)
 	{
-		// variation heights
+		// building heights
 		model.BuildingHeights = [.. br.ReadBytes(numBuildingParts)];
 
-		// variation animations
+		// building animations
 		var buildingAnimationStructs = ByteReader.ReadLocoStructArray<BuildingPartAnimation>(
 			br.ReadBytes(StructSizes.BuildingPartAnimation * numBuildingParts),
 			numBuildingParts,
 			StructSizes.BuildingPartAnimation);
 		model.BuildingAnimations = [.. buildingAnimationStructs.Cast<BuildingPartAnimation>()];
 
-		// variation variations
+		// building variations
 		for (var i = 0; i < numBuildingVariations; ++i)
 		{
 			List<byte> tmp = [];

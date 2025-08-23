@@ -1,7 +1,26 @@
 using Dat.Data;
+using Dat.Types;
 using Definitions.ObjectModels.Types;
 
 namespace Dat.Converters;
+
+public static class S5HeaderConverter
+{
+	public static S5Header Convert(this ObjectModelHeader objectModelHeader)
+		=> new(objectModelHeader.Name, objectModelHeader.Checksum)
+		{
+			ObjectType = objectModelHeader.ObjectType.Convert(),
+			ObjectSource = objectModelHeader.ObjectSource.Convert(),
+		};
+
+	public static ObjectModelHeader Convert(this S5Header s5Header)
+		=> new(
+			s5Header.Name,
+			s5Header.Checksum,
+			s5Header.ObjectType.Convert(),
+			s5Header.ObjectSource.Convert());
+}
+
 public static class ObjectTypeConverter
 {
 	public static ObjectType Convert(this DatObjectType datObjectType)

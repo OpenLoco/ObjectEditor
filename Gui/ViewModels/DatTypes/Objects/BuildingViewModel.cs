@@ -34,10 +34,10 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 
 	// note: these height sequences are massive. BLDCTY28 has 2 sequences, 512 in length and 1024 in length. Avalonia PropertyGrid takes 30+ seconds to render this. todo: don't use property grid in future
 	//[Reactive, Category("Building"), Length(1, BuildingObject.MaxElevatorHeightSequences), Browsable(false)] public BindingList<BindingList<uint8_t>> ElevatorHeightSequences { get; set; } // NumElevatorSequences
-	public List<uint8_t[]> ElevatorSequence1 { get; set; } = [];
-	public List<uint8_t[]> ElevatorSequence2 { get; set; } = [];
-	public List<uint8_t[]> ElevatorSequence3 { get; set; } = [];
-	public List<uint8_t[]> ElevatorSequence4 { get; set; } = [];
+	public uint8_t[]? ElevatorSequence1 { get; set; }
+	public uint8_t[]? ElevatorSequence2 { get; set; }
+	public uint8_t[]? ElevatorSequence3 { get; set; }
+	public uint8_t[]? ElevatorSequence4 { get; set; }
 
 	[Reactive, Category("<unknown>")] public uint8_t var_A6 { get; set; }
 	[Reactive, Category("<unknown>")] public uint8_t var_A7 { get; set; }
@@ -64,10 +64,10 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 		BuildingHeights = new(bo.BuildingHeights);
 		BuildingAnimations = new(bo.BuildingAnimations);
 		BuildingVariations = new(bo.BuildingVariations.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
-		ElevatorSequence1 = bo.ElevatorSequence1;
-		ElevatorSequence2 = bo.ElevatorSequence2;
-		ElevatorSequence3 = bo.ElevatorSequence3;
-		ElevatorSequence4 = bo.ElevatorSequence4;
+		ElevatorSequence1 = bo.ElevatorHeightSequences.Count > 0 ? bo.ElevatorHeightSequences[0] : null;
+		ElevatorSequence2 = bo.ElevatorHeightSequences.Count > 1 ? bo.ElevatorHeightSequences[1] : null;
+		ElevatorSequence3 = bo.ElevatorHeightSequences.Count > 2 ? bo.ElevatorHeightSequences[2] : null;
+		ElevatorSequence4 = bo.ElevatorHeightSequences.Count > 3 ? bo.ElevatorHeightSequences[3] : null;
 		//ElevatorHeightSequences = new(bo.ElevatorHeightSequences.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
 		var_A6 = bo.var_A6;
 		var_A7 = bo.var_A7;
@@ -96,9 +96,28 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 			ProducedQuantity = [.. ProducedQuantity],
 			ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 			RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			ElevatorSequence1 = ElevatorSequence1,
-			ElevatorSequence2 = ElevatorSequence2,
-			ElevatorSequence3 = ElevatorSequence3,
-			ElevatorSequence4 = ElevatorSequence4,
+			ElevatorHeightSequences = GetElevatorSequences(),
 		};
+
+	List<uint8_t[]> GetElevatorSequences()
+	{
+		List<uint8_t[]> result = [];
+		if (ElevatorSequence1 != null)
+		{
+			result.Add(ElevatorSequence1);
+		}
+		if (ElevatorSequence2 != null)
+		{
+			result.Add(ElevatorSequence2);
+		}
+		if (ElevatorSequence3 != null)
+		{
+			result.Add(ElevatorSequence3);
+		}
+		if (ElevatorSequence4 != null)
+		{
+			result.Add(ElevatorSequence4);
+		}
+		return result;
+	}
 }

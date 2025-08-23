@@ -41,10 +41,7 @@ public class BuildingObject : ILocoStruct
 	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];
 	public List<ObjectModelHeader> RequiredCargo { get; set; } = [];
 
-	public List<uint8_t[]> ElevatorSequence1 { get; set; } = [];
-	public List<uint8_t[]> ElevatorSequence2 { get; set; } = [];
-	public List<uint8_t[]> ElevatorSequence3 { get; set; } = [];
-	public List<uint8_t[]> ElevatorSequence4 { get; set; } = [];
+	public List<uint8_t[]> ElevatorHeightSequences { get; set; } = [];
 
 	public bool Validate()
 		=> ProducedQuantity.Count == 2

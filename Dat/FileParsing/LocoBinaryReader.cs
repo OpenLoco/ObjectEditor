@@ -24,11 +24,17 @@ public class LocoBinaryReader : BinaryReader
 	public long SkipBytes(int count)
 		=> BaseStream.Seek(count, SeekOrigin.Current);
 
-	public long SkipUInt16()
-		=> BaseStream.Seek(2, SeekOrigin.Current);
+	public long SkipUInt16(int count = 1)
+		=> BaseStream.Seek(2 * count, SeekOrigin.Current);
 
-	public long SkipInt16()
-		=> BaseStream.Seek(2, SeekOrigin.Current);
+	public long SkipInt16(int count = 1)
+		=> BaseStream.Seek(2 * count, SeekOrigin.Current);
+
+	public long SkipUInt32(int count = 1)
+		=> BaseStream.Seek(4 * count, SeekOrigin.Current);
+
+	public long SkipInt32(int count = 1)
+		=> BaseStream.Seek(4 * count, SeekOrigin.Current);
 
 	public long SkipStringId(int count = 1)
 		=> BaseStream.Seek(2 * count, SeekOrigin.Current);
@@ -42,9 +48,10 @@ public class LocoBinaryReader : BinaryReader
 	public long SkipPointer(int count = 1)
 		=> BaseStream.Seek(4 * count, SeekOrigin.Current);
 
-	public byte PeekByte()
+	public byte PeekByte(int ahead = 0)
 	{
 		var currentPosition = BaseStream.Position;
+		_ = BaseStream.Seek(ahead, SeekOrigin.Current);
 		var value = ReadByte();
 		_ = BaseStream.Seek(currentPosition, SeekOrigin.Begin);
 		return value;
@@ -77,6 +84,10 @@ public class LocoBinaryReader : BinaryReader
 				{
 					result.Add(header);
 				}
+			}
+			else
+			{
+				_ = SkipBytes(S5Header.StructLength);
 			}
 		}
 

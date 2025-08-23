@@ -2,6 +2,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadStation;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
@@ -34,6 +35,22 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 
 			// fixed
 			_ = br.SkipStringId(); // Name offset, not part of object definition
+			model.PaintStyle = br.ReadByte();
+			model.Height = br.ReadByte();
+			model.RoadPieces = (RoadTraitFlags)br.ReadUInt16();
+			model.BuildCostFactor = br.ReadInt16();
+			model.SellCostFactor = br.ReadInt16();
+			model.CostIndex = br.ReadByte();
+			model.Flags = (RoadStationObjectFlags)br.ReadByte();
+			_ = br.SkipImageId(); // Image, not part of object definition
+			_ = br.SkipImageId(Constants.MaxImageOffsets);
+			var compatibleRoadObjectCount = br.ReadByte();
+			_ = br.SkipObjectId(Constants.MaxNumCompatible);
+			model.DesignedYear = br.ReadUInt16();
+			model.ObsoleteYear = br.ReadUInt16();
+			_ = br.SkipObjectId(); // CargoTypeId, not part of object definition
+			_ = br.SkipByte(); // pad 0x2D
+			_ = br.SkipPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -42,7 +59,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.RoadStation), null);
 
 			// variable
-			// N/A
+			LoadVariable(br, model, compatibleRoadObjectCount);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -51,13 +68,60 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 		}
 	}
 
+	private static void LoadVariable(LocoBinaryReader br, RoadStationObject model, byte compatibleRoadObjectCount)
+	{
+		// compatible road objects
+		model.CompatibleRoadObjects = br.ReadS5HeaderList(compatibleRoadObjectCount);
+
+		// cargo
+		if (model.Flags.HasFlag(RoadStationObjectFlags.Passenger) || model.Flags.HasFlag(RoadStationObjectFlags.Freight))
+		{
+			model.CargoType = br.ReadS5Header();
+		}
+
+		// cargo offsets
+		model.CargoOffsetBytes = new byte[4][][];
+		for (var i = 0; i < 4; ++i)
+		{
+			model.CargoOffsetBytes[i] = new byte[4][];
+			for (var j = 0; j < 4; ++j)
+			{
+				var length = 1;
+				while (br.PeekByte(length) != 0xFF)
+				{
+					length += 4; // x, y, x, y
+				}
+
+				length += 4;
+				model.CargoOffsetBytes[i][j] = br.ReadBytes(length);
+			}
+		}
+	}
+
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (RoadStationObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write(model.PaintStyle);
+			bw.Write(model.Height);
+			bw.Write((uint16_t)model.RoadPieces);
+			bw.Write(model.BuildCostFactor);
+			bw.Write(model.SellCostFactor);
+			bw.Write(model.CostIndex);
+			bw.Write((uint8_t)model.Flags);
+			bw.WriteImageId(); // Image, not part of object definition
+			bw.WriteImageId(Constants.MaxImageOffsets); // uint32_t
+			bw.Write((uint8_t)model.CompatibleRoadObjects.Count);
+			bw.WriteObjectId(Constants.MaxNumCompatible);
+			bw.Write(model.DesignedYear);
+			bw.Write(model.ObsoleteYear);
+			bw.WriteObjectId(); // CargoTypeId, not part of object definition
+			bw.Write((uint8_t)0); // pad 0x2D
+			bw.WritePointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -66,7 +130,25 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			// N/A
+
+			// compatible road objects
+			bw.WriteS5HeaderList(model.CompatibleRoadObjects);
+
+			// cargo
+			if (model.Flags.HasFlag(RoadStationObjectFlags.Passenger) || model.Flags.HasFlag(RoadStationObjectFlags.Freight))
+			{
+				ArgumentNullException.ThrowIfNull(model.CargoType, nameof(model.CargoType));
+				bw.WriteS5Header(model.CargoType);
+			}
+
+			// cargo offsets
+			for (var i = 0; i < 4; ++i)
+			{
+				for (var j = 0; j < 4; ++j)
+				{
+					bw.Write(model.CargoOffsetBytes[i][j]);
+				}
+			}
 
 			// image table
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);

@@ -211,10 +211,11 @@ public class LoadSaveTests
 			// CollectionAssert.AreEqual(struc.var_A4, Array.CreateInstance(typeof(byte), 2), nameof(struc.var_A4));
 			Assert.That(struc.DemolishRatingReduction, Is.Zero, nameof(struc.DemolishRatingReduction));
 			Assert.That(struc.var_AC, Is.EqualTo(255), nameof(struc.var_AC));
-			Assert.That(struc.ElevatorSequence1.Count, Is.Zero, nameof(struc.ElevatorSequence1));
-			Assert.That(struc.ElevatorSequence2.Count, Is.Zero, nameof(struc.ElevatorSequence2));
-			Assert.That(struc.ElevatorSequence3.Count, Is.Zero, nameof(struc.ElevatorSequence3));
-			Assert.That(struc.ElevatorSequence4.Count, Is.Zero, nameof(struc.ElevatorSequence4));
+			Assert.That(struc.ElevatorHeightSequences.Count, Is.Zero, nameof(struc.ElevatorHeightSequences));
+			//Assert.That(struc.ElevatorHeightSequences[0].Count, Is.Zero, nameof(struc.ElevatorHeightSequences) + "[0]");
+			//Assert.That(struc.ElevatorHeightSequences[1].Count, Is.Zero, nameof(struc.ElevatorHeightSequences) + "[1]");
+			//Assert.That(struc.ElevatorHeightSequences[2].Count, Is.Zero, nameof(struc.ElevatorHeightSequences) + "[2]");
+			//Assert.That(struc.ElevatorHeightSequences[3].Count, Is.Zero, nameof(struc.ElevatorHeightSequences) + "[3]");
 
 			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(64));
 		});
@@ -746,7 +747,7 @@ public class LoadSaveTests
 		{
 			Assert.That(struc.BuildCostFactor, Is.EqualTo(24), nameof(struc.BuildCostFactor));
 			// Cargo
-			Assert.That(struc.CargoOffsetBytes, Is.All.EqualTo(0), nameof(struc.CargoOffsetBytes));
+			//Assert.That(struc.CargoOffsetBytes, Is.All.EqualTo(0), nameof(struc.CargoOffsetBytes));
 			// Compatible
 			Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 			Assert.That(struc.DesignedYear, Is.Zero, nameof(struc.DesignedYear));

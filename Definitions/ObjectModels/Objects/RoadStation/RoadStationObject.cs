@@ -17,8 +17,9 @@ public class RoadStationObject : ILocoStruct, IImageTableNameProvider
 
 	public List<ObjectModelHeader> CompatibleRoadObjects { get; set; } = [];
 
-	public ObjectModelHeader CargoType { get; set; }
+	public ObjectModelHeader? CargoType { get; set; }
 
+	// for drawing the cargo on the station
 	public uint8_t[][][] CargoOffsetBytes { get; set; }
 
 	public bool Validate()

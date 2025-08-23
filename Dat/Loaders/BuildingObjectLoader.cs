@@ -1,4 +1,5 @@
 using Common;
+using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
@@ -25,6 +26,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 	public static class StructSizes
 	{
 		public const int Dat = 0xBE;
+		public const int BuildingPartAnimation = 0x02;
 	}
 
 	public static LocoObject Load(MemoryStream stream)
@@ -39,6 +41,34 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 
 			// fixed
 			_ = br.SkipStringId(); // Name offset, not part of object definition
+			_ = br.SkipImageId(); // Image offset, not part of object definition
+			var numBuildingParts = br.ReadByte();
+			var numBuildingVariations = br.ReadByte();
+			_ = br.SkipPointer(); // BuildingHeights, not part of object definition
+			_ = br.SkipPointer(); // BuildingAnimations, not part of object definition
+			_ = br.SkipPointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
+			model.Colours = br.ReadUInt32();
+			model.DesignedYear = br.ReadUInt16();
+			model.ObsoleteYear = br.ReadUInt16();
+			model.Flags = (BuildingObjectFlags)br.ReadByte();
+			model.CostIndex = br.ReadByte();
+			model.SellCostFactor = br.ReadUInt16();
+			model.ScaffoldingSegmentType = br.ReadByte();
+			model.ScaffoldingColour = (Colour)br.ReadByte();
+			model.GeneratorFunction = br.ReadByte();
+			model.AverageNumberOnMap = br.ReadByte();
+			model.ProducedQuantity.Add(br.ReadByte());
+			model.ProducedQuantity.Add(br.ReadByte());
+			_ = br.SkipObjectId(Constants.MaxProducedCargoType);
+			_ = br.SkipObjectId(Constants.MaxRequiredCargoType);
+			model.var_A6 = br.ReadByte();
+			model.var_A7 = br.ReadByte();
+			model.var_A8 = br.ReadByte();
+			model.var_A9 = br.ReadByte();
+			model.DemolishRatingReduction = br.ReadInt16();
+			model.var_AC = br.ReadByte();
+			var numElevatorSequences = br.ReadByte();
+			_ = br.SkipPointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -47,7 +77,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Building), null);
 
 			// variable
-			// N/A
+			LoadVariable(br, model, numBuildingParts, numBuildingVariations, numElevatorSequences);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -56,13 +86,82 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		}
 	}
 
+	private static void LoadVariable(LocoBinaryReader br, BuildingObject model, byte numBuildingParts, byte numBuildingVariations, byte numElevatorSequences)
+	{
+		// building heights
+		model.BuildingHeights = [.. br.ReadBytes(numBuildingParts)];
+
+		// building animations
+		var buildingAnimationStructs = ByteReader.ReadLocoStructArray<BuildingPartAnimation>(
+			br.ReadBytes(StructSizes.BuildingPartAnimation * numBuildingParts),
+			numBuildingParts,
+			StructSizes.BuildingPartAnimation);
+		model.BuildingAnimations = [.. buildingAnimationStructs.Cast<BuildingPartAnimation>()];
+
+		// building variations
+		for (var i = 0; i < numBuildingVariations; ++i)
+		{
+			List<byte> tmp = [];
+			byte b;
+			while ((b = br.ReadByte()) != 0xFF)
+			{
+				tmp.Add(b);
+			}
+
+			model.BuildingVariations.Add(tmp);
+		}
+
+		// produced cargo
+		model.ProducedCargo = br.ReadS5HeaderList(Constants.MaxProducedCargoType);
+
+		// required cargo
+		model.RequiredCargo = br.ReadS5HeaderList(Constants.MaxRequiredCargoType);
+
+		// animation sequences
+		for (var i = 0; i < numElevatorSequences; ++i)
+		{
+			var size = br.ReadUInt16();
+			var sequence = br.ReadBytes(size);
+			model.ElevatorHeightSequences.Add(sequence);
+		}
+	}
+
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (BuildingObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.Write((uint8_t)model.BuildingAnimations.Count); // NumBuildingParts
+			bw.Write((uint8_t)model.BuildingVariations.Count);
+			bw.WritePointer();
+			bw.WritePointer();
+			bw.WritePointer(Constants.BuildingVariationCount);
+			bw.Write(model.Colours);
+			bw.Write(model.DesignedYear);
+			bw.Write(model.ObsoleteYear);
+			bw.Write((uint8_t)model.Flags);
+			bw.Write(model.CostIndex);
+			bw.Write(model.SellCostFactor);
+			bw.Write(model.ScaffoldingSegmentType);
+			bw.Write((uint8_t)model.ScaffoldingColour);
+			bw.Write(model.GeneratorFunction);
+			bw.Write(model.AverageNumberOnMap);
+			bw.Write(model.ProducedQuantity[0]);
+			bw.Write(model.ProducedQuantity[1]);
+			bw.WriteObjectId(Constants.MaxProducedCargoType);
+			bw.WriteObjectId(Constants.MaxRequiredCargoType);
+			bw.Write(model.var_A6);
+			bw.Write(model.var_A7);
+			bw.Write(model.var_A8);
+			bw.Write(model.var_A9);
+			bw.Write(model.DemolishRatingReduction);
+			bw.Write(model.var_AC);
+			bw.Write((uint8_t)model.ElevatorHeightSequences.Count);
+			bw.WritePointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -71,10 +170,50 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			// N/A
+			SaveVariable(model, bw);
 
 			// image table
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+		}
+	}
+
+	private static void SaveVariable(BuildingObject model, LocoBinaryWriter bw)
+	{
+		bw.Write(model.BuildingHeights.ToArray());
+
+		foreach (var x in model.BuildingAnimations)
+		{
+			bw.Write(x.NumFrames);
+			bw.Write(x.AnimationSpeed);
+		}
+
+		foreach (var x in model.BuildingVariations)
+		{
+			bw.Write(x.ToArray());
+			bw.Write((byte)0xFF);
+		}
+
+		foreach (var x in model.ProducedCargo
+			.Select(y => y.Convert())
+			.Fill(Constants.MaxProducedCargoType, S5Header.NullHeader))
+		{
+			bw.Write(x!.Write());
+		}
+
+		foreach (var x in model.RequiredCargo
+			.Select(y => y.Convert())
+			.Fill(Constants.MaxRequiredCargoType, S5Header.NullHeader))
+		{
+			bw.Write(x!.Write());
+		}
+
+		foreach (var unk in model.ElevatorHeightSequences)
+		{
+			bw.Write((uint16_t)unk.Length);
+			foreach (var x in unk)
+			{
+				bw.Write((uint16_t)x);
+			}
 		}
 	}
 }

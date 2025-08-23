@@ -60,12 +60,7 @@ public class LocoBinaryWriter : BinaryWriter
 
 	public void WriteS5Header(ObjectModelHeader header)
 	{
-		var s5Header = new S5Header(header.Name, header.Checksum)
-		{
-			ObjectType = header.ObjectType.Convert(),
-			ObjectSource = header.ObjectSource.Convert()
-		};
-		Write(s5Header.Write());
+		Write(header.Convert().Write());
 	}
 
 	public void WriteS5HeaderList(IEnumerable<ObjectModelHeader> headers)

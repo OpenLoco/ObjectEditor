@@ -6,9 +6,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
-using Microsoft.VisualBasic;
 using System.ComponentModel;
-using System.Diagnostics;
 using static Dat.Loaders.IndustryObjectLoader;
 
 namespace Dat.Loaders;

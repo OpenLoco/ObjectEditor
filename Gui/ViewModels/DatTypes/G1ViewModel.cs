@@ -1,4 +1,5 @@
 using Dat.FileParsing;
+using Definitions.ObjectModels;
 using Gui.Models;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -36,7 +37,7 @@ public class G1ViewModel : BaseLocoFileViewModel
 		{
 			try
 			{
-				if (Model.PaletteMap.TryConvertG1ToRgba32Bitmap(e, Dat.ColourRemapSwatch.PrimaryRemap, Dat.ColourRemapSwatch.SecondaryRemap, out var image))
+				if (Model.PaletteMap.TryConvertG1ToRgba32Bitmap(e, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 				{
 					images.Add(image!);
 				}

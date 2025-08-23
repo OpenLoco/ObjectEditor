@@ -3,7 +3,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Types;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel;
 using static Dat.Loaders.CompetitorObjectLoader;
 

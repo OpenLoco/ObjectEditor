@@ -2,7 +2,6 @@ using Definitions.ObjectModels.Objects.Track;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
-using System.Linq;
 using TrackObject = Definitions.ObjectModels.Objects.Track.TrackObject;
 
 namespace Gui.ViewModels;

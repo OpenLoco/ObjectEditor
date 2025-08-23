@@ -3,11 +3,9 @@ using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Land;
-using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 using static Dat.Loaders.LandObjectLoader;
-using static Dat.Loaders.SteamObjectLoader;
 
 namespace Dat.Loaders;
 

@@ -1,6 +1,6 @@
 namespace Dat.Data;
 
-public enum SoundId : uint16_t
+public enum DatSoundId : uint16_t
 {
 	ClickDown = 0,
 	ClickUp = 1,

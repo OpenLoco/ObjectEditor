@@ -1,12 +1,8 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Snow;
-using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Objects.Wall;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
-using static Dat.Loaders.SteamObjectLoader;
 using static Dat.Loaders.WallObjectLoader;
 
 namespace Dat.Loaders;

@@ -3,7 +3,6 @@ using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Gui.ViewModels;
 

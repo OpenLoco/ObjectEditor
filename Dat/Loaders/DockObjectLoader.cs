@@ -1,20 +1,20 @@
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Dock;
-using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 using static Dat.Loaders.DockObjectLoader;
-using static Dat.Loaders.TrackObjectLoader;
 
 namespace Dat.Loaders;
 
 public abstract class DockObjectLoader : IDatObjectLoader
 {
 	public static class Constants
-	{ }
+	{
+		public const int BuildingVariationCount = 32;
+		public const int BuildingHeightCount = 4;
+		public const int BuildingAnimationCount = 2;
+	}
 
 	public static class StructSizes
 	{

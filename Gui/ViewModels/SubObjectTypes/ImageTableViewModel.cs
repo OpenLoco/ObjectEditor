@@ -1,8 +1,8 @@
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Definitions.ObjectModels;
 using DynamicData;
-using Dat;
 using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

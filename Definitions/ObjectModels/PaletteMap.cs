@@ -1,9 +1,8 @@
-using Dat.Types;
 using Definitions.ObjectModels.Types;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Dat;
+namespace Definitions.ObjectModels;
 
 public enum ColourRemapSwatch
 {

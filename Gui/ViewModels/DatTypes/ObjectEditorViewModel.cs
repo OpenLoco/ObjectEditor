@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class DatObjectEditorViewModel : BaseLocoFileViewModel
+public class ObjectEditorViewModel : BaseLocoFileViewModel
 {
 	[Reactive]
 	public IObjectViewModel<ILocoStruct>? CurrentObjectViewModel { get; set; }
@@ -55,7 +55,7 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 	//public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
 	public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
 
-	public DatObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+	public ObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		: base(currentFile, model)
 	{
 		Load();

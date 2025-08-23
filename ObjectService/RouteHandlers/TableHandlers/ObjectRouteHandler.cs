@@ -15,8 +15,8 @@ using Dat.FileParsing;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Index;
 using Dat.Converters;
-using Dat;
 using SixLabors.ImageSharp;
+using Definitions.ObjectModels;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 

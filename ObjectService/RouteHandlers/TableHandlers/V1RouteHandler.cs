@@ -13,10 +13,10 @@ using static ObjectService.RouteHandlers.TableHandlers.V1DtoExtensions;
 using Definitions.ObjectModels.Types;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Dat.FileParsing;
-using Dat;
 using SixLabors.ImageSharp;
 using Index;
 using Dat.Converters;
+using Definitions.ObjectModels;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 

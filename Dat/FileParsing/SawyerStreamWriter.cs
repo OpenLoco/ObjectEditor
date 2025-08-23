@@ -47,10 +47,10 @@ public static class SawyerStreamWriter
 	//(uint)pcmDataLength // data size
 	//);
 
-	public static byte[] SaveSoundEffectsToCSS(List<(DatSoundEffectWaveFormat locoWaveHeader, byte[] data)> sounds)
+	public static byte[] SaveSoundEffectsToCSS(List<(SoundEffectWaveFormat locoWaveHeader, byte[] data)> sounds)
 	{
 		using (var ms = new MemoryStream())
-		using (var br = new BinaryWriter(ms))
+		using (var br = new LocoBinaryWriter(ms))
 		{
 			// total sounds
 			br.Write((uint)sounds.Count);
@@ -68,7 +68,7 @@ public static class SawyerStreamWriter
 			foreach (var (header, data) in sounds)
 			{
 				br.Write((uint)data.Length);
-				br.Write(ByteWriter.WriteLocoStruct(header));
+				br.WriteSoundEffect(header);
 				br.Write(data);
 			}
 

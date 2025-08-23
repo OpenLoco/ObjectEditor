@@ -34,8 +34,8 @@
 		<DataTemplate DataType="vm:MetadataViewModel">
 			<vi:MetadataView />
 		</DataTemplate>
-		<DataTemplate DataType="vm:DatObjectEditorViewModel">
-			<vi:DatObjectEditorView />
+		<DataTemplate DataType="vm:ObjectEditorViewModel">
+			<vi:ObjectEditorView />
 		</DataTemplate>
 		<DataTemplate DataType="vm:FolderTreeViewModel">
 			<vi:FolderTreeView />

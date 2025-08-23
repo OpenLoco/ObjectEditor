@@ -3,8 +3,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.HillShape;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
-using static Dat.Loaders.HillShapesObjectLoader;
 
 namespace Dat.Loaders;
 

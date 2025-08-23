@@ -1,4 +1,3 @@
-using Definitions.ObjectModels.Objects.Cliff;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Land;

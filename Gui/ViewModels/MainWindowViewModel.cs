@@ -3,8 +3,7 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using NuGet.Versioning;
-using Dat;
-using Dat.Data;
+
 using Gui.Models;
 using PropertyModels.Extensions;
 using ReactiveUI;
@@ -20,6 +19,8 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Dat.Data;
+using Definitions.ObjectModels;
 
 #if !DEBUG
 using Common;
@@ -263,7 +264,7 @@ public class MainWindowViewModel : ViewModelBase
 	{
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new DatObjectEditorViewModel(fsi, Model));
+			CurrentTabModel.AddDocument(new ObjectEditorViewModel(fsi, Model));
 		}
 	}
 

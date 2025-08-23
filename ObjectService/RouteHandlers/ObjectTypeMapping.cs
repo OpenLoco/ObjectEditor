@@ -1,5 +1,3 @@
-using Dat.FileParsing;
-using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Bridge;
 using Definitions.ObjectModels.Objects.Building;

@@ -77,8 +77,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\DatObjectEditorView.axaml.cs">
-      <DependentUpon>DatObjectEditorView.axaml</DependentUpon>
+    <Compile Update="Views\ObjectEditorView.axaml.cs">
+      <DependentUpon>ObjectEditorView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

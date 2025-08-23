@@ -3,7 +3,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 
 using static Dat.Loaders.SteamObjectLoader;
 

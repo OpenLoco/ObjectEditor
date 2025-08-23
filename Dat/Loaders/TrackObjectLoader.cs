@@ -2,12 +2,9 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
-using static Dat.Loaders.RoadObjectLoader;
-using static Dat.Loaders.SteamObjectLoader;
 using static Dat.Loaders.TrackObjectLoader;
 
 namespace Dat.Loaders;

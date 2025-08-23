@@ -2,7 +2,6 @@ using Definitions.ObjectModels.Objects.Road;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Gui.ViewModels;
 

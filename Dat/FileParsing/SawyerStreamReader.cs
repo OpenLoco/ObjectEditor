@@ -3,7 +3,6 @@ using Dat.Converters;
 using Dat.Data;
 using Dat.Loaders;
 using Dat.Types;
-using Dat.Types.Audio;
 using Dat.Types.SCV5;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Sound;

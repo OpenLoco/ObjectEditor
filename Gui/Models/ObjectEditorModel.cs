@@ -2,9 +2,6 @@ using Avalonia.Threading;
 using Common;
 using DynamicData;
 using Common.Logging;
-using Dat;
-using Dat.FileParsing;
-using Dat.Types;
 using Definitions.DTO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -16,10 +13,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Dat.Converters;
 using Index;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
+using Dat.Types;
+using Dat.FileParsing;
+using Dat.Converters;
 
 namespace Gui.Models;
 

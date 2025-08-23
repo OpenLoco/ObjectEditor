@@ -1,5 +1,4 @@
 using Definitions.ObjectModels.Objects.Streetlight;
-using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 

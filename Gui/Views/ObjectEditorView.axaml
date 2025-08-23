@@ -6,8 +6,8 @@
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:gui="using:Gui"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-	x:Class="Gui.Views.DatObjectEditorView"
-	x:DataType="vm:DatObjectEditorViewModel">
+	x:Class="Gui.Views.ObjectEditorView"
+	x:DataType="vm:ObjectEditorViewModel">
 
 	<DockPanel>
 		<Grid ColumnDefinitions="*, Auto, 384" RowDefinitions="Auto, *">

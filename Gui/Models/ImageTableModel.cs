@@ -1,8 +1,6 @@
 using Common;
 using Common.Json;
 using Common.Logging;
-using Dat;
-using Dat.Types;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using Gui.ViewModels;

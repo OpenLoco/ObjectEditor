@@ -31,7 +31,7 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 		SellCostFactor = ro.SellCostFactor;
 		CostIndex = ro.CostIndex;
 		Flags = ro.Flags;
-		//CompatibleRoadObjects = new(ro.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleRoadObjects = new(ro.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 	}
 
 	public override RoadStationObject GetAsStruct()
@@ -46,7 +46,6 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 			SellCostFactor = SellCostFactor,
 			CostIndex = CostIndex,
 			Flags = Flags,
-			//CompatibleRoadObjectCount = (uint8_t)CompatibleRoadObjects.Count,
 			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 		};
 }

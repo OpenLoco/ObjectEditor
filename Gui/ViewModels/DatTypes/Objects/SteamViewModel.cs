@@ -31,11 +31,8 @@ public class SteamViewModel : LocoObjectViewModel<SteamObject>
 			NumStationaryTicks = NumStationaryTicks,
 			Flags = Flags,
 			var_0A = var_0A,
-			//NumSoundEffects = (uint8_t)SoundEffects.Count,
 			SoundEffects = SoundEffects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			//_TotalNumFramesType0 = (uint8_t)FrameInfoType0.Count,
 			FrameInfoType0 = [.. FrameInfoType0],
-			//_TotalNumFramesType1 = (uint8_t)FrameInfoType1.Count,
 			FrameInfoType1 = [.. FrameInfoType1],
 		};
 }

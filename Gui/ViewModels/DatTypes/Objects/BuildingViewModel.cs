@@ -81,6 +81,9 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 	public override BuildingObject GetAsStruct()
 		=> new BuildingObject()
 		{
+			BuildingAnimations = BuildingAnimations.ToList(),
+			BuildingHeights = BuildingHeights.ToList(),
+			BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
 			Flags = Flags,
 			Colours = Colours,
 			ScaffoldingColour = ScaffoldingColour,

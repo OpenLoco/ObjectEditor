@@ -73,6 +73,6 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 			var_B6 = [.. var_B6],
 			BuildingHeights = [.. BuildingHeights],
 			BuildingAnimations = [.. BuildingAnimations],
-			//BuildingVariations = [.. BuildingVariations.ToList()],
+			BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
 		};
 }

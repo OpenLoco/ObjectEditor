@@ -2,7 +2,6 @@ using System.ComponentModel;
 
 namespace Definitions.ObjectModels.Objects.Sound;
 
-//[LocoStructSize(0x12)]
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class SoundEffectWaveFormat
 {
@@ -13,28 +12,8 @@ public class SoundEffectWaveFormat
 	public int16_t BlockAlign { get; set; }
 	public int16_t BitsPerSample { get; set; }
 	public int16_t ExtraSize { get; set; }
-
-	public ReadOnlySpan<byte> Write()
-	{
-		using var bs = new BinaryWriter(new MemoryStream());
-
-		bs.Write(BitConverter.GetBytes(WaveFormatTag));
-		bs.Write(BitConverter.GetBytes(Channels));
-		bs.Write(BitConverter.GetBytes(SampleRate));
-		bs.Write(BitConverter.GetBytes(AverageBytesPerSecond));
-		bs.Write(BitConverter.GetBytes(BlockAlign));
-		bs.Write(BitConverter.GetBytes(BitsPerSample));
-		bs.Write(BitConverter.GetBytes(ExtraSize));
-
-		bs.Flush();
-		return ((MemoryStream)bs.BaseStream).ToArray();
-	}
-
-	public bool Validate()
-		=> true;
 }
 
-//[LocoStructSize(0x1E)]
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class SoundObjectData
 {
@@ -49,7 +28,7 @@ public class SoundObject : ILocoStruct
 	public uint8_t ShouldLoop { get; set; }
 	public uint32_t Volume { get; set; }
 	public SoundObjectData SoundObjectData { get; set; }
-	[Browsable(false)]public byte[] PcmData { get; set; } = [];
+	[Browsable(false)] public byte[] PcmData { get; set; } = [];
 
 	// unk
 	public uint32_t NumUnkStructs { get; set; }

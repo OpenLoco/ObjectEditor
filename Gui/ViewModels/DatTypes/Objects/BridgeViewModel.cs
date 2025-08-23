@@ -3,6 +3,7 @@ using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -51,9 +52,9 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 		SellCostFactor = bo.SellCostFactor;
 		DisabledTrackFlags = bo.DisabledTrackFlags;
 		DesignedYear = bo.DesignedYear;
-		//CompatibleTrackObjects = new(bo.CompatibleTrackObjects.ConvertAll(x => new S5HeaderViewModel(x)));
-		//CompatibleRoadObjects = new(bo.CompatibleRoadObjects.ConvertAll(x => new S5HeaderViewModel(x)));
-		//var_03 = bo.var_03;
+		CompatibleTrackObjects = new(bo.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleRoadObjects = new(bo.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		var_03 = bo.var_03;
 		ClearHeight = bo.ClearHeight;
 		DeckDepth = bo.DeckDepth;
 	}
@@ -72,11 +73,9 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 			SellCostFactor = SellCostFactor,
 			DisabledTrackFlags = DisabledTrackFlags,
 			DesignedYear = DesignedYear,
-			//CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			//CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			//CompatibleTrackObjectCount = (uint8_t)CompatibleTrackObjects.Count,
-			//CompatibleRoadObjectCount = (uint8_t)CompatibleRoadObjects.Count,
-			//var_03 = var_03,
+			CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			var_03 = var_03,
 			ClearHeight = ClearHeight,
 			DeckDepth = DeckDepth,
 		};

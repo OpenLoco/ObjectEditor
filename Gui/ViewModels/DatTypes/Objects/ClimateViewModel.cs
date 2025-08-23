@@ -24,7 +24,7 @@ public class ClimateViewModel : LocoObjectViewModel<ClimateObject>
 		FirstSeason = (Season)ro.FirstSeason;
 		WinterSnowLine = ro.WinterSnowLine;
 		SummerSnowLine = ro.SummerSnowLine;
-		//SeasonLengths = ro.SeasonLengths.ToBindingList();
+		SeasonLengths = [ro.SeasonLength1, ro.SeasonLength2, ro.SeasonLength3, ro.SeasonLength4];
 	}
 
 	public override ClimateObject GetAsStruct()
@@ -33,6 +33,9 @@ public class ClimateViewModel : LocoObjectViewModel<ClimateObject>
 			FirstSeason = (uint8_t)FirstSeason,
 			WinterSnowLine = WinterSnowLine,
 			SummerSnowLine = SummerSnowLine,
-			//SeasonLengths = [.. SeasonLengths]
+			SeasonLength1 = SeasonLengths[0],
+			SeasonLength2 = SeasonLengths[1],
+			SeasonLength3 = SeasonLengths[2],
+			SeasonLength4 = SeasonLengths[3],
 		};
 }

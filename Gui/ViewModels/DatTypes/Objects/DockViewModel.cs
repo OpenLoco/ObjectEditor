@@ -54,7 +54,7 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 			var_07 = var_07,
 			BuildingHeights = [.. BuildingHeights],
 			BuildingAnimations = [.. BuildingAnimations],
-			//BuildingVariations = [.. BuildingVariations],
+			BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
 		};
 		return dockObject;
 	}

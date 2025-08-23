@@ -24,7 +24,7 @@ public class TrainStationViewModel : LocoObjectViewModel<TrackStationObject>
 
 	//public uint8_t[][][] CargoOffsetBytes { get; set; }
 
-	//public uint8_t[][] ManualPower { get; set; }
+	//public uint8_t[][] var_6E { get; set; }
 
 	public TrainStationViewModel(TrackStationObject tso)
 	{
@@ -37,9 +37,9 @@ public class TrainStationViewModel : LocoObjectViewModel<TrackStationObject>
 		SellCostFactor = tso.SellCostFactor;
 		CostIndex = tso.CostIndex;
 		Flags = tso.Flags;
+		var_0B = tso.var_0B;
+		var_0D = tso.var_0D;
 		//ImageOffsets = new(tso.ImageOffsets);
-		//var_0B = tso.var_0B;
-		//var_0D = tso.var_0D;
 		//CompatibleTrackObjects = new(tso.CompatibleTrackObjects.ConvertAll(x => new S5HeaderViewModel(x)));
 	}
 
@@ -57,9 +57,8 @@ public class TrainStationViewModel : LocoObjectViewModel<TrackStationObject>
 			SellCostFactor = SellCostFactor,
 			CostIndex = CostIndex,
 			Flags = Flags,
-			//var_0B = var_0B,
-			//var_0D = var_0D,
-			//CompatibleTrackObjectCount = (uint8_t)CompatibleTrackObjects.Count,
+			var_0B = var_0B,
+			var_0D = var_0D,
 			//CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 		};
 }

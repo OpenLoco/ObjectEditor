@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Scaffolding;
+using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -12,14 +13,14 @@ public class ScaffoldingViewModel : LocoObjectViewModel<ScaffoldingObject>
 
 	public ScaffoldingViewModel(ScaffoldingObject so)
 	{
-		//SegmentHeights = so.SegmentHeights.ToBindingList();
-		//RoofHeights = so.RoofHeights.ToBindingList();
+		SegmentHeights = so.SegmentHeights.ToBindingList();
+		RoofHeights = so.RoofHeights.ToBindingList();
 	}
 
 	public override ScaffoldingObject GetAsStruct()
 		=> new()
 		{
-			//SegmentHeights = [.. SegmentHeights],
-			//RoofHeights = [.. RoofHeights]
+			SegmentHeights = [.. SegmentHeights],
+			RoofHeights = [.. RoofHeights]
 		};
 }

@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Streetlight;
+using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 
@@ -10,12 +11,12 @@ public class StreetLightViewModel : LocoObjectViewModel<StreetLightObject>
 
 	public StreetLightViewModel(StreetLightObject ro)
 	{
-		//DesignedYears = ro.DesignedYears.ToBindingList();
+		DesignedYears = ro.DesignedYears.ToBindingList();
 	}
 
 	public override StreetLightObject GetAsStruct()
 		=> new()
 		{
-			//DesignedYears = [.. DesignedYears]
+			DesignedYears = [.. DesignedYears]
 		};
 }

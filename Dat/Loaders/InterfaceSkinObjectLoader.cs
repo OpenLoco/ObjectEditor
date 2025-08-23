@@ -28,8 +28,8 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
-			_ = br.SkipImageId(); // Image offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipImageId(); // Image offset, not part of object definition
 			model.MapTooltipObjectColour = (Colour)br.ReadByte();
 			model.MapTooltipCargoColour = (Colour)br.ReadByte();
 			model.TooltipColour = (Colour)br.ReadByte();

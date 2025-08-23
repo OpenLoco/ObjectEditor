@@ -37,7 +37,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.PaintStyle = br.ReadByte();
 			model.Height = br.ReadByte();
 			model.TrackPieces = (TrackTraitFlags)br.ReadUInt16();
@@ -47,14 +47,14 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			model.var_0B = br.ReadByte();
 			model.Flags = (TrackStationObjectFlags)br.ReadByte();
 			model.var_0D = br.ReadByte();
-			_ = br.SkipImageId(); // Image, not part of object definition
-			_ = br.SkipImageId(Constants.MaxImageOffsets);
+			br.SkipImageId(); // Image, not part of object definition
+			br.SkipImageId(Constants.MaxImageOffsets);
 			var compatibleTrackObjectCount = br.ReadByte();
-			_ = br.SkipObjectId(Constants.MaxNumCompatible);
+			br.SkipObjectId(Constants.MaxNumCompatible);
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
-			_ = br.SkipPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
-			_ = br.SkipPointer(Constants.var_6E_Length); // CargoOffsetBytes, not part of object definition
+			br.SkipPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
+			br.SkipPointer(Constants.var_6E_Length); // CargoOffsetBytes, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -85,7 +85,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			for (var j = 0; j < 4; ++j)
 			{
 				var length = 1;
-				while (br.PeekByte(length) != 0xFF)
+				while (br.PeekByte(length) != LocoConstants.Terminator)
 				{
 					length += 4; // x, y, x, y
 				}
@@ -100,7 +100,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		for (var i = 0; i < Constants.var_6E_Length; ++i)
 		{
 			var length = 1;
-			while (br.PeekByte(length) != 0xFF)
+			while (br.PeekByte(length) != LocoConstants.Terminator)
 			{
 				length += 4; // x, y, x, y
 			}
@@ -169,23 +169,6 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		{
 			bw.Write(model.var_6E[i]);
 		}
-	}
-
-	[Flags]
-	internal enum DatTrackTraitFlags : uint16_t
-	{
-		None = 0,
-		Diagonal = 1 << 0,
-		LargeCurve = 1 << 1,
-		NormalCurve = 1 << 2,
-		SmallCurve = 1 << 3,
-		VerySmallCurve = 1 << 4,
-		Slope = 1 << 5,
-		SteepSlope = 1 << 6,
-		OneSided = 1 << 7,
-		SlopedCurve = 1 << 8,
-		SBend = 1 << 9,
-		Junction = 1 << 10,
 	}
 
 	[Flags]

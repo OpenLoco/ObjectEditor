@@ -9,14 +9,14 @@ public class RoadObject : ILocoStruct
 	public int16_t SellCostFactor { get; set; }
 	public int16_t TunnelCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public Speed16 MaxSpeed { get; set; }
+	public int16_t MaxCurveSpeed { get; set; }
 	public RoadObjectFlags Flags { get; set; }
 	public uint8_t PaintStyle { get; set; }
 	public uint8_t DisplayOffset { get; set; }
 	public TownSize TargetTownSize { get; set; }
 
-	public List<ObjectModelHeader> Compatible { get; set; } = [];
-	public List<ObjectModelHeader> Mods { get; set; } = [];
+	public List<ObjectModelHeader> CompatibleTracksAndRoads { get; set; } = [];
+	public List<ObjectModelHeader> RoadMods { get; set; } = [];
 	public ObjectModelHeader Tunnel { get; set; }
 	public List<ObjectModelHeader> Bridges { get; set; } = [];
 	public List<ObjectModelHeader> Stations { get; set; } = [];
@@ -49,14 +49,14 @@ public class RoadObject : ILocoStruct
 			return false;
 		}
 
-		if (Mods.Count > 2)
+		if (RoadMods.Count > 2)
 		{
 			return false;
 		}
 
 		if (Flags.HasFlag(RoadObjectFlags.unk_03))
 		{
-			return Mods.Count == 0;
+			return RoadMods.Count == 0;
 		}
 
 		return true;

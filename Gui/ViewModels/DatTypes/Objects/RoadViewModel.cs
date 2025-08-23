@@ -28,7 +28,7 @@ public class RoadViewModel : LocoObjectViewModel<RoadObject>
 	{
 		Flags = ro.Flags;
 		RoadPieces = ro.RoadPieces;
-		MaxSpeed = ro.MaxSpeed;
+		MaxSpeed = ro.MaxCurveSpeed;
 		PaintStyle = ro.PaintStyle;
 		DisplayOffset = ro.DisplayOffset;
 		TargetTownSize = ro.TargetTownSize;
@@ -48,7 +48,7 @@ public class RoadViewModel : LocoObjectViewModel<RoadObject>
 		{
 			Flags = Flags,
 			RoadPieces = RoadPieces,
-			MaxSpeed = MaxSpeed,
+			MaxCurveSpeed = MaxSpeed,
 			PaintStyle = PaintStyle,
 			DisplayOffset = DisplayOffset,
 			TargetTownSize = TargetTownSize,

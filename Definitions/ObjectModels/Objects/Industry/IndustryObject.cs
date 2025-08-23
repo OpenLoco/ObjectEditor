@@ -31,18 +31,16 @@ public class IndustryObject : ILocoStruct
 	public List<ObjectModelHeader> ProducedCargo { get; set; } = []; // Cargo produced by this industry
 	public List<ObjectModelHeader> RequiredCargo { get; set; } = []; // Cargo required by this industry
 	public List<ObjectModelHeader> WallTypes { get; set; } = []; // Wall types that can be built around this industry
-	public ObjectModelHeader BuildingWall { get; set; } // Wall types that can be built around this industry
-	public ObjectModelHeader BuildingWallEntrance { get; set; } // Wall types that can be built around this industry
+	public ObjectModelHeader? BuildingWall { get; set; } // Wall types that can be built around this industry
+	public ObjectModelHeader? BuildingWallEntrance { get; set; } // Wall types that can be built around this industry
 
-	public List<uint8_t> BuildingHeights { get; set; } = []; // This is the height of a building image
-
+	public List<uint8_t> BuildingHeights { get; set; } = [];
 	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
+	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
 
 	public List<List<uint8_t>> AnimationSequences { get; set; } = []; // Access with getAnimationSequence helper method
-
+	public List<uint8_t> UnkBuildingData { get; set; } = [];
 	public List<IndustryObjectUnk38> var_38 { get; set; } = []; // Access with getUnk38 helper method
-
-	public List<List<uint8_t>> BuildingVariations { get; set; } = []; // Access with getBuildingParts helper method
 
 	public bool Validate()
 	{

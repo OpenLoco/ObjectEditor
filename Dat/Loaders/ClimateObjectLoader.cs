@@ -30,7 +30,7 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.FirstSeason = br.ReadByte();
 			model.SeasonLength1 = br.ReadByte();
 			model.SeasonLength2 = br.ReadByte();

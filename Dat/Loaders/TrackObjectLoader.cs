@@ -2,9 +2,13 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using static Dat.Loaders.RoadObjectLoader;
+using static Dat.Loaders.SteamObjectLoader;
+using static Dat.Loaders.TrackObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -34,7 +38,31 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			model.TrackPieces = ((DatTrackTraitFlags)br.ReadUInt16()).Convert();
+			model.StationTrackPieces = ((DatTrackTraitFlags)br.ReadUInt16()).Convert();
+			model.var_06 = br.ReadByte();
+			var numCompatibleTracksAndRoads = br.ReadByte();
+			var numTrackMods = br.ReadByte();
+			var numSignals = br.ReadByte();
+			br.SkipObjectId(Constants.MaxMods);
+			br.SkipUInt16(); // _Signals, not part of object definition
+			br.SkipUInt16(); // _CompatibleTracks, not part of object definition
+			br.SkipUInt16(); // _CompatibleRoads, not part of object definition
+			model.BuildCostFactor = br.ReadInt16();
+			model.SellCostFactor = br.ReadInt16();
+			model.TunnelCostFactor = br.ReadInt16();
+			model.CostIndex = br.ReadByte();
+			br.SkipObjectId(); // Tunnel, not part of object definition
+			model.MaxCurveSpeed = br.ReadInt16();
+			br.SkipImageId(); // Image offset, not part of object definition
+			model.Flags = ((DatTrackObjectFlags)br.ReadUInt16()).Convert();
+			var numBridges = br.ReadByte();
+			br.SkipObjectId(Constants.MaxBridges);
+			var numStations = br.ReadByte();
+			br.SkipObjectId(Constants.MaxStations);
+			model.DisplayOffset = br.ReadByte();
+			br.SkipByte(); // pad_35, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -43,7 +71,12 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Track), null);
 
 			// variable
-			// N/A
+			model.CompatibleTracksAndRoads = br.ReadS5HeaderList(numCompatibleTracksAndRoads);
+			model.TrackMods = br.ReadS5HeaderList(numTrackMods);
+			model.Signals = br.ReadS5HeaderList(numSignals);
+			model.Tunnel = br.ReadS5Header();
+			model.Bridges = br.ReadS5HeaderList(numBridges);
+			model.Stations = br.ReadS5HeaderList(numStations);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -55,10 +88,35 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (TrackObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write((uint16_t)model.TrackPieces.Convert());
+			bw.Write((uint16_t)model.StationTrackPieces.Convert());
+			bw.Write(model.var_06);
+			bw.Write((uint8_t)model.CompatibleTracksAndRoads.Count);
+			bw.Write((uint8_t)model.TrackMods.Count);
+			bw.Write((uint8_t)model.Signals.Count);
+			bw.WriteObjectId(Constants.MaxMods); // Mods, not part of object definition
+			bw.Write((uint16_t)0); // _Signals, not part of object definition
+			bw.Write((uint16_t)0); // _CompatibleTracks, not part of object definition
+			bw.Write((uint16_t)0); // _CompatibleRoads, not part of object definition
+			bw.Write(model.BuildCostFactor);
+			bw.Write(model.SellCostFactor);
+			bw.Write(model.TunnelCostFactor);
+			bw.Write(model.CostIndex);
+			bw.WriteObjectId(); // Tunnel, not part of object definition
+			bw.Write(model.MaxCurveSpeed);
+			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.Write((uint16_t)model.Flags.Convert());
+			bw.Write((uint8_t)model.Bridges.Count);
+			bw.WriteObjectId(Constants.MaxBridges); // Bridges, not part of object definition
+			bw.Write((uint8_t)model.Stations.Count);
+			bw.WriteObjectId(Constants.MaxStations); // Stations, not part of object definition
+			bw.Write(model.DisplayOffset);
+			bw.Write((uint8_t)0); // pad_35, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -67,21 +125,61 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			// N/A
+			bw.WriteS5HeaderList(model.CompatibleTracksAndRoads);
+			bw.WriteS5HeaderList(model.TrackMods);
+			bw.WriteS5HeaderList(model.Signals);
+			bw.WriteS5Header(model.Tunnel);
+			bw.WriteS5HeaderList(model.Bridges);
+			bw.WriteS5HeaderList(model.Stations);
 
 			// image table
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
+
+	[Flags]
+	internal enum DatTrackTraitFlags : uint16_t
+	{
+		None = 0,
+		Diagonal = 1 << 0,
+		LargeCurve = 1 << 1,
+		NormalCurve = 1 << 2,
+		SmallCurve = 1 << 3,
+		VerySmallCurve = 1 << 4,
+		Slope = 1 << 5,
+		SteepSlope = 1 << 6,
+		OneSided = 1 << 7,
+		SlopedCurve = 1 << 8,
+		SBend = 1 << 9,
+		Junction = 1 << 10,
+	}
+
+	[Flags]
+	internal enum DatTrackObjectFlags : uint16_t
+	{
+		None = 0,
+		unk_00 = 1 << 0,
+		unk_01 = 1 << 1,
+		unk_02 = 1 << 2,
+	}
 }
 
-[Flags]
-internal enum DatTrackObjectFlags : uint16_t
+internal static class TrackTraitFlagsConverter
 {
-	None = 0,
-	unk_00 = 1 << 0,
-	unk_01 = 1 << 1,
-	unk_02 = 1 << 2,
+	public static TrackTraitFlags Convert(this DatTrackTraitFlags datTrackTraitFlags)
+		=> (TrackTraitFlags)datTrackTraitFlags;
+
+	public static DatTrackTraitFlags Convert(this TrackTraitFlags trackTraitFlags)
+		=> (DatTrackTraitFlags)trackTraitFlags;
+}
+
+internal static class TrackObjectFlagsConverter
+{
+	public static TrackObjectFlags Convert(this DatTrackObjectFlags datTrackObjectFlags)
+		=> (TrackObjectFlags)datTrackObjectFlags;
+
+	public static DatTrackObjectFlags Convert(this TrackObjectFlags trackObjectFlags)
+		=> (DatTrackObjectFlags)trackObjectFlags;
 }
 
 [LocoStructSize(0x36)]

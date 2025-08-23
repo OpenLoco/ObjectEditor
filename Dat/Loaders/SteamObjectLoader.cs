@@ -33,21 +33,21 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
-			_ = br.SkipUInt16(); // Count of images in graphics table
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipUInt16(); // Count of images in graphics table
 			model.NumStationaryTicks = br.ReadByte();
-			_ = br.SkipByte(); // SpriteWidth
-			_ = br.SkipByte(); // SpriteHeightNegative
-			_ = br.SkipByte(); // SpriteHeightPositive
+			br.SkipByte(); // SpriteWidth
+			br.SkipByte(); // SpriteHeightNegative
+			br.SkipByte(); // SpriteHeightPositive
 			model.Flags = ((DatSteamObjectFlags)br.ReadUInt16()).Convert();
 			model.var_0A = br.ReadUInt32();
-			_ = br.SkipImageId(); // BaseImageId, not used
-			_ = br.SkipUInt16(); // _TotalNumFramesType0, not used
-			_ = br.SkipUInt16(); // _TotalNumFramesType1, not used
-			_ = br.SkipPointer(); // _FrameInfoType0Ptr, not used
-			_ = br.SkipPointer(); // _FrameInfoType1Ptr, not used
+			br.SkipImageId(); // BaseImageId, not used
+			br.SkipUInt16(); // _TotalNumFramesType0, not used
+			br.SkipUInt16(); // _TotalNumFramesType1, not used
+			br.SkipPointer(); // _FrameInfoType0Ptr, not used
+			br.SkipPointer(); // _FrameInfoType1Ptr, not used
 			var numSoundEffects = br.ReadByte();
-			_ = br.SkipObjectId(Constants.MaxSoundEffects);
+			br.SkipObjectId(Constants.MaxSoundEffects);
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -67,19 +67,19 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 
 	private static void LoadVariable(LocoBinaryReader br, SteamObject model, byte numSoundEffects)
 	{
-		while (br.PeekByte() != 0xFF)
+		while (br.PeekByte() != LocoConstants.Terminator)
 		{
 			model.FrameInfoType0.Add(new ImageAndHeight() { ImageOffset = br.ReadByte(), Height = br.ReadByte() });
 		}
 
-		_ = br.SkipByte(); // skip the 0xFF terminator
+		br.SkipTerminator();
 
-		while (br.PeekByte() != 0xFF)
+		while (br.PeekByte() != LocoConstants.Terminator)
 		{
 			model.FrameInfoType1.Add(new ImageAndHeight() { ImageOffset = br.ReadByte(), Height = br.ReadByte() });
 		}
 
-		_ = br.SkipByte(); // skip the 0xFF terminator
+		br.SkipTerminator();
 
 		model.SoundEffects = br.ReadS5HeaderList(numSoundEffects);
 	}
@@ -129,14 +129,14 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			bw.Write(fit.ImageOffset);
 			bw.Write(fit.Height);
 		}
-		bw.Write((uint8_t)0xFF); // end of frame info type 0
+		bw.WriteTerminator(); // end of frame info type 0
 
 		foreach (var fit in model.FrameInfoType1)
 		{
 			bw.Write(fit.ImageOffset);
 			bw.Write(fit.Height);
 		}
-		bw.Write((uint8_t)0xFF); // end of frame info type 1
+		bw.WriteTerminator(); // end of frame info type 1
 
 		bw.WriteS5HeaderList(model.SoundEffects);
 	}

@@ -1,11 +1,10 @@
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadStation;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
+using static Dat.Loaders.RoadObjectLoader;
+using static Dat.Loaders.RoadStationObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -34,23 +33,23 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.PaintStyle = br.ReadByte();
 			model.Height = br.ReadByte();
-			model.RoadPieces = (RoadTraitFlags)br.ReadUInt16();
+			model.RoadPieces = ((DatRoadTraitFlags)br.ReadUInt16()).Convert();
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
-			model.Flags = (RoadStationObjectFlags)br.ReadByte();
-			_ = br.SkipImageId(); // Image, not part of object definition
-			_ = br.SkipImageId(Constants.MaxImageOffsets);
+			model.Flags = ((DatRoadStationObjectFlags)br.ReadByte()).Convert();
+			br.SkipImageId(); // Image, not part of object definition
+			br.SkipImageId(Constants.MaxImageOffsets);
 			var compatibleRoadObjectCount = br.ReadByte();
-			_ = br.SkipObjectId(Constants.MaxNumCompatible);
+			br.SkipObjectId(Constants.MaxNumCompatible);
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
-			_ = br.SkipObjectId(); // CargoTypeId, not part of object definition
-			_ = br.SkipByte(); // pad 0x2D
-			_ = br.SkipPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
+			br.SkipObjectId(); // CargoTypeId, not part of object definition
+			br.SkipByte(); // pad 0x2D
+			br.SkipPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -87,7 +86,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 			for (var j = 0; j < 4; ++j)
 			{
 				var length = 1;
-				while (br.PeekByte(length) != 0xFF)
+				while (br.PeekByte(length) != LocoConstants.Terminator)
 				{
 					length += 4; // x, y, x, y
 				}
@@ -168,4 +167,13 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 		Freight = 1 << 2,
 		RoadEnd = 1 << 3,
 	}
+}
+
+static class RoadStationFlagsConverter
+{
+	public static DatRoadStationObjectFlags Convert(this RoadStationObjectFlags roadStationObjectFlags)
+		=> (DatRoadStationObjectFlags)roadStationObjectFlags;
+
+	public static RoadStationObjectFlags Convert(this DatRoadStationObjectFlags datRoadStationObjectFlags)
+		=> (RoadStationObjectFlags)datRoadStationObjectFlags;
 }

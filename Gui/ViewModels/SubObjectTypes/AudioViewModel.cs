@@ -1,5 +1,5 @@
 using Common.Logging;
-using Dat.Types.Audio;
+using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models.Audio;
 using NAudio.Wave;
 using ReactiveUI;
@@ -71,14 +71,14 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 		: this(logger, soundName)
 		=> ImportSoundFromFile(filename);
 
-	public AudioViewModel(ILogger logger, string soundName, DatSoundEffectWaveFormat locoWaveFormat, byte[] pcmData)
+	public AudioViewModel(ILogger logger, string soundName, SoundEffectWaveFormat locoWaveFormat, byte[] pcmData)
 		: this(logger, soundName)
 		=> WaveStream = new RawSourceWaveStream(
 			new MemoryStream(pcmData),
 			AudioHelpers.SoundEffectFormatToWaveFormat(locoWaveFormat));
 
 	// in future, this method needs to resample the audio to convert to the specific music or sfx format that loco uses
-	public (DatSoundEffectWaveFormat Header, byte[] Data)? GetAsDatWav(LocoAudioType format)
+	public (SoundEffectWaveFormat Header, byte[] Data)? GetAsDatWav(LocoAudioType format)
 	{
 		if (WaveStream == null)
 		{

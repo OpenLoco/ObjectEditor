@@ -32,8 +32,8 @@ public abstract class WallObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
-			_ = br.SkipImageId(); // Image offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipImageId(); // Image offset, not part of object definition
 			model.ToolId = br.ReadByte(); // tool cursor type not used in Locomotion
 			model.Flags1 = ((DatWallObjectFlags1)br.ReadByte()).Convert();
 			model.Height = br.ReadByte();

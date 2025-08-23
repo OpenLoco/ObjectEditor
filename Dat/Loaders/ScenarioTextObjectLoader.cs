@@ -28,9 +28,9 @@ public abstract class ScenarioTextObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
-			_ = br.SkipStringId(); // Details offset, not part of object definition
-			_ = br.SkipBytes(0x06 - 0x04); // pad, not used
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Details offset, not part of object definition
+			br.SkipByte(0x06 - 0x04); // pad, not used
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

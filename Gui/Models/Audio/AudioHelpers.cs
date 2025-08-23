@@ -1,4 +1,4 @@
-using Dat.Types.Audio;
+using Definitions.ObjectModels.Objects.Sound;
 using NAudio.Wave;
 using System.Collections.Generic;
 
@@ -15,6 +15,7 @@ public static class AudioHelpers
 				44100, // AverageBytesPerSecond
 				4, // BlockAlign
 				16), // BitsPerSample
+
 		[LocoAudioType.SoundEffect] = WaveFormat.CreateCustomFormat(
 				WaveFormatEncoding.Pcm,
 				22050, // SampleRate
@@ -24,16 +25,16 @@ public static class AudioHelpers
 				16) // BitsPerSample
 	};
 
-	public static WaveFormat SoundEffectFormatToWaveFormat(DatSoundEffectWaveFormat locoWaveFormat)
+	public static WaveFormat SoundEffectFormatToWaveFormat(SoundEffectWaveFormat locoWaveFormat)
 		=> WaveFormat.CreateCustomFormat(
 			(WaveFormatEncoding)locoWaveFormat.WaveFormatTag,
 			locoWaveFormat.SampleRate,
 			locoWaveFormat.Channels,
 			locoWaveFormat.AverageBytesPerSecond,
-			2, //locoWaveFormat.BlockAlign,
-			16); //locoWaveFormat.BitsPerSample);
+			locoWaveFormat.BlockAlign, // always 2
+			locoWaveFormat.BitsPerSample); // always 16
 
-	public static DatSoundEffectWaveFormat WaveFormatToSoundEffectFormat(WaveFormat waveFormat)
+	public static SoundEffectWaveFormat WaveFormatToSoundEffectFormat(WaveFormat waveFormat)
 		=> new()
 		{
 			WaveFormatTag = (int16_t)waveFormat.Encoding,

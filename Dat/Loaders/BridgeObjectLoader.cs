@@ -31,7 +31,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.Flags = ((DatBridgeObjectFlags)br.ReadByte()).Convert();
 			model.var_03 = br.ReadByte();
 			model.ClearHeight = br.ReadUInt16();
@@ -45,11 +45,11 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			model.HeightCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.DisabledTrackFlags = ((DatBridgeDisabledTrackFlags)br.ReadUInt16()).Convert();
-			_ = br.SkipImageId(); // Image offset, not part of object definition
+			br.SkipImageId(); // Image offset, not part of object definition
 			var compatibleTrackCount = br.ReadByte();
-			_ = br.SkipObjectId(Constants.MaxNumTrackMods);  // Placeholder for track mods, not part of object definition
+			br.SkipObjectId(Constants.MaxNumTrackMods);  // Placeholder for track mods, not part of object definition
 			var compatibleRoadCount = br.ReadByte();
-			_ = br.SkipObjectId(Constants.MaxNumRoadMods);  // Placeholder for road mods, not part of object definition
+			br.SkipObjectId(Constants.MaxNumRoadMods);  // Placeholder for road mods, not part of object definition
 			model.DesignedYear = br.ReadUInt16();
 
 			// sanity check

@@ -1,6 +1,7 @@
 using Definitions.ObjectModels.Objects.Track;
 
 namespace Definitions.ObjectModels.Objects.TrackExtra;
+
 public class TrackExtraObject : ILocoStruct, IImageTableNameProvider
 {
 	public TrackTraitFlags TrackPieces { get; set; }

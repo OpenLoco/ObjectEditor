@@ -13,11 +13,14 @@ namespace Dat.Loaders;
 public abstract class SoundObjectLoader : IDatObjectLoader
 {
 	public static class Constants
-	{ }
+	{
+		public const int NumUnkStructs = 16;
+	}
 
 	public static class StructSizes
 	{
-		public const int Dat = 0x1E;
+		public const int Dat = 0x0C;
+		public const int SoundObjectData = 0x1E;
 	}
 
 	public static LocoObject Load(MemoryStream stream)
@@ -31,7 +34,11 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipPointer(); // SoundObjectDataPtr, not part of object definition
+			model.ShouldLoop = br.ReadByte();
+			br.SkipByte(); // pad_07, not part of object definition
+			model.Volume = br.ReadUInt32();
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -40,22 +47,43 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Sound), null);
 
 			// variable
-			// N/A
+			LoadVariable(br, model);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			// N/A
 
 			return new LocoObject(ObjectType.Sound, model, stringTable, imageTable);
 		}
 	}
 
+	private static void LoadVariable(LocoBinaryReader br, SoundObject model)
+	{
+		model.NumUnkStructs = br.ReadUInt32();
+		var pcmDataLength = br.ReadUInt32(); // unused
+		model.UnkData = br.ReadBytes((int)model.NumUnkStructs * Constants.NumUnkStructs);
+		model.SoundObjectData = new SoundObjectData
+		{
+			var_00 = br.ReadInt32(),
+			Offset = br.ReadInt32(),
+			Length = br.ReadUInt32(),
+			PcmHeader = br.ReadSoundEffect(),
+		};
+
+		model.PcmData = br.ReadToEnd();
+	}
+
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (SoundObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WritePointer();
+			bw.Write(model.ShouldLoop);
+			bw.WriteBytes(1);
+			bw.Write(model.Volume);
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -64,23 +92,44 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			// N/A
+			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			// N/A
 		}
+	}
+
+	private static void SaveVariable(SoundObject model, LocoBinaryWriter bw)
+	{
+		bw.Write(model.NumUnkStructs);
+		bw.Write((uint32_t)0); // unused pcm data length
+		bw.Write(model.UnkData);
+
+		var m = model.SoundObjectData;
+		bw.Write(m.var_00);
+		bw.Write(m.Offset);
+		bw.Write(m.Length);
+		bw.Write(m.PcmHeader.WaveFormatTag);
+		bw.Write(m.PcmHeader.Channels);
+		bw.Write(m.PcmHeader.SampleRate);
+		bw.Write(m.PcmHeader.AverageBytesPerSecond);
+		bw.Write(m.PcmHeader.BlockAlign);
+		bw.Write(m.PcmHeader.BitsPerSample);
+		bw.Write(m.PcmHeader.ExtraSize);
+
+		bw.Write(model.PcmData);
 	}
 }
 
 [LocoStructSize(0x1E)]
-internal record SoundObjectData(
+internal record DatSoundObjectData(
 	[property: LocoStructOffset(0x00)] int32_t var_00,
 	[property: LocoStructOffset(0x04)] int32_t Offset,
 	[property: LocoStructOffset(0x08)] uint32_t Length,
 	[property: LocoStructOffset(0x0C)] DatSoundEffectWaveFormat PcmHeader
 	) : ILocoStruct
 {
-	public SoundObjectData() : this(0, 0, 0, new DatSoundEffectWaveFormat())
+	public DatSoundObjectData() : this(0, 0, 0, new DatSoundEffectWaveFormat())
 	{ }
 
 	public bool Validate()
@@ -97,7 +146,7 @@ internal record DatSoundObject(
 	[property: LocoStructOffset(0x08)] uint32_t Volume
 	) : ILocoStruct, ILocoStructVariableData
 {
-	[Editable(false)] public SoundObjectData SoundObjectData { get; set; }
+	[Editable(false)] public DatSoundObjectData SoundObjectData { get; set; }
 
 	[Browsable(false)] public byte[] PcmData { get; set; } = [];
 
@@ -120,8 +169,8 @@ internal record DatSoundObject(
 		remainingData = remainingData[(int)(numUnkStructs * 16)..];
 
 		// pcm data
-		SoundObjectData = ByteReader.ReadLocoStruct<SoundObjectData>(remainingData[..ObjectAttributes.StructSize<SoundObjectData>()]);
-		remainingData = remainingData[ObjectAttributes.StructSize<SoundObjectData>()..];
+		SoundObjectData = ByteReader.ReadLocoStruct<DatSoundObjectData>(remainingData[..ObjectAttributes.StructSize<DatSoundObjectData>()]);
+		remainingData = remainingData[ObjectAttributes.StructSize<DatSoundObjectData>()..];
 
 		PcmData = remainingData.ToArray();
 

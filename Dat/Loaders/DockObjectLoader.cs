@@ -3,8 +3,11 @@ using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Dock;
+using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using static Dat.Loaders.DockObjectLoader;
+using static Dat.Loaders.TrackObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -29,7 +32,22 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			model.BuildCostFactor = br.ReadInt16();
+			model.SellCostFactor = br.ReadInt16();
+			model.CostIndex = br.ReadByte();
+			model.var_07 = br.ReadByte(); // probably padding
+			br.SkipImageId(); // Image, not part of object definition
+			br.SkipImageId(); // UnkImage, not part of object definition
+			model.Flags = ((DatDockObjectFlags)br.ReadUInt16()).Convert();
+			var numBuildingParts = br.ReadByte();
+			var numBuildingVariations = br.ReadByte();
+			br.SkipPointer(); // BuildingPartHeights
+			br.SkipPointer(); // BuildingPartAnimations
+			br.SkipPointer(); // BuildingVariationParts
+			model.DesignedYear = br.ReadUInt16();
+			model.ObsoleteYear = br.ReadUInt16();
+			model.BoatPosition = new Pos2(br.ReadInt16(), br.ReadInt16());
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -38,7 +56,9 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Dock), null);
 
 			// variable
-			// N/A
+			model.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
+			model.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
+			model.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -50,10 +70,27 @@ public abstract class DockObjectLoader : IDatObjectLoader
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (DockObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write(model.BuildCostFactor);
+			bw.Write(model.SellCostFactor);
+			bw.Write(model.CostIndex);
+			bw.Write(model.var_07); // probably padding
+			bw.WriteImageId(); // Image, not part of object definition
+			bw.WriteImageId(); // UnkImage, not part of object definition
+			bw.Write((uint16_t)model.Flags.Convert());
+			bw.Write((uint8_t)model.BuildingAnimations.Count);
+			bw.Write((uint8_t)model.BuildingVariations.Count);
+			bw.WritePointer(); // BuildingPartHeights
+			bw.WritePointer(); // BuildingPartAnimations
+			bw.WritePointer(); // BuildingVariationParts
+			bw.Write(model.DesignedYear);
+			bw.Write(model.ObsoleteYear);
+			bw.Write(model.BoatPosition.X);
+			bw.Write(model.BoatPosition.Y);
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -62,84 +99,33 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			// N/A
+			SaveVariable(model, bw);
 
 			// image table
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
-}
 
-[Flags]
-internal enum DatDockObjectFlags : uint16_t
-{
-	None = 0,
-	HasShadows = 1 << 0,
-}
-
-[TypeConverter(typeof(ExpandableObjectConverter))]
-[LocoStructSize(0x28)]
-[LocoStructType(DatObjectType.Dock)]
-internal record DatDockObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] int16_t BuildCostFactor,
-	[property: LocoStructOffset(0x04)] int16_t SellCostFactor,
-	[property: LocoStructOffset(0x06)] uint8_t CostIndex,
-	[property: LocoStructOffset(0x07), LocoPropertyMaybeUnused] uint8_t var_07, // probably padding
-	[property: LocoStructOffset(0x08), Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x0C), Browsable(false)] image_id UnkImage,
-	[property: LocoStructOffset(0x10)] DatDockObjectFlags Flags,
-	[property: LocoStructOffset(0x12)] uint8_t NumBuildingPartAnimations,
-	[property: LocoStructOffset(0x13)] uint8_t NumBuildingVariationParts, // must be 1 or 0
-	[property: LocoStructOffset(0x14), LocoStructVariableLoad] List<uint8_t> BuildingPartHeights,
-	[property: LocoStructOffset(0x18), LocoStructVariableLoad] List<uint16_t> BuildingPartAnimations,
-	[property: LocoStructOffset(0x1C), LocoStructVariableLoad] List<uint8_t> BuildingVariationParts,
-	[property: LocoStructOffset(0x20)] uint16_t DesignedYear,
-	[property: LocoStructOffset(0x22)] uint16_t ObsoleteYear,
-	[property: LocoStructOffset(0x24)] DatPos2 BoatPosition
-) : ILocoStructVariableData
-{
-	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
+	private static void SaveVariable(DockObject model, LocoBinaryWriter bw)
 	{
-		BuildingPartHeights.Clear();
-		BuildingPartAnimations.Clear();
-		BuildingVariationParts.Clear();
-
-		// var_14 - a list of uint8_t
-		BuildingPartHeights.AddRange(remainingData[..(NumBuildingPartAnimations * 1)]);
-		remainingData = remainingData[(NumBuildingPartAnimations * 1)..]; // sizeof(uint8_t)
-
-		// var_18 - a list of uint16_t
-		var bytearr = remainingData[..(NumBuildingPartAnimations * 2)].ToArray();
-		for (var i = 0; i < NumBuildingPartAnimations; ++i)
-		{
-			BuildingPartAnimations.Add(BitConverter.ToUInt16(bytearr, i * 2)); // sizeof(uint16_t)
-		}
-
-		remainingData = remainingData[(NumBuildingPartAnimations * 2)..]; // sizeof(uint16_t)
-
-		// parts
-		for (var i = 0; i < NumBuildingVariationParts; ++i)
-		{
-			var ptr_1C = 0;
-			while (remainingData[ptr_1C] != 0xFF)
-			{
-				BuildingVariationParts.Add(remainingData[ptr_1C]);
-				ptr_1C++;
-			}
-
-			ptr_1C++;
-			remainingData = remainingData[ptr_1C..];
-		}
-
-		return remainingData;
+		bw.WriteBuildingHeights(model.BuildingHeights);
+		bw.WriteBuildingAnimations(model.BuildingAnimations);
+		bw.WriteBuildingVariations(model.BuildingVariations);
 	}
 
-	public ReadOnlySpan<byte> SaveVariable()
-		=> BuildingPartHeights
-		.Concat(BuildingPartAnimations.SelectMany(BitConverter.GetBytes))
-		.Concat(BuildingVariationParts)
-		.Concat(new byte[] { 0xFF })
-		.ToArray();
+	[Flags]
+	internal enum DatDockObjectFlags : uint16_t
+	{
+		None = 0,
+		HasShadows = 1 << 0,
+	}
+}
 
+internal static class DockObjectFlagsConverter
+{
+	public static DockObjectFlags Convert(this DatDockObjectFlags datDockObjectFlags)
+		=> (DockObjectFlags)datDockObjectFlags;
+
+	public static DatDockObjectFlags Convert(this DockObjectFlags dockObjectFlags)
+		=> (DatDockObjectFlags)dockObjectFlags;
 }

@@ -28,7 +28,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.CostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
@@ -36,9 +36,9 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			model.ClosingFrames = br.ReadByte();
 			model.ClosedFrames = br.ReadByte();
 			model.var_0A = br.ReadByte(); // something like IdleAnimationFrames or something
-			_ = br.SkipBytes(1); // pad_0B, unused
+			br.SkipByte(1); // pad_0B, unused
 			model.DesignedYear = br.ReadUInt16();
-			_ = br.SkipImageId();
+			br.SkipImageId();
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

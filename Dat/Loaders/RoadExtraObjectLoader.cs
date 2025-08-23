@@ -4,6 +4,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadExtra;
 using Definitions.ObjectModels.Types;
+using static Dat.Loaders.RoadObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -23,12 +24,14 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.RoadPieces = ((DatRoadTraitFlags)br.ReadUInt16()).Convert();
 			model.PaintStyle = br.ReadByte();
 			model.CostIndex = br.ReadByte();
 			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
+			br.SkipImageId(); // Image offset, not part of object definition
+			br.SkipImageId(); // BaseImageOffset, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, StructSizes.DatStructSize, nameof(stream.Position));
@@ -71,13 +74,4 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
-}
-
-static class RoadTraitFlagsConverter
-{
-	public static DatRoadTraitFlags Convert(this RoadTraitFlags roadTraitFlags)
-		=> (DatRoadTraitFlags)roadTraitFlags;
-
-	public static RoadTraitFlags Convert(this DatRoadTraitFlags datRoadTraitFlags)
-		=> (RoadTraitFlags)datRoadTraitFlags;
 }

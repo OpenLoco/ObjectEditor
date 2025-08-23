@@ -3,6 +3,7 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.TrackExtra;
 using Definitions.ObjectModels.Types;
+using static Dat.Loaders.TrackObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -27,7 +28,14 @@ public abstract class TrackExtraObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			model.TrackPieces = ((DatTrackTraitFlags)br.ReadUInt16()).Convert();
+			model.PaintStyle = br.ReadByte();
+			model.CostIndex = br.ReadByte();
+			model.BuildCostFactor = br.ReadInt16();
+			model.SellCostFactor = br.ReadInt16();
+			br.SkipImageId(); // Image offset, not part of object definition
+			br.SkipImageId(); // BaseImageOffset, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -48,10 +56,18 @@ public abstract class TrackExtraObjectLoader : IDatObjectLoader
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (TrackExtraObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write((uint16_t)model.TrackPieces);
+			bw.Write(model.PaintStyle);
+			bw.Write(model.CostIndex);
+			bw.Write(model.BuildCostFactor);
+			bw.Write(model.SellCostFactor);
+			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteImageId(); // BaseImageOffset, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

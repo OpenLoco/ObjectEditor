@@ -29,11 +29,11 @@ public abstract class HillShapesObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.HillHeightMapCount = br.ReadByte();
 			model.MountainHeightMapCount = br.ReadByte();
-			_ = br.SkipImageId(); // Image, not part of object definition
-			_ = br.SkipImageId(); // ImageHill, not part of object definition
+			br.SkipImageId(); // Image, not part of object definition
+			br.SkipImageId(); // ImageHill, not part of object definition
 			model.IsHeightMap = ((DatHillShapeFlags)br.ReadUInt16()).HasFlag(DatHillShapeFlags.IsHeightMap);
 
 			// sanity check

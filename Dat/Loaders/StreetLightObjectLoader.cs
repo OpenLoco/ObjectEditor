@@ -28,7 +28,7 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId();
+			br.SkipStringId();
 			for (var i = 0; i < Constants.DesignedYearLength; ++i)
 			{
 				model.DesignedYears.Add(br.ReadUInt16());

@@ -10,13 +10,13 @@ public class TrackObject : ILocoStruct, IImageTableNameProvider
 	public int16_t SellCostFactor { get; set; }
 	public int16_t TunnelCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public Speed16 CurveSpeed { get; set; }
+	public Speed16 MaxCurveSpeed { get; set; }
 	public TrackObjectFlags Flags { get; set; }
 	public uint8_t DisplayOffset { get; set; }
 	public uint8_t var_06 { get; set; }
 
 	public List<ObjectModelHeader> CompatibleTracksAndRoads { get; set; } = [];
-	public List<ObjectModelHeader> Mods { get; set; } = []; // aka TrackExtraObject
+	public List<ObjectModelHeader> TrackMods { get; set; } = []; // aka TrackExtraObject
 	public List<ObjectModelHeader> Signals { get; set; } = [];
 	public ObjectModelHeader Tunnel { get; set; }
 	public List<ObjectModelHeader> Bridges { get; set; } = [];

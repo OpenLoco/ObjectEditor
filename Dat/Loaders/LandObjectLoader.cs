@@ -32,22 +32,22 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.CostIndex = br.ReadByte();
 			model.NumGrowthStages = br.ReadByte();
 			model.NumImageAngles = br.ReadByte();
 			model.Flags = ((DatLandObjectFlags)br.ReadByte()).Convert();
-			_ = br.SkipObjectId(); // CliffEdgeHeader1, not part of object definition
-			_ = br.SkipObjectId(); // CliffEdgeHeader2, not part of object
+			br.SkipObjectId(); // CliffEdgeHeader1, not part of object definition
+			br.SkipObjectId(); // CliffEdgeHeader2, not part of object
 			model.CostFactor = br.ReadInt16();
-			_ = br.SkipImageId(); // Image offset, not part of object definition
+			br.SkipImageId(); // Image offset, not part of object definition
 			model.NumImagesPerGrowthStage = br.ReadUInt32();
-			_ = br.SkipImageId(); // CliffEdgeImage, not part of object definition
-			_ = br.SkipImageId(); // MapPixelImage, not part of object definition
+			br.SkipImageId(); // CliffEdgeImage, not part of object definition
+			br.SkipImageId(); // MapPixelImage, not part of object definition
 			model.DistributionPattern = br.ReadByte();
 			model.NumVariations = br.ReadByte();
 			model.VariationLikelihood = br.ReadByte();
-			_ = br.SkipByte(); // pad
+			br.SkipByte(); // pad
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

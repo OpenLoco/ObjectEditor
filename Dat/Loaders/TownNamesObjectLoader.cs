@@ -30,7 +30,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId();
+			br.SkipStringId();
 			for (var i = 0; i < Constants.Categories; ++i)
 			{
 				Category category = new()

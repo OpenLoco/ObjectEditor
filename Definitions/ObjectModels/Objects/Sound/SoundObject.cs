@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Sound;
 
 //[LocoStructSize(0x12)]
-public record SoundEffectWaveFormat
+public class SoundEffectWaveFormat
 {
 	public int16_t WaveFormatTag { get; set; }
 	public int16_t Channels { get; set; }
@@ -35,7 +35,7 @@ public record SoundEffectWaveFormat
 }
 
 //[LocoStructSize(0x1E)]
-public record SoundObjectData
+public class SoundObjectData
 {
 	public int32_t var_00 { get; set; }
 	public int32_t Offset { get; set; }
@@ -48,8 +48,11 @@ public class SoundObject : ILocoStruct
 	public uint8_t ShouldLoop { get; set; }
 	public uint32_t Volume { get; set; }
 	public SoundObjectData SoundObjectData { get; set; }
-
 	public byte[] PcmData { get; set; } = [];
+
+	// unk
+	public uint32_t NumUnkStructs { get; set; }
+	public byte[] UnkData { get; set; }
 
 	public bool Validate()
 		=> SoundObjectData?.Offset >= 0;

@@ -1,5 +1,7 @@
 using Dat.Converters;
 using Dat.Types;
+using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
 using System.Text;
 
@@ -18,35 +20,35 @@ public class LocoBinaryReader : BinaryReader
 	public override int Read()
 		=> throw new NotImplementedException("Use as specific Read method for the data type you want to read.");
 
-	public long SkipByte()
-		=> BaseStream.Seek(1, SeekOrigin.Current);
+	public void SkipTerminator()
+		=> SkipByte(1);
 
-	public long SkipBytes(int count)
-		=> BaseStream.Seek(count, SeekOrigin.Current);
+	public void SkipByte(int count = 1)
+		=> _ = BaseStream.Seek(count, SeekOrigin.Current);
 
-	public long SkipUInt16(int count = 1)
-		=> BaseStream.Seek(2 * count, SeekOrigin.Current);
+	public void SkipUInt16(int count = 1)
+		=> _ = BaseStream.Seek(2 * count, SeekOrigin.Current);
 
-	public long SkipInt16(int count = 1)
-		=> BaseStream.Seek(2 * count, SeekOrigin.Current);
+	public void SkipInt16(int count = 1)
+		=> _ = BaseStream.Seek(2 * count, SeekOrigin.Current);
 
-	public long SkipUInt32(int count = 1)
-		=> BaseStream.Seek(4 * count, SeekOrigin.Current);
+	public void SkipUInt32(int count = 1)
+		=> _ = BaseStream.Seek(4 * count, SeekOrigin.Current);
 
-	public long SkipInt32(int count = 1)
-		=> BaseStream.Seek(4 * count, SeekOrigin.Current);
+	public void SkipInt32(int count = 1)
+		=> _ = BaseStream.Seek(4 * count, SeekOrigin.Current);
 
-	public long SkipStringId(int count = 1)
-		=> BaseStream.Seek(2 * count, SeekOrigin.Current);
+	public void SkipStringId(int count = 1)
+		=> _ = BaseStream.Seek(2 * count, SeekOrigin.Current);
 
-	public long SkipObjectId(int count = 1)
-		=> BaseStream.Seek(1 * count, SeekOrigin.Current);
+	public void SkipObjectId(int count = 1)
+		=> _ = BaseStream.Seek(1 * count, SeekOrigin.Current);
 
-	public long SkipImageId(int count = 1)
-		=> BaseStream.Seek(4 * count, SeekOrigin.Current);
+	public void SkipImageId(int count = 1)
+		=> _ = BaseStream.Seek(4 * count, SeekOrigin.Current);
 
-	public long SkipPointer(int count = 1)
-		=> BaseStream.Seek(4 * count, SeekOrigin.Current);
+	public void SkipPointer(int count = 1)
+		=> _ = BaseStream.Seek(4 * count, SeekOrigin.Current);
 
 	public byte PeekByte(int ahead = 0)
 	{
@@ -77,17 +79,10 @@ public class LocoBinaryReader : BinaryReader
 		List<ObjectModelHeader> result = [];
 		for (var i = 0; i < count; ++i)
 		{
-			if (PeekByte() != 0xFF)
+			var header = ReadS5Header();
+			if (header != null)
 			{
-				var header = ReadS5Header();
-				if (header != null)
-				{
-					result.Add(header);
-				}
-			}
-			else
-			{
-				_ = SkipBytes(S5Header.StructLength);
+				result.Add(header);
 			}
 		}
 
@@ -98,7 +93,7 @@ public class LocoBinaryReader : BinaryReader
 	{
 		List<ObjectModelHeader> result = [];
 
-		while (PeekByte() != 0xFF)
+		while (PeekByte() != LocoConstants.Terminator)
 		{
 			var header = ReadS5Header();
 			if (header != null)
@@ -106,7 +101,7 @@ public class LocoBinaryReader : BinaryReader
 				result.Add(header);
 			}
 		}
-		_ = ReadByte(); // skip 0xFF
+		SkipTerminator();
 		return result;
 	}
 
@@ -118,4 +113,53 @@ public class LocoBinaryReader : BinaryReader
 			? new ObjectModelHeader(header.Name, header.Checksum, header.ObjectType.Convert(), header.ObjectSource.Convert())
 			: default;
 	}
+
+	public List<uint8_t> ReadBuildingHeights(int count)
+		=> [.. ReadBytes(count)];
+
+	public BuildingPartAnimation ReadBuildingPartAnimation()
+		=> new(ReadByte(), ReadByte());
+
+	public List<BuildingPartAnimation> ReadBuildingAnimations(int count)
+	{
+		List<BuildingPartAnimation> result = [];
+
+		for (var i = 0; i < count; ++i)
+		{
+			result.Add(ReadBuildingPartAnimation());
+		}
+
+		return result;
+	}
+
+	public List<List<byte>> ReadBuildingVariations(int count)
+	{
+		var result = new List<List<byte>>();
+
+		for (var i = 0; i < count; ++i)
+		{
+			List<byte> tmp = [];
+			byte b;
+			while ((b = ReadByte()) != LocoConstants.Terminator)
+			{
+				tmp.Add(b);
+			}
+
+			result.Add(tmp);
+		}
+
+		return result;
+	}
+
+	public SoundEffectWaveFormat ReadSoundEffect()
+		=> new()
+		{
+			WaveFormatTag = ReadInt16(),
+			Channels = ReadInt16(),
+			SampleRate = ReadInt32(),
+			AverageBytesPerSecond = ReadInt32(),
+			BlockAlign = ReadInt16(),
+			BitsPerSample = ReadInt16(),
+			ExtraSize = ReadInt16()
+		};
 }

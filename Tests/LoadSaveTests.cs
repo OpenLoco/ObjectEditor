@@ -1,47 +1,47 @@
-using NUnit.Framework;
-using NUnit.Framework.Internal;
+using Dat.Converters;
 using Dat.FileParsing;
 using Dat.Loaders;
 using Dat.Types;
-using Logger = Common.Logging.Logger;
-using System.Diagnostics;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Track;
+using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Bridge;
+using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Cargo;
+using Definitions.ObjectModels.Objects.Cliff;
+using Definitions.ObjectModels.Objects.Climate;
+using Definitions.ObjectModels.Objects.Competitor;
+using Definitions.ObjectModels.Objects.Currency;
+using Definitions.ObjectModels.Objects.Dock;
+using Definitions.ObjectModels.Objects.HillShape;
 using Definitions.ObjectModels.Objects.Industry;
-using Definitions.ObjectModels.Objects.RoadExtra;
+using Definitions.ObjectModels.Objects.InterfaceSkin;
+using Definitions.ObjectModels.Objects.Land;
+using Definitions.ObjectModels.Objects.LevelCrossing;
+using Definitions.ObjectModels.Objects.Region;
 using Definitions.ObjectModels.Objects.Road;
-using Definitions.ObjectModels.Objects.Wall;
-using Definitions.ObjectModels.Objects.Water;
-using Definitions.ObjectModels.Objects.Vehicle;
+using Definitions.ObjectModels.Objects.RoadExtra;
+using Definitions.ObjectModels.Objects.RoadStation;
+using Definitions.ObjectModels.Objects.Scaffolding;
+using Definitions.ObjectModels.Objects.ScenarioText;
+using Definitions.ObjectModels.Objects.Snow;
+using Definitions.ObjectModels.Objects.Sound;
+using Definitions.ObjectModels.Objects.Steam;
+using Definitions.ObjectModels.Objects.Streetlight;
+using Definitions.ObjectModels.Objects.TownNames;
+using Definitions.ObjectModels.Objects.Track;
+using Definitions.ObjectModels.Objects.TrackExtra;
+using Definitions.ObjectModels.Objects.TrackSignal;
+using Definitions.ObjectModels.Objects.TrackStation;
 using Definitions.ObjectModels.Objects.Tree;
 using Definitions.ObjectModels.Objects.Tunnel;
-using Definitions.ObjectModels.Objects.TrackStation;
-using Definitions.ObjectModels.Objects.TrackSignal;
-using Definitions.ObjectModels.Objects.TrackExtra;
-using Definitions.ObjectModels.Objects.TownNames;
-using Definitions.ObjectModels.Objects.Streetlight;
-using Definitions.ObjectModels.Objects.Steam;
-using Definitions.ObjectModels.Objects.Sound;
-using Definitions.ObjectModels.Objects.Snow;
-using Definitions.ObjectModels.Objects.ScenarioText;
-using Definitions.ObjectModels.Objects.Scaffolding;
-using Definitions.ObjectModels.Objects.RoadStation;
-using Definitions.ObjectModels.Objects.Region;
-using Definitions.ObjectModels.Objects.LevelCrossing;
-using Definitions.ObjectModels.Objects.Land;
-using Definitions.ObjectModels.Objects.InterfaceSkin;
-using Definitions.ObjectModels.Objects.HillShape;
-using Definitions.ObjectModels.Objects.Currency;
-using Definitions.ObjectModels.Objects.Climate;
-using Definitions.ObjectModels.Objects.Cliff;
-using Definitions.ObjectModels.Objects.Cargo;
-using Definitions.ObjectModels.Objects.Building;
-using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Vehicle;
+using Definitions.ObjectModels.Objects.Wall;
+using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
-using Definitions.ObjectModels.Objects.Dock;
-using Definitions.ObjectModels.Objects.Competitor;
-using Dat.Converters;
+using NUnit.Framework;
+using NUnit.Framework.Internal;
+using System.Diagnostics;
+using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;
 
@@ -354,8 +354,8 @@ public class LoadSaveTests
 			Assert.That(struc.var_07, Is.Zero, nameof(struc.var_07));
 			//Assert.That(struc.UnkImage, Is.Zero, nameof(struc.UnkImage));
 			Assert.That(struc.Flags, Is.EqualTo(DockObjectFlags.None), nameof(struc.Flags));
-			Assert.That(struc.BuildingPartAnimations.Count, Is.EqualTo(2), nameof(struc.BuildingPartAnimations));
-			Assert.That(struc.BuildingVariationParts.Count, Is.EqualTo(1), nameof(struc.BuildingVariationParts));
+			Assert.That(struc.BuildingAnimations.Count, Is.EqualTo(2), nameof(struc.BuildingAnimations));
+			Assert.That(struc.BuildingVariations.Count, Is.EqualTo(1), nameof(struc.BuildingVariations));
 
 			//Assert.That(struc.var_14, Is.EqualTo(1), nameof(struc.var_14));
 			//Assert.That(struc.var_14, Is.EqualTo(1), nameof(struc.var_18));
@@ -721,19 +721,69 @@ public class LoadSaveTests
 		{
 			Assert.That(struc.BuildCostFactor, Is.EqualTo(22), nameof(struc.BuildCostFactor));
 			Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
-			Assert.That(struc.Flags, Is.EqualTo(RoadObjectFlags.IsOneWay | RoadObjectFlags.unk_02 | RoadObjectFlags.unk_03 | RoadObjectFlags.unk_04 | RoadObjectFlags.IsRoad | RoadObjectFlags.unk_07), nameof(struc.Flags));
-			Assert.That(struc.MaxSpeed, Is.EqualTo(400), nameof(struc.MaxSpeed));
+			Assert.That(struc.MaxCurveSpeed, Is.EqualTo(400), nameof(struc.MaxCurveSpeed));
 			Assert.That(struc.PaintStyle, Is.Zero, nameof(struc.PaintStyle));
-			Assert.That(struc.RoadPieces, Is.EqualTo(RoadTraitFlags.SmallCurve | RoadTraitFlags.VerySmallCurve | RoadTraitFlags.Slope | RoadTraitFlags.SteepSlope | RoadTraitFlags.unk_04 | RoadTraitFlags.unk_06), nameof(struc.RoadPieces));
 			Assert.That(struc.SellCostFactor, Is.EqualTo(-20), nameof(struc.SellCostFactor));
 			Assert.That(struc.TargetTownSize, Is.EqualTo(TownSize.Town), nameof(struc.TargetTownSize));
 			Assert.That(struc.TunnelCostFactor, Is.EqualTo(27), nameof(struc.TunnelCostFactor));
 
+			Assert.That(struc.Flags, Is.EqualTo(
+				RoadObjectFlags.IsOneWay
+				| RoadObjectFlags.unk_02
+				| RoadObjectFlags.unk_03
+				| RoadObjectFlags.unk_04
+				| RoadObjectFlags.IsRoad
+				| RoadObjectFlags.unk_07
+				| RoadObjectFlags.unk_08), nameof(struc.Flags));
+
+			Assert.That(struc.RoadPieces, Is.EqualTo(
+				RoadTraitFlags.SmallCurve
+				| RoadTraitFlags.VerySmallCurve
+				| RoadTraitFlags.Slope
+				| RoadTraitFlags.SteepSlope
+				| RoadTraitFlags.unk_04
+				| RoadTraitFlags.unk_06), nameof(struc.RoadPieces));
+
 			Assert.That(struc.Bridges.Count, Is.EqualTo(5), nameof(struc.Bridges));
-			Assert.That(struc.Compatible.Count, Is.EqualTo(1), nameof(struc.Compatible));
-			Assert.That(struc.Mods.Count, Is.Zero, nameof(struc.Mods));
-			Assert.That(struc.Stations, Is.Zero, nameof(struc.Stations));
-			Assert.That(struc.Tunnel, Is.Null, nameof(struc.Tunnel));
+			Assert.That(struc.Bridges[0].Name, Is.EqualTo("BRDGBRCK"), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[0].Checksum, Is.EqualTo(0), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[0].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[1].Name, Is.EqualTo("BRDGSTAR"), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[1].Checksum, Is.EqualTo(0), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[1].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[1].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[2].Name, Is.EqualTo("BRDGGIRD"), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[2].Checksum, Is.EqualTo(0), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[2].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[2].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[3].Name, Is.EqualTo("BRDGSUSP"), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[3].Checksum, Is.EqualTo(0), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[3].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[3].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[4].Name, Is.EqualTo("BRDGWOOD"), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[4].Checksum, Is.EqualTo(0), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[4].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
+			Assert.That(struc.Bridges[4].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
+
+			Assert.That(struc.CompatibleTracksAndRoads.Count, Is.EqualTo(1), nameof(struc.CompatibleTracksAndRoads));
+			Assert.That(struc.CompatibleTracksAndRoads[0].Name, Is.EqualTo("ROADTRAM"), nameof(struc.CompatibleTracksAndRoads));
+			Assert.That(struc.CompatibleTracksAndRoads[0].Checksum, Is.EqualTo(0), nameof(struc.CompatibleTracksAndRoads));
+			Assert.That(struc.CompatibleTracksAndRoads[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CompatibleTracksAndRoads));
+			Assert.That(struc.CompatibleTracksAndRoads[0].ObjectType, Is.EqualTo(ObjectType.Road), nameof(struc.CompatibleTracksAndRoads));
+
+			Assert.That(struc.RoadMods.Count, Is.Zero, nameof(struc.RoadMods));
+
+			Assert.That(struc.Stations.Count, Is.EqualTo(1), nameof(struc.Stations));
+			Assert.That(struc.Stations[0].Name, Is.EqualTo("BUSSTOP"), nameof(struc.Stations));
+			Assert.That(struc.Stations[0].Checksum, Is.EqualTo(0), nameof(struc.Stations));
+			Assert.That(struc.Stations[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Stations));
+			Assert.That(struc.Stations[0].ObjectType, Is.EqualTo(ObjectType.RoadStation), nameof(struc.Stations));
+
+			Assert.That(struc.Tunnel.Name, Is.EqualTo("TUNNEL2"), nameof(struc.Tunnel));
+			Assert.That(struc.Tunnel.Checksum, Is.EqualTo(0), nameof(struc.Tunnel.Checksum));
+			Assert.That(struc.Tunnel.ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Tunnel.ObjectSource));
+			Assert.That(struc.Tunnel.ObjectType, Is.EqualTo(ObjectType.Tunnel), nameof(struc.Tunnel.ObjectType));
 
 			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(73));
 		});
@@ -819,8 +869,8 @@ public class LoadSaveTests
 			Assert.That(struc.SoundObjectData.var_00, Is.EqualTo(1), nameof(struc.SoundObjectData.var_00));
 
 			Assert.That(struc.SoundObjectData.PcmHeader.AverageBytesPerSecond, Is.EqualTo(44100), nameof(struc.SoundObjectData.PcmHeader.AverageBytesPerSecond));
-			Assert.That(struc.SoundObjectData.PcmHeader.BitsPerSample, Is.EqualTo(4096), nameof(struc.SoundObjectData.PcmHeader.BitsPerSample));
-			Assert.That(struc.SoundObjectData.PcmHeader.BlockAlign, Is.EqualTo(512), nameof(struc.SoundObjectData.PcmHeader.BlockAlign));
+			Assert.That(struc.SoundObjectData.PcmHeader.BitsPerSample, Is.EqualTo(16), nameof(struc.SoundObjectData.PcmHeader.BitsPerSample));
+			Assert.That(struc.SoundObjectData.PcmHeader.BlockAlign, Is.EqualTo(2), nameof(struc.SoundObjectData.PcmHeader.BlockAlign));
 			Assert.That(struc.SoundObjectData.PcmHeader.ExtraSize, Is.Zero, nameof(struc.SoundObjectData.PcmHeader.ExtraSize));
 			Assert.That(struc.SoundObjectData.PcmHeader.Channels, Is.EqualTo(1), nameof(struc.SoundObjectData.PcmHeader.Channels));
 			Assert.That(struc.SoundObjectData.PcmHeader.SampleRate, Is.EqualTo(22050), nameof(struc.SoundObjectData.PcmHeader.SampleRate));
@@ -939,13 +989,13 @@ public class LoadSaveTests
 			//Assert.That(struc._CompatibleRoads, Is.Zero, nameof(struc._CompatibleRoads));
 			//Assert.That(struc._CompatibleTracks, Is.Zero, nameof(struc._CompatibleTracks));
 			Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
-			Assert.That(struc.CurveSpeed, Is.EqualTo(400), nameof(struc.CurveSpeed));
+			Assert.That(struc.MaxCurveSpeed, Is.EqualTo(400), nameof(struc.MaxCurveSpeed));
 			Assert.That(struc.DisplayOffset, Is.EqualTo(3), nameof(struc.DisplayOffset));
 			Assert.That(struc.Flags, Is.EqualTo(TrackObjectFlags.unk_00), nameof(struc.Flags));
 			// Mods
 			Assert.That(struc.Bridges.Count, Is.EqualTo(5), nameof(struc.Bridges));
 			Assert.That(struc.CompatibleTracksAndRoads.Count, Is.EqualTo(7), nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.Mods.Count, Is.EqualTo(2), nameof(struc.Mods));
+			Assert.That(struc.TrackMods.Count, Is.EqualTo(2), nameof(struc.TrackMods));
 			Assert.That(struc.Signals.Count, Is.EqualTo(10), nameof(struc.Signals));
 			Assert.That(struc.Stations.Count, Is.EqualTo(5), nameof(struc.Stations));
 			Assert.That(struc.SellCostFactor, Is.EqualTo(-10), nameof(struc.SellCostFactor));

@@ -37,6 +37,7 @@ public class BuildingObject : ILocoStruct
 	public List<uint8_t> BuildingHeights { get; set; } = [];
 	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
 	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+
 	public List<uint8_t> ProducedQuantity { get; set; } = [];
 	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];
 	public List<ObjectModelHeader> RequiredCargo { get; set; } = [];

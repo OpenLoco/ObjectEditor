@@ -28,10 +28,10 @@ public abstract class CurrencyObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
-			_ = br.SkipStringId(); // PrefixSymbol, not part of object definition
-			_ = br.SkipStringId(); // SuffixSymbol, not part of object definition
-			_ = br.SkipImageId(); // ObjectIcon, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // PrefixSymbol, not part of object definition
+			br.SkipStringId(); // SuffixSymbol, not part of object definition
+			br.SkipImageId(); // ObjectIcon, not part of object definition
 			model.Separator = br.ReadByte();
 			model.Factor = br.ReadByte();
 

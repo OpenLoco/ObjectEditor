@@ -154,11 +154,9 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 					? itnp
 					: new DefaultImageTableNameProvider();
 
-				//ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
-				//	? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-				//	: new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
-
-				ExtraContentViewModel = new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
+				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
+					? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
+					: new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
 			}
 			else
 			{
@@ -168,7 +166,7 @@ public class DatObjectEditorViewModel : BaseLocoFileViewModel
 
 			if (CurrentObject != null)
 			{
-				//ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatFileInfo.S5Header);
+				ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatFileInfo.S5Header.Convert());
 				ObjectHeaderViewModel = new ObjectHeaderViewModel(CurrentObject.DatFileInfo.ObjectHeader);
 			}
 

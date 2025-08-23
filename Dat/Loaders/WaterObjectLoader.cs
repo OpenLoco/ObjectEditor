@@ -27,12 +27,12 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.CostIndex = br.ReadByte();
 			model.var_03 = br.ReadByte();
 			model.CostFactor = br.ReadInt16();
-			_ = br.SkipImageId(); // ImageId, not part of object definition
-			_ = br.SkipImageId(); // MapPixelImage, not part of object definition
+			br.SkipImageId(); // ImageId, not part of object definition
+			br.SkipImageId(); // MapPixelImage, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

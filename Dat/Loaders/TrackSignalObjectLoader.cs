@@ -30,7 +30,7 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.Flags = ((DatTrackSignalObjectFlags)br.ReadUInt16()).Convert();
 			model.AnimationSpeed = br.ReadByte();
 			model.NumFrames = br.ReadByte();
@@ -38,10 +38,10 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
 			model.var_0B = br.ReadByte();
-			_ = br.SkipStringId(); // Description, not part of object definition
-			_ = br.SkipImageId(); // BaseImageOffset, not part of object definition
+			br.SkipStringId(); // Description, not part of object definition
+			br.SkipImageId(); // BaseImageOffset, not part of object definition
 			var compatibleTrackCount = br.ReadByte();
-			_ = br.SkipObjectId(Constants.ModsLength); // Mods, not part of object definition
+			br.SkipObjectId(Constants.ModsLength); // Mods, not part of object definition
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
 

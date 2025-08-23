@@ -28,13 +28,13 @@ public abstract class CargoObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.var_02 = br.ReadUInt16(); // var_02, not used in Locomotion
 			model.CargoTransferTime = br.ReadUInt16();
-			_ = br.SkipStringId(); // UnitsAndCargoName, not part of object definition
-			_ = br.SkipStringId(); // UnitNameSingular, not part of object definition
-			_ = br.SkipStringId(); // UnitNamePlural, not part of object definition
-			_ = br.SkipImageId(); // UnitInlineSprite offset, not part of object definition
+			br.SkipStringId(); // UnitsAndCargoName, not part of object definition
+			br.SkipStringId(); // UnitNameSingular, not part of object definition
+			br.SkipStringId(); // UnitNamePlural, not part of object definition
+			br.SkipImageId(); // UnitInlineSprite offset, not part of object definition
 			model.CargoCategory = (CargoCategory)br.ReadUInt16();
 			model.Flags = (CargoObjectFlags)br.ReadByte();
 			model.NumPlatformVariations = br.ReadByte();

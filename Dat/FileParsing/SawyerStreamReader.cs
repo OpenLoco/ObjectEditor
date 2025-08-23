@@ -6,6 +6,7 @@ using Dat.Types;
 using Dat.Types.Audio;
 using Dat.Types.SCV5;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
 using System.Text;
 
@@ -18,11 +19,11 @@ public static class SawyerStreamReader
 		List<S5Header> result = [];
 		for (var i = 0; i < count; ++i)
 		{
-			if (data[0] != 0xFF)
+			if (data[0] != LocoConstants.Terminator)
 			{
 				var header = S5Header.Read(data[..S5Header.StructLength]);
 				// vanilla objects will have sourcegameflag == 0 and checksum == 0. custom objects will have a checksum specified - may need custom handling
-				if (header.Checksum != 0 || header.Flags != 255)
+				if (header.Checksum != 0 || header.Flags != LocoConstants.Terminator)
 				{
 					result.Add(header);
 				}
@@ -237,13 +238,13 @@ public static class SawyerStreamReader
 				var languageDict = stringTable.AddNewString(locoString);
 
 				// read string
-				while (br.PeekByte() != 0xFF)
+				while (br.PeekByte() != LocoConstants.Terminator)
 				{
 					var lang = ((DatLanguageId)br.ReadByte()).Convert();
 					languageDict[lang] = CStringToString(br, Encoding.Latin1);
 				}
 
-				_ = br.ReadByte(); // read one because we skipped the 0xFF byte at the end
+				br.SkipTerminator();
 			}
 		}
 
@@ -268,7 +269,7 @@ public static class SawyerStreamReader
 			var languageDict = stringTable.AddNewString(locoString);
 
 			// read string
-			for (; ptr < data.Length && data[ptr] != 0xFF; ++ptr)
+			for (; ptr < data.Length && data[ptr] != LocoConstants.Terminator; ++ptr)
 			{
 				var lang = ((DatLanguageId)data[ptr++]).Convert();
 				languageDict[lang] = CStringToString(data[ptr..], Encoding.Latin1);
@@ -554,15 +555,15 @@ public static class SawyerStreamReader
 		return Decode(chunk.Encoding, chunkBytes);
 	}
 
-	public static List<(DatSoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(string filename)
+	public static List<(SoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(string filename)
 		=> LoadSoundEffectsFromCSS(File.ReadAllBytes(filename));
 
-	public static List<(DatSoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
+	public static List<(SoundEffectWaveFormat header, byte[] data)> LoadSoundEffectsFromCSS(byte[] data)
 	{
-		var result = new List<(DatSoundEffectWaveFormat, byte[])>();
+		var result = new List<(SoundEffectWaveFormat, byte[])>();
 
 		using (var ms = new MemoryStream(data))
-		using (var br = new BinaryReader(ms))
+		using (var br = new LocoBinaryReader(ms))
 		{
 			var numSounds = br.ReadUInt32();
 			var soundOffsets = new uint32_t[numSounds];
@@ -576,10 +577,9 @@ public static class SawyerStreamReader
 			{
 				br.BaseStream.Position = soundOffsets[i];
 				var pcmLen = br.ReadUInt32();
-				var header = ByteReader.ReadLocoStruct<DatSoundEffectWaveFormat>(br.ReadBytes(ObjectAttributes.StructSize<DatSoundEffectWaveFormat>()));
-
+				var sfx = br.ReadSoundEffect();
 				var pcmData = br.ReadBytes((int)pcmLen);
-				result.Add((header, pcmData));
+				result.Add((sfx, pcmData));
 			}
 		}
 
@@ -639,7 +639,7 @@ public static class SawyerStreamReader
 
 		for (var i = 0; i < data.Length; i++)
 		{
-			if (data[i] == 0xFF)
+			if (data[i] == LocoConstants.Terminator)
 			{
 				i++;
 				if (i >= data.Length)

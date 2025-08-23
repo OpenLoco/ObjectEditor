@@ -31,7 +31,7 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 		Flags = to.Flags;
 		TrackPieces = to.TrackPieces;
 		StationTrackPieces = to.StationTrackPieces;
-		CurveSpeed = to.CurveSpeed;
+		CurveSpeed = to.MaxCurveSpeed;
 		DisplayOffset = to.DisplayOffset;
 		BuildCostFactor = to.BuildCostFactor;
 		SellCostFactor = to.SellCostFactor;
@@ -54,7 +54,7 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 			Flags = Flags,
 			TrackPieces = TrackPieces,
 			StationTrackPieces = StationTrackPieces,
-			CurveSpeed = CurveSpeed,
+			MaxCurveSpeed = CurveSpeed,
 			DisplayOffset = DisplayOffset,
 			BuildCostFactor = BuildCostFactor,
 			SellCostFactor = SellCostFactor,

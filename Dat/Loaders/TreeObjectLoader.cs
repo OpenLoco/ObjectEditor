@@ -32,7 +32,7 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
 			model.Clearance = br.ReadByte();
 			model.Height = br.ReadByte();
 			model.var_04 = br.ReadByte();
@@ -40,8 +40,8 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 			model.NumRotations = br.ReadByte();
 			model.NumGrowthStages = br.ReadByte();
 			model.Flags = ((DatTreeObjectFlags)br.ReadUInt16()).Convert();
-			_ = br.SkipImageId(Constants.ImageCount); // Image sprites, not part of object definition
-			_ = br.SkipImageId(Constants.ImageCount); // Snow sprites, not part of object definition
+			br.SkipImageId(Constants.ImageCount); // Image sprites, not part of object definition
+			br.SkipImageId(Constants.ImageCount); // Snow sprites, not part of object definition
 			model.ShadowImageOffset = br.ReadUInt16();
 			model.var_3C = ((DatTreeFlagsUnk)br.ReadByte()).Convert();
 			model.SeasonState = br.ReadByte();

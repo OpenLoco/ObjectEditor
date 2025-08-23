@@ -1,9 +1,7 @@
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 
 namespace Definitions.ObjectModels;
 
-[TypeConverter(typeof(ExpandableObjectConverter))]
 public class StringTable
 {
 	public StringTable()
@@ -26,7 +24,6 @@ public class StringTable
 		return Table[str];
 	}
 
-	// todo: move to StringTable class
 	static Dictionary<LanguageId, string> GetNewLanguageDictionary()
 	{
 		var languageDict = new Dictionary<LanguageId, string>();

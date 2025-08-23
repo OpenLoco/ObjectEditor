@@ -5,6 +5,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using static Dat.Loaders.RoadObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -34,7 +35,29 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			model.RoadPieces = ((DatRoadTraitFlags)br.ReadUInt16()).Convert();
+			model.BuildCostFactor = br.ReadInt16();
+			model.SellCostFactor = br.ReadInt16();
+			model.TunnelCostFactor = br.ReadInt16();
+			model.CostIndex = br.ReadByte();
+			br.SkipObjectId(); // Tunnel offset, not part of object definition
+			model.MaxCurveSpeed = br.ReadInt16();
+			br.SkipImageId(); // Image offset, not part of object definition
+			model.Flags = ((DatRoadObjectFlags)br.ReadUInt16()).Convert();
+			var numBridges = br.ReadByte();
+			br.SkipObjectId(Constants.MaxBridges);
+			var numStations = br.ReadByte();
+			br.SkipObjectId(Constants.MaxStations);
+			model.PaintStyle = br.ReadByte();
+			var numMods = br.ReadByte();
+			br.SkipObjectId(Constants.MaxMods);
+			var numCompatible = br.ReadByte();
+			model.DisplayOffset = br.ReadByte();
+			br.SkipUInt16(); // _CompatibleRoads, not part of object definition
+			br.SkipUInt16(); // _CompatibleTracks, not part of object definition
+			model.TargetTownSize = ((DatTownSize)br.ReadByte()).Convert();
+			br.SkipByte(); // pad_2F, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -43,7 +66,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Road), null);
 
 			// variable
-			// N/A
+			LoadVariable(br, model, numBridges, numStations, numMods, numCompatible);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -52,13 +75,45 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 		}
 	}
 
+	private static void LoadVariable(LocoBinaryReader br, RoadObject model, byte numBridges, byte numStations, byte numRoadMods, byte numCompatibleTracksAndRoads)
+	{
+		model.CompatibleTracksAndRoads = br.ReadS5HeaderList(numCompatibleTracksAndRoads);
+		model.RoadMods = br.ReadS5HeaderList(numRoadMods);
+		model.Tunnel = br.ReadS5Header();
+		model.Bridges = br.ReadS5HeaderList(numBridges);
+		model.Stations = br.ReadS5HeaderList(numStations);
+	}
+
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (RoadObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write((uint16_t)model.RoadPieces.Convert());
+			bw.Write(model.BuildCostFactor);
+			bw.Write(model.SellCostFactor);
+			bw.Write(model.TunnelCostFactor);
+			bw.Write(model.CostIndex);
+			bw.WriteObjectId();
+			bw.Write(model.MaxCurveSpeed);
+			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.Write((uint16_t)model.Flags.Convert());
+			bw.Write((uint8_t)model.Bridges.Count);
+			bw.WriteObjectId(Constants.MaxBridges);
+			bw.Write((uint8_t)model.Stations.Count);
+			bw.WriteObjectId(Constants.MaxStations);
+			bw.Write(model.PaintStyle);
+			bw.Write((uint8_t)model.RoadMods.Count);
+			bw.WriteObjectId(Constants.MaxMods);
+			bw.Write((uint8_t)model.CompatibleTracksAndRoads.Count);
+			bw.Write(model.DisplayOffset);
+			bw.Write((uint16_t)0); // _CompatibleRoads, not part of object definition
+			bw.Write((uint16_t)0); // _CompatibleTracks, not part of object definition
+			bw.Write((uint8_t)model.TargetTownSize.Convert());
+			bw.Write((uint8_t)0); // pad_2F, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -67,165 +122,80 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			// N/A
+			bw.WriteS5HeaderList(model.CompatibleTracksAndRoads);
+			bw.WriteS5HeaderList(model.RoadMods);
+			bw.WriteS5Header(model.Tunnel);
+			bw.WriteS5HeaderList(model.Bridges);
+			bw.WriteS5HeaderList(model.Stations);
 
 			// image table
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
-}
 
-[Flags]
-internal enum DatRoadObjectFlags : uint16_t
-{
-	None = 0,
-	IsOneWay = 1 << 0,
-	unk_01 = 1 << 1,
-	unk_02 = 1 << 2,
-	unk_03 = 1 << 3, // Likely isTram
-	unk_04 = 1 << 4,
-	unk_05 = 1 << 5,
-	IsRoad = 1 << 6, // If not set this is tram track
-	unk_07 = 1 << 7,
-}
-
-internal enum DatTownSize : uint8_t
-{
-	Hamlet,
-	Village,
-	Town,
-	City,
-	Metropolis,
-}
-
-[Flags]
-internal enum DatRoadTraitFlags : uint16_t
-{
-	None = 0,
-	SmallCurve = 1 << 0,
-	VerySmallCurve = 1 << 1,
-	Slope = 1 << 2,
-	SteepSlope = 1 << 3,
-	unk_04 = 1 << 4, // intersection?
-	Turnaround = 1 << 5,
-	unk_06 = 1 << 6, // overtake?
-	unk_07 = 1 << 7,
-	unk_08 = 1 << 8, // streetlight?
-}
-
-[LocoStructSize(0x30)]
-[LocoStructType(DatObjectType.Road)]
-internal record DatRoadObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] DatRoadTraitFlags RoadPieces,
-	[property: LocoStructOffset(0x04)] int16_t BuildCostFactor,
-	[property: LocoStructOffset(0x06)] int16_t SellCostFactor,
-	[property: LocoStructOffset(0x08)] int16_t TunnelCostFactor,
-	[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
-	[property: LocoStructOffset(0x0B), Browsable(false)] object_id _Tunnel,
-	[property: LocoStructOffset(0x0C)] Speed16 MaxSpeed,
-	[property: LocoStructOffset(0x0E), Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x12)] DatRoadObjectFlags Flags,
-	[property: LocoStructOffset(0x14)] uint8_t NumBridges,
-	[property: LocoStructOffset(0x15), LocoArrayLength(RoadObjectLoader.Constants.MaxBridges), Browsable(false)] object_id[] _Bridges,
-	[property: LocoStructOffset(0x1C)] uint8_t NumStations,
-	[property: LocoStructOffset(0x1D), LocoArrayLength(RoadObjectLoader.Constants.MaxStations), Browsable(false)] object_id[] _Stations,
-	[property: LocoStructOffset(0x24)] uint8_t PaintStyle,
-	[property: LocoStructOffset(0x25)] uint8_t NumMods,
-	[property: LocoStructOffset(0x26), LocoArrayLength(RoadObjectLoader.Constants.MaxMods), Browsable(false)] object_id[] _Mods,
-	[property: LocoStructOffset(0x28)] uint8_t NumCompatible,
-	[property: LocoStructOffset(0x29)] uint8_t DisplayOffset,
-	[property: LocoStructOffset(0x2A), Browsable(false)] uint16_t _CompatibleRoads, // bitset
-	[property: LocoStructOffset(0x2C), Browsable(false)] uint16_t _CompatibleTracks, // bitset
-	[property: LocoStructOffset(0x2E)] DatTownSize TargetTownSize,
-	[property: LocoStructOffset(0x2F), Browsable(false)] uint8_t pad_2F
-	) : ILocoStruct, ILocoStructVariableData
-{
-	public List<S5Header> Compatible { get; set; } = [];
-	public List<S5Header> Mods { get; set; } = [];
-	public S5Header Tunnel { get; set; }
-	public List<S5Header> Bridges { get; set; } = [];
-	public List<S5Header> Stations { get; set; } = [];
-
-	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
+	[Flags]
+	internal enum DatRoadObjectFlags : uint16_t
 	{
-		// compatible roads/tracks
-		Compatible = SawyerStreamReader.ReadS5HeaderList(remainingData, NumCompatible);
-		remainingData = remainingData[(S5Header.StructLength * NumCompatible)..];
-
-		// mods
-		Mods = SawyerStreamReader.ReadS5HeaderList(remainingData, NumMods);
-		remainingData = remainingData[(S5Header.StructLength * NumMods)..];
-
-		// tunnel
-		Tunnel = SawyerStreamReader.ReadS5HeaderList(remainingData, RoadObjectLoader.Constants.MaxTunnels)[0];
-		remainingData = remainingData[(S5Header.StructLength * RoadObjectLoader.Constants.MaxTunnels)..];
-
-		// bridges
-		Bridges = SawyerStreamReader.ReadS5HeaderList(remainingData, NumBridges);
-		remainingData = remainingData[(S5Header.StructLength * NumBridges)..];
-
-		// stations
-		Stations = SawyerStreamReader.ReadS5HeaderList(remainingData, NumStations);
-		remainingData = remainingData[(S5Header.StructLength * NumStations)..];
-
-		// set _CompatibleRoads?
-		// set _CompatibleTracks?
-
-		return remainingData;
+		None = 0,
+		IsOneWay = 1 << 0,
+		unk_01 = 1 << 1,
+		unk_02 = 1 << 2,
+		unk_03 = 1 << 3, // Likely isTram
+		unk_04 = 1 << 4,
+		unk_05 = 1 << 5,
+		IsRoad = 1 << 6, // If not set this is tram track
+		unk_07 = 1 << 7,
+		unk_08 = 1 << 8,
 	}
 
-	public ReadOnlySpan<byte> SaveVariable()
+	internal enum DatTownSize : uint8_t
 	{
-		//var data = new byte[S5Header.StructLength * (NumCompatible + NumMods + 1 + NumBridges + NumStations)];
-
-		var headers = Compatible
-			.Concat(Mods)
-			.Concat(Enumerable.Repeat(Tunnel, 1))
-			.Concat(Bridges)
-			.Concat(Stations);
-
-		return headers.SelectMany(h => h.Write().ToArray()).ToArray();
+		Hamlet,
+		Village,
+		Town,
+		City,
+		Metropolis,
 	}
 
-	public bool Validate()
+	[Flags]
+	internal enum DatRoadTraitFlags : uint16_t
 	{
-		// check missing in vanilla
-		if (CostIndex >= 32)
-		{
-			return false;
-		}
-
-		if (-SellCostFactor > BuildCostFactor)
-		{
-			return false;
-		}
-
-		if (BuildCostFactor <= 0)
-		{
-			return false;
-		}
-
-		if (TunnelCostFactor <= 0)
-		{
-			return false;
-		}
-
-		if (NumBridges > 7)
-		{
-			return false;
-		}
-
-		if (NumMods > 2)
-		{
-			return false;
-		}
-
-		if (Flags.HasFlag(DatRoadObjectFlags.unk_03))
-		{
-			return NumMods == 0;
-		}
-
-		return true;
+		None = 0,
+		SmallCurve = 1 << 0,
+		VerySmallCurve = 1 << 1,
+		Slope = 1 << 2,
+		SteepSlope = 1 << 3,
+		unk_04 = 1 << 4, // intersection?
+		Turnaround = 1 << 5,
+		unk_06 = 1 << 6, // overtake?
+		unk_07 = 1 << 7,
+		unk_08 = 1 << 8, // streetlight?
 	}
+}
+
+static class RoadObjectFlagsConverter
+{
+	public static DatRoadObjectFlags Convert(this RoadObjectFlags roadObjectFlags)
+		=> (DatRoadObjectFlags)roadObjectFlags;
+
+	public static RoadObjectFlags Convert(this DatRoadObjectFlags datRoadObjectFlags)
+		=> (RoadObjectFlags)datRoadObjectFlags;
+}
+
+static class RoadTraitFlagsConverter
+{
+	public static DatRoadTraitFlags Convert(this RoadTraitFlags roadTraitFlags)
+		=> (DatRoadTraitFlags)roadTraitFlags;
+
+	public static RoadTraitFlags Convert(this DatRoadTraitFlags datRoadTraitFlags)
+		=> (RoadTraitFlags)datRoadTraitFlags;
+}
+
+static class TownSizeConverter
+{
+	public static DatTownSize Convert(this TownSize townSize)
+		=> (DatTownSize)townSize;
+
+	public static TownSize Convert(this DatTownSize datTownSize)
+		=> (TownSize)datTownSize;
 }

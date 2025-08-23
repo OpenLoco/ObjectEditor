@@ -1,5 +1,8 @@
+using Common;
 using Dat.Converters;
 using Dat.Types;
+using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
 using System.Text;
 
@@ -10,7 +13,10 @@ public class LocoBinaryWriter : BinaryWriter
 	public LocoBinaryWriter(Stream output) : base(output, Encoding.UTF8, leaveOpen: true)
 	{ }
 
-	public void WriteBytes(int count = 1)
+	public void WriteTerminator()
+		=> base.Write(LocoConstants.Terminator);
+
+	public void WriteBytes(int count)
 	{
 		for (var i = 0; i < count; i++)
 		{
@@ -50,24 +56,51 @@ public class LocoBinaryWriter : BinaryWriter
 		}
 	}
 
-	public void WriteS5HeaderList(IEnumerable<S5Header> headers)
-	{
-		foreach (var header in headers)
-		{
-			Write(header.Write());
-		}
-	}
+	public void WriteS5Header(S5Header header)
+		=> Write(header.Write());
 
-	public void WriteS5Header(ObjectModelHeader header)
-	{
-		Write(header.Convert().Write());
-	}
+	public void WriteS5Header(ObjectModelHeader? header)
+		=> WriteS5Header(header?.Convert() ?? S5Header.NullHeader);
 
-	public void WriteS5HeaderList(IEnumerable<ObjectModelHeader> headers)
+	public void WriteS5HeaderList(IEnumerable<ObjectModelHeader> headers, int minimum = 0)
 	{
-		foreach (var header in headers)
+		foreach (var header in headers
+			.Select(x => x.Convert())
+			.Fill(minimum, S5Header.NullHeader))
 		{
 			WriteS5Header(header);
 		}
+	}
+
+	public void WriteBuildingHeights(List<uint8_t> heights)
+		=> Write([.. heights]);
+
+	public void WriteBuildingAnimations(List<BuildingPartAnimation> animations)
+	{
+		foreach (var x in animations)
+		{
+			Write(x.NumFrames);
+			Write(x.AnimationSpeed);
+		}
+	}
+
+	public void WriteBuildingVariations(List<List<uint8_t>> variations)
+	{
+		foreach (var x in variations)
+		{
+			Write([.. x]);
+			WriteTerminator();
+		}
+	}
+
+	public void WriteSoundEffect(SoundEffectWaveFormat sfx)
+	{
+		Write(sfx.WaveFormatTag);
+		Write(sfx.Channels);
+		Write(sfx.SampleRate);
+		Write(sfx.AverageBytesPerSecond);
+		Write(sfx.BlockAlign);
+		Write(sfx.BitsPerSample);
+		Write(sfx.ExtraSize);
 	}
 }

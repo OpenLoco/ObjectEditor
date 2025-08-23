@@ -71,5 +71,8 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
 			var_B6 = [.. var_B6],
+			BuildingHeights = [.. BuildingHeights],
+			BuildingAnimations = [.. BuildingAnimations],
+			//BuildingVariations = [.. BuildingVariations.ToList()],
 		};
 }

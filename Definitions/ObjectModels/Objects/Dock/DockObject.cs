@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Dock;
@@ -12,9 +13,10 @@ public class DockObject : ILocoStruct
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 	public Pos2 BoatPosition { get; set; }
-	public List<uint16_t> BuildingPartAnimations { get; set; }
-	public List<uint8_t> BuildingVariationParts { get; set; }
-	public List<uint8_t> BuildingPartHeights { get; set; }
+
+	public List<uint8_t> BuildingHeights { get; set; } = [];
+	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
+	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
 
 	public bool Validate()
 	{

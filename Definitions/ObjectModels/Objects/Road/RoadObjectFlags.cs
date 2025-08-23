@@ -12,4 +12,5 @@ public enum RoadObjectFlags : uint16_t
 	unk_05 = 1 << 5,
 	IsRoad = 1 << 6, // If not set this is tram track
 	unk_07 = 1 << 7,
+	unk_08 = 1 << 8,
 }

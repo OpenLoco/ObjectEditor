@@ -32,7 +32,7 @@ public class TblObjectTrack : DbSubObject, IConvertibleToTable<TblObjectTrack, T
 			SellCostFactor = obj.SellCostFactor,
 			TunnelCostFactor = obj.TunnelCostFactor,
 			CostIndex = obj.CostIndex,
-			CurveSpeed = obj.CurveSpeed,
+			CurveSpeed = obj.MaxCurveSpeed,
 			Flags = obj.Flags,
 			DisplayOffset = obj.DisplayOffset,
 			//Tunnel = obj.Tunnel,

@@ -87,9 +87,11 @@ public class AirportObject : ILocoStruct
 	public int8_t MaxY { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
+
 	public List<uint8_t> BuildingHeights { get; set; } = [];
 	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
 	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+
 	public List<AirportBuilding> BuildingPositions { get; set; } = [];
 	public List<MovementNode> MovementNodes { get; set; } = [];
 	public List<MovementEdge> MovementEdges { get; set; } = [];

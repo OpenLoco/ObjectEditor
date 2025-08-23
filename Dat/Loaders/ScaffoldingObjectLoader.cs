@@ -31,8 +31,8 @@ public abstract class ScaffoldingObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
-			_ = br.SkipImageId(); // Image, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipImageId(); // Image, not part of object definition
 
 			for (var i = 0; i < Constants.SegmentHeightCount; i++)
 			{

@@ -32,12 +32,12 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // First name offset, not part of object definition
-			_ = br.SkipStringId(); // Last name offset, not part of object definition
+			br.SkipStringId(); // First name offset, not part of object definition
+			br.SkipStringId(); // Last name offset, not part of object definition
 			model.AvailableNamePrefixes = (NamePrefixFlags)br.ReadUInt32();
 			model.AvailablePlaystyles = (PlaystyleFlags)br.ReadUInt32();
 			model.Emotions = (EmotionFlags)br.ReadUInt32();
-			_ = br.SkipImageId(Constants.ImagesLength); // Images, not part of object definition
+			br.SkipImageId(Constants.ImagesLength); // Images, not part of object definition
 			model.Intelligence = br.ReadByte();
 			model.Aggressiveness = br.ReadByte();
 			model.Competitiveness = br.ReadByte();

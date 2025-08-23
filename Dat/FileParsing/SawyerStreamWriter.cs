@@ -5,6 +5,7 @@ using Dat.Loaders;
 using Dat.Types;
 using Dat.Types.Audio;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
 using System.Text;
 
@@ -12,7 +13,7 @@ namespace Dat.FileParsing;
 
 public static class SawyerStreamWriter
 {
-	public static DatMusicWaveFormat LocoWaveFormatToRiff(DatSoundEffectWaveFormat hdr, int pcmDataLength)
+	public static DatMusicWaveFormat LocoWaveFormatToRiff(SoundEffectWaveFormat hdr, int pcmDataLength)
 		=> new(
 			0x46464952, // "RIFF"
 			(uint)(pcmDataLength + 36), // file size
@@ -197,7 +198,7 @@ public static class SawyerStreamWriter
 		}
 
 		// Need to emit at least one byte, otherwise there is nothing to repeat
-		buffer.WriteByte(0xFF);
+		buffer.WriteByte(LocoConstants.Terminator);
 		buffer.WriteByte(data[0]);
 
 		// Iterate through remainder of the source buffer
@@ -242,7 +243,7 @@ public static class SawyerStreamWriter
 
 			if (bestRepeatCount == 0)
 			{
-				buffer.WriteByte(0xFF);
+				buffer.WriteByte(LocoConstants.Terminator);
 				buffer.WriteByte(data[i]);
 				i++;
 			}

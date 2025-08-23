@@ -6,7 +6,10 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
+using Microsoft.VisualBasic;
 using System.ComponentModel;
+using System.Diagnostics;
+using static Dat.Loaders.IndustryObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -42,7 +45,54 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipStringId(); // var_02, not part of object definition
+			br.SkipStringId(); // NameClosingDown, not part of object definition
+			br.SkipStringId(); // NameUpProduction, not part of object definition
+			br.SkipStringId(); // NameDownProduction, not part of object definition
+			br.SkipStringId(); // NameSingular, not part of object definition
+			br.SkipStringId(); // NamePlural, not part of object definition
+			br.SkipImageId(); // BaseShadowImageId, not part of object definition
+			br.SkipImageId(); // BaseBuildingImageId, not part of object
+			br.SkipImageId(); // BaseFarmImageIds, not part of object definition
+			model.FarmImagesPerGrowthStage = br.ReadUInt32();
+			var numBuildingParts = br.ReadByte();
+			var numBuildingVariations = br.ReadByte();
+			br.SkipPointer(); // BuildingHeights, not part of object definition
+			br.SkipPointer(); // BuildingAnimations, not part of object definition
+			br.SkipPointer(Constants.AnimationSequencesCount); // AnimationSequences, not part of object definition
+			br.SkipPointer(); // var_38, not part of object definition
+			br.SkipPointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
+			model.MinNumBuildings = br.ReadByte();
+			model.MaxNumBuildings = br.ReadByte();
+			br.SkipPointer(); // Buildings, not part of object definition
+			model.Colours = br.ReadUInt32();  // bitset
+			model.BuildingSizeFlags = br.ReadUInt32(); // flags indicating the building types size
+			model.DesignedYear = br.ReadUInt16();
+			model.ObsoleteYear = br.ReadUInt16();
+			model.TotalOfTypeInScenario = br.ReadByte(); // Total industries of this type that
+			model.CostIndex = br.ReadByte();
+			model.BuildCostFactor = br.ReadInt16();
+			model.SellCostFactor = br.ReadInt16();
+			model.ScaffoldingSegmentType = br.ReadByte();
+			model.ScaffoldingColour = (Colour)br.ReadByte();
+			for (var i = 0; i < Constants.InitialProductionRateCount; ++i)
+			{
+				model.InitialProductionRate.Add(new IndustryObjectProductionRateRange(br.ReadUInt16(), br.ReadUInt16()));
+			}
+			br.SkipByte(Constants.MaxProducedCargoType); // ProducedCargo, not part of object definition
+			br.SkipByte(Constants.MaxRequiredCargoType); // RequiredCargo, not part of object definition
+			model.MapColour = (Colour)br.ReadByte();
+			model.Flags = ((DatIndustryObjectFlags)br.ReadUInt32()).Convert();
+			model.var_E8 = br.ReadByte(); // Unused, but must be 0 or 1
+			model.FarmTileNumImageAngles = br.ReadByte(); // How many viewing angles the farm tiles have
+			model.FarmGrowthStageWithNoProduction = br.ReadByte(); // At this stage of growth (except 0), a field tile produces nothing
+			model.FarmIdealSize = br.ReadByte(); // Max production is reached at farmIdealSize * 25 tiles
+			model.FarmNumStagesOfGrowth = br.ReadByte(); // How many growth stages there are sprites for
+			br.SkipPointer(); // WallTypes, not part of object definition
+			br.SkipObjectId(); // _BuildingWall, not part of object definition
+			br.SkipObjectId(); // _BuildingWallEntrance, not part of object definition
+			model.MonthlyClosureChance = br.ReadByte();
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -51,7 +101,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Industry), null);
 
 			// variable
-			// N/A
+			LoadVariable(br, model, numBuildingParts, numBuildingVariations);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -60,13 +110,98 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		}
 	}
 
+	private static void LoadVariable(LocoBinaryReader br, IndustryObject model, byte numBuildingParts, byte numBuildingVariations)
+	{
+		model.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
+		model.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
+
+		// animation sequences
+		for (var i = 0; i < Constants.AnimationSequencesCount; ++i)
+		{
+			var size = br.PeekByte();
+			byte[] arr = [];
+			if (size != 0)
+			{
+				br.SkipByte(); // skip size byte
+				arr = br.ReadBytes(size - 1);
+			}
+
+			model.AnimationSequences.Add([.. arr]);
+			br.SkipTerminator();
+		}
+
+		// unk
+		while (br.PeekByte() != LocoConstants.Terminator)
+		{
+			model.var_38.Add(new IndustryObjectUnk38(br.ReadByte(), br.ReadByte()));
+		}
+		br.SkipTerminator();
+
+		model.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
+		model.UnkBuildingData = [.. br.ReadBytes(model.MaxNumBuildings)];
+		model.ProducedCargo = br.ReadS5HeaderList(Constants.MaxProducedCargoType);
+		model.RequiredCargo = br.ReadS5HeaderList(Constants.MaxRequiredCargoType);
+		model.WallTypes = br.ReadS5HeaderList(Constants.MaxWallTypeCount);
+		model.BuildingWall = br.ReadS5Header();
+		model.BuildingWallEntrance = br.ReadS5Header();
+	}
+
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (IndustryObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteStringId(); // var_02, not part of object definition
+			bw.WriteStringId(); // NameClosingDown, not part of object definition
+			bw.WriteStringId(); // NameUpProduction, not part of object definition
+			bw.WriteStringId(); // NameDownProduction, not part of object definition
+			bw.WriteStringId(); // NameSingular, not part of object definition
+			bw.WriteStringId(); // NamePlural, not part of object definition
+			bw.WriteImageId(); // BaseShadowImageId, not part of object definition
+			bw.WriteImageId(); // BaseBuildingImageId, not part of object definition
+			bw.WriteImageId(); // BaseFarmImageIds, not part of object definition
+			bw.Write(model.FarmImagesPerGrowthStage);
+			bw.Write((uint8_t)model.BuildingHeights.Count);
+			bw.Write((uint8_t)model.BuildingVariations.Count);
+			bw.WritePointer(); // BuildingHeights, not part of object definition
+			bw.WritePointer(); // BuildingAnimations, not part of object definition
+			bw.WritePointer(Constants.AnimationSequencesCount); // AnimationSequences, not part of object definition
+			bw.WritePointer(); // var_38, not part of object definition
+			bw.WritePointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
+			bw.Write(model.MinNumBuildings);
+			bw.Write(model.MaxNumBuildings);
+			bw.WritePointer(); // Buildings, not part of object definition
+			bw.Write(model.Colours);  // bitset
+			bw.Write(model.BuildingSizeFlags); // flags indicating the building types size
+			bw.Write(model.DesignedYear);
+			bw.Write(model.ObsoleteYear);
+			bw.Write(model.TotalOfTypeInScenario); // Total industries of this type that can be created in a scenario
+			bw.Write(model.CostIndex);
+			bw.Write(model.BuildCostFactor);
+			bw.Write(model.SellCostFactor);
+			bw.Write(model.ScaffoldingSegmentType);
+			bw.Write((uint8_t)model.ScaffoldingColour);
+			foreach (var rate in model.InitialProductionRate)
+			{
+				bw.Write(rate.Min);
+				bw.Write(rate.Max);
+			}
+			bw.WriteBytes(Constants.MaxProducedCargoType);
+			bw.WriteBytes(Constants.MaxRequiredCargoType);
+			bw.Write((uint8_t)model.MapColour);
+			bw.Write((uint32_t)model.Flags.Convert());
+			bw.Write(model.var_E8); // Unused, but must be 0 or 1
+			bw.Write(model.FarmTileNumImageAngles); // How many viewing angles the farm tiles have
+			bw.Write(model.FarmGrowthStageWithNoProduction); // At this stage of growth (except 0), a field tile produces nothing
+			bw.Write(model.FarmIdealSize); // Max production is reached at farmIdealSize * 25 tiles
+			bw.Write(model.FarmNumStagesOfGrowth); // How many growth stages there are sprites for
+			bw.WritePointer(); // WallTypes, not part of object definition
+			bw.WriteObjectId(); // _BuildingWall, not part of object definition
+			bw.WriteObjectId(); // _BuildingWallEntrance, not part of object definition
+			bw.Write(model.MonthlyClosureChance);
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -75,47 +210,85 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			// N/A
+			SaveVariable(model, bw);
 
 			// image table
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
+
+	private static void SaveVariable(IndustryObject model, LocoBinaryWriter bw)
+	{
+		bw.WriteBuildingHeights(model.BuildingHeights);
+		bw.WriteBuildingAnimations(model.BuildingAnimations);
+
+		// animation sequences
+		foreach (var x in model.AnimationSequences)
+		{
+			bw.Write((uint8_t)x.Count);
+			bw.Write(x.ToArray());
+		}
+
+		// unk animation related
+		foreach (var x in model.var_38)
+		{
+			bw.Write(x.var_00);
+			bw.Write(x.var_01);
+		}
+		bw.WriteTerminator();
+
+		bw.WriteBuildingVariations(model.BuildingVariations);
+		bw.Write([.. model.UnkBuildingData]);
+		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
+		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);
+		bw.WriteS5HeaderList(model.WallTypes, Constants.MaxWallTypeCount);
+		bw.WriteS5Header(model.BuildingWall);
+		bw.WriteS5Header(model.BuildingWallEntrance);
+	}
+
+	[Flags]
+	internal enum DatIndustryObjectFlags : uint32_t
+	{
+		None = 0,
+		BuiltInClusters = 1 << 0,
+		BuiltOnHighGround = 1 << 1,
+		BuiltOnLowGround = 1 << 2,
+		BuiltOnSnow = 1 << 3,        // above summer snow line
+		BuiltBelowSnowLine = 1 << 4, // below winter snow line
+		BuiltOnFlatGround = 1 << 5,
+		BuiltNearWater = 1 << 6,
+		BuiltAwayFromWater = 1 << 7,
+		BuiltOnWater = 1 << 8,
+		BuiltNearTown = 1 << 9,
+		BuiltAwayFromTown = 1 << 10,
+		BuiltNearTrees = 1 << 11,
+		BuiltRequiresOpenSpace = 1 << 12,
+		Oilfield = 1 << 13,
+		Mines = 1 << 14,
+		NotRotatable = 1 << 15,
+		CanBeFoundedByPlayer = 1 << 16,
+		RequiresAllCargo = 1 << 17,
+		CanIncreaseProduction = 1 << 18,
+		CanDecreaseProduction = 1 << 19,
+		RequiresElectricityPylons = 1 << 20,
+		HasShadows = 1 << 21,
+		unk_22 = 1 << 22,
+		unk_23 = 1 << 23,
+		BuiltInDesert = 1 << 24,
+		BuiltNearDesert = 1 << 25,
+		unk_26 = 1 << 26,
+		unk_27 = 1 << 27,
+		unk_28 = 1 << 28,
+	}
 }
 
-[Flags]
-internal enum DatIndustryObjectFlags : uint32_t
+internal static class IndustryObjectFlagsConverter
 {
-	None = 0,
-	BuiltInClusters = 1 << 0,
-	BuiltOnHighGround = 1 << 1,
-	BuiltOnLowGround = 1 << 2,
-	BuiltOnSnow = 1 << 3,        // above summer snow line
-	BuiltBelowSnowLine = 1 << 4, // below winter snow line
-	BuiltOnFlatGround = 1 << 5,
-	BuiltNearWater = 1 << 6,
-	BuiltAwayFromWater = 1 << 7,
-	BuiltOnWater = 1 << 8,
-	BuiltNearTown = 1 << 9,
-	BuiltAwayFromTown = 1 << 10,
-	BuiltNearTrees = 1 << 11,
-	BuiltRequiresOpenSpace = 1 << 12,
-	Oilfield = 1 << 13,
-	Mines = 1 << 14,
-	NotRotatable = 1 << 15,
-	CanBeFoundedByPlayer = 1 << 16,
-	RequiresAllCargo = 1 << 17,
-	CanIncreaseProduction = 1 << 18,
-	CanDecreaseProduction = 1 << 19,
-	RequiresElectricityPylons = 1 << 20,
-	HasShadows = 1 << 21,
-	unk_22 = 1 << 22,
-	unk_23 = 1 << 23,
-	BuiltInDesert = 1 << 24,
-	BuiltNearDesert = 1 << 25,
-	unk_26 = 1 << 26,
-	unk_27 = 1 << 27,
-	unk_28 = 1 << 28,
+	public static IndustryObjectFlags Convert(this DatIndustryObjectFlags datIndustryObjectFlags)
+		=> (IndustryObjectFlags)datIndustryObjectFlags;
+
+	public static DatIndustryObjectFlags Convert(this IndustryObjectFlags industryObjectFlags)
+		=> (DatIndustryObjectFlags)industryObjectFlags;
 }
 
 [LocoStructSize(0xF4)]
@@ -211,7 +384,7 @@ internal record DatIndustryObject(
 		// unk animation related
 		var_38.Clear();
 		var structSize = IndustryObjectLoader.StructSizes.IndustryObjectUnk38;
-		while (remainingData[0] != 0xFF)
+		while (remainingData[0] != LocoConstants.Terminator)
 		{
 			var_38.Add(ByteReader.ReadLocoStruct<IndustryObjectUnk38>(remainingData[..structSize]));
 			remainingData = remainingData[structSize..];
@@ -224,7 +397,7 @@ internal record DatIndustryObject(
 		for (var i = 0; i < NumBuildingVariations; ++i)
 		{
 			var ptr_1F = 0;
-			while (remainingData[++ptr_1F] != 0xFF)
+			while (remainingData[++ptr_1F] != LocoConstants.Terminator)
 			{ }
 
 			BuildingVariations.Add(remainingData[..ptr_1F].ToArray().ToList());
@@ -253,7 +426,7 @@ internal record DatIndustryObject(
 		remainingData = remainingData[(S5Header.StructLength * IndustryObjectLoader.Constants.MaxWallTypeCount)..];
 
 		// wall type
-		if (remainingData[0] != 0xFF)
+		if (remainingData[0] != LocoConstants.Terminator)
 		{
 			BuildingWall = S5Header.Read(remainingData[..S5Header.StructLength]);
 		}
@@ -261,7 +434,7 @@ internal record DatIndustryObject(
 		remainingData = remainingData[S5Header.StructLength..]; // there's always a struct, its just whether its zeroed out or not
 
 		// wall type entrance
-		if (remainingData[0] != 0xFF)
+		if (remainingData[0] != LocoConstants.Terminator)
 		{
 			BuildingWallEntrance = S5Header.Read(remainingData[..S5Header.StructLength]);
 		}
@@ -313,13 +486,13 @@ internal record DatIndustryObject(
 				ms.WriteByte(x.var_01);
 			}
 
-			ms.WriteByte(0xFF);
+			ms.WriteByte(LocoConstants.Terminator);
 
 			// variation parts
 			foreach (var x in BuildingVariations)
 			{
 				ms.Write(x.ToArray());
-				ms.WriteByte(0xFF);
+				ms.WriteByte(LocoConstants.Terminator);
 			}
 
 			// unk building data

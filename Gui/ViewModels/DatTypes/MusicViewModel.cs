@@ -76,7 +76,8 @@ public class MusicViewModel : BaseLocoFileViewModel
 			return;
 		}
 
-		var bytes = SawyerStreamWriter.SaveMusicToDat(SawyerStreamWriter.LocoWaveFormatToRiff(datWav.Value.Header, datWav.Value.Data.Length), datWav.Value.Data);
+		var bytes = SawyerStreamWriter.SaveMusicToDat(
+			SawyerStreamWriter.LocoWaveFormatToRiff(datWav.Value.Header, datWav.Value.Data.Length), datWav.Value.Data);
 
 		File.WriteAllBytes(filename, bytes);
 	}

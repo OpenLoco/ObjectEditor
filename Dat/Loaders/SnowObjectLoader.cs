@@ -24,8 +24,8 @@ public abstract class SnowObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
-			_ = br.SkipImageId(); // Image offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipImageId(); // Image offset, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

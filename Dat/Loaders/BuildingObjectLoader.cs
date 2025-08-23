@@ -40,13 +40,13 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			_ = br.SkipStringId(); // Name offset, not part of object definition
-			_ = br.SkipImageId(); // Image offset, not part of object definition
+			br.SkipStringId(); // Name offset, not part of object definition
+			br.SkipImageId(); // Image offset, not part of object definition
 			var numBuildingParts = br.ReadByte();
 			var numBuildingVariations = br.ReadByte();
-			_ = br.SkipPointer(); // BuildingHeights, not part of object definition
-			_ = br.SkipPointer(); // BuildingAnimations, not part of object definition
-			_ = br.SkipPointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
+			br.SkipPointer(); // BuildingHeights, not part of object definition
+			br.SkipPointer(); // BuildingAnimations, not part of object definition
+			br.SkipPointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
 			model.Colours = br.ReadUInt32();
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
@@ -59,8 +59,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			model.AverageNumberOnMap = br.ReadByte();
 			model.ProducedQuantity.Add(br.ReadByte());
 			model.ProducedQuantity.Add(br.ReadByte());
-			_ = br.SkipObjectId(Constants.MaxProducedCargoType);
-			_ = br.SkipObjectId(Constants.MaxRequiredCargoType);
+			br.SkipObjectId(Constants.MaxProducedCargoType);
+			br.SkipObjectId(Constants.MaxRequiredCargoType);
 			model.var_A6 = br.ReadByte();
 			model.var_A7 = br.ReadByte();
 			model.var_A8 = br.ReadByte();
@@ -68,7 +68,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			model.DemolishRatingReduction = br.ReadInt16();
 			model.var_AC = br.ReadByte();
 			var numElevatorSequences = br.ReadByte();
-			_ = br.SkipPointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
+			br.SkipPointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -88,36 +88,13 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 
 	private static void LoadVariable(LocoBinaryReader br, BuildingObject model, byte numBuildingParts, byte numBuildingVariations, byte numElevatorSequences)
 	{
-		// building heights
-		model.BuildingHeights = [.. br.ReadBytes(numBuildingParts)];
-
-		// building animations
-		var buildingAnimationStructs = ByteReader.ReadLocoStructArray<BuildingPartAnimation>(
-			br.ReadBytes(StructSizes.BuildingPartAnimation * numBuildingParts),
-			numBuildingParts,
-			StructSizes.BuildingPartAnimation);
-		model.BuildingAnimations = [.. buildingAnimationStructs.Cast<BuildingPartAnimation>()];
-
-		// building variations
-		for (var i = 0; i < numBuildingVariations; ++i)
-		{
-			List<byte> tmp = [];
-			byte b;
-			while ((b = br.ReadByte()) != 0xFF)
-			{
-				tmp.Add(b);
-			}
-
-			model.BuildingVariations.Add(tmp);
-		}
-
-		// produced cargo
+		model.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
+		model.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
+		model.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
 		model.ProducedCargo = br.ReadS5HeaderList(Constants.MaxProducedCargoType);
-
-		// required cargo
 		model.RequiredCargo = br.ReadS5HeaderList(Constants.MaxRequiredCargoType);
 
-		// animation sequences
+		// elevator sequences
 		for (var i = 0; i < numElevatorSequences; ++i)
 		{
 			var size = br.ReadUInt16();
@@ -179,33 +156,11 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 
 	private static void SaveVariable(BuildingObject model, LocoBinaryWriter bw)
 	{
-		bw.Write(model.BuildingHeights.ToArray());
-
-		foreach (var x in model.BuildingAnimations)
-		{
-			bw.Write(x.NumFrames);
-			bw.Write(x.AnimationSpeed);
-		}
-
-		foreach (var x in model.BuildingVariations)
-		{
-			bw.Write(x.ToArray());
-			bw.Write((byte)0xFF);
-		}
-
-		foreach (var x in model.ProducedCargo
-			.Select(y => y.Convert())
-			.Fill(Constants.MaxProducedCargoType, S5Header.NullHeader))
-		{
-			bw.Write(x!.Write());
-		}
-
-		foreach (var x in model.RequiredCargo
-			.Select(y => y.Convert())
-			.Fill(Constants.MaxRequiredCargoType, S5Header.NullHeader))
-		{
-			bw.Write(x!.Write());
-		}
+		bw.WriteBuildingHeights(model.BuildingHeights);
+		bw.WriteBuildingAnimations(model.BuildingAnimations);
+		bw.WriteBuildingVariations(model.BuildingVariations);
+		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
+		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);
 
 		foreach (var unk in model.ElevatorHeightSequences)
 		{
@@ -216,149 +171,14 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			}
 		}
 	}
-}
 
-[Flags]
-internal enum DatBuildingObjectFlags : uint8_t
-{
-	None = 0,
-	LargeTile = 1 << 0, // 2x2 tile
-	MiscBuilding = 1 << 1,
-	Indestructible = 1 << 2,
-	IsHeadquarters = 1 << 3,
-}
-
-[LocoStructSize(0xBE)]
-[LocoStructType(DatObjectType.Building)]
-internal record DatBuildingObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-		[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
-		[property: LocoStructOffset(0x06)] uint8_t NumBuildingParts,
-		[property: LocoStructOffset(0x07)] uint8_t NumBuildingVariations,
-		[property: LocoStructOffset(0x08), LocoStructVariableLoad, LocoArrayLength(BuildingObjectLoader.Constants.BuildingHeightCount)] List<uint8_t> BuildingHeights,
-		[property: LocoStructOffset(0x0C), LocoStructVariableLoad, LocoArrayLength(BuildingObjectLoader.Constants.BuildingAnimationCount)] List<BuildingPartAnimation> BuildingAnimations,
-		[property: LocoStructOffset(0x10), LocoStructVariableLoad, LocoArrayLength(BuildingObjectLoader.Constants.BuildingVariationCount)] List<List<uint8_t>> BuildingVariations,
-		[property: LocoStructOffset(0x90)] uint32_t Colours,
-		[property: LocoStructOffset(0x94)] uint16_t DesignedYear,
-		[property: LocoStructOffset(0x96)] uint16_t ObsoleteYear,
-		[property: LocoStructOffset(0x98)] DatBuildingObjectFlags Flags,
-		[property: LocoStructOffset(0x99)] uint8_t CostIndex,
-		[property: LocoStructOffset(0x9A)] uint16_t SellCostFactor,
-		[property: LocoStructOffset(0x9C)] uint8_t ScaffoldingSegmentType,
-		[property: LocoStructOffset(0x9D)] DatColour ScaffoldingColour,
-		[property: LocoStructOffset(0x9E)] uint8_t GeneratorFunction,
-		[property: LocoStructOffset(0x9F)] uint8_t AverageNumberOnMap,
-		[property: LocoStructOffset(0xA0), LocoArrayLength(BuildingObjectLoader.Constants.MaxProducedCargoType)] uint8_t[] ProducedQuantity,
-		[property: LocoStructOffset(0xA2), LocoStructVariableLoad, LocoArrayLength(BuildingObjectLoader.Constants.MaxProducedCargoType)] List<S5Header> ProducedCargo,
-		[property: LocoStructOffset(0xA4), LocoStructVariableLoad, LocoArrayLength(BuildingObjectLoader.Constants.MaxRequiredCargoType)] List<S5Header> RequiredCargo,
-		[property: LocoStructOffset(0xA6), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A6,
-		[property: LocoStructOffset(0xA8), LocoStructVariableLoad, LocoArrayLength(2)] List<uint8_t> var_A8,
-		[property: LocoStructOffset(0xAA)] int16_t DemolishRatingReduction,
-		[property: LocoStructOffset(0xAC)] uint8_t var_AC,
-		[property: LocoStructOffset(0xAD)] uint8_t NumElevatorSequences,
-		[property: LocoStructOffset(0xAE), LocoStructVariableLoad, LocoArrayLength(BuildingObjectLoader.Constants.MaxElevatorHeightSequences)] List<uint8_t[]> _ElevatorHeightSequences // 0xAE ->0xB2->0xB6->0xBA->0xBE (4 byte pointers)
-	) : ILocoStructVariableData
-{
-	public List<uint8_t[]> ElevatorHeightSequences { get; set; } = [];
-
-	// known issues:
-	// HOSPITL1.dat - loads without error but graphics are bugged
-	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
+	[Flags]
+	internal enum DatBuildingObjectFlags : uint8_t
 	{
-		// variation heights
-		BuildingHeights.Clear();
-		BuildingHeights.AddRange(ByteReaderT.Read_Array<uint8_t>(remainingData[..(NumBuildingParts * 1)], NumBuildingParts));
-		remainingData = remainingData[(NumBuildingParts * 1)..]; // uint8_t*
-
-		// variation animations
-		BuildingAnimations.Clear();
-		var buildingAnimationSize = ObjectAttributes.StructSize<BuildingPartAnimation>();
-		BuildingAnimations.AddRange(ByteReader.ReadLocoStructArray(remainingData[..(NumBuildingParts * buildingAnimationSize)], typeof(BuildingPartAnimation), NumBuildingParts, buildingAnimationSize)
-			.Cast<BuildingPartAnimation>());
-		remainingData = remainingData[(NumBuildingParts * 2)..]; // uint16_t*
-
-		// variation parts
-		BuildingVariations.Clear();
-		for (var i = 0; i < NumBuildingVariations; ++i)
-		{
-			var ptr_10 = 0;
-			while (remainingData[++ptr_10] != 0xFF)
-			{ }
-
-			BuildingVariations.Add(remainingData[..ptr_10].ToArray().ToList());
-			ptr_10++;
-			remainingData = remainingData[ptr_10..];
-		}
-
-		// produced cargo
-		ProducedCargo.Clear();
-		ProducedCargo.AddRange(SawyerStreamReader.ReadS5HeaderList(remainingData, BuildingObjectLoader.Constants.MaxProducedCargoType));
-		remainingData = remainingData[(S5Header.StructLength * BuildingObjectLoader.Constants.MaxProducedCargoType)..];
-
-		// required cargo
-		RequiredCargo.Clear();
-		RequiredCargo.AddRange(SawyerStreamReader.ReadS5HeaderList(remainingData, BuildingObjectLoader.Constants.MaxRequiredCargoType));
-		remainingData = remainingData[(S5Header.StructLength * BuildingObjectLoader.Constants.MaxRequiredCargoType)..];
-
-		// animation sequences
-		ElevatorHeightSequences.Clear();
-		for (var i = 0; i < NumElevatorSequences; ++i)
-		{
-			var size = BitConverter.ToUInt16(remainingData[..2]);
-			remainingData = remainingData[2..];
-
-			ElevatorHeightSequences.Add(remainingData[..size].ToArray());
-			remainingData = remainingData[size..];
-		}
-
-		return remainingData;
-	}
-
-	public ReadOnlySpan<byte> SaveVariable()
-	{
-		var ms = new MemoryStream();
-
-		// variation heights
-		foreach (var x in BuildingHeights)
-		{
-			ms.WriteByte(x);
-		}
-
-		// variation animations
-		foreach (var x in BuildingAnimations)
-		{
-			ms.WriteByte(x.NumFrames);
-			ms.WriteByte(x.AnimationSpeed);
-		}
-
-		// variation parts
-		foreach (var x in BuildingVariations)
-		{
-			ms.Write(x.ToArray());
-			ms.WriteByte(0xFF);
-		}
-
-		// produced cargo
-		foreach (var obj in ProducedCargo.Fill(BuildingObjectLoader.Constants.MaxProducedCargoType, S5Header.NullHeader))
-		{
-			ms.Write(obj!.Write());
-		}
-
-		// required cargo
-		foreach (var obj in RequiredCargo.Fill(BuildingObjectLoader.Constants.MaxRequiredCargoType, S5Header.NullHeader))
-		{
-			ms.Write(obj!.Write());
-		}
-
-		foreach (var unk in ElevatorHeightSequences)
-		{
-			ms.Write(BitConverter.GetBytes((uint16_t)unk.Length));
-			foreach (var x in unk)
-			{
-				ms.Write(BitConverter.GetBytes((uint16_t)x));
-			}
-		}
-
-		return ms.ToArray();
+		None = 0,
+		LargeTile = 1 << 0, // 2x2 tile
+		MiscBuilding = 1 << 1,
+		Indestructible = 1 << 2,
+		IsHeadquarters = 1 << 3,
 	}
 }

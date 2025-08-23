@@ -2,6 +2,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Objects.TrackStation;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
@@ -14,7 +15,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 	{
 		public const int MaxImageOffsets = 4;
 		public const int MaxNumCompatible = 7;
-		public const int ManualPowerLength = 16;
+		public const int var_6E_Length = 16;
 		public const int CargoOffsetBytesSize = 16;
 		public const int MaxStationCargoDensity = 15;
 	}
@@ -37,6 +38,23 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 
 			// fixed
 			_ = br.SkipStringId(); // Name offset, not part of object definition
+			model.PaintStyle = br.ReadByte();
+			model.Height = br.ReadByte();
+			model.TrackPieces = (TrackTraitFlags)br.ReadUInt16();
+			model.BuildCostFactor = br.ReadInt16();
+			model.SellCostFactor = br.ReadInt16();
+			model.CostIndex = br.ReadByte();
+			model.var_0B = br.ReadByte();
+			model.Flags = (TrackStationObjectFlags)br.ReadByte();
+			model.var_0D = br.ReadByte();
+			_ = br.SkipImageId(); // Image, not part of object definition
+			_ = br.SkipImageId(Constants.MaxImageOffsets);
+			var compatibleTrackObjectCount = br.ReadByte();
+			_ = br.SkipObjectId(Constants.MaxNumCompatible);
+			model.DesignedYear = br.ReadUInt16();
+			model.ObsoleteYear = br.ReadUInt16();
+			_ = br.SkipPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
+			_ = br.SkipPointer(Constants.var_6E_Length); // CargoOffsetBytes, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -45,7 +63,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.TrackStation), null);
 
 			// variable
-			// N/A
+			LoadVariable(br, model, compatibleTrackObjectCount);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -54,13 +72,69 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		}
 	}
 
+	private static void LoadVariable(LocoBinaryReader br, TrackStationObject model, byte compatibleRoadObjectCount)
+	{
+		// compatible road objects
+		model.CompatibleTrackObjects = br.ReadS5HeaderList(compatibleRoadObjectCount);
+
+		// cargo offsets
+		model.CargoOffsetBytes = new byte[4][][];
+		for (var i = 0; i < 4; ++i)
+		{
+			model.CargoOffsetBytes[i] = new byte[4][];
+			for (var j = 0; j < 4; ++j)
+			{
+				var length = 1;
+				while (br.PeekByte(length) != 0xFF)
+				{
+					length += 4; // x, y, x, y
+				}
+
+				length += 4;
+				model.CargoOffsetBytes[i][j] = br.ReadBytes(length);
+			}
+		}
+
+		// very similar to cargo offset bytes
+		model.var_6E = new byte[Constants.var_6E_Length][];
+		for (var i = 0; i < Constants.var_6E_Length; ++i)
+		{
+			var length = 1;
+			while (br.PeekByte(length) != 0xFF)
+			{
+				length += 4; // x, y, x, y
+			}
+
+			length += 4;
+			model.var_6E[i] = br.ReadBytes(length);
+		}
+	}
+
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (TrackStationObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.Write(model.PaintStyle);
+			bw.Write(model.Height);
+			bw.Write((uint16_t)model.TrackPieces);
+			bw.Write(model.BuildCostFactor);
+			bw.Write(model.SellCostFactor);
+			bw.Write(model.CostIndex);
+			bw.Write(model.var_0B);
+			bw.Write((uint8_t)model.Flags);
+			bw.Write(model.var_0D);
+			bw.WriteImageId(); // Image, not part of object definition
+			bw.WriteImageId(Constants.MaxImageOffsets); // uint32_t
+			bw.Write((uint8_t)model.CompatibleTrackObjects.Count);
+			bw.WriteObjectId(Constants.MaxNumCompatible);
+			bw.Write(model.DesignedYear);
+			bw.Write(model.ObsoleteYear);
+			bw.WritePointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
+			bw.WritePointer(Constants.var_6E_Length); // var_6E, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -69,147 +143,56 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			// N/A
+			SaveVariable(model, bw);
 
 			// image table
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
-}
 
-[Flags]
-internal enum DatTrackTraitFlags : uint16_t
-{
-	None = 0,
-	Diagonal = 1 << 0,
-	LargeCurve = 1 << 1,
-	NormalCurve = 1 << 2,
-	SmallCurve = 1 << 3,
-	VerySmallCurve = 1 << 4,
-	Slope = 1 << 5,
-	SteepSlope = 1 << 6,
-	OneSided = 1 << 7,
-	SlopedCurve = 1 << 8,
-	SBend = 1 << 9,
-	Junction = 1 << 10,
-}
-
-[Flags]
-internal enum DatTrackStationObjectFlags : uint8_t
-{
-	None = 0,
-	Recolourable = 1 << 0,
-	NoGlass = 1 << 1,
-}
-
-[LocoStructSize(0xAE)]
-[LocoStructType(DatObjectType.TrackStation)]
-internal record DatTrackStationObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] uint8_t PaintStyle,
-	[property: LocoStructOffset(0x03)] uint8_t Height,
-	[property: LocoStructOffset(0x04)] DatTrackTraitFlags TrackPieces,
-	[property: LocoStructOffset(0x06)] int16_t BuildCostFactor,
-	[property: LocoStructOffset(0x08)] int16_t SellCostFactor,
-	[property: LocoStructOffset(0x0A)] uint8_t CostIndex,
-	[property: LocoStructOffset(0x0B)] uint8_t var_0B,
-	[property: LocoStructOffset(0x0C)] DatTrackStationObjectFlags Flags,
-	[property: LocoStructOffset(0x0D)] uint8_t var_0D,
-	[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x12), LocoArrayLength(TrackStationObjectLoader.Constants.MaxImageOffsets), Browsable(false)] uint32_t[] ImageOffsets,
-	[property: LocoStructOffset(0x22)] uint8_t CompatibleTrackObjectCount,
-	[property: LocoStructOffset(0x23), LocoArrayLength(TrackStationObjectLoader.Constants.MaxNumCompatible), Browsable(false)] object_id[] _Compatible, // only used for runtime loco, this isn't part of object 'definition'
-	[property: LocoStructOffset(0x2A)] uint16_t DesignedYear,
-	[property: LocoStructOffset(0x2C)] uint16_t ObsoleteYear,
-	[property: LocoStructOffset(0x2E), LocoStructVariableLoad, LocoArrayLength(TrackStationObjectLoader.Constants.CargoOffsetBytesSize), Browsable(false)] uint8_t[] _CargoOffsetBytes,
-	[property: LocoStructOffset(0x3E), LocoStructVariableLoad, LocoArrayLength(TrackStationObjectLoader.Constants.ManualPowerLength), Browsable(false)] uint8_t[] _ManualPower
-)
-{
-	public List<S5Header> CompatibleTrackObjects { get; set; } = [];
-
-	public uint8_t[][][] CargoOffsetBytes { get; set; }
-
-	public uint8_t[][] ManualPower { get; set; }
-
-	public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset(), 15)];
-
-	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
+	private static void SaveVariable(TrackStationObject model, LocoBinaryWriter bw)
 	{
-		// compatible
-		CompatibleTrackObjects = SawyerStreamReader.ReadS5HeaderList(remainingData, CompatibleTrackObjectCount);
-		remainingData = remainingData[(S5Header.StructLength * CompatibleTrackObjectCount)..];
+		// compatible road objects
+		bw.WriteS5HeaderList(model.CompatibleTrackObjects);
 
-		// cargo offsets (for drawing the cargo on the station)
-		CargoOffsetBytes = new byte[4][][];
+		// cargo offsets
 		for (var i = 0; i < 4; ++i)
 		{
-			CargoOffsetBytes[i] = new byte[4][];
 			for (var j = 0; j < 4; ++j)
 			{
-				var bytes = 0;
-				bytes++;
-				var length = 1;
-
-				while (remainingData[bytes] != 0xFF)
-				{
-					length += 4; // x, y, x, y
-					bytes += 4;
-				}
-
-				length += 4;
-				CargoOffsetBytes[i][j] = remainingData[..length].ToArray();
-				remainingData = remainingData[length..];
+				bw.Write(model.CargoOffsetBytes[i][j]);
 			}
 		}
 
-		// very similar to cargo offset bytes
-		ManualPower = new byte[TrackStationObjectLoader.Constants.ManualPowerLength][];
-		for (var i = 0; i < TrackStationObjectLoader.Constants.ManualPowerLength; ++i)
+		// var_6E offsets
+		for (var i = 0; i < Constants.var_6E_Length; ++i)
 		{
-			var bytes = 0;
-			bytes++;
-			var length = 1;
-
-			while (remainingData[bytes] != 0xFF)
-			{
-				length += 4; // x, y, x, y
-				bytes += 4;
-			}
-
-			length += 4;
-			ManualPower[i] = remainingData[..length].ToArray();
-			remainingData = remainingData[length..];
+			bw.Write(model.var_6E[i]);
 		}
-
-		return remainingData;
 	}
 
-	public ReadOnlySpan<byte> SaveVariable()
+	[Flags]
+	internal enum DatTrackTraitFlags : uint16_t
 	{
-		using (var ms = new MemoryStream())
-		{
-			// compatible track objects
-			foreach (var co in CompatibleTrackObjects)
-			{
-				ms.Write(co.Write());
-			}
+		None = 0,
+		Diagonal = 1 << 0,
+		LargeCurve = 1 << 1,
+		NormalCurve = 1 << 2,
+		SmallCurve = 1 << 3,
+		VerySmallCurve = 1 << 4,
+		Slope = 1 << 5,
+		SteepSlope = 1 << 6,
+		OneSided = 1 << 7,
+		SlopedCurve = 1 << 8,
+		SBend = 1 << 9,
+		Junction = 1 << 10,
+	}
 
-			// cargo offsets
-			for (var i = 0; i < 4; ++i)
-			{
-				for (var j = 0; j < 4; ++j)
-				{
-					ms.Write(CargoOffsetBytes[i][j]);
-				}
-			}
-
-			// manual power offsets
-			for (var i = 0; i < TrackStationObjectLoader.Constants.ManualPowerLength; ++i)
-			{
-				ms.Write(ManualPower[i]);
-			}
-
-			return ms.ToArray();
-		}
+	[Flags]
+	internal enum DatTrackStationObjectFlags : uint8_t
+	{
+		None = 0,
+		Recolourable = 1 << 0,
+		NoGlass = 1 << 1,
 	}
 }

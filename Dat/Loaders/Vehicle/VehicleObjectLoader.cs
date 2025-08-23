@@ -10,6 +10,20 @@ namespace Dat.Loaders;
 
 public abstract class VehicleObjectLoader : IDatObjectLoader
 {
+	public static class Constants
+	{
+		public const int MaxUnionSoundStructLength = 0x1B;
+		public const int CompatibleVehicleCount = 8;
+		public const int RequiredTrackExtrasCount = 4;
+		public const int CarComponentsCount = 4;
+		public const int MaxBodySprites = 4;
+		public const int MaxBogieSprites = 2;
+		public const int AnimationCount = 2;
+		public const int CompatibleCargoTypesLength = 2;
+		public const int CargoTypeSpriteOffsetsLength = 32;
+		public const int MaxStartSounds = 3;
+	}
+
 	public static class StructSizes
 	{
 		public const int Dat = 0x15E;
@@ -27,6 +41,42 @@ public abstract class VehicleObjectLoader : IDatObjectLoader
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
+			model.Mode = ((DatTransportMode)br.ReadByte()).Convert();
+			model.Type = ((DatVehicleType)br.ReadByte()).Convert();
+			var numCarComponents = br.ReadByte();
+			br.SkipObjectId(); // TrackTypeId, not part of object definition
+			var numRequiredTrackExtras = br.ReadByte();
+			model.CostIndex = br.ReadByte();
+			model.CostFactor = br.ReadInt16();
+			model.Reliability = br.ReadByte();
+			model.RunCostIndex = br.ReadByte();
+			model.RunCostFactor = br.ReadInt16();
+			model.SpecialColourSchemeIndex = ((DatCompanyColourType)br.ReadByte()).Convert();
+			var numCompatibleVehicles = br.ReadByte();
+			br.SkipObjectId(Constants.CompatibleVehicleCount);
+			br.SkipObjectId(Constants.RequiredTrackExtrasCount);
+			model.CarComponents = br.ReadCarComponents(Constants.CarComponentsCount);
+			model.BodySprites = br.ReadBodySprites(Constants.MaxBodySprites);
+			model.BogieSprites = br.ReadBogieSprites(Constants.MaxBogieSprites);
+			model.Power = br.ReadUInt16();
+			model.Speed = br.ReadInt16();
+			model.RackSpeed = br.ReadInt16();
+			model.Weight = br.ReadUInt16();
+			model.Flags = ((DatVehicleObjectFlags)br.ReadUInt16()).Convert();
+			br.SkipByte(Constants.CompatibleCargoTypesLength * 1); // MaxCargo, read in LoadVariable
+			br.SkipByte(Constants.CompatibleCargoTypesLength * 4); // CompatibleCargoCategories, read in LoadVariable
+			br.SkipByte(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
+			br.SkipByte(); // NumSimultaneousCargoTypes, read in LoadVariable
+			model.Animation = br.ReadSimpleAnimations(Constants.AnimationCount);
+			model.ShipWakeOffset = br.ReadByte(); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
+			model.DesignedYear = br.ReadUInt16();
+			model.ObsoleteYear = br.ReadUInt16();
+			br.SkipObjectId(); // RackRailType, not part of object definition
+			model.DrivingSoundType = ((DatDrivingSoundType)br.ReadByte()).Convert();
+			// read sound properties info
+			model.var_135 = br.ReadBytes(0x15A - 0x135);
+			var numStartSounds = br.ReadByte();
+			br.SkipPointer(); // StartSounds, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -115,7 +165,7 @@ public enum DatSimpleAnimationType : uint8_t
 
 [LocoStructSize(0x15E)]
 [LocoStructType(DatObjectType.Vehicle)]
-internal record VehicleObject(
+internal record DatVehicleObject(
 	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
 	[property: LocoStructOffset(0x02)] DatTransportMode Mode,
 	[property: LocoStructOffset(0x03)] DatVehicleType Type,
@@ -132,25 +182,25 @@ internal record VehicleObject(
 	[property: LocoStructOffset(0x10), LocoArrayLength(8), LocoStructVariableLoad] List<S5Header> CompatibleVehicles,
 	[property: LocoStructOffset(0x20), LocoArrayLength(4), LocoStructVariableLoad] List<S5Header> RequiredTrackExtras,
 	[property: LocoStructOffset(0x24), LocoArrayLength(4)] VehicleObjectCar[] CarComponents,
-	[property: LocoStructOffset(0x3C), LocoArrayLength(VehicleObject.MaxBodySprites)] BodySprite[] BodySprites,
-	[property: LocoStructOffset(0xB4), LocoArrayLength(VehicleObject.MaxBogieSprites)] BogieSprite[] BogieSprites,
+	[property: LocoStructOffset(0x3C), LocoArrayLength(VehicleObjectLoader.Constants.MaxBodySprites)] BodySprite[] BodySprites,
+	[property: LocoStructOffset(0xB4), LocoArrayLength(VehicleObjectLoader.Constants.MaxBogieSprites)] BogieSprite[] BogieSprites,
 	[property: LocoStructOffset(0xD8)] uint16_t Power,
 	[property: LocoStructOffset(0xDA)] Speed16 Speed,
 	[property: LocoStructOffset(0xDC)] Speed16 RackSpeed,
 	[property: LocoStructOffset(0xDE)] uint16_t Weight,
 	[property: LocoStructOffset(0xE0)] DatVehicleObjectFlags Flags,
-	[property: LocoStructOffset(0xE2), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad] List<uint8_t> MaxCargo,
-	[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObject.CompatibleCargoTypesLength), LocoStructVariableLoad, Browsable(false)] List<List<DatCargoCategory>> CompatibleCargoCategories,
-	[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObject.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] Dictionary<DatCargoCategory, uint8_t> CargoTypeSpriteOffsets,
+	[property: LocoStructOffset(0xE2), LocoArrayLength(VehicleObjectLoader.Constants.CompatibleCargoTypesLength), LocoStructVariableLoad] List<uint8_t> MaxCargo,
+	[property: LocoStructOffset(0xE4), LocoArrayLength(VehicleObjectLoader.Constants.CompatibleCargoTypesLength), LocoStructVariableLoad, Browsable(false)] List<List<DatCargoCategory>> CompatibleCargoCategories,
+	[property: LocoStructOffset(0xEC), LocoArrayLength(VehicleObjectLoader.Constants.CargoTypeSpriteOffsetsLength), LocoStructVariableLoad] Dictionary<DatCargoCategory, uint8_t> CargoTypeSpriteOffsets,
 	[property: LocoStructOffset(0x10C), LocoStructVariableLoad, Browsable(false)] uint8_t _NumSimultaneousCargoTypes,
-	[property: LocoStructOffset(0x10D), LocoArrayLength(VehicleObject.AnimationCount)] SimpleAnimation[] Animation,
+	[property: LocoStructOffset(0x10D), LocoArrayLength(VehicleObjectLoader.Constants.AnimationCount)] SimpleAnimation[] Animation,
 	[property: LocoStructOffset(0x113)] uint8_t ShipWakeOffset, // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 	[property: LocoStructOffset(0x114)] uint16_t DesignedYear,
 	[property: LocoStructOffset(0x116)] uint16_t ObsoleteYear,
 	[property: LocoStructOffset(0x118), LocoStructVariableLoad, Browsable(false)] object_id RackRailType,
 	[property: LocoStructOffset(0x119)] DatDrivingSoundType DrivingSoundType,
 	// this is a union...length is the length of the longest union struct, which is Engine2Sound. make the byte[] not visible in editor
-	[property: LocoStructOffset(0x11A), LocoArrayLength(VehicleObject.MaxUnionSoundStructLength), Browsable(false)] byte[] SoundPropertiesData,
+	[property: LocoStructOffset(0x11A), LocoArrayLength(VehicleObjectLoader.Constants.MaxUnionSoundStructLength), Browsable(false)] byte[] SoundPropertiesData,
 	//union
 	//{
 	//	VehicleObjectFrictionSound friction,
@@ -163,14 +213,7 @@ internal record VehicleObject(
 	[property: LocoStructOffset(0x15B), LocoArrayLength(3), LocoStructVariableLoad] List<S5Header> StartSounds
 ) : ILocoStruct, ILocoStructVariableData, ILocoStructPostLoad
 {
-	public const int MaxUnionSoundStructLength = 0x1B;
-	public const int MaxBodySprites = 4;
-	public const int MaxBogieSprites = 2;
-	public const int AnimationCount = 2;
-	public const int CompatibleCargoTypesLength = 2;
-	public const int CargoTypeSpriteOffsetsLength = 32;
-
-	public VehicleObject() : this(0, DatTransportMode.Rail, DatVehicleType.Train, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, 0, 0, 0, DatVehicleObjectFlags.None, [], [[], []], [], 0, [], 0, 0, 0, 0, DatDrivingSoundType.None, [], [], 0, [])
+	public DatVehicleObject() : this(0, DatTransportMode.Rail, DatVehicleType.Train, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, 0, 0, 0, DatVehicleObjectFlags.None, [], [[], []], [], 0, [], 0, 0, 0, 0, DatDrivingSoundType.None, [], [], 0, [])
 	{ }
 
 	public T GetSoundAs<T>() where T : ILocoStruct
@@ -240,7 +283,7 @@ internal record VehicleObject(
 
 		// compatible cargo types
 		CompatibleCargoCategories.Clear();
-		for (var i = 0; i < CompatibleCargoTypesLength; ++i)
+		for (var i = 0; i < VehicleObjectLoader.Constants.CompatibleCargoTypesLength; ++i)
 		{
 			CompatibleCargoCategories.Add([]);
 		}
@@ -248,7 +291,7 @@ internal record VehicleObject(
 		CargoTypeSpriteOffsets.Clear();
 		MaxCargo.Clear();
 
-		for (var i = 0; i < CompatibleCargoTypesLength; ++i)
+		for (var i = 0; i < VehicleObjectLoader.Constants.CompatibleCargoTypesLength; ++i)
 		{
 			var index = NumSimultaneousCargoTypes;
 			MaxCargo.Add(remainingData[0]);
@@ -351,7 +394,7 @@ internal record VehicleObject(
 		}
 
 		// cargo types
-		for (var i = 0; i < CompatibleCargoTypesLength; ++i) // CompatibleCargoTypesLength should == CompatibleCargoCategories.Length
+		for (var i = 0; i < VehicleObjectLoader.Constants.CompatibleCargoTypesLength; ++i) // CompatibleCargoTypesLength should == CompatibleCargoCategories.Length
 		{
 			if (MaxCargo.Count < i || MaxCargo[i] == 0)
 			{

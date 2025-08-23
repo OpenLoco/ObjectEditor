@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Objects.Climate;
 using ReactiveUI.Fody.Helpers;
-using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
@@ -17,7 +16,7 @@ public class ClimateViewModel : LocoObjectViewModel<ClimateObject>
 	[Reactive] public Season FirstSeason { get; set; }
 	[Reactive] public uint8_t WinterSnowLine { get; set; }
 	[Reactive] public uint8_t SummerSnowLine { get; set; }
-	[Reactive] public BindingList<uint8_t> SeasonLengths { get; set; }
+	[Reactive] public uint8_t[] SeasonLengths { get; set; }
 
 	public ClimateViewModel(ClimateObject ro)
 	{

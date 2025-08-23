@@ -2,6 +2,7 @@ using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
+
 public class VehicleObject : ILocoStruct
 {
 	public TransportMode Mode { get; set; }

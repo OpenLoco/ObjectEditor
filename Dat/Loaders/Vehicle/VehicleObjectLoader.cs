@@ -229,11 +229,11 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.Write(model.RunCostFactor);
 			bw.Write((uint8_t)model.SpecialColourSchemeIndex.Convert());
 			bw.Write((uint8_t)model.CompatibleVehicles.Count);
-			bw.WriteEmptyUInt16(Constants.CompatibleVehicleCount);
-			bw.WriteEmptyUInt8(Constants.RequiredTrackExtrasCount);
-			bw.WriteVehicleObjectCar(model.CarComponents);
-			bw.WriteBodySprites(model.BodySprites);
-			bw.WriteBogieSprites(model.BogieSprites);
+			bw.WriteEmptyBytes(Constants.CompatibleVehicleCount * 2);
+			bw.WriteEmptyBytes(Constants.RequiredTrackExtrasCount);
+			bw.Write(model.CarComponents);
+			bw.Write(model.BodySprites);
+			bw.Write(model.BogieSprites);
 			bw.Write(model.Power);
 			bw.Write(model.Speed);
 			bw.Write(model.RackSpeed);
@@ -242,8 +242,8 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.WriteEmptyBytes(Constants.CompatibleCargoTypesLength * 1); // MaxCargo, read in LoadVariable
 			bw.WriteEmptyBytes(Constants.CompatibleCargoTypesLength * 4); // CompatibleCargoCategories, read in LoadVariable
 			bw.WriteEmptyBytes(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
-			bw.WriteEmptyUInt8(); // NumSimultaneousCargoTypes, manipulated in LoadVariable
-			bw.WriteSimpleAnimations(model.Animation);
+			bw.WriteEmptyBytes(1); // NumSimultaneousCargoTypes, manipulated in LoadVariable
+			bw.Write(model.Animation);
 			bw.Write(model.ShipWakeOffset); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
@@ -255,17 +255,17 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			{
 				case DrivingSoundType.Friction:
 					ArgumentNullException.ThrowIfNull(model.FrictionSound);
-					bw.WriteFrictionSound(model.FrictionSound);
+					bw.Write(model.FrictionSound);
 					bw.WriteEmptyBytes(StructSizes.SoundData - StructSizes.FrictionSound);
 					break;
 				case DrivingSoundType.SimpleMotor:
 					ArgumentNullException.ThrowIfNull(model.SimpleMotorSound);
-					bw.WriteSimpleMotorSound(model.SimpleMotorSound);
+					bw.Write(model.SimpleMotorSound);
 					bw.WriteEmptyBytes(StructSizes.SoundData - StructSizes.SimpleMotorSound);
 					break;
 				case DrivingSoundType.GearboxMotor:
 					ArgumentNullException.ThrowIfNull(model.GearboxMotorSound);
-					bw.WriteGearboxMotorSound(model.GearboxMotorSound);
+					bw.Write(model.GearboxMotorSound);
 					bw.WriteEmptyBytes(StructSizes.SoundData - StructSizes.GearboxMotorSound);
 					break;
 				case DrivingSoundType.None:
@@ -277,7 +277,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 
 			bw.Write(model.var_135);
 			bw.Write((uint8_t)model.StartSounds.Count);
-			bw.WriteEmptyUInt8(Constants.MaxStartSounds); // StartSounds, not part of object
+			bw.WriteEmptyBytes(Constants.MaxStartSounds * 1); // StartSounds, not part of object
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -304,7 +304,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 				{
 					if (model.MaxCargo.Count < i || model.MaxCargo[i] == 0)
 					{
-						bw.WriteEmptyUInt8(); // write a 0 for MaxCargo - this indicates no more cargo and we skip the rest
+						bw.WriteEmptyBytes(1); // write a 0 for MaxCargo - this indicates no more cargo and we skip the rest
 						continue;
 					}
 					else

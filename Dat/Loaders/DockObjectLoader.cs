@@ -108,9 +108,9 @@ public abstract class DockObjectLoader : IDatObjectLoader
 
 	private static void SaveVariable(DockObject model, LocoBinaryWriter bw)
 	{
-		bw.WriteBuildingHeights(model.BuildingHeights);
-		bw.WriteBuildingAnimations(model.BuildingAnimations);
-		bw.WriteBuildingVariations(model.BuildingVariations);
+		bw.Write(model.BuildingHeights);
+		bw.Write(model.BuildingAnimations);
+		bw.Write(model.BuildingVariations);
 	}
 
 	[Flags]

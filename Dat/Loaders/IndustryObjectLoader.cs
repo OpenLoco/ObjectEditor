@@ -217,8 +217,8 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 
 	private static void SaveVariable(IndustryObject model, LocoBinaryWriter bw)
 	{
-		bw.WriteBuildingHeights(model.BuildingHeights);
-		bw.WriteBuildingAnimations(model.BuildingAnimations);
+		bw.Write(model.BuildingHeights);
+		bw.Write(model.BuildingAnimations);
 
 		// animation sequences
 		foreach (var x in model.AnimationSequences)
@@ -235,8 +235,8 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		}
 		bw.WriteTerminator();
 
-		bw.WriteBuildingVariations(model.BuildingVariations);
-		bw.Write([.. model.UnkBuildingData]);
+		bw.Write(model.BuildingVariations);
+		bw.Write((ReadOnlySpan<byte>)[.. model.UnkBuildingData]);
 		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
 		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);
 		bw.WriteS5HeaderList(model.WallTypes, Constants.MaxWallTypeCount);

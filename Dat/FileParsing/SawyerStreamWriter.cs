@@ -68,7 +68,7 @@ public static class SawyerStreamWriter
 			foreach (var (header, data) in sounds)
 			{
 				br.Write((uint)data.Length);
-				br.WriteSoundEffect(header);
+				br.Write(header);
 				br.Write(data);
 			}
 

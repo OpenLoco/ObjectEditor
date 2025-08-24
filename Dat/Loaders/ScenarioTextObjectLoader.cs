@@ -56,7 +56,7 @@ public abstract class ScenarioTextObjectLoader : IDatObjectLoader
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.WriteEmptyStringId(); // Details offset, not part of object definition
-			bw.WritePaddingBytes(0x06 - 0x04);
+			bw.WriteEmptyBytes(0x06 - 0x04); // padding
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

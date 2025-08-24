@@ -17,56 +17,6 @@ public class LocoBinaryWriter : BinaryWriter
 	public void WriteTerminator()
 		=> base.Write(LocoConstants.Terminator);
 
-	public void WriteEmptyUInt8(int count = 1)
-	{
-		for (var i = 0; i < count; i++)
-		{
-			base.Write((uint8_t)0);
-		}
-	}
-
-	public void WriteEmptyInt8(int count = 1)
-	{
-		for (var i = 0; i < count; i++)
-		{
-			base.Write((int8_t)0);
-		}
-	}
-
-	public void WriteEmptyUInt16(int count = 1)
-	{
-		for (var i = 0; i < count; i++)
-		{
-			base.Write((uint16_t)0);
-		}
-	}
-
-	public void WriteEmptyInt16(int count = 1)
-	{
-		for (var i = 0; i < count; i++)
-		{
-			base.Write((int16_t)0);
-		}
-	}
-	public void WriteEmptyUInt32(int count = 1)
-	{
-		for (var i = 0; i < count; i++)
-		{
-			base.Write((uint32_t)0);
-		}
-	}
-
-	public void WriteEmptyInt32(int count = 1)
-	{
-		for (var i = 0; i < count; i++)
-		{
-			base.Write((int32_t)0);
-		}
-	}
-
-	public void WritePaddingBytes(int count)
-		=> WriteEmptyBytes(count);
-
 	public void WriteEmptyBytes(int count)
 	{
 		for (var i = 0; i < count; i++)
@@ -123,10 +73,10 @@ public class LocoBinaryWriter : BinaryWriter
 		}
 	}
 
-	public void WriteBuildingHeights(List<uint8_t> heights)
-		=> Write([.. heights]);
+	public void Write(List<uint8_t> heights)
+		=> base.Write([.. heights]);
 
-	public void WriteBuildingAnimations(List<BuildingPartAnimation> animations)
+	public void Write(List<BuildingPartAnimation> animations)
 	{
 		foreach (var x in animations)
 		{
@@ -135,16 +85,16 @@ public class LocoBinaryWriter : BinaryWriter
 		}
 	}
 
-	public void WriteBuildingVariations(List<List<uint8_t>> variations)
+	public void Write(List<List<uint8_t>> variations)
 	{
 		foreach (var x in variations)
 		{
-			Write([.. x]);
+			base.Write([.. x]);
 			WriteTerminator();
 		}
 	}
 
-	public void WriteSoundEffect(SoundEffectWaveFormat sfx)
+	public void Write(SoundEffectWaveFormat sfx)
 	{
 		Write(sfx.WaveFormatTag);
 		Write(sfx.Channels);
@@ -155,7 +105,7 @@ public class LocoBinaryWriter : BinaryWriter
 		Write(sfx.ExtraSize);
 	}
 
-	public void WriteVehicleObjectCar(VehicleObjectCar[] cars)
+	public void Write(VehicleObjectCar[] cars)
 	{
 		foreach (var car in cars)
 		{
@@ -168,7 +118,7 @@ public class LocoBinaryWriter : BinaryWriter
 		}
 	}
 
-	public void WriteBodySprites(BodySprite[] bodies)
+	public void Write(BodySprite[] bodies)
 	{
 		foreach (var body in bodies)
 		{
@@ -190,7 +140,7 @@ public class LocoBinaryWriter : BinaryWriter
 		}
 	}
 
-	public void WriteBogieSprites(BogieSprite[] bogies)
+	public void Write(BogieSprite[] bogies)
 	{
 		foreach (var bogie in bogies)
 		{
@@ -204,7 +154,7 @@ public class LocoBinaryWriter : BinaryWriter
 		}
 	}
 
-	public void WriteSimpleAnimations(SimpleAnimation[] animations)
+	public void Write(SimpleAnimation[] animations)
 	{
 		foreach (var animation in animations)
 		{
@@ -214,7 +164,7 @@ public class LocoBinaryWriter : BinaryWriter
 		}
 	}
 
-	public void WriteFrictionSound(FrictionSound sound)
+	public void Write(FrictionSound sound)
 	{
 		Write(sound.SoundObjectId);
 		Write(sound.MinSpeed);
@@ -225,7 +175,7 @@ public class LocoBinaryWriter : BinaryWriter
 		Write(sound.MaxVolume);
 	}
 
-	public void WriteSimpleMotorSound(SimpleMotorSound sound)
+	public void Write(SimpleMotorSound sound)
 	{
 		Write(sound.SoundObjectId);
 		Write(sound.IdleFrequency);
@@ -241,7 +191,7 @@ public class LocoBinaryWriter : BinaryWriter
 		Write(sound.SpeedFrequencyFactor);
 	}
 
-	public void WriteGearboxMotorSound(GearboxMotorSound sound)
+	public void Write(GearboxMotorSound sound)
 	{
 		Write(sound.SoundObjectId);
 		Write(sound.IdleFrequency);

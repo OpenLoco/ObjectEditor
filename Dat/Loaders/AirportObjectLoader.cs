@@ -158,9 +158,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 	private static void SaveVariable(LocoBinaryWriter bw, AirportObject model)
 	{
-		bw.WriteBuildingHeights(model.BuildingHeights);
-		bw.WriteBuildingAnimations(model.BuildingAnimations);
-		bw.WriteBuildingVariations(model.BuildingVariations);
+		bw.Write(model.BuildingHeights);
+		bw.Write(model.BuildingAnimations);
+		bw.Write(model.BuildingVariations);
 
 		// positions
 		foreach (var x in model.BuildingPositions)

@@ -82,7 +82,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.WriteEmptyPointer();
 			bw.Write(model.ShouldLoop);
-			bw.WritePaddingBytes(1);
+			bw.WriteEmptyBytes(1); // padding
 			bw.Write(model.Volume);
 
 			// sanity check

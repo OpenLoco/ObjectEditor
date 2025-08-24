@@ -152,9 +152,9 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 
 	private static void SaveVariable(BuildingObject model, LocoBinaryWriter bw)
 	{
-		bw.WriteBuildingHeights(model.BuildingHeights);
-		bw.WriteBuildingAnimations(model.BuildingAnimations);
-		bw.WriteBuildingVariations(model.BuildingVariations);
+		bw.Write(model.BuildingHeights);
+		bw.Write(model.BuildingAnimations);
+		bw.Write(model.BuildingVariations);
 		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
 		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);
 

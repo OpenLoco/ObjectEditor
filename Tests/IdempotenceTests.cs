@@ -44,7 +44,7 @@ public class IdempotenceTests
 
 		var logger = new Logger();
 		var obj1 = SawyerStreamReader.LoadFullObjectFromFile(file, logger)!;
-		var stream = SawyerStreamWriter.WriteLocoObjectStream(
+		using var stream = SawyerStreamWriter.WriteLocoObjectStream(
 			obj1.Value.DatFileInfo.S5Header.Name,
 			obj1.Value.DatFileInfo.S5Header.ObjectType.Convert(),
 			obj1.Value.DatFileInfo.S5Header.ObjectSource.Convert(),

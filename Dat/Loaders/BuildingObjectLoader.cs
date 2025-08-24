@@ -2,10 +2,8 @@ using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Building;
-using Definitions.ObjectModels.Objects.Dock;
 using Definitions.ObjectModels.Types;
 using static Dat.Loaders.BuildingObjectLoader;
-using static Dat.Loaders.DockObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -160,12 +158,13 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
 		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);
 
+		// elevator sequences
 		foreach (var unk in model.ElevatorHeightSequences)
 		{
 			bw.Write((uint16_t)unk.Length);
 			foreach (var x in unk)
 			{
-				bw.Write((uint16_t)x);
+				bw.Write((uint8_t)x);
 			}
 		}
 	}

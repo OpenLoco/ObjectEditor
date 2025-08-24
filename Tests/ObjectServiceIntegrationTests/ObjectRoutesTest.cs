@@ -109,11 +109,13 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 	}
 
 	static void AssertDtoStringTableDescriptorsAreEqual(DtoStringTableDescriptor? expected, DtoStringTableDescriptor? actual)
-		=> Assert.Multiple(() =>
-		{
-			Assert.That(expected, Is.Not.Null);
-			Assert.That(actual, Is.Not.Null);
+	{
+		ArgumentNullException.ThrowIfNull(expected);
+		ArgumentNullException.ThrowIfNull(actual);
 
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(actual, Is.Not.Null);
 			Assert.That(expected.ObjectId, Is.EqualTo(actual.ObjectId), "Object Id");
 
 			foreach (var z1 in expected.Table.Zip(actual.Table))
@@ -126,7 +128,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 					Assert.That(z2.First.Value, Is.EqualTo(z2.Second.Value), $"{z1.First.Key}-{z2.First.Key}-Text");
 				}
 			}
-		});
+		}
+	}
 
 	[Test]
 	public override async Task GetAsync()

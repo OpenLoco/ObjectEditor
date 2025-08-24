@@ -91,7 +91,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			// fixed
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write((uint16_t)0);
 			bw.Write(model.NumStationaryTicks);
 			bw.Write((uint8_t)0); // SpriteWidth, not used
@@ -99,13 +99,13 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)0); // SpriteHeightPositive, not used
 			bw.Write((uint16_t)model.Flags.Convert());
 			bw.Write(model.var_0A);
-			bw.WriteImageId(); // BaseImageId, not used
+			bw.WriteEmptyImageId(); // BaseImageId, not used
 			bw.Write((uint16_t)0); // _TotalNumFramesType0, not used
 			bw.Write((uint16_t)0); // _TotalNumFramesType1, not used
-			bw.WritePointer(); // _FrameInfoType0Ptr, not used
-			bw.WritePointer(); // _FrameInfoType1Ptr, not used
+			bw.WriteEmptyPointer(); // _FrameInfoType0Ptr, not used
+			bw.WriteEmptyPointer(); // _FrameInfoType1Ptr, not used
 			bw.Write((uint8_t)model.SoundEffects.Count);
-			bw.WriteObjectId(Constants.MaxSoundEffects); // _SoundEffects, not used
+			bw.WriteEmptyObjectId(Constants.MaxSoundEffects); // _SoundEffects, not used
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

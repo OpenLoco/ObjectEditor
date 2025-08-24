@@ -63,7 +63,7 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.FirstSeason);
 			bw.Write(model.SeasonLength1);
 			bw.Write(model.SeasonLength2);

@@ -89,14 +89,14 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write((uint16_t)model.TrackPieces.Convert());
 			bw.Write((uint16_t)model.StationTrackPieces.Convert());
 			bw.Write(model.var_06);
 			bw.Write((uint8_t)model.CompatibleTracksAndRoads.Count);
 			bw.Write((uint8_t)model.TrackMods.Count);
 			bw.Write((uint8_t)model.Signals.Count);
-			bw.WriteObjectId(Constants.MaxMods); // Mods, not part of object definition
+			bw.WriteEmptyObjectId(Constants.MaxMods); // Mods, not part of object definition
 			bw.Write((uint16_t)0); // _Signals, not part of object definition
 			bw.Write((uint16_t)0); // _CompatibleTracks, not part of object definition
 			bw.Write((uint16_t)0); // _CompatibleRoads, not part of object definition
@@ -104,14 +104,14 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.TunnelCostFactor);
 			bw.Write(model.CostIndex);
-			bw.WriteObjectId(); // Tunnel, not part of object definition
+			bw.WriteEmptyObjectId(); // Tunnel, not part of object definition
 			bw.Write(model.MaxCurveSpeed);
-			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write((uint16_t)model.Flags.Convert());
 			bw.Write((uint8_t)model.Bridges.Count);
-			bw.WriteObjectId(Constants.MaxBridges); // Bridges, not part of object definition
+			bw.WriteEmptyObjectId(Constants.MaxBridges); // Bridges, not part of object definition
 			bw.Write((uint8_t)model.Stations.Count);
-			bw.WriteObjectId(Constants.MaxStations); // Stations, not part of object definition
+			bw.WriteEmptyObjectId(Constants.MaxStations); // Stations, not part of object definition
 			bw.Write(model.DisplayOffset);
 			bw.Write((uint8_t)0); // pad_35, not part of object definition
 

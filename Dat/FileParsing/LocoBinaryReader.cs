@@ -248,6 +248,7 @@ public class LocoBinaryReader : BinaryReader
 				_GentleImageIds = 0,
 				_SteepImageIds = 0,
 			};
+
 			SkipImageId();
 			SkipImageId();
 			SkipImageId();

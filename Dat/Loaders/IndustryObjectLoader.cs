@@ -151,27 +151,27 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
-			bw.WriteStringId(); // var_02, not part of object definition
-			bw.WriteStringId(); // NameClosingDown, not part of object definition
-			bw.WriteStringId(); // NameUpProduction, not part of object definition
-			bw.WriteStringId(); // NameDownProduction, not part of object definition
-			bw.WriteStringId(); // NameSingular, not part of object definition
-			bw.WriteStringId(); // NamePlural, not part of object definition
-			bw.WriteImageId(); // BaseShadowImageId, not part of object definition
-			bw.WriteImageId(); // BaseBuildingImageId, not part of object definition
-			bw.WriteImageId(); // BaseFarmImageIds, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // var_02, not part of object definition
+			bw.WriteEmptyStringId(); // NameClosingDown, not part of object definition
+			bw.WriteEmptyStringId(); // NameUpProduction, not part of object definition
+			bw.WriteEmptyStringId(); // NameDownProduction, not part of object definition
+			bw.WriteEmptyStringId(); // NameSingular, not part of object definition
+			bw.WriteEmptyStringId(); // NamePlural, not part of object definition
+			bw.WriteEmptyImageId(); // BaseShadowImageId, not part of object definition
+			bw.WriteEmptyImageId(); // BaseBuildingImageId, not part of object definition
+			bw.WriteEmptyImageId(); // BaseFarmImageIds, not part of object definition
 			bw.Write(model.FarmImagesPerGrowthStage);
 			bw.Write((uint8_t)model.BuildingHeights.Count);
 			bw.Write((uint8_t)model.BuildingVariations.Count);
-			bw.WritePointer(); // BuildingHeights, not part of object definition
-			bw.WritePointer(); // BuildingAnimations, not part of object definition
-			bw.WritePointer(Constants.AnimationSequencesCount); // AnimationSequences, not part of object definition
-			bw.WritePointer(); // var_38, not part of object definition
-			bw.WritePointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
+			bw.WriteEmptyPointer(); // BuildingHeights, not part of object definition
+			bw.WriteEmptyPointer(); // BuildingAnimations, not part of object definition
+			bw.WriteEmptyPointer(Constants.AnimationSequencesCount); // AnimationSequences, not part of object definition
+			bw.WriteEmptyPointer(); // var_38, not part of object definition
+			bw.WriteEmptyPointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
 			bw.Write(model.MinNumBuildings);
 			bw.Write(model.MaxNumBuildings);
-			bw.WritePointer(); // Buildings, not part of object definition
+			bw.WriteEmptyPointer(); // Buildings, not part of object definition
 			bw.Write(model.Colours);  // bitset
 			bw.Write(model.BuildingSizeFlags); // flags indicating the building types size
 			bw.Write(model.DesignedYear);
@@ -187,8 +187,8 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 				bw.Write(rate.Min);
 				bw.Write(rate.Max);
 			}
-			bw.WriteBytes(Constants.MaxProducedCargoType);
-			bw.WriteBytes(Constants.MaxRequiredCargoType);
+			bw.WriteEmptyBytes(Constants.MaxProducedCargoType);
+			bw.WriteEmptyBytes(Constants.MaxRequiredCargoType);
 			bw.Write((uint8_t)model.MapColour);
 			bw.Write((uint32_t)model.Flags.Convert());
 			bw.Write(model.var_E8); // Unused, but must be 0 or 1
@@ -196,9 +196,9 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			bw.Write(model.FarmGrowthStageWithNoProduction); // At this stage of growth (except 0), a field tile produces nothing
 			bw.Write(model.FarmIdealSize); // Max production is reached at farmIdealSize * 25 tiles
 			bw.Write(model.FarmNumStagesOfGrowth); // How many growth stages there are sprites for
-			bw.WritePointer(); // WallTypes, not part of object definition
-			bw.WriteObjectId(); // _BuildingWall, not part of object definition
-			bw.WriteObjectId(); // _BuildingWallEntrance, not part of object definition
+			bw.WriteEmptyPointer(); // WallTypes, not part of object definition
+			bw.WriteEmptyObjectId(); // _BuildingWall, not part of object definition
+			bw.WriteEmptyObjectId(); // _BuildingWallEntrance, not part of object definition
 			bw.Write(model.MonthlyClosureChance);
 
 			// sanity check

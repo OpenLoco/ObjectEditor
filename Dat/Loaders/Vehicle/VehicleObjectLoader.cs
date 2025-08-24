@@ -33,7 +33,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 	{
 		public const int Dat = 0x15E;
 		public const int SoundData = 0x1B;
-		public const int FrictionSound = 0x08;
+		public const int FrictionSound = 0x0B;
 		public const int SimpleMotorSound = 0x11;
 		public const int GearboxMotorSound = 0x1B;
 	}
@@ -49,65 +49,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			var imageTable = new List<GraphicsElement>();
 
 			// fixed
-			br.SkipStringId(); // Name offset, not part of object definition
-			model.Mode = ((DatTransportMode)br.ReadByte()).Convert();
-			model.Type = ((DatVehicleType)br.ReadByte()).Convert();
-			model.NumCarComponents = br.ReadByte();
-			br.SkipObjectId(); // TrackTypeId, not part of object definition
-			var numRequiredTrackExtras = br.ReadByte();
-			model.CostIndex = br.ReadByte();
-			model.CostFactor = br.ReadInt16();
-			model.Reliability = br.ReadByte();
-			model.RunCostIndex = br.ReadByte();
-			model.RunCostFactor = br.ReadInt16();
-			model.SpecialColourSchemeIndex = ((DatCompanyColourType)br.ReadByte()).Convert();
-			var numCompatibleVehicles = br.ReadByte();
-			br.SkipUInt16(Constants.CompatibleVehicleCount);
-			br.SkipByte(Constants.RequiredTrackExtrasCount);
-			model.CarComponents = br.ReadCarComponents(Constants.CarComponentsCount);
-			model.BodySprites = br.ReadBodySprites(Constants.MaxBodySprites);
-			model.BogieSprites = br.ReadBogieSprites(Constants.MaxBogieSprites);
-			model.Power = br.ReadUInt16();
-			model.Speed = br.ReadInt16();
-			model.RackSpeed = br.ReadInt16();
-			model.Weight = br.ReadUInt16();
-			model.Flags = ((DatVehicleObjectFlags)br.ReadUInt16()).Convert();
-			br.SkipByte(Constants.CompatibleCargoTypesLength * 1); // MaxCargo, read in LoadVariable
-			br.SkipByte(Constants.CompatibleCargoTypesLength * 4); // CompatibleCargoCategories, read in LoadVariable
-			br.SkipByte(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
-			br.SkipByte(); // NumSimultaneousCargoTypes, manipulated in LoadVariable
-			model.Animation = br.ReadSimpleAnimations(Constants.AnimationCount);
-			model.ShipWakeOffset = br.ReadByte(); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
-			model.DesignedYear = br.ReadUInt16();
-			model.ObsoleteYear = br.ReadUInt16();
-			br.SkipObjectId(); // RackRailType, not part of object definition
-			model.DrivingSoundType = ((DatDrivingSoundType)br.ReadByte()).Convert();
-
-			switch (model.DrivingSoundType)
-			{
-				case DrivingSoundType.Friction:
-					model.FrictionSound = br.ReadFrictionSound();
-					br.SkipByte(StructSizes.SoundData - StructSizes.FrictionSound);
-					break;
-				case DrivingSoundType.SimpleMotor:
-					model.SimpleMotorSound = br.ReadSimpleMotorSound();
-					br.SkipByte(StructSizes.SoundData - StructSizes.SimpleMotorSound);
-					break;
-				case DrivingSoundType.GearboxMotor:
-					model.GearboxMotorSound = br.ReadGearboxMotorSound();
-					br.SkipByte(StructSizes.SoundData - StructSizes.GearboxMotorSound);
-					break;
-				case DrivingSoundType.None:
-					// nothing to read
-					br.SkipByte(StructSizes.SoundData);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(nameof(model.DrivingSoundType), model.DrivingSoundType, null);
-			}
-
-			model.var_135 = br.ReadBytes(0x15A - 0x135);
-			var numStartSounds = br.ReadByte();
-			br.SkipByte(Constants.MaxStartSounds); // StartSounds, not part of object definition
+			LoadFixed(br, model, out var numRequiredTrackExtras, out var numCompatibleVehicles, out var numStartSounds);
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -116,82 +58,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Vehicle), null);
 
 			// variable
-			{
-				// track type
-				if (!model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road))
-				{
-					model.TrackType = br.ReadS5Header();
-				}
-
-				model.RequiredTrackExtras = br.ReadS5HeaderList(numRequiredTrackExtras);
-
-				// compatible cargo
-				for (var i = 0; i < Constants.CompatibleCargoTypesLength; ++i)
-				{
-					model.CompatibleCargoCategories.Add([]);
-					var index = model.NumSimultaneousCargoTypes;
-					model.MaxCargo.Add(br.ReadByte());
-
-					if (model.MaxCargo[index] == 0)
-					{
-						continue;
-					}
-
-					while ((CargoCategory)br.PeekUInt16() != CargoCategory.NULL)
-					{
-						var cargoCategory = (CargoCategory)br.ReadUInt16();
-						var cargoTypeSpriteOffset = br.ReadByte();
-
-						model.CompatibleCargoCategories[index].Add(cargoCategory);
-
-						if (!model.CargoTypeSpriteOffsets.TryAdd(cargoCategory, cargoTypeSpriteOffset))
-						{
-							// invalid object - shouldn't have 2 cargo types that are the same
-						}
-					}
-
-					br.SkipByte(2); // skips the 0xFFFF bytes
-
-					if (model.CompatibleCargoCategories[index].Count == 0)
-					{
-						model.MaxCargo[index] = 0;
-					}
-					else
-					{
-						model.NumSimultaneousCargoTypes++;
-					}
-				}
-
-				// animation
-				foreach (var anim in model.Animation)
-				{
-					if (anim.Type == SimpleAnimationType.None)
-					{
-						continue;
-					}
-
-					model.AnimationHeaders.Add(br.ReadS5Header());
-				}
-
-				model.CompatibleVehicles = br.ReadS5HeaderList(numCompatibleVehicles);
-
-				// rack rail
-				if (model.Flags.HasFlag(VehicleObjectFlags.RackRail))
-				{
-					model.RackRail = br.ReadS5Header();
-				}
-
-				// driving sound
-				if (model.DrivingSoundType != DrivingSoundType.None)
-				{
-					model.Sound = br.ReadS5Header();
-				}
-
-				// driving start sounds
-				const int mask = 127;
-				var count = numStartSounds & mask;
-				model.StartSounds = br.ReadS5HeaderList(count);
-			}
+			LoadVariable(br, model, numRequiredTrackExtras, numCompatibleVehicles, numStartSounds);
 
 			// image table
 			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
@@ -200,13 +67,217 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		}
 	}
 
+	private static void LoadVariable(LocoBinaryReader br, VehicleObject model, byte numRequiredTrackExtras, byte numCompatibleVehicles, byte numStartSounds)
+	{
+		// track type
+		if (!model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road))
+		{
+			model.TrackType = br.ReadS5Header();
+		}
+
+		// required track extra
+		model.RequiredTrackExtras = br.ReadS5HeaderList(numRequiredTrackExtras);
+
+		// compatible cargo
+		for (var i = 0; i < Constants.CompatibleCargoTypesLength; ++i)
+		{
+			model.CompatibleCargoCategories.Add([]);
+			var index = model.NumSimultaneousCargoTypes;
+			model.MaxCargo.Add(br.ReadByte());
+
+			if (model.MaxCargo[index] == 0)
+			{
+				continue;
+			}
+
+			while ((CargoCategory)br.PeekUInt16() != CargoCategory.NULL)
+			{
+				var cargoCategory = (CargoCategory)br.ReadUInt16();
+				var cargoTypeSpriteOffset = br.ReadByte();
+
+				model.CompatibleCargoCategories[index].Add(cargoCategory);
+
+				if (!model.CargoTypeSpriteOffsets.TryAdd(cargoCategory, cargoTypeSpriteOffset))
+				{
+					// invalid object - shouldn't have 2 cargo types that are the same
+				}
+			}
+
+			br.SkipByte(2); // skips the 0xFFFF bytes
+
+			if (model.CompatibleCargoCategories[index].Count == 0)
+			{
+				model.MaxCargo[index] = 0;
+			}
+			else
+			{
+				model.NumSimultaneousCargoTypes++;
+			}
+		}
+
+		// animation
+		foreach (var anim in model.Animation)
+		{
+			if (anim.Type == SimpleAnimationType.None)
+			{
+				continue;
+			}
+
+			model.AnimationHeaders.Add(br.ReadS5Header());
+		}
+
+		// compatible vehicles
+		model.CompatibleVehicles = br.ReadS5HeaderList(numCompatibleVehicles);
+
+		// rack rail
+		if (model.Flags.HasFlag(VehicleObjectFlags.RackRail))
+		{
+			model.RackRail = br.ReadS5Header();
+		}
+
+		// driving sound
+		if (model.DrivingSoundType != DrivingSoundType.None)
+		{
+			model.Sound = br.ReadS5Header();
+		}
+
+		// driving start sounds
+		const int mask = 127;
+		var count = numStartSounds & mask;
+		model.StartSounds = br.ReadS5HeaderList(count);
+	}
+
+	private static void LoadFixed(LocoBinaryReader br, VehicleObject model, out byte numRequiredTrackExtras, out byte numCompatibleVehicles, out byte numStartSounds)
+	{
+		br.SkipStringId(); // Name offset, not part of object definition
+		model.Mode = ((DatTransportMode)br.ReadByte()).Convert();
+		model.Type = ((DatVehicleType)br.ReadByte()).Convert();
+		model.NumCarComponents = br.ReadByte();
+		br.SkipObjectId(); // TrackTypeId, not part of object definition
+		numRequiredTrackExtras = br.ReadByte();
+		model.CostIndex = br.ReadByte();
+		model.CostFactor = br.ReadInt16();
+		model.Reliability = br.ReadByte();
+		model.RunCostIndex = br.ReadByte();
+		model.RunCostFactor = br.ReadInt16();
+		model.SpecialColourSchemeIndex = ((DatCompanyColourType)br.ReadByte()).Convert();
+		numCompatibleVehicles = br.ReadByte();
+		br.SkipUInt16(Constants.CompatibleVehicleCount);
+		br.SkipByte(Constants.RequiredTrackExtrasCount);
+		model.CarComponents = br.ReadCarComponents(Constants.CarComponentsCount);
+		model.BodySprites = br.ReadBodySprites(Constants.MaxBodySprites);
+		model.BogieSprites = br.ReadBogieSprites(Constants.MaxBogieSprites);
+		model.Power = br.ReadUInt16();
+		model.Speed = br.ReadInt16();
+		model.RackSpeed = br.ReadInt16();
+		model.Weight = br.ReadUInt16();
+		model.Flags = ((DatVehicleObjectFlags)br.ReadUInt16()).Convert();
+		br.SkipByte(Constants.CompatibleCargoTypesLength * 1); // MaxCargo, read in LoadVariable
+		br.SkipByte(Constants.CompatibleCargoTypesLength * 4); // CompatibleCargoCategories, read in LoadVariable
+		br.SkipByte(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
+		br.SkipByte(); // NumSimultaneousCargoTypes, manipulated in LoadVariable
+		model.Animation = br.ReadSimpleAnimations(Constants.AnimationCount);
+		model.ShipWakeOffset = br.ReadByte(); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
+		model.DesignedYear = br.ReadUInt16();
+		model.ObsoleteYear = br.ReadUInt16();
+		br.SkipObjectId(); // RackRailType, not part of object definition
+		model.DrivingSoundType = ((DatDrivingSoundType)br.ReadByte()).Convert();
+
+		switch (model.DrivingSoundType)
+		{
+			case DrivingSoundType.Friction:
+				model.FrictionSound = br.ReadFrictionSound();
+				br.SkipByte(StructSizes.SoundData - StructSizes.FrictionSound);
+				break;
+			case DrivingSoundType.SimpleMotor:
+				model.SimpleMotorSound = br.ReadSimpleMotorSound();
+				br.SkipByte(StructSizes.SoundData - StructSizes.SimpleMotorSound);
+				break;
+			case DrivingSoundType.GearboxMotor:
+				model.GearboxMotorSound = br.ReadGearboxMotorSound();
+				br.SkipByte(StructSizes.SoundData - StructSizes.GearboxMotorSound);
+				break;
+			case DrivingSoundType.None:
+				br.SkipByte(StructSizes.SoundData);
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(model.DrivingSoundType), model.DrivingSoundType, null);
+		}
+
+		model.var_135 = br.ReadBytes(0x15A - 0x135);
+		numStartSounds = br.ReadByte();
+		br.SkipByte(Constants.MaxStartSounds); // StartSounds, not part of object definition
+	}
+
 	public static void Save(MemoryStream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
+		var model = (VehicleObject)obj.Object;
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
+			bw.Write((uint8_t)model.Mode.Convert());
+			bw.Write((uint8_t)model.Type.Convert());
+			bw.Write(model.NumCarComponents);
+			bw.WriteEmptyObjectId(); // TrackTypeId, not part of object definition
+			bw.Write((uint8_t)model.RequiredTrackExtras.Count);
+			bw.Write(model.CostIndex);
+			bw.Write(model.CostFactor);
+			bw.Write(model.Reliability);
+			bw.Write(model.RunCostIndex);
+			bw.Write(model.RunCostFactor);
+			bw.Write((uint8_t)model.SpecialColourSchemeIndex.Convert());
+			bw.Write((uint8_t)model.CompatibleVehicles.Count);
+			bw.WriteEmptyUInt16(Constants.CompatibleVehicleCount);
+			bw.WriteEmptyUInt8(Constants.RequiredTrackExtrasCount);
+			bw.WriteVehicleObjectCar(model.CarComponents);
+			bw.WriteBodySprites(model.BodySprites);
+			bw.WriteBogieSprites(model.BogieSprites);
+			bw.Write(model.Power);
+			bw.Write(model.Speed);
+			bw.Write(model.RackSpeed);
+			bw.Write(model.Weight);
+			bw.Write((uint16_t)model.Flags.Convert());
+			bw.WriteEmptyBytes(Constants.CompatibleCargoTypesLength * 1); // MaxCargo, read in LoadVariable
+			bw.WriteEmptyBytes(Constants.CompatibleCargoTypesLength * 4); // CompatibleCargoCategories, read in LoadVariable
+			bw.WriteEmptyBytes(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
+			bw.WriteEmptyUInt8(); // NumSimultaneousCargoTypes, manipulated in LoadVariable
+			bw.WriteSimpleAnimations(model.Animation);
+			bw.Write(model.ShipWakeOffset); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
+			bw.Write(model.DesignedYear);
+			bw.Write(model.ObsoleteYear);
+			bw.WriteEmptyObjectId(); // RackRailType, not part of object definition
+			bw.Write((uint8_t)model.DrivingSoundType.Convert());
+
+			// sound union
+			switch (model.DrivingSoundType)
+			{
+				case DrivingSoundType.Friction:
+					ArgumentNullException.ThrowIfNull(model.FrictionSound);
+					bw.WriteFrictionSound(model.FrictionSound);
+					bw.WriteEmptyBytes(StructSizes.SoundData - StructSizes.FrictionSound);
+					break;
+				case DrivingSoundType.SimpleMotor:
+					ArgumentNullException.ThrowIfNull(model.SimpleMotorSound);
+					bw.WriteSimpleMotorSound(model.SimpleMotorSound);
+					bw.WriteEmptyBytes(StructSizes.SoundData - StructSizes.SimpleMotorSound);
+					break;
+				case DrivingSoundType.GearboxMotor:
+					ArgumentNullException.ThrowIfNull(model.GearboxMotorSound);
+					bw.WriteGearboxMotorSound(model.GearboxMotorSound);
+					bw.WriteEmptyBytes(StructSizes.SoundData - StructSizes.GearboxMotorSound);
+					break;
+				case DrivingSoundType.None:
+					bw.WriteEmptyBytes(StructSizes.SoundData);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(model.DrivingSoundType), model.DrivingSoundType, null);
+			}
+
+			bw.Write(model.var_135);
+			bw.Write((uint8_t)model.StartSounds.Count);
+			bw.WriteEmptyUInt8(Constants.MaxStartSounds); // StartSounds, not part of object
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -215,7 +286,62 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
 
 			// variable
-			// N/A
+			{
+				// track type
+				if (!model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road))
+				{
+					bw.WriteS5Header(model.TrackType);
+				}
+
+				// track extras
+				foreach (var x in model.RequiredTrackExtras)
+				{
+					bw.WriteS5Header(x);
+				}
+
+				// cargo types
+				for (var i = 0; i < Constants.CompatibleCargoTypesLength; ++i) // CompatibleCargoTypesLength should == CompatibleCargoCategories.Length
+				{
+					if (model.MaxCargo.Count < i || model.MaxCargo[i] == 0)
+					{
+						bw.WriteEmptyUInt8(); // write a 0 for MaxCargo - this indicates no more cargo and we skip the rest
+						continue;
+					}
+					else
+					{
+						bw.Write(model.MaxCargo[i]);
+					}
+
+					foreach (var cc in model.CompatibleCargoCategories[i])
+					{
+						bw.Write(BitConverter.GetBytes((uint16_t)cc));
+						bw.Write(model.CargoTypeSpriteOffsets[cc]);
+					}
+
+					bw.Write(BitConverter.GetBytes((uint16_t)CargoCategory.NULL));
+				}
+
+				// animation
+				bw.WriteS5HeaderList(model.AnimationHeaders);
+
+				// compatible vehicles
+				bw.WriteS5HeaderList(model.CompatibleVehicles);
+
+				// rack rail
+				if (model.Flags.HasFlag(VehicleObjectFlags.RackRail))
+				{
+					bw.WriteS5Header(model.RackRail);
+				}
+
+				// driving sound
+				if (model.DrivingSoundType != DrivingSoundType.None)
+				{
+					bw.WriteS5Header(model.Sound);
+				}
+
+				// driving start sounds
+				bw.WriteS5HeaderList(model.StartSounds);
+			}
 
 			// image table
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);

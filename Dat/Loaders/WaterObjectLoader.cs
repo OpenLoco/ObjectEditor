@@ -57,12 +57,12 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.CostIndex);
 			bw.Write(model.var_03);
 			bw.Write(model.CostFactor);
-			bw.WriteImageId(); // ImageId, not part of object definition
-			bw.WriteImageId(); // MapPixelImage, not part of object definition
+			bw.WriteEmptyImageId(); // ImageId, not part of object definition
+			bw.WriteEmptyImageId(); // MapPixelImage, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

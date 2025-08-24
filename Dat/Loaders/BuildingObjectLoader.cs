@@ -108,13 +108,13 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
-			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write((uint8_t)model.BuildingAnimations.Count); // NumBuildingParts
 			bw.Write((uint8_t)model.BuildingVariations.Count);
-			bw.WritePointer();
-			bw.WritePointer();
-			bw.WritePointer(Constants.BuildingVariationCount);
+			bw.WriteEmptyPointer();
+			bw.WriteEmptyPointer();
+			bw.WriteEmptyPointer(Constants.BuildingVariationCount);
 			bw.Write(model.Colours);
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
@@ -127,8 +127,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			bw.Write(model.AverageNumberOnMap);
 			bw.Write(model.ProducedQuantity[0]);
 			bw.Write(model.ProducedQuantity[1]);
-			bw.WriteObjectId(Constants.MaxProducedCargoType);
-			bw.WriteObjectId(Constants.MaxRequiredCargoType);
+			bw.WriteEmptyObjectId(Constants.MaxProducedCargoType);
+			bw.WriteEmptyObjectId(Constants.MaxRequiredCargoType);
 			bw.Write(model.var_A6);
 			bw.Write(model.var_A7);
 			bw.Write(model.var_A8);
@@ -136,7 +136,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			bw.Write(model.DemolishRatingReduction);
 			bw.Write(model.var_AC);
 			bw.Write((uint8_t)model.ElevatorHeightSequences.Count);
-			bw.WritePointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
+			bw.WriteEmptyPointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

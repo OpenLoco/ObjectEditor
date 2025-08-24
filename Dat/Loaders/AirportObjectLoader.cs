@@ -115,20 +115,20 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId();// Name offset, not part of object definition
+			bw.WriteEmptyStringId();// Name offset, not part of object definition
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
 			bw.Write(model.var_07);
-			bw.WriteImageId(); // Image, not part of object definition
-			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyImageId(); // Image, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write(model.AllowedPlaneTypes);
 			bw.Write((uint8_t)model.BuildingHeights.Count);
 			bw.Write((uint8_t)model.BuildingVariations.Count);
-			bw.WritePointer(); // BuildingHeights
-			bw.WritePointer(); // BuildingAnimations
-			bw.WritePointer(Constants.BuildingVariationCount); // BuildingVariations
-			bw.WritePointer(); // BuildingPositions
+			bw.WriteEmptyPointer(); // BuildingHeights
+			bw.WriteEmptyPointer(); // BuildingAnimations
+			bw.WriteEmptyPointer(Constants.BuildingVariationCount); // BuildingVariations
+			bw.WriteEmptyPointer(); // BuildingPositions
 			bw.Write(model.LargeTiles);
 			bw.Write(model.MinX);
 			bw.Write(model.MinY);
@@ -138,8 +138,8 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(model.ObsoleteYear);
 			bw.Write((uint8_t)model.MovementNodes.Count);
 			bw.Write((uint8_t)model.MovementEdges.Count);
-			bw.WritePointer(); // MovementNodes
-			bw.WritePointer(); // MovementEdges
+			bw.WriteEmptyPointer(); // MovementNodes
+			bw.WriteEmptyPointer(); // MovementEdges
 			bw.Write(model.var_B6);
 
 			// sanity check

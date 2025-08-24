@@ -63,7 +63,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.CostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
@@ -73,7 +73,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			bw.Write(model.var_0A); // something like IdleAnimationFrames or something
 			bw.Write((uint8_t)0); // pad_0B, unused
 			bw.Write(model.DesignedYear);
-			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

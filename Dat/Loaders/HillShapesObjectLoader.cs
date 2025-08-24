@@ -57,11 +57,11 @@ public abstract class HillShapesObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.HillHeightMapCount);
 			bw.Write(model.MountainHeightMapCount);
-			bw.WriteImageId();
-			bw.WriteImageId();
+			bw.WriteEmptyImageId();
+			bw.WriteEmptyImageId();
 			bw.Write((uint16_t)(model.IsHeightMap ? DatHillShapeFlags.IsHeightMap : DatHillShapeFlags.None));
 
 			// sanity check

@@ -60,14 +60,14 @@ public abstract class TrackExtraObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write((uint16_t)model.TrackPieces);
 			bw.Write(model.PaintStyle);
 			bw.Write(model.CostIndex);
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
-			bw.WriteImageId(); // Image offset, not part of object definition
-			bw.WriteImageId(); // BaseImageOffset, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyImageId(); // BaseImageOffset, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

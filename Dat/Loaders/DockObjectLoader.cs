@@ -74,19 +74,19 @@ public abstract class DockObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
 			bw.Write(model.var_07); // probably padding
-			bw.WriteImageId(); // Image, not part of object definition
-			bw.WriteImageId(); // UnkImage, not part of object definition
+			bw.WriteEmptyImageId(); // Image, not part of object definition
+			bw.WriteEmptyImageId(); // UnkImage, not part of object definition
 			bw.Write((uint16_t)model.Flags.Convert());
 			bw.Write((uint8_t)model.BuildingAnimations.Count);
 			bw.Write((uint8_t)model.BuildingVariations.Count);
-			bw.WritePointer(); // BuildingPartHeights
-			bw.WritePointer(); // BuildingPartAnimations
-			bw.WritePointer(); // BuildingVariationParts
+			bw.WriteEmptyPointer(); // BuildingPartHeights
+			bw.WriteEmptyPointer(); // BuildingPartAnimations
+			bw.WriteEmptyPointer(); // BuildingVariationParts
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
 			bw.Write(model.BoatPosition.X);

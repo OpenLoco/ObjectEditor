@@ -65,12 +65,12 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // First ame offset, not part of object definition
-			bw.WriteStringId(); // Last name offset, not part of object definition
+			bw.WriteEmptyStringId(); // First ame offset, not part of object definition
+			bw.WriteEmptyStringId(); // Last name offset, not part of object definition
 			bw.Write((uint32_t)model.AvailableNamePrefixes);
 			bw.Write((uint32_t)model.AvailablePlaystyles);
 			bw.Write((uint32_t)model.Emotions);
-			bw.WriteImageId(Constants.ImagesLength); // Images, not part of object definition
+			bw.WriteEmptyImageId(Constants.ImagesLength); // Images, not part of object definition
 			bw.Write(model.Intelligence);
 			bw.Write(model.Aggressiveness);
 			bw.Write(model.Competitiveness);

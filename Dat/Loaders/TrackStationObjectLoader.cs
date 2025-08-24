@@ -115,7 +115,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.PaintStyle);
 			bw.Write(model.Height);
 			bw.Write((uint16_t)model.TrackPieces);
@@ -125,14 +125,14 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			bw.Write(model.var_0B);
 			bw.Write((uint8_t)model.Flags);
 			bw.Write(model.var_0D);
-			bw.WriteImageId(); // Image, not part of object definition
-			bw.WriteImageId(Constants.MaxImageOffsets); // uint32_t
+			bw.WriteEmptyImageId(); // Image, not part of object definition
+			bw.WriteEmptyImageId(Constants.MaxImageOffsets); // uint32_t
 			bw.Write((uint8_t)model.CompatibleTrackObjects.Count);
-			bw.WriteObjectId(Constants.MaxNumCompatible);
+			bw.WriteEmptyObjectId(Constants.MaxNumCompatible);
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
-			bw.WritePointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
-			bw.WritePointer(Constants.var_6E_Length); // var_6E, not part of object definition
+			bw.WriteEmptyPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
+			bw.WriteEmptyPointer(Constants.var_6E_Length); // var_6E, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

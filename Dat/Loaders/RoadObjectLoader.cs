@@ -89,23 +89,23 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write((uint16_t)model.RoadPieces.Convert());
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.TunnelCostFactor);
 			bw.Write(model.CostIndex);
-			bw.WriteObjectId();
+			bw.WriteEmptyObjectId();
 			bw.Write(model.MaxCurveSpeed);
-			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write((uint16_t)model.Flags.Convert());
 			bw.Write((uint8_t)model.Bridges.Count);
-			bw.WriteObjectId(Constants.MaxBridges);
+			bw.WriteEmptyObjectId(Constants.MaxBridges);
 			bw.Write((uint8_t)model.Stations.Count);
-			bw.WriteObjectId(Constants.MaxStations);
+			bw.WriteEmptyObjectId(Constants.MaxStations);
 			bw.Write(model.PaintStyle);
 			bw.Write((uint8_t)model.RoadMods.Count);
-			bw.WriteObjectId(Constants.MaxMods);
+			bw.WriteEmptyObjectId(Constants.MaxMods);
 			bw.Write((uint8_t)model.CompatibleTracksAndRoads.Count);
 			bw.Write(model.DisplayOffset);
 			bw.Write((uint16_t)0); // _CompatibleRoads, not part of object definition

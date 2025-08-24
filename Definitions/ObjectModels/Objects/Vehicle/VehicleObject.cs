@@ -14,7 +14,6 @@ public class VehicleObject : ILocoStruct
 	public uint8_t Reliability { get; set; }
 	public uint8_t RunCostIndex { get; set; }
 	public int16_t RunCostFactor { get; set; }
-	//public uint8_t NumCompatibleVehicles { get; set; }
 	public CompanyColourType SpecialColourSchemeIndex { get; set; }
 	public uint16_t Power { get; set; }
 	public Speed16 Speed { get; set; }

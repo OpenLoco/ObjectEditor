@@ -67,8 +67,8 @@ public abstract class ScaffoldingObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
-			bw.WriteImageId();
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyImageId();
 
 			for (var i = 0; i < Constants.SegmentHeightCount; i++)
 			{

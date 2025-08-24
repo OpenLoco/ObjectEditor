@@ -53,7 +53,7 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId();// Name offset, not part of object definition
+			bw.WriteEmptyStringId();// Name offset, not part of object definition
 			for (var i = 0; i < Constants.DesignedYearLength; ++i)
 			{
 				bw.Write(model.DesignedYears[i]);

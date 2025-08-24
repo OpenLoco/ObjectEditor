@@ -68,7 +68,7 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId();// Name offset, not part of object definition
+			bw.WriteEmptyStringId();// Name offset, not part of object definition
 			bw.Write((uint16_t)model.Flags);
 			bw.Write(model.AnimationSpeed);
 			bw.Write(model.NumFrames);
@@ -79,7 +79,7 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			bw.Write((string_id)0); // Description, not part of object definition
 			bw.Write((image_id)0); // BaseImageOffset, not part of object definition
 			bw.Write((uint8_t)model.CompatibleTrackObjects.Count);
-			bw.WriteObjectId(Constants.ModsLength); // Mods, not part of object definition
+			bw.WriteEmptyObjectId(Constants.ModsLength); // Mods, not part of object definition
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
 

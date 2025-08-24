@@ -58,8 +58,8 @@ public abstract class WallObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
-			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write(model.ToolId);
 			bw.Write((uint8_t)model.Flags1.Convert());
 			bw.Write(model.Height);

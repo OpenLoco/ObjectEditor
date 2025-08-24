@@ -54,9 +54,9 @@ public abstract class ScenarioTextObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
-			bw.WriteStringId(); // Details offset, not part of object definition
-			bw.WriteBytes(0x06 - 0x04); // pad, not used
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Details offset, not part of object definition
+			bw.WritePaddingBytes(0x06 - 0x04);
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
@@ -71,15 +71,4 @@ public abstract class ScenarioTextObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
 		}
 	}
-}
-
-[LocoStructSize(0x06)]
-[LocoStructType(DatObjectType.ScenarioText)]
-internal record DatScenarioTextObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02), LocoString, Browsable(false)] string_id Details,
-	[property: LocoStructOffset(0x04), LocoArrayLength(0x6 - 0x4), Browsable(false)] uint8_t pad_04
-	) : ILocoStruct
-{
-	public bool Validate() => true;
 }

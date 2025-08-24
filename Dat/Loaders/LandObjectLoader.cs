@@ -74,18 +74,18 @@ public abstract class LandObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.CostIndex);
 			bw.Write(model.NumGrowthStages);
 			bw.Write(model.NumImageAngles);
 			bw.Write((uint8_t)model.Flags.Convert());
-			bw.WriteObjectId(); // CliffEdgeHeader1, not part of object definition
-			bw.WriteObjectId(); // CliffEdgeHeader2, not part of object definition
+			bw.WriteEmptyObjectId(); // CliffEdgeHeader1, not part of object definition
+			bw.WriteEmptyObjectId(); // CliffEdgeHeader2, not part of object definition
 			bw.Write(model.CostFactor);
-			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write(model.NumImagesPerGrowthStage);
-			bw.WriteImageId(); // CliffEdgeImage, not part of object definition
-			bw.WriteImageId(); // MapPixelImage, not part of object definition
+			bw.WriteEmptyImageId(); // CliffEdgeImage, not part of object definition
+			bw.WriteEmptyImageId(); // MapPixelImage, not part of object definition
 			bw.Write(model.DistributionPattern);
 			bw.Write(model.NumVariations);
 			bw.Write(model.VariationLikelihood);

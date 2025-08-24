@@ -58,10 +58,10 @@ public abstract class CurrencyObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
-			bw.WriteStringId(); // PrefixSymbol, not part of object definition
-			bw.WriteStringId(); // SuffixSymbol, not part of object definition
-			bw.WriteImageId(); // ObjectIcon, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // PrefixSymbol, not part of object definition
+			bw.WriteEmptyStringId(); // SuffixSymbol, not part of object definition
+			bw.WriteEmptyImageId(); // ObjectIcon, not part of object definition
 			bw.Write(model.Separator);
 			bw.Write(model.Factor);
 

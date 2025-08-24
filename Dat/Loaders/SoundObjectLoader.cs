@@ -79,10 +79,10 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
-			bw.WritePointer();
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyPointer();
 			bw.Write(model.ShouldLoop);
-			bw.WriteBytes(1);
+			bw.WritePaddingBytes(1);
 			bw.Write(model.Volume);
 
 			// sanity check

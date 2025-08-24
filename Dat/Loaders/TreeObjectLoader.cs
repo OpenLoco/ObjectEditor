@@ -74,7 +74,7 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.Clearance);
 			bw.Write(model.Height);
 			bw.Write(model.var_04);
@@ -82,8 +82,8 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 			bw.Write(model.NumRotations);
 			bw.Write(model.NumGrowthStages);
 			bw.Write((uint16_t)model.Flags.Convert()); // Convert to DatTreeObjectFlags
-			bw.WriteImageId(Constants.ImageCount); // Image sprites, not part
-			bw.WriteImageId(Constants.ImageCount); // Snow sprites, not part of object definition
+			bw.WriteEmptyImageId(Constants.ImageCount); // Image sprites, not part
+			bw.WriteEmptyImageId(Constants.ImageCount); // Snow sprites, not part of object definition
 			bw.Write(model.ShadowImageOffset);
 			bw.Write((uint8_t)model.var_3C.Convert()); // Convert to Dat
 			bw.Write(model.SeasonState);

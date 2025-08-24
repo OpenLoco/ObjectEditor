@@ -61,7 +61,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId();// Name offset, not part of object definition
+			bw.WriteEmptyStringId();// Name offset, not part of object definition
 			for (var i = 0; i < Constants.Categories; ++i)
 			{
 				bw.Write(model.Categories[i].Count);

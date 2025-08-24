@@ -65,11 +65,11 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
-			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write((uint16_t)0); // pad
 			bw.Write((uint8_t)model.CargoInfluenceObjects.Count);
-			bw.WriteObjectId(Constants.MaxCargoInfluenceObjects);
+			bw.WriteEmptyObjectId(Constants.MaxCargoInfluenceObjects);
 			for (var i = 0; i < Constants.MaxCargoInfluenceObjects; ++i)
 			{
 				bw.Write((uint8_t)model.CargoInfluenceTownFilter[i]); // Cargo influence town filter

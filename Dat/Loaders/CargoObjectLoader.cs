@@ -70,13 +70,13 @@ public abstract class CargoObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId(); // Name offset, not part of object definition
+			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.var_02);
 			bw.Write(model.CargoTransferTime);
-			bw.WriteStringId(); // UnitsAndCargoName, not part of object definition
-			bw.WriteStringId(); // UnitNameSingular, not part of object definition
-			bw.WriteStringId(); // UnitNamePlural, not part of object definition
-			bw.WriteImageId(); // UnitInlineSprite offset, not part of object definition
+			bw.WriteEmptyStringId(); // UnitsAndCargoName, not part of object definition
+			bw.WriteEmptyStringId(); // UnitNameSingular, not part of object definition
+			bw.WriteEmptyStringId(); // UnitNamePlural, not part of object definition
+			bw.WriteEmptyImageId(); // UnitInlineSprite offset, not part of object definition
 			bw.Write((uint16_t)model.CargoCategory);
 			bw.Write((uint8_t)model.Flags);
 			bw.Write(model.NumPlatformVariations);

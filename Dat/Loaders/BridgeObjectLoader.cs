@@ -76,7 +76,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 
 		using (var bw = new LocoBinaryWriter(stream))
 		{
-			bw.WriteStringId();// Name offset, not part of object definition
+			bw.WriteEmptyStringId();// Name offset, not part of object definition
 			bw.Write((uint8_t)model.Flags);
 			bw.Write(model.var_03);
 			bw.Write(model.ClearHeight);
@@ -90,11 +90,11 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			bw.Write(model.HeightCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write((uint16_t)model.DisabledTrackFlags.Convert());
-			bw.WriteImageId(); // Image offset, not part of object definition
+			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write((uint8_t)model.CompatibleTrackObjects.Count);
-			bw.WriteObjectId(Constants.MaxNumTrackMods); // Placeholder for track mods, not part of object definition
+			bw.WriteEmptyObjectId(Constants.MaxNumTrackMods); // Placeholder for track mods, not part of object definition
 			bw.Write((uint8_t)model.CompatibleRoadObjects.Count);
-			bw.WriteObjectId(Constants.MaxNumRoadMods); // Placeholder for road mods, not part of object definition
+			bw.WriteEmptyObjectId(Constants.MaxNumRoadMods); // Placeholder for road mods, not part of object definition
 			bw.Write(model.DesignedYear);
 
 			// sanity check

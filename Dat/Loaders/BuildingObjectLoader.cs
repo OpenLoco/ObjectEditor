@@ -2,7 +2,10 @@ using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Dock;
 using Definitions.ObjectModels.Types;
+using static Dat.Loaders.BuildingObjectLoader;
+using static Dat.Loaders.DockObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -45,7 +48,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			model.Colours = br.ReadUInt32();
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
-			model.Flags = (BuildingObjectFlags)br.ReadByte();
+			model.Flags = ((DatBuildingObjectFlags)br.ReadByte()).Convert();
 			model.CostIndex = br.ReadByte();
 			model.SellCostFactor = br.ReadUInt16();
 			model.ScaffoldingSegmentType = br.ReadByte();
@@ -176,4 +179,13 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		Indestructible = 1 << 2,
 		IsHeadquarters = 1 << 3,
 	}
+}
+
+internal static class BuildingObjectFlagsConverter
+{
+	public static BuildingObjectFlags Convert(this DatBuildingObjectFlags datBuildingObjectFlags)
+		=> (BuildingObjectFlags)datBuildingObjectFlags;
+
+	public static DatBuildingObjectFlags Convert(this BuildingObjectFlags buildingObjectFlags)
+		=> (DatBuildingObjectFlags)buildingObjectFlags;
 }

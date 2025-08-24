@@ -1,23 +1,17 @@
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
-//[LocoStructSize(0x11)]
-public record SimpleMotorSound(
-	/*[property: LocoStructOffset(0x00), Browsable(false)]*/ uint8_t SoundObjectId,
-	/*[property: LocoStructOffset(0x01)] */uint16_t IdleFrequency,
-	/*[property: LocoStructOffset(0x03)] */uint8_t IdleVolume,
-	/*[property: LocoStructOffset(0x04)] */uint16_t CoastingFrequency,
-	/*[property: LocoStructOffset(0x06)] */uint8_t CoastingVolume,
-	/*[property: LocoStructOffset(0x07)] */uint16_t AccelerationBaseFrequency,
-	/*[property: LocoStructOffset(0x09)] */uint8_t AccelerationVolume,
-	/*[property: LocoStructOffset(0x0A)] */uint16_t FreqIncreaseStep,
-	/*[property: LocoStructOffset(0x0C)] */uint16_t FreqDecreaseStep,
-	/*[property: LocoStructOffset(0x0E)] */uint8_t VolumeIncreaseStep,
-	/*[property: LocoStructOffset(0x0F)] */uint8_t VolumeDecreaseStep,
-	/*[property: LocoStructOffset(0x10)] */uint8_t SpeedFrequencyFactor // bit-shift right of vehicle speed, added to calculated base frequency
-	) : ILocoStruct
+public class SimpleMotorSound
 {
-	public SimpleMotorSound() : this(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-	{ }
-
-	public bool Validate() => true;
+	public uint8_t SoundObjectId { get; set; }
+	public uint16_t IdleFrequency { get; set; }
+	public uint8_t IdleVolume { get; set; }
+	public uint16_t CoastingFrequency { get; set; }
+	public uint8_t CoastingVolume { get; set; }
+	public uint16_t AccelerationBaseFrequency { get; set; }
+	public uint8_t AccelerationVolume { get; set; }
+	public uint16_t FreqIncreaseStep { get; set; }
+	public uint16_t FreqDecreaseStep { get; set; }
+	public uint8_t VolumeIncreaseStep { get; set; }
+	public uint8_t VolumeDecreaseStep { get; set; }
+	public uint8_t SpeedFrequencyFactor { get; set; } // bit-shift right of vehicle speed, added to calculated base frequency
 }

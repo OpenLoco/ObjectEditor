@@ -1,5 +1,8 @@
+using System.ComponentModel;
+
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
+[TypeConverter(typeof(ExpandableObjectConverter))]
 //[LocoStructSize(0x06)]
 public record VehicleObjectCar(
 	/*[property: LocoStructOffset(0x00)] */uint8_t FrontBogiePosition,

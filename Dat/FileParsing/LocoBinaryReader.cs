@@ -2,6 +2,7 @@ using Dat.Converters;
 using Dat.Types;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Sound;
+using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using System.Text;
 
@@ -55,6 +56,15 @@ public class LocoBinaryReader : BinaryReader
 		var currentPosition = BaseStream.Position;
 		_ = BaseStream.Seek(ahead, SeekOrigin.Current);
 		var value = ReadByte();
+		_ = BaseStream.Seek(currentPosition, SeekOrigin.Begin);
+		return value;
+	}
+
+	public uint16_t PeekUInt16(int ahead = 0)
+	{
+		var currentPosition = BaseStream.Position;
+		_ = BaseStream.Seek(ahead, SeekOrigin.Current);
+		var value = ReadUInt16();
 		_ = BaseStream.Seek(currentPosition, SeekOrigin.Begin);
 		return value;
 	}
@@ -161,5 +171,156 @@ public class LocoBinaryReader : BinaryReader
 			BlockAlign = ReadInt16(),
 			BitsPerSample = ReadInt16(),
 			ExtraSize = ReadInt16()
+		};
+
+	public VehicleObjectCar[] ReadCarComponents(int count)
+	{
+		var result = new VehicleObjectCar[count];
+
+		for (var i = 0; i < count; ++i)
+		{
+			result[i] = new VehicleObjectCar
+			{
+				FrontBogiePosition = ReadByte(),
+				BackBogiePosition = ReadByte(),
+				FrontBogieSpriteIndex = ReadByte(),
+				BackBogieSpriteIndex = ReadByte(),
+				BodySpriteIndex = ReadByte(),
+				var_05 = ReadByte(),
+			};
+		}
+
+		return result;
+	}
+
+	public BodySprite[] ReadBodySprites(int count)
+	{
+		var result = new BodySprite[count];
+
+		for (var i = 0; i < count; ++i)
+		{
+			result[i] = new BodySprite
+			{
+				NumFlatRotationFrames = ReadByte(),
+				NumSlopedRotationFrames = ReadByte(),
+				NumAnimationFrames = ReadByte(),
+				NumCargoLoadFrames = ReadByte(),
+				NumCargoFrames = ReadByte(),
+				NumRollFrames = ReadByte(),
+				HalfLength = ReadByte(),
+				Flags = (BodySpriteFlags)ReadByte(),
+				_Width = ReadByte(),
+				_HeightNegative = ReadByte(),
+				_HeightPositive = ReadByte(),
+				_FlatYawAccuracy = ReadByte(),
+				_SlopedYawAccuracy = ReadByte(),
+				_NumFramesPerRotation = ReadByte(),
+				_FlatImageId = 0,
+				_UnkImageId = 0,
+				_GentleImageId = 0,
+				_SteepImageId = 0,
+			};
+
+			SkipImageId();
+			SkipImageId();
+			SkipImageId();
+			SkipImageId();
+		}
+
+		return result;
+	}
+
+	public BogieSprite[] ReadBogieSprites(int count)
+	{
+		var result = new BogieSprite[count];
+
+		for (var i = 0; i < count; ++i)
+		{
+			result[i] = new BogieSprite
+			{
+				RollStates = ReadByte(),
+				Flags = (BogieSpriteFlags)ReadByte(),
+				Width = ReadByte(),
+				HeightNegative = ReadByte(),
+				HeightPositive = ReadByte(),
+				_NumRollSprites = ReadByte(),
+				_FlatImageIds = 0,
+				_GentleImageIds = 0,
+				_SteepImageIds = 0,
+			};
+			SkipImageId();
+			SkipImageId();
+			SkipImageId();
+		}
+
+		return result;
+	}
+
+	public SimpleAnimation[] ReadSimpleAnimations(int count)
+	{
+		var result = new SimpleAnimation[count];
+
+		for (var i = 0; i < count; ++i)
+		{
+			result[i] = new SimpleAnimation
+			{
+				ObjectId = ReadByte(),
+				Height = ReadByte(),
+				Type = (SimpleAnimationType)ReadByte(),
+			};
+		}
+
+		return result;
+	}
+
+	public FrictionSound ReadFrictionSound()
+		=> new()
+		{
+			SoundObjectId = ReadByte(),
+			MinSpeed = ReadInt32(),
+			SpeedFreqFactor = ReadByte(),
+			BaseFrequency = ReadUInt16(),
+			SpeedVolumeFactor = ReadByte(),
+			BaseVolume = ReadByte(),
+			MaxVolume = ReadByte(),
+		};
+
+	public SimpleMotorSound ReadSimpleMotorSound()
+		=> new()
+		{
+			SoundObjectId = ReadByte(),
+			IdleFrequency = ReadUInt16(),
+			IdleVolume = ReadByte(),
+			CoastingFrequency = ReadUInt16(),
+			CoastingVolume = ReadByte(),
+			AccelerationBaseFrequency = ReadUInt16(),
+			AccelerationVolume = ReadByte(),
+			FreqIncreaseStep = ReadUInt16(),
+			FreqDecreaseStep = ReadUInt16(),
+			VolumeIncreaseStep = ReadByte(),
+			VolumeDecreaseStep = ReadByte(),
+			SpeedFrequencyFactor = ReadByte(),
+		};
+
+	public GearboxMotorSound ReadGearboxMotorSound()
+		=> new()
+		{
+			SoundObjectId = ReadByte(),
+			IdleFrequency = ReadUInt16(),
+			IdleVolume = ReadByte(),
+			FirstGearFrequency = ReadUInt16(),
+			FirstGearSpeed = ReadInt16(),
+			SecondGearFrequencyOffset = ReadUInt16(),
+			SecondGearSpeed = ReadInt16(),
+			ThirdGearFrequencyOffset = ReadUInt16(),
+			ThirdGearSpeed = ReadInt16(),
+			FourthGearFrequencyOffset = ReadUInt16(),
+			CoastingVolume = ReadByte(),
+			AcceleratingVolume = ReadByte(),
+			FreqIncreaseStep = ReadUInt16(),
+			FreqDecreaseStep = ReadUInt16(),
+			VolumeIncreaseStep = ReadByte(),
+			VolumeDecreaseStep = ReadByte(),
+			SpeedFrequencyFactor = ReadByte(),
 		};
 }

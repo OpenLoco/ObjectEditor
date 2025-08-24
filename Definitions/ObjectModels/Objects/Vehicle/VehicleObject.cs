@@ -25,7 +25,7 @@ public class VehicleObject : ILocoStruct
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 	public List<List<CargoCategory>> CompatibleCargoCategories { get; set; } = [];
-	public List<SimpleAnimation> Animation { get; set; }
+	public SimpleAnimation[] Animation { get; set; }
 	public uint8_t NumSimultaneousCargoTypes { get; set; }
 	public ObjectModelHeader? TrackType { get; set; }
 	public ObjectModelHeader? RackRail { get; set; }
@@ -43,8 +43,10 @@ public class VehicleObject : ILocoStruct
 	public FrictionSound? FrictionSound { get; set; }
 	public SimpleMotorSound? SimpleMotorSound { get; set; }
 	public GearboxMotorSound? GearboxMotorSound { get; set; }
+
 	public Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets { get; set; } = new();
 	public List<uint8_t> MaxCargo { get; set; } = [];
+	public uint8_t[] var_135 { get; set; } = [];
 
 	public bool Validate()
 	{

@@ -30,27 +30,7 @@ public class G1ViewModel : BaseLocoFileViewModel
 			return;
 		}
 
-		var images = new List<Image<Rgba32>>();
-
-		var i = 0;
-		foreach (var e in Model.G1.GraphicsElements)
-		{
-			try
-			{
-				if (Model.PaletteMap.TryConvertG1ToRgba32Bitmap(e, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
-				{
-					images.Add(image!);
-				}
-			}
-			catch (Exception ex)
-			{
-				Model.Logger.Error($"[{i}] - [e]", ex);
-			}
-
-			i++;
-		}
-
-		ImageTableViewModel = new ImageTableViewModel(new ImageTableModel(images, Model.G1, Model.G1, Model.PaletteMap, logger));
+		ImageTableViewModel = new ImageTableViewModel(Model.G1.GraphicsElements, Model.G1, Model.PaletteMap, logger);
 	}
 
 	public override void Save()

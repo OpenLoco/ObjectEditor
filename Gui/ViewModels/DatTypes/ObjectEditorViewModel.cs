@@ -156,7 +156,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
 					? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-					: new ImageTableViewModel(new ImageTableModel(CurrentObject.Images, CurrentObject.LocoObject, imageNameProvider, Model.PaletteMap, Model.Logger));
+					: new ImageTableViewModel(CurrentObject.LocoObject.GraphicsElements, imageNameProvider, Model.PaletteMap, Model.Logger);
 			}
 			else
 			{

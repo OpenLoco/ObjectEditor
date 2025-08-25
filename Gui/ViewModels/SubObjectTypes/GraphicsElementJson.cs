@@ -1,10 +1,9 @@
-
 using Definitions.ObjectModels.Types;
 using System.Text.Json.Serialization;
 
 namespace Gui.ViewModels;
 
-public record G1Element32Json(
+public record GraphicsElementJson(
 	[property: JsonPropertyName("path")] string Path,
 	[property: JsonPropertyName("x")] int16_t XOffset,
 	[property: JsonPropertyName("y")] int16_t YOffset,
@@ -12,18 +11,18 @@ public record G1Element32Json(
 	[property: JsonPropertyName("flags")] GraphicsElementFlags? Flags
 	)
 {
-	public G1Element32Json()
+	public GraphicsElementJson()
 		: this("", 0, 0, null, null)
 	{ }
 
-	public G1Element32Json(string path, int16_t xOffset, int16_t yOffset)
+	public GraphicsElementJson(string path, int16_t xOffset, int16_t yOffset)
 		: this(path, xOffset, yOffset, null, null)
 	{ }
 
-	public G1Element32Json(string path, GraphicsElement g1Element)
+	public GraphicsElementJson(string path, GraphicsElement g1Element)
 		: this(path, g1Element.XOffset, g1Element.YOffset, g1Element.ZoomOffset, g1Element.Flags)
 	{ }
 
-	public static G1Element32Json Zero
+	public static GraphicsElementJson Zero
 		=> new(string.Empty, 0, 0, 0, GraphicsElementFlags.None);
 }

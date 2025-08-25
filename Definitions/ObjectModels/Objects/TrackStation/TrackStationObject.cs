@@ -49,7 +49,7 @@ public class TrackStationObject : ILocoStruct, IImageTableNameProvider
 			return false;
 		}
 
-		return true; //CompatibleTrackObjectCount <= TrackStationObjectLoader.Constants.MaxNumCompatible;
+		return true; // CompatibleTrackObjects.Count <= TrackStationObjectLoader.Constants.MaxNumCompatible;
 	}
 
 	public bool TryGetImageName(int id, out string? value)

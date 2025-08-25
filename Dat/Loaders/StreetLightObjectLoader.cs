@@ -19,7 +19,7 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 		public const int Dat = 0x0C;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		using (var br = new LocoBinaryReader(stream))
 		{
@@ -41,13 +41,13 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 			// N/A
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.StreetLight, model, stringTable, imageTable);
 		}
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var model = obj.Object as StreetLightObject;
 
@@ -60,13 +60,13 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 			}
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			// N/A
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 }

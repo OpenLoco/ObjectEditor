@@ -1,14 +1,9 @@
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
-using Dat.Types.SCV5;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
-using static Dat.Loaders.BuildingObjectLoader;
 using static Dat.Loaders.VehicleObjectLoader;
 
 namespace Dat.Loaders;
@@ -38,7 +33,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		public const int GearboxMotorSound = 0x1B;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
 
@@ -61,7 +56,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			LoadVariable(br, model, numRequiredTrackExtras, numCompatibleVehicles, numStartSounds);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.Vehicle, model, stringTable, imageTable);
 		}
@@ -209,7 +204,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		br.SkipByte(Constants.MaxStartSounds); // StartSounds, not part of object definition
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
 		var model = (VehicleObject)obj.Object;
@@ -283,7 +278,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			{
@@ -344,7 +339,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			}
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 }

@@ -19,7 +19,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 		public const int CargoInfluenceTownFilterType = 0x01;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
 
@@ -52,13 +52,13 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			model.DependentObjects = br.ReadS5HeaderList();
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.Region, model, stringTable, imageTable);
 		}
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
 		var model = (RegionObject)obj.Object;
@@ -80,7 +80,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			bw.WriteS5HeaderList(model.CargoInfluenceObjects);
@@ -88,7 +88,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			bw.WriteTerminator(); // end of dependent objects
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 

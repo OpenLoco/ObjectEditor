@@ -25,11 +25,11 @@ static void QueryIndustryHasShadows()
 	{
 		try
 		{
-			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
-			if (o?.LocoObject != null)
+			var o = SawyerStreamReader.LoadFullObject(Path.Combine(dir, obj.FileName), logger);
+			if (o.LocoObject != null)
 			{
-				var struc = (IndustryObject)o.Value.LocoObject.Object;
-				var header = o.Value.DatFileInfo.S5Header;
+				var struc = (IndustryObject)o.LocoObject.Object;
+				var header = o.DatFileInfo.S5Header;
 				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
 
 				if (struc.Flags.HasFlag(IndustryObjectFlags.HasShadows))
@@ -67,11 +67,11 @@ static void QueryVehicleBodyUnkSprites()
 	{
 		try
 		{
-			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
-			if (o?.LocoObject != null)
+			var o = SawyerStreamReader.LoadFullObject(Path.Combine(dir, obj.FileName), logger);
+			if (o.LocoObject != null)
 			{
-				var struc = (VehicleObject)o.Value.LocoObject.Object;
-				var header = o.Value.DatFileInfo.S5Header;
+				var struc = (VehicleObject)o.LocoObject.Object;
+				var header = o.DatFileInfo.S5Header;
 				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
 
 				if (struc.Flags.HasFlag(VehicleObjectFlags.AlternatingCarSprite))
@@ -109,15 +109,15 @@ static void QueryCargoCategories()
 	{
 		try
 		{
-			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
-			if (o?.LocoObject != null)
+			var o = SawyerStreamReader.LoadFullObject(Path.Combine(dir, obj.FileName), logger);
+			if (o.LocoObject != null)
 			{
-				var struc = (CargoObject)o.Value.LocoObject.Object;
+				var struc = (CargoObject)o.LocoObject.Object;
 
-				var header = o.Value.DatFileInfo.S5Header;
+				var header = o.DatFileInfo.S5Header;
 				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
 
-				results.Add((obj, struc.CargoCategory, o.Value.LocoObject.StringTable.Table["Name"][LanguageId.English_UK], source));
+				results.Add((obj, struc.CargoCategory, o.LocoObject.StringTable.Table["Name"][LanguageId.English_UK], source));
 			}
 		}
 		catch (Exception ex)
@@ -148,10 +148,10 @@ static void QueryCostIndices()
 	{
 		try
 		{
-			var o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, obj.FileName), logger);
-			if (o?.LocoObject != null)
+			var o = SawyerStreamReader.LoadFullObject(Path.Combine(dir, obj.FileName), logger);
+			if (o.LocoObject != null)
 			{
-				var struc = o.Value.LocoObject.Object;
+				var struc = o.LocoObject.Object;
 				var type = struc.GetType();
 
 				var costIndexProperty = type.GetProperty("CostIndex", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
@@ -250,15 +250,15 @@ async static void FixObjectDescriptions()
 
 			try
 			{
-				var dat = SawyerStreamReader.LoadFullObjectFromFile(filename, logger);
+				var dat = SawyerStreamReader.LoadFullObject(filename, logger);
 
-				if (dat == null)
+				if (dat.LocoObject == null)
 				{
 					Console.WriteLine($"Failed to read {entry.FileName}");
 					continue;
 				}
 
-				obj.Description = dat.Value.LocoObject.StringTable.Table.First().Value[LanguageId.English_UK];
+				obj.Description = dat.LocoObject.StringTable.Table.First().Value[LanguageId.English_UK];
 			}
 			catch (Exception ex)
 			{
@@ -299,15 +299,15 @@ async static void WriteStringTable()
 
 			try
 			{
-				var dat = SawyerStreamReader.LoadFullObjectFromFile(filename, logger);
+				var dat = SawyerStreamReader.LoadFullObject(filename, logger);
 
-				if (dat == null)
+				if (dat.LocoObject == null)
 				{
 					Console.WriteLine($"Failed to read {entry.FileName}");
 					continue;
 				}
 
-				foreach (var s in dat.Value.LocoObject.StringTable.Table)
+				foreach (var s in dat.LocoObject.StringTable.Table)
 				{
 					foreach (var t in s.Value)
 					{
@@ -405,14 +405,14 @@ async static void SetupSubObjects()
 
 			try
 			{
-				var _o = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(dir, entry.FileName), logger);
-				if (_o?.LocoObject == null)
+				var o = SawyerStreamReader.LoadFullObject(Path.Combine(dir, entry.FileName), logger);
+				if (o.LocoObject == null)
 				{
 					Console.WriteLine($"Loco object was null {firstDatObj.DatName} - {obj.Name}");
 					continue;
 				}
 
-				var result = await DbSubObjectHelper.AddOrUpdate(db, obj, _o.Value.LocoObject.Object);
+				var result = await DbSubObjectHelper.AddOrUpdate(db, obj, o.LocoObject.Object);
 				Console.WriteLine($"{result} data for {firstDatObj.DatName} - {obj.Name}");
 			}
 			catch (Exception ex)

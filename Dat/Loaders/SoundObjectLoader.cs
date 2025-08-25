@@ -23,7 +23,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 		public const int SoundObjectData = 0x1E;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
 
@@ -72,7 +72,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 		model.PcmData = br.ReadToEnd();
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
 		var model = (SoundObject)obj.Object;
@@ -89,7 +89,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			SaveVariable(model, bw);

@@ -95,7 +95,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			.Subscribe(_ => UpdateBitmaps());
 
 		_ = this.WhenAnyValue(o => o.SelectedImageIndex)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element))); // disabling this line stops mem leak
 		_ = this.WhenAnyValue(o => o.SelectedG1Element)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1ElementOffset)));
 		_ = this.WhenAnyValue(o => o.SelectedG1Element)
@@ -169,7 +169,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 		// Update the displayed image
 		SelectedBitmapPreview = SelectedBitmaps[currentFrameIndex];
-		SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex];
+		SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex]; // disabling this also makes the memory leaks stop
 
 		// Move to the next frame, looping back to the beginning if necessary
 		currentFrameIndex = (currentFrameIndex + 1) % SelectedBitmaps.Count;

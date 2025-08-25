@@ -21,7 +21,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 		public const int ImageAndHeight = 2;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
 
@@ -58,7 +58,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			LoadVariable(br, model, numSoundEffects);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.Steam, model, stringTable, imageTable);
 		}
@@ -83,7 +83,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 		model.SoundEffects = br.ReadS5HeaderList(numSoundEffects);
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
 		var model = obj.Object as SteamObject;
@@ -111,13 +111,13 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 

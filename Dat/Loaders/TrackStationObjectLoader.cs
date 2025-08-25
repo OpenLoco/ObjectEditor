@@ -24,7 +24,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		public const int CargoOffset = 6;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
 
@@ -64,7 +64,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			LoadVariable(br, model, compatibleTrackObjectCount);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.TrackStation, model, stringTable, imageTable);
 		}
@@ -108,7 +108,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		}
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
 		var model = (TrackStationObject)obj.Object;
@@ -138,13 +138,13 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 

@@ -19,7 +19,7 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 		public const int Dat = 0x1E;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
 
@@ -55,13 +55,13 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			model.CompatibleTrackObjects = br.ReadS5HeaderList(compatibleTrackCount);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.TrackSignal, model, stringTable, imageTable);
 		}
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
 		var model = obj.Object as TrackSignalObject;
@@ -87,13 +87,13 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			bw.WriteS5HeaderList(model.CompatibleTrackObjects);
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 

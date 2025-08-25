@@ -1,5 +1,3 @@
-using Dat.Types.SCV5;
-
 namespace Dat.Data;
 
 public enum DatObjectType : byte

@@ -22,7 +22,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 		public const int Dat = 0x30;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
 
@@ -67,7 +67,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			LoadVariable(br, model, numBridges, numStations, numMods, numCompatible);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.Road, model, stringTable, imageTable);
 		}
@@ -82,7 +82,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 		model.Stations = br.ReadS5HeaderList(numStations);
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
 		var model = (RoadObject)obj.Object;
@@ -117,7 +117,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			bw.WriteS5HeaderList(model.CompatibleTracksAndRoads);
@@ -127,7 +127,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			bw.WriteS5HeaderList(model.Stations);
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 

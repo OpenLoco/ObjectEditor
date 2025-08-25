@@ -100,7 +100,7 @@ public static class SawyerStreamWriter
 
 		logger.Info($"Writing \"{objName}\" to {filename}");
 
-		var objBytes = WriteLocoObject(objName, objectSource, encoding, logger, locoObject, allowWritingAsVanilla);
+		var objBytes = WriteLocoObject(objName, locoObject.ObjectType, objectSource, encoding, logger, locoObject, allowWritingAsVanilla).ToArray();
 
 		try
 		{
@@ -367,9 +367,6 @@ public static class SawyerStreamWriter
 		return ms.ToArray();
 	}
 
-	public static ReadOnlySpan<byte> WriteLocoObject(string objName, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
-		=> WriteLocoObjectStream(objName, obj.ObjectType, objectSource, encoding, logger, obj, allowWritingAsVanilla).ToArray();
-
 	public static ReadOnlySpan<byte> WriteChunk(ILocoStruct str, SawyerEncoding encoding)
 		=> WriteChunkCore(ByteWriter.WriteLocoStruct(str), encoding);
 
@@ -380,7 +377,7 @@ public static class SawyerStreamWriter
 		return [.. objHeader.ToArray(), .. encoded];
 	}
 
-	public static void WriteLocoObject(LocoObject obj, MemoryStream stream)
+	public static void WriteLocoObject(Stream stream, LocoObject obj)
 	{
 		switch (obj.ObjectType)
 		{
@@ -491,26 +488,15 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static MemoryStream WriteLocoObjectStream(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
+	public static MemoryStream WriteLocoObject(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
 	{
+		if (!obj.Object.Validate())
+		{
+			throw new ArgumentException($"{objName} was invalid", nameof(obj));
+		}
+
 		using var rawObjStream = new MemoryStream();
-		WriteLocoObject(obj, rawObjStream);
-
-		// old method
-		//{
-		//	// obj
-		//	rawObjStream.Write(ByteWriter.WriteLocoStruct(obj.Object));
-
-		//	// string table
-		//	WriteImageTableStream(rawObjStream, obj.GraphicsElements);
-
-		//	// variable data
-		//	WriteVariableStream(rawObjStream, obj);
-
-		//	// graphics data
-		//	WriteImageTableStream(rawObjStream, obj.GraphicsElements);
-		//}
-
+		WriteLocoObject(rawObjStream, obj);
 		rawObjStream.Flush();
 
 		// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
@@ -568,7 +554,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static void WriteStringTableStream(Stream ms, StringTable table)
+	public static void WriteStringTable(Stream ms, StringTable table)
 	{
 		foreach (var ste in table.Table)
 		{
@@ -585,7 +571,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static void WriteImageTableStream(Stream ms, List<GraphicsElement> graphicsElements)
+	public static void WriteImageTable(Stream ms, List<GraphicsElement> graphicsElements)
 	{
 		var g1Elements = graphicsElements.Select(x => x.Convert()).ToList();
 
@@ -629,7 +615,7 @@ public static class SawyerStreamWriter
 	{
 		using (var fs = File.OpenWrite(filename))
 		{
-			WriteImageTableStream(fs, g1.GraphicsElements);
+			WriteImageTable(fs, g1.GraphicsElements);
 		}
 	}
 }

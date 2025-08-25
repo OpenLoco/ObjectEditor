@@ -320,7 +320,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
 
 		var sfm = sp.GetRequiredService<ServerFolderManager>();
-		var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
+		var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObject(datFileBytes, ssrLogger);
 
 		if (LocoObject == null)
 		{
@@ -565,13 +565,13 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
 
-		var locoObj = SawyerStreamReader.LoadFullObjectFromFile(pathOnDisk, dummyLogger, true);
+		var locoObj = SawyerStreamReader.LoadFullObject(pathOnDisk, dummyLogger, true);
 
 		await using var memoryStream = new MemoryStream();
 		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
 		{
 			var count = 0;
-			foreach (var g1 in locoObj!.Value!.LocoObject!.GraphicsElements)
+			foreach (var g1 in locoObj!.LocoObject!.GraphicsElements)
 			{
 				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 				{

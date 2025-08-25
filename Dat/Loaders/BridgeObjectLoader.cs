@@ -20,7 +20,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 		public const int Dat = 0x2C;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
 
@@ -63,13 +63,13 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			model.CompatibleRoadObjects = br.ReadS5HeaderList(compatibleRoadCount);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.Bridge, model, stringTable, imageTable);
 		}
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
 		var model = obj.Object as BridgeObject;
@@ -101,14 +101,14 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			bw.WriteS5HeaderList(model.CompatibleTrackObjects);
 			bw.WriteS5HeaderList(model.CompatibleRoadObjects);
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 }

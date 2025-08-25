@@ -11,5 +11,5 @@ public class TownNamesObject : ILocoStruct
 {
 	public List<Category> Categories { get; set; } = [];
 
-	public bool Validate() => throw new NotImplementedException();
+	public bool Validate() => true;
 }

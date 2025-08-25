@@ -239,14 +239,14 @@ public class LegacyRouteHandler()
 		}
 
 		var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
-		var locoObj = SawyerStreamReader.LoadFullObjectFromFile(pathOnDisk, dummyLogger, true);
+		var locoObj = SawyerStreamReader.LoadFullObject(pathOnDisk, dummyLogger, true);
 		var pm = sp.GetRequiredService<PaletteMap>();
 
 		await using var memoryStream = new MemoryStream();
 		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
 		{
 			var count = 0;
-			foreach (var g1 in locoObj!.Value!.LocoObject!.GraphicsElements)
+			foreach (var g1 in locoObj!.LocoObject!.GraphicsElements)
 			{
 				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 				{
@@ -541,7 +541,7 @@ public class LegacyRouteHandler()
 		var sfm = sp.GetRequiredService<ServerFolderManager>();
 		var locoLogger = new Logger();
 
-		var (_, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, locoLogger);
+		var (_, LocoObject) = SawyerStreamReader.LoadFullObject(datFileBytes, locoLogger);
 		var uuid = Guid.NewGuid();
 		var saveFileName = Path.Combine(sfm.ObjectsCustomFolder, $"{uuid}.dat");
 		File.WriteAllBytes(saveFileName, datFileBytes);

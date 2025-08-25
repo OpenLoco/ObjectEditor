@@ -24,20 +24,20 @@ public class G1Tests
 		var g1a = SawyerStreamReader.LoadG1(tempName, Logger);
 
 		ArgumentNullException.ThrowIfNull(g1a);
-		Assert.Multiple(() =>
+		using (Assert.EnterMultipleScope())
 		{
 			Assert.That(g1.G1Header.NumEntries, Is.EqualTo(g1a.G1Header.NumEntries));
 			Assert.That(g1.G1Header.TotalSize, Is.EqualTo(g1a.G1Header.TotalSize));
 			Assert.That(g1.GraphicsElements, Has.Count.EqualTo(g1a.GraphicsElements.Count));
-		});
+		}
 
-		Assert.Multiple(() =>
+		using (Assert.EnterMultipleScope())
 		{
 			foreach (var (expected, actual, i) in g1.GraphicsElements.Zip(g1a.GraphicsElements).Select((item, i) => (item.First, item.Second, i)))
 			{
 				AssertG1ElementsEqual(expected, actual, i);
 			}
-		});
+		}
 	}
 
 	// These images have RLE runs/segment lengths > 127, which require special handling in the encode

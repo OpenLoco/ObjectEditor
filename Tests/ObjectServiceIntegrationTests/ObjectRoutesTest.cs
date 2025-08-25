@@ -80,7 +80,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 
 	static void AssertDtoObjectDescriptorsAreEqual(DtoObjectDescriptor? expected, DtoObjectDescriptor? actual)
 	{
-		Assert.Multiple(() =>
+		using (Assert.EnterMultipleScope())
 		{
 			Assert.That(expected, Is.Not.Null);
 			Assert.That(actual, Is.Not.Null);
@@ -103,7 +103,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			Assert.That(actual.Tags, Is.EqualTo(expected.Tags).Using(new DtoTagEntryComparer()));
 			Assert.That(actual.ObjectPacks, Is.EqualTo(expected.ObjectPacks).Using(new DtoItemPackEntryComparer()));
 			Assert.That(actual.DatObjects, Is.EqualTo(expected.DatObjects).Using(new DtoDatObjectEntryComparer()));
-		});
+		}
 
 		AssertDtoStringTableDescriptorsAreEqual(expected.StringTable, actual.StringTable);
 	}
@@ -147,17 +147,17 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 	{
 		// act
 		const int id = 1;
-		var results = await ClientHelpers.DeleteAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+		_ = await ClientHelpers.DeleteAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
 
 		// assert
-		Assert.Multiple(async () =>
+		using (Assert.EnterMultipleScope())
 		{
 			var results = await ClientHelpers.GetAsync<DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
 			var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.Today };
 
 			// assert
 			AssertDtoObjectDescriptorsAreEqual(results, descriptor);
-		});
+		}
 	}
 
 	[Test]

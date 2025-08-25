@@ -14,7 +14,7 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 		public const int DatStructSize = 0x12;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		using (var br = new LocoBinaryReader(stream))
 		{
@@ -42,13 +42,13 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 			// N/A
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.RoadExtra, model, stringTable, imageTable);
 		}
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var model = obj.Object as RoadExtraObject;
 
@@ -64,13 +64,13 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 			bw.WriteEmptyImageId(); // BaseImageOffset, not part of object definition
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			// N/A
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 }

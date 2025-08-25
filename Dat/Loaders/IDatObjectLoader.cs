@@ -13,6 +13,6 @@ public interface IDatObjectLoader //<TDetails> where TDetails : IDatDetails
 {
 	//public static abstract TDetails DatDetails { get; }
 
-	public static abstract LocoObject Load(MemoryStream stream);
-	public static abstract void Save(MemoryStream stream, LocoObject obj);
+	public static abstract LocoObject Load(Stream stream);
+	public static abstract void Save(Stream stream, LocoObject obj);
 }

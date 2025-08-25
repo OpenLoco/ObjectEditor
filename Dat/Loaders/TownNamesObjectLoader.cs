@@ -21,7 +21,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 		public const int Category = 0x1A;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		using (var br = new LocoBinaryReader(stream))
 		{
@@ -55,7 +55,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 		}
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var model = obj.Object as TownNamesObject;
 
@@ -70,7 +70,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 			}
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			// N/A

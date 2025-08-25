@@ -25,7 +25,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		public const int BuildingPartAnimation = 0x02;
 	}
 
-	public static LocoObject Load(MemoryStream stream)
+	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
 
@@ -76,7 +76,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations, numElevatorSequences);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTableStream(stream).Table;
+			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
 
 			return new LocoObject(ObjectType.Building, model, stringTable, imageTable);
 		}
@@ -99,7 +99,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		}
 	}
 
-	public static void Save(MemoryStream stream, LocoObject obj)
+	public static void Save(Stream stream, LocoObject obj)
 	{
 		var initialStreamPosition = stream.Position;
 		var model = (BuildingObject)obj.Object;
@@ -140,13 +140,13 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			SawyerStreamWriter.WriteStringTableStream(stream, obj.StringTable);
+			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
 			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTableStream(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
 
@@ -162,10 +162,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		foreach (var unk in model.ElevatorHeightSequences)
 		{
 			bw.Write((uint16_t)unk.Length);
-			foreach (var x in unk)
-			{
-				bw.Write((uint8_t)x);
-			}
+			bw.Write(unk);
 		}
 	}
 

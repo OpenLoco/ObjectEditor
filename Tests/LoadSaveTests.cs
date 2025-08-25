@@ -40,7 +40,6 @@ using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using System.Diagnostics;
 using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;
@@ -54,7 +53,7 @@ public class LoadSaveTests
 	static (DatFileInfo, LocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
 	{
 		var logger = new Logger();
-		var (datFileInfo, locoObject) = SawyerStreamReader.LoadFullObjectFromStream(data, logger);
+		var (datFileInfo, locoObject) = SawyerStreamReader.LoadFullObject(data.ToArray(), logger);
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable NUnit2045 // Use Assert.Multiple - cannot use a ReadOnlySpan inside an anonymous method
@@ -72,11 +71,11 @@ public class LoadSaveTests
 
 		var (datInfo1, obj1, struc1) = LoadObject<T>(filename);
 		assertFunc(obj1, struc1);
-		var bytes1 = SawyerStreamWriter.WriteLocoObject(datInfo1.S5Header.Name, datInfo1.S5Header.ObjectSource.Convert(), datInfo1.ObjectHeader.Encoding, logger, obj1, true);
+		var bytes1 = SawyerStreamWriter.WriteLocoObject(datInfo1.S5Header.Name, obj1.ObjectType, datInfo1.S5Header.ObjectSource.Convert(), datInfo1.ObjectHeader.Encoding, logger, obj1, true).ToArray();
 
 		var (datInfo2, obj2, struc2) = LoadObject<T>(bytes1);
 		assertFunc(obj2, struc2);
-		var bytes2 = SawyerStreamWriter.WriteLocoObject(datInfo2.S5Header.Name, datInfo2.S5Header.ObjectSource.Convert(), datInfo2.ObjectHeader.Encoding, logger, obj2, true);
+		var bytes2 = SawyerStreamWriter.WriteLocoObject(datInfo2.S5Header.Name, obj2.ObjectType, datInfo2.S5Header.ObjectSource.Convert(), datInfo2.ObjectHeader.Encoding, logger, obj2, true).ToArray();
 
 		// grab headers first
 		var s5Header1 = S5Header.Read(bytes1[0..S5Header.StructLength]);
@@ -676,42 +675,6 @@ public class LoadSaveTests
 			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(46));
 		});
 		LoadSaveGenericTest<RoadExtraObject>(objectName, assertFunc);
-	}
-
-	[Explicit]
-	[TestCase("RDEXCAT1.DAT")]
-	public void PerformanceTest_RoadExtraObject(string objectName)
-	{
-		var logger = new Logger();
-		var bytes = File.ReadAllBytes(Path.Combine(TestConstants.BaseObjDataPath, objectName));
-		var data = SawyerStreamReader.LoadAndDecodeFromStream(bytes, logger);
-
-		var sw = new Stopwatch();
-		long t1, t2;
-		const int iterCount = 100_000;
-
-		sw.Restart();
-
-		for (var i = 0; i < iterCount; ++i)
-		{
-			using (var stream = new MemoryStream(data.Value.decodedData))
-			{
-				_ = RoadExtraObjectLoader.Load(stream);
-			}
-		}
-
-		t1 = sw.ElapsedMilliseconds;
-		sw.Restart();
-
-		for (var i = 0; i < iterCount; ++i)
-		{
-			_ = ByteReader.ReadLocoStruct<RoadExtraObject>(data.Value.decodedData);
-		}
-
-		t2 = sw.ElapsedMilliseconds;
-		sw.Restart();
-
-		Assert.That(t1, Is.LessThan(t2));
 	}
 
 	[TestCase("ROADONE.DAT")]

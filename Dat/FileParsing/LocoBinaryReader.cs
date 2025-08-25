@@ -111,6 +111,7 @@ public class LocoBinaryReader : BinaryReader
 				result.Add(header);
 			}
 		}
+
 		SkipTerminator();
 		return result;
 	}

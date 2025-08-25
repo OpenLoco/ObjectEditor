@@ -131,7 +131,7 @@
 							</Button.Flyout>
 						</Button>
 					</StackPanel>
-					<paz:ZoomBorder Name="ZoomBorder" MinWidth="256" MinHeight="256" Stretch="None" ZoomX="{Binding ZoomLevel}" ZoomSpeed="1.2" MinZoomX="0.5" MaxZoomX="30" MinZoomY="0.5" MaxZoomY="30" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left"  Background="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" >
+					<paz:ZoomBorder Name="ZoomBorder" MinWidth="256" MinHeight="256" Stretch="None" ZoomSpeed="1.2" MinZoomX="0.5" MaxZoomX="30" MinZoomY="0.5" MaxZoomY="30" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left"  Background="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" >
 						<Canvas Width="{Binding SelectedImage.Width}" Height="{Binding SelectedImage.Height}" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Gray">
 							<!--Bounding box-->
 							<Rectangle Canvas.Top="-1" Canvas.Left="-1" StrokeThickness="1.0" Width="{Binding SelectedImage.SelectedBitmapPreviewBorder.Width}" Height="{Binding SelectedImage.SelectedBitmapPreviewBorder.Height}" Opacity="1.0" Fill="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" Stroke="{Binding #ImageColorViewBorder.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}"  />

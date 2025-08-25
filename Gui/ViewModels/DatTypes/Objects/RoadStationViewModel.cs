@@ -1,4 +1,5 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Road;
+using Definitions.ObjectModels.Objects.RoadStation;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
@@ -17,7 +18,7 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleRoadObjects { get; set; }
+	[Reactive, Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
 
 	public RoadStationViewModel(RoadStationObject ro)
 	{
@@ -30,11 +31,11 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 		SellCostFactor = ro.SellCostFactor;
 		CostIndex = ro.CostIndex;
 		Flags = ro.Flags;
-		CompatibleRoadObjects = new(ro.CompatibleRoadObjects.ConvertAll(x => new S5HeaderViewModel(x)));
+		CompatibleRoadObjects = new(ro.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 	}
 
-	public override RoadStationObject GetAsStruct(RoadStationObject ro)
-		=> ro with
+	public override RoadStationObject GetAsStruct()
+		=> new()
 		{
 			PaintStyle = PaintStyle,
 			Height = Height,
@@ -45,7 +46,6 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 			SellCostFactor = SellCostFactor,
 			CostIndex = CostIndex,
 			Flags = Flags,
-			CompatibleRoadObjectCount = (uint8_t)CompatibleRoadObjects.Count,
 			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 		};
 }

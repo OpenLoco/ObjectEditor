@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.TownNames;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -13,6 +13,6 @@ public class TownNamesViewModel : LocoObjectViewModel<TownNamesObject>
 	public TownNamesViewModel(TownNamesObject tno)
 		=> Categories = new(tno.Categories);
 
-	public override TownNamesObject GetAsStruct(TownNamesObject tno)
-		=> tno;
+	public override TownNamesObject GetAsStruct()
+		=> new();
 }

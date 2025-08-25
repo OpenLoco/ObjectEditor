@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Tree;
 
 namespace Definitions.Database;
 
@@ -6,6 +6,8 @@ public class TblObjectTree : DbSubObject, IConvertibleToTable<TblObjectTree, Tre
 {
 	public uint8_t Clearance { get; set; }
 	public uint8_t Height { get; set; }
+	public uint8_t var_04 { get; set; }
+	public uint8_t var_05 { get; set; }
 	public uint8_t NumRotations { get; set; }
 	public uint8_t NumGrowthStages { get; set; }
 	public TreeObjectFlags Flags { get; set; }
@@ -18,10 +20,7 @@ public class TblObjectTree : DbSubObject, IConvertibleToTable<TblObjectTree, Tre
 	public uint32_t Colours { get; set; }
 	public int16_t Rating { get; set; }
 	public int16_t DemolishRatingReduction { get; set; }
-
-	//public uint8_t var_04 { get; set; }
-	//public uint8_t var_05 { get; set; }
-	//public UnkTreeFlags var_3C { get; set; } // something with images
+	public TreeFlagsUnk var_3C { get; set; } // something with images
 
 	public static TblObjectTree FromObject(TblObject tbl, TreeObject obj)
 		=> new()

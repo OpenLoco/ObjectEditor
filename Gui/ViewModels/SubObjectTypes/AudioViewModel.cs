@@ -1,5 +1,5 @@
 using Common.Logging;
-using Dat.Types.Audio;
+using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models.Audio;
 using NAudio.Wave;
 using ReactiveUI;
@@ -16,7 +16,7 @@ namespace Gui.ViewModels;
 
 public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
 {
-	public string Name => "Sound Name";
+	public string Name => "Audio Data";
 
 	ILogger Logger { get; init; }
 

@@ -1,8 +1,8 @@
-using Common.Json;
 using Common;
+using Common.Json;
 using Common.Logging;
-using Dat;
-using Dat.Types;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Types;
 using Gui.ViewModels;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -16,10 +16,10 @@ using System.Threading.Tasks;
 
 namespace Gui.Models;
 
-public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, ILogger logger)
+public class ImageTableModel(IList<Image<Rgba32>> images, IHasGraphicsElements g1ElementProvider, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, ILogger logger)
 {
 	public readonly ILogger Logger = logger;
-	public readonly IHasG1Elements G1Provider = g1ElementProvider;
+	public readonly IHasGraphicsElements G1Provider = g1ElementProvider;
 	public readonly IImageTableNameProvider NameProvider = imageNameProvider;
 
 	public PaletteMap PaletteMap { get; init; } = paletteMap;
@@ -32,7 +32,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 		Logger.Info("Clearing current G1Element32s and existing object images");
 		Images.Clear();
 
-		foreach (var g1 in G1Provider.G1Elements)
+		foreach (var g1 in G1Provider.GraphicsElements)
 		{
 			if (PaletteMap.TryConvertG1ToRgba32Bitmap(g1, primary, secondary, out var img) && img != null)
 			{
@@ -90,7 +90,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 			else
 			{
 				image.Mutate(i => i.Crop(cropRegion));
-				var currG1 = G1Provider.G1Elements[i];
+				var currG1 = G1Provider.GraphicsElements[i];
 
 				// set to bitmaps
 				UpdateImage(image, i, xOffset: (short)(currG1.XOffset + cropRegion.Left), yOffset: (short)(currG1.YOffset + cropRegion.Top));
@@ -127,7 +127,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 
 		try
 		{
-			Logger.Debug($"{G1Provider.G1Elements.Count} images in current object");
+			Logger.Debug($"{G1Provider.GraphicsElements.Count} images in current object");
 			ICollection<G1Element32Json> offsets;
 
 			// check for offsets file
@@ -142,7 +142,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 			{
 				var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
 				var sanitised = files.Select(TrimZeroes).ToList();
-				offsets = [.. G1Provider.G1Elements
+				offsets = [.. G1Provider.GraphicsElements
 					.Select((x, i) => new G1Element32Json($"{sanitised[i]}.png", x.XOffset, x.YOffset))
 					.Fill(files.Length, G1Element32Json.Zero)];
 				Logger.Debug($"Didn't find sprites.json file, using existing G1Element32 offsets with {offsets.Count} images");
@@ -150,7 +150,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 
 			// clear existing images
 			Logger.Debug("Clearing current G1Element32s and existing object images");
-			G1Provider.G1Elements.Clear();
+			G1Provider.GraphicsElements.Clear();
 			Images.Clear();
 
 			// load files
@@ -158,25 +158,31 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 			{
 				var is1Pixel = string.IsNullOrEmpty(offset.Path);
 				var img = is1Pixel ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
-				var newOffset = is1Pixel ? offset with { Flags = G1ElementFlags.HasTransparency } : offset;
+				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
 				var g1Element32 = G1Element32FromImage(newOffset, img);
 
-				G1Provider.G1Elements.Add(g1Element32);
+				G1Provider.GraphicsElements.Add(g1Element32);
 				Images.Add(img);
 			}
 
-			Logger.Debug($"Imported {G1Provider.G1Elements.Count} images successfully");
+			Logger.Debug($"Imported {G1Provider.GraphicsElements.Count} images successfully");
 		}
 		catch (Exception ex)
 		{
 			Logger.Error(ex);
 		}
 
-		G1Element32 G1Element32FromImage(G1Element32Json ele, Image<Rgba32> img)
+		GraphicsElement G1Element32FromImage(G1Element32Json ele, Image<Rgba32> img)
 		{
-			var flags = ele.Flags ?? G1ElementFlags.None;
-			return new G1Element32(0, (int16_t)img.Width, (int16_t)img.Height, ele.XOffset, ele.YOffset, flags, ele.ZoomOffset ?? 0)
+			var flags = ele.Flags ?? GraphicsElementFlags.None;
+			return new GraphicsElement()
 			{
+				Width = (int16_t)img.Width,
+				Height = (int16_t)img.Height,
+				XOffset = ele.XOffset,
+				YOffset = ele.YOffset,
+				Flags = flags,
+				ZoomOffset = ele.ZoomOffset ?? 0,
 				ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags)
 			};
 		}
@@ -184,7 +190,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 
 	static readonly Image<Rgba32> OnePixelTransparent = new(1, 1, PaletteMap.Transparent.Color);
 
-	public void UpdateImage(string filename, int index, G1ElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
+	public void UpdateImage(string filename, int index, GraphicsElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
 	{
 		if (string.IsNullOrEmpty(filename))
 		{
@@ -202,7 +208,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 		UpdateImage(img, index, flags, xOffset, yOffset, zoomOffset);
 	}
 
-	public void UpdateImage(Image<Rgba32> img, int index, G1ElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
+	public void UpdateImage(Image<Rgba32> img, int index, GraphicsElementFlags? flags = null, int16_t? xOffset = null, int16_t? yOffset = null, int16_t? zoomOffset = null)
 	{
 		if (index == -1)
 		{
@@ -211,8 +217,8 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 
 		Images[index] = img;
 
-		var currG1 = G1Provider.G1Elements[index];
-		G1Provider.G1Elements[index] = (currG1 with
+		var currG1 = G1Provider.GraphicsElements[index];
+		G1Provider.GraphicsElements[index] = new()
 		{
 			ImageData = PaletteMap.ConvertRgba32ImageToG1Data(img, flags ?? currG1.Flags),
 			Width = (int16_t)img.Width,
@@ -221,7 +227,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 			XOffset = xOffset ?? currG1.XOffset,
 			YOffset = yOffset ?? currG1.YOffset,
 			ZoomOffset = zoomOffset ?? currG1.ZoomOffset,
-		});
+		};
 	}
 
 	public async Task ExportImages(string directory)
@@ -245,7 +251,7 @@ public class ImageTableModel(IList<Image<Rgba32>> images, IHasG1Elements g1Eleme
 
 		foreach (var image in Images)
 		{
-			var g1Element = G1Provider.G1Elements[counter];
+			var g1Element = G1Provider.GraphicsElements[counter];
 			var imageName = counter.ToString(); // todo: maybe use image name provider below (but number must still exist)
 			counter++;
 

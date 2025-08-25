@@ -1,6 +1,6 @@
-using Dat.Data;
-using Dat.Objects;
 using Definitions.Database;
+using Definitions.ObjectModels.Objects.Vehicle;
+using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 

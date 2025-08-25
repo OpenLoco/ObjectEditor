@@ -13,7 +13,7 @@
 
 	<Application.DataTemplates>
 		<local:ViewLocator/>
-		<DataTemplate DataType="vm:S5HeaderViewModel">
+		<DataTemplate DataType="vm:ObjectModelHeaderViewModel">
 			<pgc:PropertyGrid x:Name="propertyGrid_S5HeaderVm" DataContext="{Binding}" IsCategoryVisible="False"></pgc:PropertyGrid>
 		</DataTemplate>
 		<DataTemplate DataType="vm:ObjectHeaderViewModel">
@@ -34,8 +34,8 @@
 		<DataTemplate DataType="vm:MetadataViewModel">
 			<vi:MetadataView />
 		</DataTemplate>
-		<DataTemplate DataType="vm:DatObjectEditorViewModel">
-			<vi:DatObjectEditorView />
+		<DataTemplate DataType="vm:ObjectEditorViewModel">
+			<vi:ObjectEditorView />
 		</DataTemplate>
 		<DataTemplate DataType="vm:FolderTreeViewModel">
 			<vi:FolderTreeView />

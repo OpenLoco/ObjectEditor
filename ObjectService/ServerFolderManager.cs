@@ -1,5 +1,5 @@
 using Common.Logging;
-using Definitions.Database;
+using Index;
 
 namespace ObjectService;
 

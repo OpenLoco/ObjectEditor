@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Climate;
 
 namespace Definitions.Database;
 
@@ -19,9 +19,9 @@ public class TblObjectClimate : DbSubObject, IConvertibleToTable<TblObjectClimat
 			FirstSeason = obj.FirstSeason,
 			WinterSnowLine = obj.WinterSnowLine,
 			SummerSnowLine = obj.SummerSnowLine,
-			SeasonLength1 = obj.SeasonLengths[0],
-			SeasonLength2 = obj.SeasonLengths[1],
-			SeasonLength3 = obj.SeasonLengths[2],
-			SeasonLength4 = obj.SeasonLengths[3]
+			SeasonLength1 = obj.SeasonLength1,
+			SeasonLength2 = obj.SeasonLength2,
+			SeasonLength3 = obj.SeasonLength3,
+			SeasonLength4 = obj.SeasonLength4,
 		};
 }

@@ -1,12 +1,12 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Competitor;
 
 namespace Definitions.Database;
 
 public class TblObjectCompetitor : DbSubObject, IConvertibleToTable<TblObjectCompetitor, CompetitorObject>
 {
-	public CompetitorNamePrefix AvailableNamePrefixes { get; set; } // bitset
-	public CompetitorPlaystyle AvailablePlaystyles { get; set; } // bitset
-	public uint32_t Emotions { get; set; } // bitset
+	public NamePrefixFlags AvailableNamePrefixes { get; set; } // bitset
+	public PlaystyleFlags AvailablePlaystyles { get; set; } // bitset
+	public EmotionFlags Emotions { get; set; } // bitset
 	public uint8_t Intelligence { get; set; }
 	public uint8_t Aggressiveness { get; set; }
 	public uint8_t Competitiveness { get; set; }

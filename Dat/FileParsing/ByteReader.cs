@@ -1,4 +1,5 @@
 using Dat.Types;
+using Definitions.ObjectModels;
 
 namespace Dat.FileParsing;
 
@@ -265,6 +266,33 @@ public static class ByteReader
 		{
 			var range = data[(i * structSize)..((i + 1) * structSize)];
 			list.Add(ReadLocoStruct(range, t));
+		}
+
+		return list;
+	}
+
+	//public static IList<ILocoStruct> ReadLocoStructArray(ReadOnlySpan<byte> data, Type t, int count)
+	//{
+	//	// cannot use ReadOnlySpan with yield return :|
+	//	var structSize = data.Length / count;
+	//	var list = new List<ILocoStruct>();
+	//	for (var i = 0; i < count; ++i)
+	//	{
+	//		var range = data[(i * structSize)..((i + 1) * structSize)];
+	//		list.Add(ReadLocoStruct(range, t));
+	//	}
+
+	//	return list;
+	//}
+
+	public static IList<T> ReadLocoStructArray<T>(ReadOnlySpan<byte> data, int count, int structSize) where T : class
+	{
+		// cannot use ReadOnlySpan with yield return :|
+		var list = new List<T>();
+		for (var i = 0; i < count; ++i)
+		{
+			var range = data[(i * structSize)..((i + 1) * structSize)];
+			list.Add(ReadLocoStruct<T>(range));
 		}
 
 		return list;

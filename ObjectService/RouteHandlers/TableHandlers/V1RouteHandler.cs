@@ -2,19 +2,21 @@ using Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Common.Logging;
-using Dat;
-using Dat.Data;
-using Dat.FileParsing;
-using Dat.Objects;
 using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.SourceData;
 using Definitions.Web;
-using SixLabors.ImageSharp;
 using System.IO.Compression;
 using static ObjectService.RouteHandlers.TableHandlers.V1DtoExtensions;
+using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Objects.Vehicle;
+using Dat.FileParsing;
+using SixLabors.ImageSharp;
+using Index;
+using Dat.Converters;
+using Definitions.ObjectModels;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
@@ -237,14 +239,14 @@ public class LegacyRouteHandler()
 		}
 
 		var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
-		var locoObj = SawyerStreamReader.LoadFullObjectFromFile(pathOnDisk, dummyLogger, true);
+		var locoObj = SawyerStreamReader.LoadFullObject(pathOnDisk, dummyLogger, true);
 		var pm = sp.GetRequiredService<PaletteMap>();
 
 		await using var memoryStream = new MemoryStream();
 		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
 		{
 			var count = 0;
-			foreach (var g1 in locoObj!.Value!.LocoObject!.G1Elements)
+			foreach (var g1 in locoObj!.LocoObject!.GraphicsElements)
 			{
 				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 				{
@@ -529,7 +531,7 @@ public class LegacyRouteHandler()
 			return Results.BadRequest("Invalid DAT file.");
 		}
 
-		if (db.DoesObjectExist(hdrs.S5, out var existingObject))
+		if (db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObject))
 		{
 			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
 		}
@@ -539,7 +541,7 @@ public class LegacyRouteHandler()
 		var sfm = sp.GetRequiredService<ServerFolderManager>();
 		var locoLogger = new Logger();
 
-		var (_, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, locoLogger);
+		var (_, LocoObject) = SawyerStreamReader.LoadFullObject(datFileBytes, locoLogger);
 		var uuid = Guid.NewGuid();
 		var saveFileName = Path.Combine(sfm.ObjectsCustomFolder, $"{uuid}.dat");
 		File.WriteAllBytes(saveFileName, datFileBytes);
@@ -560,7 +562,7 @@ public class LegacyRouteHandler()
 			Name = uuid.ToString(),
 			Description = $"{hdrs.S5.Name}_{hdrs.S5.Checksum}",
 			ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
-			ObjectType = hdrs.S5.ObjectType,
+			ObjectType = hdrs.S5.ObjectType.Convert(),
 			VehicleType = vehicleType,
 			Availability = request.InitialAvailability,
 			CreatedDate = createdDate,

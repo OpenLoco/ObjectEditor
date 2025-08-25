@@ -1,5 +1,5 @@
-using Dat.Data;
-using Dat.Types;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Types;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

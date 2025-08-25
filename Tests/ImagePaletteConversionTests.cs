@@ -3,6 +3,7 @@ using Common.Logging;
 using Dat.FileParsing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using Definitions.ObjectModels;
 
 namespace Dat.Tests;
 
@@ -53,10 +54,10 @@ public class ImagePaletteConversionTests
 	{
 		var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 		var paletteMap = new PaletteMap(paletteFile);
-		var obj = SawyerStreamReader.LoadFullObjectFromFile(Path.Combine(BaseObjDataPath, objectSource), Logger);
-		var g1Elements = obj!.Value!.LocoObject!.G1Elements;
+		var obj = SawyerStreamReader.LoadFullObject(Path.Combine(BaseObjDataPath, objectSource), Logger);
+		var g1Elements = obj!.LocoObject!.GraphicsElements;
 
-		Assert.Multiple(() =>
+		using (Assert.EnterMultipleScope())
 		{
 			//_ = Parallel.ForEach(g1Elements, (element, _, i) =>
 			//{
@@ -75,6 +76,6 @@ public class ImagePaletteConversionTests
 					Assert.That(g1Bytes, Is.EqualTo(element.ImageData), $"[{i++}]");
 				}
 			}
-		});
+		}
 	}
 }

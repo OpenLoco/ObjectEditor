@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Wall;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 
@@ -18,8 +18,8 @@ public class WallViewModel : LocoObjectViewModel<WallObject>
 		Flags2 = ro.Flags2;
 	}
 
-	public override WallObject GetAsStruct(WallObject tso)
-		=> tso with
+	public override WallObject GetAsStruct()
+		=> new()
 		{
 			Height = Height,
 			Flags1 = Flags1,

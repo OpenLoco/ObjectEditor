@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Road;
 
 namespace Definitions.Database;
 
@@ -32,7 +32,7 @@ public class TblObjectRoad : DbSubObject, IConvertibleToTable<TblObjectRoad, Roa
 			SellCostFactor = obj.SellCostFactor,
 			TunnelCostFactor = obj.TunnelCostFactor,
 			CostIndex = obj.CostIndex,
-			MaxSpeed = obj.MaxSpeed,
+			MaxSpeed = obj.MaxCurveSpeed,
 			Flags = obj.Flags,
 			PaintStyle = obj.PaintStyle,
 			DisplayOffset = obj.DisplayOffset,

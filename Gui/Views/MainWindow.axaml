@@ -222,7 +222,6 @@
 			</ScrollViewer>
 		</DataTemplate>
 
-
 	</Window.DataTemplates>
 
 	<DockPanel>

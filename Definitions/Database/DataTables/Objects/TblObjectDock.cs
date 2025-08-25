@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Dock;
 
 namespace Definitions.Database;
 
@@ -30,8 +30,8 @@ public class TblObjectDock : DbSubObject, IConvertibleToTable<TblObjectDock, Doc
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
 			Flags = obj.Flags,
-			NumBuildingPartAnimations = obj.NumBuildingPartAnimations,
-			NumBuildingVariationParts = obj.NumBuildingVariationParts,
+			NumBuildingPartAnimations = (uint8_t)obj.BuildingAnimations.Count,
+			NumBuildingVariationParts = (uint8_t)obj.BuildingVariations.Count,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
 			BoatPositionX = obj.BoatPosition.X,

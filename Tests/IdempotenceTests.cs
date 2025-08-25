@@ -1,9 +1,10 @@
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Dat.FileParsing;
-using Dat.Types;
 using System.Text.Json;
 using Logger = Common.Logging.Logger;
+using Dat.Converters;
+using Definitions.ObjectModels.Types;
 
 namespace Dat.Tests;
 
@@ -20,17 +21,17 @@ public class IdempotenceTests
 		var file = Path.Combine(TestConstants.BaseObjDataPath, filename);
 
 		var logger = new Logger();
-		var fullData = File.ReadAllBytes(file);
+		using var fs = new FileStream(file, FileMode.Open);
 
-		if (!SawyerStreamReader.TryGetHeadersFromBytes(fullData, out var hdrs, logger))
+		if (!SawyerStreamReader.TryGetHeadersFromBytes(fs, out var hdrs, logger))
 		{
 			Assert.Fail();
 			return;
 		}
 
-		var remainingData = fullData[(S5Header.StructLength + ObjectHeader.StructLength)..];
+		using var br = new LocoBinaryReader(fs);
 
-		var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, remainingData);
+		var decoded = SawyerStreamReader.Decode(hdrs.Obj.Encoding, br.ReadToEnd());
 		var encoded = SawyerStreamWriter.Encode(hdrs.Obj.Encoding, decoded);
 		var decoded2 = SawyerStreamReader.Decode(hdrs.Obj.Encoding, encoded);
 		Assert.That(decoded2, Is.EqualTo(decoded).AsCollection);
@@ -42,27 +43,48 @@ public class IdempotenceTests
 		var file = Path.Combine(TestConstants.BaseObjDataPath, filename);
 
 		var logger = new Logger();
-		var obj1 = SawyerStreamReader.LoadFullObjectFromFile(file, logger)!;
-		var ms = SawyerStreamWriter.WriteLocoObjectStream(
-			obj1.Value.DatFileInfo.S5Header.Name,
-			obj1.Value.DatFileInfo.S5Header.SourceGame,
-			obj1.Value.DatFileInfo.ObjectHeader.Encoding,
+		var obj1 = SawyerStreamReader.LoadFullObject(file, logger)!;
+
+		using var stream = SawyerStreamWriter.WriteLocoObject(
+			obj1.DatFileInfo.S5Header.Name,
+			obj1.DatFileInfo.S5Header.ObjectType.Convert(),
+			obj1.DatFileInfo.S5Header.ObjectSource.Convert(),
+			obj1.DatFileInfo.ObjectHeader.Encoding,
 			logger,
-			obj1!.Value!.LocoObject!,
+			obj1.LocoObject!,
 			true);
 
-		ms.Flush();
+		stream.Flush();
 
-		var obj2 = SawyerStreamReader.LoadFullObjectFromStream(ms.ToArray(), logger);
+		var obj2 = SawyerStreamReader.LoadFullObject(stream.ToArray(), logger);
 
-		var o1 = obj1.Value.LocoObject;
+		var o1 = obj1.LocoObject;
 		var o2 = obj2.LocoObject;
 
-		Assert.Multiple(() =>
+		using (Assert.EnterMultipleScope())
 		{
 			Assert.That(JsonSerializer.Serialize(o1.Object), Is.EqualTo(JsonSerializer.Serialize(o2.Object)));
 			Assert.That(JsonSerializer.Serialize(o1.StringTable), Is.EqualTo(JsonSerializer.Serialize(o2.StringTable)));
-			//Assert.That(JsonSerializer.Serialize(o1.G1Elements), Is.EqualTo(JsonSerializer.Serialize(o2.G1Elements)));
-		});
+			AssertGraphicsElementsAreEqual(o1.GraphicsElements, o2.GraphicsElements);
+		}
+	}
+
+	public void AssertGraphicsElementsAreEqual(IEnumerable<GraphicsElement> expected, IEnumerable<GraphicsElement> actual)
+	{
+		using (Assert.EnterMultipleScope())
+		{
+			var index = 0;
+			foreach (var (a, b) in expected.Zip(actual))
+			{
+				Assert.That(a.Width, Is.EqualTo(b.Width), $"[{index}] Width");
+				Assert.That(a.Height, Is.EqualTo(b.Height), $"[{index}] Height");
+				Assert.That(a.XOffset, Is.EqualTo(b.XOffset), $"[{index}] XOffset");
+				Assert.That(a.YOffset, Is.EqualTo(b.YOffset), $"[{index}] YOffset");
+				Assert.That(a.Flags, Is.EqualTo(b.Flags), $"[{index}] Flags");
+				Assert.That(a.ZoomOffset, Is.EqualTo(b.ZoomOffset), $"[{index}] ZoomOffset");
+				Assert.That(a.ImageData, Is.EqualTo(b.ImageData).AsCollection, $"[{index}] ImageData");
+				index++;
+			}
+		}
 	}
 }

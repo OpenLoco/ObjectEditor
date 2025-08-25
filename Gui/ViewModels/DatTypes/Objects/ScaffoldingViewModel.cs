@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Scaffolding;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
@@ -17,8 +17,8 @@ public class ScaffoldingViewModel : LocoObjectViewModel<ScaffoldingObject>
 		RoofHeights = so.RoofHeights.ToBindingList();
 	}
 
-	public override ScaffoldingObject GetAsStruct(ScaffoldingObject sco)
-		=> sco with
+	public override ScaffoldingObject GetAsStruct()
+		=> new()
 		{
 			SegmentHeights = [.. SegmentHeights],
 			RoofHeights = [.. RoofHeights]

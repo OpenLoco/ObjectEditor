@@ -2,11 +2,6 @@ using Avalonia.Threading;
 using Common;
 using DynamicData;
 using Common.Logging;
-using Dat;
-using Dat.Data;
-using Dat.FileParsing;
-using Dat.Types;
-using Definitions.Database;
 using Definitions.DTO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -18,6 +13,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Index;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Types;
+using Dat.Types;
+using Dat.FileParsing;
+using Dat.Converters;
 
 namespace Gui.Models;
 
@@ -180,7 +181,7 @@ public class ObjectEditorModel : IDisposable
 		locoDatFile = null;
 
 		DatFileInfo? fileInfo = null;
-		ILocoObject? locoObject = null;
+		LocoObject? locoObject = null;
 		MetadataModel? metadata = null;
 		List<Image<Rgba32>> images = [];
 
@@ -263,7 +264,12 @@ public class ObjectEditorModel : IDisposable
 			var firstLinkedDatFile = cachedLocoObjDto!.DatObjects.First();
 			if (firstLinkedDatFile.DatBytesAsBase64?.Length > 0)
 			{
-				var obj = SawyerStreamReader.LoadFullObjectFromStream(Convert.FromBase64String(firstLinkedDatFile.DatBytesAsBase64), Logger, $"{filesystemItem.FileName}-{filesystemItem.DisplayName}", true);
+				var obj = SawyerStreamReader.LoadFullObject(
+					Convert.FromBase64String(firstLinkedDatFile.DatBytesAsBase64),
+					Logger,
+					filename: $"{filesystemItem.FileName}-{filesystemItem.DisplayName}",
+					loadExtra: true);
+
 				fileInfo = obj.DatFileInfo;
 				locoObject = obj.LocoObject;
 				if (obj.LocoObject == null)
@@ -276,8 +282,8 @@ public class ObjectEditorModel : IDisposable
 				Logger.Warning($"Cached object {filesystemItem.DisplayName} had no data in DatBytes");
 				var fakeS5Header = new S5Header(0, firstLinkedDatFile.DatName, firstLinkedDatFile.DatChecksum)
 				{
-					ObjectType = cachedLocoObjDto.ObjectType,
-					SourceGame = cachedLocoObjDto.ObjectSource.ToSourceGame()
+					ObjectType = cachedLocoObjDto.ObjectType.Convert(),
+					ObjectSource = cachedLocoObjDto.ObjectSource.Convert()
 				};
 				fileInfo = new DatFileInfo(fakeS5Header, ObjectHeader.NullHeader);
 			}
@@ -300,7 +306,7 @@ public class ObjectEditorModel : IDisposable
 
 			if (locoObject != null)
 			{
-				foreach (var i in locoObject.G1Elements)
+				foreach (var i in locoObject.GraphicsElements)
 				{
 					if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 					{
@@ -319,7 +325,7 @@ public class ObjectEditorModel : IDisposable
 		locoDatFile = null;
 
 		DatFileInfo? fileInfo = null;
-		ILocoObject? locoObject = null;
+		LocoObject? locoObject = null;
 		MetadataModel? metadata = null;
 		List<Image<Rgba32>> images = [];
 
@@ -327,27 +333,24 @@ public class ObjectEditorModel : IDisposable
 			? filesystemItem.FileName
 			: Path.Combine(Settings.ObjDataDirectory, filesystemItem.FileName);
 
-		var obj = SawyerStreamReader.LoadFullObjectFromFile(filename, logger: Logger);
-		if (obj != null)
+		var obj = SawyerStreamReader.LoadFullObject(filename, logger: Logger);
+		fileInfo = obj.DatFileInfo;
+		locoObject = obj.LocoObject;
+		metadata = new MetadataModel("<unknown>")
 		{
-			fileInfo = obj.Value.DatFileInfo;
-			locoObject = obj.Value.LocoObject;
-			metadata = new MetadataModel("<unknown>")
-			{
-				CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
-				ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset(),
-				Availability = Definitions.ObjectAvailability.Available,
-				//DatObjects = [new(0)],
-			}; // todo: look up the rest of the data from internet
+			CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
+			ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset(),
+			Availability = Definitions.ObjectAvailability.Available,
+			//DatObjects = [new(0)],
+		}; // todo: look up the rest of the data from internet
 
-			if (locoObject != null)
+		if (locoObject != null)
+		{
+			foreach (var i in locoObject.GraphicsElements)
 			{
-				foreach (var i in locoObject.G1Elements)
+				if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 				{
-					if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
-					{
-						images.Add(image!);
-					}
+					images.Add(image!);
 				}
 			}
 		}

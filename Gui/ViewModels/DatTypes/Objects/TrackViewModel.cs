@@ -1,8 +1,9 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Track;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.Linq;
+using TrackObject = Definitions.ObjectModels.Objects.Track.TrackObject;
 
 namespace Gui.ViewModels;
 
@@ -13,16 +14,16 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 	[Reactive, EnumProhibitValues<TrackTraitFlags>(TrackTraitFlags.None)] public TrackTraitFlags StationTrackPieces { get; set; }
 	[Reactive] public Speed16 CurveSpeed { get; set; }
 	[Reactive] public uint8_t DisplayOffset { get; set; }
-	[Reactive] public S5HeaderViewModel CompatibleTunnel { get; set; }
+	[Reactive] public ObjectModelHeaderViewModel CompatibleTunnel { get; set; }
 	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t TunnelCostFactor { get; set; }
 	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Reactive, Category("Tracks and Roads")] public BindingList<S5HeaderViewModel> CompatibleTracksAndRoads { get; set; }
-	[Reactive, Category("Mods")] public BindingList<S5HeaderViewModel> CompatibleTrackExtras { get; set; }
-	[Reactive, Category("Signals")] public BindingList<S5HeaderViewModel> CompatibleSignals { get; set; }
-	[Reactive, Category("Bridges")] public BindingList<S5HeaderViewModel> CompatibleBridges { get; set; }
-	[Reactive, Category("Stations")] public BindingList<S5HeaderViewModel> CompatibleStations { get; set; }
+	[Reactive, Category("Tracks and Roads")] public BindingList<ObjectModelHeaderViewModel> CompatibleTracksAndRoads { get; set; }
+	[Reactive, Category("Mods")] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackExtras { get; set; }
+	[Reactive, Category("Signals")] public BindingList<ObjectModelHeaderViewModel> CompatibleSignals { get; set; }
+	[Reactive, Category("Bridges")] public BindingList<ObjectModelHeaderViewModel> CompatibleBridges { get; set; }
+	[Reactive, Category("Stations")] public BindingList<ObjectModelHeaderViewModel> CompatibleStations { get; set; }
 	[Reactive, Category("<unknown>")] public uint8_t var_06 { get; set; }
 
 	public TrackViewModel(TrackObject to)
@@ -30,45 +31,40 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 		Flags = to.Flags;
 		TrackPieces = to.TrackPieces;
 		StationTrackPieces = to.StationTrackPieces;
-		CurveSpeed = to.CurveSpeed;
+		CurveSpeed = to.MaxCurveSpeed;
 		DisplayOffset = to.DisplayOffset;
 		BuildCostFactor = to.BuildCostFactor;
 		SellCostFactor = to.SellCostFactor;
 		TunnelCostFactor = to.TunnelCostFactor;
 		CostIndex = to.CostIndex;
-		CompatibleTracksAndRoads = new(to.TracksAndRoads.ConvertAll(x => new S5HeaderViewModel(x)));
-		CompatibleTrackExtras = new(to.TrackMods.ConvertAll(x => new S5HeaderViewModel(x)));
-		CompatibleSignals = new(to.Signals.ConvertAll(x => new S5HeaderViewModel(x)));
+		CompatibleTracksAndRoads = new(to.CompatibleTracksAndRoads.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleTrackExtras = new(to.TrackMods.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleSignals = new(to.Signals.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 		CompatibleTunnel = new(to.Tunnel);
-		CompatibleBridges = new(to.Bridges.ConvertAll(x => new S5HeaderViewModel(x)));
-		CompatibleStations = new(to.Stations.ConvertAll(x => new S5HeaderViewModel(x)));
+		CompatibleBridges = new(to.Bridges.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleStations = new(to.Stations.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 		var_06 = to.var_06;
 	}
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override TrackObject GetAsStruct(TrackObject to)
-		=> to with
+	public override TrackObject GetAsStruct()
+		=> new()
 		{
 			Flags = Flags,
 			TrackPieces = TrackPieces,
 			StationTrackPieces = StationTrackPieces,
-			CurveSpeed = CurveSpeed,
+			MaxCurveSpeed = CurveSpeed,
 			DisplayOffset = DisplayOffset,
 			BuildCostFactor = BuildCostFactor,
 			SellCostFactor = SellCostFactor,
 			TunnelCostFactor = TunnelCostFactor,
 			CostIndex = CostIndex,
-			NumCompatibleTracksAndRoads = (uint8_t)CompatibleTracksAndRoads.Count,
-			TracksAndRoads = CompatibleTracksAndRoads.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			NumMods = (uint8_t)CompatibleTrackExtras.Count,
+			CompatibleTracksAndRoads = CompatibleTracksAndRoads.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 			TrackMods = CompatibleTrackExtras.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			NumSignals = (uint8_t)CompatibleSignals.Count,
 			Signals = CompatibleSignals.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 			Tunnel = CompatibleTunnel.GetAsUnderlyingType(),
-			NumBridges = (uint8_t)CompatibleBridges.Count,
 			Bridges = CompatibleBridges.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			NumStations = (uint8_t)CompatibleStations.Count,
 			Stations = CompatibleStations.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 			var_06 = var_06,
 		};

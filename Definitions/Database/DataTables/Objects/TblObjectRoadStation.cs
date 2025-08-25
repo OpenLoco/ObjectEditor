@@ -1,4 +1,5 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Road;
+using Definitions.ObjectModels.Objects.RoadStation;
 
 namespace Definitions.Database;
 
@@ -31,7 +32,7 @@ public class TblObjectRoadStation : DbSubObject, IConvertibleToTable<TblObjectRo
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
 			Flags = obj.Flags,
-			CompatibleRoadObjectCount = obj.CompatibleRoadObjectCount,
+			CompatibleRoadObjectCount = (uint8_t)obj.CompatibleRoadObjects.Count,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
 			//CargoTypeId = obj.CargoTypeId,

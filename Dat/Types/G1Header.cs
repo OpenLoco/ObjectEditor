@@ -1,9 +1,8 @@
 using Dat.FileParsing;
-using System.ComponentModel;
+using Definitions.ObjectModels;
 
 namespace Dat.Types;
 
-[TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x08)]
 public record G1Header(
 	[property: LocoStructOffset(0x00)] uint32_t NumEntries,

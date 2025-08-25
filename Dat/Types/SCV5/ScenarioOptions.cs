@@ -1,4 +1,5 @@
 using Dat.FileParsing;
+using Definitions.ObjectModels;
 using System.ComponentModel;
 
 namespace Dat.Types.SCV5;
@@ -45,7 +46,8 @@ public record ScenarioOptions(
 	[property: LocoStructOffset(0x41C1)] uint8_t MaxRiverWidth,
 	[property: LocoStructOffset(0x41C2)] uint8_t RiverbankWidth,
 	[property: LocoStructOffset(0x41C3)] uint8_t RiverMeanderRate,
-	[property: LocoStructOffset(0x41C4), LocoArrayLength(342), Browsable(false)] byte[] var_41C4) : ILocoStruct
+	[property: LocoStructOffset(0x41C4), LocoArrayLength(342), Browsable(false)] byte[] var_41C4)
+	: ILocoStruct
 {
 	public const int StructLength = 0x431A;
 	public bool Validate() => true;

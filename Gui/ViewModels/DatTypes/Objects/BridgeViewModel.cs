@@ -1,4 +1,4 @@
-using Dat.Objects;
+using Definitions.ObjectModels.Objects.Bridge;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -35,8 +35,8 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 	[Reactive, Category("Cost")] public int16_t BaseCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t HeightCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleTrackObjects { get; set; }
-	[Reactive, Category("Compatible")] public BindingList<S5HeaderViewModel> CompatibleRoadObjects { get; set; }
+	[Reactive, Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
+	[Reactive, Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
 	[Reactive, Category("<unknown>")] public uint8_t var_03 { get; set; }
 
 	public BridgeViewModel(BridgeObject bo)
@@ -52,15 +52,15 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 		SellCostFactor = bo.SellCostFactor;
 		DisabledTrackFlags = bo.DisabledTrackFlags;
 		DesignedYear = bo.DesignedYear;
-		CompatibleTrackObjects = new(bo.CompatibleTrackObjects.ConvertAll(x => new S5HeaderViewModel(x)));
-		CompatibleRoadObjects = new(bo.CompatibleRoadObjects.ConvertAll(x => new S5HeaderViewModel(x)));
+		CompatibleTrackObjects = new(bo.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleRoadObjects = new(bo.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 		var_03 = bo.var_03;
 		ClearHeight = bo.ClearHeight;
 		DeckDepth = bo.DeckDepth;
 	}
 
-	public override BridgeObject GetAsStruct(BridgeObject bro)
-		=> bro with
+	public override BridgeObject GetAsStruct()
+		=> new()
 		{
 			Flags = Flags,
 			SpanLength = SpanLength,
@@ -75,8 +75,6 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 			DesignedYear = DesignedYear,
 			CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
 			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			CompatibleTrackObjectCount = (uint8_t)CompatibleTrackObjects.Count,
-			CompatibleRoadObjectCount = (uint8_t)CompatibleRoadObjects.Count,
 			var_03 = var_03,
 			ClearHeight = ClearHeight,
 			DeckDepth = DeckDepth,

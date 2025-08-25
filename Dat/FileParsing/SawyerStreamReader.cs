@@ -1,78 +1,27 @@
 using Common.Logging;
+using Dat.Converters;
 using Dat.Data;
-using Dat.Objects;
+using Dat.Loaders;
 using Dat.Types;
-using Dat.Types.Audio;
 using Dat.Types.SCV5;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Sound;
+using Definitions.ObjectModels.Types;
 using System.Text;
 
 namespace Dat.FileParsing;
 
 public static class SawyerStreamReader
 {
-	public static List<S5Header> LoadVariableCountS5Headers(ReadOnlySpan<byte> data, int max)
+	public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecode(Stream stream, ILogger logger)
 	{
-		List<S5Header> result = [];
-		for (var i = 0; i < max; ++i)
-		{
-			if (data[0] != 0xFF)
-			{
-				var header = S5Header.Read(data[..S5Header.StructLength]);
-				// vanilla objects will have sourcegameflag == 0 and checksum == 0. custom objects will have a checksum specified - may need custom handling
-				if (header.Checksum != 0 || header.Flags != 255)
-				{
-					result.Add(header);
-				}
-			}
-
-			data = data[S5Header.StructLength..];
-		}
-
-		return result;
-	}
-
-	public static S5Header LoadS5HeaderFromFile(string filename, ILogger? logger = null)
-	{
-		if (!File.Exists(filename))
-		{
-			logger?.Error($"Path doesn't exist: {filename}");
-		}
-
-		logger?.Info($"Loading header for {filename}");
-
-		using var fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None, 32, FileOptions.SequentialScan | FileOptions.Asynchronous);
-		using var reader = new BinaryReader(fileStream);
-
-		var data = reader.ReadBytes(S5Header.StructLength);
-
-		return data.Length != S5Header.StructLength
-			? throw new InvalidOperationException($"bytes read ({data.Length}) didn't match bytes expected ({S5Header.StructLength})")
-			: S5Header.Read(data);
-	}
-
-	public static byte[] LoadBytesFromFile(string filename, ILogger? logger = null)
-	{
-		if (!File.Exists(filename))
-		{
-			var ex = new InvalidOperationException($"File doesn't exist: {filename}");
-			logger?.Error(ex);
-		}
-
-		logger?.Info($"Loading {filename}");
-		return File.ReadAllBytes(filename);
-	}
-
-	public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecodeFromFile(string filename, ILogger logger)
-		=> LoadAndDecodeFromStream(LoadBytesFromFile(filename), logger);
-
-	public static (S5Header s5Header, ObjectHeader objHeader, byte[] decodedData)? LoadAndDecodeFromStream(ReadOnlySpan<byte> fullData, ILogger logger)
-	{
-		if (!TryGetHeadersFromBytes(fullData, out var hdrs, logger))
+		if (!TryGetHeadersFromBytes(stream, out var hdrs, logger))
 		{
 			return null;
 		}
 
-		var remainingData = fullData[(S5Header.StructLength + ObjectHeader.StructLength)..];
+		using var br = new LocoBinaryReader(stream);
+		var remainingData = br.ReadToEnd();
 
 		byte[] decodedData;
 		try
@@ -86,7 +35,7 @@ public static class SawyerStreamReader
 		}
 
 		var headerFlag = BitConverter.GetBytes(hdrs.S5.Flags).AsSpan()[0..1];
-		var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, fullData[4..12], decodedData);
+		var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, Encoding.ASCII.GetBytes(hdrs.S5.Name), decodedData);
 
 		if (checksum != hdrs.S5.Checksum)
 		{
@@ -96,16 +45,24 @@ public static class SawyerStreamReader
 		return (hdrs.S5, hdrs.Obj, decodedData);
 	}
 
-	public static bool TryGetHeadersFromBytes(ReadOnlySpan<byte> data, out (S5Header S5, ObjectHeader Obj) hdrs, ILogger logger)
+	public static bool TryGetHeadersFromBytes(byte[] data, out (S5Header S5, ObjectHeader Obj) hdrs, ILogger logger)
+	{
+		using var ms = new MemoryStream(data);
+		return TryGetHeadersFromBytes(ms, hdrs: out hdrs, logger);
+	}
+
+	public static bool TryGetHeadersFromBytes(Stream stream, out (S5Header S5, ObjectHeader Obj) hdrs, ILogger logger)
 	{
 		hdrs = default;
-		if (data.Length < (S5Header.StructLength + ObjectHeader.StructLength))
+		if (stream.Length < (S5Header.StructLength + ObjectHeader.StructLength))
 		{
 			return false;
 		}
 
-		var s5 = S5Header.Read(data[0..S5Header.StructLength]);
-		var oh = ObjectHeader.Read(data[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+		using var br = new LocoBinaryReader(stream);
+
+		var s5 = S5Header.Read(br.ReadBytes(S5Header.StructLength));
+		var oh = ObjectHeader.Read(br.ReadBytes(ObjectHeader.StructLength));
 
 		if (!s5.IsValid())
 		{
@@ -124,15 +81,23 @@ public static class SawyerStreamReader
 		return true;
 	}
 
-	// load file
-	public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject)? LoadFullObjectFromFile(string filename, ILogger logger, bool loadExtra = true)
-		=> LoadFullObjectFromStream(File.ReadAllBytes(filename), logger, filename, loadExtra);
+	public static (DatFileInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(string filename, ILogger logger, bool loadExtra = true)
+	{
+		using var fs = new FileStream(filename, FileMode.Open);
+		return LoadFullObject(fs, logger, filename, loadExtra);
+	}
 
-	public static (DatFileInfo DatFileInfo, ILocoObject? LocoObject) LoadFullObjectFromStream(ReadOnlySpan<byte> data, ILogger logger, string filename = "<in-memory>", bool loadExtra = true)
+	public static (DatFileInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(byte[] data, ILogger logger, string filename = "<in-memory>", bool loadExtra = true)
+	{
+		using var ms = new MemoryStream(data);
+		return LoadFullObject(ms, logger, filename: filename, loadExtra: loadExtra);
+	}
+
+	public static (DatFileInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(Stream stream, ILogger logger, string filename, bool loadExtra = true)
 	{
 		logger.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
-		var obj = LoadAndDecodeFromStream(data, logger);
+		var obj = LoadAndDecode(stream, logger);
 		if (obj == null || obj.Value.decodedData.Length == 0)
 		{
 			logger.Error($"{filename} was unable to be decoded");
@@ -149,54 +114,12 @@ public static class SawyerStreamReader
 			return (new DatFileInfo(s5Header, objectHeader), null);
 		}
 
-		ReadOnlySpan<byte> remainingData = decodedData;
-
-		var locoStruct = GetLocoStruct(s5Header.ObjectType, remainingData);
-		ArgumentNullException.ThrowIfNull(locoStruct, paramName: filename);
-
-		var structSize = AttributeHelper.Get<LocoStructSizeAttribute>(locoStruct.GetType());
-		var locoStructSize = structSize!.Size;
-		remainingData = remainingData[locoStructSize..];
-
-		// every object has a string table
-		var (stringTable, stringTableBytesRead) = LoadStringTable(remainingData, locoStruct, logger);
-		remainingData = remainingData[stringTableBytesRead..];
-
-		// some objects have variable-sized data
-		if (loadExtra && locoStruct is ILocoStructVariableData locoStructExtra)
+		using (var decodedStream = new MemoryStream(decodedData))
 		{
-			remainingData = locoStructExtra.LoadVariable(remainingData);
+			var locoObject = ReadLocoObject(s5Header.ObjectType, decodedStream);
+			ValidateLocoStruct(s5Header, locoObject.Object, logger);
+			return new(new DatFileInfo(s5Header, objectHeader), locoObject);
 		}
-
-		LocoObject? newObj;
-		try
-		{
-			// some objects have graphics data
-			var (_, imageTable, imageTableBytesRead) = LoadImageTable(remainingData);
-			logger.Info($"HeaderLength={S5Header.StructLength} DataLength={objectHeader.DataLength} StringTableLength={stringTableBytesRead} ImageTableLength={imageTableBytesRead}");
-			newObj = new LocoObject(locoStruct, stringTable, imageTable);
-			remainingData = remainingData[imageTableBytesRead..];
-		}
-		catch (Exception ex)
-		{
-			newObj = new LocoObject(locoStruct, stringTable);
-			logger.Error(ex, "Error loading graphics table");
-		}
-
-		if (remainingData.Length > 0)
-		{
-			logger.Debug($"\"{s5Header.Name}\" has {remainingData.Length} bytes unaccounted for. What is this extra data???");
-		}
-
-		// some objects have extra computation that must be done after the object is fully loaded
-		if (loadExtra && locoStruct is ILocoStructPostLoad locoStructPostLoad)
-		{
-			locoStructPostLoad.PostLoad();
-		}
-
-		ValidateLocoStruct(s5Header, locoStruct, logger);
-
-		return new(new DatFileInfo(s5Header, objectHeader), newObj);
 	}
 
 	static void ValidateLocoStruct(S5Header s5Header, ILocoStruct locoStruct, ILogger? logger)
@@ -205,7 +128,7 @@ public static class SawyerStreamReader
 
 		try
 		{
-			if (s5Header.SourceGame == SourceGame.Vanilla)
+			if (s5Header.ObjectSource == DatObjectSource.Vanilla)
 			{
 				var s5Name = s5Header.Name;
 				if (!s5Header.IsVanilla())
@@ -237,71 +160,52 @@ public static class SawyerStreamReader
 		}
 	}
 
-	static string CStringToString(ReadOnlySpan<byte> data, Encoding enc)
+	static string CStringToString(LocoBinaryReader br, Encoding enc)
 	{
-		var ptr = 0;
-		while (data[ptr++] != '\0')
-		{ }
-
-		return enc.GetString(data[0..(ptr - 1)]); // do -1 to exclude the \0
-	}
-
-	static Dictionary<LanguageId, string> GetNewLanguageDictionary()
-	{
-		var languageDict = new Dictionary<LanguageId, string>();
-		foreach (var language in Enum.GetValues<LanguageId>())
+		List<byte> data = [];
+		byte b;
+		while ((b = br.ReadByte()) != '\0')
 		{
-			languageDict.Add(language, string.Empty);
+			data.Add(b);
 		}
 
-		return languageDict;
+		return enc.GetString([.. data]); // do -1 to exclude the \0
 	}
 
-	public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, string[] stringNames, ILogger logger)
+	public static StringTable ReadStringTableStream(Stream stream, string[] stringNames, ILogger? logger)
 	{
 		var stringTable = new StringTable();
 
-		if (data.Length == 0 || stringNames.Length == 0)
+		if (stream.Length == 0 || stringNames.Length == 0)
 		{
-			logger.Warning("No data for language table");
-			return (stringTable, 0);
+			logger?.Warning("No data for language table");
+			return stringTable;
 		}
 
-		var ptr = 0;
-
-		foreach (var locoString in stringNames)
+		using (var br = new LocoBinaryReader(stream))
 		{
-			// init language table
-			stringTable.Table.Add(locoString, GetNewLanguageDictionary());
-			var languageDict = stringTable[locoString];
-
-			// read string
-			for (; ptr < data.Length && data[ptr] != 0xFF; ++ptr)
+			foreach (var locoString in stringNames)
 			{
-				var lang = (LanguageId)data[ptr++];
-				languageDict[lang] = CStringToString(data[ptr..], Encoding.Latin1);
-				ptr += languageDict[lang].Length;
-			}
+				// init language table
+				var languageDict = stringTable.AddNewString(locoString);
 
-			ptr++; // add one because we skipped the 0xFF byte at the end
+				// read string
+				while (br.PeekByte() != LocoConstants.Terminator)
+				{
+					var lang = ((DatLanguageId)br.ReadByte()).Convert();
+					languageDict[lang] = CStringToString(br, Encoding.Latin1);
+				}
+
+				br.SkipTerminator();
+			}
 		}
 
-		return (stringTable, ptr);
-	}
-
-	public static (StringTable table, int bytesRead) LoadStringTable(ReadOnlySpan<byte> data, ILocoStruct locoStruct, ILogger logger)
-	{
-		var locoStructType = locoStruct.GetType();
-		var stringTableStrings = AttributeHelper.Has<LocoStringTableAttribute>(locoStructType)
-			? AttributeHelper.Get<LocoStringTableAttribute>(locoStructType)!.Strings
-			: [.. AttributeHelper.GetAllPropertiesWithAttribute<LocoStringAttribute>(locoStructType).Select(s => s.Name)];
-
-		return LoadStringTable(data, stringTableStrings, logger);
+		return stringTable;
 	}
 
 	public static S5File? LoadSave(string filename, ILogger? logger)
 	{
-		var data = LoadBytesFromFile(filename, logger).AsSpan();
+		var data = File.ReadAllBytes(filename);
 		if (data.Length < S5File.StructLength)
 		{
 			return null;
@@ -314,41 +218,46 @@ public static class SawyerStreamReader
 
 	public static G1Dat? LoadG1(string filename, ILogger logger)
 	{
-		ReadOnlySpan<byte> fullData = LoadBytesFromFile(filename);
-		var (g1Header, imageTable, imageTableBytesRead) = LoadImageTable(fullData);
-		logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={imageTableBytesRead}");
-		return new G1Dat(g1Header, imageTable);
+		ReadOnlySpan<byte> fullData = File.ReadAllBytes(filename);
+
+		using (var ms = new MemoryStream(fullData.ToArray()))
+		using (var br = new LocoBinaryReader(ms))
+		{
+			var (g1Header, imageTable) = ReadImageTable(br);
+			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={ms.Position}");
+			return new G1Dat(g1Header, imageTable);
+		}
 	}
 
-	static (G1Header header, List<G1Element32> table, int bytesRead) LoadImageTable(ReadOnlySpan<byte> data)
+	public static (G1Header Header, List<GraphicsElement> Table) ReadImageTable(LocoBinaryReader br)
 	{
-		var g1Element32s = new List<G1Element32>();
-
-		if (data.Length < ObjectAttributes.StructSize<G1Header>())
+		if (br.BaseStream.Length - br.BaseStream.Position < ObjectAttributes.StructSize<G1Header>())
 		{
-			return (new G1Header(0, 0), g1Element32s, 0);
+			return (new G1Header(0, 0), []);
 		}
 
-		var g1Header = new G1Header(
-			BitConverter.ToUInt32(data[0..4]),
-			BitConverter.ToUInt32(data[4..8]));
+		// read G1Header
+		var numEntries = br.ReadUInt32();
+		var totalSize = br.ReadUInt32();
+		var g1Header = new G1Header(numEntries, totalSize);
 
-		var g1ElementHeaders = data[8..];
-		var imageData = g1ElementHeaders[((int)g1Header.NumEntries * G1Element32.StructLength)..];
-		g1Header.ImageData = imageData.ToArray();
+		// read G1Element headers
+		var g1Element32s = new List<DatG1Element32>();
 		for (var i = 0; i < g1Header.NumEntries; ++i)
 		{
-			var g32ElementData = g1ElementHeaders[(i * G1Element32.StructLength)..((i + 1) * G1Element32.StructLength)];
-			var g32Element = ByteReader.ReadLocoStruct<G1Element32>(g32ElementData);
+			var g32Element = ByteReader.ReadLocoStruct<DatG1Element32>(br.ReadBytes(DatG1Element32.StructLength));
 			g1Element32s.Add(g32Element);
 		}
+
+		var imageData = br.ReadToEnd();
+		g1Header.ImageData = [.. imageData];
 
 		// set image data
 		for (var i = 0; i < g1Header.NumEntries; ++i)
 		{
 			var currElement = g1Element32s[i];
 
-			if (currElement.Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
+			if (currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
 			{
 				if (i == 0)
 				{
@@ -360,21 +269,21 @@ public static class SawyerStreamReader
 			else
 			{
 				var nextOffset = GetNextNonDuplicateOffset(g1Element32s, i, (uint)g1Header.ImageData.Length);
-				currElement.ImageData = imageData[(int)currElement.Offset..(int)nextOffset].ToArray();
+				currElement.ImageData = [.. imageData[(int)currElement.Offset..(int)nextOffset]];
 			}
 
 			// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
 			// image (which was also compressed) is now uncompressed, so we don't need do double-uncompress it.
-			if (currElement.Flags.HasFlag(G1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(G1ElementFlags.DuplicatePrevious))
+			if (currElement.Flags.HasFlag(DatG1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
 			{
 				currElement.ImageData = DecodeRLEImageData(currElement);
 			}
 		}
 
-		return (g1Header, g1Element32s, G1Header.StructLength + (int)g1Header.TotalSize);
+		return (g1Header, g1Element32s.Select(x => x.Convert()).ToList());
 	}
 
-	static uint GetNextNonDuplicateOffset(List<G1Element32> g1Element32s, int i, uint imageDateLength)
+	static uint GetNextNonDuplicateOffset(List<DatG1Element32> g1Element32s, int i, uint imageDateLength)
 	{
 		uint nextOffset;
 		do
@@ -385,12 +294,12 @@ public static class SawyerStreamReader
 
 			i++;
 		}
-		while (i < g1Element32s.Count && g1Element32s[i].Flags.HasFlag(G1ElementFlags.DuplicatePrevious));
+		while (i < g1Element32s.Count && g1Element32s[i].Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious));
 
 		return nextOffset;
 	}
 
-	public static byte[] DecodeRLEImageData(G1Element32 img)
+	public static byte[] DecodeRLEImageData(DatG1Element32 img)
 	{
 		var srcBuf = img.ImageData;
 		var dstBuf = new byte[img.Width * img.Height]; // Assuming a single byte per pixel - these are palette images
@@ -441,43 +350,43 @@ public static class SawyerStreamReader
 		return dstBuf;
 	}
 
-	public static ILocoStruct GetLocoStruct(ObjectType objectType, ReadOnlySpan<byte> data)
+	public static LocoObject ReadLocoObject(DatObjectType objectType, MemoryStream stream)
 		=> objectType switch
 		{
-			ObjectType.Airport => ByteReader.ReadLocoStruct<AirportObject>(data),
-			ObjectType.Bridge => ByteReader.ReadLocoStruct<BridgeObject>(data),
-			ObjectType.Building => ByteReader.ReadLocoStruct<BuildingObject>(data),
-			ObjectType.Cargo => ByteReader.ReadLocoStruct<CargoObject>(data),
-			ObjectType.CliffEdge => ByteReader.ReadLocoStruct<CliffEdgeObject>(data),
-			ObjectType.Climate => ByteReader.ReadLocoStruct<ClimateObject>(data),
-			ObjectType.Competitor => ByteReader.ReadLocoStruct<CompetitorObject>(data),
-			ObjectType.Currency => ByteReader.ReadLocoStruct<CurrencyObject>(data),
-			ObjectType.Dock => ByteReader.ReadLocoStruct<DockObject>(data),
-			ObjectType.HillShapes => ByteReader.ReadLocoStruct<HillShapesObject>(data),
-			ObjectType.Industry => ByteReader.ReadLocoStruct<IndustryObject>(data),
-			ObjectType.InterfaceSkin => ByteReader.ReadLocoStruct<InterfaceSkinObject>(data),
-			ObjectType.Land => ByteReader.ReadLocoStruct<LandObject>(data),
-			ObjectType.LevelCrossing => ByteReader.ReadLocoStruct<LevelCrossingObject>(data),
-			ObjectType.Region => ByteReader.ReadLocoStruct<RegionObject>(data),
-			ObjectType.RoadExtra => ByteReader.ReadLocoStruct<RoadExtraObject>(data),
-			ObjectType.Road => ByteReader.ReadLocoStruct<RoadObject>(data),
-			ObjectType.RoadStation => ByteReader.ReadLocoStruct<RoadStationObject>(data),
-			ObjectType.Scaffolding => ByteReader.ReadLocoStruct<ScaffoldingObject>(data),
-			ObjectType.ScenarioText => ByteReader.ReadLocoStruct<ScenarioTextObject>(data),
-			ObjectType.Snow => ByteReader.ReadLocoStruct<SnowObject>(data),
-			ObjectType.Sound => ByteReader.ReadLocoStruct<SoundObject>(data),
-			ObjectType.Steam => ByteReader.ReadLocoStruct<SteamObject>(data),
-			ObjectType.StreetLight => ByteReader.ReadLocoStruct<StreetLightObject>(data),
-			ObjectType.TownNames => ByteReader.ReadLocoStruct<TownNamesObject>(data),
-			ObjectType.TrackExtra => ByteReader.ReadLocoStruct<TrackExtraObject>(data),
-			ObjectType.Track => ByteReader.ReadLocoStruct<TrackObject>(data),
-			ObjectType.TrackSignal => ByteReader.ReadLocoStruct<TrackSignalObject>(data),
-			ObjectType.TrackStation => ByteReader.ReadLocoStruct<TrackStationObject>(data),
-			ObjectType.Tree => ByteReader.ReadLocoStruct<TreeObject>(data),
-			ObjectType.Tunnel => ByteReader.ReadLocoStruct<TunnelObject>(data),
-			ObjectType.Vehicle => ByteReader.ReadLocoStruct<VehicleObject>(data),
-			ObjectType.Wall => ByteReader.ReadLocoStruct<WallObject>(data),
-			ObjectType.Water => ByteReader.ReadLocoStruct<WaterObject>(data),
+			DatObjectType.Airport => AirportObjectLoader.Load(stream),
+			DatObjectType.Bridge => BridgeObjectLoader.Load(stream),
+			DatObjectType.Building => BuildingObjectLoader.Load(stream),
+			DatObjectType.Cargo => CargoObjectLoader.Load(stream),
+			DatObjectType.CliffEdge => CliffEdgeObjectLoader.Load(stream),
+			DatObjectType.Climate => ClimateObjectLoader.Load(stream),
+			DatObjectType.Competitor => CompetitorObjectLoader.Load(stream),
+			DatObjectType.Currency => CurrencyObjectLoader.Load(stream),
+			DatObjectType.Dock => DockObjectLoader.Load(stream),
+			DatObjectType.HillShapes => HillShapesObjectLoader.Load(stream),
+			DatObjectType.Industry => IndustryObjectLoader.Load(stream),
+			DatObjectType.InterfaceSkin => InterfaceSkinObjectLoader.Load(stream),
+			DatObjectType.Land => LandObjectLoader.Load(stream),
+			DatObjectType.LevelCrossing => LevelCrossingObjectLoader.Load(stream),
+			DatObjectType.Region => RegionObjectLoader.Load(stream),
+			DatObjectType.Road => RoadObjectLoader.Load(stream),
+			DatObjectType.RoadExtra => RoadExtraObjectLoader.Load(stream),
+			DatObjectType.RoadStation => RoadStationObjectLoader.Load(stream),
+			DatObjectType.Scaffolding => ScaffoldingObjectLoader.Load(stream),
+			DatObjectType.ScenarioText => ScenarioTextObjectLoader.Load(stream),
+			DatObjectType.Snow => SnowObjectLoader.Load(stream),
+			DatObjectType.Sound => SoundObjectLoader.Load(stream),
+			DatObjectType.Steam => SteamObjectLoader.Load(stream),
+			DatObjectType.StreetLight => StreetLightObjectLoader.Load(stream),
+			DatObjectType.TownNames => TownNamesObjectLoader.Load(stream),
+			DatObjectType.Track => TrackObjectLoader.Load(stream),
+			DatObjectType.TrackExtra => TrackExtraObjectLoader.Load(stream),
+			DatObjectType.TrackSignal => TrackSignalObjectLoader.Load(stream),
+			DatObjectType.TrackStation => TrackStationObjectLoader.Load(stream),
+			DatObjectType.Tree => TreeObjectLoader.Load(stream),
+			DatObjectType.Tunnel => TunnelObjectLoader.Load(stream),
+			DatObjectType.Vehicle => VehicleObjectLoader.Load(stream),
+			DatObjectType.Wall => WallObjectLoader.Load(stream),
+			DatObjectType.Water => WaterObjectLoader.Load(stream),
 			_ => throw new ArgumentOutOfRangeException(nameof(objectType), $"unknown object type {objectType}")
 		};
 
@@ -515,7 +424,7 @@ public static class SawyerStreamReader
 		var result = new List<(SoundEffectWaveFormat, byte[])>();
 
 		using (var ms = new MemoryStream(data))
-		using (var br = new BinaryReader(ms))
+		using (var br = new LocoBinaryReader(ms))
 		{
 			var numSounds = br.ReadUInt32();
 			var soundOffsets = new uint32_t[numSounds];
@@ -529,10 +438,9 @@ public static class SawyerStreamReader
 			{
 				br.BaseStream.Position = soundOffsets[i];
 				var pcmLen = br.ReadUInt32();
-				var header = ByteReader.ReadLocoStruct<SoundEffectWaveFormat>(br.ReadBytes(ObjectAttributes.StructSize<SoundEffectWaveFormat>()));
-
+				var sfx = br.ReadSoundEffect();
 				var pcmData = br.ReadBytes((int)pcmLen);
-				result.Add((header, pcmData));
+				result.Add((sfx, pcmData));
 			}
 		}
 
@@ -592,7 +500,7 @@ public static class SawyerStreamReader
 
 		for (var i = 0; i < data.Length; i++)
 		{
-			if (data[i] == 0xFF)
+			if (data[i] == LocoConstants.Terminator)
 			{
 				i++;
 				if (i >= data.Length)

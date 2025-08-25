@@ -1,3 +1,5 @@
+using Definitions.ObjectModels.Types;
+
 namespace Dat.Data;
 
 public static class OriginalObjectFiles

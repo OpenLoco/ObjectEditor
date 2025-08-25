@@ -1,12 +1,12 @@
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using Common.Logging;
-using Dat.Data;
 using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Reactive;
 using System.Threading.Tasks;
+using Definitions.ObjectModels.Types;
 
 namespace Gui.ViewModels;
 

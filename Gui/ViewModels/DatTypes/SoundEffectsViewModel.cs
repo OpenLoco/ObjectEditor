@@ -1,6 +1,6 @@
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types.Audio;
+using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models;
 using Gui.Models.Audio;
 using PropertyModels.Extensions;
@@ -23,7 +23,7 @@ public class SoundEffectsViewModel : BaseLocoFileViewModel
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(CurrentFile?.FileName, nameof(CurrentFile.FileName));
 
-		var soundIdNames = Enum.GetValues<SoundId>();
+		var soundIdNames = Enum.GetValues<DatSoundId>();
 		AudioViewModels = SawyerStreamReader.LoadSoundEffectsFromCSS(CurrentFile.FileName)
 			.Select((x, i) => new AudioViewModel(logger, soundIdNames[i].ToString(), x.header, x.data))
 			.ToBindingList();

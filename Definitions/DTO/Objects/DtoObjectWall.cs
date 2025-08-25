@@ -1,5 +1,5 @@
-using Dat.Objects;
 using Definitions.Database;
+using Definitions.ObjectModels.Objects.Wall;
 
 namespace Definitions.DTO;
 

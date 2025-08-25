@@ -1,4 +1,5 @@
 using Dat.Types;
+using Definitions.ObjectModels;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Gui.Models;
 public class UiDatLocoFile
 {
 	public required DatFileInfo DatFileInfo { get; set; }
-	public ILocoObject? LocoObject { get; set; }
+	public LocoObject? LocoObject { get; set; }
 	public IList<Image<Rgba32>> Images { get; set; } = [];
 	public MetadataModel? Metadata { get; set; }
 }

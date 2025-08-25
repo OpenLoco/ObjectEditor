@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Dat.Types;
 
 namespace Definitions.Database;
 
@@ -156,9 +155,6 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
 	}
-
-	public bool DoesObjectExist(S5Header s5Header, out TblObject? existingObject)
-	 => DoesObjectExist(s5Header.Name, s5Header.Checksum, out existingObject);
 
 	public bool DoesObjectExist(string datName, uint datChecksum, out TblObject? existingObject)
 	{

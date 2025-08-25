@@ -2,20 +2,21 @@ using Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Common.Logging;
-using Dat;
-using Dat.Data;
-using Dat.FileParsing;
-using Dat.Objects;
-using Dat.Types;
 using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.SourceData;
 using Definitions.Web;
-using SixLabors.ImageSharp;
 using System.IO.Compression;
 using System.IO.Hashing;
+using Definitions.ObjectModels.Types;
+using Dat.FileParsing;
+using Definitions.ObjectModels.Objects.Vehicle;
+using Index;
+using Dat.Converters;
+using SixLabors.ImageSharp;
+using Definitions.ObjectModels;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
@@ -87,7 +88,6 @@ public class ObjectRouteHandler : ITableRouteHandler
 			SubObjectId = 0,
 			Licence = null,
 		};
-
 
 		_ = await db.Objects.AddAsync(tblObject);
 		_ = await db.SaveChangesAsync();
@@ -311,7 +311,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existing!.UploadedDate}");
 		}
 
-		if (db.DoesObjectExist(hdrs.S5, out var existingObject))
+		if (db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObject))
 		{
 			// todo: if we get here - the object doesn't exist but the dat object does - we should then link them
 			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
@@ -320,7 +320,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		// at this stage, headers must be valid. we can add it to the object index/database, even if the remainder of the object is invalid
 
 		var sfm = sp.GetRequiredService<ServerFolderManager>();
-		var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObjectFromStream(datFileBytes, ssrLogger);
+		var (DatFileInfo, LocoObject) = SawyerStreamReader.LoadFullObject(datFileBytes, ssrLogger);
 
 		if (LocoObject == null)
 		{
@@ -347,7 +347,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			Name = objName, // same as DB seeder name. this is NOT unique
 			Description = string.Empty,
 			ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
-			ObjectType = hdrs.S5.ObjectType,
+			ObjectType = hdrs.S5.ObjectType.Convert(),
 			VehicleType = vehicleType,
 			Availability = request.InitialAvailability,
 			CreatedDate = request.CreatedDate,
@@ -565,13 +565,13 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
 
-		var locoObj = SawyerStreamReader.LoadFullObjectFromFile(pathOnDisk, dummyLogger, true);
+		var locoObj = SawyerStreamReader.LoadFullObject(pathOnDisk, dummyLogger, true);
 
 		await using var memoryStream = new MemoryStream();
 		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
 		{
 			var count = 0;
-			foreach (var g1 in locoObj!.Value!.LocoObject!.G1Elements)
+			foreach (var g1 in locoObj!.LocoObject!.GraphicsElements)
 			{
 				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 				{

@@ -1,8 +1,13 @@
-using Dat.Objects;
-using Dat.Types;
+using Dat.Loaders;
+using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Dock;
+using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
+using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -15,9 +20,9 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
 	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Reactive, Category("Building")] public BindingList<uint16_t> BuildingPartAnimations { get; set; }
-	[Reactive, Category("Building")] public BindingList<uint8_t> BuildingVariationParts { get; set; }
-	[Reactive, Category("Building")] public BindingList<uint8_t> BuildingPartHeights { get; set; }
+	[Reactive, Category("Building"), Length(1, DockObjectLoader.Constants.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
+	[Reactive, Category("Building"), Length(1, DockObjectLoader.Constants.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
+	[Reactive, Category("Building"), Length(1, DockObjectLoader.Constants.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
 	[Reactive, Category("<unknown>")] public uint8_t var_07 { get; set; }
 
 	public DockViewModel(DockObject @do)
@@ -29,14 +34,15 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 		BuildCostFactor = @do.BuildCostFactor;
 		SellCostFactor = @do.SellCostFactor;
 		BoatPosition = @do.BoatPosition;
-		BuildingPartAnimations = new(@do.BuildingPartAnimations);
-		BuildingVariationParts = new(@do.BuildingVariationParts);
 		var_07 = @do.var_07;
-		BuildingPartHeights = new(@do.BuildingPartHeights);
+		BuildingHeights = new(@do.BuildingHeights);
+		BuildingAnimations = new(@do.BuildingAnimations);
+		BuildingVariations = new(@do.BuildingVariations.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
 	}
 
-	public override DockObject GetAsStruct(DockObject @do)
-		=> @do with
+	public override DockObject GetAsStruct()
+	{
+		var dockObject = new DockObject()
 		{
 			Flags = Flags,
 			DesignedYear = DesignedYear,
@@ -46,9 +52,10 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 			SellCostFactor = SellCostFactor,
 			BoatPosition = BoatPosition,
 			var_07 = var_07,
-			BuildingPartAnimations = [.. BuildingPartAnimations],
-			BuildingVariationParts = [.. BuildingVariationParts],
-			NumBuildingPartAnimations = (uint8_t)BuildingPartAnimations.Count,
-			NumBuildingVariationParts = (uint8_t)BuildingVariationParts.Count,
+			BuildingHeights = [.. BuildingHeights],
+			BuildingAnimations = [.. BuildingAnimations],
+			BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
 		};
+		return dockObject;
+	}
 }

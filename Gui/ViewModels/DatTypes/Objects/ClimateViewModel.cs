@@ -1,7 +1,5 @@
-using Dat.Objects;
-using PropertyModels.Extensions;
+using Definitions.ObjectModels.Objects.Climate;
 using ReactiveUI.Fody.Helpers;
-using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
@@ -18,22 +16,25 @@ public class ClimateViewModel : LocoObjectViewModel<ClimateObject>
 	[Reactive] public Season FirstSeason { get; set; }
 	[Reactive] public uint8_t WinterSnowLine { get; set; }
 	[Reactive] public uint8_t SummerSnowLine { get; set; }
-	[Reactive] public BindingList<uint8_t> SeasonLengths { get; set; }
+	[Reactive] public uint8_t[] SeasonLengths { get; set; }
 
 	public ClimateViewModel(ClimateObject ro)
 	{
 		FirstSeason = (Season)ro.FirstSeason;
 		WinterSnowLine = ro.WinterSnowLine;
 		SummerSnowLine = ro.SummerSnowLine;
-		SeasonLengths = ro.SeasonLengths.ToBindingList();
+		SeasonLengths = [ro.SeasonLength1, ro.SeasonLength2, ro.SeasonLength3, ro.SeasonLength4];
 	}
 
-	public override ClimateObject GetAsStruct(ClimateObject co)
-		=> co with
+	public override ClimateObject GetAsStruct()
+		=> new()
 		{
 			FirstSeason = (uint8_t)FirstSeason,
 			WinterSnowLine = WinterSnowLine,
 			SummerSnowLine = SummerSnowLine,
-			SeasonLengths = [.. SeasonLengths]
+			SeasonLength1 = SeasonLengths[0],
+			SeasonLength2 = SeasonLengths[1],
+			SeasonLength3 = SeasonLengths[2],
+			SeasonLength4 = SeasonLengths[3],
 		};
 }

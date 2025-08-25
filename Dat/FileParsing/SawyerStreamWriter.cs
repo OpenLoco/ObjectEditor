@@ -1,14 +1,19 @@
 using Common.Logging;
+using Dat.Converters;
 using Dat.Data;
+using Dat.Loaders;
 using Dat.Types;
 using Dat.Types.Audio;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Sound;
+using Definitions.ObjectModels.Types;
 using System.Text;
 
 namespace Dat.FileParsing;
 
 public static class SawyerStreamWriter
 {
-	public static MusicWaveFormat LocoWaveFormatToRiff(SoundEffectWaveFormat hdr, int pcmDataLength)
+	public static DatMusicWaveFormat LocoWaveFormatToRiff(SoundEffectWaveFormat hdr, int pcmDataLength)
 		=> new(
 			0x46464952, // "RIFF"
 			(uint)(pcmDataLength + 36), // file size
@@ -45,7 +50,7 @@ public static class SawyerStreamWriter
 	public static byte[] SaveSoundEffectsToCSS(List<(SoundEffectWaveFormat locoWaveHeader, byte[] data)> sounds)
 	{
 		using (var ms = new MemoryStream())
-		using (var br = new BinaryWriter(ms))
+		using (var br = new LocoBinaryWriter(ms))
 		{
 			// total sounds
 			br.Write((uint)sounds.Count);
@@ -56,14 +61,14 @@ public static class SawyerStreamWriter
 			foreach (var (header, data) in sounds)
 			{
 				br.Write((uint)currOffset);
-				currOffset += 4 + data.Length + ObjectAttributes.StructSize<SoundEffectWaveFormat>();
+				currOffset += 4 + data.Length + ObjectAttributes.StructSize<DatSoundEffectWaveFormat>();
 			}
 
 			// pcm data
 			foreach (var (header, data) in sounds)
 			{
 				br.Write((uint)data.Length);
-				br.Write(ByteWriter.WriteLocoStruct(header));
+				br.Write(header);
 				br.Write(data);
 			}
 
@@ -74,7 +79,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static byte[] SaveMusicToDat(MusicWaveFormat header, byte[] data)
+	public static byte[] SaveMusicToDat(DatMusicWaveFormat header, byte[] data)
 	{
 		using (var ms = new MemoryStream())
 		using (var br = new BinaryWriter(ms))
@@ -89,13 +94,13 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static void Save(string filename, string objName, SourceGame sourceGame, SawyerEncoding encoding, ILocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
+	public static void Save(string filename, string objName, ObjectSource objectSource, SawyerEncoding encoding, LocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
 	{
 		ArgumentNullException.ThrowIfNull(locoObject);
 
 		logger.Info($"Writing \"{objName}\" to {filename}");
 
-		var objBytes = WriteLocoObject(objName, sourceGame, encoding, logger, locoObject, allowWritingAsVanilla);
+		var objBytes = WriteLocoObject(objName, locoObject.ObjectType, objectSource, encoding, logger, locoObject, allowWritingAsVanilla).ToArray();
 
 		try
 		{
@@ -193,7 +198,7 @@ public static class SawyerStreamWriter
 		}
 
 		// Need to emit at least one byte, otherwise there is nothing to repeat
-		buffer.WriteByte(0xFF);
+		buffer.WriteByte(LocoConstants.Terminator);
 		buffer.WriteByte(data[0]);
 
 		// Iterate through remainder of the source buffer
@@ -238,7 +243,7 @@ public static class SawyerStreamWriter
 
 			if (bestRepeatCount == 0)
 			{
-				buffer.WriteByte(0xFF);
+				buffer.WriteByte(LocoConstants.Terminator);
 				buffer.WriteByte(data[i]);
 				i++;
 			}
@@ -271,12 +276,14 @@ public static class SawyerStreamWriter
 		shift &= 7; // Ensure shift is within 0-7 for 8-bit bytes
 		return (uint8_t)((value << shift) | (value >> (8 - shift)));
 	}
+	public static byte[] EncodeRLEImageData(GraphicsElement img)
+		=> EncodeRLEImageData((DatG1ElementFlags)img.Flags, img.ImageData, img.Width, img.Height);
 
-	public static byte[] EncodeRLEImageData(G1Element32 img)
+	public static byte[] EncodeRLEImageData(DatG1Element32 img)
 		=> EncodeRLEImageData(img.Flags, img.ImageData, img.Width, img.Height);
 
 	// this is ugly as all hell but it works. plenty of room for cleanup and optimisation
-	public static byte[] EncodeRLEImageData(G1ElementFlags flags, byte[] imageData, int width, int height)
+	public static byte[] EncodeRLEImageData(DatG1ElementFlags flags, byte[] imageData, int width, int height)
 	{
 		using var ms = new MemoryStream();
 
@@ -360,9 +367,6 @@ public static class SawyerStreamWriter
 		return ms.ToArray();
 	}
 
-	public static ReadOnlySpan<byte> WriteLocoObject(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
-		=> WriteLocoObjectStream(objName, sourceGame, encoding, logger, obj, allowWritingAsVanilla).ToArray();
-
 	public static ReadOnlySpan<byte> WriteChunk(ILocoStruct str, SawyerEncoding encoding)
 		=> WriteChunkCore(ByteWriter.WriteLocoStruct(str), encoding);
 
@@ -373,56 +377,142 @@ public static class SawyerStreamWriter
 		return [.. objHeader.ToArray(), .. encoded];
 	}
 
-	public static MemoryStream WriteLocoObjectStream(string objName, SourceGame sourceGame, SawyerEncoding encoding, ILogger logger, ILocoObject obj, bool allowWritingAsVanilla)
+	public static void WriteLocoObject(Stream stream, LocoObject obj)
 	{
+		switch (obj.ObjectType)
+		{
+			case ObjectType.Airport:
+				AirportObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Bridge:
+				BridgeObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Building:
+				BuildingObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Cargo:
+				CargoObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.CliffEdge:
+				CliffEdgeObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Climate:
+				ClimateObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Competitor:
+				CompetitorObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Currency:
+				CurrencyObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Dock:
+				DockObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.HillShapes:
+				HillShapesObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Industry:
+				IndustryObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.InterfaceSkin:
+				InterfaceSkinObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Land:
+				LandObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.LevelCrossing:
+				LevelCrossingObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Region:
+				RegionObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Road:
+				RoadObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.RoadExtra:
+				RoadExtraObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.RoadStation:
+				RoadStationObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Scaffolding:
+				ScaffoldingObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.ScenarioText:
+				ScenarioTextObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Snow:
+				SnowObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Sound:
+				SoundObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Steam:
+				SteamObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.StreetLight:
+				StreetLightObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.TownNames:
+				TownNamesObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Track:
+				TrackObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.TrackExtra:
+				TrackExtraObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.TrackSignal:
+				TrackSignalObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.TrackStation:
+				TrackStationObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Tree:
+				TreeObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Tunnel:
+				TunnelObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Vehicle:
+				VehicleObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Wall:
+				WallObjectLoader.Save(stream, obj);
+				break;
+			case ObjectType.Water:
+				WaterObjectLoader.Save(stream, obj);
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(obj.ObjectType), $"unknown object type {obj.ObjectType}");
+		}
+	}
+
+	public static MemoryStream WriteLocoObject(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
+	{
+		if (!obj.Object.Validate())
+		{
+			throw new ArgumentException($"{objName} was invalid", nameof(obj));
+		}
+
 		using var rawObjStream = new MemoryStream();
-
-		// obj
-		var objBytes = ByteWriter.WriteLocoStruct(obj.Object);
-		rawObjStream.Write(objBytes);
-
-		// string table
-		foreach (var ste in obj.StringTable.Table)
-		{
-			foreach (var language in ste.Value.Where(str => !string.IsNullOrEmpty(str.Value))) // skip strings with empty content
-			{
-				rawObjStream.WriteByte((byte)language.Key);
-
-				var strBytes = Encoding.Latin1.GetBytes(language.Value);
-				rawObjStream.Write(strBytes, 0, strBytes.Length);
-				rawObjStream.WriteByte((byte)'\0');
-			}
-
-			rawObjStream.WriteByte(0xff);
-		}
-
-		// variable data
-		if (obj.Object is ILocoStructVariableData objV)
-		{
-			var variableBytes = objV.SaveVariable();
-			rawObjStream.Write(variableBytes);
-		}
-
-		// graphics data
-		SaveImageTable(obj.G1Elements, rawObjStream);
-
+		WriteLocoObject(rawObjStream, obj);
 		rawObjStream.Flush();
 
 		// now obj is written, we can calculate the few bits of metadata (checksum and length) for the headers
 
 		// s5 header
-		var attr = AttributeHelper.Get<LocoStructTypeAttribute>(obj.Object.GetType());
-
-		if (sourceGame == SourceGame.Vanilla && !allowWritingAsVanilla)
+		var sourceGame = objectSource.Convert();
+		if (sourceGame == DatObjectSource.Vanilla && !allowWritingAsVanilla)
 		{
-			sourceGame = SourceGame.Custom;
+			sourceGame = DatObjectSource.Custom;
 			logger.Warning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
 		}
 
 		var s5Header = new S5Header(objName, 0)
 		{
-			SourceGame = sourceGame,
-			ObjectType = attr!.ObjectType
+			ObjectSource = sourceGame,
+			ObjectType = objectType.Convert(),
 		};
 
 		// calculate checksum
@@ -455,12 +545,40 @@ public static class SawyerStreamWriter
 		return headerStream;
 	}
 
-	static void SaveImageTable(List<G1Element32> g1Elements, Stream objStream)
+	public static void WriteVariableStream(Stream ms, LocoObject obj)
 	{
+		if (obj.Object is ILocoStructVariableData objV)
+		{
+			var variableBytes = objV.SaveVariable();
+			ms.Write(variableBytes);
+		}
+	}
+
+	public static void WriteStringTable(Stream ms, StringTable table)
+	{
+		foreach (var ste in table.Table)
+		{
+			foreach (var language in ste.Value.Where(str => !string.IsNullOrEmpty(str.Value))) // skip strings with empty content
+			{
+				ms.WriteByte((byte)language.Key);
+
+				var strBytes = Encoding.Latin1.GetBytes(language.Value);
+				ms.Write(strBytes, 0, strBytes.Length);
+				ms.WriteByte((byte)'\0');
+			}
+
+			ms.WriteByte(0xff);
+		}
+	}
+
+	public static void WriteImageTable(Stream ms, List<GraphicsElement> graphicsElements)
+	{
+		var g1Elements = graphicsElements.Select(x => x.Convert()).ToList();
+
 		if (g1Elements != null && g1Elements.Count != 0)
 		{
 			// encode if necessary
-			List<G1Element32> encoded = [];
+			List<DatG1Element32> encoded = [];
 			var offsetBytesIntoImageData = 0;
 			foreach (var g1Element in g1Elements)
 			{
@@ -476,19 +594,19 @@ public static class SawyerStreamWriter
 			}
 
 			// write G1Header
-			objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Count));
-			objStream.Write(BitConverter.GetBytes((uint32_t)encoded.Sum(x => x.ImageData.Length)));
+			ms.Write(BitConverter.GetBytes((uint32_t)encoded.Count));
+			ms.Write(BitConverter.GetBytes((uint32_t)encoded.Sum(x => x.ImageData.Length)));
 
 			// write G1Element headers
 			foreach (var g1Element in encoded)
 			{
-				objStream.Write(g1Element.Write());
+				ms.Write(g1Element.Write());
 			}
 
 			// write G1Elements ImageData
 			foreach (var g1Element in encoded)
 			{
-				objStream.Write(g1Element.ImageData);
+				ms.Write(g1Element.ImageData);
 			}
 		}
 	}
@@ -497,7 +615,7 @@ public static class SawyerStreamWriter
 	{
 		using (var fs = File.OpenWrite(filename))
 		{
-			SaveImageTable(g1.G1Elements, fs);
+			WriteImageTable(fs, g1.GraphicsElements);
 		}
 	}
 }

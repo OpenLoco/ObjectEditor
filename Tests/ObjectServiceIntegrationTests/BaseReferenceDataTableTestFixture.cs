@@ -40,13 +40,13 @@ public abstract class BaseRouteHandlerTestFixture
 	public async Task SetUp()
 	{
 		testWebAppFactory = new TestWebApplicationFactory<Program>();
-		Assert.Multiple(() =>
+		using (Assert.EnterMultipleScope())
 		{
 			var config = testWebAppFactory.Services.GetRequiredService<IConfiguration>();
 			Assert.That(config["ObjectService:RootFolder"].StartsWith(Path.GetTempPath()));
 			Assert.That(Directory.Exists(config["ObjectService:RootFolder"]), Is.True);
 			Assert.That(config.GetValue<bool>("ObjectService:ShowScalar"), Is.False);
-		});
+		}
 
 		HttpClient = testWebAppFactory.CreateClient();
 
@@ -54,11 +54,11 @@ public abstract class BaseRouteHandlerTestFixture
 		var healthResponse = await HttpClient.GetAsync("/health");
 		var health = await healthResponse.Content.ReadAsStringAsync();
 
-		Assert.Multiple(() =>
+		using (Assert.EnterMultipleScope())
 		{
 			Assert.That(healthResponse.IsSuccessStatusCode, Is.True);
 			Assert.That(health, Is.EqualTo("Healthy"));
-		});
+		}
 	}
 
 	[TearDown]
@@ -100,11 +100,11 @@ public abstract class BaseReferenceDataTableTestFixture<TGetDto, TRequestDto, TR
 		var results = await ClientHelpers.GetAsync<IEnumerable<TGetDto>>(HttpClient!, RoutesV2.Prefix, BaseRoute);
 
 		// assert
-		Assert.Multiple(() =>
+		using (Assert.EnterMultipleScope())
 		{
 			Assert.That(results?.Count(), Is.EqualTo(2));
 			Assert.That(results, Is.EquivalentTo(DbSeedData.Select(ToDtoEntryFunc)));
-		});
+		}
 	}
 
 	[Test]
@@ -123,14 +123,14 @@ public abstract class BaseReferenceDataTableTestFixture<TGetDto, TRequestDto, TR
 	{
 		// act
 		const int id = 1;
-		var results = await ClientHelpers.DeleteAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+		_ = await ClientHelpers.DeleteAsync(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
 
 		// assert
-		Assert.Multiple(async () =>
+		using (Assert.EnterMultipleScope())
 		{
 			var results = await ClientHelpers.GetAsync<IEnumerable<TGetDto>>(HttpClient!, RoutesV2.Prefix, BaseRoute);
 			Assert.That(results.First(), Is.EqualTo(ToDtoEntryFunc(DbSeedData.ToList()[id])));
-		});
+		}
 	}
 
 	[Test]

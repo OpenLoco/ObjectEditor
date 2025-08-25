@@ -1,8 +1,8 @@
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Definitions.ObjectModels;
 using DynamicData;
-using Dat;
 using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -67,9 +67,9 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public SelectionModel<Bitmap> SelectionModel { get; set; }
 
 	public UIG1Element32? SelectedG1Element
-		=> SelectedImageIndex == -1 || Model.G1Provider.G1Elements.Count == 0 || SelectedImageIndex >= Model.G1Provider.G1Elements.Count
+		=> SelectedImageIndex == -1 || Model.G1Provider.GraphicsElements.Count == 0 || SelectedImageIndex >= Model.G1Provider.GraphicsElements.Count
 		? null
-		: new UIG1Element32(SelectedImageIndex, Model.GetImageName(SelectedImageIndex), Model.G1Provider.G1Elements[SelectedImageIndex]);
+		: new UIG1Element32(SelectedImageIndex, Model.GetImageName(SelectedImageIndex), Model.G1Provider.GraphicsElements[SelectedImageIndex]);
 
 	public Avalonia.Point SelectedG1ElementOffset
 		=> SelectedG1Element == null
@@ -95,7 +95,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			.Subscribe(_ => UpdateBitmaps());
 
 		_ = this.WhenAnyValue(o => o.SelectedImageIndex)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element)));
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element))); // disabling this line stops mem leak
 		_ = this.WhenAnyValue(o => o.SelectedG1Element)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1ElementOffset)));
 		_ = this.WhenAnyValue(o => o.SelectedG1Element)
@@ -169,7 +169,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 		// Update the displayed image
 		SelectedBitmapPreview = SelectedBitmaps[currentFrameIndex];
-		SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex];
+		SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex]; // disabling this also makes the memory leaks stop
 
 		// Move to the next frame, looping back to the beginning if necessary
 		currentFrameIndex = (currentFrameIndex + 1) % SelectedBitmaps.Count;

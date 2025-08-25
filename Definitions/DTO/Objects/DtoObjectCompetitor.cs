@@ -1,13 +1,13 @@
-using Dat.Objects;
 using Definitions.Database;
+using Definitions.ObjectModels.Objects.Competitor;
 
 namespace Definitions.DTO;
 
 public class DtoObjectCompetitor : IDtoSubObject
 {
-	public CompetitorNamePrefix AvailableNamePrefixes { get; set; }
-	public CompetitorPlaystyle AvailablePlaystyles { get; set; }
-	public uint32_t Emotions { get; set; }
+	public NamePrefixFlags AvailableNamePrefixes { get; set; }
+	public PlaystyleFlags AvailablePlaystyles { get; set; }
+	public EmotionFlags Emotions { get; set; }
 	public uint8_t Intelligence { get; set; }
 	public uint8_t Aggressiveness { get; set; }
 	public uint8_t Competitiveness { get; set; }

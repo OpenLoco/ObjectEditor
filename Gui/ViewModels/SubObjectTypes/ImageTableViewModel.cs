@@ -30,20 +30,6 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	[Reactive]
 	public ColourRemapSwatch SelectedSecondarySwatch { get; set; } = ColourRemapSwatch.SecondaryRemap;
 
-	readonly DispatcherTimer animationTimer;
-	int currentFrameIndex;
-
-	public IList<Bitmap> SelectedBitmaps { get; set; }
-
-	[Reactive] public Bitmap SelectedBitmapPreview { get; set; }
-	public Avalonia.Size SelectedBitmapPreviewBorder
-		=> SelectedBitmapPreview == null
-			? new Avalonia.Size()
-			: new Avalonia.Size(SelectedBitmapPreview.Size.Width + 2, SelectedBitmapPreview.Size.Height + 2);
-
-	[Reactive]
-	public int AnimationSpeed { get; set; } = 40;
-
 	[Reactive]
 	public ICommand ReplaceImageCommand { get; set; }
 
@@ -58,27 +44,25 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	// what is displaying on the ui
 	[Reactive]
-	public ObservableCollection<Bitmap?> Bitmaps { get; set; }
+	public ObservableCollection<ImageViewModel> ImageViewModels { get; set; } = [];
 
 	[Reactive]
 	public int SelectedImageIndex { get; set; } = -1;
 
 	[Reactive]
-	public SelectionModel<Bitmap> SelectionModel { get; set; }
+	public SelectionModel<ImageViewModel> SelectionModel { get; set; }
 
-	public UIG1Element32? SelectedG1Element
-		=> SelectedImageIndex == -1 || Model.G1Provider.GraphicsElements.Count == 0 || SelectedImageIndex >= Model.G1Provider.GraphicsElements.Count
-		? null
-		: new UIG1Element32(SelectedImageIndex, Model.GetImageName(SelectedImageIndex), Model.G1Provider.GraphicsElements[SelectedImageIndex]);
+	[Reactive]
+	public ImageViewModel? SelectedImage { get; set; }
 
-	public Avalonia.Point SelectedG1ElementOffset
-		=> SelectedG1Element == null
-			? new Avalonia.Point()
-			: new Avalonia.Point(-SelectedG1Element?.XOffset ?? 0, -SelectedG1Element?.YOffset ?? 0);
-	public Avalonia.Size SelectedG1ElementSize
-		=> SelectedG1Element == null
-			? new Avalonia.Size()
-			: new Avalonia.Size(SelectedG1Element?.Width ?? 0, SelectedG1Element?.Height ?? 0);
+	readonly DispatcherTimer animationTimer;
+	int currentFrameIndex;
+
+	[Reactive]
+	public IList<ImageViewModel> SelectedBitmaps { get; set; }
+
+	[Reactive]
+	public int AnimationSpeed { get; set; } = 40;
 
 	ImageTableModel Model { get; init; }
 
@@ -95,17 +79,17 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			.Subscribe(_ => UpdateBitmaps());
 
 		_ = this.WhenAnyValue(o => o.SelectedImageIndex)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1Element))); // disabling this line stops mem leak
-		_ = this.WhenAnyValue(o => o.SelectedG1Element)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1ElementOffset)));
-		_ = this.WhenAnyValue(o => o.SelectedG1Element)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedG1ElementSize)));
-		_ = this.WhenAnyValue(o => o.SelectedG1Element)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreview)));
-		_ = this.WhenAnyValue(o => o.SelectedBitmapPreview)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
+			.Where(index => index >= 0 && index < ImageViewModels?.Count)
+			.Subscribe(_ =>
+			{
+				// why the FUCK doesn't this trigged SelectedImage's property changed (and thus update the UI)
+				SelectedImage = ImageViewModels[SelectedImageIndex];
+				this.RaisePropertyChanged(nameof(SelectedImage));
+			});
+
 		_ = this.WhenAnyValue(o => o.AnimationSpeed)
-			.Subscribe(_ => UpdateAnimationSpeed());
+			.Where(_ => animationTimer != null)
+			.Subscribe(_ => animationTimer!.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed));
 
 		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
 		ExportImagesCommand = ReactiveCommand.CreateFromTask(ExportImages);
@@ -129,7 +113,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
 	{
-		var sm = (SelectionModel<Bitmap>)sender;
+		var sm = (SelectionModel<ImageViewModel>)sender;
 
 		if (sm.SelectedIndexes.Count > 0)
 		{
@@ -142,17 +126,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		}
 
 		// ... handle selection changed
-		SelectedBitmaps = [.. sm.SelectedItems.Cast<Bitmap>()];
-	}
-
-	void UpdateAnimationSpeed()
-	{
-		if (animationTimer == null)
-		{
-			return;
-		}
-
-		animationTimer.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed);
+		SelectedBitmaps = [.. sm.SelectedItems.Cast<ImageViewModel>()];
 	}
 
 	void AnimationTimer_Tick(object? sender, EventArgs e)
@@ -167,8 +141,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			currentFrameIndex = 0;
 		}
 
-		// Update the displayed image
-		SelectedBitmapPreview = SelectedBitmaps[currentFrameIndex];
+		// Update the displayed image viewmodel
 		SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex]; // disabling this also makes the memory leaks stop
 
 		// Move to the next frame, looping back to the beginning if necessary
@@ -177,7 +150,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	void CreateSelectionModel()
 	{
-		SelectionModel = new SelectionModel<Bitmap>
+		SelectionModel = new SelectionModel<ImageViewModel>
 		{
 			SingleSelect = false
 		};
@@ -213,7 +186,15 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public void UpdateBitmaps()
 	{
 		Model.RecalcImages(SelectedPrimarySwatch, SelectedSecondarySwatch);
-		Bitmaps = [.. G1ImageConversion.CreateAvaloniaImages(Model.Images)];
+		var newImages = G1ImageConversion.CreateAvaloniaImages(Model.Images);
+
+		ImageViewModels.Clear();
+		var i = 0;
+		foreach (var image in newImages)
+		{
+			ImageViewModels.Add(new ImageViewModel(i, Model.GetImageName(i), Model.G1Provider.GraphicsElements[i], image));
+			i++;
+		}
 	}
 
 	public async Task ExportImages()

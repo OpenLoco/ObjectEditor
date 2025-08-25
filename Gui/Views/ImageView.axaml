@@ -1,0 +1,64 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Gui.ViewModels"
+	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	x:Class="Gui.Views.ImageView"
+	x:DataType="vm:ImageViewModel">
+
+	<StackPanel>
+		<StackPanel Orientation="Horizontal">
+			<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select preview background colour">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Background</TextBlock>
+				</DockPanel>
+				<Button.Flyout >
+					<Flyout>
+						<ColorView Name="ImageColorViewPreviewBackground" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+					</Flyout>
+				</Button.Flyout>
+			</Button>
+			<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select border preview colour">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Border</TextBlock>
+				</DockPanel>
+				<Button.Flyout >
+					<Flyout>
+						<ColorView Name="ImageColorViewBorder" Palette="" Color="Gold" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+					</Flyout>
+				</Button.Flyout>
+			</Button>
+			<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select origin point colour">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Origin</TextBlock>
+				</DockPanel>
+				<Button.Flyout >
+					<Flyout>
+						<ColorView Name="ImageColorViewOriginPoint" Palette="" Color="Red" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+					</Flyout>
+				</Button.Flyout>
+			</Button>
+		</StackPanel>
+		<paz:ZoomBorder Name="ZoomBorder" MinWidth="256" MinHeight="256" Stretch="Uniform" ZoomSpeed="1.2" MinZoomX="0.5" MaxZoomX="30" MinZoomY="0.5" MaxZoomY="30" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left"  Background="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" >
+			<Canvas Width="{Binding Width}" Height="{Binding Height}" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Gray">
+				<!--Bounding box-->
+				<Rectangle Canvas.Top="-1" Canvas.Left="-1" StrokeThickness="1.0" Width="{Binding Image.Size.Width}" Height="{Binding Image.Size.Height}" Opacity="1.0" Fill="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" Stroke="{Binding #ImageColorViewBorder.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}"  />
+				<!--Image-->
+				<Image Name="AnimationPreviewPP" Source="{Binding Image}" RenderOptions.BitmapInterpolationMode="None" Stretch="None"/>
+				<!--Origin point-->
+				<Rectangle Canvas.Left="{Binding XOffset, Converter={StaticResource NegativeValueConverter}}" Canvas.Top="{Binding YOffset, Converter={StaticResource NegativeValueConverter}}" Width="1" Height="1" Opacity="1.0" Fill="{Binding #ImageColorViewOriginPoint.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" />
+			</Canvas>
+		</paz:ZoomBorder>
+		<TextBlock HorizontalAlignment="Center" Text="{Binding #ZoomBorder.ZoomX, StringFormat='Zoom: {0:F2}x | \'R\' to reset'}"></TextBlock>
+		<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False"></pgc:PropertyGrid>
+	</StackPanel>
+
+</UserControl>

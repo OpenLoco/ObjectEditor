@@ -1,3 +1,4 @@
+using Avalonia.Controls.PanAndZoom;
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using Definitions.ObjectModels;
@@ -40,6 +41,12 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	[Reactive]
 	public ICommand CropAllImagesCommand { get; set; }
+
+	[Reactive]
+	public ICommand ZeroOffsetAllImagesCommand { get; set; }
+
+	[Reactive]
+	public ICommand CenterOffsetAllImagesCommand { get; set; }
 
 	// what is displaying on the ui
 	[Reactive]
@@ -92,6 +99,24 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		{
 			Model.CropAllImages(SelectedPrimarySwatch, SelectedSecondarySwatch);
 			UpdateBitmaps();
+		});
+
+		ZeroOffsetAllImagesCommand = ReactiveCommand.Create(() =>
+		{
+			foreach (var ivm in ImageViewModels)
+			{
+				ivm.XOffset = 0;
+				ivm.YOffset = 0;
+			}
+		});
+
+		CenterOffsetAllImagesCommand = ReactiveCommand.Create(() =>
+		{
+			foreach (var ivm in ImageViewModels)
+			{
+				ivm.XOffset = (short)(-ivm.Width / 2);
+				ivm.YOffset = (short)(-ivm.Height / 2);
+			}
 		});
 
 		UpdateBitmaps();

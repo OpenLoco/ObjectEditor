@@ -20,8 +20,10 @@ public class ImageViewModel : ReactiveObject
 	public GraphicsElementFlags Flags { get; set; }
 	public short ZoomOffset { get; set; }
 
-	[Reactive] public Bitmap Image { get; set; }
+	[Reactive, Browsable(false)]
+	public Bitmap Image { get; set; }
 
+	[Browsable(false)]
 	public Avalonia.Size SelectedBitmapPreviewBorder
 		=> Image == null
 			? new Avalonia.Size()

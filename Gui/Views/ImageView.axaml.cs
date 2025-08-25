@@ -13,6 +13,7 @@ public partial class ImageView : UserControl
 		if (ZoomBorder != null)
 		{
 			ZoomBorder.KeyDown += ZoomBorder_KeyDown;
+			ZoomBorder.PointerWheelChanged += ZoomBorder_PointerWheelChanged;
 		}
 	}
 
@@ -29,5 +30,15 @@ public partial class ImageView : UserControl
 				break;
 		}
 #pragma warning restore IDE0010 // Add missing cases
+	}
+
+	void ZoomBorder_PointerWheelChanged(object? sender, PointerWheelEventArgs e)
+	{
+		// Capture the scroll event when the mouse is over the ZoomBorder
+		if (ZoomBorder != null && ZoomBorder.IsPointerOver)
+		{
+			// Handle the zoom functionality here (if needed)
+			e.Handled = true; // Prevent the event from propagating to the ScrollViewer
+		}
 	}
 }

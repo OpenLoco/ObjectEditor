@@ -13,22 +13,21 @@ public class EditorSettings
 {
 	public string ObjDataDirectory
 	{
-		get => objectDirectory;
+		get;
 		set
 		{
-			objectDirectory = value;
+			field = value;
 			ObjDataDirectories ??= [];
-			_ = ObjDataDirectories.Add(objectDirectory);
+			_ = ObjDataDirectories.Add(field);
 		}
 	}
-	string objectDirectory;
 
 	public HashSet<string> ObjDataDirectories
 	{
-		get => objDataDirectories ??= [];
-		set => objDataDirectories = value;
-	}
-	HashSet<string> objDataDirectories = [];
+		get => field ??= [];
+		set;
+	} = [];
+
 	public bool AllowSavingAsVanillaObject { get; set; }
 	public bool AutoObjectDiscoveryAndUpload { get; set; }
 

@@ -59,7 +59,7 @@ public static class PlatformSpecific
 	{
 		if (!Directory.Exists(directory))
 		{
-			throw new ArgumentException("The specified folder does not exist.", nameof(directory));
+			throw new ArgumentException("The specified folder does not exist. Folder=\"{directory}\"", nameof(directory));
 		}
 
 		// Platform-specific command construction

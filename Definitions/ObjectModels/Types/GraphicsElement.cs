@@ -13,7 +13,7 @@ public enum GraphicsElementFlags : uint16_t
 	DuplicatePrevious = 1 << 6, // Duplicates the previous element but with adjusted x/y offsets
 }
 
-public class GraphicsElement // follows G1Element32
+public class GraphicsElement // follows G1Element32, except XOffset and YOffset = are inverted - in loco they're negative but here they're positive
 {
 	public short Width { get; set; }
 	public short Height { get; set; }

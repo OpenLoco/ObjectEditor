@@ -7,7 +7,8 @@
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
-	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
+	xmlns:gmc="using:Gui.Models.Converters"
+	xmlns:vi="using:Gui.Views"
 	mc:Ignorable="d"
 	d:DesignWidth="1200"
 	d:DesignHeight="900"
@@ -51,20 +52,32 @@
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Crop all</TextBlock>
 				</DockPanel>
 			</Button>
+			<Button Command="{Binding ZeroOffsetAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Sets all image offsets to 0">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="PanTopLeft" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Zero all offsets</TextBlock>
+				</DockPanel>
+			</Button>
+			<Button Command="{Binding CenterOffsetAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Sets all image offsets to the centre of the image">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="Pan" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Center all offsets</TextBlock>
+				</DockPanel>
+			</Button>
 		</StackPanel>
 		<Grid ColumnDefinitions="*, Auto, 384">
-			<ScrollViewer Margin="2">
+			<ScrollViewer Margin="4">
 				<DockPanel>
-					<Panel Width="12" DockPanel.Dock="Right"></Panel>
-					<ListBox ItemsSource="{Binding Bitmaps}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+					<Panel Width="16" DockPanel.Dock="Right"></Panel>
+					<ListBox ItemsSource="{Binding ImageViewModels}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
-								<WrapPanel/>
+								<WrapPanel />
 							</ItemsPanelTemplate>
 						</ListBox.ItemsPanel>
 						<ListBox.ItemTemplate>
 							<DataTemplate>
-								<Image Source="{Binding}" Stretch="None" Margin="0">
+								<Image Source="{Binding Image}" Stretch="None" Margin="0">
 									<Image.ContextMenu>
 										<ContextMenu>
 											<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
@@ -79,57 +92,10 @@
 			<GridSplitter Grid.Column="1" />
 			<DockPanel Grid.Column="2">
 				<StackPanel Margin="2" Orientation="Vertical" MaxHeight="512" DockPanel.Dock="Top">
-					<StackPanel Orientation="Horizontal">
-						<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select preview background colour">
-							<DockPanel>
-								<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
-								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Background</TextBlock>
-							</DockPanel>
-							<Button.Flyout >
-								<Flyout>
-									<ColorView Name="ImageColorViewPreviewBackground" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
-								</Flyout>
-							</Button.Flyout>
-						</Button>
-						<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select border preview colour">
-							<DockPanel>
-								<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
-								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Border</TextBlock>
-							</DockPanel>
-							<Button.Flyout >
-								<Flyout>
-									<ColorView Name="ImageColorViewBorder" Palette="" Color="Gold" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
-								</Flyout>
-							</Button.Flyout>
-						</Button>
-						<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select origin point colour">
-							<DockPanel>
-								<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
-								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Origin</TextBlock>
-							</DockPanel>
-							<Button.Flyout >
-								<Flyout>
-									<ColorView Name="ImageColorViewOriginPoint" Palette="" Color="Red" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
-								</Flyout>
-							</Button.Flyout>
-						</Button>
-					</StackPanel>
-					<paz:ZoomBorder Name="ZoomBorder" MinWidth="256" MinHeight="256" Stretch="Uniform" ZoomSpeed="1.2" MinZoomX="0.5" MaxZoomX="30" MinZoomY="0.5" MaxZoomY="30" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left"  Background="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" >
-						<Canvas Width="{Binding SelectedG1ElementSize.Width}" Height="{Binding SelectedG1ElementSize.Height}" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Gray">
-							<!--Bounding box-->
-							<Rectangle Canvas.Top="-1" Canvas.Left="-1" StrokeThickness="1.0" Width="{Binding SelectedBitmapPreviewBorder.Width}" Height="{Binding SelectedBitmapPreviewBorder.Height}" Opacity="1.0" Fill="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" Stroke="{Binding #ImageColorViewBorder.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}"  />
-							<!--Image-->
-							<Image Name="AnimationPreviewPP" Source="{Binding SelectedBitmapPreview}" RenderOptions.BitmapInterpolationMode="None" Stretch="None"/>
-							<!--Origin point-->
-							<Rectangle Canvas.Left="{Binding SelectedG1ElementOffset.X}" Canvas.Top="{Binding SelectedG1ElementOffset.Y}" Width="1" Height="1" Opacity="1.0" Fill="{Binding #ImageColorViewOriginPoint.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" />
-						</Canvas>
-					</paz:ZoomBorder>
-					<TextBlock HorizontalAlignment="Center" Text="{Binding #ZoomBorder.ZoomX, StringFormat='Zoom: {0:F2}x | \'R\' to reset'}"></TextBlock>
-					<!--<Slider Minimum="1" Maximum="10" Value="{Binding ZoomBorder.ZoomX}" />-->
 					<TextBlock Margin="0, 16, 0, 0" HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
 					<Slider Minimum="1" Maximum="80" Value="{Binding AnimationSpeed}" />
 				</StackPanel>
-				<ContentControl Content="{Binding SelectedG1Element}"></ContentControl>
+					<ContentControl Content="{Binding SelectedImage}" />
 			</DockPanel>
 		</Grid>
 	</DockPanel>

@@ -7,10 +7,17 @@
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
+	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
+	xmlns:gmc="using:Gui.Models.Converters"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 	x:Class="Gui.Views.ImageView"
 	x:DataType="vm:ImageViewModel">
-
+	
+	<UserControl.Resources>
+		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+		<gmc:NegativeValueConverter x:Key="NegativeValueConverter"/>
+	</UserControl.Resources>
+	
 	<StackPanel>
 		<StackPanel Orientation="Horizontal">
 			<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select preview background colour">

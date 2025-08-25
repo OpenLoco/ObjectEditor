@@ -6,8 +6,7 @@
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:vi="using:Gui.Views"
 	xmlns:oldt="using:Dat.Types"
-	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"	
-	
+	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"		
 	x:Class="Gui.App"
 	RequestedThemeVariant="Default">
 	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->

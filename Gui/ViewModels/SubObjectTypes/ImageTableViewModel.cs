@@ -1,5 +1,4 @@
 using Avalonia.Controls.Selection;
-using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Definitions.ObjectModels;
 using DynamicData;
@@ -80,12 +79,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 		_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 			.Where(index => index >= 0 && index < ImageViewModels?.Count)
-			.Subscribe(_ =>
-			{
-				// why the FUCK doesn't this trigged SelectedImage's property changed (and thus update the UI)
-				SelectedImage = ImageViewModels[SelectedImageIndex];
-				this.RaisePropertyChanged(nameof(SelectedImage));
-			});
+			.Subscribe(_ => SelectedImage = ImageViewModels[SelectedImageIndex]);
 
 		_ = this.WhenAnyValue(o => o.AnimationSpeed)
 			.Where(_ => animationTimer != null)

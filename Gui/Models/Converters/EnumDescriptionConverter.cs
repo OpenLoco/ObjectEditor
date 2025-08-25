@@ -10,7 +10,7 @@ public class EnumDescriptionConverter : MarkupExtension, IValueConverter
 	public override object ProvideValue(IServiceProvider serviceProvider)
 		=> this;
 
-	public object? Convert(object? value, Type targetType, object parameter, CultureInfo culture)
+	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
 		var type = value?.GetType();
 		var text = value?.ToString();

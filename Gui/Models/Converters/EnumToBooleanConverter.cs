@@ -6,7 +6,7 @@ namespace Gui.Models.Converters;
 
 public class EnumToBooleanConverter : IValueConverter
 {
-	public object? Convert(object? value, Type targetType, object parameter, CultureInfo culture)
+	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
 		if (value is Enum enumValue && parameter is Enum enumParameter)
 		{
@@ -16,7 +16,7 @@ public class EnumToBooleanConverter : IValueConverter
 		return false;
 	}
 
-	public object? ConvertBack(object? value, Type targetType, object parameter, CultureInfo culture)
+	public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
 		if (value is bool boolValue && boolValue && parameter is Enum enumParameter)
 		{

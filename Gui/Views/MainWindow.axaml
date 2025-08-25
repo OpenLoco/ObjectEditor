@@ -43,35 +43,6 @@
 	<Window.DataTemplates>
 		<!-- Mind the order of the Templates. Begin with the most specific first. -->
 
-		<!--<DataTemplate DataType="mo:FileSystemItemGroup">
-			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-			</StackPanel>
-		</DataTemplate>-->
-
-		<!--<DataTemplate DataType="mo:FileSystemItemBase">
-			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-			</StackPanel>
-		</DataTemplate>-->
-
-		<!--
-		<DataTemplate DataType="mo:FileSystemItemBase">
-			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding ObjectSource, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
-			</StackPanel>
-		</DataTemplate>-->
-
-		<!--<DataTemplate DataType="mo:FileSystemItemBase">
-			<StackPanel Orientation="Horizontal">
-				<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-				<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}" ToolTip.Tip="{Binding Filename}"/>
-			</StackPanel>
-		</DataTemplate>-->
-
 		<DataTemplate DataType="old5:TileElement">
 			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
 				<Grid.ColumnDefinitions>
@@ -192,23 +163,6 @@
 				</ItemsRepeater>
 			</ScrollViewer>
 		</DataTemplate>
-
-		<!--<DataTemplate DataType ="vm:TutorialActionB">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="{Binding Unk, StringFormat='Unk: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseX, StringFormat='X: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseY, StringFormat='Y: {0}'}" Margin="4" Width="64"></TextBlock>
-			</StackPanel>
-		</DataTemplate>-->
-
-		<!--<DataTemplate DataType ="vm:TutorialActionA">
-			<StackPanel Orientation="Horizontal">
-				<TextBlock Text="{Binding KeyModifier, StringFormat='Key: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseX, StringFormat='X: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseY, StringFormat='Y: {0}'}" Margin="4" Width="64"></TextBlock>
-				<TextBlock Text="{Binding MouseButton, StringFormat='MButton: {0}'}" Margin="4" Width="64"></TextBlock>
-			</StackPanel>
-		</DataTemplate>-->
 
 		<DataTemplate DataType="vm:TutorialViewModel">
 			<ScrollViewer>

@@ -33,13 +33,13 @@ popd
 
 pushd "linux-x64/publish"
 chmod +x "./ObjectEditor"
-tar -jcvf "object-editor-$version-linux-x64.tar" .
+tar -jcf "object-editor-$version-linux-x64.tar" .
 mv "object-editor-$version-linux-x64.tar" ../..
 popd
 
 pushd "osx-x64/publish"
 chmod +x "./ObjectEditor"
-tar -jcvf "object-editor-$version-osx-x64.tar" .
+tar -jcf "object-editor-$version-osx-x64.tar" .
 mv "object-editor-$version-osx-x64.tar" ../..
 popd
 

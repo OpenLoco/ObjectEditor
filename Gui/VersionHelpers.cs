@@ -4,6 +4,14 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 
+#if !DEBUG
+using Common;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System;
+#endif
+
 namespace Gui;
 
 public static class VersionHelpers

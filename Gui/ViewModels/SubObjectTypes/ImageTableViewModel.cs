@@ -6,7 +6,6 @@ using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
-using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;

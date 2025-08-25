@@ -4,7 +4,6 @@ using DynamicData;
 using Common.Logging;
 using Definitions.DTO;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

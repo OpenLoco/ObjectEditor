@@ -1,4 +1,3 @@
-using Avalonia.Logging;
 using Avalonia.Media.Imaging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
@@ -11,7 +10,6 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
@@ -30,7 +28,7 @@ public class ImageViewModel : ReactiveObject
 	[Reactive, Browsable(false)]
 	public Bitmap Image { get; set; }
 
-	[Reactive]
+	[Reactive, Browsable(false)]
 	public Image<Rgba32> UnderlyingImage { get; set; }
 
 	[Browsable(false)]

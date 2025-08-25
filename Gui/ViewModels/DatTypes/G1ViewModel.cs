@@ -1,11 +1,6 @@
 using Dat.FileParsing;
-using Definitions.ObjectModels;
 using Gui.Models;
 using ReactiveUI.Fody.Helpers;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 

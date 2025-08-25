@@ -1,12 +1,8 @@
-using Common;
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 using static Dat.Loaders.IndustryObjectLoader;
 
 namespace Dat.Loaders;

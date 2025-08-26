@@ -5,7 +5,6 @@ using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
-using DynamicData;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -63,9 +62,6 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public SelectionModel<ImageViewModel> SelectionModel { get; set; }
 
 	[Reactive]
-	public IList<ImageViewModel> SelectedImages { get; set; }
-
-	[Reactive]
 	public ImageViewModel? SelectedImage { get; set; }
 
 	[Reactive]
@@ -84,8 +80,8 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		var index = 0;
 		foreach (var ge in graphicsElements)
 		{
-			_ = imageNameProvider.TryGetImageName(index, out var imageName);
-			ImageViewModels.Add(new ImageViewModel(index, imageName, ge, paletteMap));
+			var success = imageNameProvider.TryGetImageName(index, out var imageName);
+			ImageViewModels.Add(new ImageViewModel(index, success ? imageName! : "failed to get image name", ge, paletteMap));
 			index++;
 		}
 
@@ -119,10 +115,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
 		ExportImagesCommand = ReactiveCommand.CreateFromTask(ExportImages);
 		ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImage);
-		CropAllImagesCommand = ReactiveCommand.Create(() =>
-		{
-			CropAllImages(SelectedPrimarySwatch, SelectedSecondarySwatch);
-		});
+		CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
 
 		ZeroOffsetAllImagesCommand = ReactiveCommand.Create(() =>
 		{
@@ -164,19 +157,16 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		{
 			return;
 		}
-
-		// ... handle selection changed
-		SelectedImages = [.. sm.SelectedItems.Cast<ImageViewModel>()];
 	}
 
 	void AnimationTimer_Tick(object? sender, EventArgs e)
 	{
-		if (SelectionModel == null || SelectedImages == null || SelectedImages.Count == 0 || SelectionModel.SelectedIndexes.Count == 0)
+		if (SelectionModel == null || SelectionModel.SelectedIndexes.Count == 0)
 		{
 			return;
 		}
 
-		if (currentFrameIndex >= SelectedImages.Count)
+		if (currentFrameIndex >= SelectionModel.SelectedIndexes.Count)
 		{
 			currentFrameIndex = 0;
 		}
@@ -185,7 +175,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		SelectedImageIndex = SelectionModel.SelectedIndexes[currentFrameIndex]; // disabling this also makes the memory leaks stop
 
 		// Move to the next frame, looping back to the beginning if necessary
-		currentFrameIndex = (currentFrameIndex + 1) % SelectedImages.Count;
+		currentFrameIndex = (currentFrameIndex + 1) % SelectionModel.SelectedIndexes.Count;
 	}
 
 	public void ClearSelectionModel()
@@ -207,7 +197,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			await ImportImages(dirPath, SelectedPrimarySwatch, SelectedSecondarySwatch);
+			await ImportImages(dirPath);
 		}
 
 		animationTimer.Start();
@@ -257,7 +247,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		}
 	}
 
-	public void CropAllImages(ColourRemapSwatch primary, ColourRemapSwatch secondary)
+	public void CropAllImages()
 	{
 		foreach (var ivm in ImageViewModels)
 		{
@@ -276,7 +266,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		return result.Length == 0 ? "0" : result;
 	}
 
-	public async Task ImportImages(string directory, ColourRemapSwatch primary, ColourRemapSwatch secondary)
+	public async Task ImportImages(string directory)
 	{
 		if (string.IsNullOrEmpty(directory))
 		{

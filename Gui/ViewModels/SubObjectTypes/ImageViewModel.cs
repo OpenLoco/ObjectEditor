@@ -31,18 +31,18 @@ public class ImageViewModel : ReactiveObject
 	[Reactive, Browsable(false)]
 	public Image<Rgba32> UnderlyingImage { get; set; }
 
-	[Browsable(false)]
-	public Avalonia.Size SelectedBitmapPreviewBorder
+	public Avalonia.Rect SelectedBitmapPreviewBorder
 		=> Image == null
-			? new Avalonia.Size()
-			: new Avalonia.Size(Image.Size.Width + 2, Image.Size.Height + 2);
+		? new Avalonia.Rect()
+			: new Avalonia.Rect(
+				XOffset - 1,
+				YOffset - 1,
+				Image.Size.Width + 2,
+				Image.Size.Height + 2);
 
-	PaletteMap PaletteMap;
-
-	ImageViewModel() { }
+	readonly PaletteMap PaletteMap;
 
 	public ImageViewModel(int imageIndex, string imageName, GraphicsElement graphicsElement, PaletteMap paletteMap)
-		: this()
 	{
 		ImageIndex = imageIndex;
 		ImageName = imageName;
@@ -50,24 +50,21 @@ public class ImageViewModel : ReactiveObject
 		YOffset = graphicsElement.YOffset;
 		Flags = graphicsElement.Flags;
 		ZoomOffset = graphicsElement.ZoomOffset;
+		PaletteMap = paletteMap;
 
 		_ = this.WhenAnyValue(o => o.UnderlyingImage)
 			.Where(x => x != null)
-			.Subscribe(_ =>
-			{
-				Image = UnderlyingImage!.ToAvaloniaBitmap();
-			});
+			.Subscribe(_ => UnderlyingImageChanged());
 
 		_ = this.WhenAnyValue(o => o.Image)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
 
-		if (paletteMap.TryConvertG1ToRgba32Bitmap(graphicsElement, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
+		if (!PaletteMap.TryConvertG1ToRgba32Bitmap(graphicsElement, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 		{
-			UnderlyingImage = image;
-			//Image = image.ToAvaloniaBitmap();
+			throw new Exception("Failed to convert image");
 		}
 
-		PaletteMap = paletteMap;
+		UnderlyingImage = image!;
 	}
 
 	public void RecolourImage(ColourRemapSwatch primary, ColourRemapSwatch secondary)
@@ -88,9 +85,15 @@ public class ImageViewModel : ReactiveObject
 
 		if (!PaletteMap.TryConvertG1ToRgba32Bitmap(dummyElement, primary, secondary, out var image))
 		{
+			throw new Exception("Failed to recolour image");
 		}
-		Image = image.ToAvaloniaBitmap();
+
+		// only update the UI image - don't update the underlying image as we want to keep the original
+		Image = image!.ToAvaloniaBitmap();
 	}
+
+	void UnderlyingImageChanged()
+		=> Image = UnderlyingImage!.ToAvaloniaBitmap();
 
 	public void CropImage()
 	{
@@ -99,15 +102,14 @@ public class ImageViewModel : ReactiveObject
 		if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
 		{
 			UnderlyingImage.Mutate(i => i.Crop(new Rectangle(0, 0, 1, 1)));
-
-			Image = UnderlyingImage.ToAvaloniaBitmap();
+			UnderlyingImageChanged();
 			XOffset = 0;
 			YOffset = 0;
 		}
 		else
 		{
 			UnderlyingImage.Mutate(i => i.Crop(cropRegion));
-			Image = UnderlyingImage.ToAvaloniaBitmap();
+			UnderlyingImageChanged();
 			XOffset += cropRegion.Left;
 			YOffset += cropRegion.Top;
 		}

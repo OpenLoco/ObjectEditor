@@ -69,9 +69,9 @@
 			</Grid>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:GenericObjectViewModel">
+		<!--<DataTemplate DataType="vm:GenericObjectViewModel">
 			<pgc:PropertyGrid DataContext="{Binding Object}" />
-		</DataTemplate>
+		</DataTemplate>-->
 
 		<DataTemplate DataType="vm:IObjectViewModel">
 			<pgc:PropertyGrid DataContext="{Binding}" Background="{DynamicResource ExpanderContentBackground}" />

@@ -1,28 +1,27 @@
 using Definitions.ObjectModels.Objects.Tree;
 using PropertyModels.ComponentModel.DataAnnotations;
-using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
 public class TreeViewModel : LocoObjectViewModel<TreeObject>
 {
-	[Reactive, EnumProhibitValues<TreeObjectFlags>(TreeObjectFlags.None)] public TreeObjectFlags Flags { get; set; }
-	[Reactive] public uint8_t NumRotations { get; set; }
-	[Reactive] public uint8_t NumGrowthStages { get; set; }
-	[Reactive] public uint8_t SeasonState { get; set; }
-	[Reactive] public uint8_t Season { get; set; }
-	[Reactive] public uint32_t Colours { get; set; }
-	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
-	[Reactive, Category("Cost")] public int16_t ClearCostFactor { get; set; }
-	[Reactive, Category("Building")] public uint8_t Clearance { get; set; }
-	[Reactive, Category("Building")] public uint8_t Height { get; set; }
-	[Reactive, Category("Building")] public int16_t Rating { get; set; }
-	[Reactive, Category("Building")] public int16_t DemolishRatingReduction { get; set; }
-	[Reactive, Category("<unknown>")] public uint8_t var_04 { get; set; }
-	[Reactive, Category("<unknown>")] public uint8_t var_05 { get; set; }
-	[Reactive, Category("<unknown>")] public TreeFlagsUnk var_3C { get; set; }
+	[EnumProhibitValues<TreeObjectFlags>(TreeObjectFlags.None)] public TreeObjectFlags Flags { get; set; }
+	public uint8_t NumRotations { get; set; }
+	public uint8_t NumGrowthStages { get; set; }
+	public uint8_t SeasonState { get; set; }
+	public uint8_t Season { get; set; }
+	public uint32_t Colours { get; set; }
+	[Category("Cost")] public uint8_t CostIndex { get; set; }
+	[Category("Cost")] public int16_t BuildCostFactor { get; set; }
+	[Category("Cost")] public int16_t ClearCostFactor { get; set; }
+	[Category("Building")] public uint8_t Clearance { get; set; }
+	[Category("Building")] public uint8_t Height { get; set; }
+	[Category("Building")] public int16_t Rating { get; set; }
+	[Category("Building")] public int16_t DemolishRatingReduction { get; set; }
+	[Category("<unknown>")] public uint8_t var_04 { get; set; }
+	[Category("<unknown>")] public uint8_t var_05 { get; set; }
+	[Category("<unknown>")] public TreeFlagsUnk var_3C { get; set; }
 
 	public TreeViewModel(TreeObject to)
 	{
@@ -44,7 +43,7 @@ public class TreeViewModel : LocoObjectViewModel<TreeObject>
 		var_3C = to.var_3C;
 	}
 
-	public override TreeObject GetAsStruct()
+	public override TreeObject GetAsModel()
 		=> new()
 		{
 			Flags = Flags,

@@ -126,9 +126,11 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 				&& type.BaseType.GetGenericTypeDefinition() == typeof(LocoObjectViewModel<>)
 				&& type.BaseType.GenericTypeArguments.Single() == locoStruct.GetType());
 
-		return asm == null
-			? new GenericObjectViewModel() { Object = locoStruct }
-			: (Activator.CreateInstance(asm, locoStruct) as IObjectViewModel<ILocoStruct>)!;
+		//return asm == null
+		//	? new GenericObjectViewModel() { Object = locoStruct }
+		//	: (Activator.CreateInstance(asm, locoStruct) as IObjectViewModel<ILocoStruct>)!;
+
+		return Activator.CreateInstance(asm, locoStruct) as IObjectViewModel<ILocoStruct>;
 	}
 
 	public override void Load()
@@ -242,6 +244,12 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			return;
 		}
 
+		if (CurrentObjectViewModel == null)
+		{
+			logger.Error("Cannot save - loco object viewmodel was null");
+			return;
+		}
+
 		if (string.IsNullOrEmpty(filename))
 		{
 			logger.Error("Cannot save - filename was empty");
@@ -264,10 +272,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		logger.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
 		StringTableViewModel?.WriteTableBackToObject();
 
-		if (CurrentObjectViewModel is not null and not GenericObjectViewModel)
-		{
-			CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsUnderlyingType(CurrentObject.LocoObject.Object);
-		}
+		CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsModel();
 
 		// this is hacky but it should work
 		if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject so)

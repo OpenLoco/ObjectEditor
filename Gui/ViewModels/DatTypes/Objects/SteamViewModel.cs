@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Objects.Steam;
 using PropertyModels.ComponentModel.DataAnnotations;
-using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.Linq;
 
@@ -8,12 +7,12 @@ namespace Gui.ViewModels;
 
 public class SteamViewModel : LocoObjectViewModel<SteamObject>
 {
-	[Reactive] public uint8_t NumStationaryTicks { get; set; }
-	[Reactive, EnumProhibitValues<SteamObjectFlags>(SteamObjectFlags.None)] public SteamObjectFlags Flags { get; set; }
-	[Reactive] public uint32_t var_0A { get; set; }
-	[Reactive] public BindingList<ObjectModelHeaderViewModel> SoundEffects { get; set; }
-	[Reactive] public BindingList<ImageAndHeight> FrameInfoType0 { get; set; } // may need viewmodel for ImageAndHeight
-	[Reactive] public BindingList<ImageAndHeight> FrameInfoType1 { get; set; }
+	public uint8_t NumStationaryTicks { get; set; }
+	[EnumProhibitValues<SteamObjectFlags>(SteamObjectFlags.None)] public SteamObjectFlags Flags { get; set; }
+	public uint32_t var_0A { get; set; }
+	public BindingList<ObjectModelHeaderViewModel> SoundEffects { get; set; }
+	public BindingList<ImageAndHeight> FrameInfoType0 { get; set; } // may need viewmodel for ImageAndHeight
+	public BindingList<ImageAndHeight> FrameInfoType1 { get; set; }
 
 	public SteamViewModel(SteamObject so)
 	{
@@ -25,13 +24,13 @@ public class SteamViewModel : LocoObjectViewModel<SteamObject>
 		FrameInfoType1 = new(so.FrameInfoType1);
 	}
 
-	public override SteamObject GetAsStruct()
+	public override SteamObject GetAsModel()
 		=> new()
 		{
 			NumStationaryTicks = NumStationaryTicks,
 			Flags = Flags,
 			var_0A = var_0A,
-			SoundEffects = SoundEffects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			SoundEffects = SoundEffects.ToList().ConvertAll(x => x.GetAsModel()),
 			FrameInfoType0 = [.. FrameInfoType0],
 			FrameInfoType1 = [.. FrameInfoType1],
 		};

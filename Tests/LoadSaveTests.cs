@@ -7,7 +7,7 @@ using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Bridge;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Cargo;
-using Definitions.ObjectModels.Objects.Cliff;
+using Definitions.ObjectModels.Objects.CliffEdge;
 using Definitions.ObjectModels.Objects.Climate;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.Currency;
@@ -163,7 +163,15 @@ public class LoadSaveTests
 
 			Assert.That(struc.DeckDepth, Is.EqualTo(16), nameof(struc.DeckDepth));
 			Assert.That(struc.SpanLength, Is.EqualTo(1), nameof(struc.SpanLength));
-			Assert.That(struc.PillarSpacing, Is.EqualTo(255), nameof(struc.PillarSpacing));
+			Assert.That(struc.PillarSpacing, Is.EqualTo(
+				SupportPillarSpacing.Tile0A
+				| SupportPillarSpacing.Tile0B
+				| SupportPillarSpacing.Tile1A
+				| SupportPillarSpacing.Tile1B
+				| SupportPillarSpacing.Tile2A
+				| SupportPillarSpacing.Tile2B
+				| SupportPillarSpacing.Tile3A
+				| SupportPillarSpacing.Tile3B), nameof(struc.PillarSpacing));
 			Assert.That(struc.MaxSpeed, Is.EqualTo(60), nameof(struc.MaxSpeed));
 			Assert.That(struc.MaxHeight, Is.EqualTo(10), nameof(struc.MaxHeight));
 			Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));

@@ -1,18 +1,20 @@
 using Definitions.ObjectModels.Objects.TownNames;
-using ReactiveUI.Fody.Helpers;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
 public class TownNamesViewModel : LocoObjectViewModel<TownNamesObject>
 {
-	[Reactive, Length(6, 6), Editable(false)]
-	public BindingList<Category> Categories { get; set; }
+	[Length(6, 6), Editable(false)]
+	public List<Category> Categories { get; set; }
 
 	public TownNamesViewModel(TownNamesObject tno)
-		=> Categories = new(tno.Categories);
+		=> Categories = [.. tno.Categories];
 
-	public override TownNamesObject GetAsStruct()
-		=> new();
+	public override TownNamesObject GetAsModel()
+		=> new()
+		{
+			Categories = [.. Categories],
+		};
 }

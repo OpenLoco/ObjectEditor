@@ -1,20 +1,18 @@
 using Definitions.ObjectModels.Objects.Streetlight;
-using PropertyModels.Extensions;
-using ReactiveUI.Fody.Helpers;
-using System.ComponentModel;
+using System.Collections.Generic;
 
 namespace Gui.ViewModels;
 
 public class StreetLightViewModel : LocoObjectViewModel<StreetLightObject>
 {
-	[Reactive] public BindingList<uint16_t> DesignedYears { get; set; }
+	public List<uint16_t> DesignedYears { get; set; }
 
 	public StreetLightViewModel(StreetLightObject ro)
 	{
-		DesignedYears = ro.DesignedYears.ToBindingList();
+		DesignedYears = ro.DesignedYears;
 	}
 
-	public override StreetLightObject GetAsStruct()
+	public override StreetLightObject GetAsModel()
 		=> new()
 		{
 			DesignedYears = [.. DesignedYears]

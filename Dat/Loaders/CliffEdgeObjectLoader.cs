@@ -1,7 +1,7 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Cliff;
+using Definitions.ObjectModels.Objects.CliffEdge;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 

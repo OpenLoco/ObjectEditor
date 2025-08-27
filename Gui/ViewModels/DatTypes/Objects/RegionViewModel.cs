@@ -1,29 +1,28 @@
 using Definitions.ObjectModels.Objects.Region;
-using ReactiveUI.Fody.Helpers;
-using System.ComponentModel;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace Gui.ViewModels;
 
 public class RegionViewModel : LocoObjectViewModel<RegionObject>
 {
-	[Reactive] public BindingList<ObjectModelHeaderViewModel> CargoInfluenceObjects { get; set; }
-	[Reactive] public BindingList<ObjectModelHeaderViewModel> DependentObjects { get; set; }
-	[Reactive] public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; set; }
+	public List<ObjectModelHeaderViewModel> CargoInfluenceObjects { get; set; }
+	public List<ObjectModelHeaderViewModel> DependentObjects { get; set; }
+	public List<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; set; }
 
 	public RegionViewModel(RegionObject ro)
 	{
-		CargoInfluenceObjects = new(ro.CargoInfluenceObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		DependentObjects = new(ro.DependentObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		CargoInfluenceTownFilter = new(ro.CargoInfluenceTownFilter);
+		CargoInfluenceObjects = [.. ro.CargoInfluenceObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
+		DependentObjects = [.. ro.DependentObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
+		CargoInfluenceTownFilter = [.. ro.CargoInfluenceTownFilter];
 	}
 
-	public override RegionObject GetAsStruct()
+	public override RegionObject GetAsModel()
 	{ 
 		var regionObject = new RegionObject()
 		{
-			CargoInfluenceObjects = CargoInfluenceObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			DependentObjects = DependentObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			CargoInfluenceObjects = CargoInfluenceObjects.ConvertAll(x => x.GetAsModel()),
+			DependentObjects = DependentObjects.ConvertAll(x => x.GetAsModel()),
+			CargoInfluenceTownFilter = CargoInfluenceTownFilter,
 		};
 		return regionObject;
 	}

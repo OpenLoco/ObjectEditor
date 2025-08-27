@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Gui.ViewModels;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class ObjectModelHeaderViewModel : ReactiveObject
+public class ObjectModelHeaderViewModel : ReactiveObject, IObjectViewModel<ObjectModelHeader>
 {
 	// todo: instead of setting ObjectType to a default here, instead prompt user to select a type if appropriate
 	public ObjectModelHeaderViewModel()
@@ -49,6 +49,6 @@ public class ObjectModelHeaderViewModel : ReactiveObject
 	[Reactive]
 	public ObjectType ObjectType { get; set; }
 
-	public ObjectModelHeader GetAsUnderlyingType()
+	public ObjectModelHeader GetAsModel()
 		=> new(Name, Checksum, ObjectType, ObjectSource);
 }

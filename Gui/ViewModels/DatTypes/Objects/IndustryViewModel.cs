@@ -4,7 +4,6 @@ using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
-using ReactiveUI.Fody.Helpers;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -13,38 +12,38 @@ namespace Gui.ViewModels;
 
 public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 {
-	[Reactive] public uint8_t TotalOfTypeInScenario { get; set; } // Total industries of this type that can be created in a scenario Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.
-	[Reactive] public uint16_t DesignedYear { get; set; }
-	[Reactive] public uint16_t ObsoleteYear { get; set; }
-	[Reactive, EnumProhibitValues<IndustryObjectFlags>(IndustryObjectFlags.None)] public IndustryObjectFlags Flags { get; set; }
-	[Reactive] public Colour MapColour { get; set; }
-	[Reactive] public uint32_t Colours { get; set; } // bitset
-	[Reactive, Category("Production")] public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; set; }
-	[Reactive, Category("Production"), Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeaderViewModel> ProducedCargo { get; set; }
-	[Reactive, Category("Production"), Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeaderViewModel> RequiredCargo { get; set; }
-	[Reactive, Category("Production")] public uint8_t MonthlyClosureChance { get; set; }
-	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Reactive, Category("Cost")] public int16_t BuildCostFactor { get; set; }
-	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Reactive, Category("Building"), Length(IndustryObjectLoader.Constants.AnimationSequencesCount, IndustryObjectLoader.Constants.AnimationSequencesCount)] public BindingList<BindingList<uint8_t>> AnimationSequences { get; set; }
-	[Reactive, Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
-	[Reactive, Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
-	[Reactive, Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
-	[Reactive, Category("Building")] public uint8_t MinNumBuildings { get; set; }
-	[Reactive, Category("Building")] public uint8_t MaxNumBuildings { get; set; }
-	[Reactive, Category("Building")] public BindingList<uint8_t> UnkBuildingData { get; set; }
-	[Reactive, Category("Building")] public uint32_t BuildingSizeFlags { get; set; }
-	[Reactive, Category("Building")] public uint8_t ScaffoldingSegmentType { get; set; }
-	[Reactive, Category("Building")] public Colour ScaffoldingColour { get; set; }
-	[Reactive, Category("Building"), Length(0, IndustryObjectLoader.Constants.MaxWallTypeCount)] public BindingList<ObjectModelHeaderViewModel> WallTypes { get; set; }
-	[Reactive, Category("Building")] public ObjectModelHeaderViewModel? BuildingWall { get; set; }
-	[Reactive, Category("Building")] public ObjectModelHeaderViewModel? BuildingWallEntrance { get; set; }
-	[Reactive, Category("<unknown>")] public BindingList<IndustryObjectUnk38> var_38 { get; set; }
-	[Reactive, Category("<unknown>")] public uint8_t var_E8 { get; set; }
-	[Reactive, Category("Farm")] public uint8_t FarmTileNumImageAngles { get; set; }
-	[Reactive, Category("Farm")] public uint8_t FarmGrowthStageWithNoProduction { get; set; }
-	[Reactive, Category("Farm")] public uint8_t FarmIdealSize { get; set; }
-	[Reactive, Category("Farm")] public uint8_t FarmNumStagesOfGrowth { get; set; }
+	public uint8_t TotalOfTypeInScenario { get; set; } // Total industries of this type that can be created in a scenario Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.
+	public uint16_t DesignedYear { get; set; }
+	public uint16_t ObsoleteYear { get; set; }
+	[EnumProhibitValues<IndustryObjectFlags>(IndustryObjectFlags.None)] public IndustryObjectFlags Flags { get; set; }
+	public Colour MapColour { get; set; }
+	public uint32_t Colours { get; set; } // bitset
+	[Category("Production")] public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; set; }
+	[Category("Production"), Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeaderViewModel> ProducedCargo { get; set; }
+	[Category("Production"), Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeaderViewModel> RequiredCargo { get; set; }
+	[Category("Production")] public uint8_t MonthlyClosureChance { get; set; }
+	[Category("Cost")] public uint8_t CostIndex { get; set; }
+	[Category("Cost")] public int16_t BuildCostFactor { get; set; }
+	[Category("Cost")] public int16_t SellCostFactor { get; set; }
+	[Category("Building"), Length(IndustryObjectLoader.Constants.AnimationSequencesCount, IndustryObjectLoader.Constants.AnimationSequencesCount)] public BindingList<BindingList<uint8_t>> AnimationSequences { get; set; }
+	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
+	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
+	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
+	[Category("Building")] public uint8_t MinNumBuildings { get; set; }
+	[Category("Building")] public uint8_t MaxNumBuildings { get; set; }
+	[Category("Building")] public BindingList<uint8_t> UnkBuildingData { get; set; }
+	[Category("Building")] public uint32_t BuildingSizeFlags { get; set; }
+	[Category("Building")] public uint8_t ScaffoldingSegmentType { get; set; }
+	[Category("Building")] public Colour ScaffoldingColour { get; set; }
+	[Category("Building"), Length(0, IndustryObjectLoader.Constants.MaxWallTypeCount)] public BindingList<ObjectModelHeaderViewModel> WallTypes { get; set; }
+	[Category("Building")] public ObjectModelHeaderViewModel? BuildingWall { get; set; }
+	[Category("Building")] public ObjectModelHeaderViewModel? BuildingWallEntrance { get; set; }
+	[Category("<unknown>")] public BindingList<IndustryObjectUnk38> var_38 { get; set; }
+	[Category("<unknown>")] public uint8_t var_E8 { get; set; }
+	[Category("Farm")] public uint8_t FarmTileNumImageAngles { get; set; }
+	[Category("Farm")] public uint8_t FarmGrowthStageWithNoProduction { get; set; }
+	[Category("Farm")] public uint8_t FarmIdealSize { get; set; }
+	[Category("Farm")] public uint8_t FarmNumStagesOfGrowth { get; set; }
 
 	public IndustryViewModel(IndustryObject io)
 	{
@@ -84,23 +83,23 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override IndustryObject GetAsStruct()
+	public override IndustryObject GetAsModel()
 		=> new()
 		{
 			AnimationSequences = AnimationSequences.ToList().ConvertAll(x => x.ToList()),
-			BuildingAnimations = BuildingAnimations.ToList(),
-			BuildingHeights = BuildingHeights.ToList(),
+			BuildingAnimations = [.. BuildingAnimations],
+			BuildingHeights = [.. BuildingHeights],
 			BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
-			UnkBuildingData = UnkBuildingData.ToList(),
+			UnkBuildingData = [.. UnkBuildingData],
 			BuildingSizeFlags = BuildingSizeFlags,
-			BuildingWall = BuildingWall?.GetAsUnderlyingType(),
-			BuildingWallEntrance = BuildingWallEntrance?.GetAsUnderlyingType(),
+			BuildingWall = BuildingWall?.GetAsModel(),
+			BuildingWallEntrance = BuildingWallEntrance?.GetAsModel(),
 			MinNumBuildings = MinNumBuildings,
 			MaxNumBuildings = MaxNumBuildings,
-			InitialProductionRate = InitialProductionRate.ToList(),
-			ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			WallTypes = WallTypes.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			InitialProductionRate = [.. InitialProductionRate],
+			ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.GetAsModel()),
+			RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.GetAsModel()),
+			WallTypes = WallTypes.ToList().ConvertAll(x => x.GetAsModel()),
 			Colours = Colours,
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
@@ -118,6 +117,6 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 			FarmNumStagesOfGrowth = FarmNumStagesOfGrowth,
 			MonthlyClosureChance = MonthlyClosureChance,
 			var_E8 = var_E8,
-			var_38 = var_38.ToList(),
+			var_38 = [.. var_38],
 		};
 }

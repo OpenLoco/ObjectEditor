@@ -1,43 +1,28 @@
 using Definitions.ObjectModels.Objects.Bridge;
 using PropertyModels.ComponentModel.DataAnnotations;
-using ReactiveUI.Fody.Helpers;
-using System;
 using System.ComponentModel;
 using System.Linq;
 
 namespace Gui.ViewModels;
 
-[Flags]
-public enum SupportPillarSpacing : uint8_t
-{
-	Tile0A = 1 << 0,
-	Tile0B = 1 << 1,
-	Tile1A = 1 << 2,
-	Tile1B = 1 << 3,
-	Tile2A = 1 << 4,
-	Tile2B = 1 << 5,
-	Tile3A = 1 << 6,
-	Tile4B = 1 << 7,
-}
-
 public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 {
-	[Reactive, EnumProhibitValues<BridgeObjectFlags>(BridgeObjectFlags.None)] public BridgeObjectFlags Flags { get; set; }
-	[Reactive] public uint16_t ClearHeight { get; set; }
-	[Reactive] public int16_t DeckDepth { get; set; }
-	[Reactive] public uint8_t SpanLength { get; set; }
-	[Reactive] public SupportPillarSpacing PillarPlacement { get; set; }
-	[Reactive] public Speed16 MaxSpeed { get; set; }
-	[Reactive] public MicroZ MaxHeight { get; set; }
-	[Reactive, EnumProhibitValues<BridgeDisabledTrackFlags>(BridgeDisabledTrackFlags.None)] public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
-	[Reactive] public uint16_t DesignedYear { get; set; }
-	[Reactive, Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Reactive, Category("Cost")] public int16_t BaseCostFactor { get; set; }
-	[Reactive, Category("Cost")] public int16_t HeightCostFactor { get; set; }
-	[Reactive, Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Reactive, Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
-	[Reactive, Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
-	[Reactive, Category("<unknown>")] public uint8_t var_03 { get; set; }
+	[EnumProhibitValues<BridgeObjectFlags>(BridgeObjectFlags.None)] public BridgeObjectFlags Flags { get; set; }
+	public uint16_t ClearHeight { get; set; }
+	public int16_t DeckDepth { get; set; }
+	public uint8_t SpanLength { get; set; }
+	public SupportPillarSpacing PillarPlacement { get; set; }
+	public Speed16 MaxSpeed { get; set; }
+	public MicroZ MaxHeight { get; set; }
+	[EnumProhibitValues<BridgeDisabledTrackFlags>(BridgeDisabledTrackFlags.None)] public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
+	public uint16_t DesignedYear { get; set; }
+	[Category("Cost")] public uint8_t CostIndex { get; set; }
+	[Category("Cost")] public int16_t BaseCostFactor { get; set; }
+	[Category("Cost")] public int16_t HeightCostFactor { get; set; }
+	[Category("Cost")] public int16_t SellCostFactor { get; set; }
+	[Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
+	[Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
+	[Category("<unknown>")] public uint8_t var_03 { get; set; }
 
 	public BridgeViewModel(BridgeObject bo)
 	{
@@ -59,12 +44,12 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 		DeckDepth = bo.DeckDepth;
 	}
 
-	public override BridgeObject GetAsStruct()
+	public override BridgeObject GetAsModel()
 		=> new()
 		{
 			Flags = Flags,
 			SpanLength = SpanLength,
-			PillarSpacing = (uint8_t)PillarPlacement,
+			PillarSpacing = PillarPlacement,
 			MaxSpeed = MaxSpeed,
 			MaxHeight = MaxHeight,
 			CostIndex = CostIndex,
@@ -73,8 +58,8 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 			SellCostFactor = SellCostFactor,
 			DisabledTrackFlags = DisabledTrackFlags,
 			DesignedYear = DesignedYear,
-			CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
-			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsUnderlyingType()),
+			CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsModel()),
+			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsModel()),
 			var_03 = var_03,
 			ClearHeight = ClearHeight,
 			DeckDepth = DeckDepth,

@@ -23,16 +23,15 @@ public class VehicleObject : ILocoStruct
 	public uint8_t ShipWakeOffset { get; set; } // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-	public List<List<CargoCategory>> CompatibleCargoCategories { get; set; } = [];
-	public SimpleAnimation[] Animation { get; set; }
+	public SimpleAnimation[] Animation { get; set; } = [];
 	public uint8_t NumSimultaneousCargoTypes { get; set; }
 	public ObjectModelHeader? TrackType { get; set; }
 	public ObjectModelHeader? RackRail { get; set; }
 	public ObjectModelHeader? Sound { get; set; }
 	public List<ObjectModelHeader> AnimationHeaders { get; set; } = [];
-	public List<ObjectModelHeader> StartSounds { get; set; } = [];
-	public List<ObjectModelHeader> CompatibleVehicles { get; set; } = [];
-	public List<ObjectModelHeader> RequiredTrackExtras { get; set; } = [];
+	public ObjectModelHeader[] StartSounds { get; set; } = [];
+	public ObjectModelHeader[] CompatibleVehicles { get; set; } = [];
+	public ObjectModelHeader[] RequiredTrackExtras { get; set; } = [];
 	public VehicleObjectCar[] CarComponents { get; set; } = [];
 	public BodySprite[] BodySprites { get; set; } = [];
 	public BogieSprite[] BogieSprites { get; set; } = [];
@@ -43,8 +42,10 @@ public class VehicleObject : ILocoStruct
 	public SimpleMotorSound? SimpleMotorSound { get; set; }
 	public GearboxMotorSound? GearboxMotorSound { get; set; }
 
-	public Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets { get; set; } = new();
-	public List<uint8_t> MaxCargo { get; set; } = [];
+	public List<CargoCategory>[] CompatibleCargoCategories { get; set; } = new List<CargoCategory>[2]; // VehicleObjectLoader.Constants.MaxCompatibleCargoCategories
+	public uint8_t[] MaxCargo { get; set; } = new uint8_t[2]; // VehicleObjectLoader.Constants.MaxCompatibleCargoCategories
+	public Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets { get; set; } = [];
+
 	public uint8_t[] var_135 { get; set; } = [];
 
 	public bool Validate()
@@ -71,7 +72,7 @@ public class VehicleObject : ILocoStruct
 
 		if (Flags.HasFlag(VehicleObjectFlags.AnyRoadType))
 		{
-			if (RequiredTrackExtras.Count != 0)
+			if (RequiredTrackExtras.Length != 0)
 			{
 				return false;
 			}
@@ -82,7 +83,7 @@ public class VehicleObject : ILocoStruct
 			}
 		}
 
-		if (RequiredTrackExtras.Count > 4)
+		if (RequiredTrackExtras.Length > 4)
 		{
 			return false;
 		}
@@ -92,7 +93,7 @@ public class VehicleObject : ILocoStruct
 			return false;
 		}
 
-		if (CompatibleVehicles.Count > 8)
+		if (CompatibleVehicles.Length > 8)
 		{
 			return false;
 		}

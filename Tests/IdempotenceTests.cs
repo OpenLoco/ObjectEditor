@@ -1,27 +1,28 @@
+using Dat.Converters;
+using Dat.FileParsing;
+using Definitions.ObjectModels;
+using Gui.ViewModels;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Dat.FileParsing;
+using SixLabors.ImageSharp;
 using System.Text.Json;
 using Logger = Common.Logging.Logger;
-using Dat.Converters;
-using Definitions.ObjectModels.Types;
 
 namespace Dat.Tests;
 
 [TestFixture]
 public class IdempotenceTests
 {
-	static string[] VanillaFiles => [.. Directory
-		.GetFiles(TestConstants.BaseObjDataPath, "*.dat")
-		.Select(x => Path.GetFileName(x))];
+	static string[] VanillaFiles => [
+		.. Directory.GetFiles(TestConstants.BaseSteamObjDataPath, "*.dat"),
+		.. Directory.GetFiles(TestConstants.BaseGoGObjDataPath, "*.dat")
+		];
 
 	[TestCaseSource(nameof(VanillaFiles))]
 	public void DecodeEncodeDecode(string filename)
 	{
-		var file = Path.Combine(TestConstants.BaseObjDataPath, filename);
-
 		var logger = new Logger();
-		using var fs = new FileStream(file, FileMode.Open);
+		using var fs = new FileStream(filename, FileMode.Open);
 
 		if (!SawyerStreamReader.TryGetHeadersFromBytes(fs, out var hdrs, logger))
 		{
@@ -40,10 +41,8 @@ public class IdempotenceTests
 	[TestCaseSource(nameof(VanillaFiles))]
 	public void LoadSaveLoad(string filename)
 	{
-		var file = Path.Combine(TestConstants.BaseObjDataPath, filename);
-
 		var logger = new Logger();
-		var obj1 = SawyerStreamReader.LoadFullObject(file, logger)!;
+		var obj1 = SawyerStreamReader.LoadFullObject(filename, logger)!;
 
 		using var stream = SawyerStreamWriter.WriteLocoObject(
 			obj1.DatFileInfo.S5Header.Name,
@@ -58,33 +57,46 @@ public class IdempotenceTests
 
 		var obj2 = SawyerStreamReader.LoadFullObject(stream.ToArray(), logger);
 
-		var o1 = obj1.LocoObject;
-		var o2 = obj2.LocoObject;
+		var expected = obj1.LocoObject;
+		var actual = obj2.LocoObject;
 
 		using (Assert.EnterMultipleScope())
 		{
-			Assert.That(JsonSerializer.Serialize(o1.Object), Is.EqualTo(JsonSerializer.Serialize(o2.Object)));
-			Assert.That(JsonSerializer.Serialize(o1.StringTable), Is.EqualTo(JsonSerializer.Serialize(o2.StringTable)));
-			AssertGraphicsElementsAreEqual(o1.GraphicsElements, o2.GraphicsElements);
+			Assert.That(JsonSerializer.Serialize((object)actual.Object), Is.EqualTo(JsonSerializer.Serialize((object)expected.Object)));
+			Assert.That(JsonSerializer.Serialize(actual.StringTable), Is.EqualTo(JsonSerializer.Serialize(expected.StringTable)));
+
+			var pm = new PaletteMap("C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\Assets\\palette.png");
+			var i = 0;
+			foreach (var ae in actual.GraphicsElements.Zip(expected.GraphicsElements))
+			{
+				var ac = JsonSerializer.Serialize(ae.First);
+				var ex = JsonSerializer.Serialize(ae.Second);
+
+				if (ac != ex)
+				{
+					_ = pm.TryConvertG1ToRgba32Bitmap(ae.First, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img1);
+					_ = pm.TryConvertG1ToRgba32Bitmap(ae.Second, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img2);
+					img1.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-actual.bmp");
+					img2.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-expected.bmp");
+				}
+
+				Assert.That(ac, Is.EqualTo(ex));
+				i++;
+			}
 		}
 	}
 
-	public void AssertGraphicsElementsAreEqual(IEnumerable<GraphicsElement> expected, IEnumerable<GraphicsElement> actual)
+	[TestCaseSource(nameof(VanillaFiles))]
+	public void LoadSaveLoadViewModels(string filename)
 	{
-		using (Assert.EnterMultipleScope())
-		{
-			var index = 0;
-			foreach (var (a, b) in expected.Zip(actual))
-			{
-				Assert.That(a.Width, Is.EqualTo(b.Width), $"[{index}] Width");
-				Assert.That(a.Height, Is.EqualTo(b.Height), $"[{index}] Height");
-				Assert.That(a.XOffset, Is.EqualTo(b.XOffset), $"[{index}] XOffset");
-				Assert.That(a.YOffset, Is.EqualTo(b.YOffset), $"[{index}] YOffset");
-				Assert.That(a.Flags, Is.EqualTo(b.Flags), $"[{index}] Flags");
-				Assert.That(a.ZoomOffset, Is.EqualTo(b.ZoomOffset), $"[{index}] ZoomOffset");
-				Assert.That(a.ImageData, Is.EqualTo(b.ImageData).AsCollection, $"[{index}] ImageData");
-				index++;
-			}
-		}
+		var logger = new Logger();
+		var obj1 = SawyerStreamReader.LoadFullObject(filename, logger)!.LocoObject!.Object;
+
+		var vm = ObjectEditorViewModel.GetViewModelFromStruct(obj1);
+		var obj2 = vm.GetAsModel();
+
+		var expected = JsonSerializer.Serialize((object)obj1);
+		var actual = JsonSerializer.Serialize((object)obj2);
+		Assert.That(actual, Is.EqualTo(expected));
 	}
 }

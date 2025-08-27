@@ -3,6 +3,7 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Bridge;
 using Definitions.ObjectModels.Types;
+using static Dat.Loaders.BridgeObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -37,7 +38,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			model.ClearHeight = br.ReadUInt16();
 			model.DeckDepth = br.ReadInt16();
 			model.SpanLength = br.ReadByte();
-			model.PillarSpacing = br.ReadByte(); // This is a bitfield, see https
+			model.PillarSpacing = ((DatSupportPillarSpacing)br.ReadByte()).Convert(); // This is a bitfield, see https
 			model.MaxSpeed = (Speed16)br.ReadInt16();
 			model.MaxHeight = (MicroZ)br.ReadByte();
 			model.CostIndex = br.ReadByte();
@@ -82,7 +83,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			bw.Write(model.ClearHeight);
 			bw.Write(model.DeckDepth);
 			bw.Write(model.SpanLength);
-			bw.Write(model.PillarSpacing); // This is a bitfield, see https://
+			bw.Write((uint8_t)model.PillarSpacing); // This is a bitfield, see https://
 			bw.Write(model.MaxSpeed);
 			bw.Write(model.MaxHeight);
 			bw.Write(model.CostIndex);
@@ -111,6 +112,45 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
 		}
 	}
+
+	[Flags]
+	public enum DatSupportPillarSpacing : uint8_t
+	{
+		Tile0A = 1 << 0,
+		Tile0B = 1 << 1,
+		Tile1A = 1 << 2,
+		Tile1B = 1 << 3,
+		Tile2A = 1 << 4,
+		Tile2B = 1 << 5,
+		Tile3A = 1 << 6,
+		Tile3B = 1 << 7,
+	}
+
+	[Flags]
+	internal enum DatBridgeDisabledTrackFlags : uint16_t
+	{
+		None = 0,
+		Slope = 1 << 0,
+		SteepSlope = 1 << 1,
+		CurveSlope = 1 << 2,
+		Diagonal = 1 << 3,
+		VerySmallCurve = 1 << 4,
+		SmallCurve = 1 << 5,
+		Curve = 1 << 6,
+		LargeCurve = 1 << 7,
+		SBendCurve = 1 << 8,
+		OneSided = 1 << 9,
+		StartsAtHalfHeight = 1 << 10, // Not used. From RCT2
+		Junction = 1 << 11,
+	}
+
+	[Flags]
+	internal enum DatBridgeObjectFlags : uint8_t
+	{
+		None = 0,
+		HasRoof = 1 << 0,
+	}
+
 }
 
 static class BridgeFlagsConverter
@@ -131,27 +171,11 @@ static class BridgeDisabledFlagsConverter
 		=> (BridgeDisabledTrackFlags)datBridgeDisabledTrackFlags;
 }
 
-[Flags]
-internal enum DatBridgeDisabledTrackFlags : uint16_t
+static class SupportPillarSpacingFlagsConverter
 {
-	None = 0,
-	Slope = 1 << 0,
-	SteepSlope = 1 << 1,
-	CurveSlope = 1 << 2,
-	Diagonal = 1 << 3,
-	VerySmallCurve = 1 << 4,
-	SmallCurve = 1 << 5,
-	Curve = 1 << 6,
-	LargeCurve = 1 << 7,
-	SBendCurve = 1 << 8,
-	OneSided = 1 << 9,
-	StartsAtHalfHeight = 1 << 10, // Not used. From RCT2
-	Junction = 1 << 11,
-}
+	public static DatSupportPillarSpacing Convert(this SupportPillarSpacing supportPillarSpacing)
+		=> (DatSupportPillarSpacing)supportPillarSpacing;
 
-[Flags]
-internal enum DatBridgeObjectFlags : uint8_t
-{
-	None = 0,
-	HasRoof = 1 << 0,
+	public static SupportPillarSpacing Convert(this DatSupportPillarSpacing datSupportPillarSpacing)
+		=> (SupportPillarSpacing)datSupportPillarSpacing;
 }

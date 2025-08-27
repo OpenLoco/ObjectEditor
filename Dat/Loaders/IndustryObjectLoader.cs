@@ -3,6 +3,7 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
+using System.Diagnostics;
 using static Dat.Loaders.IndustryObjectLoader;
 
 namespace Dat.Loaders;
@@ -112,16 +113,9 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		// animation sequences
 		for (var i = 0; i < Constants.AnimationSequencesCount; ++i)
 		{
-			var size = br.PeekByte();
-			byte[] arr = [];
-			if (size != 0)
-			{
-				br.SkipByte(); // skip size byte
-				arr = br.ReadBytes(size - 1);
-			}
-
-			model.AnimationSequences.Add([.. arr]);
-			br.SkipTerminator();
+			var size = br.ReadByte();
+			var seq = br.ReadBytes(size);
+			model.AnimationSequences.Add([.. seq]);
 		}
 
 		// unk

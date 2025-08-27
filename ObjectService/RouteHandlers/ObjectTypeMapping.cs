@@ -2,7 +2,7 @@ using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Bridge;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Cargo;
-using Definitions.ObjectModels.Objects.Cliff;
+using Definitions.ObjectModels.Objects.CliffEdge;
 using Definitions.ObjectModels.Objects.Climate;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.Currency;

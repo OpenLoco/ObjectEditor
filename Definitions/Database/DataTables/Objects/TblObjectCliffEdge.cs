@@ -1,4 +1,4 @@
-using Definitions.ObjectModels.Objects.Cliff;
+using Definitions.ObjectModels.Objects.CliffEdge;
 
 namespace Definitions.Database;
 

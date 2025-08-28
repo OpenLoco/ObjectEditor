@@ -26,19 +26,20 @@ public class ImageViewModel : ReactiveObject
 	public short ZoomOffset { get; set; }
 
 	[Reactive, Browsable(false)]
-	public Bitmap Image { get; set; }
+	public Bitmap DisplayedImage { get; private set; }
 
 	[Reactive, Browsable(false)]
 	public Image<Rgba32> UnderlyingImage { get; set; }
 
+	[Browsable(false)]
 	public Avalonia.Rect SelectedBitmapPreviewBorder
-		=> Image == null
+		=> DisplayedImage == null
 		? new Avalonia.Rect()
 			: new Avalonia.Rect(
 				XOffset - 1,
 				YOffset - 1,
-				Image.Size.Width + 2,
-				Image.Size.Height + 2);
+				DisplayedImage.Size.Width + 2,
+				DisplayedImage.Size.Height + 2);
 
 	readonly PaletteMap PaletteMap;
 
@@ -56,7 +57,7 @@ public class ImageViewModel : ReactiveObject
 			.Where(x => x != null)
 			.Subscribe(_ => UnderlyingImageChanged());
 
-		_ = this.WhenAnyValue(o => o.Image)
+		_ = this.WhenAnyValue(o => o.DisplayedImage)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
 
 		if (!PaletteMap.TryConvertG1ToRgba32Bitmap(graphicsElement, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
@@ -89,11 +90,11 @@ public class ImageViewModel : ReactiveObject
 		}
 
 		// only update the UI image - don't update the underlying image as we want to keep the original
-		Image = image!.ToAvaloniaBitmap();
+		DisplayedImage = image!.ToAvaloniaBitmap();
 	}
 
 	void UnderlyingImageChanged()
-		=> Image = UnderlyingImage!.ToAvaloniaBitmap();
+		=> DisplayedImage = UnderlyingImage!.ToAvaloniaBitmap();
 
 	public void CropImage()
 	{

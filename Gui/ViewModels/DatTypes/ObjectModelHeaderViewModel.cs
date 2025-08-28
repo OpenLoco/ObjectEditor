@@ -37,7 +37,6 @@ public class ObjectModelHeaderViewModel : ReactiveObject, IObjectViewModel<Objec
 	[Reactive, MaxLength(8)]
 	public string Name { get; set; }
 
-	[Reactive]
 	public uint32_t Checksum { get; set; }
 
 	public string ChecksumHex

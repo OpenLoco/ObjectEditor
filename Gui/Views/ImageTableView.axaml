@@ -79,10 +79,11 @@
 						</ListBox.ItemsPanel>
 						<ListBox.ItemTemplate>
 							<DataTemplate>
-								<Image Source="{Binding Image}" Stretch="None" Margin="0">
+								<Image Source="{Binding DisplayedImage}" Stretch="None" Margin="0">
 									<Image.ContextMenu>
 										<ContextMenu>
 											<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
+											<MenuItem Header="Crop image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).CropImageCommand}"/>
 										</ContextMenu>
 									</Image.ContextMenu>
 								</Image>
@@ -136,7 +137,7 @@
 							<!--Bounding box-->
 							<Rectangle Canvas.Left="{Binding SelectedImage.SelectedBitmapPreviewBorder.X}" Canvas.Top="{Binding SelectedImage.SelectedBitmapPreviewBorder.Y}"  StrokeThickness="1.0" Width="{Binding SelectedImage.SelectedBitmapPreviewBorder.Width}" Height="{Binding SelectedImage.SelectedBitmapPreviewBorder.Height}" Opacity="1.0" Fill="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" Stroke="{Binding #ImageColorViewBorder.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" />
 							<!--Image-->
-							<Image Canvas.Left="{Binding SelectedImage.XOffset}" Canvas.Top="{Binding SelectedImage.YOffset}" Source="{Binding SelectedImage.Image}" RenderOptions.BitmapInterpolationMode="None" Stretch="None"/>
+							<Image Canvas.Left="{Binding SelectedImage.XOffset}" Canvas.Top="{Binding SelectedImage.YOffset}" Source="{Binding SelectedImage.DisplayedImage}" RenderOptions.BitmapInterpolationMode="None" Stretch="None"/>
 							<!--Origin point-->
 							<Rectangle Canvas.Left="0" Canvas.Top="0" Width="1" Height="1" Opacity="1.0" Fill="{Binding #ImageColorViewOriginPoint.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" />
 						</Canvas>

@@ -53,4 +53,18 @@ public class StringTableViewModel : ReactiveObject
 			}
 		}
 	}
+
+	//public StringTable ToStringTable()
+	//{
+	//	var st = new StringTable();
+	//	foreach (var key in TableView)
+	//	{
+	//		foreach (var t in key.Value)
+	//		{
+	//			st[key.Key][t.Language] = t.Translation;
+	//		}
+	//	}
+
+	//	return st;
+	//}
 }

@@ -274,6 +274,11 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 		CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsModel();
 
+		if (ExtraContentViewModel is ImageTableViewModel itvm)
+		{
+			CurrentObject.LocoObject.GraphicsElements = itvm.ImageViewModels.Select(x => x.ToGraphicsElement()).ToList();
+		}
+
 		// this is hacky but it should work
 		if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject so)
 		{

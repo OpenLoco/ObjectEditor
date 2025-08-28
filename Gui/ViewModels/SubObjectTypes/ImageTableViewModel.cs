@@ -34,13 +34,15 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public ColourRemapSwatch SelectedSecondarySwatch { get; set; } = ColourRemapSwatch.SecondaryRemap;
 
 	[Reactive]
-	public ICommand ReplaceImageCommand { get; set; }
-
-	[Reactive]
 	public ICommand ImportImagesCommand { get; set; }
 
 	[Reactive]
 	public ICommand ExportImagesCommand { get; set; }
+	[Reactive]
+	public ICommand ReplaceImageCommand { get; set; }
+
+	[Reactive]
+	public ICommand CropImageCommand { get; set; }
 
 	[Reactive]
 	public ICommand CropAllImagesCommand { get; set; }
@@ -81,7 +83,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		foreach (var ge in graphicsElements)
 		{
 			var success = imageNameProvider.TryGetImageName(index, out var imageName);
-			ImageViewModels.Add(new ImageViewModel(index, success ? imageName! : "failed to get image name", ge, paletteMap));
+			ImageViewModels.Add(new ImageViewModel(index, success ? imageName! : $"{index}-unnamed", ge, paletteMap));
 			index++;
 		}
 
@@ -103,9 +105,9 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		_ = this.WhenAnyValue(o => o.SelectedImageIndex)
 			.Subscribe(index =>
 			{
-				SelectedImage = index < 0 || index >= ImageViewModels.Count
-				? null
-				: ImageViewModels[SelectedImageIndex];
+				SelectedImage = SelectedImageIndexIsValid()
+				? ImageViewModels[SelectedImageIndex]
+				: null;
 			});
 
 		_ = this.WhenAnyValue(o => o.AnimationSpeed)
@@ -115,6 +117,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
 		ExportImagesCommand = ReactiveCommand.CreateFromTask(ExportImages);
 		ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImage);
+		CropImageCommand = ReactiveCommand.Create(CropImage);
 		CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
 
 		ZeroOffsetAllImagesCommand = ReactiveCommand.Create(() =>
@@ -143,6 +146,9 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		animationTimer.Tick += AnimationTimer_Tick;
 		animationTimer.Start();
 	}
+
+	bool SelectedImageIndexIsValid()
+		=> SelectedImageIndex >= 0 && SelectedImageIndex < ImageViewModels.Count;
 
 	void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
 	{
@@ -241,10 +247,25 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	// model stuff
 	public void RecolourImages(ColourRemapSwatch primary, ColourRemapSwatch secondary)
 	{
+		if (SelectedImageIndexIsValid())
+		{
+			return;
+		}
+
 		foreach (var ivm in ImageViewModels)
 		{
 			ivm.RecolourImage(primary, secondary);
 		}
+	}
+
+	public void CropImage()
+	{
+		if (!SelectedImageIndexIsValid())
+		{
+			return;
+		}
+
+		ImageViewModels[SelectedImageIndex].CropImage();
 	}
 
 	public void CropAllImages()

@@ -1,7 +1,9 @@
 using Dat.FileParsing;
+using Definitions.ObjectModels.Objects.Currency;
 using Gui.Models;
 using ReactiveUI.Fody.Helpers;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
@@ -35,6 +37,8 @@ public class G1ViewModel : BaseLocoFileViewModel
 			logger?.Error("G1 was null and was unable to saved");
 			return;
 		}
+
+		Model.G1.GraphicsElements = [.. ImageTableViewModel.ImageViewModels.Select(x => x.ToGraphicsElement())];
 
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.FileName)

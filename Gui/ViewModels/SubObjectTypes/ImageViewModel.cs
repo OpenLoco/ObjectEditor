@@ -103,17 +103,17 @@ public class ImageViewModel : ReactiveObject
 		if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
 		{
 			UnderlyingImage.Mutate(i => i.Crop(new Rectangle(0, 0, 1, 1)));
-			UnderlyingImageChanged();
 			XOffset = 0;
 			YOffset = 0;
 		}
 		else
 		{
 			UnderlyingImage.Mutate(i => i.Crop(cropRegion));
-			UnderlyingImageChanged();
 			XOffset += cropRegion.Left;
 			YOffset += cropRegion.Top;
 		}
+
+		UnderlyingImageChanged();
 
 		static Rectangle FindCropRegion(Image<Rgba32> image)
 		{

@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace Definitions.ObjectModels.Types;
 
 [Flags]
@@ -24,5 +22,6 @@ public class GraphicsElement // follows G1Element32, except XOffset and YOffset 
 	public GraphicsElementFlags Flags { get; set; }
 	public short ZoomOffset { get; set; }
 	public byte[] ImageData { get; set; } = [];
-	// string Name - taken from IImageNameProvider
+
+	public string Name { get; set; } // taken from IImageNameProvider
 }

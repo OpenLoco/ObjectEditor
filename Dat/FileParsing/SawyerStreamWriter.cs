@@ -615,7 +615,7 @@ public static class SawyerStreamWriter
 	{
 		using (var fs = File.OpenWrite(filename))
 		{
-			WriteImageTable(fs, g1.GraphicsElements);
+			WriteImageTable(fs, g1.ImageTable.GraphicsElements);
 		}
 	}
 }

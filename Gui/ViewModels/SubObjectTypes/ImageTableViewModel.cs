@@ -75,15 +75,14 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public PaletteMap PaletteMap { get; init; }
 	public readonly ILogger Logger;
 
-	public ImageTableViewModel(IList<GraphicsElement> graphicsElements, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, ILogger logger)
+	public ImageTableViewModel(ImageTable imageTable, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, ILogger logger)
 	{
 		ArgumentNullException.ThrowIfNull(paletteMap);
 
 		var index = 0;
-		foreach (var ge in graphicsElements)
+		foreach (var ge in imageTable.GraphicsElements)
 		{
-			var success = imageNameProvider.TryGetImageName(index, out var imageName);
-			ImageViewModels.Add(new ImageViewModel(index, success ? imageName! : $"{index}-unnamed", ge, paletteMap));
+			ImageViewModels.Add(new ImageViewModel(ge, paletteMap));
 			index++;
 		}
 
@@ -279,7 +278,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public string GetImageName(int index)
 		=> NameProvider.TryGetImageName(index, out var value) && !string.IsNullOrEmpty(value)
 			? value
-			: index.ToString();
+			: $"{index}-unnamed";
 
 	public static string TrimZeroes(string str)
 	{
@@ -324,7 +323,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 				var sanitised = files.Select(TrimZeroes).ToList();
 
 				offsets = [.. ImageViewModels
-					.Select((x, i) => new GraphicsElementJson($"{sanitised[i]}.png", (short)x.XOffset, (short)x.YOffset))
+					.Select((x, i) => new GraphicsElementJson($"{sanitised[i]}.png", (short)x.XOffset, (short)x.YOffset, string.Empty))
 					.Fill(files.Length, GraphicsElementJson.Zero)];
 
 				Logger.Debug($"Didn't find sprites.json file, using existing G1Element32 offsets with {offsets.Count} images");
@@ -341,9 +340,8 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 				var img = is1Pixel ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
 				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
 				var graphicsElement = GraphicsElementFromImage(newOffset, img, PaletteMap);
-
-				_ = NameProvider.TryGetImageName(i, out var imageName);
-				ImageViewModels.Add(new ImageViewModel(i, imageName ?? "<null>", graphicsElement, PaletteMap));
+				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name) ? GetImageName(i) : graphicsElement.Name;
+				ImageViewModels.Add(new ImageViewModel(graphicsElement, PaletteMap));
 			}
 
 			Logger.Debug($"Imported {ImageViewModels.Count} images successfully");
@@ -365,7 +363,8 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			YOffset = ele.YOffset,
 			Flags = flags,
 			ZoomOffset = ele.ZoomOffset ?? 0,
-			ImageData = paletteMap.ConvertRgba32ImageToG1Data(img, flags)
+			ImageData = paletteMap.ConvertRgba32ImageToG1Data(img, flags),
+			Name = ele.Name ?? string.Empty
 		};
 	}
 

@@ -15,10 +15,10 @@ namespace Gui.ViewModels;
 
 public class ImageViewModel : ReactiveObject
 {
-	[ReadOnly(true)] public int ImageIndex { get; }
-	[ReadOnly(true)] public string ImageName { get; }
 	public int Width => UnderlyingImage.Width;
 	public int Height => UnderlyingImage.Height;
+	public string Name { get; set; }
+
 	[Reactive] public int XOffset { get; set; }
 	[Reactive] public int YOffset { get; set; }
 
@@ -43,10 +43,9 @@ public class ImageViewModel : ReactiveObject
 
 	readonly PaletteMap PaletteMap;
 
-	public ImageViewModel(int imageIndex, string imageName, GraphicsElement graphicsElement, PaletteMap paletteMap)
+	public ImageViewModel(GraphicsElement graphicsElement, PaletteMap paletteMap)
 	{
-		ImageIndex = imageIndex;
-		ImageName = imageName;
+		Name = graphicsElement.Name;
 		XOffset = graphicsElement.XOffset;
 		YOffset = graphicsElement.YOffset;
 		Flags = graphicsElement.Flags;
@@ -147,10 +146,11 @@ public class ImageViewModel : ReactiveObject
 
 	public GraphicsElement ToGraphicsElement()
 	{
-		if (ImageIndex < 0 || UnderlyingImage == null)
+		if (UnderlyingImage == null)
 		{
-			throw new InvalidOperationException("Cannot convert to GraphicsElement when ImageIndex is less than 0 or UnderlyingImage is null");
+			throw new InvalidOperationException("Cannot convert to GraphicsElement when UnderlyingImage is null");
 		}
+
 		// turn rgba32 into raw palette image
 		var rawData = PaletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
 		return new GraphicsElement

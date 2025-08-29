@@ -88,7 +88,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			bw.WriteTerminator(); // end of dependent objects
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 

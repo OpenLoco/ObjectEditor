@@ -158,7 +158,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
 					? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-					: new ImageTableViewModel(CurrentObject.LocoObject.GraphicsElements, imageNameProvider, Model.PaletteMap, Model.Logger);
+					: new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, imageNameProvider, Model.PaletteMap, Model.Logger);
 			}
 			else
 			{
@@ -276,7 +276,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 		if (ExtraContentViewModel is ImageTableViewModel itvm)
 		{
-			CurrentObject.LocoObject.GraphicsElements = itvm.ImageViewModels.Select(x => x.ToGraphicsElement()).ToList();
+			CurrentObject.LocoObject.ImageTable.GraphicsElements = itvm.ImageViewModels.Select(x => x.ToGraphicsElement()).ToList();
 		}
 
 		// this is hacky but it should work

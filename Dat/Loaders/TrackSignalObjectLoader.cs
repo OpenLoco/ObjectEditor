@@ -93,7 +93,7 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			bw.WriteS5HeaderList(model.CompatibleTrackObjects);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 

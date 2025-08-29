@@ -1,5 +1,6 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Building;
 using PropertyModels.Extensions;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

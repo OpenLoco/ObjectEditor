@@ -1,5 +1,22 @@
+using System.ComponentModel;
+
 namespace Definitions.ObjectModels.Types;
 
-public record Pos2(coord_t X, coord_t Y);
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class Pos2(coord_t x, coord_t y)
+{
+	public coord_t X { get; } = x;
+	public coord_t Y { get; } = y;
 
-public record Pos3(coord_t X, coord_t Y, coord_t Z);
+	public static Pos2 Zero => new(0, 0);
+}
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class Pos3(coord_t x, coord_t y, coord_t z)
+{
+	public coord_t X { get; } = x;
+	public coord_t Y { get; } = y;
+	public coord_t Z { get; } = z;
+
+	public static Pos3 Zero => new(0, 0, 0);
+}

@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Objects.TrackStation;
+using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -29,7 +30,7 @@ public class TrackStationViewModel : LocoObjectViewModel<TrackStationObject>
 	[Browsable(false)]
 	public uint8_t[][] var_6E { get; set; }
 
-	public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset(), 15)];
+	public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset() { A = Pos3.Zero, B = Pos3.Zero }, 15)];
 
 	public TrackStationViewModel(TrackStationObject tso)
 	{

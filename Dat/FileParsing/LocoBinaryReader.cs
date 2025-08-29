@@ -1,6 +1,7 @@
 using Dat.Converters;
 using Dat.Types;
 using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
@@ -129,7 +130,11 @@ public class LocoBinaryReader : BinaryReader
 		=> [.. ReadBytes(count)];
 
 	public BuildingPartAnimation ReadBuildingPartAnimation()
-		=> new(ReadByte(), ReadByte());
+		=> new()
+		{
+			NumFrames = ReadByte(),
+			AnimationSpeed = ReadByte(),
+		};
 
 	public List<BuildingPartAnimation> ReadBuildingAnimations(int count)
 	{
@@ -180,7 +185,7 @@ public class LocoBinaryReader : BinaryReader
 
 		for (var i = 0; i < count; ++i)
 		{
-			result[i] = new VehicleObjectCar
+			result[i] = new VehicleObjectCar()
 			{
 				FrontBogiePosition = ReadByte(),
 				BackBogiePosition = ReadByte(),

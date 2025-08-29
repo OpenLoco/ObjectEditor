@@ -11,8 +11,8 @@ public class SteamObject : ILocoStruct
 	public SteamObjectFlags Flags { get; set; }
 	public uint32_t var_0A { get; set; }
 
-	public List<ImageAndHeight> FrameInfoType0 { get; set; } = [];
-	public List<ImageAndHeight> FrameInfoType1 { get; set; } = [];
+	public List<SteamImageAndHeight> FrameInfoType0 { get; set; } = [];
+	public List<SteamImageAndHeight> FrameInfoType1 { get; set; } = [];
 	public List<ObjectModelHeader> SoundEffects { get; set; } = [];
 
 	public bool Validate()

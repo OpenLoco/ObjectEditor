@@ -1,24 +1,22 @@
+using System.ComponentModel;
+
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
-//[LocoStructSize(0x12)]
-public record BogieSprite(
-	/*[property: LocoStructOffset(0x00)]*/ uint8_t RollStates,      // valid values 1, 2, 4 related to bogie->var_46 (identical in value to numRollSprites)
-	/*[property: LocoStructOffset(0x01)]*/ BogieSpriteFlags Flags,  // BogieSpriteFlags
-	/*[property: LocoStructOffset(0x02)]*/ uint8_t Width,           // sprite width
-	/*[property: LocoStructOffset(0x03)]*/ uint8_t HeightNegative,  // sprite height negative
-	/*[property: LocoStructOffset(0x04)]*/ uint8_t HeightPositive,  // sprite height positive
-	/*[property: LocoStructOffset(0x05), LocoStructVariableLoad, Browsable(false)]*/ uint8_t _NumRollSprites,
-	/*[property: LocoStructOffset(0x06), LocoStructVariableLoad, Browsable(false)]*/ uint32_t _FlatImageIds,   // flat sprites
-	/*[property: LocoStructOffset(0x0A), LocoStructVariableLoad, Browsable(false)]*/ uint32_t _GentleImageIds, // gentle sprites
-	/*[property: LocoStructOffset(0x0E), LocoStructVariableLoad, Browsable(false)]*/ uint32_t _SteepImageIds   // steep sprites
-	) : ILocoStruct
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class BogieSprite : ILocoStruct
 {
-	public BogieSprite() : this(0, 0, 0, 0, 0, 0, 0, 0, 0)
-	{ }
+	public uint8_t RollStates { get; set; }
+	public BogieSpriteFlags Flags { get; set; }
+	public uint8_t Width { get; set; }
+	public uint8_t HeightNegative { get; set; }
+	public uint8_t HeightPositive { get; set; }
+	public uint8_t _NumRollSprites { get; set; }
+	public uint32_t _FlatImageIds { get; set; }
+	public uint32_t _GentleImageIds { get; set; }
+	public uint32_t _SteepImageIds { get; set; }
 
 	public uint8_t NumRollSprites { get; set; }
-
-	public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds = [];
+	public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds { get; set; } = new();
 	public int NumImages { get; set; }
 
 	public bool Validate() => true;

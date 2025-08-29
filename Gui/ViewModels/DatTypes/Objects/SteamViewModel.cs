@@ -11,8 +11,8 @@ public class SteamViewModel : LocoObjectViewModel<SteamObject>
 	[EnumProhibitValues<SteamObjectFlags>(SteamObjectFlags.None)] public SteamObjectFlags Flags { get; set; }
 	public uint32_t var_0A { get; set; }
 	public BindingList<ObjectModelHeaderViewModel> SoundEffects { get; set; }
-	public BindingList<ImageAndHeight> FrameInfoType0 { get; set; } // may need viewmodel for ImageAndHeight
-	public BindingList<ImageAndHeight> FrameInfoType1 { get; set; }
+	public BindingList<SteamImageAndHeight> FrameInfoType0 { get; set; } // may need viewmodel for ImageAndHeight
+	public BindingList<SteamImageAndHeight> FrameInfoType1 { get; set; }
 
 	public SteamViewModel(SteamObject so)
 	{

@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using Common;
@@ -5,6 +6,7 @@ using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
+using Gui.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -75,15 +77,17 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public PaletteMap PaletteMap { get; init; }
 	public readonly ILogger Logger;
 
+	[Reactive]
+	public ObservableCollection<GroupedImageViewModel> GroupedImageViewModels { get; set; } = [];
+
 	public ImageTableViewModel(ImageTable imageTable, IImageTableNameProvider imageNameProvider, PaletteMap paletteMap, ILogger logger)
 	{
 		ArgumentNullException.ThrowIfNull(paletteMap);
 
-		var index = 0;
-		foreach (var ge in imageTable.GraphicsElements)
+		foreach (var group in imageTable.Groups)
 		{
-			ImageViewModels.Add(new ImageViewModel(ge, paletteMap));
-			index++;
+			var imageViewModels = group.GraphicsElements.Select(ge => new ImageViewModel(ge, paletteMap));
+			GroupedImageViewModels.Add(new GroupedImageViewModel(group.Name, imageViewModels));
 		}
 
 		NameProvider = imageNameProvider;
@@ -240,7 +244,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			return;
 		}
 
-		ImageViewModels[SelectedImageIndex].UnderlyingImage = Image.Load<Rgba32>(filename);
+		ImageViewModels[SelectedImageIndex].UnderlyingImage = SixLabors.ImageSharp.Image.Load<Rgba32>(filename);
 	}
 
 	// model stuff
@@ -337,7 +341,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			foreach (var (offset, i) in offsets.Select((x, i) => (x, i)))
 			{
 				var is1Pixel = string.IsNullOrEmpty(offset.Path);
-				var img = is1Pixel ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
+				var img = is1Pixel ? OnePixelTransparent : SixLabors.ImageSharp.Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
 				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
 				var graphicsElement = GraphicsElementFromImage(newOffset, img, PaletteMap);
 				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name) ? GetImageName(i) : graphicsElement.Name;
@@ -404,5 +408,17 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		var offsetsFile = Path.Combine(directory, "sprites.json");
 		Logger.Info($"Saving sprite offsets to {offsetsFile}");
 		await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
+	}
+}
+
+public class GroupedImageViewModel
+{
+	public string GroupName { get; set; }
+	public ObservableCollection<ImageViewModel> Images { get; set; }
+
+	public GroupedImageViewModel(string groupName, IEnumerable<ImageViewModel> images)
+	{
+		GroupName = groupName;
+		Images = new ObservableCollection<ImageViewModel>(images);
 	}
 }

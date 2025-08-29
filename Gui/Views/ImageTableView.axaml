@@ -71,25 +71,33 @@
 			<ScrollViewer Margin="4">
 				<DockPanel>
 					<Panel Width="16" DockPanel.Dock="Right"></Panel>
-					<ListBox ItemsSource="{Binding ImageViewModels}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
-						<ListBox.ItemsPanel>
-							<ItemsPanelTemplate>
-								<WrapPanel />
-							</ItemsPanelTemplate>
-						</ListBox.ItemsPanel>
-						<ListBox.ItemTemplate>
+					<ItemsControl ItemsSource="{Binding GroupedImageViewModels}" Margin="4">
+						<ItemsControl.ItemTemplate>
 							<DataTemplate>
-								<Image Source="{Binding DisplayedImage}" Stretch="None" Margin="0">
-									<Image.ContextMenu>
-										<ContextMenu>
-											<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
-											<MenuItem Header="Crop image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).CropImageCommand}"/>
-										</ContextMenu>
-									</Image.ContextMenu>
-								</Image>
+								<Expander Header="{Binding GroupName}" IsExpanded="True" Margin="4" Padding="0" HorizontalAlignment="Stretch">
+									<ListBox ItemsSource="{Binding Images}" SelectionMode="Multiple" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+										<ListBox.ItemsPanel>
+											<ItemsPanelTemplate>
+												<WrapPanel />
+											</ItemsPanelTemplate>
+										</ListBox.ItemsPanel>
+										<ListBox.ItemTemplate>
+											<DataTemplate>
+												<Image Source="{Binding DisplayedImage}" Stretch="None" Margin="0">
+													<Image.ContextMenu>
+														<ContextMenu>
+															<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
+															<MenuItem Header="Crop image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).CropImageCommand}"/>
+														</ContextMenu>
+													</Image.ContextMenu>
+												</Image>
+											</DataTemplate>
+										</ListBox.ItemTemplate>
+									</ListBox>
+								</Expander>
 							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
 				</DockPanel>
 			</ScrollViewer>
 			<GridSplitter Grid.Column="1" />
@@ -144,7 +152,7 @@
 					</paz:ZoomBorder>
 					<TextBlock HorizontalAlignment="Center" Text="{Binding #ZoomBorder.ZoomX, StringFormat='Zoom: {0:F2}x | \'R\' to reset'}"></TextBlock>
 				</StackPanel>
-					<ContentControl Content="{Binding SelectedImage}" />
+				<ContentControl Content="{Binding SelectedImage}" />
 			</DockPanel>
 		</Grid>
 	</DockPanel>

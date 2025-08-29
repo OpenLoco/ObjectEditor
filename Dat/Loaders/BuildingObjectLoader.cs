@@ -25,6 +25,11 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		public const int BuildingPartAnimation = 0x02;
 	}
 
+	public static class ImageGroups
+	{
+		public const int Base = 4;
+	}
+
 	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
@@ -32,8 +37,6 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new BuildingObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -70,16 +73,34 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Building), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Building), null);
 
 			// variable
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations, numElevatorSequences);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
+
+			// define groups
+			var imageTable = CreateImageTable(imageList);
 
 			return new LocoObject(ObjectType.Building, model, stringTable, imageTable);
 		}
+	}
+
+	private static ImageTable CreateImageTable(List<GraphicsElement> imageList)
+	{
+		var imageTable = new ImageTable();
+
+		var chunks = imageList.Chunk(4);
+		imageTable.Groups.Add(("Base", chunks.First().ToList()));
+		var floorCount = 0;
+		foreach (var chunk in chunks.Skip(1))
+		{
+			imageTable.Groups.Add(($"Floor {floorCount++}", chunk.ToList()));
+		}
+
+		return imageTable;
 	}
 
 	private static void LoadVariable(LocoBinaryReader br, BuildingObject model, byte numBuildingParts, byte numBuildingVariations, byte numElevatorSequences)

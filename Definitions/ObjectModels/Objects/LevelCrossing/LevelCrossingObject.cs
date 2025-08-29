@@ -1,4 +1,5 @@
 namespace Definitions.ObjectModels.Objects.LevelCrossing;
+
 public class LevelCrossingObject : ILocoStruct
 {
 	public int16_t CostFactor { get; set; }

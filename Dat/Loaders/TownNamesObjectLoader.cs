@@ -39,6 +39,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 					Bias = br.ReadByte(),
 					Offset = br.ReadUInt16()
 				};
+
 				model.Categories.Add(category);
 			}
 

@@ -73,7 +73,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			model.ScaffoldingColour = (Colour)br.ReadByte();
 			for (var i = 0; i < Constants.InitialProductionRateCount; ++i)
 			{
-				model.InitialProductionRate.Add(new IndustryObjectProductionRateRange(br.ReadUInt16(), br.ReadUInt16()));
+				model.InitialProductionRate.Add(new() { Min = br.ReadUInt16(), Max = br.ReadUInt16()});
 			}
 			br.SkipByte(Constants.MaxProducedCargoType); // ProducedCargo, not part of object definition
 			br.SkipByte(Constants.MaxRequiredCargoType); // RequiredCargo, not part of object definition
@@ -121,7 +121,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		// unk
 		while (br.PeekByte() != LocoConstants.Terminator)
 		{
-			model.var_38.Add(new IndustryObjectUnk38(br.ReadByte(), br.ReadByte()));
+			model.var_38.Add(new() { var_00 = br.ReadByte(), var_01 = br.ReadByte() });
 		}
 		br.SkipTerminator();
 

@@ -1,6 +1,7 @@
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.InterfaceSkin;
+
 public class InterfaceSkinObject : ILocoStruct, IImageTableNameProvider
 {
 	public Colour MapTooltipObjectColour { get; set; }

@@ -1,5 +1,8 @@
+using System.ComponentModel;
+
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
+[TypeConverter(typeof(ExpandableObjectConverter))]
 public class SimpleMotorSound
 {
 	public uint8_t SoundObjectId { get; set; }

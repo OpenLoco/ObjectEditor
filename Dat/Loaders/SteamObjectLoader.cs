@@ -68,14 +68,14 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 	{
 		while (br.PeekByte() != LocoConstants.Terminator)
 		{
-			model.FrameInfoType0.Add(new ImageAndHeight() { ImageOffset = br.ReadByte(), Height = br.ReadByte() });
+			model.FrameInfoType0.Add(new() { ImageOffset = br.ReadByte(), Height = br.ReadByte() });
 		}
 
 		br.SkipTerminator();
 
 		while (br.PeekByte() != LocoConstants.Terminator)
 		{
-			model.FrameInfoType1.Add(new ImageAndHeight() { ImageOffset = br.ReadByte(), Height = br.ReadByte() });
+			model.FrameInfoType1.Add(new() { ImageOffset = br.ReadByte(), Height = br.ReadByte() });
 		}
 
 		br.SkipTerminator();

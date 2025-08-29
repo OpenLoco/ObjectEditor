@@ -1,3 +1,12 @@
+using System.ComponentModel;
+
 namespace Definitions.ObjectModels.Types;
 
-public record ObjectModelHeader(string Name, uint Checksum, ObjectType ObjectType, ObjectSource ObjectSource); // mimics S5Header from DAT
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class ObjectModelHeader(string name, uint checksum, ObjectType objectType, ObjectSource objectSource)
+{
+	public string Name { get; } = name;
+	public uint Checksum { get; } = checksum;
+	public ObjectType ObjectType { get; } = objectType;
+	public ObjectSource ObjectSource { get; } = objectSource;
+}

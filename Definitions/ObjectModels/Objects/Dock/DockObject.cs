@@ -1,4 +1,4 @@
-using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Dock;

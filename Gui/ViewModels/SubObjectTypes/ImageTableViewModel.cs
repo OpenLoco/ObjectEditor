@@ -324,10 +324,10 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 				var sanitised = files.Select(TrimZeroes).ToList();
 
 				offsets = [.. ImageViewModels
-					.Select((x, i) => new GraphicsElementJson($"{sanitised[i]}.png", (short)x.XOffset, (short)x.YOffset))
+					.Select((x, i) => new GraphicsElementJson(sanitised[i], (short)x.XOffset, (short)x.YOffset))
 					.Fill(files.Length, GraphicsElementJson.Zero)];
 
-				Logger.Debug($"Didn't find sprites.json file, using existing G1Element32 offsets with {offsets.Count} images");
+				Logger.Debug($"Didn't find sprites.json file, using existing GraphicsElement offsets with {offsets.Count} images");
 			}
 
 			// clear existing images

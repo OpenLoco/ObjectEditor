@@ -201,7 +201,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 

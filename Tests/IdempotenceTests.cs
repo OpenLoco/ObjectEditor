@@ -67,7 +67,7 @@ public class IdempotenceTests
 
 			var pm = new PaletteMap("C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\Assets\\palette.png");
 			var i = 0;
-			foreach (var ae in actual.GraphicsElements.Zip(expected.GraphicsElements))
+			foreach (var ae in actual.ImageTable.GraphicsElements.Zip(expected.ImageTable.GraphicsElements))
 			{
 				var ac = JsonSerializer.Serialize(ae.First);
 				var ex = JsonSerializer.Serialize(ae.Second);

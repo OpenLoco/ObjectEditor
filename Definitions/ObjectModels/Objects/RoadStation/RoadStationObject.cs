@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Road;
+using Definitions.ObjectModels.Objects.TrackStation;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.RoadStation;
@@ -21,6 +22,7 @@ public class RoadStationObject : ILocoStruct, IImageTableNameProvider
 
 	// for drawing the cargo on the station
 	public uint8_t[][][] CargoOffsetBytes { get; set; }
+	//public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset { A = Pos3.Zero, B = Pos3.Zero }, 15)];
 
 	public bool Validate()
 	{

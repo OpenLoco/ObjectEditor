@@ -15,6 +15,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 		public const int MaxImageOffsets = 4;
 		public const int MaxNumCompatible = 7;
 		public const int CargoOffsetBytesSize = 16;
+		public const int MaxStationCargoDensity = 15;
 	}
 
 	public static class StructSizes
@@ -132,7 +133,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 

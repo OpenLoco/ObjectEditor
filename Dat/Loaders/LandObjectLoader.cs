@@ -106,7 +106,7 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			}
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 

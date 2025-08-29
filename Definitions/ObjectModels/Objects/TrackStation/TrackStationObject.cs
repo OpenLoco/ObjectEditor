@@ -19,7 +19,7 @@ public class TrackStationObject : ILocoStruct, IImageTableNameProvider
 	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
 	public uint8_t[][][] CargoOffsetBytes { get; set; }
 	public uint8_t[][] var_6E { get; set; }
-	public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset { A = Pos3.Zero, B = Pos3.Zero }, 15)];
+	//public List<CargoOffset> CargoOffsets { get; init; } = []; //.. Enumerable.Repeat(new CargoOffset { A = Pos3.Zero, B = Pos3.Zero }, 15)];
 
 	public bool Validate()
 	{

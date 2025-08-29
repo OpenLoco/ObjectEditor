@@ -1,4 +1,5 @@
 using Dat.Types;
+using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 
 namespace Dat.Converters;

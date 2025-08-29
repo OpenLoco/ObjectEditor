@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System;
 
 namespace Definitions.ObjectModels;
 
@@ -16,7 +17,10 @@ public class DefaultImageTableNameProvider : IImageTableNameProvider
 {
 	public bool TryGetImageName(int id, out string? value)
 	{
-		value = id.ToString();
+		value = GetImageName(id);
 		return true;
 	}
+
+	public static string GetImageName(int id)
+		=> $"{id}-unnamed";
 }

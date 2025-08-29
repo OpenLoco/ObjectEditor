@@ -145,7 +145,7 @@ public class LoadSaveTests
 			Assert.That(struc.var_B6[2], Is.Zero, nameof(struc.var_B6) + "[2]");
 			Assert.That(struc.var_B6[3], Is.Zero, nameof(struc.var_B6) + "[3]");
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(377));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(377));
 		});
 		LoadSaveGenericTest<AirportObject>(objectName, assertFunc);
 	}
@@ -185,7 +185,7 @@ public class LoadSaveTests
 			//CollectionAssert.AreEqual(struc.RoadMods, Array.CreateInstance(typeof(byte), 7), nameof(struc.RoadMods));
 			Assert.That(struc.DesignedYear, Is.Zero, nameof(struc.DesignedYear));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(124));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(124));
 		});
 		LoadSaveGenericTest<BridgeObject>(objectName, assertFunc);
 	}
@@ -224,7 +224,7 @@ public class LoadSaveTests
 			//Assert.That(struc.ElevatorHeightSequences[2].Count, Is.Zero, nameof(struc.ElevatorHeightSequences) + "[2]");
 			//Assert.That(struc.ElevatorHeightSequences[3].Count, Is.Zero, nameof(struc.ElevatorHeightSequences) + "[3]");
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(64));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(64));
 		});
 		LoadSaveGenericTest<BuildingObject>(objectName, assertFunc);
 	}
@@ -249,7 +249,7 @@ public class LoadSaveTests
 			Assert.That(struc.PaymentIndex, Is.EqualTo(10), nameof(struc.PaymentIndex));
 			Assert.That(struc.UnitSize, Is.EqualTo(10), nameof(struc.UnitSize));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(9));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(9));
 		});
 		LoadSaveGenericTest<CargoObject>(objectName, assertFunc);
 	}
@@ -269,7 +269,7 @@ public class LoadSaveTests
 			Assert.That(entry[LanguageId.English_UK], Is.EqualTo("Brown Rock"));
 			Assert.That(entry[LanguageId.English_US], Is.EqualTo("Brown Rock"));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(70));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(70));
 		});
 		LoadSaveGenericTest<CliffEdgeObject>(objectName, assertFunc);
 	}
@@ -287,7 +287,7 @@ public class LoadSaveTests
 			Assert.That(struc.WinterSnowLine, Is.EqualTo(48), nameof(struc.WinterSnowLine));
 			Assert.That(struc.SummerSnowLine, Is.EqualTo(76), nameof(struc.SummerSnowLine));
 
-			Assert.That(obj.GraphicsElements, Is.Empty);
+			Assert.That(obj.ImageTable.GraphicsElements, Is.Empty);
 		});
 		LoadSaveGenericTest<ClimateObject>(objectName, assertFunc);
 	}
@@ -331,7 +331,7 @@ public class LoadSaveTests
 			Assert.That(struc.Competitiveness, Is.EqualTo(6), nameof(struc.Competitiveness));
 			Assert.That(struc.var_37, Is.Zero, nameof(struc.var_37));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(18));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(18));
 		});
 		LoadSaveGenericTest<CompetitorObject>(objectName, assertFunc);
 	}
@@ -345,7 +345,7 @@ public class LoadSaveTests
 			Assert.That(struc.Separator, Is.Zero, nameof(struc.Separator));
 			Assert.That(struc.Factor, Is.EqualTo(1), nameof(struc.Factor));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(5));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(5));
 		});
 		LoadSaveGenericTest<CurrencyObject>(objectName, assertFunc);
 	}
@@ -372,7 +372,7 @@ public class LoadSaveTests
 			Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
 			Assert.That(struc.BoatPosition, Is.EqualTo(new Pos2(48, 0)), nameof(struc.BoatPosition));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(9));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(9));
 		});
 		LoadSaveGenericTest<DockObject>(objectName, assertFunc);
 	}
@@ -387,7 +387,7 @@ public class LoadSaveTests
 			//Assert.That(struc.var_08, Is.EqualTo(0), nameof(struc.var_08));
 			Assert.That(struc.IsHeightMap, Is.EqualTo(false), nameof(struc.IsHeightMap));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(5));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(5));
 		});
 		LoadSaveGenericTest<HillShapesObject>(objectName, assertFunc);
 	}
@@ -487,7 +487,7 @@ public class LoadSaveTests
 			Assert.That(struc.BuildingWallEntrance!.Name, Is.EqualTo("SECFENCG"));
 			Assert.That(struc.BuildingWallEntrance.ObjectType, Is.EqualTo(ObjectType.Wall));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(61));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(61));
 		});
 		LoadSaveGenericTest<IndustryObject>(objectName, assertFunc);
 	}
@@ -569,7 +569,7 @@ public class LoadSaveTests
 			Assert.That(struc.BuildingWall, Is.Null);
 			Assert.That(struc.BuildingWallEntrance, Is.Null);
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(37));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(37));
 		});
 		LoadSaveGenericTest<IndustryObject>(objectName, assertFunc);
 	}
@@ -598,7 +598,7 @@ public class LoadSaveTests
 			Assert.That(struc.PlayerInfoToolbarColour, Is.EqualTo(Colour.Grey), nameof(struc.PlayerInfoToolbarColour));
 			Assert.That(struc.TimeToolbarColour, Is.EqualTo(Colour.Grey), nameof(struc.TimeToolbarColour));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(470));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(470));
 		});
 		LoadSaveGenericTest<InterfaceSkinObject>(objectName, assertFunc);
 	}
@@ -625,7 +625,7 @@ public class LoadSaveTests
 
 			Assert.That(struc.UnkObjectHeader, Is.Null, nameof(struc.UnkObjectHeader));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(417));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(417));
 		});
 		LoadSaveGenericTest<LandObject>(objectName, assertFunc);
 	}
@@ -648,7 +648,7 @@ public class LoadSaveTests
 
 			Assert.That(struc.DesignedYear, Is.EqualTo(1955), nameof(struc.DesignedYear));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(128));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(128));
 		});
 		LoadSaveGenericTest<LevelCrossingObject>(objectName, assertFunc);
 	}
@@ -663,7 +663,7 @@ public class LoadSaveTests
 			Assert.That(struc.DependentObjects, Has.Count.EqualTo(239), nameof(struc.DependentObjects));
 			Assert.That(struc.CargoInfluenceTownFilter, Is.EquivalentTo(Enumerable.Repeat(CargoInfluenceTownFilterType.AllTowns, 4)), nameof(struc.CargoInfluenceTownFilter));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(1));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(1));
 		});
 		LoadSaveGenericTest<RegionObject>(objectName, assertFunc);
 	}
@@ -680,7 +680,7 @@ public class LoadSaveTests
 			Assert.That(struc.SellCostFactor, Is.EqualTo(-3), nameof(struc.SellCostFactor));
 			//Assert.That(struc.BaseImageOffset, Is.Zero, nameof(struc.BaseImageOffset));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(46));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(46));
 		});
 		LoadSaveGenericTest<RoadExtraObject>(objectName, assertFunc);
 	}
@@ -756,7 +756,7 @@ public class LoadSaveTests
 			Assert.That(struc.Tunnel.ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Tunnel.ObjectSource));
 			Assert.That(struc.Tunnel.ObjectType, Is.EqualTo(ObjectType.Tunnel), nameof(struc.Tunnel.ObjectType));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(73));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(73));
 		});
 		LoadSaveGenericTest<RoadObject>(objectName, assertFunc);
 	}
@@ -779,7 +779,7 @@ public class LoadSaveTests
 			Assert.That(struc.RoadPieces, Is.EqualTo(RoadTraitFlags.None), nameof(struc.RoadPieces));
 			Assert.That(struc.SellCostFactor, Is.EqualTo(-17), nameof(struc.SellCostFactor));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(18));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(18));
 		});
 		LoadSaveGenericTest<RoadStationObject>(objectName, assertFunc);
 	}
@@ -797,7 +797,7 @@ public class LoadSaveTests
 			Assert.That(struc.RoofHeights[1], Is.Zero, nameof(struc.RoofHeights) + "[1]");
 			Assert.That(struc.RoofHeights[2], Is.EqualTo(14), nameof(struc.RoofHeights) + "[2]");
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(36));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(36));
 		});
 		LoadSaveGenericTest<ScaffoldingObject>(objectName, assertFunc);
 	}
@@ -807,7 +807,7 @@ public class LoadSaveTests
 	{
 		void assertFunc(LocoObject obj, ScenarioTextObject struc) => Assert.Multiple(() =>
 		{
-			Assert.That(obj.GraphicsElements, Is.Empty);
+			Assert.That(obj.ImageTable.GraphicsElements, Is.Empty);
 		});
 		LoadSaveGenericTest<ScenarioTextObject>(objectName, assertFunc);
 	}
@@ -818,9 +818,9 @@ public class LoadSaveTests
 		void assertFunc(LocoObject obj, SnowObject struc) => Assert.Multiple(() =>
 		{
 			Assert.That(obj.StringTable.Table, Has.Count.EqualTo(1), nameof(obj.StringTable.Table));
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(139), nameof(obj.GraphicsElements));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(139), nameof(obj.ImageTable.GraphicsElements));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(139));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(139));
 		});
 		LoadSaveGenericTest<SnowObject>(objectName, assertFunc);
 	}
@@ -847,7 +847,7 @@ public class LoadSaveTests
 			Assert.That(struc.SoundObjectData.PcmHeader.SampleRate, Is.EqualTo(22050), nameof(struc.SoundObjectData.PcmHeader.SampleRate));
 			Assert.That(struc.SoundObjectData.PcmHeader.WaveFormatTag, Is.EqualTo(1), nameof(struc.SoundObjectData.PcmHeader.WaveFormatTag));
 
-			Assert.That(obj.GraphicsElements, Is.Empty);
+			Assert.That(obj.ImageTable.GraphicsElements, Is.Empty);
 		});
 		LoadSaveGenericTest<SoundObject>(objectName, assertFunc);
 	}
@@ -874,7 +874,7 @@ public class LoadSaveTests
 			Assert.That(struc.var_0A, Is.Zero, nameof(struc.var_0A));
 			// SoundEffects
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(57));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(57));
 		});
 		LoadSaveGenericTest<SteamObject>(objectName, assertFunc);
 	}
@@ -891,7 +891,7 @@ public class LoadSaveTests
 			Assert.That(obj.StringTable["Name"][LanguageId.English_UK], Is.EqualTo("Street Lights"));
 			Assert.That(obj.StringTable["Name"][LanguageId.English_US], Is.EqualTo("Street Lights"));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(12));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(12));
 		});
 		LoadSaveGenericTest<StreetLightObject>(objectName, assertFunc);
 	}
@@ -928,7 +928,7 @@ public class LoadSaveTests
 			Assert.That(obj.StringTable["Name"][LanguageId.English_UK], Is.EqualTo("North-American style town names"));
 			Assert.That(obj.StringTable["Name"][LanguageId.English_US], Is.EqualTo("North-American style town names"));
 
-			Assert.That(obj.GraphicsElements, Is.Empty);
+			Assert.That(obj.ImageTable.GraphicsElements, Is.Empty);
 		});
 		LoadSaveGenericTest<TownNamesObject>(objectName, assertFunc);
 	}
@@ -944,7 +944,7 @@ public class LoadSaveTests
 			Assert.That(struc.BuildCostFactor, Is.EqualTo(2), nameof(struc.BuildCostFactor));
 			Assert.That(struc.SellCostFactor, Is.EqualTo(-1), nameof(struc.SellCostFactor));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(134));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(134));
 		});
 		LoadSaveGenericTest<TrackExtraObject>(objectName, assertFunc);
 	}
@@ -978,10 +978,10 @@ public class LoadSaveTests
 			Assert.That(struc.var_06, Is.Zero, nameof(struc.var_06));
 
 			Assert.That(obj.StringTable.Table, Has.Count.EqualTo(1), nameof(obj.StringTable.Table));
-			Assert.That(obj.GraphicsElements, Is.Not.Null);
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(400), nameof(obj.GraphicsElements));
+			Assert.That(obj.ImageTable.GraphicsElements, Is.Not.Null);
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(400), nameof(obj.ImageTable.GraphicsElements));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(400));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(400));
 		});
 		LoadSaveGenericTest<TrackObject>(objectName, assertFunc);
 	}
@@ -1003,7 +1003,7 @@ public class LoadSaveTests
 			Assert.That(struc.SellCostFactor, Is.EqualTo(-3), nameof(struc.SellCostFactor));
 			Assert.That(struc.var_0B, Is.Zero, nameof(struc.var_0B));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(56));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(56));
 		});
 		LoadSaveGenericTest<TrackSignalObject>(objectName, assertFunc);
 	}
@@ -1029,7 +1029,7 @@ public class LoadSaveTests
 			Assert.That(struc.var_0B, Is.EqualTo(2), nameof(struc.var_0B));
 			Assert.That(struc.var_0D, Is.Zero, nameof(struc.var_0D));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(36));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(36));
 		});
 		LoadSaveGenericTest<TrackStationObject>(objectName, assertFunc);
 	}
@@ -1059,7 +1059,7 @@ public class LoadSaveTests
 			Assert.That(struc.Rating, Is.EqualTo(10), nameof(struc.Rating));
 			Assert.That(struc.DemolishRatingReduction, Is.EqualTo(-15), nameof(struc.DemolishRatingReduction));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(32));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(32));
 		});
 		LoadSaveGenericTest<TreeObject>(objectName, assertFunc);
 	}
@@ -1069,7 +1069,7 @@ public class LoadSaveTests
 	{
 		void assertFunc(LocoObject obj, TunnelObject struc) => Assert.Multiple(() =>
 		{
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(4));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(4));
 		});
 		LoadSaveGenericTest<TunnelObject>(objectName, assertFunc);
 	}
@@ -1142,7 +1142,7 @@ public class LoadSaveTests
 			Assert.That(struc.StartSounds[1].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.StartSounds) + "[1]Checksum");
 			Assert.That(struc.StartSounds[1].ObjectType, Is.EqualTo(ObjectType.Sound), nameof(struc.StartSounds) + "[1]Flags");
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(168));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(168));
 		});
 		LoadSaveGenericTest<VehicleObject>(objectName, assertFunc);
 	}
@@ -1157,7 +1157,7 @@ public class LoadSaveTests
 			Assert.That(struc.Height, Is.EqualTo(2), nameof(struc.Height));
 			Assert.That(struc.Flags2, Is.EqualTo(WallObjectFlags2.Opaque), nameof(struc.Flags2));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(6));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(6));
 		});
 		LoadSaveGenericTest<WallObject>(objectName, assertFunc);
 	}
@@ -1172,7 +1172,7 @@ public class LoadSaveTests
 			Assert.That(struc.CostFactor, Is.EqualTo(51), nameof(struc.CostFactor));
 			//Assert.That(struc.var_0A, Is.EqualTo(0), nameof(struc.var_0A));
 
-			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(76));
+			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(76));
 		});
 		LoadSaveGenericTest<WaterObject>(objectName, assertFunc);
 	}

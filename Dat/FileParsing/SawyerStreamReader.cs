@@ -252,6 +252,8 @@ public static class SawyerStreamReader
 		var imageData = br.ReadToEnd();
 		g1Header.ImageData = [.. imageData];
 
+		var graphicsElements = new List<GraphicsElement>();
+
 		// set image data
 		for (var i = 0; i < g1Header.NumEntries; ++i)
 		{
@@ -278,9 +280,13 @@ public static class SawyerStreamReader
 			{
 				currElement.ImageData = DecodeRLEImageData(currElement);
 			}
+
+			var ge = currElement.Convert();
+			ge.Name = DefaultImageTableNameProvider.GetImageName(i++);
+			graphicsElements.Add(ge);
 		}
 
-		return (g1Header, g1Element32s.Select(x => x.Convert()).ToList());
+		return (g1Header, graphicsElements);
 	}
 
 	static uint GetNextNonDuplicateOffset(List<DatG1Element32> g1Element32s, int i, uint imageDateLength)

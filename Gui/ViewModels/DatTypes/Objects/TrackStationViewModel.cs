@@ -30,7 +30,7 @@ public class TrackStationViewModel : LocoObjectViewModel<TrackStationObject>
 	[Browsable(false)]
 	public uint8_t[][] var_6E { get; set; }
 
-	public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset() { A = Pos3.Zero, B = Pos3.Zero }, 15)];
+	public List<CargoOffset> CargoOffsets { get; set; }
 
 	public TrackStationViewModel(TrackStationObject tso)
 	{
@@ -47,7 +47,7 @@ public class TrackStationViewModel : LocoObjectViewModel<TrackStationObject>
 		var_0D = tso.var_0D;
 		CargoOffsetBytes = tso.CargoOffsetBytes;
 		var_6E = tso.var_6E;
-		CargoOffsets = tso.CargoOffsets;
+		//CargoOffsets = tso.CargoOffsets;
 		CompatibleTrackObjects = [.. tso.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
 	}
 
@@ -69,7 +69,7 @@ public class TrackStationViewModel : LocoObjectViewModel<TrackStationObject>
 			var_0D = var_0D,
 			CargoOffsetBytes = CargoOffsetBytes,
 			var_6E = var_6E,
-			CargoOffsets = CargoOffsets,
+			//CargoOffsets = CargoOffsets,
 			CompatibleTrackObjects = CompatibleTrackObjects.ConvertAll(x => x.GetAsModel()),
 		};
 }

@@ -15,6 +15,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 		public const int MaxImageOffsets = 4;
 		public const int MaxNumCompatible = 7;
 		public const int CargoOffsetBytesSize = 16;
+		public const int MaxStationCargoDensity = 15;
 	}
 
 	public static class StructSizes

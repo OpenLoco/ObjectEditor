@@ -1,5 +1,5 @@
+using Gui.ViewModels.Graphics;
 using NUnit.Framework;
-using Gui.ViewModels;
 
 namespace Models.Tests;
 

@@ -8,6 +8,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models;
 using Gui.Models.Audio;
+using Gui.ViewModels.Graphics;
 using Gui.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -152,13 +153,13 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 				CurrentObjectViewModel = GetViewModelFromStruct(CurrentObject.LocoObject.Object);
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 
-				var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp)
-					? itnp
-					: new DefaultImageTableNameProvider();
+				//var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp)
+				//	? itnp
+				//	: new DefaultImageTableNameProvider();
 
 				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
 					? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-					: new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, imageNameProvider, Model.PaletteMap, Model.Logger);
+					: new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.PaletteMap, Model.Logger);
 			}
 			else
 			{
@@ -276,7 +277,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 		if (ExtraContentViewModel is ImageTableViewModel itvm)
 		{
-			CurrentObject.LocoObject.ImageTable.GraphicsElements = itvm.ImageViewModels.Select(x => x.ToGraphicsElement()).ToList();
+			//CurrentObject.LocoObject.ImageTable.GraphicsElements = itvm.ImageViewModels.Select(x => x.ToGraphicsElement()).ToList();
 		}
 
 		// this is hacky but it should work

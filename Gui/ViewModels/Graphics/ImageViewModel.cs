@@ -11,7 +11,7 @@ using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.Graphics;
 
 public class ImageViewModel : ReactiveObject
 {

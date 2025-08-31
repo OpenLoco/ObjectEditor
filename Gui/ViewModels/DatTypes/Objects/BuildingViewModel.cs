@@ -80,7 +80,7 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
 	public override BuildingObject GetAsModel()
-		=> new BuildingObject()
+		=> new()
 		{
 			BuildingComponents = new BuildingComponents()
 			{
@@ -118,18 +118,22 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 		{
 			result.Add(ElevatorSequence1);
 		}
+
 		if (ElevatorSequence2 != null)
 		{
 			result.Add(ElevatorSequence2);
 		}
+
 		if (ElevatorSequence3 != null)
 		{
 			result.Add(ElevatorSequence3);
 		}
+
 		if (ElevatorSequence4 != null)
 		{
 			result.Add(ElevatorSequence4);
 		}
+
 		return result;
 	}
 }

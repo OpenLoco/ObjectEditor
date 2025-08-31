@@ -5,7 +5,6 @@ using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models;
@@ -15,7 +14,6 @@ using Gui.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -280,7 +278,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 		if (ExtraContentViewModel is ImageTableViewModel itvm)
 		{
-			//CurrentObject.LocoObject.ImageTable.GraphicsElements = itvm.ImageViewModels.Select(x => x.ToGraphicsElement()).ToList();
+			CurrentObject.LocoObject.ImageTable.GraphicsElements = itvm.GroupedImageViewModels.SelectMany(x => x.Images).Select(x => x.ToGraphicsElement()).ToList();
 		}
 
 		// this is hacky but it should work

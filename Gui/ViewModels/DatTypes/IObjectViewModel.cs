@@ -1,5 +1,3 @@
-using Definitions.ObjectModels;
-
 namespace Gui.ViewModels;
 
 // this is purely to bind to the UI elements since Avalonia XAML doesn't support binding to generic types

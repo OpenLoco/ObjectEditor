@@ -6,7 +6,6 @@ using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
-using DynamicData;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -283,9 +282,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	}
 
 	public void CropImage()
-	{
-		SelectedImage?.CropImage();
-	}
+		=> SelectedImage?.CropImage();
 
 	public void CropAllImages()
 	{
@@ -365,7 +362,6 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 					currentGroup++;
 					currentGroupIndex = 0;
 				}
-
 			}
 		}
 		catch (Exception ex)
@@ -408,7 +404,6 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 		Logger.Info($"Exporting images to {directory}");
 
-		var counter = 0;
 		var offsets = new List<GraphicsElementJson>();
 
 		foreach (var group in GroupedImageViewModels)

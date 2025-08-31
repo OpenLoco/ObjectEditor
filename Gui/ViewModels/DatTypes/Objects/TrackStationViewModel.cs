@@ -1,10 +1,8 @@
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Objects.TrackStation;
-using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Gui.ViewModels;
 

@@ -92,6 +92,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			var building = ByteReader.ReadLocoStruct<AirportBuilding>(br.ReadBytes(StructSizes.AirportBuilding));
 			model.BuildingPositions.Add(building);
 		}
+
 		br.SkipTerminator();
 
 		// movement nodes
@@ -171,6 +172,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(x.X);
 			bw.Write(x.Y);
 		}
+
 		bw.WriteTerminator();
 
 		// movement nodes

@@ -1,5 +1,4 @@
 using Definitions.ObjectModels.Objects.Road;
-using Definitions.ObjectModels.Objects.TrackStation;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.RoadStation;

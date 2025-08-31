@@ -70,8 +70,9 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			model.ScaffoldingColour = (Colour)br.ReadByte();
 			for (var i = 0; i < Constants.InitialProductionRateCount; ++i)
 			{
-				model.InitialProductionRate.Add(new() { Min = br.ReadUInt16(), Max = br.ReadUInt16()});
+				model.InitialProductionRate.Add(new() { Min = br.ReadUInt16(), Max = br.ReadUInt16() });
 			}
+
 			br.SkipByte(Constants.MaxProducedCargoType); // ProducedCargo, not part of object definition
 			br.SkipByte(Constants.MaxRequiredCargoType); // RequiredCargo, not part of object definition
 			model.MapColour = (Colour)br.ReadByte();
@@ -123,6 +124,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		{
 			model.var_38.Add(new() { var_00 = br.ReadByte(), var_01 = br.ReadByte() });
 		}
+
 		br.SkipTerminator();
 
 		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
@@ -177,6 +179,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 				bw.Write(rate.Min);
 				bw.Write(rate.Max);
 			}
+
 			bw.WriteEmptyBytes(Constants.MaxProducedCargoType);
 			bw.WriteEmptyBytes(Constants.MaxRequiredCargoType);
 			bw.Write((uint8_t)model.MapColour);
@@ -223,6 +226,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			bw.Write(x.var_00);
 			bw.Write(x.var_01);
 		}
+
 		bw.WriteTerminator();
 
 		bw.Write(model.BuildingComponents.BuildingVariations);

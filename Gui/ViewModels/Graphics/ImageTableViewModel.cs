@@ -4,7 +4,9 @@ using Common;
 using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using DynamicData;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -70,7 +72,14 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	[Reactive]
 	public ObservableCollection<GroupedImageViewModel> GroupedImageViewModels { get; set; } = [];
 
-	public ImageTableViewModel(ImageTable imageTable, PaletteMap paletteMap, ILogger logger)
+	[Reactive]
+	public ObservableCollection<ImageViewModel> LayeredImages { get; set; } = [];
+
+	[Reactive]
+	public int OffsetSpacing { get; set; }
+	int prevOffset;
+
+	public ImageTableViewModel(ImageTable imageTable, PaletteMap paletteMap, ILogger logger, BuildingComponents buildingComponents = null)
 	{
 		ArgumentNullException.ThrowIfNull(paletteMap);
 
@@ -80,7 +89,54 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			var givm = new GroupedImageViewModel(group.Name, imageViewModels);
 			givm.SelectionModel.SelectionChanged += SelectionChanged;
 			GroupedImageViewModels.Add(givm);
+
 		}
+
+		// building components
+		if (buildingComponents != null)
+		{
+			var allGEs = imageTable.GraphicsElements;
+			var baseY = 128;
+
+			foreach (var variation in buildingComponents.BuildingVariations)
+			{
+				var yOffset = 0;
+				foreach (var variationItem in variation)
+				{
+					var group = imageTable.Groups[variationItem];
+					var numDirections = 4;
+					for (var i = 0; i < numDirections; ++i)
+					{
+						var x = new ImageViewModel(group.GraphicsElements[i], paletteMap);
+						x.XOffset += (i + 1) * 128;
+						x.YOffset += baseY + yOffset;
+						LayeredImages.Add(x);
+					}
+
+					yOffset -= buildingComponents.BuildingHeights[variationItem];
+				}
+
+				baseY += 128;
+			}
+		}
+
+		_ = this.WhenAnyValue(x => x.OffsetSpacing)
+			.Where(_ => LayeredImages.Count > 0)
+			.Subscribe(spacing =>
+			{
+				var index = 0;
+				foreach (var img in LayeredImages)
+				{
+					var diff = OffsetSpacing - prevOffset;
+					img.YOffset -= diff * index;
+					img.RaisePropertyChanged(nameof(img.YOffset));
+					img.RaisePropertyChanged(nameof(img));
+					index++;
+				}
+
+				prevOffset = OffsetSpacing;
+				this.RaisePropertyChanged(nameof(LayeredImages));
+			});
 
 		PaletteMap = paletteMap;
 		Logger = logger;
@@ -89,15 +145,6 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch, SelectedSecondarySwatch));
 		_ = this.WhenAnyValue(o => o.SelectedSecondarySwatch).Skip(1)
 			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch, SelectedSecondarySwatch));
-
-		//_ = this.WhenAnyValue(o => o.SelectedImageIndex)
-		//	.Subscribe(index =>
-		//	{
-		//		SelectedImage = SelectedImageIndexIsValid()
-		//		? ImageViewModels[SelectedImageIndex]
-		//		: null;
-		//	});
-
 		_ = this.WhenAnyValue(o => o.AnimationSpeed)
 			.Where(_ => animationTimer != null)
 			.Subscribe(_ => animationTimer!.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed));
@@ -110,20 +157,20 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 		ZeroOffsetAllImagesCommand = ReactiveCommand.Create(() =>
 		{
-			//foreach (var ivm in ImageViewModels)
-			//{
-			//	ivm.XOffset = 0;
-			//	ivm.YOffset = 0;
-			//}
+			foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
+			{
+				ivm.XOffset = 0;
+				ivm.YOffset = 0;
+			}
 		});
 
 		CenterOffsetAllImagesCommand = ReactiveCommand.Create(() =>
 		{
-			//foreach (var ivm in ImageViewModels)
-			//{
-			//	ivm.XOffset = (short)(-ivm.Width / 2);
-			//	ivm.YOffset = (short)(-ivm.Height / 2);
-			//}
+			foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
+			{
+				ivm.XOffset = (short)(-ivm.Width / 2);
+				ivm.YOffset = (short)(-ivm.Height / 2);
+			}
 		});
 
 		SelectionModel = new SelectionModel<ImageViewModel>
@@ -223,39 +270,29 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			return;
 		}
 
-		//ImageViewModels[SelectedImageIndex].UnderlyingImage = Image.Load<Rgba32>(filename);
+		_ = SelectedImage?.UnderlyingImage = Image.Load<Rgba32>(filename);
 	}
 
 	// model stuff
 	public void RecolourImages(ColourRemapSwatch primary, ColourRemapSwatch secondary)
 	{
-		//if (SelectedImageIndexIsValid())
-		//{
-		//	return;
-		//}
-
-		//foreach (var ivm in ImageViewModels)
-		//{
-		//	ivm.RecolourImage(primary, secondary);
-		//}
+		foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
+		{
+			ivm.RecolourImage(primary, secondary);
+		}
 	}
 
 	public void CropImage()
 	{
-		//if (!SelectedImageIndexIsValid())
-		//{
-		//	return;
-		//}
-
-		//ImageViewModels[SelectedImageIndex].CropImage();
+		SelectedImage?.CropImage();
 	}
 
 	public void CropAllImages()
 	{
-		//foreach (var ivm in ImageViewModels)
-		//{
-		//	ivm.CropImage();
-		//}
+		foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
+		{
+			ivm.CropImage();
+		}
 	}
 
 	public static string TrimZeroes(string str)
@@ -266,68 +303,75 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	public async Task ImportImages(string directory)
 	{
-		//if (string.IsNullOrEmpty(directory))
-		//{
-		//	Logger.Error($"Directory is invalid: \"{directory}\"");
-		//	return;
-		//}
+		if (string.IsNullOrEmpty(directory))
+		{
+			Logger.Error($"Directory is invalid: \"{directory}\"");
+			return;
+		}
 
-		//if (!Directory.Exists(directory))
-		//{
-		//	Logger.Error($"Directory does not exist: \"{directory}\"");
-		//	return;
-		//}
+		if (!Directory.Exists(directory))
+		{
+			Logger.Error($"Directory does not exist: \"{directory}\"");
+			return;
+		}
 
-		//Logger.Info($"Importing images from {directory}");
+		Logger.Info($"Importing images from {directory}");
 
-		//ClearSelectionModel();
+		ClearSelectionModel();
 
-		//try
-		//{
-		//	Logger.Debug($"{ImageViewModels.Count} images in current object");
-		//	ICollection<GraphicsElementJson> offsets;
+		try
+		{
+			ICollection<GraphicsElementJson> offsets;
 
-		//	// check for offsets file
-		//	var offsetsFile = Path.Combine(directory, "sprites.json");
-		//	if (File.Exists(offsetsFile))
-		//	{
-		//		offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(offsetsFile); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
-		//		ArgumentNullException.ThrowIfNull(offsets);
-		//		Logger.Debug($"Found sprites.json file with {offsets.Count} images");
-		//	}
-		//	else
-		//	{
-		//		var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
-		//		var sanitised = files.Select(TrimZeroes).ToList();
+			// check for offsets file
+			var offsetsFile = Path.Combine(directory, "sprites.json");
+			if (File.Exists(offsetsFile))
+			{
+				offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(offsetsFile); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+				ArgumentNullException.ThrowIfNull(offsets);
+				Logger.Debug($"Found sprites.json file with {offsets.Count} images");
+			}
+			else
+			{
+				var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
+				var sanitised = files.Select(TrimZeroes).ToList();
 
-		//		offsets = [.. ImageViewModels
-		//			.Select((x, i) => new GraphicsElementJson(sanitised[i], (short)x.XOffset, (short)x.YOffset, string.Empty))
-		//			.Fill(files.Length, GraphicsElementJson.Zero)];
+				offsets = [.. GroupedImageViewModels.SelectMany(x => x.Images)
+					.Select((x, i) => new GraphicsElementJson(sanitised[i], (short)x.XOffset, (short)x.YOffset, x.Name))
+					.Fill(files.Length, GraphicsElementJson.Zero)];
 
-		//		Logger.Debug($"Didn't find sprites.json file, using existing GraphicsElement offsets with {offsets.Count} images");
-		//	}
+				Logger.Debug($"Didn't find sprites.json file, using existing GraphicsElement offsets with {offsets.Count} images");
+			}
 
-		//	// clear existing images
-		//	Logger.Debug("Clearing current images");
-		//	ImageViewModels.Clear();
+			// clear existing images
+			Logger.Debug("Clearing current images");
+			GroupedImageViewModels.Clear();
 
-		//	// load files
-		//	foreach (var (offset, i) in offsets.Select((x, i) => (x, i)))
-		//	{
-		//		var is1Pixel = string.IsNullOrEmpty(offset.Path);
-		//		var img = is1Pixel ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
-		//		var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
-		//		var graphicsElement = GraphicsElementFromImage(newOffset, img, PaletteMap);
-		//		graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name) ? GetImageName(i) : graphicsElement.Name;
-		//		ImageViewModels.Add(new ImageViewModel(graphicsElement, PaletteMap));
-		//	}
+			// load files
+			var currentGroup = 0;
+			var currentGroupIndex = 0;
+			foreach (var (offset, i) in offsets.Select((x, i) => (x, i)))
+			{
+				var is1Pixel = string.IsNullOrEmpty(offset.Path);
+				var img = is1Pixel ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
+				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
+				var graphicsElement = GraphicsElementFromImage(newOffset, img, PaletteMap);
+				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name) ? DefaultImageTableNameProvider.GetImageName(i) : graphicsElement.Name;
 
-		//	Logger.Debug($"Imported {ImageViewModels.Count} images successfully");
-		//}
-		//catch (Exception ex)
-		//{
-		//	Logger.Error(ex);
-		//}
+				GroupedImageViewModels[currentGroup].Images.Add(new ImageViewModel(graphicsElement, PaletteMap));
+				currentGroupIndex++;
+				if (currentGroupIndex >= GroupedImageViewModels[currentGroup].Images.Count)
+				{
+					currentGroup++;
+					currentGroupIndex = 0;
+				}
+
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.Error(ex);
+		}
 	}
 
 	static GraphicsElement GraphicsElementFromImage(GraphicsElementJson ele, Image<Rgba32> img, PaletteMap paletteMap)
@@ -350,37 +394,39 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	public async Task ExportImages(string directory)
 	{
-		//if (string.IsNullOrEmpty(directory))
-		//{
-		//	Logger.Error($"Directory is invalid: \"{directory}\"");
-		//	return;
-		//}
+		if (string.IsNullOrEmpty(directory))
+		{
+			Logger.Error($"Directory is invalid: \"{directory}\"");
+			return;
+		}
 
-		//if (!Directory.Exists(directory))
-		//{
-		//	Logger.Error($"Directory does not exist: \"{directory}\"");
-		//	return;
-		//}
+		if (!Directory.Exists(directory))
+		{
+			Logger.Error($"Directory does not exist: \"{directory}\"");
+			return;
+		}
 
-		//Logger.Info($"Exporting images to {directory}");
+		Logger.Info($"Exporting images to {directory}");
 
-		//var counter = 0;
-		//var offsets = new List<GraphicsElementJson>();
+		var counter = 0;
+		var offsets = new List<GraphicsElementJson>();
 
-		//foreach (var image in ImageViewModels)
-		//{
-		//	var imageName = counter.ToString(); // todo: maybe use image name provider below (but number must still exist)
-		//	counter++;
+		foreach (var group in GroupedImageViewModels)
+		{
+			foreach (var image in group.Images)
+			{
+				var imageName = image.Name.Trim().ToLower().Replace(' ', '-');
+				var groupName = group.GroupName.Trim().ToLower().Replace(' ', '-');
+				var fileName = $"{groupName}_{imageName}.png";
+				var path = Path.Combine(directory, fileName);
+				await image.UnderlyingImage.SaveAsPngAsync(path);
 
-		//	var fileName = $"{imageName}.png";
-		//	var path = Path.Combine(directory, fileName);
-		//	await image.UnderlyingImage.SaveAsPngAsync(path);
+				offsets.Add(new GraphicsElementJson(fileName, image.ToGraphicsElement()));
+			}
+		}
 
-		//	offsets.Add(new GraphicsElementJson(fileName, image.ToGraphicsElement()));
-		//}
-
-		//var offsetsFile = Path.Combine(directory, "sprites.json");
-		//Logger.Info($"Saving sprite offsets to {offsetsFile}");
-		//await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
+		var offsetsFile = Path.Combine(directory, "sprites.json");
+		Logger.Info($"Saving sprite offsets to {offsetsFile}");
+		await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
 	}
 }

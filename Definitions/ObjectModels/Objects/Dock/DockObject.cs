@@ -1,9 +1,9 @@
-using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Dock;
 
-public class DockObject : ILocoStruct
+public class DockObject : ILocoStruct, IHasBuildingComponents
 {
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
@@ -14,12 +14,15 @@ public class DockObject : ILocoStruct
 	public uint16_t ObsoleteYear { get; set; }
 	public Pos2 BoatPosition { get; set; }
 
-	public List<uint8_t> BuildingHeights { get; set; } = [];
-	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
-	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+	public BuildingComponents BuildingComponents { get; set; } = new();
 
 	public bool Validate()
 	{
+		if (BuildingComponents.Validate())
+		{
+			return false;
+		}
+
 		if (CostIndex > 32)
 		{
 			return false;

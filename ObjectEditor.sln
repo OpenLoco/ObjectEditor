@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseImporter", "Databas
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Index", "Index\Index.csproj", "{26FB082F-DEC4-4501-907F-16E99C4D6442}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageConversion", "ImageConversion\ImageConversion.csproj", "{EA404621-9BBC-48E1-B956-CD9F99939F91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -185,6 +187,18 @@ Global
 		{26FB082F-DEC4-4501-907F-16E99C4D6442}.Release|x64.Build.0 = Release|Any CPU
 		{26FB082F-DEC4-4501-907F-16E99C4D6442}.Release|x86.ActiveCfg = Release|Any CPU
 		{26FB082F-DEC4-4501-907F-16E99C4D6442}.Release|x86.Build.0 = Release|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Debug|x64.Build.0 = Debug|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Debug|x86.Build.0 = Debug|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Release|x64.ActiveCfg = Release|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Release|x64.Build.0 = Release|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Release|x86.ActiveCfg = Release|Any CPU
+		{EA404621-9BBC-48E1-B956-CD9F99939F91}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

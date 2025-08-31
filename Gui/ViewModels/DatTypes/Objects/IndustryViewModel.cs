@@ -1,10 +1,11 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
-using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -26,20 +27,20 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 	[Category("Cost")] public uint8_t CostIndex { get; set; }
 	[Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Category("Building"), Length(IndustryObjectLoader.Constants.AnimationSequencesCount, IndustryObjectLoader.Constants.AnimationSequencesCount)] public BindingList<BindingList<uint8_t>> AnimationSequences { get; set; }
-	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
-	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
-	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
+	[Category("Building"), Length(IndustryObjectLoader.Constants.AnimationSequencesCount, IndustryObjectLoader.Constants.AnimationSequencesCount)] public List<List<uint8_t>> AnimationSequences { get; set; }
+	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingVariationCount)] public List<List<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
+	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingHeightCount)] public List<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
+	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingAnimationCount)] public List<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
 	[Category("Building")] public uint8_t MinNumBuildings { get; set; }
 	[Category("Building")] public uint8_t MaxNumBuildings { get; set; }
 	[Category("Building")] public BindingList<uint8_t> UnkBuildingData { get; set; }
 	[Category("Building")] public uint32_t BuildingSizeFlags { get; set; }
 	[Category("Building")] public uint8_t ScaffoldingSegmentType { get; set; }
 	[Category("Building")] public Colour ScaffoldingColour { get; set; }
-	[Category("Building"), Length(0, IndustryObjectLoader.Constants.MaxWallTypeCount)] public BindingList<ObjectModelHeaderViewModel> WallTypes { get; set; }
+	[Category("Building"), Length(0, IndustryObjectLoader.Constants.MaxWallTypeCount)] public List<ObjectModelHeaderViewModel> WallTypes { get; set; }
 	[Category("Building")] public ObjectModelHeaderViewModel? BuildingWall { get; set; }
 	[Category("Building")] public ObjectModelHeaderViewModel? BuildingWallEntrance { get; set; }
-	[Category("<unknown>")] public BindingList<IndustryObjectUnk38> var_38 { get; set; }
+	[Category("<unknown>")] public List<IndustryObjectUnk38> var_38 { get; set; }
 	[Category("<unknown>")] public uint8_t var_E8 { get; set; }
 	[Category("Farm")] public uint8_t FarmTileNumImageAngles { get; set; }
 	[Category("Farm")] public uint8_t FarmGrowthStageWithNoProduction { get; set; }
@@ -48,10 +49,10 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 
 	public IndustryViewModel(IndustryObject io)
 	{
-		AnimationSequences = new(io.AnimationSequences.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
-		BuildingAnimations = new(io.BuildingAnimations);
-		BuildingHeights = new(io.BuildingHeights);
-		BuildingVariations = new(io.BuildingVariations.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
+		AnimationSequences = [.. io.AnimationSequences.Select(x => new List<uint8_t>(x))];
+		BuildingAnimations = [.. io.BuildingComponents.BuildingAnimations];
+		BuildingHeights = [.. io.BuildingComponents.BuildingHeights];
+		BuildingVariations = [.. io.BuildingComponents.BuildingVariations.Select(x => new List<uint8_t>(x))];
 		UnkBuildingData = new(io.UnkBuildingData);
 		BuildingSizeFlags = io.BuildingSizeFlags;
 		BuildingWall = io.BuildingWall == null ? null : new(io.BuildingWall);
@@ -61,7 +62,7 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 		InitialProductionRate = new(io.InitialProductionRate);
 		ProducedCargo = new(io.ProducedCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 		RequiredCargo = new(io.RequiredCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		WallTypes = new(io.WallTypes.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		WallTypes = [.. io.WallTypes.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
 		Colours = io.Colours;
 		DesignedYear = io.DesignedYear;
 		ObsoleteYear = io.ObsoleteYear;
@@ -79,7 +80,7 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 		FarmNumStagesOfGrowth = io.FarmNumStagesOfGrowth;
 		MonthlyClosureChance = io.MonthlyClosureChance;
 		var_E8 = io.var_E8;
-		var_38 = new(io.var_38);
+		var_38 = [.. io.var_38];
 	}
 
 	// validation:
@@ -88,9 +89,12 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 		=> new()
 		{
 			AnimationSequences = AnimationSequences.ToList().ConvertAll(x => x.ToList()),
-			BuildingAnimations = [.. BuildingAnimations],
-			BuildingHeights = [.. BuildingHeights],
-			BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
+			BuildingComponents = new BuildingComponents()
+			{
+				BuildingHeights = [.. BuildingHeights],
+				BuildingAnimations = [.. BuildingAnimations],
+				BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
+			},
 			UnkBuildingData = [.. UnkBuildingData],
 			BuildingSizeFlags = BuildingSizeFlags,
 			BuildingWall = BuildingWall?.GetAsModel(),

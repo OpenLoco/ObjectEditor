@@ -1,9 +1,9 @@
-using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Industry;
 
-public class IndustryObject : ILocoStruct
+public class IndustryObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint32_t FarmImagesPerGrowthStage { get; set; }
 	public uint8_t MinNumBuildings { get; set; }
@@ -34,9 +34,7 @@ public class IndustryObject : ILocoStruct
 	public ObjectModelHeader? BuildingWall { get; set; } // Wall types that can be built around this industry
 	public ObjectModelHeader? BuildingWallEntrance { get; set; } // Wall types that can be built around this industry
 
-	public List<uint8_t> BuildingHeights { get; set; } = [];
-	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
-	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+	public BuildingComponents BuildingComponents { get; set; } = new();
 
 	public List<List<uint8_t>> AnimationSequences { get; set; } = []; // Access with getAnimationSequence helper method
 	public List<uint8_t> UnkBuildingData { get; set; } = [];
@@ -44,12 +42,7 @@ public class IndustryObject : ILocoStruct
 
 	public bool Validate()
 	{
-		if (BuildingHeights.Count == 0 || BuildingAnimations.Count == 0)
-		{
-			return false;
-		}
-
-		if (BuildingVariations.Count is 0 or > 31)
+		if (!BuildingComponents.Validate())
 		{
 			return false;
 		}

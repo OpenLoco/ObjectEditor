@@ -5,6 +5,8 @@ using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models;
 using Gui.Models.Audio;
@@ -13,6 +15,7 @@ using Gui.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -159,7 +162,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
 					? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-					: new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.PaletteMap, Model.Logger);
+					: new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.PaletteMap, Model.Logger, (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents);
 			}
 			else
 			{

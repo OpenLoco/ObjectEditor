@@ -1,8 +1,9 @@
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
-public class BuildingObject : ILocoStruct
+public class BuildingObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
@@ -23,9 +24,7 @@ public class BuildingObject : ILocoStruct
 
 	public uint8_t var_AC { get; set; }
 
-	public List<uint8_t> BuildingHeights { get; set; } = [];
-	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
-	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+	public BuildingComponents BuildingComponents { get; set; } = new();
 
 	public List<uint8_t> ProducedQuantity { get; set; } = [];
 	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];
@@ -35,8 +34,5 @@ public class BuildingObject : ILocoStruct
 
 	public bool Validate()
 		=> ProducedQuantity.Count == 2
-		&& BuildingHeights.Count is not 0 and not > 63
-		&& BuildingAnimations.Count is not 0 and not > 63
-		&& BuildingHeights.Count == BuildingAnimations.Count
-		&& BuildingVariations.Count is not 0 and <= 31;
+		&& BuildingComponents.Validate();
 }

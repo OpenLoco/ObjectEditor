@@ -1,7 +1,8 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
-using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using PropertyModels.Extensions;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -21,12 +22,12 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 	[Category("Cost")] public uint8_t CostIndex { get; set; }
 	[Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)] public BindingList<BindingList<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)] public BindingList<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)] public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
-	[Category("Building")] public BindingList<AirportBuilding> BuildingPositions { get; set; }
-	[Category("Movement")] public BindingList<MovementNode> MovementNodes { get; set; } // NumMovementNodes
-	[Category("Movement")] public BindingList<MovementEdge> MovementEdges { get; set; } // NumMovementEdges
+	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)] public List<List<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
+	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)] public List<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
+	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)] public List<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
+	[Category("Building")] public List<AirportBuilding> BuildingPositions { get; set; }
+	[Category("Movement")] public List<MovementNode> MovementNodes { get; set; } // NumMovementNodes
+	[Category("Movement")] public List<MovementEdge> MovementEdges { get; set; } // NumMovementEdges
 	[Category("<unknown>")] public uint8_t var_07 { get; set; }
 	[Category("<unknown>"), Length(4, 4)] public BindingList<uint8_t> var_B6 { get; set; }
 
@@ -37,10 +38,10 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 		SellCostFactor = ao.SellCostFactor;
 		var_07 = ao.var_07;
 		AllowedPlaneTypes = ao.AllowedPlaneTypes;
-		BuildingHeights = new(ao.BuildingHeights);
-		BuildingAnimations = new(ao.BuildingAnimations);
-		BuildingVariations = new(ao.BuildingVariations.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
-		BuildingPositions = new(ao.BuildingPositions);
+		BuildingAnimations = [.. ao.BuildingComponents.BuildingAnimations];
+		BuildingHeights = [.. ao.BuildingComponents.BuildingHeights];
+		BuildingVariations = [.. ao.BuildingComponents.BuildingVariations.Select(x => new List<uint8_t>(x))];
+		BuildingPositions = [.. ao.BuildingPositions];
 		LargeTiles = ao.LargeTiles;
 		MinX = ao.MinX;
 		MinY = ao.MinY;
@@ -48,8 +49,8 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 		MaxY = ao.MaxY;
 		DesignedYear = ao.DesignedYear;
 		ObsoleteYear = ao.ObsoleteYear;
-		MovementNodes = new(ao.MovementNodes);
-		MovementEdges = new(ao.MovementEdges);
+		MovementNodes = [.. ao.MovementNodes];
+		MovementEdges = [.. ao.MovementEdges];
 		var_B6 = [.. ao.var_B6];
 	}
 
@@ -71,9 +72,12 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
 			var_B6 = [.. var_B6],
-			BuildingHeights = [.. BuildingHeights],
-			BuildingAnimations = [.. BuildingAnimations],
-			BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
+			BuildingComponents = new()
+			{
+				BuildingHeights = [.. BuildingHeights],
+				BuildingAnimations = [.. BuildingAnimations],
+				BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
+			},
 			BuildingPositions = [.. BuildingPositions],
 			MovementNodes = [.. MovementNodes],
 			MovementEdges = [.. MovementEdges],

@@ -3,7 +3,6 @@ using Gui.Models;
 using Gui.ViewModels.Graphics;
 using ReactiveUI.Fody.Helpers;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gui.ViewModels;

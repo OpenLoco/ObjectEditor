@@ -82,32 +82,17 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
 			// define groups
-			var imageTable = CreateImageTable(imageList);
+			var imageTable = ImageTableLoader.CreateImageTable(imageList);
 
 			return new LocoObject(ObjectType.Building, model, stringTable, imageTable);
 		}
 	}
 
-	private static ImageTable CreateImageTable(List<GraphicsElement> imageList)
-	{
-		var imageTable = new ImageTable();
-
-		var chunks = imageList.Chunk(4);
-		imageTable.Groups.Add(("Base", chunks.First().ToList()));
-		var floorCount = 0;
-		foreach (var chunk in chunks.Skip(1))
-		{
-			imageTable.Groups.Add(($"Floor {floorCount++}", chunk.ToList()));
-		}
-
-		return imageTable;
-	}
-
 	private static void LoadVariable(LocoBinaryReader br, BuildingObject model, byte numBuildingParts, byte numBuildingVariations, byte numElevatorSequences)
 	{
-		model.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
-		model.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
-		model.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
+		model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
+		model.BuildingComponents.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
+		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
 		model.ProducedCargo = br.ReadS5HeaderList(Constants.MaxProducedCargoType);
 		model.RequiredCargo = br.ReadS5HeaderList(Constants.MaxRequiredCargoType);
 
@@ -129,8 +114,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
-			bw.Write((uint8_t)model.BuildingAnimations.Count); // NumBuildingParts
-			bw.Write((uint8_t)model.BuildingVariations.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingAnimations.Count); // NumBuildingParts
+			bw.Write((uint8_t)model.BuildingComponents.BuildingVariations.Count);
 			bw.WriteEmptyPointer();
 			bw.WriteEmptyPointer();
 			bw.WriteEmptyPointer(Constants.BuildingVariationCount);
@@ -173,9 +158,9 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 
 	private static void SaveVariable(BuildingObject model, LocoBinaryWriter bw)
 	{
-		bw.Write(model.BuildingHeights);
-		bw.Write(model.BuildingAnimations);
-		bw.Write(model.BuildingVariations);
+		bw.Write(model.BuildingComponents.BuildingHeights);
+		bw.Write(model.BuildingComponents.BuildingAnimations);
+		bw.Write(model.BuildingComponents.BuildingVariations);
 		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
 		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);
 

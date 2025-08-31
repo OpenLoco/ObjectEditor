@@ -28,8 +28,6 @@ public abstract class DockObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new DockObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -53,15 +51,18 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Dock), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Dock), null);
 
 			// variable
-			model.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
-			model.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
-			model.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
+			model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
+			model.BuildingComponents.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
+			model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
+
+			// define groups
+			var imageTable = ImageTableLoader.CreateImageTable(imageList);
 
 			return new LocoObject(ObjectType.Dock, model, stringTable, imageTable);
 		}
@@ -82,8 +83,8 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			bw.WriteEmptyImageId(); // Image, not part of object definition
 			bw.WriteEmptyImageId(); // UnkImage, not part of object definition
 			bw.Write((uint16_t)model.Flags.Convert());
-			bw.Write((uint8_t)model.BuildingAnimations.Count);
-			bw.Write((uint8_t)model.BuildingVariations.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingAnimations.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingVariations.Count);
 			bw.WriteEmptyPointer(); // BuildingPartHeights
 			bw.WriteEmptyPointer(); // BuildingPartAnimations
 			bw.WriteEmptyPointer(); // BuildingVariationParts
@@ -108,9 +109,9 @@ public abstract class DockObjectLoader : IDatObjectLoader
 
 	private static void SaveVariable(DockObject model, LocoBinaryWriter bw)
 	{
-		bw.Write(model.BuildingHeights);
-		bw.Write(model.BuildingAnimations);
-		bw.Write(model.BuildingVariations);
+		bw.Write(model.BuildingComponents.BuildingHeights);
+		bw.Write(model.BuildingComponents.BuildingAnimations);
+		bw.Write(model.BuildingComponents.BuildingVariations);
 	}
 
 	[Flags]

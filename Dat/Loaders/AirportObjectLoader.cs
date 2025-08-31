@@ -32,8 +32,6 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new AirportObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -67,13 +65,16 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Airport), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Airport), null);
 
 			// variable
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations, numMovementNodes, numMovementEdges);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
+
+			// define groups
+			var imageTable = ImageTableLoader.CreateImageTable(imageList);
 
 			return new LocoObject(ObjectType.Airport, model, stringTable, imageTable);
 		}
@@ -81,9 +82,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 	private static void LoadVariable(LocoBinaryReader br, AirportObject model, int numBuildingParts, int numBuildingVariations, byte numMovementNodes, byte numMovementEdges)
 	{
-		model.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
-		model.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
-		model.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
+		model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
+		model.BuildingComponents.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
+		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
 
 		// building positions
 		while (br.PeekByte() != LocoConstants.Terminator)
@@ -123,8 +124,8 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.WriteEmptyImageId(); // Image, not part of object definition
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write(model.AllowedPlaneTypes);
-			bw.Write((uint8_t)model.BuildingHeights.Count);
-			bw.Write((uint8_t)model.BuildingVariations.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingHeights.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingVariations.Count);
 			bw.WriteEmptyPointer(); // BuildingHeights
 			bw.WriteEmptyPointer(); // BuildingAnimations
 			bw.WriteEmptyPointer(Constants.BuildingVariationCount); // BuildingVariations
@@ -158,9 +159,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 	private static void SaveVariable(LocoBinaryWriter bw, AirportObject model)
 	{
-		bw.Write(model.BuildingHeights);
-		bw.Write(model.BuildingAnimations);
-		bw.Write(model.BuildingVariations);
+		bw.Write(model.BuildingComponents.BuildingHeights);
+		bw.Write(model.BuildingComponents.BuildingAnimations);
+		bw.Write(model.BuildingComponents.BuildingVariations);
 
 		// positions
 		foreach (var x in model.BuildingPositions)

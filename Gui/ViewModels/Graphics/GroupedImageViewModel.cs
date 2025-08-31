@@ -23,21 +23,5 @@ public class GroupedImageViewModel : ReactiveObject
 		{
 			SingleSelect = false
 		};
-		//SelectionModel.SelectionChanged += SelectionChanged;
 	}
-
-	//void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
-	//{
-	//	var sm = (SelectionModel<ImageViewModel>)sender;
-
-	//	if (sm.SelectedIndexes.Count > 0)
-	//	{
-	//		//SelectedImageIndex = sm.SelectedIndex;
-	//	}
-
-	//	if (sm.SelectedItems.Count == 0)
-	//	{
-	//		return;
-	//	}
-	//}
 }

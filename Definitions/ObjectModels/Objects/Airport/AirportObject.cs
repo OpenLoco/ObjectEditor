@@ -1,8 +1,8 @@
-using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 
 namespace Definitions.ObjectModels.Objects.Airport;
 
-public class AirportObject : ILocoStruct
+public class AirportObject : ILocoStruct, IHasBuildingComponents
 {
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
@@ -17,9 +17,7 @@ public class AirportObject : ILocoStruct
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 
-	public List<uint8_t> BuildingHeights { get; set; } = [];
-	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
-	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+	public BuildingComponents BuildingComponents { get; set; } = new();
 
 	public List<AirportBuilding> BuildingPositions { get; set; } = [];
 	public List<MovementNode> MovementNodes { get; set; } = [];
@@ -28,6 +26,11 @@ public class AirportObject : ILocoStruct
 
 	public bool Validate()
 	{
+		if (!BuildingComponents.Validate())
+		{
+			return false;
+		}
+
 		if (CostIndex > 32)
 		{
 			return false;

@@ -22,9 +22,9 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 	[Category("Cost")] public uint8_t CostIndex { get; set; }
 	[Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)] public List<List<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)] public List<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)] public List<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
+	//[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)] public List<List<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
+	//[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)] public List<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
+	//[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)] public List<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
 	[Category("Building")] public List<AirportBuilding> BuildingPositions { get; set; }
 	[Category("Movement")] public List<MovementNode> MovementNodes { get; set; } // NumMovementNodes
 	[Category("Movement")] public List<MovementEdge> MovementEdges { get; set; } // NumMovementEdges
@@ -38,9 +38,9 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 		SellCostFactor = ao.SellCostFactor;
 		var_07 = ao.var_07;
 		AllowedPlaneTypes = ao.AllowedPlaneTypes;
-		BuildingAnimations = [.. ao.BuildingComponents.BuildingAnimations];
-		BuildingHeights = [.. ao.BuildingComponents.BuildingHeights];
-		BuildingVariations = [.. ao.BuildingComponents.BuildingVariations.Select(x => new List<uint8_t>(x))];
+		//BuildingAnimations = [.. ao.BuildingComponents.BuildingAnimations];
+		//BuildingHeights = [.. ao.BuildingComponents.BuildingHeights];
+		//BuildingVariations = [.. ao.BuildingComponents.BuildingVariations.Select(x => new List<uint8_t>(x))];
 		BuildingPositions = [.. ao.BuildingPositions];
 		LargeTiles = ao.LargeTiles;
 		MinX = ao.MinX;
@@ -72,12 +72,12 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
 			var_B6 = [.. var_B6],
-			BuildingComponents = new()
-			{
-				BuildingHeights = [.. BuildingHeights],
-				BuildingAnimations = [.. BuildingAnimations],
-				BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
-			},
+			//BuildingComponents = new()
+			//{
+			//	BuildingHeights = [.. BuildingHeights],
+			//	BuildingAnimations = [.. BuildingAnimations],
+			//	BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
+			//},
 			BuildingPositions = [.. BuildingPositions],
 			MovementNodes = [.. MovementNodes],
 			MovementEdges = [.. MovementEdges],

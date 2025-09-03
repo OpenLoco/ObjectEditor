@@ -14,7 +14,7 @@ public class DockObject : ILocoStruct, IHasBuildingComponents
 	public uint16_t ObsoleteYear { get; set; }
 	public Pos2 BoatPosition { get; set; }
 
-	public BuildingComponents BuildingComponents { get; set; } = new();
+	public BuildingComponentsModel BuildingComponents { get; set; } = new();
 
 	public bool Validate()
 	{

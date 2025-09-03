@@ -34,7 +34,7 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 	public ObjectModelHeader? BuildingWall { get; set; } // Wall types that can be built around this industry
 	public ObjectModelHeader? BuildingWallEntrance { get; set; } // Wall types that can be built around this industry
 
-	public BuildingComponents BuildingComponents { get; set; } = new();
+	public BuildingComponentsModel BuildingComponents { get; set; } = new();
 
 	public List<List<uint8_t>> AnimationSequences { get; set; } = []; // Access with getAnimationSequence helper method
 	public List<uint8_t> UnkBuildingData { get; set; } = [];

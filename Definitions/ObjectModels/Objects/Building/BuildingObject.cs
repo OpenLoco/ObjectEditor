@@ -24,7 +24,7 @@ public class BuildingObject : ILocoStruct, IHasBuildingComponents
 
 	public uint8_t var_AC { get; set; }
 
-	public BuildingComponents BuildingComponents { get; set; } = new();
+	public BuildingComponentsModel BuildingComponents { get; set; } = new();
 
 	public List<uint8_t> ProducedQuantity { get; set; } = [];
 	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];

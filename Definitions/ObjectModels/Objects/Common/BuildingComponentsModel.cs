@@ -4,11 +4,11 @@ namespace Definitions.ObjectModels.Objects.Common;
 
 public interface IHasBuildingComponents
 {
-	BuildingComponents BuildingComponents { get; set; }
+	BuildingComponentsModel BuildingComponents { get; set; }
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class BuildingComponents
+public class BuildingComponentsModel
 {
 	public List<uint8_t> BuildingHeights { get; set; } = [];
 	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];

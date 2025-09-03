@@ -78,7 +78,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public int OffsetSpacing { get; set; }
 	int prevOffset;
 
-	public ImageTableViewModel(ImageTable imageTable, PaletteMap paletteMap, ILogger logger, BuildingComponents buildingComponents = null)
+	public ImageTableViewModel(ImageTable imageTable, PaletteMap paletteMap, ILogger logger, BuildingComponentsModel buildingComponents = null)
 	{
 		ArgumentNullException.ThrowIfNull(paletteMap);
 

@@ -17,7 +17,7 @@ public class AirportObject : ILocoStruct, IHasBuildingComponents
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 
-	public BuildingComponents BuildingComponents { get; set; } = new();
+	public BuildingComponentsModel BuildingComponents { get; set; } = new();
 
 	public List<AirportBuilding> BuildingPositions { get; set; } = [];
 	public List<MovementNode> MovementNodes { get; set; } = [];

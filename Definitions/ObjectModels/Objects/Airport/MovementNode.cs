@@ -1,10 +1,12 @@
+using Definitions.ObjectModels.Types;
+using System.ComponentModel;
+
 namespace Definitions.ObjectModels.Objects.Airport;
 
+[TypeConverter(typeof(ExpandableObjectConverter))]
 public class MovementNode : ILocoStruct
 {
-	public int16_t X { get; set; }
-	public int16_t Y { get; set; }
-	public int16_t Z { get; set; }
+	public Pos3 Position { get; set; }
 	public AirportMovementNodeFlags Flags { get; set; }
 
 	public bool Validate() => true;

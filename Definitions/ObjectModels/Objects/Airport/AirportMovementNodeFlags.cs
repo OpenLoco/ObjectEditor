@@ -1,5 +1,6 @@
 namespace Definitions.ObjectModels.Objects.Airport;
 
+[Flags]
 public enum AirportMovementNodeFlags : uint16_t
 {
 	None = 0,

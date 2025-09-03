@@ -1,5 +1,8 @@
+using System.ComponentModel;
+
 namespace Definitions.ObjectModels.Objects.Airport;
 
+[TypeConverter(typeof(ExpandableObjectConverter))]
 public class MovementEdge : ILocoStruct
 {
 	public uint8_t var_00 { get; set; }

@@ -1,5 +1,8 @@
+using System.ComponentModel;
+
 namespace Definitions.ObjectModels.Objects.Airport;
 
+[TypeConverter(typeof(ExpandableObjectConverter))]
 public class AirportBuilding : ILocoStruct
 {
 	public uint8_t Index { get; set; }

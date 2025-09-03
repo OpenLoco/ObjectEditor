@@ -1,29 +1,41 @@
 <Application
-	xmlns="https://github.com/avaloniaui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-	xmlns:local="using:Gui"
-	xmlns:vm="using:Gui.ViewModels"
-	xmlns:vi="using:Gui.Views"
-	xmlns:oldt="using:Dat.Types"
-	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"		
-	x:Class="Gui.App"
-	RequestedThemeVariant="Default">
-	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    x:Class="Gui.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Gui"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:oldt="using:Dat.Types"
+    xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+    xmlns:vi="using:Gui.Views"
+    xmlns:vm="using:Gui.ViewModels"
+    RequestedThemeVariant="Default">
+	<!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
 
 	<Application.DataTemplates>
-		<local:ViewLocator/>
+		<local:ViewLocator />
 		<DataTemplate DataType="vm:ObjectModelHeaderViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_S5HeaderVm" DataContext="{Binding}" IsCategoryVisible="False"></pgc:PropertyGrid>
+			<pgc:PropertyGrid
+                x:Name="propertyGrid_S5HeaderVm"
+                DataContext="{Binding}"
+                IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="vm:ObjectHeaderViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeaderVm" DataContext="{Binding}" IsCategoryVisible="False"></pgc:PropertyGrid>
+			<pgc:PropertyGrid
+                x:Name="propertyGrid_ObjectHeaderVm"
+                DataContext="{Binding}"
+                IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="oldt:S5Header">
-			<pgc:PropertyGrid x:Name="propertyGrid_S5Header" DataContext="{Binding}" IsCategoryVisible="False"></pgc:PropertyGrid>
+			<pgc:PropertyGrid
+                x:Name="propertyGrid_S5Header"
+                DataContext="{Binding}"
+                IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="oldt:ObjectHeader">
-			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeader" DataContext="{Binding}" IsCategoryVisible="False"></pgc:PropertyGrid>
+			<pgc:PropertyGrid
+                x:Name="propertyGrid_ObjectHeader"
+                DataContext="{Binding}"
+                IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="vm:SCV5ViewModel">
 			<vi:SCV5View />
@@ -48,35 +60,35 @@
 	<Application.Styles>
 		<FluentTheme />
 		<materialIcons:MaterialIconStyles />
-		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
 		<StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
 
 		<Style Selector="TabItem">
-			<Setter Property="FontSize" Value="16"/>
-			<Setter Property="Margin" Value="0"/>
-			<Setter Property="Height" Value="16"/>
-			<Setter Property="Padding" Value="8"/>
+			<Setter Property="FontSize" Value="16" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Height" Value="16" />
+			<Setter Property="Padding" Value="8" />
 		</Style>
 		<Style Selector="Border">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
-			<Setter Property="CornerRadius" Value="4"/>
-			<Setter Property="Margin" Value="0"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
+			<Setter Property="CornerRadius" Value="4" />
+			<Setter Property="Margin" Value="0" />
 		</Style>
 		<Style Selector="Button">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
 		</Style>
 		<Style Selector="TextBox">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
-			<Setter Property="VerticalContentAlignment" Value="Center"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
 		</Style>
 		<Style Selector="NumericUpDown">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
 		</Style>
 		<Style Selector="DataGrid">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
 		</Style>
 		<Style Selector="ComboBox">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
 		</Style>
 
 		<Style Selector="GridSplitter">
@@ -84,18 +96,12 @@
 		</Style>
 
 		<Style Selector="pgc|PropertyGrid">
-			<Setter Property="IsTitleVisible" Value="False"/>
-			<Setter Property="IsHeaderVisible" Value="False"/>
-			<Setter Property="IsQuickFilterVisible" Value="False"/>
+			<Setter Property="IsTitleVisible" Value="False" />
+			<Setter Property="IsHeaderVisible" Value="False" />
+			<Setter Property="IsQuickFilterVisible" Value="False" />
 		</Style>
 
-		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml"/>
+		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
 	</Application.Styles>
-
-	<!--<ResourceDictionary>
-		<ResourceDictionary.MergedDictionaries>
-			<ResourceInclude Source="ObjectDataTemplates.axaml"/>
-		</ResourceDictionary.MergedDictionaries>
-	</ResourceDictionary>-->
 
 </Application>

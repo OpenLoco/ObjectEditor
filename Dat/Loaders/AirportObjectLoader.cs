@@ -3,7 +3,10 @@ using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
+using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
+using static Dat.Loaders.AirportObjectLoader;
+using static Dat.Loaders.TrackObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -94,18 +97,30 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		br.SkipTerminator();
 
 		// movement nodes
-		var movementNodes = ByteReader.ReadLocoStructArray<MovementNode>(
-			br.ReadBytes(StructSizes.MovementNode * numMovementNodes),
-			numMovementNodes,
-			StructSizes.MovementNode);
-		model.MovementNodes = [.. movementNodes.Cast<MovementNode>()];
+		for (var i = 0; i < numMovementNodes; ++i)
+		{
+			var mn = new MovementNode()
+			{
+				Flags = ((DatAirportMovementNodeFlags)br.ReadUInt16()).Convert(),
+				Position = new Pos3(br.ReadInt16(), br.ReadInt16(), br.ReadInt16()),
+			};
+			model.MovementNodes.Add(mn);
+		}
 
 		// movement edges
-		var movementEdges = ByteReader.ReadLocoStructArray<MovementEdge>(
-			br.ReadBytes(StructSizes.MovementEdge * numMovementEdges),
-			numMovementEdges,
-			StructSizes.MovementEdge);
-		model.MovementEdges = [.. movementEdges.Cast<MovementEdge>()];
+		for (var i = 0; i < numMovementEdges; ++i)
+		{
+			var me = new MovementEdge()
+			{
+				var_00 = br.ReadByte(),
+				CurrNode = br.ReadByte(),
+				NextNode = br.ReadByte(),
+				var_03 = br.ReadByte(),
+				MustBeClearEdges = br.ReadUInt32(),
+				AtLeastOneClearEdges = br.ReadUInt32(),
+			};
+			model.MovementEdges.Add(me);
+		}
 	}
 
 	public static void Save(Stream stream, LocoObject obj)
@@ -175,9 +190,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		// movement nodes
 		foreach (var x in model.MovementNodes)
 		{
-			bw.Write(x.X);
-			bw.Write(x.Y);
-			bw.Write(x.Z);
+			bw.Write(x.Position.X);
+			bw.Write(x.Position.Y);
+			bw.Write(x.Position.Z);
 			bw.Write((uint16_t)x.Flags);
 		}
 
@@ -192,4 +207,28 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(x.AtLeastOneClearEdges);
 		}
 	}
+
+	[Flags]
+	public enum DatAirportMovementNodeFlags : uint16_t
+	{
+		None = 0,
+		Terminal = 1 << 0,
+		TakeoffEnd = 1 << 1,
+		Flag2 = 1 << 2,
+		Taxiing = 1 << 3,
+		InFlight = 1 << 4,
+		HeliTakeoffBegin = 1 << 5,
+		TakeoffBegin = 1 << 6,
+		HeliTakeoffEnd = 1 << 7,
+		Touchdown = 1 << 8,
+	}
+}
+
+internal static class AirportMovementNodeFlagsConverter
+{
+	public static AirportMovementNodeFlags Convert(this DatAirportMovementNodeFlags datAirportMovementNodeFlags)
+		=> (AirportMovementNodeFlags)datAirportMovementNodeFlags;
+
+	public static DatAirportMovementNodeFlags Convert(this AirportMovementNodeFlags airportMovementNodeFlags)
+		=> (DatAirportMovementNodeFlags)airportMovementNodeFlags;
 }

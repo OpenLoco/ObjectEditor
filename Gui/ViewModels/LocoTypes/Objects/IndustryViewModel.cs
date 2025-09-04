@@ -1,5 +1,4 @@
 using Dat.Loaders;
-using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;

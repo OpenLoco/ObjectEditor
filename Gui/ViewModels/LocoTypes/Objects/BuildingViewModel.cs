@@ -1,10 +1,7 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Building;
-using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
-using Gui.ViewModels.LocoTypes;
 using PropertyModels.ComponentModel.DataAnnotations;
-using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.Generic;
 using System.ComponentModel;

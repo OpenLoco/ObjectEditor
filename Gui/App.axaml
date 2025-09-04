@@ -3,6 +3,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:local="using:Gui"
+	xmlns:domc="using:Definitions.ObjectModels.Objects.Common"
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:vi="using:Gui.Views"
 	xmlns:oldt="using:Dat.Types"
@@ -54,6 +55,9 @@
 		</DataTemplate>
 		<DataTemplate DataType="vm:FolderTreeViewModel">
 			<vi:FolderTreeView />
+		</DataTemplate>
+		<DataTemplate DataType="vm:LocoTypes.BuildingComponentsViewModel">
+			<vi:BuildingComponentsView />
 		</DataTemplate>
 	</Application.DataTemplates>
 

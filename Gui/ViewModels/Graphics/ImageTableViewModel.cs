@@ -6,6 +6,7 @@ using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using Gui.ViewModels.LocoTypes;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -74,9 +75,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	[Reactive]
 	public ObservableCollection<ImageViewModel> LayeredImages { get; set; } = [];
 
-	[Reactive]
-	public int OffsetSpacing { get; set; }
-	int prevOffset;
+	public BuildingComponentsViewModel? BuildingComponents { get; set; }
 
 	public ImageTableViewModel(ImageTable imageTable, PaletteMap paletteMap, ILogger logger, BuildingComponentsModel buildingComponents = null)
 	{
@@ -88,54 +87,10 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			var givm = new GroupedImageViewModel(group.Name, imageViewModels);
 			givm.SelectionModel.SelectionChanged += SelectionChanged;
 			GroupedImageViewModels.Add(givm);
-
 		}
 
 		// building components
-		if (buildingComponents != null)
-		{
-			var allGEs = imageTable.GraphicsElements;
-			var baseY = 128;
-
-			foreach (var variation in buildingComponents.BuildingVariations)
-			{
-				var yOffset = 0;
-				foreach (var variationItem in variation)
-				{
-					var group = imageTable.Groups[variationItem];
-					var numDirections = 4;
-					for (var i = 0; i < numDirections; ++i)
-					{
-						var x = new ImageViewModel(group.GraphicsElements[i], paletteMap);
-						x.XOffset += (i + 1) * 128;
-						x.YOffset += baseY + yOffset;
-						LayeredImages.Add(x);
-					}
-
-					yOffset -= buildingComponents.BuildingHeights[variationItem];
-				}
-
-				baseY += 128;
-			}
-		}
-
-		_ = this.WhenAnyValue(x => x.OffsetSpacing)
-			.Where(_ => LayeredImages.Count > 0)
-			.Subscribe(spacing =>
-			{
-				var index = 0;
-				foreach (var img in LayeredImages)
-				{
-					var diff = OffsetSpacing - prevOffset;
-					img.YOffset -= diff * index;
-					img.RaisePropertyChanged(nameof(img.YOffset));
-					img.RaisePropertyChanged(nameof(img));
-					index++;
-				}
-
-				prevOffset = OffsetSpacing;
-				this.RaisePropertyChanged(nameof(LayeredImages));
-			});
+		BuildingComponents = new(buildingComponents, imageTable.GraphicsElements, paletteMap);
 
 		PaletteMap = paletteMap;
 		Logger = logger;

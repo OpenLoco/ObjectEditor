@@ -1,11 +1,7 @@
-using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
-using Definitions.ObjectModels.Objects.Common;
-using PropertyModels.Extensions;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace Gui.ViewModels;
 

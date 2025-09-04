@@ -1,13 +1,7 @@
-using Dat.Loaders;
-using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Dock;
 using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
-using PropertyModels.Extensions;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace Gui.ViewModels;
 

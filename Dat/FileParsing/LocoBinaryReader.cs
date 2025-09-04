@@ -1,6 +1,5 @@
 using Dat.Converters;
 using Dat.Types;
-using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Objects.Vehicle;

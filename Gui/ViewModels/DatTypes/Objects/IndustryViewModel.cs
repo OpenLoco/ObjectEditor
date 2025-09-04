@@ -1,5 +1,4 @@
 using Dat.Loaders;
-using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;

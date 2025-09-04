@@ -1,5 +1,4 @@
 using Dat.FileParsing;
-using Definitions.ObjectModels.Objects.Currency;
 using Gui.Models;
 using ReactiveUI.Fody.Helpers;
 using System.IO;

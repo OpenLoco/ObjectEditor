@@ -370,7 +370,7 @@ public class LoadSaveTests
 
 			Assert.That(struc.DesignedYear, Is.Zero, nameof(struc.DesignedYear));
 			Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
-			Assert.That(struc.BoatPosition, Is.EqualTo(new Pos2(48, 0)), nameof(struc.BoatPosition));
+			Assert.That(struc.BoatPosition, Is.EqualTo(new Pos2() { X = 48, Y = 0 }), nameof(struc.BoatPosition));
 
 			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(9));
 		});

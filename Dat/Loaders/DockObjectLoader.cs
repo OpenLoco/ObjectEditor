@@ -45,7 +45,11 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			br.SkipPointer(); // BuildingVariationParts
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
-			model.BoatPosition = new Pos2(br.ReadInt16(), br.ReadInt16());
+			model.BoatPosition = new Pos2
+			{
+				X = br.ReadInt16(),
+				Y = br.ReadInt16()
+			};
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));

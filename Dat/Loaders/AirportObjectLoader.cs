@@ -1,12 +1,9 @@
-using Common;
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Airport;
-using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
 using static Dat.Loaders.AirportObjectLoader;
-using static Dat.Loaders.TrackObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -92,8 +89,14 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		// building positions
 		while (br.PeekByte() != LocoConstants.Terminator)
 		{
-			var building = ByteReader.ReadLocoStruct<AirportBuilding>(br.ReadBytes(StructSizes.AirportBuilding));
-			model.BuildingPositions.Add(building);
+			var ab = new AirportBuilding()
+			{
+				Index = br.ReadByte(),
+				Rotation = br.ReadByte(),
+				X = br.ReadSByte(),
+				Y = br.ReadSByte()
+			};
+			model.BuildingPositions.Add(ab);
 		}
 
 		br.SkipTerminator();
@@ -104,7 +107,12 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			var mn = new MovementNode()
 			{
 				Flags = ((DatAirportMovementNodeFlags)br.ReadUInt16()).Convert(),
-				Position = new Pos3(br.ReadInt16(), br.ReadInt16(), br.ReadInt16()),
+				Position = new Pos3()
+				{
+					X = br.ReadInt16(),
+					Y = br.ReadInt16(),
+					Z = br.ReadInt16()
+				},
 			};
 			model.MovementNodes.Add(mn);
 		}

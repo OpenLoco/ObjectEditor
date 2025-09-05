@@ -1,4 +1,6 @@
 using Avalonia.Controls.Selection;
+using Avalonia.Data.Converters;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Common;
 using Common.Json;
@@ -14,13 +16,66 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using SLColour = SixLabors.ImageSharp.Color;
+using AvaColour = Avalonia.Media.Color;
 
 namespace Gui.ViewModels.Graphics;
+
+public class ColourArrayToGradientStopsConverter : IValueConverter
+{
+	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+	{
+		if (value is AvaColour[] colours)
+		{
+			var stops = new GradientStops();
+			var segmentWidth = 1.0 / colours.Length;
+
+			for (var i = 0; i < colours.Length; i++)
+			{
+				// Add a stop at the beginning of the segment
+				stops.Add(new GradientStop(colours[i], i * segmentWidth));
+
+				// Add a second stop at the end of the segment to create a sharp transition
+				stops.Add(new GradientStop(colours[i], (i + 1) * segmentWidth));
+			}
+
+			return stops;
+		}
+
+		return new GradientStops();
+	}
+
+	public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+}
+
+public static class SixLaboursAvaloniaColor
+{
+	public static AvaColour ToAvaloniaColor(this SLColour color)
+	{
+		var pixel = color.ToPixel<Rgba32>();
+		return AvaColour.FromArgb(pixel.A, pixel.R, pixel.G, pixel.B);
+	}
+
+	public static SLColour ToSixLaborsColor(this AvaColour color)
+		=> SLColour.FromRgba(color.R, color.G, color.B, color.A);
+}
+
+public class ColourRemapSwatchViewModel
+{
+	[Reactive] public ColourRemapSwatch Swatch { get; init; }
+	[Reactive] public AvaColour Colour { get; init; }
+
+	[Reactive] public AvaColour[] GradientColours { get; init; }
+}
 
 public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 {
@@ -30,10 +85,13 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public static ColourRemapSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourRemapSwatch>();
 
 	[Reactive]
-	public ColourRemapSwatch SelectedPrimarySwatch { get; set; } = ColourRemapSwatch.PrimaryRemap;
+	public List<ColourRemapSwatchViewModel> ColourSwatches { get; init; }
 
 	[Reactive]
-	public ColourRemapSwatch SelectedSecondarySwatch { get; set; } = ColourRemapSwatch.SecondaryRemap;
+	public ColourRemapSwatchViewModel SelectedPrimarySwatch { get; set; }
+
+	[Reactive]
+	public ColourRemapSwatchViewModel SelectedSecondarySwatch { get; set; }
 
 	[Reactive]
 	public ICommand ImportImagesCommand { get; set; }
@@ -79,26 +137,38 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	public ImageTableViewModel(ImageTable imageTable, PaletteMap paletteMap, ILogger logger, BuildingComponentsModel buildingComponents = null)
 	{
+		ArgumentNullException.ThrowIfNull(imageTable);
 		ArgumentNullException.ThrowIfNull(paletteMap);
+		PaletteMap = paletteMap;
+		Logger = logger;
 
+		// swatches/palettes
+		ColourSwatches = [.. ColourSwatchesArr.Select(x => new ColourRemapSwatchViewModel()
+		{
+			Swatch = x,
+			Colour = paletteMap.GetRemapSwatchFromName(x)[0].Color.ToAvaloniaColor(),
+			GradientColours = [.. paletteMap.GetRemapSwatchFromName(x).Select(x => x.Color.ToAvaloniaColor())],
+		})];
+
+		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourRemapSwatch.PrimaryRemap);
+		SelectedSecondarySwatch = ColourSwatches.Single(x => x.Swatch == ColourRemapSwatch.SecondaryRemap);
+
+		// image tables
 		foreach (var group in imageTable.Groups)
 		{
-			var imageViewModels = group.GraphicsElements.Select(ge => new ImageViewModel(ge, paletteMap));
+			var imageViewModels = group.GraphicsElements.Select(ge => new ImageViewModel(ge, PaletteMap));
 			var givm = new GroupedImageViewModel(group.Name, imageViewModels);
 			givm.SelectionModel.SelectionChanged += SelectionChanged;
 			GroupedImageViewModels.Add(givm);
 		}
 
 		// building components
-		BuildingComponents = new(buildingComponents, imageTable.GraphicsElements, paletteMap);
-
-		PaletteMap = paletteMap;
-		Logger = logger;
+		BuildingComponents = new(buildingComponents, imageTable.GraphicsElements, PaletteMap);
 
 		_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
-			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch, SelectedSecondarySwatch));
+			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));
 		_ = this.WhenAnyValue(o => o.SelectedSecondarySwatch).Skip(1)
-			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch, SelectedSecondarySwatch));
+			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));
 		_ = this.WhenAnyValue(o => o.AnimationSpeed)
 			.Where(_ => animationTimer != null)
 			.Subscribe(_ => animationTimer!.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed));

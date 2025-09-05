@@ -22,63 +22,63 @@
 			</StackPanel>
 		</ScrollViewer>
 		<ScrollViewer>
-			
-		<ItemsControl ItemsSource="{Binding BuildingVariations}" Background="Red">
-			<ItemsControl.ItemsPanel>
-				<ItemsPanelTemplate>
-					<WrapPanel/>
-					<!--<Canvas Background="SteelBlue" />-->
-				</ItemsPanelTemplate>
-			</ItemsControl.ItemsPanel>
-			<ItemsControl.ItemTemplate>
-				<DataTemplate>
-					<StackPanel>
-						<TextBlock>Variation</TextBlock>
-						<ItemsControl ItemsSource="{Binding Directions}" Background="Purple">
-							<ItemsControl.ItemsPanel>
-								<ItemsPanelTemplate>
-									<WrapPanel/>
-									<!--<Canvas Background="SteelBlue" />-->
-								</ItemsPanelTemplate>
-							</ItemsControl.ItemsPanel>
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<paz:ZoomBorder MinWidth="256" MinHeight="256" Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
-										<StackPanel>
-											<TextBlock> Direction </TextBlock>
-											<ItemsControl ItemsSource="{Binding Layers}" Background="Green">
-												<ItemsControl.ItemsPanel>
-													<ItemsPanelTemplate>
-														<Canvas Background="SteelBlue" MinWidth="256" MinHeight="256" />
-													</ItemsPanelTemplate>
-												</ItemsControl.ItemsPanel>
-												<ItemsControl.ItemTemplate>
-													<DataTemplate>
-														<StackPanel Orientation="Horizontal">
-															<TextBlock>Layer</TextBlock>
-															<Image Source="{Binding DisplayedImage}" RenderOptions.BitmapInterpolationMode="None" Stretch="None">
-																<!--<Image.RenderTransform>
-																	<TranslateTransform X="{Binding XOffset}" Y="{Binding YOffset}"/>
-																</Image.RenderTransform>-->
-																<Image.RenderTransform>
-																	<TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
-																</Image.RenderTransform>
-															</Image>
-															<!--<TextBlock Canvas.Top="{Binding YOffset}" Text="{Binding YOffset}"></TextBlock>-->
-														</StackPanel>
-													</DataTemplate>
-												</ItemsControl.ItemTemplate>
-											</ItemsControl>
-										</StackPanel>
-									</paz:ZoomBorder>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
-					</StackPanel>
-				</DataTemplate>
-			</ItemsControl.ItemTemplate>
 
-		</ItemsControl>
+			<ItemsControl ItemsSource="{Binding BuildingVariations}" Background="Red">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel/>
+						<!--<Canvas Background="SteelBlue" />-->
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<StackPanel>
+							<TextBlock>Variation</TextBlock>
+							<ItemsControl ItemsSource="{Binding Directions}" Background="Purple">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel/>
+										<!--<Canvas Background="SteelBlue" />-->
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<paz:ZoomBorder MinWidth="256" MinHeight="256" Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
+											<StackPanel>
+												<TextBlock Text="{Binding Direction}"/>
+												<ItemsControl ItemsSource="{Binding Layers}" Background="Green">
+													<ItemsControl.ItemsPanel>
+														<ItemsPanelTemplate>
+															<Canvas Background="SteelBlue" MinWidth="256" MinHeight="256" />
+														</ItemsPanelTemplate>
+													</ItemsControl.ItemsPanel>
+													<ItemsControl.ItemTemplate>
+														<DataTemplate>
+															<StackPanel Orientation="Horizontal">
+																<TextBlock>Layer</TextBlock>
+																<Image Source="{Binding DisplayedImage}" RenderOptions.BitmapInterpolationMode="None" Stretch="None">
+																	<Image.RenderTransform>
+																		<TranslateTransform X="{Binding XOffset}" Y="{Binding YOffset}"/>
+																	</Image.RenderTransform>
+																	<Image.RenderTransform>
+																		<TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
+																	</Image.RenderTransform>
+																</Image>
+																<!--<TextBlock Canvas.Top="{Binding YOffset}" Text="{Binding YOffset}"></TextBlock>-->
+															</StackPanel>
+														</DataTemplate>
+													</ItemsControl.ItemTemplate>
+												</ItemsControl>
+											</StackPanel>
+										</paz:ZoomBorder>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</StackPanel>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+
+			</ItemsControl>
 
 		</ScrollViewer>
 	</DockPanel>

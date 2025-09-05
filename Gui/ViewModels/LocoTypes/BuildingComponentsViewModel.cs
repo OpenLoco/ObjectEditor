@@ -2,7 +2,6 @@ using Avalonia.Media.Imaging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
-using DynamicData;
 using Gui.Models;
 using Gui.ViewModels.Graphics;
 using ReactiveUI;
@@ -15,13 +14,13 @@ using System.Reactive.Linq;
 
 namespace Gui.ViewModels.LocoTypes;
 
-//public enum Direction : uint8_t
-//{
-//	North,
-//	East,
-//	South,
-//	West
-//}
+public enum CardinalDirection : uint8_t
+{
+	South,
+	West,
+	North,
+	East,
+}
 
 public class BuildingLayerViewModel : ReactiveObject
 {
@@ -38,6 +37,7 @@ public class BuildingLayerViewModel : ReactiveObject
 
 public class BuildingStackViewModel : ReactiveObject
 {
+	public CardinalDirection Direction { get; init; }
 	public ObservableCollection<BuildingLayerViewModel> Layers { get; set; } = [];
 }
 
@@ -65,11 +65,9 @@ public class BuildingComponentsViewModel : ReactiveObject
 
 		var layers = graphicsElements.Chunk(4).ToList(); // each building part has 4 directions
 
-		//var allGEs = graphicsElements;
 		var baseX = 128;
-		var baseY = 128;
+		var baseY = 192;
 
-		//int i = 0;
 		foreach (var variation in buildingComponents.BuildingVariations)
 		{
 			var bv = new BuildingVariationViewModel();
@@ -77,7 +75,11 @@ public class BuildingComponentsViewModel : ReactiveObject
 			var numDirections = 4;
 			for (var i = 0; i < numDirections; ++i)
 			{
-				var bs = new BuildingStackViewModel();
+				var bs = new BuildingStackViewModel()
+				{
+					Direction = (CardinalDirection)i
+				};
+
 				var cumulativeOffset = 0;
 				foreach (var variationItem in variation)
 				{
@@ -91,12 +93,12 @@ public class BuildingComponentsViewModel : ReactiveObject
 
 					bl.DisplayedImage = image.ToAvaloniaBitmap();
 					bl.X = layer[i].XOffset + baseX;
-
 					bl.Y = layer[i].YOffset - cumulativeOffset + baseY;
 					cumulativeOffset += buildingComponents.BuildingHeights[variationItem];
 
-					//bl.XOffset = 0;
-					//bl.YOffset = 128;
+					bl.XOffset = 0;
+					bl.YOffset = 0;
+
 					bs.Layers.Add(bl);
 				}
 
@@ -105,10 +107,7 @@ public class BuildingComponentsViewModel : ReactiveObject
 				//yOffset -= buildingComponents.BuildingHeights[variationItem];
 			}
 
-			//baseY += 128;
 			BuildingVariations.Add(bv);
-
-			//i++;
 		}
 
 		//_ = this.WhenAnyValue(x => x.OffsetSpacing)

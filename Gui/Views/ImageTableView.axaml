@@ -36,36 +36,74 @@
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export</TextBlock>
 				</DockPanel>
 			</Button>
-			<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Background colour">
+			<Button Content="Colours" HorizontalAlignment="Stretch" Margin="2" Padding="2" >
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
-					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Background colour</TextBlock>
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Colours</TextBlock>
 				</DockPanel>
-				<Button.Flyout >
+				<Button.Styles>
+					<Style Selector="FlyoutPresenter">
+						<Setter Property="Padding" Value="0" />
+					</Style>
+				</Button.Styles>
+				<Button.Flyout>
 					<Flyout>
-						<ColorView Name="ImageBackgroundColorView" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+						<ItemsControl>
+							<Button HorizontalAlignment="Stretch" ToolTip.Tip="Background colour">
+								<DockPanel>
+									<materialIcons:MaterialIcon Kind="PaletteOutline" Width="24" Height="24" Margin="2" />
+									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Background colour</TextBlock>
+								</DockPanel>
+								<Button.Flyout>
+									<Flyout>
+										<ColorView Name="ImageBackgroundColorView" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+									</Flyout>
+								</Button.Flyout>
+							</Button>
+							<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedPrimarySwatch}" HorizontalAlignment="Stretch" ToolTip.Tip="Primary remap swatch" />
+							<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedSecondarySwatch}" HorizontalAlignment="Stretch" ToolTip.Tip="Secondary remap swatch" />
+						</ItemsControl>
 					</Flyout>
 				</Button.Flyout>
 			</Button>
-			<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedPrimarySwatch}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Primary remap swatch" />
-			<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedSecondarySwatch}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Secondary remap swatch" />
-			<Button Command="{Binding CropAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Crops all images and adjusts offsets">
+			<Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="2" Padding="2" Content="Bulk editing" ToolTip.Tip="Bulk image editing options">
 				<DockPanel>
-					<materialIcons:MaterialIcon Kind="Crop" Width="24" Height="24" Margin="2" />
-					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Crop all</TextBlock>
+					<materialIcons:MaterialIcon Kind="FolderEdit" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Bulk editing</TextBlock>
 				</DockPanel>
-			</Button>
-			<Button Command="{Binding ZeroOffsetAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Sets all image offsets to 0">
-				<DockPanel>
-					<materialIcons:MaterialIcon Kind="PanTopLeft" Width="24" Height="24" Margin="2" />
-					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Zero all offsets</TextBlock>
-				</DockPanel>
-			</Button>
-			<Button Command="{Binding CenterOffsetAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Sets all image offsets to the centre of the image">
-				<DockPanel>
-					<materialIcons:MaterialIcon Kind="Pan" Width="24" Height="24" Margin="2" />
-					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Center all offsets</TextBlock>
-				</DockPanel>
+				<Button.Styles>
+					<Style Selector="MenuFlyoutPresenter">
+						<Setter Property="Padding" Value="0" />
+					</Style>
+				</Button.Styles>
+				<Button.Flyout>
+					<MenuFlyout>
+						<MenuFlyout.ItemContainerTheme>
+							<ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+								<Setter Property="Padding" Value="0" />
+								<Setter Property="Margin" Value="0" />
+							</ControlTheme>
+						</MenuFlyout.ItemContainerTheme>
+						<Button Command="{Binding CropAllImagesCommand}" HorizontalAlignment="Stretch" Padding="2" ToolTip.Tip="Crops all images and adjusts offsets">
+							<DockPanel>
+								<materialIcons:MaterialIcon Kind="Crop" Width="24" Height="24" Margin="2" />
+								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Crop</TextBlock>
+							</DockPanel>
+						</Button>
+						<Button Command="{Binding ZeroOffsetAllImagesCommand}" HorizontalAlignment="Stretch" Padding="2" ToolTip.Tip="Sets all image offsets to 0">
+							<DockPanel>
+								<materialIcons:MaterialIcon Kind="PanTopLeft" Width="24" Height="24" Margin="2" />
+								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Zero offsets</TextBlock>
+							</DockPanel>
+						</Button>
+						<Button Command="{Binding CenterOffsetAllImagesCommand}" HorizontalAlignment="Stretch" Padding="2" ToolTip.Tip="Sets all image offsets to the centre of the image">
+							<DockPanel>
+								<materialIcons:MaterialIcon Kind="Pan" Width="24" Height="24" Margin="2" />
+								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Center offsets</TextBlock>
+							</DockPanel>
+						</Button>
+					</MenuFlyout>
+				</Button.Flyout>
 			</Button>
 		</StackPanel>
 		<Grid ColumnDefinitions="*, Auto, 384">

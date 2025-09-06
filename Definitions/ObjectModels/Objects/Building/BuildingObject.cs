@@ -2,7 +2,15 @@ using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
-public class BuildingObject : ILocoStruct
+public enum CardinalDirection : uint8_t
+{
+	South,
+	West,
+	North,
+	East,
+}
+
+public class BuildingObject : ILocoStruct, IImageTableNameProvider
 {
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
@@ -39,4 +47,13 @@ public class BuildingObject : ILocoStruct
 		&& BuildingAnimations.Count is not 0 and not > 63
 		&& BuildingHeights.Count == BuildingAnimations.Count
 		&& BuildingVariations.Count is not 0 and <= 31;
+
+	public bool TryGetImageName(int id, out string? value)
+	{
+		var direction = (CardinalDirection)(id % 4);
+		var level = id / 4;
+		value = $"{direction} | Level {level}";
+		return true;
+	}
+
 }

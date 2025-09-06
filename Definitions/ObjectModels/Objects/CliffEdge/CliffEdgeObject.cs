@@ -1,4 +1,5 @@
 namespace Definitions.ObjectModels.Objects.CliffEdge;
+
 public class CliffEdgeObject : ILocoStruct, IImageTableNameProvider
 {
 	public bool Validate() => true;
@@ -16,8 +17,7 @@ public class CliffEdgeObject : ILocoStruct, IImageTableNameProvider
 
 		if (id is >= 64 and <= 69)
 		{
-			value = ImageIdNameMap[id];
-			return true;
+			return ImageIdNameMap.TryGetValue(id, out value);
 		}
 
 		value = null;

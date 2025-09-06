@@ -3,7 +3,7 @@ using Avalonia.Markup.Xaml;
 using System;
 using System.Globalization;
 
-namespace Gui.Models.Converters;
+namespace Gui.Converters;
 
 public class EnumDescriptionConverter : MarkupExtension, IValueConverter
 {

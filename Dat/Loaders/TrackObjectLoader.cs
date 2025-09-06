@@ -128,7 +128,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			bw.WriteS5HeaderList(model.Stations);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 

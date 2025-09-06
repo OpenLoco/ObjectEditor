@@ -4,7 +4,7 @@ namespace Definitions.ObjectModels;
 
 public interface IHasGraphicsElements
 {
-	public List<GraphicsElement> GraphicsElements { get; set; }
+	public List<GraphicsElement> GraphicsElements { get; set; } // todo: probably change to IEnumerable
 }
 
 public interface IImageTableNameProvider
@@ -16,7 +16,10 @@ public class DefaultImageTableNameProvider : IImageTableNameProvider
 {
 	public bool TryGetImageName(int id, out string? value)
 	{
-		value = id.ToString();
+		value = GetImageName(id);
 		return true;
 	}
+
+	public static string GetImageName(int id)
+		=> $"{id}-unnamed";
 }

@@ -1,8 +1,8 @@
 using Dat.FileParsing;
 using Gui.Models;
+using Gui.ViewModels.Graphics;
 using ReactiveUI.Fody.Helpers;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
@@ -26,7 +26,7 @@ public class G1ViewModel : BaseLocoFileViewModel
 			return;
 		}
 
-		ImageTableViewModel = new ImageTableViewModel(Model.G1.GraphicsElements, Model.G1, Model.PaletteMap, logger);
+		ImageTableViewModel = new ImageTableViewModel(Model.G1.ImageTable, Model.PaletteMap, logger);
 	}
 
 	public override void Save()
@@ -37,7 +37,7 @@ public class G1ViewModel : BaseLocoFileViewModel
 			return;
 		}
 
-		Model.G1.GraphicsElements = [.. ImageTableViewModel.ImageViewModels.Select(x => x.ToGraphicsElement())];
+		//Model.G1.ImageTable.GraphicsElements = [.. ImageTableViewModel.ImageViewModels.Select(x => x.ToGraphicsElement())];
 
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.FileName)

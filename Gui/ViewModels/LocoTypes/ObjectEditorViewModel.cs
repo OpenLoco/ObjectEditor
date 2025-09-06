@@ -5,9 +5,11 @@ using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models;
 using Gui.Models.Audio;
+using Gui.ViewModels.Graphics;
 using Gui.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -152,13 +154,13 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 				CurrentObjectViewModel = GetViewModelFromStruct(CurrentObject.LocoObject.Object);
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 
-				var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp)
-					? itnp
-					: new DefaultImageTableNameProvider();
+				//var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp)
+				//	? itnp
+				//	: new DefaultImageTableNameProvider();
 
 				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
 					? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-					: new ImageTableViewModel(CurrentObject.LocoObject.GraphicsElements, imageNameProvider, Model.PaletteMap, Model.Logger);
+					: new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.PaletteMap, Model.Logger, (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents);
 			}
 			else
 			{
@@ -276,7 +278,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 		if (ExtraContentViewModel is ImageTableViewModel itvm)
 		{
-			CurrentObject.LocoObject.GraphicsElements = itvm.ImageViewModels.Select(x => x.ToGraphicsElement()).ToList();
+			CurrentObject.LocoObject.ImageTable.GraphicsElements = itvm.GroupedImageViewModels.SelectMany(x => x.Images).Select(x => x.ToGraphicsElement()).ToList();
 		}
 
 		// this is hacky but it should work

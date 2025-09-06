@@ -7,7 +7,7 @@ namespace Gui.Views;
 public static class WindowInteractionExtensions
 {
 	public static async Task DoShowDialogAsync<TViewModel, TWindow>(this Window owner, IInteractionContext<TViewModel, TViewModel?> interaction)
-				where TWindow : Window, new()
+		where TWindow : Window, new()
 	{
 		var dialog = new TWindow
 		{

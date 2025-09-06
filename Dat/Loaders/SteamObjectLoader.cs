@@ -117,7 +117,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 
@@ -128,6 +128,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			bw.Write(fit.ImageOffset);
 			bw.Write(fit.Height);
 		}
+
 		bw.WriteTerminator(); // end of frame info type 0
 
 		foreach (var fit in model.FrameInfoType1)
@@ -135,6 +136,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 			bw.Write(fit.ImageOffset);
 			bw.Write(fit.Height);
 		}
+
 		bw.WriteTerminator(); // end of frame info type 1
 
 		bw.WriteS5HeaderList(model.SoundEffects);

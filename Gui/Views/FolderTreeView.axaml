@@ -5,7 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:mo="using:Gui.Models"
-	xmlns:moc="using:Gui.Models.Converters"
+	xmlns:cnv="using:Gui.Converters"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	mc:Ignorable="d" d:DesignWidth="384" d:DesignHeight="768"
 	x:Class="Gui.Views.FolderTreeView"
@@ -16,8 +16,8 @@
 	</Design.DataContext>
 
 	<UserControl.Resources>
-		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
-		<moc:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
+		<cnv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+		<cnv:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
 	</UserControl.Resources>
 
 	<DockPanel >

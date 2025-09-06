@@ -1,7 +1,7 @@
 using Avalonia.Data.Converters;
 using System;
 
-namespace Gui.Models.Converters;
+namespace Gui.Converters;
 
 public class NegativeValueConverter : IValueConverter
 {

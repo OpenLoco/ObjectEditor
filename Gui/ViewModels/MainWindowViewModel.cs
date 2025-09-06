@@ -24,9 +24,6 @@ using Definitions.ObjectModels;
 
 #if !DEBUG
 using Common;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
 #endif
 
 namespace Gui.ViewModels;

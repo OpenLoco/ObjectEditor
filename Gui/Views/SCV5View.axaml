@@ -4,7 +4,7 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:Gui.ViewModels"
-	xmlns:moc="using:Gui.Models.Converters"
+	xmlns:cnv="using:Gui.Converters"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:gui="using:Gui"
@@ -13,9 +13,9 @@
 	x:DataType="vm:SCV5ViewModel">
 
 	<UserControl.Resources>
-		<moc:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
-		<moc:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+		<cnv:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
+		<cnv:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+		<cnv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
 	</UserControl.Resources>
 
 	<TabControl>

@@ -369,7 +369,8 @@ public class LoadSaveTests
 
 			Assert.That(struc.DesignedYear, Is.Zero, nameof(struc.DesignedYear));
 			Assert.That(struc.ObsoleteYear, Is.EqualTo(65535), nameof(struc.ObsoleteYear));
-			Assert.That(struc.BoatPosition, Is.EqualTo(new Pos2() { X = 48, Y = 0 }), nameof(struc.BoatPosition));
+			Assert.That(struc.BoatPosition.X, Is.EqualTo(48), nameof(struc.BoatPosition));
+			Assert.That(struc.BoatPosition.Y, Is.EqualTo(0), nameof(struc.BoatPosition));
 
 			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(9));
 		});
@@ -657,7 +658,7 @@ public class LoadSaveTests
 	{
 		void assertFunc(LocoObject obj, RegionObject struc) => Assert.Multiple(() =>
 		{
-			//Assert.That(struc.pad_06, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 2)), nameof(struc.pad_06));
+			Assert.That(struc.VehiclesDriveOnThe, Is.EqualTo(DrivingSide.Left), nameof(struc.VehiclesDriveOnThe));
 			Assert.That(struc.CargoInfluenceObjects.Count, Is.EqualTo(1), nameof(struc.CargoInfluenceObjects));
 			Assert.That(struc.DependentObjects, Has.Count.EqualTo(239), nameof(struc.DependentObjects));
 			Assert.That(struc.CargoInfluenceTownFilter, Is.EquivalentTo(Enumerable.Repeat(CargoInfluenceTownFilterType.AllTowns, 4)), nameof(struc.CargoInfluenceTownFilter));

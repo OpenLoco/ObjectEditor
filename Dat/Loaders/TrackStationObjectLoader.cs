@@ -76,22 +76,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		model.CompatibleTrackObjects = br.ReadS5HeaderList(compatibleRoadObjectCount);
 
 		// cargo offsets
-		model.CargoOffsetBytes = new byte[4][][];
-		for (var i = 0; i < 4; ++i)
-		{
-			model.CargoOffsetBytes[i] = new byte[4][];
-			for (var j = 0; j < 4; ++j)
-			{
-				var length = 1;
-				while (br.PeekByte(length) != LocoConstants.Terminator)
-				{
-					length += 4; // x, y, x, y
-				}
-
-				length += 4;
-				model.CargoOffsetBytes[i][j] = br.ReadBytes(length);
-			}
-		}
+		model.CargoOffsets = br.ReadCargoOffsets();
 
 		// very similar to cargo offset bytes
 		model.var_6E = new byte[Constants.var_6E_Length][];
@@ -154,13 +139,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 		bw.WriteS5HeaderList(model.CompatibleTrackObjects);
 
 		// cargo offsets
-		for (var i = 0; i < 4; ++i)
-		{
-			for (var j = 0; j < 4; ++j)
-			{
-				bw.Write(model.CargoOffsetBytes[i][j]);
-			}
-		}
+		bw.WriteCargoOffsets(model.CargoOffsets);
 
 		// var_6E offsets
 		for (var i = 0; i < Constants.var_6E_Length; ++i)

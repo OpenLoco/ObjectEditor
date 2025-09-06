@@ -1,7 +1,7 @@
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
-namespace Definitions.ObjectModels.Objects.TrackStation;
+namespace Definitions.ObjectModels.Objects.Shared;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class CargoOffset

@@ -32,7 +32,8 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
 			br.SkipImageId(); // Image offset, not part of object definition
-			br.SkipByte(0x08 - 0x06); // pad
+			model.VehiclesDriveOnThe = br.ReadByte() == 0 ? DrivingSide.Left : DrivingSide.Right;
+			model.pad_07 = br.ReadByte();
 			var numCargoInfluenceObjects = br.ReadByte();
 			for (var i = 0; i < Constants.MaxCargoInfluenceObjects; ++i)
 			{
@@ -68,7 +69,8 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
-			bw.Write((uint16_t)0); // pad
+			bw.Write(model.VehiclesDriveOnThe == DrivingSide.Left ? (uint8_t)0 : (uint8_t)1);
+			bw.Write(model.pad_07);
 			bw.Write((uint8_t)model.CargoInfluenceObjects.Count);
 			bw.WriteEmptyObjectId(Constants.MaxCargoInfluenceObjects);
 			for (var i = 0; i < Constants.MaxCargoInfluenceObjects; ++i)

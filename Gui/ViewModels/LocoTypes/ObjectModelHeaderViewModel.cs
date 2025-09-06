@@ -29,23 +29,21 @@ public class ObjectModelHeaderViewModel : ReactiveObject, IObjectViewModel<Objec
 		Checksum = header.Checksum;
 		ObjectSource = header.ObjectSource;
 		ObjectType = header.ObjectType;
-
-		_ = this.WhenAnyValue(o => o.Checksum)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(ChecksumHex)));
 	}
 
-	[Reactive, MaxLength(8)]
+	[MaxLength(8)]
 	public string Name { get; set; }
 
-	public uint32_t Checksum { get; set; }
+	uint32_t Checksum { get; set; }
 
 	public string ChecksumHex
-		=> string.Format($"{Checksum:X}");
+	{
+		get => string.Format($"0x{Checksum:X}");
+		set => Checksum = Convert.ToUInt32(value[2..], 16);
+	}
 
-	[Reactive]
 	public ObjectSource ObjectSource { get; set; }
 
-	[Reactive]
 	public ObjectType ObjectType { get; set; }
 
 	public ObjectModelHeader GetAsModel()

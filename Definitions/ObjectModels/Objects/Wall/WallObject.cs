@@ -10,21 +10,39 @@ public class WallObject : ILocoStruct, IImageTableNameProvider
 	public bool Validate() => true;
 
 	public bool TryGetImageName(int id, out string? value)
-		=> ImageIdNameMap.TryGetValue(id, out value);
+	{
+		var result = ImageIdNameMap.TryGetValue(id, out value);
+
+		if (id is >= 0 and <= 5 && Flags1.HasFlag(WallObjectFlags1.DoubleSided))
+		{
+			value = $"{value} back";
+		}
+
+		if (id is >= 6 and <= 11 && Flags1.HasFlag(WallObjectFlags1.HasGlass))
+		{
+			value = $"{value} glass overlay";
+		}
+		else
+		{
+			value = $"{value} front";
+		}
+
+		return result;
+	}
 
 	public static Dictionary<int, string> ImageIdNameMap = new()
 	{
-		{ 0, "kFlatSE" },
-		{ 1, "kFlatNE" },
-		{ 2, "SlopedSE" },
-		{ 3, "SlopedNE" },
-		{ 4, "SlopedNW" },
-		{ 5, "SlopedSW" },
-		{ 6, "kGlassFlatSE" },
-		{ 7, "kGlassFlatNE" },
-		{ 8, "kGlassSlopedSE" },
-		{ 9, "kGlassSlopedNE" },
-		{ 10, "kGlassSlopedNW" },
-		{ 11, "kGlassSlopedSW" },
+		{ 0, "Flat SE" },
+		{ 1, "Flat NE" },
+		{ 2, "Sloped SE" },
+		{ 3, "Sloped NE" },
+		{ 4, "Sloped NW" },
+		{ 5, "Sloped SW" },
+		{ 6, "Flat SE" },
+		{ 7, "Flat NE" },
+		{ 8, "Sloped SE" },
+		{ 9, "Sloped NE" },
+		{ 10, "Sloped NW" },
+		{ 11, "Sloped SW" },
 	};
 }

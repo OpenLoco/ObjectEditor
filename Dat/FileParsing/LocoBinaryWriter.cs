@@ -1,6 +1,8 @@
 using Common;
 using Dat.Converters;
 using Dat.Types;
+using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Objects.Vehicle;
@@ -210,5 +212,44 @@ public class LocoBinaryWriter : BinaryWriter
 		Write(sound.VolumeIncreaseStep);
 		Write(sound.VolumeDecreaseStep);
 		Write(sound.SpeedFrequencyFactor);
+	}
+
+	public void WriteCargoOffsets(CargoOffset[][][] offsets)
+	{
+		const int rotationSize = 4;
+		const int nibbleSize = 4;
+
+		for (var i = 0; i < rotationSize; ++i)
+		{
+			for (var j = 0; j < nibbleSize; ++j)
+			{
+				var cargoOffsets = offsets[i][j];
+				WriteCargoOffsets(cargoOffsets, (byte)i, (byte)j);
+			}
+		}
+
+		void WriteCargoOffsets(CargoOffset[] offsets, byte rotation, byte nibble)
+		{
+			Write((int8_t)offsets[0].A.Z); // Assuming the Z value is consistent across all offsets.
+
+			foreach (var offset in offsets)
+			{
+				WriteCargoOffset(offset);
+			}
+
+			// Add the terminator bytes at the end.
+			Write(LocoConstants.Terminator);
+			Write(LocoConstants.Terminator);
+			Write(LocoConstants.Terminator);
+			Write(LocoConstants.Terminator);
+		}
+
+		void WriteCargoOffset(CargoOffset cargoOffset)
+		{
+			Write((int8_t)cargoOffset.A.X);
+			Write((int8_t)cargoOffset.A.Y);
+			Write((int8_t)cargoOffset.B.X);
+			Write((int8_t)cargoOffset.B.Y);
+		}
 	}
 }

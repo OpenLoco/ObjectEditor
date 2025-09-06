@@ -80,22 +80,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 		}
 
 		// cargo offsets
-		model.CargoOffsetBytes = new byte[4][][];
-		for (var i = 0; i < 4; ++i)
-		{
-			model.CargoOffsetBytes[i] = new byte[4][];
-			for (var j = 0; j < 4; ++j)
-			{
-				var length = 1;
-				while (br.PeekByte(length) != LocoConstants.Terminator)
-				{
-					length += 4; // x, y, x, y
-				}
-
-				length += 4;
-				model.CargoOffsetBytes[i][j] = br.ReadBytes(length);
-			}
-		}
+		model.CargoOffsets = br.ReadCargoOffsets();
 	}
 
 	public static void Save(Stream stream, LocoObject obj)
@@ -150,13 +135,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 		}
 
 		// cargo offsets
-		for (var i = 0; i < 4; ++i)
-		{
-			for (var j = 0; j < 4; ++j)
-			{
-				bw.Write(model.CargoOffsetBytes[i][j]);
-			}
-		}
+		bw.WriteCargoOffsets(model.CargoOffsets);
 	}
 
 	[Flags]

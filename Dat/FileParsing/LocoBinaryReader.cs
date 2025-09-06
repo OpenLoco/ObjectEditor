@@ -1,6 +1,8 @@
 using Dat.Converters;
 using Dat.Types;
 using Definitions.ObjectModels.Objects.Common;
+using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
@@ -329,4 +331,45 @@ public class LocoBinaryReader : BinaryReader
 			VolumeDecreaseStep = ReadByte(),
 			SpeedFrequencyFactor = ReadByte(),
 		};
+
+
+	public CargoOffset[][][] ReadCargoOffsets()
+	{
+		const int rotationSize = 4;
+		const int nibbleSize = 4;
+
+		var result = new CargoOffset[rotationSize][][];
+
+		for (var i = 0; i < rotationSize; ++i)
+		{
+			result[i] = new CargoOffset[nibbleSize][];
+			for (var j = 0; j < nibbleSize; ++j)
+			{
+				var offsets = new List<CargoOffset>(15 /*Constants.MaxStationCargoDensity*/);
+
+				var z = ReadSByte();
+				while (PeekByte() != LocoConstants.Terminator)
+				{
+					offsets.Add(ReadCargoOffset(z));
+				}
+
+				// 4 terminators!!
+				SkipTerminator();
+				SkipTerminator();
+				SkipTerminator();
+				SkipTerminator();
+
+				result[i][j] = [.. offsets];
+			}
+		}
+
+		return result;
+
+		CargoOffset ReadCargoOffset(int8_t z)
+			=> new()
+			{
+				A = new Pos3 { X = ReadSByte(), Y = ReadSByte(), Z = z },
+				B = new Pos3 { X = ReadSByte(), Y = ReadSByte(), Z = z },
+			};
+	}
 }

@@ -3,15 +3,7 @@ using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
-public enum CardinalDirection : uint8_t
-{
-	South,
-	West,
-	North,
-	East,
-}
-
-public class BuildingObject : ILocoStruct, IHasBuildingComponents
+public class BuildingObject : ILocoStruct, IImageTableNameProvider, IHasBuildingComponents
 {
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
@@ -42,5 +34,15 @@ public class BuildingObject : ILocoStruct, IHasBuildingComponents
 
 	public bool Validate()
 		=> ProducedQuantity.Count == 2
+		&& BuildingComponents.Validate();
+
+	public bool TryGetImageName(int id, out string? value)
+	{
+		var direction = (CardinalDirection)(id % 4);
+		var level = id / 4;
+		value = $"{direction} | Level {level}";
+		return true;
+	}
+
 		&& BuildingComponents.Validate();
 }

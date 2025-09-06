@@ -1,7 +1,9 @@
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadStation;
+using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -18,26 +20,25 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 	[Category("Cost")] public int16_t BuildCostFactor { get; set; }
 	[Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
+	[Category("Compatible")] public List<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
 	public ObjectModelHeader? CargoType { get; set; }
 
-	[Browsable(false)]
-	public uint8_t[][][] CargoOffsetBytes { get; set; }
+	public CargoOffset[][][] CargoOffsets { get; init; }
 
-	public RoadStationViewModel(RoadStationObject ro)
+	public RoadStationViewModel(RoadStationObject rso)
 	{
-		PaintStyle = ro.PaintStyle;
-		Height = ro.Height;
-		RoadPieces = ro.RoadPieces;
-		DesignedYear = ro.DesignedYear;
-		ObsoleteYear = ro.ObsoleteYear;
-		BuildCostFactor = ro.BuildCostFactor;
-		SellCostFactor = ro.SellCostFactor;
-		CostIndex = ro.CostIndex;
-		Flags = ro.Flags;
-		CompatibleRoadObjects = new(ro.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		CargoType = ro.CargoType;
-		CargoOffsetBytes = ro.CargoOffsetBytes;
+		PaintStyle = rso.PaintStyle;
+		Height = rso.Height;
+		RoadPieces = rso.RoadPieces;
+		DesignedYear = rso.DesignedYear;
+		ObsoleteYear = rso.ObsoleteYear;
+		BuildCostFactor = rso.BuildCostFactor;
+		SellCostFactor = rso.SellCostFactor;
+		CostIndex = rso.CostIndex;
+		Flags = rso.Flags;
+		CargoType = rso.CargoType;
+		CargoOffsets = rso.CargoOffsets;
+		CompatibleRoadObjects = [.. rso.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
 	}
 
 	public override RoadStationObject GetAsModel()
@@ -52,8 +53,8 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 			SellCostFactor = SellCostFactor,
 			CostIndex = CostIndex,
 			Flags = Flags,
-			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsModel()),
 			CargoType = CargoType,
-			CargoOffsetBytes = CargoOffsetBytes
+			CargoOffsets = CargoOffsets,
+			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsModel()),
 		};
 }

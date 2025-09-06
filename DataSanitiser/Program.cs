@@ -12,6 +12,70 @@ using Definitions.ObjectModels.Objects.Vehicle;
 using VehicleObject = Definitions.ObjectModels.Objects.Vehicle.VehicleObject;
 using Dat.Data;
 using Definitions.ObjectModels.Objects.Cargo;
+using Definitions.ObjectModels.Objects.TrackStation;
+using Definitions.ObjectModels.Objects.Track;
+
+static void QueryTrackStationOneSidedTrack()
+{
+	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
+	var logger = new Logger();
+	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+	//var index = ObjectIndex.CreateIndex(dir, logger);
+	//index.SaveIndexAsync(Path.Combine(dir, "objectIndex.json")).Wait();
+
+	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource, List<string> Flags)>();
+
+	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.TrackStation))
+	{
+		try
+		{
+			var o = SawyerStreamReader.LoadFullObject(Path.Combine(dir, obj.FileName), logger);
+			if (o.LocoObject != null)
+			{
+				var struc = (TrackStationObject)o.LocoObject.Object;
+				var header = o.DatFileInfo.S5Header;
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+
+				// Build a list of all enabled TrackTraitFlags for this object
+				var enabledFlags = new List<string>();
+				foreach (TrackTraitFlags flag in Enum.GetValues(typeof(TrackTraitFlags)))
+				{
+					// skip the default/zero value if present
+					if (flag.Equals((TrackTraitFlags)0))
+					{
+						continue;
+					}
+
+					if (struc.TrackPieces.HasFlag(flag))
+					{
+						enabledFlags.Add(flag.ToString());
+					}
+				}
+
+				if (enabledFlags.Count > 0)
+				{
+					results.Add((obj, source, enabledFlags));
+				}
+				else
+				{
+					Console.WriteLine($"{header.Name} didn't have it");
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
+		}
+	}
+
+	Console.WriteLine(results.Count);
+	foreach (var result in results)
+	{
+		// Print object index entry and its enabled flags
+		Console.WriteLine($"{result.Obj.DisplayName} - Checksum: 0x{result.Obj.DatChecksum:X} - Source: {result.ObjectSource} - Flags: {string.Join('|', result.Flags)}");
+	}
+}
+QueryTrackStationOneSidedTrack();
 
 static void QueryIndustryHasShadows()
 {

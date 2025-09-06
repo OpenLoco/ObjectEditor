@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
 
@@ -17,9 +18,11 @@ public class TrackStationObject : ILocoStruct, IImageTableNameProvider
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
-	public uint8_t[][][] CargoOffsetBytes { get; set; }
+
+	//public uint8_t[][][] CargoOffsetBytes { get; set; }
+	public CargoOffset[][][] CargoOffsets { get; set; }
+
 	public uint8_t[][] var_6E { get; set; }
-	public CargoOffset[] CargoOffsets { get; init; } = [.. Enumerable.Repeat(new CargoOffset { A = Pos3.Zero, B = Pos3.Zero }, 15)];
 
 	public bool Validate()
 	{

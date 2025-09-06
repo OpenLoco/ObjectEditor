@@ -248,7 +248,6 @@ public class LoadSaveTests
 			Assert.That(struc.PaymentFactor, Is.EqualTo(62), nameof(struc.PaymentFactor));
 			Assert.That(struc.PaymentIndex, Is.EqualTo(10), nameof(struc.PaymentIndex));
 			Assert.That(struc.UnitSize, Is.EqualTo(10), nameof(struc.UnitSize));
-
 			Assert.That(obj.GraphicsElements, Has.Count.EqualTo(9));
 		});
 		LoadSaveGenericTest<CargoObject>(objectName, assertFunc);

@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Road;
+using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.RoadStation;
@@ -19,8 +20,8 @@ public class RoadStationObject : ILocoStruct, IImageTableNameProvider
 
 	public ObjectModelHeader? CargoType { get; set; }
 
-	// for drawing the cargo on the station
-	public uint8_t[][][] CargoOffsetBytes { get; set; }
+	//public uint8_t[][][] CargoOffsetBytes { get; set; }
+	public CargoOffset[][][] CargoOffsets { get; set; }
 
 	public bool Validate()
 	{

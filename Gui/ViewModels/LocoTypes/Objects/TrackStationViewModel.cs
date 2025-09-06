@@ -41,7 +41,7 @@ public class TrackStationViewModel : LocoObjectViewModel<TrackStationObject>
 		var_0B = tso.var_0B;
 		var_0D = tso.var_0D;
 		var_6E = tso.var_6E;
-		//CargoOffsets = tso.CargoOffsets;
+		CargoOffsets = tso.CargoOffsets;
 		CompatibleTrackObjects = [.. tso.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
 	}
 
@@ -62,7 +62,7 @@ public class TrackStationViewModel : LocoObjectViewModel<TrackStationObject>
 			var_0B = var_0B,
 			var_0D = var_0D,
 			var_6E = var_6E,
-			//CargoOffsets = CargoOffsets,
+			CargoOffsets = CargoOffsets,
 			CompatibleTrackObjects = CompatibleTrackObjects.ConvertAll(x => x.GetAsModel()),
 		};
 }

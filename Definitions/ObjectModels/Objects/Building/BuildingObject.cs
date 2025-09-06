@@ -43,6 +43,4 @@ public class BuildingObject : ILocoStruct, IImageTableNameProvider, IHasBuilding
 		value = $"{direction} | Level {level}";
 		return true;
 	}
-
-		&& BuildingComponents.Validate();
 }

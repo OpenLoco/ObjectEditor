@@ -1,14 +1,11 @@
 using Avalonia.Media.Imaging;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
-using Definitions.ObjectModels.Types;
-using DynamicData.Binding;
 using Gui.Models;
-using Gui.ViewModels.Graphics;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;

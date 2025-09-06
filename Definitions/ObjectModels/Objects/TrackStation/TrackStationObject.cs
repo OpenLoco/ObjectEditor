@@ -55,7 +55,7 @@ public class TrackStationObject : ILocoStruct, IImageTableNameProvider
 	public static readonly Dictionary<int, string> ImageIdNameMap = new()
 	{
 		{ 0, "preview_image" },
-		{ 1, "preview_image_windows" },
+		{ 1, "preview_image_glass_overlay" },
 		{ 2, "totalPreviewImages" },
 	};
 

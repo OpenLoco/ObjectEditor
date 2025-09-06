@@ -10,19 +10,18 @@
 	xmlns:mo="using:Gui.Models"
 	xmlns:vm="using:Gui.ViewModels"
 	mc:Ignorable="d"
-
 	x:Class="Gui.Views.BuildingComponentsView"
-	x:DataType="vm:LocoTypes.BuildingComponentsViewModel">
+	x:DataType="vm:LocoTypes.BuildingComponentsViewModel"
+	x:Name="Root">
 	<DockPanel>
 		<ScrollViewer>
 			<StackPanel DockPanel.Dock="Left" >
 				<TextBlock HorizontalAlignment="Center">Vertical sprite spacing</TextBlock>
-				<Slider Minimum="0" Maximum="32" Value="{Binding OffsetSpacing}" />
+				<Slider Minimum="0" Maximum="64" Value="{Binding OffsetSpacing}" />
 				<pgc:PropertyGrid DataContext="{Binding BuildingComponents}" IsCategoryVisible="False"></pgc:PropertyGrid>
 			</StackPanel>
 		</ScrollViewer>
 		<ScrollViewer>
-
 			<ItemsControl ItemsSource="{Binding BuildingVariations}" Background="Red">
 				<ItemsControl.ItemsPanel>
 					<ItemsPanelTemplate>
@@ -43,34 +42,29 @@
 								</ItemsControl.ItemsPanel>
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
-										<paz:ZoomBorder MinWidth="256" MinHeight="256" Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
-											<StackPanel>
-												<TextBlock Text="{Binding Direction}"/>
-												<ItemsControl ItemsSource="{Binding Layers}" Background="Green">
-													<ItemsControl.ItemsPanel>
-														<ItemsPanelTemplate>
-															<Canvas Background="SteelBlue" MinWidth="256" MinHeight="256" />
-														</ItemsPanelTemplate>
-													</ItemsControl.ItemsPanel>
-													<ItemsControl.ItemTemplate>
-														<DataTemplate>
-															<StackPanel Orientation="Horizontal">
-																<TextBlock>Layer</TextBlock>
+										<StackPanel>
+											<TextBlock Text="{Binding Direction}"/>
+											<paz:ZoomBorder Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
+												<StackPanel>
+													<ItemsControl ItemsSource="{Binding Layers}" Background="Green">
+														<ItemsControl.ItemsPanel>
+															<ItemsPanelTemplate>
+																<Canvas Background="SteelBlue" MinWidth="{Binding DataContext.MaxWidth, ElementName=Root}" MinHeight="{Binding DataContext.MaxHeight, ElementName=Root}" />
+															</ItemsPanelTemplate>
+														</ItemsControl.ItemsPanel>
+														<ItemsControl.ItemTemplate>
+															<DataTemplate>
 																<Image Source="{Binding DisplayedImage}" RenderOptions.BitmapInterpolationMode="None" Stretch="None">
-																	<Image.RenderTransform>
-																		<TranslateTransform X="{Binding XOffset}" Y="{Binding YOffset}"/>
-																	</Image.RenderTransform>
 																	<Image.RenderTransform>
 																		<TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
 																	</Image.RenderTransform>
 																</Image>
-																<!--<TextBlock Canvas.Top="{Binding YOffset}" Text="{Binding YOffset}"></TextBlock>-->
-															</StackPanel>
-														</DataTemplate>
-													</ItemsControl.ItemTemplate>
-												</ItemsControl>
-											</StackPanel>
-										</paz:ZoomBorder>
+															</DataTemplate>
+														</ItemsControl.ItemTemplate>
+													</ItemsControl>
+												</StackPanel>
+											</paz:ZoomBorder>
+										</StackPanel>
 									</DataTemplate>
 								</ItemsControl.ItemTemplate>
 							</ItemsControl>

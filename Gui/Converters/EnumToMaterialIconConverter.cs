@@ -1,11 +1,12 @@
 using Avalonia.Data.Converters;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
+using Gui.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Gui.Models.Converters;
+namespace Gui.Converters;
 
 public class EnumToMaterialIconConverter : IValueConverter
 {
@@ -23,7 +24,7 @@ public class EnumToMaterialIconConverter : IValueConverter
 			{
 				return icon;
 			}
-			else if ((value is T source2) && mapping.TryGetValue(source2, out var icon2))
+			else if (value is T source2 && mapping.TryGetValue(source2, out var icon2))
 			{
 				return icon2;
 			}

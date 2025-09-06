@@ -2,6 +2,7 @@ using Avalonia.Media.Imaging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using DynamicData.Binding;
 using Gui.Models;
 using Gui.ViewModels.Graphics;
 using ReactiveUI;
@@ -14,14 +15,6 @@ using System.Reactive.Linq;
 
 namespace Gui.ViewModels.LocoTypes;
 
-public enum CardinalDirection : uint8_t
-{
-	South,
-	West,
-	North,
-	East,
-}
-
 public class BuildingLayerViewModel : ReactiveObject
 {
 	[Reactive] public Bitmap DisplayedImage { get; set; }
@@ -29,10 +22,27 @@ public class BuildingLayerViewModel : ReactiveObject
 	public double Width => DisplayedImage.Size.Width;
 	public double Height => DisplayedImage.Size.Height;
 
-	[Reactive] public double X { get; set; }
-	[Reactive] public double Y { get; set; }
+	public double X => XBase + XOffset;
+	public double Y => YBase + YOffset;
+
+	[Reactive] public double XBase { get; set; }
+	[Reactive] public double YBase { get; set; }
+
 	[Reactive] public double XOffset { get; set; }
 	[Reactive] public double YOffset { get; set; }
+
+	public BuildingLayerViewModel()
+	{
+		_ = this.WhenAnyValue(o => o.XBase)
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(X)));
+		_ = this.WhenAnyValue(o => o.XOffset)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(X)));
+
+		_ = this.WhenAnyValue(o => o.YBase)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Y)));
+		_ = this.WhenAnyValue(o => o.YOffset)
+				.Subscribe(_ => this.RaisePropertyChanged(nameof(Y)));
+	}
 }
 
 public class BuildingStackViewModel : ReactiveObject
@@ -50,29 +60,27 @@ public class BuildingComponentsViewModel : ReactiveObject
 {
 	public BuildingComponentsModel BuildingComponents { get; }
 
-	List<GraphicsElement> GraphicsElements { get; }
-
-	public ObservableCollection<ImageViewModel> LayeredImages { get; set; } = [];
-
 	public ObservableCollection<BuildingVariationViewModel> BuildingVariations { get; set; } = [];
 
-	public int OffsetSpacing { get; set; }
+	[Reactive] public int OffsetSpacing { get; set; }
 
-	public BuildingComponentsViewModel(BuildingComponentsModel buildingComponents, List<GraphicsElement> graphicsElements, PaletteMap paletteMap)
+	[Reactive] public int MaxWidth { get; set; }
+	[Reactive] public int MaxHeight { get; set; }
+
+	public BuildingComponentsViewModel(BuildingComponentsModel buildingComponents, ImageTable imageTable, PaletteMap paletteMap)
 	{
 		BuildingComponents = buildingComponents;
-		GraphicsElements = graphicsElements;
 
-		var layers = graphicsElements.Chunk(4).ToList(); // each building part has 4 directions
+		var layers = imageTable.Groups.ConvertAll(x => x.GraphicsElements); // each building part has 4 directions
 
-		var baseX = 128;
-		var baseY = 192;
+		MaxWidth = layers.Max(x => x.Max(y => y.Width)) + 16;
+		MaxHeight = (layers.Max(x => x.Max(y => y.Height)) * buildingComponents.BuildingHeights.Count) + buildingComponents.BuildingHeights.Sum(x => x) + (buildingComponents.BuildingVariations.Max(x => x.Count) * OffsetSpacing);
 
 		foreach (var variation in buildingComponents.BuildingVariations)
 		{
 			var bv = new BuildingVariationViewModel();
 
-			var numDirections = 4;
+			const int numDirections = 4;
 			for (var i = 0; i < numDirections; ++i)
 			{
 				var bs = new BuildingStackViewModel()
@@ -92,8 +100,8 @@ public class BuildingComponentsViewModel : ReactiveObject
 					}
 
 					bl.DisplayedImage = image.ToAvaloniaBitmap();
-					bl.X = layer[i].XOffset + baseX;
-					bl.Y = layer[i].YOffset - cumulativeOffset + baseY;
+					bl.XBase = layer[i].XOffset + MaxWidth / 2;
+					bl.YBase = layer[i].YOffset - cumulativeOffset + (MaxHeight * 0.80);
 					cumulativeOffset += buildingComponents.BuildingHeights[variationItem];
 
 					bl.XOffset = 0;
@@ -103,30 +111,40 @@ public class BuildingComponentsViewModel : ReactiveObject
 				}
 
 				bv.Directions.Add(bs); // [i] = bs;
-
-				//yOffset -= buildingComponents.BuildingHeights[variationItem];
 			}
 
 			BuildingVariations.Add(bv);
 		}
 
-		//_ = this.WhenAnyValue(x => x.OffsetSpacing)
-		//		.Where(_ => LayeredImages.Count > 0)
-		//		.Subscribe(spacing =>
-		//		{
-		//			var index = 0;
-		//			foreach (var img in LayeredImages)
-		//			{
-		//				var diff = OffsetSpacing - prevOffset;
-		//				img.YOffset -= diff * index;
-		//				img.RaisePropertyChanged(nameof(img.YOffset));
-		//				img.RaisePropertyChanged(nameof(img));
-		//				index++;
-		//			}
+		// Update all nested layers' YOffset whenever OffsetSpacing changes
+		_ = this.WhenAnyValue(x => x.OffsetSpacing)
+			.Subscribe(ApplyOffsetToAllLayers);
+	}
 
-		//			prevOffset = OffsetSpacing;
-		//			this.RaisePropertyChanged(nameof(LayeredImages));
-		//		});
+	private void ApplyOffsetToAllLayers(int offset)
+	{
+		foreach (var variation in BuildingVariations)
+		{
+			if (variation?.Directions == null)
+			{
+				continue;
+			}
+
+			foreach (var dir in variation.Directions)
+			{
+				if (dir?.Layers == null)
+				{
+					continue;
+				}
+
+				var cumulativeOffset = 0;
+				foreach (var layer in dir.Layers)
+				{
+					layer.YOffset = cumulativeOffset;
+					cumulativeOffset -= OffsetSpacing;
+				}
+			}
+		}
 	}
 }
 

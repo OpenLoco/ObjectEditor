@@ -3,6 +3,14 @@ using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
+public enum CardinalDirection : uint8_t
+{
+	South,
+	West,
+	North,
+	East,
+}
+
 public class BuildingObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint16_t DesignedYear { get; set; }

@@ -1,6 +1,4 @@
 using Avalonia.Controls.Selection;
-using Avalonia.Data.Converters;
-using Avalonia.Media;
 using Avalonia.Threading;
 using Common;
 using Common.Json;
@@ -16,7 +14,6 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -26,36 +23,6 @@ using SLColour = SixLabors.ImageSharp.Color;
 using AvaColour = Avalonia.Media.Color;
 
 namespace Gui.ViewModels.Graphics;
-
-public class ColourArrayToGradientStopsConverter : IValueConverter
-{
-	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-	{
-		if (value is AvaColour[] colours)
-		{
-			var stops = new GradientStops();
-			var segmentWidth = 1.0 / colours.Length;
-
-			for (var i = 0; i < colours.Length; i++)
-			{
-				// Add a stop at the beginning of the segment
-				stops.Add(new GradientStop(colours[i], i * segmentWidth));
-
-				// Add a second stop at the end of the segment to create a sharp transition
-				stops.Add(new GradientStop(colours[i], (i + 1) * segmentWidth));
-			}
-
-			return stops;
-		}
-
-		return new GradientStops();
-	}
-
-	public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-	{
-		throw new NotImplementedException();
-	}
-}
 
 public static class SixLaboursAvaloniaColor
 {
@@ -163,7 +130,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		}
 
 		// building components
-		BuildingComponents = new(buildingComponents, imageTable.GraphicsElements, PaletteMap);
+		BuildingComponents = new(buildingComponents, imageTable, PaletteMap);
 
 		_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
 			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));

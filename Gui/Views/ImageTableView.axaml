@@ -8,7 +8,7 @@
 	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
 	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
 	xmlns:vi="using:Gui.Views"
-	xmlns:gmc="using:Gui.Models.Converters"
+	xmlns:cnv="using:Gui.Converters"
 	xmlns:vmg="using:Gui.ViewModels.Graphics"
 	xmlns:vmlt="using:Gui.ViewModels.LocoTypes"
 	mc:Ignorable="d"
@@ -19,8 +19,8 @@
 
 	<UserControl.Resources>
 		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
-		<gmc:NegativeValueConverter x:Key="NegativeValueConverter"/>
-		<vmg:ColourArrayToGradientStopsConverter x:Key="ColourArrayToGradientStopsConverter" />
+		<cnv:NegativeValueConverter x:Key="NegativeValueConverter"/>
+		<cnv:ColourArrayToGradientStopsConverter x:Key="ColourArrayToGradientStopsConverter" />
 	</UserControl.Resources>
 
 	<DockPanel>
@@ -82,7 +82,7 @@
 													<LinearGradientBrush.GradientStops>
 														<Binding Path="GradientColours">
 															<Binding.Converter>
-																<vmg:ColourArrayToGradientStopsConverter />
+																<cnv:ColourArrayToGradientStopsConverter />
 															</Binding.Converter>
 														</Binding>
 													</LinearGradientBrush.GradientStops>
@@ -114,7 +114,7 @@
 													<LinearGradientBrush.GradientStops>
 														<Binding Path="GradientColours">
 															<Binding.Converter>
-																<vmg:ColourArrayToGradientStopsConverter />
+																<cnv:ColourArrayToGradientStopsConverter />
 															</Binding.Converter>
 														</Binding>
 													</LinearGradientBrush.GradientStops>

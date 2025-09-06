@@ -104,13 +104,13 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		{
 			var mn = new MovementNode()
 			{
-				Flags = ((DatAirportMovementNodeFlags)br.ReadUInt16()).Convert(),
 				Position = new Pos3()
 				{
 					X = br.ReadInt16(),
 					Y = br.ReadInt16(),
 					Z = br.ReadInt16()
 				},
+				Flags = ((DatAirportMovementNodeFlags)br.ReadUInt16()).Convert(),
 			};
 			model.MovementNodes.Add(mn);
 		}

@@ -64,10 +64,12 @@
 						</ItemsRepeater.Layout>
 						<ItemsRepeater.ItemTemplate>
 							<DataTemplate>
-								<StackPanel>
-									<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-									<ContentControl Content="{Binding}" />
-								</StackPanel>
+								<Border Margin="4" BorderThickness="1">
+									<StackPanel>
+										<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+										<ContentControl Content="{Binding}" />
+									</StackPanel>
+								</Border>
 							</DataTemplate>
 						</ItemsRepeater.ItemTemplate>
 					</ItemsRepeater>
@@ -84,10 +86,12 @@
 						</ItemsRepeater.Layout>
 						<ItemsRepeater.ItemTemplate>
 							<DataTemplate>
-								<StackPanel>
-									<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-									<ContentControl Content="{Binding}" />
-								</StackPanel>
+								<Border Margin="4" BorderThickness="1">
+									<StackPanel>
+										<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+										<ContentControl Content="{Binding}" />
+									</StackPanel>
+								</Border>
 							</DataTemplate>
 						</ItemsRepeater.ItemTemplate>
 					</ItemsRepeater>

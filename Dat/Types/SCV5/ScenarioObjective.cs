@@ -1,8 +1,10 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using System.ComponentModel;
 
 namespace Dat.Types.SCV5;
 
+[TypeConverter(typeof(ExpandableObjectConverter))]
 [LocoStructSize(0x11)]
 public record ScenarioObjective(
 	[property: LocoStructOffset(0x00)] ObjectiveType Type,

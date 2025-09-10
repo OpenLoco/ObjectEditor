@@ -4,6 +4,7 @@ using Index;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -38,6 +39,7 @@ public class EditorSettings
 	//public string ServerEmail { get; set; }
 	//public string ServerPassword { get; set; }
 
+	public string ObjectIndicesFolder { get; set; } = string.Empty;
 	public string DownloadFolder { get; set; } = string.Empty;
 
 	public string AppDataObjDataFolder { get; set; } = string.Empty;
@@ -55,10 +57,13 @@ public class EditorSettings
 
 	[JsonIgnore]
 	public string IndexFileName
-		=> GetObjDataFullPath(ObjectIndex.DefaultIndexFileName);
-
-	public string GetObjDataFullPath(string fileName)
-		=> Path.Combine(ObjDataDirectory, fileName);
+	{
+		get
+		{
+			var filename = Convert.ToBase64String(Encoding.UTF8.GetBytes(ObjDataDirectory));
+			return Path.Combine(ObjectIndicesFolder, $"{filename}.json");
+		}
+	}
 
 	[JsonIgnore]
 	public const string DefaultFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
@@ -113,6 +118,18 @@ public class EditorSettings
 		if (!Directory.Exists(ObjDataDirectory))
 		{
 			logger.Warning($"Invalid settings file: Directory \"{ObjDataDirectory}\" does not exist");
+			return false;
+		}
+
+		if (!Directory.Exists(DownloadFolder))
+		{
+			logger.Warning($"Invalid settings file: Directory \"{DownloadFolder}\" does not exist");
+			return false;
+		}
+
+		if (!Directory.Exists(ObjectIndicesFolder))
+		{
+			logger.Warning($"Invalid settings file: Directory \"{ObjectIndicesFolder}\" does not exist");
 			return false;
 		}
 

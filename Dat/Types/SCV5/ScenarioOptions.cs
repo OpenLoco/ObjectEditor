@@ -8,7 +8,7 @@ namespace Dat.Types.SCV5;
 [LocoStructSize(StructLength)]
 public record ScenarioOptions(
 	[property: LocoStructOffset(0x00)] EditorControllerStep EditorStep,
-	[property: LocoStructOffset(0x01)] uint8_t Difficulty,
+	[property: LocoStructOffset(0x01)] ScenarioDifficulty Difficulty,
 	[property: LocoStructOffset(0x02)] uint16_t ScenarioStartYear,
 	[property: LocoStructOffset(0x04), LocoArrayLength(2)] uint8_t[] var_4,
 	[property: LocoStructOffset(0x06)] ScenarioFlags ScenarioFlags,

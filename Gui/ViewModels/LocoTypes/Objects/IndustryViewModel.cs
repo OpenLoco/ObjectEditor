@@ -1,4 +1,5 @@
 using Dat.Loaders;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
@@ -48,9 +49,9 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 	public IndustryViewModel(IndustryObject io)
 	{
 		AnimationSequences = new(io.AnimationSequences.Select(x => new ObservableCollection<uint8_t>(x)));
-		BuildingAnimations = new(io.BuildingAnimations);
-		BuildingHeights = new(io.BuildingHeights);
-		BuildingVariations = new(io.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
+		BuildingHeights = new(io.BuildingComponents.BuildingHeights);
+		BuildingAnimations = new(io.BuildingComponents.BuildingAnimations);
+		BuildingVariations = new(io.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
 		UnkBuildingData = new(io.UnkBuildingData);
 		BuildingSizeFlags = io.BuildingSizeFlags;
 		BuildingWall = io.BuildingWall == null ? null : new(io.BuildingWall);
@@ -87,12 +88,12 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 		=> new()
 		{
 			AnimationSequences = AnimationSequences.ToList().ConvertAll(x => x.ToList()),
-			//BuildingComponents = new BuildingComponentsModel()
-			//{
-			//	BuildingHeights = [.. BuildingHeights],
-			//	BuildingAnimations = [.. BuildingAnimations],
-			//	BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
-			//},
+			BuildingComponents = new BuildingComponentsModel()
+			{
+				BuildingHeights = [.. BuildingHeights],
+				BuildingAnimations = [.. BuildingAnimations],
+				BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())],
+			},
 			UnkBuildingData = [.. UnkBuildingData],
 			BuildingSizeFlags = BuildingSizeFlags,
 			BuildingWall = BuildingWall?.GetAsModel(),

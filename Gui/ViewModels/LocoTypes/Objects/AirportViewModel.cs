@@ -1,9 +1,11 @@
+using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
-using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using PropertyModels.Extensions;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -42,9 +44,9 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 		CostIndex = ao.CostIndex;
 		BuildCostFactor = ao.BuildCostFactor;
 		SellCostFactor = ao.SellCostFactor;
-		BuildingHeights = new(ao.BuildingHeights);
-		BuildingAnimations = new(ao.BuildingAnimations);
-		BuildingVariations = new(ao.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
+		BuildingHeights = new(ao.BuildingComponents.BuildingHeights);
+		BuildingAnimations = new(ao.BuildingComponents.BuildingAnimations);
+		BuildingVariations = new(ao.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
 		BuildingPositions = new(ao.BuildingPositions);
 		MovementNodes = new(ao.MovementNodes);
 		MovementEdges = new(ao.MovementEdges);
@@ -68,9 +70,12 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 			CostIndex = CostIndex,
 			BuildCostFactor = BuildCostFactor,
 			SellCostFactor = SellCostFactor,
-			BuildingHeights = [.. BuildingHeights],
-			BuildingAnimations = [.. BuildingAnimations],
-			BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
+			BuildingComponents = new BuildingComponentsModel()
+			{
+				BuildingHeights = [.. BuildingHeights],
+				BuildingAnimations = [.. BuildingAnimations],
+				BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())],
+			},
 			BuildingPositions = [.. BuildingPositions],
 			MovementNodes = [.. MovementNodes],
 			MovementEdges = [.. MovementEdges],

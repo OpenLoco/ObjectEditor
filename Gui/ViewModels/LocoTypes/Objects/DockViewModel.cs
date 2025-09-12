@@ -1,9 +1,13 @@
+using Dat.Loaders;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Dock;
 using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -31,9 +35,9 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 		SellCostFactor = @do.SellCostFactor;
 		BoatPosition = @do.BoatPosition;
 		var_07 = @do.var_07;
-		BuildingHeights = new(@do.BuildingHeights);
-		BuildingAnimations = new(@do.BuildingAnimations);
-		BuildingVariations = new(@do.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
+		BuildingHeights = new(@do.BuildingComponents.BuildingHeights);
+		BuildingAnimations = new(@do.BuildingComponents.BuildingAnimations);
+		BuildingVariations = new(@do.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
 	}
 
 	public override DockObject GetAsModel()
@@ -48,12 +52,12 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 			SellCostFactor = SellCostFactor,
 			BoatPosition = BoatPosition,
 			var_07 = var_07,
-			//BuildingComponents = new BuildingComponentsModel()
-			//{
-			//	BuildingHeights = [.. BuildingHeights],
-			//	BuildingAnimations = [.. BuildingAnimations],
-			//	BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
-			//},
+			BuildingComponents = new BuildingComponentsModel()
+			{
+				BuildingHeights = [.. BuildingHeights],
+				BuildingAnimations = [.. BuildingAnimations],
+				BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())],
+			},
 		};
 		return dockObject;
 	}

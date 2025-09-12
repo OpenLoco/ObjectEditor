@@ -38,9 +38,9 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	[Category("Sprites"), Editable(false)] public BogieSprite[] BogieSprites { get; set; }
 	[Category("Sprites"), Editable(false)] public SimpleAnimation[] Animation { get; set; }
 	[Category("Sprites")] public ObjectModelHeaderViewModel[] AnimationHeaders { get; set; }
-	//[Category("Cargo")] public BindingList<uint8_t> MaxCargo { get; set; }
-	//[Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories1 { get; set; }
-	//[Category("Cargo")] public BindingList<CargoCategory> CompatibleCargoCategories2 { get; set; }
+	//[Category("Cargo")] public ObservableCollection<uint8_t> MaxCargo { get; set; }
+	//[Category("Cargo")] public ObservableCollection<CargoCategory> CompatibleCargoCategories1 { get; set; }
+	//[Category("Cargo")] public ObservableCollection<CargoCategory> CompatibleCargoCategories2 { get; set; }
 	[Category("Cargo")] public CompatibleCargo CompatibleCargo1 { get; set; }
 	[Category("Cargo")] public CompatibleCargo CompatibleCargo2 { get; set; }
 	[Category("Cargo"), Length(0, 32)] public List<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; set; } // this is a dictionary type

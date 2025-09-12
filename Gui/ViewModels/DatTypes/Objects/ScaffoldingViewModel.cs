@@ -1,19 +1,18 @@
 using Definitions.ObjectModels.Objects.Scaffolding;
-using PropertyModels.Extensions;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
 public class ScaffoldingViewModel : LocoObjectViewModel<ScaffoldingObject>
 {
-	[Length(0, 3)] public BindingList<uint16_t> SegmentHeights { get; set; }
-	[Length(0, 3)] public BindingList<uint16_t> RoofHeights { get; set; }
+	[Length(0, 3)] public ObservableCollection<uint16_t> SegmentHeights { get; set; }
+	[Length(0, 3)] public ObservableCollection<uint16_t> RoofHeights { get; set; }
 
 	public ScaffoldingViewModel(ScaffoldingObject so)
 	{
-		SegmentHeights = so.SegmentHeights.ToBindingList();
-		RoofHeights = so.RoofHeights.ToBindingList();
+		SegmentHeights = new(so.SegmentHeights);
+		RoofHeights = new(so.RoofHeights);
 	}
 
 	public override ScaffoldingObject GetAsModel()

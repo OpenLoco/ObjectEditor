@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Types;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

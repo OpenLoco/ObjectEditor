@@ -35,8 +35,6 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new IndustryObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -72,8 +70,9 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			model.ScaffoldingColour = (Colour)br.ReadByte();
 			for (var i = 0; i < Constants.InitialProductionRateCount; ++i)
 			{
-				model.InitialProductionRate.Add(new() { Min = br.ReadUInt16(), Max = br.ReadUInt16()});
+				model.InitialProductionRate.Add(new() { Min = br.ReadUInt16(), Max = br.ReadUInt16() });
 			}
+
 			br.SkipByte(Constants.MaxProducedCargoType); // ProducedCargo, not part of object definition
 			br.SkipByte(Constants.MaxRequiredCargoType); // RequiredCargo, not part of object definition
 			model.MapColour = (Colour)br.ReadByte();
@@ -92,13 +91,16 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Industry), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Industry), null);
 
 			// variable
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
+
+			// define groups
+			var imageTable = ImageTableLoader.CreateImageTable(imageList);
 
 			return new LocoObject(ObjectType.Industry, model, stringTable, imageTable);
 		}
@@ -106,8 +108,8 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 
 	private static void LoadVariable(LocoBinaryReader br, IndustryObject model, byte numBuildingParts, byte numBuildingVariations)
 	{
-		model.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
-		model.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
+		model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
+		model.BuildingComponents.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
 
 		// animation sequences
 		for (var i = 0; i < Constants.AnimationSequencesCount; ++i)
@@ -122,9 +124,10 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		{
 			model.var_38.Add(new() { var_00 = br.ReadByte(), var_01 = br.ReadByte() });
 		}
+
 		br.SkipTerminator();
 
-		model.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
+		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
 		model.UnkBuildingData = [.. br.ReadBytes(model.MaxNumBuildings)];
 		model.ProducedCargo = br.ReadS5HeaderList(Constants.MaxProducedCargoType);
 		model.RequiredCargo = br.ReadS5HeaderList(Constants.MaxRequiredCargoType);
@@ -151,8 +154,8 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			bw.WriteEmptyImageId(); // BaseBuildingImageId, not part of object definition
 			bw.WriteEmptyImageId(); // BaseFarmImageIds, not part of object definition
 			bw.Write(model.FarmImagesPerGrowthStage);
-			bw.Write((uint8_t)model.BuildingHeights.Count);
-			bw.Write((uint8_t)model.BuildingVariations.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingHeights.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingVariations.Count);
 			bw.WriteEmptyPointer(); // BuildingHeights, not part of object definition
 			bw.WriteEmptyPointer(); // BuildingAnimations, not part of object definition
 			bw.WriteEmptyPointer(Constants.AnimationSequencesCount); // AnimationSequences, not part of object definition
@@ -176,6 +179,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 				bw.Write(rate.Min);
 				bw.Write(rate.Max);
 			}
+
 			bw.WriteEmptyBytes(Constants.MaxProducedCargoType);
 			bw.WriteEmptyBytes(Constants.MaxRequiredCargoType);
 			bw.Write((uint8_t)model.MapColour);
@@ -200,14 +204,14 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 
 	private static void SaveVariable(IndustryObject model, LocoBinaryWriter bw)
 	{
-		bw.Write(model.BuildingHeights);
-		bw.Write(model.BuildingAnimations);
+		bw.Write(model.BuildingComponents.BuildingHeights);
+		bw.Write(model.BuildingComponents.BuildingAnimations);
 
 		// animation sequences
 		foreach (var x in model.AnimationSequences)
@@ -222,9 +226,10 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			bw.Write(x.var_00);
 			bw.Write(x.var_01);
 		}
+
 		bw.WriteTerminator();
 
-		bw.Write(model.BuildingVariations);
+		bw.Write(model.BuildingComponents.BuildingVariations);
 		bw.Write((ReadOnlySpan<byte>)[.. model.UnkBuildingData]);
 		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
 		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);

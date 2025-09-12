@@ -25,6 +25,11 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		public const int BuildingPartAnimation = 0x02;
 	}
 
+	public static class ImageGroups
+	{
+		public const int Base = 4;
+	}
+
 	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
@@ -32,8 +37,6 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new BuildingObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -70,13 +73,16 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Building), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Building), null);
 
 			// variable
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations, numElevatorSequences);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
+
+			// define groups
+			var imageTable = ImageTableLoader.CreateImageTable(imageList);
 
 			return new LocoObject(ObjectType.Building, model, stringTable, imageTable);
 		}
@@ -84,9 +90,9 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 
 	private static void LoadVariable(LocoBinaryReader br, BuildingObject model, byte numBuildingParts, byte numBuildingVariations, byte numElevatorSequences)
 	{
-		model.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
-		model.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
-		model.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
+		model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
+		model.BuildingComponents.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
+		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
 		model.ProducedCargo = br.ReadS5HeaderList(Constants.MaxProducedCargoType);
 		model.RequiredCargo = br.ReadS5HeaderList(Constants.MaxRequiredCargoType);
 
@@ -108,8 +114,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
-			bw.Write((uint8_t)model.BuildingAnimations.Count); // NumBuildingParts
-			bw.Write((uint8_t)model.BuildingVariations.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingAnimations.Count); // NumBuildingParts
+			bw.Write((uint8_t)model.BuildingComponents.BuildingVariations.Count);
 			bw.WriteEmptyPointer();
 			bw.WriteEmptyPointer();
 			bw.WriteEmptyPointer(Constants.BuildingVariationCount);
@@ -146,15 +152,15 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 
 	private static void SaveVariable(BuildingObject model, LocoBinaryWriter bw)
 	{
-		bw.Write(model.BuildingHeights);
-		bw.Write(model.BuildingAnimations);
-		bw.Write(model.BuildingVariations);
+		bw.Write(model.BuildingComponents.BuildingHeights);
+		bw.Write(model.BuildingComponents.BuildingAnimations);
+		bw.Write(model.BuildingComponents.BuildingVariations);
 		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
 		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);
 

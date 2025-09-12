@@ -5,14 +5,23 @@ using System.ComponentModel;
 namespace Dat.Types;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class G1Dat(G1Header g1Header, List<GraphicsElement> g1Elements) : IHasGraphicsElements, IImageTableNameProvider
+public class G1Dat : IImageTableNameProvider
 {
-	public G1Header G1Header { get; set; } = g1Header;
 
-	public List<GraphicsElement> GraphicsElements { get; set; } = g1Elements;
+	public G1Header G1Header { get; set; }
+	public ImageTable ImageTable { get; set; }
 
 	public bool IsSteamG1
-		=> GraphicsElements.Count == 3896;
+		=> ImageTable.GraphicsElements.Count == 3896;
+
+	public G1Dat(G1Header g1Header, List<GraphicsElement> graphicsElements)
+	{
+		G1Header = g1Header;
+		ImageTable = new ImageTable
+		{
+			Groups = [("All", graphicsElements)]
+		};
+	}
 
 	public bool TryGetImageName(int id, out string? value)
 		=> id < 3550

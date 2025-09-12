@@ -64,6 +64,7 @@ public class DtoStringTableDescriptorComparer : IEqualityComparer<DtoStringTable
 				hash = HashCode.Combine(hash, lang, text);
 			}
 		}
+
 		return hash;
 	}
 }

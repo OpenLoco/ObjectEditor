@@ -1,4 +1,3 @@
-
 <Window
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,7 +6,7 @@
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:vi="using:Gui.Views"
 	xmlns:mo="using:Gui.Models"
-	xmlns:moc="using:Gui.Models.Converters"
+	xmlns:cnv="using:Gui.Converters"
 	xmlns:ol="using:ObjectEditor.Logging"
 	xmlns:oldt="using:Dat.Types"
 	xmlns:old5="using:Dat.Types.SCV5"
@@ -35,9 +34,9 @@
 
 	<Window.Resources>
 		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
-		<moc:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
-		<moc:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-		<moc:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+		<cnv:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
+		<cnv:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+		<cnv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
 	</Window.Resources>
 
 	<Window.DataTemplates>
@@ -76,7 +75,7 @@
 		<DataTemplate DataType="vm:G1ViewModel">
 			<ContentControl Content="{Binding ImageTableViewModel}" />
 		</DataTemplate>
-		
+
 		<DataTemplate DataType="vm:AudioViewModel">
 			<Border BorderThickness="1">
 				<StackPanel Orientation="Vertical" Background="{DynamicResource ScrollBarTrackFill}">

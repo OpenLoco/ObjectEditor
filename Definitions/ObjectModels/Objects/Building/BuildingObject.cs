@@ -1,16 +1,9 @@
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
-public enum CardinalDirection : uint8_t
-{
-	South,
-	West,
-	North,
-	East,
-}
-
-public class BuildingObject : ILocoStruct, IImageTableNameProvider
+public class BuildingObject : ILocoStruct, IImageTableNameProvider, IHasBuildingComponents
 {
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
@@ -31,9 +24,7 @@ public class BuildingObject : ILocoStruct, IImageTableNameProvider
 
 	public uint8_t var_AC { get; set; }
 
-	public List<uint8_t> BuildingHeights { get; set; } = [];
-	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
-	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+	public BuildingComponentsModel BuildingComponents { get; set; } = new();
 
 	public List<uint8_t> ProducedQuantity { get; set; } = [];
 	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];
@@ -43,10 +34,7 @@ public class BuildingObject : ILocoStruct, IImageTableNameProvider
 
 	public bool Validate()
 		=> ProducedQuantity.Count == 2
-		&& BuildingHeights.Count is not 0 and not > 63
-		&& BuildingAnimations.Count is not 0 and not > 63
-		&& BuildingHeights.Count == BuildingAnimations.Count
-		&& BuildingVariations.Count is not 0 and <= 31;
+		&& BuildingComponents.Validate();
 
 	public bool TryGetImageName(int id, out string? value)
 	{
@@ -55,5 +43,4 @@ public class BuildingObject : ILocoStruct, IImageTableNameProvider
 		value = $"{direction} | Level {level}";
 		return true;
 	}
-
 }

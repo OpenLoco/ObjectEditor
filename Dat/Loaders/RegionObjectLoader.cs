@@ -39,6 +39,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			{
 				model.CargoInfluenceTownFilter.Add((CargoInfluenceTownFilterType)br.ReadByte()); // Cargo influence town filter
 			}
+
 			br.SkipByte(Constants.MaxCargoInfluenceObjects * StructSizes.CargoInfluenceTownFilterType); // Cargo influence town filter
 			br.SkipByte(); // pad
 
@@ -76,6 +77,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			{
 				bw.Write((uint8_t)model.CargoInfluenceTownFilter[i]); // Cargo influence town filter
 			}
+
 			bw.Write((uint8_t)0); // pad
 
 			// sanity check
@@ -90,7 +92,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			bw.WriteTerminator(); // end of dependent objects
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 

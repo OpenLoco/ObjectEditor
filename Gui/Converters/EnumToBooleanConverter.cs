@@ -2,7 +2,7 @@ using Avalonia.Data.Converters;
 using System;
 using System.Globalization;
 
-namespace Gui.Models.Converters;
+namespace Gui.Converters;
 
 public class EnumToBooleanConverter : IValueConverter
 {

@@ -1,3 +1,6 @@
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
 namespace Definitions.ObjectModels.Types;
 
 [Flags]
@@ -22,6 +25,8 @@ public class GraphicsElement // follows G1Element32, except XOffset and YOffset 
 	public GraphicsElementFlags Flags { get; set; }
 	public short ZoomOffset { get; set; }
 	public byte[] ImageData { get; set; } = [];
+
+	public Image<Rgba32>? Image { get; set; }
 
 	public string Name { get; set; } // taken from IImageNameProvider
 }

@@ -154,13 +154,15 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 				CurrentObjectViewModel = GetViewModelFromStruct(CurrentObject.LocoObject.Object);
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 
-				//var imageNameProvider = (CurrentObject.LocoObject.Object is IImageTableNameProvider itnp)
-				//	? itnp
-				//	: new DefaultImageTableNameProvider();
-
-				ExtraContentViewModel = CurrentObject.LocoObject.Object is SoundObject soundObject
-					? new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData)
-					: new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.PaletteMap, Model.Logger, (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents);
+				if (CurrentObject.LocoObject.Object is SoundObject soundObject)
+				{
+					ExtraContentViewModel = new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
+				}
+				else
+				{
+					CurrentObject.LocoObject.ImageTable?.PaletteMap = Model.PaletteMap;
+					ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents);
+				}
 			}
 			else
 			{

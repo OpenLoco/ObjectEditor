@@ -26,7 +26,8 @@ public class G1ViewModel : BaseLocoFileViewModel
 			return;
 		}
 
-		ImageTableViewModel = new ImageTableViewModel(Model.G1.ImageTable, Model.PaletteMap, logger);
+		Model.G1.ImageTable.PaletteMap = Model.PaletteMap;
+		ImageTableViewModel = new ImageTableViewModel(Model.G1.ImageTable, logger);
 	}
 
 	public override void Save()

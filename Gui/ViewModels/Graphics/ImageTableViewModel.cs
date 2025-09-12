@@ -6,7 +6,6 @@ using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
-using Gui.ViewModels.LocoTypes;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -21,6 +20,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using SLColour = SixLabors.ImageSharp.Color;
 using AvaColour = Avalonia.Media.Color;
+using Gui.ViewModels.LocoTypes.Objects.Building;
 
 namespace Gui.ViewModels.Graphics;
 
@@ -102,19 +102,18 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	public BuildingComponentsViewModel? BuildingComponents { get; set; }
 
-	public ImageTableViewModel(ImageTable imageTable, PaletteMap paletteMap, ILogger logger, BuildingComponentsModel buildingComponents = null)
+	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponentsModel buildingComponents = null)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
-		ArgumentNullException.ThrowIfNull(paletteMap);
-		PaletteMap = paletteMap;
+		PaletteMap = imageTable.PaletteMap;
 		Logger = logger;
 
 		// swatches/palettes
 		ColourSwatches = [.. ColourSwatchesArr.Select(x => new ColourRemapSwatchViewModel()
 		{
 			Swatch = x,
-			Colour = paletteMap.GetRemapSwatchFromName(x)[0].Color.ToAvaloniaColor(),
-			GradientColours = [.. paletteMap.GetRemapSwatchFromName(x).Select(x => x.Color.ToAvaloniaColor())],
+			Colour = PaletteMap.GetRemapSwatchFromName(x)[0].Color.ToAvaloniaColor(),
+			GradientColours = [.. PaletteMap.GetRemapSwatchFromName(x).Select(x => x.Color.ToAvaloniaColor())],
 		})];
 
 		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourRemapSwatch.PrimaryRemap);
@@ -130,7 +129,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		}
 
 		// building components
-		BuildingComponents = new(buildingComponents, imageTable, PaletteMap);
+		BuildingComponents = new(buildingComponents, imageTable);
 
 		_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
 			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));

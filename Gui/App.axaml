@@ -56,7 +56,7 @@
 		<DataTemplate DataType="vm:FolderTreeViewModel">
 			<vi:FolderTreeView />
 		</DataTemplate>
-		<DataTemplate DataType="vm:LocoTypes.BuildingComponentsViewModel">
+		<DataTemplate DataType="vm:LocoTypes.Objects.Building.BuildingComponentsViewModel">
 			<vi:BuildingComponentsView />
 		</DataTemplate>
 	</Application.DataTemplates>

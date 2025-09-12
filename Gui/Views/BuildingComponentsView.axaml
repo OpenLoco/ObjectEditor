@@ -3,77 +3,77 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vmg="using:Gui.ViewModels.Graphics"
+	xmlns:mo="using:Gui.Models"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
-	xmlns:mo="using:Gui.Models"
-	xmlns:vm="using:Gui.ViewModels"
 	mc:Ignorable="d"
+	xmlns:bvm="using:Gui.ViewModels.LocoTypes.Objects.Building"
+	x:DataType="bvm:BuildingComponentsViewModel"
 	x:Class="Gui.Views.BuildingComponentsView"
-	x:DataType="vm:LocoTypes.BuildingComponentsViewModel"
 	x:Name="Root">
-	<DockPanel>
-		<ScrollViewer>
-			<StackPanel DockPanel.Dock="Left" >
-				<TextBlock HorizontalAlignment="Center">Vertical sprite spacing</TextBlock>
-				<Slider Minimum="0" Maximum="64" Value="{Binding OffsetSpacing}" />
-				<pgc:PropertyGrid DataContext="{Binding BuildingComponents}" IsCategoryVisible="False"></pgc:PropertyGrid>
+
+	<UserControl.DataTemplates>
+
+		<DataTemplate DataType="bvm:BuildingVariationViewModel">
+			<StackPanel>
+				<TextBlock Text="{Binding VariationName}"/>
+				<ItemsControl ItemsSource="{Binding Directions}" Background="Purple">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<WrapPanel/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+				</ItemsControl>
 			</StackPanel>
-		</ScrollViewer>
+		</DataTemplate>
+
+		<DataTemplate DataType="bvm:BuildingStackViewModel">
+			<StackPanel>
+				<TextBlock Text="{Binding Direction}"/>
+
+				<paz:ZoomBorder Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
+					<StackPanel>
+						<ItemsControl ItemsSource="{Binding Layers}" Background="Green">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<Canvas Background="SteelBlue" MinWidth="{Binding DataContext.MaxWidth, ElementName=Root}" MinHeight="{Binding DataContext.MaxHeight, ElementName=Root}" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Image Source="{Binding DisplayedImage}" RenderOptions.BitmapInterpolationMode="None" Stretch="None">
+										<Image.RenderTransform>
+											<TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
+										</Image.RenderTransform>
+									</Image>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+				</paz:ZoomBorder>
+			</StackPanel>
+		</DataTemplate>
+	</UserControl.DataTemplates>
+
+	<Design.DataContext>
+		<bvm:DesignBuildingComponentsViewModel/>
+	</Design.DataContext>
+
+	<DockPanel>
+		<!--<ScrollViewer>
+			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" MaxWidth="1024" />
+		</ScrollViewer>-->
+
 		<ScrollViewer>
-			<ItemsControl ItemsSource="{Binding BuildingVariations}" Background="Red">
+			<ItemsControl ItemsSource="{Binding BuildingVariationViewModels}" Background="Red">
 				<ItemsControl.ItemsPanel>
 					<ItemsPanelTemplate>
 						<WrapPanel/>
-						<!--<Canvas Background="SteelBlue" />-->
 					</ItemsPanelTemplate>
 				</ItemsControl.ItemsPanel>
-				<ItemsControl.ItemTemplate>
-					<DataTemplate>
-						<StackPanel>
-							<TextBlock>Variation</TextBlock>
-							<ItemsControl ItemsSource="{Binding Directions}" Background="Purple">
-								<ItemsControl.ItemsPanel>
-									<ItemsPanelTemplate>
-										<WrapPanel/>
-										<!--<Canvas Background="SteelBlue" />-->
-									</ItemsPanelTemplate>
-								</ItemsControl.ItemsPanel>
-								<ItemsControl.ItemTemplate>
-									<DataTemplate>
-										<StackPanel>
-											<TextBlock Text="{Binding Direction}"/>
-											<paz:ZoomBorder Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
-												<StackPanel>
-													<ItemsControl ItemsSource="{Binding Layers}" Background="Green">
-														<ItemsControl.ItemsPanel>
-															<ItemsPanelTemplate>
-																<Canvas Background="SteelBlue" MinWidth="{Binding DataContext.MaxWidth, ElementName=Root}" MinHeight="{Binding DataContext.MaxHeight, ElementName=Root}" />
-															</ItemsPanelTemplate>
-														</ItemsControl.ItemsPanel>
-														<ItemsControl.ItemTemplate>
-															<DataTemplate>
-																<Image Source="{Binding DisplayedImage}" RenderOptions.BitmapInterpolationMode="None" Stretch="None">
-																	<Image.RenderTransform>
-																		<TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
-																	</Image.RenderTransform>
-																</Image>
-															</DataTemplate>
-														</ItemsControl.ItemTemplate>
-													</ItemsControl>
-												</StackPanel>
-											</paz:ZoomBorder>
-										</StackPanel>
-									</DataTemplate>
-								</ItemsControl.ItemTemplate>
-							</ItemsControl>
-						</StackPanel>
-					</DataTemplate>
-				</ItemsControl.ItemTemplate>
-
 			</ItemsControl>
-
 		</ScrollViewer>
+
 	</DockPanel>
 </UserControl>

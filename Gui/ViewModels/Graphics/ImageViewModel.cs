@@ -59,12 +59,7 @@ public class ImageViewModel : ReactiveObject
 		_ = this.WhenAnyValue(o => o.DisplayedImage)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
 
-		if (!PaletteMap.TryConvertG1ToRgba32Bitmap(graphicsElement, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
-		{
-			throw new Exception("Failed to convert image");
-		}
-
-		UnderlyingImage = image!;
+		UnderlyingImage = graphicsElement.Image!;
 	}
 
 	public void RecolourImage(ColourRemapSwatch primary, ColourRemapSwatch secondary)

@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace Definitions.ObjectModels.Objects.Common;
 
 public interface IHasBuildingComponents
@@ -7,7 +5,6 @@ public interface IHasBuildingComponents
 	BuildingComponentsModel BuildingComponents { get; set; }
 }
 
-[TypeConverter(typeof(ExpandableObjectConverter))]
 public class BuildingComponentsModel
 {
 	public List<uint8_t> BuildingHeights { get; set; } = [];

@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Bridge;
 using PropertyModels.ComponentModel.DataAnnotations;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 
@@ -20,8 +21,8 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 	[Category("Cost")] public int16_t BaseCostFactor { get; set; }
 	[Category("Cost")] public int16_t HeightCostFactor { get; set; }
 	[Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
-	[Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
+	[Category("Compatible")] public ObservableCollection<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
+	[Category("Compatible")] public ObservableCollection<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
 	[Category("<unknown>")] public uint8_t var_03 { get; set; }
 
 	public BridgeViewModel(BridgeObject bo)

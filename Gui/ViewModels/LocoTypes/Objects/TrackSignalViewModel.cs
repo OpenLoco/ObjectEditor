@@ -1,6 +1,7 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.TrackSignal;
 using PropertyModels.ComponentModel.DataAnnotations;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -17,7 +18,7 @@ public class TrackSignalViewModel : LocoObjectViewModel<TrackSignalObject>
 	[Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Category("Stats")] public uint16_t DesignedYear { get; set; }
 	[Category("Stats")] public uint16_t ObsoleteYear { get; set; }
-	[Length(0, TrackSignalObjectLoader.Constants.ModsLength)] public BindingList<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
+	[Length(0, TrackSignalObjectLoader.Constants.ModsLength)] public ObservableCollection<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
 
 	public TrackSignalViewModel(TrackSignalObject ro)
 	{

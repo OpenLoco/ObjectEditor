@@ -16,27 +16,27 @@
 		<local:ViewLocator />
 		<DataTemplate DataType="vm:ObjectModelHeaderViewModel">
 			<pgc:PropertyGrid
-                x:Name="propertyGrid_S5HeaderVm"
-                DataContext="{Binding}"
-                IsCategoryVisible="False" />
+				x:Name="propertyGrid_S5HeaderVm"
+				DataContext="{Binding}"
+				IsCategoryVisible="False"/>
 		</DataTemplate>
 		<DataTemplate DataType="vm:ObjectHeaderViewModel">
 			<pgc:PropertyGrid
-                x:Name="propertyGrid_ObjectHeaderVm"
-                DataContext="{Binding}"
-                IsCategoryVisible="False" />
+				x:Name="propertyGrid_ObjectHeaderVm"
+				DataContext="{Binding}"
+				IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="oldt:S5Header">
 			<pgc:PropertyGrid
-                x:Name="propertyGrid_S5Header"
-                DataContext="{Binding}"
-                IsCategoryVisible="False" />
+				x:Name="propertyGrid_S5Header"
+				DataContext="{Binding}"
+				IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="oldt:ObjectHeader">
 			<pgc:PropertyGrid
-                x:Name="propertyGrid_ObjectHeader"
-                DataContext="{Binding}"
-                IsCategoryVisible="False" />
+				x:Name="propertyGrid_ObjectHeader"
+				DataContext="{Binding}"
+				IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="vm:SCV5ViewModel">
 			<vi:SCV5View />
@@ -102,6 +102,7 @@
 		<Style Selector="pgc|PropertyGrid">
 			<Setter Property="IsTitleVisible" Value="False" />
 			<Setter Property="IsHeaderVisible" Value="False" />
+			<Setter Property="IsCategoryVisible" Value="False" />
 			<Setter Property="IsQuickFilterVisible" Value="False" />
 		</Style>
 

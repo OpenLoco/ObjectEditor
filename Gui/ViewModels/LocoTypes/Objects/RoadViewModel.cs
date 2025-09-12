@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Road;
 using PropertyModels.ComponentModel.DataAnnotations;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 
@@ -18,10 +19,10 @@ public class RoadViewModel : LocoObjectViewModel<RoadObject>
 	[Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Category("Cost")] public int16_t TunnelCostFactor { get; set; }
 	[Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Category("Bridges")] public BindingList<ObjectModelHeaderViewModel> Bridges { get; set; }
-	[Category("Stations")] public BindingList<ObjectModelHeaderViewModel> Stations { get; set; }
-	[Category("Mods")] public BindingList<ObjectModelHeaderViewModel> Mods { get; set; }
-	[Category("Compatible")] public BindingList<ObjectModelHeaderViewModel> Compatible { get; set; }
+	[Category("Bridges")] public ObservableCollection<ObjectModelHeaderViewModel> Bridges { get; set; }
+	[Category("Stations")] public ObservableCollection<ObjectModelHeaderViewModel> Stations { get; set; }
+	[Category("Mods")] public ObservableCollection<ObjectModelHeaderViewModel> Mods { get; set; }
+	[Category("Compatible")] public ObservableCollection<ObjectModelHeaderViewModel> Compatible { get; set; }
 
 	public RoadViewModel(RoadObject ro)
 	{

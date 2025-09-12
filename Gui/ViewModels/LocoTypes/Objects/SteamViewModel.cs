@@ -1,6 +1,6 @@
 using Definitions.ObjectModels.Objects.Steam;
 using PropertyModels.ComponentModel.DataAnnotations;
-using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Gui.ViewModels;
@@ -10,9 +10,9 @@ public class SteamViewModel : LocoObjectViewModel<SteamObject>
 	public uint8_t NumStationaryTicks { get; set; }
 	[EnumProhibitValues<SteamObjectFlags>(SteamObjectFlags.None)] public SteamObjectFlags Flags { get; set; }
 	public uint32_t var_0A { get; set; }
-	public BindingList<ObjectModelHeaderViewModel> SoundEffects { get; set; }
-	public BindingList<SteamImageAndHeight> FrameInfoType0 { get; set; } // may need viewmodel for ImageAndHeight
-	public BindingList<SteamImageAndHeight> FrameInfoType1 { get; set; }
+	public ObservableCollection<ObjectModelHeaderViewModel> SoundEffects { get; set; }
+	public ObservableCollection<SteamImageAndHeight> FrameInfoType0 { get; set; } // may need viewmodel for ImageAndHeight
+	public ObservableCollection<SteamImageAndHeight> FrameInfoType1 { get; set; }
 
 	public SteamViewModel(SteamObject so)
 	{

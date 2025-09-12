@@ -36,6 +36,9 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 	public IExtraContentViewModel? ExtraContentViewModel { get; set; }
 
 	[Reactive]
+	public string ExtraContentViewModelTabName { get; set; }
+
+	[Reactive]
 	public ObjectModelHeaderViewModel? ObjectModelHeaderViewModel { get; set; }
 
 	[Reactive]
@@ -88,6 +91,9 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 		SelectObjectShowDialog = new();
 		_ = SelectObjectShowDialog.RegisterHandler(DoShowDialogAsync<ObjectSelectionWindowViewModel, ObjectSelectionWindow>);
+
+		_ = this.WhenAnyValue(x => x.ExtraContentViewModel)
+			.Subscribe(x => ExtraContentViewModelTabName = ExtraContentViewModel?.Name ?? "<no-extra-content>");
 
 		//SelectObjectCommand = ReactiveCommand.CreateFromTask(async () =>
 		//{
@@ -189,9 +195,6 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			}
 		}
 	}
-
-	public string ExtraContentViewModelTabName
-		=> ExtraContentViewModel == null ? "<no content>" : ExtraContentViewModel.Name;
 
 	public override void Delete()
 	{

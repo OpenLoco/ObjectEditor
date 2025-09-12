@@ -165,7 +165,7 @@
 				</Button.Flyout>
 			</Button>
 		</StackPanel>
-		<Grid ColumnDefinitions="*, Auto, 384">
+		<Grid ColumnDefinitions="*, Auto, 320">
 			<ScrollViewer Margin="4">
 				<DockPanel>
 					<Panel Width="16" DockPanel.Dock="Right"></Panel>

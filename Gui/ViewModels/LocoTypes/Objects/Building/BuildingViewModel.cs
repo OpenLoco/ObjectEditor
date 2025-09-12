@@ -4,6 +4,7 @@ using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -23,9 +24,9 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 	[Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 	[Category("Cost")] public uint8_t CostIndex { get; set; }
 	[Category("Cost")] public uint16_t SellCostFactor { get; set; }
-	[Category("Production"), Length(0, BuildingObjectLoader.Constants.MaxProducedCargoType)] public List<ObjectModelHeaderViewModel> ProducedCargo { get; set; }
-	[Category("Production"), Length(0, BuildingObjectLoader.Constants.MaxProducedCargoType)] public List<ObjectModelHeaderViewModel> RequiredCargo { get; set; }
-	[Category("Production"), Length(1, BuildingObjectLoader.Constants.MaxProducedCargoType)] public List<uint8_t> ProducedQuantity { get; set; }
+	[Category("Production"), Length(0, BuildingObjectLoader.Constants.MaxProducedCargoType)] public ObservableCollection<ObjectModelHeaderViewModel> ProducedCargo { get; set; }
+	[Category("Production"), Length(0, BuildingObjectLoader.Constants.MaxProducedCargoType)] public ObservableCollection<ObjectModelHeaderViewModel> RequiredCargo { get; set; }
+	[Category("Production"), Length(1, BuildingObjectLoader.Constants.MaxProducedCargoType)] public ObservableCollection<uint8_t> ProducedQuantity { get; set; }
 
 	//[Category("Building"), Length(1, BuildingObjectLoader.Constants.BuildingVariationCount)] public List<List<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
 	//[Category("Building"), Length(1, BuildingObjectLoader.Constants.BuildingHeightCount)] public List<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
@@ -69,7 +70,7 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 		ElevatorSequence2 = bo.ElevatorHeightSequences.Count > 1 ? bo.ElevatorHeightSequences[1] : null;
 		ElevatorSequence3 = bo.ElevatorHeightSequences.Count > 2 ? bo.ElevatorHeightSequences[2] : null;
 		ElevatorSequence4 = bo.ElevatorHeightSequences.Count > 3 ? bo.ElevatorHeightSequences[3] : null;
-		//ElevatorHeightSequences = new(bo.ElevatorHeightSequences.Select(x => new BindingList<uint8_t>(x)).ToBindingList());
+		//ElevatorHeightSequences = new(bo.ElevatorHeightSequences.Select(x => new ObservableCollection<uint8_t>(x)).ToObservableCollection());
 		var_A6 = bo.var_A6;
 		var_A7 = bo.var_A7;
 		var_A8 = bo.var_A8;

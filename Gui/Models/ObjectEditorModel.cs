@@ -74,7 +74,9 @@ public class ObjectEditorModel : IDisposable
 		// settings must be loaded or else the rest of the app cannot start
 		ArgumentNullException.ThrowIfNull(Settings);
 
+		InitialiseObjectIndiciesDirectory();
 		InitialiseDownloadDirectory();
+
 		ObjectServiceClient = new(Settings, Logger);
 	}
 
@@ -126,6 +128,20 @@ public class ObjectEditorModel : IDisposable
 		else
 		{
 			Logger.Error("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
+		}
+	}
+
+	void InitialiseObjectIndiciesDirectory()
+	{
+		if (string.IsNullOrEmpty(Settings.ObjectIndicesFolder))
+		{
+			Settings.ObjectIndicesFolder = Path.Combine(ProgramDataPath, "objectIndices");
+		}
+
+		if (!Directory.Exists(Settings.ObjectIndicesFolder))
+		{
+			Logger.Info($"Object indices folder doesn't exist; creating now at \"{Settings.ObjectIndicesFolder}\"");
+			_ = Directory.CreateDirectory(Settings.ObjectIndicesFolder);
 		}
 	}
 

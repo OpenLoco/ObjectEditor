@@ -5,13 +5,13 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:gui="using:Gui"
-	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="720"
 	x:Class="Gui.Views.ObjectEditorView"
 	x:DataType="vm:ObjectEditorViewModel">
 
 	<DockPanel>
-		<Grid ColumnDefinitions="*, Auto, 384" RowDefinitions="Auto, *">
-			<StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Horizontal">
+		<Grid ColumnDefinitions="50*, Auto, 25*, Auto, 25*" RowDefinitions="Auto, *">
+			<StackPanel Grid.Row="0" Grid.ColumnSpan="5" Orientation="Horizontal">
 				<Button Margin="4" Command="{Binding ExportUncompressedCommand}" ToolTip.Tip="Equivalent to saving the object with 'Uncompressed' encoding">Export as uncompressed DAT</Button>
 				<SplitButton Content="{Binding LastGameObjDataFolder, StringFormat='Copy to {0} object folder'}" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}" >
 					<SplitButton.Flyout>
@@ -28,17 +28,38 @@
 					<Style Selector="TabItem">
 						<Setter Property="Padding" Value="8"/>
 						<Setter Property="FontSize" Value="14"/>
+						<Setter Property="Header" Value="no-extra-content"/>
 					</Style>
 				</TabControl.Styles>
+				<TabItem Header="{Binding ExtraContentViewModelTabName}">
+					<DockPanel>
+						<ContentControl Content="{Binding ExtraContentViewModel}" />
+					</DockPanel>
+				</TabItem>
+			</TabControl>
+			<GridSplitter Grid.Column="1" Grid.Row="1" />
+			<TabControl Grid.Column="2" Grid.Row="1">
 				<TabItem Header="Object">
 					<ScrollViewer>
 						<ContentControl Content="{Binding CurrentObjectViewModel}" />
 					</ScrollViewer>
 				</TabItem>
-				<TabItem Header="{Binding ExtraContentViewModelTabName}">
-					<DockPanel>
-						<ContentControl Content="{Binding ExtraContentViewModel}" />
-					</DockPanel>
+			</TabControl>
+			<GridSplitter Grid.Column="3" Grid.Row="1" />
+			<TabControl Grid.Column="4" Grid.Row="1">
+				<TabControl.Styles>
+					<Style Selector="TabItem">
+						<Setter Property="Padding" Value="8"/>
+						<Setter Property="FontSize" Value="14"/>
+					</Style>
+				</TabControl.Styles>
+				<TabItem Header="Headers">
+					<Border Margin="4" Background="{DynamicResource ExpanderContentBackground}">
+						<StackPanel Margin="4">
+							<ContentControl Content="{Binding ObjectModelHeaderViewModel}" />
+							<ContentControl Content="{Binding ObjectHeaderViewModel}" />
+						</StackPanel>
+					</Border>
 				</TabItem>
 				<TabItem Header="String Table">
 					<DockPanel DataContext="{Binding StringTableViewModel}" >
@@ -66,23 +87,6 @@
 				</TabItem>
 				<TabItem Header="Metadata">
 					<ContentControl Content="{Binding MetadataViewModel}" />
-				</TabItem>
-			</TabControl>
-			<GridSplitter Grid.Column="1" Grid.Row="1" />
-			<TabControl Grid.Column="2" Grid.Row="1">
-				<TabControl.Styles>
-					<Style Selector="TabItem">
-						<Setter Property="Padding" Value="8"/>
-						<Setter Property="FontSize" Value="14"/>
-					</Style>
-				</TabControl.Styles>
-				<TabItem Header="Headers">
-					<Border Margin="4" Background="{DynamicResource ExpanderContentBackground}">
-						<StackPanel Margin="4">
-							<ContentControl Content="{Binding ObjectModelHeaderViewModel}" />
-							<ContentControl Content="{Binding ObjectHeaderViewModel}" />
-						</StackPanel>
-					</Border>
 				</TabItem>
 			</TabControl>
 		</Grid>

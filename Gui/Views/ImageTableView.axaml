@@ -67,7 +67,7 @@
 				</DockPanel>
 			</Button>
 		</StackPanel>
-		<Grid ColumnDefinitions="*, Auto, 384">
+		<Grid ColumnDefinitions="*, Auto, 320">
 			<ScrollViewer Margin="4">
 				<DockPanel>
 					<Panel Width="16" DockPanel.Dock="Right"></Panel>
@@ -144,7 +144,7 @@
 					</paz:ZoomBorder>
 					<TextBlock HorizontalAlignment="Center" Text="{Binding #ZoomBorder.ZoomX, StringFormat='Zoom: {0:F2}x | \'R\' to reset'}"></TextBlock>
 				</StackPanel>
-					<ContentControl Content="{Binding SelectedImage}" />
+				<ContentControl Content="{Binding SelectedImage}" />
 			</DockPanel>
 		</Grid>
 	</DockPanel>

@@ -1,4 +1,6 @@
+using Dat.Data;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Types;
 
 namespace Dat.Loaders;
 
@@ -12,6 +14,9 @@ namespace Dat.Loaders;
 public interface IDatObjectLoader //<TDetails> where TDetails : IDatDetails
 {
 	//public static abstract TDetails DatDetails { get; }
+
+	public static abstract ObjectType ObjectType { get; }
+	public static abstract DatObjectType DatObjectType { get; }
 
 	public static abstract LocoObject Load(Stream stream);
 	public static abstract void Save(Stream stream, LocoObject obj);

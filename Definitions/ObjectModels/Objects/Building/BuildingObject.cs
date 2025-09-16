@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
@@ -36,7 +37,7 @@ public class BuildingObject : ILocoStruct, IImageTableNameProvider, IHasBuilding
 		=> ProducedQuantity.Count == 2
 		&& BuildingComponents.Validate();
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 	{
 		var direction = (CardinalDirection)(id % 4);
 		var level = id / 4;

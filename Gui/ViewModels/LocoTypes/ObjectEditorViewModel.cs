@@ -167,7 +167,23 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 				else
 				{
 					CurrentObject.LocoObject.ImageTable?.PaletteMap = Model.PaletteMap;
-					ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents);
+
+					// temporary hack to show building components
+					if (CurrentObject.LocoObject.ObjectType == Definitions.ObjectModels.Types.ObjectType.Building)
+					{
+						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents);
+					}
+					else
+					{
+						if (CurrentObject.LocoObject.ImageTable == null)
+						{
+							logger.Info("${CurrentFile.DisplayName has no image table");
+						}
+						else
+						{
+							ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, null);
+						}
+					}
 				}
 			}
 			else

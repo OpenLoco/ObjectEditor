@@ -102,7 +102,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	public BuildingComponentsViewModel? BuildingComponents { get; set; }
 
-	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponentsModel buildingComponents = null)
+	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponentsModel? buildingComponents = null)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 		PaletteMap = imageTable.PaletteMap;
@@ -129,7 +129,10 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		}
 
 		// building components
-		BuildingComponents = new(buildingComponents, imageTable);
+		if (buildingComponents != null)
+		{
+			BuildingComponents = new(buildingComponents, imageTable);
+		}
 
 		_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
 			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));
@@ -344,7 +347,9 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 				var img = is1Pixel ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
 				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
 				var graphicsElement = GraphicsElementFromImage(newOffset, img, PaletteMap);
-				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name) ? DefaultImageTableNameProvider.GetImageName(i) : graphicsElement.Name;
+				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name)
+					? DefaultImageTableNameProvider.GetImageName(i)
+					: graphicsElement.Name;
 
 				GroupedImageViewModels[currentGroup].Images.Add(new ImageViewModel(graphicsElement, PaletteMap));
 				currentGroupIndex++;

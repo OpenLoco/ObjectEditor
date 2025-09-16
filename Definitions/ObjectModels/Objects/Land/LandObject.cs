@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Land;
 
@@ -42,7 +43,7 @@ public class LandObject : ILocoStruct, IImageTableNameProvider
 		return NumImageAngles is 1 or 2 or 4;
 	}
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 		=> ImageIdNameMap.TryGetValue(id, out value);
 
 	public static readonly Dictionary<int, string> ImageIdNameMap = new()

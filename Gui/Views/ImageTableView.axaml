@@ -251,8 +251,8 @@
 					</paz:ZoomBorder>
 					<TextBlock HorizontalAlignment="Center" Text="{Binding #ZoomBorder.ZoomX, StringFormat='Zoom: {0:F2}x | \'R\' to reset'}"></TextBlock>
 				</StackPanel>
-				<ContentControl Content="{Binding BuildingComponents}" />
-				<!--<ContentControl Content="{Binding SelectedImage}" />-->
+				<!--<ContentControl Content="{Binding BuildingComponents}" />-->
+				<ContentControl Content="{Binding SelectedImage}" />
 			</DockPanel>
 		</Grid>
 	</DockPanel>

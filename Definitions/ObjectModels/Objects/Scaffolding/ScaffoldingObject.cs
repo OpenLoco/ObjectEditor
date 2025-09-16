@@ -1,12 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Definitions.ObjectModels.Objects.Scaffolding;
-public class ScaffoldingObject : ILocoStruct
+public class ScaffoldingObject : ILocoStruct, IImageTableNameProvider
 {
 	public List<uint16_t> SegmentHeights { get; set; } = [];
 	public List<uint16_t> RoofHeights { get; set; } = [];
 
 	public bool Validate() => true;
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 		=> ImageIdNameMap.TryGetValue(id, out value);
 
 	public static Dictionary<int, string> ImageIdNameMap = new()

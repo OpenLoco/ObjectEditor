@@ -1,8 +1,9 @@
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Steam;
 
-public class SteamObject : ILocoStruct
+public class SteamObject : ILocoStruct, IImageTableNameProvider
 {
 	public uint8_t NumStationaryTicks { get; set; }
 	public uint8_t SpriteWidth { get; set; }
@@ -17,4 +18,7 @@ public class SteamObject : ILocoStruct
 
 	public bool Validate()
 		=> true;
+
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
+		=> throw new NotImplementedException();
 }

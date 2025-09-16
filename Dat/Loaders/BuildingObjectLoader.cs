@@ -21,7 +21,6 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 
 	public static class StructSizes
 	{
-		public const int Dat = 0xBE;
 		public const int BuildingPartAnimation = 0x02;
 	}
 
@@ -29,6 +28,9 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 	{
 		public const int Base = 4;
 	}
+
+	public static ObjectType ObjectType => ObjectType.Building;
+	public static DatObjectType DatObjectType => DatObjectType.Building;
 
 	public static LocoObject Load(Stream stream)
 	{
@@ -70,10 +72,10 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			br.SkipPointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Building), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations, numElevatorSequences);
@@ -82,9 +84,9 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
 			// define groups
-			var imageTable = ImageTableLoader.CreateImageTable(imageList);
+			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
 
-			return new LocoObject(ObjectType.Building, model, stringTable, imageTable);
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -143,7 +145,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			bw.WriteEmptyPointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);

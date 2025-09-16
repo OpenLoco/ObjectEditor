@@ -18,12 +18,14 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 	internal static class StructSizes
 	{
-		public const int Dat = 0xBA;
 		public const int BuildingPartAnimation = 0x02;
 		public const int AirportBuilding = 0x04;
 		public const int MovementNode = 0x08;
 		public const int MovementEdge = 0x0C;
 	}
+
+	public static ObjectType ObjectType => ObjectType.Airport;
+	public static DatObjectType DatObjectType => DatObjectType.Airport;
 
 	public static LocoObject Load(Stream stream)
 	{
@@ -62,10 +64,10 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			model.var_B6 = br.ReadBytes(0xBA - 0xB6);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Airport), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations, numMovementNodes, numMovementEdges);
@@ -74,9 +76,9 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
 			// define groups
-			var imageTable = ImageTableLoader.CreateImageTable(imageList);
+			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
 
-			return new LocoObject(ObjectType.Airport, model, stringTable, imageTable);
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -168,7 +170,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(model.var_B6);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);

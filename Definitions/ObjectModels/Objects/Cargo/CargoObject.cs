@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Definitions.ObjectModels.Objects.Cargo;
 
 public class CargoObject : ILocoStruct, IImageTableNameProvider
@@ -20,7 +22,7 @@ public class CargoObject : ILocoStruct, IImageTableNameProvider
 		=> var_02 <= 3840
 		&& CargoTransferTime != 0;
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 	{
 		value = id == 0
 			? "kInlineSprite"

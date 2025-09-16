@@ -622,7 +622,7 @@ public class LoadSaveTests
 			Assert.That(struc.CliffEdgeHeader.Name, Is.EqualTo("LSBROWN"), nameof(struc.CliffEdgeHeader));
 			Assert.That(struc.CliffEdgeHeader.Checksum, Is.Zero, nameof(struc.CliffEdgeHeader));
 			Assert.That(struc.CliffEdgeHeader.ObjectType, Is.EqualTo(ObjectType.CliffEdge), nameof(struc.CliffEdgeHeader));
-			Assert.That(struc.CliffEdgeHeader.ObjectSource, Is.Zero, nameof(struc.CliffEdgeHeader));
+			Assert.That(struc.CliffEdgeHeader.ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CliffEdgeHeader));
 
 			Assert.That(struc.UnkObjectHeader, Is.Null, nameof(struc.UnkObjectHeader));
 

@@ -22,6 +22,9 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 		public const int Dat = 0x30;
 	}
 
+	public static ObjectType ObjectType => ObjectType.Road;
+	public static DatObjectType DatObjectType => DatObjectType.Road;
+
 	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
@@ -29,8 +32,6 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new RoadObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -58,18 +59,21 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			br.SkipByte(); // pad_2F, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Road), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			LoadVariable(br, model, numBridges, numStations, numMods, numCompatible);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.Road, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -114,7 +118,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)0); // pad_2F, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);

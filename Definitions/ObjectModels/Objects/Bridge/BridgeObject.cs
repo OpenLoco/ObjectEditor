@@ -1,8 +1,9 @@
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Bridge;
 
-public class BridgeObject : ILocoStruct
+public class BridgeObject : ILocoStruct, IImageTableNameProvider
 {
 	public BridgeObjectFlags Flags { get; set; }
 	public uint16_t ClearHeight { get; set; }
@@ -66,4 +67,7 @@ public class BridgeObject : ILocoStruct
 
 		return true;
 	}
+
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
+		=> throw new NotImplementedException();
 }

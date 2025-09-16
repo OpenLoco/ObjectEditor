@@ -1,6 +1,7 @@
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Dat.Types;
 
@@ -23,7 +24,7 @@ public class G1Dat : IImageTableNameProvider
 		};
 	}
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 		=> id < 3550
 			? BaseImageIdNameMap.TryGetValue(id, out value)
 			: (IsSteamG1 ? SteamImageIdNameMap : GoGImageIdNameMap).TryGetValue(id, out value);

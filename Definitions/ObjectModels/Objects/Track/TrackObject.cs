@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Track;
 
@@ -64,7 +65,7 @@ public class TrackObject : ILocoStruct, IImageTableNameProvider
 		return Stations.Count <= 7;
 	}
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 		=> ImageIdNameMap.TryGetValue(id, out value);
 
 	// taken from OpenLoco TrackObject.h

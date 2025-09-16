@@ -3,8 +3,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
-using static Dat.Loaders.CompetitorObjectLoader;
 
 namespace Dat.Loaders;
 
@@ -15,10 +13,8 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 		public const int ImagesLength = 9;
 	}
 
-	public static class StructSizes
-	{
-		public const int Dat = 0x38;
-	}
+	public static ObjectType ObjectType => ObjectType.Competitor;
+	public static DatObjectType DatObjectType => DatObjectType.Competitor;
 
 	public static LocoObject Load(Stream stream)
 	{
@@ -27,8 +23,6 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new CompetitorObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // First name offset, not part of object definition
@@ -43,18 +37,21 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 			model.var_37 = br.ReadByte(); // unused
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Competitor), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			// N/A
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.Competitor, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -77,7 +74,7 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 			bw.Write(model.var_37); // unused
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
@@ -140,20 +137,3 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 		unk12 = 1 << 12,
 	}
 }
-
-[TypeConverter(typeof(ExpandableObjectConverter))]
-[LocoStructSize(0x38)]
-[LocoStructType(DatObjectType.Competitor)]
-internal record DatCompetitorObject(
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id FullName,
-		[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id LastName,
-		[property: LocoStructOffset(0x04)] DatCompetitorNamePrefix AvailableNamePrefixes, // bitset
-		[property: LocoStructOffset(0x08)] DatCompetitorPlaystyle AvailablePlaystyles, // bitset
-		[property: LocoStructOffset(0x0C)] DatCompetitorEmotion Emotions, // bitset
-		[property: LocoStructOffset(0x10), Browsable(false), LocoArrayLength(CompetitorObjectLoader.Constants.ImagesLength)] image_id[] Images,
-		[property: LocoStructOffset(0x34)] uint8_t Intelligence,
-		[property: LocoStructOffset(0x35)] uint8_t Aggressiveness,
-		[property: LocoStructOffset(0x36)] uint8_t Competitiveness,
-		[property: LocoStructOffset(0x37), LocoPropertyMaybeUnused] uint8_t var_37
-	)
-{ }

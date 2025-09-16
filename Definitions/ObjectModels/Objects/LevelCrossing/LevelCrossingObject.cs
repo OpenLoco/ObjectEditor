@@ -1,6 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Definitions.ObjectModels.Objects.LevelCrossing;
 
-public class LevelCrossingObject : ILocoStruct
+public class LevelCrossingObject : ILocoStruct, IImageTableNameProvider
 {
 	public int16_t CostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
@@ -29,4 +31,7 @@ public class LevelCrossingObject : ILocoStruct
 			_ => false,
 		};
 	}
+
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
+		=> throw new NotImplementedException();
 }

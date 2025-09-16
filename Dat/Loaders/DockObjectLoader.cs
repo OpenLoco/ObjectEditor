@@ -21,6 +21,9 @@ public abstract class DockObjectLoader : IDatObjectLoader
 		public const int Dat = 0x28;
 	}
 
+	public static ObjectType ObjectType => ObjectType.Dock;
+	public static DatObjectType DatObjectType => DatObjectType.Dock;
+
 	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
@@ -52,10 +55,10 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			};
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Dock), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
@@ -66,9 +69,9 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
 			// define groups
-			var imageTable = ImageTableLoader.CreateImageTable(imageList);
+			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
 
-			return new LocoObject(ObjectType.Dock, model, stringTable, imageTable);
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -98,7 +101,7 @@ public abstract class DockObjectLoader : IDatObjectLoader
 			bw.Write(model.BoatPosition.Y);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);

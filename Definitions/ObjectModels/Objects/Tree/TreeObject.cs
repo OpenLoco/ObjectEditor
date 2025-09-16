@@ -1,6 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Definitions.ObjectModels.Objects.Tree;
 
-public class TreeObject : ILocoStruct
+public class TreeObject : ILocoStruct, IImageTableNameProvider
 {
 	public uint8_t Clearance { get; set; }
 	public uint8_t Height { get; set; }
@@ -55,4 +57,7 @@ public class TreeObject : ILocoStruct
 
 		return var_05 >= var_04;
 	}
+
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
+		=> throw new NotImplementedException();
 }

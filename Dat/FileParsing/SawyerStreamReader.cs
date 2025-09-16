@@ -274,8 +274,8 @@ public static class SawyerStreamReader
 				currElement.ImageData = [.. imageData[(int)currElement.Offset..(int)nextOffset]];
 			}
 
-			// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
-			// image (which was also compressed) is now uncompressed, so we don't need do double-uncompress it.
+			// if rleCompressed, decompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
+			// image (which was also compressed) is now decompressed, so we don't need do double-decompress it.
 			if (currElement.Flags.HasFlag(DatG1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
 			{
 				currElement.ImageData = DecodeRLEImageData(currElement);

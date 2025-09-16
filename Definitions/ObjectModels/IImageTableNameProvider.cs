@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels;
 
@@ -9,12 +10,12 @@ public interface IHasGraphicsElements
 
 public interface IImageTableNameProvider
 {
-	public bool TryGetImageName(int id, out string? value);
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value);
 }
 
 public class DefaultImageTableNameProvider : IImageTableNameProvider
 {
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 	{
 		value = GetImageName(id);
 		return true;

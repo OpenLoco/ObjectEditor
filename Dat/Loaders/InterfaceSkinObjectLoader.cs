@@ -3,7 +3,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.InterfaceSkin;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 
 namespace Dat.Loaders;
 
@@ -17,6 +16,9 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 		public const int Dat = 0x18;
 	}
 
+	public static ObjectType ObjectType => ObjectType.InterfaceSkin;
+	public static DatObjectType DatObjectType => DatObjectType.InterfaceSkin;
+
 	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
@@ -24,8 +26,6 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new InterfaceSkinObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -50,18 +50,21 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 			model.TimeToolbarColour = (Colour)br.ReadByte();
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.InterfaceSkin), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			// N/A
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.InterfaceSkin, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -94,7 +97,7 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.TimeToolbarColour);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
@@ -107,29 +110,3 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 		}
 	}
 }
-
-[LocoStructSize(0x18)]
-[LocoStructType(DatObjectType.InterfaceSkin)]
-internal record DatInterfaceSkinObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02), Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x06)] DatColour MapTooltipObjectColour,
-	[property: LocoStructOffset(0x07)] DatColour MapTooltipCargoColour,
-	[property: LocoStructOffset(0x08)] DatColour TooltipColour,
-	[property: LocoStructOffset(0x09)] DatColour ErrorColour,
-	[property: LocoStructOffset(0x0A)] DatColour WindowPlayerColor,
-	[property: LocoStructOffset(0x0B)] DatColour WindowTitlebarColour,
-	[property: LocoStructOffset(0x0C)] DatColour WindowColour,
-	[property: LocoStructOffset(0x0D)] DatColour WindowConstructionColour,
-	[property: LocoStructOffset(0x0E)] DatColour WindowTerraFormColour,
-	[property: LocoStructOffset(0x0F)] DatColour WindowMapColour,
-	[property: LocoStructOffset(0x10)] DatColour WindowOptionsColour,
-	[property: LocoStructOffset(0x11)] DatColour Colour_11,
-	[property: LocoStructOffset(0x12)] DatColour TopToolbarPrimaryColour,
-	[property: LocoStructOffset(0x13)] DatColour TopToolbarSecondaryColour,
-	[property: LocoStructOffset(0x14)] DatColour TopToolbarTertiaryColour,
-	[property: LocoStructOffset(0x15)] DatColour TopToolbarQuaternaryColour,
-	[property: LocoStructOffset(0x16)] DatColour PlayerInfoToolbarColour,
-	[property: LocoStructOffset(0x17)] DatColour TimeToolbarColour
-	)
-{ }

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Definitions.ObjectModels.Objects.Wall;
 
 public class WallObject : ILocoStruct, IImageTableNameProvider
@@ -9,7 +11,7 @@ public class WallObject : ILocoStruct, IImageTableNameProvider
 
 	public bool Validate() => true;
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 	{
 		var result = ImageIdNameMap.TryGetValue(id, out value);
 

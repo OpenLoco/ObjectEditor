@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Track;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.TrackExtra;
 
@@ -31,7 +32,7 @@ public class TrackExtraObject : ILocoStruct, IImageTableNameProvider
 		return BuildCostFactor > 0;
 	}
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 		=> ImageIdNameMap.TryGetValue(id - 8, out value);
 
 	// taken from OpenLoco TrackExtraObject.h

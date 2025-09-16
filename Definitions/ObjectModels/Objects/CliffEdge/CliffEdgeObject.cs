@@ -1,10 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Definitions.ObjectModels.Objects.CliffEdge;
 
 public class CliffEdgeObject : ILocoStruct, IImageTableNameProvider
 {
 	public bool Validate() => true;
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 	{
 		if (id is >= 0 and <= 63)
 		{

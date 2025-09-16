@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Definitions.ObjectModels.Objects.Water;
@@ -24,7 +25,7 @@ public class WaterObject : ILocoStruct, IImageTableNameProvider
 		return true;
 	}
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 		=> ImageIdNameMap.TryGetValue(id, out value);
 
 	public static Dictionary<int, string> ImageIdNameMap = new()

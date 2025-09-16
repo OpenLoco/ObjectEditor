@@ -1,9 +1,10 @@
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Dock;
 
-public class DockObject : ILocoStruct, IHasBuildingComponents
+public class DockObject : ILocoStruct, IHasBuildingComponents, IImageTableNameProvider
 {
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
@@ -35,4 +36,7 @@ public class DockObject : ILocoStruct, IHasBuildingComponents
 
 		return BuildCostFactor > 0;
 	}
+
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
+		=> throw new NotImplementedException();
 }

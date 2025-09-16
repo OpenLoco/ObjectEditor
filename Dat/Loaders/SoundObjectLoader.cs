@@ -23,6 +23,9 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 		public const int SoundObjectData = 0x1E;
 	}
 
+	public static ObjectType ObjectType => ObjectType.Sound;
+	public static DatObjectType DatObjectType => DatObjectType.Sound;
+
 	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
@@ -30,8 +33,6 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new SoundObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -41,10 +42,10 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			model.Volume = br.ReadUInt32();
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Sound), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			LoadVariable(br, model);
@@ -52,7 +53,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			// image table
 			// N/A
 
-			return new LocoObject(ObjectType.Sound, model, stringTable, imageTable);
+			return new LocoObject(ObjectType, model, stringTable);
 		}
 	}
 
@@ -86,7 +87,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			bw.Write(model.Volume);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);

@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Road;
 
@@ -62,9 +63,15 @@ public class RoadObject : ILocoStruct, IImageTableNameProvider
 		return true;
 	}
 
-	public bool TryGetImageName(int id, out string? value)
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 	{
-		if (id is >= 0 and <= 33)
+		if (id is >= 0 and <= 31)
+		{
+			value = $"uiPreviewImage{id}";
+			return true;
+		}
+
+		if (id is >= 32 and <= 33)
 		{
 			return ImageIdNameMap.TryGetValue(id, out value);
 		}
@@ -81,39 +88,6 @@ public class RoadObject : ILocoStruct, IImageTableNameProvider
 
 	public static Dictionary<int, string> ImageIdNameMap = new()
 	{
-		{ 0, "uiPreviewImage0" },
-		{ 1, "uiPreviewImage1" },
-		{ 2, "uiPreviewImage2" },
-		{ 3, "uiPreviewImage3" },
-		{ 4, "uiPreviewImage4" },
-		{ 5, "uiPreviewImage5" },
-		{ 6, "uiPreviewImage6" },
-		{ 7, "uiPreviewImage7" },
-		{ 8, "uiPreviewImage8" },
-		{ 9, "uiPreviewImage9" },
-		{ 10, "uiPreviewImage10" },
-		{ 11, "uiPreviewImage11" },
-		{ 12, "uiPreviewImage12" },
-		{ 13, "uiPreviewImage13" },
-		{ 14, "uiPreviewImage14" },
-		{ 15, "uiPreviewImage15" },
-		{ 16, "uiPreviewImage0" },
-		{ 17, "uiPreviewImage1" },
-		{ 18, "uiPreviewImage2" },
-		{ 19, "uiPreviewImage3" },
-		{ 20, "uiPreviewImage4" },
-		{ 21, "uiPreviewImage5" },
-		{ 22, "uiPreviewImage6" },
-		{ 23, "uiPreviewImage7" },
-		{ 24, "uiPreviewImage8" },
-		{ 25, "uiPreviewImage9" },
-		{ 26, "uiPreviewImage10" },
-		{ 27, "uiPreviewImage11" },
-		{ 28, "uiPreviewImage12" },
-		{ 29, "uiPreviewImage13" },
-		{ 30, "uiPreviewImage14" },
-		{ 31, "uiPreviewImage15" },
-
 		{ 32, "uiPickupFromTrack" },
 		{ 33, "uiPlaceOnTrack" },
 	};

@@ -4,6 +4,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Currency;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Dat.Loaders;
 
@@ -17,6 +18,9 @@ public abstract class CurrencyObjectLoader : IDatObjectLoader
 		public const int Dat = 0x0C;
 	}
 
+	public static ObjectType ObjectType => ObjectType.Currency;
+	public static DatObjectType DatObjectType => DatObjectType.Currency;
+
 	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
@@ -24,8 +28,6 @@ public abstract class CurrencyObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new CurrencyObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -36,18 +38,21 @@ public abstract class CurrencyObjectLoader : IDatObjectLoader
 			model.Factor = br.ReadByte();
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Currency), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			// N/A
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.Currency, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -66,7 +71,7 @@ public abstract class CurrencyObjectLoader : IDatObjectLoader
 			bw.Write(model.Factor);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
@@ -78,6 +83,8 @@ public abstract class CurrencyObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
+
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value) => throw new NotImplementedException();
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]

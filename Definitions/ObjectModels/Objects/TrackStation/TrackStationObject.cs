@@ -1,6 +1,7 @@
 using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.TrackStation;
 
@@ -49,8 +50,10 @@ public class TrackStationObject : ILocoStruct, IImageTableNameProvider
 		return true; // CompatibleTrackObjects.Count <= TrackStationObjectLoader.Constants.MaxNumCompatible;
 	}
 
-	public bool TryGetImageName(int id, out string? value)
-		=> ImageIdNameMap.TryGetValue(id, out value);
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
+	{
+		return ImageIdNameMap.TryGetValue(id, out value);
+	}
 
 	public static readonly Dictionary<int, string> ImageIdNameMap = new()
 	{

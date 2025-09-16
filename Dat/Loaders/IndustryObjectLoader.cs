@@ -28,6 +28,9 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		public const int IndustryObjectUnk38 = 0x02;
 	}
 
+	public static ObjectType ObjectType => ObjectType.Industry;
+	public static DatObjectType DatObjectType => DatObjectType.Industry;
+
 	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
@@ -88,10 +91,10 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			model.MonthlyClosureChance = br.ReadByte();
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Industry), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations);
@@ -100,9 +103,9 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
 			// define groups
-			var imageTable = ImageTableLoader.CreateImageTable(imageList);
+			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
 
-			return new LocoObject(ObjectType.Industry, model, stringTable, imageTable);
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -195,7 +198,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			bw.Write(model.MonthlyClosureChance);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);

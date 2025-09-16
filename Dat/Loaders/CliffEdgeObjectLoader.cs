@@ -33,7 +33,7 @@ public abstract class CliffEdgeObjectLoader : IDatObjectLoader
 			// image table
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
 
 			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}

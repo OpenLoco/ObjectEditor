@@ -1,8 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Definitions.ObjectModels.Objects.Currency;
 
-public class CurrencyObject : ILocoStruct, IImageTableNameProvider
+public class CurrencyObject : ILocoStruct
 {
 	public uint8_t Separator { get; set; }
 	public uint8_t Factor { get; set; }
@@ -21,7 +19,4 @@ public class CurrencyObject : ILocoStruct, IImageTableNameProvider
 
 		return true;
 	}
-
-	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
-		=> throw new NotImplementedException();
 }

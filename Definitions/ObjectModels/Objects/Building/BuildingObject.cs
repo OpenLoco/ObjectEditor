@@ -1,10 +1,9 @@
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
-public class BuildingObject : ILocoStruct, IImageTableNameProvider, IHasBuildingComponents
+public class BuildingObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
@@ -36,12 +35,4 @@ public class BuildingObject : ILocoStruct, IImageTableNameProvider, IHasBuilding
 	public bool Validate()
 		=> ProducedQuantity.Count == 2
 		&& BuildingComponents.Validate();
-
-	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
-	{
-		var direction = (CardinalDirection)(id % 4);
-		var level = id / 4;
-		value = $"{direction} | Level {level}";
-		return true;
-	}
 }

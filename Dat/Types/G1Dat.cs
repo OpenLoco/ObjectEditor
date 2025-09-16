@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Dat.Types;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class G1Dat : IImageTableNameProvider
+public class G1Dat
 {
 
 	public G1Header G1Header { get; set; }

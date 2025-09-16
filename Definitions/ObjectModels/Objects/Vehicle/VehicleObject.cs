@@ -1,10 +1,9 @@
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Types;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
-public class VehicleObject : ILocoStruct, IImageTableNameProvider
+public class VehicleObject : ILocoStruct
 {
 	public TransportMode Mode { get; set; }
 	public VehicleType Type { get; set; }
@@ -179,7 +178,4 @@ public class VehicleObject : ILocoStruct, IImageTableNameProvider
 
 		return true;
 	}
-
-	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
-		=> throw new NotImplementedException();
 }

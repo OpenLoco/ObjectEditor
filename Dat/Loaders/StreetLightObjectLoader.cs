@@ -45,7 +45,7 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
 			// define groups
-			var imageTable = ImageTableLoader.CreateImageTable(model, ObjectType, imageList);
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
 
 			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}

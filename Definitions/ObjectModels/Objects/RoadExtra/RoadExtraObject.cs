@@ -1,9 +1,8 @@
 using Definitions.ObjectModels.Objects.Road;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.RoadExtra;
 
-public class RoadExtraObject : ILocoStruct, IImageTableNameProvider
+public class RoadExtraObject : ILocoStruct
 {
 	public RoadTraitFlags RoadPieces { get; set; } = RoadTraitFlags.None;
 	public uint8_t PaintStyle { get; set; }
@@ -31,7 +30,4 @@ public class RoadExtraObject : ILocoStruct, IImageTableNameProvider
 
 		return BuildCostFactor > 0;
 	}
-
-	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
-		=> throw new NotImplementedException();
 }

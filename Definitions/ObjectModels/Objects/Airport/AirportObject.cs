@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Airport;
 
-public class AirportObject : ILocoStruct, IHasBuildingComponents, IImageTableNameProvider
+public class AirportObject : ILocoStruct, IHasBuildingComponents
 {
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
@@ -44,7 +44,4 @@ public class AirportObject : ILocoStruct, IHasBuildingComponents, IImageTableNam
 
 		return BuildCostFactor > 0;
 	}
-
-	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
-		=> throw new NotImplementedException();
 }

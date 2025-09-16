@@ -1,9 +1,8 @@
 using Definitions.ObjectModels.Types;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.TrackSignal;
 
-public class TrackSignalObject : ILocoStruct, IImageTableNameProvider
+public class TrackSignalObject : ILocoStruct
 {
 	public TrackSignalObjectFlags Flags { get; set; }
 	public uint8_t AnimationSpeed { get; set; }
@@ -58,15 +57,4 @@ public class TrackSignalObject : ILocoStruct, IImageTableNameProvider
 
 		return true;
 	}
-
-	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
-	=> ImageIdNameMap.TryGetValue(id, out value);
-
-	public static Dictionary<int, string> ImageIdNameMap = new()
-	{
-		{ 80, "redLights" },
-		{ 88, "redLights2" },
-		{ 96, "greenLights" },
-		{ 104, "greenLights2" },
-	};
 }

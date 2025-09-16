@@ -1,8 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Definitions.ObjectModels.Objects.Climate;
 
-public class ClimateObject : ILocoStruct, IImageTableNameProvider
+public class ClimateObject : ILocoStruct
 {
 	public uint8_t FirstSeason { get; set; }
 	public uint8_t SeasonLength1 { get; set; }
@@ -15,6 +13,4 @@ public class ClimateObject : ILocoStruct, IImageTableNameProvider
 	public bool Validate()
 		=> WinterSnowLine <= SummerSnowLine
 		&& FirstSeason < 4;
-	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
-		=> throw new NotImplementedException();
 }

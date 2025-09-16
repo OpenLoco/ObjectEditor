@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Industry;
 
-public class IndustryObject : ILocoStruct, IHasBuildingComponents, IImageTableNameProvider
+public class IndustryObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint32_t FarmImagesPerGrowthStage { get; set; }
 	public uint8_t MinNumBuildings { get; set; }
@@ -96,7 +96,4 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents, IImageTableNa
 
 		return InitialProductionRate[1].Min <= 100;
 	}
-
-	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
-		=> throw new NotImplementedException();
 }

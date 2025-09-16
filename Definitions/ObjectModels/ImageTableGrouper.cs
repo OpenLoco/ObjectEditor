@@ -14,7 +14,6 @@ using Definitions.ObjectModels.Objects.TrackStation;
 using Definitions.ObjectModels.Objects.Wall;
 using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels;

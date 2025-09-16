@@ -1889,7 +1889,7 @@ public static class ImageTableGrouper
 				CreateCliffEdgeGroups(imageList, imageTable);
 				break;
 			case ObjectType.Water:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				CreateWaterGroups(imageList, imageTable);
 				break;
 			case ObjectType.Land:
 				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
@@ -1910,7 +1910,7 @@ public static class ImageTableGrouper
 				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
 				break;
 			case ObjectType.StreetLight:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				CreateStreetLightGroups(imageList, imageTable);
 				break;
 			case ObjectType.Tunnel:
 				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
@@ -1946,7 +1946,7 @@ public static class ImageTableGrouper
 				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
 				break;
 			case ObjectType.Tree:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				CreateTreeGroups(imageList, imageTable);
 				break;
 			case ObjectType.Snow:
 				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
@@ -2096,5 +2096,29 @@ public static class ImageTableGrouper
 		imageTable.Groups.Add(("type 0", imageList[0..10]));
 		imageTable.Groups.Add(("type 1", imageList[10..24]));
 		imageTable.Groups.Add(("type 2", imageList[24..36]));
+	}
+
+	private static void CreateStreetLightGroups(List<GraphicsElement> imageList, ImageTable imageTable)
+		=> imageTable.Groups.AddRange(imageList
+			.Chunk(4)
+			.Select((x, i) => ($"Year group {i}", x.ToList()))
+			.ToList());
+
+	private static void CreateTreeGroups(List<GraphicsElement> imageList, ImageTable imageTable)
+		=> imageTable.Groups.AddRange(imageList
+			.Chunk(4)
+			.Select((x, i) => ($"Variation {i}", x.ToList()))
+			.ToList());
+
+	private static void CreateWaterGroups(List<GraphicsElement> imageList, ImageTable imageTable)
+	{
+		imageTable.Groups.Add(("zoom 1", imageList[0..10]));
+		imageTable.Groups.Add(("zoom 2", imageList[10..20]));
+		imageTable.Groups.Add(("zoom 3", imageList[20..30]));
+		imageTable.Groups.Add(("zoom 4", imageList[30..40]));
+		imageTable.Groups.Add(("palettes", imageList[40..42]));
+		imageTable.Groups.Add(("icon-animation", imageList[42..58]));
+		imageTable.Groups.Add(("icon-interaction", imageList[58..60]));
+		imageTable.Groups.Add(("animation", imageList[60..76]));
 	}
 }

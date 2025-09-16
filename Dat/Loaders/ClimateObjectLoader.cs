@@ -46,12 +46,10 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 			// N/A
 
 			// image table
-			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
+			// N/A but Climate has an empty image table for some reason
+			_ = SawyerStreamReader.ReadImageTable(br).Table;
 
-			// define groups
-			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
-
-			return new LocoObject(ObjectType, model, stringTable, imageTable);
+			return new LocoObject(ObjectType, model, stringTable);
 		}
 	}
 

@@ -65,23 +65,26 @@ public class IdempotenceTests
 			Assert.That(JsonSerializer.Serialize((object)actual.Object), Is.EqualTo(JsonSerializer.Serialize((object)expected.Object)));
 			Assert.That(JsonSerializer.Serialize(actual.StringTable), Is.EqualTo(JsonSerializer.Serialize(expected.StringTable)));
 
-			var pm = new PaletteMap("C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\Assets\\palette.png");
-			var i = 0;
-			foreach (var ae in actual.ImageTable.GraphicsElements.Zip(expected.ImageTable.GraphicsElements))
+			if (actual.ImageTable != null && expected.ImageTable != null)
 			{
-				var ac = JsonSerializer.Serialize(ae.First);
-				var ex = JsonSerializer.Serialize(ae.Second);
-
-				if (ac != ex)
+				var pm = new PaletteMap("C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\Assets\\palette.png");
+				var i = 0;
+				foreach (var ae in actual.ImageTable.GraphicsElements.Zip(expected.ImageTable.GraphicsElements))
 				{
-					_ = pm.TryConvertG1ToRgba32Bitmap(ae.First, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img1);
-					_ = pm.TryConvertG1ToRgba32Bitmap(ae.Second, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img2);
-					img1.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-actual.bmp");
-					img2.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-expected.bmp");
-				}
+					var ac = JsonSerializer.Serialize(ae.First);
+					var ex = JsonSerializer.Serialize(ae.Second);
 
-				Assert.That(ac, Is.EqualTo(ex));
-				i++;
+					if (ac != ex)
+					{
+						_ = pm.TryConvertG1ToRgba32Bitmap(ae.First, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img1);
+						_ = pm.TryConvertG1ToRgba32Bitmap(ae.Second, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img2);
+						img1.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-actual.bmp");
+						img2.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-expected.bmp");
+					}
+
+					Assert.That(ac, Is.EqualTo(ex));
+					i++;
+				}
 			}
 		}
 	}

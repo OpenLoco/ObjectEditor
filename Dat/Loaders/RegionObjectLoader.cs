@@ -55,9 +55,11 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 
 			// image table
 			// N/A but Region has an empty image table for some reason
-			_ = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType, model, stringTable);
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 

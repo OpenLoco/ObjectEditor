@@ -69,7 +69,7 @@ public abstract class ScenarioTextObjectLoader : IDatObjectLoader
 			// N/A
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, new ImageTable().GraphicsElements);
 		}
 	}
 }

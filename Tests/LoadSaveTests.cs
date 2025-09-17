@@ -287,7 +287,7 @@ public class LoadSaveTests
 			Assert.That(struc.WinterSnowLine, Is.EqualTo(48), nameof(struc.WinterSnowLine));
 			Assert.That(struc.SummerSnowLine, Is.EqualTo(76), nameof(struc.SummerSnowLine));
 
-			Assert.That(obj.ImageTable.GraphicsElements, Is.Empty);
+			Assert.That(obj.ImageTable, Is.Null);
 		});
 		LoadSaveGenericTest<ClimateObject>(objectName, assertFunc);
 	}
@@ -806,7 +806,8 @@ public class LoadSaveTests
 	[TestCase("STEX000.DAT")]
 	public void ScenarioTextObject(string objectName)
 	{
-		void assertFunc(LocoObject obj, ScenarioTextObject struc) => Assert.Multiple(() => Assert.That(obj.ImageTable.GraphicsElements, Is.Empty));
+		void assertFunc(LocoObject obj, ScenarioTextObject struc)
+			=> Assert.Multiple(() => Assert.That(obj.ImageTable, Is.Null));
 		LoadSaveGenericTest<ScenarioTextObject>(objectName, assertFunc);
 	}
 
@@ -845,7 +846,7 @@ public class LoadSaveTests
 			Assert.That(struc.SoundObjectData.PcmHeader.SampleRate, Is.EqualTo(22050), nameof(struc.SoundObjectData.PcmHeader.SampleRate));
 			Assert.That(struc.SoundObjectData.PcmHeader.WaveFormatTag, Is.EqualTo(1), nameof(struc.SoundObjectData.PcmHeader.WaveFormatTag));
 
-			Assert.That(obj.ImageTable.GraphicsElements, Is.Empty);
+			Assert.That(obj.ImageTable, Is.Null);
 		});
 		LoadSaveGenericTest<SoundObject>(objectName, assertFunc);
 	}
@@ -926,7 +927,7 @@ public class LoadSaveTests
 			Assert.That(obj.StringTable["Name"][LanguageId.English_UK], Is.EqualTo("North-American style town names"));
 			Assert.That(obj.StringTable["Name"][LanguageId.English_US], Is.EqualTo("North-American style town names"));
 
-			Assert.That(obj.ImageTable.GraphicsElements, Is.Empty);
+			Assert.That(obj.ImageTable, Is.Null);
 		});
 		LoadSaveGenericTest<TownNamesObject>(objectName, assertFunc);
 	}

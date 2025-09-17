@@ -14,6 +14,7 @@ using Definitions.ObjectModels.Objects.TrackStation;
 using Definitions.ObjectModels.Objects.Wall;
 using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels;
@@ -1867,6 +1868,8 @@ public static class ImageTableGrouper
 {
 	public static ImageTable CreateImageTable(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
 	{
+		var originalCount = imageList.Count;
+
 		ImageTableNamer.NameImages(obj, objectType, imageList);
 
 		var imageTable = new ImageTable();
@@ -1960,9 +1963,6 @@ public static class ImageTableGrouper
 			case ObjectType.Building:
 				CreateBuildingGroups(imageList, imageTable);
 				break;
-			case ObjectType.Scaffolding:
-				CreateScaffoldingGroups(imageList, imageTable);
-				break;
 			case ObjectType.Industry:
 				CreateBuildingGroups(imageList, imageTable);
 				break;
@@ -1978,6 +1978,8 @@ public static class ImageTableGrouper
 			default:
 				break;
 		}
+
+		Debug.Assert(imageTable.GraphicsElements.Count == originalCount, "Image grouping lost or gained images");
 
 		return imageTable;
 	}
@@ -1996,8 +1998,8 @@ public static class ImageTableGrouper
 	private static void CreateBridgeGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
 		imageTable.Groups.Add(("preview", imageList[0..1]));
-		imageTable.Groups.Add(("base plates", imageList[1..5]));
-		imageTable.Groups.Add(("unk", imageList[6..11]));
+		imageTable.Groups.Add(("base plates", imageList[1..6]));
+		imageTable.Groups.Add(("unk", imageList[6..12]));
 		imageTable.Groups.Add(("<uncategorised>", imageList[12..]));
 	}
 
@@ -2052,7 +2054,7 @@ public static class ImageTableGrouper
 		imageTable.Groups.Add(("toolbar", imageList[1..31]));
 		imageTable.Groups.Add(("build-vehicle", imageList[31..43]));
 		imageTable.Groups.Add(("toolbar", imageList[43..49]));
-		imageTable.Groups.Add(("paint", imageList[49..55]));
+		imageTable.Groups.Add(("paint", imageList[49..57]));
 		imageTable.Groups.Add(("population", imageList[57..65]));
 		imageTable.Groups.Add(("performance-index", imageList[65..73]));
 		imageTable.Groups.Add(("cargo-units", imageList[73..81]));

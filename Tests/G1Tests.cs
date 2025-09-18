@@ -12,7 +12,7 @@ public class G1Tests
 {
 	readonly ILogger Logger = new Logger();
 	const string Steam_G1 = "Q:\\Games\\Locomotion\\G1\\steam-g1.dat"; // todo: check both steam and gog
-	const string GoG_G1 = "Q:\\Games\\Locomotion\\G1\\steam-g1.dat"; // todo: check both steam and gog 
+	const string GoG_G1 = "Q:\\Games\\Locomotion\\G1\\gog-g1.dat"; // todo: check both steam and gog 
 
 	[TestCase(Steam_G1)]
 	[TestCase(GoG_G1)]

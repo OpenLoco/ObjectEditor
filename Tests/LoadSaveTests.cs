@@ -620,7 +620,7 @@ public class LoadSaveTests
 			Assert.That(struc.VariationLikelihood, Is.EqualTo(10), nameof(struc.VariationLikelihood));
 
 			Assert.That(struc.CliffEdgeHeader.Name, Is.EqualTo("LSBROWN"), nameof(struc.CliffEdgeHeader));
-			Assert.That(struc.CliffEdgeHeader.Checksum, Is.Zero, nameof(struc.CliffEdgeHeader));
+			Assert.That(struc.CliffEdgeHeader.DatChecksum, Is.Zero, nameof(struc.CliffEdgeHeader));
 			Assert.That(struc.CliffEdgeHeader.ObjectType, Is.EqualTo(ObjectType.CliffEdge), nameof(struc.CliffEdgeHeader));
 			Assert.That(struc.CliffEdgeHeader.ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CliffEdgeHeader));
 
@@ -718,29 +718,29 @@ public class LoadSaveTests
 
 			Assert.That(struc.Bridges, Has.Count.EqualTo(5), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[0].Name, Is.EqualTo("BRDGBRCK"), nameof(struc.Bridges));
-			Assert.That(struc.Bridges[0].Checksum, Is.Zero, nameof(struc.Bridges));
+			Assert.That(struc.Bridges[0].DatChecksum, Is.Zero, nameof(struc.Bridges));
 			Assert.That(struc.Bridges[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[0].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[1].Name, Is.EqualTo("BRDGSTAR"), nameof(struc.Bridges));
-			Assert.That(struc.Bridges[1].Checksum, Is.Zero, nameof(struc.Bridges));
+			Assert.That(struc.Bridges[1].DatChecksum, Is.Zero, nameof(struc.Bridges));
 			Assert.That(struc.Bridges[1].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[1].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[2].Name, Is.EqualTo("BRDGGIRD"), nameof(struc.Bridges));
-			Assert.That(struc.Bridges[2].Checksum, Is.Zero, nameof(struc.Bridges));
+			Assert.That(struc.Bridges[2].DatChecksum, Is.Zero, nameof(struc.Bridges));
 			Assert.That(struc.Bridges[2].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[2].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[3].Name, Is.EqualTo("BRDGSUSP"), nameof(struc.Bridges));
-			Assert.That(struc.Bridges[3].Checksum, Is.Zero, nameof(struc.Bridges));
+			Assert.That(struc.Bridges[3].DatChecksum, Is.Zero, nameof(struc.Bridges));
 			Assert.That(struc.Bridges[3].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[3].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[4].Name, Is.EqualTo("BRDGWOOD"), nameof(struc.Bridges));
-			Assert.That(struc.Bridges[4].Checksum, Is.Zero, nameof(struc.Bridges));
+			Assert.That(struc.Bridges[4].DatChecksum, Is.Zero, nameof(struc.Bridges));
 			Assert.That(struc.Bridges[4].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[4].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
 
 			Assert.That(struc.CompatibleTracksAndRoads, Has.Count.EqualTo(1), nameof(struc.CompatibleTracksAndRoads));
 			Assert.That(struc.CompatibleTracksAndRoads[0].Name, Is.EqualTo("ROADTRAM"), nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.CompatibleTracksAndRoads[0].Checksum, Is.Zero, nameof(struc.CompatibleTracksAndRoads));
+			Assert.That(struc.CompatibleTracksAndRoads[0].DatChecksum, Is.Zero, nameof(struc.CompatibleTracksAndRoads));
 			Assert.That(struc.CompatibleTracksAndRoads[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CompatibleTracksAndRoads));
 			Assert.That(struc.CompatibleTracksAndRoads[0].ObjectType, Is.EqualTo(ObjectType.Road), nameof(struc.CompatibleTracksAndRoads));
 
@@ -748,12 +748,12 @@ public class LoadSaveTests
 
 			Assert.That(struc.Stations, Has.Count.EqualTo(1), nameof(struc.Stations));
 			Assert.That(struc.Stations[0].Name, Is.EqualTo("BUSSTOP"), nameof(struc.Stations));
-			Assert.That(struc.Stations[0].Checksum, Is.Zero, nameof(struc.Stations));
+			Assert.That(struc.Stations[0].DatChecksum, Is.Zero, nameof(struc.Stations));
 			Assert.That(struc.Stations[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Stations));
 			Assert.That(struc.Stations[0].ObjectType, Is.EqualTo(ObjectType.RoadStation), nameof(struc.Stations));
 
 			Assert.That(struc.Tunnel.Name, Is.EqualTo("TUNNEL2"), nameof(struc.Tunnel));
-			Assert.That(struc.Tunnel.Checksum, Is.Zero, nameof(struc.Tunnel.Checksum));
+			Assert.That(struc.Tunnel.DatChecksum, Is.Zero, nameof(struc.Tunnel.DatChecksum));
 			Assert.That(struc.Tunnel.ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Tunnel.ObjectSource));
 			Assert.That(struc.Tunnel.ObjectType, Is.EqualTo(ObjectType.Tunnel), nameof(struc.Tunnel.ObjectType));
 
@@ -1127,13 +1127,13 @@ public class LoadSaveTests
 			Assert.That(struc.StartSounds.Count, Is.EqualTo(2), nameof(struc.StartSounds));
 
 			Assert.That(struc.StartSounds[0].Name, Is.EqualTo("SNDTD1"), nameof(struc.StartSounds) + "[0]Name");
-			Assert.That(struc.StartSounds[0].Checksum, Is.Zero, nameof(struc.StartSounds) + "[0]Checksum");
+			Assert.That(struc.StartSounds[0].DatChecksum, Is.Zero, nameof(struc.StartSounds) + "[0]Checksum");
 			//Assert.That(struc.StartSounds[0].Flags, Is.EqualTo(1), nameof(struc.StartSounds) + "[0]Flags");
 			Assert.That(struc.StartSounds[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.StartSounds) + "[0]Checksum");
 			Assert.That(struc.StartSounds[0].ObjectType, Is.EqualTo(ObjectType.Sound), nameof(struc.StartSounds) + "[0]Flags");
 
 			Assert.That(struc.StartSounds[1].Name, Is.EqualTo("SNDTD2"), nameof(struc.StartSounds) + "[1]Name");
-			Assert.That(struc.StartSounds[1].Checksum, Is.Zero, nameof(struc.StartSounds) + "[1]Checksum");
+			Assert.That(struc.StartSounds[1].DatChecksum, Is.Zero, nameof(struc.StartSounds) + "[1]Checksum");
 			//Assert.That(struc.StartSounds[1].Flags, Is.EqualTo(1), nameof(struc.StartSounds) + "[1]Flags");
 			Assert.That(struc.StartSounds[1].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.StartSounds) + "[1]Checksum");
 			Assert.That(struc.StartSounds[1].ObjectType, Is.EqualTo(ObjectType.Sound), nameof(struc.StartSounds) + "[1]Flags");

@@ -7,7 +7,7 @@ namespace Dat.Converters;
 public static class S5HeaderConverter
 {
 	public static S5Header Convert(this ObjectModelHeader objectModelHeader)
-		=> new(objectModelHeader.Name, objectModelHeader.Checksum)
+		=> new(objectModelHeader.Name, objectModelHeader.DatChecksum)
 		{
 			ObjectType = objectModelHeader.ObjectType.Convert(),
 			ObjectSource = objectModelHeader.ObjectSource.Convert(),
@@ -16,9 +16,9 @@ public static class S5HeaderConverter
 	public static ObjectModelHeader Convert(this S5Header s5Header)
 		=> new(
 			s5Header.Name,
-			s5Header.Checksum,
 			s5Header.ObjectType.Convert(),
-			s5Header.ObjectSource.Convert());
+			s5Header.ObjectSource.Convert(),
+			s5Header.Checksum);
 }
 
 public static class ObjectTypeConverter

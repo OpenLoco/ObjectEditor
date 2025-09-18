@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class ObjectHeaderViewModel(SawyerEncoding encoding, uint dataLength) : ReactiveObject
+public class ObjectHeaderViewModel(SawyerEncoding encoding, uint datDataLength) : ReactiveObject
 {
 	public ObjectHeaderViewModel()
 		: this(SawyerEncoding.Uncompressed, 0)
@@ -18,8 +18,8 @@ public class ObjectHeaderViewModel(SawyerEncoding encoding, uint dataLength) : R
 	{ }
 
 	[Reactive]
-	public SawyerEncoding Encoding { get; set; } = encoding;
+	public SawyerEncoding DatEncoding { get; set; } = encoding;
 
 	[ReadOnly(true)]
-	public uint32_t DataLength { get; } = dataLength;
+	public uint32_t DatDataLength { get; } = datDataLength;
 }

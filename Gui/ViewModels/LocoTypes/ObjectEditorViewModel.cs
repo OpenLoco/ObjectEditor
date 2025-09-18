@@ -325,7 +325,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		SawyerStreamWriter.Save(filename,
 			ObjectModelHeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
 			ObjectModelHeaderViewModel?.ObjectSource ?? CurrentObject.DatFileInfo.S5Header.ObjectSource.Convert(),
-			encodingToUse ?? ObjectHeaderViewModel?.Encoding ?? SawyerEncoding.Uncompressed,
+			encodingToUse ?? ObjectHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
 			CurrentObject.LocoObject,
 			logger,
 			Model.Settings.AllowSavingAsVanillaObject);

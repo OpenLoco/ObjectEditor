@@ -122,7 +122,7 @@ public class LocoBinaryReader : BinaryReader
 		var header = S5Header.Read(ReadBytes(S5Header.StructLength));
 		// vanilla objects will have sourcegameflag == 0 and checksum == 0. custom objects will have a checksum specified - may need custom handling
 		return header.Checksum != 0 || header.Flags != 255
-			? new ObjectModelHeader(header.Name, header.Checksum, header.ObjectType.Convert(), header.ObjectSource.Convert())
+			? new ObjectModelHeader(header.Name, header.ObjectType.Convert(), header.ObjectSource.Convert(), header.Checksum)
 			: default;
 	}
 

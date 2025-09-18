@@ -20,7 +20,7 @@
 		<cnv:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
 	</UserControl.Resources>
 
-	<DockPanel >
+	<DockPanel>
 		<TabStrip DockPanel.Dock="Top"  Margin="2" SelectedIndex="{Binding SelectedTabIndex}" HorizontalAlignment="Center" Name="LocalOnlineTab">
 			<TabItem>
 				<TabItem.Header>
@@ -89,7 +89,7 @@
 							<Setter Property="Height" Value="32"/>
 						</Style>
 						<Style Selector="TreeDataGrid TreeDataGridRow:nth-child(even)">
-							<Setter Property="Background" Value="#18808080"/>
+							<Setter Property="Background" Value="#30808080"/>
 							<!-- ARGB in hex -->
 						</Style>
 					</TreeDataGrid.Styles>

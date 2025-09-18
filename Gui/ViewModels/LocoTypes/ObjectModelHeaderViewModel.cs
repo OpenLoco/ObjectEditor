@@ -9,15 +9,10 @@ namespace Gui.ViewModels;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class ObjectModelHeaderViewModel : ReactiveObject, IObjectViewModel<ObjectModelHeader>
 {
-	// todo: instead of setting ObjectType to a default here, instead prompt user to select a type if appropriate
-	public ObjectModelHeaderViewModel()
-		: this(string.Empty, 0, ObjectSource.Custom, ObjectType.InterfaceSkin)
-	{ }
-
-	public ObjectModelHeaderViewModel(string name, uint checksum, ObjectSource objectSource, ObjectType objectType)
+	public ObjectModelHeaderViewModel(string name, uint datChecksum, ObjectSource objectSource, ObjectType objectType)
 	{
 		Name = name;
-		Checksum = checksum;
+		DatChecksum = datChecksum;
 		ObjectSource = objectSource;
 		ObjectType = objectType;
 	}
@@ -25,7 +20,7 @@ public class ObjectModelHeaderViewModel : ReactiveObject, IObjectViewModel<Objec
 	public ObjectModelHeaderViewModel(ObjectModelHeader header)
 	{
 		Name = header.Name;
-		Checksum = header.Checksum;
+		DatChecksum = header.DatChecksum;
 		ObjectSource = header.ObjectSource;
 		ObjectType = header.ObjectType;
 	}
@@ -33,12 +28,12 @@ public class ObjectModelHeaderViewModel : ReactiveObject, IObjectViewModel<Objec
 	[MaxLength(8)]
 	public string Name { get; set; }
 
-	uint32_t Checksum { get; set; }
+	uint32_t DatChecksum { get; set; }
 
-	public string ChecksumHex
+	public string DatChecksumHex
 	{
-		get => string.Format($"0x{Checksum:X}");
-		set => Checksum = Convert.ToUInt32(value[2..], 16);
+		get => string.Format($"0x{DatChecksum:X}");
+		set => DatChecksum = Convert.ToUInt32(value[2..], 16);
 	}
 
 	public ObjectSource ObjectSource { get; set; }
@@ -46,5 +41,5 @@ public class ObjectModelHeaderViewModel : ReactiveObject, IObjectViewModel<Objec
 	public ObjectType ObjectType { get; set; }
 
 	public ObjectModelHeader GetAsModel()
-		=> new(Name, Checksum, ObjectType, ObjectSource);
+		=> new(Name, ObjectType, ObjectSource, DatChecksum);
 }

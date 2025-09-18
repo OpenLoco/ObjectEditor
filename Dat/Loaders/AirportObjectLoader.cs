@@ -18,12 +18,14 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 
 	internal static class StructSizes
 	{
-		public const int Dat = 0xBA;
 		public const int BuildingPartAnimation = 0x02;
 		public const int AirportBuilding = 0x04;
 		public const int MovementNode = 0x08;
 		public const int MovementEdge = 0x0C;
 	}
+
+	public static ObjectType ObjectType => ObjectType.Airport;
+	public static DatObjectType DatObjectType => DatObjectType.Airport;
 
 	public static LocoObject Load(Stream stream)
 	{
@@ -32,8 +34,6 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new AirportObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -64,26 +64,29 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			model.var_B6 = br.ReadBytes(0xBA - 0xB6);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Airport), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			LoadVariable(br, model, numBuildingParts, numBuildingVariations, numMovementNodes, numMovementEdges);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.Airport, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
 	private static void LoadVariable(LocoBinaryReader br, AirportObject model, int numBuildingParts, int numBuildingVariations, byte numMovementNodes, byte numMovementEdges)
 	{
-		model.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
-		model.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
-		model.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
+		model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
+		model.BuildingComponents.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
+		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
 
 		// building positions
 		while (br.PeekByte() != LocoConstants.Terminator)
@@ -97,6 +100,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			};
 			model.BuildingPositions.Add(ab);
 		}
+
 		br.SkipTerminator();
 
 		// movement nodes
@@ -146,8 +150,8 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.WriteEmptyImageId(); // Image, not part of object definition
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write(model.AllowedPlaneTypes);
-			bw.Write((uint8_t)model.BuildingHeights.Count);
-			bw.Write((uint8_t)model.BuildingVariations.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingHeights.Count);
+			bw.Write((uint8_t)model.BuildingComponents.BuildingVariations.Count);
 			bw.WriteEmptyPointer(); // BuildingHeights
 			bw.WriteEmptyPointer(); // BuildingAnimations
 			bw.WriteEmptyPointer(Constants.BuildingVariationCount); // BuildingVariations
@@ -166,7 +170,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(model.var_B6);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
@@ -175,15 +179,15 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			SaveVariable(bw, model);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 
 	private static void SaveVariable(LocoBinaryWriter bw, AirportObject model)
 	{
-		bw.Write(model.BuildingHeights);
-		bw.Write(model.BuildingAnimations);
-		bw.Write(model.BuildingVariations);
+		bw.Write(model.BuildingComponents.BuildingHeights);
+		bw.Write(model.BuildingComponents.BuildingAnimations);
+		bw.Write(model.BuildingComponents.BuildingVariations);
 
 		// positions
 		foreach (var x in model.BuildingPositions)
@@ -193,6 +197,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(x.X);
 			bw.Write(x.Y);
 		}
+
 		bw.WriteTerminator();
 
 		// movement nodes

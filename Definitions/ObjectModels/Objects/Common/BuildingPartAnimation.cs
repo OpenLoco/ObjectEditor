@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Definitions.ObjectModels.Objects.Building;
+namespace Definitions.ObjectModels.Objects.Common;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class BuildingPartAnimation

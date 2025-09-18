@@ -1,5 +1,6 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.Audio;
 
@@ -47,38 +48,36 @@ public record DatMusicWaveFormat(
 		return ((MemoryStream)bs.BaseStream).ToArray();
 	}
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (Signature != 0x46464952) // "RIFF"
 		{
-			return false;
+			yield return new ValidationResult("Signature must be 'RIFF'", [nameof(Signature)]);
 		}
 
 		if (RiffType != 0x45564157) // "WAVE"
 		{
-			return false;
+			yield return new ValidationResult("RiffType must be 'WAVE'", [nameof(RiffType)]);
 		}
 
 		if (FormatMarker is not 0x20746d66 and not 0x00746d66) // "fmt\0" or "fmt"
 		{
-			return false;
+			yield return new ValidationResult("FormatMarker must be 'fmt ' or 'fmt\\0'", [nameof(FormatMarker)]);
 		}
 
 		if (FormatType != 1) // expected PCM
 		{
-			return false;
+			yield return new ValidationResult("FormatType must be 1 (PCM)", [nameof(FormatType)]);
 		}
 
 		if (BitsPerSample != 16)
 		{
-			return false;
+			yield return new ValidationResult("BitsPerSample must be 16", [nameof(BitsPerSample)]);
 		}
 
 		if (DataMarker != 0x61746164)
 		{
-			return false;
+			yield return new ValidationResult("DataMarker must be 'data'", [nameof(DataMarker)]);
 		}
-
-		return true;
 	}
 }

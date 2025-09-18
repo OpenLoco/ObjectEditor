@@ -2,6 +2,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.SCV5;
 
@@ -149,7 +150,8 @@ public record GameStateScenarioA(
 {
 	//public const int StructLength = 0x4A0644;
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -162,7 +164,8 @@ public record GameStateScenarioB(
 //[property: LocoStructOffset(0x123480), LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities  // this isn't actually part of the data chunk in a scenario!
 ) : ILocoStruct
 {
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -175,7 +178,8 @@ public record GameStateScenarioC(
 	[property: LocoStructOffset(0x3B580), LocoArrayLength((int)Limits.kMaxWaves), Browsable(false)] uint8_t[] Orders
 ) : ILocoStruct
 {
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
@@ -312,5 +316,6 @@ public record GameStateSave([property: LocoStructOffset(0x00), LocoArrayLength(2
 	)
 	: ILocoStruct, IGameState
 {
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

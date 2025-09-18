@@ -125,7 +125,7 @@ public class PaletteMap
 	public (Color Color, byte Index)[] Brown
 		=> Palette[214..226];
 	public (Color Color, byte Index)[] Amber
-		=> [.. Palette[230..240], .. Palette[244..246]];
+		=> [.. Palette[230..240], .. Palette[243..245]];
 
 	#endregion
 

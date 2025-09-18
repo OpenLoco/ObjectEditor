@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
@@ -27,5 +28,34 @@ public class BodySprite : ILocoStruct
 	//public Dictionary<BodySpriteSlopeType, List<int>> ImageIds { get; set; } = [];
 	//public int NumImages { get; set; }
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+	{
+		if (Flags.HasFlag(BodySpriteFlags.HasSprites))
+		{
+			if (NumFlatRotationFrames is not 8 or 16 or 32 or 64 or 128)
+			{
+				yield return new ValidationResult($"{nameof(NumFlatRotationFrames)} must be one of the following values: 8, 16, 32, 64, 128.", [nameof(NumFlatRotationFrames)]);
+			}
+
+			if (NumSlopedRotationFrames is not 4 or 8 or 16 or 32)
+			{
+				yield return new ValidationResult($"{nameof(NumSlopedRotationFrames)} must be one of the following values: 8, 16, 32, 64, 128.", [nameof(NumSlopedRotationFrames)]);
+			}
+
+			if (NumAnimationFrames is not 1 or 2 or 4)
+			{
+				yield return new ValidationResult($"{nameof(NumAnimationFrames)} must be one of the following values: 1, 2, 4.", [nameof(NumAnimationFrames)]);
+			}
+
+			if (NumCargoLoadFrames is < 1 or > 5)
+			{
+				yield return new ValidationResult($"{nameof(NumCargoLoadFrames)} must be between 1 and 5 inclusive.", [nameof(NumCargoLoadFrames)]);
+			}
+
+			if (NumRollFrames is not 1 or 3)
+			{
+				yield return new ValidationResult($"{nameof(NumRollFrames)} must be one of the following values: 1, 3.", [nameof(NumRollFrames)]);
+			}
+		}
+	}
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Airport;
 
@@ -10,5 +11,6 @@ public class AirportBuilding : ILocoStruct
 	public int8_t X { get; set; }
 	public int8_t Y { get; set; }
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

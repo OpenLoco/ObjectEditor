@@ -1,6 +1,6 @@
 using Dat.Converters;
 using Dat.Types;
-using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Objects.Vehicle;
@@ -330,7 +330,6 @@ public class LocoBinaryReader : BinaryReader
 			VolumeDecreaseStep = ReadByte(),
 			SpeedFrequencyFactor = ReadByte(),
 		};
-
 
 	public CargoOffset[][][] ReadCargoOffsets()
 	{

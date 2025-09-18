@@ -28,12 +28,15 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 
 	public static class StructSizes
 	{
-		public const int Dat = 0x15E;
+		//public const int Dat = 0x15E;
 		public const int SoundData = 0x1B;
 		public const int FrictionSound = 0x0B;
 		public const int SimpleMotorSound = 0x11;
 		public const int GearboxMotorSound = 0x1B;
 	}
+
+	public static ObjectType ObjectType => ObjectType.Vehicle;
+	public static DatObjectType DatObjectType => DatObjectType.Vehicle;
 
 	public static LocoObject Load(Stream stream)
 	{
@@ -42,25 +45,26 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new VehicleObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			LoadFixed(br, model, out var numRequiredTrackExtras, out var numCompatibleVehicles, out var numStartSounds);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Vehicle), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			LoadVariable(br, model, numRequiredTrackExtras, numCompatibleVehicles, numStartSounds);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.Vehicle, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -277,7 +281,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.WriteEmptyBytes(Constants.MaxStartSounds * 1); // StartSounds, not part of object
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
@@ -286,7 +290,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			SaveVariable(model, bw);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 

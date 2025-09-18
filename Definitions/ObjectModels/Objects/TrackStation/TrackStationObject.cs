@@ -1,10 +1,11 @@
 using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.TrackStation;
 
-public class TrackStationObject : ILocoStruct, IImageTableNameProvider
+public class TrackStationObject : ILocoStruct
 {
 	public uint8_t PaintStyle { get; set; }
 	public uint8_t Height { get; set; }
@@ -24,66 +25,31 @@ public class TrackStationObject : ILocoStruct, IImageTableNameProvider
 
 	public uint8_t[][] var_6E { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (CostIndex >= 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 31 inclusive.", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"The negative of {nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (BuildCostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be positive.", [nameof(BuildCostFactor)]);
 		}
 
 		if (PaintStyle >= 1)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(PaintStyle)} must be 0.", [nameof(PaintStyle)]);
 		}
 
-		return true; // CompatibleTrackObjects.Count <= TrackStationObjectLoader.Constants.MaxNumCompatible;
+		if (CompatibleTrackObjects.Count > 7 /*TrackStationObjectLoader.Constants.MaxNumCompatible*/)
+		{
+			yield return new ValidationResult($"{nameof(CompatibleTrackObjects)} must have at most 7 entries.", [nameof(CompatibleTrackObjects)]);
+		}
 	}
-
-	public bool TryGetImageName(int id, out string? value)
-		=> ImageIdNameMap.TryGetValue(id, out value);
-
-	public static readonly Dictionary<int, string> ImageIdNameMap = new()
-	{
-		{ 0, "preview_image" },
-		{ 1, "preview_image_glass_overlay" },
-		{ 2, "totalPreviewImages" },
-	};
-
-	// These are relative to ImageOffsets
-	// ImageOffsets is the imageIds per sequenceIndex (for start/middle/end of the platform)
-	//namespace Style0
-	//{
-	//    constexpr uint32_t straightBackNE = 0;
-	//    constexpr uint32_t straightFrontNE = 1;
-	//    constexpr uint32_t straightCanopyNE = 2;
-	//    constexpr uint32_t straightCanopyTranslucentNE = 3;
-	//    constexpr uint32_t straightBackSE = 4;
-	//    constexpr uint32_t straightFrontSE = 5;
-	//    constexpr uint32_t straightCanopySE = 6;
-	//    constexpr uint32_t straightCanopyTranslucentSE = 7;
-	//    constexpr uint32_t diagonalNE0 = 8;
-	//    constexpr uint32_t diagonalNE3 = 9;
-	//    constexpr uint32_t diagonalNE1 = 10;
-	//    constexpr uint32_t diagonalCanopyNE1 = 11;
-	//    constexpr uint32_t diagonalCanopyTranslucentNE1 = 12;
-	//    constexpr uint32_t diagonalSE1 = 13;
-	//    constexpr uint32_t diagonalSE2 = 14;
-	//    constexpr uint32_t diagonalSE3 = 15;
-	//    constexpr uint32_t diagonalCanopyTranslucentSE3 = 16;
-	//    constexpr uint32_t totalNumImages = 17;
-	//}
-	//namespace Style1
-	//{
-	//    constexpr uint32_t totalNumImages = 8;
-	//}
 }

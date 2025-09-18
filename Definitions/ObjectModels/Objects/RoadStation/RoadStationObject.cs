@@ -1,10 +1,11 @@
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.RoadStation;
 
-public class RoadStationObject : ILocoStruct, IImageTableNameProvider
+public class RoadStationObject : ILocoStruct
 {
 	public uint8_t PaintStyle { get; set; }
 	public uint8_t Height { get; set; }
@@ -23,63 +24,36 @@ public class RoadStationObject : ILocoStruct, IImageTableNameProvider
 	//public uint8_t[][][] CargoOffsetBytes { get; set; }
 	public CargoOffset[][][] CargoOffsets { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (CostIndex >= 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 31 inclusive.", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"The negative of {nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (BuildCostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be positive.", [nameof(BuildCostFactor)]);
 		}
 
 		if (PaintStyle >= 1)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(PaintStyle)} must be 0.", [nameof(PaintStyle)]);
 		}
 
 		if (CompatibleRoadObjects.Count > 7)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CompatibleRoadObjects)} must have at most 7 entries.", [nameof(CompatibleRoadObjects)]);
 		}
 
 		if (Flags.HasFlag(RoadStationObjectFlags.Passenger) && Flags.HasFlag(RoadStationObjectFlags.Freight))
 		{
-			return false;
+			yield return new ValidationResult($"Only one of {nameof(RoadStationObjectFlags.Passenger)} or {nameof(RoadStationObjectFlags.Freight)} can be set.", [nameof(Flags)]);
 		}
-
-		return true;
 	}
-
-	public bool TryGetImageName(int id, out string? value)
-		=> ImageIdNameMap.TryGetValue(id, out value);
-
-	public static Dictionary<int, string> ImageIdNameMap = new()
-	{
-		{ 0, "preview_image" },
-		{ 1, "preview_image_glass_overlay" },
-		{ 2, "North West Back Wall" },
-		{ 3, "North West Front Platform" },
-		{ 4, "North West Front Wall/Roof" },
-		{ 5, "North West Glass Overlay" },
-		{ 6, "South West Back Wall" },
-		{ 7, "South West Front Platform" },
-		{ 8, "South West Front Wall/Roof" },
-		{ 9, "South West Glass Overlay" },
-		{ 10, "South East Back Wall" },
-		{ 11, "South East Front Platform" },
-		{ 12, "South East Front Wall/Roof" },
-		{ 13, "South East Glass Overlay" },
-		{ 14, "North East Back Wall" },
-		{ 15, "North East Front Platform" },
-		{ 16, "North East Front Wall/Roof" },
-		{ 17, "North East Glass Overlay" },
-	};
 }

@@ -3,22 +3,24 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Gui.ViewModels"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
-	xmlns:gmc="using:Gui.Models.Converters"
 	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
 	xmlns:vi="using:Gui.Views"
+	xmlns:cnv="using:Gui.Converters"
+	xmlns:vmg="using:Gui.ViewModels.Graphics"
+	xmlns:vmlt="using:Gui.ViewModels.LocoTypes"
 	mc:Ignorable="d"
 	d:DesignWidth="1200"
 	d:DesignHeight="900"
 	x:Class="Gui.Views.ImageTableView"
-	x:DataType="vm:ImageTableViewModel">
+	x:DataType="vmg:ImageTableViewModel">
 
 	<UserControl.Resources>
 		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
-		<gmc:NegativeValueConverter x:Key="NegativeValueConverter"/>
+		<cnv:NegativeValueConverter x:Key="NegativeValueConverter"/>
+		<cnv:ColourArrayToGradientStopsConverter x:Key="ColourArrayToGradientStopsConverter" />
 	</UserControl.Resources>
 
 	<DockPanel>
@@ -35,61 +37,165 @@
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export</TextBlock>
 				</DockPanel>
 			</Button>
-			<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Background colour">
+			<Button Content="Colours" HorizontalAlignment="Stretch" Margin="2" Padding="2" >
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
-					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Background colour</TextBlock>
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Colours</TextBlock>
 				</DockPanel>
-				<Button.Flyout >
+				<Button.Styles>
+					<Style Selector="FlyoutPresenter">
+						<Setter Property="Padding" Value="0" />
+					</Style>
+				</Button.Styles>
+				<Button.Flyout>
 					<Flyout>
-						<ColorView Name="ImageBackgroundColorView" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+						<ItemsControl Margin="0" Padding="0">
+							<Button HorizontalAlignment="Stretch" ToolTip.Tip="Background colour">
+								<DockPanel>
+									<materialIcons:MaterialIcon Kind="PaletteOutline" Width="24" Height="24" Margin="2" />
+									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Background colour</TextBlock>
+								</DockPanel>
+								<Button.Flyout>
+									<Flyout>
+										<ColorView Name="ImageBackgroundColorView" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+									</Flyout>
+								</Button.Flyout>
+							</Button>
+							<ComboBox ItemsSource="{Binding ColourSwatches}" SelectedItem="{Binding SelectedPrimarySwatch}" HorizontalAlignment="Stretch" ToolTip.Tip="Primary remap swatch">
+								<ComboBox.Styles>
+									<Style Selector="FlyoutPresenter">
+										<Setter Property="Margin" Value="0" />
+										<Setter Property="Padding" Value="0" />
+									</Style>
+								</ComboBox.Styles>
+								<ComboBox.ItemContainerTheme>
+									<ControlTheme TargetType="ComboBoxItem">
+										<Setter Property="Padding" Value="0" />
+										<Setter Property="Margin" Value="0" />
+									</ControlTheme>
+								</ComboBox.ItemContainerTheme>
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<Border Margin="0">
+											<Border.Background>
+												<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+													<LinearGradientBrush.GradientStops>
+														<Binding Path="GradientColours">
+															<Binding.Converter>
+																<cnv:ColourArrayToGradientStopsConverter />
+															</Binding.Converter>
+														</Binding>
+													</LinearGradientBrush.GradientStops>
+												</LinearGradientBrush>
+											</Border.Background>
+											<TextBlock Text="{Binding Swatch}" Margin="5" VerticalAlignment="Center"/>
+										</Border>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+							<ComboBox ItemsSource="{Binding ColourSwatches}" SelectedItem="{Binding SelectedSecondarySwatch}" HorizontalAlignment="Stretch" ToolTip.Tip="Secondary remap swatch">
+								<ComboBox.Styles>
+									<Style Selector="FlyoutPresenter">
+										<Setter Property="Margin" Value="0" />
+										<Setter Property="Padding" Value="0" />
+									</Style>
+								</ComboBox.Styles>
+								<ComboBox.ItemContainerTheme>
+									<ControlTheme TargetType="ComboBoxItem">
+										<Setter Property="Padding" Value="0" />
+										<Setter Property="Margin" Value="0" />
+									</ControlTheme>
+								</ComboBox.ItemContainerTheme>
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<Border Margin="0">
+											<Border.Background>
+												<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+													<LinearGradientBrush.GradientStops>
+														<Binding Path="GradientColours">
+															<Binding.Converter>
+																<cnv:ColourArrayToGradientStopsConverter />
+															</Binding.Converter>
+														</Binding>
+													</LinearGradientBrush.GradientStops>
+												</LinearGradientBrush>
+											</Border.Background>
+											<TextBlock Text="{Binding Swatch}" Margin="5" VerticalAlignment="Center"/>
+										</Border>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+						</ItemsControl>
 					</Flyout>
 				</Button.Flyout>
 			</Button>
-			<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedPrimarySwatch}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Primary remap swatch" />
-			<ComboBox ItemsSource="{Binding ColourSwatchesArr}" SelectedItem="{Binding SelectedSecondarySwatch}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Secondary remap swatch" />
-			<Button Command="{Binding CropAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Crops all images and adjusts offsets">
+			<Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="2" Padding="2" Content="Bulk editing" ToolTip.Tip="Bulk image editing options">
 				<DockPanel>
-					<materialIcons:MaterialIcon Kind="Crop" Width="24" Height="24" Margin="2" />
-					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Crop all</TextBlock>
+					<materialIcons:MaterialIcon Kind="FolderEdit" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Bulk editing</TextBlock>
 				</DockPanel>
-			</Button>
-			<Button Command="{Binding ZeroOffsetAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Sets all image offsets to 0">
-				<DockPanel>
-					<materialIcons:MaterialIcon Kind="PanTopLeft" Width="24" Height="24" Margin="2" />
-					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Zero all offsets</TextBlock>
-				</DockPanel>
-			</Button>
-			<Button Command="{Binding CenterOffsetAllImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Sets all image offsets to the centre of the image">
-				<DockPanel>
-					<materialIcons:MaterialIcon Kind="Pan" Width="24" Height="24" Margin="2" />
-					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Center all offsets</TextBlock>
-				</DockPanel>
+				<Button.Styles>
+					<Style Selector="FlyoutPresenter">
+						<Setter Property="Padding" Value="0" />
+					</Style>
+				</Button.Styles>
+				<Button.Flyout>
+					<Flyout>
+						<ItemsControl Margin="0" Padding="0">
+							<Button Command="{Binding CropAllImagesCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="Crops all images and adjusts offsets">
+								<DockPanel>
+									<materialIcons:MaterialIcon Kind="Crop" Width="24" Height="24" Margin="2" />
+									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Crop</TextBlock>
+								</DockPanel>
+							</Button>
+							<Button Command="{Binding ZeroOffsetAllImagesCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to 0">
+								<DockPanel>
+									<materialIcons:MaterialIcon Kind="PanTopLeft" Width="24" Height="24" Margin="2" />
+									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Zero offsets</TextBlock>
+								</DockPanel>
+							</Button>
+							<Button Command="{Binding CenterOffsetAllImagesCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to the centre of the image">
+								<DockPanel>
+									<materialIcons:MaterialIcon Kind="Pan" Width="24" Height="24" Margin="2" />
+									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Center offsets</TextBlock>
+								</DockPanel>
+							</Button>
+						</ItemsControl>
+					</Flyout>
+				</Button.Flyout>
 			</Button>
 		</StackPanel>
 		<Grid ColumnDefinitions="*, Auto, 320">
 			<ScrollViewer Margin="4">
 				<DockPanel>
 					<Panel Width="16" DockPanel.Dock="Right"></Panel>
-					<ListBox ItemsSource="{Binding ImageViewModels}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
-						<ListBox.ItemsPanel>
-							<ItemsPanelTemplate>
-								<WrapPanel />
-							</ItemsPanelTemplate>
-						</ListBox.ItemsPanel>
-						<ListBox.ItemTemplate>
+					<ItemsControl ItemsSource="{Binding GroupedImageViewModels}" Margin="4">
+						<ItemsControl.ItemTemplate>
 							<DataTemplate>
-								<Image Source="{Binding DisplayedImage}" Stretch="None" Margin="0">
-									<Image.ContextMenu>
-										<ContextMenu>
-											<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
-											<MenuItem Header="Crop image" Command="{Binding $parent[ListBox].((vm:ImageTableViewModel)DataContext).CropImageCommand}"/>
-										</ContextMenu>
-									</Image.ContextMenu>
-								</Image>
+								<Expander Header="{Binding GroupName}" IsExpanded="True" Margin="4" Padding="0" HorizontalAlignment="Stretch">
+									<ListBox ItemsSource="{Binding Images}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+										<ListBox.ItemsPanel>
+											<ItemsPanelTemplate>
+												<WrapPanel />
+											</ItemsPanelTemplate>
+										</ListBox.ItemsPanel>
+										<ListBox.ItemTemplate>
+											<DataTemplate>
+												<Image Source="{Binding DisplayedImage}" Stretch="None" Margin="0">
+													<Image.ContextMenu>
+														<ContextMenu>
+															<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vmg:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
+															<MenuItem Header="Crop image" Command="{Binding $parent[ListBox].((vmg:ImageTableViewModel)DataContext).CropImageCommand}"/>
+														</ContextMenu>
+													</Image.ContextMenu>
+												</Image>
+											</DataTemplate>
+										</ListBox.ItemTemplate>
+									</ListBox>
+								</Expander>
 							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
 				</DockPanel>
 			</ScrollViewer>
 			<GridSplitter Grid.Column="1" />
@@ -132,7 +238,8 @@
 							</Button.Flyout>
 						</Button>
 					</StackPanel>
-					<paz:ZoomBorder Name="ZoomBorder" MinWidth="256" MinHeight="256" Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" >
+					<paz:ZoomBorder Name="ZoomBorder" MinWidth="256" MinHeight="256" Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
+						<!-- Image list -->
 						<Canvas HorizontalAlignment="Center" VerticalAlignment="Center" Background="Gray">
 							<!--Bounding box-->
 							<Rectangle Canvas.Left="{Binding SelectedImage.SelectedBitmapPreviewBorder.X}" Canvas.Top="{Binding SelectedImage.SelectedBitmapPreviewBorder.Y}"  StrokeThickness="1.0" Width="{Binding SelectedImage.SelectedBitmapPreviewBorder.Width}" Height="{Binding SelectedImage.SelectedBitmapPreviewBorder.Height}" Opacity="1.0" Fill="{Binding #ImageColorViewPreviewBackground.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" Stroke="{Binding #ImageColorViewBorder.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}" />
@@ -144,6 +251,7 @@
 					</paz:ZoomBorder>
 					<TextBlock HorizontalAlignment="Center" Text="{Binding #ZoomBorder.ZoomX, StringFormat='Zoom: {0:F2}x | \'R\' to reset'}"></TextBlock>
 				</StackPanel>
+				<!--<ContentControl Content="{Binding BuildingComponents}" />-->
 				<ContentControl Content="{Binding SelectedImage}" />
 			</DockPanel>
 		</Grid>

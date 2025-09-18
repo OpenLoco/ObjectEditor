@@ -1,9 +1,10 @@
-using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Dock;
 
-public class DockObject : ILocoStruct
+public class DockObject : ILocoStruct, IHasBuildingComponents
 {
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
@@ -14,22 +15,29 @@ public class DockObject : ILocoStruct
 	public uint16_t ObsoleteYear { get; set; }
 	public Pos2 BoatPosition { get; set; }
 
-	public List<uint8_t> BuildingHeights { get; set; } = [];
-	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
-	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+	public BuildingComponentsModel BuildingComponents { get; set; } = new();
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
+		var bcValidationContext = new ValidationContext(BuildingComponents);
+		foreach (var result in BuildingComponents.Validate(bcValidationContext))
+		{
+			yield return result;
+		}
+
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 (inclusive).", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(SellCostFactor)} must be between 0 and -{BuildCostFactor} (inclusive).", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
-		return BuildCostFactor > 0;
+		if (BuildCostFactor <= 0)
+		{
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be greater than 0.", [nameof(BuildCostFactor)]);
+		}
 	}
 }

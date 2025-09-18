@@ -571,7 +571,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
 		{
 			var count = 0;
-			foreach (var g1 in locoObj!.LocoObject!.GraphicsElements)
+			foreach (var g1 in locoObj!.LocoObject!.ImageTable.GraphicsElements)
 			{
 				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
 				{

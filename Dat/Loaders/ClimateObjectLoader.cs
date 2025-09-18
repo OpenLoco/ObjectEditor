@@ -14,10 +14,8 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 		public const int Seasons = 4;
 	}
 
-	public static class StructSizes
-	{
-		public const int Dat = 0x0A;
-	}
+	public static ObjectType ObjectType => ObjectType.Climate;
+	public static DatObjectType DatObjectType => DatObjectType.Climate;
 
 	public static LocoObject Load(Stream stream)
 	{
@@ -26,8 +24,6 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new ClimateObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -41,18 +37,19 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 			_ = br.ReadByte(); // pad
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Climate), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			// N/A
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			// N/A but Climate has an empty image table for some reason
+			_ = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.Climate, model, stringTable, imageTable);
+			return new LocoObject(ObjectType, model, stringTable);
 		}
 	}
 
@@ -74,7 +71,7 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)0); // pad
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
@@ -83,7 +80,7 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 			// N/A
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, new ImageTable().GraphicsElements);
 		}
 	}
 }

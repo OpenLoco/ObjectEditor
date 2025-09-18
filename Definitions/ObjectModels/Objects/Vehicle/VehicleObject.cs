@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
@@ -48,134 +49,75 @@ public class VehicleObject : ILocoStruct
 
 	public uint8_t[] var_135 { get; set; } = [];
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 inclusive.", [nameof(CostIndex)]);
 		}
 
 		if (RunCostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(RunCostIndex)} must be between 0 and 32 inclusive.", [nameof(RunCostIndex)]);
 		}
 
 		if (CostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostFactor)} must be positive.", [nameof(CostFactor)]);
 		}
 
 		if (RunCostFactor < 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(RunCostFactor)} must be non-negative.", [nameof(RunCostFactor)]);
 		}
 
 		if (Flags.HasFlag(VehicleObjectFlags.AnyRoadType))
 		{
 			if (RequiredTrackExtras.Length != 0)
 			{
-				return false;
+				yield return new ValidationResult($"{nameof(RequiredTrackExtras)} must be empty if {nameof(VehicleObjectFlags.AnyRoadType)} is set.", [nameof(RequiredTrackExtras), nameof(Flags)]);
 			}
 
 			if (Flags.HasFlag(VehicleObjectFlags.RackRail))
 			{
-				return false;
+				yield return new ValidationResult($"{nameof(Flags)} cannot have both {nameof(VehicleObjectFlags.AnyRoadType)} and {nameof(VehicleObjectFlags.RackRail)} set.", [nameof(Flags)]);
 			}
 		}
 
 		if (RequiredTrackExtras.Length > 4)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(RequiredTrackExtras)} must have at most 4 entries.", [nameof(RequiredTrackExtras)]);
 		}
 
 		if (NumSimultaneousCargoTypes > 2)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(NumSimultaneousCargoTypes)} must be between 0 and 2 inclusive.", [nameof(NumSimultaneousCargoTypes)]);
 		}
 
 		if (CompatibleVehicles.Length > 8)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CompatibleVehicles)} must have at most 8 entries.", [nameof(CompatibleVehicles)]);
 		}
 
 		if (RackSpeed > Speed)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(RackSpeed)} must be less than or equal to {nameof(Speed)}.", [nameof(RackSpeed), nameof(Speed)]);
 		}
 
 		foreach (var bodySprite in BodySprites)
 		{
-			if (!bodySprite.Flags.HasFlag(BodySpriteFlags.HasSprites))
+			foreach (var result in bodySprite.Validate(validationContext))
 			{
-				continue;
-			}
-
-			switch (bodySprite.NumFlatRotationFrames)
-			{
-				case 8:
-				case 16:
-				case 32:
-				case 64:
-				case 128:
-					break;
-				default:
-					return false;
-			}
-
-			switch (bodySprite.NumSlopedRotationFrames)
-			{
-				case 4:
-				case 8:
-				case 16:
-				case 32:
-					break;
-				default:
-					return false;
-			}
-
-			switch (bodySprite.NumAnimationFrames)
-			{
-				case 1:
-				case 2:
-				case 4:
-					break;
-				default:
-					return false;
-			}
-
-			if (bodySprite.NumCargoLoadFrames is < 1 or > 5)
-			{
-				return false;
-			}
-
-			switch (bodySprite.NumRollFrames)
-			{
-				case 1:
-				case 3:
-					break;
-				default:
-					return false;
+				yield return result;
 			}
 		}
 
 		foreach (var bogieSprite in BogieSprites)
 		{
-			if (!bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSprites))
+			foreach (var result in bogieSprite.Validate(validationContext))
 			{
-				continue;
-			}
-
-			switch (bogieSprite.RollStates)
-			{
-				case 1:
-				case 2:
-				case 4:
-					break;
-				default:
-					return false;
+				yield return result;
 			}
 		}
-
-		return true;
 	}
 }

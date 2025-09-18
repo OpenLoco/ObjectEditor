@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Airport;
 
@@ -9,5 +10,6 @@ public class MovementNode : ILocoStruct
 	public Pos3 Position { get; set; }
 	public AirportMovementNodeFlags Flags { get; set; }
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

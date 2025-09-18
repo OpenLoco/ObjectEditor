@@ -17,10 +17,8 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 		public const int MaxMods = 4;
 	}
 
-	public static class StructSizes
-	{
-		public const int Dat = 0x36;
-	}
+	public static ObjectType ObjectType => ObjectType.Track;
+	public static DatObjectType DatObjectType => DatObjectType.Track;
 
 	public static LocoObject Load(Stream stream)
 	{
@@ -29,8 +27,6 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new TrackObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -60,10 +56,10 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			br.SkipByte(); // pad_35, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Track), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			model.CompatibleTracksAndRoads = br.ReadS5HeaderList(numCompatibleTracksAndRoads);
@@ -74,9 +70,12 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			model.Stations = br.ReadS5HeaderList(numStations);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.Track, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -114,7 +113,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)0); // pad_35, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
@@ -128,7 +127,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			bw.WriteS5HeaderList(model.Stations);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 

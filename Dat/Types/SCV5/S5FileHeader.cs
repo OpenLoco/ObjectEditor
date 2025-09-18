@@ -1,6 +1,7 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.SCV5;
 
@@ -16,5 +17,7 @@ public record S5FileHeader(
 	: ILocoStruct
 {
 	public const int StructLength = 0x20;
-	public bool Validate() => true;
+
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

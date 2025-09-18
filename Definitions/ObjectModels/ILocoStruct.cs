@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Definitions.ObjectModels;
 
 public interface ILocoStruct
 {
-	bool Validate();
+	IEnumerable<ValidationResult> Validate(ValidationContext validationContext);
 }

@@ -1,16 +1,10 @@
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
-public enum CardinalDirection : uint8_t
-{
-	South,
-	West,
-	North,
-	East,
-}
-
-public class BuildingObject : ILocoStruct, IImageTableNameProvider
+public class BuildingObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
@@ -31,9 +25,7 @@ public class BuildingObject : ILocoStruct, IImageTableNameProvider
 
 	public uint8_t var_AC { get; set; }
 
-	public List<uint8_t> BuildingHeights { get; set; } = [];
-	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
-	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+	public BuildingComponentsModel BuildingComponents { get; set; } = new();
 
 	public List<uint8_t> ProducedQuantity { get; set; } = [];
 	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];
@@ -41,19 +33,17 @@ public class BuildingObject : ILocoStruct, IImageTableNameProvider
 
 	public List<uint8_t[]> ElevatorHeightSequences { get; set; } = [];
 
-	public bool Validate()
-		=> ProducedQuantity.Count == 2
-		&& BuildingHeights.Count is not 0 and not > 63
-		&& BuildingAnimations.Count is not 0 and not > 63
-		&& BuildingHeights.Count == BuildingAnimations.Count
-		&& BuildingVariations.Count is not 0 and <= 31;
-
-	public bool TryGetImageName(int id, out string? value)
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		var direction = (CardinalDirection)(id % 4);
-		var level = id / 4;
-		value = $"{direction} | Level {level}";
-		return true;
-	}
+		var bcValidationContext = new ValidationContext(BuildingComponents);
+		foreach (var result in BuildingComponents.Validate(bcValidationContext))
+		{
+			yield return result;
+		}
 
+		if (ProducedQuantity.Count != 2)
+		{
+			yield return new ValidationResult($"{nameof(ProducedQuantity)} must have exactly 2 entries.", [nameof(ProducedQuantity)]);
+		}
+	}
 }

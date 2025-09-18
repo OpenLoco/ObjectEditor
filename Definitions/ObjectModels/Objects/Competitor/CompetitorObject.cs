@@ -1,6 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Competitor;
 
-public class CompetitorObject : ILocoStruct, IImageTableNameProvider
+public class CompetitorObject : ILocoStruct
 {
 	public NamePrefixFlags AvailableNamePrefixes { get; set; } // bitset
 	public PlaystyleFlags AvailablePlaystyles { get; set; } // bitset
@@ -10,48 +11,26 @@ public class CompetitorObject : ILocoStruct, IImageTableNameProvider
 	public uint8_t Competitiveness { get; set; }
 	public uint8_t var_37 { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (!Emotions.HasFlag(EmotionFlags.Neutral))
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(Emotions)} must include {nameof(EmotionFlags.Neutral)}.", [nameof(Emotions)]);
 		}
 
 		if (Intelligence is < 1 or > 9)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(Intelligence)} must be between 1 and 9 inclusive.", [nameof(Intelligence)]);
 		}
 
 		if (Aggressiveness is < 1 or > 9)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(Aggressiveness)} must be between 1 and 9 inclusive.", [nameof(Aggressiveness)]);
 		}
 
-		return Competitiveness is >= 1 and <= 9;
+		if (Competitiveness is < 1 or > 9)
+		{
+			yield return new ValidationResult($"{nameof(Competitiveness)} must be between 1 and 9 inclusive.", [nameof(Competitiveness)]);
+		}
 	}
-
-	public bool TryGetImageName(int id, out string? value)
-		=> ImageIdNameMap.TryGetValue(id, out value);
-
-	public static Dictionary<int, string> ImageIdNameMap = new()
-	{
-		{ 0, "smallNeutral" },
-		{ 1, "largeNeutral" },
-		{ 2, "smallHappy" },
-		{ 3, "largeHappy" },
-		{ 4, "smallWorried" },
-		{ 5, "largeWorried" },
-		{ 6, "smallThinking" },
-		{ 7, "largeThinking" },
-		{ 8, "smallDejected" },
-		{ 9, "largeDejected" },
-		{ 10, "smallSurprised" },
-		{ 11, "largeSurprised" },
-		{ 12, "smallScared" },
-		{ 13, "largeScared" },
-		{ 14, "smallAngry" },
-		{ 15, "largeAngry" },
-		{ 16, "smallDisgusted" },
-		{ 17, "largeDisgusted" },
-	};
 }

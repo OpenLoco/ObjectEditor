@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Road;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.RoadExtra;
 
@@ -10,24 +11,28 @@ public class RoadExtraObject : ILocoStruct
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (PaintStyle >= 2)
 		{
-			return false;
+			yield return new ValidationResult("PaintStyle must be 0 or 1", [nameof(PaintStyle)]);
 		}
 
 		// This check missing from vanilla
 		if (CostIndex >= 32)
 		{
-			return false;
+			yield return new ValidationResult("CostIndex must be less than 32", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult("SellCostFactor must be greater than or equal to -BuildCostFactor", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
+
 		}
 
-		return BuildCostFactor > 0;
+		if (BuildCostFactor <= 0)
+		{
+			yield return new ValidationResult("BuildCostFactor must be greater than 0", [nameof(BuildCostFactor)]);
+		}
 	}
 }

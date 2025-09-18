@@ -1,9 +1,10 @@
-using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Industry;
 
-public class IndustryObject : ILocoStruct
+public class IndustryObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint32_t FarmImagesPerGrowthStage { get; set; }
 	public uint8_t MinNumBuildings { get; set; }
@@ -34,72 +35,64 @@ public class IndustryObject : ILocoStruct
 	public ObjectModelHeader? BuildingWall { get; set; } // Wall types that can be built around this industry
 	public ObjectModelHeader? BuildingWallEntrance { get; set; } // Wall types that can be built around this industry
 
-	public List<uint8_t> BuildingHeights { get; set; } = [];
-	public List<BuildingPartAnimation> BuildingAnimations { get; set; } = [];
-	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+	public BuildingComponentsModel BuildingComponents { get; set; } = new();
 
 	public List<List<uint8_t>> AnimationSequences { get; set; } = []; // Access with getAnimationSequence helper method
 	public List<uint8_t> UnkBuildingData { get; set; } = [];
 	public List<IndustryObjectUnk38> var_38 { get; set; } = []; // Access with getUnk38 helper method
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		if (BuildingHeights.Count == 0 || BuildingAnimations.Count == 0)
+		var bcValidationContext = new ValidationContext(BuildingComponents);
+		foreach (var result in BuildingComponents.Validate(bcValidationContext))
 		{
-			return false;
-		}
-
-		if (BuildingVariations.Count is 0 or > 31)
-		{
-			return false;
+			yield return result;
 		}
 
 		if (MaxNumBuildings < MinNumBuildings)
 		{
-			return false;
+			yield return new ValidationResult("MaxNumBuildings must be greater than or equal to MinNumBuildings", [nameof(MaxNumBuildings), nameof(MinNumBuildings)]);
 		}
 
 		if (TotalOfTypeInScenario is 0 or > 32)
 		{
-			return false;
+			yield return new ValidationResult("TotalOfTypeInScenario must be between 1 and 32", [nameof(TotalOfTypeInScenario)]);
 		}
 
 		// 230/256 = ~90%
 		if (-SellCostFactor > BuildCostFactor * 230 / 256)
 		{
-			return false;
+			yield return new ValidationResult("SellCostFactor must be at least -90% of BuildCostFactor", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (var_E8 > 8)
 		{
-			return false;
+			yield return new ValidationResult("var_E8 must be between 0 and 8", [nameof(var_E8)]);
 		}
 
-		switch (FarmTileNumImageAngles)
+		if (FarmTileNumImageAngles is not 1 or 2 or 4)
 		{
-			case 1:
-			case 2:
-			case 4:
-				break;
-			default:
-				return false;
+			yield return new ValidationResult("FarmTileNumImageAngles must be 1, 2, or 4", [nameof(FarmTileNumImageAngles)]);
 		}
 
 		if (FarmGrowthStageWithNoProduction is not 0xFF and > 7)
 		{
-			return false;
+			yield return new ValidationResult("FarmGrowthStageWithNoProduction must be between 0 and 7, or 0xFF", [nameof(FarmGrowthStageWithNoProduction)]);
 		}
 
 		if (FarmNumStagesOfGrowth > 8)
 		{
-			return false;
+			yield return new ValidationResult("FarmNumStagesOfGrowth must be between 1 and 8", [nameof(FarmNumStagesOfGrowth)]);
 		}
 
 		if (InitialProductionRate[0].Min > 100)
 		{
-			return false;
+			yield return new ValidationResult("InitialProductionRate[0].Min must be less than or equal to 100", [nameof(InitialProductionRate)]);
 		}
 
-		return InitialProductionRate[1].Min <= 100;
+		if (InitialProductionRate[1].Min > 100)
+		{
+			yield return new ValidationResult("InitialProductionRate[1].Min must be less than or equal to 100", [nameof(InitialProductionRate)]);
+		}
 	}
 }

@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Steam;
 
@@ -15,6 +16,6 @@ public class SteamObject : ILocoStruct
 	public List<SteamImageAndHeight> FrameInfoType1 { get; set; } = [];
 	public List<ObjectModelHeader> SoundEffects { get; set; } = [];
 
-	public bool Validate()
-		=> true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

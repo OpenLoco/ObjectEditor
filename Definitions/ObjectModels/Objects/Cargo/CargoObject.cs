@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+
 namespace Definitions.ObjectModels.Objects.Cargo;
 
-public class CargoObject : ILocoStruct, IImageTableNameProvider
+public class CargoObject : ILocoStruct
 {
 	public uint16_t CargoTransferTime { get; set; }
 	public CargoCategory CargoCategory { get; set; }
@@ -16,16 +19,16 @@ public class CargoObject : ILocoStruct, IImageTableNameProvider
 	public uint8_t UnitSize { get; set; }
 	public uint16_t var_02 { get; set; }
 
-	public bool Validate()
-		=> var_02 <= 3840
-		&& CargoTransferTime != 0;
-
-	public bool TryGetImageName(int id, out string? value)
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		value = id == 0
-			? "kInlineSprite"
-			: $"kStationPlatform{id}";
+		if (var_02 > 3840)
+		{
+			yield return new ValidationResult($"{nameof(var_02)} must be less than or equal to 3840.");
+		}
 
-		return true;
+		if (CargoTransferTime == 0)
+		{
+			yield return new ValidationResult($"{nameof(CargoTransferTime)} must be non-zero.");
+		}
 	}
 }

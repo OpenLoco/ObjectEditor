@@ -19,13 +19,14 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 		public const int Dat = 0x0C;
 	}
 
+	public static ObjectType ObjectType => ObjectType.StreetLight;
+	public static DatObjectType DatObjectType => DatObjectType.StreetLight;
+
 	public static LocoObject Load(Stream stream)
 	{
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new StreetLightObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId();
@@ -35,15 +36,18 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 			}
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.StreetLight), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			// N/A
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.StreetLight, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -66,7 +70,7 @@ public abstract class StreetLightObjectLoader : IDatObjectLoader
 			// N/A
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 }

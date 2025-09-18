@@ -1,6 +1,7 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.SCV5;
 
@@ -50,5 +51,7 @@ public record ScenarioOptions(
 	: ILocoStruct
 {
 	public const int StructLength = 0x431A;
-	public bool Validate() => true;
+
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

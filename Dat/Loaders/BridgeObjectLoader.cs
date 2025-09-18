@@ -16,10 +16,8 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 		public const int MaxNumRoadMods = 7;
 	}
 
-	public static class StructSizes
-	{
-		public const int Dat = 0x2C;
-	}
+	public static ObjectType ObjectType => ObjectType.Bridge;
+	public static DatObjectType DatObjectType => DatObjectType.Bridge;
 
 	public static LocoObject Load(Stream stream)
 	{
@@ -28,8 +26,6 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new BridgeObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -54,19 +50,22 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			model.DesignedYear = br.ReadUInt16();
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Bridge), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			model.CompatibleTrackObjects = br.ReadS5HeaderList(compatibleTrackCount);
 			model.CompatibleRoadObjects = br.ReadS5HeaderList(compatibleRoadCount);
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.Bridge, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -99,7 +98,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			bw.Write(model.DesignedYear);
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
@@ -109,7 +108,7 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			bw.WriteS5HeaderList(model.CompatibleRoadObjects);
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 
@@ -150,7 +149,6 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 		None = 0,
 		HasRoof = 1 << 0,
 	}
-
 }
 
 static class BridgeFlagsConverter

@@ -5,6 +5,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.TownNames;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Loaders;
 
@@ -21,13 +22,14 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 		public const int Category = 0x1A;
 	}
 
+	public static ObjectType ObjectType => ObjectType.TownNames;
+	public static DatObjectType DatObjectType => DatObjectType.TownNames;
+
 	public static LocoObject Load(Stream stream)
 	{
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new TownNamesObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId();
@@ -44,7 +46,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 			}
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.TownNames), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			// N/A
@@ -52,7 +54,7 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 			// image table
 			// N/A
 
-			return new LocoObject(ObjectType.TownNames, model, stringTable, imageTable);
+			return new LocoObject(ObjectType, model, stringTable);
 		}
 	}
 
@@ -81,27 +83,4 @@ public abstract class TownNamesObjectLoader : IDatObjectLoader
 		}
 	}
 
-}
-
-[LocoStructSize(0x1A)]
-[LocoStructType(DatObjectType.TownNames)]
-internal record DatTownNamesObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02), LocoArrayLength(6)] Category[] Categories
-) : ILocoStruct, ILocoStructVariableData
-{
-	byte[] tempUnkVariableData;
-
-	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
-	{
-		// town names is interesting - loco has not RE'd the whole object and there are no graphics, so we just
-		// skip the rest of the data/object
-		tempUnkVariableData = remainingData.ToArray();
-		return remainingData[remainingData.Length..];
-	}
-
-	public ReadOnlySpan<byte> SaveVariable()
-		=> tempUnkVariableData;
-
-	public bool Validate() => true;
 }

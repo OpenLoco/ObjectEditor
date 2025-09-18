@@ -342,7 +342,6 @@ public class ObjectEditorModel : IDisposable
 		DatFileInfo? fileInfo = null;
 		LocoObject? locoObject = null;
 		MetadataModel? metadata = null;
-		//List<Image<Rgba32>> images = [];
 
 		var filename = File.Exists(filesystemItem.FileName)
 			? filesystemItem.FileName
@@ -358,17 +357,6 @@ public class ObjectEditorModel : IDisposable
 			Availability = Definitions.ObjectAvailability.Available,
 			//DatObjects = [new(0)],
 		}; // todo: look up the rest of the data from internet
-
-		//if (locoObject != null)
-		//{
-		//	foreach (var i in locoObject.GraphicsElements)
-		//	{
-		//		if (PaletteMap.TryConvertG1ToRgba32Bitmap(i, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
-		//		{
-		//			images.Add(image!);
-		//		}
-		//	}
-		//}
 
 		locoDatFile = new UiDatLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
 		return true;

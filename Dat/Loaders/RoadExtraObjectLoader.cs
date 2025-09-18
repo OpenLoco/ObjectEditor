@@ -14,13 +14,14 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 		public const int DatStructSize = 0x12;
 	}
 
+	public static ObjectType ObjectType => ObjectType.RoadExtra;
+	public static DatObjectType DatObjectType => DatObjectType.RoadExtra;
+
 	public static LocoObject Load(Stream stream)
 	{
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new RoadExtraObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -36,15 +37,18 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, StructSizes.DatStructSize, nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.RoadExtra), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			// N/A
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.RoadExtra, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -70,7 +74,7 @@ public abstract class RoadExtraObjectLoader : IDatObjectLoader
 			// N/A
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
 }

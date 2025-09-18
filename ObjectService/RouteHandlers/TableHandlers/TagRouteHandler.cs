@@ -36,6 +36,7 @@ public class TagRouteHandler
 			result = Results.BadRequest("Cannot add an empty or whitespace-only name.");
 			return false;
 		}
+
 		result = null;
 		return true;
 	}

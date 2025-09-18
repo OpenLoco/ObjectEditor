@@ -16,6 +16,9 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 		public const int Dat = 0x0E;
 	}
 
+	public static ObjectType ObjectType => ObjectType.Water;
+	public static DatObjectType DatObjectType => DatObjectType.Water;
+
 	public static LocoObject Load(Stream stream)
 	{
 		var initialStreamPosition = stream.Position;
@@ -23,8 +26,6 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 		using (var br = new LocoBinaryReader(stream))
 		{
 			var model = new WaterObject();
-			var stringTable = new StringTable();
-			var imageTable = new List<GraphicsElement>();
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
@@ -35,18 +36,21 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 			br.SkipImageId(); // MapPixelImage, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
-			stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType.Water), null);
+			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
 			// N/A
 
 			// image table
-			imageTable = SawyerStreamReader.ReadImageTable(br).Table;
+			var imageList = SawyerStreamReader.ReadImageTable(br).Table;
 
-			return new LocoObject(ObjectType.Water, model, stringTable, imageTable);
+			// define groups
+			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
+
+			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}
 
@@ -65,7 +69,7 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 			bw.WriteEmptyImageId(); // MapPixelImage, not part of object definition
 
 			// sanity check
-			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + StructSizes.Dat, nameof(stream.Position));
+			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
 
 			// string table
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
@@ -74,21 +78,7 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 			// N/A
 
 			// image table
-			SawyerStreamWriter.WriteImageTable(stream, obj.GraphicsElements);
+			SawyerStreamWriter.WriteImageTable(stream, obj.ImageTable.GraphicsElements);
 		}
 	}
-}
-
-[LocoStructSize(0x0E)]
-[LocoStructType(DatObjectType.Water)]
-internal record DatWaterObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] uint8_t CostIndex,
-	[property: LocoStructOffset(0x03), LocoPropertyMaybeUnused] uint8_t var_03,
-	[property: LocoStructOffset(0x04)] int16_t CostFactor,
-	[property: LocoStructOffset(0x06), Browsable(false)] image_id Image,
-	[property: LocoStructOffset(0x0A), Browsable(false)] image_id MapPixelImage
-	)
-{
-
 }

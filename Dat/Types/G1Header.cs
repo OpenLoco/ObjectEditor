@@ -1,5 +1,6 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types;
 
@@ -12,5 +13,6 @@ public record G1Header(
 	public static int StructLength => 0x08;
 	public byte[] ImageData = [];
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

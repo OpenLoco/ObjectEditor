@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Definitions.ObjectModels.Objects.LevelCrossing;
 
 public class LevelCrossingObject : ILocoStruct
@@ -11,22 +13,21 @@ public class LevelCrossingObject : ILocoStruct
 	public uint8_t var_0A { get; set; } // something like IdleAnimationFrames or something
 	public uint16_t DesignedYear { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (-SellCostFactor > CostFactor)
 		{
-			return false;
+			yield return new ValidationResult("SellCostFactor must not be greater than CostFactor", [nameof(SellCostFactor), nameof(CostFactor)]);
 		}
 
 		if (CostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult("CostFactor must be positive", [nameof(CostFactor)]);
 		}
 
-		return ClosingFrames switch
+		if (ClosingFrames is not 1 or 2 or 4 or 8 or 16 or 32)
 		{
-			1 or 2 or 4 or 8 or 16 or 32 => true,
-			_ => false,
-		};
+			yield return new ValidationResult("ClosingFrames must be a power of two between 1 and 32 (inclusive)", [nameof(ClosingFrames)]);
+		}
 	}
 }

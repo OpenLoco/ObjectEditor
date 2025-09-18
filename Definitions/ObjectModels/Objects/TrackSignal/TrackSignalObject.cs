@@ -1,8 +1,9 @@
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.TrackSignal;
 
-public class TrackSignalObject : ILocoStruct, IImageTableNameProvider
+public class TrackSignalObject : ILocoStruct
 {
 	public TrackSignalObjectFlags Flags { get; set; }
 	public uint8_t AnimationSpeed { get; set; }
@@ -15,57 +16,32 @@ public class TrackSignalObject : ILocoStruct, IImageTableNameProvider
 	public uint16_t ObsoleteYear { get; set; }
 	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		// animationSpeed must be 1 less than a power of 2 (its a mask)
-		switch (AnimationSpeed)
+		if (AnimationSpeed is not 0 and not 1 and not 3 and not 7 and not 15)
 		{
-			case 0:
-			case 1:
-			case 3:
-			case 7:
-			case 15:
-				break;
-			default:
-				return false;
+			// animationSpeed must be 1 less than a power of 2 (its a mask)
+			yield return new ValidationResult($"{nameof(AnimationSpeed)} must be 0, 1, 3, 7, or 15.", [nameof(AnimationSpeed)]);
 		}
 
-		switch (NumFrames)
+		if (NumFrames is not 4 or 7 or 10)
 		{
-			case 4:
-			case 7:
-			case 10:
-				break;
-			default:
-				return false;
+			yield return new ValidationResult($"{nameof(NumFrames)} must be 4, 7, or 10.", [nameof(NumFrames)]);
 		}
 
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 inclusive.", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"The negative of {nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (CompatibleTrackObjects.Count > 7)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CompatibleTrackObjects)} must have at most 7 entries.", [nameof(CompatibleTrackObjects)]);
 		}
-
-		return true;
 	}
-
-	public bool TryGetImageName(int id, out string? value)
-	=> ImageIdNameMap.TryGetValue(id, out value);
-
-	public static Dictionary<int, string> ImageIdNameMap = new()
-	{
-		{ 80, "redLights" },
-		{ 88, "redLights2" },
-		{ 96, "greenLights" },
-		{ 104, "greenLights2" },
-	};
 }

@@ -1,20 +1,47 @@
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Dat.Types;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class G1Dat(G1Header g1Header, List<GraphicsElement> g1Elements) : IHasGraphicsElements, IImageTableNameProvider
+public class G1Dat
 {
-	public G1Header G1Header { get; set; } = g1Header;
 
-	public List<GraphicsElement> GraphicsElements { get; set; } = g1Elements;
+	public G1Header G1Header { get; set; }
+	public ImageTable ImageTable { get; set; }
 
 	public bool IsSteamG1
-		=> GraphicsElements.Count == 3896;
+		=> ImageTable.GraphicsElements.Count == 3896;
 
-	public bool TryGetImageName(int id, out string? value)
+	public G1Dat(G1Header g1Header, List<GraphicsElement> graphicsElements)
+	{
+		G1Header = g1Header;
+		ImageTable = new ImageTable
+		{
+			Groups =
+			[
+				("terrain-masks", [.. graphicsElements[0..417], .. graphicsElements[3629..3896]]),
+				("palettes", [.. graphicsElements[417..428], .. graphicsElements[2170..2304]]),
+				("arrows", [.. graphicsElements[428..444], .. graphicsElements[449..457], .. graphicsElements[3492..3504]]),
+				("unk", graphicsElements[444..449]),
+				("supports", graphicsElements[457..1117]),
+				("glyphs", graphicsElements[1117..2169]),
+				("loading-bar", graphicsElements[2326..2335]),
+				("interface", [.. graphicsElements[2335..2470], .. graphicsElements[3477..3479], .. graphicsElements[2305..2326], .. graphicsElements[3539..3547]]),
+				("height-markers", graphicsElements[2470..3238]),
+				("numerical-markers", graphicsElements[3238..3302]),
+				("unk", graphicsElements[3302..3362]),
+				("particles", graphicsElements[3362..3477]),
+				("masks", [.. graphicsElements[3479..3492], graphicsElements[3504]]),
+				("object-types", graphicsElements[3505..3539]),
+				("title", graphicsElements[3547..3629]),
+			]
+		};
+	}
+
+	public bool TryGetImageName(int id, [MaybeNullWhen(false)] out string value)
 		=> id < 3550
 			? BaseImageIdNameMap.TryGetValue(id, out value)
 			: (IsSteamG1 ? SteamImageIdNameMap : GoGImageIdNameMap).TryGetValue(id, out value);

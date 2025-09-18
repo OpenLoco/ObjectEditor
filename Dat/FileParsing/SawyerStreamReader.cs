@@ -7,6 +7,7 @@ using Dat.Types.SCV5;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Dat.FileParsing;
@@ -137,9 +138,9 @@ public static class SawyerStreamReader
 				}
 			}
 
-			if (!locoStruct.Validate())
+			foreach (var failedValidation in locoStruct.Validate(new ValidationContext(locoStruct)))
 			{
-				warnings.Add($"\"{s5Header.Name}\" failed validation");
+				warnings.Add($"\"{s5Header.Name}\" failed validation: {failedValidation}");
 			}
 
 			if (warnings.Count != 0)
@@ -252,6 +253,8 @@ public static class SawyerStreamReader
 		var imageData = br.ReadToEnd();
 		g1Header.ImageData = [.. imageData];
 
+		var graphicsElements = new List<GraphicsElement>();
+
 		// set image data
 		for (var i = 0; i < g1Header.NumEntries; ++i)
 		{
@@ -272,15 +275,19 @@ public static class SawyerStreamReader
 				currElement.ImageData = [.. imageData[(int)currElement.Offset..(int)nextOffset]];
 			}
 
-			// if rleCompressed, uncompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
-			// image (which was also compressed) is now uncompressed, so we don't need do double-uncompress it.
+			// if rleCompressed, decompress it, except if the duplicate-previous flag is also set - by the current code here, the previous
+			// image (which was also compressed) is now decompressed, so we don't need do double-decompress it.
 			if (currElement.Flags.HasFlag(DatG1ElementFlags.IsRLECompressed) && !currElement.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
 			{
 				currElement.ImageData = DecodeRLEImageData(currElement);
 			}
+
+			var ge = currElement.Convert();
+			ge.Name = DefaultImageTableNameProvider.GetImageName(i);
+			graphicsElements.Add(ge);
 		}
 
-		return (g1Header, g1Element32s.Select(x => x.Convert()).ToList());
+		return (g1Header, graphicsElements);
 	}
 
 	static uint GetNextNonDuplicateOffset(List<DatG1Element32> g1Element32s, int i, uint imageDateLength)

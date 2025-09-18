@@ -3,7 +3,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Tree;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 using static Dat.Loaders.TreeObjectLoader;
 
 namespace Dat.Loaders;

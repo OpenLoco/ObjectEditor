@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Types;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.InterfaceSkin;
 

@@ -3,7 +3,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 
 namespace Dat.Loaders;
 public abstract class WaterObjectLoader : IDatObjectLoader

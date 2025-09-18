@@ -1,11 +1,8 @@
 using Dat.Data;
 using Dat.FileParsing;
-using Dat.Types;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.TownNames;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Loaders;
 

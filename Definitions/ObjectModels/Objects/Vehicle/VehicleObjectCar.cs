@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
@@ -12,5 +13,6 @@ public class VehicleObjectCar : ILocoStruct
 	public uint8_t BodySpriteIndex { get; set; }
 	public uint8_t var_05 { get; set; }
 
-    public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

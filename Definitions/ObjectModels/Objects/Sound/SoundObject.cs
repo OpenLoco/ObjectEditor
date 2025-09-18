@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Sound;
 
@@ -13,6 +14,11 @@ public class SoundObject : ILocoStruct
 	public uint32_t NumUnkStructs { get; set; }
 	[Browsable(false)] public byte[] UnkData { get; set; }
 
-	public bool Validate()
-		=> SoundObjectData?.Offset >= 0;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+	{
+		if (SoundObjectData?.Offset < -1) // todo: move validation into SoundObjectData
+		{
+			yield return new ValidationResult($"{nameof(SoundObjectData.Offset)} must be -1 or non-negative.", [nameof(SoundObjectData), nameof(SoundObjectData.Offset)]);
+		}
+	}
 }

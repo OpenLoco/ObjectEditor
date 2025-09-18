@@ -11,10 +11,12 @@ namespace Dat.Tests;
 public class G1Tests
 {
 	readonly ILogger Logger = new Logger();
-	const string g1File = "Q:\\Games\\Locomotion\\G1\\g1.dat";
+	const string Steam_G1 = "Q:\\Games\\Locomotion\\G1\\steam-g1.dat"; // todo: check both steam and gog
+	const string GoG_G1 = "Q:\\Games\\Locomotion\\G1\\steam-g1.dat"; // todo: check both steam and gog 
 
-	[Test]
-	public void LoadSaveLoadG1()
+	[TestCase(Steam_G1)]
+	[TestCase(GoG_G1)]
+	public void LoadSaveLoadG1(string g1File)
 	{
 		var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
 		ArgumentNullException.ThrowIfNull(g1);
@@ -43,13 +45,19 @@ public class G1Tests
 	// These images have RLE runs/segment lengths > 127, which require special handling in the encode
 	// method. I split these out to initially debug why they weren't working. The code now works but
 	// I will leave these tests in as they serve as a kind of documentation of this quirk of the g1 encoding.
-	[TestCase(3539)]
-	[TestCase(3540)]
-	[TestCase(3541)]
-	[TestCase(3542)]
-	[TestCase(3618)]
-	[TestCase(3619)]
-	public void LoadSaveLoadG1_RLERunsGreaterThan127(int element)
+	[TestCase(Steam_G1, 3539)]
+	[TestCase(Steam_G1, 3540)]
+	[TestCase(Steam_G1, 3541)]
+	[TestCase(Steam_G1, 3542)]
+	[TestCase(Steam_G1, 3618)]
+	[TestCase(Steam_G1, 3619)]
+	[TestCase(GoG_G1, 3539)]
+	[TestCase(GoG_G1, 3540)]
+	[TestCase(GoG_G1, 3541)]
+	[TestCase(GoG_G1, 3542)]
+	[TestCase(GoG_G1, 3618)]
+	[TestCase(GoG_G1, 3619)]
+	public void LoadSaveLoadG1_RLERunsGreaterThan127(string g1File, int element)
 	{
 		var g1 = SawyerStreamReader.LoadG1(g1File, Logger);
 		var d1 = g1!.ImageTable.GraphicsElements[element];

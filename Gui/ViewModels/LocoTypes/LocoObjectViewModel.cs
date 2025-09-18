@@ -7,5 +7,6 @@ public abstract class LocoObjectViewModel<T> : ReactiveObject, IObjectViewModel<
 {
 	public abstract T GetAsModel();
 
-	ILocoStruct IObjectViewModel<ILocoStruct>.GetAsModel() => GetAsModel();
+	ILocoStruct IObjectViewModel<ILocoStruct>.GetAsModel()
+		=> GetAsModel();
 }

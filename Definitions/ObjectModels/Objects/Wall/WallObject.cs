@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Definitions.ObjectModels.Objects.Wall;
 
 public class WallObject : ILocoStruct
@@ -7,6 +9,6 @@ public class WallObject : ILocoStruct
 	public WallObjectFlags1 Flags1 { get; set; } = WallObjectFlags1.None;
 	public WallObjectFlags2 Flags2 { get; set; } = WallObjectFlags2.None; // unused in loco???
 
-	public bool Validate()
-		=> true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

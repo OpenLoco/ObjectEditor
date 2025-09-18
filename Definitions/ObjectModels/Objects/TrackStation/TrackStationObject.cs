@@ -1,6 +1,7 @@
 using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.TrackStation;
 
@@ -24,28 +25,31 @@ public class TrackStationObject : ILocoStruct
 
 	public uint8_t[][] var_6E { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (CostIndex >= 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 31 inclusive.", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"The negative of {nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (BuildCostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be positive.", [nameof(BuildCostFactor)]);
 		}
 
 		if (PaintStyle >= 1)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(PaintStyle)} must be 0.", [nameof(PaintStyle)]);
 		}
 
-		return true; // CompatibleTrackObjects.Count <= TrackStationObjectLoader.Constants.MaxNumCompatible;
+		if (CompatibleTrackObjects.Count > 7 /*TrackStationObjectLoader.Constants.MaxNumCompatible*/)
+		{
+			yield return new ValidationResult($"{nameof(CompatibleTrackObjects)} must have at most 7 entries.", [nameof(CompatibleTrackObjects)]);
+		}
 	}
 }

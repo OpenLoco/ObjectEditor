@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Tunnel;
 
 public class TunnelObject : ILocoStruct
 {
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

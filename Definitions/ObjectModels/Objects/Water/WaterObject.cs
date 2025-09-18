@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Definitions.ObjectModels.Objects.Water;
 
 public class WaterObject : ILocoStruct
@@ -6,18 +8,16 @@ public class WaterObject : ILocoStruct
 	public uint8_t var_03 { get; set; }
 	public int16_t CostFactor { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32.", [nameof(CostIndex)]);
 		}
 
 		if (CostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostFactor)} must be positive.", [nameof(CostFactor)]);
 		}
-
-		return true;
 	}
 }

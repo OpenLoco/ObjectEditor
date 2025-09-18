@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Land;
 
@@ -17,28 +18,31 @@ public class LandObject : ILocoStruct
 	public ObjectModelHeader CliffEdgeHeader { get; set; }
 	public ObjectModelHeader? UnkObjectHeader { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be in the range 0-32.", [nameof(CostIndex)]);
 		}
 
 		if (CostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostFactor)} must be positive.", [nameof(CostFactor)]);
 		}
 
 		if (NumGrowthStages < 1)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(NumGrowthStages)} must be at least 1.", [nameof(NumGrowthStages)]);
 		}
 
 		if (NumGrowthStages > 8)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(NumGrowthStages)} must be at most 8.", [nameof(NumGrowthStages)]);
 		}
 
-		return NumImageAngles is 1 or 2 or 4;
+		if (NumImageAngles is not 1 or 2 or 4)
+		{
+			yield return new ValidationResult($"{nameof(NumImageAngles)} must be 1, 2, or 4.", [nameof(NumImageAngles)]);
+		}
 	}
 }

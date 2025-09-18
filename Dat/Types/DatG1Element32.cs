@@ -1,6 +1,7 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types;
 
@@ -67,5 +68,6 @@ public record DatG1Element32(
 			? SawyerStreamWriter.EncodeRLEImageData(flags, imageData, width, height)
 			: imageData;
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

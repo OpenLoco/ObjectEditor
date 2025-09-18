@@ -1975,6 +1975,9 @@ public static class ImageTableGrouper
 			case ObjectType.ScenarioText:
 				imageTable.Groups.Add(("<none>", imageList.ToList()));
 				break;
+			case ObjectType.Scaffolding:
+				CreateScaffoldingGroups(imageList, imageTable);
+				break;
 			default:
 				break;
 		}

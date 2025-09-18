@@ -7,6 +7,7 @@ using Dat.Types.SCV5;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Dat.FileParsing;
@@ -137,9 +138,9 @@ public static class SawyerStreamReader
 				}
 			}
 
-			if (!locoStruct.Validate())
+			foreach (var failedValidation in locoStruct.Validate(new ValidationContext(locoStruct)))
 			{
-				warnings.Add($"\"{s5Header.Name}\" failed validation");
+				warnings.Add($"\"{s5Header.Name}\" failed validation: {failedValidation}");
 			}
 
 			if (warnings.Count != 0)

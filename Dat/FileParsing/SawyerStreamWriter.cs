@@ -7,6 +7,7 @@ using Dat.Types.Audio;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Dat.FileParsing;
@@ -490,9 +491,10 @@ public static class SawyerStreamWriter
 
 	public static MemoryStream WriteLocoObject(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
 	{
-		if (!obj.Object.Validate())
+		var validationResults = new List<ValidationResult>();
+		if (!Validator.TryValidateObject(obj.Object, new ValidationContext(obj.Object), validationResults))
 		{
-			throw new ArgumentException($"{objName} was invalid", nameof(obj));
+			throw new ArgumentException($"{objName} was invalid: {string.Join(", ", validationResults.Select(r => r.ErrorMessage))}", nameof(obj));
 		}
 
 		using var rawObjStream = new MemoryStream();

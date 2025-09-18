@@ -1,5 +1,5 @@
 using Definitions.ObjectModels.Objects.Common;
-using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Airport;
 
@@ -25,23 +25,27 @@ public class AirportObject : ILocoStruct, IHasBuildingComponents
 	public List<MovementEdge> MovementEdges { get; set; } = [];
 	public uint8_t[] var_B6 { get; set; } = [];
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		if (!BuildingComponents.Validate())
+		var bcValidationContext = new ValidationContext(BuildingComponents);
+		foreach (var result in BuildingComponents.Validate(bcValidationContext))
 		{
-			return false;
+			yield return result;
 		}
 
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32.", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"-{nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
-		return BuildCostFactor > 0;
+		if (BuildCostFactor <= 0)
+		{
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be greater than 0.", [nameof(BuildCostFactor)]);
+		}
 	}
 }

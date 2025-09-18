@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
@@ -9,5 +10,6 @@ public class SimpleAnimation : ILocoStruct
 	public uint8_t Height { get; set; }
 	public SimpleAnimationType Type { get; set; }
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

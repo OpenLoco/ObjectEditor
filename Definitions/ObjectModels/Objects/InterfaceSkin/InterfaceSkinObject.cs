@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.InterfaceSkin;
@@ -24,5 +25,6 @@ public class InterfaceSkinObject : ILocoStruct
 	public Colour PlayerInfoToolbarColour { get; set; }
 	public Colour TimeToolbarColour { get; set; }
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

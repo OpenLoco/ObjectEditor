@@ -1,5 +1,6 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.SCV5;
 
@@ -17,5 +18,6 @@ public class Company : ILocoStruct
 	public uint8_t ChallengeProgress { get; set; }     // 0x8C4E
 	[LocoArrayLength(0x8FA8 - 0x8C4F)] public uint8_t[] var_8C4F { get; set; }
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

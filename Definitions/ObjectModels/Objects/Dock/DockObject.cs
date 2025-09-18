@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Dock;
 
@@ -16,23 +17,27 @@ public class DockObject : ILocoStruct, IHasBuildingComponents
 
 	public BuildingComponentsModel BuildingComponents { get; set; } = new();
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		if (BuildingComponents.Validate())
+		var bcValidationContext = new ValidationContext(BuildingComponents);
+		foreach (var result in BuildingComponents.Validate(bcValidationContext))
 		{
-			return false;
+			yield return result;
 		}
 
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 (inclusive).", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(SellCostFactor)} must be between 0 and -{BuildCostFactor} (inclusive).", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
-		return BuildCostFactor > 0;
+		if (BuildCostFactor <= 0)
+		{
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be greater than 0.", [nameof(BuildCostFactor)]);
+		}
 	}
 }

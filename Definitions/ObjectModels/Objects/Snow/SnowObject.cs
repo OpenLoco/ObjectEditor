@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Snow;
 
 public class SnowObject : ILocoStruct
 {
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

@@ -1,6 +1,7 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.SCV5;
 
@@ -10,5 +11,6 @@ public class Message : ILocoStruct
 {
 	[LocoArrayLength(0xD4)] public uint8_t[] var_0 { get; set; }
 
-	public bool Validate() => throw new NotImplementedException();
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

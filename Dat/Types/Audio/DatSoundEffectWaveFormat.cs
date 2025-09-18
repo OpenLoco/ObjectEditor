@@ -1,6 +1,7 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.Audio;
 
@@ -35,6 +36,6 @@ public record DatSoundEffectWaveFormat(
 		return ((MemoryStream)bs.BaseStream).ToArray();
 	}
 
-	public bool Validate()
-		=> true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

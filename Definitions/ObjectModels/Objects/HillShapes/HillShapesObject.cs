@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Definitions.ObjectModels.Objects.HillShape;
 
 public class HillShapesObject : ILocoStruct
@@ -6,5 +8,6 @@ public class HillShapesObject : ILocoStruct
 	public uint8_t MountainHeightMapCount { get; set; }
 	public bool IsHeightMap { get; set; }
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

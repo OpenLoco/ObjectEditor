@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Bridge;
@@ -23,48 +24,46 @@ public class BridgeObject : ILocoStruct
 	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
 	public List<ObjectModelHeader> CompatibleRoadObjects { get; set; } = [];
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 inclusive.", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BaseCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"The negative of {nameof(SellCostFactor)} must be less than or equal to {nameof(BaseCostFactor)}.", [nameof(SellCostFactor), nameof(BaseCostFactor)]);
 		}
 
 		if (BaseCostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(BaseCostFactor)} must be positive.", [nameof(BaseCostFactor)]);
 		}
 
 		if (HeightCostFactor < 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(HeightCostFactor)} must be non-negative.", [nameof(HeightCostFactor)]);
 		}
 
 		if (DeckDepth is not 16 and not 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(DeckDepth)} must be either 16 or 32.", [nameof(DeckDepth)]);
 		}
 
 		if (SpanLength is not 1 and not 2 and not 4)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(SpanLength)} must be either 1, 2, or 4.", [nameof(SpanLength)]);
 		}
 
-		//if (CompatibleTrackObjectCount > 7)
-		//{
-		//	return false;
-		//}
+		if (CompatibleTrackObjects.Count > 7)
+		{
+			yield return new ValidationResult($"{nameof(CompatibleTrackObjects)} must contain at most 7 entries.", [nameof(CompatibleTrackObjects)]);
+		}
 
-		//if (CompatibleRoadObjectCount > 7)
-		//{
-		//	return false;
-		//}
-
-		return true;
+		if (CompatibleRoadObjects.Count > 7)
+		{
+			yield return new ValidationResult($"{nameof(CompatibleRoadObjects)} must contain at most 7 entries.", [nameof(CompatibleRoadObjects)]);
+		}
 	}
 }

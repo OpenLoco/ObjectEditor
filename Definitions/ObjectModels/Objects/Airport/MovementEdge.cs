@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Airport;
 
@@ -12,5 +13,6 @@ public class MovementEdge : ILocoStruct
 	public uint32_t MustBeClearEdges { get; set; } // Which edges must be clear to use the transition edge. should probably be some kind of flags?
 	public uint32_t AtLeastOneClearEdges { get; set; } // Which edges must have at least one clear to use transition edge. should probably be some kind of flags?
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

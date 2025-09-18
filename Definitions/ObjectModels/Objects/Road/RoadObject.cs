@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Road;
 
@@ -21,44 +22,41 @@ public class RoadObject : ILocoStruct
 	public List<ObjectModelHeader> Bridges { get; set; } = [];
 	public List<ObjectModelHeader> Stations { get; set; } = [];
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		// check missing in vanilla
 		if (CostIndex >= 32)
 		{
-			return false;
+			yield return new ValidationResult("CostIndex must be less than 32", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult("SellCostFactor must not be less than negative BuildCostFactor", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (BuildCostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult("BuildCostFactor must be greater than 0", [nameof(BuildCostFactor)]);
 		}
 
 		if (TunnelCostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult("TunnelCostFactor must be greater than 0", [nameof(TunnelCostFactor)]);
 		}
 
 		if (Bridges.Count > 7)
 		{
-			return false;
+			yield return new ValidationResult("Bridges.Count must be 7 or less", [nameof(Bridges)]);
 		}
 
 		if (RoadMods.Count > 2)
 		{
-			return false;
+			yield return new ValidationResult("RoadMods.Count must be 2 or less", [nameof(RoadMods)]);
 		}
 
-		if (Flags.HasFlag(RoadObjectFlags.unk_03))
+		if (Flags.HasFlag(RoadObjectFlags.unk_03) && RoadMods.Count != 0)
 		{
-			return RoadMods.Count == 0;
+			yield return new ValidationResult("If unk_03 flag is set, RoadMods.Count must be 0", [nameof(Flags), nameof(RoadMods)]);
 		}
-
-		return true;
 	}
 }

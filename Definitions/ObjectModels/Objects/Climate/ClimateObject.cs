@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Definitions.ObjectModels.Objects.Climate;
 
 public class ClimateObject : ILocoStruct
@@ -10,7 +12,16 @@ public class ClimateObject : ILocoStruct
 	public uint8_t WinterSnowLine { get; set; }
 	public uint8_t SummerSnowLine { get; set; }
 
-	public bool Validate()
-		=> WinterSnowLine <= SummerSnowLine
-		&& FirstSeason < 4;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+	{
+		if (WinterSnowLine > SummerSnowLine)
+		{
+			yield return new ValidationResult("WinterSnowLine must be less than or equal to SummerSnowLine", [nameof(WinterSnowLine), nameof(SummerSnowLine)]);
+		}
+
+		if (FirstSeason >= 4)
+		{
+			yield return new ValidationResult("FirstSeason must be less than 4", [nameof(FirstSeason)]);
+		}
+	}
 }

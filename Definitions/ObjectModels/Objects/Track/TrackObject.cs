@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Track;
 
@@ -22,45 +23,47 @@ public class TrackObject : ILocoStruct
 	public List<ObjectModelHeader> Bridges { get; set; } = [];
 	public List<ObjectModelHeader> Stations { get; set; } = [];
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (var_06 >= 3)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(var_06)} must be 0, 1, or 2.", [nameof(var_06)]);
 		}
 
 		// vanilla missed this check
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 inclusive.", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"The negative of {nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (BuildCostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be positive.", [nameof(BuildCostFactor)]);
 		}
 
 		if (TunnelCostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(TunnelCostFactor)} must be positive.", [nameof(TunnelCostFactor)]);
 		}
 
-		if (TrackPieces.HasFlag(TrackTraitFlags.Diagonal | TrackTraitFlags.LargeCurve)
-			&& TrackPieces.HasFlag(TrackTraitFlags.OneSided | TrackTraitFlags.VerySmallCurve))
+		if (TrackPieces.HasFlag(TrackTraitFlags.Diagonal | TrackTraitFlags.LargeCurve) && TrackPieces.HasFlag(TrackTraitFlags.OneSided | TrackTraitFlags.VerySmallCurve))
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(TrackPieces)} cannot include both {TrackTraitFlags.Diagonal} or {TrackTraitFlags.LargeCurve} and {TrackTraitFlags.OneSided} or {TrackTraitFlags.VerySmallCurve}.", [nameof(TrackPieces)]);
 		}
 
 		if (Bridges.Count > 7)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(Bridges)} can contain at most 7 entries.", [nameof(Bridges)]);
 		}
 
-		return Stations.Count <= 7;
+		if (Stations.Count > 7)
+		{
+			yield return new ValidationResult($"{nameof(Stations)} can contain at most 7 entries.", [nameof(Stations)]);
+		}
 	}
 }

@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-
+using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Competitor;
 
 public class CompetitorObject : ILocoStruct
@@ -12,23 +11,26 @@ public class CompetitorObject : ILocoStruct
 	public uint8_t Competitiveness { get; set; }
 	public uint8_t var_37 { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (!Emotions.HasFlag(EmotionFlags.Neutral))
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(Emotions)} must include {nameof(EmotionFlags.Neutral)}.", [nameof(Emotions)]);
 		}
 
 		if (Intelligence is < 1 or > 9)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(Intelligence)} must be between 1 and 9 inclusive.", [nameof(Intelligence)]);
 		}
 
 		if (Aggressiveness is < 1 or > 9)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(Aggressiveness)} must be between 1 and 9 inclusive.", [nameof(Aggressiveness)]);
 		}
 
-		return Competitiveness is >= 1 and <= 9;
+		if (Competitiveness is < 1 or > 9)
+		{
+			yield return new ValidationResult($"{nameof(Competitiveness)} must be between 1 and 9 inclusive.", [nameof(Competitiveness)]);
+		}
 	}
 }

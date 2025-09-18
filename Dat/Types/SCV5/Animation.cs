@@ -1,5 +1,6 @@
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.SCV5;
 
@@ -8,6 +9,6 @@ public class Animation : ILocoStruct
 {
 	[LocoArrayLength(0x06)] public uint8_t[] var_0 { get; set; } = [];
 
-	public bool Validate()
-		=> throw new NotImplementedException();
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

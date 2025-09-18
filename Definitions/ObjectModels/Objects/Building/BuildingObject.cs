@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
@@ -32,7 +33,17 @@ public class BuildingObject : ILocoStruct, IHasBuildingComponents
 
 	public List<uint8_t[]> ElevatorHeightSequences { get; set; } = [];
 
-	public bool Validate()
-		=> ProducedQuantity.Count == 2
-		&& BuildingComponents.Validate();
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+	{
+		var bcValidationContext = new ValidationContext(BuildingComponents);
+		foreach (var result in BuildingComponents.Validate(bcValidationContext))
+		{
+			yield return result;
+		}
+
+		if (ProducedQuantity.Count != 2)
+		{
+			yield return new ValidationResult($"{nameof(ProducedQuantity)} must have exactly 2 entries.", [nameof(ProducedQuantity)]);
+		}
+	}
 }

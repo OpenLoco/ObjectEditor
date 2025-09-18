@@ -1,6 +1,7 @@
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Types;
+using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.RoadStation;
 
@@ -23,38 +24,36 @@ public class RoadStationObject : ILocoStruct
 	//public uint8_t[][][] CargoOffsetBytes { get; set; }
 	public CargoOffset[][][] CargoOffsets { get; set; }
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (CostIndex >= 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 31 inclusive.", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{
-			return false;
+			yield return new ValidationResult($"The negative of {nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (BuildCostFactor <= 0)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be positive.", [nameof(BuildCostFactor)]);
 		}
 
 		if (PaintStyle >= 1)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(PaintStyle)} must be 0.", [nameof(PaintStyle)]);
 		}
 
 		if (CompatibleRoadObjects.Count > 7)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CompatibleRoadObjects)} must have at most 7 entries.", [nameof(CompatibleRoadObjects)]);
 		}
 
 		if (Flags.HasFlag(RoadStationObjectFlags.Passenger) && Flags.HasFlag(RoadStationObjectFlags.Freight))
 		{
-			return false;
+			yield return new ValidationResult($"Only one of {nameof(RoadStationObjectFlags.Passenger)} or {nameof(RoadStationObjectFlags.Freight)} can be set.", [nameof(Flags)]);
 		}
-
-		return true;
 	}
 }

@@ -1,5 +1,6 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Building;
+using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI.Fody.Helpers;
@@ -28,10 +29,9 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 	[Category("Production"), Length(0, BuildingObjectLoader.Constants.MaxProducedCargoType)] public ObservableCollection<ObjectModelHeaderViewModel> RequiredCargo { get; set; }
 	[Category("Production"), Length(1, BuildingObjectLoader.Constants.MaxProducedCargoType)] public ObservableCollection<uint8_t> ProducedQuantity { get; set; }
 
-	//[Category("Building"), Length(1, BuildingObjectLoader.Constants.BuildingVariationCount)] public List<List<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
-	//[Category("Building"), Length(1, BuildingObjectLoader.Constants.BuildingHeightCount)] public List<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
-	//[Category("Building"), Length(1, BuildingObjectLoader.Constants.BuildingAnimationCount)] public List<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
-	//[Browsable(false)] public BuildingComponentsViewModel BuildingComponents { get; set; }
+	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)] public ObservableCollection<ObservableCollection<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
+	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)] public ObservableCollection<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
+	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)] public ObservableCollection<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
 
 	// note: these height sequences are massive. BLDCTY28 has 2 sequences, 512 in length and 1024 in length. Avalonia PropertyGrid takes 30+ seconds to render this. todo: don't use property grid in future
 	//[Reactive, Category("Building"), Length(1, BuildingObject.MaxElevatorHeightSequences), Browsable(false)] public BindingList<BindingList<uint8_t>> ElevatorHeightSequences { get; set; } // NumElevatorSequences
@@ -63,9 +63,9 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 		ProducedCargo = [.. bo.ProducedCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
 		RequiredCargo = [.. bo.RequiredCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
 		ProducedQuantity = [.. bo.ProducedQuantity];
-		//BuildingAnimations = [.. bo.BuildingComponents.BuildingAnimations];
-		//BuildingHeights = [.. bo.BuildingComponents.BuildingHeights];
-		//BuildingVariations = [.. bo.BuildingComponents.BuildingVariations.Select(x => new List<uint8_t>(x))];
+		BuildingHeights = new(bo.BuildingComponents.BuildingHeights);
+		BuildingAnimations = new(bo.BuildingComponents.BuildingAnimations);
+		BuildingVariations = new(bo.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
 		ElevatorSequence1 = bo.ElevatorHeightSequences.Count > 0 ? bo.ElevatorHeightSequences[0] : null;
 		ElevatorSequence2 = bo.ElevatorHeightSequences.Count > 1 ? bo.ElevatorHeightSequences[1] : null;
 		ElevatorSequence3 = bo.ElevatorHeightSequences.Count > 2 ? bo.ElevatorHeightSequences[2] : null;
@@ -83,12 +83,12 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 	public override BuildingObject GetAsModel()
 		=> new()
 		{
-			//BuildingComponents = new BuildingComponentsModel()
-			//{
-			//	BuildingHeights = [.. BuildingHeights],
-			//	BuildingAnimations = [.. BuildingAnimations],
-			//	BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
-			//},
+			BuildingComponents = new BuildingComponentsModel()
+			{
+				BuildingHeights = [.. BuildingHeights],
+				BuildingAnimations = [.. BuildingAnimations],
+				BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
+			},
 			Flags = Flags,
 			Colours = Colours,
 			ScaffoldingColour = ScaffoldingColour,

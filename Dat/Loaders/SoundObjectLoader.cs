@@ -133,8 +133,13 @@ internal record DatSoundObjectData(
 	public DatSoundObjectData() : this(0, 0, 0, new DatSoundEffectWaveFormat())
 	{ }
 
-	public bool Validate()
-		=> Offset >= 0;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+	{
+		if (Length > 0 && Offset < 0)
+		{
+			yield return new ValidationResult("If Length is greater than 0, Offset must be non-negative.", [nameof(Offset), nameof(Length)]);
+		}
+	}
 }
 
 [LocoStructSize(0x0C)]
@@ -196,5 +201,6 @@ internal record DatSoundObject(
 		}
 	}
 
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

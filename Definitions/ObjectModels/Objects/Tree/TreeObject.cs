@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Definitions.ObjectModels.Objects.Tree;
 
 public class TreeObject : ILocoStruct
@@ -20,39 +22,37 @@ public class TreeObject : ILocoStruct
 	public int16_t DemolishRatingReduction { get; set; }
 	public TreeFlagsUnk var_3C { get; set; } // something with images
 
-	public bool Validate()
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
 		if (CostIndex > 32)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 inclusive.", [nameof(CostIndex)]);
 		}
 
 		// 230/256 = ~90%
 		if (-ClearCostFactor > BuildCostFactor * 230 / 256)
 		{
-			return false;
+			yield return new ValidationResult($"The negative of {nameof(ClearCostFactor)} must be less than or equal to ~90% of {nameof(BuildCostFactor)}.", [nameof(ClearCostFactor), nameof(BuildCostFactor)]);
 		}
 
-		switch (NumRotations)
+		if (NumRotations is not 1 or 2 or 4)
 		{
-			default:
-				return false;
-			case 1:
-			case 2:
-			case 4:
-				break;
+			yield return new ValidationResult($"{nameof(NumRotations)} must be either 1, 2, or 4.", [nameof(NumRotations)]);
 		}
 
 		if (NumGrowthStages is < 1 or > 8)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(NumGrowthStages)} must be between 1 and 8 inclusive.", [nameof(NumGrowthStages)]);
 		}
 
 		if (Height < Clearance)
 		{
-			return false;
+			yield return new ValidationResult($"{nameof(Height)} must be greater than or equal to {nameof(Clearance)}.", [nameof(Height), nameof(Clearance)]);
 		}
 
-		return var_05 >= var_04;
+		if (var_05 < var_04)
+		{
+			yield return new ValidationResult($"{nameof(var_05)} must be greater than or equal to {nameof(var_04)}.", [nameof(var_05), nameof(var_04)]);
+		}
 	}
 }

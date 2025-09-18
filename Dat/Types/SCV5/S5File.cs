@@ -2,6 +2,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dat.Types.SCV5;
 
@@ -96,13 +97,15 @@ public record S5File(
 	)
 	: ILocoStruct
 {
-	public bool Validate() => true;
 	public const int StructLength = 0x20;
 	public const int RequiredObjectsCount = 859;
 
 	// convert the 1D TileElements into a more usable 2D array
 	public List<TileElement>[,]? TileElementMap { get; set; }
 	byte[] OriginalTileElementData { get; set; } = [];
+
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 
 	public byte[] Write()
 	{

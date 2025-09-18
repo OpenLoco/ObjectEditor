@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Cargo;
@@ -18,7 +19,16 @@ public class CargoObject : ILocoStruct
 	public uint8_t UnitSize { get; set; }
 	public uint16_t var_02 { get; set; }
 
-	public bool Validate()
-		=> var_02 <= 3840
-		&& CargoTransferTime != 0;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+	{
+		if (var_02 > 3840)
+		{
+			yield return new ValidationResult($"{nameof(var_02)} must be less than or equal to 3840.");
+		}
+
+		if (CargoTransferTime == 0)
+		{
+			yield return new ValidationResult($"{nameof(CargoTransferTime)} must be non-zero.");
+		}
+	}
 }

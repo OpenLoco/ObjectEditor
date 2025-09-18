@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Definitions.ObjectModels.Objects.CliffEdge;
 
 public class CliffEdgeObject : ILocoStruct
 {
-	public bool Validate() => true;
+	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		=> [];
 }

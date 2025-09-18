@@ -2,9 +2,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Climate;
 
+public enum Season
+{
+	Autumn = 0,
+	Winter = 1,
+	Spring = 2,
+	Summer = 3,
+}
+
 public class ClimateObject : ILocoStruct
 {
-	public uint8_t FirstSeason { get; set; }
+	public Season FirstSeason { get; set; }
 	public uint8_t SeasonLength1 { get; set; }
 	public uint8_t SeasonLength2 { get; set; }
 	public uint8_t SeasonLength3 { get; set; }
@@ -19,7 +27,7 @@ public class ClimateObject : ILocoStruct
 			yield return new ValidationResult("WinterSnowLine must be less than or equal to SummerSnowLine", [nameof(WinterSnowLine), nameof(SummerSnowLine)]);
 		}
 
-		if (FirstSeason >= 4)
+		if ((int)FirstSeason >= 4)
 		{
 			yield return new ValidationResult("FirstSeason must be less than 4", [nameof(FirstSeason)]);
 		}

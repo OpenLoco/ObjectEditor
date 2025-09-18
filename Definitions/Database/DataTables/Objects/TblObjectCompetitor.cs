@@ -18,7 +18,7 @@ public class TblObjectCompetitor : DbSubObject, IConvertibleToTable<TblObjectCom
 		{
 			Parent = tbl,
 			AvailableNamePrefixes = obj.AvailableNamePrefixes,
-			AvailablePlaystyles = obj.AvailablePlaystyles,
+			AvailablePlaystyles = obj.AvailablePlayStyles,
 			Emotions = obj.Emotions,
 			Intelligence = obj.Intelligence,
 			Aggressiveness = obj.Aggressiveness,

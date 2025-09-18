@@ -59,10 +59,20 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 			yield return new ValidationResult("TotalOfTypeInScenario must be between 1 and 32", [nameof(TotalOfTypeInScenario)]);
 		}
 
+		if (SellCostFactor >= 0)
+		{
+			yield return new ValidationResult($"{nameof(SellCostFactor)} must be less than 0 {nameof(SellCostFactor)}", [nameof(SellCostFactor)]);
+		}
+
+		if (BuildCostFactor <= 0)
+		{
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be greater than 0", [nameof(BuildCostFactor)]);
+		}
+
 		// 230/256 = ~90%
 		if (-SellCostFactor > BuildCostFactor * 230 / 256)
 		{
-			yield return new ValidationResult("SellCostFactor must be at least -90% of BuildCostFactor", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
+			yield return new ValidationResult($"-{nameof(SellCostFactor)} must be at least -90% of {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (var_E8 > 8)

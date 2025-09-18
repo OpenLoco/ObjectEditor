@@ -4,7 +4,7 @@ namespace Definitions.ObjectModels.Objects.Competitor;
 public class CompetitorObject : ILocoStruct
 {
 	public NamePrefixFlags AvailableNamePrefixes { get; set; } // bitset
-	public PlaystyleFlags AvailablePlaystyles { get; set; } // bitset
+	public PlaystyleFlags AvailablePlayStyles { get; set; } // bitset
 	public EmotionFlags Emotions { get; set; } // bitset
 	public uint8_t Intelligence { get; set; }
 	public uint8_t Aggressiveness { get; set; }

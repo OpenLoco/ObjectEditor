@@ -2,36 +2,48 @@ using Definitions.ObjectModels.Objects.Competitor;
 
 namespace Gui.ViewModels;
 
-public class CompetitorViewModel : LocoObjectViewModel<CompetitorObject>
+public class CompetitorViewModel(CompetitorObject model)
+	: LocoObjectViewModel<CompetitorObject>(model)
 {
-	public NamePrefixFlags AvailableNamePrefixes { get; set; }
-	public PlaystyleFlags AvailablePlaystyles { get; set; }
-	public EmotionFlags Emotions { get; set; }
-	public uint8_t Intelligence { get; set; }
-	public uint8_t Aggressiveness { get; set; }
-	public uint8_t Competitiveness { get; set; }
-	public uint8_t var_37 { get; set; }
-
-	public CompetitorViewModel(CompetitorObject obj)
+	public NamePrefixFlags AvailableNamePrefixes
 	{
-		AvailableNamePrefixes = obj.AvailableNamePrefixes;
-		AvailablePlaystyles = obj.AvailablePlaystyles;
-		Emotions = obj.Emotions;
-		Intelligence = obj.Intelligence;
-		Aggressiveness = obj.Aggressiveness;
-		Competitiveness = obj.Competitiveness;
-		var_37 = obj.var_37;
+		get => Model.AvailableNamePrefixes;
+		set => Model.AvailableNamePrefixes = value;
 	}
 
-	public override CompetitorObject GetAsModel()
-		=> new()
-		{
-			AvailableNamePrefixes = AvailableNamePrefixes,
-			AvailablePlaystyles = AvailablePlaystyles,
-			Emotions = Emotions,
-			Intelligence = Intelligence,
-			Aggressiveness = Aggressiveness,
-			Competitiveness = Competitiveness,
-			var_37 = var_37,
-		};
+	public PlaystyleFlags AvailablePlayStyles
+	{
+		get => Model.AvailablePlayStyles;
+		set => Model.AvailablePlayStyles = value;
+	}
+
+	public EmotionFlags Emotions
+	{
+		get => Model.Emotions;
+		set => Model.Emotions = value;
+	}
+
+	public uint8_t Intelligence
+	{
+		get => Model.Intelligence;
+		set => Model.Intelligence = value;
+	}
+
+	public uint8_t Aggressiveness
+	{
+		get => Model.Aggressiveness;
+		set => Model.Aggressiveness = value;
+	}
+
+	public uint8_t Competitiveness
+	{
+		get => Model.Competitiveness;
+		set => Model.Competitiveness = value;
+	}
+
+	public uint8_t var_37
+	{
+		get => Model.var_37;
+		set => Model.var_37 = value;
+	}
 }

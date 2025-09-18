@@ -22,7 +22,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
-			model.CostFactor = br.ReadInt16();
+			model.BuildCostFactor = br.ReadInt16();
 			model.SellCostFactor = br.ReadInt16();
 			model.CostIndex = br.ReadByte();
 			model.AnimationSpeed = br.ReadByte();
@@ -60,7 +60,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
-			bw.Write(model.CostFactor);
+			bw.Write(model.BuildCostFactor);
 			bw.Write(model.SellCostFactor);
 			bw.Write(model.CostIndex);
 			bw.Write(model.AnimationSpeed);

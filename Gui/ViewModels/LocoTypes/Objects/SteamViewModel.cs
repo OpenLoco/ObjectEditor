@@ -24,13 +24,13 @@ public class SteamViewModel : LocoObjectViewModel<SteamObject>
 		FrameInfoType1 = new(so.FrameInfoType1);
 	}
 
-	public override SteamObject GetAsModel()
+	public override SteamObject CopyBackToModel()
 		=> new()
 		{
 			NumStationaryTicks = NumStationaryTicks,
 			Flags = Flags,
 			var_0A = var_0A,
-			SoundEffects = SoundEffects.ToList().ConvertAll(x => x.GetAsModel()),
+			SoundEffects = SoundEffects.ToList().ConvertAll(x => x.CopyBackToModel()),
 			FrameInfoType0 = [.. FrameInfoType0],
 			FrameInfoType1 = [.. FrameInfoType1],
 		};

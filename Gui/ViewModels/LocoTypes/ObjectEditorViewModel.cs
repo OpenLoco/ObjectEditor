@@ -295,7 +295,8 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		logger.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
 		StringTableViewModel?.WriteTableBackToObject();
 
-		CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsModel();
+		// VM should auto-copy back now
+		//CurrentObject.LocoObject.Object = CurrentObjectViewModel.CopyBackToModel();
 
 		if (ExtraContentViewModel is ImageTableViewModel itvm)
 		{

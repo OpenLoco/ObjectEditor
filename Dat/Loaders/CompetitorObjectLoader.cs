@@ -28,7 +28,7 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 			br.SkipStringId(); // First name offset, not part of object definition
 			br.SkipStringId(); // Last name offset, not part of object definition
 			model.AvailableNamePrefixes = (NamePrefixFlags)br.ReadUInt32();
-			model.AvailablePlaystyles = (PlaystyleFlags)br.ReadUInt32();
+			model.AvailablePlayStyles = (PlaystyleFlags)br.ReadUInt32();
 			model.Emotions = (EmotionFlags)br.ReadUInt32();
 			br.SkipImageId(Constants.ImagesLength); // Images, not part of object definition
 			model.Intelligence = br.ReadByte();
@@ -65,7 +65,7 @@ public abstract class CompetitorObjectLoader : IDatObjectLoader
 			bw.WriteEmptyStringId(); // First ame offset, not part of object definition
 			bw.WriteEmptyStringId(); // Last name offset, not part of object definition
 			bw.Write((uint32_t)model.AvailableNamePrefixes);
-			bw.Write((uint32_t)model.AvailablePlaystyles);
+			bw.Write((uint32_t)model.AvailablePlayStyles);
 			bw.Write((uint32_t)model.Emotions);
 			bw.WriteEmptyImageId(Constants.ImagesLength); // Images, not part of object definition
 			bw.Write(model.Intelligence);

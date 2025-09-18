@@ -40,7 +40,7 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 		BuildingVariations = new(@do.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
 	}
 
-	public override DockObject GetAsModel()
+	public override DockObject CopyBackToModel()
 	{
 		var dockObject = new DockObject()
 		{

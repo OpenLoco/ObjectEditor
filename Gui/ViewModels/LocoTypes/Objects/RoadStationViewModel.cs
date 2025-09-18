@@ -41,7 +41,7 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 		CompatibleRoadObjects = [.. rso.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
 	}
 
-	public override RoadStationObject GetAsModel()
+	public override RoadStationObject CopyBackToModel()
 		=> new()
 		{
 			PaintStyle = PaintStyle,
@@ -55,6 +55,6 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 			Flags = Flags,
 			CargoType = CargoType,
 			CargoOffsets = CargoOffsets,
-			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsModel()),
+			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.CopyBackToModel()),
 		};
 }

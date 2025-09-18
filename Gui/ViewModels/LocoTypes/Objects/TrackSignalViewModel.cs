@@ -33,7 +33,7 @@ public class TrackSignalViewModel : LocoObjectViewModel<TrackSignalObject>
 		CompatibleTrackObjects = new(ro.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 	}
 
-	public override TrackSignalObject GetAsModel()
+	public override TrackSignalObject CopyBackToModel()
 		=> new()
 		{
 			Flags = Flags,
@@ -44,6 +44,6 @@ public class TrackSignalViewModel : LocoObjectViewModel<TrackSignalObject>
 			SellCostFactor = SellCostFactor,
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
-			CompatibleTrackObjects = [.. CompatibleTrackObjects.Select(x => x.GetAsModel())],
+			CompatibleTrackObjects = [.. CompatibleTrackObjects.Select(x => x.CopyBackToModel())],
 		};
 }

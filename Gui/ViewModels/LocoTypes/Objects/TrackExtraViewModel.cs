@@ -20,7 +20,7 @@ public class TrackExtraViewModel : LocoObjectViewModel<TrackExtraObject>
 		SellCostFactor = obj.SellCostFactor;
 	}
 
-	public override TrackExtraObject GetAsModel()
+	public override TrackExtraObject CopyBackToModel()
 		=> new()
 		{
 			TrackPieces = TrackPieces,

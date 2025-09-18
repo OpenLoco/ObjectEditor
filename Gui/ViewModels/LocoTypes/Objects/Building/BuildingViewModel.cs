@@ -79,7 +79,7 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override BuildingObject GetAsModel()
+	public override BuildingObject CopyBackToModel()
 		=> new()
 		{
 			BuildingComponents = new BuildingComponentsModel()
@@ -101,8 +101,8 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 			SellCostFactor = SellCostFactor,
 			var_AC = var_AC,
 			ProducedQuantity = [.. ProducedQuantity],
-			ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.GetAsModel()),
-			RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.GetAsModel()),
+			ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
+			RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
 			ElevatorHeightSequences = GetElevatorSequences(),
 			var_A6 = var_A6,
 			var_A7 = var_A7,

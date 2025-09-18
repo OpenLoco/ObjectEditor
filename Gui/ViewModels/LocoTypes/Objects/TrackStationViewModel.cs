@@ -47,7 +47,7 @@ public class TrackStationViewModel : LocoObjectViewModel<TrackStationObject>
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override TrackStationObject GetAsModel()
+	public override TrackStationObject CopyBackToModel()
 		=> new()
 		{
 			PaintStyle = PaintStyle,
@@ -63,6 +63,6 @@ public class TrackStationViewModel : LocoObjectViewModel<TrackStationObject>
 			var_0D = var_0D,
 			var_6E = var_6E,
 			CargoOffsets = CargoOffsets,
-			CompatibleTrackObjects = CompatibleTrackObjects.ConvertAll(x => x.GetAsModel()),
+			CompatibleTrackObjects = CompatibleTrackObjects.ConvertAll(x => x.CopyBackToModel()),
 		};
 }

@@ -94,7 +94,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		var_135 = [.. vo.var_135];
 	}
 
-	public override VehicleObject GetAsModel()
+	public override VehicleObject CopyBackToModel()
 	{
 		var vo = new VehicleObject()
 		{
@@ -104,7 +104,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 			CarComponents = [.. CarComponents],
 			BodySprites = [.. BodySprites],
 			BogieSprites = [.. BogieSprites],
-			TrackType = TrackType?.GetAsModel(),
+			TrackType = TrackType?.CopyBackToModel(),
 			CostIndex = CostIndex,
 			CostFactor = CostFactor,
 			Reliability = Reliability,
@@ -119,12 +119,12 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 			ShipWakeOffset = ShipWakeOffset,
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
-			RackRail = RackRail?.GetAsModel(),
-			Sound = Sound?.GetAsModel(),
-			StartSounds = Array.ConvertAll(StartSounds, x => x.GetAsModel()),
-			CompatibleVehicles = Array.ConvertAll(CompatibleVehicles, x => x.GetAsModel()),
-			RequiredTrackExtras = Array.ConvertAll(RequiredTrackExtras, x => x.GetAsModel()),
-			AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.GetAsModel()),
+			RackRail = RackRail?.CopyBackToModel(),
+			Sound = Sound?.CopyBackToModel(),
+			StartSounds = Array.ConvertAll(StartSounds, x => x.CopyBackToModel()),
+			CompatibleVehicles = Array.ConvertAll(CompatibleVehicles, x => x.CopyBackToModel()),
+			RequiredTrackExtras = Array.ConvertAll(RequiredTrackExtras, x => x.CopyBackToModel()),
+			AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.CopyBackToModel()),
 			Animation = [.. Animation],
 			DrivingSoundType = SoundType,
 			FrictionSound = FrictionSound,

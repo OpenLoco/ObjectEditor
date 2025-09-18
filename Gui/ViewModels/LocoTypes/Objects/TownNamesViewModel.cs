@@ -12,7 +12,7 @@ public class TownNamesViewModel : LocoObjectViewModel<TownNamesObject>
 	public TownNamesViewModel(TownNamesObject tno)
 		=> Categories = [.. tno.Categories];
 
-	public override TownNamesObject GetAsModel()
+	public override TownNamesObject CopyBackToModel()
 		=> new()
 		{
 			Categories = [.. Categories],

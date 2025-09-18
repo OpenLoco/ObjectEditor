@@ -2,24 +2,24 @@ using Definitions.ObjectModels.Objects.HillShape;
 
 namespace Gui.ViewModels;
 
-public class HillShapesViewModel : LocoObjectViewModel<HillShapesObject>
+public class HillShapesViewModel(HillShapesObject model)
+	: LocoObjectViewModel<HillShapesObject>(model)
 {
-	public uint8_t HillHeightMapCount { get; set; }
-	public uint8_t MountainHeightMapCount { get; set; }
-	public bool IsHeightMap { get; set; }
-
-	public HillShapesViewModel(HillShapesObject obj)
+	public uint8_t HillHeightMapCount
 	{
-		HillHeightMapCount = obj.HillHeightMapCount;
-		MountainHeightMapCount = obj.MountainHeightMapCount;
-		IsHeightMap = obj.IsHeightMap;
+		get => Model.HillHeightMapCount;
+		set => Model.HillHeightMapCount = value;
 	}
 
-	public override HillShapesObject GetAsModel()
-		=> new()
-		{
-			HillHeightMapCount = HillHeightMapCount,
-			MountainHeightMapCount = MountainHeightMapCount,
-			IsHeightMap = IsHeightMap,
-		};
+	public uint8_t MountainHeightMapCount
+	{
+		get => Model.MountainHeightMapCount;
+		set => Model.MountainHeightMapCount = value;
+	}
+
+	public bool IsHeightMap
+	{
+		get => Model.IsHeightMap;
+		set => Model.IsHeightMap = value;
+	}
 }

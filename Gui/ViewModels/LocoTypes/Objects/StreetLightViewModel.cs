@@ -1,20 +1,13 @@
 using Definitions.ObjectModels.Objects.Streetlight;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Gui.ViewModels;
 
-public class StreetLightViewModel : LocoObjectViewModel<StreetLightObject>
+public class StreetLightViewModel(StreetLightObject model)
+	: LocoObjectViewModel<StreetLightObject>(model)
 {
-	public List<uint16_t> DesignedYears { get; set; }
+	public ObservableCollection<uint16_t> DesignedYears { get; set; } = new ObservableCollection<uint16_t>(model.DesignedYears);
 
-	public StreetLightViewModel(StreetLightObject ro)
-	{
-		DesignedYears = ro.DesignedYears;
-	}
-
-	public override StreetLightObject GetAsModel()
-		=> new()
-		{
-			DesignedYears = [.. DesignedYears]
-		};
+	public override void CopyBackToModel()
+		=> Model.DesignedYears = [.. DesignedYears];
 }

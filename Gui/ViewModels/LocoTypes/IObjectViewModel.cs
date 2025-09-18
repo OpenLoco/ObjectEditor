@@ -5,5 +5,7 @@ public interface IObjectViewModel;
 
 public interface IObjectViewModel<T> : IObjectViewModel where T : class //, ILocoStruct
 {
-	T GetAsModel();
+	T Model { get; init; }
+
+	void CopyBackToModel();
 }

@@ -22,7 +22,7 @@ public class SoundViewModel : LocoObjectViewModel<SoundObject>
 		UnkData = obj.UnkData;
 	}
 
-	public override SoundObject GetAsModel()
+	public override SoundObject CopyBackToModel()
 		=> new()
 		{
 			ShouldLoop = ShouldLoop,

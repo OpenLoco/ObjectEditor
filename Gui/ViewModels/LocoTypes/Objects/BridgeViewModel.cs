@@ -45,7 +45,7 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 		DeckDepth = bo.DeckDepth;
 	}
 
-	public override BridgeObject GetAsModel()
+	public override BridgeObject CopyBackToModel()
 		=> new()
 		{
 			Flags = Flags,
@@ -59,8 +59,8 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 			SellCostFactor = SellCostFactor,
 			DisabledTrackFlags = DisabledTrackFlags,
 			DesignedYear = DesignedYear,
-			CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsModel()),
-			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsModel()),
+			CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.CopyBackToModel()),
+			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.CopyBackToModel()),
 			var_03 = var_03,
 			ClearHeight = ClearHeight,
 			DeckDepth = DeckDepth,

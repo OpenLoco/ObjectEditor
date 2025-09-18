@@ -4,21 +4,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
-public class ScaffoldingViewModel : LocoObjectViewModel<ScaffoldingObject>
+public class ScaffoldingViewModel(ScaffoldingObject model)
+	: LocoObjectViewModel<ScaffoldingObject>(model)
 {
-	[Length(0, 3)] public ObservableCollection<uint16_t> SegmentHeights { get; set; }
-	[Length(0, 3)] public ObservableCollection<uint16_t> RoofHeights { get; set; }
+	[Length(0, 3)] public ObservableCollection<uint16_t> SegmentHeights { get; set; } = new(model.SegmentHeights);
+	[Length(0, 3)] public ObservableCollection<uint16_t> RoofHeights { get; set; } = new(model.RoofHeights);
 
-	public ScaffoldingViewModel(ScaffoldingObject so)
+	public override void CopyBackToModel()
 	{
-		SegmentHeights = new(so.SegmentHeights);
-		RoofHeights = new(so.RoofHeights);
+		Model.SegmentHeights = [.. SegmentHeights];
+		Model.RoofHeights = [.. RoofHeights];
 	}
-
-	public override ScaffoldingObject GetAsModel()
-		=> new()
-		{
-			SegmentHeights = [.. SegmentHeights],
-			RoofHeights = [.. RoofHeights]
-		};
 }

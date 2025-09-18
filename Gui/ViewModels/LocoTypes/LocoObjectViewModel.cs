@@ -1,12 +1,19 @@
 using ReactiveUI;
-using Definitions.ObjectModels;
+using System;
 
 namespace Gui.ViewModels;
 
-public abstract class LocoObjectViewModel<T> : ReactiveObject, IObjectViewModel<ILocoStruct> where T : class, ILocoStruct
+public abstract class LocoObjectViewModel<T> : ReactiveObject, IObjectViewModel<T> where T : class
 {
-	public abstract T GetAsModel();
+	public T Model { get; init; } = null!;
 
-	ILocoStruct IObjectViewModel<ILocoStruct>.GetAsModel()
-		=> GetAsModel();
+	protected LocoObjectViewModel(T model)
+	{
+		ArgumentNullException.ThrowIfNull(model);
+		Model = model;
+	}
+
+	public virtual void CopyBackToModel()
+	{ }
+
 }

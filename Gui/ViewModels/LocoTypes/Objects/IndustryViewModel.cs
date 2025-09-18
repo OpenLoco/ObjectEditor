@@ -84,7 +84,7 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override IndustryObject GetAsModel()
+	public override IndustryObject CopyBackToModel()
 		=> new()
 		{
 			AnimationSequences = AnimationSequences.ToList().ConvertAll(x => x.ToList()),
@@ -96,14 +96,14 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 			},
 			UnkBuildingData = [.. UnkBuildingData],
 			BuildingSizeFlags = BuildingSizeFlags,
-			BuildingWall = BuildingWall?.GetAsModel(),
-			BuildingWallEntrance = BuildingWallEntrance?.GetAsModel(),
+			BuildingWall = BuildingWall?.CopyBackToModel(),
+			BuildingWallEntrance = BuildingWallEntrance?.CopyBackToModel(),
 			MinNumBuildings = MinNumBuildings,
 			MaxNumBuildings = MaxNumBuildings,
 			InitialProductionRate = [.. InitialProductionRate],
-			ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.GetAsModel()),
-			RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.GetAsModel()),
-			WallTypes = WallTypes.ToList().ConvertAll(x => x.GetAsModel()),
+			ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
+			RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
+			WallTypes = WallTypes.ToList().ConvertAll(x => x.CopyBackToModel()),
 			Colours = Colours,
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,

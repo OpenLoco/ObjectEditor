@@ -25,7 +25,7 @@ The ObjectService is used to host a SQLite database and a folder of all known cu
 - ASP.NET Core
 - SQLite
 - System.Text.Json
-- Avalonia UI
+- Avalonia UI and ReactiveUI
 
 ## Coding Standards
 
@@ -39,7 +39,7 @@ The ObjectService is used to host a SQLite database and a folder of all known cu
 - Separate views and viewmodels as necessary, and as evidenced by the existing `/Gui/Views`, `/Gui/ViewModels` and `/Gui/Models` folders. Note that many 'models' are defined in the `/Definitions` project as well.
 - The application should have a modern and clean design utilising FluentUI principles and library.
 - It should try to use MVVM style UI design, and where this design doesn't exist in the code, inform the user how to rewrite the code to better adhere to the standard MVVM/Avalonia UI style.
-- The UI code uses ReactiveUI, so any UI suggestions must use that as well. We do not use INotifyPropertyChanged, for example, since ReactiveUI handles that automatically.
+- The UI code uses ReactiveUI, so any UI suggestions must use that as well. We do not use INotifyPropertyChanged, for example, since ReactiveUI handles that automatically, so do not provide any suggestions related to INotifyPropertyChanged.
 
 ## AI Agent Behavior
 

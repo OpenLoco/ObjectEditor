@@ -2,38 +2,48 @@ using Definitions.ObjectModels.Objects.Climate;
 
 namespace Gui.ViewModels;
 
-public enum Season
+public class ClimateViewModel(ClimateObject model)
+	: LocoObjectViewModel<ClimateObject>(model)
 {
-	Autumn = 0,
-	Winter = 1,
-	Spring = 2,
-	Summer = 3,
-}
-
-public class ClimateViewModel : LocoObjectViewModel<ClimateObject>
-{
-	public Season FirstSeason { get; set; }
-	public uint8_t WinterSnowLine { get; set; }
-	public uint8_t SummerSnowLine { get; set; }
-	public uint8_t[] SeasonLengths { get; set; }
-
-	public ClimateViewModel(ClimateObject ro)
+	public Season FirstSeason
 	{
-		FirstSeason = (Season)ro.FirstSeason;
-		WinterSnowLine = ro.WinterSnowLine;
-		SummerSnowLine = ro.SummerSnowLine;
-		SeasonLengths = [ro.SeasonLength1, ro.SeasonLength2, ro.SeasonLength3, ro.SeasonLength4];
+		get => Model.FirstSeason;
+		set => Model.FirstSeason = value;
 	}
 
-	public override ClimateObject GetAsModel()
-		=> new()
-		{
-			FirstSeason = (uint8_t)FirstSeason,
-			WinterSnowLine = WinterSnowLine,
-			SummerSnowLine = SummerSnowLine,
-			SeasonLength1 = SeasonLengths[0],
-			SeasonLength2 = SeasonLengths[1],
-			SeasonLength3 = SeasonLengths[2],
-			SeasonLength4 = SeasonLengths[3],
-		};
+	public uint8_t SeasonLength1
+	{
+		get => Model.SeasonLength1;
+		set => Model.SeasonLength1 = value;
+	}
+
+	public uint8_t SeasonLength2
+	{
+		get => Model.SeasonLength2;
+		set => Model.SeasonLength2 = value;
+	}
+
+	public uint8_t SeasonLength3
+	{
+		get => Model.SeasonLength3;
+		set => Model.SeasonLength3 = value;
+	}
+
+	public uint8_t SeasonLength4
+	{
+		get => Model.SeasonLength4;
+		set => Model.SeasonLength4 = value;
+	}
+
+	public uint8_t WinterSnowLine
+	{
+		get => Model.WinterSnowLine;
+		set => Model.WinterSnowLine = value;
+	}
+
+	public uint8_t SummerSnowLine
+	{
+		get => Model.SummerSnowLine;
+		set => Model.SummerSnowLine = value;
+	}
 }

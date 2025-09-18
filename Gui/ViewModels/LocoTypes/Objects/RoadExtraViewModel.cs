@@ -20,7 +20,7 @@ public class RoadExtraViewModel : LocoObjectViewModel<RoadExtraObject>
 		SellCostFactor = obj.SellCostFactor;
 	}
 
-	public override RoadExtraObject GetAsModel()
+	public override RoadExtraObject CopyBackToModel()
 		=> new()
 		{
 			RoadPieces = RoadPieces,

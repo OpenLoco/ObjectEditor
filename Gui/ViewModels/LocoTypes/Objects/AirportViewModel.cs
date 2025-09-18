@@ -56,7 +56,7 @@ public class AirportViewModel : LocoObjectViewModel<AirportObject>
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override AirportObject GetAsModel()
+	public override AirportObject CopyBackToModel()
 		=> new()
 		{
 			AllowedPlaneTypes = AllowedPlaneTypes,

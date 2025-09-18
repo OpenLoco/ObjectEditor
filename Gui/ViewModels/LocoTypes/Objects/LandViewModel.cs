@@ -3,48 +3,72 @@ using Definitions.ObjectModels.Types;
 
 namespace Gui.ViewModels;
 
-public class LandViewModel : LocoObjectViewModel<LandObject>
+public class LandViewModel(LandObject model)
+	: LocoObjectViewModel<LandObject>(model)
 {
-	public uint8_t CostIndex { get; set; }
-	public uint8_t NumGrowthStages { get; set; }
-	public uint8_t NumImageAngles { get; set; }
-	public LandObjectFlags Flags { get; set; }
-	public int16_t CostFactor { get; set; }
-	public uint32_t NumImagesPerGrowthStage { get; set; }
-	public uint8_t DistributionPattern { get; set; }
-	public uint8_t NumVariations { get; set; }
-	public uint8_t VariationLikelihood { get; set; }
-	public ObjectModelHeader CliffEdgeHeader { get; set; }
-	public ObjectModelHeader? UnkObjectHeader { get; set; }
-
-	public LandViewModel(LandObject obj)
+	public uint8_t CostIndex
 	{
-		CostIndex = obj.CostIndex;
-		NumGrowthStages = obj.NumGrowthStages;
-		NumImageAngles = obj.NumImageAngles;
-		Flags = obj.Flags;
-		CostFactor = obj.CostFactor;
-		NumImagesPerGrowthStage = obj.NumImagesPerGrowthStage;
-		DistributionPattern = obj.DistributionPattern;
-		NumVariations = obj.NumVariations;
-		VariationLikelihood = obj.VariationLikelihood;
-		CliffEdgeHeader = obj.CliffEdgeHeader;
-		UnkObjectHeader = obj.UnkObjectHeader;
+		get => Model.CostIndex;
+		set => Model.CostIndex = value;
 	}
 
-	public override LandObject GetAsModel()
-		=> new()
-		{
-			CostIndex = CostIndex,
-			NumGrowthStages = NumGrowthStages,
-			NumImageAngles = NumImageAngles,
-			Flags = Flags,
-			CostFactor = CostFactor,
-			NumImagesPerGrowthStage = NumImagesPerGrowthStage,
-			DistributionPattern = DistributionPattern,
-			NumVariations = NumVariations,
-			VariationLikelihood = VariationLikelihood,
-			CliffEdgeHeader = CliffEdgeHeader,
-			UnkObjectHeader = UnkObjectHeader,
-		};
+	public uint8_t NumGrowthStages
+	{
+		get => Model.NumGrowthStages;
+		set => Model.NumGrowthStages = value;
+	}
+
+	public uint8_t NumImageAngles
+	{
+		get => Model.NumImageAngles;
+		set => Model.NumImageAngles = value;
+	}
+
+	public LandObjectFlags Flags
+	{
+		get => Model.Flags;
+		set => Model.Flags = value;
+	}
+
+	public int16_t CostFactor
+	{
+		get => Model.CostFactor;
+		set => Model.CostFactor = value;
+	}
+
+	public uint32_t NumImagesPerGrowthStage
+	{
+		get => Model.NumImagesPerGrowthStage;
+		set => Model.NumImagesPerGrowthStage = value;
+	}
+
+	public uint8_t DistributionPattern
+	{
+		get => Model.DistributionPattern;
+		set => Model.DistributionPattern = value;
+	}
+
+	public uint8_t NumVariations
+	{
+		get => Model.NumVariations;
+		set => Model.NumVariations = value;
+	}
+
+	public uint8_t VariationLikelihood
+	{
+		get => Model.VariationLikelihood;
+		set => Model.VariationLikelihood = value;
+	}
+
+	public ObjectModelHeader CliffEdgeHeader
+	{
+		get => Model.CliffEdgeHeader;
+		set => Model.CliffEdgeHeader = value;
+	}
+
+	public ObjectModelHeader? UnkObjectHeader
+	{
+		get => Model.UnkObjectHeader;
+		set => Model.UnkObjectHeader = value;
+	}
 }

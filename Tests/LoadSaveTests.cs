@@ -279,7 +279,7 @@ public class LoadSaveTests
 	{
 		void assertFunc(LocoObject obj, ClimateObject struc) => Assert.Multiple(() =>
 		{
-			Assert.That(struc.FirstSeason, Is.EqualTo(1), nameof(struc.FirstSeason));
+			Assert.That(struc.FirstSeason, Is.EqualTo(Season.Winter), nameof(struc.FirstSeason));
 			Assert.That(struc.SeasonLength1, Is.EqualTo(57), nameof(struc.SeasonLength1));
 			Assert.That(struc.SeasonLength2, Is.EqualTo(80), nameof(struc.SeasonLength2));
 			Assert.That(struc.SeasonLength3, Is.EqualTo(100), nameof(struc.SeasonLength3));
@@ -305,12 +305,12 @@ public class LoadSaveTests
 					| NamePrefixFlags.unk12),
 				nameof(struc.AvailableNamePrefixes));
 
-			Assert.That(struc.AvailablePlaystyles,
+			Assert.That(struc.AvailablePlayStyles,
 				Is.EqualTo(
 					PlaystyleFlags.unk0
 					| PlaystyleFlags.unk2
 					| PlaystyleFlags.unk11),
-				nameof(struc.AvailablePlaystyles));
+				nameof(struc.AvailablePlayStyles));
 
 			Assert.That(struc.Emotions,
 				Is.EqualTo(
@@ -636,7 +636,7 @@ public class LoadSaveTests
 	{
 		void assertFunc(LocoObject obj, LevelCrossingObject struc) => Assert.Multiple(() =>
 		{
-			Assert.That(struc.CostFactor, Is.EqualTo(30), nameof(struc.CostFactor));
+			Assert.That(struc.BuildCostFactor, Is.EqualTo(30), nameof(struc.BuildCostFactor));
 			Assert.That(struc.SellCostFactor, Is.EqualTo(-10), nameof(struc.SellCostFactor));
 			Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 

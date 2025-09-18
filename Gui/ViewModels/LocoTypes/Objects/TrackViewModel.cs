@@ -48,7 +48,7 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override TrackObject GetAsModel()
+	public override TrackObject CopyBackToModel()
 		=> new()
 		{
 			Flags = Flags,
@@ -60,12 +60,12 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 			SellCostFactor = SellCostFactor,
 			TunnelCostFactor = TunnelCostFactor,
 			CostIndex = CostIndex,
-			CompatibleTracksAndRoads = CompatibleTracksAndRoads.ToList().ConvertAll(x => x.GetAsModel()),
-			TrackMods = CompatibleTrackExtras.ToList().ConvertAll(x => x.GetAsModel()),
-			Signals = CompatibleSignals.ToList().ConvertAll(x => x.GetAsModel()),
-			Tunnel = CompatibleTunnel.GetAsModel(),
-			Bridges = CompatibleBridges.ToList().ConvertAll(x => x.GetAsModel()),
-			Stations = CompatibleStations.ToList().ConvertAll(x => x.GetAsModel()),
+			CompatibleTracksAndRoads = CompatibleTracksAndRoads.ToList().ConvertAll(x => x.CopyBackToModel()),
+			TrackMods = CompatibleTrackExtras.ToList().ConvertAll(x => x.CopyBackToModel()),
+			Signals = CompatibleSignals.ToList().ConvertAll(x => x.CopyBackToModel()),
+			Tunnel = CompatibleTunnel.CopyBackToModel(),
+			Bridges = CompatibleBridges.ToList().ConvertAll(x => x.CopyBackToModel()),
+			Stations = CompatibleStations.ToList().ConvertAll(x => x.CopyBackToModel()),
 			var_06 = var_06,
 		};
 }

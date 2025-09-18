@@ -43,7 +43,7 @@ public class RoadViewModel : LocoObjectViewModel<RoadObject>
 		Stations = new(ro.Stations.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 	}
 
-	public override RoadObject GetAsModel()
+	public override RoadObject CopyBackToModel()
 		=> new()
 		{
 			Flags = Flags,
@@ -56,10 +56,10 @@ public class RoadViewModel : LocoObjectViewModel<RoadObject>
 			SellCostFactor = SellCostFactor,
 			TunnelCostFactor = TunnelCostFactor,
 			CostIndex = CostIndex,
-			CompatibleTracksAndRoads = Compatible.ToList().ConvertAll(x => x.GetAsModel()),
-			RoadMods = Mods.ToList().ConvertAll(x => x.GetAsModel()),
-			Tunnel = Tunnel.GetAsModel(),
-			Bridges = Bridges.ToList().ConvertAll(x => x.GetAsModel()),
-			Stations = Stations.ToList().ConvertAll(x => x.GetAsModel()),
+			CompatibleTracksAndRoads = Compatible.ToList().ConvertAll(x => x.CopyBackToModel()),
+			RoadMods = Mods.ToList().ConvertAll(x => x.CopyBackToModel()),
+			Tunnel = Tunnel.CopyBackToModel(),
+			Bridges = Bridges.ToList().ConvertAll(x => x.CopyBackToModel()),
+			Stations = Stations.ToList().ConvertAll(x => x.CopyBackToModel()),
 		};
 }

@@ -24,9 +24,9 @@ public class RoadObject : ILocoStruct
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		if (CostIndex >= 32)
+		if (CostIndex >= Constants.CurrencyMultiplicationFactorArraySize)
 		{
-			yield return new ValidationResult("CostIndex must be less than 32", [nameof(CostIndex)]);
+			yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)

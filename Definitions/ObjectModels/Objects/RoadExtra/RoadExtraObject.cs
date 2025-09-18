@@ -18,10 +18,9 @@ public class RoadExtraObject : ILocoStruct
 			yield return new ValidationResult("PaintStyle must be 0 or 1", [nameof(PaintStyle)]);
 		}
 
-		// This check missing from vanilla
-		if (CostIndex >= 32)
+		if (CostIndex >= Constants.CurrencyMultiplicationFactorArraySize)
 		{
-			yield return new ValidationResult("CostIndex must be less than 32", [nameof(CostIndex)]);
+			yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)

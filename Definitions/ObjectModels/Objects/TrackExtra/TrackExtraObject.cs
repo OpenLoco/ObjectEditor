@@ -18,10 +18,9 @@ public class TrackExtraObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(PaintStyle)} must be either 0 (normal) or 1 (fancy).", [nameof(PaintStyle)]);
 		}
 
-		// This check missing from vanilla
-		if (CostIndex > 32)
+		if (CostIndex >= Constants.CurrencyMultiplicationFactorArraySize)
 		{
-			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 inclusive.", [nameof(CostIndex)]);
+			yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)

@@ -93,12 +93,7 @@ static void QueryCostIndex()
 	//var index = ObjectIndex.CreateIndex(dir, logger);
 	//index.SaveIndexAsync(Path.Combine(dir, "objectIndex.json")).Wait();
 
-	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource, byte CostIndex)>();
-
-	// Pseudocode plan:
-	// 1. Get all loaded assemblies (or just the relevant ones, e.g., Assembly.GetExecutingAssembly()).
-	// 2. For each type, check if it's a class, not abstract, implements ILocoStruct, and has a property named "CostIndex".
-	// 3. Iterate over these types in a foreach loop.
+	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource, ObjectType ObjectType, byte CostIndex)>();
 
 	var locoStructTypesWithCostIndex = AppDomain.CurrentDomain.GetAssemblies()
 		.SelectMany(a => a.GetTypes())
@@ -115,9 +110,8 @@ static void QueryCostIndex()
 		Console.WriteLine($"Type: {type} implements ILocoStruct and has a CostIndex property.");
 	}
 
-	//foreach (var obj in index.Objects.Where(x => x.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG && locoStructTypesWithCostIndex.Contains(x.ObjectType)))
-
-	foreach (var obj in index.Objects.Where(x => locoStructTypesWithCostIndex.Contains(x.ObjectType)))
+	foreach (var obj in index.Objects.Where(x => x.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG && locoStructTypesWithCostIndex.Contains(x.ObjectType)))
+	//foreach (var obj in index.Objects.Where(x => locoStructTypesWithCostIndex.Contains(x.ObjectType)))
 	{
 		try
 		{
@@ -132,7 +126,7 @@ static void QueryCostIndex()
 				var header = o.DatFileInfo.S5Header;
 				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
 
-				results.Add((obj, source, costIndex));
+				results.Add((obj, source, o.LocoObject.ObjectType, costIndex));
 			}
 		}
 		catch (Exception ex)
@@ -145,7 +139,7 @@ static void QueryCostIndex()
 	foreach (var result in results.OrderBy(x => x.CostIndex))
 	{
 		// Print object index entry and its enabled flags
-		Console.WriteLine($"{result.Obj.DisplayName} - {result.ObjectSource} - CostIndex={result.CostIndex}");
+		Console.WriteLine($"{result.Obj.DisplayName} - {result.ObjectSource} - {result.ObjectType} - CostIndex={result.CostIndex}");
 	}
 }
 QueryCostIndex();

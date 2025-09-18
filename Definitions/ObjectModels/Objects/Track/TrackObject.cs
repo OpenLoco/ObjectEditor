@@ -30,10 +30,9 @@ public class TrackObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(var_06)} must be 0, 1, or 2.", [nameof(var_06)]);
 		}
 
-		// vanilla missed this check
-		if (CostIndex > 32)
+		if (CostIndex >= Constants.CurrencyMultiplicationFactorArraySize)
 		{
-			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 inclusive.", [nameof(CostIndex)]);
+			yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BuildCostFactor)

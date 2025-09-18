@@ -25,9 +25,9 @@ public class BridgeObject : ILocoStruct
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		if (CostIndex > 32)
+		if (CostIndex >= Constants.CurrencyMultiplicationFactorArraySize)
 		{
-			yield return new ValidationResult($"{nameof(CostIndex)} must be between 0 and 32 inclusive.", [nameof(CostIndex)]);
+			yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
 		}
 
 		if (-SellCostFactor > BaseCostFactor)

@@ -20,9 +20,9 @@ public class LandObject : ILocoStruct
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		if (CostIndex > 32)
+		if (CostIndex >= Constants.CurrencyMultiplicationFactorArraySize)
 		{
-			yield return new ValidationResult($"{nameof(CostIndex)} must be in the range 0-32.", [nameof(CostIndex)]);
+			yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
 		}
 
 		if (CostFactor <= 0)

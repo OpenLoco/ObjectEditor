@@ -28,7 +28,6 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 	[Category("Production"), Length(0, BuildingObjectLoader.Constants.MaxProducedCargoType)] public ObservableCollection<ObjectModelHeaderViewModel> ProducedCargo { get; set; }
 	[Category("Production"), Length(0, BuildingObjectLoader.Constants.MaxProducedCargoType)] public ObservableCollection<ObjectModelHeaderViewModel> RequiredCargo { get; set; }
 	[Category("Production"), Length(1, BuildingObjectLoader.Constants.MaxProducedCargoType)] public ObservableCollection<uint8_t> ProducedQuantity { get; set; }
-
 	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)] public ObservableCollection<ObservableCollection<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
 	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)] public ObservableCollection<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
 	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)] public ObservableCollection<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts

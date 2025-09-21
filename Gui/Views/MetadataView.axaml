@@ -1,127 +1,206 @@
 <UserControl
-	xmlns="https://github.com/avaloniaui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:mo="using:Gui.Models"
-	xmlns:vm="using:Gui.ViewModels"
-	mc:Ignorable="d"
-	d:DesignWidth="800"
-	d:DesignHeight="450"
-	x:Class="Gui.Views.MetadataView"
-	x:DataType="vm:MetadataViewModel">
+    x:Class="Gui.Views.MetadataView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mo="using:Gui.Models"
+    xmlns:vm="using:Gui.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="vm:MetadataViewModel"
+    mc:Ignorable="d">
 
-	<TabControl DataContext="{Binding Metadata}" Margin="8" Background="{DynamicResource ExpanderContentBackground}">
-		<TabItem Header="Details">
-			<Grid >
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="*"/>
-				</Grid.ColumnDefinitions>
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
-				
-				<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Unique Object Id" Margin="4"/>
-				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding UniqueObjectId}" IsReadOnly="True" Margin="4" />
-				
-				<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Description" Margin="4"/>
-				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description}" IsReadOnly="True" Margin="4" />
+    <TabControl
+        Margin="8"
+        Background="{DynamicResource ExpanderContentBackground}"
+        DataContext="{Binding Metadata}">
+        <TabItem Header="Details">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-				<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Created Date" Margin="4" />
-				<DatePicker Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding CreatedDate}" IsEnabled="False" Margin="4" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Unique Object Id" />
+                <TextBox
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsReadOnly="True"
+                    Text="{Binding UniqueObjectId}" />
 
-				<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Modified Date" Margin="4"/>
-				<DatePicker Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding ModifiedDate}" IsEnabled="False" Margin="4" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Description" />
+                <TextBox
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsReadOnly="True"
+                    Text="{Binding Description}" />
 
-				<TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Uploaded Date" Margin="4"/>
-				<DatePicker Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" SelectedDate="{Binding UploadedDate}" IsEnabled="False" Margin="4" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Created Date" />
+                <DatePicker
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsEnabled="False"
+                    SelectedDate="{Binding CreatedDate}" />
 
-				<TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Licence" Margin="4"/>
-				<TextBox Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Licence.Name}" IsReadOnly="True" Margin="4" />
+                <TextBlock
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Modified Date" />
+                <DatePicker
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsEnabled="False"
+                    SelectedDate="{Binding ModifiedDate}" />
 
-				<TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Availability" Margin="4"/>
-				<TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Availability}" IsReadOnly="True" Margin="4" />
-			</Grid>
-		</TabItem>
-		<TabItem Header="Authors">
-			<ListBox ItemsSource="{Binding Authors}">
-				<ListBox.ItemsPanel>
-					<ItemsPanelTemplate>
-						<WrapPanel/>
-					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
-				<ListBox.ItemTemplate>
-					<DataTemplate>
-						<Border BorderThickness="2">
-							<StackPanel>
-								<TextBlock Margin="4" Text="{Binding Name}" />
-							</StackPanel>
-						</Border>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox >
-		</TabItem>
-		<TabItem Header="Tags">
-			<ListBox ItemsSource="{Binding Tags}">
-				<ListBox.ItemsPanel>
-					<ItemsPanelTemplate>
-						<WrapPanel/>
-					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
-				<ListBox.ItemTemplate>
-					<DataTemplate>
-						<Border BorderThickness="2">
-							<TextBlock Margin="4" Text="{Binding Name}" />
-						</Border>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox >
-		</TabItem>
-		<TabItem Header="ObjectPacks">
-			<ListBox ItemsSource="{Binding ObjectPacks}">
-				<ListBox.ItemsPanel>
-					<ItemsPanelTemplate>
-						<WrapPanel/>
-					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
-				<ListBox.ItemTemplate>
-					<DataTemplate>
-						<Border BorderThickness="2">
-							<TextBlock Margin="4" Text="{Binding Name}" />
-						</Border>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox >
-		</TabItem>
-		<TabItem Header="DatObjects">
-			<ListBox ItemsSource="{Binding DatObjects}">
-				<ListBox.ItemsPanel>
-					<ItemsPanelTemplate>
-						<WrapPanel/>
-					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
-				<ListBox.ItemTemplate>
-					<DataTemplate>
-						<Border BorderThickness="2">
-							<StackPanel Orientation="Horizontal">
-								<TextBlock Margin="4" Text="{Binding DatName}" />
-								<TextBlock Margin="4" Text="{Binding DatChecksum}" />
-								<TextBlock Margin="4" Text="{Binding xxHash3}" />
-							</StackPanel>
-						</Border>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox >
-		</TabItem>
-	</TabControl>
+                <TextBlock
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Uploaded Date" />
+                <DatePicker
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsEnabled="False"
+                    SelectedDate="{Binding UploadedDate}" />
 
+                <TextBlock
+                    Grid.Row="5"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Licence" />
+                <TextBox
+                    Grid.Row="5"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsReadOnly="True"
+                    Text="{Binding Licence.Name}" />
+
+                <TextBlock
+                    Grid.Row="6"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Availability" />
+                <TextBox
+                    Grid.Row="6"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsReadOnly="True"
+                    Text="{Binding Availability}" />
+            </Grid>
+        </TabItem>
+        <TabItem Header="Authors">
+            <ListBox ItemsSource="{Binding Authors}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderThickness="2">
+                            <StackPanel>
+                                <TextBlock Margin="4" Text="{Binding Name}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </TabItem>
+        <TabItem Header="Tags">
+            <ListBox ItemsSource="{Binding Tags}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderThickness="2">
+                            <TextBlock Margin="4" Text="{Binding Name}" />
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </TabItem>
+        <TabItem Header="ObjectPacks">
+            <ListBox ItemsSource="{Binding ObjectPacks}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderThickness="2">
+                            <TextBlock Margin="4" Text="{Binding Name}" />
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </TabItem>
+        <TabItem Header="DatObjects">
+            <ListBox ItemsSource="{Binding DatObjects}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderThickness="2">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="4" Text="{Binding DatName}" />
+                                <TextBlock Margin="4" Text="{Binding DatChecksum}" />
+                                <TextBlock Margin="4" Text="{Binding xxHash3}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </TabItem>
+    </TabControl>
 </UserControl>

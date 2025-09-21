@@ -1,9 +1,9 @@
-using NUnit.Framework;
 using Common.Logging;
 using Dat.FileParsing;
 using Dat.Types;
-using SixLabors.ImageSharp;
 using Definitions.ObjectModels.Types;
+using NUnit.Framework;
+using SixLabors.ImageSharp;
 
 namespace Dat.Tests;
 
@@ -55,8 +55,8 @@ public class G1Tests
 	[TestCase(GoG_G1, 3540)]
 	[TestCase(GoG_G1, 3541)]
 	[TestCase(GoG_G1, 3542)]
-	[TestCase(GoG_G1, 3618)]
-	[TestCase(GoG_G1, 3619)]
+	[TestCase(GoG_G1, 3620)]
+	[TestCase(GoG_G1, 3621)]
 	public void LoadSaveLoadG1_RLERunsGreaterThan127(string g1File, int element)
 	{
 		var g1 = SawyerStreamReader.LoadG1(g1File, Logger);

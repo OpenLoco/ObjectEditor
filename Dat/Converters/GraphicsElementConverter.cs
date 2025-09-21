@@ -19,7 +19,7 @@ public static class GraphicsElementConverter
 			ImageData = graphicsElement.ImageData,
 		};
 
-	public static GraphicsElement Convert(this DatG1Element32 graphicsElement)
+	public static GraphicsElement Convert(this DatG1Element32 graphicsElement, string name, int index)
 		=> new()
 		{
 			Width = graphicsElement.Width,
@@ -29,5 +29,7 @@ public static class GraphicsElementConverter
 			Flags = (GraphicsElementFlags)graphicsElement.Flags,
 			ZoomOffset = graphicsElement.ZoomOffset,
 			ImageData = graphicsElement.ImageData,
+			Name = name,
+			ImageTableIndex = index,
 		};
 }

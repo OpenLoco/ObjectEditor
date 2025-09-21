@@ -2,6 +2,7 @@ using Avalonia.Media.Imaging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
+using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -15,15 +16,16 @@ namespace Gui.ViewModels.Graphics;
 
 public class ImageViewModel : ReactiveObject
 {
+	public string Name { get; set; }
+	public int ImageTableIndex { get; init; }
 	public int Width => UnderlyingImage.Width;
 	public int Height => UnderlyingImage.Height;
-	public string Name { get; set; }
-
 	[Reactive] public int XOffset { get; set; }
 	[Reactive] public int YOffset { get; set; }
-
-	public GraphicsElementFlags Flags { get; set; }
 	public short ZoomOffset { get; set; }
+
+	[EnumProhibitValues<GraphicsElementFlags>(GraphicsElementFlags.None)]
+	public GraphicsElementFlags Flags { get; set; }
 
 	[Reactive, Browsable(false)]
 	public Bitmap DisplayedImage { get; private set; }
@@ -50,6 +52,7 @@ public class ImageViewModel : ReactiveObject
 		YOffset = graphicsElement.YOffset;
 		Flags = graphicsElement.Flags;
 		ZoomOffset = graphicsElement.ZoomOffset;
+		ImageTableIndex = graphicsElement.ImageTableIndex;
 		PaletteMap = paletteMap;
 
 		_ = this.WhenAnyValue(o => o.UnderlyingImage)
@@ -69,13 +72,15 @@ public class ImageViewModel : ReactiveObject
 
 		var dummyElement = new GraphicsElement
 		{
+			Name = Name, // not necessary for palette
 			Width = (short)UnderlyingImage.Width,
 			Height = (short)UnderlyingImage.Height,
 			XOffset = (short)XOffset,
 			YOffset = (short)YOffset,
 			Flags = Flags,
 			ZoomOffset = ZoomOffset,
-			ImageData = rawData
+			ImageData = rawData,
+			ImageTableIndex = ImageTableIndex, // not necessary for palette
 		};
 
 		if (!PaletteMap.TryConvertG1ToRgba32Bitmap(dummyElement, primary, secondary, out var image))

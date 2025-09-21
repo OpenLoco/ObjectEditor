@@ -29,7 +29,9 @@ public class ImageTable : IHasGraphicsElements
 	// public/old interface
 	public List<GraphicsElement> GraphicsElements
 	{
-		get => [.. Groups.SelectMany(x => x.GraphicsElements)];
+		get => [.. Groups
+			.SelectMany(x => x.GraphicsElements)
+			.OrderBy(x => x.ImageTableIndex)];
 		set => Groups.Add(("All", value));
 	}
 

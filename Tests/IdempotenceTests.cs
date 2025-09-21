@@ -12,6 +12,8 @@ namespace Dat.Tests;
 [TestFixture]
 public class IdempotenceTests
 {
+	static PaletteMap PaletteMap { get; } = new PaletteMap("C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\Assets\\palette.png");
+
 	static string[] VanillaFiles => [
 		.. Directory.GetFiles(TestConstants.BaseSteamObjDataPath, "*.dat"),
 		.. Directory.GetFiles(TestConstants.BaseGoGObjDataPath, "*.dat")
@@ -61,12 +63,11 @@ public class IdempotenceTests
 
 		using (Assert.EnterMultipleScope())
 		{
-			Assert.That(JsonSerializer.Serialize((object)actual.Object), Is.EqualTo(JsonSerializer.Serialize((object)expected.Object)));
-			Assert.That(JsonSerializer.Serialize(actual.StringTable), Is.EqualTo(JsonSerializer.Serialize(expected.StringTable)));
+			Assert.That(JsonSerializer.Serialize((object)actual.Object), Is.EqualTo(JsonSerializer.Serialize((object)expected.Object)), "Object");
+			Assert.That(JsonSerializer.Serialize(actual.StringTable), Is.EqualTo(JsonSerializer.Serialize(expected.StringTable)), "String Table");
 
 			if (actual.ImageTable != null && expected.ImageTable != null)
 			{
-				var pm = new PaletteMap("C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\Assets\\palette.png");
 				var i = 0;
 				foreach (var ae in actual.ImageTable.GraphicsElements.Zip(expected.ImageTable.GraphicsElements))
 				{
@@ -75,13 +76,13 @@ public class IdempotenceTests
 
 					if (ac != ex)
 					{
-						_ = pm.TryConvertG1ToRgba32Bitmap(ae.First, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img1);
-						_ = pm.TryConvertG1ToRgba32Bitmap(ae.Second, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img2);
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(ae.First, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img1);
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(ae.Second, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img2);
 						img1.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-actual.bmp");
 						img2.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-expected.bmp");
 					}
 
-					Assert.That(ac, Is.EqualTo(ex));
+					Assert.That(ac, Is.EqualTo(ex), $"GraphicsTable[{i}]");
 					i++;
 				}
 			}

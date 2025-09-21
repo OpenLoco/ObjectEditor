@@ -64,9 +64,19 @@ public record DatG1Element32(
 		=> GetImageDataForSave(Flags, ImageData, Width, Height);
 
 	public static byte[] GetImageDataForSave(DatG1ElementFlags flags, byte[] imageData, int width, int height)
-		=> flags.HasFlag(DatG1ElementFlags.IsRLECompressed)
-			? SawyerStreamWriter.EncodeRLEImageData(flags, imageData, width, height)
-			: imageData;
+	{
+		if (flags.HasFlag(DatG1ElementFlags.IsRLECompressed))
+		{
+			return SawyerStreamWriter.EncodeRLEImageData(flags, imageData, width, height);
+		}
+
+		if (flags.HasFlag(DatG1ElementFlags.DuplicatePrevious))
+		{
+			return [];
+		}
+
+		return imageData;
+	}
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 		=> [];

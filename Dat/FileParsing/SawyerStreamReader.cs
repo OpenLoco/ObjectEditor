@@ -219,9 +219,7 @@ public static class SawyerStreamReader
 
 	public static G1Dat? LoadG1(string filename, ILogger logger)
 	{
-		ReadOnlySpan<byte> fullData = File.ReadAllBytes(filename);
-
-		using (var ms = new MemoryStream(fullData.ToArray()))
+		using (var ms = new FileStream(filename, FileMode.Open))
 		using (var br = new LocoBinaryReader(ms))
 		{
 			var (g1Header, imageTable) = ReadImageTable(br);
@@ -282,9 +280,7 @@ public static class SawyerStreamReader
 				currElement.ImageData = DecodeRLEImageData(currElement);
 			}
 
-			var ge = currElement.Convert();
-			ge.Name = DefaultImageTableNameProvider.GetImageName(i);
-			graphicsElements.Add(ge);
+			graphicsElements.Add(currElement.Convert(DefaultImageTableNameProvider.GetImageName(i), i));
 		}
 
 		return (g1Header, graphicsElements);

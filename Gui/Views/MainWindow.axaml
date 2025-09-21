@@ -1,75 +1,121 @@
 <Window
-	xmlns="https://github.com/avaloniaui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Gui.ViewModels"
-	xmlns:vi="using:Gui.Views"
-	xmlns:mo="using:Gui.Models"
-	xmlns:cnv="using:Gui.Converters"
-	xmlns:ol="using:ObjectEditor.Logging"
-	xmlns:oldt="using:Dat.Types"
-	xmlns:old5="using:Dat.Types.SCV5"
-	xmlns:oldd="using:Dat.Data"
-	xmlns:oldo="using:Dat.Objects"
-	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
-	xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox"
-	xmlns:sys="clr-namespace:System;assembly=mscorlib"
-	xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
-	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
-	mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900"
-	Width="1920"
-	Height="1080"
-	x:Class="Gui.Views.MainWindow"
-	x:DataType="vm:MainWindowViewModel"
-	Icon="/Assets/loco_icon.png"
-	Title="{Binding WindowTitle}"
-	>
-	<!-- https://docs.avaloniaui.net/docs/0.10.x/tutorials/music-store-app/creating-a-modern-looking-window -->
+    x:Class="Gui.Views.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
+    xmlns:cnv="using:Gui.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mo="using:Gui.Models"
+    xmlns:ol="using:ObjectEditor.Logging"
+    xmlns:old5="using:Dat.Types.SCV5"
+    xmlns:oldd="using:Dat.Data"
+    xmlns:oldo="using:Dat.Objects"
+    xmlns:oldt="using:Dat.Types"
+    xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+    xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:vi="using:Gui.Views"
+    xmlns:vm="using:Gui.ViewModels"
+    Title="{Binding WindowTitle}"
+    Width="1920"
+    Height="1080"
+    d:DesignHeight="900"
+    d:DesignWidth="1440"
+    x:DataType="vm:MainWindowViewModel"
+    Icon="/Assets/loco_icon.png"
+    mc:Ignorable="d">
+	<!--  https://docs.avaloniaui.net/docs/0.10.x/tutorials/music-store-app/creating-a-modern-looking-window  -->
 
 	<Design.DataContext>
-		<vm:MainWindowViewModel/>
+		<vm:MainWindowViewModel />
 	</Design.DataContext>
 
 	<Window.Resources>
-		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
-		<cnv:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
-		<cnv:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-		<cnv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+		<cnv:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter" />
+		<cnv:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+		<cnv:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
 	</Window.Resources>
 
 	<Window.DataTemplates>
-		<!-- Mind the order of the Templates. Begin with the most specific first. -->
+		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
 
 		<DataTemplate DataType="old5:TileElement">
 			<Grid DataContext="{Binding}" DockPanel.Dock="Left">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
-				<TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Type" Margin="4"/>
-				<TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Type}" Margin="4" />
+				<TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Type" />
+				<TextBox
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="{Binding Type}" />
 
-				<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Flags" Margin="4" />
-				<TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Flags}" IsReadOnly="True" Margin="4" />
+				<TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Flags" />
+				<TextBox
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsReadOnly="True"
+                    Text="{Binding Flags}" />
 
-				<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="BaseZ" Margin="4"/>
-				<TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Text="{Binding BaseZ}" IsReadOnly="True" Margin="4" />
+				<TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="BaseZ" />
+				<TextBox
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsReadOnly="True"
+                    Text="{Binding BaseZ}" />
 
-				<TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="ClearZ" Margin="4"/>
-				<TextBox Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Text="{Binding ClearZ}" IsReadOnly="True" Margin="4" />
+				<TextBlock
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="ClearZ" />
+				<TextBox
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsReadOnly="True"
+                    Text="{Binding ClearZ}" />
 			</Grid>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:IObjectViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Background="{DynamicResource ExpanderContentBackground}" />
+			<ScrollViewer>
+				<pgc:PropertyGrid Background="{DynamicResource ExpanderContentBackground}" IsCategoryVisible="True" DataContext="{Binding}" />
+			</ScrollViewer>
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:G1ViewModel">
@@ -78,42 +124,118 @@
 
 		<DataTemplate DataType="vm:AudioViewModel">
 			<Border BorderThickness="1">
-				<StackPanel Orientation="Vertical" Background="{DynamicResource ScrollBarTrackFill}">
+				<StackPanel Background="{DynamicResource ScrollBarTrackFill}" Orientation="Vertical">
 					<StackPanel Margin="4" Orientation="Horizontal">
-						<TextBlock Text="{Binding SoundName}" VerticalAlignment="Center" Margin="4"/>
-						<TextBlock Text="{Binding Duration}" VerticalAlignment="Center" Margin="4"/>
+						<TextBlock
+                            Margin="4"
+                            VerticalAlignment="Center"
+                            Text="{Binding SoundName}" />
+						<TextBlock
+                            Margin="4"
+                            VerticalAlignment="Center"
+                            Text="{Binding Duration}" />
 					</StackPanel>
 					<OnPlatform>
 						<OnPlatform.Windows>
-							<StackPanel Orientation="Horizontal" Margin="4">
-								<Button Command="{Binding PlaySoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Play audio">
+							<StackPanel Margin="4" Orientation="Horizontal">
+								<Button
+                                    Margin="2"
+                                    Padding="2"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding PlaySoundCommand}"
+                                    ToolTip.Tip="Play audio">
 									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Play" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Play</TextBlock>
+										<materialIcons:MaterialIcon
+                                            Width="24"
+                                            Height="24"
+                                            Margin="2"
+                                            Kind="Play" />
+										<TextBlock
+                                            Margin="4"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center">
+											Play
+										</TextBlock>
 									</DockPanel>
 								</Button>
-								<Button Command="{Binding PauseSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Pause audio">
+								<Button
+                                    Margin="2"
+                                    Padding="2"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding PauseSoundCommand}"
+                                    ToolTip.Tip="Pause audio">
 									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Pause" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Pause</TextBlock>
+										<materialIcons:MaterialIcon
+                                            Width="24"
+                                            Height="24"
+                                            Margin="2"
+                                            Kind="Pause" />
+										<TextBlock
+                                            Margin="4"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center">
+											Pause
+										</TextBlock>
 									</DockPanel>
 								</Button>
-								<Button Command="{Binding StopSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Stop audio">
+								<Button
+                                    Margin="2"
+                                    Padding="2"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding StopSoundCommand}"
+                                    ToolTip.Tip="Stop audio">
 									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Stop" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Stop</TextBlock>
+										<materialIcons:MaterialIcon
+                                            Width="24"
+                                            Height="24"
+                                            Margin="2"
+                                            Kind="Stop" />
+										<TextBlock
+                                            Margin="4"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center">
+											Stop
+										</TextBlock>
 									</DockPanel>
 								</Button>
-								<Button Command="{Binding ImportSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import audio">
+								<Button
+                                    Margin="2"
+                                    Padding="2"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding ImportSoundCommand}"
+                                    ToolTip.Tip="Import audio">
 									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Import" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import</TextBlock>
+										<materialIcons:MaterialIcon
+                                            Width="24"
+                                            Height="24"
+                                            Margin="2"
+                                            Kind="Import" />
+										<TextBlock
+                                            Margin="4"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center">
+											Import
+										</TextBlock>
 									</DockPanel>
 								</Button>
-								<Button Command="{Binding ExportSoundCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export audio">
+								<Button
+                                    Margin="2"
+                                    Padding="2"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding ExportSoundCommand}"
+                                    ToolTip.Tip="Export audio">
 									<DockPanel>
-										<materialIcons:MaterialIcon Kind="Export" Width="24" Height="24" Margin="2" />
-										<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export</TextBlock>
+										<materialIcons:MaterialIcon
+                                            Width="24"
+                                            Height="24"
+                                            Margin="2"
+                                            Kind="Export" />
+										<TextBlock
+                                            Margin="4"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center">
+											Export
+										</TextBlock>
 									</DockPanel>
 								</Button>
 							</StackPanel>
@@ -139,7 +261,7 @@
 			<DockPanel>
 				<ContentControl Content="{Binding AudioViewModel}" DockPanel.Dock="Left" />
 				<ScrollViewer>
-					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding AudioViewModel.WaveStream.WaveFormat}"/>
+					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding AudioViewModel.WaveStream.WaveFormat}" />
 				</ScrollViewer>
 			</DockPanel>
 		</DataTemplate>
@@ -148,11 +270,11 @@
 			<ScrollViewer>
 				<ItemsRepeater ItemsSource="{Binding AudioViewModels}">
 					<ItemsRepeater.Layout>
-						<UniformGridLayout Orientation="Horizontal"/>
+						<UniformGridLayout Orientation="Horizontal" />
 					</ItemsRepeater.Layout>
 					<ItemsRepeater.ItemTemplate>
 						<DataTemplate>
-							<ContentControl Content="{Binding}" Margin="4" />
+							<ContentControl Margin="4" Content="{Binding}" />
 						</DataTemplate>
 					</ItemsRepeater.ItemTemplate>
 				</ItemsRepeater>
@@ -161,10 +283,10 @@
 
 		<DataTemplate DataType="vm:TutorialViewModel">
 			<ScrollViewer>
-				<ItemsRepeater ItemsSource="{Binding TutorialInputs}" Background="{DynamicResource ExpanderContentBackground}">
+				<ItemsRepeater Background="{DynamicResource ExpanderContentBackground}" ItemsSource="{Binding TutorialInputs}">
 					<ItemsRepeater.ItemTemplate>
 						<DataTemplate>
-							<TextBlock Text="{Binding}"></TextBlock>
+							<TextBlock Text="{Binding}" />
 						</DataTemplate>
 					</ItemsRepeater.ItemTemplate>
 				</ItemsRepeater>
@@ -177,67 +299,152 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
-					<MenuItem Header="Open single object (.DAT)" Command="{Binding OpenSingleObject}" HotKey="Ctrl+O" InputGesture="Ctrl+O" />
-					<MenuItem Header="Open G1 (.DAT)" Command="{Binding OpenG1}" HotKey="Ctrl+G" InputGesture="Ctrl+G" />
-					<MenuItem Header="Open scenario/save game/landscape (.SC5/.SV5)" Command="{Binding OpenSCV5}" HotKey="Ctrl+H" InputGesture="Ctrl+H"/>
-					<MenuItem Header="Open music file (.DAT)" Command="{Binding OpenMusic}" HotKey="Ctrl+M" InputGesture="Ctrl+M"/>
-					<MenuItem Header="Open sound effect file (.DAT)" Command="{Binding OpenSoundEffect}" HotKey="Ctrl+F" InputGesture="Ctrl+F"/>
-					<MenuItem Header="Open tutorial (.DAT)" Command="{Binding OpenTutorial}" HotKey="Ctrl+T" InputGesture="Ctrl+T"/>
-					<MenuItem Header="Open scores file (.DAT) (coming soon)" Command="{Binding OpenScores}" IsEnabled="False" HotKey="Ctrl+H" InputGesture="Ctrl+H"/>
-					<MenuItem Header="Open language file (.DAT) (coming soon)" Command="{Binding OpenLanguage}" IsEnabled="False" HotKey="Ctrl+L" InputGesture="Ctrl+L"/>
+					<MenuItem
+                        Command="{Binding OpenSingleObject}"
+                        Header="Open single object (.DAT)"
+                        HotKey="Ctrl+O"
+                        InputGesture="Ctrl+O" />
+					<MenuItem
+                        Command="{Binding OpenG1}"
+                        Header="Open G1 (.DAT)"
+                        HotKey="Ctrl+G"
+                        InputGesture="Ctrl+G" />
+					<MenuItem
+                        Command="{Binding OpenSCV5}"
+                        Header="Open scenario/save game/landscape (.SC5/.SV5)"
+                        HotKey="Ctrl+H"
+                        InputGesture="Ctrl+H" />
+					<MenuItem
+                        Command="{Binding OpenMusic}"
+                        Header="Open music file (.DAT)"
+                        HotKey="Ctrl+M"
+                        InputGesture="Ctrl+M" />
+					<MenuItem
+                        Command="{Binding OpenSoundEffect}"
+                        Header="Open sound effect file (.DAT)"
+                        HotKey="Ctrl+F"
+                        InputGesture="Ctrl+F" />
+					<MenuItem
+                        Command="{Binding OpenTutorial}"
+                        Header="Open tutorial (.DAT)"
+                        HotKey="Ctrl+T"
+                        InputGesture="Ctrl+T" />
+					<MenuItem
+                        Command="{Binding OpenScores}"
+                        Header="Open scores file (.DAT) (coming soon)"
+                        HotKey="Ctrl+H"
+                        InputGesture="Ctrl+H"
+                        IsEnabled="False" />
+					<MenuItem
+                        Command="{Binding OpenLanguage}"
+                        Header="Open language file (.DAT) (coming soon)"
+                        HotKey="Ctrl+L"
+                        InputGesture="Ctrl+L"
+                        IsEnabled="False" />
 				</MenuItem>
-				<MenuItem Header="_Objects" ItemsSource="{Binding ObjDataItems}" Classes="SubItems" >
+				<MenuItem
+                    Classes="SubItems"
+                    Header="_Objects"
+                    ItemsSource="{Binding ObjDataItems}">
 					<MenuItem.Styles>
-						<Style Selector="MenuItem.SubItems MenuItem" x:DataType="vm:MenuItemViewModel">
-							<Setter Property="Header" Value="{Binding Name}"/>
-							<Setter Property="Command" Value="{Binding MenuCommand}"/>
+						<Style x:DataType="vm:MenuItemViewModel" Selector="MenuItem.SubItems MenuItem">
+							<Setter Property="Header" Value="{Binding Name}" />
+							<Setter Property="Command" Value="{Binding MenuCommand}" />
 						</Style>
 					</MenuItem.Styles>
 				</MenuItem>
 				<MenuItem Header="_Palette">
-					<MenuItem Header="Load default palette" Command="{Binding UseDefaultPalette}" />
-					<MenuItem Header="Load custom palette" Command="{Binding UseCustomPalette}" />
+					<MenuItem Command="{Binding UseDefaultPalette}" Header="Load default palette" />
+					<MenuItem Command="{Binding UseCustomPalette}" Header="Load custom palette" />
 				</MenuItem>
 				<MenuItem Header="_Settings">
-					<MenuItem Header="Edit settings" Command="{Binding EditSettingsCommand}" />
-					<MenuItem Header="Open settings folder" Command="{Binding OpenSettingsFolder}" />
-					<MenuItem Header="Open downloads folder" Command="{Binding OpenDownloadFolder}" />
-					<MenuItem Header="Show logs" Command="{Binding ShowLogsCommand}" />
+					<MenuItem Command="{Binding EditSettingsCommand}" Header="Edit settings" />
+					<MenuItem Command="{Binding OpenSettingsFolder}" Header="Open settings folder" />
+					<MenuItem Command="{Binding OpenDownloadFolder}" Header="Open downloads folder" />
+					<MenuItem Command="{Binding ShowLogsCommand}" Header="Show logs" />
 				</MenuItem>
 			</Menu>
-			<StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
-				<Button Margin="4" Command="{Binding OpenDownloadLink}" IsVisible="{Binding IsUpdateAvailable}" IsEnabled="{Binding IsUpdateAvailable}">
+			<StackPanel
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+				<Button
+                    Margin="4"
+                    Command="{Binding OpenDownloadLink}"
+                    IsEnabled="{Binding IsUpdateAvailable}"
+                    IsVisible="{Binding IsUpdateAvailable}">
 					New version available!
 				</Button>
-				<Panel Margin="4" Width="32"/>
-				<ToggleSwitch Margin="4" IsChecked="{Binding IsDarkTheme, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}" />
+				<Panel Width="32" Margin="4" />
+				<ToggleSwitch
+                    Margin="4"
+                    IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
+                    OffContent="{materialIcons:MaterialIconExt Kind=WeatherSunny}"
+                    OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" />
 			</StackPanel>
 		</DockPanel>
 		<Grid ColumnDefinitions="384, Auto, *" RowDefinitions="*">
 			<ContentControl Grid.Column="0" Content="{Binding FolderTreeViewModel}" />
-			<GridSplitter Grid.Column="1" Grid.Row="1" Margin ="4, 0, 4, 0"/>
-			<DockPanel Grid.Column="2" DataContext="{Binding CurrentTabModel}" Margin="8" >
-				<ToggleSwitch Margin="4" IsVisible="{Binding OpenInNewTabIsVisible}" DockPanel.Dock="Top" IsChecked="{Binding OpenInNewTab, Mode=TwoWay}" OnContent="{materialIcons:MaterialIconExt Kind=TabAdd}" OffContent="{materialIcons:MaterialIconExt Kind=Tab}" />
-				<TabControl ItemsSource="{Binding Documents}" WrapSelection="True" SelectedItem="{Binding SelectedDocument}" Padding="0">
+			<GridSplitter
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="4,0,4,0" />
+			<DockPanel
+                Grid.Column="2"
+                Margin="8"
+                DataContext="{Binding CurrentTabModel}">
+				<ToggleSwitch
+                    Margin="4"
+                    DockPanel.Dock="Top"
+                    IsChecked="{Binding OpenInNewTab, Mode=TwoWay}"
+                    IsVisible="{Binding OpenInNewTabIsVisible}"
+                    OffContent="{materialIcons:MaterialIconExt Kind=Tab}"
+                    OnContent="{materialIcons:MaterialIconExt Kind=TabAdd}" />
+				<TabControl
+                    Padding="0"
+                    ItemsSource="{Binding Documents}"
+                    SelectedItem="{Binding SelectedDocument}"
+                    WrapSelection="True">
 					<TabControl.Styles>
 						<Style Selector="TabItem">
-							<Setter Property="Padding" Value="2, 0, 2, 0"/>
-							<Setter Property="FontSize" Value="14"/>
+							<Setter Property="Padding" Value="2, 0, 2, 0" />
+							<Setter Property="FontSize" Value="14" />
 						</Style>
 					</TabControl.Styles>
 					<TabControl.ItemTemplate>
 						<DataTemplate>
-							<TabItem Margin="0" Padding="0" BorderThickness="0" MaxHeight="32">
+							<TabItem
+                                MaxHeight="32"
+                                Margin="0"
+                                Padding="0"
+                                BorderThickness="0">
 								<TabItem.Header>
-									<StackPanel Orientation="Horizontal" Background="{DynamicResource ButtonBackground}">
-										<TextBlock Text="{Binding CurrentFile.DisplayName}" Margin="4" TextAlignment="Left" VerticalAlignment="Center" ToolTip.Tip="{Binding CurrentFile.FileName}" />
-										<Button BorderThickness="0" FontSize="12" VerticalAlignment="Center" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}" CommandParameter="{Binding}" HotKey="Ctrl+F4" ToolTip.Tip="(Ctrl+F4)">X</Button>
+									<StackPanel Background="{DynamicResource ButtonBackground}" Orientation="Horizontal">
+										<TextBlock
+                                            Margin="4"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding CurrentFile.DisplayName}"
+                                            TextAlignment="Left"
+                                            ToolTip.Tip="{Binding CurrentFile.FileName}" />
+										<Button
+                                            VerticalAlignment="Center"
+                                            BorderThickness="0"
+                                            Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).RemoveTabCommand}"
+                                            CommandParameter="{Binding}"
+                                            FontSize="12"
+                                            HotKey="Ctrl+F4"
+                                            ToolTip.Tip="(Ctrl+F4)">
+											X
+										</Button>
 									</StackPanel>
 								</TabItem.Header>
 								<TabItem.ContextMenu>
 									<ContextMenu>
-										<MenuItem Header="Close All Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseAllTabsCommand}" />
-										<MenuItem Header="Close Other Tabs" Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseOtherTabsCommand}" CommandParameter="{Binding}" />
+										<MenuItem Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseAllTabsCommand}" Header="Close All Tabs" />
+										<MenuItem
+                                            Command="{Binding $parent[TabControl].((vm:TabViewPageViewModel)DataContext).CloseOtherTabsCommand}"
+                                            CommandParameter="{Binding}"
+                                            Header="Close Other Tabs" />
 									</ContextMenu>
 								</TabItem.ContextMenu>
 							</TabItem>
@@ -248,28 +455,88 @@
 							<Border BorderThickness="1">
 								<DockPanel>
 									<DockPanel DockPanel.Dock="Top">
-										<Button Command="{Binding ReloadCommand}" Margin="4" Padding="2" DockPanel.Dock="Left" HotKey="F5" ToolTip.Tip="(F5)">
+										<Button
+                                            Margin="4"
+                                            Padding="2"
+                                            Command="{Binding ReloadCommand}"
+                                            DockPanel.Dock="Left"
+                                            HotKey="F5"
+                                            ToolTip.Tip="(F5)">
 											<DockPanel>
-												<materialIcons:MaterialIcon Kind="{Binding ReloadIcon}" Width="24" Height="24" Margin="2" />
-												<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding ReloadText}" />
+												<materialIcons:MaterialIcon
+                                                    Width="24"
+                                                    Height="24"
+                                                    Margin="2"
+                                                    Kind="{Binding ReloadIcon}" />
+												<TextBlock
+                                                    Margin="4"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding ReloadText}" />
 											</DockPanel>
 										</Button>
-										<Button Command="{Binding SaveCommand}" Margin="4" Padding="2" DockPanel.Dock="Left" HotKey="Ctrl+S" ToolTip.Tip="(Ctrl+S)">
+										<Button
+                                            Margin="4"
+                                            Padding="2"
+                                            Command="{Binding SaveCommand}"
+                                            DockPanel.Dock="Left"
+                                            HotKey="Ctrl+S"
+                                            ToolTip.Tip="(Ctrl+S)">
 											<DockPanel>
-												<materialIcons:MaterialIcon Kind="{Binding SaveIcon}" Width="24" Height="24" Margin="2" />
-												<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveText}" />
+												<materialIcons:MaterialIcon
+                                                    Width="24"
+                                                    Height="24"
+                                                    Margin="2"
+                                                    Kind="{Binding SaveIcon}" />
+												<TextBlock
+                                                    Margin="4"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding SaveText}" />
 											</DockPanel>
 										</Button>
-										<Button Command="{Binding SaveAsCommand}" Margin="4" Padding="2" DockPanel.Dock="Left" HotKey="Ctrl+Shift+S" ToolTip.Tip="(Ctrl+Shift+S)">
+										<Button
+                                            Margin="4"
+                                            Padding="2"
+                                            Command="{Binding SaveAsCommand}"
+                                            DockPanel.Dock="Left"
+                                            HotKey="Ctrl+Shift+S"
+                                            ToolTip.Tip="(Ctrl+Shift+S)">
 											<DockPanel>
-												<materialIcons:MaterialIcon Kind="{Binding SaveAsIcon}" Width="24" Height="24" Margin="2" />
-												<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding SaveAsText}" />
+												<materialIcons:MaterialIcon
+                                                    Width="24"
+                                                    Height="24"
+                                                    Margin="2"
+                                                    Kind="{Binding SaveAsIcon}" />
+												<TextBlock
+                                                    Margin="4"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding SaveAsText}" />
 											</DockPanel>
 										</Button>
-										<Button Command="{Binding DeleteLocalFileCommand}" HorizontalAlignment="Right" Margin="4" Padding="2" HotKey="Ctrl+D" IsVisible="{Binding IsLocalMode}" IsEnabled="{Binding IsLocalMode}" Background="DarkRed" DockPanel.Dock="Right" ToolTip.Tip="(Ctrl+D) WARNING: this will delete your local file without asking! Only click this if you're sure you want to delete this file!">
+										<Button
+                                            Margin="4"
+                                            Padding="2"
+                                            HorizontalAlignment="Right"
+                                            Background="DarkRed"
+                                            Command="{Binding DeleteLocalFileCommand}"
+                                            DockPanel.Dock="Right"
+                                            HotKey="Ctrl+D"
+                                            IsEnabled="{Binding IsLocalMode}"
+                                            IsVisible="{Binding IsLocalMode}"
+                                            ToolTip.Tip="(Ctrl+D) WARNING: this will delete your local file without asking! Only click this if you're sure you want to delete this file!">
 											<DockPanel>
-												<materialIcons:MaterialIcon Kind="{Binding DeleteLocalFileIcon}" Width="24" Height="24" Margin="2" />
-												<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="{Binding DeleteLocalFileText}"/>
+												<materialIcons:MaterialIcon
+                                                    Width="24"
+                                                    Height="24"
+                                                    Margin="2"
+                                                    Kind="{Binding DeleteLocalFileIcon}" />
+												<TextBlock
+                                                    Margin="4"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding DeleteLocalFileText}" />
 											</DockPanel>
 										</Button>
 									</DockPanel>

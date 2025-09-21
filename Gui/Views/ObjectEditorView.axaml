@@ -54,9 +54,7 @@
 					</Style>
 				</TabControl.Styles>
 				<TabItem Header="Object">
-					<ScrollViewer>
-						<ContentControl Content="{Binding CurrentObjectViewModel}" />
-					</ScrollViewer>
+					<ContentControl Content="{Binding CurrentObjectViewModel}" />
 				</TabItem>
 				<TabItem Header="String Table">
 					<DockPanel DataContext="{Binding StringTableViewModel}" >

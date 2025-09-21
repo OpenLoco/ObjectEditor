@@ -46,81 +46,82 @@ public class IndustryViewModel : LocoObjectViewModel<IndustryObject>
 	[Category("Farm")] public uint8_t FarmIdealSize { get; set; }
 	[Category("Farm")] public uint8_t FarmNumStagesOfGrowth { get; set; }
 
-	public IndustryViewModel(IndustryObject io)
+	public IndustryViewModel(IndustryObject model)
+		: base(model)
 	{
-		AnimationSequences = new(io.AnimationSequences.Select(x => new ObservableCollection<uint8_t>(x)));
-		BuildingHeights = new(io.BuildingComponents.BuildingHeights);
-		BuildingAnimations = new(io.BuildingComponents.BuildingAnimations);
-		BuildingVariations = new(io.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
-		UnkBuildingData = new(io.UnkBuildingData);
-		BuildingSizeFlags = io.BuildingSizeFlags;
-		BuildingWall = io.BuildingWall == null ? null : new(io.BuildingWall);
-		BuildingWallEntrance = io.BuildingWallEntrance == null ? null : new(io.BuildingWallEntrance);
-		MinNumBuildings = io.MinNumBuildings;
-		MaxNumBuildings = io.MaxNumBuildings;
-		InitialProductionRate = new(io.InitialProductionRate);
-		ProducedCargo = new(io.ProducedCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		RequiredCargo = new(io.RequiredCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		WallTypes = [.. io.WallTypes.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
-		Colours = io.Colours;
-		DesignedYear = io.DesignedYear;
-		ObsoleteYear = io.ObsoleteYear;
-		TotalOfTypeInScenario = io.TotalOfTypeInScenario;
-		CostIndex = io.CostIndex;
-		BuildCostFactor = io.BuildCostFactor;
-		SellCostFactor = io.SellCostFactor;
-		ScaffoldingSegmentType = io.ScaffoldingSegmentType;
-		ScaffoldingColour = io.ScaffoldingColour;
-		MapColour = io.MapColour;
-		Flags = io.Flags;
-		FarmTileNumImageAngles = io.FarmTileNumImageAngles;
-		FarmGrowthStageWithNoProduction = io.FarmGrowthStageWithNoProduction;
-		FarmIdealSize = io.FarmIdealSize;
-		FarmNumStagesOfGrowth = io.FarmNumStagesOfGrowth;
-		MonthlyClosureChance = io.MonthlyClosureChance;
-		var_E8 = io.var_E8;
-		var_38 = [.. io.var_38];
+		AnimationSequences = new(model.AnimationSequences.Select(x => new ObservableCollection<uint8_t>(x)));
+		BuildingHeights = new(model.BuildingComponents.BuildingHeights);
+		BuildingAnimations = new(model.BuildingComponents.BuildingAnimations);
+		BuildingVariations = new(model.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
+		UnkBuildingData = new(model.UnkBuildingData);
+		BuildingSizeFlags = model.BuildingSizeFlags;
+		BuildingWall = model.BuildingWall == null ? null : new(model.BuildingWall);
+		BuildingWallEntrance = model.BuildingWallEntrance == null ? null : new(model.BuildingWallEntrance);
+		MinNumBuildings = model.MinNumBuildings;
+		MaxNumBuildings = model.MaxNumBuildings;
+		InitialProductionRate = new(model.InitialProductionRate);
+		ProducedCargo = new(model.ProducedCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		RequiredCargo = new(model.RequiredCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		WallTypes = [.. model.WallTypes.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
+		Colours = model.Colours;
+		DesignedYear = model.DesignedYear;
+		ObsoleteYear = model.ObsoleteYear;
+		TotalOfTypeInScenario = model.TotalOfTypeInScenario;
+		CostIndex = model.CostIndex;
+		BuildCostFactor = model.BuildCostFactor;
+		SellCostFactor = model.SellCostFactor;
+		ScaffoldingSegmentType = model.ScaffoldingSegmentType;
+		ScaffoldingColour = model.ScaffoldingColour;
+		MapColour = model.MapColour;
+		Flags = model.Flags;
+		FarmTileNumImageAngles = model.FarmTileNumImageAngles;
+		FarmGrowthStageWithNoProduction = model.FarmGrowthStageWithNoProduction;
+		FarmIdealSize = model.FarmIdealSize;
+		FarmNumStagesOfGrowth = model.FarmNumStagesOfGrowth;
+		MonthlyClosureChance = model.MonthlyClosureChance;
+		var_E8 = model.var_E8;
+		var_38 = [.. model.var_38];
 	}
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override IndustryObject CopyBackToModel()
-		=> new()
-		{
-			AnimationSequences = AnimationSequences.ToList().ConvertAll(x => x.ToList()),
-			BuildingComponents = new BuildingComponentsModel()
-			{
-				BuildingHeights = [.. BuildingHeights],
-				BuildingAnimations = [.. BuildingAnimations],
-				BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())],
-			},
-			UnkBuildingData = [.. UnkBuildingData],
-			BuildingSizeFlags = BuildingSizeFlags,
-			BuildingWall = BuildingWall?.CopyBackToModel(),
-			BuildingWallEntrance = BuildingWallEntrance?.CopyBackToModel(),
-			MinNumBuildings = MinNumBuildings,
-			MaxNumBuildings = MaxNumBuildings,
-			InitialProductionRate = [.. InitialProductionRate],
-			ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
-			RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
-			WallTypes = WallTypes.ToList().ConvertAll(x => x.CopyBackToModel()),
-			Colours = Colours,
-			DesignedYear = DesignedYear,
-			ObsoleteYear = ObsoleteYear,
-			TotalOfTypeInScenario = TotalOfTypeInScenario,
-			CostIndex = CostIndex,
-			BuildCostFactor = BuildCostFactor,
-			SellCostFactor = SellCostFactor,
-			ScaffoldingSegmentType = ScaffoldingSegmentType,
-			ScaffoldingColour = ScaffoldingColour,
-			MapColour = MapColour,
-			Flags = Flags,
-			FarmTileNumImageAngles = FarmTileNumImageAngles,
-			FarmGrowthStageWithNoProduction = FarmGrowthStageWithNoProduction,
-			FarmIdealSize = FarmIdealSize,
-			FarmNumStagesOfGrowth = FarmNumStagesOfGrowth,
-			MonthlyClosureChance = MonthlyClosureChance,
-			var_E8 = var_E8,
-			var_38 = [.. var_38],
-		};
+	//public override IndustryObject CopyBackToModel()
+	//	=> new()
+	//	{
+	//		AnimationSequences = AnimationSequences.ToList().ConvertAll(x => x.ToList()),
+	//		BuildingComponents = new BuildingComponentsModel()
+	//		{
+	//			BuildingHeights = [.. BuildingHeights],
+	//			BuildingAnimations = [.. BuildingAnimations],
+	//			BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())],
+	//		},
+	//		UnkBuildingData = [.. UnkBuildingData],
+	//		BuildingSizeFlags = BuildingSizeFlags,
+	//		BuildingWall = BuildingWall?.CopyBackToModel(),
+	//		BuildingWallEntrance = BuildingWallEntrance?.CopyBackToModel(),
+	//		MinNumBuildings = MinNumBuildings,
+	//		MaxNumBuildings = MaxNumBuildings,
+	//		InitialProductionRate = [.. InitialProductionRate],
+	//		ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		WallTypes = WallTypes.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		Colours = Colours,
+	//		DesignedYear = DesignedYear,
+	//		ObsoleteYear = ObsoleteYear,
+	//		TotalOfTypeInScenario = TotalOfTypeInScenario,
+	//		CostIndex = CostIndex,
+	//		BuildCostFactor = BuildCostFactor,
+	//		SellCostFactor = SellCostFactor,
+	//		ScaffoldingSegmentType = ScaffoldingSegmentType,
+	//		ScaffoldingColour = ScaffoldingColour,
+	//		MapColour = MapColour,
+	//		Flags = Flags,
+	//		FarmTileNumImageAngles = FarmTileNumImageAngles,
+	//		FarmGrowthStageWithNoProduction = FarmGrowthStageWithNoProduction,
+	//		FarmIdealSize = FarmIdealSize,
+	//		FarmNumStagesOfGrowth = FarmNumStagesOfGrowth,
+	//		MonthlyClosureChance = MonthlyClosureChance,
+	//		var_E8 = var_E8,
+	//		var_38 = [.. var_38],
+	//	};
 }

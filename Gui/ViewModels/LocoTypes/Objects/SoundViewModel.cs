@@ -12,17 +12,18 @@ public class SoundViewModel : LocoObjectViewModel<SoundObject>
 	public uint32_t NumUnkStructs { get; set; }
 	[Browsable(false)] public byte[] UnkData { get; set; }
 
-	public SoundViewModel(SoundObject obj)
+	public SoundViewModel(SoundObject model)
+		: base(model)
 	{
-		ShouldLoop = obj.ShouldLoop;
-		Volume = obj.Volume;
-		SoundObjectData = obj.SoundObjectData;
-		PcmData = obj.PcmData;
-		NumUnkStructs = obj.NumUnkStructs;
-		UnkData = obj.UnkData;
+		ShouldLoop = model.ShouldLoop;
+		Volume = model.Volume;
+		SoundObjectData = model.SoundObjectData;
+		PcmData = model.PcmData;
+		NumUnkStructs = model.NumUnkStructs;
+		UnkData = model.UnkData;
 	}
 
-	public override SoundObject CopyBackToModel()
+	public SoundObject CopyBackToModel()
 		=> new()
 		{
 			ShouldLoop = ShouldLoop,

@@ -69,7 +69,7 @@
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:IObjectViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" Background="{DynamicResource ExpanderContentBackground}" />
+			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="True" Background="{DynamicResource ExpanderContentBackground}" />
 		</DataTemplate>
 
 		<DataTemplate DataType="vm:G1ViewModel">

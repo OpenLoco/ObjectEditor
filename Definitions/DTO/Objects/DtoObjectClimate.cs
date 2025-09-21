@@ -1,10 +1,11 @@
 using Definitions.Database;
+using Definitions.ObjectModels.Objects.Climate;
 
 namespace Definitions.DTO;
 
 public class DtoObjectClimate : IDtoSubObject
 {
-	public uint8_t FirstSeason { get; set; }
+	public Season FirstSeason { get; set; }
 	public uint8_t WinterSnowLine { get; set; }
 	public uint8_t SummerSnowLine { get; set; }
 	public uint8_t SeasonLength1 { get; set; }

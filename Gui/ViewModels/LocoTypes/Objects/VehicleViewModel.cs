@@ -54,47 +54,48 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	[Category("Sound")] public ObjectModelHeaderViewModel[] StartSounds { get; set; }
 	[Category("<unknown>")] public uint8_t[] var_135 { get; set; } = [];
 
-	public VehicleViewModel(VehicleObject vo)
+	public VehicleViewModel(VehicleObject model)
+		: base(model)
 	{
-		Mode = vo.Mode;
-		Type = vo.Type;
-		NumCarComponents = vo.NumCarComponents;
-		TrackType = vo.TrackType == null ? null : new(vo.TrackType);
-		CostIndex = vo.CostIndex;
-		CostFactor = vo.CostFactor;
-		Reliability = vo.Reliability;
-		RunCostIndex = vo.RunCostIndex;
-		RunCostFactor = vo.RunCostFactor;
-		SpecialColourSchemeIndex = vo.SpecialColourSchemeIndex;
-		CompatibleVehicles = Array.ConvertAll(vo.CompatibleVehicles, x => new ObjectModelHeaderViewModel(x));
-		RequiredTrackExtras = Array.ConvertAll(vo.RequiredTrackExtras, x => new ObjectModelHeaderViewModel(x));
-		CarComponents = [.. vo.CarComponents];
-		BodySprites = [.. vo.BodySprites];
-		BogieSprites = [.. vo.BogieSprites];
-		Power = vo.Power;
-		Speed = vo.Speed;
-		RackSpeed = vo.RackSpeed;
-		Weight = vo.Weight;
-		Flags = vo.Flags;
-		CompatibleCargo1 = new(vo.MaxCargo[0], [.. vo.CompatibleCargoCategories[0]]);
-		CompatibleCargo2 = new(vo.MaxCargo[1], [.. vo.CompatibleCargoCategories[1]]);
-		CargoTypeSpriteOffsets = new([.. vo.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
-		Animation = [.. vo.Animation];
-		AnimationHeaders = [.. vo.AnimationHeaders.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
-		ShipWakeOffset = vo.ShipWakeOffset;
-		DesignedYear = vo.DesignedYear;
-		ObsoleteYear = vo.ObsoleteYear;
-		RackRail = vo.RackRail == null ? null : new(vo.RackRail);
-		Sound = vo.Sound == null ? null : new(vo.Sound);
-		StartSounds = Array.ConvertAll(vo.StartSounds, x => new ObjectModelHeaderViewModel(x));
-		SoundType = vo.DrivingSoundType;
-		FrictionSound = vo.FrictionSound;
-		SimpleMotorSound = vo.SimpleMotorSound;
-		GearboxMotorSound = vo.GearboxMotorSound;
-		var_135 = [.. vo.var_135];
+		Mode = model.Mode;
+		Type = model.Type;
+		NumCarComponents = model.NumCarComponents;
+		TrackType = model.TrackType == null ? null : new(model.TrackType);
+		CostIndex = model.CostIndex;
+		CostFactor = model.CostFactor;
+		Reliability = model.Reliability;
+		RunCostIndex = model.RunCostIndex;
+		RunCostFactor = model.RunCostFactor;
+		SpecialColourSchemeIndex = model.SpecialColourSchemeIndex;
+		CompatibleVehicles = Array.ConvertAll(model.CompatibleVehicles, x => new ObjectModelHeaderViewModel(x));
+		RequiredTrackExtras = Array.ConvertAll(model.RequiredTrackExtras, x => new ObjectModelHeaderViewModel(x));
+		CarComponents = [.. model.CarComponents];
+		BodySprites = [.. model.BodySprites];
+		BogieSprites = [.. model.BogieSprites];
+		Power = model.Power;
+		Speed = model.Speed;
+		RackSpeed = model.RackSpeed;
+		Weight = model.Weight;
+		Flags = model.Flags;
+		CompatibleCargo1 = new(model.MaxCargo[0], [.. model.CompatibleCargoCategories[0]]);
+		CompatibleCargo2 = new(model.MaxCargo[1], [.. model.CompatibleCargoCategories[1]]);
+		CargoTypeSpriteOffsets = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
+		Animation = [.. model.Animation];
+		AnimationHeaders = [.. model.AnimationHeaders.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
+		ShipWakeOffset = model.ShipWakeOffset;
+		DesignedYear = model.DesignedYear;
+		ObsoleteYear = model.ObsoleteYear;
+		RackRail = model.RackRail == null ? null : new(model.RackRail);
+		Sound = model.Sound == null ? null : new(model.Sound);
+		StartSounds = Array.ConvertAll(model.StartSounds, x => new ObjectModelHeaderViewModel(x));
+		SoundType = model.DrivingSoundType;
+		FrictionSound = model.FrictionSound;
+		SimpleMotorSound = model.SimpleMotorSound;
+		GearboxMotorSound = model.GearboxMotorSound;
+		var_135 = [.. model.var_135];
 	}
 
-	public override VehicleObject CopyBackToModel()
+	public VehicleObject CopyBackToModel()
 	{
 		var vo = new VehicleObject()
 		{
@@ -104,7 +105,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 			CarComponents = [.. CarComponents],
 			BodySprites = [.. BodySprites],
 			BogieSprites = [.. BogieSprites],
-			TrackType = TrackType?.CopyBackToModel(),
+			//TrackType = TrackType?.CopyBackToModel(),
 			CostIndex = CostIndex,
 			CostFactor = CostFactor,
 			Reliability = Reliability,
@@ -119,20 +120,17 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 			ShipWakeOffset = ShipWakeOffset,
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
-			RackRail = RackRail?.CopyBackToModel(),
-			Sound = Sound?.CopyBackToModel(),
-			StartSounds = Array.ConvertAll(StartSounds, x => x.CopyBackToModel()),
-			CompatibleVehicles = Array.ConvertAll(CompatibleVehicles, x => x.CopyBackToModel()),
-			RequiredTrackExtras = Array.ConvertAll(RequiredTrackExtras, x => x.CopyBackToModel()),
-			AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.CopyBackToModel()),
+			//RackRail = RackRail?.CopyBackToModel(),
+			//Sound = Sound?.CopyBackToModel(),
+			//StartSounds = Array.ConvertAll(StartSounds, x => x.CopyBackToModel()),
+			//CompatibleVehicles = Array.ConvertAll(CompatibleVehicles, x => x.CopyBackToModel()),
+			//RequiredTrackExtras = Array.ConvertAll(RequiredTrackExtras, x => x.CopyBackToModel()),
+			//AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.CopyBackToModel()),
 			Animation = [.. Animation],
 			DrivingSoundType = SoundType,
 			FrictionSound = FrictionSound,
 			SimpleMotorSound = SimpleMotorSound,
 			GearboxMotorSound = GearboxMotorSound,
-			//NumCompatibleVehicles = (uint8_t)CompatibleVehicles.Count,
-			//NumRequiredTrackExtras = (uint8_t)RequiredTrackExtras.Count,
-			//NumStartSounds = (uint8_t)StartSounds.Count,
 			MaxCargo = [CompatibleCargo1.MaxCargo, CompatibleCargo2.MaxCargo],
 			CompatibleCargoCategories = [
 				[.. CompatibleCargo1.CompatibleCargoCategories.ToArray()],

@@ -1,11 +1,16 @@
 using Definitions.ObjectModels.Types;
 using System;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
-[TypeConverter(typeof(ExpandableObjectConverter))]
+public class DesignerObjectModelHeaderViewModel : ObjectModelHeaderViewModel
+{
+	public DesignerObjectModelHeaderViewModel()
+		: base(new ObjectModelHeader("TestObj", ObjectType.Building, ObjectSource.Custom, 0))
+	{ }
+}
+
 public class ObjectModelHeaderViewModel(ObjectModelHeader model)
 	: LocoObjectViewModel<ObjectModelHeader>(model)
 {
@@ -14,12 +19,6 @@ public class ObjectModelHeaderViewModel(ObjectModelHeader model)
 	{
 		get => Model.Name;
 		set => Model.Name = value;
-	}
-
-	public string DatChecksumHex
-	{
-		get => string.Format($"0x{Model.DatChecksum:X}");
-		set => Model.DatChecksum = Convert.ToUInt32(value[2..], 16);
 	}
 
 	public ObjectSource ObjectSource
@@ -32,5 +31,11 @@ public class ObjectModelHeaderViewModel(ObjectModelHeader model)
 	{
 		get => Model.ObjectType;
 		set => Model.ObjectType = value;
+	}
+
+	public string DatChecksumHex
+	{
+		get => string.Format($"0x{Model.DatChecksum:X}");
+		set => Model.DatChecksum = Convert.ToUInt32(value[2..], 16);
 	}
 }

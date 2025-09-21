@@ -25,40 +25,41 @@ public class DockViewModel : LocoObjectViewModel<DockObject>
 	[Category("Building"), Length(1, DockObjectLoader.Constants.BuildingAnimationCount)] public ObservableCollection<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
 	[Category("<unknown>")] public uint8_t var_07 { get; set; }
 
-	public DockViewModel(DockObject @do)
+	public DockViewModel(DockObject model)
+		: base(model)
 	{
-		Flags = @do.Flags;
-		DesignedYear = @do.DesignedYear;
-		ObsoleteYear = @do.ObsoleteYear;
-		CostIndex = @do.CostIndex;
-		BuildCostFactor = @do.BuildCostFactor;
-		SellCostFactor = @do.SellCostFactor;
-		BoatPosition = @do.BoatPosition;
-		var_07 = @do.var_07;
-		BuildingHeights = new(@do.BuildingComponents.BuildingHeights);
-		BuildingAnimations = new(@do.BuildingComponents.BuildingAnimations);
-		BuildingVariations = new(@do.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
+		Flags = model.Flags;
+		DesignedYear = model.DesignedYear;
+		ObsoleteYear = model.ObsoleteYear;
+		CostIndex = model.CostIndex;
+		BuildCostFactor = model.BuildCostFactor;
+		SellCostFactor = model.SellCostFactor;
+		BoatPosition = model.BoatPosition;
+		var_07 = model.var_07;
+		BuildingHeights = new(model.BuildingComponents.BuildingHeights);
+		BuildingAnimations = new(model.BuildingComponents.BuildingAnimations);
+		BuildingVariations = new(model.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
 	}
 
-	public override DockObject CopyBackToModel()
-	{
-		var dockObject = new DockObject()
-		{
-			Flags = Flags,
-			DesignedYear = DesignedYear,
-			ObsoleteYear = ObsoleteYear,
-			CostIndex = CostIndex,
-			BuildCostFactor = BuildCostFactor,
-			SellCostFactor = SellCostFactor,
-			BoatPosition = BoatPosition,
-			var_07 = var_07,
-			BuildingComponents = new BuildingComponentsModel()
-			{
-				BuildingHeights = [.. BuildingHeights],
-				BuildingAnimations = [.. BuildingAnimations],
-				BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())],
-			},
-		};
-		return dockObject;
-	}
+	//public override DockObject CopyBackToModel()
+	//{
+	//	var dockObject = new DockObject()
+	//	{
+	//		Flags = Flags,
+	//		DesignedYear = DesignedYear,
+	//		ObsoleteYear = ObsoleteYear,
+	//		CostIndex = CostIndex,
+	//		BuildCostFactor = BuildCostFactor,
+	//		SellCostFactor = SellCostFactor,
+	//		BoatPosition = BoatPosition,
+	//		var_07 = var_07,
+	//		BuildingComponents = new BuildingComponentsModel()
+	//		{
+	//			BuildingHeights = [.. BuildingHeights],
+	//			BuildingAnimations = [.. BuildingAnimations],
+	//			BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())],
+	//		},
+	//	};
+	//	return dockObject;
+	//}
 }

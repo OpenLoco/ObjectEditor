@@ -5,7 +5,6 @@ using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -25,23 +24,24 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 
 	public CargoOffset[][][] CargoOffsets { get; init; }
 
-	public RoadStationViewModel(RoadStationObject rso)
+	public RoadStationViewModel(RoadStationObject model)
+		: base(model)
 	{
-		PaintStyle = rso.PaintStyle;
-		Height = rso.Height;
-		RoadPieces = rso.RoadPieces;
-		DesignedYear = rso.DesignedYear;
-		ObsoleteYear = rso.ObsoleteYear;
-		BuildCostFactor = rso.BuildCostFactor;
-		SellCostFactor = rso.SellCostFactor;
-		CostIndex = rso.CostIndex;
-		Flags = rso.Flags;
-		CargoType = rso.CargoType;
-		CargoOffsets = rso.CargoOffsets;
-		CompatibleRoadObjects = [.. rso.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
+		PaintStyle = model.PaintStyle;
+		Height = model.Height;
+		RoadPieces = model.RoadPieces;
+		DesignedYear = model.DesignedYear;
+		ObsoleteYear = model.ObsoleteYear;
+		BuildCostFactor = model.BuildCostFactor;
+		SellCostFactor = model.SellCostFactor;
+		CostIndex = model.CostIndex;
+		Flags = model.Flags;
+		CargoType = model.CargoType;
+		CargoOffsets = model.CargoOffsets;
+		CompatibleRoadObjects = [.. model.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
 	}
 
-	public override RoadStationObject CopyBackToModel()
+	public RoadStationObject CopyBackToModel()
 		=> new()
 		{
 			PaintStyle = PaintStyle,
@@ -55,6 +55,6 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 			Flags = Flags,
 			CargoType = CargoType,
 			CargoOffsets = CargoOffsets,
-			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.CopyBackToModel()),
+			//CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.CopyBackToModel()),
 		};
 }

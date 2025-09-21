@@ -4,7 +4,6 @@ using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -20,20 +19,21 @@ public class TrackSignalViewModel : LocoObjectViewModel<TrackSignalObject>
 	[Category("Stats")] public uint16_t ObsoleteYear { get; set; }
 	[Length(0, TrackSignalObjectLoader.Constants.ModsLength)] public ObservableCollection<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
 
-	public TrackSignalViewModel(TrackSignalObject ro)
+	public TrackSignalViewModel(TrackSignalObject model)
+		: base(model)
 	{
-		Flags = ro.Flags;
-		AnimationSpeed = ro.AnimationSpeed;
-		NumFrames = ro.NumFrames;
-		CostIndex = ro.CostIndex;
-		BuildCostFactor = ro.BuildCostFactor;
-		SellCostFactor = ro.SellCostFactor;
-		DesignedYear = ro.DesignedYear;
-		ObsoleteYear = ro.ObsoleteYear;
-		CompatibleTrackObjects = new(ro.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		Flags = model.Flags;
+		AnimationSpeed = model.AnimationSpeed;
+		NumFrames = model.NumFrames;
+		CostIndex = model.CostIndex;
+		BuildCostFactor = model.BuildCostFactor;
+		SellCostFactor = model.SellCostFactor;
+		DesignedYear = model.DesignedYear;
+		ObsoleteYear = model.ObsoleteYear;
+		CompatibleTrackObjects = new(model.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 	}
 
-	public override TrackSignalObject CopyBackToModel()
+	public TrackSignalObject CopyBackToModel()
 		=> new()
 		{
 			Flags = Flags,
@@ -44,6 +44,6 @@ public class TrackSignalViewModel : LocoObjectViewModel<TrackSignalObject>
 			SellCostFactor = SellCostFactor,
 			DesignedYear = DesignedYear,
 			ObsoleteYear = ObsoleteYear,
-			CompatibleTrackObjects = [.. CompatibleTrackObjects.Select(x => x.CopyBackToModel())],
+			//CompatibleTrackObjects = [.. CompatibleTrackObjects.Select(x => x.CopyBackToModel())],
 		};
 }

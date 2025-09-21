@@ -2,7 +2,6 @@ using Definitions.ObjectModels.Objects.Track;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using TrackObject = Definitions.ObjectModels.Objects.Track.TrackObject;
 
 namespace Gui.ViewModels;
@@ -26,29 +25,30 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 	[Category("Stations")] public ObservableCollection<ObjectModelHeaderViewModel> CompatibleStations { get; set; }
 	[Category("<unknown>")] public uint8_t var_06 { get; set; }
 
-	public TrackViewModel(TrackObject to)
+	public TrackViewModel(TrackObject model)
+		: base(model)
 	{
-		Flags = to.Flags;
-		TrackPieces = to.TrackPieces;
-		StationTrackPieces = to.StationTrackPieces;
-		CurveSpeed = to.MaxCurveSpeed;
-		DisplayOffset = to.DisplayOffset;
-		BuildCostFactor = to.BuildCostFactor;
-		SellCostFactor = to.SellCostFactor;
-		TunnelCostFactor = to.TunnelCostFactor;
-		CostIndex = to.CostIndex;
-		CompatibleTracksAndRoads = new(to.CompatibleTracksAndRoads.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		CompatibleTrackExtras = new(to.TrackMods.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		CompatibleSignals = new(to.Signals.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		CompatibleTunnel = new(to.Tunnel);
-		CompatibleBridges = new(to.Bridges.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		CompatibleStations = new(to.Stations.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		var_06 = to.var_06;
+		Flags = model.Flags;
+		TrackPieces = model.TrackPieces;
+		StationTrackPieces = model.StationTrackPieces;
+		CurveSpeed = model.MaxCurveSpeed;
+		DisplayOffset = model.DisplayOffset;
+		BuildCostFactor = model.BuildCostFactor;
+		SellCostFactor = model.SellCostFactor;
+		TunnelCostFactor = model.TunnelCostFactor;
+		CostIndex = model.CostIndex;
+		CompatibleTracksAndRoads = new(model.CompatibleTracksAndRoads.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleTrackExtras = new(model.TrackMods.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleSignals = new(model.Signals.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleTunnel = new(model.Tunnel);
+		CompatibleBridges = new(model.Bridges.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleStations = new(model.Stations.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		var_06 = model.var_06;
 	}
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override TrackObject CopyBackToModel()
+	public TrackObject CopyBackToModel()
 		=> new()
 		{
 			Flags = Flags,
@@ -60,12 +60,12 @@ public class TrackViewModel : LocoObjectViewModel<TrackObject>
 			SellCostFactor = SellCostFactor,
 			TunnelCostFactor = TunnelCostFactor,
 			CostIndex = CostIndex,
-			CompatibleTracksAndRoads = CompatibleTracksAndRoads.ToList().ConvertAll(x => x.CopyBackToModel()),
-			TrackMods = CompatibleTrackExtras.ToList().ConvertAll(x => x.CopyBackToModel()),
-			Signals = CompatibleSignals.ToList().ConvertAll(x => x.CopyBackToModel()),
-			Tunnel = CompatibleTunnel.CopyBackToModel(),
-			Bridges = CompatibleBridges.ToList().ConvertAll(x => x.CopyBackToModel()),
-			Stations = CompatibleStations.ToList().ConvertAll(x => x.CopyBackToModel()),
+			//CompatibleTracksAndRoads = CompatibleTracksAndRoads.ToList().ConvertAll(x => x.CopyBackToModel()),
+			//TrackMods = CompatibleTrackExtras.ToList().ConvertAll(x => x.CopyBackToModel()),
+			//Signals = CompatibleSignals.ToList().ConvertAll(x => x.CopyBackToModel()),
+			//Tunnel = CompatibleTunnel.CopyBackToModel(),
+			//Bridges = CompatibleBridges.ToList().ConvertAll(x => x.CopyBackToModel()),
+			//Stations = CompatibleStations.ToList().ConvertAll(x => x.CopyBackToModel()),
 			var_06 = var_06,
 		};
 }

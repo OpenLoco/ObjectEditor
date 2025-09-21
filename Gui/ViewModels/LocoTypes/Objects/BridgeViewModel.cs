@@ -2,7 +2,6 @@ using Definitions.ObjectModels.Objects.Bridge;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -25,44 +24,45 @@ public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
 	[Category("Compatible")] public ObservableCollection<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
 	[Category("<unknown>")] public uint8_t var_03 { get; set; }
 
-	public BridgeViewModel(BridgeObject bo)
+	public BridgeViewModel(BridgeObject model)
+		: base(model)
 	{
-		Flags = bo.Flags;
-		SpanLength = bo.SpanLength;
-		PillarPlacement = (SupportPillarSpacing)bo.PillarSpacing;
-		MaxSpeed = bo.MaxSpeed;
-		MaxHeight = bo.MaxHeight;
-		CostIndex = bo.CostIndex;
-		BaseCostFactor = bo.BaseCostFactor;
-		HeightCostFactor = bo.HeightCostFactor;
-		SellCostFactor = bo.SellCostFactor;
-		DisabledTrackFlags = bo.DisabledTrackFlags;
-		DesignedYear = bo.DesignedYear;
-		CompatibleTrackObjects = new(bo.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		CompatibleRoadObjects = new(bo.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		var_03 = bo.var_03;
-		ClearHeight = bo.ClearHeight;
-		DeckDepth = bo.DeckDepth;
+		Flags = model.Flags;
+		SpanLength = model.SpanLength;
+		PillarPlacement = (SupportPillarSpacing)model.PillarSpacing;
+		MaxSpeed = model.MaxSpeed;
+		MaxHeight = model.MaxHeight;
+		CostIndex = model.CostIndex;
+		BaseCostFactor = model.BaseCostFactor;
+		HeightCostFactor = model.HeightCostFactor;
+		SellCostFactor = model.SellCostFactor;
+		DisabledTrackFlags = model.DisabledTrackFlags;
+		DesignedYear = model.DesignedYear;
+		CompatibleTrackObjects = new(model.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		CompatibleRoadObjects = new(model.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		var_03 = model.var_03;
+		ClearHeight = model.ClearHeight;
+		DeckDepth = model.DeckDepth;
 	}
 
-	public override BridgeObject CopyBackToModel()
-		=> new()
-		{
-			Flags = Flags,
-			SpanLength = SpanLength,
-			PillarSpacing = PillarPlacement,
-			MaxSpeed = MaxSpeed,
-			MaxHeight = MaxHeight,
-			CostIndex = CostIndex,
-			BaseCostFactor = BaseCostFactor,
-			HeightCostFactor = HeightCostFactor,
-			SellCostFactor = SellCostFactor,
-			DisabledTrackFlags = DisabledTrackFlags,
-			DesignedYear = DesignedYear,
-			CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.CopyBackToModel()),
-			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.CopyBackToModel()),
-			var_03 = var_03,
-			ClearHeight = ClearHeight,
-			DeckDepth = DeckDepth,
-		};
+	//public override BridgeObject CopyBackToModel()
+	//	=> new()
+	//	{
+	//		Flags = Flags,
+	//		SpanLength = SpanLength,
+	//		PillarSpacing = PillarPlacement,
+	//		MaxSpeed = MaxSpeed,
+	//		MaxHeight = MaxHeight,
+	//		CostIndex = CostIndex,
+	//		BaseCostFactor = BaseCostFactor,
+	//		HeightCostFactor = HeightCostFactor,
+	//		SellCostFactor = SellCostFactor,
+	//		DisabledTrackFlags = DisabledTrackFlags,
+	//		DesignedYear = DesignedYear,
+	//		CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		var_03 = var_03,
+	//		ClearHeight = ClearHeight,
+	//		DeckDepth = DeckDepth,
+	//	};
 }

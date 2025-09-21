@@ -5,33 +5,36 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:gui="using:Gui"
-	mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="720"
+	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	mc:Ignorable="d"
+	d:DesignWidth="1440"
+	d:DesignHeight="720"
 	x:Class="Gui.Views.ObjectEditorView"
 	x:DataType="vm:ObjectEditorViewModel">
 
 	<DockPanel>
-		<Grid ColumnDefinitions="60*, Auto, 40*" RowDefinitions="Auto, Auto, Auto, *">
-			<Border Grid.Row="0" Grid.ColumnSpan="3" Margin="4" Background="{DynamicResource ExpanderContentBackground}">
-				<StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Vertical">
-					<StackPanel Margin="4" Orientation="Horizontal">
-						<ContentControl Content="{Binding ObjectModelHeaderViewModel}" />
-						<ContentControl Content="{Binding ObjectHeaderViewModel}" />
-					</StackPanel>
-					<StackPanel Orientation="Horizontal">
-						<Button Margin="4" Command="{Binding ExportUncompressedCommand}" ToolTip.Tip="Equivalent to saving the object with 'Uncompressed' encoding">Export as uncompressed DAT</Button>
-						<SplitButton Content="{Binding LastGameObjDataFolder, StringFormat='Copy to {0} object folder'}" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}" >
-							<SplitButton.Flyout>
-								<MenuFlyout Placement="Bottom">
-									<MenuItem Header="Copy to AppData game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.AppData}"/>
-									<MenuItem Header="Copy to Locomotion game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.Locomotion}"/>
-									<MenuItem Header="Copy to OpenLoco game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.OpenLoco}"/>
-								</MenuFlyout>
-							</SplitButton.Flyout>
-						</SplitButton>
-					</StackPanel>
+		<Border DockPanel.Dock="Top" Margin="4" Background="{DynamicResource ExpanderContentBackground}">
+			<StackPanel Orientation="Vertical">
+				<StackPanel Margin="4" Orientation="Horizontal">
+					<ContentControl Content="{Binding ObjectModelHeaderViewModel}" />
+					<ContentControl Content="{Binding ObjectHeaderViewModel}" />
 				</StackPanel>
-			</Border>
-			<TabControl Grid.Column="0" Grid.Row="2">
+				<StackPanel Orientation="Horizontal">
+					<Button Margin="4" Command="{Binding ExportUncompressedCommand}" ToolTip.Tip="Equivalent to saving the object with 'Uncompressed' encoding">Export as uncompressed DAT</Button>
+					<SplitButton Content="{Binding LastGameObjDataFolder, StringFormat='Copy to {0} object folder'}" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}" >
+						<SplitButton.Flyout>
+							<MenuFlyout Placement="Bottom">
+								<MenuItem Header="Copy to AppData game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.AppData}"/>
+								<MenuItem Header="Copy to Locomotion game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.Locomotion}"/>
+								<MenuItem Header="Copy to OpenLoco game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.OpenLoco}"/>
+							</MenuFlyout>
+						</SplitButton.Flyout>
+					</SplitButton>
+				</StackPanel>
+			</StackPanel>
+		</Border>
+		<Grid ColumnDefinitions="60*, Auto, 40*">
+			<TabControl Grid.Column="0" >
 				<TabControl.Styles>
 					<Style Selector="TabItem">
 						<Setter Property="Padding" Value="8"/>
@@ -45,8 +48,8 @@
 					</DockPanel>
 				</TabItem>
 			</TabControl>
-			<GridSplitter Grid.Column="1" Grid.Row="2" />
-			<TabControl Grid.Column="2" Grid.Row="2">
+			<GridSplitter Grid.Column="1"/>
+			<TabControl Grid.Column="2">
 				<TabControl.Styles>
 					<Style Selector="TabItem">
 						<Setter Property="Padding" Value="8"/>
@@ -55,6 +58,8 @@
 				</TabControl.Styles>
 				<TabItem Header="Object">
 					<ScrollViewer>
+						<!--<pgc:PropertyGrid DataContext="{Binding CurrentObjectViewModel}" Background="{DynamicResource ExpanderContentBackground}" />-->
+
 						<ContentControl Content="{Binding CurrentObjectViewModel}" />
 					</ScrollViewer>
 				</TabItem>

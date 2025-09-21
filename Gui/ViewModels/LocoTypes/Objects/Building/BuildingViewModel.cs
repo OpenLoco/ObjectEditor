@@ -46,70 +46,71 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 	[Reactive, Category("<unknown>")] public uint8_t var_A9 { get; set; }
 	[Reactive, Category("<unknown>")] public uint8_t var_AC { get; set; }
 
-	public BuildingViewModel(BuildingObject bo)
+	public BuildingViewModel(BuildingObject model)
+		: base(model)
 	{
-		Flags = bo.Flags;
-		Colours = bo.Colours;
-		ScaffoldingColour = bo.ScaffoldingColour;
-		ScaffoldingSegmentType = bo.ScaffoldingSegmentType;
-		GeneratorFunction = bo.GeneratorFunction;
-		AverageNumberOnMap = bo.AverageNumberOnMap;
-		DemolishRatingReduction = bo.DemolishRatingReduction;
-		DesignedYear = bo.DesignedYear;
-		ObsoleteYear = bo.ObsoleteYear;
-		CostIndex = bo.CostIndex;
-		SellCostFactor = bo.SellCostFactor;
-		ProducedCargo = [.. bo.ProducedCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
-		RequiredCargo = [.. bo.RequiredCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
-		ProducedQuantity = [.. bo.ProducedQuantity];
-		BuildingHeights = new(bo.BuildingComponents.BuildingHeights);
-		BuildingAnimations = new(bo.BuildingComponents.BuildingAnimations);
-		BuildingVariations = new(bo.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
-		ElevatorSequence1 = bo.ElevatorHeightSequences.Count > 0 ? bo.ElevatorHeightSequences[0] : null;
-		ElevatorSequence2 = bo.ElevatorHeightSequences.Count > 1 ? bo.ElevatorHeightSequences[1] : null;
-		ElevatorSequence3 = bo.ElevatorHeightSequences.Count > 2 ? bo.ElevatorHeightSequences[2] : null;
-		ElevatorSequence4 = bo.ElevatorHeightSequences.Count > 3 ? bo.ElevatorHeightSequences[3] : null;
+		Flags = model.Flags;
+		Colours = model.Colours;
+		ScaffoldingColour = model.ScaffoldingColour;
+		ScaffoldingSegmentType = model.ScaffoldingSegmentType;
+		GeneratorFunction = model.GeneratorFunction;
+		AverageNumberOnMap = model.AverageNumberOnMap;
+		DemolishRatingReduction = model.DemolishRatingReduction;
+		DesignedYear = model.DesignedYear;
+		ObsoleteYear = model.ObsoleteYear;
+		CostIndex = model.CostIndex;
+		SellCostFactor = model.SellCostFactor;
+		ProducedCargo = [.. model.ProducedCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
+		RequiredCargo = [.. model.RequiredCargo.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
+		ProducedQuantity = [.. model.ProducedQuantity];
+		BuildingHeights = new(model.BuildingComponents.BuildingHeights);
+		BuildingAnimations = new(model.BuildingComponents.BuildingAnimations);
+		BuildingVariations = new(model.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
+		ElevatorSequence1 = model.ElevatorHeightSequences.Count > 0 ? model.ElevatorHeightSequences[0] : null;
+		ElevatorSequence2 = model.ElevatorHeightSequences.Count > 1 ? model.ElevatorHeightSequences[1] : null;
+		ElevatorSequence3 = model.ElevatorHeightSequences.Count > 2 ? model.ElevatorHeightSequences[2] : null;
+		ElevatorSequence4 = model.ElevatorHeightSequences.Count > 3 ? model.ElevatorHeightSequences[3] : null;
 		//ElevatorHeightSequences = new(bo.ElevatorHeightSequences.Select(x => new ObservableCollection<uint8_t>(x)).ToObservableCollection());
-		var_A6 = bo.var_A6;
-		var_A7 = bo.var_A7;
-		var_A8 = bo.var_A8;
-		var_A9 = bo.var_A9;
-		var_AC = bo.var_AC;
+		var_A6 = model.var_A6;
+		var_A7 = model.var_A7;
+		var_A8 = model.var_A8;
+		var_A9 = model.var_A9;
+		var_AC = model.var_AC;
 	}
 
 	// validation:
 	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override BuildingObject CopyBackToModel()
-		=> new()
-		{
-			BuildingComponents = new BuildingComponentsModel()
-			{
-				BuildingHeights = [.. BuildingHeights],
-				BuildingAnimations = [.. BuildingAnimations],
-				BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
-			},
-			Flags = Flags,
-			Colours = Colours,
-			ScaffoldingColour = ScaffoldingColour,
-			ScaffoldingSegmentType = ScaffoldingSegmentType,
-			GeneratorFunction = GeneratorFunction,
-			AverageNumberOnMap = AverageNumberOnMap,
-			DemolishRatingReduction = DemolishRatingReduction,
-			DesignedYear = DesignedYear,
-			ObsoleteYear = ObsoleteYear,
-			CostIndex = CostIndex,
-			SellCostFactor = SellCostFactor,
-			var_AC = var_AC,
-			ProducedQuantity = [.. ProducedQuantity],
-			ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
-			RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
-			ElevatorHeightSequences = GetElevatorSequences(),
-			var_A6 = var_A6,
-			var_A7 = var_A7,
-			var_A8 = var_A8,
-			var_A9 = var_A9,
+	//public override BuildingObject CopyBackToModel()
+	//	=> new()
+	//	{
+	//		BuildingComponents = new BuildingComponentsModel()
+	//		{
+	//			BuildingHeights = [.. BuildingHeights],
+	//			BuildingAnimations = [.. BuildingAnimations],
+	//			BuildingVariations = BuildingVariations.ToList().ConvertAll(x => x.ToList()),
+	//		},
+	//		Flags = Flags,
+	//		Colours = Colours,
+	//		ScaffoldingColour = ScaffoldingColour,
+	//		ScaffoldingSegmentType = ScaffoldingSegmentType,
+	//		GeneratorFunction = GeneratorFunction,
+	//		AverageNumberOnMap = AverageNumberOnMap,
+	//		DemolishRatingReduction = DemolishRatingReduction,
+	//		DesignedYear = DesignedYear,
+	//		ObsoleteYear = ObsoleteYear,
+	//		CostIndex = CostIndex,
+	//		SellCostFactor = SellCostFactor,
+	//		var_AC = var_AC,
+	//		ProducedQuantity = [.. ProducedQuantity],
+	//		ProducedCargo = ProducedCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		RequiredCargo = RequiredCargo.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		ElevatorHeightSequences = GetElevatorSequences(),
+	//		var_A6 = var_A6,
+	//		var_A7 = var_A7,
+	//		var_A8 = var_A8,
+	//		var_A9 = var_A9,
 
-		};
+	//	};
 
 	List<uint8_t[]> GetElevatorSequences()
 	{

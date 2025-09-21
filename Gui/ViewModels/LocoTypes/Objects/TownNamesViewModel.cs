@@ -10,9 +10,10 @@ public class TownNamesViewModel : LocoObjectViewModel<TownNamesObject>
 	public List<Category> Categories { get; set; }
 
 	public TownNamesViewModel(TownNamesObject tno)
+		: base(tno)
 		=> Categories = [.. tno.Categories];
 
-	public override TownNamesObject CopyBackToModel()
+	public TownNamesObject CopyBackToModel()
 		=> new()
 		{
 			Categories = [.. Categories],

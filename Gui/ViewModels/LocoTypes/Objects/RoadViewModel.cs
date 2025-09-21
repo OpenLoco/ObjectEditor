@@ -2,7 +2,6 @@ using Definitions.ObjectModels.Objects.Road;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -24,42 +23,43 @@ public class RoadViewModel : LocoObjectViewModel<RoadObject>
 	[Category("Mods")] public ObservableCollection<ObjectModelHeaderViewModel> Mods { get; set; }
 	[Category("Compatible")] public ObservableCollection<ObjectModelHeaderViewModel> Compatible { get; set; }
 
-	public RoadViewModel(RoadObject ro)
+	public RoadViewModel(RoadObject model)
+		: base(model)
 	{
-		Flags = ro.Flags;
-		RoadPieces = ro.RoadPieces;
-		MaxSpeed = ro.MaxCurveSpeed;
-		PaintStyle = ro.PaintStyle;
-		DisplayOffset = ro.DisplayOffset;
-		TargetTownSize = ro.TargetTownSize;
-		BuildCostFactor = ro.BuildCostFactor;
-		SellCostFactor = ro.SellCostFactor;
-		TunnelCostFactor = ro.TunnelCostFactor;
-		CostIndex = ro.CostIndex;
-		Tunnel = new(ro.Tunnel);
-		Compatible = new(ro.CompatibleTracksAndRoads.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		Mods = new(ro.RoadMods.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		Bridges = new(ro.Bridges.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		Stations = new(ro.Stations.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		Flags = model.Flags;
+		RoadPieces = model.RoadPieces;
+		MaxSpeed = model.MaxCurveSpeed;
+		PaintStyle = model.PaintStyle;
+		DisplayOffset = model.DisplayOffset;
+		TargetTownSize = model.TargetTownSize;
+		BuildCostFactor = model.BuildCostFactor;
+		SellCostFactor = model.SellCostFactor;
+		TunnelCostFactor = model.TunnelCostFactor;
+		CostIndex = model.CostIndex;
+		Tunnel = new(model.Tunnel);
+		Compatible = new(model.CompatibleTracksAndRoads.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		Mods = new(model.RoadMods.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		Bridges = new(model.Bridges.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		Stations = new(model.Stations.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
 	}
 
-	public override RoadObject CopyBackToModel()
-		=> new()
-		{
-			Flags = Flags,
-			RoadPieces = RoadPieces,
-			MaxCurveSpeed = MaxSpeed,
-			PaintStyle = PaintStyle,
-			DisplayOffset = DisplayOffset,
-			TargetTownSize = TargetTownSize,
-			BuildCostFactor = BuildCostFactor,
-			SellCostFactor = SellCostFactor,
-			TunnelCostFactor = TunnelCostFactor,
-			CostIndex = CostIndex,
-			CompatibleTracksAndRoads = Compatible.ToList().ConvertAll(x => x.CopyBackToModel()),
-			RoadMods = Mods.ToList().ConvertAll(x => x.CopyBackToModel()),
-			Tunnel = Tunnel.CopyBackToModel(),
-			Bridges = Bridges.ToList().ConvertAll(x => x.CopyBackToModel()),
-			Stations = Stations.ToList().ConvertAll(x => x.CopyBackToModel()),
-		};
+	//public override RoadObject CopyBackToModel()
+	//	=> new()
+	//	{
+	//		Flags = Flags,
+	//		RoadPieces = RoadPieces,
+	//		MaxCurveSpeed = MaxSpeed,
+	//		PaintStyle = PaintStyle,
+	//		DisplayOffset = DisplayOffset,
+	//		TargetTownSize = TargetTownSize,
+	//		BuildCostFactor = BuildCostFactor,
+	//		SellCostFactor = SellCostFactor,
+	//		TunnelCostFactor = TunnelCostFactor,
+	//		CostIndex = CostIndex,
+	//		CompatibleTracksAndRoads = Compatible.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		RoadMods = Mods.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		Tunnel = Tunnel.CopyBackToModel(),
+	//		Bridges = Bridges.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//		Stations = Stations.ToList().ConvertAll(x => x.CopyBackToModel()),
+	//	};
 }

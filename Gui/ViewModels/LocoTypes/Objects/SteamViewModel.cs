@@ -1,7 +1,6 @@
 using Definitions.ObjectModels.Objects.Steam;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -14,23 +13,24 @@ public class SteamViewModel : LocoObjectViewModel<SteamObject>
 	public ObservableCollection<SteamImageAndHeight> FrameInfoType0 { get; set; } // may need viewmodel for ImageAndHeight
 	public ObservableCollection<SteamImageAndHeight> FrameInfoType1 { get; set; }
 
-	public SteamViewModel(SteamObject so)
+	public SteamViewModel(SteamObject model)
+		: base(model)
 	{
-		NumStationaryTicks = so.NumStationaryTicks;
-		Flags = so.Flags;
-		var_0A = so.var_0A;
-		SoundEffects = new(so.SoundEffects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		FrameInfoType0 = new(so.FrameInfoType0);
-		FrameInfoType1 = new(so.FrameInfoType1);
+		NumStationaryTicks = model.NumStationaryTicks;
+		Flags = model.Flags;
+		var_0A = model.var_0A;
+		SoundEffects = new(model.SoundEffects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		FrameInfoType0 = new(model.FrameInfoType0);
+		FrameInfoType1 = new(model.FrameInfoType1);
 	}
 
-	public override SteamObject CopyBackToModel()
+	public SteamObject CopyBackToModel()
 		=> new()
 		{
 			NumStationaryTicks = NumStationaryTicks,
 			Flags = Flags,
 			var_0A = var_0A,
-			SoundEffects = SoundEffects.ToList().ConvertAll(x => x.CopyBackToModel()),
+			//SoundEffects = SoundEffects.ToList().ConvertAll(x => x.CopyBackToModel()),
 			FrameInfoType0 = [.. FrameInfoType0],
 			FrameInfoType1 = [.. FrameInfoType1],
 		};

@@ -3,7 +3,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Climate;
 using Definitions.ObjectModels.Types;
-using System.ComponentModel;
 
 namespace Dat.Loaders;
 
@@ -27,7 +26,7 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
-			model.FirstSeason = br.ReadByte();
+			model.FirstSeason = (Season)br.ReadByte();
 			model.SeasonLength1 = br.ReadByte();
 			model.SeasonLength2 = br.ReadByte();
 			model.SeasonLength3 = br.ReadByte();
@@ -61,7 +60,7 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
-			bw.Write(model.FirstSeason);
+			bw.Write((uint8_t)model.FirstSeason);
 			bw.Write(model.SeasonLength1);
 			bw.Write(model.SeasonLength2);
 			bw.Write(model.SeasonLength3);
@@ -83,22 +82,4 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteImageTable(stream, new ImageTable().GraphicsElements);
 		}
 	}
-}
-
-[TypeConverter(typeof(ExpandableObjectConverter))]
-[LocoStructSize(0x0A)]
-[LocoStructType(DatObjectType.Climate)]
-internal record DatClimateObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02)] uint8_t FirstSeason,
-	[property: LocoStructOffset(0x03), LocoArrayLength(ClimateObjectLoader.Constants.Seasons)] uint8_t[] SeasonLengths,
-	[property: LocoStructOffset(0x07)] uint8_t WinterSnowLine,
-	[property: LocoStructOffset(0x08)] uint8_t SummerSnowLine,
-	[property: LocoStructOffset(0x09), LocoPropertyMaybeUnused] uint8_t pad_09
-	)
-{
-
-	public bool Validate()
-		=> WinterSnowLine <= SummerSnowLine
-		&& FirstSeason < 4;
 }

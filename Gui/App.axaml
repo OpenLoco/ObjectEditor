@@ -18,18 +18,15 @@
 		<DataTemplate DataType="vm:ObjectModelHeaderViewModel">
 			<vi:ObjectModelHeaderView />
 		</DataTemplate>
-		<!--<DataTemplate DataType="vm:ObjectHeaderViewModel">
-			<Design.DataContext>
-				<vm:DesignerObjectHeaderViewModel />
-			</Design.DataContext>
+		<DataTemplate DataType="vm:ObjectHeaderViewModel">
 			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeaderVm" DataContext="{Binding}" IsCategoryVisible="False" />
-		</DataTemplate>-->
-		<DataTemplate DataType="oldt:S5Header">
+		</DataTemplate>
+		<!--<DataTemplate DataType="oldt:S5Header">
 			<pgc:PropertyGrid x:Name="propertyGrid_S5Header" DataContext="{Binding}" IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="oldt:ObjectHeader">
 			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeader" DataContext="{Binding}" IsCategoryVisible="False" />
-		</DataTemplate>
+		</DataTemplate>-->
 		<DataTemplate DataType="vm:SCV5ViewModel">
 			<vi:SCV5View />
 		</DataTemplate>
@@ -50,6 +47,9 @@
 		</DataTemplate>
 		<DataTemplate DataType="vm:LocoTypes.Objects.Building.BuildingComponentsViewModel">
 			<vi:BuildingComponentsView />
+		</DataTemplate>
+		<DataTemplate DataType="vm:G1ViewModel">
+			<ContentControl Content="{Binding ImageTableViewModel}" />
 		</DataTemplate>
 	</Application.DataTemplates>
 
@@ -96,6 +96,7 @@
 			<Setter Property="IsHeaderVisible" Value="False" />
 			<Setter Property="IsCategoryVisible" Value="False" />
 			<Setter Property="IsQuickFilterVisible" Value="False" />
+			<Setter Property="IsAutoNameWidth" Value="True" />
 		</Style>
 
 		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />

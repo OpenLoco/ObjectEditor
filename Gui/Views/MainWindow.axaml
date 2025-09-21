@@ -118,10 +118,6 @@
 			</ScrollViewer>
 		</DataTemplate>
 
-		<DataTemplate DataType="vm:G1ViewModel">
-			<ContentControl Content="{Binding ImageTableViewModel}" />
-		</DataTemplate>
-
 		<DataTemplate DataType="vm:AudioViewModel">
 			<Border BorderThickness="1">
 				<StackPanel Background="{DynamicResource ScrollBarTrackFill}" Orientation="Vertical">

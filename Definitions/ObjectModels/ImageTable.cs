@@ -32,7 +32,11 @@ public class ImageTable : IHasGraphicsElements
 		get => [.. Groups
 			.SelectMany(x => x.GraphicsElements)
 			.OrderBy(x => x.ImageTableIndex)];
-		set => Groups.Add(("All", value));
+		set
+		{
+			Groups.Clear();
+			Groups.Add(("All", value));
+		}
 	}
 
 	public List<(string Name, List<GraphicsElement> GraphicsElements)> Groups { get; set; } = [];

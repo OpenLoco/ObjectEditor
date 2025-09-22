@@ -20,9 +20,9 @@ public class RoadStationViewModel : LocoObjectViewModel<RoadStationObject>
 	[Category("Cost")] public int16_t SellCostFactor { get; set; }
 	[Category("Cost")] public uint8_t CostIndex { get; set; }
 	[Category("Compatible")] public List<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
-	public ObjectModelHeader? CargoType { get; set; }
+	[Category("Cargo")] public ObjectModelHeader? CargoType { get; set; }
 
-	public CargoOffset[][][] CargoOffsets { get; init; }
+	[Category("Cargo")] public CargoOffset[][][] CargoOffsets { get; init; }
 
 	public RoadStationViewModel(RoadStationObject model)
 		: base(model)

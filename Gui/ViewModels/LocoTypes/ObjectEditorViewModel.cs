@@ -134,10 +134,6 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 				&& type.BaseType.GetGenericTypeDefinition() == typeof(LocoObjectViewModel<>)
 				&& type.BaseType.GenericTypeArguments.Single() == locoStruct.GetType());
 
-		//return asm == null
-		//	? new GenericObjectViewModel() { Object = locoStruct }
-		//	: (Activator.CreateInstance(asm, locoStruct) as IObjectViewModel<ILocoStruct>)!;
-
 		return Activator.CreateInstance(asm, locoStruct) as IObjectViewModel<ILocoStruct>;
 	}
 
@@ -298,9 +294,13 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		// VM should auto-copy back now
 		//CurrentObject.LocoObject.Object = CurrentObjectViewModel.CopyBackToModel();
 
-		if (ExtraContentViewModel is ImageTableViewModel itvm)
+		if (ExtraContentViewModel is ImageTableViewModel itvm && CurrentObject?.LocoObject?.ImageTable != null)
 		{
-			CurrentObject.LocoObject.ImageTable.GraphicsElements = itvm.GroupedImageViewModels.SelectMany(x => x.Images).Select(x => x.ToGraphicsElement()).ToList();
+			CurrentObject.LocoObject.ImageTable.GraphicsElements = itvm.GroupedImageViewModels
+				.SelectMany(x => x.Images)
+				.Select(x => x.ToGraphicsElement())
+				.OrderBy(x => x.ImageTableIndex)
+				.ToList();
 		}
 
 		// this is hacky but it should work

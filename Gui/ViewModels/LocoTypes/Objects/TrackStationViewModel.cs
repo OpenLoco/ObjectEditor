@@ -22,9 +22,10 @@ public class TrackStationViewModel : LocoObjectViewModel<TrackStationObject>
 	[Category("<unknown>")] public uint8_t var_0B { get; set; }
 	[Category("<unknown>")] public uint8_t var_0D { get; set; }
 
-	[Browsable(false)]
+	[Category("<unknown>")]
 	public uint8_t[][] var_6E { get; set; }
 
+	[Category("Cargo")]
 	public CargoOffset[][][] CargoOffsets { get; init; }
 
 	public TrackStationViewModel(TrackStationObject model)

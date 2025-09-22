@@ -182,6 +182,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		MiscBuilding = 1 << 1,
 		Indestructible = 1 << 2,
 		IsHeadquarters = 1 << 3,
+		HasShadows = 1 << 4,
 	}
 }
 

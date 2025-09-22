@@ -161,7 +161,8 @@ public class ImageViewModel : ReactiveObject
 			YOffset = (short)YOffset,
 			Flags = Flags,
 			ZoomOffset = ZoomOffset,
-			ImageData = rawData
+			ImageData = rawData,
+			ImageTableIndex = ImageTableIndex,
 		};
 	}
 }

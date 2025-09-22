@@ -4,7 +4,7 @@ namespace Definitions.Database;
 
 public class TblObjectClimate : DbSubObject, IConvertibleToTable<TblObjectClimate, ClimateObject>
 {
-	public uint8_t FirstSeason { get; set; }
+	public Season FirstSeason { get; set; }
 	public uint8_t WinterSnowLine { get; set; }
 	public uint8_t SummerSnowLine { get; set; }
 	public uint8_t SeasonLength1 { get; set; }

@@ -3,30 +3,36 @@ using Definitions.ObjectModels.Objects.TrackExtra;
 
 namespace Gui.ViewModels;
 
-public class TrackExtraViewModel : LocoObjectViewModel<TrackExtraObject>
+public class TrackExtraViewModel(TrackExtraObject model)
+	: LocoObjectViewModel<TrackExtraObject>(model)
 {
-	public TrackTraitFlags TrackPieces { get; set; }
-	public uint8_t PaintStyle { get; set; }
-	public uint8_t CostIndex { get; set; }
-	public int16_t BuildCostFactor { get; set; }
-	public int16_t SellCostFactor { get; set; }
-
-	public TrackExtraViewModel(TrackExtraObject obj)
+	public TrackTraitFlags TrackPieces
 	{
-		TrackPieces = obj.TrackPieces;
-		PaintStyle = obj.PaintStyle;
-		CostIndex = obj.CostIndex;
-		BuildCostFactor = obj.BuildCostFactor;
-		SellCostFactor = obj.SellCostFactor;
+		get => Model.TrackPieces;
+		set => Model.TrackPieces = value;
 	}
 
-	public override TrackExtraObject GetAsModel()
-		=> new()
-		{
-			TrackPieces = TrackPieces,
-			PaintStyle = PaintStyle,
-			CostIndex = CostIndex,
-			BuildCostFactor = BuildCostFactor,
-			SellCostFactor = SellCostFactor,
-		};
+	public uint8_t PaintStyle
+	{
+		get => Model.PaintStyle;
+		set => Model.PaintStyle = value;
+	}
+
+	public uint8_t CostIndex
+	{
+		get => Model.CostIndex;
+		set => Model.CostIndex = value;
+	}
+
+	public int16_t BuildCostFactor
+	{
+		get => Model.BuildCostFactor;
+		set => Model.BuildCostFactor = value;
+	}
+
+	public int16_t SellCostFactor
+	{
+		get => Model.SellCostFactor;
+		set => Model.SellCostFactor = value;
+	}
 }

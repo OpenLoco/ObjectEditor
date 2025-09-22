@@ -2,84 +2,121 @@ using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Common;
 using PropertyModels.Extensions;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace Gui.ViewModels;
 
-public class AirportViewModel : LocoObjectViewModel<AirportObject>
+public class AirportViewModel(AirportObject model)
+	: LocoObjectViewModel<AirportObject>(model)
 {
-	public uint16_t AllowedPlaneTypes { get; set; }
-	public int8_t MinX { get; set; }
-	public int8_t MinY { get; set; }
-	public int8_t MaxX { get; set; }
-	public int8_t MaxY { get; set; }
-	public uint16_t DesignedYear { get; set; }
-	public uint16_t ObsoleteYear { get; set; }
-	public uint32_t LargeTiles { get; set; }
-	[Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Category("Cost")] public int16_t BuildCostFactor { get; set; }
-	[Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)] public ObservableCollection<ObservableCollection<uint8_t>> BuildingVariations { get; set; } // NumBuildingVariations
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)] public ObservableCollection<uint8_t> BuildingHeights { get; set; } // NumBuildingParts
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)] public ObservableCollection<BuildingPartAnimation> BuildingAnimations { get; set; } // NumBuildingParts
-	[Category("Building")] public ObservableCollection<AirportBuilding> BuildingPositions { get; set; }
-	[Category("Movement")] public ObservableCollection<MovementNode> MovementNodes { get; set; } // NumMovementNodes
-	[Category("Movement")] public ObservableCollection<MovementEdge> MovementEdges { get; set; } // NumMovementEdges
-	[Category("<unknown>")] public uint8_t var_07 { get; set; }
-	[Category("<unknown>"), Length(4, 4)] public ObservableCollection<uint8_t> var_B6 { get; set; }
-
-	public AirportViewModel(AirportObject ao)
+	public uint16_t AllowedPlaneTypes
 	{
-		AllowedPlaneTypes = ao.AllowedPlaneTypes;
-		MinX = ao.MinX;
-		MinY = ao.MinY;
-		MaxX = ao.MaxX;
-		MaxY = ao.MaxY;
-		DesignedYear = ao.DesignedYear;
-		ObsoleteYear = ao.ObsoleteYear;
-		LargeTiles = ao.LargeTiles;
-		CostIndex = ao.CostIndex;
-		BuildCostFactor = ao.BuildCostFactor;
-		SellCostFactor = ao.SellCostFactor;
-		BuildingHeights = new(ao.BuildingComponents.BuildingHeights);
-		BuildingAnimations = new(ao.BuildingComponents.BuildingAnimations);
-		BuildingVariations = new(ao.BuildingComponents.BuildingVariations.Select(x => new ObservableCollection<uint8_t>(x)));
-		BuildingPositions = new(ao.BuildingPositions);
-		MovementNodes = new(ao.MovementNodes);
-		MovementEdges = new(ao.MovementEdges);
-		var_07 = ao.var_07;
-		var_B6 = [.. ao.var_B6];
+		get => Model.AllowedPlaneTypes;
+		set => Model.AllowedPlaneTypes = value;
 	}
 
-	// validation:
-	// BuildingVariationHeights.Count MUST equal BuildingVariationAnimations.Count
-	public override AirportObject GetAsModel()
-		=> new()
-		{
-			AllowedPlaneTypes = AllowedPlaneTypes,
-			MinX = MinX,
-			MinY = MinY,
-			MaxX = MaxX,
-			MaxY = MaxY,
-			DesignedYear = DesignedYear,
-			ObsoleteYear = ObsoleteYear,
-			LargeTiles = LargeTiles,
-			CostIndex = CostIndex,
-			BuildCostFactor = BuildCostFactor,
-			SellCostFactor = SellCostFactor,
-			BuildingComponents = new BuildingComponentsModel()
-			{
-				BuildingHeights = [.. BuildingHeights],
-				BuildingAnimations = [.. BuildingAnimations],
-				BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())],
-			},
-			BuildingPositions = [.. BuildingPositions],
-			MovementNodes = [.. MovementNodes],
-			MovementEdges = [.. MovementEdges],
-			var_07 = var_07,
-			var_B6 = [.. var_B6],
-		};
+	public int8_t MinX
+	{
+		get => Model.MinX;
+		set => Model.MinX = value;
+	}
+
+	public int8_t MinY
+	{
+		get => Model.MinY;
+		set => Model.MinY = value;
+	}
+
+	public int8_t MaxX
+	{
+		get => Model.MaxX;
+		set => Model.MaxX = value;
+	}
+
+	public int8_t MaxY
+	{
+		get => Model.MaxY;
+		set => Model.MaxY = value;
+	}
+
+	public uint16_t DesignedYear
+	{
+		get => Model.DesignedYear;
+		set => Model.DesignedYear = value;
+	}
+
+	public uint16_t ObsoleteYear
+	{
+		get => Model.ObsoleteYear;
+		set => Model.ObsoleteYear = value;
+	}
+
+	public uint32_t LargeTiles
+	{
+		get => Model.LargeTiles;
+		set => Model.LargeTiles = value;
+	}
+
+	[Category("Cost")]
+	public uint8_t CostIndex
+	{
+		get => Model.CostIndex;
+		set => Model.CostIndex = value;
+	}
+
+	[Category("Cost")]
+	public int16_t BuildCostFactor
+	{
+		get => Model.BuildCostFactor;
+		set => Model.BuildCostFactor = value;
+	}
+
+	[Category("Cost")]
+	public int16_t SellCostFactor
+	{
+		get => Model.SellCostFactor;
+		set => Model.SellCostFactor = value;
+	}
+
+	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)]
+	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
+
+	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)]
+	public BindingList<uint8_t> BuildingHeights { get; init; } = model.BuildingComponents.BuildingHeights.ToBindingList();
+
+	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)]
+	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
+
+	[Category("Building")]
+	public BindingList<AirportBuilding> BuildingPositions { get; init; } = model.BuildingPositions.ToBindingList();
+
+	[Category("Movement")]
+	public BindingList<MovementNode> MovementNodes { get; init; } = model.MovementNodes.ToBindingList();
+
+	[Category("Movement")]
+	public BindingList<MovementEdge> MovementEdges { get; init; } = model.MovementEdges.ToBindingList();
+
+	[Category("<unknown>")]
+	public uint8_t var_07
+	{
+		get => Model.var_07;
+		set => Model.var_07 = value;
+	}
+
+	[Category("<unknown>"), Length(4, 4)]
+	public BindingList<uint8_t> var_B6 { get; init; } = model.var_B6.ToBindingList();
+
+	//public AirportViewModel(AirportObject model)
+	//	: base(model)
+	//{
+	//	BuildingHeights = new(model.BuildingComponents.BuildingHeights);
+	//	BuildingAnimations = new(model.BuildingComponents.BuildingAnimations);
+	//	BuildingVariations = new(model.BuildingComponents.BuildingVariations.Select(x => new BindingList<uint8_t>(x)));
+	//	BuildingPositions = new(model.BuildingPositions);
+	//	MovementNodes = new(model.MovementNodes);
+	//	MovementEdges = new(model.MovementEdges);
+	//	var_B6 = new BindingList<uint8_t>(model.var_B6);
+	//}
 }

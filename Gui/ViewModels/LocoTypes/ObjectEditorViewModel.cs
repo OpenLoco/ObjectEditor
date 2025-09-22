@@ -27,7 +27,7 @@ namespace Gui.ViewModels;
 public class ObjectEditorViewModel : BaseLocoFileViewModel
 {
 	[Reactive]
-	public IObjectViewModel<ILocoStruct>? CurrentObjectViewModel { get; set; }
+	public IObjectViewModel? CurrentObjectViewModel { get; set; }
 
 	[Reactive]
 	public StringTableViewModel? StringTableViewModel { get; set; }
@@ -122,7 +122,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		}
 	}
 
-	public static IObjectViewModel<ILocoStruct> GetViewModelFromStruct(ILocoStruct locoStruct)
+	public static IObjectViewModel GetViewModelFromStruct(ILocoStruct locoStruct)
 	{
 		var asm = Assembly
 			.GetExecutingAssembly()
@@ -134,7 +134,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 				&& type.BaseType.GetGenericTypeDefinition() == typeof(LocoObjectViewModel<>)
 				&& type.BaseType.GenericTypeArguments.Single() == locoStruct.GetType());
 
-		return Activator.CreateInstance(asm, locoStruct) as IObjectViewModel<ILocoStruct>;
+		return (IObjectViewModel)Activator.CreateInstance(asm, locoStruct);
 	}
 
 	public override void Load()
@@ -291,7 +291,8 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		logger.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
 		StringTableViewModel?.WriteTableBackToObject();
 
-		CurrentObject.LocoObject.Object = CurrentObjectViewModel.GetAsModel();
+		// VM should auto-copy back now for everything but VehicleObject
+		CurrentObjectViewModel.CopyBackToModel();
 
 		if (ExtraContentViewModel is ImageTableViewModel itvm && CurrentObject?.LocoObject?.ImageTable != null)
 		{

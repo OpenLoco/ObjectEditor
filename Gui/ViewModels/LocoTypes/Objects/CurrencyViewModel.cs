@@ -2,21 +2,18 @@ using Definitions.ObjectModels.Objects.Currency;
 
 namespace Gui.ViewModels;
 
-public class CurrencyViewModel : LocoObjectViewModel<CurrencyObject>
+public class CurrencyViewModel(CurrencyObject model)
+		: LocoObjectViewModel<CurrencyObject>(model)
 {
-	public uint8_t Separator { get; set; }
-	public uint8_t Factor { get; set; }
-
-	public CurrencyViewModel(CurrencyObject obj)
+	public uint8_t Separator
 	{
-		Separator = obj.Separator;
-		Factor = obj.Factor;
+		get => Model.Separator;
+		set => Model.Separator = value;
 	}
 
-	public override CurrencyObject GetAsModel()
-		=> new()
-		{
-			Separator = Separator,
-			Factor = Factor,
-		};
+	public uint8_t Factor
+	{
+		get => Model.Factor;
+		set => Model.Factor = value;
+	}
 }

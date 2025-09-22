@@ -1,65 +1,88 @@
 using Definitions.ObjectModels.Objects.Road;
+using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Gui.ViewModels;
 
-public class RoadViewModel : LocoObjectViewModel<RoadObject>
+public class RoadViewModel(RoadObject model)
+	: LocoObjectViewModel<RoadObject>(model)
 {
-	[EnumProhibitValues<RoadObjectFlags>(RoadObjectFlags.None)] public RoadObjectFlags Flags { get; set; }
-	[EnumProhibitValues<RoadTraitFlags>(RoadTraitFlags.None)] public RoadTraitFlags RoadPieces { get; set; }
-	public Speed16 MaxSpeed { get; set; }
-	public uint8_t PaintStyle { get; set; }
-	public uint8_t DisplayOffset { get; set; }
-	public TownSize TargetTownSize { get; set; }
-	public ObjectModelHeaderViewModel Tunnel { get; set; }
-	[Category("Cost")] public int16_t BuildCostFactor { get; set; }
-	[Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Category("Cost")] public int16_t TunnelCostFactor { get; set; }
-	[Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Category("Bridges")] public ObservableCollection<ObjectModelHeaderViewModel> Bridges { get; set; }
-	[Category("Stations")] public ObservableCollection<ObjectModelHeaderViewModel> Stations { get; set; }
-	[Category("Mods")] public ObservableCollection<ObjectModelHeaderViewModel> Mods { get; set; }
-	[Category("Compatible")] public ObservableCollection<ObjectModelHeaderViewModel> Compatible { get; set; }
-
-	public RoadViewModel(RoadObject ro)
+	[EnumProhibitValues<RoadObjectFlags>(RoadObjectFlags.None)]
+	public RoadObjectFlags Flags
 	{
-		Flags = ro.Flags;
-		RoadPieces = ro.RoadPieces;
-		MaxSpeed = ro.MaxCurveSpeed;
-		PaintStyle = ro.PaintStyle;
-		DisplayOffset = ro.DisplayOffset;
-		TargetTownSize = ro.TargetTownSize;
-		BuildCostFactor = ro.BuildCostFactor;
-		SellCostFactor = ro.SellCostFactor;
-		TunnelCostFactor = ro.TunnelCostFactor;
-		CostIndex = ro.CostIndex;
-		Tunnel = new(ro.Tunnel);
-		Compatible = new(ro.CompatibleTracksAndRoads.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		Mods = new(ro.RoadMods.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		Bridges = new(ro.Bridges.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		Stations = new(ro.Stations.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
+		get => Model.Flags;
+		set => Model.Flags = value;
 	}
 
-	public override RoadObject GetAsModel()
-		=> new()
-		{
-			Flags = Flags,
-			RoadPieces = RoadPieces,
-			MaxCurveSpeed = MaxSpeed,
-			PaintStyle = PaintStyle,
-			DisplayOffset = DisplayOffset,
-			TargetTownSize = TargetTownSize,
-			BuildCostFactor = BuildCostFactor,
-			SellCostFactor = SellCostFactor,
-			TunnelCostFactor = TunnelCostFactor,
-			CostIndex = CostIndex,
-			CompatibleTracksAndRoads = Compatible.ToList().ConvertAll(x => x.GetAsModel()),
-			RoadMods = Mods.ToList().ConvertAll(x => x.GetAsModel()),
-			Tunnel = Tunnel.GetAsModel(),
-			Bridges = Bridges.ToList().ConvertAll(x => x.GetAsModel()),
-			Stations = Stations.ToList().ConvertAll(x => x.GetAsModel()),
-		};
+	[EnumProhibitValues<RoadTraitFlags>(RoadTraitFlags.None)]
+	public RoadTraitFlags RoadPieces
+	{
+		get => Model.RoadPieces;
+		set => Model.RoadPieces = value;
+	}
+
+	public Speed16 MaxSpeed
+	{
+		get => Model.MaxCurveSpeed;
+		set => Model.MaxCurveSpeed = value;
+	}
+
+	public uint8_t PaintStyle
+	{
+		get => Model.PaintStyle;
+		set => Model.PaintStyle = value;
+	}
+
+	public uint8_t DisplayOffset
+	{
+		get => Model.DisplayOffset;
+		set => Model.DisplayOffset = value;
+	}
+
+	public TownSize TargetTownSize
+	{
+		get => Model.TargetTownSize;
+		set => Model.TargetTownSize = value;
+	}
+
+	[Category("Cost")]
+	public int16_t BuildCostFactor
+	{
+		get => Model.BuildCostFactor;
+		set => Model.BuildCostFactor = value;
+	}
+
+	[Category("Cost")]
+	public int16_t SellCostFactor
+	{
+		get => Model.SellCostFactor;
+		set => Model.SellCostFactor = value;
+	}
+
+	[Category("Cost")]
+	public int16_t TunnelCostFactor
+	{
+		get => Model.TunnelCostFactor;
+		set => Model.TunnelCostFactor = value;
+	}
+
+	[Category("Cost")]
+	public uint8_t CostIndex
+	{
+		get => Model.CostIndex;
+		set => Model.CostIndex = value;
+	}
+
+	[Category("Compatible Objects")]
+	public ObjectModelHeader Tunnel
+	{
+		get => Model.Tunnel;
+		set => Model.Tunnel = value;
+	}
+
+	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> Bridges { get; set; } = new(model.Bridges);
+	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> Stations { get; set; } = new(model.Stations);
+	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> Mods { get; set; } = new(model.RoadMods);
+	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> TracksAndRoads { get; set; } = new(model.TracksAndRoads);
 }

@@ -279,7 +279,7 @@ public class LoadSaveTests
 	{
 		void assertFunc(LocoObject obj, ClimateObject struc) => Assert.Multiple(() =>
 		{
-			Assert.That(struc.FirstSeason, Is.EqualTo(1), nameof(struc.FirstSeason));
+			Assert.That(struc.FirstSeason, Is.EqualTo(Season.Winter), nameof(struc.FirstSeason));
 			Assert.That(struc.SeasonLength1, Is.EqualTo(57), nameof(struc.SeasonLength1));
 			Assert.That(struc.SeasonLength2, Is.EqualTo(80), nameof(struc.SeasonLength2));
 			Assert.That(struc.SeasonLength3, Is.EqualTo(100), nameof(struc.SeasonLength3));
@@ -305,12 +305,12 @@ public class LoadSaveTests
 					| NamePrefixFlags.unk12),
 				nameof(struc.AvailableNamePrefixes));
 
-			Assert.That(struc.AvailablePlaystyles,
+			Assert.That(struc.AvailablePlayStyles,
 				Is.EqualTo(
 					PlaystyleFlags.unk0
 					| PlaystyleFlags.unk2
 					| PlaystyleFlags.unk11),
-				nameof(struc.AvailablePlaystyles));
+				nameof(struc.AvailablePlayStyles));
 
 			Assert.That(struc.Emotions,
 				Is.EqualTo(
@@ -636,7 +636,7 @@ public class LoadSaveTests
 	{
 		void assertFunc(LocoObject obj, LevelCrossingObject struc) => Assert.Multiple(() =>
 		{
-			Assert.That(struc.CostFactor, Is.EqualTo(30), nameof(struc.CostFactor));
+			Assert.That(struc.BuildCostFactor, Is.EqualTo(30), nameof(struc.BuildCostFactor));
 			Assert.That(struc.SellCostFactor, Is.EqualTo(-10), nameof(struc.SellCostFactor));
 			Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 
@@ -738,11 +738,11 @@ public class LoadSaveTests
 			Assert.That(struc.Bridges[4].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[4].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
 
-			Assert.That(struc.CompatibleTracksAndRoads, Has.Count.EqualTo(1), nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.CompatibleTracksAndRoads[0].Name, Is.EqualTo("ROADTRAM"), nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.CompatibleTracksAndRoads[0].DatChecksum, Is.Zero, nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.CompatibleTracksAndRoads[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.CompatibleTracksAndRoads[0].ObjectType, Is.EqualTo(ObjectType.Road), nameof(struc.CompatibleTracksAndRoads));
+			Assert.That(struc.TracksAndRoads, Has.Count.EqualTo(1), nameof(struc.TracksAndRoads));
+			Assert.That(struc.TracksAndRoads[0].Name, Is.EqualTo("ROADTRAM"), nameof(struc.TracksAndRoads));
+			Assert.That(struc.TracksAndRoads[0].DatChecksum, Is.Zero, nameof(struc.TracksAndRoads));
+			Assert.That(struc.TracksAndRoads[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.TracksAndRoads));
+			Assert.That(struc.TracksAndRoads[0].ObjectType, Is.EqualTo(ObjectType.Road), nameof(struc.TracksAndRoads));
 
 			Assert.That(struc.RoadMods, Is.Empty, nameof(struc.RoadMods));
 
@@ -964,7 +964,7 @@ public class LoadSaveTests
 			Assert.That(struc.Flags, Is.EqualTo(TrackObjectFlags.unk_00), nameof(struc.Flags));
 			// Mods
 			Assert.That(struc.Bridges, Has.Count.EqualTo(5), nameof(struc.Bridges));
-			Assert.That(struc.CompatibleTracksAndRoads, Has.Count.EqualTo(7), nameof(struc.CompatibleTracksAndRoads));
+			Assert.That(struc.TracksAndRoads, Has.Count.EqualTo(7), nameof(struc.TracksAndRoads));
 			Assert.That(struc.TrackMods, Has.Count.EqualTo(2), nameof(struc.TrackMods));
 			Assert.That(struc.Signals, Has.Count.EqualTo(10), nameof(struc.Signals));
 			Assert.That(struc.Stations, Has.Count.EqualTo(5), nameof(struc.Stations));

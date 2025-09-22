@@ -1,12 +1,24 @@
-using ReactiveUI;
 using Definitions.ObjectModels;
+using ReactiveUI;
+using System;
+using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace Gui.ViewModels;
 
-public abstract class LocoObjectViewModel<T> : ReactiveObject, IObjectViewModel<ILocoStruct> where T : class, ILocoStruct
+public abstract class LocoObjectViewModel<T> : ReactiveObject, IObjectViewModel<T> where T : class, ILocoStruct
 {
-	public abstract T GetAsModel();
+	[Browsable(false)]
+	[JsonIgnore]
+	public T Model { get; init; } = null!;
 
-	ILocoStruct IObjectViewModel<ILocoStruct>.GetAsModel()
-		=> GetAsModel();
+	protected LocoObjectViewModel(T model)
+	{
+		ArgumentNullException.ThrowIfNull(model);
+		Model = model;
+	}
+
+	public virtual void CopyBackToModel()
+	{ }
+
 }

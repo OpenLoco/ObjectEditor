@@ -16,10 +16,10 @@ public class TrackObject : ILocoStruct
 	public uint8_t DisplayOffset { get; set; }
 	public uint8_t var_06 { get; set; }
 
-	public List<ObjectModelHeader> CompatibleTracksAndRoads { get; set; } = [];
+	public ObjectModelHeader Tunnel { get; set; }
+	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
 	public List<ObjectModelHeader> TrackMods { get; set; } = []; // aka TrackExtraObject
 	public List<ObjectModelHeader> Signals { get; set; } = [];
-	public ObjectModelHeader Tunnel { get; set; }
 	public List<ObjectModelHeader> Bridges { get; set; } = [];
 	public List<ObjectModelHeader> Stations { get; set; } = [];
 
@@ -35,14 +35,19 @@ public class TrackObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
 		}
 
-		if (-SellCostFactor > BuildCostFactor)
+		if (SellCostFactor >= 0)
 		{
-			yield return new ValidationResult($"The negative of {nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
+			yield return new ValidationResult($"{nameof(SellCostFactor)} must be less than 0 {nameof(SellCostFactor)}", [nameof(SellCostFactor)]);
 		}
 
 		if (BuildCostFactor <= 0)
 		{
-			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be positive.", [nameof(BuildCostFactor)]);
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be greater than 0", [nameof(BuildCostFactor)]);
+		}
+
+		if (-SellCostFactor > BuildCostFactor)
+		{
+			yield return new ValidationResult($"-{nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 
 		if (TunnelCostFactor <= 0)

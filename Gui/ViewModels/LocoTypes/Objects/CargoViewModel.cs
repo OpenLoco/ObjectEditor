@@ -2,54 +2,84 @@ using Definitions.ObjectModels.Objects.Cargo;
 
 namespace Gui.ViewModels;
 
-public class CargoViewModel : LocoObjectViewModel<CargoObject>
+public class CargoViewModel(CargoObject model)
+		: LocoObjectViewModel<CargoObject>(model)
 {
-	public uint16_t CargoTransferTime { get; set; }
-	public CargoCategory CargoCategory { get; set; }
-	public CargoObjectFlags Flags { get; set; }
-	public uint8_t NumPlatformVariations { get; set; }
-	public uint8_t StationCargoDensity { get; set; }
-	public uint8_t PremiumDays { get; set; }
-	public uint8_t MaxNonPremiumDays { get; set; }
-	public uint16_t MaxPremiumRate { get; set; }
-	public uint16_t PenaltyRate { get; set; }
-	public uint16_t PaymentFactor { get; set; }
-	public uint8_t PaymentIndex { get; set; }
-	public uint8_t UnitSize { get; set; }
-	public uint16_t var_02 { get; set; }
-
-	public CargoViewModel(CargoObject obj)
+	public uint16_t CargoTransferTime
 	{
-		CargoTransferTime = obj.CargoTransferTime;
-		CargoCategory = obj.CargoCategory;
-		Flags = obj.Flags;
-		NumPlatformVariations = obj.NumPlatformVariations;
-		StationCargoDensity = obj.StationCargoDensity;
-		PremiumDays = obj.PremiumDays;
-		MaxNonPremiumDays = obj.MaxNonPremiumDays;
-		MaxPremiumRate = obj.MaxPremiumRate;
-		PenaltyRate = obj.PenaltyRate;
-		PaymentFactor = obj.PaymentFactor;
-		PaymentIndex = obj.PaymentIndex;
-		UnitSize = obj.UnitSize;
-		var_02 = obj.var_02;
+		get => Model.CargoTransferTime;
+		set => Model.CargoTransferTime = value;
 	}
 
-	public override CargoObject GetAsModel()
-		=> new()
-		{
-			CargoTransferTime = CargoTransferTime,
-			CargoCategory = CargoCategory,
-			Flags = Flags,
-			NumPlatformVariations = NumPlatformVariations,
-			StationCargoDensity = StationCargoDensity,
-			PremiumDays = PremiumDays,
-			MaxNonPremiumDays = MaxNonPremiumDays,
-			MaxPremiumRate = MaxPremiumRate,
-			PenaltyRate = PenaltyRate,
-			PaymentFactor = PaymentFactor,
-			PaymentIndex = PaymentIndex,
-			UnitSize = UnitSize,
-			var_02 = var_02,
-		};
+	public CargoCategory CargoCategory
+	{
+		get => Model.CargoCategory;
+		set => Model.CargoCategory = value;
+	}
+
+	public CargoObjectFlags Flags
+	{
+		get => Model.Flags;
+		set => Model.Flags = value;
+	}
+
+	public uint8_t NumPlatformVariations
+	{
+		get => Model.NumPlatformVariations;
+		set => Model.NumPlatformVariations = value;
+	}
+
+	public uint8_t StationCargoDensity
+	{
+		get => Model.StationCargoDensity;
+		set => Model.StationCargoDensity = value;
+	}
+
+	public uint8_t PremiumDays
+	{
+		get => Model.PremiumDays;
+		set => Model.PremiumDays = value;
+	}
+
+	public uint8_t MaxNonPremiumDays
+	{
+		get => Model.MaxNonPremiumDays;
+		set => Model.MaxNonPremiumDays = value;
+	}
+
+	public uint16_t MaxPremiumRate
+	{
+		get => Model.MaxPremiumRate;
+		set => Model.MaxPremiumRate = value;
+	}
+
+	public uint16_t PenaltyRate
+	{
+		get => Model.PenaltyRate;
+		set => Model.PenaltyRate = value;
+	}
+
+	public uint16_t PaymentFactor
+	{
+		get => Model.PaymentFactor;
+		set => Model.PaymentFactor = value;
+	}
+
+	public uint8_t PaymentIndex
+	{
+		get => Model.PaymentIndex;
+		set => Model.PaymentIndex = value;
+	}
+
+	public uint8_t UnitSize
+	{
+		get => Model.UnitSize;
+		set => Model.UnitSize = value;
+	}
+
+	public uint16_t var_02
+	{
+		get => Model.var_02;
+		set => Model.var_02 = value;
+	}
 }

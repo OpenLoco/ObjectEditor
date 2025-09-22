@@ -1,33 +1,27 @@
 using Definitions.ObjectModels.Objects.Region;
-using System.Collections.Generic;
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
-public class RegionViewModel : LocoObjectViewModel<RegionObject>
+public class RegionViewModel(RegionObject model)
+	: LocoObjectViewModel<RegionObject>(model)
 {
-	public DrivingSide VehiclesDriveOnThe { get; set; }
-	public uint8_t pad_07 { get; set; }
-	[Category("Cargo")] public List<ObjectModelHeaderViewModel> CargoInfluenceObjects { get; set; }
-	[Category("Cargo")] public List<ObjectModelHeaderViewModel> DependentObjects { get; set; }
-	[Category("Cargo")] public List<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; set; }
-
-	public RegionViewModel(RegionObject ro)
+	public DrivingSide VehiclesDriveOnThe
 	{
-		CargoInfluenceObjects = [.. ro.CargoInfluenceObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
-		DependentObjects = [.. ro.DependentObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
-		CargoInfluenceTownFilter = [.. ro.CargoInfluenceTownFilter];
-		VehiclesDriveOnThe = ro.VehiclesDriveOnThe;
-		pad_07 = ro.pad_07;
+		get => Model.VehiclesDriveOnThe;
+		set => Model.VehiclesDriveOnThe = value;
 	}
 
-	public override RegionObject GetAsModel()
-		=> new RegionObject()
-		{
-			CargoInfluenceObjects = CargoInfluenceObjects.ConvertAll(x => x.GetAsModel()),
-			DependentObjects = DependentObjects.ConvertAll(x => x.GetAsModel()),
-			CargoInfluenceTownFilter = CargoInfluenceTownFilter,
-			VehiclesDriveOnThe = VehiclesDriveOnThe,
-			pad_07 = pad_07
-		};
+	public uint8_t pad_07
+	{
+		get => Model.pad_07;
+		set => Model.pad_07 = value;
+	}
+
+	[Category("Cargo")] public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; init; } = new(model.CargoInfluenceObjects);
+	public BindingList<ObjectModelHeader> DependentObjects { get; init; } = new(model.DependentObjects);
+
+	[Category("Cargo")]
+	public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; init; } = new(model.CargoInfluenceTownFilter);
 }

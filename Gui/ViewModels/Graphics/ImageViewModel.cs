@@ -2,6 +2,7 @@ using Avalonia.Media.Imaging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
+using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -14,14 +15,23 @@ using System.Reactive.Linq;
 
 namespace Gui.ViewModels.Graphics;
 
-public class ImageViewModel : ReactiveObject
+public class ImageViewModel : ReactiveUI.ReactiveObject
 {
 	public string Name { get; set; }
 	public int ImageTableIndex { get; init; }
+
+	[Unit("px")]
 	public int Width => UnderlyingImage.Width;
+
+	[Unit("px")]
 	public int Height => UnderlyingImage.Height;
-	[Reactive] public int XOffset { get; set; }
-	[Reactive] public int YOffset { get; set; }
+
+	[Reactive, Unit("px")]
+	public int XOffset { get; set; }
+
+	[Reactive, Unit("px")]
+	public int YOffset { get; set; }
+
 	public short ZoomOffset { get; set; }
 
 	[EnumProhibitValues<GraphicsElementFlags>(GraphicsElementFlags.None)]
@@ -85,7 +95,7 @@ public class ImageViewModel : ReactiveObject
 
 		if (!PaletteMap.TryConvertG1ToRgba32Bitmap(dummyElement, primary, secondary, out var image))
 		{
-			throw new Exception("Failed to recolour image");
+			throw new InvalidOperationException("Failed to recolour image");
 		}
 
 		// only update the UI image - don't update the underlying image as we want to keep the original

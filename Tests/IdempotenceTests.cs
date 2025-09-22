@@ -97,7 +97,7 @@ public class IdempotenceTests
 		var obj1 = SawyerStreamReader.LoadFullObject(filename, logger)!.LocoObject!.Object;
 
 		var vm = ObjectEditorViewModel.GetViewModelFromStruct(obj1);
-		var obj2 = vm.GetAsModel();
+		var obj2 = vm.GetILocoStruct();
 
 		var expected = JsonSerializer.Serialize((object)obj1);
 		var actual = JsonSerializer.Serialize((object)obj2);

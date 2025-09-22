@@ -1,10 +1,11 @@
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using Dat.Data;
+using Definitions.ObjectModels;
 using DynamicData;
-using NuGet.Versioning;
-
 using Gui.Models;
+using NuGet.Versioning;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -19,8 +20,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using Dat.Data;
-using Definitions.ObjectModels;
 
 #if !DEBUG
 using Common;

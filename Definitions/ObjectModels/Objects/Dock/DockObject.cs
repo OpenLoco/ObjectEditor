@@ -30,14 +30,19 @@ public class DockObject : ILocoStruct, IHasBuildingComponents
 			yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
 		}
 
-		if (-SellCostFactor > BuildCostFactor)
+		if (SellCostFactor >= 0)
 		{
-			yield return new ValidationResult($"{nameof(SellCostFactor)} must be between 0 and -{BuildCostFactor} (inclusive).", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
+			yield return new ValidationResult($"{nameof(SellCostFactor)} must be less than 0 {nameof(SellCostFactor)}", [nameof(SellCostFactor)]);
 		}
 
 		if (BuildCostFactor <= 0)
 		{
-			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be greater than 0.", [nameof(BuildCostFactor)]);
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be greater than 0", [nameof(BuildCostFactor)]);
+		}
+
+		if (-SellCostFactor > BuildCostFactor)
+		{
+			yield return new ValidationResult($"-{nameof(SellCostFactor)} must be less than or equal to {nameof(BuildCostFactor)}.", [nameof(SellCostFactor), nameof(BuildCostFactor)]);
 		}
 	}
 }

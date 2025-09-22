@@ -1,37 +1,35 @@
 using Definitions.ObjectModels.Objects.Steam;
+using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
-using System.Collections.ObjectModel;
-using System.Linq;
+using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
-public class SteamViewModel : LocoObjectViewModel<SteamObject>
+public class SteamViewModel(SteamObject model)
+		: LocoObjectViewModel<SteamObject>(model)
 {
-	public uint8_t NumStationaryTicks { get; set; }
-	[EnumProhibitValues<SteamObjectFlags>(SteamObjectFlags.None)] public SteamObjectFlags Flags { get; set; }
-	public uint32_t var_0A { get; set; }
-	public ObservableCollection<ObjectModelHeaderViewModel> SoundEffects { get; set; }
-	public ObservableCollection<SteamImageAndHeight> FrameInfoType0 { get; set; } // may need viewmodel for ImageAndHeight
-	public ObservableCollection<SteamImageAndHeight> FrameInfoType1 { get; set; }
-
-	public SteamViewModel(SteamObject so)
+	public uint8_t NumStationaryTicks
 	{
-		NumStationaryTicks = so.NumStationaryTicks;
-		Flags = so.Flags;
-		var_0A = so.var_0A;
-		SoundEffects = new(so.SoundEffects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		FrameInfoType0 = new(so.FrameInfoType0);
-		FrameInfoType1 = new(so.FrameInfoType1);
+		get => Model.NumStationaryTicks;
+		set => Model.NumStationaryTicks = value;
 	}
 
-	public override SteamObject GetAsModel()
-		=> new()
-		{
-			NumStationaryTicks = NumStationaryTicks,
-			Flags = Flags,
-			var_0A = var_0A,
-			SoundEffects = SoundEffects.ToList().ConvertAll(x => x.GetAsModel()),
-			FrameInfoType0 = [.. FrameInfoType0],
-			FrameInfoType1 = [.. FrameInfoType1],
-		};
+	[EnumProhibitValues<SteamObjectFlags>(SteamObjectFlags.None)]
+	public SteamObjectFlags Flags
+	{
+		get => Model.Flags;
+		set => Model.Flags = value;
+	}
+
+	public uint32_t var_0A
+	{
+		get => Model.var_0A;
+		set => Model.var_0A = value;
+	}
+
+	public BindingList<ObjectModelHeader> SoundEffects { get; init; } = new(model.SoundEffects);
+
+	public BindingList<SteamImageAndHeight> FrameInfoType0 { get; init; } = new(model.FrameInfoType0);
+
+	public BindingList<SteamImageAndHeight> FrameInfoType1 { get; init; } = new(model.FrameInfoType1);
 }

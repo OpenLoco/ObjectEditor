@@ -18,7 +18,7 @@ public class TblObjectLevelCrossing : DbSubObject, IConvertibleToTable<TblObject
 		=> new()
 		{
 			Parent = tbl,
-			CostFactor = obj.CostFactor,
+			CostFactor = obj.BuildCostFactor,
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
 			AnimationSpeed = obj.AnimationSpeed,

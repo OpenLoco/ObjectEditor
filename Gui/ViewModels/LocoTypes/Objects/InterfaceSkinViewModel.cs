@@ -3,69 +3,113 @@ using Definitions.ObjectModels.Types;
 
 namespace Gui.ViewModels;
 
-public class InterfaceSkinViewModel : LocoObjectViewModel<InterfaceSkinObject>
+public class InterfaceSkinViewModel(InterfaceSkinObject model) : LocoObjectViewModel<InterfaceSkinObject>(model)
 {
-	public Colour MapTooltipObjectColour { get; set; }
-	public Colour MapTooltipCargoColour { get; set; }
-	public Colour TooltipColour { get; set; }
-	public Colour ErrorColour { get; set; }
-	public Colour WindowPlayerColor { get; set; }
-	public Colour WindowTitlebarColour { get; set; }
-	public Colour WindowColour { get; set; }
-	public Colour WindowConstructionColour { get; set; }
-	public Colour WindowTerraFormColour { get; set; }
-	public Colour WindowMapColour { get; set; }
-	public Colour WindowOptionsColour { get; set; }
-	public Colour Colour_11 { get; set; }
-	public Colour TopToolbarPrimaryColour { get; set; }
-	public Colour TopToolbarSecondaryColour { get; set; }
-	public Colour TopToolbarTertiaryColour { get; set; }
-	public Colour TopToolbarQuaternaryColour { get; set; }
-	public Colour PlayerInfoToolbarColour { get; set; }
-	public Colour TimeToolbarColour { get; set; }
-
-	public InterfaceSkinViewModel(InterfaceSkinObject obj)
+	public Colour MapTooltipObjectColour
 	{
-		MapTooltipObjectColour = obj.MapTooltipObjectColour;
-		MapTooltipCargoColour = obj.MapTooltipCargoColour;
-		TooltipColour = obj.TooltipColour;
-		ErrorColour = obj.ErrorColour;
-		WindowPlayerColor = obj.WindowPlayerColor;
-		WindowTitlebarColour = obj.WindowTitlebarColour;
-		WindowColour = obj.WindowColour;
-		WindowConstructionColour = obj.WindowConstructionColour;
-		WindowTerraFormColour = obj.WindowTerraFormColour;
-		WindowMapColour = obj.WindowMapColour;
-		WindowOptionsColour = obj.WindowOptionsColour;
-		Colour_11 = obj.Colour_11;
-		TopToolbarPrimaryColour = obj.TopToolbarPrimaryColour;
-		TopToolbarSecondaryColour = obj.TopToolbarSecondaryColour;
-		TopToolbarTertiaryColour = obj.TopToolbarTertiaryColour;
-		TopToolbarQuaternaryColour = obj.TopToolbarQuaternaryColour;
-		PlayerInfoToolbarColour = obj.PlayerInfoToolbarColour;
-		TimeToolbarColour = obj.TimeToolbarColour;
+		get => Model.MapTooltipObjectColour;
+		set => Model.MapTooltipObjectColour = value;
 	}
 
-	public override InterfaceSkinObject GetAsModel()
-		=> new()
-		{
-			MapTooltipObjectColour = MapTooltipObjectColour,
-			MapTooltipCargoColour = MapTooltipCargoColour,
-			TooltipColour = TooltipColour,
-			ErrorColour = ErrorColour,
-			WindowPlayerColor = WindowPlayerColor,
-			WindowTitlebarColour = WindowTitlebarColour,
-			WindowColour = WindowColour,
-			WindowConstructionColour = WindowConstructionColour,
-			WindowTerraFormColour = WindowTerraFormColour,
-			WindowMapColour = WindowMapColour,
-			WindowOptionsColour = WindowOptionsColour,
-			Colour_11 = Colour_11,
-			TopToolbarPrimaryColour = TopToolbarPrimaryColour,
-			TopToolbarSecondaryColour = TopToolbarSecondaryColour,
-			TopToolbarTertiaryColour = TopToolbarTertiaryColour,
-			TopToolbarQuaternaryColour = TopToolbarQuaternaryColour,
-			PlayerInfoToolbarColour = PlayerInfoToolbarColour,
-			TimeToolbarColour = TimeToolbarColour,
-		};
+	public Colour MapTooltipCargoColour
+	{
+		get => Model.MapTooltipCargoColour;
+		set => Model.MapTooltipCargoColour = value;
+	}
+
+	public Colour TooltipColour
+	{
+		get => Model.TooltipColour;
+		set => Model.TooltipColour = value;
+	}
+
+	public Colour ErrorColour
+	{
+		get => Model.ErrorColour;
+		set => Model.ErrorColour = value;
+	}
+
+	public Colour WindowPlayerColour
+	{
+		get => Model.WindowPlayerColor;
+		set => Model.WindowPlayerColor = value;
+	}
+
+	public Colour WindowTitlebarColour
+	{
+		get => Model.WindowTitlebarColour;
+		set => Model.WindowTitlebarColour = value;
+	}
+
+	public Colour WindowColour
+	{
+		get => Model.WindowColour;
+		set => Model.WindowColour = value;
+	}
+
+	public Colour WindowConstructionColour
+	{
+		get => Model.WindowConstructionColour;
+		set => Model.WindowConstructionColour = value;
+	}
+
+	public Colour WindowTerraFormColour
+	{
+		get => Model.WindowTerraFormColour;
+		set => Model.WindowTerraFormColour = value;
+	}
+
+	public Colour WindowMapColour
+	{
+		get => Model.WindowMapColour;
+		set => Model.WindowMapColour = value;
+	}
+
+	public Colour WindowOptionsColour
+	{
+		get => Model.WindowOptionsColour;
+		set => Model.WindowOptionsColour = value;
+	}
+
+	public Colour Colour_11
+	{
+		get => Model.Colour_11;
+		set => Model.Colour_11 = value;
+	}
+
+	public Colour TopToolbarPrimaryColour
+	{
+		get => Model.TopToolbarPrimaryColour;
+		set => Model.TopToolbarPrimaryColour = value;
+	}
+
+	public Colour TopToolbarSecondaryColour
+	{
+		get => Model.TopToolbarSecondaryColour;
+		set => Model.TopToolbarSecondaryColour = value;
+	}
+
+	public Colour TopToolbarTertiaryColour
+	{
+		get => Model.TopToolbarTertiaryColour;
+		set => Model.TopToolbarTertiaryColour = value;
+	}
+
+	public Colour TopToolbarQuaternaryColour
+	{
+		get => Model.TopToolbarQuaternaryColour;
+		set => Model.TopToolbarQuaternaryColour = value;
+	}
+
+	public Colour PlayerInfoToolbarColour
+	{
+		get => Model.PlayerInfoToolbarColour;
+		set => Model.PlayerInfoToolbarColour = value;
+	}
+
+	public Colour TimeToolbarColour
+	{
+		get => Model.TimeToolbarColour;
+		set => Model.TimeToolbarColour = value;
+	}
 }

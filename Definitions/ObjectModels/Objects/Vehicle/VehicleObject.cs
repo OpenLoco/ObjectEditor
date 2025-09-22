@@ -42,7 +42,6 @@ public class VehicleObject : ILocoStruct
 	public FrictionSound? FrictionSound { get; set; }
 	public SimpleMotorSound? SimpleMotorSound { get; set; }
 	public GearboxMotorSound? GearboxMotorSound { get; set; }
-
 	public List<CargoCategory>[] CompatibleCargoCategories { get; set; } = new List<CargoCategory>[2]; // VehicleObjectLoader.Constants.MaxCompatibleCargoCategories
 	public uint8_t[] MaxCargo { get; set; } = new uint8_t[2]; // VehicleObjectLoader.Constants.MaxCompatibleCargoCategories
 	public Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets { get; set; } = [];

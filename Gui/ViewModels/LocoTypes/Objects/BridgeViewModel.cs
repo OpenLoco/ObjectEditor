@@ -1,68 +1,105 @@
 using Definitions.ObjectModels.Objects.Bridge;
+using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Gui.ViewModels;
 
-public class BridgeViewModel : LocoObjectViewModel<BridgeObject>
+public class BridgeViewModel(BridgeObject model)
+	: LocoObjectViewModel<BridgeObject>(model)
 {
-	[EnumProhibitValues<BridgeObjectFlags>(BridgeObjectFlags.None)] public BridgeObjectFlags Flags { get; set; }
-	public uint16_t ClearHeight { get; set; }
-	public int16_t DeckDepth { get; set; }
-	public uint8_t SpanLength { get; set; }
-	public SupportPillarSpacing PillarPlacement { get; set; }
-	public Speed16 MaxSpeed { get; set; }
-	public MicroZ MaxHeight { get; set; }
-	[EnumProhibitValues<BridgeDisabledTrackFlags>(BridgeDisabledTrackFlags.None)] public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
-	public uint16_t DesignedYear { get; set; }
-	[Category("Cost")] public uint8_t CostIndex { get; set; }
-	[Category("Cost")] public int16_t BaseCostFactor { get; set; }
-	[Category("Cost")] public int16_t HeightCostFactor { get; set; }
-	[Category("Cost")] public int16_t SellCostFactor { get; set; }
-	[Category("Compatible")] public ObservableCollection<ObjectModelHeaderViewModel> CompatibleTrackObjects { get; set; }
-	[Category("Compatible")] public ObservableCollection<ObjectModelHeaderViewModel> CompatibleRoadObjects { get; set; }
-	[Category("<unknown>")] public uint8_t var_03 { get; set; }
-
-	public BridgeViewModel(BridgeObject bo)
+	[EnumProhibitValues<BridgeObjectFlags>(BridgeObjectFlags.None)]
+	public BridgeObjectFlags Flags
 	{
-		Flags = bo.Flags;
-		SpanLength = bo.SpanLength;
-		PillarPlacement = (SupportPillarSpacing)bo.PillarSpacing;
-		MaxSpeed = bo.MaxSpeed;
-		MaxHeight = bo.MaxHeight;
-		CostIndex = bo.CostIndex;
-		BaseCostFactor = bo.BaseCostFactor;
-		HeightCostFactor = bo.HeightCostFactor;
-		SellCostFactor = bo.SellCostFactor;
-		DisabledTrackFlags = bo.DisabledTrackFlags;
-		DesignedYear = bo.DesignedYear;
-		CompatibleTrackObjects = new(bo.CompatibleTrackObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		CompatibleRoadObjects = new(bo.CompatibleRoadObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x)));
-		var_03 = bo.var_03;
-		ClearHeight = bo.ClearHeight;
-		DeckDepth = bo.DeckDepth;
+		get => Model.Flags;
+		set => Model.Flags = value;
 	}
 
-	public override BridgeObject GetAsModel()
-		=> new()
-		{
-			Flags = Flags,
-			SpanLength = SpanLength,
-			PillarSpacing = PillarPlacement,
-			MaxSpeed = MaxSpeed,
-			MaxHeight = MaxHeight,
-			CostIndex = CostIndex,
-			BaseCostFactor = BaseCostFactor,
-			HeightCostFactor = HeightCostFactor,
-			SellCostFactor = SellCostFactor,
-			DisabledTrackFlags = DisabledTrackFlags,
-			DesignedYear = DesignedYear,
-			CompatibleTrackObjects = CompatibleTrackObjects.ToList().ConvertAll(x => x.GetAsModel()),
-			CompatibleRoadObjects = CompatibleRoadObjects.ToList().ConvertAll(x => x.GetAsModel()),
-			var_03 = var_03,
-			ClearHeight = ClearHeight,
-			DeckDepth = DeckDepth,
-		};
+	public uint16_t ClearHeight
+	{
+		get => Model.ClearHeight;
+		set => Model.ClearHeight = value;
+	}
+
+	public int16_t DeckDepth
+	{
+		get => Model.DeckDepth;
+		set => Model.DeckDepth = value;
+	}
+
+	public uint8_t SpanLength
+	{
+		get => Model.SpanLength;
+		set => Model.SpanLength = value;
+	}
+
+	public SupportPillarSpacing PillarSpacing
+	{
+		get => Model.PillarSpacing;
+		set => Model.PillarSpacing = value;
+	}
+
+	public Speed16 MaxSpeed
+	{
+		get => Model.MaxSpeed;
+		set => Model.MaxSpeed = value;
+	}
+
+	public MicroZ MaxHeight
+	{
+		get => Model.MaxHeight;
+		set => Model.MaxHeight = value;
+	}
+
+	[EnumProhibitValues<BridgeDisabledTrackFlags>(BridgeDisabledTrackFlags.None)]
+	public BridgeDisabledTrackFlags DisabledTrackFlags
+	{
+		get => Model.DisabledTrackFlags;
+		set => Model.DisabledTrackFlags = value;
+	}
+
+	public uint16_t DesignedYear
+	{
+		get => Model.DesignedYear;
+		set => Model.DesignedYear = value;
+	}
+
+	[Category("Cost")]
+	public uint8_t CostIndex
+	{
+		get => Model.CostIndex;
+		set => Model.CostIndex = value;
+	}
+
+	[Category("Cost")]
+	public int16_t BaseCostFactor
+	{
+		get => Model.BaseCostFactor;
+		set => Model.BaseCostFactor = value;
+	}
+
+	[Category("Cost")]
+	public int16_t HeightCostFactor
+	{
+		get => Model.HeightCostFactor;
+		set => Model.HeightCostFactor = value;
+	}
+
+	[Category("Cost")]
+	public int16_t SellCostFactor
+	{
+		get => Model.SellCostFactor;
+		set => Model.SellCostFactor = value;
+	}
+
+	[Category("Compatible")] public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
+
+	[Category("Compatible")] public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects);
+
+	[Category("<unknown>")]
+	public uint8_t var_03
+	{
+		get => Model.var_03;
+		set => Model.var_03 = value;
+	}
 }

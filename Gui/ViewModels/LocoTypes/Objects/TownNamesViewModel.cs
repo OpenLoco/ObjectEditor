@@ -1,20 +1,14 @@
 using Definitions.ObjectModels.Objects.TownNames;
-using System.Collections.Generic;
+using PropertyModels.Extensions;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
-public class TownNamesViewModel : LocoObjectViewModel<TownNamesObject>
+public class TownNamesViewModel(TownNamesObject model)
+	: LocoObjectViewModel<TownNamesObject>(model)
 {
 	[Length(6, 6), Editable(false)]
-	public List<Category> Categories { get; set; }
+	public BindingList<Category> Categories { get; set; } = model.Categories.ToBindingList();
 
-	public TownNamesViewModel(TownNamesObject tno)
-		=> Categories = [.. tno.Categories];
-
-	public override TownNamesObject GetAsModel()
-		=> new()
-		{
-			Categories = [.. Categories],
-		};
 }

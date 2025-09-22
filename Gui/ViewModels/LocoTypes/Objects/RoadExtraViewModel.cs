@@ -3,30 +3,36 @@ using Definitions.ObjectModels.Objects.RoadExtra;
 
 namespace Gui.ViewModels;
 
-public class RoadExtraViewModel : LocoObjectViewModel<RoadExtraObject>
+public class RoadExtraViewModel(RoadExtraObject model)
+	: LocoObjectViewModel<RoadExtraObject>(model)
 {
-	public RoadTraitFlags RoadPieces { get; set; }
-	public uint8_t PaintStyle { get; set; }
-	public uint8_t CostIndex { get; set; }
-	public int16_t BuildCostFactor { get; set; }
-	public int16_t SellCostFactor { get; set; }
-
-	public RoadExtraViewModel(RoadExtraObject obj)
+	public RoadTraitFlags RoadPieces
 	{
-		RoadPieces = obj.RoadPieces;
-		PaintStyle = obj.PaintStyle;
-		CostIndex = obj.CostIndex;
-		BuildCostFactor = obj.BuildCostFactor;
-		SellCostFactor = obj.SellCostFactor;
+		get => Model.RoadPieces;
+		set => Model.RoadPieces = value;
 	}
 
-	public override RoadExtraObject GetAsModel()
-		=> new()
-		{
-			RoadPieces = RoadPieces,
-			PaintStyle = PaintStyle,
-			CostIndex = CostIndex,
-			BuildCostFactor = BuildCostFactor,
-			SellCostFactor = SellCostFactor,
-		};
+	public uint8_t PaintStyle
+	{
+		get => Model.PaintStyle;
+		set => Model.PaintStyle = value;
+	}
+
+	public uint8_t CostIndex
+	{
+		get => Model.CostIndex;
+		set => Model.CostIndex = value;
+	}
+
+	public int16_t BuildCostFactor
+	{
+		get => Model.BuildCostFactor;
+		set => Model.BuildCostFactor = value;
+	}
+
+	public int16_t SellCostFactor
+	{
+		get => Model.SellCostFactor;
+		set => Model.SellCostFactor = value;
+	}
 }

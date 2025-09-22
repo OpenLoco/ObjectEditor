@@ -16,10 +16,10 @@ public class TrackObject : ILocoStruct
 	public uint8_t DisplayOffset { get; set; }
 	public uint8_t var_06 { get; set; }
 
-	public List<ObjectModelHeader> CompatibleTracksAndRoads { get; set; } = [];
+	public ObjectModelHeader Tunnel { get; set; }
+	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
 	public List<ObjectModelHeader> TrackMods { get; set; } = []; // aka TrackExtraObject
 	public List<ObjectModelHeader> Signals { get; set; } = [];
-	public ObjectModelHeader Tunnel { get; set; }
 	public List<ObjectModelHeader> Bridges { get; set; } = [];
 	public List<ObjectModelHeader> Stations { get; set; } = [];
 

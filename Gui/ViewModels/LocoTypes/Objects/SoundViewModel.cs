@@ -3,34 +3,44 @@ using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
-public class SoundViewModel : LocoObjectViewModel<SoundObject>
+public class SoundViewModel(SoundObject model)
+	: LocoObjectViewModel<SoundObject>(model)
 {
-	public uint8_t ShouldLoop { get; set; }
-	public uint32_t Volume { get; set; }
-	public SoundObjectData SoundObjectData { get; set; }
-	[Browsable(false)] public byte[] PcmData { get; set; }
-	public uint32_t NumUnkStructs { get; set; }
-	[Browsable(false)] public byte[] UnkData { get; set; }
-
-	public SoundViewModel(SoundObject model)
-		: base(model)
+	public uint8_t ShouldLoop
 	{
-		ShouldLoop = model.ShouldLoop;
-		Volume = model.Volume;
-		SoundObjectData = model.SoundObjectData;
-		PcmData = model.PcmData;
-		NumUnkStructs = model.NumUnkStructs;
-		UnkData = model.UnkData;
+		get => Model.ShouldLoop;
+		set => Model.ShouldLoop = value;
 	}
 
-	public SoundObject CopyBackToModel()
-		=> new()
-		{
-			ShouldLoop = ShouldLoop,
-			Volume = Volume,
-			SoundObjectData = SoundObjectData,
-			PcmData = PcmData,
-			NumUnkStructs = NumUnkStructs,
-			UnkData = UnkData,
-		};
+	public uint32_t Volume
+	{
+		get => Model.Volume;
+		set => Model.Volume = value;
+	}
+
+	public SoundObjectData SoundObjectData
+	{
+		get => Model.SoundObjectData;
+		set => Model.SoundObjectData = value;
+	}
+
+	[Browsable(false)]
+	public byte[] PcmData
+	{
+		get => Model.PcmData;
+		set => Model.PcmData = value;
+	}
+
+	public uint32_t NumUnkStructs
+	{
+		get => Model.NumUnkStructs;
+		set => Model.NumUnkStructs = value;
+	}
+
+	[Browsable(false)]
+	public byte[] UnkData
+	{
+		get => Model.UnkData;
+		set => Model.UnkData = value;
+	}
 }

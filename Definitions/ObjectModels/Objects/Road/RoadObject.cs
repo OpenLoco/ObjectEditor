@@ -16,7 +16,7 @@ public class RoadObject : ILocoStruct
 	public uint8_t DisplayOffset { get; set; }
 	public TownSize TargetTownSize { get; set; }
 
-	public List<ObjectModelHeader> CompatibleTracksAndRoads { get; set; } = [];
+	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
 	public List<ObjectModelHeader> RoadMods { get; set; } = [];
 	public ObjectModelHeader Tunnel { get; set; }
 	public List<ObjectModelHeader> Bridges { get; set; } = [];

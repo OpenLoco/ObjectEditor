@@ -1,162 +1,242 @@
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.Vehicle;
+using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace Gui.ViewModels;
 
-public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
+public class VehicleViewModel(VehicleObject model)
+	: LocoObjectViewModel<VehicleObject>(model)
 {
-	[Category("Stats")] public TransportMode Mode { get; set; }
-	[Category("Stats")] public VehicleType Type { get; set; }
-	[Category("Stats")] public uint16_t Weight { get; set; }
-	[Category("Stats")] public uint16_t Power { get; set; }
-	[Category("Stats")] public Speed16 Speed { get; set; }
-	[Category("Stats"), Description("Also used for Aircraft as their broken-down speed, landing speed, and approaching speed")] public Speed16 RackSpeed { get; set; }
-	[Category("Stats")] public uint8_t RackRailType { get; set; }
-	[Category("Stats")] public uint16_t DesignedYear { get; set; }
-	[Category("Stats")] public uint16_t ObsoleteYear { get; set; }
-	[Category("Stats")] public uint8_t Reliability { get; set; }
-	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None)] public VehicleObjectFlags Flags { get; set; }
-	public ObjectModelHeaderViewModel? TrackType { get; set; }
-	public ObjectModelHeaderViewModel? RackRail { get; set; }
-	[Range(0, 4)] public uint8_t NumCarComponents { get; set; }
-	[Length(0, 8)] public ObjectModelHeaderViewModel[] CompatibleVehicles { get; set; }
-	[Length(0, 4)] public ObjectModelHeaderViewModel[] RequiredTrackExtras { get; set; }
-	[Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")] public uint8_t ShipWakeOffset { get; set; }
-	[Category("Cost"), Range(0, 32)] public uint8_t CostIndex { get; set; }
-	[Category("Cost"), Range(1, int16_t.MaxValue)] public int16_t CostFactor { get; set; }
-	[Category("Cost"), Range(0, 32)] public uint8_t RunCostIndex { get; set; }
-	[Category("Cost"), Range(0, int16_t.MaxValue)] public int16_t RunCostFactor { get; set; }
-	[Category("Sprites")] public CompanyColourType SpecialColourSchemeIndex { get; set; } // called "ColourType" in the loco codebase
-	[Category("Sprites"), Editable(false)] public VehicleObjectCar[] CarComponents { get; set; }
-	[Category("Sprites"), Editable(false)] public BodySprite[] BodySprites { get; set; }
-	[Category("Sprites"), Editable(false)] public BogieSprite[] BogieSprites { get; set; }
-	[Category("Sprites"), Editable(false)] public SimpleAnimation[] Animation { get; set; }
-	[Category("Sprites")] public ObjectModelHeaderViewModel[] AnimationHeaders { get; set; }
-	//[Category("Cargo")] public ObservableCollection<uint8_t> MaxCargo { get; set; }
-	//[Category("Cargo")] public ObservableCollection<CargoCategory> CompatibleCargoCategories1 { get; set; }
-	//[Category("Cargo")] public ObservableCollection<CargoCategory> CompatibleCargoCategories2 { get; set; }
-	[Category("Cargo")] public CompatibleCargo CompatibleCargo1 { get; set; }
-	[Category("Cargo")] public CompatibleCargo CompatibleCargo2 { get; set; }
-	[Category("Cargo"), Length(0, 32)] public List<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; set; } // this is a dictionary type
-	[Category("Sound")] public ObjectModelHeaderViewModel? Sound { get; set; }
-	[Category("Sound")] public DrivingSoundType SoundType { get; set; }
-	// SoundPropertiesData
-	// these next 3 properties are a union in the dat file
-	[Category("Sound")] public FrictionSound? FrictionSound { get; set; }
-	[Category("Sound")] public SimpleMotorSound? SimpleMotorSound { get; set; }
-	[Category("Sound")] public GearboxMotorSound? GearboxMotorSound { get; set; }
-	[Category("Sound")] public ObjectModelHeaderViewModel[] StartSounds { get; set; }
-	[Category("<unknown>")] public uint8_t[] var_135 { get; set; } = [];
-
-	public VehicleViewModel(VehicleObject model)
-		: base(model)
+	[Category("Stats")]
+	public TransportMode Mode
 	{
-		Mode = model.Mode;
-		Type = model.Type;
-		NumCarComponents = model.NumCarComponents;
-		TrackType = model.TrackType == null ? null : new(model.TrackType);
-		CostIndex = model.CostIndex;
-		CostFactor = model.CostFactor;
-		Reliability = model.Reliability;
-		RunCostIndex = model.RunCostIndex;
-		RunCostFactor = model.RunCostFactor;
-		SpecialColourSchemeIndex = model.SpecialColourSchemeIndex;
-		CompatibleVehicles = Array.ConvertAll(model.CompatibleVehicles, x => new ObjectModelHeaderViewModel(x));
-		RequiredTrackExtras = Array.ConvertAll(model.RequiredTrackExtras, x => new ObjectModelHeaderViewModel(x));
-		CarComponents = [.. model.CarComponents];
-		BodySprites = [.. model.BodySprites];
-		BogieSprites = [.. model.BogieSprites];
-		Power = model.Power;
-		Speed = model.Speed;
-		RackSpeed = model.RackSpeed;
-		Weight = model.Weight;
-		Flags = model.Flags;
-		CompatibleCargo1 = new(model.MaxCargo[0], [.. model.CompatibleCargoCategories[0]]);
-		CompatibleCargo2 = new(model.MaxCargo[1], [.. model.CompatibleCargoCategories[1]]);
-		CargoTypeSpriteOffsets = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
-		Animation = [.. model.Animation];
-		AnimationHeaders = [.. model.AnimationHeaders.ConvertAll(x => new ObjectModelHeaderViewModel(x))];
-		ShipWakeOffset = model.ShipWakeOffset;
-		DesignedYear = model.DesignedYear;
-		ObsoleteYear = model.ObsoleteYear;
-		RackRail = model.RackRail == null ? null : new(model.RackRail);
-		Sound = model.Sound == null ? null : new(model.Sound);
-		StartSounds = Array.ConvertAll(model.StartSounds, x => new ObjectModelHeaderViewModel(x));
-		SoundType = model.DrivingSoundType;
-		FrictionSound = model.FrictionSound;
-		SimpleMotorSound = model.SimpleMotorSound;
-		GearboxMotorSound = model.GearboxMotorSound;
-		var_135 = [.. model.var_135];
+		get => model.Mode;
+		set => model.Mode = value;
 	}
 
-	public VehicleObject CopyBackToModel()
+	[Category("Stats")]
+	public VehicleType Type
 	{
-		var vo = new VehicleObject()
-		{
-			Mode = Mode,
-			Type = Type,
-			NumCarComponents = NumCarComponents,
-			CarComponents = [.. CarComponents],
-			BodySprites = [.. BodySprites],
-			BogieSprites = [.. BogieSprites],
-			//TrackType = TrackType?.CopyBackToModel(),
-			CostIndex = CostIndex,
-			CostFactor = CostFactor,
-			Reliability = Reliability,
-			RunCostIndex = RunCostIndex,
-			RunCostFactor = RunCostFactor,
-			SpecialColourSchemeIndex = SpecialColourSchemeIndex,
-			Power = Power,
-			Speed = Speed,
-			RackSpeed = RackSpeed,
-			Weight = Weight,
-			Flags = Flags,
-			ShipWakeOffset = ShipWakeOffset,
-			DesignedYear = DesignedYear,
-			ObsoleteYear = ObsoleteYear,
-			//RackRail = RackRail?.CopyBackToModel(),
-			//Sound = Sound?.CopyBackToModel(),
-			//StartSounds = Array.ConvertAll(StartSounds, x => x.CopyBackToModel()),
-			//CompatibleVehicles = Array.ConvertAll(CompatibleVehicles, x => x.CopyBackToModel()),
-			//RequiredTrackExtras = Array.ConvertAll(RequiredTrackExtras, x => x.CopyBackToModel()),
-			//AnimationHeaders = AnimationHeaders.ToList().ConvertAll(x => x.CopyBackToModel()),
-			Animation = [.. Animation],
-			DrivingSoundType = SoundType,
-			FrictionSound = FrictionSound,
-			SimpleMotorSound = SimpleMotorSound,
-			GearboxMotorSound = GearboxMotorSound,
-			MaxCargo = [CompatibleCargo1.MaxCargo, CompatibleCargo2.MaxCargo],
-			CompatibleCargoCategories = [
-				[.. CompatibleCargo1.CompatibleCargoCategories.ToArray()],
-				[.. CompatibleCargo2.CompatibleCargoCategories.ToArray()]
-			],
-			var_135 = [.. var_135], // purpose unknown
-		};
+		get => model.Type;
+		set => model.Type = value;
+	}
 
-		vo.NumSimultaneousCargoTypes += (byte)(CompatibleCargo1.CompatibleCargoCategories.Count > 0 ? 1 : 0);
-		vo.NumSimultaneousCargoTypes += (byte)(CompatibleCargo2.CompatibleCargoCategories.Count > 0 ? 1 : 0);
+	[Category("Stats")]
+	public uint16_t Weight
+	{
+		get => model.Weight;
+		set => model.Weight = value;
+	}
+
+	[Category("Stats")]
+	public uint16_t Power
+	{
+		get => model.Power;
+		set => model.Power = value;
+	}
+
+	[Category("Stats")]
+	public Speed16 Speed
+	{
+		get => model.Speed;
+		set => model.Speed = value;
+	}
+
+	[Category("Stats"), Description("Also used for Aircraft as their broken-down speed, landing speed, and approaching speed")]
+	public Speed16 RackSpeed
+	{
+		get => model.RackSpeed;
+		set => model.RackSpeed = value;
+	}
+
+	[Category("Stats")]
+	public uint16_t DesignedYear
+	{
+		get => model.DesignedYear;
+		set => model.DesignedYear = value;
+	}
+
+	[Category("Stats")]
+	public uint16_t ObsoleteYear
+	{
+		get => model.ObsoleteYear;
+		set => model.ObsoleteYear = value;
+	}
+
+	[Category("Stats")]
+	public uint8_t Reliability
+	{
+		get => model.Reliability;
+		set => model.Reliability = value;
+	}
+
+	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None)]
+	public VehicleObjectFlags Flags
+	{
+		get => model.Flags;
+		set => model.Flags = value;
+	}
+
+	public ObjectModelHeader? TrackType
+	{
+		get => model.TrackType;
+		set => model.TrackType = value;
+	}
+
+	public ObjectModelHeader? RackRail
+	{
+		get => model.RackRail;
+		set => model.RackRail = value;
+	}
+
+	[Range(0, 4)]
+	public uint8_t NumCarComponents
+	{
+		get => model.NumCarComponents;
+		set => model.NumCarComponents = value;
+	}
+
+	[Length(0, 8)]
+	public BindingList<ObjectModelHeader> CompatibleVehicles { get; init; } = new(model.CompatibleVehicles);
+
+	[Length(0, 4)]
+	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; init; } = new(model.RequiredTrackExtras);
+
+	[Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")]
+	public uint8_t ShipWakeOffset
+	{
+		get => model.ShipWakeOffset;
+		set => model.ShipWakeOffset = value;
+	}
+
+	[Category("Cost"), Range(0, 32)]
+	public uint8_t CostIndex
+	{
+		get => model.CostIndex;
+		set => model.CostIndex = value;
+	}
+
+	[Category("Cost"), Range(1, int16_t.MaxValue)]
+	public int16_t CostFactor
+	{
+		get => model.CostFactor;
+		set => model.CostFactor = value;
+	}
+
+	[Category("Cost"), Range(0, 32)]
+	public uint8_t RunCostIndex
+	{
+		get => model.RunCostIndex;
+		set => model.RunCostIndex = value;
+	}
+
+	[Category("Cost"), Range(0, int16_t.MaxValue)]
+	public int16_t RunCostFactor
+	{
+		get => model.RunCostFactor;
+		set => model.RunCostFactor = value;
+	}
+
+	[Category("Sprites")]
+	public CompanyColourType SpecialColourSchemeIndex
+	{
+		get => model.SpecialColourSchemeIndex;
+		set => model.SpecialColourSchemeIndex = value;
+	} // called "ColourType" in the loco codebase
+
+	[Category("Sprites"), Editable(false)] public BindingList<VehicleObjectCar> CarComponents { get; init; } = new(model.CarComponents);
+	[Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; init; } = new(model.BodySprites);
+	[Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; init; } = new(model.BogieSprites);
+	[Category("Sprites"), Editable(false)] public BindingList<SimpleAnimation> Animation { get; init; } = new(model.Animation);
+	[Category("Sprites")] public BindingList<ObjectModelHeader> AnimationHeaders { get; init; } = new(model.AnimationHeaders);
+
+	[Category("Cargo")]
+	public CompatibleCargo CompatibleCargo1 { get; init; } = new(model.MaxCargo[0], new(model.CompatibleCargoCategories[0]));
+
+	[Category("Cargo")]
+	public CompatibleCargo CompatibleCargo2 { get; init; } = new(model.MaxCargo[1], new(model.CompatibleCargoCategories[1]));
+
+	[Category("Cargo"), Length(0, 32), Description("This is a dictionary. For every cargo defined in both CompatibleCargoCategories, an entry must exist in this dictionary.")]
+	public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; init; } = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
+
+	[Category("Sound")]
+	public ObjectModelHeader? Sound
+	{
+		get => model.Sound;
+		set => model.Sound = value;
+	}
+
+	[Category("Sound")]
+	public DrivingSoundType DrivingSoundType
+	{
+		get => model.DrivingSoundType;
+		set => model.DrivingSoundType = value;
+	}
+
+	[Category("Sound")]
+	public FrictionSound? FrictionSound
+	{
+		get => model.FrictionSound;
+		set => model.FrictionSound = value;
+	}
+
+	[Category("Sound")]
+	public SimpleMotorSound? SimpleMotorSound
+	{
+		get => model.SimpleMotorSound;
+		set => model.SimpleMotorSound = value;
+	}
+
+	[Category("Sound")]
+	public GearboxMotorSound? GearboxMotorSound
+	{
+		get => model.GearboxMotorSound;
+		set => model.GearboxMotorSound = value;
+	}
+
+	[Category("Sound")]
+	public BindingList<ObjectModelHeader> StartSounds { get; init; } = new(model.StartSounds);
+
+	[Category("<unknown>")]
+	public BindingList<uint8_t> var_135 { get; init; } = new(model.var_135);
+
+	public override void CopyBackToModel()
+	{
+		Model.MaxCargo = [CompatibleCargo1.MaxCargo, CompatibleCargo2.MaxCargo];
+		Model.CompatibleCargoCategories =
+		[
+			[.. CompatibleCargo1.CompatibleCargoCategories.ToArray()],
+			[.. CompatibleCargo2.CompatibleCargoCategories.ToArray()]
+		];
+
+		Model.NumSimultaneousCargoTypes += (byte)(CompatibleCargo1.CompatibleCargoCategories.Count > 0 ? 1 : 0);
+		Model.NumSimultaneousCargoTypes += (byte)(CompatibleCargo2.CompatibleCargoCategories.Count > 0 ? 1 : 0);
 
 		foreach (var ctso in CargoTypeSpriteOffsets)
 		{
-			vo.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
+			Model.CargoTypeSpriteOffsets[ctso.CargoCategory] = ctso.Offset;
 		}
-
-		return vo;
 	}
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public record CargoTypeSpriteOffset(CargoCategory CargoCategory, uint8_t Offset)
+public class CargoTypeSpriteOffset(CargoCategory CargoCategory, uint8_t Offset)
 {
 	public CargoTypeSpriteOffset() : this(CargoCategory.NULL, 0)
 	{ }
+
+	public CargoCategory CargoCategory { get; set; } = CargoCategory;
+	public byte Offset { get; set; } = Offset;
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public record CompatibleCargo(uint8_t MaxCargo, List<CargoCategory> CompatibleCargoCategories);
+public class CompatibleCargo(uint8_t MaxCargo, BindingList<CargoCategory> CompatibleCargoCategories)
+{
+	public byte MaxCargo { get; set; } = MaxCargo;
+	public BindingList<CargoCategory> CompatibleCargoCategories { get; init; } = CompatibleCargoCategories;
+}

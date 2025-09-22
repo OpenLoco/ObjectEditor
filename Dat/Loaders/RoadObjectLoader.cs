@@ -79,7 +79,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 
 	private static void LoadVariable(LocoBinaryReader br, RoadObject model, byte numBridges, byte numStations, byte numRoadMods, byte numCompatibleTracksAndRoads)
 	{
-		model.CompatibleTracksAndRoads = br.ReadS5HeaderList(numCompatibleTracksAndRoads);
+		model.TracksAndRoads = br.ReadS5HeaderList(numCompatibleTracksAndRoads);
 		model.RoadMods = br.ReadS5HeaderList(numRoadMods);
 		model.Tunnel = br.ReadS5Header();
 		model.Bridges = br.ReadS5HeaderList(numBridges);
@@ -110,7 +110,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			bw.Write(model.PaintStyle);
 			bw.Write((uint8_t)model.RoadMods.Count);
 			bw.WriteEmptyObjectId(Constants.MaxMods);
-			bw.Write((uint8_t)model.CompatibleTracksAndRoads.Count);
+			bw.Write((uint8_t)model.TracksAndRoads.Count);
 			bw.Write(model.DisplayOffset);
 			bw.Write((uint16_t)0); // _CompatibleRoads, not part of object definition
 			bw.Write((uint16_t)0); // _CompatibleTracks, not part of object definition
@@ -124,7 +124,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
-			bw.WriteS5HeaderList(model.CompatibleTracksAndRoads);
+			bw.WriteS5HeaderList(model.TracksAndRoads);
 			bw.WriteS5HeaderList(model.RoadMods);
 			bw.WriteS5Header(model.Tunnel);
 			bw.WriteS5HeaderList(model.Bridges);

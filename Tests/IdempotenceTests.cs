@@ -1,6 +1,7 @@
 using Dat.Converters;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Gui.ViewModels;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using SixLabors.ImageSharp;
@@ -89,17 +90,17 @@ public class IdempotenceTests
 		}
 	}
 
-	//[TestCaseSource(nameof(VanillaFiles))]
-	//public void LoadSaveLoadViewModels(string filename)
-	//{
-	//	var logger = new Logger();
-	//	var obj1 = SawyerStreamReader.LoadFullObject(filename, logger)!.LocoObject!.Object;
+	[TestCaseSource(nameof(VanillaFiles))]
+	public void LoadSaveLoadViewModels(string filename)
+	{
+		var logger = new Logger();
+		var obj1 = SawyerStreamReader.LoadFullObject(filename, logger)!.LocoObject!.Object;
 
-	//	var vm = ObjectEditorViewModel.GetViewModelFromStruct(obj1);
-	//	var obj2 = vm.Model;
+		var vm = ObjectEditorViewModel.GetViewModelFromStruct(obj1);
+		var obj2 = vm.GetILocoStruct();
 
-	//	var expected = JsonSerializer.Serialize((object)obj1);
-	//	var actual = JsonSerializer.Serialize((object)obj2);
-	//	Assert.That(actual, Is.EqualTo(expected));
-	//}
+		var expected = JsonSerializer.Serialize((object)obj1);
+		var actual = JsonSerializer.Serialize((object)obj2);
+		Assert.That(actual, Is.EqualTo(expected));
+	}
 }

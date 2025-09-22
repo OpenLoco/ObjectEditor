@@ -738,11 +738,11 @@ public class LoadSaveTests
 			Assert.That(struc.Bridges[4].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[4].ObjectType, Is.EqualTo(ObjectType.Bridge), nameof(struc.Bridges));
 
-			Assert.That(struc.CompatibleTracksAndRoads, Has.Count.EqualTo(1), nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.CompatibleTracksAndRoads[0].Name, Is.EqualTo("ROADTRAM"), nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.CompatibleTracksAndRoads[0].DatChecksum, Is.Zero, nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.CompatibleTracksAndRoads[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CompatibleTracksAndRoads));
-			Assert.That(struc.CompatibleTracksAndRoads[0].ObjectType, Is.EqualTo(ObjectType.Road), nameof(struc.CompatibleTracksAndRoads));
+			Assert.That(struc.TracksAndRoads, Has.Count.EqualTo(1), nameof(struc.TracksAndRoads));
+			Assert.That(struc.TracksAndRoads[0].Name, Is.EqualTo("ROADTRAM"), nameof(struc.TracksAndRoads));
+			Assert.That(struc.TracksAndRoads[0].DatChecksum, Is.Zero, nameof(struc.TracksAndRoads));
+			Assert.That(struc.TracksAndRoads[0].ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.TracksAndRoads));
+			Assert.That(struc.TracksAndRoads[0].ObjectType, Is.EqualTo(ObjectType.Road), nameof(struc.TracksAndRoads));
 
 			Assert.That(struc.RoadMods, Is.Empty, nameof(struc.RoadMods));
 
@@ -964,7 +964,7 @@ public class LoadSaveTests
 			Assert.That(struc.Flags, Is.EqualTo(TrackObjectFlags.unk_00), nameof(struc.Flags));
 			// Mods
 			Assert.That(struc.Bridges, Has.Count.EqualTo(5), nameof(struc.Bridges));
-			Assert.That(struc.CompatibleTracksAndRoads, Has.Count.EqualTo(7), nameof(struc.CompatibleTracksAndRoads));
+			Assert.That(struc.TracksAndRoads, Has.Count.EqualTo(7), nameof(struc.TracksAndRoads));
 			Assert.That(struc.TrackMods, Has.Count.EqualTo(2), nameof(struc.TrackMods));
 			Assert.That(struc.Signals, Has.Count.EqualTo(10), nameof(struc.Signals));
 			Assert.That(struc.Stations, Has.Count.EqualTo(5), nameof(struc.Stations));

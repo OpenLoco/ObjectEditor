@@ -62,7 +62,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
-			model.CompatibleTracksAndRoads = br.ReadS5HeaderList(numCompatibleTracksAndRoads);
+			model.TracksAndRoads = br.ReadS5HeaderList(numCompatibleTracksAndRoads);
 			model.TrackMods = br.ReadS5HeaderList(numTrackMods);
 			model.Signals = br.ReadS5HeaderList(numSignals);
 			model.Tunnel = br.ReadS5Header();
@@ -90,7 +90,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			bw.Write((uint16_t)model.TrackPieces.Convert());
 			bw.Write((uint16_t)model.StationTrackPieces.Convert());
 			bw.Write(model.var_06);
-			bw.Write((uint8_t)model.CompatibleTracksAndRoads.Count);
+			bw.Write((uint8_t)model.TracksAndRoads.Count);
 			bw.Write((uint8_t)model.TrackMods.Count);
 			bw.Write((uint8_t)model.Signals.Count);
 			bw.WriteEmptyObjectId(Constants.MaxMods); // Mods, not part of object definition
@@ -119,7 +119,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
-			bw.WriteS5HeaderList(model.CompatibleTracksAndRoads);
+			bw.WriteS5HeaderList(model.TracksAndRoads);
 			bw.WriteS5HeaderList(model.TrackMods);
 			bw.WriteS5HeaderList(model.Signals);
 			bw.WriteS5Header(model.Tunnel);

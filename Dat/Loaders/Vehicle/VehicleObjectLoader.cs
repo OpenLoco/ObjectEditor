@@ -324,11 +324,11 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			var compatibleCargoCategories = model.CompatibleCargoCategories.Fill(Constants.MaxCompatibleCargoCategories, []).ToArray();
 			foreach (var cc in compatibleCargoCategories[i])
 			{
-				bw.Write(BitConverter.GetBytes((uint16_t)cc));
+				bw.Write((uint16_t)cc);
 				bw.Write(model.CargoTypeSpriteOffsets[cc]);
 			}
 
-			bw.Write(BitConverter.GetBytes((uint16_t)CargoCategory.NULL));
+			bw.Write((uint16_t)CargoCategory.NULL);
 		}
 
 		// animation

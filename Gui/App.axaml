@@ -51,6 +51,11 @@
 		<DataTemplate DataType="vm:G1ViewModel">
 			<ContentControl Content="{Binding ImageTableViewModel}" />
 		</DataTemplate>
+		<DataTemplate DataType="vm:IObjectViewModel">
+			<ScrollViewer>
+				<pgc:PropertyGrid Background="{DynamicResource ExpanderContentBackground}" IsCategoryVisible="True" DataContext="{Binding}" />
+			</ScrollViewer>
+		</DataTemplate>
 	</Application.DataTemplates>
 
 	<Application.Styles>

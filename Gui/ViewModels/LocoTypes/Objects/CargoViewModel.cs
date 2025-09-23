@@ -77,9 +77,9 @@ public class CargoViewModel(CargoObject model)
 		set => Model.UnitSize = value;
 	}
 
-	public uint16_t var_02
+	public uint16_t UnitWeight
 	{
-		get => Model.var_02;
-		set => Model.var_02 = value;
+		get => Model.UnitWeight;
+		set => Model.UnitWeight = value;
 	}
 }

@@ -231,7 +231,7 @@ public class LoadSaveTests
 	{
 		void assertFunc(LocoObject obj, CargoObject struc) => Assert.Multiple(() =>
 		{
-			Assert.That(struc.var_02, Is.EqualTo(256), nameof(struc.var_02));
+			Assert.That(struc.UnitWeight, Is.EqualTo(256), nameof(struc.UnitWeight));
 			Assert.That(struc.CargoTransferTime, Is.EqualTo(64), nameof(struc.CargoTransferTime));
 			//Assert.That(struc.UnitInlineSprite, Is.Zero, nameof(struc.UnitInlineSprite));
 			Assert.That(struc.CargoCategory, Is.EqualTo(CargoCategory.Liquids), nameof(struc.CargoCategory));

@@ -21,7 +21,7 @@ public abstract class CargoObjectLoader : IDatObjectLoader
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
-			model.var_02 = br.ReadUInt16(); // var_02, not used in Locomotion
+			model.UnitWeight = br.ReadUInt16(); // var_02, not used in Locomotion
 			model.CargoTransferTime = br.ReadUInt16();
 			br.SkipStringId(); // UnitsAndCargoName, not part of object definition
 			br.SkipStringId(); // UnitNameSingular, not part of object definition
@@ -66,7 +66,7 @@ public abstract class CargoObjectLoader : IDatObjectLoader
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
-			bw.Write(model.var_02);
+			bw.Write(model.UnitWeight);
 			bw.Write(model.CargoTransferTime);
 			bw.WriteEmptyStringId(); // UnitsAndCargoName, not part of object definition
 			bw.WriteEmptyStringId(); // UnitNameSingular, not part of object definition

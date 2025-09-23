@@ -31,26 +31,26 @@ public class AirportObject : ILocoStruct, IHasBuildingComponents
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		//var bcValidationContext = new ValidationContext(BuildingComponents);
-		//foreach (var result in BuildingComponents.Validate(bcValidationContext))
-		//{
-		//	yield return result;
-		//}
+		var bcValidationContext = new ValidationContext(BuildingComponents);
+		foreach (var result in BuildingComponents.Validate(bcValidationContext))
+		{
+			yield return result;
+		}
 
-		//if (CostIndex >= Constants.CurrencyMultiplicationFactorArraySize)
-		//{
-		//	yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
-		//}
+		if (CostIndex >= Constants.CurrencyMultiplicationFactorArraySize)
+		{
+			yield return new ValidationResult($"{nameof(CostIndex)} must be less than {Constants.CurrencyMultiplicationFactorArraySize}", [nameof(CostIndex)]);
+		}
 
-		//if (SellCostFactor >= 0)
-		//{
-		//	yield return new ValidationResult($"{nameof(SellCostFactor)} must be less than 0 {nameof(SellCostFactor)}", [nameof(SellCostFactor)]);
-		//}
+		if (SellCostFactor >= 0)
+		{
+			yield return new ValidationResult($"{nameof(SellCostFactor)} must be less than 0 {nameof(SellCostFactor)}", [nameof(SellCostFactor)]);
+		}
 
-		//if (BuildCostFactor <= 0)
-		//{
-		//	yield return new ValidationResult($"{nameof(BuildCostFactor)} must be greater than 0", [nameof(BuildCostFactor)]);
-		//}
+		if (BuildCostFactor <= 0)
+		{
+			yield return new ValidationResult($"{nameof(BuildCostFactor)} must be greater than 0", [nameof(BuildCostFactor)]);
+		}
 
 		if (-SellCostFactor > BuildCostFactor)
 		{

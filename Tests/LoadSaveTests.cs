@@ -853,7 +853,7 @@ public class LoadSaveTests
 	{
 		void assertFunc(LocoObject obj, SteamObject struc) => Assert.Multiple(() =>
 		{
-			Assert.That(struc.Flags, Is.EqualTo(SteamObjectFlags.ApplyWind | SteamObjectFlags.DisperseOnCollision | SteamObjectFlags.unk_02), nameof(struc.Flags));
+			Assert.That(struc.Flags, Is.EqualTo(SteamObjectFlags.ApplyWind | SteamObjectFlags.DisperseOnCollision | SteamObjectFlags.HasTunnelSounds), nameof(struc.Flags));
 			// FrameInfoType0 contents
 			// FrameInfoType1 contents
 			//Assert.That(struc.NumImages, Is.EqualTo(57), nameof(struc.NumImages));

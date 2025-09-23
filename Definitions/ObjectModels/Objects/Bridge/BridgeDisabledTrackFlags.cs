@@ -16,4 +16,5 @@ public enum BridgeDisabledTrackFlags : uint16_t
 	OneSided = 1 << 9,
 	StartsAtHalfHeight = 1 << 10, // Not used. From RCT2
 	Junction = 1 << 11,
+	Unk = 1 << 12,
 }

@@ -10,7 +10,7 @@ public enum RoadTraitFlags : uint16_t
 	SteepSlope = 1 << 3,
 	unk_04 = 1 << 4, // intersection?
 	Turnaround = 1 << 5,
-	unk_06 = 1 << 6, // overtake?
+	Junction = 1 << 6,
 	unk_07 = 1 << 7,
 	unk_08 = 1 << 8, // streetlight?
 }

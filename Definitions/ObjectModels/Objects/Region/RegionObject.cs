@@ -10,6 +10,7 @@ public class RegionObject : ILocoStruct
 	public List<ObjectModelHeader> CargoInfluenceObjects { get; set; } = [];
 	public List<ObjectModelHeader> DependentObjects { get; set; } = [];
 	public List<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; set; } = [];
+	public uint8_t pad_11 { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 		=> [];

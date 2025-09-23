@@ -674,7 +674,7 @@ public class LoadSaveTests
 			Assert.That(struc.BuildCostFactor, Is.EqualTo(4), nameof(struc.BuildCostFactor));
 			Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 			Assert.That(struc.PaintStyle, Is.EqualTo(1), nameof(struc.PaintStyle));
-			Assert.That(struc.RoadPieces, Is.EqualTo(RoadTraitFlags.SmallCurve | RoadTraitFlags.VerySmallCurve | RoadTraitFlags.Slope | RoadTraitFlags.SteepSlope | RoadTraitFlags.unk_04 | RoadTraitFlags.Turnaround | RoadTraitFlags.unk_06), nameof(struc.RoadPieces));
+			Assert.That(struc.RoadPieces, Is.EqualTo(RoadTraitFlags.SmallCurve | RoadTraitFlags.VerySmallCurve | RoadTraitFlags.Slope | RoadTraitFlags.SteepSlope | RoadTraitFlags.unk_04 | RoadTraitFlags.Turnaround | RoadTraitFlags.Junction), nameof(struc.RoadPieces));
 			Assert.That(struc.SellCostFactor, Is.EqualTo(-3), nameof(struc.SellCostFactor));
 			//Assert.That(struc.BaseImageOffset, Is.Zero, nameof(struc.BaseImageOffset));
 
@@ -711,7 +711,7 @@ public class LoadSaveTests
 				| RoadTraitFlags.Slope
 				| RoadTraitFlags.SteepSlope
 				| RoadTraitFlags.unk_04
-				| RoadTraitFlags.unk_06), nameof(struc.RoadPieces));
+				| RoadTraitFlags.Junction), nameof(struc.RoadPieces));
 
 			Assert.That(struc.Bridges, Has.Count.EqualTo(5), nameof(struc.Bridges));
 			Assert.That(struc.Bridges[0].Name, Is.EqualTo("BRDGBRCK"), nameof(struc.Bridges));

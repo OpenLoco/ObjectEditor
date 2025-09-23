@@ -9,7 +9,7 @@ public class InterfaceSkinObject : ILocoStruct
 	public Colour MapTooltipCargoColour { get; set; }
 	public Colour TooltipColour { get; set; }
 	public Colour ErrorColour { get; set; }
-	public Colour WindowPlayerColor { get; set; }
+	public Colour WindowPlayerColour { get; set; }
 	public Colour WindowTitlebarColour { get; set; }
 	public Colour WindowColour { get; set; }
 	public Colour WindowConstructionColour { get; set; }

@@ -7,6 +7,10 @@ namespace Definitions.ObjectModels.Objects.Industry;
 public class IndustryObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint32_t FarmImagesPerGrowthStage { get; set; }
+	public BuildingComponentsModel BuildingComponents { get; set; } = new();
+	[Length(4, 4)]
+	public List<List<uint8_t>> AnimationSequences { get; set; } = []; // Access with getAnimationSequence helper method
+	public List<IndustryObjectUnk38> var_38 { get; set; } = []; // Access with getUnk38 helper method
 	public uint8_t MinNumBuildings { get; set; }
 	public uint8_t MaxNumBuildings { get; set; }
 	public uint32_t Colours { get; set; }  // bitset
@@ -19,27 +23,29 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t ScaffoldingSegmentType { get; set; }
 	public Colour ScaffoldingColour { get; set; }
+
+	[Length(2, 2)]
 	public List<IndustryObjectProductionRateRange> InitialProductionRate { get; set; } = []; // 2 entries, min and max production rate
+
+	[Length(2, 2)]
+	public List<ObjectModelHeader> ProducedCargo { get; set; } = []; // Cargo produced by this industry
+
+	[Length(3, 3)]
+	public List<ObjectModelHeader> RequiredCargo { get; set; } = []; // Cargo required by this industry
+
 	public Colour MapColour { get; set; }
 	public IndustryObjectFlags Flags { get; set; }
 	public uint8_t var_E8 { get; set; } // Unused, but must be 0 or 1
 	public uint8_t FarmTileNumImageAngles { get; set; } // How many viewing angles the farm tiles have
 	public uint8_t FarmGrowthStageWithNoProduction { get; set; } // At this stage of growth (except 0) { get; set; } a field tile produces nothing
-	public uint8_t FarmIdealSize { get; set; } // Max production is reached at farmIdealSize * 25 tiles
+	public uint8_t FarmNumFields { get; set; } // Max production is reached at farmIdealSize * 25 tiles
 	public uint8_t FarmNumStagesOfGrowth { get; set; } // How many growth stages there are sprites for
-	public uint8_t MonthlyClosureChance { get; set; }
-
-	public List<ObjectModelHeader> ProducedCargo { get; set; } = []; // Cargo produced by this industry
-	public List<ObjectModelHeader> RequiredCargo { get; set; } = []; // Cargo required by this industry
 	public List<ObjectModelHeader> WallTypes { get; set; } = []; // Wall types that can be built around this industry
+
 	public ObjectModelHeader? BuildingWall { get; set; } // Wall types that can be built around this industry
 	public ObjectModelHeader? BuildingWallEntrance { get; set; } // Wall types that can be built around this industry
-
-	public BuildingComponentsModel BuildingComponents { get; set; } = new();
-
-	public List<List<uint8_t>> AnimationSequences { get; set; } = []; // Access with getAnimationSequence helper method
-	public List<uint8_t> UnkBuildingData { get; set; } = [];
-	public List<IndustryObjectUnk38> var_38 { get; set; } = []; // Access with getUnk38 helper method
+	public uint8_t MonthlyClosureChance { get; set; }
+	public List<uint8_t> Buildings { get; set; } = [];
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

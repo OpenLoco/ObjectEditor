@@ -53,10 +53,10 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
-			model.CliffEdgeHeader = br.ReadS5Header();
-			if (model.Flags.HasFlag(LandObjectFlags.HasUnkObjectHeader))
+			model.CliffEdgeHeader1 = br.ReadS5Header();
+			if (model.Flags.HasFlag(LandObjectFlags.HasExtraCliffEdge))
 			{
-				model.UnkObjectHeader = br.ReadS5Header();
+				model.CliffEdgeHeader2 = br.ReadS5Header();
 			}
 
 			// image table
@@ -100,11 +100,11 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
-			bw.WriteS5Header(model.CliffEdgeHeader);
-			if (model.Flags.HasFlag(LandObjectFlags.HasUnkObjectHeader))
+			bw.WriteS5Header(model.CliffEdgeHeader1);
+			if (model.Flags.HasFlag(LandObjectFlags.HasExtraCliffEdge))
 			{
-				ArgumentNullException.ThrowIfNull(model.UnkObjectHeader); // cannot have flag set but no unk header
-				bw.WriteS5Header(model.UnkObjectHeader);
+				ArgumentNullException.ThrowIfNull(model.CliffEdgeHeader2); // cannot have flag set but no extra header
+				bw.WriteS5Header(model.CliffEdgeHeader2);
 			}
 
 			// image table

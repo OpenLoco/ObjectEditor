@@ -107,8 +107,8 @@ public class IndustryViewModel(IndustryObject model)
 	[Category("Farm")]
 	public uint8_t FarmIdealSize
 	{
-		get => Model.FarmIdealSize;
-		set => Model.FarmIdealSize = value;
+		get => Model.FarmNumFields;
+		set => Model.FarmNumFields = value;
 	}
 
 	[Category("Farm")]
@@ -145,7 +145,7 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("Building")]
-	public BindingList<uint8_t> UnkBuildingData { get; init; } = model.UnkBuildingData.ToBindingList();
+	public BindingList<uint8_t> UnkBuildingData { get; init; } = model.Buildings.ToBindingList();
 
 	[Category("Building")]
 	public uint32_t BuildingSizeFlags

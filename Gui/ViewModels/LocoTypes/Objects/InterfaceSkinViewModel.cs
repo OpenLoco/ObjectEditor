@@ -31,8 +31,8 @@ public class InterfaceSkinViewModel(InterfaceSkinObject model) : LocoObjectViewM
 
 	public Colour WindowPlayerColour
 	{
-		get => Model.WindowPlayerColor;
-		set => Model.WindowPlayerColor = value;
+		get => Model.WindowPlayerColour;
+		set => Model.WindowPlayerColour = value;
 	}
 
 	public Colour WindowTitlebarColour

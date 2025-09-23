@@ -83,7 +83,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			model.var_E8 = br.ReadByte(); // Unused, but must be 0 or 1
 			model.FarmTileNumImageAngles = br.ReadByte(); // How many viewing angles the farm tiles have
 			model.FarmGrowthStageWithNoProduction = br.ReadByte(); // At this stage of growth (except 0), a field tile produces nothing
-			model.FarmIdealSize = br.ReadByte(); // Max production is reached at farmIdealSize * 25 tiles
+			model.FarmNumFields = br.ReadByte(); // Max production is reached at farmIdealSize * 25 tiles
 			model.FarmNumStagesOfGrowth = br.ReadByte(); // How many growth stages there are sprites for
 			br.SkipPointer(); // WallTypes, not part of object definition
 			br.SkipObjectId(); // _BuildingWall, not part of object definition
@@ -131,7 +131,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		br.SkipTerminator();
 
 		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
-		model.UnkBuildingData = [.. br.ReadBytes(model.MaxNumBuildings)];
+		model.Buildings = [.. br.ReadBytes(model.MaxNumBuildings)];
 		model.ProducedCargo = br.ReadS5HeaderList(Constants.MaxProducedCargoType);
 		model.RequiredCargo = br.ReadS5HeaderList(Constants.MaxRequiredCargoType);
 		model.WallTypes = br.ReadS5HeaderList(Constants.MaxWallTypeCount);
@@ -190,7 +190,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 			bw.Write(model.var_E8); // Unused, but must be 0 or 1
 			bw.Write(model.FarmTileNumImageAngles); // How many viewing angles the farm tiles have
 			bw.Write(model.FarmGrowthStageWithNoProduction); // At this stage of growth (except 0), a field tile produces nothing
-			bw.Write(model.FarmIdealSize); // Max production is reached at farmIdealSize * 25 tiles
+			bw.Write(model.FarmNumFields); // Max production is reached at farmIdealSize * 25 tiles
 			bw.Write(model.FarmNumStagesOfGrowth); // How many growth stages there are sprites for
 			bw.WriteEmptyPointer(); // WallTypes, not part of object definition
 			bw.WriteEmptyObjectId(); // _BuildingWall, not part of object definition
@@ -233,7 +233,7 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 		bw.WriteTerminator();
 
 		bw.Write(model.BuildingComponents.BuildingVariations);
-		bw.Write((ReadOnlySpan<byte>)[.. model.UnkBuildingData]);
+		bw.Write((ReadOnlySpan<byte>)[.. model.Buildings]);
 		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
 		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);
 		bw.WriteS5HeaderList(model.WallTypes, Constants.MaxWallTypeCount);

@@ -474,7 +474,7 @@ public class LoadSaveTests
 			Assert.That(struc.var_E8, Is.EqualTo(1), nameof(struc.var_E8));
 			Assert.That(struc.FarmTileNumImageAngles, Is.EqualTo(1), nameof(struc.FarmTileNumImageAngles));
 			Assert.That(struc.FarmGrowthStageWithNoProduction, Is.Zero, nameof(struc.FarmGrowthStageWithNoProduction));
-			Assert.That(struc.FarmIdealSize, Is.Zero, nameof(struc.FarmIdealSize));
+			Assert.That(struc.FarmNumFields, Is.Zero, nameof(struc.FarmNumFields));
 			Assert.That(struc.FarmNumStagesOfGrowth, Is.Zero, nameof(struc.FarmNumStagesOfGrowth));
 			Assert.That(struc.MonthlyClosureChance, Is.EqualTo(1), nameof(struc.MonthlyClosureChance));
 			// Walls
@@ -558,7 +558,7 @@ public class LoadSaveTests
 			Assert.That(struc.var_E8, Is.EqualTo(1), nameof(struc.var_E8));
 			Assert.That(struc.FarmTileNumImageAngles, Is.EqualTo(1), nameof(struc.FarmTileNumImageAngles));
 			Assert.That(struc.FarmGrowthStageWithNoProduction, Is.Zero, nameof(struc.FarmGrowthStageWithNoProduction));
-			Assert.That(struc.FarmIdealSize, Is.Zero, nameof(struc.FarmIdealSize));
+			Assert.That(struc.FarmNumFields, Is.Zero, nameof(struc.FarmNumFields));
 			Assert.That(struc.FarmNumStagesOfGrowth, Is.Zero, nameof(struc.FarmNumStagesOfGrowth));
 			Assert.That(struc.MonthlyClosureChance, Is.EqualTo(1), nameof(struc.MonthlyClosureChance));
 			// Walls
@@ -581,7 +581,7 @@ public class LoadSaveTests
 			Assert.That(struc.MapTooltipCargoColour, Is.EqualTo(Colour.DarkOrange), nameof(struc.MapTooltipCargoColour));
 			Assert.That(struc.TooltipColour, Is.EqualTo(Colour.Orange), nameof(struc.TooltipColour));
 			Assert.That(struc.ErrorColour, Is.EqualTo(Colour.DarkRed), nameof(struc.ErrorColour));
-			Assert.That(struc.WindowPlayerColor, Is.EqualTo(Colour.Grey), nameof(struc.WindowPlayerColor));
+			Assert.That(struc.WindowPlayerColour, Is.EqualTo(Colour.Grey), nameof(struc.WindowPlayerColour));
 			Assert.That(struc.WindowTitlebarColour, Is.EqualTo(Colour.Black), nameof(struc.WindowTitlebarColour));
 			Assert.That(struc.WindowColour, Is.EqualTo(Colour.Grey), nameof(struc.WindowColour));
 			Assert.That(struc.WindowConstructionColour, Is.EqualTo(Colour.Brown), nameof(struc.WindowConstructionColour));
@@ -616,12 +616,12 @@ public class LoadSaveTests
 			Assert.That(struc.NumVariations, Is.EqualTo(3), nameof(struc.NumVariations));
 			Assert.That(struc.VariationLikelihood, Is.EqualTo(10), nameof(struc.VariationLikelihood));
 
-			Assert.That(struc.CliffEdgeHeader.Name, Is.EqualTo("LSBROWN"), nameof(struc.CliffEdgeHeader));
-			Assert.That(struc.CliffEdgeHeader.DatChecksum, Is.Zero, nameof(struc.CliffEdgeHeader));
-			Assert.That(struc.CliffEdgeHeader.ObjectType, Is.EqualTo(ObjectType.CliffEdge), nameof(struc.CliffEdgeHeader));
-			Assert.That(struc.CliffEdgeHeader.ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CliffEdgeHeader));
+			Assert.That(struc.CliffEdgeHeader1.Name, Is.EqualTo("LSBROWN"), nameof(struc.CliffEdgeHeader1));
+			Assert.That(struc.CliffEdgeHeader1.DatChecksum, Is.Zero, nameof(struc.CliffEdgeHeader1));
+			Assert.That(struc.CliffEdgeHeader1.ObjectType, Is.EqualTo(ObjectType.CliffEdge), nameof(struc.CliffEdgeHeader1));
+			Assert.That(struc.CliffEdgeHeader1.ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CliffEdgeHeader1));
 
-			Assert.That(struc.UnkObjectHeader, Is.Null, nameof(struc.UnkObjectHeader));
+			Assert.That(struc.CliffEdgeHeader2, Is.Null, nameof(struc.CliffEdgeHeader2));
 
 			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(417));
 		});

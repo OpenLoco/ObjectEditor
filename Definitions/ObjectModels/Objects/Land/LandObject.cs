@@ -9,14 +9,14 @@ public class LandObject : ILocoStruct
 	public uint8_t NumGrowthStages { get; set; }
 	public uint8_t NumImageAngles { get; set; }
 	public LandObjectFlags Flags { get; set; }
+	public ObjectModelHeader CliffEdgeHeader1 { get; set; }
+	public ObjectModelHeader? CliffEdgeHeader2 { get; set; }
 	public int16_t CostFactor { get; set; }
 	public uint32_t NumImagesPerGrowthStage { get; set; }
 	public uint8_t DistributionPattern { get; set; }
 	public uint8_t NumVariations { get; set; }
 	public uint8_t VariationLikelihood { get; set; }
-
-	public ObjectModelHeader CliffEdgeHeader { get; set; }
-	public ObjectModelHeader? UnkObjectHeader { get; set; }
+	public uint8_t pad_1D { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

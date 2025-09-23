@@ -65,7 +65,7 @@ public class TblObjectIndustry : DbSubObject, IConvertibleToTable<TblObjectIndus
 			Flags = obj.Flags,
 			FarmTileNumImageAngles = obj.FarmTileNumImageAngles,
 			FarmGrowthStageWithNoProduction = obj.FarmGrowthStageWithNoProduction,
-			FarmIdealSize = obj.FarmIdealSize,
+			FarmIdealSize = obj.FarmNumFields,
 			FarmNumStagesOfGrowth = obj.FarmNumStagesOfGrowth,
 			MonthlyClosureChance = obj.MonthlyClosureChance,
 			//BuildingWall = obj.BuildingWall, ?? how to do ?? needs to look up the object in DB from the dat name+checksum

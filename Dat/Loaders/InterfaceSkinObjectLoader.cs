@@ -34,7 +34,7 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 			model.MapTooltipCargoColour = (Colour)br.ReadByte();
 			model.TooltipColour = (Colour)br.ReadByte();
 			model.ErrorColour = (Colour)br.ReadByte();
-			model.WindowPlayerColor = (Colour)br.ReadByte();
+			model.WindowPlayerColour = (Colour)br.ReadByte();
 			model.WindowTitlebarColour = (Colour)br.ReadByte();
 			model.WindowColour = (Colour)br.ReadByte();
 			model.WindowConstructionColour = (Colour)br.ReadByte();
@@ -81,7 +81,7 @@ public abstract class InterfaceSkinObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.MapTooltipCargoColour);
 			bw.Write((uint8_t)model.TooltipColour);
 			bw.Write((uint8_t)model.ErrorColour);
-			bw.Write((uint8_t)model.WindowPlayerColor);
+			bw.Write((uint8_t)model.WindowPlayerColour);
 			bw.Write((uint8_t)model.WindowTitlebarColour);
 			bw.Write((uint8_t)model.WindowColour);
 			bw.Write((uint8_t)model.WindowConstructionColour);

@@ -41,7 +41,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			}
 
 			br.SkipByte(Constants.MaxCargoInfluenceObjects * StructSizes.CargoInfluenceTownFilterType); // Cargo influence town filter
-			br.SkipByte(); // pad
+			model.pad_11 = br.ReadByte();
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -81,7 +81,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 				bw.Write((uint8_t)model.CargoInfluenceTownFilter[i]); // Cargo influence town filter
 			}
 
-			bw.Write((uint8_t)0); // pad
+			bw.Write(model.pad_11); // pad
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

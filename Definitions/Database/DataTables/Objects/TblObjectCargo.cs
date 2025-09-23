@@ -11,7 +11,7 @@ public class TblObjectCargo : DbSubObject, IConvertibleToTable<TblObjectCargo, C
 	public uint8_t StationCargoDensity { get; set; }
 	public uint8_t PremiumDays { get; set; }
 	public uint8_t MaxNonPremiumDays { get; set; }
-	public uint16_t MaxPremiumRate { get; set; }
+	public uint16_t NonPremiumRate { get; set; }
 	public uint16_t PenaltyRate { get; set; }
 	public uint16_t PaymentFactor { get; set; }
 	public uint8_t PaymentIndex { get; set; }
@@ -30,7 +30,7 @@ public class TblObjectCargo : DbSubObject, IConvertibleToTable<TblObjectCargo, C
 			StationCargoDensity = obj.StationCargoDensity,
 			PremiumDays = obj.PremiumDays,
 			MaxNonPremiumDays = obj.MaxNonPremiumDays,
-			MaxPremiumRate = obj.MaxPremiumRate,
+			NonPremiumRate = obj.NonPremiumRate,
 			PenaltyRate = obj.PenaltyRate,
 			PaymentFactor = obj.PaymentFactor,
 			PaymentIndex = obj.PaymentIndex,

@@ -33,7 +33,7 @@ public abstract class CargoObjectLoader : IDatObjectLoader
 			model.StationCargoDensity = br.ReadByte();
 			model.PremiumDays = br.ReadByte();
 			model.MaxNonPremiumDays = br.ReadByte();
-			model.MaxPremiumRate = br.ReadUInt16();
+			model.NonPremiumRate = br.ReadUInt16();
 			model.PenaltyRate = br.ReadUInt16();
 			model.PaymentFactor = br.ReadUInt16();
 			model.PaymentIndex = br.ReadByte();
@@ -78,7 +78,7 @@ public abstract class CargoObjectLoader : IDatObjectLoader
 			bw.Write(model.StationCargoDensity);
 			bw.Write(model.PremiumDays);
 			bw.Write(model.MaxNonPremiumDays);
-			bw.Write(model.MaxPremiumRate);
+			bw.Write(model.NonPremiumRate);
 			bw.Write(model.PenaltyRate);
 			bw.Write(model.PaymentFactor);
 			bw.Write(model.PaymentIndex);

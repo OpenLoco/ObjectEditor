@@ -49,8 +49,8 @@ public class CargoViewModel(CargoObject model)
 
 	public uint16_t MaxPremiumRate
 	{
-		get => Model.MaxPremiumRate;
-		set => Model.MaxPremiumRate = value;
+		get => Model.NonPremiumRate;
+		set => Model.NonPremiumRate = value;
 	}
 
 	public uint16_t PenaltyRate

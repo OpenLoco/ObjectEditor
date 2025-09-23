@@ -12,7 +12,7 @@ public class DtoObjectCargo : IDtoSubObject
 	public uint8_t StationCargoDensity { get; set; }
 	public uint8_t PremiumDays { get; set; }
 	public uint8_t MaxNonPremiumDays { get; set; }
-	public uint16_t MaxPremiumRate { get; set; }
+	public uint16_t NonPremiumRate { get; set; }
 	public uint16_t PenaltyRate { get; set; }
 	public uint16_t PaymentFactor { get; set; }
 	public uint8_t PaymentIndex { get; set; }

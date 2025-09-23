@@ -240,7 +240,7 @@ public class LoadSaveTests
 			Assert.That(struc.StationCargoDensity, Is.EqualTo(4), nameof(struc.StationCargoDensity));
 			Assert.That(struc.PremiumDays, Is.EqualTo(10), nameof(struc.PremiumDays));
 			Assert.That(struc.MaxNonPremiumDays, Is.EqualTo(30), nameof(struc.MaxNonPremiumDays));
-			Assert.That(struc.MaxPremiumRate, Is.EqualTo(128), nameof(struc.MaxPremiumRate));
+			Assert.That(struc.NonPremiumRate, Is.EqualTo(128), nameof(struc.NonPremiumRate));
 			Assert.That(struc.PenaltyRate, Is.EqualTo(256), nameof(struc.PenaltyRate));
 			Assert.That(struc.PaymentFactor, Is.EqualTo(62), nameof(struc.PaymentFactor));
 			Assert.That(struc.PaymentIndex, Is.EqualTo(10), nameof(struc.PaymentIndex));

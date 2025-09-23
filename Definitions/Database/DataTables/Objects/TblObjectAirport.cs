@@ -7,7 +7,7 @@ public class TblObjectAirport : DbSubObject, IConvertibleToTable<TblObjectAirpor
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public uint16_t AllowedPlaneTypes { get; set; }
+	public AirportObjectFlags Flags { get; set; }
 	public uint32_t LargeTiles { get; set; }
 	public int8_t MinX { get; set; }
 	public int8_t MinY { get; set; }
@@ -36,7 +36,7 @@ public class TblObjectAirport : DbSubObject, IConvertibleToTable<TblObjectAirpor
 			BuildCostFactor = obj.BuildCostFactor,
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
-			AllowedPlaneTypes = obj.AllowedPlaneTypes,
+			Flags = obj.Flags,
 			LargeTiles = obj.LargeTiles,
 			MinX = obj.MinX,
 			MinY = obj.MinY,

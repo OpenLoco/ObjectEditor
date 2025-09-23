@@ -117,7 +117,7 @@ public class LoadSaveTests
 			Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 			// Assert.That(struc.Image, Is.Zero, nameof(struc.Image));
 			//Assert.That(struc.ImageOffset, Is.Zero, nameof(struc.ImageOffset));
-			Assert.That(struc.AllowedPlaneTypes, Is.EqualTo(24), nameof(struc.AllowedPlaneTypes));
+			Assert.That(struc.Flags, Is.EqualTo(AirportObjectFlags.AcceptsHeavyPlanes | AirportObjectFlags.AcceptsHelicopter), nameof(struc.Flags));
 			Assert.That(struc.BuildingComponents.BuildingHeights, Has.Count.EqualTo(94), nameof(struc.BuildingComponents.BuildingHeights));
 			Assert.That(struc.BuildingComponents.BuildingAnimations, Has.Count.EqualTo(94), nameof(struc.BuildingComponents.BuildingAnimations));
 			Assert.That(struc.BuildingComponents.BuildingVariations, Has.Count.EqualTo(23), nameof(struc.BuildingComponents.BuildingVariations));
@@ -140,10 +140,7 @@ public class LoadSaveTests
 			//Assert.That(struc.MovementNodes, Is.EqualTo(0), nameof(struc.MovementNodes));
 			//Assert.That(struc.MovementEdges, Is.EqualTo(0), nameof(struc.MovementEdges));
 
-			Assert.That(struc.var_B6[0], Is.Zero, nameof(struc.var_B6) + "[0]");
-			Assert.That(struc.var_B6[1], Is.EqualTo(19), nameof(struc.var_B6) + "[1]");
-			Assert.That(struc.var_B6[2], Is.Zero, nameof(struc.var_B6) + "[2]");
-			Assert.That(struc.var_B6[3], Is.Zero, nameof(struc.var_B6) + "[3]");
+			Assert.That(struc.var_B6, Is.EqualTo(4864), nameof(struc.var_B6));
 
 			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(377));
 		});

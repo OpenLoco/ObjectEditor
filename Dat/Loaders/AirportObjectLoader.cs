@@ -43,7 +43,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			model.var_07 = br.ReadByte();
 			br.SkipImageId(); // Image, not part of object definition
 			br.SkipImageId(); // Image offset, not part of object definition
-			model.AllowedPlaneTypes = br.ReadUInt16();
+			model.Flags = ((DatAirportObjectFlags)br.ReadUInt16()).Convert();
 			var numBuildingParts = br.ReadByte();
 			var numBuildingVariations = br.ReadByte();
 			br.SkipPointer(); // BuildingHeights
@@ -61,7 +61,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			var numMovementEdges = br.ReadByte();
 			br.SkipPointer(); // MovementNodes
 			br.SkipPointer(); // MovementEdges
-			model.var_B6 = br.ReadBytes(0xBA - 0xB6);
+			model.var_B6 = br.ReadUInt32();
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -149,7 +149,7 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 			bw.Write(model.var_07);
 			bw.WriteEmptyImageId(); // Image, not part of object definition
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
-			bw.Write(model.AllowedPlaneTypes);
+			bw.Write((uint16_t)model.Flags);
 			bw.Write((uint8_t)model.BuildingComponents.BuildingHeights.Count);
 			bw.Write((uint8_t)model.BuildingComponents.BuildingVariations.Count);
 			bw.WriteEmptyPointer(); // BuildingHeights
@@ -235,6 +235,17 @@ public abstract class AirportObjectLoader : IDatObjectLoader
 		HeliTakeoffEnd = 1 << 7,
 		Touchdown = 1 << 8,
 	}
+
+	[Flags]
+	public enum DatAirportObjectFlags : uint16_t
+	{
+		None = 0,
+		HasShadows = 1 << 0,
+		IsHelipad = 1 << 1,
+		AcceptsLightPlanes = 1 << 2,
+		AcceptsHeavyPlanes = 1 << 3,
+		AcceptsHelicopter = 1 << 4,
+	}
 }
 
 internal static class AirportMovementNodeFlagsConverter
@@ -244,4 +255,13 @@ internal static class AirportMovementNodeFlagsConverter
 
 	public static DatAirportMovementNodeFlags Convert(this AirportMovementNodeFlags airportMovementNodeFlags)
 		=> (DatAirportMovementNodeFlags)airportMovementNodeFlags;
+}
+
+internal static class AirportObjectFlagsConverter
+{
+	public static AirportObjectFlags Convert(this DatAirportObjectFlags datAirportObjectFlags)
+		=> (AirportObjectFlags)datAirportObjectFlags;
+
+	public static DatAirportObjectFlags Convert(this AirportObjectFlags airportObjectFlags)
+		=> (DatAirportObjectFlags)airportObjectFlags;
 }

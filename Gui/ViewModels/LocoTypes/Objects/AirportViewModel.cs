@@ -11,10 +11,10 @@ namespace Gui.ViewModels;
 public class AirportViewModel(AirportObject model)
 	: LocoObjectViewModel<AirportObject>(model)
 {
-	public uint16_t AllowedPlaneTypes
+	public AirportObjectFlags Flags
 	{
-		get => Model.AllowedPlaneTypes;
-		set => Model.AllowedPlaneTypes = value;
+		get => Model.Flags;
+		set => Model.Flags = value;
 	}
 
 	public int8_t MinX
@@ -105,8 +105,12 @@ public class AirportViewModel(AirportObject model)
 		set => Model.var_07 = value;
 	}
 
-	[Category("<unknown>"), Length(4, 4)]
-	public BindingList<uint8_t> var_B6 { get; init; } = model.var_B6.ToBindingList();
+	[Category("<unknown>")]
+	public uint32_t var_B6
+	{
+		get => Model.var_B6;
+		set => Model.var_B6 = value;
+	}
 
 	//public AirportViewModel(AirportObject model)
 	//	: base(model)

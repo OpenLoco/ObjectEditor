@@ -1,4 +1,5 @@
 using Definitions.Database;
+using Definitions.ObjectModels.Objects.Airport;
 
 namespace Definitions.DTO;
 
@@ -7,7 +8,7 @@ public class DtoObjectAirport : IDtoSubObject
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public uint16_t AllowedPlaneTypes { get; set; }
+	public AirportObjectFlags Flags { get; set; }
 	public uint32_t LargeTiles { get; set; }
 	public int8_t MinX { get; set; }
 	public int8_t MinY { get; set; }

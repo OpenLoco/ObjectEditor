@@ -34,8 +34,8 @@ public class TreeViewModel(TreeObject model)
 
 	public uint8_t Season
 	{
-		get => Model.Season;
-		set => Model.Season = value;
+		get => Model.CurrentSeason;
+		set => Model.CurrentSeason = value;
 	}
 
 	public uint32_t Colours
@@ -66,10 +66,10 @@ public class TreeViewModel(TreeObject model)
 	}
 
 	[Category("Building")]
-	public uint8_t Clearance
+	public uint8_t InitialHeight
 	{
-		get => Model.Clearance;
-		set => Model.Clearance = value;
+		get => Model.InitialHeight;
+		set => Model.InitialHeight = value;
 	}
 
 	[Category("Building")]

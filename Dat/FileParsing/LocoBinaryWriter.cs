@@ -1,8 +1,8 @@
 using Common;
 using Dat.Converters;
 using Dat.Types;
-using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Common;
+using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
@@ -155,12 +155,12 @@ public class LocoBinaryWriter : BinaryWriter
 		}
 	}
 
-	public void Write(SimpleAnimation[] animations)
+	public void Write(EmitterAnimation[] animations)
 	{
 		foreach (var animation in animations)
 		{
-			Write(animation.ObjectId);
-			Write(animation.Height);
+			Write((object_id)0); // object header
+			Write(animation.EmitterVerticalPos);
 			Write((uint8_t)animation.Type);
 		}
 	}

@@ -7,21 +7,21 @@ public class TrackObject : ILocoStruct
 {
 	public TrackTraitFlags TrackPieces { get; set; }
 	public TrackTraitFlags StationTrackPieces { get; set; }
+	public List<ObjectModelHeader> TrackMods { get; set; } = []; // aka TrackExtraObject
+	public List<ObjectModelHeader> Signals { get; set; } = [];
+	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public int16_t TunnelCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
+	public ObjectModelHeader Tunnel { get; set; }
 	public Speed16 MaxCurveSpeed { get; set; }
 	public TrackObjectFlags Flags { get; set; }
 	public uint8_t DisplayOffset { get; set; }
 	public uint8_t var_06 { get; set; }
-
-	public ObjectModelHeader Tunnel { get; set; }
-	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
-	public List<ObjectModelHeader> TrackMods { get; set; } = []; // aka TrackExtraObject
-	public List<ObjectModelHeader> Signals { get; set; } = [];
 	public List<ObjectModelHeader> Bridges { get; set; } = [];
 	public List<ObjectModelHeader> Stations { get; set; } = [];
+	public uint8_t pad_35 { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

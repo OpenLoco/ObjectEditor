@@ -4,7 +4,7 @@ namespace Definitions.ObjectModels.Objects.Tree;
 
 public class TreeObject : ILocoStruct
 {
-	public uint8_t Clearance { get; set; }
+	public uint8_t InitialHeight { get; set; }
 	public uint8_t Height { get; set; }
 	public uint8_t var_04 { get; set; }
 	public uint8_t var_05 { get; set; }
@@ -12,15 +12,15 @@ public class TreeObject : ILocoStruct
 	public uint8_t NumGrowthStages { get; set; }
 	public TreeObjectFlags Flags { get; set; }
 	public uint16_t ShadowImageOffset { get; set; }
+	public TreeFlagsUnk var_3C { get; set; } // something with images
 	public uint8_t SeasonState { get; set; }
-	public uint8_t Season { get; set; }
+	public uint8_t CurrentSeason { get; set; } // i don't think this is part of definition, its game state
 	public uint8_t CostIndex { get; set; }
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t ClearCostFactor { get; set; }
 	public uint32_t Colours { get; set; }
 	public int16_t Rating { get; set; }
 	public int16_t DemolishRatingReduction { get; set; }
-	public TreeFlagsUnk var_3C { get; set; } // something with images
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
@@ -45,9 +45,9 @@ public class TreeObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(NumGrowthStages)} must be between 1 and 8 inclusive.", [nameof(NumGrowthStages)]);
 		}
 
-		if (Height < Clearance)
+		if (Height < InitialHeight)
 		{
-			yield return new ValidationResult($"{nameof(Height)} must be greater than or equal to {nameof(Clearance)}.", [nameof(Height), nameof(Clearance)]);
+			yield return new ValidationResult($"{nameof(Height)} must be greater than or equal to {nameof(InitialHeight)}.", [nameof(Height), nameof(InitialHeight)]);
 		}
 
 		if (var_05 < var_04)

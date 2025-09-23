@@ -14,14 +14,11 @@ public class RoadStationObject : ILocoStruct
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
 	public RoadStationObjectFlags Flags { get; set; }
+	public List<ObjectModelHeader> CompatibleRoadObjects { get; set; } = [];
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-
-	public List<ObjectModelHeader> CompatibleRoadObjects { get; set; } = [];
-
 	public ObjectModelHeader? CargoType { get; set; }
-
-	//public uint8_t[][][] CargoOffsetBytes { get; set; }
+	public uint8_t pad_2D { get; set; }
 	public CargoOffset[][][] CargoOffsets { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

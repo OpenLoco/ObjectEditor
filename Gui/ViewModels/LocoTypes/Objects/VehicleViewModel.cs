@@ -145,15 +145,14 @@ public class VehicleViewModel(VehicleObject model)
 	[Category("Sprites")]
 	public CompanyColourType SpecialColourSchemeIndex
 	{
-		get => model.SpecialColourSchemeIndex;
-		set => model.SpecialColourSchemeIndex = value;
+		get => model.CompanyColourSchemeIndex;
+		set => model.CompanyColourSchemeIndex = value;
 	} // called "ColourType" in the loco codebase
 
 	[Category("Sprites"), Editable(false)] public BindingList<VehicleObjectCar> CarComponents { get; init; } = new(model.CarComponents);
 	[Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; init; } = new(model.BodySprites);
 	[Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; init; } = new(model.BogieSprites);
-	[Category("Sprites"), Editable(false)] public BindingList<SimpleAnimation> Animation { get; init; } = new(model.Animation);
-	[Category("Sprites")] public BindingList<ObjectModelHeader> AnimationHeaders { get; init; } = new(model.AnimationHeaders);
+	[Category("Sprites"), Editable(false)] public BindingList<EmitterAnimation> Animation { get; init; } = new(model.ParticleEmitters);
 
 	[Category("Cargo")]
 	public CompatibleCargo CompatibleCargo1 { get; init; } = new(model.MaxCargo[0], new(model.CompatibleCargoCategories[0]));

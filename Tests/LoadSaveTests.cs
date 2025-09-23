@@ -1047,7 +1047,7 @@ public class LoadSaveTests
 			Assert.That(struc.ShadowImageOffset, Is.Zero, nameof(struc.ShadowImageOffset));
 			Assert.That(struc.var_3C, Is.EqualTo(TreeFlagsUnk.unk_00 | TreeFlagsUnk.unk_01 | TreeFlagsUnk.unk_02 | TreeFlagsUnk.unk_03), nameof(struc.var_3C));
 			Assert.That(struc.SeasonState, Is.EqualTo(3), nameof(struc.SeasonState));
-			Assert.That(struc.Season, Is.EqualTo(2), nameof(struc.Season));
+			Assert.That(struc.CurrentSeason, Is.EqualTo(2), nameof(struc.CurrentSeason));
 			Assert.That(struc.CostIndex, Is.EqualTo(3), nameof(struc.CostIndex));
 			Assert.That(struc.BuildCostFactor, Is.EqualTo(8), nameof(struc.BuildCostFactor));
 			Assert.That(struc.ClearCostFactor, Is.EqualTo(4), nameof(struc.ClearCostFactor));
@@ -1092,7 +1092,7 @@ public class LoadSaveTests
 			Assert.That(struc.Reliability, Is.EqualTo(88), nameof(struc.Reliability));
 			Assert.That(struc.RunCostIndex, Is.EqualTo(4), nameof(struc.RunCostIndex));
 			Assert.That(struc.RunCostFactor, Is.EqualTo(55), nameof(struc.RunCostFactor));
-			Assert.That(struc.SpecialColourSchemeIndex, Is.EqualTo(CompanyColourType.Airplane), nameof(struc.SpecialColourSchemeIndex));
+			Assert.That(struc.CompanyColourSchemeIndex, Is.EqualTo(CompanyColourType.Airplane), nameof(struc.CompanyColourSchemeIndex));
 			Assert.That(struc.CompatibleVehicles.Count, Is.Zero, nameof(struc.CompatibleVehicles));
 			//CollectionAssert.AreEqual(Enumerable.Repeat(0, 8).ToArray(), struc.CompatibleVehicles, nameof(struc.CompatibleVehicles));
 			//CollectionAssert.AreEqual(Enumerable.Repeat(0, 4).ToArray(), struc.RequiredTrackExtras, nameof(struc.RequiredTrackExtras));
@@ -1108,12 +1108,12 @@ public class LoadSaveTests
 			//CollectionAssert.AreEqual(Enumerable.Repeat(0, 2).ToArray(), struc.CompatibleCargoCategories, nameof(struc.CompatibleCargoCategories));
 			//CollectionAssert.AreEqual(Enumerable.Repeat(0, 32).ToArray(), struc.CargoTypeSpriteOffsets, nameof(struc.CargoTypeSpriteOffsets));
 			Assert.That(struc.NumSimultaneousCargoTypes, Is.EqualTo(1), nameof(struc.NumSimultaneousCargoTypes));
-			Assert.That(struc.Animation[0].ObjectId, Is.Zero, nameof(struc.Animation));
-			Assert.That(struc.Animation[0].Height, Is.EqualTo(24), nameof(struc.Animation));
-			Assert.That(struc.Animation[0].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.Animation));
-			Assert.That(struc.Animation[1].ObjectId, Is.Zero, nameof(struc.Animation));
-			Assert.That(struc.Animation[1].Height, Is.Zero, nameof(struc.Animation));
-			Assert.That(struc.Animation[1].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.Animation));
+			Assert.That(struc.ParticleEmitters[0].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
+			Assert.That(struc.ParticleEmitters[0].EmitterVerticalPos, Is.EqualTo(24), nameof(struc.ParticleEmitters));
+			Assert.That(struc.ParticleEmitters[0].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.ParticleEmitters));
+			Assert.That(struc.ParticleEmitters[1].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
+			Assert.That(struc.ParticleEmitters[1].EmitterVerticalPos, Is.Zero, nameof(struc.ParticleEmitters));
+			Assert.That(struc.ParticleEmitters[1].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.ParticleEmitters));
 			Assert.That(struc.ShipWakeOffset, Is.Zero, nameof(struc.ShipWakeOffset));
 			Assert.That(struc.DesignedYear, Is.EqualTo(1957), nameof(struc.DesignedYear));
 			Assert.That(struc.ObsoleteYear, Is.EqualTo(1987), nameof(struc.ObsoleteYear));

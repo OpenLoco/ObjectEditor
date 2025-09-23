@@ -6,6 +6,7 @@ using Definitions.ObjectModels.Types;
 using static Dat.Loaders.TreeObjectLoader;
 
 namespace Dat.Loaders;
+
 public abstract class TreeObjectLoader : IDatObjectLoader
 {
 	public static class Constants
@@ -31,7 +32,7 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
-			model.Clearance = br.ReadByte();
+			model.InitialHeight = br.ReadByte();
 			model.Height = br.ReadByte();
 			model.var_04 = br.ReadByte();
 			model.var_05 = br.ReadByte();
@@ -43,7 +44,7 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 			model.ShadowImageOffset = br.ReadUInt16();
 			model.var_3C = ((DatTreeFlagsUnk)br.ReadByte()).Convert();
 			model.SeasonState = br.ReadByte();
-			model.Season = br.ReadByte();
+			model.CurrentSeason = br.ReadByte();
 			model.CostIndex = br.ReadByte();
 			model.BuildCostFactor = br.ReadInt16();
 			model.ClearCostFactor = br.ReadInt16();
@@ -78,7 +79,7 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 		using (var bw = new LocoBinaryWriter(stream))
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
-			bw.Write(model.Clearance);
+			bw.Write(model.InitialHeight);
 			bw.Write(model.Height);
 			bw.Write(model.var_04);
 			bw.Write(model.var_05);
@@ -90,7 +91,7 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 			bw.Write(model.ShadowImageOffset);
 			bw.Write((uint8_t)model.var_3C.Convert()); // Convert to Dat
 			bw.Write(model.SeasonState);
-			bw.Write(model.Season);
+			bw.Write(model.CurrentSeason);
 			bw.Write(model.CostIndex);
 			bw.Write(model.BuildCostFactor);
 			bw.Write(model.ClearCostFactor);

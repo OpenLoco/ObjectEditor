@@ -22,7 +22,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		public const int MaxBodySprites = 4;
 		public const int MaxBogieSprites = 2;
 		public const int MaxStartSounds = 3;
-		public const int MaxSimpleAnimations = 2;
+		public const int MaxEmitterAnimations = 2;
 		public const int Var135PadSize = 0x15A - 0x135;
 	}
 
@@ -117,14 +117,14 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		}
 
 		// animation
-		foreach (var anim in model.Animation)
+		foreach (var anim in model.ParticleEmitters)
 		{
 			if (anim.Type == SimpleAnimationType.None)
 			{
 				continue;
 			}
 
-			model.AnimationHeaders.Add(br.ReadS5Header());
+			anim.AnimationObject = br.ReadS5Header();
 		}
 
 		// compatible vehicles
@@ -161,7 +161,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		model.Reliability = br.ReadByte();
 		model.RunCostIndex = br.ReadByte();
 		model.RunCostFactor = br.ReadInt16();
-		model.SpecialColourSchemeIndex = ((DatCompanyColourType)br.ReadByte()).Convert();
+		model.CompanyColourSchemeIndex = ((DatCompanyColourType)br.ReadByte()).Convert();
 		numCompatibleVehicles = br.ReadByte();
 		br.SkipUInt16(Constants.CompatibleVehicleCount);
 		br.SkipByte(Constants.RequiredTrackExtrasCount);
@@ -177,7 +177,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		br.SkipByte(Constants.MaxCompatibleCargoCategories * 4); // CompatibleCargoCategories, read in LoadVariable
 		br.SkipByte(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
 		br.SkipByte(); // NumSimultaneousCargoTypes, manipulated in LoadVariable
-		model.Animation = br.ReadSimpleAnimations(Constants.MaxSimpleAnimations);
+		model.ParticleEmitters = br.ReadEmitterAnimations(Constants.MaxEmitterAnimations);
 		model.ShipWakeOffset = br.ReadByte(); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 		model.DesignedYear = br.ReadUInt16();
 		model.ObsoleteYear = br.ReadUInt16();
@@ -228,7 +228,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.Write(model.Reliability);
 			bw.Write(model.RunCostIndex);
 			bw.Write(model.RunCostFactor);
-			bw.Write((uint8_t)model.SpecialColourSchemeIndex.Convert());
+			bw.Write((uint8_t)model.CompanyColourSchemeIndex.Convert());
 			bw.Write((uint8_t)model.CompatibleVehicles.Length);
 			bw.WriteEmptyBytes(Constants.CompatibleVehicleCount * 2);
 			bw.WriteEmptyBytes(Constants.RequiredTrackExtrasCount);
@@ -244,7 +244,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.WriteEmptyBytes(Constants.MaxCompatibleCargoCategories * 4); // CompatibleCargoCategories, read in LoadVariable
 			bw.WriteEmptyBytes(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
 			bw.WriteEmptyBytes(1); // NumSimultaneousCargoTypes, manipulated in LoadVariable
-			bw.Write(model.Animation.Fill(Constants.MaxSimpleAnimations, new SimpleAnimation()).ToArray());
+			bw.Write(model.ParticleEmitters.Fill(Constants.MaxEmitterAnimations, new EmitterAnimation()).ToArray());
 			bw.Write(model.ShipWakeOffset); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
@@ -331,8 +331,8 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.Write((uint16_t)CargoCategory.NULL);
 		}
 
-		// animation
-		bw.WriteS5HeaderList(model.AnimationHeaders);
+		// particle emitter animations
+		bw.WriteS5HeaderList(model.ParticleEmitters.Where(x => x.AnimationObject != null).Select(x => x.AnimationObject));
 
 		// compatible vehicles
 		bw.WriteS5HeaderList(model.CompatibleVehicles);

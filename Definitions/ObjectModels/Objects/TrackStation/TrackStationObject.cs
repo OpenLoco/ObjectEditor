@@ -16,13 +16,10 @@ public class TrackStationObject : ILocoStruct
 	public uint8_t var_0B { get; set; }
 	public TrackStationObjectFlags Flags { get; set; }
 	public uint8_t var_0D { get; set; }
+	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-	public List<ObjectModelHeader> CompatibleTrackObjects { get; set; } = [];
-
-	//public uint8_t[][][] CargoOffsetBytes { get; set; }
 	public CargoOffset[][][] CargoOffsets { get; set; }
-
 	public uint8_t[][] var_6E { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

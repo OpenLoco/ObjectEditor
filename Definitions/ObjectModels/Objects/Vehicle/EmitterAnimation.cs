@@ -1,13 +1,14 @@
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class SimpleAnimation : ILocoStruct
+public class EmitterAnimation : ILocoStruct
 {
-	public object_id ObjectId { get; set; }
-	public uint8_t Height { get; set; }
+	public ObjectModelHeader AnimationObject { get; set; } // will  be SteamObject
+	public uint8_t EmitterVerticalPos { get; set; }
 	public SimpleAnimationType Type { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

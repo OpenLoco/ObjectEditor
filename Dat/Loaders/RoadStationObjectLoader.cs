@@ -50,7 +50,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
 			br.SkipObjectId(); // CargoTypeId, not part of object definition
-			br.SkipByte(); // pad 0x2D
+			model.pad_2D = br.ReadByte(); // pad 0x2D
 			br.SkipPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
 
 			// sanity check
@@ -109,7 +109,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
 			bw.WriteEmptyObjectId(); // CargoTypeId, not part of object definition
-			bw.Write((uint8_t)0); // pad 0x2D
+			bw.Write(model.pad_2D); // pad 0x2D
 			bw.WriteEmptyPointer(Constants.CargoOffsetBytesSize); // CargoOffsetBytes, not part of object definition
 
 			// sanity check

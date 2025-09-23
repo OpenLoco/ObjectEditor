@@ -5,7 +5,7 @@ namespace Definitions.DTO;
 
 public class DtoObjectTree : IDtoSubObject
 {
-	public uint8_t Clearance { get; set; }
+	public uint8_t InitialHeight { get; set; }
 	public uint8_t Height { get; set; }
 	public uint8_t NumRotations { get; set; }
 	public uint8_t NumGrowthStages { get; set; }

@@ -6,7 +6,7 @@ public static class DtoObjectTreeMapper
 {
 	public static DtoObjectTree ToDto(this TblObjectTree tblobjecttree) => new()
 	{
-		Clearance = tblobjecttree.Clearance,
+		InitialHeight = tblobjecttree.InitialHeight,
 		Height = tblobjecttree.Height,
 		NumRotations = tblobjecttree.NumRotations,
 		NumGrowthStages = tblobjecttree.NumGrowthStages,
@@ -26,7 +26,7 @@ public static class DtoObjectTreeMapper
 	public static TblObjectTree ToTblObjectTreeEntity(this DtoObjectTree model, TblObject parent) => new()
 	{
 		Parent = parent,
-		Clearance = model.Clearance,
+		InitialHeight = model.InitialHeight,
 		Height = model.Height,
 		NumRotations = model.NumRotations,
 		NumGrowthStages = model.NumGrowthStages,

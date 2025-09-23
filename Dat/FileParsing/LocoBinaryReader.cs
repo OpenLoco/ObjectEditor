@@ -263,16 +263,16 @@ public class LocoBinaryReader : BinaryReader
 		return result;
 	}
 
-	public SimpleAnimation[] ReadSimpleAnimations(int count)
+	public EmitterAnimation[] ReadEmitterAnimations(int count)
 	{
-		var result = new SimpleAnimation[count];
+		var result = new EmitterAnimation[count];
 
 		for (var i = 0; i < count; ++i)
 		{
-			result[i] = new SimpleAnimation
+			SkipByte(); // object_id
+			result[i] = new EmitterAnimation
 			{
-				ObjectId = ReadByte(),
-				Height = ReadByte(),
+				EmitterVerticalPos = ReadByte(),
 				Type = (SimpleAnimationType)ReadByte(),
 			};
 		}

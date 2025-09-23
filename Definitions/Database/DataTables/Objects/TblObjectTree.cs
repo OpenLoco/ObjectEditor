@@ -4,7 +4,7 @@ namespace Definitions.Database;
 
 public class TblObjectTree : DbSubObject, IConvertibleToTable<TblObjectTree, TreeObject>
 {
-	public uint8_t Clearance { get; set; }
+	public uint8_t InitialHeight { get; set; }
 	public uint8_t Height { get; set; }
 	public uint8_t var_04 { get; set; }
 	public uint8_t var_05 { get; set; }
@@ -26,14 +26,14 @@ public class TblObjectTree : DbSubObject, IConvertibleToTable<TblObjectTree, Tre
 		=> new()
 		{
 			Parent = tbl,
-			Clearance = obj.Clearance,
+			InitialHeight = obj.InitialHeight,
 			Height = obj.Height,
 			NumRotations = obj.NumRotations,
 			NumGrowthStages = obj.NumGrowthStages,
 			Flags = obj.Flags,
 			ShadowImageOffset = obj.ShadowImageOffset,
 			SeasonState = obj.SeasonState,
-			Season = obj.Season,
+			Season = obj.CurrentSeason,
 			CostIndex = obj.CostIndex,
 			BuildCostFactor = obj.BuildCostFactor,
 			ClearCostFactor = obj.ClearCostFactor,

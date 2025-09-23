@@ -19,6 +19,7 @@ public class ClimateObject : ILocoStruct
 	public uint8_t SeasonLength4 { get; set; }
 	public uint8_t WinterSnowLine { get; set; }
 	public uint8_t SummerSnowLine { get; set; }
+	public uint8_t pad_09 { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

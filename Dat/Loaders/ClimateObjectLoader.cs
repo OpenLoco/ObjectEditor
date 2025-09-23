@@ -33,7 +33,7 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 			model.SeasonLength4 = br.ReadByte();
 			model.WinterSnowLine = br.ReadByte();
 			model.SummerSnowLine = br.ReadByte();
-			_ = br.ReadByte(); // pad
+			model.pad_09 = br.ReadByte();
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -67,7 +67,7 @@ public abstract class ClimateObjectLoader : IDatObjectLoader
 			bw.Write(model.SeasonLength4);
 			bw.Write(model.WinterSnowLine);
 			bw.Write(model.SummerSnowLine);
-			bw.Write((uint8_t)0); // pad
+			bw.Write(model.pad_09);
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

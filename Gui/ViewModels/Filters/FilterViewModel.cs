@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using DynamicData;
 using Index;
 using ReactiveUI;
@@ -13,53 +14,59 @@ using System.Reflection;
 
 namespace Gui.ViewModels.Filters;
 
+public class FilterTypeViewModel : ReactiveObject
+{
+	public Type Type { get; set; }
+	public string DisplayName { get; set; }
+	public string IconName { get; set; } = "CircleSmall";
+
+	public IBrush? BackgroundColour { get; set; }
+}
+
 public class FilterViewModel : ReactiveObject
 {
-	[Reactive] public Type? SelectedObjectType { get; set; }
+	[Reactive] public FilterTypeViewModel? SelectedObjectType { get; set; }
 	[Reactive] public PropertyInfo? SelectedField { get; set; }
-	[Reactive] public FilterOperator SelectedOperator { get; set; }
-	[Reactive] public string? FilterValue { get; set; }
+	[Reactive] public FilterOperator SelectedOperator { get; set; } = FilterOperator.Equals;
+	[Reactive] public object? FilterValue { get; set; }
 
 	public ObservableCollection<PropertyInfo> AvailableFields { get; set; } = [];
 	public ObservableCollection<FilterOperator> AvailableOperators { get; set; } = [];
 
 	public ReactiveCommand<Unit, Unit> RemoveFilterCommand { get; }
 
-	Dictionary<Type, IEnumerable<PropertyInfo>> AvailableFilters { get; init; }
-	public ObservableCollection<Type> AvailableFiltersList { get; }
+	public ObservableCollection<FilterTypeViewModel> AvailableFiltersList { get; }
 
-	public FilterViewModel(List<Type> availableFilters, Action<FilterViewModel> onRemove)
+	public FilterViewModel(List<FilterTypeViewModel> availableFilters, Action<FilterViewModel> onRemove)
 	{
-		AvailableFilters = availableFilters
-			.ToDictionary(
-				x => x,
-				x => x.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name).AsEnumerable());
-
-		AvailableFiltersList = new(AvailableFilters.Keys.OrderBy(n => n.Name));
+		AvailableFiltersList = new(availableFilters);
 
 		_ = this.WhenAnyValue(x => x.SelectedObjectType)
 			.Where(x => x != null)
 			.Subscribe(_ =>
 			{
-				AvailableFields.Clear();
-				AvailableFields.AddRange(SelectedObjectType!.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name));
+				FilterValue = null;
 
+				AvailableFields.Clear();
+				AvailableFields.AddRange(SelectedObjectType!.Type.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name));
+				SelectedField = AvailableFields.FirstOrDefault();
+
+				SelectedOperator = FilterOperator.Equals;
 				AvailableOperators.Clear();
 				AvailableOperators.AddRange(Enum.GetValues<FilterOperator>());
 			});
 
-		//SelectedObjectType = typeof(ObjectIndexEntry);
 		RemoveFilterCommand = ReactiveCommand.Create(() => onRemove(this));
 	}
 
 	public Expression<Func<ObjectIndexEntry, bool>>? BuildExpression()
 	{
-		if (string.IsNullOrEmpty(FilterValue) || SelectedField == null)
+		if (FilterValue == null || SelectedField == null)
 		{
 			return null;
 		}
 
-		var parameter = Expression.Parameter(typeof(ObjectIndexEntry), "entry");
+		var parameter = Expression.Parameter(SelectedObjectType.Type, SelectedObjectType.Type.Name);
 		var member = Expression.Property(parameter, SelectedField.Name);
 		var constant = Expression.Constant(FilterValue);
 		Expression? body = null;
@@ -80,7 +87,7 @@ public class FilterViewModel : ReactiveObject
 		else if (member.Type.IsEnum || (Nullable.GetUnderlyingType(member.Type)?.IsEnum ?? false))
 		{
 			var enumType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
-			if (Enum.TryParse(enumType, FilterValue, true, out var enumValue))
+			if (Enum.TryParse(enumType, FilterValue as string, true, out var enumValue))
 			{
 				var enumConstant = Expression.Constant(enumValue, member.Type);
 				body = SelectedOperator switch

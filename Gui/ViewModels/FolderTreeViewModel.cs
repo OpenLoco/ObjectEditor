@@ -3,7 +3,6 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using Dat.Data;
-using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using DynamicData.Binding;
@@ -99,31 +98,28 @@ public class FolderTreeViewModel : ReactiveObject
 		Model = model;
 		Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = progress;
 
-		var availableFilterCategories = new List<Type>
+		var availableFilterCategories = new List<FilterTypeViewModel>
 		{
-			{ typeof(ObjectIndexEntry) },
+			new() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) },
+			new() { Type = typeof (MetadataModel), DisplayName = "Metadata", IconName = nameof(MetadataModel) }
 		};
 
-		foreach (var obj in Enum.GetValues<ObjectType>())
-		{
-			var typeOfObj = ObjectTypeMapping.ObjectTypeToStructType(obj);
-			availableFilterCategories.Add(typeOfObj);
-		}
+		// todo: add in object-specific searches
+		//var objBrush = new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x80, 0x80));
+		//foreach (var obj in Enum.GetValues<ObjectType>().OrderBy(x => x.ToString()))
+		//{
+		//	var typeOfObj = ObjectTypeMapping.ObjectTypeToStructType(obj);
+		//	availableFilterCategories.Add(new()
+		//	{
+		//		Type = typeOfObj,
+		//		DisplayName = typeOfObj.Name.Replace("Object", string.Empty),
+		//		IconName = typeOfObj.Name.Replace("Object", string.Empty),
+		//		BackgroundColour = objBrush
+		//	});
 
-		//var canAddFilter = this.WhenAnyValue(x => x.SelectedObjectType, (ot) => ot.HasValue);
-		AddFilterCommand = ReactiveCommand.Create(() =>
-		{
-			Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
-			//if (SelectedObjectType.HasValue)
-			//{
-			//	var type = ObjectTypeMapping.ObjectTypeToStructType(SelectedObjectType.Value);
-			//	if (type != null)
-			//	{
-			//		var newFilter = new FilterViewModel(type, RemoveFilter);
-			//		Filters.Add(newFilter);
-			//	}
-			//}
-		});
+		//}
+
+		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter)));
 
 		_filterSubject = new BehaviorSubject<Func<ObjectIndexEntry, bool>>(t => true);
 

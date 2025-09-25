@@ -2,6 +2,7 @@ using Avalonia.Data.Converters;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
+using Index;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,6 +29,23 @@ public class EnumToMaterialIconConverter : IValueConverter
 			{
 				return icon2;
 			}
+			else if (value is string str)
+			{
+				if (Enum.TryParse(typeof(T), str, true, out var enumObj))
+				{
+					if (mapping.TryGetValue((T)enumObj, out var icon3))
+					{
+						return icon3;
+					}
+				}
+				else
+				{
+					if (MiscMappings.TryGetValue(str, out var icon4))
+					{
+						return icon4;
+					}
+				}
+			}
 
 			return null;
 		}
@@ -35,6 +53,12 @@ public class EnumToMaterialIconConverter : IValueConverter
 
 	public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 		=> throw new NotImplementedException();
+
+	static readonly Dictionary<string, string> MiscMappings = new()
+	{
+		{ nameof(ObjectIndexEntry), "ViewList" },
+		{ nameof(MetadataModel), "ViewListOutline" },
+	};
 
 	static readonly Dictionary<ObjectType, string> ObjectMapping = new()
 	{

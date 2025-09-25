@@ -82,7 +82,28 @@
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal" Spacing="5" Margin="0,5">
-								<ComboBox ItemsSource="{Binding AvailableFiltersList}" SelectedItem="{Binding SelectedObjectType}" HorizontalAlignment="Stretch" Height="32"/>
+								<ComboBox ItemsSource="{Binding AvailableFiltersList}" SelectedItem="{Binding SelectedObjectType}" HorizontalAlignment="Stretch" Height="32" MinWidth="160">
+									<!--<ComboBox.Styles>
+										<Style Selector="ComboBoxItem">
+											<Setter Property="Padding" Value="0"/>
+											<Setter Property="Margin" Value="0"/>
+										</Style>
+										<Style Selector="ComboBoxItem /template/ ContentPresenter">
+											<Setter Property="Background" Value="{Binding BackgroundColour}"/>
+										</Style>
+										<Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
+											<Setter Property="Background" Value="{DynamicResource ComboBoxItemPointerOverBackgroundBrush}"/>
+										</Style>
+									</ComboBox.Styles>-->
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<StackPanel Orientation="Horizontal" Margin="4" Background="{Binding BackgroundColour}">
+												<materialIcons:MaterialIcon Kind="{Binding IconName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
+												<TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" />
+											</StackPanel>
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
 								<ComboBox ItemsSource="{Binding AvailableFields}" SelectedItem="{Binding SelectedField}" DisplayMemberBinding="{Binding Name}" MinWidth="120"/>
 								<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}"/>
 								<TextBox Text="{Binding FilterValue}" Watermark="Value" MinWidth="120"/>

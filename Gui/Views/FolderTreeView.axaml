@@ -79,13 +79,13 @@
 					<RadioButton Grid.Column="2" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
 				</Grid>
 			</Border>
-			<StackPanel Grid.Row="3" Orientation="Vertical" Margin="4">
-				<ComboBox ItemsSource="{Binding AvailableObjectTypes}"
-						  SelectedItem="{Binding SelectedObjectType}"
-						  HorizontalAlignment="Stretch"/>
-			</StackPanel>
+			<DockPanel Grid.Row="3" Margin="4">
+				<Button Command="{Binding AddFilterCommand}" DockPanel.Dock="Right" Height="32" Width="32">
+					<materialIcons:MaterialIcon Kind="Plus" Width="24" Height="24" />
+				</Button>
+				<ComboBox ItemsSource="{Binding AvailableObjectTypes}" SelectedItem="{Binding SelectedObjectType}" HorizontalAlignment="Stretch" Height="32"/>
+			</DockPanel>
 			<StackPanel Grid.Row="4" Orientation="Vertical" Margin="4">
-				<Button Content="Add Property Filter" Command="{Binding AddFilterCommand}" />
 				<ItemsControl ItemsSource="{Binding Filters}">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>

@@ -55,7 +55,7 @@ public class FolderTreeViewModel : ReactiveObject
 
 	[Reactive] public ObjectDisplayMode DisplayMode { get; set; } = ObjectDisplayMode.All;
 	[Reactive] public ObjectType? SelectedObjectType { get; set; }
-	public ObservableCollection<ObjectType> AvailableObjectTypes { get; }
+	//public ObservableCollection<object> AvailableObjectTypes { get; }
 	public ObservableCollection<FilterViewModel> Filters { get; } = [];
 	public ReactiveCommand<Unit, Unit> AddFilterCommand { get; }
 
@@ -99,23 +99,31 @@ public class FolderTreeViewModel : ReactiveObject
 		Model = model;
 		Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = progress;
 
-		AvailableObjectTypes = new(Enum
-			.GetValues<ObjectType>()
-			.Cast<ObjectType>());
+		var availableFilterCategories = new List<Type>
+		{
+			{ typeof(ObjectIndexEntry) },
+		};
 
-		var canAddFilter = this.WhenAnyValue(x => x.SelectedObjectType, (ot) => ot.HasValue);
+		foreach (var obj in Enum.GetValues<ObjectType>())
+		{
+			var typeOfObj = ObjectTypeMapping.ObjectTypeToStructType(obj);
+			availableFilterCategories.Add(typeOfObj);
+		}
+
+		//var canAddFilter = this.WhenAnyValue(x => x.SelectedObjectType, (ot) => ot.HasValue);
 		AddFilterCommand = ReactiveCommand.Create(() =>
 		{
-			if (SelectedObjectType.HasValue)
-			{
-				var type = ObjectTypeMapping.ObjectTypeToStructType(SelectedObjectType.Value);
-				if (type != null)
-				{
-					var newFilter = new FilterViewModel(type, RemoveFilter);
-					Filters.Add(newFilter);
-				}
-			}
-		}, canAddFilter);
+			Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
+			//if (SelectedObjectType.HasValue)
+			//{
+			//	var type = ObjectTypeMapping.ObjectTypeToStructType(SelectedObjectType.Value);
+			//	if (type != null)
+			//	{
+			//		var newFilter = new FilterViewModel(type, RemoveFilter);
+			//		Filters.Add(newFilter);
+			//	}
+			//}
+		});
 
 		_filterSubject = new BehaviorSubject<Func<ObjectIndexEntry, bool>>(t => true);
 

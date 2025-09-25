@@ -44,8 +44,6 @@
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
 			<Border Grid.Row="0" BorderThickness="1">
@@ -67,7 +65,7 @@
 					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
 			</Border>
-			<Border Grid.Row="2" BorderThickness="1">
+			<!--<Border Grid.Row="2" BorderThickness="1">
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="*"/>
@@ -78,32 +76,26 @@
 					<RadioButton Grid.Column="1" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="Custom" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Custom}}"/>
 					<RadioButton Grid.Column="2" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
 				</Grid>
-			</Border>
-			<DockPanel Grid.Row="3" Margin="4">
-				<Button Command="{Binding AddFilterCommand}" DockPanel.Dock="Right" Height="32" Width="32">
-					<materialIcons:MaterialIcon Kind="Plus" Width="24" Height="24" />
-				</Button>
-				<ComboBox ItemsSource="{Binding AvailableObjectTypes}" SelectedItem="{Binding SelectedObjectType}" HorizontalAlignment="Stretch" Height="32"/>
-			</DockPanel>
-			<StackPanel Grid.Row="4" Orientation="Vertical" Margin="4">
+			</Border>-->
+			<StackPanel Grid.Row="2" Orientation="Vertical" Margin="4">
 				<ItemsControl ItemsSource="{Binding Filters}">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal" Spacing="5" Margin="0,5">
-								<ComboBox ItemsSource="{Binding AvailableFields}"
-										  SelectedItem="{Binding SelectedField}"
-										  DisplayMemberBinding="{Binding Name}"
-										  MinWidth="120"/>
-								<ComboBox ItemsSource="{Binding AvailableOperators}"
-										  SelectedItem="{Binding SelectedOperator}"/>
+								<ComboBox ItemsSource="{Binding AvailableFiltersList}" SelectedItem="{Binding SelectedObjectType}" HorizontalAlignment="Stretch" Height="32"/>
+								<ComboBox ItemsSource="{Binding AvailableFields}" SelectedItem="{Binding SelectedField}" DisplayMemberBinding="{Binding Name}" MinWidth="120"/>
+								<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}"/>
 								<TextBox Text="{Binding FilterValue}" Watermark="Value" MinWidth="120"/>
 								<Button Content="X" Command="{Binding RemoveFilterCommand}" Classes="danger" />
 							</StackPanel>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>
+				<Button Command="{Binding AddFilterCommand}" Height="32" Width="32" HorizontalAlignment="Center">
+					<materialIcons:MaterialIcon Kind="Plus" Width="24" Height="24" />
+				</Button>
 			</StackPanel>
-			<Border Grid.Row="5" BorderThickness="1">
+			<Border Grid.Row="3" BorderThickness="1">
 				<TreeDataGrid Source="{Binding TreeDataGridSource}">
 					<TreeDataGrid.Styles>
 						<Style Selector="TreeDataGrid TreeDataGridRow">

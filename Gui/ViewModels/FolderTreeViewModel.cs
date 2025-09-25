@@ -133,10 +133,9 @@ public class FolderTreeViewModel : ReactiveObject
 		var rootFiltersChanged = this.WhenAnyValue(x => x.DisplayMode, x => x.SelectedObjectType).Select(_ => Unit.Default);
 
 		var combinedTrigger = Observable.Merge(filtersChanged, rootFiltersChanged)
-			.Throttle(TimeSpan.FromMilliseconds(300))
-			.Select(_ => CreateFilterPredicate());
-
-		_ = combinedTrigger.Subscribe(_filterSubject);
+			.Throttle(TimeSpan.FromMilliseconds(200))
+			.Select(_ => CreateFilterPredicate())
+			.Subscribe(_filterSubject);
 
 		_ = this.WhenAnyValue(x => x.SelectedObjectType)
 			.Skip(1)
@@ -166,30 +165,6 @@ public class FolderTreeViewModel : ReactiveObject
 		var parameter = Expression.Parameter(typeof(ObjectIndexEntry), "entry");
 		Expression combinedExpression = Expression.Constant(true);
 
-		// Master ObjectType Filter
-		if (SelectedObjectType.HasValue)
-		{
-			var objectTypeExpression = Expression.Equal(
-				Expression.Property(parameter, nameof(ObjectIndexEntry.ObjectType)),
-				Expression.Constant(SelectedObjectType.Value)
-			);
-			combinedExpression = Expression.AndAlso(combinedExpression, objectTypeExpression);
-		}
-
-		// Display Mode Filter
-		Expression displayModeExpression = DisplayMode switch
-		{
-			ObjectDisplayMode.Vanilla => Expression.OrElse(
-				Expression.Equal(Expression.Property(parameter, nameof(ObjectIndexEntry.ObjectSource)), Expression.Constant(ObjectSource.LocomotionSteam)),
-				Expression.Equal(Expression.Property(parameter, nameof(ObjectIndexEntry.ObjectSource)), Expression.Constant(ObjectSource.LocomotionGoG))
-			),
-			ObjectDisplayMode.Custom => Expression.Equal(Expression.Property(parameter, nameof(ObjectIndexEntry.ObjectSource)), Expression.Constant(ObjectSource.Custom)),
-			ObjectDisplayMode.OpenLoco => Expression.Equal(Expression.Property(parameter, nameof(ObjectIndexEntry.ObjectSource)), Expression.Constant(ObjectSource.OpenLoco)),
-			_ => Expression.Constant(true)
-		};
-		combinedExpression = Expression.AndAlso(combinedExpression, displayModeExpression);
-
-		// Dynamic Filters
 		foreach (var filter in Filters)
 		{
 			var filterExpression = filter.BuildExpression();
@@ -200,8 +175,9 @@ public class FolderTreeViewModel : ReactiveObject
 			}
 		}
 
-		var lambda = Expression.Lambda<Func<ObjectIndexEntry, bool>>(combinedExpression, parameter);
-		return lambda.Compile();
+		return Expression
+			.Lambda<Func<ObjectIndexEntry, bool>>(combinedExpression, parameter)
+			.Compile();
 	}
 
 	public static int CountNodes(FileSystemItem fib)

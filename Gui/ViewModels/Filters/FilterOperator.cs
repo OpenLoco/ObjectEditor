@@ -5,9 +5,10 @@ public enum FilterOperator
 	Contains,
 	Equals,
 	NotEquals,
-	/* LessThan
-	 * GreaterThan,
-	 * LessThanOrEqual,
-	 * GreaterThanOrEqual
-	 */
+	GreaterThan,
+	GreaterThanOrEqual,
+	LessThan,
+	LessThanOrEqual,
+	StartsWith,
+	EndsWith,
 }

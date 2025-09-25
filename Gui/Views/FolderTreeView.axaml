@@ -65,36 +65,12 @@
 					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
 			</Border>
-			<!--<Border Grid.Row="2" BorderThickness="1">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="*"/>
-					</Grid.ColumnDefinitions>
-					<RadioButton Grid.Column="0" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="Vanilla" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Vanilla}}"/>
-					<RadioButton Grid.Column="1" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="Custom" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.Custom}}"/>
-					<RadioButton Grid.Column="2" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
-				</Grid>
-			</Border>-->
 			<StackPanel Grid.Row="2" Orientation="Vertical" Margin="4">
 				<ItemsControl ItemsSource="{Binding Filters}">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal" Spacing="5" Margin="0,5">
 								<ComboBox ItemsSource="{Binding AvailableFiltersList}" SelectedItem="{Binding SelectedObjectType}" HorizontalAlignment="Stretch" Height="32" MinWidth="160">
-									<!--<ComboBox.Styles>
-										<Style Selector="ComboBoxItem">
-											<Setter Property="Padding" Value="0"/>
-											<Setter Property="Margin" Value="0"/>
-										</Style>
-										<Style Selector="ComboBoxItem /template/ ContentPresenter">
-											<Setter Property="Background" Value="{Binding BackgroundColour}"/>
-										</Style>
-										<Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
-											<Setter Property="Background" Value="{DynamicResource ComboBoxItemPointerOverBackgroundBrush}"/>
-										</Style>
-									</ComboBox.Styles>-->
 									<ComboBox.ItemTemplate>
 										<DataTemplate>
 											<StackPanel Orientation="Horizontal" Margin="4" Background="{Binding BackgroundColour}">
@@ -106,7 +82,12 @@
 								</ComboBox>
 								<ComboBox ItemsSource="{Binding AvailableFields}" SelectedItem="{Binding SelectedField}" DisplayMemberBinding="{Binding Name}" MinWidth="120"/>
 								<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}"/>
-								<TextBox Text="{Binding FilterValue}" Watermark="Value" MinWidth="120"/>
+								<Grid MinWidth="120">
+									<TextBox Text="{Binding FilterValue}" Watermark="Value" IsVisible="{Binding IsTextValue}"/>
+									<DatePicker SelectedDate="{Binding FilterValue, Mode=TwoWay}" IsVisible="{Binding IsDateValue}"/>
+									<ComboBox ItemsSource="{Binding AvailableEnumValues}" SelectedItem="{Binding FilterValue, Mode=TwoWay}" IsVisible="{Binding IsEnumValue}"/>
+									<CheckBox IsChecked="{Binding FilterValue, Mode=TwoWay}" IsVisible="{Binding IsBoolValue}" />
+								</Grid>
 								<Button Content="X" Command="{Binding RemoveFilterCommand}" Classes="danger" />
 							</StackPanel>
 						</DataTemplate>

@@ -108,10 +108,10 @@ public class VehicleViewModel(VehicleObject model)
 	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; init; } = new(model.RequiredTrackExtras);
 
 	[Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")]
-	public uint8_t ShipWakeOffset
+	public uint8_t ShipWakeSpacing
 	{
-		get => model.ShipWakeOffset;
-		set => model.ShipWakeOffset = value;
+		get => model.ShipWakeSpacing;
+		set => model.ShipWakeSpacing = value;
 	}
 
 	[Category("Cost"), Range(0, 32)]

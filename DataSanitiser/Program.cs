@@ -85,6 +85,51 @@ static ObjectType TypeToStruct(Type type)
 		_ => throw new ArgumentOutOfRangeException(nameof(type), $"unknown struct type {type.FullName}")
 	};
 
+static void QueryHeadquarters()
+{
+	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
+	var logger = new Logger();
+	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+
+	var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
+
+	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Building))
+	{
+		try
+		{
+			var o = SawyerStreamReader.LoadFullObject(Path.Combine(dir, obj.FileName), logger);
+			if (o.LocoObject != null)
+			{
+				var struc = (BuildingObject)o.LocoObject.Object;
+				var header = o.DatFileInfo.S5Header;
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+
+				if (struc.Flags.HasFlag(BuildingObjectFlags.IsHeadquarters))
+				{
+					results.Add((obj, source));
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
+		}
+	}
+
+	Console.WriteLine(results.Count);
+
+	const string csvHeader = "DatName, ObjectSource";
+	var lines = results
+		.OrderBy(x => x.Obj.DisplayName)
+		.Select(x => string.Join(',', x.Obj.DisplayName, x.ObjectSource));
+
+	foreach (var line in lines)
+	{
+		Console.WriteLine(line);
+	}
+}
+QueryHeadquarters();
+
 static void QueryCostIndex()
 {
 	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
@@ -142,7 +187,7 @@ static void QueryCostIndex()
 		Console.WriteLine($"{result.Obj.DisplayName} - {result.ObjectSource} - {result.ObjectType} - CostIndex={result.CostIndex}");
 	}
 }
-QueryCostIndex();
+//QueryCostIndex();
 
 static void QueryTrackStationOneSidedTrack()
 {

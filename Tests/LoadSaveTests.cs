@@ -616,12 +616,12 @@ public class LoadSaveTests
 			Assert.That(struc.NumVariations, Is.EqualTo(3), nameof(struc.NumVariations));
 			Assert.That(struc.VariationLikelihood, Is.EqualTo(10), nameof(struc.VariationLikelihood));
 
-			Assert.That(struc.CliffEdgeHeader1.Name, Is.EqualTo("LSBROWN"), nameof(struc.CliffEdgeHeader1));
-			Assert.That(struc.CliffEdgeHeader1.DatChecksum, Is.Zero, nameof(struc.CliffEdgeHeader1));
-			Assert.That(struc.CliffEdgeHeader1.ObjectType, Is.EqualTo(ObjectType.CliffEdge), nameof(struc.CliffEdgeHeader1));
-			Assert.That(struc.CliffEdgeHeader1.ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CliffEdgeHeader1));
+			Assert.That(struc.CliffEdgeHeader.Name, Is.EqualTo("LSBROWN"), nameof(struc.CliffEdgeHeader));
+			Assert.That(struc.CliffEdgeHeader.DatChecksum, Is.Zero, nameof(struc.CliffEdgeHeader));
+			Assert.That(struc.CliffEdgeHeader.ObjectType, Is.EqualTo(ObjectType.CliffEdge), nameof(struc.CliffEdgeHeader));
+			Assert.That(struc.CliffEdgeHeader.ObjectSource, Is.EqualTo(ObjectSource.Custom), nameof(struc.CliffEdgeHeader));
 
-			Assert.That(struc.CliffEdgeHeader2, Is.Null, nameof(struc.CliffEdgeHeader2));
+			Assert.That(struc.ReplacementLandHeader, Is.Null, nameof(struc.ReplacementLandHeader));
 
 			Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(417));
 		});
@@ -1114,7 +1114,7 @@ public class LoadSaveTests
 			Assert.That(struc.ParticleEmitters[1].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
 			Assert.That(struc.ParticleEmitters[1].EmitterVerticalPos, Is.Zero, nameof(struc.ParticleEmitters));
 			Assert.That(struc.ParticleEmitters[1].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.ParticleEmitters));
-			Assert.That(struc.ShipWakeOffset, Is.Zero, nameof(struc.ShipWakeOffset));
+			Assert.That(struc.ShipWakeSpacing, Is.Zero, nameof(struc.ShipWakeSpacing));
 			Assert.That(struc.DesignedYear, Is.EqualTo(1957), nameof(struc.DesignedYear));
 			Assert.That(struc.ObsoleteYear, Is.EqualTo(1987), nameof(struc.ObsoleteYear));
 			//Assert.That(struc.RackRailType, Is.Zero, nameof(struc.RackRailType));

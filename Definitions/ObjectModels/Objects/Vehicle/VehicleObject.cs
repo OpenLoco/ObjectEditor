@@ -32,7 +32,7 @@ public class VehicleObject : ILocoStruct
 	public Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets { get; set; } = [];
 	public uint8_t NumSimultaneousCargoTypes { get; set; }
 	public EmitterAnimation[] ParticleEmitters { get; set; } = [];
-	public uint8_t ShipWakeOffset { get; set; } // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
+	public uint8_t ShipWakeSpacing { get; set; } // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 	public ObjectModelHeader? RackRail { get; set; }

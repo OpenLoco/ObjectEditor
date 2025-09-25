@@ -34,8 +34,8 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			model.NumGrowthStages = br.ReadByte();
 			model.NumImageAngles = br.ReadByte();
 			model.Flags = ((DatLandObjectFlags)br.ReadByte()).Convert();
-			br.SkipObjectId(); // CliffEdgeHeader1, not part of object definition
-			br.SkipObjectId(); // CliffEdgeHeader2, not part of object
+			br.SkipObjectId(); // CliffEdgeHeader, not part of object definition
+			br.SkipObjectId(); // ReplacementLandHeader, not part of object
 			model.CostFactor = br.ReadInt16();
 			br.SkipImageId(); // Image offset, not part of object definition
 			model.NumImagesPerGrowthStage = br.ReadUInt32();
@@ -53,10 +53,10 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
-			model.CliffEdgeHeader1 = br.ReadS5Header();
-			if (model.Flags.HasFlag(LandObjectFlags.HasExtraCliffEdge))
+			model.CliffEdgeHeader = br.ReadS5Header();
+			if (model.Flags.HasFlag(LandObjectFlags.HasReplacementLandHeader))
 			{
-				model.CliffEdgeHeader2 = br.ReadS5Header();
+				model.ReplacementLandHeader = br.ReadS5Header();
 			}
 
 			// image table
@@ -81,8 +81,8 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			bw.Write(model.NumGrowthStages);
 			bw.Write(model.NumImageAngles);
 			bw.Write((uint8_t)model.Flags.Convert());
-			bw.WriteEmptyObjectId(); // CliffEdgeHeader1, not part of object definition
-			bw.WriteEmptyObjectId(); // CliffEdgeHeader2, not part of object definition
+			bw.WriteEmptyObjectId(); // CliffEdgeHeader, not part of object definition
+			bw.WriteEmptyObjectId(); // ReplacementLandHeader, not part of object definition
 			bw.Write(model.CostFactor);
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 			bw.Write(model.NumImagesPerGrowthStage);
@@ -100,11 +100,11 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			SawyerStreamWriter.WriteStringTable(stream, obj.StringTable);
 
 			// variable
-			bw.WriteS5Header(model.CliffEdgeHeader1);
-			if (model.Flags.HasFlag(LandObjectFlags.HasExtraCliffEdge))
+			bw.WriteS5Header(model.CliffEdgeHeader);
+			if (model.Flags.HasFlag(LandObjectFlags.HasReplacementLandHeader))
 			{
-				ArgumentNullException.ThrowIfNull(model.CliffEdgeHeader2); // cannot have flag set but no extra header
-				bw.WriteS5Header(model.CliffEdgeHeader2);
+				ArgumentNullException.ThrowIfNull(model.ReplacementLandHeader); // cannot have flag set but no extra header
+				bw.WriteS5Header(model.ReplacementLandHeader);
 			}
 
 			// image table

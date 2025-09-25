@@ -60,15 +60,15 @@ public class LandViewModel(LandObject model)
 		set => Model.VariationLikelihood = value;
 	}
 
-	public ObjectModelHeader CliffEdgeHeader1
+	public ObjectModelHeader CliffEdgeHeader
 	{
-		get => Model.CliffEdgeHeader1;
-		set => Model.CliffEdgeHeader1 = value;
+		get => Model.CliffEdgeHeader;
+		set => Model.CliffEdgeHeader = value;
 	}
 
-	public ObjectModelHeader? CliffEdgeHeader2
+	public ObjectModelHeader? ReplacementLandHeader
 	{
-		get => Model.CliffEdgeHeader2;
-		set => Model.CliffEdgeHeader2 = value;
+		get => Model.ReplacementLandHeader;
+		set => Model.ReplacementLandHeader = value;
 	}
 }

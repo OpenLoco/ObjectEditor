@@ -178,7 +178,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		br.SkipByte(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
 		br.SkipByte(); // NumSimultaneousCargoTypes, manipulated in LoadVariable
 		model.ParticleEmitters = br.ReadEmitterAnimations(Constants.MaxEmitterAnimations);
-		model.ShipWakeOffset = br.ReadByte(); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
+		model.ShipWakeSpacing = br.ReadByte(); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 		model.DesignedYear = br.ReadUInt16();
 		model.ObsoleteYear = br.ReadUInt16();
 		br.SkipObjectId(); // RackRailType, not part of object definition
@@ -245,7 +245,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.WriteEmptyBytes(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
 			bw.WriteEmptyBytes(1); // NumSimultaneousCargoTypes, manipulated in LoadVariable
 			bw.Write(model.ParticleEmitters.Fill(Constants.MaxEmitterAnimations, new EmitterAnimation()).ToArray());
-			bw.Write(model.ShipWakeOffset); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
+			bw.Write(model.ShipWakeSpacing); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
 			bw.WriteEmptyObjectId(); // RackRailType, not part of object definition

@@ -21,7 +21,7 @@ public class DtoObjectVehicle : IDtoSubObject
 	public Speed16 RackSpeed { get; set; }
 	public uint16_t Weight { get; set; }
 	public VehicleObjectFlags Flags { get; set; }
-	public uint8_t ShipWakeOffset { get; set; }
+	public uint8_t ShipWakeSpacing { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 	public DrivingSoundType DrivingSoundType { get; set; }

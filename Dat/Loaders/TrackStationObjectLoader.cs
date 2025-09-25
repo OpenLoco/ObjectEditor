@@ -157,6 +157,6 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 	{
 		None = 0,
 		Recolourable = 1 << 0,
-		NoGlass = 1 << 1,
+		NoCanopy = 1 << 1,
 	}
 }

@@ -14,8 +14,8 @@ public class TblObjectLand : DbSubObject, IConvertibleToTable<TblObjectLand, Lan
 	public uint8_t NumVariations { get; set; }
 	public uint8_t VariationLikelihood { get; set; }
 
-	//public TblObjectCliffEdge CliffEdgeHeader1 { get; set; }
-	//public TblObjectCliffEdge CliffEdgeHeader2 { get; set; }
+	//public TblObjectCliffEdge CliffEdgeHeader { get; set; }
+	//public TblObjectCliffEdge ReplacementLandHeader { get; set; }
 
 	public static TblObjectLand FromObject(TblObject tbl, LandObject obj)
 		=> new()
@@ -30,7 +30,7 @@ public class TblObjectLand : DbSubObject, IConvertibleToTable<TblObjectLand, Lan
 			DistributionPattern = obj.DistributionPattern,
 			NumVariations = obj.NumVariations,
 			VariationLikelihood = obj.VariationLikelihood,
-			//CliffEdgeHeader1 = obj.CliffEdgeHeader1,
-			//CliffEdgeHeader2 = obj.CliffEdgeHeader2,
+			//CliffEdgeHeader = obj.CliffEdgeHeader,
+			//ReplacementLandHeader = obj.ReplacementLandHeader,
 		};
 }

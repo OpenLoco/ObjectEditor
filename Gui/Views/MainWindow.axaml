@@ -509,7 +509,7 @@
                                             Margin="4"
                                             Padding="2"
                                             HorizontalAlignment="Right"
-                                            Background="DarkRed"
+                                            Classes="danger"
                                             Command="{Binding DeleteLocalFileCommand}"
                                             DockPanel.Dock="Right"
                                             HotKey="Ctrl+D"

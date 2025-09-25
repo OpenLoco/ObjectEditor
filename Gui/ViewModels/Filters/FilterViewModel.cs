@@ -6,43 +6,37 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive;
-using System.Reactive.Linq;
+using System.Reflection;
 
 namespace Gui.ViewModels.Filters;
 
 public class FilterViewModel : ReactiveObject
 {
-	[Reactive] public FilterField SelectedField { get; set; }
+	[Reactive] public PropertyInfo? SelectedField { get; set; }
 	[Reactive] public FilterOperator SelectedOperator { get; set; }
 	[Reactive] public string? FilterValue { get; set; }
 
-	public ObservableCollection<FilterField> AvailableFields { get; }
+	public ObservableCollection<PropertyInfo> AvailableFields { get; }
 	public ObservableCollection<FilterOperator> AvailableOperators { get; }
 
 	public ReactiveCommand<Unit, Unit> RemoveFilterCommand { get; }
 
-	public FilterViewModel(Action<FilterViewModel> onRemove)
+	public FilterViewModel(Type objectType, Action<FilterViewModel> onRemove)
 	{
-		AvailableFields = new(Enum.GetValues<FilterField>());
+		AvailableFields = new(objectType.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name));
 		AvailableOperators = new(Enum.GetValues<FilterOperator>());
 		RemoveFilterCommand = ReactiveCommand.Create(() => onRemove(this));
 	}
 
 	public Expression<Func<ObjectIndexEntry, bool>>? BuildExpression()
 	{
-		if (string.IsNullOrEmpty(FilterValue))
+		if (string.IsNullOrEmpty(FilterValue) || SelectedField == null)
 		{
 			return null;
 		}
 
 		var parameter = Expression.Parameter(typeof(ObjectIndexEntry), "entry");
-		var member = GetMemberExpression(parameter, SelectedField);
-
-		if (member == null)
-		{
-			return null; // Field not supported
-		}
-
+		var member = Expression.Property(parameter, SelectedField.Name);
 		var constant = Expression.Constant(FilterValue);
 		Expression? body = null;
 
@@ -61,7 +55,6 @@ public class FilterViewModel : ReactiveObject
 		}
 		else if (member.Type.IsEnum || (Nullable.GetUnderlyingType(member.Type)?.IsEnum ?? false))
 		{
-			// Handle enums by parsing the string value
 			var enumType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
 			if (Enum.TryParse(enumType, FilterValue, true, out var enumValue))
 			{
@@ -70,23 +63,11 @@ public class FilterViewModel : ReactiveObject
 				{
 					FilterOperator.Equals => Expression.Equal(member, enumConstant),
 					FilterOperator.NotEquals => Expression.NotEqual(member, enumConstant),
-					_ => null // Contains is not valid for enums
+					_ => null
 				};
 			}
 		}
 
 		return body != null ? Expression.Lambda<Func<ObjectIndexEntry, bool>>(body, parameter) : null;
-	}
-
-	private static MemberExpression? GetMemberExpression(ParameterExpression parameter, FilterField field)
-	{
-		return field switch
-		{
-			FilterField.DisplayName => Expression.Property(parameter, nameof(ObjectIndexEntry.DisplayName)),
-			FilterField.ObjectType => Expression.Property(parameter, nameof(ObjectIndexEntry.ObjectType)),
-			FilterField.VehicleType => Expression.Property(parameter, nameof(ObjectIndexEntry.VehicleType)),
-			FilterField.ObjectSource => Expression.Property(parameter, nameof(ObjectIndexEntry.ObjectSource)),
-			_ => null
-		};
 	}
 }

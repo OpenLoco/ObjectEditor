@@ -3,6 +3,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using Dat.Data;
+using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using DynamicData.Binding;
@@ -53,6 +54,8 @@ public class FolderTreeViewModel : ReactiveObject
 	ReadOnlyObservableCollection<ObjectIndexEntry> treeDataGridSource;
 
 	[Reactive] public ObjectDisplayMode DisplayMode { get; set; } = ObjectDisplayMode.All;
+	[Reactive] public ObjectType? SelectedObjectType { get; set; }
+	public ObservableCollection<ObjectType> AvailableObjectTypes { get; }
 	public ObservableCollection<FilterViewModel> Filters { get; } = [];
 	public ReactiveCommand<Unit, Unit> AddFilterCommand { get; }
 
@@ -96,22 +99,23 @@ public class FolderTreeViewModel : ReactiveObject
 		Model = model;
 		Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = progress;
 
-		RefreshDirectoryItems = ReactiveCommand.Create(() => ReloadDirectoryAsync(false));
-		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : Model.Settings.DownloadFolder, Model.Logger));
-		OpenFolderFor = ReactiveCommand.Create((FileSystemItem clickedOn) =>
-		{
-			if (IsLocal && clickedOn.FileLocation == FileLocation.Local && (clickedOn.SubNodes == null || clickedOn.SubNodes.Count == 0) && File.Exists(clickedOn.FileName))
-			{
-				var dir = Directory.GetParent(clickedOn.FileName)?.FullName;
-				PlatformSpecific.FolderOpenInDesktop(dir, Model.Logger, Path.GetFileName(clickedOn.FileName));
-			}
-		});
+		AvailableObjectTypes = new(Enum
+			.GetValues<ObjectType>()
+			.Cast<ObjectType>());
 
+		var canAddFilter = this.WhenAnyValue(x => x.SelectedObjectType, (ot) => ot.HasValue);
 		AddFilterCommand = ReactiveCommand.Create(() =>
 		{
-			var newFilter = new FilterViewModel(RemoveFilter);
-			Filters.Add(newFilter);
-		});
+			if (SelectedObjectType.HasValue)
+			{
+				var type = ObjectTypeMapping.ObjectTypeToStructType(SelectedObjectType.Value);
+				if (type != null)
+				{
+					var newFilter = new FilterViewModel(type, RemoveFilter);
+					Filters.Add(newFilter);
+				}
+			}
+		}, canAddFilter);
 
 		_filterSubject = new BehaviorSubject<Func<ObjectIndexEntry, bool>>(t => true);
 
@@ -122,13 +126,17 @@ public class FolderTreeViewModel : ReactiveObject
 			.ToCollection()
 			.Select(_ => Unit.Default);
 
-		var displayModeChanged = this.WhenAnyValue(x => x.DisplayMode).Select(_ => Unit.Default);
+		var rootFiltersChanged = this.WhenAnyValue(x => x.DisplayMode, x => x.SelectedObjectType).Select(_ => Unit.Default);
 
-		var combinedTrigger = Observable.Merge(filtersChanged, displayModeChanged)
+		var combinedTrigger = Observable.Merge(filtersChanged, rootFiltersChanged)
 			.Throttle(TimeSpan.FromMilliseconds(300))
 			.Select(_ => CreateFilterPredicate());
 
 		_ = combinedTrigger.Subscribe(_filterSubject);
+
+		_ = this.WhenAnyValue(x => x.SelectedObjectType)
+			.Skip(1)
+			.Subscribe(_ => Filters.Clear());
 
 		_ = CurrentDirectoryItems.Connect()
 			.Filter(_filterSubject)
@@ -152,7 +160,17 @@ public class FolderTreeViewModel : ReactiveObject
 	private Func<ObjectIndexEntry, bool> CreateFilterPredicate()
 	{
 		var parameter = Expression.Parameter(typeof(ObjectIndexEntry), "entry");
-		Expression? combinedExpression = null;
+		Expression combinedExpression = Expression.Constant(true);
+
+		// Master ObjectType Filter
+		if (SelectedObjectType.HasValue)
+		{
+			var objectTypeExpression = Expression.Equal(
+				Expression.Property(parameter, nameof(ObjectIndexEntry.ObjectType)),
+				Expression.Constant(SelectedObjectType.Value)
+			);
+			combinedExpression = Expression.AndAlso(combinedExpression, objectTypeExpression);
+		}
 
 		// Display Mode Filter
 		Expression displayModeExpression = DisplayMode switch
@@ -165,7 +183,7 @@ public class FolderTreeViewModel : ReactiveObject
 			ObjectDisplayMode.OpenLoco => Expression.Equal(Expression.Property(parameter, nameof(ObjectIndexEntry.ObjectSource)), Expression.Constant(ObjectSource.OpenLoco)),
 			_ => Expression.Constant(true)
 		};
-		combinedExpression = displayModeExpression;
+		combinedExpression = Expression.AndAlso(combinedExpression, displayModeExpression);
 
 		// Dynamic Filters
 		foreach (var filter in Filters)
@@ -182,8 +200,6 @@ public class FolderTreeViewModel : ReactiveObject
 		return lambda.Compile();
 	}
 
-	// ... other methods (ReloadDirectoryAsync, etc.) are unchanged ...
-	#region Unchanged Methods
 	public static int CountNodes(FileSystemItem fib)
 	{
 		if (fib.SubNodes == null || fib.SubNodes.Count == 0)
@@ -393,5 +409,4 @@ public class FolderTreeViewModel : ReactiveObject
 
 		return result;
 	}
-	#endregion
 }

@@ -67,11 +67,7 @@
 					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
 			</Border>
-			<DockPanel Grid.Row="2">
-				<materialIcons:MaterialIcon Kind="Magnify" Width="24" Height="24" Margin="2"/>
-				<!--<TextBox Text="{Binding FilenameFilter}" Watermark="Filename filter" />-->
-			</DockPanel>
-			<Border Grid.Row="3" BorderThickness="1">
+			<Border Grid.Row="2" BorderThickness="1">
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="*"/>
@@ -83,15 +79,24 @@
 					<RadioButton Grid.Column="2" HorizontalAlignment="Center" GroupName="DisplayModeGroup" Content="All" IsChecked="{Binding DisplayMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static vm:ObjectDisplayMode.All}}"/>
 				</Grid>
 			</Border>
+			<StackPanel Grid.Row="3" Orientation="Vertical" Margin="4">
+				<ComboBox ItemsSource="{Binding AvailableObjectTypes}"
+						  SelectedItem="{Binding SelectedObjectType}"
+						  HorizontalAlignment="Stretch"/>
+			</StackPanel>
 			<StackPanel Grid.Row="4" Orientation="Vertical" Margin="4">
-				<Button Content="Add Filter" Command="{Binding AddFilterCommand}" />
+				<Button Content="Add Property Filter" Command="{Binding AddFilterCommand}" />
 				<ItemsControl ItemsSource="{Binding Filters}">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal" Spacing="5" Margin="0,5">
-								<ComboBox ItemsSource="{Binding AvailableFields}" SelectedItem="{Binding SelectedField}" />
-								<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}" />
-								<TextBox Text="{Binding FilterValue}" Watermark="Value" />
+								<ComboBox ItemsSource="{Binding AvailableFields}"
+										  SelectedItem="{Binding SelectedField}"
+										  DisplayMemberBinding="{Binding Name}"
+										  MinWidth="120"/>
+								<ComboBox ItemsSource="{Binding AvailableOperators}"
+										  SelectedItem="{Binding SelectedOperator}"/>
+								<TextBox Text="{Binding FilterValue}" Watermark="Value" MinWidth="120"/>
 								<Button Content="X" Command="{Binding RemoveFilterCommand}" Classes="danger" />
 							</StackPanel>
 						</DataTemplate>

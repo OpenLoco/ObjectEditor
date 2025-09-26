@@ -7,7 +7,7 @@
 	xmlns:mo="using:Gui.Models"
 	xmlns:cnv="using:Gui.Converters"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-	mc:Ignorable="d" d:DesignWidth="384" d:DesignHeight="768"
+	mc:Ignorable="d" d:DesignWidth="512" d:DesignHeight="768"
 	x:Class="Gui.Views.FolderTreeView"
 	x:DataType="vm:FolderTreeViewModel">
 
@@ -69,8 +69,8 @@
 				<ItemsControl ItemsSource="{Binding Filters}">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
-							<StackPanel Orientation="Horizontal" Spacing="5" Margin="0,5">
-								<ComboBox ItemsSource="{Binding AvailableFiltersList}" SelectedItem="{Binding SelectedObjectType}" HorizontalAlignment="Stretch" Height="32" MinWidth="160">
+							<StackPanel Orientation="Horizontal" Spacing="4" Margin="4" Width="256">
+								<ComboBox ItemsSource="{Binding AvailableFiltersList, Mode=TwoWay}" SelectedItem="{Binding SelectedObjectType, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="32" MinWidth="160">
 									<ComboBox.ItemTemplate>
 										<DataTemplate>
 											<StackPanel Orientation="Horizontal" Margin="4" Background="{Binding BackgroundColour}">
@@ -80,13 +80,13 @@
 										</DataTemplate>
 									</ComboBox.ItemTemplate>
 								</ComboBox>
-								<ComboBox ItemsSource="{Binding AvailableFields}" SelectedItem="{Binding SelectedField}" DisplayMemberBinding="{Binding Name}" MinWidth="120"/>
+								<ComboBox ItemsSource="{Binding AvailableProperties}" SelectedItem="{Binding SelectedProperty}" DisplayMemberBinding="{Binding Name}" MinWidth="120"/>
 								<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}"/>
 								<Grid MinWidth="120">
-									<TextBox Text="{Binding FilterValue}" Watermark="Value" IsVisible="{Binding IsTextValue}"/>
-									<DatePicker SelectedDate="{Binding FilterValue, Mode=TwoWay}" IsVisible="{Binding IsDateValue}"/>
-									<ComboBox ItemsSource="{Binding AvailableEnumValues}" SelectedItem="{Binding FilterValue, Mode=TwoWay}" IsVisible="{Binding IsEnumValue}"/>
-									<CheckBox IsChecked="{Binding FilterValue, Mode=TwoWay}" IsVisible="{Binding IsBoolValue}" />
+									<TextBox Text="{Binding TextValue}" Watermark="Value" IsVisible="{Binding IsTextValue}"/>
+									<DatePicker SelectedDate="{Binding DateValue}" IsVisible="{Binding IsDateValue}"/>
+									<ComboBox ItemsSource="{Binding AvailableEnumValues}" SelectedItem="{Binding EnumValue}" IsVisible="{Binding IsEnumValue}"/>
+									<CheckBox IsChecked="{Binding BoolValue}" IsVisible="{Binding IsBoolValue}" />
 								</Grid>
 								<Button Content="X" Command="{Binding RemoveFilterCommand}" Classes="danger" />
 							</StackPanel>

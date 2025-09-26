@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using Avalonia.Threading;
 using Dat.Data;
 using Definitions.ObjectModels.Types;
 using DynamicData;
@@ -41,6 +40,13 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 			null,
 			null,
 			null));
+
+		var availableFilterCategories = new List<FilterTypeViewModel>
+		{
+			new() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) },
+			new() { Type = typeof (MetadataModel), DisplayName = "Metadata", IconName = nameof(MetadataModel) }
+		};
+		Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
 	}
 }
 
@@ -52,9 +58,6 @@ public class FolderTreeViewModel : ReactiveObject
 	public HierarchicalTreeDataGridSource<FileSystemItem> TreeDataGridSource { get; set; }
 	ReadOnlyObservableCollection<ObjectIndexEntry> treeDataGridSource;
 
-	[Reactive] public ObjectDisplayMode DisplayMode { get; set; } = ObjectDisplayMode.All;
-	[Reactive] public ObjectType? SelectedObjectType { get; set; }
-	//public ObservableCollection<object> AvailableObjectTypes { get; }
 	public ObservableCollection<FilterViewModel> Filters { get; } = [];
 	public ReactiveCommand<Unit, Unit> AddFilterCommand { get; }
 
@@ -124,22 +127,17 @@ public class FolderTreeViewModel : ReactiveObject
 		_filterSubject = new BehaviorSubject<Func<ObjectIndexEntry, bool>>(t => true);
 
 		var filtersChanged = Filters.ToObservableChangeSet()
-			.AutoRefresh(f => f.SelectedField)
+			.Skip(1)
+			.AutoRefresh(f => f.SelectedProperty)
 			.AutoRefresh(f => f.SelectedOperator)
-			.AutoRefresh(f => f.FilterValue)
+			.AutoRefresh(f => f.BoolValue)
+			.AutoRefresh(f => f.DateValue)
+			.AutoRefresh(f => f.EnumValue)
+			.AutoRefresh(f => f.TextValue)
 			.ToCollection()
-			.Select(_ => Unit.Default);
-
-		var rootFiltersChanged = this.WhenAnyValue(x => x.DisplayMode, x => x.SelectedObjectType).Select(_ => Unit.Default);
-
-		var combinedTrigger = Observable.Merge(filtersChanged, rootFiltersChanged)
 			.Throttle(TimeSpan.FromMilliseconds(200))
 			.Select(_ => CreateFilterPredicate())
 			.Subscribe(_filterSubject);
-
-		_ = this.WhenAnyValue(x => x.SelectedObjectType)
-			.Skip(1)
-			.Subscribe(_ => Filters.Clear());
 
 		_ = CurrentDirectoryItems.Connect()
 			.Filter(_filterSubject)
@@ -158,7 +156,8 @@ public class FolderTreeViewModel : ReactiveObject
 		CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
 	}
 
-	private void RemoveFilter(FilterViewModel filter) => Filters.Remove(filter);
+	protected void RemoveFilter(FilterViewModel filter)
+		=> Filters.Remove(filter);
 
 	private Func<ObjectIndexEntry, bool> CreateFilterPredicate()
 	{
@@ -167,11 +166,19 @@ public class FolderTreeViewModel : ReactiveObject
 
 		foreach (var filter in Filters)
 		{
-			var filterExpression = filter.BuildExpression();
-			if (filterExpression != null)
+			try
 			{
-				var invoked = Expression.Invoke(filterExpression, parameter);
-				combinedExpression = Expression.AndAlso(combinedExpression, invoked);
+				var filterExpression = filter.BuildExpression();
+				if (filterExpression != null)
+				{
+					var invoked = Expression.Invoke(filterExpression, parameter);
+					combinedExpression = Expression.AndAlso(combinedExpression, invoked);
+				}
+			}
+			catch (Exception ex)
+			{
+				// Log or handle the exception as needed
+				Console.WriteLine($"Error building filter expression: {ex.Message}");
 			}
 		}
 
@@ -301,7 +308,7 @@ public class FolderTreeViewModel : ReactiveObject
 			},
 		};
 
-		Dispatcher.UIThread.Invoke(new Action(() => TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged));
+		//Dispatcher.UIThread.Invoke(new Action(() => TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged));
 
 		this.RaisePropertyChanged(nameof(TreeDataGridSource));
 

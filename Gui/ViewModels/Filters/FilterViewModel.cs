@@ -1,9 +1,11 @@
 using Avalonia.Media;
+using Common;
 using DynamicData;
 using Index;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -26,18 +28,17 @@ public class FilterTypeViewModel : ReactiveObject
 public class FilterViewModel : ReactiveObject
 {
 	[Reactive] public FilterTypeViewModel? SelectedObjectType { get; set; }
-	[Reactive] public PropertyInfo? SelectedField { get; set; }
-	[Reactive] public FilterOperator SelectedOperator { get; set; }
-	[Reactive]
-	public object? FilterValue
-	{
-		get;
-		set;
-	}
+	[Reactive] public PropertyInfo? SelectedProperty { get; set; }
+	[Reactive] public FilterOperator? SelectedOperator { get; set; }
 
-	public ObservableCollection<PropertyInfo> AvailableFields { get; set; } = [];
+	[Reactive] public string? TextValue { get; set; }
+	[Reactive] public DateTimeOffset? DateValue { get; set; }
+	[Reactive] public object? EnumValue { get; set; }
+	[Reactive] public bool? BoolValue { get; set; }
+
+	public ObservableCollection<PropertyInfo> AvailableProperties { get; set; } = [];
 	public ObservableCollection<FilterOperator> AvailableOperators { get; set; } = [];
-	public ObservableCollection<object> AvailableEnumValues { get; } = [];
+	public ObservableCollection<object> AvailableEnumValues { get; set; } = [];
 
 	[Reactive] public bool IsTextValue { get; private set; }
 	[Reactive] public bool IsDateValue { get; private set; }
@@ -46,65 +47,34 @@ public class FilterViewModel : ReactiveObject
 
 	public ReactiveCommand<Unit, Unit> RemoveFilterCommand { get; }
 
-	public ObservableCollection<FilterTypeViewModel> AvailableFiltersList { get; }
+	public ObservableCollection<FilterTypeViewModel> AvailableFiltersList { get; set; } = [];
 
 	public FilterViewModel(List<FilterTypeViewModel> availableFilters, Action<FilterViewModel> onRemove)
 	{
-		AvailableFiltersList = new(availableFilters);
+		AvailableFiltersList.Clear();
+		AvailableFiltersList.AddRange(availableFilters);
+
+		SelectedObjectType = AvailableFiltersList.FirstOrDefault();
 
 		_ = this.WhenAnyValue(x => x.SelectedObjectType)
 			.Where(x => x != null)
 			.Subscribe(_ =>
 			{
-				AvailableFields.Clear();
-				AvailableFields.AddRange(SelectedObjectType!.Type.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name));
-				SelectedField = AvailableFields.FirstOrDefault();
+				AvailableProperties.Clear();
+				AvailableProperties.AddRange(SelectedObjectType!.Type.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name));
+				SelectedProperty = AvailableProperties.FirstOrDefault();
+				SelectedOperator = null;
 			});
 
-		_ = this.WhenAnyValue(x => x.SelectedField)
-			.Where(field => field is not null)
-			.Subscribe(field =>
+		_ = this.WhenAnyValue(x => x.SelectedProperty)
+			.Where(x => x != null)
+			.Subscribe(property =>
 			{
-				UpdateAvailableOperators(field!.PropertyType);
-				UpdateValueInputType(field!.PropertyType);
+				UpdateAvailableOperators(property!.PropertyType);
+				UpdateValueInputType(property!.PropertyType);
 			});
 
 		RemoveFilterCommand = ReactiveCommand.Create(() => onRemove(this));
-	}
-
-	private void UpdateValueInputType(Type propertyType)
-	{
-		var underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
-
-		IsTextValue = false;
-		IsDateValue = false;
-		IsEnumValue = false;
-		IsBoolValue = false;
-		AvailableEnumValues.Clear();
-
-		if (underlyingType.IsEnum)
-		{
-			IsEnumValue = true;
-			var enumValues = Enum.GetValues(underlyingType);
-			AvailableEnumValues.AddRange(enumValues.Cast<object>());
-			FilterValue = enumValues.GetValue(0);
-		}
-		else if (underlyingType == typeof(bool))
-		{
-			IsBoolValue = true;
-			FilterValue = false;
-		}
-		else if (underlyingType == typeof(string) || IsNumericType(underlyingType))
-		{
-			IsTextValue = true;
-			FilterValue = string.Empty;
-		}
-		else if (underlyingType == typeof(DateOnly))
-		{
-			IsDateValue = true;
-			// Set a default value for the date picker
-			FilterValue = DateOnly.FromDateTime(DateTime.Now);
-		}
 	}
 
 	private void UpdateAvailableOperators(Type propertyType)
@@ -112,7 +82,11 @@ public class FilterViewModel : ReactiveObject
 		AvailableOperators.Clear();
 		var underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
 
-		if (underlyingType == typeof(string))
+		if (underlyingType.IsEnum || underlyingType == typeof(bool))
+		{
+			AvailableOperators.AddRange([FilterOperator.Equals, FilterOperator.NotEquals]);
+		}
+		else if (underlyingType == typeof(string))
 		{
 			AvailableOperators.AddRange([
 				FilterOperator.Contains,
@@ -122,11 +96,7 @@ public class FilterViewModel : ReactiveObject
 				FilterOperator.EndsWith
 			]);
 		}
-		else if (underlyingType.IsEnum || underlyingType == typeof(bool))
-		{
-			AvailableOperators.AddRange([FilterOperator.Equals, FilterOperator.NotEquals]);
-		}
-		else if (IsNumericType(underlyingType) || underlyingType == typeof(DateOnly))
+		else if (IsNumericType(underlyingType) || underlyingType == typeof(DateOnly) || underlyingType == typeof(DateTime) || underlyingType == typeof(DateTimeOffset))
 		{
 			AvailableOperators.AddRange([
 				FilterOperator.Equals,
@@ -145,51 +115,76 @@ public class FilterViewModel : ReactiveObject
 		SelectedOperator = AvailableOperators.FirstOrDefault();
 	}
 
-	private static bool IsNumericType(Type type) => Type.GetTypeCode(type) switch
+	private void UpdateValueInputType(Type propertyType)
 	{
-		TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.Decimal or TypeCode.Double or TypeCode.Single => true,
-		_ => false,
-	};
+		var underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+		AvailableEnumValues.Clear();
+
+		IsTextValue = false;
+		IsDateValue = false;
+		IsEnumValue = false;
+		IsBoolValue = false;
+
+		if (underlyingType.IsEnum)
+		{
+			IsEnumValue = true;
+			var enumValues = Enum.GetValues(underlyingType);
+			AvailableEnumValues.AddRange(enumValues.Cast<object>());
+			EnumValue = enumValues.GetValue(0);
+			//Debug.Assert(EnumValue == enumValues.GetValue(0));
+		}
+		else if (underlyingType == typeof(bool))
+		{
+			IsBoolValue = true;
+			BoolValue = false;
+			//Debug.Assert((bool)BoolValue == false);
+		}
+		else if (underlyingType == typeof(DateOnly) || underlyingType == typeof(DateTime) || underlyingType == typeof(DateTimeOffset))
+		{
+			IsDateValue = true;
+			// Set a default value for the date picker
+			DateValue = DateTimeOffset.Now;
+			//Debug.Assert((DateOnly)DateValue == DateOnly.Today);
+		}
+		else if (underlyingType == typeof(string) || IsNumericType(underlyingType))
+		{
+			IsTextValue = true;
+			TextValue = string.Empty;
+			//Debug.Assert((string)TextValue == string.Empty);
+		}
+		else if (underlyingType == typeof(ICollection) || underlyingType == typeof(ICollection<>) || underlyingType.IsGenericType)
+		{
+			// not implemented at the moment
+		}
+		else
+		{
+			//Debug.Assert(false, "Unsupported property type for filtering");
+		}
+	}
+
+	private static bool IsNumericType(Type type)
+		=> Type.GetTypeCode(type) switch
+		{
+			TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.Decimal or TypeCode.Double or TypeCode.Single => true,
+			_ => false,
+		};
 
 	public Expression<Func<ObjectIndexEntry, bool>>? BuildExpression()
 	{
-		if (FilterValue == null || SelectedField == null)
+		if (SelectedProperty == null)
 		{
 			return null;
 		}
 
 		var parameter = Expression.Parameter(typeof(ObjectIndexEntry), "x");
-		var member = Expression.Property(parameter, SelectedField.Name);
+		var member = Expression.Property(parameter, SelectedProperty.Name);
 		Expression? body = null;
 
 		var underlyingType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
 
-		if (underlyingType == typeof(string))
+		if (underlyingType.IsEnum && EnumValue != null)
 		{
-			var method = typeof(string).GetMethod(nameof(string.Contains), [typeof(string), typeof(StringComparison)]);
-			var startsWithMethod = typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string), typeof(StringComparison)]);
-			var endsWithMethod = typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string), typeof(StringComparison)]);
-			var toLowerMethod = typeof(string).GetMethod("ToLower", Type.EmptyTypes);
-
-			var comparisonConstant = Expression.Constant(StringComparison.OrdinalIgnoreCase);
-			var constant = Expression.Constant(FilterValue);
-
-			var memberLower = Expression.Call(member, toLowerMethod!);
-			var constantLower = Expression.Call(constant, toLowerMethod!);
-
-			body = SelectedOperator switch
-			{
-				FilterOperator.Contains => Expression.Call(member, method!, constant, comparisonConstant),
-				FilterOperator.StartsWith => Expression.Call(member, startsWithMethod!, constant, comparisonConstant),
-				FilterOperator.EndsWith => Expression.Call(member, endsWithMethod!, constant, comparisonConstant),
-				FilterOperator.Equals => Expression.Equal(memberLower, constantLower),
-				FilterOperator.NotEquals => Expression.NotEqual(memberLower, constantLower),
-				_ => null
-			};
-		}
-		else if (underlyingType.IsEnum)
-		{
-			var enumConstant = Expression.Constant(FilterValue, member.Type);
+			var enumConstant = Expression.Constant(EnumValue, member.Type);
 			body = SelectedOperator switch
 			{
 				FilterOperator.Equals => Expression.Equal(member, enumConstant),
@@ -197,11 +192,21 @@ public class FilterViewModel : ReactiveObject
 				_ => null
 			};
 		}
-		else if (IsNumericType(underlyingType) || underlyingType == typeof(DateOnly))
+		else if (underlyingType == typeof(bool) && BoolValue != null)
+		{
+			var constant = Expression.Constant(BoolValue);
+			body = SelectedOperator switch
+			{
+				FilterOperator.Equals => Expression.Equal(member, constant),
+				FilterOperator.NotEquals => Expression.NotEqual(member, constant),
+				_ => null
+			};
+		}
+		else if (IsNumericType(underlyingType) && TextValue != null)
 		{
 			try
 			{
-				var convertedValue = Convert.ChangeType(FilterValue, underlyingType);
+				var convertedValue = Convert.ChangeType(TextValue, underlyingType);
 				var constant = Expression.Constant(convertedValue, member.Type);
 
 				body = SelectedOperator switch
@@ -220,13 +225,49 @@ public class FilterViewModel : ReactiveObject
 				return null; // Conversion failed
 			}
 		}
-		else if (underlyingType == typeof(bool))
+		else if (underlyingType == typeof(DateOnly) && DateValue != null)
 		{
-			var constant = Expression.Constant(FilterValue);
+			try
+			{
+				var convertedValue = Convert.ChangeType(DateValue, underlyingType);
+				var constant = Expression.Constant(convertedValue, member.Type);
+
+				body = SelectedOperator switch
+				{
+					FilterOperator.Equals => Expression.Equal(member, constant),
+					FilterOperator.NotEquals => Expression.NotEqual(member, constant),
+					FilterOperator.GreaterThan => Expression.GreaterThan(member, constant),
+					FilterOperator.GreaterThanOrEqual => Expression.GreaterThanOrEqual(member, constant),
+					FilterOperator.LessThan => Expression.LessThan(member, constant),
+					FilterOperator.LessThanOrEqual => Expression.LessThanOrEqual(member, constant),
+					_ => null
+				};
+			}
+			catch (Exception)
+			{
+				return null; // Conversion failed
+			}
+		}
+		else if (underlyingType == typeof(string) && TextValue != null)
+		{
+			var method = typeof(string).GetMethod(nameof(string.Contains), [typeof(string), typeof(StringComparison)]);
+			var startsWithMethod = typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string), typeof(StringComparison)]);
+			var endsWithMethod = typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string), typeof(StringComparison)]);
+			var toLowerMethod = typeof(string).GetMethod("ToLower", Type.EmptyTypes);
+
+			var comparisonConstant = Expression.Constant(StringComparison.OrdinalIgnoreCase);
+			var constant = Expression.Constant(TextValue);
+
+			var memberLower = Expression.Call(member, toLowerMethod!);
+			var constantLower = Expression.Call(constant, toLowerMethod!);
+
 			body = SelectedOperator switch
 			{
-				FilterOperator.Equals => Expression.Equal(member, constant),
-				FilterOperator.NotEquals => Expression.NotEqual(member, constant),
+				FilterOperator.Contains => Expression.Call(member, method!, constant, comparisonConstant),
+				FilterOperator.StartsWith => Expression.Call(member, startsWithMethod!, constant, comparisonConstant),
+				FilterOperator.EndsWith => Expression.Call(member, endsWithMethod!, constant, comparisonConstant),
+				FilterOperator.Equals => Expression.Equal(memberLower, constantLower),
+				FilterOperator.NotEquals => Expression.NotEqual(memberLower, constantLower),
 				_ => null
 			};
 		}

@@ -1,8 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Dat.Data;
+using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using DynamicData.Binding;
@@ -16,7 +18,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -48,8 +49,8 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 			new() { Type = typeof (MetadataModel), DisplayName = "Metadata", IconName = nameof(MetadataModel) }
 		};
 
-		Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
-		Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
+		//Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
+		//Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
 	}
 }
 
@@ -111,21 +112,20 @@ public class FolderTreeViewModel : ReactiveObject
 		};
 
 		// todo: add in object-specific searches
-		//var objBrush = new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x80, 0x80));
-		//foreach (var obj in Enum.GetValues<ObjectType>().OrderBy(x => x.ToString()))
-		//{
-		//	var typeOfObj = ObjectTypeMapping.ObjectTypeToStructType(obj);
-		//	availableFilterCategories.Add(new()
-		//	{
-		//		Type = typeOfObj,
-		//		DisplayName = typeOfObj.Name.Replace("Object", string.Empty),
-		//		IconName = typeOfObj.Name.Replace("Object", string.Empty),
-		//		BackgroundColour = objBrush
-		//	});
+		var objBrush = new SolidColorBrush(Color.FromArgb(0x30, 0x80, 0x80, 0x80));
+		foreach (var obj in Enum.GetValues<ObjectType>().OrderBy(x => x.ToString()))
+		{
+			var typeOfObj = ObjectTypeMapping.ObjectTypeToStructType(obj);
+			availableFilterCategories.Add(new()
+			{
+				Type = typeOfObj,
+				DisplayName = typeOfObj.Name.Replace("Object", string.Empty),
+				IconName = typeOfObj.Name.Replace("Object", string.Empty),
+				BackgroundColour = objBrush
+			});
+		}
 
-		//}
-
-		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter)));
+		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(Model, availableFilterCategories, RemoveFilter)));
 
 		_filterSubject = new BehaviorSubject<Func<ObjectIndexEntry, bool>>(t => true);
 
@@ -138,7 +138,7 @@ public class FolderTreeViewModel : ReactiveObject
 			.AutoRefresh(f => f.EnumValue)
 			.AutoRefresh(f => f.TextValue)
 			.ToCollection()
-			.Throttle(TimeSpan.FromMilliseconds(200))
+			.Throttle(TimeSpan.FromMilliseconds(500))
 			.Select(_ => CreateFilterPredicate())
 			.Subscribe(_filterSubject);
 
@@ -164,18 +164,16 @@ public class FolderTreeViewModel : ReactiveObject
 
 	private Func<ObjectIndexEntry, bool> CreateFilterPredicate()
 	{
-		var parameter = Expression.Parameter(typeof(ObjectIndexEntry), "entry");
-		Expression combinedExpression = Expression.Constant(true);
+		var filterDelegates = new List<Func<ObjectIndexEntry, bool>>();
 
 		foreach (var filter in Filters)
 		{
 			try
 			{
-				var filterExpression = filter.BuildExpression();
-				if (filterExpression != null)
+				var filterDelegate = filter.BuildExpression();
+				if (filterDelegate != null)
 				{
-					var invoked = Expression.Invoke(filterExpression, parameter);
-					combinedExpression = Expression.AndAlso(combinedExpression, invoked);
+					filterDelegates.Add(filterDelegate);
 				}
 			}
 			catch (Exception ex)
@@ -185,9 +183,12 @@ public class FolderTreeViewModel : ReactiveObject
 			}
 		}
 
-		return Expression
-			.Lambda<Func<ObjectIndexEntry, bool>>(combinedExpression, parameter)
-			.Compile();
+		if (filterDelegates.Count == 0)
+		{
+			return _ => true;
+		}
+
+		return entry => filterDelegates.All(filter => filter(entry));
 	}
 
 	public static int CountNodes(FileSystemItem fib)

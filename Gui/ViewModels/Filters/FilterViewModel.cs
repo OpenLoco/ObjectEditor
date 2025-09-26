@@ -1,6 +1,8 @@
 using Avalonia.Media;
 using Common;
+using Definitions.ObjectModels;
 using DynamicData;
+using Gui.Models;
 using Index;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -27,10 +29,11 @@ public class FilterTypeViewModel : ReactiveObject
 
 public class FilterViewModel : ReactiveObject
 {
+	private readonly ObjectEditorModel _model;
+
 	[Reactive] public FilterTypeViewModel? SelectedObjectType { get; set; }
 	[Reactive] public PropertyInfo? SelectedProperty { get; set; }
 	[Reactive] public FilterOperator? SelectedOperator { get; set; }
-
 	[Reactive] public string? TextValue { get; set; }
 	[Reactive] public DateTimeOffset? DateValue { get; set; }
 	[Reactive] public object? EnumValue { get; set; }
@@ -49,11 +52,10 @@ public class FilterViewModel : ReactiveObject
 
 	public ObservableCollection<FilterTypeViewModel> AvailableFiltersList { get; set; } = [];
 
-	public FilterViewModel(List<FilterTypeViewModel> availableFilters, Action<FilterViewModel> onRemove)
+	public FilterViewModel(ObjectEditorModel model, List<FilterTypeViewModel> availableFilters, Action<FilterViewModel> onRemove)
 	{
-		AvailableFiltersList.Clear();
+		_model = model;
 		AvailableFiltersList.AddRange(availableFilters);
-
 		SelectedObjectType = AvailableFiltersList.FirstOrDefault();
 
 		_ = this.WhenAnyValue(x => x.SelectedObjectType)
@@ -169,7 +171,83 @@ public class FilterViewModel : ReactiveObject
 			_ => false,
 		};
 
-	public Expression<Func<ObjectIndexEntry, bool>>? BuildExpression()
+	public Func<ObjectIndexEntry, bool>? BuildExpression()
+	{
+		if (SelectedProperty == null || SelectedObjectType == null)
+		{
+			return null;
+		}
+
+		// If the filter is on the index itself, build a fast expression tree
+		if (SelectedObjectType.Type == typeof(ObjectIndexEntry))
+		{
+			return BuildIndexFilterExpression()?.Compile();
+		}
+
+		// Otherwise, build a delegate that loads the object from disk
+		return BuildObjectFilter;
+	}
+
+	bool BuildObjectFilter(ObjectIndexEntry entry)
+	{
+		if (ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
+		{
+			return false;
+		}
+
+		var fileSystemItem = FolderTreeViewModel.IndexEntryToFileSystemItem(entry, _model.Settings.ObjDataDirectory, FileLocation.Local); // todo: change this to support online mode
+		if (!_model.TryLoadObject(fileSystemItem, out var locoFile) || locoFile?.LocoObject == null)
+		{
+			return false;
+		}
+
+		// should never trigger because the first type check should catch this
+		if (locoFile.LocoObject.ObjectType != entry.ObjectType)
+		{
+			return false;
+		}
+
+		var locoObject = locoFile.LocoObject.Object;
+		var propertyValue = SelectedProperty!.GetValue(locoObject);
+
+		// This is a simplified comparison logic. You might want to expand it to be as robust as BuildIndexFilterExpression.
+		// For now, we'll just support 'Equals'.
+		var filterValue = GetFilterValue();
+		return SelectedOperator switch
+		{
+			FilterOperator.Equals => Equals(propertyValue.ToString(), filterValue.ToString()),
+			FilterOperator.NotEquals => !Equals(propertyValue, filterValue),
+			// Add other operators as needed
+			_ => false,
+		};
+	}
+
+	private object? GetFilterValue()
+	{
+		if (IsBoolValue)
+		{
+			return BoolValue;
+		}
+
+		if (IsDateValue)
+		{
+			return DateValue;
+		}
+
+		if (IsEnumValue)
+		{
+			return EnumValue;
+		}
+
+		if (IsTextValue)
+		{
+			return TextValue;
+		}
+
+		return null;
+	}
+
+	private Expression<Func<ObjectIndexEntry, bool>>? BuildIndexFilterExpression()
 	{
 		if (SelectedProperty == null)
 		{

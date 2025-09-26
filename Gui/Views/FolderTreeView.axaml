@@ -82,12 +82,20 @@
 								<StackPanel Spacing="4">
 									<StackPanel ZIndex="0" Orientation="Horizontal" Spacing="4">
 										<ComboBox ItemsSource="{Binding AvailableFiltersList, Mode=TwoWay}" DockPanel.Dock="Top" SelectedItem="{Binding SelectedObjectType, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="32" MinWidth="128">
+											<ComboBox.ItemContainerTheme>
+												<ControlTheme TargetType="ComboBoxItem">
+													<Setter Property="Padding" Value="0" />
+													<Setter Property="Margin" Value="0" />
+												</ControlTheme>
+											</ComboBox.ItemContainerTheme>
 											<ComboBox.ItemTemplate>
 												<DataTemplate>
-													<StackPanel Orientation="Horizontal" Margin="4" Background="{Binding BackgroundColour}">
-														<materialIcons:MaterialIcon Kind="{Binding IconName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
-														<TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" />
-													</StackPanel>
+													<Panel Margin="0" Background="{Binding BackgroundColour}">
+														<StackPanel Orientation="Horizontal" Margin="4" >
+															<materialIcons:MaterialIcon Kind="{Binding IconName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
+															<TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" />
+														</StackPanel>
+													</Panel>
 												</DataTemplate>
 											</ComboBox.ItemTemplate>
 										</ComboBox>

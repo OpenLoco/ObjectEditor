@@ -181,45 +181,11 @@ public class FilterViewModel : ReactiveObject
 		// If the filter is on the index itself, build a fast expression tree
 		if (SelectedObjectType.Type == typeof(ObjectIndexEntry))
 		{
-			return BuildIndexFilterExpression()?.Compile();
+			return BuildFilterExpression<ObjectIndexEntry>()?.Compile();
 		}
 
 		// Otherwise, build a delegate that loads the object from disk
 		return BuildObjectFilter;
-	}
-
-	bool BuildObjectFilter(ObjectIndexEntry entry)
-	{
-		if (ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
-		{
-			return false;
-		}
-
-		var fileSystemItem = FolderTreeViewModel.IndexEntryToFileSystemItem(entry, _model.Settings.ObjDataDirectory, FileLocation.Local); // todo: change this to support online mode
-		if (!_model.TryLoadObject(fileSystemItem, out var locoFile) || locoFile?.LocoObject == null)
-		{
-			return false;
-		}
-
-		// should never trigger because the first type check should catch this
-		if (locoFile.LocoObject.ObjectType != entry.ObjectType)
-		{
-			return false;
-		}
-
-		var locoObject = locoFile.LocoObject.Object;
-		var propertyValue = SelectedProperty!.GetValue(locoObject);
-
-		// This is a simplified comparison logic. You might want to expand it to be as robust as BuildIndexFilterExpression.
-		// For now, we'll just support 'Equals'.
-		var filterValue = GetFilterValue();
-		return SelectedOperator switch
-		{
-			FilterOperator.Equals => Equals(propertyValue.ToString(), filterValue.ToString()),
-			FilterOperator.NotEquals => !Equals(propertyValue, filterValue),
-			// Add other operators as needed
-			_ => false,
-		};
 	}
 
 	private object? GetFilterValue()
@@ -247,14 +213,37 @@ public class FilterViewModel : ReactiveObject
 		return null;
 	}
 
-	private Expression<Func<ObjectIndexEntry, bool>>? BuildIndexFilterExpression()
+	bool BuildObjectFilter(ObjectIndexEntry entry)
+	{
+		if (ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
+		{
+			return false;
+		}
+
+		var fileSystemItem = FolderTreeViewModel.IndexEntryToFileSystemItem(entry, _model.Settings.ObjDataDirectory, FileLocation.Local); // todo: change this to support online mode
+		if (!_model.TryLoadObject(fileSystemItem, out var locoFile) || locoFile?.LocoObject == null)
+		{
+			return false;
+		}
+
+		// should never trigger because the first type check should catch this
+		if (locoFile.LocoObject.ObjectType != entry.ObjectType)
+		{
+			return false;
+		}
+
+		var locoObject = locoFile.LocoObject.Object;
+		return BuildObjectFilterExpression(SelectedObjectType.Type)?.Compile().Invoke(locoObject) ?? false;
+	}
+
+	private Expression<Func<T, bool>>? BuildFilterExpression<T>()
 	{
 		if (SelectedProperty == null)
 		{
 			return null;
 		}
 
-		var parameter = Expression.Parameter(typeof(ObjectIndexEntry), "x");
+		var parameter = Expression.Parameter(typeof(T), "x");
 		var member = Expression.Property(parameter, SelectedProperty.Name);
 		Expression? body = null;
 
@@ -355,6 +344,118 @@ public class FilterViewModel : ReactiveObject
 			return null;
 		}
 
-		return Expression.Lambda<Func<ObjectIndexEntry, bool>>(body, parameter);
+		return Expression.Lambda<Func<T, bool>>(body, parameter);
+	}
+
+	private Expression<Func<ILocoStruct, bool>>? BuildObjectFilterExpression(Type t)
+	{
+		if (SelectedProperty == null)
+		{
+			return null;
+		}
+
+		var parameter = Expression.Parameter(typeof(ILocoStruct), "x");
+		var convertedParameter = Expression.Convert(parameter, t); // Cast the interface to the concrete type
+		var member = Expression.Property(convertedParameter, SelectedProperty.Name);
+		Expression? body = null;
+
+		var underlyingType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+
+		if (underlyingType.IsEnum && EnumValue != null)
+		{
+			var enumConstant = Expression.Constant(EnumValue, member.Type);
+			body = SelectedOperator switch
+			{
+				FilterOperator.Equals => Expression.Equal(member, enumConstant),
+				FilterOperator.NotEquals => Expression.NotEqual(member, enumConstant),
+				_ => null
+			};
+		}
+		else if (underlyingType == typeof(bool) && BoolValue != null)
+		{
+			var constant = Expression.Constant(BoolValue);
+			body = SelectedOperator switch
+			{
+				FilterOperator.Equals => Expression.Equal(member, constant),
+				FilterOperator.NotEquals => Expression.NotEqual(member, constant),
+				_ => null
+			};
+		}
+		else if (IsNumericType(underlyingType) && TextValue != null)
+		{
+			try
+			{
+				var convertedValue = Convert.ChangeType(TextValue, underlyingType);
+				var constant = Expression.Constant(convertedValue, member.Type);
+
+				body = SelectedOperator switch
+				{
+					FilterOperator.Equals => Expression.Equal(member, constant),
+					FilterOperator.NotEquals => Expression.NotEqual(member, constant),
+					FilterOperator.GreaterThan => Expression.GreaterThan(member, constant),
+					FilterOperator.GreaterThanOrEqual => Expression.GreaterThanOrEqual(member, constant),
+					FilterOperator.LessThan => Expression.LessThan(member, constant),
+					FilterOperator.LessThanOrEqual => Expression.LessThanOrEqual(member, constant),
+					_ => null
+				};
+			}
+			catch (Exception)
+			{
+				return null; // Conversion failed
+			}
+		}
+		else if (underlyingType == typeof(DateOnly) && DateValue != null)
+		{
+			try
+			{
+				var convertedValue = Convert.ChangeType(DateValue, underlyingType);
+				var constant = Expression.Constant(convertedValue, member.Type);
+
+				body = SelectedOperator switch
+				{
+					FilterOperator.Equals => Expression.Equal(member, constant),
+					FilterOperator.NotEquals => Expression.NotEqual(member, constant),
+					FilterOperator.GreaterThan => Expression.GreaterThan(member, constant),
+					FilterOperator.GreaterThanOrEqual => Expression.GreaterThanOrEqual(member, constant),
+					FilterOperator.LessThan => Expression.LessThan(member, constant),
+					FilterOperator.LessThanOrEqual => Expression.LessThanOrEqual(member, constant),
+					_ => null
+				};
+			}
+			catch (Exception)
+			{
+				return null; // Conversion failed
+			}
+		}
+		else if (underlyingType == typeof(string) && TextValue != null)
+		{
+			var method = typeof(string).GetMethod(nameof(string.Contains), [typeof(string), typeof(StringComparison)]);
+			var startsWithMethod = typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string), typeof(StringComparison)]);
+			var endsWithMethod = typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string), typeof(StringComparison)]);
+			var toLowerMethod = typeof(string).GetMethod("ToLower", Type.EmptyTypes);
+
+			var comparisonConstant = Expression.Constant(StringComparison.OrdinalIgnoreCase);
+			var constant = Expression.Constant(TextValue);
+
+			var memberLower = Expression.Call(member, toLowerMethod!);
+			var constantLower = Expression.Call(constant, toLowerMethod!);
+
+			body = SelectedOperator switch
+			{
+				FilterOperator.Contains => Expression.Call(member, method!, constant, comparisonConstant),
+				FilterOperator.StartsWith => Expression.Call(member, startsWithMethod!, constant, comparisonConstant),
+				FilterOperator.EndsWith => Expression.Call(member, endsWithMethod!, constant, comparisonConstant),
+				FilterOperator.Equals => Expression.Equal(memberLower, constantLower),
+				FilterOperator.NotEquals => Expression.NotEqual(memberLower, constantLower),
+				_ => null
+			};
+		}
+
+		if (body == null)
+		{
+			return null;
+		}
+
+		return Expression.Lambda<Func<ILocoStruct, bool>>(body, parameter);
 	}
 }

@@ -7,7 +7,7 @@
 	xmlns:mo="using:Gui.Models"
 	xmlns:cnv="using:Gui.Converters"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-	mc:Ignorable="d" d:DesignWidth="512" d:DesignHeight="768"
+	mc:Ignorable="d" d:DesignWidth="448" d:DesignHeight="768"
 	x:Class="Gui.Views.FolderTreeView"
 	x:DataType="vm:FolderTreeViewModel">
 
@@ -67,29 +67,41 @@
 			</Border>
 			<StackPanel Grid.Row="2" Orientation="Vertical" Margin="4">
 				<ItemsControl ItemsSource="{Binding Filters}">
+					<ItemsControl.Styles>
+						<Style Selector="ItemsPresenter > ContentPresenter, ItemsControl > ContentPresenter:nth-child(odd)">
+							<Setter Property="Background" Value="#60C0C0C0" />
+						</Style>
+						<Style Selector="ItemsPresenter > ContentPresenter, ItemsControl > ContentPresenter:nth-child(even)">
+							<Setter Property="Background" Value="#60606060" />
+						</Style>
+					</ItemsControl.Styles>
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
-							<StackPanel Orientation="Horizontal" Spacing="4" Margin="4" Width="256">
-								<ComboBox ItemsSource="{Binding AvailableFiltersList, Mode=TwoWay}" SelectedItem="{Binding SelectedObjectType, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="32" MinWidth="160">
-									<ComboBox.ItemTemplate>
-										<DataTemplate>
-											<StackPanel Orientation="Horizontal" Margin="4" Background="{Binding BackgroundColour}">
-												<materialIcons:MaterialIcon Kind="{Binding IconName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
-												<TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" />
-											</StackPanel>
-										</DataTemplate>
-									</ComboBox.ItemTemplate>
-								</ComboBox>
-								<ComboBox ItemsSource="{Binding AvailableProperties}" SelectedItem="{Binding SelectedProperty}" DisplayMemberBinding="{Binding Name}" MinWidth="120"/>
-								<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}"/>
-								<Grid MinWidth="120">
-									<TextBox Text="{Binding TextValue}" Watermark="Value" IsVisible="{Binding IsTextValue}"/>
-									<DatePicker SelectedDate="{Binding DateValue}" IsVisible="{Binding IsDateValue}"/>
-									<ComboBox ItemsSource="{Binding AvailableEnumValues}" SelectedItem="{Binding EnumValue}" IsVisible="{Binding IsEnumValue}"/>
-									<CheckBox IsChecked="{Binding BoolValue}" IsVisible="{Binding IsBoolValue}" />
-								</Grid>
-								<Button Content="X" Command="{Binding RemoveFilterCommand}" Classes="danger" />
-							</StackPanel>
+							<DockPanel Margin="4">
+								<Button DockPanel.Dock="Right" ZIndex="1" Margin="2,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Content="X" Command="{Binding RemoveFilterCommand}" Classes="danger" />
+								<StackPanel Spacing="4">
+									<StackPanel ZIndex="0" Orientation="Horizontal" Spacing="4">
+										<ComboBox ItemsSource="{Binding AvailableFiltersList, Mode=TwoWay}" DockPanel.Dock="Top" SelectedItem="{Binding SelectedObjectType, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="32" MinWidth="128">
+											<ComboBox.ItemTemplate>
+												<DataTemplate>
+													<StackPanel Orientation="Horizontal" Margin="4" Background="{Binding BackgroundColour}">
+														<materialIcons:MaterialIcon Kind="{Binding IconName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
+														<TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" />
+													</StackPanel>
+												</DataTemplate>
+											</ComboBox.ItemTemplate>
+										</ComboBox>
+										<ComboBox ItemsSource="{Binding AvailableProperties}" SelectedItem="{Binding SelectedProperty}" DisplayMemberBinding="{Binding Name}"/>
+										<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}"/>
+									</StackPanel>
+									<Grid DockPanel.Dock="Bottom">
+										<TextBox Text="{Binding TextValue}" Watermark="Value" IsVisible="{Binding IsTextValue}"/>
+										<DatePicker SelectedDate="{Binding DateValue}" IsVisible="{Binding IsDateValue}"/>
+										<ComboBox ItemsSource="{Binding AvailableEnumValues}" SelectedItem="{Binding EnumValue}" IsVisible="{Binding IsEnumValue}"/>
+										<CheckBox IsChecked="{Binding BoolValue}" IsVisible="{Binding IsBoolValue}" />
+									</Grid>
+								</StackPanel>
+							</DockPanel>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>

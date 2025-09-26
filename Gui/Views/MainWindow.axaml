@@ -373,7 +373,7 @@
                     OnContent="{materialIcons:MaterialIconExt Kind=MoonWaningCrescent}" />
 			</StackPanel>
 		</DockPanel>
-		<Grid ColumnDefinitions="384, Auto, *" RowDefinitions="*">
+		<Grid ColumnDefinitions="448, Auto, *" RowDefinitions="*">
 			<ContentControl Grid.Column="0" Content="{Binding FolderTreeViewModel}" />
 			<GridSplitter
                 Grid.Row="1"

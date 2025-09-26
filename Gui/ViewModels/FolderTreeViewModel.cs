@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
+using Avalonia.Threading;
 using Dat.Data;
 using Definitions.ObjectModels.Types;
 using DynamicData;
@@ -46,6 +47,8 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 			new() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) },
 			new() { Type = typeof (MetadataModel), DisplayName = "Metadata", IconName = nameof(MetadataModel) }
 		};
+
+		Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
 		Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));
 	}
 }
@@ -308,7 +311,7 @@ public class FolderTreeViewModel : ReactiveObject
 			},
 		};
 
-		//Dispatcher.UIThread.Invoke(new Action(() => TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged));
+		Dispatcher.UIThread.Invoke(new Action(() => TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged));
 
 		this.RaisePropertyChanged(nameof(TreeDataGridSource));
 

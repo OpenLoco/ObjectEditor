@@ -21,7 +21,7 @@
 	</UserControl.Resources>
 
 	<DockPanel>
-		<TabStrip DockPanel.Dock="Top"  Margin="2" SelectedIndex="{Binding SelectedTabIndex}" HorizontalAlignment="Center" Name="LocalOnlineTab">
+		<TabStrip DockPanel.Dock="Top" Margin="2" SelectedIndex="{Binding SelectedTabIndex}" HorizontalAlignment="Center" Name="LocalOnlineTab">
 			<TabItem>
 				<TabItem.Header>
 					<DockPanel>
@@ -41,7 +41,6 @@
 		</TabStrip>
 		<Grid Background="{DynamicResource ExpanderHeaderBackground}">
 			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
@@ -65,97 +64,108 @@
 					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
 			</Border>
-			<StackPanel Grid.Row="2" Orientation="Vertical" Margin="4">
-				<ItemsControl ItemsSource="{Binding Filters}">
-					<ItemsControl.Styles>
-						<Style Selector="ItemsPresenter > ContentPresenter, ItemsControl > ContentPresenter:nth-child(odd)">
-							<Setter Property="Background" Value="#60C0C0C0" />
-						</Style>
-						<Style Selector="ItemsPresenter > ContentPresenter, ItemsControl > ContentPresenter:nth-child(even)">
-							<Setter Property="Background" Value="#60606060" />
-						</Style>
-					</ItemsControl.Styles>
-					<ItemsControl.ItemTemplate>
-						<DataTemplate>
-							<DockPanel Margin="4">
-								<Button DockPanel.Dock="Right" ZIndex="1" Margin="2,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Content="X" Command="{Binding RemoveFilterCommand}" Classes="danger" />
-								<StackPanel Spacing="4">
-									<StackPanel ZIndex="0" Orientation="Horizontal" Spacing="4">
-										<ComboBox ItemsSource="{Binding AvailableFiltersList, Mode=TwoWay}" DockPanel.Dock="Top" SelectedItem="{Binding SelectedObjectType, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="32" MinWidth="128">
-											<ComboBox.ItemContainerTheme>
-												<ControlTheme TargetType="ComboBoxItem">
-													<Setter Property="Padding" Value="0" />
-													<Setter Property="Margin" Value="0" />
-												</ControlTheme>
-											</ComboBox.ItemContainerTheme>
-											<ComboBox.ItemTemplate>
-												<DataTemplate>
-													<Panel Margin="0" Background="{Binding BackgroundColour}">
-														<StackPanel Orientation="Horizontal" Margin="4" >
-															<materialIcons:MaterialIcon Kind="{Binding IconName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
-															<TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" />
-														</StackPanel>
-													</Panel>
-												</DataTemplate>
-											</ComboBox.ItemTemplate>
-										</ComboBox>
-										<ComboBox ItemsSource="{Binding AvailableProperties}" SelectedItem="{Binding SelectedProperty}" DisplayMemberBinding="{Binding Name}"/>
-										<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}"/>
-									</StackPanel>
-									<Grid DockPanel.Dock="Bottom">
-										<TextBox Text="{Binding TextValue}" Watermark="Value" IsVisible="{Binding IsTextValue}"/>
-										<DatePicker SelectedDate="{Binding DateValue}" IsVisible="{Binding IsDateValue}"/>
-										<ComboBox ItemsSource="{Binding AvailableEnumValues}" SelectedItem="{Binding EnumValue}" IsVisible="{Binding IsEnumValue}"/>
-										<CheckBox IsChecked="{Binding BoolValue}" IsVisible="{Binding IsBoolValue}" />
-									</Grid>
+			<Border Grid.Row="2" BorderThickness="8">
+				<DockPanel>
+					<StackPanel Orientation="Vertical" Margin="4" DockPanel.Dock="Top" Spacing="4">
+						<ItemsControl ItemsSource="{Binding Filters}">
+							<ItemsControl.Styles>
+								<Style Selector="ItemsPresenter > ContentPresenter, ItemsControl > ContentPresenter:nth-child(odd)">
+									<Setter Property="Background" Value="#60C0C0C0" />
+								</Style>
+								<Style Selector="ItemsPresenter > ContentPresenter, ItemsControl > ContentPresenter:nth-child(even)">
+									<Setter Property="Background" Value="#60606060" />
+								</Style>
+							</ItemsControl.Styles>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<DockPanel Margin="4">
+										<Button DockPanel.Dock="Right" ZIndex="1" Margin="2,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Content="X" Command="{Binding RemoveFilterCommand}" Classes="danger" />
+										<StackPanel Spacing="4">
+											<StackPanel ZIndex="0" Orientation="Horizontal" Spacing="4">
+												<ComboBox ItemsSource="{Binding AvailableFiltersList, Mode=TwoWay}" DockPanel.Dock="Top" SelectedItem="{Binding SelectedObjectType, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="32" MinWidth="128">
+													<ComboBox.ItemContainerTheme>
+														<ControlTheme TargetType="ComboBoxItem">
+															<Setter Property="Padding" Value="0" />
+															<Setter Property="Margin" Value="0" />
+														</ControlTheme>
+													</ComboBox.ItemContainerTheme>
+													<ComboBox.ItemTemplate>
+														<DataTemplate>
+															<Panel Margin="0" Background="{Binding BackgroundColour}">
+																<StackPanel Orientation="Horizontal" Margin="4" >
+																	<materialIcons:MaterialIcon Kind="{Binding IconName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
+																	<TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" />
+																</StackPanel>
+															</Panel>
+														</DataTemplate>
+													</ComboBox.ItemTemplate>
+												</ComboBox>
+												<ComboBox ItemsSource="{Binding AvailableProperties}" SelectedItem="{Binding SelectedProperty}" DisplayMemberBinding="{Binding Name}"/>
+												<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}"/>
+											</StackPanel>
+											<Grid DockPanel.Dock="Bottom">
+												<TextBox Text="{Binding TextValue}" Watermark="Value" IsVisible="{Binding IsTextValue}"/>
+												<DatePicker SelectedDate="{Binding DateValue}" IsVisible="{Binding IsDateValue}"/>
+												<ComboBox ItemsSource="{Binding AvailableEnumValues}" SelectedItem="{Binding EnumValue}" IsVisible="{Binding IsEnumValue}"/>
+												<CheckBox IsChecked="{Binding BoolValue}" IsVisible="{Binding IsBoolValue}" />
+											</Grid>
+										</StackPanel>
+									</DockPanel>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+						<DockPanel>
+							<TextBlock DockPanel.Dock="Left" Margin="4" Text="{Binding TreeDataGridSourceCount, StringFormat='\{0\} results'}" VerticalAlignment="Center" />
+							<Button Command="{Binding ExpandAllCommand}" ToolTip.Tip="Expand all categories" DockPanel.Dock="Right" >
+								<materialIcons:MaterialIcon Kind="ExpandAll" Width="24" Height="24" Margin="2" />
+							</Button>
+							<Button Command="{Binding CollapseAllCommand}" ToolTip.Tip="Collapse all catagories" DockPanel.Dock="Right" >
+								<materialIcons:MaterialIcon Kind="CollapseAll" Width="24" Height="24" Margin="2" />
+							</Button>
+							<Button Command="{Binding AddFilterCommand}" ToolTip.Tip="Add a search filter" DockPanel.Dock="Right" HorizontalAlignment="Right">
+								<materialIcons:MaterialIcon Kind="Plus" Width="24" Height="24" Margin="2" />
+							</Button>
+						</DockPanel>
+					</StackPanel>
+					<TreeDataGrid Source="{Binding TreeDataGridSource}">
+						<TreeDataGrid.Styles>
+							<Style Selector="TreeDataGrid TreeDataGridRow">
+								<Setter Property="Height" Value="32"/>
+							</Style>
+							<Style Selector="TreeDataGrid TreeDataGridRow:nth-child(even)">
+								<Setter Property="Background" Value="#30808080"/>
+								<!-- ARGB in hex -->
+							</Style>
+						</TreeDataGrid.Styles>
+						<TreeDataGrid.Resources>
+							<!-- Template for Name column cells -->
+							<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
+							<DataTemplate x:Key="Object" DataType="mo:FileSystemItem">
+								<StackPanel Orientation="Horizontal" >
+									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
+									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+									<StackPanel.ContextMenu>
+										<ContextMenu IsVisible="{Binding IsLeafNode}">
+											<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
+										</ContextMenu>
+									</StackPanel.ContextMenu>
 								</StackPanel>
-							</DockPanel>
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ItemsControl>
-				<Button Command="{Binding AddFilterCommand}" Height="32" Width="32" HorizontalAlignment="Center">
-					<materialIcons:MaterialIcon Kind="Plus" Width="24" Height="24" />
-				</Button>
-			</StackPanel>
-			<Border Grid.Row="3" BorderThickness="1">
-				<TreeDataGrid Source="{Binding TreeDataGridSource}">
-					<TreeDataGrid.Styles>
-						<Style Selector="TreeDataGrid TreeDataGridRow">
-							<Setter Property="Height" Value="32"/>
-						</Style>
-						<Style Selector="TreeDataGrid TreeDataGridRow:nth-child(even)">
-							<Setter Property="Background" Value="#30808080"/>
-							<!-- ARGB in hex -->
-						</Style>
-					</TreeDataGrid.Styles>
-					<TreeDataGrid.Resources>
-						<!-- Template for Name column cells -->
-						<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
-						<DataTemplate x:Key="Object" DataType="mo:FileSystemItem">
-							<StackPanel Orientation="Horizontal" >
-								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
-								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-								<StackPanel.ContextMenu>
-									<ContextMenu IsVisible="{Binding IsLeafNode}">
-										<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
-									</ContextMenu>
-								</StackPanel.ContextMenu>
-							</StackPanel>
-						</DataTemplate>
-						<!-- Edit template for Name column cells -->
-						<DataTemplate x:Key="Edit" DataType="mo:FileSystemItem">
-							<StackPanel Orientation="Horizontal" >
-								<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-								<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
-								<StackPanel.ContextMenu>
-									<ContextMenu IsVisible="{Binding IsLeafNode}">
-										<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
-									</ContextMenu>
-								</StackPanel.ContextMenu>
-							</StackPanel>
-						</DataTemplate>
-					</TreeDataGrid.Resources>
-				</TreeDataGrid>
+							</DataTemplate>
+							<!-- Edit template for Name column cells -->
+							<DataTemplate x:Key="Edit" DataType="mo:FileSystemItem">
+								<StackPanel Orientation="Horizontal" >
+									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
+									<StackPanel.ContextMenu>
+										<ContextMenu IsVisible="{Binding IsLeafNode}">
+											<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
+										</ContextMenu>
+									</StackPanel.ContextMenu>
+								</StackPanel>
+							</DataTemplate>
+						</TreeDataGrid.Resources>
+					</TreeDataGrid>
+				</DockPanel>
 			</Border>
 		</Grid>
 	</DockPanel>

@@ -49,6 +49,12 @@ public class FilterViewModel : ReactiveObject
 	[Reactive] public bool IsEnumValue { get; private set; }
 	[Reactive] public bool IsBoolValue { get; private set; }
 
+	public bool IsValid
+		=> SelectedObjectType != null
+		&& SelectedProperty != null
+		&& SelectedOperator != null
+		&& GetFilterValue() != null;
+
 	public ReactiveCommand<Unit, Unit> RemoveFilterCommand { get; }
 
 	public ObservableCollection<FilterTypeViewModel> AvailableFiltersList { get; set; } = [];

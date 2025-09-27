@@ -60,9 +60,12 @@ public class FolderTreeViewModel : ReactiveObject
 
 	public HierarchicalTreeDataGridSource<FileSystemItem> TreeDataGridSource { get; set; }
 	ReadOnlyObservableCollection<ObjectIndexEntry> treeDataGridSource;
+	public int TreeDataGridSourceCount => treeDataGridSource?.Count ?? 0;
 
 	public ObservableCollection<FilterViewModel> Filters { get; } = [];
 	public ReactiveCommand<Unit, Unit> AddFilterCommand { get; }
+	public ReactiveCommand<Unit, Unit> ExpandAllCommand { get; }
+	public ReactiveCommand<Unit, Unit> CollapseAllCommand { get; }
 
 	private readonly BehaviorSubject<Func<ObjectIndexEntry, bool>> _filterSubject;
 
@@ -125,6 +128,8 @@ public class FolderTreeViewModel : ReactiveObject
 		}
 
 		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(Model, availableFilterCategories, RemoveFilter)));
+		ExpandAllCommand = ReactiveCommand.Create(() => TreeDataGridSource?.ExpandAll());
+		CollapseAllCommand = ReactiveCommand.Create(() => TreeDataGridSource?.CollapseAll());
 
 		_filterSubject = new BehaviorSubject<Func<ObjectIndexEntry, bool>>(t => true);
 
@@ -161,6 +166,7 @@ public class FolderTreeViewModel : ReactiveObject
 		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
 		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
 		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ => CurrentlySelectedObject = null);
+		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(TreeDataGridSourceCount)));
 		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
 		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(RecreateText)));
 		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
@@ -172,11 +178,12 @@ public class FolderTreeViewModel : ReactiveObject
 	protected void RemoveFilter(FilterViewModel filter)
 		=> Filters.Remove(filter);
 
+	// this needs to be async as it blocks the UI when building expressions is slow
 	private Func<ObjectIndexEntry, bool> CreateFilterPredicate()
 	{
 		var filterDelegates = new List<Func<ObjectIndexEntry, bool>>();
 
-		foreach (var filter in Filters)
+		foreach (var filter in Filters.Where(x => x.IsValid))
 		{
 			try
 			{
@@ -320,8 +327,12 @@ public class FolderTreeViewModel : ReactiveObject
 			},
 		};
 
-		this.RaisePropertyChanged(nameof(TreeDataGridSource));
+		if (Filters.All(x => x.IsValid))
+		{
+			TreeDataGridSource.ExpandAll();
+		}
 
+		this.RaisePropertyChanged(nameof(TreeDataGridSource));
 	}
 
 	static string GetNiceObjectSource(ObjectSource? os)

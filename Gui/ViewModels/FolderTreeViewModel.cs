@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Dat.Data;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
@@ -327,10 +328,13 @@ public class FolderTreeViewModel : ReactiveObject
 			},
 		};
 
-		if (Filters.All(x => x.IsValid))
+		Dispatcher.UIThread.Invoke(new Action(() =>
 		{
-			TreeDataGridSource.ExpandAll();
-		}
+			if (Filters.All(x => x.IsValid))
+			{
+				TreeDataGridSource.ExpandAll();
+			}
+		}));
 
 		this.RaisePropertyChanged(nameof(TreeDataGridSource));
 	}

@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Dat.Data;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
@@ -108,7 +107,7 @@ public class FolderTreeViewModel : ReactiveObject
 		var availableFilterCategories = new List<FilterTypeViewModel>
 		{
 			new() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) },
-			new() { Type = typeof (MetadataModel), DisplayName = "Metadata", IconName = nameof(MetadataModel) }
+			//new() { Type = typeof (MetadataModel), DisplayName = "Metadata", IconName = nameof(MetadataModel) }
 		};
 
 		// todo: add in object-specific searches
@@ -146,6 +145,17 @@ public class FolderTreeViewModel : ReactiveObject
 			.Filter(_filterSubject)
 			.Bind(out treeDataGridSource)
 			.Subscribe(_ => UpdateDirectoryItemsView());
+
+		_ = this.WhenAnyValue(x => x.TreeDataGridSource)
+			.Where(x => x?.RowSelection != null)
+			.Select(x => Observable.FromEventPattern<TreeSelectionModelSelectionChangedEventArgs<FileSystemItem>>(x.RowSelection, nameof(x.RowSelection.SelectionChanged)))
+			.Switch()
+			.Subscribe(e =>
+			{
+				CurrentlySelectedObject = e.EventArgs.SelectedItems.Count == 1
+					? e.EventArgs.SelectedItems[0]
+					: null;
+			});
 
 		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(async _ => await ReloadDirectoryAsync(true));
 		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
@@ -284,14 +294,13 @@ public class FolderTreeViewModel : ReactiveObject
 			IsLocal ? Model.Settings.ObjDataDirectory : Model.Settings.DownloadFolder,
 			IsLocal ? FileLocation.Local : FileLocation.Online);
 
-		//treeDataGridSource = [.. items];
 		TreeDataGridSource = new HierarchicalTreeDataGridSource<FileSystemItem>(_treeGridDataSource)
 		{
 			Columns =
 			{
 				new HierarchicalExpanderColumn<FileSystemItem>(
 					new TemplateColumn<FileSystemItem>(
-						string.Empty, // the column name
+						string.Empty, // the column name. it looks better with no name
 						"Object",
 						"Edit",
 						new GridLength(1, GridUnitType.Auto),
@@ -303,7 +312,6 @@ public class FolderTreeViewModel : ReactiveObject
 							TextSearchValueSelector = x => x.ToString()
 						}),
 					x => x.SubNodes),
-
 				new TextColumn<FileSystemItem, string?>("Source", x => GetNiceObjectSource(x.ObjectSource)),
 				new TextColumn<FileSystemItem, FileLocation?>("Origin", x => x.FileLocation),
 				new TextColumn<FileSystemItem, string?>("Location", x => x.FileName),
@@ -311,8 +319,6 @@ public class FolderTreeViewModel : ReactiveObject
 				new TextColumn<FileSystemItem, DateOnly?>("Modified", x => x.ModifiedDate),
 			},
 		};
-
-		Dispatcher.UIThread.Invoke(new Action(() => TreeDataGridSource.RowSelection!.SelectionChanged += SelectionChanged));
 
 		this.RaisePropertyChanged(nameof(TreeDataGridSource));
 
@@ -328,15 +334,6 @@ public class FolderTreeViewModel : ReactiveObject
 			null => string.Empty,
 			_ => throw new NotImplementedException(),
 		};
-
-	void SelectionChanged(object? sender, TreeSelectionModelSelectionChangedEventArgs<FileSystemItem> e)
-	{
-		CurrentlySelectedObject = null;
-		if (e.SelectedItems.Count == 1)
-		{
-			CurrentlySelectedObject = e.SelectedItems[0];
-		}
-	}
 
 	public static FileSystemItem IndexEntryToFileSystemItem(ObjectIndexEntry x, string baseDirectory, FileLocation fileLocation)
 	{

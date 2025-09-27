@@ -4,6 +4,7 @@ using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
 using Index;
+using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -63,7 +64,28 @@ public class FilterViewModel : ReactiveObject
 			.Subscribe(_ =>
 			{
 				AvailableProperties.Clear();
-				AvailableProperties.AddRange(SelectedObjectType!.Type.GetProperties(BindingFlags.Public | BindingFlags.Instance).OrderBy(p => p.Name));
+
+				// only add properties that are searchable (so no collections, sub objects)
+				var searchableProperties = SelectedObjectType!.Type
+					.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+					.Where(x => x.GetUnderlyingType().IsPrimitive
+						|| x.GetUnderlyingType() == typeof(string)
+						|| x.GetUnderlyingType() == typeof(DateOnly)
+						|| x.GetUnderlyingType() == typeof(DateTime)
+						|| x.GetUnderlyingType() == typeof(DateTimeOffset)
+						|| x.GetUnderlyingType().IsEnum
+						|| x.GetUnderlyingType() == typeof(bool)
+						|| (x.PropertyType.IsGenericType && x.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>) && (
+							Nullable.GetUnderlyingType(x.PropertyType)!.IsPrimitive
+							|| Nullable.GetUnderlyingType(x.PropertyType) == typeof(DateOnly)
+							|| Nullable.GetUnderlyingType(x.PropertyType) == typeof(DateTime)
+							|| Nullable.GetUnderlyingType(x.PropertyType) == typeof(DateTimeOffset)
+							|| Nullable.GetUnderlyingType(x.PropertyType)!.IsEnum
+							|| Nullable.GetUnderlyingType(x.PropertyType) == typeof(bool)
+						)))
+					.OrderBy(p => p.Name);
+
+				AvailableProperties.AddRange(searchableProperties);
 				SelectedProperty = AvailableProperties.FirstOrDefault();
 				SelectedOperator = null;
 			});
@@ -170,24 +192,6 @@ public class FilterViewModel : ReactiveObject
 			TypeCode.Byte or TypeCode.SByte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.Decimal or TypeCode.Double or TypeCode.Single => true,
 			_ => false,
 		};
-
-	public Func<ObjectIndexEntry, bool>? BuildExpression()
-	{
-		if (SelectedProperty == null || SelectedObjectType == null)
-		{
-			return null;
-		}
-
-		// If the filter is on the index itself, build a fast expression tree
-		if (SelectedObjectType.Type == typeof(ObjectIndexEntry))
-		{
-			return BuildFilterExpression<ObjectIndexEntry>()?.Compile();
-		}
-
-		// Otherwise, build a delegate that loads the object from disk
-		return BuildObjectFilter;
-	}
-
 	private object? GetFilterValue()
 	{
 		if (IsBoolValue)
@@ -213,6 +217,31 @@ public class FilterViewModel : ReactiveObject
 		return null;
 	}
 
+	public Func<ObjectIndexEntry, bool>? BuildExpression()
+	{
+		if (SelectedProperty == null || SelectedObjectType == null)
+		{
+			return null;
+		}
+
+		// If the filter is on the index itself, build a fast expression tree
+		if (SelectedObjectType.Type == typeof(ObjectIndexEntry))
+		{
+			return BuildFilterExpression<ObjectIndexEntry>()?.Compile();
+		}
+		//else if (SelectedObjectType.Type == typeof(MetadataModel))
+		//{
+		//	return BuildFilterExpression<MetadataModel>()?.Compile();
+		//}
+		// Otherwise, build a delegate that loads the object from disk
+		return BuildObjectFilter;
+	}
+
+	//bool BuildMetadataFilter(ObjectIndexEntry entry)
+	//{
+	//	return BuildFilterExpression<MetadataModel>()?.Compile();
+	//}
+
 	bool BuildObjectFilter(ObjectIndexEntry entry)
 	{
 		if (ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
@@ -220,6 +249,7 @@ public class FilterViewModel : ReactiveObject
 			return false;
 		}
 
+		// todo: only do this in local mode!
 		var fileSystemItem = FolderTreeViewModel.IndexEntryToFileSystemItem(entry, _model.Settings.ObjDataDirectory, FileLocation.Local); // todo: change this to support online mode
 		if (!_model.TryLoadObject(fileSystemItem, out var locoFile) || locoFile?.LocoObject == null)
 		{

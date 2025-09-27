@@ -64,10 +64,20 @@
 				<ResourceDictionary x:Key='Light'>
 					<SolidColorBrush x:Key='DangerButtonBackgroundBrush'>Crimson</SolidColorBrush>
 					<SolidColorBrush x:Key='DangerButtonForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='Shadow' Color='#0A0908' />
+					<SolidColorBrush x:Key='Dark' Color='#22333B' />
+					<SolidColorBrush x:Key='Neutral' Color='#EAE0D5' />
+					<SolidColorBrush x:Key='Light' Color='#C6AC8F' />
+					<SolidColorBrush x:Key='Highlight' Color='#5E503F' />
 				</ResourceDictionary>
 				<ResourceDictionary x:Key='Dark'>
 					<SolidColorBrush x:Key='DangerButtonBackgroundBrush'>Crimson</SolidColorBrush>
 					<SolidColorBrush x:Key='DangerButtonForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='Shadow' Color='#5E503F' />
+					<SolidColorBrush x:Key='Dark' Color='#C6AC8F' />
+					<SolidColorBrush x:Key='Neutral' Color='#EAE0D5' />
+					<SolidColorBrush x:Key='Light' Color='#22333B' />
+					<SolidColorBrush x:Key='Highlight' Color='#0A0908' />
 				</ResourceDictionary>
 			</ResourceDictionary.ThemeDictionaries>
 		</ResourceDictionary>

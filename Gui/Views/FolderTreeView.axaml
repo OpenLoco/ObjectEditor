@@ -64,7 +64,7 @@
 					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
 			</Border>
-			<Border Grid.Row="2" BorderThickness="8">
+			<Border Grid.Row="2" BorderThickness="4">
 				<DockPanel>
 					<StackPanel Orientation="Vertical" Margin="4" DockPanel.Dock="Top" Spacing="4">
 						<ItemsControl ItemsSource="{Binding Filters}">

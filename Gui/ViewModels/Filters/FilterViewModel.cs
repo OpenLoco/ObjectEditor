@@ -114,11 +114,11 @@ public class FilterViewModel : ReactiveObject
 
 		if (underlyingType.IsEnum)
 		{
-			AvailableOperators.AddRange([FilterOperator.Equals, FilterOperator.NotEquals]);
 			if (underlyingType.GetCustomAttribute<FlagsAttribute>() != null)
 			{
 				AvailableOperators.Add(FilterOperator.Contains);
 			}
+			AvailableOperators.AddRange([FilterOperator.Equals, FilterOperator.NotEquals]);
 		}
 		else if (underlyingType == typeof(bool))
 		{

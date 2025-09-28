@@ -330,7 +330,7 @@ public class FolderTreeViewModel : ReactiveObject
 
 		Dispatcher.UIThread.Invoke(new Action(() =>
 		{
-			if (Filters.All(x => x.IsValid))
+			if (Filters.Any() && Filters.All(x => x.IsValid))
 			{
 				TreeDataGridSource.ExpandAll();
 			}

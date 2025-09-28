@@ -703,7 +703,7 @@ public class LoadSaveTests
 				| RoadObjectFlags.unk_04
 				| RoadObjectFlags.IsRoad
 				| RoadObjectFlags.unk_07
-				| RoadObjectFlags.unk_08), nameof(struc.Flags));
+				| RoadObjectFlags.CanHaveStreetLights), nameof(struc.Flags));
 
 			Assert.That(struc.RoadPieces, Is.EqualTo(
 				RoadTraitFlags.SmallCurve

@@ -65,7 +65,7 @@ public class BuildingComponentsViewModel : ReactiveObject
 		BuildingHeights = new ObservableCollection<uint8_t>(buildingComponents.BuildingHeights);
 		BuildingAnimations = new ObservableCollection<BuildingPartAnimation>(buildingComponents.BuildingAnimations);
 
-		RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations);
+		//RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations);
 
 		//BuildingVariations = buildingComponents.BuildingVariations;
 		//BuildingComponentsModel = buildingComponents;

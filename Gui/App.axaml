@@ -58,6 +58,32 @@
 		</DataTemplate>
 	</Application.DataTemplates>
 
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.ThemeDictionaries>
+				<ResourceDictionary x:Key='Light'>
+					<SolidColorBrush x:Key='DangerButtonBackgroundBrush'>Crimson</SolidColorBrush>
+					<SolidColorBrush x:Key='DangerButtonForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='Shadow' Color='#0A0908' />
+					<SolidColorBrush x:Key='Dark' Color='#22333B' />
+					<SolidColorBrush x:Key='Neutral' Color='#EAE0D5' />
+					<SolidColorBrush x:Key='Light' Color='#C6AC8F' />
+					<SolidColorBrush x:Key='Highlight' Color='#5E503F' />
+				</ResourceDictionary>
+				<ResourceDictionary x:Key='Dark'>
+					<SolidColorBrush x:Key='DangerButtonBackgroundBrush'>Crimson</SolidColorBrush>
+					<SolidColorBrush x:Key='DangerButtonForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='Shadow' Color='#5E503F' />
+					<SolidColorBrush x:Key='Dark' Color='#C6AC8F' />
+					<SolidColorBrush x:Key='Neutral' Color='#EAE0D5' />
+					<SolidColorBrush x:Key='Light' Color='#22333B' />
+					<SolidColorBrush x:Key='Highlight' Color='#0A0908' />
+				</ResourceDictionary>
+			</ResourceDictionary.ThemeDictionaries>
+		</ResourceDictionary>
+
+	</Application.Resources>
+
 	<Application.Styles>
 		<FluentTheme />
 		<materialIcons:MaterialIconStyles />
@@ -77,6 +103,10 @@
 		</Style>
 		<Style Selector="Button">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
+		</Style>
+		<Style Selector="Button.danger">
+			<Setter Property="Background" Value="{DynamicResource DangerButtonBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource DangerButtonForegroundBrush}"/>
 		</Style>
 		<Style Selector="TextBox">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />

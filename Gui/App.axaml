@@ -4,6 +4,7 @@
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:local="using:Gui"
 	xmlns:domc="using:Definitions.ObjectModels.Objects.Common"
+	xmlns:domt="using:Definitions.ObjectModels.Types"
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:vi="using:Gui.Views"
 	xmlns:oldt="using:Dat.Types"
@@ -12,14 +13,69 @@
 	x:Class="Gui.App"
 	RequestedThemeVariant="Default">
 	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+	<Application.Styles>
+		<FluentTheme />
+		<materialIcons:MaterialIconStyles />
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+		<StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+
+		<Style Selector="TabItem">
+			<Setter Property="FontSize" Value="16" />
+			<Setter Property="Margin" Value="0" />
+			<Setter Property="Height" Value="16" />
+			<Setter Property="Padding" Value="8" />
+		</Style>
+		<Style Selector="Border">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
+			<Setter Property="CornerRadius" Value="4" />
+			<Setter Property="Margin" Value="0" />
+		</Style>
+		<Style Selector="Button">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
+		</Style>
+		<Style Selector="Button.danger">
+			<Setter Property="Background" Value="{DynamicResource DangerButtonBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource DangerButtonForegroundBrush}"/>
+		</Style>
+		<Style Selector="TextBox">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+		</Style>
+		<Style Selector="NumericUpDown">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
+		</Style>
+		<Style Selector="DataGrid">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
+		</Style>
+		<Style Selector="ComboBox">
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
+		</Style>
+
+		<Style Selector="GridSplitter">
+			<Setter Property="Background" Value="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" />
+		</Style>
+
+		<Style Selector="pgc|PropertyGrid">
+			<Setter Property="IsTitleVisible" Value="False" />
+			<Setter Property="IsHeaderVisible" Value="False" />
+			<Setter Property="IsCategoryVisible" Value="False" />
+			<Setter Property="IsQuickFilterVisible" Value="False" />
+			<Setter Property="IsAutoNameWidth" Value="True" />
+		</Style>
+
+		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
+	</Application.Styles>
 
 	<Application.DataTemplates>
 		<local:ViewLocator />
-		<DataTemplate DataType="vm:ObjectModelHeaderViewModel">
+		<DataTemplate DataType="vm:ObjectModelHeaderViewModel" >
 			<vi:ObjectModelHeaderView />
 		</DataTemplate>
 		<DataTemplate DataType="vm:ObjectHeaderViewModel">
-			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeaderVm" DataContext="{Binding}" IsCategoryVisible="False" />
+			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
+		</DataTemplate>
+		<DataTemplate DataType="domt:ObjectModelHeader">
+			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
 		</DataTemplate>
 		<!--<DataTemplate DataType="oldt:S5Header">
 			<pgc:PropertyGrid x:Name="propertyGrid_S5Header" DataContext="{Binding}" IsCategoryVisible="False" />
@@ -83,58 +139,4 @@
 		</ResourceDictionary>
 
 	</Application.Resources>
-
-	<Application.Styles>
-		<FluentTheme />
-		<materialIcons:MaterialIconStyles />
-		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
-		<StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
-
-		<Style Selector="TabItem">
-			<Setter Property="FontSize" Value="16" />
-			<Setter Property="Margin" Value="0" />
-			<Setter Property="Height" Value="16" />
-			<Setter Property="Padding" Value="8" />
-		</Style>
-		<Style Selector="Border">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
-			<Setter Property="CornerRadius" Value="4" />
-			<Setter Property="Margin" Value="0" />
-		</Style>
-		<Style Selector="Button">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
-		</Style>
-		<Style Selector="Button.danger">
-			<Setter Property="Background" Value="{DynamicResource DangerButtonBackgroundBrush}"/>
-			<Setter Property="Foreground" Value="{DynamicResource DangerButtonForegroundBrush}"/>
-		</Style>
-		<Style Selector="TextBox">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
-			<Setter Property="VerticalContentAlignment" Value="Center" />
-		</Style>
-		<Style Selector="NumericUpDown">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
-		</Style>
-		<Style Selector="DataGrid">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
-		</Style>
-		<Style Selector="ComboBox">
-			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
-		</Style>
-
-		<Style Selector="GridSplitter">
-			<Setter Property="Background" Value="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}" />
-		</Style>
-
-		<Style Selector="pgc|PropertyGrid">
-			<Setter Property="IsTitleVisible" Value="False" />
-			<Setter Property="IsHeaderVisible" Value="False" />
-			<Setter Property="IsCategoryVisible" Value="False" />
-			<Setter Property="IsQuickFilterVisible" Value="False" />
-			<Setter Property="IsAutoNameWidth" Value="True" />
-		</Style>
-
-		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
-	</Application.Styles>
-
 </Application>

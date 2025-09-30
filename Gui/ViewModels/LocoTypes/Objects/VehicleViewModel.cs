@@ -1,7 +1,10 @@
+using Common;
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using PropertyModels.ComponentModel.DataAnnotations;
+using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -9,9 +12,36 @@ using System.Linq;
 
 namespace Gui.ViewModels;
 
-public class VehicleViewModel(VehicleObject model)
-	: LocoObjectViewModel<VehicleObject>(model)
+public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 {
+	private readonly VehicleObject model;
+
+	public VehicleViewModel(VehicleObject model) : base(model)
+	{
+		this.model = model;
+		CompatibleVehicles = new(model.CompatibleVehicles);
+		RequiredTrackExtras = new(model.RequiredTrackExtras);
+		CarComponents = new(model.CarComponents);
+		BodySprites = new(model.BodySprites);
+		BogieSprites = new(model.BogieSprites);
+		Animation = new(model.ParticleEmitters);
+		CompatibleCargo1 = new(model.MaxCargo[0], new(model.CompatibleCargoCategories[0]));
+		CompatibleCargo2 = new(model.MaxCargo[1], new(model.CompatibleCargoCategories[1]));
+		CargoTypeSpriteOffsets = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
+		StartSounds = new(model.StartSounds);
+		var_135 = new(model.var_135);
+		TrackType = model.TrackType;
+		RackRail = model.RackRail;
+
+		HasRackRail = model.Flags.HasFlag(VehicleObjectFlags.RackRail);
+
+		_ = this.WhenAnyValue(x => x.Mode, x => x.Flags)
+			.Subscribe((_) => this.RaisePropertyChanged(nameof(IsTrackTypeSettable)));
+
+		_ = this.WhenAnyValue(x => x.IsTrackTypeSettable)
+			.Subscribe((_) => this.RaisePropertyChanged(nameof(TrackType)));
+	}
+
 	[Category("Stats")]
 	public TransportMode Mode
 	{
@@ -47,13 +77,6 @@ public class VehicleViewModel(VehicleObject model)
 		set => model.Speed = value;
 	}
 
-	[Category("Stats"), Description("Also used for Aircraft as their broken-down speed, landing speed, and approaching speed")]
-	public Speed16 RackSpeed
-	{
-		get => model.RackSpeed;
-		set => model.RackSpeed = value;
-	}
-
 	[Category("Stats")]
 	public uint16_t DesignedYear
 	{
@@ -75,24 +98,44 @@ public class VehicleViewModel(VehicleObject model)
 		set => model.Reliability = value;
 	}
 
-	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None)]
+	[Category("Stats"), Description("Also used for Aircraft as their broken-down speed, landing speed, and approaching speed")]
+	public Speed16 RackSpeed
+	{
+		get => model.RackSpeed;
+		set => model.RackSpeed = value;
+	}
+
+	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None, VehicleObjectFlags.RackRail)]
 	public VehicleObjectFlags Flags
 	{
 		get => model.Flags;
-		set => model.Flags = value;
+		set
+		{
+			model.Flags = value;
+			this.RaisePropertyChanged(nameof(Flags));
+		}
 	}
 
-	public ObjectModelHeader? TrackType
+	bool IsTrackTypeSettable
+		=> (!model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road));
+
+	[Reactive, ConditionTarget, PropertyVisibilityCondition(nameof(IsTrackTypeSettable), true)]
+	public ObjectModelHeader? TrackType { get; set; }
+
+	public bool HasRackRail
 	{
-		get => model.TrackType;
-		set => model.TrackType = value;
+		get => model.Flags.HasFlag(VehicleObjectFlags.RackRail);
+		set
+		{
+			model.Flags = model.Flags.ToggleFlag(VehicleObjectFlags.RackRail, value);
+			RackRail = value && RackRail == null
+				? new ObjectModelHeader("<obj>", ObjectType.TrackExtra, ObjectSource.OpenLoco, 0)
+				: null;
+		}
 	}
 
-	public ObjectModelHeader? RackRail
-	{
-		get => model.RackRail;
-		set => model.RackRail = value;
-	}
+	[Reactive, ConditionTarget, PropertyVisibilityCondition(nameof(HasRackRail), true)]
+	public ObjectModelHeader? RackRail { get; set; }
 
 	[Range(0, 4)]
 	public uint8_t NumCarComponents
@@ -102,10 +145,10 @@ public class VehicleViewModel(VehicleObject model)
 	}
 
 	[Length(0, 8)]
-	public BindingList<ObjectModelHeader> CompatibleVehicles { get; init; } = new(model.CompatibleVehicles);
+	public BindingList<ObjectModelHeader> CompatibleVehicles { get; init; }
 
 	[Length(0, 4)]
-	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; init; } = new(model.RequiredTrackExtras);
+	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; init; }
 
 	[Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")]
 	public uint8_t ShipWakeSpacing
@@ -149,19 +192,19 @@ public class VehicleViewModel(VehicleObject model)
 		set => model.CompanyColourSchemeIndex = value;
 	} // called "ColourType" in the loco codebase
 
-	[Category("Sprites"), Editable(false)] public BindingList<VehicleObjectCar> CarComponents { get; init; } = new(model.CarComponents);
-	[Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; init; } = new(model.BodySprites);
-	[Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; init; } = new(model.BogieSprites);
-	[Category("Sprites"), Editable(false)] public BindingList<EmitterAnimation> Animation { get; init; } = new(model.ParticleEmitters);
+	[Category("Sprites"), Editable(false)] public BindingList<VehicleObjectCar> CarComponents { get; init; }
+	[Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; init; }
+	[Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; init; }
+	[Category("Sprites"), Editable(false)] public BindingList<EmitterAnimation> Animation { get; init; }
 
 	[Category("Cargo")]
-	public CompatibleCargo CompatibleCargo1 { get; init; } = new(model.MaxCargo[0], new(model.CompatibleCargoCategories[0]));
+	public CompatibleCargo CompatibleCargo1 { get; init; }
 
 	[Category("Cargo")]
-	public CompatibleCargo CompatibleCargo2 { get; init; } = new(model.MaxCargo[1], new(model.CompatibleCargoCategories[1]));
+	public CompatibleCargo CompatibleCargo2 { get; init; }
 
 	[Category("Cargo"), Length(0, 32), Description("This is a dictionary. For every cargo defined in both CompatibleCargoCategories, an entry must exist in this dictionary.")]
-	public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; init; } = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
+	public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; init; }
 
 	[Category("Sound")]
 	public ObjectModelHeader? Sound
@@ -199,10 +242,10 @@ public class VehicleViewModel(VehicleObject model)
 	}
 
 	[Category("Sound")]
-	public BindingList<ObjectModelHeader> StartSounds { get; init; } = new(model.StartSounds);
+	public BindingList<ObjectModelHeader> StartSounds { get; init; }
 
 	[Category("<unknown>")]
-	public BindingList<uint8_t> var_135 { get; init; } = new(model.var_135);
+	public BindingList<uint8_t> var_135 { get; init; }
 
 	public override void CopyBackToModel()
 	{

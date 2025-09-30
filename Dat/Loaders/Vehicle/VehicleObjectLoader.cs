@@ -77,7 +77,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		}
 
 		// required track extra
-		model.RequiredTrackExtras = br.ReadS5HeaderList(numRequiredTrackExtras).ToArray();
+		model.RequiredTrackExtras = [.. br.ReadS5HeaderList(numRequiredTrackExtras)];
 
 		// compatible cargo
 		for (var i = 0; i < Constants.MaxCompatibleCargoCategories; ++i)

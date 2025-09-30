@@ -57,7 +57,7 @@
 				<DockPanel>
 					<Button Command="{Binding RefreshDirectoryItems}" BorderThickness="0" DockPanel.Dock="Right" MinWidth="48" MaxWidth="48" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="{Binding RecreateText}">
 						<DockPanel>
-							<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="1" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
+							<ProgressBar DockPanel.Dock="Bottom" Minimum="0" Maximum="100" Margin="4" Height="8" Value="{Binding IndexOrDownloadProgress}"/>
 							<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
 						</DockPanel>
 					</Button>
@@ -127,7 +127,7 @@
 							</Button>
 						</DockPanel>
 					</StackPanel>
-					<TreeDataGrid Source="{Binding TreeDataGridSource}">
+					<TreeDataGrid Source="{Binding TreeDataGridSource}" CanUserResizeColumns="True" CanUserSortColumns="True" >
 						<TreeDataGrid.Styles>
 							<Style Selector="TreeDataGrid TreeDataGridRow">
 								<Setter Property="Height" Value="32"/>
@@ -141,7 +141,7 @@
 							<!-- Template for Name column cells -->
 							<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
 							<DataTemplate x:Key="Object" DataType="mo:FileSystemItem">
-								<StackPanel Orientation="Horizontal" >
+								<StackPanel Orientation="Horizontal" ToolTip.Tip="{Binding FileName}">
 									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
 									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 									<StackPanel.ContextMenu>

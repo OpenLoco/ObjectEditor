@@ -231,7 +231,7 @@ public class FilterViewModel : ReactiveObject
 		return null;
 	}
 
-	public Func<ObjectIndexEntry, bool>? BuildExpression()
+	public Func<ObjectIndexEntry, bool>? BuildExpression(bool isLocal)
 	{
 		if (SelectedProperty == null || SelectedObjectType == null)
 		{
@@ -248,7 +248,7 @@ public class FilterViewModel : ReactiveObject
 		//	return BuildFilterExpression<MetadataModel>()?.Compile();
 		//}
 		// Otherwise, build a delegate that loads the object from disk
-		return BuildObjectFilter;
+		return (ObjectIndexEntry entry) => BuildObjectFilter(entry, isLocal);
 	}
 
 	//bool BuildMetadataFilter(ObjectIndexEntry entry)
@@ -256,15 +256,20 @@ public class FilterViewModel : ReactiveObject
 	//	return BuildFilterExpression<MetadataModel>()?.Compile();
 	//}
 
-	bool BuildObjectFilter(ObjectIndexEntry entry)
+	bool BuildObjectFilter(ObjectIndexEntry entry, bool isLocal)
 	{
+		if (!isLocal)
+		{
+			// online mode not supported yet
+			return false;
+		}
+
 		if (ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
 		{
 			return false;
 		}
 
-		// todo: only do this in local mode!
-		var fileSystemItem = FolderTreeViewModel.IndexEntryToFileSystemItem(entry, _model.Settings.ObjDataDirectory, FileLocation.Local); // todo: change this to support online mode
+		var fileSystemItem = FolderTreeViewModel.IndexEntryToFileSystemItem(entry, _model.Settings.ObjDataDirectory, FileLocation.Local);
 		if (!_model.TryLoadObject(fileSystemItem, out var locoFile) || locoFile?.LocoObject == null)
 		{
 			return false;

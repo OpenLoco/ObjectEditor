@@ -173,7 +173,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 					{
 						if (CurrentObject.LocoObject.ImageTable == null)
 						{
-							logger.Info("${CurrentFile.DisplayName has no image table");
+							logger.Info($"{CurrentFile.DisplayName} has no image table");
 						}
 						else
 						{

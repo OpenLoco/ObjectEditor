@@ -84,11 +84,11 @@ public class FolderTreeViewModel : ReactiveObject
 	public FileSystemItem? CurrentlySelectedObject { get; set; }
 
 	[Reactive]
-	public float IndexOrDownloadProgress { get; set; }
+	public int IndexOrDownloadProgress { get; set; }
 
 	Progress<float> Progress { get; } = new();
 
-	public ReactiveCommand<Unit, Task>? RefreshDirectoryItems { get; }
+	public ReactiveCommand<Unit, Unit>? RefreshDirectoryItems { get; }
 	public ReactiveCommand<Unit, Unit>? OpenCurrentFolder { get; }
 	public ReactiveCommand<FileSystemItem, Unit>? OpenFolderFor { get; }
 
@@ -106,7 +106,7 @@ public class FolderTreeViewModel : ReactiveObject
 	public FolderTreeViewModel(ObjectEditorModel model)
 	{
 		Model = model;
-		Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = progress;
+		Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = (int)(progress * 100);
 
 		var availableFilterCategories = new List<FilterTypeViewModel>
 		{
@@ -128,9 +128,38 @@ public class FolderTreeViewModel : ReactiveObject
 			});
 		}
 
+		RefreshDirectoryItems = ReactiveCommand.CreateFromTask(async () => await LoadDirectoryAsync(false));
+		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : Model.Settings.DownloadFolder, Model.Logger));
 		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(Model, availableFilterCategories, RemoveFilter)));
-		ExpandAllCommand = ReactiveCommand.Create(() => TreeDataGridSource?.ExpandAll());
-		CollapseAllCommand = ReactiveCommand.Create(() => TreeDataGridSource?.CollapseAll());
+		OpenFolderFor = ReactiveCommand.Create((FileSystemItem clickedOn) =>
+		{
+			if (IsLocal
+			&& clickedOn is FileSystemItem clickedOnObject
+			&& clickedOnObject.FileLocation == FileLocation.Local
+			&& (clickedOnObject.SubNodes == null || clickedOnObject.SubNodes.Count == 0)
+			&& File.Exists(clickedOnObject.FileName))
+			{
+				var dir = Directory.GetParent(clickedOnObject.FileName)?.FullName;
+				PlatformSpecific.FolderOpenInDesktop(dir, Model.Logger, Path.GetFileName(clickedOnObject.FileName));
+
+			}
+		});
+
+		ExpandAllCommand = ReactiveCommand.Create(() =>
+		{
+			if (TreeDataGridSource is HierarchicalTreeDataGridSource<FileSystemItem> htgds)
+			{
+				htgds?.ExpandAll();
+			}
+		});
+
+		CollapseAllCommand = ReactiveCommand.Create(() =>
+		{
+			if (TreeDataGridSource is HierarchicalTreeDataGridSource<FileSystemItem> htgds)
+			{
+				htgds?.CollapseAll();
+			}
+		});
 
 		_filterSubject = new BehaviorSubject<Func<ObjectIndexEntry, bool>>(t => true);
 
@@ -163,15 +192,23 @@ public class FolderTreeViewModel : ReactiveObject
 					: null;
 			});
 
-		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(async _ => await ReloadDirectoryAsync(true));
+		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true));
 		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
-		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(DirectoryFileCount)));
-		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ => CurrentlySelectedObject = null);
-		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(TreeDataGridSourceCount)));
-		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
-		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(RecreateText)));
+
+
+		//_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
 		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
+		_ = this.WhenAnyValue(o => o.CurrentDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true));
 		_ = this.WhenAnyValue(o => o.CurrentDirectoryItems).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
+
+		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ =>
+		{
+			CurrentlySelectedObject = null;
+			this.RaisePropertyChanged(nameof(DirectoryFileCount));
+			this.RaisePropertyChanged(nameof(TreeDataGridSourceCount));
+			this.RaisePropertyChanged(nameof(RecreateText));
+			this.RaisePropertyChanged(nameof(CurrentDirectory));
+		});
 
 		CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
 	}
@@ -188,7 +225,7 @@ public class FolderTreeViewModel : ReactiveObject
 		{
 			try
 			{
-				var filterDelegate = filter.BuildExpression();
+				var filterDelegate = filter.BuildExpression(IsLocal);
 				if (filterDelegate != null)
 				{
 					filterDelegates.Add(filterDelegate);
@@ -226,7 +263,7 @@ public class FolderTreeViewModel : ReactiveObject
 		return count;
 	}
 
-	async Task ReloadDirectoryAsync(bool useExistingIndex)
+	async Task LoadDirectoryAsync(bool useExistingIndex)
 	{
 		if (SelectedTabIndex == 0)
 		{
@@ -322,9 +359,10 @@ public class FolderTreeViewModel : ReactiveObject
 					x => x.SubNodes),
 				new TextColumn<FileSystemItem, string?>("Source", x => GetNiceObjectSource(x.ObjectSource)),
 				new TextColumn<FileSystemItem, FileLocation?>("Origin", x => x.FileLocation),
-				new TextColumn<FileSystemItem, string?>("Location", x => x.FileName),
+				//new TextColumn<FileSystemItem, string?>("Location", x => x.FileName),
 				new TextColumn<FileSystemItem, DateOnly?>("Created", x => x.CreatedDate),
 				new TextColumn<FileSystemItem, DateOnly?>("Modified", x => x.ModifiedDate),
+				new TextColumn<FileSystemItem, ObjectType?>("Type", x => x.ObjectType),
 			},
 		};
 
@@ -356,7 +394,7 @@ public class FolderTreeViewModel : ReactiveObject
 		// fallback - DisplayName is never null
 		computedFileName ??= x.DisplayName;
 
-		return new FileSystemItem(x.DisplayName, Path.Combine(baseDirectory, computedFileName), x.Id, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource);
+		return new FileSystemItem(x.DisplayName, Path.Combine(baseDirectory, computedFileName), x.Id, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource, x.ObjectType, x.VehicleType);
 	}
 
 	static List<FileSystemItem> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, FileLocation fileLocation)
@@ -406,7 +444,7 @@ public class FolderTreeViewModel : ReactiveObject
 				objGroup.Key.ToString(),
 				null,
 				null,
-				ObjectType: objGroup.Key,
+				//ObjectType: objGroup.Key,
 				SubNodes: subNodes));
 		}
 

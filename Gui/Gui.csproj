@@ -81,5 +81,9 @@
     <Compile Update="Views\ObjectEditorView.axaml.cs">
       <DependentUpon>ObjectEditorView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Pos3View.axaml.cs">
+      <DependentUpon>Pos3View.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 </Project>

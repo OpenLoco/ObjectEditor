@@ -2,6 +2,8 @@ using Common;
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
+using DynamicData.Binding;
+using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -30,16 +32,59 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		CargoTypeSpriteOffsets = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
 		StartSounds = new(model.StartSounds);
 		var_135 = new(model.var_135);
-		TrackType = model.TrackType;
+		RoadOrTrackType = model.RoadOrTrackType;
 		RackRail = model.RackRail;
 
 		HasRackRail = model.Flags.HasFlag(VehicleObjectFlags.RackRail);
+
+		SimpleMotorSound = model.SimpleMotorSound ?? new SimpleMotorSound();
+		FrictionSound = model.FrictionSound ?? new FrictionSound();
+		GearboxMotorSound = model.GearboxMotorSound ?? new GearboxMotorSound();
+		Sound = model.Sound;
+
+		_ = this.WhenAnyValue(x => x.RackRail)
+			.Subscribe((_) => model.RackRail = RackRail);
+
+		#region Road/Track Type Binding
 
 		_ = this.WhenAnyValue(x => x.Mode, x => x.Flags)
 			.Subscribe((_) => this.RaisePropertyChanged(nameof(IsTrackTypeSettable)));
 
 		_ = this.WhenAnyValue(x => x.IsTrackTypeSettable)
-			.Subscribe((_) => this.RaisePropertyChanged(nameof(TrackType)));
+			.Subscribe((_) => this.RaisePropertyChanged(nameof(RoadOrTrackType)));
+
+		_ = this.WhenAnyValue(x => x.RoadOrTrackType)
+			.Subscribe((_) => model.RoadOrTrackType = RoadOrTrackType);
+
+		#endregion
+
+		#region Sound Properties Binding
+		_ = this.WhenAnyValue(x => x.DrivingSoundType)
+			.Subscribe((_) =>
+			{
+				this.RaisePropertyChanged(nameof(SimpleMotorSound));
+				this.RaisePropertyChanged(nameof(FrictionSound));
+				this.RaisePropertyChanged(nameof(GearboxMotorSound));
+			});
+
+		_ = this.WhenAnyValue(x => x.Sound)
+			.Subscribe((_) => model.Sound = Sound);
+
+		_ = this.WhenAnyValue(x => x.SimpleMotorSound)
+			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound);
+		_ = this.WhenAnyValue(x => x.FrictionSound)
+			.Subscribe((_) => model.FrictionSound = FrictionSound);
+		_ = this.WhenAnyValue(x => x.GearboxMotorSound)
+			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound);
+
+		_ = this.WhenPropertyChanged(x => x.SimpleMotorSound)
+			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound);
+		_ = this.WhenPropertyChanged(x => x.FrictionSound)
+			.Subscribe((_) => model.FrictionSound = FrictionSound);
+		_ = this.WhenPropertyChanged(x => x.GearboxMotorSound)
+			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound);
+
+		#endregion
 	}
 
 	[Category("Stats")]
@@ -116,11 +161,12 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		}
 	}
 
+	[Browsable(false)]
 	bool IsTrackTypeSettable
-		=> (!model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road));
+		=> !model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road);
 
-	[Reactive, ConditionTarget, PropertyVisibilityCondition(nameof(IsTrackTypeSettable), true)]
-	public ObjectModelHeader? TrackType { get; set; }
+	[Reactive, ConditionTarget, PropertyVisibilityCondition(nameof(IsTrackTypeSettable), true), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
+	public ObjectModelHeader? RoadOrTrackType { get; set; }
 
 	public bool HasRackRail
 	{
@@ -134,7 +180,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		}
 	}
 
-	[Reactive, ConditionTarget, PropertyVisibilityCondition(nameof(HasRackRail), true)]
+	[Reactive, ConditionTarget, PropertyVisibilityCondition(nameof(HasRackRail), true), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public ObjectModelHeader? RackRail { get; set; }
 
 	[Range(0, 4)]
@@ -144,10 +190,10 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		set => model.NumCarComponents = value;
 	}
 
-	[Length(0, 8)]
+	[Length(0, 8), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> CompatibleVehicles { get; init; }
 
-	[Length(0, 4)]
+	[Length(0, 4), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; init; }
 
 	[Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")]
@@ -192,59 +238,53 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		set => model.CompanyColourSchemeIndex = value;
 	} // called "ColourType" in the loco codebase
 
-	[Category("Sprites"), Editable(false)] public BindingList<VehicleObjectCar> CarComponents { get; init; }
-	[Category("Sprites"), Editable(false)] public BindingList<BodySprite> BodySprites { get; init; }
-	[Category("Sprites"), Editable(false)] public BindingList<BogieSprite> BogieSprites { get; init; }
-	[Category("Sprites"), Editable(false)] public BindingList<EmitterAnimation> Animation { get; init; }
+	[Category("Sprites"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)] public BindingList<VehicleObjectCar> CarComponents { get; init; }
+	[Category("Sprites"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)] public BindingList<BodySprite> BodySprites { get; init; }
+	[Category("Sprites"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)] public BindingList<BogieSprite> BogieSprites { get; init; }
+	[Category("Sprites"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)] public BindingList<EmitterAnimation> Animation { get; init; }
 
-	[Category("Cargo")]
+	[Category("Cargo"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public CompatibleCargo CompatibleCargo1 { get; init; }
 
-	[Category("Cargo")]
+	[Category("Cargo"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public CompatibleCargo CompatibleCargo2 { get; init; }
 
-	[Category("Cargo"), Length(0, 32), Description("This is a dictionary. For every cargo defined in both CompatibleCargoCategories, an entry must exist in this dictionary.")]
+	[Category("Cargo"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No), Length(0, 32), Description("This is a dictionary. For every cargo defined in both CompatibleCargoCategories, an entry must exist in this dictionary.")]
 	public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; init; }
 
-	[Category("Sound")]
-	public ObjectModelHeader? Sound
-	{
-		get => model.Sound;
-		set => model.Sound = value;
-	}
-
-	[Category("Sound")]
+	[Category("Sound"), ConditionTarget]
 	public DrivingSoundType DrivingSoundType
 	{
 		get => model.DrivingSoundType;
-		set => model.DrivingSoundType = value;
+		set
+		{
+			model.DrivingSoundType = value;
+			this.RaisePropertyChanged(nameof(DrivingSoundType));
+		}
 	}
 
-	[Category("Sound")]
-	public FrictionSound? FrictionSound
-	{
-		get => model.FrictionSound;
-		set => model.FrictionSound = value;
-	}
+	[Browsable(false)]
+	[DependsOnProperty(nameof(DrivingSoundType))]
+	[ConditionTarget]
+	bool IsDrivingSoundTypeSet
+		=> model.DrivingSoundType != DrivingSoundType.None;
 
-	[Category("Sound")]
-	public SimpleMotorSound? SimpleMotorSound
-	{
-		get => model.SimpleMotorSound;
-		set => model.SimpleMotorSound = value;
-	}
+	[Category("Sound"), Reactive, ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No), PropertyVisibilityCondition(nameof(IsDrivingSoundTypeSet), true)]
+	public ObjectModelHeader? Sound { get; set; }
 
-	[Category("Sound")]
-	public GearboxMotorSound? GearboxMotorSound
-	{
-		get => model.GearboxMotorSound;
-		set => model.GearboxMotorSound = value;
-	}
+	[Category("Sound"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No), PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.Friction)]
+	public FrictionSound FrictionSound { get; set; }
 
-	[Category("Sound")]
+	[Category("Sound"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No), PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.SimpleMotor)]
+	public SimpleMotorSound SimpleMotorSound { get; set; }
+
+	[Category("Sound"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No), ConditionTarget, PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.GearboxMotor)]
+	public GearboxMotorSound GearboxMotorSound { get; set; }
+
+	[Category("Sound"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> StartSounds { get; init; }
 
-	[Category("<unknown>")]
+	[Category("<unknown>"), ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<uint8_t> var_135 { get; init; }
 
 	public override void CopyBackToModel()

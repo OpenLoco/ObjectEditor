@@ -73,7 +73,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// track type
 		if (!model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road))
 		{
-			model.TrackType = br.ReadS5Header();
+			model.RoadOrTrackType = br.ReadS5Header();
 		}
 
 		// required track extra
@@ -184,6 +184,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		br.SkipObjectId(); // RackRailType, not part of object definition
 		model.DrivingSoundType = ((DatDrivingSoundType)br.ReadByte()).Convert();
 
+		br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs
 		switch (model.DrivingSoundType)
 		{
 			case DrivingSoundType.Friction:
@@ -252,6 +253,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.DrivingSoundType.Convert());
 
 			// sound union
+			bw.WriteEmptyBytes(1); // this is the object id which is the first byte of all of the sound union structs
 			switch (model.DrivingSoundType)
 			{
 				case DrivingSoundType.Friction:
@@ -299,7 +301,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// track type
 		if (!model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road))
 		{
-			bw.WriteS5Header(model.TrackType);
+			bw.WriteS5Header(model.RoadOrTrackType);
 		}
 
 		// track extras

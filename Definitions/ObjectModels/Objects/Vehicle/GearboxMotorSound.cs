@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
@@ -5,7 +6,7 @@ namespace Definitions.ObjectModels.Objects.Vehicle;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class GearboxMotorSound
 {
-	public uint8_t SoundObjectId { get; set; }
+	public ObjectModelHeader SoundObject { get; set; }
 	public uint16_t IdleFrequency { get; set; }
 	public uint8_t IdleVolume { get; set; }
 	public uint16_t FirstGearFrequency { get; set; } // All subsequent gears are based on this frequency

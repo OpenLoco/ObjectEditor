@@ -1,4 +1,4 @@
-namespace Definitions.ObjectModels;
+namespace Definitions.ObjectModels.Types;
 
 public enum ColourSwatch
 {

@@ -283,7 +283,6 @@ public class LocoBinaryReader : BinaryReader
 	public FrictionSound ReadFrictionSound()
 		=> new()
 		{
-			SoundObjectId = ReadByte(),
 			MinSpeed = ReadInt32(),
 			SpeedFreqFactor = ReadByte(),
 			BaseFrequency = ReadUInt16(),
@@ -295,7 +294,6 @@ public class LocoBinaryReader : BinaryReader
 	public SimpleMotorSound ReadSimpleMotorSound()
 		=> new()
 		{
-			SoundObjectId = ReadByte(),
 			IdleFrequency = ReadUInt16(),
 			IdleVolume = ReadByte(),
 			CoastingFrequency = ReadUInt16(),
@@ -312,7 +310,6 @@ public class LocoBinaryReader : BinaryReader
 	public GearboxMotorSound ReadGearboxMotorSound()
 		=> new()
 		{
-			SoundObjectId = ReadByte(),
 			IdleFrequency = ReadUInt16(),
 			IdleVolume = ReadByte(),
 			FirstGearFrequency = ReadUInt16(),

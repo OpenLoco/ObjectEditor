@@ -184,18 +184,20 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		br.SkipObjectId(); // RackRailType, not part of object definition
 		model.DrivingSoundType = ((DatDrivingSoundType)br.ReadByte()).Convert();
 
-		br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs
 		switch (model.DrivingSoundType)
 		{
 			case DrivingSoundType.Friction:
+				br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs. it will be read from Sound property
 				model.FrictionSound = br.ReadFrictionSound();
 				br.SkipByte(StructSizes.SoundData - StructSizes.FrictionSound);
 				break;
 			case DrivingSoundType.SimpleMotor:
+				br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs. it will be read from Sound property
 				model.SimpleMotorSound = br.ReadSimpleMotorSound();
 				br.SkipByte(StructSizes.SoundData - StructSizes.SimpleMotorSound);
 				break;
 			case DrivingSoundType.GearboxMotor:
+				br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs. it will be read from Sound property
 				model.GearboxMotorSound = br.ReadGearboxMotorSound();
 				br.SkipByte(StructSizes.SoundData - StructSizes.GearboxMotorSound);
 				break;
@@ -253,21 +255,23 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.DrivingSoundType.Convert());
 
 			// sound union
-			bw.WriteEmptyBytes(1); // this is the object id which is the first byte of all of the sound union structs
 			switch (model.DrivingSoundType)
 			{
 				case DrivingSoundType.Friction:
 					ArgumentNullException.ThrowIfNull(model.FrictionSound);
+					bw.WriteEmptyBytes(1); // this is the object id which is the first byte of all of the sound union structs
 					bw.Write(model.FrictionSound);
 					bw.WriteEmptyBytes(StructSizes.SoundData - StructSizes.FrictionSound);
 					break;
 				case DrivingSoundType.SimpleMotor:
 					ArgumentNullException.ThrowIfNull(model.SimpleMotorSound);
+					bw.WriteEmptyBytes(1); // this is the object id which is the first byte of all of the sound union structs
 					bw.Write(model.SimpleMotorSound);
 					bw.WriteEmptyBytes(StructSizes.SoundData - StructSizes.SimpleMotorSound);
 					break;
 				case DrivingSoundType.GearboxMotor:
 					ArgumentNullException.ThrowIfNull(model.GearboxMotorSound);
+					bw.WriteEmptyBytes(1); // this is the object id which is the first byte of all of the sound union structs
 					bw.Write(model.GearboxMotorSound);
 					bw.WriteEmptyBytes(StructSizes.SoundData - StructSizes.GearboxMotorSound);
 					break;

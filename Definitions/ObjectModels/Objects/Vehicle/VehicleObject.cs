@@ -9,7 +9,7 @@ public class VehicleObject : ILocoStruct
 	public TransportMode Mode { get; set; }
 	public VehicleType Type { get; set; }
 	public uint8_t NumCarComponents { get; set; }
-	public ObjectModelHeader? TrackType { get; set; }
+	public ObjectModelHeader? RoadOrTrackType { get; set; }
 	public object_id TrackTypeId { get; set; }
 	public uint8_t CostIndex { get; set; }
 	public int16_t CostFactor { get; set; }

@@ -1,0 +1,34 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vi="using:Gui.Views"
+	xmlns:vm="using:Gui.ViewModels">
+	<Design.PreviewWith>
+		<vi:Pos3View />
+	</Design.PreviewWith>
+
+	<Style Selector="vi|Pos3View">
+		<!-- Set Defaults -->
+		<Setter Property="Template">
+			<ControlTemplate>
+				<StackPanel x:DataType="vm:Pos3ViewModel" Orientation="Horizontal">
+					<TextBlock Text="X" VerticalAlignment="Center" Padding="4"></TextBlock>
+					<!-- ReSharper disable once Xaml.BindingWithoutContextNotResolved -->
+					<NumericUpDown Value="{Binding X}"  ShowButtonSpinner="False">
+						<NumericUpDown.FormatString>{0}</NumericUpDown.FormatString>
+					</NumericUpDown>
+					<TextBlock Text="Y" VerticalAlignment="Center" Padding="4"></TextBlock>
+					<!-- ReSharper disable once Xaml.BindingWithoutContextNotResolved -->
+					<NumericUpDown Value="{Binding Y}" ShowButtonSpinner="False">
+						<NumericUpDown.FormatString>{0}</NumericUpDown.FormatString>
+					</NumericUpDown>
+					<TextBlock Text="Z" VerticalAlignment="Center" Padding="4"></TextBlock>
+					<!-- ReSharper disable once Xaml.BindingWithoutContextNotResolved -->
+					<NumericUpDown Value="{Binding Z}" ShowButtonSpinner="False">
+						<NumericUpDown.FormatString>{0}</NumericUpDown.FormatString>
+					</NumericUpDown>
+				</StackPanel>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+</Styles>

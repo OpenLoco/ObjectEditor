@@ -92,9 +92,11 @@ public class BridgeViewModel(BridgeObject model)
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Compatible")] public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
+	[Category("Compatible")]
+	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
 
-	[Category("Compatible")] public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects);
+	[Category("Compatible")]
+	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects);
 
 	[Category("<unknown>")]
 	public uint8_t var_03

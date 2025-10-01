@@ -59,13 +59,16 @@ public class DockViewModel(DockObject model)
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Building"), Length(1, DockObjectLoader.Constants.BuildingVariationCount)]
+	[Category("Building")]
+	[Length(1, DockObjectLoader.Constants.BuildingVariationCount)]
 	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
 
-	[Category("Building"), Length(1, DockObjectLoader.Constants.BuildingHeightCount)]
+	[Category("Building")]
+	[Length(1, DockObjectLoader.Constants.BuildingHeightCount)]
 	public BindingList<uint8_t> BuildingHeights { get; init; } = model.BuildingComponents.BuildingHeights.ToBindingList();
 
-	[Category("Building"), Length(1, DockObjectLoader.Constants.BuildingAnimationCount)]
+	[Category("Building")]
+	[Length(1, DockObjectLoader.Constants.BuildingAnimationCount)]
 	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	[Category("<unknown>")]

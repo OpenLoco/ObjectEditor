@@ -81,8 +81,15 @@ public class RoadViewModel(RoadObject model)
 		set => Model.Tunnel = value;
 	}
 
-	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> Bridges { get; set; } = new(model.Bridges);
-	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> Stations { get; set; } = new(model.Stations);
-	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> Mods { get; set; } = new(model.RoadMods);
-	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> TracksAndRoads { get; set; } = new(model.TracksAndRoads);
+	[Category("Compatible Objects")]
+	public BindingList<ObjectModelHeader> Bridges { get; set; } = new(model.Bridges);
+
+	[Category("Compatible Objects")]
+	public BindingList<ObjectModelHeader> Stations { get; set; } = new(model.Stations);
+
+	[Category("Compatible Objects")]
+	public BindingList<ObjectModelHeader> Mods { get; set; } = new(model.RoadMods);
+
+	[Category("Compatible Objects")]
+	public BindingList<ObjectModelHeader> TracksAndRoads { get; set; } = new(model.TracksAndRoads);
 }

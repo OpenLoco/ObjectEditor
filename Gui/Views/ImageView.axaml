@@ -5,7 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vmg="using:Gui.ViewModels.Graphics"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"	
+	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
 	xmlns:gmc="using:Gui.Models.Converters"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -15,7 +15,7 @@
 	<ScrollViewer Margin="4" Name="SV">
 		<DockPanel>
 			<Panel Width="16" DockPanel.Dock="Right"></Panel>
-			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False"></pgc:PropertyGrid>
+			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
 		</DockPanel>
 	</ScrollViewer>
 

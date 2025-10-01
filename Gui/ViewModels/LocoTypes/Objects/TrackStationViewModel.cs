@@ -7,9 +7,9 @@ using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
-public class TrackStationViewModel(TrackStationObject model) : LocoObjectViewModel<TrackStationObject>(model)
+public class TrackStationViewModel(TrackStationObject model)
+	: LocoObjectViewModel<TrackStationObject>(model)
 {
-
 	public uint8_t PaintStyle
 	{
 		get => Model.PaintStyle;

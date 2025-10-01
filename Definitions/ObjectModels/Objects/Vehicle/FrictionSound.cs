@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
@@ -5,7 +6,7 @@ namespace Definitions.ObjectModels.Objects.Vehicle;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class FrictionSound
 {
-	public uint8_t SoundObjectId { get; set; }
+	public ObjectModelHeader SoundObject { get; set; }
 	public int32_t MinSpeed { get; set; }
 	public uint8_t SpeedFreqFactor { get; set; }
 	public uint16_t BaseFrequency { get; set; }

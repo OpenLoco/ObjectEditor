@@ -1,4 +1,4 @@
-using Definitions.ObjectModels;
+using Definitions.ObjectModels.Types;
 using ReactiveUI.Fody.Helpers;
 using AvaColour = Avalonia.Media.Color;
 

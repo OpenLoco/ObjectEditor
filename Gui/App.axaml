@@ -18,6 +18,8 @@
 		<materialIcons:MaterialIconStyles />
 		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
 		<StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
+		<StyleInclude Source="/Views/Pos3View.axaml"></StyleInclude>
 
 		<Style Selector="TabItem">
 			<Setter Property="FontSize" Value="16" />
@@ -63,7 +65,14 @@
 			<Setter Property="IsAutoNameWidth" Value="True" />
 		</Style>
 
-		<StyleInclude Source="avares://Avalonia.Controls.TreeDataGrid/Themes/Fluent.axaml" />
+		<Style Selector="vi|ExtendedPropertyGrid">
+			<Setter Property="IsTitleVisible" Value="False" />
+			<Setter Property="IsHeaderVisible" Value="False" />
+			<Setter Property="IsCategoryVisible" Value="False" />
+			<Setter Property="IsQuickFilterVisible" Value="True" />
+			<Setter Property="IsAutoNameWidth" Value="True" />
+		</Style>
+
 	</Application.Styles>
 
 	<Application.DataTemplates>
@@ -109,7 +118,7 @@
 		</DataTemplate>
 		<DataTemplate DataType="vm:IObjectViewModel">
 			<ScrollViewer>
-				<pgc:PropertyGrid Background="{DynamicResource ExpanderContentBackground}" IsCategoryVisible="True" DataContext="{Binding}" />
+				<vi:ExtendedPropertyGrid Background="{DynamicResource ExpanderContentBackground}" IsHeaderVisible="True" IsCategoryVisible="False" IsAutoNameWidth="True" IsQuickFilterVisible="True" DataContext="{Binding}" />
 			</ScrollViewer>
 		</DataTemplate>
 	</Application.DataTemplates>

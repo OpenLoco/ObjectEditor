@@ -167,7 +167,6 @@ public class LocoBinaryWriter : BinaryWriter
 
 	public void Write(FrictionSound sound)
 	{
-		Write(sound.SoundObjectId);
 		Write(sound.MinSpeed);
 		Write(sound.SpeedFreqFactor);
 		Write(sound.BaseFrequency);
@@ -178,7 +177,6 @@ public class LocoBinaryWriter : BinaryWriter
 
 	public void Write(SimpleMotorSound sound)
 	{
-		Write(sound.SoundObjectId);
 		Write(sound.IdleFrequency);
 		Write(sound.IdleVolume);
 		Write(sound.CoastingFrequency);
@@ -194,7 +192,6 @@ public class LocoBinaryWriter : BinaryWriter
 
 	public void Write(GearboxMotorSound sound)
 	{
-		Write(sound.SoundObjectId);
 		Write(sound.IdleFrequency);
 		Write(sound.IdleVolume);
 		Write(sound.FirstGearFrequency);

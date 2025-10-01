@@ -19,8 +19,10 @@ public class RegionViewModel(RegionObject model)
 		set => Model.pad_07 = value;
 	}
 
-	[Category("Cargo")] public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; init; } = new(model.CargoInfluenceObjects);
 	public BindingList<ObjectModelHeader> DependentObjects { get; init; } = new(model.DependentObjects);
+
+	[Category("Cargo")]
+	public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; init; } = new(model.CargoInfluenceObjects);
 
 	[Category("Cargo")]
 	public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; init; } = new(model.CargoInfluenceTownFilter);

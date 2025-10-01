@@ -56,10 +56,12 @@ public class IndustryViewModel(IndustryObject model)
 	[Category("Production")]
 	public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; init; } = new(model.InitialProductionRate);
 
-	[Category("Production"), Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)]
+	[Category("Production")]
+	[Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)]
 	public BindingList<ObjectModelHeader> ProducedCargo { get; init; } = new(model.ProducedCargo);
 
-	[Category("Production"), Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)]
+	[Category("Production")]
+	[Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)]
 	public BindingList<ObjectModelHeader> RequiredCargo { get; init; } = new(model.RequiredCargo);
 
 	[Category("Production")]
@@ -118,16 +120,20 @@ public class IndustryViewModel(IndustryObject model)
 		set => Model.FarmNumStagesOfGrowth = value;
 	}
 
-	[Category("Building"), Length(IndustryObjectLoader.Constants.AnimationSequencesCount, IndustryObjectLoader.Constants.AnimationSequencesCount)]
+	[Category("Building")]
+	[Length(IndustryObjectLoader.Constants.AnimationSequencesCount, IndustryObjectLoader.Constants.AnimationSequencesCount)]
 	public BindingList<BindingList<uint8_t>> AnimationSequences { get; init; } = model.AnimationSequences.Select(x => x.ToBindingList()).ToBindingList();
 
-	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingVariationCount)]
+	[Category("Building")]
+	[Length(1, IndustryObjectLoader.Constants.BuildingVariationCount)]
 	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
 
-	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingHeightCount)]
+	[Category("Building")]
+	[Length(1, IndustryObjectLoader.Constants.BuildingHeightCount)]
 	public BindingList<uint8_t> BuildingHeights { get; init; } = model.BuildingComponents.BuildingHeights.ToBindingList();
 
-	[Category("Building"), Length(1, IndustryObjectLoader.Constants.BuildingAnimationCount)]
+	[Category("Building")]
+	[Length(1, IndustryObjectLoader.Constants.BuildingAnimationCount)]
 	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	[Category("Building")]
@@ -168,7 +174,8 @@ public class IndustryViewModel(IndustryObject model)
 		set => Model.ScaffoldingColour = value;
 	}
 
-	[Category("Building"), Length(0, IndustryObjectLoader.Constants.MaxWallTypeCount)]
+	[Category("Building")]
+	[Length(0, IndustryObjectLoader.Constants.MaxWallTypeCount)]
 	public BindingList<ObjectModelHeader> WallTypes { get; init; } = model.WallTypes.ToBindingList();
 
 	[Category("Building")]

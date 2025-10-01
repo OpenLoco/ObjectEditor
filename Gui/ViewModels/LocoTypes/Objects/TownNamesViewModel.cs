@@ -8,7 +8,8 @@ namespace Gui.ViewModels;
 public class TownNamesViewModel(TownNamesObject model)
 	: LocoObjectViewModel<TownNamesObject>(model)
 {
-	[Length(6, 6), Editable(false)]
+	[Length(6, 6)]
+	[Editable(false)]
 	public BindingList<Category> Categories { get; set; } = model.Categories.ToBindingList();
 
 }

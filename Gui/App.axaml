@@ -69,7 +69,7 @@
 			<Setter Property="IsTitleVisible" Value="False" />
 			<Setter Property="IsHeaderVisible" Value="False" />
 			<Setter Property="IsCategoryVisible" Value="False" />
-			<Setter Property="IsQuickFilterVisible" Value="False" />
+			<Setter Property="IsQuickFilterVisible" Value="True" />
 			<Setter Property="IsAutoNameWidth" Value="True" />
 		</Style>
 
@@ -118,7 +118,7 @@
 		</DataTemplate>
 		<DataTemplate DataType="vm:IObjectViewModel">
 			<ScrollViewer>
-				<vi:ExtendedPropertyGrid Background="{DynamicResource ExpanderContentBackground}" IsCategoryVisible="True" DataContext="{Binding}" />
+				<vi:ExtendedPropertyGrid Background="{DynamicResource ExpanderContentBackground}" IsHeaderVisible="True" IsCategoryVisible="False" IsAutoNameWidth="True" IsQuickFilterVisible="True" DataContext="{Binding}" />
 			</ScrollViewer>
 		</DataTemplate>
 	</Application.DataTemplates>

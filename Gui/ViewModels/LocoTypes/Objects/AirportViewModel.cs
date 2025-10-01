@@ -1,7 +1,6 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Common;
-using PropertyModels.ComponentModel;
 using PropertyModels.Extensions;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -83,7 +82,6 @@ public class AirportViewModel(AirportObject model)
 
 	[Category("Building")]
 	[Length(1, AirportObjectLoader.Constants.BuildingVariationCount)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
 
 	[Category("Building")]
@@ -92,19 +90,15 @@ public class AirportViewModel(AirportObject model)
 
 	[Category("Building")]
 	[Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	[Category("Building")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<AirportBuilding> BuildingPositions { get; init; } = model.BuildingPositions.ToBindingList();
 
 	[Category("Movement")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<MovementNode> MovementNodes { get; init; } = model.MovementNodes.ToBindingList();
 
 	[Category("Movement")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<MovementEdge> MovementEdges { get; init; } = model.MovementEdges.ToBindingList();
 
 	[Category("<unknown>")]

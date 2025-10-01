@@ -2,7 +2,6 @@ using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
-using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using System.ComponentModel;
@@ -55,12 +54,10 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("Production")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; init; } = new(model.InitialProductionRate);
 
 	[Category("Production")]
 	[Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> ProducedCargo { get; init; } = new(model.ProducedCargo);
 
 	[Category("Production")]
@@ -125,12 +122,10 @@ public class IndustryViewModel(IndustryObject model)
 
 	[Category("Building")]
 	[Length(IndustryObjectLoader.Constants.AnimationSequencesCount, IndustryObjectLoader.Constants.AnimationSequencesCount)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BindingList<uint8_t>> AnimationSequences { get; init; } = model.AnimationSequences.Select(x => x.ToBindingList()).ToBindingList();
 
 	[Category("Building")]
 	[Length(1, IndustryObjectLoader.Constants.BuildingVariationCount)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
 
 	[Category("Building")]
@@ -139,7 +134,6 @@ public class IndustryViewModel(IndustryObject model)
 
 	[Category("Building")]
 	[Length(1, IndustryObjectLoader.Constants.BuildingAnimationCount)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	[Category("Building")]
@@ -182,11 +176,9 @@ public class IndustryViewModel(IndustryObject model)
 
 	[Category("Building")]
 	[Length(0, IndustryObjectLoader.Constants.MaxWallTypeCount)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> WallTypes { get; init; } = model.WallTypes.ToBindingList();
 
 	[Category("Building")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public ObjectModelHeader? BuildingWall
 	{
 		get => Model.BuildingWall;
@@ -194,7 +186,6 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("Building")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public ObjectModelHeader? BuildingWallEntrance
 	{
 		get => Model.BuildingWallEntrance;
@@ -202,7 +193,6 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("<unknown>")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<IndustryObjectUnk38> var_38 { get; init; } = model.var_38.ToBindingList();
 
 	[Category("<unknown>")]

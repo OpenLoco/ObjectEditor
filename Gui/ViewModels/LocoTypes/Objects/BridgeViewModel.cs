@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Objects.Bridge;
 using Definitions.ObjectModels.Types;
-using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
@@ -94,11 +93,9 @@ public class BridgeViewModel(BridgeObject model)
 	}
 
 	[Category("Compatible")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
 
 	[Category("Compatible")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects);
 
 	[Category("<unknown>")]

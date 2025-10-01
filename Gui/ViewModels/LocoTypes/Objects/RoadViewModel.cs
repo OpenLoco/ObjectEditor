@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Types;
-using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
@@ -76,7 +75,6 @@ public class RoadViewModel(RoadObject model)
 	}
 
 	[Category("Compatible Objects")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public ObjectModelHeader Tunnel
 	{
 		get => Model.Tunnel;
@@ -84,18 +82,14 @@ public class RoadViewModel(RoadObject model)
 	}
 
 	[Category("Compatible Objects")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> Bridges { get; set; } = new(model.Bridges);
 
 	[Category("Compatible Objects")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> Stations { get; set; } = new(model.Stations);
 
 	[Category("Compatible Objects")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> Mods { get; set; } = new(model.RoadMods);
 
 	[Category("Compatible Objects")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> TracksAndRoads { get; set; } = new(model.TracksAndRoads);
 }

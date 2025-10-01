@@ -168,7 +168,6 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	[Reactive]
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(IsTrackTypeSettable), true)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public ObjectModelHeader? RoadOrTrackType { get; set; }
 
 	[ConditionTarget]
@@ -187,7 +186,6 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	[Reactive]
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(HasRackRail), true)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public ObjectModelHeader? RackRail { get; set; }
 
 	[Range(0, 4)]
@@ -198,11 +196,9 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	}
 
 	[Length(0, 8)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> CompatibleVehicles { get; init; }
 
 	[Length(0, 4)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; init; }
 
 	[Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")]
@@ -252,32 +248,25 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	} // called "ColourType" in the loco codebase
 
 	[Category("Sprites")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<VehicleObjectCar> CarComponents { get; init; }
 
 	[Category("Sprites")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BodySprite> BodySprites { get; init; }
 
 	[Category("Sprites")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BogieSprite> BogieSprites { get; init; }
 
 	[Category("Sprites")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<EmitterAnimation> Animation { get; init; }
 
 	[Category("Cargo")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public CompatibleCargo CompatibleCargo1 { get; init; }
 
 	[Category("Cargo")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public CompatibleCargo CompatibleCargo2 { get; init; }
 
 	[Category("Cargo")]
 	[Length(0, 32)]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	[Description("This is a dictionary. For every cargo defined in both CompatibleCargoCategories, an entry must exist in this dictionary.")]
 	public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; init; }
 
@@ -301,32 +290,26 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 
 	[Category("Sound")]
 	[Reactive]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	[PropertyVisibilityCondition(nameof(IsDrivingSoundTypeSet), true)]
 	public ObjectModelHeader? Sound { get; set; }
 
 	[Category("Sound")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	[PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.Friction)]
 	public FrictionSound FrictionSound { get; set; }
 
 	[Category("Sound")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	[PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.SimpleMotor)]
 	public SimpleMotorSound SimpleMotorSound { get; set; }
 
 	[Category("Sound")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.GearboxMotor)]
 	public GearboxMotorSound GearboxMotorSound { get; set; }
 
 	[Category("Sound")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> StartSounds { get; init; }
 
 	[Category("<unknown>")]
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<uint8_t> var_135 { get; init; }
 
 	public override void CopyBackToModel()

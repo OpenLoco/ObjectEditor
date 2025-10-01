@@ -1,5 +1,4 @@
 using Definitions.ObjectModels.Objects.Sound;
-using PropertyModels.ComponentModel;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
@@ -19,7 +18,6 @@ public class SoundViewModel(SoundObject model)
 		set => Model.Volume = value;
 	}
 
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public SoundObjectData SoundObjectData
 	{
 		get => Model.SoundObjectData;

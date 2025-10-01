@@ -1,6 +1,5 @@
 using Definitions.ObjectModels.Objects.Steam;
 using Definitions.ObjectModels.Types;
-using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
@@ -28,12 +27,9 @@ public class SteamViewModel(SteamObject model)
 		set => Model.var_0A = value;
 	}
 
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> SoundEffects { get; init; } = new(model.SoundEffects);
 
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<SteamImageAndHeight> FrameInfoType0 { get; init; } = new(model.FrameInfoType0);
 
-	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<SteamImageAndHeight> FrameInfoType1 { get; init; } = new(model.FrameInfoType1);
 }

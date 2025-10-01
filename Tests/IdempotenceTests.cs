@@ -77,8 +77,8 @@ public class IdempotenceTests
 
 					if (ac != ex)
 					{
-						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(ae.First, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img1);
-						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(ae.Second, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var img2);
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(ae.First, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img1);
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(ae.Second, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img2);
 						img1.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-actual.bmp");
 						img2.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-expected.bmp");
 					}

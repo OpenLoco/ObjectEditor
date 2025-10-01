@@ -573,7 +573,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			var count = 0;
 			foreach (var g1 in locoObj!.LocoObject!.ImageTable.GraphicsElements)
 			{
-				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
+				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image))
 				{
 					continue;
 				}

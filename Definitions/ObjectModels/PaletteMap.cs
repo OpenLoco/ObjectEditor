@@ -4,32 +4,6 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Definitions.ObjectModels;
 
-public enum ColourRemapSwatch
-{
-	Amber,
-	AvocadoGreen,
-	Black,
-	Blue,
-	Brass,
-	Bronze,
-	Brown,
-	Copper,
-	GrassGreen,
-	Green,
-	Lavender,
-	Orange,
-	Purple,
-	Red,
-	Rose,
-	SeaGreen,
-	Teal,
-	Yellow,
-	//MiscGrey,
-	//MiscYellow,
-	PrimaryRemap,
-	SecondaryRemap,
-}
-
 public class PaletteMap
 {
 	public PaletteMap(string filename)
@@ -167,33 +141,33 @@ public class PaletteMap
 		return bytes;
 	}
 
-	public (Color Color, byte Index)[]? GetRemapSwatchFromName(ColourRemapSwatch swatch)
+	public (Color Color, byte Index)[]? GetRemapSwatchFromName(ColourSwatch swatch)
 		=> swatch switch
 		{
-			ColourRemapSwatch.Black => Black,
-			ColourRemapSwatch.Bronze => Bronze,
-			ColourRemapSwatch.Copper => Copper,
-			ColourRemapSwatch.Yellow => Yellow,
-			ColourRemapSwatch.Rose => Rose,
-			ColourRemapSwatch.GrassGreen => GrassGreen,
-			ColourRemapSwatch.AvocadoGreen => AvocadoGreen,
-			ColourRemapSwatch.Green => Green,
-			ColourRemapSwatch.Brass => Brass,
-			ColourRemapSwatch.Lavender => Lavender,
-			ColourRemapSwatch.Blue => Blue,
-			ColourRemapSwatch.SeaGreen => SeaGreen,
-			ColourRemapSwatch.Purple => Purple,
-			ColourRemapSwatch.Red => Red,
-			ColourRemapSwatch.Orange => Orange,
-			ColourRemapSwatch.Teal => Teal,
-			ColourRemapSwatch.Brown => Brown,
-			ColourRemapSwatch.Amber => Amber,
-			ColourRemapSwatch.PrimaryRemap => PrimaryRemap,
-			ColourRemapSwatch.SecondaryRemap => SecondaryRemap,
+			ColourSwatch.Black => Black,
+			ColourSwatch.Bronze => Bronze,
+			ColourSwatch.Copper => Copper,
+			ColourSwatch.Yellow => Yellow,
+			ColourSwatch.Rose => Rose,
+			ColourSwatch.GrassGreen => GrassGreen,
+			ColourSwatch.AvocadoGreen => AvocadoGreen,
+			ColourSwatch.Green => Green,
+			ColourSwatch.Brass => Brass,
+			ColourSwatch.Lavender => Lavender,
+			ColourSwatch.Blue => Blue,
+			ColourSwatch.SeaGreen => SeaGreen,
+			ColourSwatch.Purple => Purple,
+			ColourSwatch.Red => Red,
+			ColourSwatch.Orange => Orange,
+			ColourSwatch.Teal => Teal,
+			ColourSwatch.Brown => Brown,
+			ColourSwatch.Amber => Amber,
+			ColourSwatch.PrimaryRemap => PrimaryRemap,
+			ColourSwatch.SecondaryRemap => SecondaryRemap,
 			_ => default,
 		};
 
-	public bool TryConvertG1ToRgba32Bitmap(GraphicsElement graphicsElement, ColourRemapSwatch primary, ColourRemapSwatch secondary, out Image<Rgba32>? image)
+	public bool TryConvertG1ToRgba32Bitmap(GraphicsElement graphicsElement, ColourSwatch primary, ColourSwatch secondary, out Image<Rgba32>? image)
 	{
 		image = new Image<Rgba32>(graphicsElement.Width, graphicsElement.Height);
 

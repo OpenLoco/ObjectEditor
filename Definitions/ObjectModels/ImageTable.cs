@@ -16,7 +16,7 @@ public class ImageTable : IHasGraphicsElements
 			{
 				foreach (var ge in g.GraphicsElements)
 				{
-					if (!field.TryConvertG1ToRgba32Bitmap(ge, ColourRemapSwatch.PrimaryRemap, ColourRemapSwatch.SecondaryRemap, out var image))
+					if (!field.TryConvertG1ToRgba32Bitmap(ge, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image))
 					{
 						throw new Exception("Failed to convert image");
 					}

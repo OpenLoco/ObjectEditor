@@ -5,16 +5,6 @@ using System.Reactive;
 
 namespace Gui.ViewModels;
 
-public record FileViewButton(ReactiveCommand<Unit, Unit> Command, string Text, string Icon);
-
-public interface ILocoFileViewModelControl
-{
-	[Reactive]
-	public FileSystemItem CurrentFile { get; init; }
-
-	ListObservable<FileViewButton> Buttons { get; }
-}
-
 public interface ILocoFileViewModel
 {
 	public ReactiveCommand<Unit, Unit> ReloadCommand { get; init; }

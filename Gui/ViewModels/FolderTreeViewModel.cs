@@ -29,7 +29,7 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 {
 	public DesignerFolderTreeViewModel()
 	{
-		SelectedTabIndex = 0;
+		IsLocal = true;
 		CurrentLocalDirectory = "test/directory";
 		CurrentDirectoryItems.Add(new(
 			"local-displayname1",
@@ -74,7 +74,7 @@ public class FolderTreeViewModel : ReactiveObject
 
 	[Reactive]
 	public string CurrentLocalDirectory { get; set; } = string.Empty;
-	public string CurrentDirectory => SelectedTabIndex == 0
+	public string CurrentDirectory => IsLocal
 		? CurrentLocalDirectory
 		: Model.Settings.UseHttps
 			? Model.Settings.ServerAddressHttps
@@ -97,9 +97,17 @@ public class FolderTreeViewModel : ReactiveObject
 	[Reactive]
 	public int SelectedTabIndex { get; set; }
 
-	public bool IsLocal => SelectedTabIndex == 0;
-	public string RecreateText => IsLocal ? "Recreate index" : "Download object list";
-	public string DirectoryFileCount => $"Objects: {CurrentDirectoryItems.Count}";
+	public bool IsLocal
+	{
+		get => SelectedTabIndex == 0;
+		set => SelectedTabIndex = value ? 0 : 1;
+	}
+
+	public string RecreateText
+		=> IsLocal ? "Recreate index" : "Download object list";
+
+	public string DirectoryFileCount
+		=> $"Objects: {CurrentDirectoryItems.Count}";
 
 	public FolderTreeViewModel() { }
 
@@ -265,7 +273,9 @@ public class FolderTreeViewModel : ReactiveObject
 
 	async Task LoadDirectoryAsync(bool useExistingIndex)
 	{
-		if (SelectedTabIndex == 0)
+		Model.Logger.Debug($"UseExistingIndex={useExistingIndex}");
+
+		if (IsLocal)
 		{
 			// local
 			await LoadObjDirectoryAsync(CurrentLocalDirectory, useExistingIndex);
@@ -280,6 +290,8 @@ public class FolderTreeViewModel : ReactiveObject
 
 	async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
 	{
+		Model.Logger.Debug($"Directory={directory} UseExistingIndex={useExistingIndex}");
+
 		if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
 		{
 			CurrentDirectoryItems.Clear();
@@ -300,6 +312,8 @@ public class FolderTreeViewModel : ReactiveObject
 
 	async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 	{
+		Model.Logger.Debug($"UseExistingIndex={useExistingIndex}");
+
 		if (Design.IsDesignMode)
 		{
 			// DO NOT WEB QUERY AT DESIGN TIME

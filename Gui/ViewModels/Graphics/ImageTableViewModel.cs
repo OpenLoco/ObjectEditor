@@ -6,6 +6,7 @@ using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using Gui.ViewModels.LocoTypes.Objects.Building;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -18,38 +19,15 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using SLColour = SixLabors.ImageSharp.Color;
-using AvaColour = Avalonia.Media.Color;
-using Gui.ViewModels.LocoTypes.Objects.Building;
 
 namespace Gui.ViewModels.Graphics;
-
-public static class SixLaboursAvaloniaColor
-{
-	public static AvaColour ToAvaloniaColor(this SLColour color)
-	{
-		var pixel = color.ToPixel<Rgba32>();
-		return AvaColour.FromArgb(pixel.A, pixel.R, pixel.G, pixel.B);
-	}
-
-	public static SLColour ToSixLaborsColor(this AvaColour color)
-		=> SLColour.FromRgba(color.R, color.G, color.B, color.A);
-}
-
-public class ColourRemapSwatchViewModel
-{
-	[Reactive] public ColourRemapSwatch Swatch { get; init; }
-	[Reactive] public AvaColour Colour { get; init; }
-
-	[Reactive] public AvaColour[] GradientColours { get; init; }
-}
 
 public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 {
 	public string Name => "Image Table";
 
 	// used in the axaml to bind the combobox to the list of swatches
-	public static ColourRemapSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourRemapSwatch>();
+	public static ColourSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourSwatch>();
 
 	[Reactive]
 	public List<ColourRemapSwatchViewModel> ColourSwatches { get; init; }
@@ -116,8 +94,8 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			GradientColours = [.. PaletteMap.GetRemapSwatchFromName(x).Select(x => x.Color.ToAvaloniaColor())],
 		})];
 
-		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourRemapSwatch.PrimaryRemap);
-		SelectedSecondarySwatch = ColourSwatches.Single(x => x.Swatch == ColourRemapSwatch.SecondaryRemap);
+		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.PrimaryRemap);
+		SelectedSecondarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.SecondaryRemap);
 
 		// image tables
 		foreach (var group in imageTable.Groups)
@@ -267,7 +245,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	}
 
 	// model stuff
-	public void RecolourImages(ColourRemapSwatch primary, ColourRemapSwatch secondary)
+	public void RecolourImages(ColourSwatch primary, ColourSwatch secondary)
 	{
 		foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
 		{

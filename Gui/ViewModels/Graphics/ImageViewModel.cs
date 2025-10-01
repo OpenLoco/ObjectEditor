@@ -75,7 +75,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 		UnderlyingImage = graphicsElement.Image!;
 	}
 
-	public void RecolourImage(ColourRemapSwatch primary, ColourRemapSwatch secondary)
+	public void RecolourImage(ColourSwatch primary, ColourSwatch secondary)
 	{
 		// turn rgba32 into raw palette image
 		var rawData = PaletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);

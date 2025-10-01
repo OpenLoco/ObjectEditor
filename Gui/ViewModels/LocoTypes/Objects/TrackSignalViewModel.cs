@@ -1,6 +1,7 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.TrackSignal;
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -65,5 +66,6 @@ public class TrackSignalViewModel(TrackSignalObject model)
 	}
 
 	[Length(0, TrackSignalObjectLoader.Constants.ModsLength)]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
 }

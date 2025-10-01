@@ -2,14 +2,15 @@ using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Objects.TrackStation;
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
-public class TrackStationViewModel(TrackStationObject model) : LocoObjectViewModel<TrackStationObject>(model)
+public class TrackStationViewModel(TrackStationObject model)
+	: LocoObjectViewModel<TrackStationObject>(model)
 {
-
 	public uint8_t PaintStyle
 	{
 		get => Model.PaintStyle;
@@ -87,8 +88,10 @@ public class TrackStationViewModel(TrackStationObject model) : LocoObjectViewMod
 	public uint8_t[][] var_6E { get; set; } = model.var_6E;
 
 	[Category("Cargo")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;
 
 	[Category("Compatible")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
 }

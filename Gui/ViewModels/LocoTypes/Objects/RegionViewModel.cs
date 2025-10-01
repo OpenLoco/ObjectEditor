@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Region;
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
@@ -19,8 +20,12 @@ public class RegionViewModel(RegionObject model)
 		set => Model.pad_07 = value;
 	}
 
-	[Category("Cargo")] public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; init; } = new(model.CargoInfluenceObjects);
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> DependentObjects { get; init; } = new(model.DependentObjects);
+
+	[Category("Cargo")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
+	public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; init; } = new(model.CargoInfluenceObjects);
 
 	[Category("Cargo")]
 	public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; init; } = new(model.CargoInfluenceTownFilter);

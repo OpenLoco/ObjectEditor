@@ -2,6 +2,7 @@ using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Dock;
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using System.ComponentModel;
@@ -32,6 +33,7 @@ public class DockViewModel(DockObject model)
 		set => Model.ObsoleteYear = value;
 	}
 
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public Pos2 BoatPosition
 	{
 		get => Model.BoatPosition;
@@ -59,13 +61,18 @@ public class DockViewModel(DockObject model)
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Building"), Length(1, DockObjectLoader.Constants.BuildingVariationCount)]
+	[Category("Building")]
+	[Length(1, DockObjectLoader.Constants.BuildingVariationCount)]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
 
-	[Category("Building"), Length(1, DockObjectLoader.Constants.BuildingHeightCount)]
+	[Category("Building")]
+	[Length(1, DockObjectLoader.Constants.BuildingHeightCount)]
 	public BindingList<uint8_t> BuildingHeights { get; init; } = model.BuildingComponents.BuildingHeights.ToBindingList();
 
-	[Category("Building"), Length(1, DockObjectLoader.Constants.BuildingAnimationCount)]
+	[Category("Building")]
+	[Length(1, DockObjectLoader.Constants.BuildingAnimationCount)]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	[Category("<unknown>")]

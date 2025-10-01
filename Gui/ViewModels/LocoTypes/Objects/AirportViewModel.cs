@@ -1,6 +1,7 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Common;
+using PropertyModels.ComponentModel;
 using PropertyModels.Extensions;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -80,22 +81,30 @@ public class AirportViewModel(AirportObject model)
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingVariationCount)]
+	[Category("Building")]
+	[Length(1, AirportObjectLoader.Constants.BuildingVariationCount)]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
 
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingHeightCount)]
+	[Category("Building")]
+	[Length(1, AirportObjectLoader.Constants.BuildingHeightCount)]
 	public BindingList<uint8_t> BuildingHeights { get; init; } = model.BuildingComponents.BuildingHeights.ToBindingList();
 
-	[Category("Building"), Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)]
+	[Category("Building")]
+	[Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	[Category("Building")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<AirportBuilding> BuildingPositions { get; init; } = model.BuildingPositions.ToBindingList();
 
 	[Category("Movement")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<MovementNode> MovementNodes { get; init; } = model.MovementNodes.ToBindingList();
 
 	[Category("Movement")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<MovementEdge> MovementEdges { get; init; } = model.MovementEdges.ToBindingList();
 
 	[Category("<unknown>")]
@@ -111,16 +120,4 @@ public class AirportViewModel(AirportObject model)
 		get => Model.var_B6;
 		set => Model.var_B6 = value;
 	}
-
-	//public AirportViewModel(AirportObject model)
-	//	: base(model)
-	//{
-	//	BuildingHeights = new(model.BuildingComponents.BuildingHeights);
-	//	BuildingAnimations = new(model.BuildingComponents.BuildingAnimations);
-	//	BuildingVariations = new(model.BuildingComponents.BuildingVariations.Select(x => new BindingList<uint8_t>(x)));
-	//	BuildingPositions = new(model.BuildingPositions);
-	//	MovementNodes = new(model.MovementNodes);
-	//	MovementEdges = new(model.MovementEdges);
-	//	var_B6 = new BindingList<uint8_t>(model.var_B6);
-	//}
 }

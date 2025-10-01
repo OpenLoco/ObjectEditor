@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using TrackObject = Definitions.ObjectModels.Objects.Track.TrackObject;
@@ -78,15 +79,30 @@ public class TrackViewModel(TrackObject model)
 	}
 
 	[Category("Compatible Objects")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public ObjectModelHeader Tunnel
 	{
 		get => Model.Tunnel;
 		set => Model.Tunnel = value;
 	}
 
-	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> TracksAndRoads { get; init; } = new(model.TracksAndRoads);
-	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> TrackExtras { get; init; } = new(model.TrackMods);
-	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> Signals { get; init; } = new(model.Signals);
-	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> Bridges { get; init; } = new(model.Bridges);
-	[Category("Compatible Objects")] public BindingList<ObjectModelHeader> Stations { get; init; } = new(model.Stations);
+	[Category("Compatible Objects")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
+	public BindingList<ObjectModelHeader> TracksAndRoads { get; init; } = new(model.TracksAndRoads);
+
+	[Category("Compatible Objects")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
+	public BindingList<ObjectModelHeader> TrackExtras { get; init; } = new(model.TrackMods);
+
+	[Category("Compatible Objects")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
+	public BindingList<ObjectModelHeader> Signals { get; init; } = new(model.Signals);
+
+	[Category("Compatible Objects")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
+	public BindingList<ObjectModelHeader> Bridges { get; init; } = new(model.Bridges);
+
+	[Category("Compatible Objects")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
+	public BindingList<ObjectModelHeader> Stations { get; init; } = new(model.Stations);
 }

@@ -2,6 +2,7 @@ using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadStation;
 using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
@@ -78,8 +79,10 @@ public class RoadStationViewModel(RoadStationObject model)
 	}
 
 	[Category("Cargo")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;
 
 	[Category("Compatible")]
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects);
 }

@@ -7,7 +7,7 @@ namespace Definitions.ObjectModels.Objects.Vehicle;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class EmitterAnimation : ILocoStruct
 {
-	public ObjectModelHeader AnimationObject { get; set; } // will  be SteamObject
+	public ObjectModelHeader AnimationObject { get; set; } // will be SteamObject
 	public uint8_t EmitterVerticalPos { get; set; }
 	public SimpleAnimationType Type { get; set; }
 

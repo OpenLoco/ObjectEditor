@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Land;
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel;
 
 namespace Gui.ViewModels;
 
@@ -60,12 +61,14 @@ public class LandViewModel(LandObject model)
 		set => Model.VariationLikelihood = value;
 	}
 
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public ObjectModelHeader CliffEdgeHeader
 	{
 		get => Model.CliffEdgeHeader;
 		set => Model.CliffEdgeHeader = value;
 	}
 
+	[ExpandableObjectDisplayMode(IsCategoryVisible = NullableBooleanType.No)]
 	public ObjectModelHeader? ReplacementLandHeader
 	{
 		get => Model.ReplacementLandHeader;

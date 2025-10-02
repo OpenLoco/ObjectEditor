@@ -45,5 +45,5 @@ public class DefaultImageTableNameProvider : IImageTableNameProvider
 	}
 
 	public static string GetImageName(int id)
-		=> $"{id}-unnamed";
+		=> $"unnamed_{id}";
 }

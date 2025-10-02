@@ -97,14 +97,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.PrimaryRemap);
 		SelectedSecondarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.SecondaryRemap);
 
-		// image tables
-		foreach (var group in imageTable.Groups)
-		{
-			var imageViewModels = group.GraphicsElements.Select(ge => new ImageViewModel(ge, PaletteMap));
-			var givm = new GroupedImageViewModel(group.Name, imageViewModels);
-			givm.SelectionModel.SelectionChanged += SelectionChanged;
-			GroupedImageViewModels.Add(givm);
-		}
+		RecreateGroupsFromImageTable(imageTable);
 
 		// building components
 		if (buildingComponents != null)
@@ -157,6 +150,20 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		};
 		animationTimer.Tick += AnimationTimer_Tick;
 		animationTimer.Start();
+	}
+
+	private void RecreateGroupsFromImageTable(ImageTable imageTable, List<ImageViewModel>? images = null)
+	{
+		// image tables
+		GroupedImageViewModels.Clear();
+		foreach (var group in imageTable.Groups)
+		{
+			var imageViewModels = images ?? group.GraphicsElements.Select(ge => new ImageViewModel(ge, PaletteMap));
+			var givm = new GroupedImageViewModel(group.Name, imageViewModels);
+			givm.SelectionModel.SelectionChanged += SelectionChanged;
+			GroupedImageViewModels.Add(givm);
+		}
+		this.RaisePropertyChanged(nameof(GroupedImageViewModels));
 	}
 
 	void AnimationTimer_Tick(object? sender, EventArgs e)
@@ -312,31 +319,29 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 				Logger.Debug($"Didn't find sprites.json file, using existing GraphicsElement offsets with {offsets.Count} images");
 			}
 
-			// clear existing images
-			Logger.Debug("Clearing current images");
-			GroupedImageViewModels.Clear();
+			var all = GroupedImageViewModels.SelectMany(x => x.Images).ToList();
 
 			// load files
-			var currentGroup = 0;
-			var currentGroupIndex = 0;
+			var newImageViewModels = new List<ImageViewModel>();
 			foreach (var (offset, i) in offsets.Select((x, i) => (x, i)))
 			{
 				var is1Pixel = string.IsNullOrEmpty(offset.Path);
 				var img = is1Pixel ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
 				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
-				var graphicsElement = GraphicsElementFromImage(newOffset, img, PaletteMap);
+				var graphicsElement = GraphicsElementFromImage(newOffset, img, PaletteMap, i);
 				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name)
 					? DefaultImageTableNameProvider.GetImageName(i)
 					: graphicsElement.Name;
 
-				GroupedImageViewModels[currentGroup].Images.Add(new ImageViewModel(graphicsElement, PaletteMap));
-				currentGroupIndex++;
-				if (currentGroupIndex >= GroupedImageViewModels[currentGroup].Images.Count)
-				{
-					currentGroup++;
-					currentGroupIndex = 0;
-				}
+				newImageViewModels.Add(new ImageViewModel(graphicsElement, PaletteMap));
 			}
+
+			var imageTable = new ImageTable()
+			{
+				Groups = [.. GroupedImageViewModels.Select(g => (g.GroupName, new List<GraphicsElement>()))]
+			};
+
+			RecreateGroupsFromImageTable(imageTable, newImageViewModels);
 		}
 		catch (Exception ex)
 		{
@@ -344,7 +349,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		}
 	}
 
-	static GraphicsElement GraphicsElementFromImage(GraphicsElementJson ele, Image<Rgba32> img, PaletteMap paletteMap)
+	static GraphicsElement GraphicsElementFromImage(GraphicsElementJson ele, Image<Rgba32> img, PaletteMap paletteMap, int index)
 	{
 		var flags = ele.Flags ?? GraphicsElementFlags.None;
 		return new GraphicsElement()
@@ -356,7 +361,9 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			Flags = flags,
 			ZoomOffset = ele.ZoomOffset ?? 0,
 			ImageData = paletteMap.ConvertRgba32ImageToG1Data(img, flags),
-			Name = ele.Name ?? string.Empty
+			Name = ele.Name ?? string.Empty,
+			Image = img,
+			ImageTableIndex = index,
 		};
 	}
 
@@ -380,22 +387,24 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 		var offsets = new List<GraphicsElementJson>();
 
+		var invalidChars = Path.GetInvalidFileNameChars();
+
 		foreach (var item in GroupedImageViewModels
 			.SelectMany(group => group.Images, (group, image) => new { group.GroupName, Image = image })
 			.OrderBy(x => x.Image.ImageTableIndex))
 		{
 			var image = item.Image;
 
-			var fileName = string.Empty;
+			var fileName = $"{image.ImageTableIndex}.png";
 			if (prependGroupAndImageNameInFilename)
 			{
-				var imageName = item.Image.Name.Trim().ToLower().Replace(' ', '-');
-				var groupName = item.GroupName.Trim().ToLower().Replace(' ', '-');
-				fileName = $"{groupName}_{imageName}_{image.ImageTableIndex}.png";
-			}
-			else
-			{
-				fileName = $"{image.ImageTableIndex}.png";
+				var imageName = new string([.. item.Image.Name.ToLower().Replace(' ', '-').Where(x => !invalidChars.Contains(x))]).Trim();
+				var groupName = new string([.. item.GroupName.ToLower().Replace(' ', '-').Where(x => !invalidChars.Contains(x))]).Trim();
+
+				if (!string.IsNullOrEmpty(groupName) && !string.IsNullOrEmpty(imageName))
+				{
+					fileName = $"{groupName}_{imageName}.png";
+				}
 			}
 
 			var path = Path.Combine(directory, fileName);

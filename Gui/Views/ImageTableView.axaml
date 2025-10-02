@@ -11,6 +11,7 @@
 	xmlns:cnv="using:Gui.Converters"
 	xmlns:vmg="using:Gui.ViewModels.Graphics"
 	xmlns:vmlt="using:Gui.ViewModels.LocoTypes"
+	xmlns:system="clr-namespace:System;assembly=mscorlib"
 	mc:Ignorable="d"
 	d:DesignWidth="1200"
 	d:DesignHeight="900"
@@ -31,12 +32,17 @@
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import</TextBlock>
 				</DockPanel>
 			</Button>
-			<Button Command="{Binding ExportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export all images as .pngs to a directory">
+			<SplitButton Command="{Binding ExportImagesCommand}" CommandParameter="{x:False}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export all images as .pngs to a directory, using the image table index as the filename">
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="FolderDownload" Width="24" Height="24" Margin="2" />
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Export</TextBlock>
 				</DockPanel>
-			</Button>
+				<SplitButton.Flyout>
+					<MenuFlyout Placement="BottomEdgeAlignedRight">
+						<MenuItem Header="Export with image and group names" Command="{Binding ExportImagesCommand}" CommandParameter="{x:True}" ToolTip.Tip="Export all images as .pngs to a directory, using the image and group names as the filename" />
+					</MenuFlyout>
+				</SplitButton.Flyout>
+			</SplitButton>
 			<Button Content="Colours" HorizontalAlignment="Stretch" Margin="2" Padding="2" >
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />

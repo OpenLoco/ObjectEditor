@@ -121,7 +121,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			.Subscribe(_ => animationTimer!.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed));
 
 		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
-		ExportImagesCommand = ReactiveCommand.CreateFromTask(ExportImages);
+		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImages);
 		ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImage);
 		CropImageCommand = ReactiveCommand.Create(CropImage);
 		CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
@@ -214,7 +214,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		animationTimer.Start();
 	}
 
-	public async Task ExportImages()
+	public async Task ExportImages(bool prependGroupAndImageNameInFilename)
 	{
 		var folders = await PlatformSpecific.OpenFolderPicker();
 		var dir = folders.FirstOrDefault();
@@ -224,7 +224,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		}
 
 		var dirPath = dir.Path.LocalPath;
-		await ExportImages(dirPath);
+		await ExportImages(dirPath, prependGroupAndImageNameInFilename);
 	}
 
 	public async Task ReplaceImage()
@@ -270,7 +270,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		return result.Length == 0 ? "0" : result;
 	}
 
-	public async Task ImportImages(string directory)
+	async Task ImportImages(string directory)
 	{
 		if (string.IsNullOrEmpty(directory))
 		{
@@ -362,7 +362,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	static readonly Image<Rgba32> OnePixelTransparent = new(1, 1, PaletteMap.Transparent.Color);
 
-	public async Task ExportImages(string directory)
+	async Task ExportImages(string directory, bool prependGroupAndImageNameInFilename)
 	{
 		if (string.IsNullOrEmpty(directory))
 		{
@@ -380,18 +380,28 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 		var offsets = new List<GraphicsElementJson>();
 
-		foreach (var group in GroupedImageViewModels)
+		foreach (var item in GroupedImageViewModels
+			.SelectMany(group => group.Images, (group, image) => new { group.GroupName, Image = image })
+			.OrderBy(x => x.Image.ImageTableIndex))
 		{
-			foreach (var image in group.Images)
-			{
-				var imageName = image.Name.Trim().ToLower().Replace(' ', '-');
-				var groupName = group.GroupName.Trim().ToLower().Replace(' ', '-');
-				var fileName = $"{groupName}_{imageName}.png";
-				var path = Path.Combine(directory, fileName);
-				await image.UnderlyingImage.SaveAsPngAsync(path);
+			var image = item.Image;
 
-				offsets.Add(new GraphicsElementJson(fileName, image.ToGraphicsElement()));
+			var fileName = string.Empty;
+			if (prependGroupAndImageNameInFilename)
+			{
+				var imageName = item.Image.Name.Trim().ToLower().Replace(' ', '-');
+				var groupName = item.GroupName.Trim().ToLower().Replace(' ', '-');
+				fileName = $"{groupName}_{imageName}_{image.ImageTableIndex}.png";
 			}
+			else
+			{
+				fileName = $"{image.ImageTableIndex}.png";
+			}
+
+			var path = Path.Combine(directory, fileName);
+			await image.UnderlyingImage.SaveAsPngAsync(path);
+
+			offsets.Add(new GraphicsElementJson(fileName, image.ToGraphicsElement()));
 		}
 
 		var offsetsFile = Path.Combine(directory, "sprites.json");

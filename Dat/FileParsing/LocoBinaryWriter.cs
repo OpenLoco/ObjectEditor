@@ -137,6 +137,7 @@ public class LocoBinaryWriter : BinaryWriter
 			Write(body._FlatYawAccuracy);
 			Write(body._SlopedYawAccuracy);
 			Write(body._NumFramesPerRotation);
+
 			WriteEmptyImageId(4); // image ids not part of object definition
 		}
 	}
@@ -150,7 +151,7 @@ public class LocoBinaryWriter : BinaryWriter
 			Write(bogie.Width);
 			Write(bogie.HeightNegative);
 			Write(bogie.HeightPositive);
-			Write(bogie._NumRollSprites);
+			Write(bogie.NumRollSprites);
 			WriteEmptyImageId(3); // image ids not part of object definition
 		}
 	}

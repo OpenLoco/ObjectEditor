@@ -221,16 +221,9 @@ public class LocoBinaryReader : BinaryReader
 				_FlatYawAccuracy = ReadByte(),
 				_SlopedYawAccuracy = ReadByte(),
 				_NumFramesPerRotation = ReadByte(),
-				_FlatImageId = 0,
-				_UnkImageId = 0,
-				_GentleImageId = 0,
-				_SteepImageId = 0,
 			};
 
-			SkipImageId();
-			SkipImageId();
-			SkipImageId();
-			SkipImageId();
+			SkipImageId(4);
 		}
 
 		return result;
@@ -249,15 +242,10 @@ public class LocoBinaryReader : BinaryReader
 				Width = ReadByte(),
 				HeightNegative = ReadByte(),
 				HeightPositive = ReadByte(),
-				_NumRollSprites = ReadByte(),
-				_FlatImageIds = 0,
-				_GentleImageIds = 0,
-				_SteepImageIds = 0,
+				NumRollSprites = ReadByte(),
 			};
 
-			SkipImageId();
-			SkipImageId();
-			SkipImageId();
+			SkipImageId(3);
 		}
 
 		return result;

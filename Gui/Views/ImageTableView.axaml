@@ -190,8 +190,8 @@
 												<Image Source="{Binding DisplayedImage}" Stretch="None" Margin="0">
 													<Image.ContextMenu>
 														<ContextMenu>
-															<MenuItem Header="Replace image" Command="{Binding $parent[ListBox].((vmg:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
-															<MenuItem Header="Crop image" Command="{Binding $parent[ListBox].((vmg:ImageTableViewModel)DataContext).CropImageCommand}"/>
+															<MenuItem Header="Replace image" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
+															<MenuItem Header="Crop image" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).CropImageCommand}"/>
 														</ContextMenu>
 													</Image.ContextMenu>
 												</Image>

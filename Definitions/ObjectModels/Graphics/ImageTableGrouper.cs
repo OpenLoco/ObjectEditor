@@ -1,7 +1,7 @@
 using Definitions.ObjectModels.Types;
 using System.Diagnostics;
 
-namespace Definitions.ObjectModels;
+namespace Definitions.ObjectModels.Graphics;
 
 public static class ImageTableGrouper
 {

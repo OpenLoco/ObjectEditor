@@ -1,5 +1,4 @@
-using Definitions.ObjectModels;
-using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Graphics;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;

@@ -5,8 +5,8 @@ using Dat.Loaders;
 using Dat.Types;
 using Dat.Types.SCV5;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Sound;
-using Definitions.ObjectModels.Types;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 

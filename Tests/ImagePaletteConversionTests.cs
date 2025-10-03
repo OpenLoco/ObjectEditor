@@ -4,7 +4,7 @@ using Dat.FileParsing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Graphics;
 
 namespace Dat.Tests;
 

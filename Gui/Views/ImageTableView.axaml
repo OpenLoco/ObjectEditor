@@ -180,9 +180,14 @@
 							<DataTemplate>
 								<Expander Header="{Binding GroupName}" IsExpanded="True" Margin="4" Padding="0" HorizontalAlignment="Stretch">
 									<ListBox ItemsSource="{Binding Images}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
+										<!--<ListBox.ContextMenu>
+											<ContextMenu>
+												<MenuItem Header="Append new image" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).AppendImageCommand}" CommandParameter="{Binding GroupName}"/>
+											</ContextMenu>
+										</ListBox.ContextMenu>-->
 										<ListBox.ItemsPanel>
 											<ItemsPanelTemplate>
-												<WrapPanel />
+												<WrapPanel/>
 											</ItemsPanelTemplate>
 										</ListBox.ItemsPanel>
 										<ListBox.ItemTemplate>
@@ -190,8 +195,11 @@
 												<Image Source="{Binding DisplayedImage}" Stretch="None" Margin="0">
 													<Image.ContextMenu>
 														<ContextMenu>
-															<MenuItem Header="Replace image" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
-															<MenuItem Header="Crop image" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).CropImageCommand}"/>
+															<MenuItem Header="Replace" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).ReplaceImageCommand}"/>
+															<MenuItem Header="Crop" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).CropImageCommand}"/>
+															<MenuItem Header="Delete" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).DeleteImageCommand}"/>
+															<MenuItem Header="Insert before" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).InsertImageAtCommand}" CommandParameter="{x:True}"/>
+															<MenuItem Header="Insert after" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).InsertImageAtCommand}" CommandParameter="{x:False}"/>
 														</ContextMenu>
 													</Image.ContextMenu>
 												</Image>

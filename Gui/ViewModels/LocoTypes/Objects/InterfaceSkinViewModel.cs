@@ -1,5 +1,5 @@
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.InterfaceSkin;
-using Definitions.ObjectModels.Types;
 
 namespace Gui.ViewModels;
 

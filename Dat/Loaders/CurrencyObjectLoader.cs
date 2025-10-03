@@ -1,6 +1,7 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Currency;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;

@@ -1,10 +1,9 @@
-using Definitions.ObjectModels;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Gui.ViewModels.Graphics;
+namespace Definitions.ObjectModels.Graphics;
 
-public static class Constants
+public static class ImageTableHelpers
 {
 	public static readonly Image<Rgba32> OnePixelTransparent = new(1, 1, PaletteMap.Transparent.Color);
 
@@ -24,4 +23,18 @@ public static class Constants
 		}
 		return img;
 	}
+
+	public static GraphicsElement GetErrorGraphicsElement(int index)
+		=> new()
+		{
+			Width = (short)ErrorImage.Width,
+			Height = (short)ErrorImage.Height,
+			XOffset = 0,
+			YOffset = 0,
+			Flags = GraphicsElementFlags.None,
+			ImageData = [],
+			Name = "<no-image>",
+			Image = ErrorImage,
+			ImageTableIndex = index,
+		};
 }

@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel.DataAnnotations;

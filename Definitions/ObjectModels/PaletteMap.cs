@@ -1,4 +1,4 @@
-using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Graphics;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 

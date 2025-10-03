@@ -1,6 +1,6 @@
 using Avalonia.Media.Imaging;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Graphics;
 using Gui.Models;
 using PropertyModels.ComponentModel;
 using PropertyModels.ComponentModel.DataAnnotations;

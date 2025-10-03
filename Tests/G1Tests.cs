@@ -1,7 +1,7 @@
 using Common.Logging;
 using Dat.FileParsing;
 using Dat.Types;
-using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Graphics;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
 

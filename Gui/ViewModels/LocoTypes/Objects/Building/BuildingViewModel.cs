@@ -1,4 +1,5 @@
 using Dat.Loaders;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;

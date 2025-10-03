@@ -17,6 +17,7 @@ using Index;
 using Dat.Converters;
 using SixLabors.ImageSharp;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 

@@ -1,5 +1,5 @@
 using Definitions.Database;
-using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Graphics;
 
 namespace Definitions.DTO;
 

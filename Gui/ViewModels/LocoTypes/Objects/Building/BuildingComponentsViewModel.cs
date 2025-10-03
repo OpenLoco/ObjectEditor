@@ -1,4 +1,4 @@
-using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
 using Gui.Models;

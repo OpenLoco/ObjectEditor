@@ -1,4 +1,4 @@
-using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Graphics;
 using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.InterfaceSkin;

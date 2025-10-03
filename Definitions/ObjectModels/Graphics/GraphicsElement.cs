@@ -2,7 +2,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Text.Json.Serialization;
 
-namespace Definitions.ObjectModels.Types;
+namespace Definitions.ObjectModels.Graphics;
 
 [Flags]
 public enum GraphicsElementFlags : uint16_t
@@ -37,5 +37,5 @@ public class GraphicsElement // follows G1Element32, except XOffset and YOffset 
 	[JsonIgnore] // this is calculated based on object type, its not really a part of the object definition itself
 	public string Name { get; set; } // taken from IImageNameProvider
 
-	public int ImageTableIndex { get; init; }
+	public int ImageTableIndex { get; set; }
 }

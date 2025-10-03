@@ -1,6 +1,7 @@
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.CliffEdge;
 using Definitions.ObjectModels.Types;
 

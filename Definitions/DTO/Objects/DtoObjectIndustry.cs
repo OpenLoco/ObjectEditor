@@ -1,6 +1,6 @@
 using Definitions.Database;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Industry;
-using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 

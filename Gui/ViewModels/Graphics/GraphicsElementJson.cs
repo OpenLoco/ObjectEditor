@@ -1,4 +1,4 @@
-using Definitions.ObjectModels.Types;
+using Definitions.ObjectModels.Graphics;
 using System.Text.Json.Serialization;
 
 namespace Gui.ViewModels.Graphics;

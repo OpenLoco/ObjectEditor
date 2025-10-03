@@ -3,6 +3,7 @@ using Dat.FileParsing;
 using Dat.Loaders;
 using Dat.Types;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Bridge;
 using Definitions.ObjectModels.Objects.Building;

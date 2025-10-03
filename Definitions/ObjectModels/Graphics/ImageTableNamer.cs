@@ -16,7 +16,7 @@ using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Definitions.ObjectModels;
+namespace Definitions.ObjectModels.Graphics;
 
 public static class ImageTableNamer
 {

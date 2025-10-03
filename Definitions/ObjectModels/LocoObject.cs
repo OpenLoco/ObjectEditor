@@ -1,3 +1,4 @@
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels;

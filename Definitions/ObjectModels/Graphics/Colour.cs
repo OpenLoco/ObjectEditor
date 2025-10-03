@@ -1,4 +1,4 @@
-namespace Definitions.ObjectModels.Types;
+namespace Definitions.ObjectModels.Graphics;
 
 public enum Colour : uint8_t // copy DatColour for now
 {

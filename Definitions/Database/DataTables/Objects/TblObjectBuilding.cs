@@ -1,5 +1,5 @@
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Building;
-using Definitions.ObjectModels.Types;
 
 namespace Definitions.Database;
 

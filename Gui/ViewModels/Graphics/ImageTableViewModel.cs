@@ -4,8 +4,8 @@ using Common;
 using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Common;
-using Definitions.ObjectModels.Types;
 using Gui.ViewModels.LocoTypes.Objects.Building;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -43,11 +43,17 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	[Reactive]
 	public ICommand ExportImagesCommand { get; set; }
-	[Reactive]
-	public ICommand ReplaceImageCommand { get; set; }
 
 	[Reactive]
+	public ICommand ReplaceImageCommand { get; set; }
+	[Reactive]
 	public ICommand CropImageCommand { get; set; }
+	[Reactive]
+	public ICommand DeleteImageCommand { get; set; }
+	[Reactive]
+	public ICommand InsertImageAtCommand { get; set; }
+	[Reactive]
+	public ICommand AppendImageCommand { get; set; }
 
 	[Reactive]
 	public ICommand CropAllImagesCommand { get; set; }
@@ -118,6 +124,9 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImages);
 		ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImage);
 		CropImageCommand = ReactiveCommand.Create(CropImage);
+		DeleteImageCommand = ReactiveCommand.CreateFromTask(DeleteImage);
+		InsertImageAtCommand = ReactiveCommand.CreateFromTask<bool>(InsertImageAt);
+		AppendImageCommand = ReactiveCommand.CreateFromTask<string>(AppendImage);
 		CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
 
 		ZeroOffsetAllImagesCommand = ReactiveCommand.Create(() =>
@@ -251,6 +260,52 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		_ = SelectedImage?.UnderlyingImage = Image.Load<Rgba32>(filename);
 	}
 
+	public async Task DeleteImage()
+	{
+		if (SelectedImage == null)
+		{
+			return;
+		}
+
+		var index = SelectedImage.ImageTableIndex;
+		Model.DeleteAt(index);
+
+		RecreateViewModelGroupsFromImageTable(Model);
+		await Task.CompletedTask;
+	}
+
+	private async Task AppendImage(string groupName)
+	{
+		var group = Model.Groups.FirstOrDefault(x => x.Name == groupName);
+
+		if (group == null)
+		{
+			Logger.Error($"Couldn't find group named {groupName}");
+			return;
+		}
+
+		// this doesn't work
+		// because the groups don't store which indices they own, then
+		// if a group is ever empty we can't ever add something into it with the correct index
+		group.GraphicsElements.Add(ImageTableHelpers.GetErrorGraphicsElement(Model.Groups.Sum(x => x.GraphicsElements.Count)));
+		RecreateViewModelGroupsFromImageTable(Model);
+		await Task.CompletedTask;
+	}
+
+	private async Task InsertImageAt(bool insertBefore)
+	{
+		if (SelectedImage == null)
+		{
+			return;
+		}
+
+		var index = SelectedImage.ImageTableIndex;
+		Model.InsertAt(index, insertBefore);
+
+		RecreateViewModelGroupsFromImageTable(Model);
+		await Task.CompletedTask;
+	}
+
 	// model stuff
 	public void RecolourImages(ColourSwatch primary, ColourSwatch secondary)
 	{
@@ -322,18 +377,18 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			var all = GroupedImageViewModels.SelectMany(x => x.Images).ToList();
 
 			// load files
-			var newImageViewModels = new List<GraphicsElement>();
+			var importedImages = new List<GraphicsElement>();
 			foreach (var (offset, i) in offsets.Select((x, i) => (x, i)))
 			{
 				var is1Pixel = string.IsNullOrEmpty(offset.Path);
-				var img = is1Pixel ? Constants.OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
+				var img = is1Pixel ? ImageTableHelpers.OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
 				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
 				var graphicsElement = GraphicsElementFromImage(newOffset, img, Model.PaletteMap, i);
 				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name)
 					? DefaultImageTableNameProvider.GetImageName(i)
 					: graphicsElement.Name;
 
-				newImageViewModels.Add(graphicsElement);
+				importedImages.Add(graphicsElement);
 			}
 
 			foreach (var group in Model.Groups)
@@ -341,16 +396,24 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 				for (var i = 0; i < group.GraphicsElements.Count; i++)
 				{
 					var ge = group.GraphicsElements[i];
-					if (ge.ImageTableIndex < 0 || ge.ImageTableIndex >= newImageViewModels.Count)
+					if (ge.ImageTableIndex < 0 || ge.ImageTableIndex >= importedImages.Count)
 					{
-						Logger.Error($"Image[{ge.ImageTableIndex}] is out of range; only {newImageViewModels.Count} were loaded. This graphics element will be set to empty.");
-						group.GraphicsElements[i] = GetErrorGraphicsElement(ge.ImageTableIndex);
+						Logger.Error($"Image[{ge.ImageTableIndex}] is out of range; only {importedImages.Count} were loaded. This graphics element will be set to empty.");
+						group.GraphicsElements[i] = ImageTableHelpers.GetErrorGraphicsElement(ge.ImageTableIndex);
 					}
 					else
 					{
-						group.GraphicsElements[i] = newImageViewModels[ge.ImageTableIndex];
+						group.GraphicsElements[i] = importedImages[ge.ImageTableIndex];
 					}
 				}
+			}
+
+			// if there are any extras, add them to a new group
+			var totalExistingElements = Model.Groups.Sum(x => x.GraphicsElements.Count);
+			if (importedImages.Count > totalExistingElements)
+			{
+				var newGroup = new ImageTableGroup("<uncategorised-imported>", importedImages[totalExistingElements..]);
+				Model.Groups.Add(newGroup);
 			}
 
 			RecreateViewModelGroupsFromImageTable(Model);
@@ -360,20 +423,6 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			Logger.Error(ex);
 		}
 	}
-
-	static GraphicsElement GetErrorGraphicsElement(int index)
-		=> new()
-		{
-			Width = (short)Constants.ErrorImage.Width,
-			Height = (short)Constants.ErrorImage.Height,
-			XOffset = 0,
-			YOffset = 0,
-			Flags = GraphicsElementFlags.None,
-			ImageData = [],
-			Name = "Missing Image",
-			Image = Constants.ErrorImage,
-			ImageTableIndex = index,
-		};
 
 	static GraphicsElement GraphicsElementFromImage(GraphicsElementJson ele, Image<Rgba32> img, PaletteMap paletteMap, int index)
 	{

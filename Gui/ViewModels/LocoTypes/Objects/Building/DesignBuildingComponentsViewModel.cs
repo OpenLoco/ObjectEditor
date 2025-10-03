@@ -48,7 +48,7 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 		ImageTable = new ImageTable()
 		{
 			Groups = [
-				(
+				new (
 					"Layer 0",
 					[
 						new GraphicsElement() { Name = "Layer 0 - South", Width = width, Height = height, Image = CreateDummyImage(width, height) },
@@ -57,7 +57,7 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 						new GraphicsElement() { Name = "Layer 0 - East ", Width = width, Height = height, Image = CreateDummyImage(width, height) },
 					]
 				),
-				(
+				new (
 					"Layer 1",
 					[
 						new GraphicsElement() { Name = "Layer 1 - South", Width = width, Height = height, Image = CreateDummyImage(width, height) },

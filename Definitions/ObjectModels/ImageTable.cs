@@ -2,6 +2,8 @@ using Definitions.ObjectModels.Types;
 
 namespace Definitions.ObjectModels;
 
+public record ImageTableGroup(string Name, List<GraphicsElement> GraphicsElements);
+
 public class ImageTable : IHasGraphicsElements
 {
 	public PaletteMap PaletteMap
@@ -28,16 +30,9 @@ public class ImageTable : IHasGraphicsElements
 
 	// public/old interface
 	public List<GraphicsElement> GraphicsElements
-	{
-		get => [.. Groups
+		=> [.. Groups
 			.SelectMany(x => x.GraphicsElements)
 			.OrderBy(x => x.ImageTableIndex)];
-		set
-		{
-			Groups.Clear();
-			Groups.Add(("All", value));
-		}
-	}
 
-	public List<(string Name, List<GraphicsElement> GraphicsElements)> Groups { get; set; } = [];
+	public List<ImageTableGroup> Groups { get; set; } = [];
 }

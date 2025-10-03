@@ -69,7 +69,6 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	readonly DispatcherTimer animationTimer;
 	int currentFrameIndex;
 
-	public PaletteMap PaletteMap { get; init; }
 	public readonly ILogger Logger;
 
 	[Reactive]
@@ -80,24 +79,26 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	public BuildingComponentsViewModel? BuildingComponents { get; set; }
 
+	ImageTable Model { get; init; }
+
 	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponentsModel? buildingComponents = null)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
-		PaletteMap = imageTable.PaletteMap;
+
+		Model = imageTable;
 		Logger = logger;
+		RecreateViewModelGroupsFromImageTable(Model);
 
 		// swatches/palettes
 		ColourSwatches = [.. ColourSwatchesArr.Select(x => new ColourRemapSwatchViewModel()
 		{
 			Swatch = x,
-			Colour = PaletteMap.GetRemapSwatchFromName(x)[0].Color.ToAvaloniaColor(),
-			GradientColours = [.. PaletteMap.GetRemapSwatchFromName(x).Select(x => x.Color.ToAvaloniaColor())],
+			Colour = Model.PaletteMap.GetRemapSwatchFromName(x)[0].Color.ToAvaloniaColor(),
+			GradientColours = [.. Model.PaletteMap.GetRemapSwatchFromName(x).Select(x => x.Color.ToAvaloniaColor())],
 		})];
 
 		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.PrimaryRemap);
 		SelectedSecondarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.SecondaryRemap);
-
-		RecreateGroupsFromImageTable(imageTable);
 
 		// building components
 		if (buildingComponents != null)
@@ -152,14 +153,13 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		animationTimer.Start();
 	}
 
-	private void RecreateGroupsFromImageTable(ImageTable imageTable, List<ImageViewModel>? images = null)
+	private void RecreateViewModelGroupsFromImageTable(ImageTable imageTable)
 	{
 		// image tables
 		GroupedImageViewModels.Clear();
 		foreach (var group in imageTable.Groups)
 		{
-			var imageViewModels = images ?? group.GraphicsElements.Select(ge => new ImageViewModel(ge, PaletteMap));
-			var givm = new GroupedImageViewModel(group.Name, imageViewModels);
+			var givm = new GroupedImageViewModel(group.Name, group.GraphicsElements.Select(ge => new ImageViewModel(ge)));
 			givm.SelectionModel.SelectionChanged += SelectionChanged;
 			GroupedImageViewModels.Add(givm);
 		}
@@ -256,7 +256,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	{
 		foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
 		{
-			ivm.RecolourImage(primary, secondary);
+			ivm.RecolourImage(primary, secondary, Model.PaletteMap);
 		}
 	}
 
@@ -313,7 +313,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 				var sanitised = files.Select(TrimZeroes).ToList();
 
 				offsets = [.. GroupedImageViewModels.SelectMany(x => x.Images)
-					.Select((x, i) => new GraphicsElementJson(sanitised[i], (short)x.XOffset, (short)x.YOffset, x.Name))
+					.Select((x, i) => new GraphicsElementJson(sanitised[i], x.XOffset, x.YOffset, x.Name))
 					.Fill(files.Length, GraphicsElementJson.Zero)];
 
 				Logger.Debug($"Didn't find sprites.json file, using existing GraphicsElement offsets with {offsets.Count} images");
@@ -322,32 +322,58 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			var all = GroupedImageViewModels.SelectMany(x => x.Images).ToList();
 
 			// load files
-			var newImageViewModels = new List<ImageViewModel>();
+			var newImageViewModels = new List<GraphicsElement>();
 			foreach (var (offset, i) in offsets.Select((x, i) => (x, i)))
 			{
 				var is1Pixel = string.IsNullOrEmpty(offset.Path);
-				var img = is1Pixel ? OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
+				var img = is1Pixel ? Constants.OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
 				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
-				var graphicsElement = GraphicsElementFromImage(newOffset, img, PaletteMap, i);
+				var graphicsElement = GraphicsElementFromImage(newOffset, img, Model.PaletteMap, i);
 				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name)
 					? DefaultImageTableNameProvider.GetImageName(i)
 					: graphicsElement.Name;
 
-				newImageViewModels.Add(new ImageViewModel(graphicsElement, PaletteMap));
+				newImageViewModels.Add(graphicsElement);
 			}
 
-			var imageTable = new ImageTable()
+			foreach (var group in Model.Groups)
 			{
-				Groups = [.. GroupedImageViewModels.Select(g => (g.GroupName, new List<GraphicsElement>()))]
-			};
+				for (var i = 0; i < group.GraphicsElements.Count; i++)
+				{
+					var ge = group.GraphicsElements[i];
+					if (ge.ImageTableIndex < 0 || ge.ImageTableIndex >= newImageViewModels.Count)
+					{
+						Logger.Error($"Image[{ge.ImageTableIndex}] is out of range; only {newImageViewModels.Count} were loaded. This graphics element will be set to empty.");
+						group.GraphicsElements[i] = GetErrorGraphicsElement(ge.ImageTableIndex);
+					}
+					else
+					{
+						group.GraphicsElements[i] = newImageViewModels[ge.ImageTableIndex];
+					}
+				}
+			}
 
-			RecreateGroupsFromImageTable(imageTable, newImageViewModels);
+			RecreateViewModelGroupsFromImageTable(Model);
 		}
 		catch (Exception ex)
 		{
 			Logger.Error(ex);
 		}
 	}
+
+	static GraphicsElement GetErrorGraphicsElement(int index)
+		=> new()
+		{
+			Width = (short)Constants.ErrorImage.Width,
+			Height = (short)Constants.ErrorImage.Height,
+			XOffset = 0,
+			YOffset = 0,
+			Flags = GraphicsElementFlags.None,
+			ImageData = [],
+			Name = "Missing Image",
+			Image = Constants.ErrorImage,
+			ImageTableIndex = index,
+		};
 
 	static GraphicsElement GraphicsElementFromImage(GraphicsElementJson ele, Image<Rgba32> img, PaletteMap paletteMap, int index)
 	{
@@ -366,8 +392,6 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			ImageTableIndex = index,
 		};
 	}
-
-	static readonly Image<Rgba32> OnePixelTransparent = new(1, 1, PaletteMap.Transparent.Color);
 
 	async Task ExportImages(string directory, bool prependGroupAndImageNameInFilename)
 	{
@@ -410,7 +434,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			var path = Path.Combine(directory, fileName);
 			await image.UnderlyingImage.SaveAsPngAsync(path);
 
-			offsets.Add(new GraphicsElementJson(fileName, image.ToGraphicsElement()));
+			offsets.Add(new GraphicsElementJson(fileName, image.ToGraphicsElement(Model.PaletteMap)));
 		}
 
 		var offsetsFile = Path.Combine(directory, "sprites.json");

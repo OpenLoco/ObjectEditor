@@ -19,13 +19,13 @@ public static class ImageTableGrouper
 				CreateInterfaceGroups(imageList, imageTable);
 				break;
 			case ObjectType.Sound:
-				imageTable.Groups.Add(("<none>", imageList.ToList()));
+				imageTable.Groups.Add(new("<none>", [.. imageList]));
 				break;
 			case ObjectType.Currency:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.Steam:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.CliffEdge:
 				CreateCliffEdgeGroups(imageList, imageTable);
@@ -34,49 +34,49 @@ public static class ImageTableGrouper
 				CreateWaterGroups(imageList, imageTable);
 				break;
 			case ObjectType.Land:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.TownNames:
-				imageTable.Groups.Add(("<none>", imageList.ToList()));
+				imageTable.Groups.Add(new("<none>", [.. imageList]));
 				break;
 			case ObjectType.Cargo:
 				CreateCargoGroups(imageList, imageTable);
 				break;
 			case ObjectType.Wall:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.TrackSignal:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.LevelCrossing:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.StreetLight:
 				CreateStreetLightGroups(imageList, imageTable);
 				break;
 			case ObjectType.Tunnel:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.Bridge:
 				CreateBridgeGroups(imageList, imageTable);
 				break;
 			case ObjectType.TrackStation:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.TrackExtra:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.Track:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.RoadStation:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.RoadExtra:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.Road:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.Airport:
 				CreateAirportGroups(imageList, imageTable);
@@ -85,19 +85,19 @@ public static class ImageTableGrouper
 				CreateDockGroups(imageList, imageTable);
 				break;
 			case ObjectType.Vehicle:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.Tree:
 				CreateTreeGroups(imageList, imageTable);
 				break;
 			case ObjectType.Snow:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.Climate:
-				imageTable.Groups.Add(("<none>", imageList.ToList()));
+				imageTable.Groups.Add(new("<none>", [.. imageList]));
 				break;
 			case ObjectType.HillShapes:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.Building:
 				CreateBuildingGroups(imageList, imageTable);
@@ -106,13 +106,13 @@ public static class ImageTableGrouper
 				CreateBuildingGroups(imageList, imageTable);
 				break;
 			case ObjectType.Region:
-				imageTable.Groups.Add(("<uncategorised>", imageList.ToList()));
+				imageTable.Groups.Add(new("<uncategorised>", [.. imageList]));
 				break;
 			case ObjectType.Competitor:
 				CreateCompetitorGroups(imageList, imageTable);
 				break;
 			case ObjectType.ScenarioText:
-				imageTable.Groups.Add(("<none>", imageList.ToList()));
+				imageTable.Groups.Add(new("<none>", [.. imageList]));
 				break;
 			case ObjectType.Scaffolding:
 				CreateScaffoldingGroups(imageList, imageTable);
@@ -128,141 +128,140 @@ public static class ImageTableGrouper
 
 	private static void CreateAirportGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
-		imageTable.Groups.Add(("preview", imageList[0..1]));
+		imageTable.Groups.Add(new("preview", imageList[0..1]));
 
 		imageTable.Groups.AddRange(imageList
 			.Skip(1)
 			.Chunk(4)
-			.Select((x, i) => ($"Part {i}", x.ToList()))
+			.Select((x, i) => new ImageTableGroup($"Part {i}", [.. x]))
 			.ToList());
 	}
 
 	private static void CreateBridgeGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
-		imageTable.Groups.Add(("preview", imageList[0..1]));
-		imageTable.Groups.Add(("base plates", imageList[1..6]));
-		imageTable.Groups.Add(("unk", imageList[6..12]));
-		imageTable.Groups.Add(("<uncategorised>", imageList[12..]));
+		imageTable.Groups.Add(new("preview", imageList[0..1]));
+		imageTable.Groups.Add(new("base plates", imageList[1..6]));
+		imageTable.Groups.Add(new("unk", imageList[6..12]));
+		imageTable.Groups.Add(new("<uncategorised>", imageList[12..]));
 	}
 
 	private static void CreateBuildingGroups(List<GraphicsElement> imageList, ImageTable imageTable)
-		=> imageTable.Groups = imageList
+		=> imageTable.Groups = [.. imageList
 			.Chunk(4)
-			.Select((x, i) => ($"Part {i}", x.ToList()))
-			.ToList();
+			.Select((x, i) => new ImageTableGroup($"Part {i}", [.. x]))];
 
 	private static void CreateCargoGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
-		imageTable.Groups.Add(("preview", imageList[0..1]));
-		imageTable.Groups.Add(("station variations", imageList[1..]));
+		imageTable.Groups.Add(new("preview", imageList[0..1]));
+		imageTable.Groups.Add(new("station variations", imageList[1..]));
 	}
 
 	private static void CreateCliffEdgeGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
-		imageTable.Groups.Add(("left west", imageList[0..16]));
-		imageTable.Groups.Add(("right east", imageList[16..32]));
-		imageTable.Groups.Add(("right west", imageList[32..48]));
-		imageTable.Groups.Add(("left east", imageList[48..64]));
-		imageTable.Groups.Add(("far-side slopes", imageList[64..]));
+		imageTable.Groups.Add(new("left west", imageList[0..16]));
+		imageTable.Groups.Add(new("right east", imageList[16..32]));
+		imageTable.Groups.Add(new("right west", imageList[32..48]));
+		imageTable.Groups.Add(new("left east", imageList[48..64]));
+		imageTable.Groups.Add(new("far-side slopes", imageList[64..]));
 	}
 
 	private static void CreateCompetitorGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
-		imageTable.Groups.Add(("neutral", imageList[0..2]));
-		imageTable.Groups.Add(("happy", imageList[2..4]));
-		imageTable.Groups.Add(("worried", imageList[4..6]));
-		imageTable.Groups.Add(("thinking", imageList[6..8]));
-		imageTable.Groups.Add(("dejected", imageList[8..10]));
-		imageTable.Groups.Add(("surprised", imageList[10..12]));
-		imageTable.Groups.Add(("scared", imageList[12..14]));
-		imageTable.Groups.Add(("angry", imageList[14..16]));
-		imageTable.Groups.Add(("disgusted", imageList[16..18]));
+		imageTable.Groups.Add(new("neutral", imageList[0..2]));
+		imageTable.Groups.Add(new("happy", imageList[2..4]));
+		imageTable.Groups.Add(new("worried", imageList[4..6]));
+		imageTable.Groups.Add(new("thinking", imageList[6..8]));
+		imageTable.Groups.Add(new("dejected", imageList[8..10]));
+		imageTable.Groups.Add(new("surprised", imageList[10..12]));
+		imageTable.Groups.Add(new("scared", imageList[12..14]));
+		imageTable.Groups.Add(new("angry", imageList[14..16]));
+		imageTable.Groups.Add(new("disgusted", imageList[16..18]));
 	}
 
 	private static void CreateDockGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
-		imageTable.Groups.Add(("preview", [imageList[0]]));
+		imageTable.Groups.Add(new("preview", [imageList[0]]));
 
 		imageTable.Groups.AddRange(imageList
 			.Skip(1)
 			.Chunk(4)
-			.Select((x, i) => ($"Part {i}", x.ToList()))
+			.Select((x, i) => new ImageTableGroup($"Part {i}", [.. x]))
 			.ToList());
 	}
 
 	private static void CreateInterfaceGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
-		imageTable.Groups.Add(("preview", imageList[0..1]));
-		imageTable.Groups.Add(("toolbar", imageList[1..31]));
-		imageTable.Groups.Add(("build-vehicle", imageList[31..43]));
-		imageTable.Groups.Add(("toolbar", imageList[43..49]));
-		imageTable.Groups.Add(("paint", imageList[49..57]));
-		imageTable.Groups.Add(("population", imageList[57..65]));
-		imageTable.Groups.Add(("performance-index", imageList[65..73]));
-		imageTable.Groups.Add(("cargo-units", imageList[73..81]));
-		imageTable.Groups.Add(("cargo-distance", imageList[81..89]));
-		imageTable.Groups.Add(("production", imageList[89..97]));
-		imageTable.Groups.Add(("wrench", imageList[97..113]));
-		imageTable.Groups.Add(("finances", imageList[113..129]));
-		imageTable.Groups.Add(("cup", imageList[129..145]));
-		imageTable.Groups.Add(("ratings", imageList[145..161]));
-		imageTable.Groups.Add(("transported", imageList[161..168]));
-		imageTable.Groups.Add(("cogs", imageList[168..172]));
-		imageTable.Groups.Add(("toolbar", imageList[172..203]));
-		imageTable.Groups.Add(("tab-train", imageList[203..211]));
-		imageTable.Groups.Add(("tab-aircraft", imageList[211..219]));
-		imageTable.Groups.Add(("tab-bus", imageList[219..227]));
-		imageTable.Groups.Add(("tab-tram", imageList[227..235]));
-		imageTable.Groups.Add(("tab-truck", imageList[235..243]));
-		imageTable.Groups.Add(("tab-ship", imageList[243..251]));
-		imageTable.Groups.Add(("build-train", imageList[251..267]));
-		imageTable.Groups.Add(("build-aircraft", imageList[267..283]));
-		imageTable.Groups.Add(("build-bus", imageList[283..299]));
-		imageTable.Groups.Add(("build-tram", imageList[299..315]));
-		imageTable.Groups.Add(("build-truck", imageList[315..331]));
-		imageTable.Groups.Add(("build-ship", imageList[331..347]));
-		imageTable.Groups.Add(("build-industry", imageList[347..363]));
-		imageTable.Groups.Add(("build-town", imageList[363..379]));
-		imageTable.Groups.Add(("build-buildings", imageList[379..395]));
-		imageTable.Groups.Add(("build-misc-buildings", imageList[395..411]));
-		imageTable.Groups.Add(("build-extra", imageList[411..418]));
-		imageTable.Groups.Add(("train", imageList[418..426]));
-		imageTable.Groups.Add(("aircraft", imageList[426..434]));
-		imageTable.Groups.Add(("bus", imageList[434..442]));
-		imageTable.Groups.Add(("tram", imageList[442..450]));
-		imageTable.Groups.Add(("truck", imageList[450..458]));
-		imageTable.Groups.Add(("ship", imageList[458..466]));
-		imageTable.Groups.Add(("toolbar-map", imageList[466..470]));
+		imageTable.Groups.Add(new("preview", imageList[0..1]));
+		imageTable.Groups.Add(new("toolbar", imageList[1..31]));
+		imageTable.Groups.Add(new("build-vehicle", imageList[31..43]));
+		imageTable.Groups.Add(new("toolbar", imageList[43..49]));
+		imageTable.Groups.Add(new("paint", imageList[49..57]));
+		imageTable.Groups.Add(new("population", imageList[57..65]));
+		imageTable.Groups.Add(new("performance-index", imageList[65..73]));
+		imageTable.Groups.Add(new("cargo-units", imageList[73..81]));
+		imageTable.Groups.Add(new("cargo-distance", imageList[81..89]));
+		imageTable.Groups.Add(new("production", imageList[89..97]));
+		imageTable.Groups.Add(new("wrench", imageList[97..113]));
+		imageTable.Groups.Add(new("finances", imageList[113..129]));
+		imageTable.Groups.Add(new("cup", imageList[129..145]));
+		imageTable.Groups.Add(new("ratings", imageList[145..161]));
+		imageTable.Groups.Add(new("transported", imageList[161..168]));
+		imageTable.Groups.Add(new("cogs", imageList[168..172]));
+		imageTable.Groups.Add(new("toolbar", imageList[172..203]));
+		imageTable.Groups.Add(new("tab-train", imageList[203..211]));
+		imageTable.Groups.Add(new("tab-aircraft", imageList[211..219]));
+		imageTable.Groups.Add(new("tab-bus", imageList[219..227]));
+		imageTable.Groups.Add(new("tab-tram", imageList[227..235]));
+		imageTable.Groups.Add(new("tab-truck", imageList[235..243]));
+		imageTable.Groups.Add(new("tab-ship", imageList[243..251]));
+		imageTable.Groups.Add(new("build-train", imageList[251..267]));
+		imageTable.Groups.Add(new("build-aircraft", imageList[267..283]));
+		imageTable.Groups.Add(new("build-bus", imageList[283..299]));
+		imageTable.Groups.Add(new("build-tram", imageList[299..315]));
+		imageTable.Groups.Add(new("build-truck", imageList[315..331]));
+		imageTable.Groups.Add(new("build-ship", imageList[331..347]));
+		imageTable.Groups.Add(new("build-industry", imageList[347..363]));
+		imageTable.Groups.Add(new("build-town", imageList[363..379]));
+		imageTable.Groups.Add(new("build-buildings", imageList[379..395]));
+		imageTable.Groups.Add(new("build-misc-buildings", imageList[395..411]));
+		imageTable.Groups.Add(new("build-extra", imageList[411..418]));
+		imageTable.Groups.Add(new("train", imageList[418..426]));
+		imageTable.Groups.Add(new("aircraft", imageList[426..434]));
+		imageTable.Groups.Add(new("bus", imageList[434..442]));
+		imageTable.Groups.Add(new("tram", imageList[442..450]));
+		imageTable.Groups.Add(new("truck", imageList[450..458]));
+		imageTable.Groups.Add(new("ship", imageList[458..466]));
+		imageTable.Groups.Add(new("toolbar-map", imageList[466..470]));
 	}
 
 	private static void CreateScaffoldingGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
-		imageTable.Groups.Add(("type 0", imageList[0..10]));
-		imageTable.Groups.Add(("type 1", imageList[10..24]));
-		imageTable.Groups.Add(("type 2", imageList[24..36]));
+		imageTable.Groups.Add(new("type 0", imageList[0..10]));
+		imageTable.Groups.Add(new("type 1", imageList[10..24]));
+		imageTable.Groups.Add(new("type 2", imageList[24..36]));
 	}
 
 	private static void CreateStreetLightGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 		=> imageTable.Groups.AddRange(imageList
 			.Chunk(4)
-			.Select((x, i) => ($"Year group {i}", x.ToList()))
+			.Select((x, i) => new ImageTableGroup($"Year group {i}", [.. x]))
 			.ToList());
 
 	private static void CreateTreeGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 		=> imageTable.Groups.AddRange(imageList
 			.Chunk(4)
-			.Select((x, i) => ($"Variation {i}", x.ToList()))
+			.Select((x, i) => new ImageTableGroup($"Variation {i}", [.. x]))
 			.ToList());
 
 	private static void CreateWaterGroups(List<GraphicsElement> imageList, ImageTable imageTable)
 	{
-		imageTable.Groups.Add(("zoom 1", imageList[0..10]));
-		imageTable.Groups.Add(("zoom 2", imageList[10..20]));
-		imageTable.Groups.Add(("zoom 3", imageList[20..30]));
-		imageTable.Groups.Add(("zoom 4", imageList[30..40]));
-		imageTable.Groups.Add(("palettes", imageList[40..42]));
-		imageTable.Groups.Add(("icon-animation", imageList[42..58]));
-		imageTable.Groups.Add(("icon-interaction", imageList[58..60]));
-		imageTable.Groups.Add(("animation", imageList[60..76]));
+		imageTable.Groups.Add(new("zoom 1", imageList[0..10]));
+		imageTable.Groups.Add(new("zoom 2", imageList[10..20]));
+		imageTable.Groups.Add(new("zoom 3", imageList[20..30]));
+		imageTable.Groups.Add(new("zoom 4", imageList[30..40]));
+		imageTable.Groups.Add(new("palettes", imageList[40..42]));
+		imageTable.Groups.Add(new("icon-animation", imageList[42..58]));
+		imageTable.Groups.Add(new("icon-interaction", imageList[58..60]));
+		imageTable.Groups.Add(new("animation", imageList[60..76]));
 	}
 }

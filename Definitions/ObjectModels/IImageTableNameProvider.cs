@@ -5,7 +5,7 @@ namespace Definitions.ObjectModels;
 
 public interface IHasGraphicsElements
 {
-	List<GraphicsElement> GraphicsElements { get; set; } // todo: probably change to IEnumerable
+	List<GraphicsElement> GraphicsElements { get; } // todo: probably change to IEnumerable
 }
 
 public interface IImageTableNameProvider

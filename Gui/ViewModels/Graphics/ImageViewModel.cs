@@ -17,8 +17,8 @@ namespace Gui.ViewModels.Graphics;
 
 public class ImageViewModel : ReactiveUI.ReactiveObject
 {
-	public string Name { get; set; }
-	public int ImageTableIndex { get; init; }
+	public string Name => Model.Name;
+	public int ImageTableIndex => Model.ImageTableIndex;
 
 	[Unit("px")]
 	public int Width => UnderlyingImage.Width;
@@ -26,16 +26,48 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 	[Unit("px")]
 	public int Height => UnderlyingImage.Height;
 
-	[Reactive, Unit("px")]
-	public int XOffset { get; set; }
+	[Unit("px")]
+	public short XOffset
+	{
+		get => Model.XOffset;
+		set
+		{
+			Model.XOffset = value;
+			this.RaisePropertyChanged(nameof(XOffset));
+		}
+	}
 
-	[Reactive, Unit("px")]
-	public int YOffset { get; set; }
+	[Unit("px")]
+	public short YOffset
+	{
+		get => Model.YOffset;
+		set
+		{
+			Model.YOffset = value;
+			this.RaisePropertyChanged(nameof(YOffset));
+		}
+	}
 
-	public short ZoomOffset { get; set; }
+	public short ZoomOffset
+	{
+		get => Model.ZoomOffset;
+		set
+		{
+			Model.ZoomOffset = value;
+			this.RaisePropertyChanged(nameof(ZoomOffset));
+		}
+	}
 
 	[EnumProhibitValues<GraphicsElementFlags>(GraphicsElementFlags.None)]
-	public GraphicsElementFlags Flags { get; set; }
+	public GraphicsElementFlags Flags
+	{
+		get => Model.Flags;
+		set
+		{
+			Model.Flags = value;
+			this.RaisePropertyChanged(nameof(Flags));
+		}
+	}
 
 	[Reactive, Browsable(false)]
 	public Bitmap DisplayedImage { get; private set; }
@@ -53,17 +85,11 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 				DisplayedImage.Size.Width + 2,
 				DisplayedImage.Size.Height + 2);
 
-	readonly PaletteMap PaletteMap;
+	GraphicsElement Model { get; init; }
 
-	public ImageViewModel(GraphicsElement graphicsElement, PaletteMap paletteMap)
+	public ImageViewModel(GraphicsElement graphicsElement)
 	{
-		Name = graphicsElement.Name;
-		XOffset = graphicsElement.XOffset;
-		YOffset = graphicsElement.YOffset;
-		Flags = graphicsElement.Flags;
-		ZoomOffset = graphicsElement.ZoomOffset;
-		ImageTableIndex = graphicsElement.ImageTableIndex;
-		PaletteMap = paletteMap;
+		Model = graphicsElement;
 
 		_ = this.WhenAnyValue(o => o.UnderlyingImage)
 			.Where(x => x != null)
@@ -72,28 +98,28 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 		_ = this.WhenAnyValue(o => o.DisplayedImage)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
 
-		UnderlyingImage = graphicsElement.Image!;
+		UnderlyingImage = Model.Image!;
 	}
 
-	public void RecolourImage(ColourSwatch primary, ColourSwatch secondary)
+	public void RecolourImage(ColourSwatch primary, ColourSwatch secondary, PaletteMap paletteMap)
 	{
 		// turn rgba32 into raw palette image
-		var rawData = PaletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
+		var rawData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
 
 		var dummyElement = new GraphicsElement
 		{
 			Name = Name, // not necessary for palette
 			Width = (short)UnderlyingImage.Width,
 			Height = (short)UnderlyingImage.Height,
-			XOffset = (short)XOffset,
-			YOffset = (short)YOffset,
+			XOffset = XOffset,
+			YOffset = YOffset,
 			Flags = Flags,
 			ZoomOffset = ZoomOffset,
 			ImageData = rawData,
 			ImageTableIndex = ImageTableIndex, // not necessary for palette
 		};
 
-		if (!PaletteMap.TryConvertG1ToRgba32Bitmap(dummyElement, primary, secondary, out var image))
+		if (!paletteMap.TryConvertG1ToRgba32Bitmap(dummyElement, primary, secondary, out var image))
 		{
 			throw new InvalidOperationException("Failed to recolour image");
 		}
@@ -118,8 +144,8 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 		else
 		{
 			UnderlyingImage.Mutate(i => i.Crop(cropRegion));
-			XOffset += cropRegion.Left;
-			YOffset += cropRegion.Top;
+			XOffset += (short)cropRegion.Left;
+			YOffset += (short)cropRegion.Top;
 		}
 
 		UnderlyingImageChanged();
@@ -154,7 +180,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 		}
 	}
 
-	public GraphicsElement ToGraphicsElement()
+	public GraphicsElement ToGraphicsElement(PaletteMap paletteMap)
 	{
 		if (UnderlyingImage == null)
 		{
@@ -162,13 +188,13 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 		}
 
 		// turn rgba32 into raw palette image
-		var rawData = PaletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
+		var rawData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
 		return new GraphicsElement
 		{
 			Width = (short)UnderlyingImage.Width,
 			Height = (short)UnderlyingImage.Height,
-			XOffset = (short)XOffset,
-			YOffset = (short)YOffset,
+			XOffset = XOffset,
+			YOffset = YOffset,
 			Flags = Flags,
 			ZoomOffset = ZoomOffset,
 			ImageData = rawData,

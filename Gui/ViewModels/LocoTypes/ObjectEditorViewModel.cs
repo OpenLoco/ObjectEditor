@@ -294,15 +294,6 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		// VM should auto-copy back now for everything but VehicleObject
 		CurrentObjectViewModel.CopyBackToModel();
 
-		if (ExtraContentViewModel is ImageTableViewModel itvm && CurrentObject?.LocoObject?.ImageTable != null)
-		{
-			CurrentObject.LocoObject.ImageTable.GraphicsElements = itvm.GroupedImageViewModels
-				.SelectMany(x => x.Images)
-				.Select(x => x.ToGraphicsElement())
-				.OrderBy(x => x.ImageTableIndex)
-				.ToList();
-		}
-
 		// this is hacky but it should work
 		if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject so)
 		{

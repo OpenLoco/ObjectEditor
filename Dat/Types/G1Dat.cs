@@ -29,21 +29,21 @@ public class G1Dat
 				// Note: The grouping below is good but its for steam only, and because elements are out of order, saving is not possible unless each element stores its index
 				Groups =
 				[
-					("terrain-masks", [.. graphicsElements[0..417], .. graphicsElements[3629..3896]]),
-					("palettes", [.. graphicsElements[417..428], .. graphicsElements[2170..2305]]),
-					("arrows", [.. graphicsElements[428..444], .. graphicsElements[449..457], .. graphicsElements[3492..3504]]),
-					("unk", graphicsElements[444..449]),
-					("supports", graphicsElements[457..1117]),
-					("glyphs", graphicsElements[1117..2170]),
-					("loading-bar", graphicsElements[2326..2335]),
-					("interface", [.. graphicsElements[2335..2470], .. graphicsElements[3477..3479], .. graphicsElements[2305..2326], .. graphicsElements[3539..3547]]),
-					("height-markers", graphicsElements[2470..3238]),
-					("numerical-markers", graphicsElements[3238..3302]),
-					("unk", graphicsElements[3302..3362]),
-					("particles", graphicsElements[3362..3477]),
-					("masks", [.. graphicsElements[3479..3492], graphicsElements[3504]]),
-					("object-types", graphicsElements[3505..3539]),
-					("title", graphicsElements[3547..3629]),
+					new ("terrain-masks", [.. graphicsElements[0..417], .. graphicsElements[3629..3896]]),
+					new ("palettes", [.. graphicsElements[417..428], .. graphicsElements[2170..2305]]),
+					new ("arrows", [.. graphicsElements[428..444], .. graphicsElements[449..457], .. graphicsElements[3492..3504]]),
+					new ("unk", graphicsElements[444..449]),
+					new ("supports", graphicsElements[457..1117]),
+					new ("glyphs", graphicsElements[1117..2170]),
+					new ("loading-bar", graphicsElements[2326..2335]),
+					new ("interface", [.. graphicsElements[2335..2470], .. graphicsElements[3477..3479], .. graphicsElements[2305..2326], .. graphicsElements[3539..3547]]),
+					new ("height-markers", graphicsElements[2470..3238]),
+					new ("numerical-markers", graphicsElements[3238..3302]),
+					new ("unk", graphicsElements[3302..3362]),
+					new ("particles", graphicsElements[3362..3477]),
+					new ("masks", [.. graphicsElements[3479..3492], graphicsElements[3504]]),
+					new ("object-types", graphicsElements[3505..3539]),
+					new ("title", graphicsElements[3547..3629]),
 				]
 			};
 		}
@@ -53,21 +53,21 @@ public class G1Dat
 			{
 				Groups =
 				[
-					("terrain-masks", [.. graphicsElements[0..417], .. graphicsElements[3631..3898]]),
-					("palettes", [.. graphicsElements[417..428], .. graphicsElements[2170..2305]]),
-					("arrows", [.. graphicsElements[428..444], .. graphicsElements[449..457], .. graphicsElements[3492..3504]]),
-					("unk", graphicsElements[444..449]),
-					("supports", graphicsElements[457..1117]),
-					("glyphs", [.. graphicsElements[1117..2170], .. graphicsElements[3898..4122]]),
-					("loading-bar", graphicsElements[2326..2335]),
-					("interface", [.. graphicsElements[2335..2470], .. graphicsElements[3477..3479], .. graphicsElements[2305..2326], .. graphicsElements[3539..3547]]),
-					("height-markers", graphicsElements[2470..3238]),
-					("numerical-markers", graphicsElements[3238..3302]),
-					("unk", graphicsElements[3302..3362]),
-					("particles", graphicsElements[3362..3477]),
-					("masks", [.. graphicsElements[3479..3492], graphicsElements[3504]]),
-					("object-types", graphicsElements[3505..3539]),
-					("title", graphicsElements[3547..3631]),
+					new ("terrain-masks", [.. graphicsElements[0..417], .. graphicsElements[3631..3898]]),
+					new ("palettes", [.. graphicsElements[417..428], .. graphicsElements[2170..2305]]),
+					new ("arrows", [.. graphicsElements[428..444], .. graphicsElements[449..457], .. graphicsElements[3492..3504]]),
+					new ("unk", graphicsElements[444..449]),
+					new ("supports", graphicsElements[457..1117]),
+					new ("glyphs", [.. graphicsElements[1117..2170], .. graphicsElements[3898..4122]]),
+					new ("loading-bar", graphicsElements[2326..2335]),
+					new ("interface", [.. graphicsElements[2335..2470], .. graphicsElements[3477..3479], .. graphicsElements[2305..2326], .. graphicsElements[3539..3547]]),
+					new ("height-markers", graphicsElements[2470..3238]),
+					new ("numerical-markers", graphicsElements[3238..3302]),
+					new ("unk", graphicsElements[3302..3362]),
+					new ("particles", graphicsElements[3362..3477]),
+					new ("masks", [.. graphicsElements[3479..3492], graphicsElements[3504]]),
+					new ("object-types", graphicsElements[3505..3539]),
+					new ("title", graphicsElements[3547..3631]),
 				]
 			};
 		}

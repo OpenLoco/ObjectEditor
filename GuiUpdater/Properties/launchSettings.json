@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GuiUpdater": {
+      "commandName": "Project",
+      "commandLineArgs": "--pid 123\r\n--url https://github.com/OpenLoco/ObjectEditor/releases/tag/5.3.5\r\n--app-path \"cmd.exe\""
+    }
+  }
+}

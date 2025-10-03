@@ -1,8 +1,11 @@
+using Common.Logging;
 using NuGet.Versioning;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 #if !DEBUG
 using Common;
@@ -21,8 +24,54 @@ public static class VersionHelpers
 	public const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
 	public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 
+	// todo: instead of going to downloads, start the auto-updater (GuiUpdater.exe) with the right args
 	public static Process? OpenDownloadPage()
 		=> Process.Start(new ProcessStartInfo(GithubLatestReleaseDownloadPage) { UseShellExecute = true });
+
+	public static void StartGuiAutoUpdater(ILogger logger)
+	{
+		try
+		{
+			var startInfo = new ProcessStartInfo("GuiUpdater.exe",
+			[
+				$"--pid {Environment.ProcessId}",
+				$"--url {GithubLatestReleaseDownloadPage}",
+				$"--app-path {Environment.ProcessPath}",
+			])
+			{
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true,
+				CreateNoWindow = true,
+			};
+
+			var process = Process.Start(startInfo);
+
+			var stdOut = Task.Run(() =>
+			{
+				string line;
+				while ((line = process.StandardOutput.ReadLine()) != null)
+				{
+					logger.Info($"[Updater] {line}");
+				}
+			});
+
+			var stdErro = Task.Run(() =>
+			{
+				string line;
+				while ((line = process.StandardError.ReadLine()) != null)
+				{
+					logger.Info($"[Updater] {line}");
+				}
+			});
+
+			Task.WaitAll(stdOut, stdErro);
+		}
+		catch (Exception ex)
+		{
+			Debug.WriteLine($"Failed to start auto-updater: {ex}");
+		}
+	}
 
 	public static SemanticVersion GetCurrentAppVersion()
 	{

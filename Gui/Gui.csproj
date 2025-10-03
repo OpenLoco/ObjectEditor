@@ -68,6 +68,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
+    <ProjectReference Include="..\GuiUpdater\GuiUpdater.csproj" />
     <ProjectReference Include="..\Index\Index.csproj" />
   </ItemGroup>
 

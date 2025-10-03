@@ -14,7 +14,6 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -52,7 +51,7 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
 	public ReactiveCommand<Unit, Unit> EditSettingsCommand { get; }
 	public ReactiveCommand<Unit, Unit> ShowLogsCommand { get; }
-	public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
+	public ReactiveCommand<Unit, Unit> OpenDownloadLink { get; }
 
 	public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
@@ -124,7 +123,8 @@ public class MainWindowViewModel : ViewModelBase
 			var result = await OpenLogWindow.Handle(vm);
 		});
 
-		OpenDownloadLink = ReactiveCommand.Create(VersionHelpers.OpenDownloadPage);
+		//OpenDownloadLink = ReactiveCommand.Create(VersionHelpers.OpenDownloadPage);
+		OpenDownloadLink = ReactiveCommand.Create(() => VersionHelpers.StartGuiAutoUpdater(Model.Logger));
 
 		#region Version
 
@@ -155,6 +155,9 @@ public class MainWindowViewModel : ViewModelBase
 			Model.Logger.Error(ex);
 		}
 #endif
+
+		// testing only:
+		IsUpdateAvailable = true;
 
 		#endregion
 	}

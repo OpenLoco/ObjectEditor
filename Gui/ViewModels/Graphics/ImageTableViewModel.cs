@@ -196,7 +196,16 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
 	{
+		// need to unselect the current selection
 		var sm = (SelectionModel<ImageViewModel>)sender;
+		if (SelectionModel != null && SelectionModel != sm)
+		{
+			SelectionModel.SelectionChanged -= SelectionChanged;
+			SelectionModel.Clear();
+			SelectionModel.SelectionChanged += SelectionChanged;
+		}
+
+		// set main selection to the new viewmodel selection
 		SelectionModel = sm;
 		SelectedImage = SelectionModel.SelectedItems.Count > 0 ? sm.SelectedItems[0] : null;
 	}

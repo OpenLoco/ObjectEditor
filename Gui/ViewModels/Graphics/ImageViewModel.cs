@@ -17,14 +17,19 @@ namespace Gui.ViewModels.Graphics;
 
 public class ImageViewModel : ReactiveUI.ReactiveObject
 {
-	public string Name => Model.Name;
-	public int ImageTableIndex => Model.ImageTableIndex;
+	public string Name
+		=> Model.Name;
+
+	public int ImageTableIndex
+		=> Model.ImageTableIndex;
 
 	[Unit("px")]
-	public int Width => UnderlyingImage.Width;
+	public int Width
+		=> UnderlyingImage.Width;
 
 	[Unit("px")]
-	public int Height => UnderlyingImage.Height;
+	public int Height
+		=> UnderlyingImage.Height;
 
 	[Unit("px")]
 	public short XOffset

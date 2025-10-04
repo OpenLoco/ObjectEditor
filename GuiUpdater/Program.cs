@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO.Compression;
 
 var pidOption = new Option<int>("--pid") { Description = "The process ID of the main application to wait for it to exit." };
-var urlOption = new Option<Uri>("--url") { Description = "The download URL of the update package." };
+var urlOption = new Option<string>("--url") { Description = "The download URL of the update package." };
 var appPathOption = new Option<string>("--app-path") { Description = "The path to the main application executable to restart." };
 
 var rootCommand = new RootCommand("GUI Updater for OpenLoco Object Editor")
@@ -16,7 +16,7 @@ var rootCommand = new RootCommand("GUI Updater for OpenLoco Object Editor")
 rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
 {
 	var pid = parseResult.GetValue(pidOption);
-	var url = parseResult.GetValue(urlOption)?.ToString();
+	var url = new Uri(parseResult.GetValue(urlOption));
 	var appPath = parseResult.GetValue(appPathOption);
 
 	Console.WriteLine("OpenLoco Object Editor Updater started.");
@@ -43,7 +43,9 @@ rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancella
 		return;
 	}
 
-	var tempZipPath = Path.Combine(Path.GetTempPath(), "OpenLocoObjectEditor_Update.zip");
+	// url is something like "https://github.com/OpenLoco/ObjectEditor/releases/download/5.3.5/object-editor-5.3.5-win-x64.zip"
+	var filenameUri = new Uri(url.GetLeftPart(UriPartial.Path));
+	var tempZipPath = Path.Combine(Path.GetTempPath(), filenameUri.ToString());
 	var extractionPath = Path.GetDirectoryName(appPath);
 
 	if (string.IsNullOrEmpty(extractionPath))
@@ -84,6 +86,7 @@ rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancella
 	}
 
 	Console.WriteLine($"Restarting application: {appPath}");
+	Console.ReadLine();
 	Process.Start(new ProcessStartInfo(appPath) { UseShellExecute = true });
 
 });

@@ -55,6 +55,12 @@ public static class PlatformSpecific
 		}
 	}
 
+	public static string EditorPlatformExtension
+		=> RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win-x64.zip" :
+		   RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx-x64.tar" :
+		   RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux-x64.tar" :
+		   "unknown";
+
 	static void FolderOpenInDesktopCore(string directory, string? filename = null)
 	{
 		if (!Directory.Exists(directory))

@@ -1,16 +1,18 @@
-//#if !DEBUG
-using Common;
 using Common.Logging;
 using NuGet.Versioning;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+
+#if !DEBUG
+using Common;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
-//#endif
+using System;
+#endif
 
 namespace Gui;
 
@@ -21,7 +23,6 @@ public static class VersionHelpers
 	public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
 	public const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
 	public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
-
 
 	// todo: instead of going to downloads, start the auto-updater (ObjectEditorUpdater.exe) with the right args
 	public static Process? OpenDownloadPage()
@@ -93,7 +94,7 @@ public static class VersionHelpers
 		}
 	}
 
-	//#if !DEBUG
+#if !DEBUG
 	// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
 	public static SemanticVersion GetLatestAppVersion(SemanticVersion currentVersion)
 	{
@@ -112,7 +113,7 @@ public static class VersionHelpers
 		throw new Exception($"Unable to get latest version. Error={response.StatusCode}");
 #pragma warning restore CA2201 // Do not raise reserved exception types
 	}
-	//#endif
+#endif
 
 	public static readonly SemanticVersion UnknownVersion = new(0, 0, 0, "unknown");
 

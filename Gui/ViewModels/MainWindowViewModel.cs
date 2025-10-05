@@ -144,7 +144,7 @@ public class MainWindowViewModel : ViewModelBase
 
 		ApplicationVersion = VersionHelpers.GetCurrentAppVersion();
 
-		//#if !DEBUG
+#if !DEBUG
 		try
 		{
 			LatestVersion = VersionHelpers.GetLatestAppVersion(ApplicationVersion);
@@ -163,11 +163,6 @@ public class MainWindowViewModel : ViewModelBase
 		{
 			Model.Logger.Error(ex);
 		}
-		//#endif
-
-#if DEBUG
-		// testing only:
-		IsUpdateAvailable = true;
 #endif
 
 		#endregion

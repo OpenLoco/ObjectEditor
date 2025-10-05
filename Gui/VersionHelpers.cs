@@ -10,7 +10,6 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 //#endif
 
 namespace Gui;
@@ -18,20 +17,22 @@ namespace Gui;
 public static class VersionHelpers
 {
 	public const string GithubApplicationName = "ObjectEditor";
+	public const string ObjectEditorUpdaterName = "ObjectEditorUpdater";
 	public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
 	public const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
 	public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 
-	// todo: instead of going to downloads, start the auto-updater (GuiUpdater.exe) with the right args
+
+	// todo: instead of going to downloads, start the auto-updater (ObjectEditorUpdater.exe) with the right args
 	public static Process? OpenDownloadPage()
 		=> Process.Start(new ProcessStartInfo(GithubLatestReleaseDownloadPage) { UseShellExecute = true });
 
-	public static async Task StartGuiAutoUpdater(ILogger logger, SemanticVersion latestVersion)
+	public static void StartAutoUpdater(ILogger logger, SemanticVersion latestVersion)
 	{
 		try
 		{
 			// kill any existing processes of the updater
-			foreach (var existingProcess in Process.GetProcessesByName("GuiUpdater"))
+			foreach (var existingProcess in Process.GetProcessesByName(ObjectEditorUpdaterName))
 			{
 				try
 				{
@@ -40,7 +41,7 @@ public static class VersionHelpers
 				}
 				catch (Exception ex)
 				{
-					logger.Error(ex, "Failed to kill existing GuiUpdater process.");
+					logger.Error(ex, "Failed to kill existing ObjectEditorUpdater process.");
 				}
 			}
 
@@ -50,7 +51,7 @@ public static class VersionHelpers
 			var platform = PlatformSpecific.EditorPlatformExtension;
 			var filename = $"object-editor-{latestVersion}-{platform}";
 
-			var startInfo = new ProcessStartInfo("GuiUpdater.exe",
+			var startInfo = new ProcessStartInfo($"{ObjectEditorUpdaterName}.exe",
 			[
 				"--pid",
 				$"{Environment.ProcessId}",
@@ -60,35 +61,12 @@ public static class VersionHelpers
 				$"{Environment.ProcessPath}",
 			])
 			{
-				UseShellExecute = true,
-				//RedirectStandardOutput = true,
-				//RedirectStandardError = true,
-				//CreateNoWindow = true,
+				UseShellExecute = false,
+				CreateNoWindow = true,
 			};
 
 			var process = Process.Start(startInfo);
-			Environment.Exit(0); // close the main app so the updater can do its thing
-
-			//var stdOut = Task.Run(() =>
-			//{
-			//	string line;
-			//	while ((line = process.StandardOutput.ReadLine()) != null)
-			//	{
-			//		logger.Info($"[Updater] {line}");
-			//	}
-			//});
-
-			//var stdErro = Task.Run(() =>
-			//{
-			//	string line;
-			//	while ((line = process.StandardError.ReadLine()) != null)
-			//	{
-			//		logger.Info($"[Updater] {line}");
-			//	}
-			//});
-
-			//await stdOut;
-			//await stdErro;
+			Environment.Exit(0);
 		}
 		catch (Exception ex)
 		{

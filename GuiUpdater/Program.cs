@@ -27,13 +27,13 @@ rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancella
 		{
 			var mainProcess = Process.GetProcessById(pid);
 			Console.WriteLine($"Waiting for main application (PID: {pid}) to exit...");
-			await mainProcess.WaitForExitAsync();
+			await mainProcess.WaitForExitAsync(cancellationToken);
 			Console.WriteLine("Main application has exited.");
 		}
 		catch (ArgumentException)
 		{
 			// Process with an invalid PID or one that has already exited.
-			Console.WriteLine($"Process with PID {pid} not found. It might have already exited.");
+			Console.WriteLine($"Process with PID {pid} not found. It might have already exited (which is a good thing).");
 		}
 	}
 
@@ -44,8 +44,8 @@ rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancella
 	}
 
 	// url is something like "https://github.com/OpenLoco/ObjectEditor/releases/download/5.3.5/object-editor-5.3.5-win-x64.zip"
-	var filenameUri = new Uri(url.GetLeftPart(UriPartial.Path));
-	var tempZipPath = Path.Combine(Path.GetTempPath(), filenameUri.ToString());
+	var filename = Path.GetFileName(url.ToString());
+	var tempZipPath = Path.Combine(Path.GetTempPath(), filename);
 	var extractionPath = Path.GetDirectoryName(appPath);
 
 	if (string.IsNullOrEmpty(extractionPath))
@@ -59,11 +59,11 @@ rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancella
 		Console.WriteLine($"Downloading update from {url}...");
 		using (var httpClient = new HttpClient())
 		{
-			var response = await httpClient.GetAsync(url);
-			response.EnsureSuccessStatusCode();
-			using (var fs = new FileStream(tempZipPath, FileMode.Create, FileAccess.Write, FileShare.None))
+			var response = await httpClient.GetAsync(url, cancellationToken);
+			_ = response.EnsureSuccessStatusCode();
+			await using (var fs = new FileStream(tempZipPath, FileMode.Create, FileAccess.Write, FileShare.None))
 			{
-				await response.Content.CopyToAsync(fs);
+				await response.Content.CopyToAsync(fs, cancellationToken);
 			}
 		}
 		Console.WriteLine($"Update downloaded to {tempZipPath}.");
@@ -86,8 +86,7 @@ rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancella
 	}
 
 	Console.WriteLine($"Restarting application: {appPath}");
-	Console.ReadLine();
-	Process.Start(new ProcessStartInfo(appPath) { UseShellExecute = true });
+	_ = Process.Start(new ProcessStartInfo(appPath) { UseShellExecute = false, CreateNoWindow = true, });
 
 });
 

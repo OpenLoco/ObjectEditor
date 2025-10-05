@@ -36,8 +36,16 @@
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
 		</Style>
 		<Style Selector="Button.danger">
-			<Setter Property="Background" Value="{DynamicResource DangerButtonBackgroundBrush}"/>
-			<Setter Property="Foreground" Value="{DynamicResource DangerButtonForegroundBrush}"/>
+			<Setter Property="Background" Value="{DynamicResource DangerBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource DangerForegroundBrush}"/>
+		</Style>
+		<Style Selector="Button.update">
+			<Setter Property="Background" Value="{DynamicResource UpdateBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource UpdateForegroundBrush}"/>
+		</Style>
+		<Style Selector="Button.information">
+			<Setter Property="Background" Value="{DynamicResource InformationBackgroundBrush}"/>
+			<Setter Property="Foreground" Value="{DynamicResource InformationForegroundBrush}"/>
 		</Style>
 		<Style Selector="TextBox">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBackground}" />
@@ -127,8 +135,12 @@
 		<ResourceDictionary>
 			<ResourceDictionary.ThemeDictionaries>
 				<ResourceDictionary x:Key='Light'>
-					<SolidColorBrush x:Key='DangerButtonBackgroundBrush'>Crimson</SolidColorBrush>
-					<SolidColorBrush x:Key='DangerButtonForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='DangerBackgroundBrush'>Crimson</SolidColorBrush>
+					<SolidColorBrush x:Key='DangerForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='UpdateBackgroundBrush'>ForestGreen</SolidColorBrush>
+					<SolidColorBrush x:Key='UpdateForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='InformationBackgroundBrush'>RoyalBlue</SolidColorBrush>
+					<SolidColorBrush x:Key='InformationForegroundBrush'>White</SolidColorBrush>
 					<SolidColorBrush x:Key='Shadow' Color='#0A0908' />
 					<SolidColorBrush x:Key='Dark' Color='#22333B' />
 					<SolidColorBrush x:Key='Neutral' Color='#EAE0D5' />
@@ -136,8 +148,12 @@
 					<SolidColorBrush x:Key='Highlight' Color='#5E503F' />
 				</ResourceDictionary>
 				<ResourceDictionary x:Key='Dark'>
-					<SolidColorBrush x:Key='DangerButtonBackgroundBrush'>Crimson</SolidColorBrush>
-					<SolidColorBrush x:Key='DangerButtonForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='DangerBackgroundBrush'>Crimson</SolidColorBrush>
+					<SolidColorBrush x:Key='DangerForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='UpdateBackgroundBrush'>ForestGreen</SolidColorBrush>
+					<SolidColorBrush x:Key='UpdateForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='InformationBackgroundBrush'>RoyalBlue</SolidColorBrush>
+					<SolidColorBrush x:Key='InformationForegroundBrush'>White</SolidColorBrush>
 					<SolidColorBrush x:Key='Shadow' Color='#5E503F' />
 					<SolidColorBrush x:Key='Dark' Color='#C6AC8F' />
 					<SolidColorBrush x:Key='Neutral' Color='#EAE0D5' />

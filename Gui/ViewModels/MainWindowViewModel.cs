@@ -53,11 +53,13 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Unit> EditSettingsCommand { get; }
 	public ReactiveCommand<Unit, Unit> ShowLogsCommand { get; }
 	public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
+	public ReactiveCommand<Unit, Unit> DownloadLatestUpdate { get; }
 
 	public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
 	[Reactive]
 	public SemanticVersion ApplicationVersion { get; set; }
+	SemanticVersion? LatestVersion { get; set; }
 
 	[Reactive]
 	public string LatestVersionText { get; set; } = "Development build";
@@ -125,6 +127,13 @@ public class MainWindowViewModel : ViewModelBase
 		});
 
 		OpenDownloadLink = ReactiveCommand.Create(VersionHelpers.OpenDownloadPage);
+		DownloadLatestUpdate = ReactiveCommand.Create(() =>
+		{
+			if (LatestVersion != null)
+			{
+				var t = Task.Run(() => VersionHelpers.StartAutoUpdater(Model.Logger, LatestVersion));
+			}
+		});
 
 		#region Version
 
@@ -138,10 +147,10 @@ public class MainWindowViewModel : ViewModelBase
 #if !DEBUG
 		try
 		{
-			var latestVersion = VersionHelpers.GetLatestAppVersion(ApplicationVersion);
-			if (latestVersion > ApplicationVersion)
+			LatestVersion = VersionHelpers.GetLatestAppVersion(ApplicationVersion);
+			if (LatestVersion > ApplicationVersion)
 			{
-				LatestVersionText = $"newer version exists: {latestVersion}";
+				LatestVersionText = $"newer version exists: {LatestVersion}";
 				IsUpdateAvailable = true;
 			}
 			else

@@ -1,4 +1,6 @@
+using Common.Logging;
 using NuGet.Versioning;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -17,12 +19,61 @@ namespace Gui;
 public static class VersionHelpers
 {
 	public const string GithubApplicationName = "ObjectEditor";
+	public const string ObjectEditorUpdaterName = "ObjectEditorUpdater";
 	public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
 	public const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
 	public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 
+	// todo: instead of going to downloads, start the auto-updater (ObjectEditorUpdater.exe) with the right args
 	public static Process? OpenDownloadPage()
 		=> Process.Start(new ProcessStartInfo(GithubLatestReleaseDownloadPage) { UseShellExecute = true });
+
+	public static void StartAutoUpdater(ILogger logger, SemanticVersion latestVersion)
+	{
+		try
+		{
+			// kill any existing processes of the updater
+			foreach (var existingProcess in Process.GetProcessesByName(ObjectEditorUpdaterName))
+			{
+				try
+				{
+					existingProcess.Kill();
+					existingProcess.WaitForExit();
+				}
+				catch (Exception ex)
+				{
+					logger.Error(ex, "Failed to kill existing ObjectEditorUpdater process.");
+				}
+			}
+
+			// win: object-editor-5.3.5-win-x64.zip
+			// osx: object-editor-5.3.5-osx-x64.tar
+			// linux: object-editor-5.3.5-linux-x64.tar
+			var platform = PlatformSpecific.EditorPlatformExtension;
+			var filename = $"object-editor-{latestVersion}-{platform}";
+
+			var startInfo = new ProcessStartInfo($"{ObjectEditorUpdaterName}.exe",
+			[
+				"--pid",
+				$"{Environment.ProcessId}",
+				"--url",
+				$"{GithubLatestReleaseDownloadPage}/download/{latestVersion}/{filename}",
+				"--app-path",
+				$"{Environment.ProcessPath}",
+			])
+			{
+				UseShellExecute = false,
+				CreateNoWindow = true,
+			};
+
+			var process = Process.Start(startInfo);
+			Environment.Exit(0);
+		}
+		catch (Exception ex)
+		{
+			Debug.WriteLine($"Failed to start auto-updater: {ex}");
+		}
+	}
 
 	public static SemanticVersion GetCurrentAppVersion()
 	{

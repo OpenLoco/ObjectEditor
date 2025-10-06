@@ -1,8 +1,14 @@
 using Avalonia.Threading;
 using Common;
-using DynamicData;
 using Common.Logging;
+using Dat.Converters;
+using Dat.FileParsing;
+using Dat.Types;
 using Definitions.DTO;
+using Definitions.ObjectModels;
+using Definitions.ObjectModels.Types;
+using DynamicData;
+using Index;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
@@ -12,12 +18,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Index;
-using Definitions.ObjectModels;
-using Definitions.ObjectModels.Types;
-using Dat.Types;
-using Dat.FileParsing;
-using Dat.Converters;
 
 namespace Gui.Models;
 
@@ -224,7 +224,7 @@ public class ObjectEditorModel : IDisposable
 			}
 
 			Logger.Debug(cachedLocoObjDto.ToString());
-			Logger.Info($"Object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} has {cachedLocoObjDto.DatObjects} attached DAT objects");
+			Logger.Info($"Object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} has {cachedLocoObjDto.DatObjects.Count} attached DAT objects: [{string.Join(',', cachedLocoObjDto.DatObjects)}]");
 
 			foreach (var datObject in cachedLocoObjDto.DatObjects)
 			{
@@ -247,7 +247,8 @@ public class ObjectEditorModel : IDisposable
 					continue;
 				}
 
-				var filename = $"{cachedLocoObjDto.DisplayName}-{cachedLocoObjDto.Id}.dat";
+				var filename = Path.GetInvalidFileNameChars().Aggregate(datObject.DatName, (current, c) => current.Replace(c, '_'));
+				filename = $"{filename}-{datObject.ObjectId}.dat";
 				var pathname = Path.Combine(Settings.DownloadFolder, filename);
 				if (!File.Exists(pathname))
 				{

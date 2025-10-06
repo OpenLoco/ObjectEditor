@@ -33,6 +33,26 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 
 # Features
 
+## 5.0.0+
+- Object service now uses proper REST API
+- Scenario viewer can download missing objects
+- Rewritten DAT reading/writing to abstract DAT away from Objects
+- All object properties are loaded and can be edited by the user
+- Removed hex editor (not needed now that all objects are loaded correctly)
+- MP3s can be loaded and converted into DAT files for game music
+- Index files are now stored in settings folder
+- Image naming and grouping
+- Advanced object property searching
+
+## 4.0.0+
+- Backend support for object packs, scenario packs metadata
+- DAT files exported with sawyer encoding
+- Tabbed object viewer
+- Indexing optimisations
+- Basic image editing/viewing support (cropping, panning, zooming)
+- Performance increases from virtualised folder tree
+- Button shortcuts to copy objects to your game folders
+
 ## 3.0.0+
 - Online mode
   - Can connect to the object repository to view and download any object stored in it

@@ -8,10 +8,11 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 | ![image](https://github.com/user-attachments/assets/1adb4be5-cc8e-46a0-9174-83e0634c2ad2) | ![image](https://github.com/user-attachments/assets/17bf5419-6e58-4903-9998-cda708be359a) |
 | **String table editing** | **Light/dark mode** |
 | ![image](https://github.com/user-attachments/assets/a60f6f62-084c-4bbd-ba66-0175177becef) | ![image](https://github.com/user-attachments/assets/3d0d36d2-17b9-4449-8940-f9820dcfdc5b) |
-| **Hex dump viewer** | **Object repository browsing and downloading** |
-| ![image](https://github.com/user-attachments/assets/4c20b844-fdbc-4c35-b9da-5b7b3bbf879b) | ![image](https://github.com/user-attachments/assets/98c37f5f-1325-4795-9729-2f1c8e1d4ce7) |
+| **Advanced object search** | **Object repository browsing and downloading** |
+| ![image](https://github.com/user-attachments/assets/68f9dbde-552b-4b56-9f0d-75d3df353bf8) | ![image](https://github.com/user-attachments/assets/98c37f5f-1325-4795-9729-2f1c8e1d4ce7) |
 | **Scenario/Landscape/SaveGame data viewer** | **Palette swapping** |
 | ![image](https://github.com/user-attachments/assets/6bffd1e1-fc74-4979-9b0f-ce3c23c74e0e) | ![image](https://github.com/user-attachments/assets/baef3750-91d8-46ef-bb64-e8d8cd8004b2) |
+
 
 
 # How to use
@@ -121,10 +122,11 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - Feel free to inspect it and change it if necessary, or even delete it if you mess things up too much - the editor will recreate a fresh one!
 
 ## Indexing
-- When the editor first loads a directory containing objects it will scan every file to make an index and save that into `objectIndex.json` in that folder
+- When the editor first loads a directory containing objects it will scan every file to make an index and save that into an index folder in `objectIndices` folder in the settings folder (see above)
 - This indexing is relatively slow, but only needs to run once/when the folder contents change
 - On subsequent uses of the editor, the index file will be loaded instead, and this is fast
 - The editor will print a log message if it detects changes in the folder and thinks you need to reindex it
+- In Online mode, and if you have enabled automatic object discovery in the settings, the editor will check your DAT files against the online database and see if there are any new files
 
 ## Unit Testing
 - All object types have a unit test which

@@ -26,6 +26,7 @@
 
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+			<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8" Text="{Binding ImageCount}" />
 			<Button Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import a directory of .pngs">
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="FolderUpload" Width="24" Height="24" Margin="2" />

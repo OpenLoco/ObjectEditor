@@ -26,6 +26,8 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 {
 	public string Name => "Image Table";
 
+	public string ImageCount => $"Image count = {GroupedImageViewModels.Sum(x => x.Images.Count)}";
+
 	// used in the axaml to bind the combobox to the list of swatches
 	public static ColourSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourSwatch>();
 
@@ -124,6 +126,8 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		_ = this.WhenAnyValue(o => o.AnimationSpeed)
 			.Where(_ => animationTimer != null)
 			.Subscribe(_ => animationTimer!.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed));
+		_ = this.WhenAnyValue(o => o.GroupedImageViewModels).Skip(1)
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageCount)));
 
 		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
 		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImages);

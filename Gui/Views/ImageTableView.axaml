@@ -147,25 +147,56 @@
 				</Button.Styles>
 				<Button.Flyout>
 					<Flyout>
-						<ItemsControl Margin="0" Padding="0">
+						<ItemsControl Margin="0" Padding="4">
 							<Button Command="{Binding CropAllImagesCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="Crops all images and adjusts offsets">
 								<DockPanel>
 									<materialIcons:MaterialIcon Kind="Crop" Width="24" Height="24" Margin="2" />
 									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Crop</TextBlock>
 								</DockPanel>
 							</Button>
-							<Button Command="{Binding ZeroOffsetAllImagesCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to 0">
-								<DockPanel>
-									<materialIcons:MaterialIcon Kind="PanTopLeft" Width="24" Height="24" Margin="2" />
-									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Zero offsets</TextBlock>
-								</DockPanel>
-							</Button>
-							<Button Command="{Binding CenterOffsetAllImagesCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to the centre of the image">
-								<DockPanel>
-									<materialIcons:MaterialIcon Kind="Pan" Width="24" Height="24" Margin="2" />
-									<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Center offsets</TextBlock>
-								</DockPanel>
-							</Button>
+							<StackPanel Orientation="Vertical">
+								<TextBlock>
+									Offsets
+								</TextBlock>
+								<Grid ColumnDefinitions="50*, 50*" RowDefinitions="33*, 33*, 33*">
+									<Button Grid.Row="0" Grid.Column="0" Command="{Binding ZeroOffsetAllImagesCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to 0">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="PanTopLeft" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Zero</TextBlock>
+										</DockPanel>
+									</Button>
+									<Button Grid.Row="0" Grid.Column="1" Command="{Binding CenterOffsetAllImagesCommand}" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to the centre of the image">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="Pan" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Center</TextBlock>
+										</DockPanel>
+									</Button>
+									<Button Grid.Row="1" Grid.Column="0" Command="{Binding TranslateXOffsetAllImagesCommand}" CommandParameter="-1" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to the centre of the image">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="ArrowLeft" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">X--</TextBlock>
+										</DockPanel>
+									</Button>
+									<Button Grid.Row="1" Grid.Column="1" Command="{Binding TranslateXOffsetAllImagesCommand}" CommandParameter="1" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to the centre of the image">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="ArrowRight" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">X++</TextBlock>
+										</DockPanel>
+									</Button>
+									<Button Grid.Row="2" Grid.Column="0" Command="{Binding TranslateYOffsetAllImagesCommand}" CommandParameter="-1" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to the centre of the image">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="ArrowUp" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Y--</TextBlock>
+										</DockPanel>
+									</Button>
+									<Button Grid.Row="2" Grid.Column="1" Command="{Binding TranslateYOffsetAllImagesCommand}" CommandParameter="1" HorizontalAlignment="Stretch" ToolTip.Tip="Sets all image offsets to the centre of the image">
+										<DockPanel>
+											<materialIcons:MaterialIcon Kind="ArrowDown" Width="24" Height="24" Margin="2" />
+											<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Y++</TextBlock>
+										</DockPanel>
+									</Button>
+								</Grid>
+							</StackPanel>
 						</ItemsControl>
 					</Flyout>
 				</Button.Flyout>

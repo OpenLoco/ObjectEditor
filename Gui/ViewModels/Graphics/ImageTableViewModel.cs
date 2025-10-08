@@ -62,6 +62,11 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	public ICommand ZeroOffsetAllImagesCommand { get; set; }
 
 	[Reactive]
+	public ICommand TranslateXOffsetAllImagesCommand { get; set; }
+	[Reactive]
+	public ICommand TranslateYOffsetAllImagesCommand { get; set; }
+
+	[Reactive]
 	public ICommand CenterOffsetAllImagesCommand { get; set; }
 
 	[Reactive]
@@ -144,6 +149,28 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			{
 				ivm.XOffset = (short)(-ivm.Width / 2);
 				ivm.YOffset = (short)(-ivm.Height / 2);
+			}
+		});
+
+		TranslateXOffsetAllImagesCommand = ReactiveCommand.Create<string>((string amount) =>
+		{
+			if (short.TryParse(amount, out var result))
+			{
+				foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
+				{
+					ivm.XOffset += result;
+				}
+			}
+		});
+
+		TranslateYOffsetAllImagesCommand = ReactiveCommand.Create<string>((string amount) =>
+		{
+			if (short.TryParse(amount, out var result))
+			{
+				foreach (var ivm in GroupedImageViewModels.SelectMany(x => x.Images))
+				{
+					ivm.YOffset += result;
+				}
 			}
 		});
 

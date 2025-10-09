@@ -6,6 +6,11 @@ public static class SawyerStreamUtils
 {
 	public static uint ComputeObjectChecksum(ReadOnlySpan<byte> headerFlagByte, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data)
 	{
+		if (name.Length != 8)
+		{
+			throw new ArgumentOutOfRangeException(nameof(name), "Name must be exactly 8 bytes long.");
+		}
+
 		static uint32_t ComputeChecksum(ReadOnlySpan<byte> data, uint32_t seed)
 		{
 			var checksum = seed;
@@ -18,9 +23,9 @@ public static class SawyerStreamUtils
 		}
 
 		const uint32_t objectChecksumMagic = 0xF369A75B;
-		var checksum = ComputeChecksum(headerFlagByte, objectChecksumMagic);
-		checksum = ComputeChecksum(name, checksum);
-		checksum = ComputeChecksum(data, checksum);
+		var checksum = ComputeChecksum(headerFlagByte, objectChecksumMagic); // 1295935387
+		checksum = ComputeChecksum(name, checksum); // 2991070967
+		checksum = ComputeChecksum(data, checksum); // 1733551639
 		return checksum;
 	}
 

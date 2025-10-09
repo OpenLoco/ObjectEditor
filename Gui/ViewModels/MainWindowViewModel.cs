@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using Common.Logging;
 using Dat.Data;
 using Definitions.ObjectModels;
 using DynamicData;
@@ -94,6 +95,21 @@ public class MainWindowViewModel : ViewModelBase
 
 		_ = CurrentTabModel.WhenAnyValue(o => o.SelectedDocument)
 			.Subscribe((x) => FolderTreeViewModel.CurrentlySelectedObject = x?.CurrentFile);
+
+		Model.Logger.LogAdded += (sender, laea) =>
+		{
+			// announce to users that something bad happened
+			var log = laea.Log;
+			if (log.Level is LogLevel.Error)
+			{
+				// check if the logs window is already open
+				if (App.GetOpenWindows().Any(x => x.DataContext is LogWindowViewModel))
+				{
+					return;
+				}
+				ShowLogsCommand.Execute();
+			}
+		};
 
 		PopulateObjDataMenu();
 

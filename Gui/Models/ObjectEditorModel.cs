@@ -55,7 +55,7 @@ public class ObjectEditorModel : IDisposable
 	public static string SettingsFile => Path.Combine(ProgramDataPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? EditorSettings.DefaultFileName);
 	public static string LoggingFile => Path.Combine(ProgramDataPath, LoggingFileName);
 
-	public ObservableCollection<LogLine> LoggerObservableLogs = [];
+	public ObservableCollection<LogLine> LoggerObservableLogs { get; init; } = [];
 
 	public ObjectServiceClient ObjectServiceClient { get; init; }
 
@@ -66,8 +66,7 @@ public class ObjectEditorModel : IDisposable
 	{
 		Logger = new Logger();
 		LoggerObservableLogs = [];
-		Logger.LogAdded += (sender, laea) => Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, laea.Log));
-		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log.ToString()).ConfigureAwait(false);
+		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log).ConfigureAwait(false);
 
 		LoadSettings();
 
@@ -80,17 +79,21 @@ public class ObjectEditorModel : IDisposable
 		ObjectServiceClient = new(Settings, Logger);
 	}
 
-	public async Task LogAsync(string message)
+	public async Task LogAsync(LogLine log)
 	{
-		logQueue.Enqueue(message);
-		await WriteLogsToFileAsync(); // Start the async writing process
+		// update UI
+		Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, log));
+
+		// update log file on disk
+		logQueue.Enqueue(log.ToString());
+		await WriteLogsToFileAsync();
 	}
 
 	async Task WriteLogsToFileAsync()
 	{
 		if (logQueue.IsEmpty)
 		{
-			return; // Nothing to write
+			return;
 		}
 
 		if (await logFileLock.WaitAsync(0)) // Non-blocking wait if available.

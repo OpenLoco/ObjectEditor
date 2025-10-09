@@ -1,4 +1,23 @@
-<Window x:Class="Gui.Views.MainWindow" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:amxc="using:Avalonia.Markup.Xaml.Converters" xmlns:cnv="using:Gui.Converters" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime" xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mo="using:Gui.Models" xmlns:ol="using:ObjectEditor.Logging" xmlns:old5="using:Dat.Types.SCV5" xmlns:oldd="using:Dat.Data" xmlns:oldo="using:Dat.Objects" xmlns:oldt="using:Dat.Types" xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid" xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:vi="using:Gui.Views" xmlns:vm="using:Gui.ViewModels" Title="{Binding WindowTitle}" Width="1920" Height="1080" d:DesignHeight="900" d:DesignWidth="1440" x:DataType="vm:MainWindowViewModel" Icon="/Assets/loco_icon.png" mc:Ignorable="d">
+<Window x:Class="Gui.Views.MainWindow"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
+		xmlns:cnv="using:Gui.Converters"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Runtime"
+		xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:mo="using:Gui.Models"
+		xmlns:ol="using:ObjectEditor.Logging"
+		xmlns:old5="using:Dat.Types.SCV5"
+		xmlns:oldd="using:Dat.Data"
+		xmlns:oldo="using:Dat.Objects"
+		xmlns:oldt="using:Dat.Types"
+		xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+		xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox"
+		xmlns:sys="clr-namespace:System;assembly=mscorlib"
+		xmlns:vi="using:Gui.Views"
+		xmlns:vm="using:Gui.ViewModels" Title="{Binding WindowTitle}" Width="1920" Height="1080" d:DesignHeight="900" d:DesignWidth="1440" x:DataType="vm:MainWindowViewModel" Icon="/Assets/loco_icon.png" mc:Ignorable="d">
 	<!--  https://docs.avaloniaui.net/docs/0.10.x/tutorials/music-store-app/creating-a-modern-looking-window  -->
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>
@@ -8,7 +27,16 @@
 		<cnv:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
 		<cnv:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 		<cnv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+		<cnv:LogLevelToRowBrushConverter x:Key="LogLevelToRowBrushConverter"/>
 	</Window.Resources>
+
+	<Window.Styles>
+		<Style Selector="DataGridRow" >
+			<Setter Property="Background" Value="{Binding Converter={StaticResource LogLevelToRowBrushConverter}, ConverterParameter=Background}" />
+			<Setter Property="Foreground" Value="{Binding Converter={StaticResource LogLevelToRowBrushConverter}, ConverterParameter=Foreground}" />
+		</Style>
+	</Window.Styles>
+
 	<Window.DataTemplates>
 		<!--  Mind the order of the Templates. Begin with the most specific first.  -->
 		<DataTemplate DataType="old5:TileElement">

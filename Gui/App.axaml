@@ -8,6 +8,8 @@
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:vi="using:Gui.Views"
 	xmlns:oldt="using:Dat.Types"
+	xmlns:log="using:Common.Logging"
+	xmlns:cnv="using:Gui.Converters"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	x:Class="Gui.App"
@@ -135,8 +137,12 @@
 		<ResourceDictionary>
 			<ResourceDictionary.ThemeDictionaries>
 				<ResourceDictionary x:Key='Light'>
+					<SolidColorBrush x:Key='TextBackgroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='TextForegroundBrush'>Black</SolidColorBrush>
 					<SolidColorBrush x:Key='DangerBackgroundBrush'>Crimson</SolidColorBrush>
 					<SolidColorBrush x:Key='DangerForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='WarningBackgroundBrush'>PaleGoldenrod</SolidColorBrush>
+					<SolidColorBrush x:Key='WarningForegroundBrush'>Black</SolidColorBrush>
 					<SolidColorBrush x:Key='UpdateBackgroundBrush'>ForestGreen</SolidColorBrush>
 					<SolidColorBrush x:Key='UpdateForegroundBrush'>White</SolidColorBrush>
 					<SolidColorBrush x:Key='InformationBackgroundBrush'>RoyalBlue</SolidColorBrush>
@@ -148,8 +154,12 @@
 					<SolidColorBrush x:Key='Highlight' Color='#5E503F' />
 				</ResourceDictionary>
 				<ResourceDictionary x:Key='Dark'>
+					<SolidColorBrush x:Key='TextBackgroundBrush'>Black</SolidColorBrush>
+					<SolidColorBrush x:Key='TextForegroundBrush'>White</SolidColorBrush>
 					<SolidColorBrush x:Key='DangerBackgroundBrush'>Crimson</SolidColorBrush>
 					<SolidColorBrush x:Key='DangerForegroundBrush'>White</SolidColorBrush>
+					<SolidColorBrush x:Key='WarningBackgroundBrush'>Black</SolidColorBrush>
+					<SolidColorBrush x:Key='WarningForegroundBrush'>PaleGoldenrod</SolidColorBrush>
 					<SolidColorBrush x:Key='UpdateBackgroundBrush'>ForestGreen</SolidColorBrush>
 					<SolidColorBrush x:Key='UpdateForegroundBrush'>White</SolidColorBrush>
 					<SolidColorBrush x:Key='InformationBackgroundBrush'>RoyalBlue</SolidColorBrush>
@@ -162,6 +172,5 @@
 				</ResourceDictionary>
 			</ResourceDictionary.ThemeDictionaries>
 		</ResourceDictionary>
-
 	</Application.Resources>
 </Application>

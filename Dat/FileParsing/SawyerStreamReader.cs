@@ -36,11 +36,23 @@ public static class SawyerStreamReader
 		}
 
 		var headerFlag = BitConverter.GetBytes(hdrs.S5.Flags).AsSpan()[0..1];
-		var checksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, Encoding.ASCII.GetBytes(hdrs.S5.Name), decodedData);
+		var computedChecksum = SawyerStreamUtils.ComputeObjectChecksum(headerFlag, Encoding.ASCII.GetBytes(hdrs.S5.Name.PadRight(8, ' ')), decodedData);
 
-		if (checksum != hdrs.S5.Checksum)
+		if (computedChecksum != hdrs.S5.Checksum)
 		{
-			logger?.Error($"{hdrs.S5.Name} had incorrect checksum. expected={hdrs.S5.Checksum} actual={checksum}");
+			logger?.Error($"{hdrs.S5.Name} had incorrect checksum. Header={hdrs.S5.Checksum} Computed={computedChecksum}");
+		}
+
+		if (hdrs.S5.IsVanilla())
+		{
+			if (OriginalObjectFiles.Names.TryGetValue(hdrs.S5.Name.Trim(), out var originalChecksum))
+			{
+				logger?.Debug($"{hdrs.S5.Name} is a vanilla object with checksums [Steam={originalChecksum.SteamChecksum} GoG={originalChecksum.GoGChecksum}]");
+			}
+			else
+			{
+				logger?.Warning($"{hdrs.S5.Name} is marked as vanilla but is not in the original object list!");
+			}
 		}
 
 		return (hdrs.S5, hdrs.Obj, decodedData);

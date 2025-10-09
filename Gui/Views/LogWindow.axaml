@@ -5,13 +5,14 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:gui="using:Gui"
 	xmlns:vm="using:Gui.ViewModels"
-	mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="768"
+	xmlns:cnv="using:Gui.Converters"
+	mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="480"
 	x:Class="Gui.Views.LogWindow"
 	x:DataType="vm:LogWindowViewModel"
 	Title="LogViewer"
 	WindowStartupLocation="CenterOwner"
 	SystemDecorations="Full"
-	Width="1024"
+	Width="1600"
 	Height="768"
 	ShowInTaskbar="True">
 
@@ -19,7 +20,18 @@
 		<vm:DesignLogWindowViewModel/>
 	</Design.DataContext>
 
+	<Window.Resources>
+		<cnv:LogLevelToRowBrushConverter x:Key="LogLevelToRowBrushConverter"/>
+	</Window.Resources>
+
+	<Window.Styles>
+		<Style Selector="DataGridRow" >
+			<Setter Property="Background" Value="{Binding Converter={StaticResource LogLevelToRowBrushConverter}, ConverterParameter=Background}" />
+			<Setter Property="Foreground" Value="{Binding Converter={StaticResource LogLevelToRowBrushConverter}, ConverterParameter=Foreground}" />
+		</Style>
+	</Window.Styles>
+
 	<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-		<DataGrid MinHeight="256" MaxHeight="1024" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="False"/>
+		<DataGrid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ItemsSource="{Binding Logs}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="True"/>
 	</ScrollViewer>
 </Window>

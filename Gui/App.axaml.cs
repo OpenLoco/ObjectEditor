@@ -1,8 +1,10 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Gui.ViewModels;
 using Gui.Views;
+using System.Collections.Generic;
 
 namespace Gui;
 
@@ -21,5 +23,13 @@ public partial class App : Application
 		}
 
 		base.OnFrameworkInitializationCompleted();
+	}
+	public static IEnumerable<Window> GetOpenWindows()
+	{
+		if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+		{
+			return desktop.Windows;
+		}
+		return [];
 	}
 }

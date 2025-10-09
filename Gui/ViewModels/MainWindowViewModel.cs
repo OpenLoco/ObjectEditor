@@ -98,16 +98,19 @@ public class MainWindowViewModel : ViewModelBase
 
 		Model.Logger.LogAdded += (sender, laea) =>
 		{
-			// announce to users that something bad happened
-			var log = laea.Log;
-			if (log.Level is LogLevel.Error)
+			if (Model.Settings.ShowLogsOnError)
 			{
-				// check if the logs window is already open
-				if (App.GetOpenWindows().Any(x => x.DataContext is LogWindowViewModel))
+				// announce to users that something bad happened
+				var log = laea.Log;
+				if (log.Level is LogLevel.Error)
 				{
-					return;
+					// check if the logs window is already open
+					if (App.GetOpenWindows().Any(x => x.DataContext is LogWindowViewModel))
+					{
+						return;
+					}
+					ShowLogsCommand.Execute();
 				}
-				ShowLogsCommand.Execute();
 			}
 		};
 

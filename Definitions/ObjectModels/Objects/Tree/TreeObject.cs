@@ -35,7 +35,7 @@ public class TreeObject : ILocoStruct
 			yield return new ValidationResult($"The negative of {nameof(ClearCostFactor)} must be less than or equal to ~90% of {nameof(BuildCostFactor)}.", [nameof(ClearCostFactor), nameof(BuildCostFactor)]);
 		}
 
-		if (NumRotations is not 1 or 2 or 4)
+		if (NumRotations is not (1 or 2 or 4))
 		{
 			yield return new ValidationResult($"{nameof(NumRotations)} must be either 1, 2, or 4.", [nameof(NumRotations)]);
 		}

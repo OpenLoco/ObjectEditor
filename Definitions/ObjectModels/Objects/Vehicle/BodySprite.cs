@@ -28,17 +28,17 @@ public class BodySprite : ILocoStruct
 	{
 		if (Flags.HasFlag(BodySpriteFlags.HasSprites))
 		{
-			if (NumFlatRotationFrames is not 8 or 16 or 32 or 64 or 128)
+			if (NumFlatRotationFrames is not (8 or 16 or 32 or 64 or 128))
 			{
 				yield return new ValidationResult($"{nameof(NumFlatRotationFrames)} must be one of the following values: 8, 16, 32, 64, 128.", [nameof(NumFlatRotationFrames)]);
 			}
 
-			if (NumSlopedRotationFrames is not 4 or 8 or 16 or 32)
+			if (NumSlopedRotationFrames is not (4 or 8 or 16 or 32))
 			{
 				yield return new ValidationResult($"{nameof(NumSlopedRotationFrames)} must be one of the following values: 8, 16, 32, 64, 128.", [nameof(NumSlopedRotationFrames)]);
 			}
 
-			if (NumAnimationFrames is not 1 or 2 or 4)
+			if (NumAnimationFrames is not (1 or 2 or 4))
 			{
 				yield return new ValidationResult($"{nameof(NumAnimationFrames)} must be one of the following values: 1, 2, 4.", [nameof(NumAnimationFrames)]);
 			}
@@ -48,7 +48,7 @@ public class BodySprite : ILocoStruct
 				yield return new ValidationResult($"{nameof(NumCargoLoadFrames)} must be between 1 and 5 inclusive.", [nameof(NumCargoLoadFrames)]);
 			}
 
-			if (NumRollFrames is not 1 or 3)
+			if (NumRollFrames is not (1 or 3))
 			{
 				yield return new ValidationResult($"{nameof(NumRollFrames)} must be one of the following values: 1, 3.", [nameof(NumRollFrames)]);
 			}

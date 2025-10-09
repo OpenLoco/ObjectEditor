@@ -24,7 +24,7 @@ public class TrackSignalObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(AnimationSpeed)} must be 0, 1, 3, 7, or 15.", [nameof(AnimationSpeed)]);
 		}
 
-		if (NumFrames is not 4 or 7 or 10)
+		if (NumFrames is not (4 or 7 or 10))
 		{
 			yield return new ValidationResult($"{nameof(NumFrames)} must be 4, 7, or 10.", [nameof(NumFrames)]);
 		}

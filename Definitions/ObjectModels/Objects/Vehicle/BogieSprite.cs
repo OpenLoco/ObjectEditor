@@ -20,7 +20,7 @@ public class BogieSprite : ILocoStruct
 	{
 		if (Flags.HasFlag(BogieSpriteFlags.HasSprites))
 		{
-			if (RollStates is not 1 or 2 or 4)
+			if (RollStates is not (1 or 2 or 4))
 			{
 				yield return new ValidationResult($"{nameof(RollStates)} must be either 1, 2, or 4 when {nameof(Flags)} includes {nameof(BogieSpriteFlags.HasSprites)}.", [nameof(RollStates), nameof(Flags)]);
 			}

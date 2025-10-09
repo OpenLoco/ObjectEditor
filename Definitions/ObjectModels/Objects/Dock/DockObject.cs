@@ -18,11 +18,12 @@ public class DockObject : ILocoStruct, IHasBuildingComponents
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
-		var bcValidationContext = new ValidationContext(BuildingComponents);
-		foreach (var result in BuildingComponents.Validate(bcValidationContext))
-		{
-			yield return result;
-		}
+		// not applicable for DockObject
+		//var bcValidationContext = new ValidationContext(BuildingComponents);
+		//foreach (var result in BuildingComponents.Validate(bcValidationContext))
+		//{
+		//	yield return result;
+		//}
 
 		if (CostIndex >= Constants.CurrencyMultiplicationFactorArraySize)
 		{

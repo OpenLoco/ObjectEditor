@@ -66,10 +66,11 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 			yield return new ValidationResult("TotalOfTypeInScenario must be between 1 and 32", [nameof(TotalOfTypeInScenario)]);
 		}
 
-		if (SellCostFactor >= 0)
-		{
-			yield return new ValidationResult($"{nameof(SellCostFactor)} must be less than 0 {nameof(SellCostFactor)}", [nameof(SellCostFactor)]);
-		}
+		// it costs money to setll an Industry
+		//if (SellCostFactor >= 0)
+		//{
+		//	yield return new ValidationResult($"{nameof(SellCostFactor)} must be less than 0 {nameof(SellCostFactor)}", [nameof(SellCostFactor)]);
+		//}
 
 		if (BuildCostFactor <= 0)
 		{

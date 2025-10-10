@@ -1,26 +1,95 @@
+using Common;
+using NuGet.Versioning;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO.Compression;
 
 var pidOption = new Option<int>("--pid") { Description = "The process ID of the main application to wait for it to exit." };
-var urlOption = new Option<string>("--url") { Description = "The download URL of the update package." };
 var appPathOption = new Option<string>("--app-path") { Description = "The path to the main application executable to restart." };
+var currentVersionOption = new Option<string>("--current-version") { Description = "The current version of the application in SemVer format." };
 
 var rootCommand = new RootCommand("GUI Updater for OpenLoco Object Editor")
 {
 	pidOption,
-	urlOption,
-	appPathOption
+	appPathOption,
+	currentVersionOption,
 };
 
-rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
+// taken from ObjectEditorModel.cs
+const string ApplicationName = "OpenLoco Object Editor";
+const string LoggingFileName = "objectEditorUpdater.log";
+
+rootCommand.SetAction(UpdateEditor);
+return await rootCommand.Parse(args).InvokeAsync();
+
+async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationToken)
 {
+	var programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
+	var loggingFile = Path.Combine(programDataPath, LoggingFileName);
+	using var logStream = new StreamWriter(File.OpenWrite(loggingFile));
+	Console.SetOut(logStream);
+	Console.SetError(logStream);
+
+	Console.WriteLine($"=== OpenLoco Object Editor Updater started ===");
+	Console.WriteLine($"Logs can be found in {loggingFile}");
+
+	// parsing arguments
 	var pid = parseResult.GetValue(pidOption);
-	var url = new Uri(parseResult.GetValue(urlOption));
 	var appPath = parseResult.GetValue(appPathOption);
+	var currentVersionString = parseResult.GetValue(currentVersionOption);
 
-	Console.WriteLine("OpenLoco Object Editor Updater started.");
+	if (string.IsNullOrEmpty(appPath))
+	{
+		Console.WriteLine("Current editor .exe path is empty; using current directory.");
+		var appDir = Directory.GetCurrentDirectory();
+		var appName = PlatformSpecific.EditorPlatformBinaryName(PlatformSpecific.GetPlatform);
+		appPath = Path.Combine(appDir, appName);
+		Console.WriteLine($"Current directory is \"{appPath}\"");
+	}
 
+	if (string.IsNullOrEmpty(currentVersionString))
+	{
+		Console.WriteLine("Current version is empty");
+	}
+
+	// current version
+	if (SemanticVersion.TryParse(currentVersionString, out var currentVersion) || currentVersion == null || currentVersion == VersionHelpers.UnknownVersion)
+	{
+		Console.WriteLine($"Current version: {currentVersion}");
+	}
+	else
+	{
+		Console.WriteLine("Unable to parse current version - will attempt to download the latest version");
+	}
+
+	// latest version
+	SemanticVersion? latestVersion = null;
+	try
+	{
+		Console.WriteLine("Checking for the latest version...");
+		latestVersion = VersionHelpers.GetLatestAppVersion(VersionHelpers.ObjectEditorName);
+		Console.WriteLine($"Latest version available: {latestVersion}");
+	}
+	catch (Exception ex)
+	{
+		Console.Error.WriteLine($"An error occurred while checking for the latest version: {ex.Message}");
+		return;
+	}
+
+	if (latestVersion == null)
+	{
+		Console.Error.WriteLine("Unable to determine the latest version");
+		return;
+	}
+
+	// compare versions
+	if (latestVersion <= currentVersion)
+	{
+		Console.WriteLine("Current version is the latest version - no update needed");
+		return;
+	}
+
+	// kill existing editor processes
 	if (pid > 0)
 	{
 		try
@@ -33,24 +102,19 @@ rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancella
 		catch (ArgumentException)
 		{
 			// Process with an invalid PID or one that has already exited.
-			Console.WriteLine($"Process with PID {pid} not found. It might have already exited (which is a good thing).");
+			Console.WriteLine($"Process with PID {pid} not found. It might have already exited (which is a good thing)");
 		}
 	}
 
-	if (url == null || string.IsNullOrEmpty(appPath))
-	{
-		Console.WriteLine("URL and App Path are required.");
-		return;
-	}
-
-	// url is something like "https://github.com/OpenLoco/ObjectEditor/releases/download/5.3.5/object-editor-5.3.5-win-x64.zip"
-	var filename = Path.GetFileName(url.ToString());
+	// actually download
+	var url = VersionHelpers.UrlForDownload(latestVersion, PlatformSpecific.GetPlatform);
+	var filename = Path.GetFileName(url);
 	var tempZipPath = Path.Combine(Path.GetTempPath(), filename);
 	var extractionPath = Path.GetDirectoryName(appPath);
 
 	if (string.IsNullOrEmpty(extractionPath))
 	{
-		Console.WriteLine("Invalid application path.");
+		Console.WriteLine("Invalid application path");
 		return;
 	}
 
@@ -70,7 +134,7 @@ rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancella
 
 		Console.WriteLine($"Extracting update to {extractionPath}...");
 		ZipFile.ExtractToDirectory(tempZipPath, extractionPath, true);
-		Console.WriteLine("Extraction complete.");
+		Console.WriteLine("Extraction complete");
 	}
 	catch (Exception ex)
 	{
@@ -85,9 +149,6 @@ rootCommand.SetAction(async (ParseResult parseResult, CancellationToken cancella
 		}
 	}
 
-	Console.WriteLine($"Restarting application: {appPath}");
+	Console.WriteLine($"Restarting editor at: {appPath}");
 	_ = Process.Start(new ProcessStartInfo(appPath) { UseShellExecute = false, CreateNoWindow = true, });
-
-});
-
-return await rootCommand.Parse(args).InvokeAsync();
+}

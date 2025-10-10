@@ -7,42 +7,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace Gui;
 
-// For Unix-like systems (Linux, macOS)
-static class UnixUserChecker
-{
-	// Imports the geteuid() function from libc (the standard C library)
-	// geteuid() returns the effective user ID of the calling process.
-	// A value of 0 typically indicates the root user.
-	[DllImport("libc", EntryPoint = "geteuid")]
-	internal static extern uint geteuid();
-
-	public static bool IsRoot()
-		=> geteuid() == 0;
-}
-
 public static class PlatformSpecific
 {
-	public static bool RunningAsAdmin()
-	{
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-		{
-			var identity = WindowsIdentity.GetCurrent();
-			var principal = new WindowsPrincipal(identity);
-			return principal.IsInRole(WindowsBuiltInRole.Administrator);
-		}
-		else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-		{
-			return UnixUserChecker.IsRoot();
-		}
-
-		return false;
-	}
-
 	public static void FolderOpenInDesktop(string directory, ILogger logger, string? filename = null)
 	{
 		try
@@ -54,12 +24,6 @@ public static class PlatformSpecific
 			logger.Error(ex);
 		}
 	}
-
-	public static string EditorPlatformExtension
-		=> RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win-x64.zip" :
-		   RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx-x64.tar" :
-		   RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux-x64.tar" :
-		   "unknown";
 
 	static void FolderOpenInDesktopCore(string directory, string? filename = null)
 	{

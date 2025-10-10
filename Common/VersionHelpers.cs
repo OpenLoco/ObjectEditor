@@ -1,35 +1,38 @@
 using Common.Logging;
 using NuGet.Versioning;
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Text;
-
-#if !DEBUG
-using Common;
-using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
-using System;
-#endif
 
-namespace Gui;
+namespace Common;
 
 public static class VersionHelpers
 {
-	public const string GithubApplicationName = "ObjectEditor";
+	public const string ObjectEditorName = "ObjectEditor";
 	public const string ObjectEditorUpdaterName = "ObjectEditorUpdater";
 	public const string GithubIssuePage = "https://github.com/OpenLoco/ObjectEditor/issues";
 	public const string GithubLatestReleaseDownloadPage = "https://github.com/OpenLoco/ObjectEditor/releases";
 	public const string GithubLatestReleaseAPI = "https://api.github.com/repos/OpenLoco/ObjectEditor/releases/latest";
 
-	// todo: instead of going to downloads, start the auto-updater (ObjectEditorUpdater.exe) with the right args
 	public static Process? OpenDownloadPage()
 		=> Process.Start(new ProcessStartInfo(GithubLatestReleaseDownloadPage) { UseShellExecute = true });
 
-	public static void StartAutoUpdater(ILogger logger, SemanticVersion latestVersion)
+	// win: object-editor-5.3.5-win-x64.zip
+	// osx: object-editor-5.3.5-osx-x64.tar
+	// linux: object-editor-5.3.5-linux-x64.tar
+
+	static string DownloadFilename(SemanticVersion latestVersion, OSPlatform platform)
+		=> $"object-editor-{latestVersion}-{PlatformSpecific.EditorPlatformZipName(platform)}";
+
+	public static string UrlForDownload(SemanticVersion latestVersion, OSPlatform platform)
+		=> $"{GithubLatestReleaseDownloadPage}/download/{latestVersion}/{DownloadFilename(latestVersion, platform)}";
+
+	public static void StartAutoUpdater(ILogger logger, SemanticVersion currentVersion, SemanticVersion latestVersion)
 	{
+		logger.Debug("Attempting to kill existing updater processes");
 		try
 		{
 			// kill any existing processes of the updater
@@ -46,38 +49,52 @@ public static class VersionHelpers
 				}
 			}
 
-			// win: object-editor-5.3.5-win-x64.zip
-			// osx: object-editor-5.3.5-osx-x64.tar
-			// linux: object-editor-5.3.5-linux-x64.tar
-			var platform = PlatformSpecific.EditorPlatformExtension;
-			var filename = $"object-editor-{latestVersion}-{platform}";
+			var editorExe = $"{ObjectEditorUpdaterName}.exe";
+			if (!File.Exists(editorExe))
+			{
+				logger.Error($"Cannot find the auto-updater executable: {editorExe}. You'll need to manually download the update.");
+				return;
+			}
 
-			var startInfo = new ProcessStartInfo($"{ObjectEditorUpdaterName}.exe",
+			var startInfo = new ProcessStartInfo(editorExe,
 			[
 				"--pid",
 				$"{Environment.ProcessId}",
-				"--url",
-				$"{GithubLatestReleaseDownloadPage}/download/{latestVersion}/{filename}",
+				"--current-version",
+				currentVersion.ToString(),
 				"--app-path",
 				$"{Environment.ProcessPath}",
 			])
 			{
+				// updater process will log to file
 				UseShellExecute = false,
 				CreateNoWindow = true,
 			};
 
+			logger.Debug($"CurrentProcessId: {Environment.ProcessId}");
+			logger.Debug($"CurrentProcessPath: {Environment.ProcessPath}");
+			logger.Debug($"Attempting to start auto-updater \"{startInfo}\"");
 			var process = Process.Start(startInfo);
-			Environment.Exit(0);
+
+			if (process != null)
+			{
+				logger.Info($"Started auto-updater process (PID {process.Id}) to update from {currentVersion} to {latestVersion}. Editor will now close");
+				Environment.Exit(0);
+			}
+			else
+			{
+				logger.Error("Failed to start auto-updater process. You'll need to manually download the update.");
+			}
 		}
 		catch (Exception ex)
 		{
-			Debug.WriteLine($"Failed to start auto-updater: {ex}");
+			logger.Error($"Failed to start auto-updater: {ex}");
 		}
 	}
 
 	public static SemanticVersion GetCurrentAppVersion()
 	{
-		var assembly = Assembly.GetExecutingAssembly();
+		var assembly = Assembly.GetCallingAssembly();
 		if (assembly == null)
 		{
 			return UnknownVersion;
@@ -94,12 +111,11 @@ public static class VersionHelpers
 		}
 	}
 
-#if !DEBUG
 	// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
-	public static SemanticVersion GetLatestAppVersion(SemanticVersion currentVersion)
+	public static SemanticVersion GetLatestAppVersion(string productName, SemanticVersion? currentVersion = null)
 	{
 		var client = new HttpClient();
-		client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(GithubApplicationName, currentVersion.ToString()));
+		client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, currentVersion?.ToString()));
 		var response = client.GetAsync(GithubLatestReleaseAPI).Result;
 		if (response.IsSuccessStatusCode)
 		{
@@ -109,11 +125,8 @@ public static class VersionHelpers
 			return GetVersionFromText(versionText);
 		}
 
-#pragma warning disable CA2201 // Do not raise reserved exception types
-		throw new Exception($"Unable to get latest version. Error={response.StatusCode}");
-#pragma warning restore CA2201 // Do not raise reserved exception types
+		return UnknownVersion;
 	}
-#endif
 
 	public static readonly SemanticVersion UnknownVersion = new(0, 0, 0, "unknown");
 

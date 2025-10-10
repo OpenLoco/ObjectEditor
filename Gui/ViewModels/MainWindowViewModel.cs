@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using Common;
 using Common.Logging;
 using Dat.Data;
 using Definitions.ObjectModels;
@@ -21,10 +22,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-
-#if !DEBUG
-using Common;
-#endif
 
 namespace Gui.ViewModels;
 
@@ -145,15 +142,6 @@ public class MainWindowViewModel : ViewModelBase
 			var result = await OpenLogWindow.Handle(vm);
 		});
 
-		OpenDownloadLink = ReactiveCommand.Create(VersionHelpers.OpenDownloadPage);
-		DownloadLatestUpdate = ReactiveCommand.Create(() =>
-		{
-			if (LatestVersion != null)
-			{
-				var t = Task.Run(() => VersionHelpers.StartAutoUpdater(Model.Logger, LatestVersion));
-			}
-		});
-
 		#region Version
 
 		_ = this.WhenAnyValue(o => o.ApplicationVersion)
@@ -161,12 +149,29 @@ public class MainWindowViewModel : ViewModelBase
 		_ = this.WhenAnyValue(o => o.LatestVersionText)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(WindowTitle)));
 
+		OpenDownloadLink = ReactiveCommand.Create(VersionHelpers.OpenDownloadPage);
+		DownloadLatestUpdate = ReactiveCommand.Create(() =>
+		{
+			if (ApplicationVersion == null || ApplicationVersion == VersionHelpers.UnknownVersion)
+			{
+				Model.Logger.Info($"{nameof(ApplicationVersion)} is null");
+			}
+			if (LatestVersion == null || LatestVersion == VersionHelpers.UnknownVersion)
+			{
+				Model.Logger.Info($"{nameof(LatestVersion)} is null");
+			}
+
+			Model.Logger.Info($"Attempting to update from {ApplicationVersion} to {LatestVersion}");
+			var t = Task.Run(() => VersionHelpers.StartAutoUpdater(Model.Logger, ApplicationVersion, LatestVersion));
+
+		});
+
 		ApplicationVersion = VersionHelpers.GetCurrentAppVersion();
 
 #if !DEBUG
 		try
 		{
-			LatestVersion = VersionHelpers.GetLatestAppVersion(ApplicationVersion);
+			LatestVersion = VersionHelpers.GetLatestAppVersion(VersionHelpers.ObjectEditorName);
 			if (LatestVersion > ApplicationVersion)
 			{
 				LatestVersionText = $"newer version exists: {LatestVersion}";

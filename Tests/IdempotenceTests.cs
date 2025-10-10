@@ -16,10 +16,11 @@ public class IdempotenceTests
 {
 	static PaletteMap PaletteMap { get; } = new PaletteMap("C:\\Users\\bigba\\source\\repos\\OpenLoco\\ObjectEditor\\Gui\\Assets\\palette.png");
 
-	static string[] VanillaFiles => [
+	static string[] VanillaFiles =>
+	[
 		.. Directory.GetFiles(TestConstants.BaseSteamObjDataPath, "*.dat"),
 		.. Directory.GetFiles(TestConstants.BaseGoGObjDataPath, "*.dat")
-		];
+	];
 
 	[TestCaseSource(nameof(VanillaFiles))]
 	public void DecodeEncodeDecode(string filename)

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Logging;
 using Avalonia.ReactiveUI;
+using Common;
 using System;
 
 namespace Gui;
@@ -24,7 +25,7 @@ class Program
 
 	static void PreventRunningAsAdmin()
 	{
-		if (PlatformSpecific.RunningAsAdmin())
+		if (Common.PlatformSpecific.RunningAsAdmin())
 		{
 			const string errorMessage = "This application should not be run with elevated privileges. Please run it as a regular user.";
 

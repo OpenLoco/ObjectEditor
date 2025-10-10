@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -12,12 +12,12 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
     <AssemblyVersion>$(Version)</AssemblyVersion>
+    <Authors>LeftofZen</Authors>
     <FileVersion>$(Version)</FileVersion>
     <AssemblyName>ObjectEditor</AssemblyName>
     <Product>$(AssemblyName) $(Version)</Product>
     <!-- This is a dummy version that is replaced with the real version either at runtime or at package build time -->
     <Version>1.2.3</Version>
-    <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <ApplicationIcon>Assets\loco_icon.ico</ApplicationIcon>
   </PropertyGroup>
@@ -87,4 +87,5 @@
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
+
 </Project>

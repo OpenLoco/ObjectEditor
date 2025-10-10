@@ -3,6 +3,7 @@ using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Common;
 using Dat.Data;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
@@ -202,7 +203,6 @@ public class FolderTreeViewModel : ReactiveObject
 
 		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true));
 		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
-
 
 		//_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
 		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));

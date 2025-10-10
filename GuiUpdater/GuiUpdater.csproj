@@ -8,12 +8,21 @@
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
     <AssemblyName>ObjectEditorUpdater</AssemblyName>
     <Authors>LeftofZen</Authors>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <Product>$(AssemblyName) $(Version)</Product>
+    <!-- This is a dummy version that is replaced with the real version either at runtime or at package build time -->
+    <Version>1.2.3</Version>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <ApplicationIcon>Assets\updater_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-rc.1.25451.107" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 
 </Project>

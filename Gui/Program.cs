@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Logging;
 using Avalonia.ReactiveUI;
+using Common;
 using System;
 
 namespace Gui;
@@ -13,18 +14,18 @@ class Program
 	[STAThread]
 	public static void Main(string[] args)
 	{
-		//PreventRunningAsAdmin();
+		PreventRunningAsAdmin();
 		_ = BuildAvaloniaApp()
 			.With(new Win32PlatformOptions()
 			{
-				RenderingMode = [Win32RenderingMode.Software],
+				RenderingMode = [Win32RenderingMode.Vulkan],
 			})
 			.StartWithClassicDesktopLifetime(args);
 	}
 
 	static void PreventRunningAsAdmin()
 	{
-		if (PlatformSpecific.RunningAsAdmin())
+		if (Common.PlatformSpecific.RunningAsAdmin())
 		{
 			const string errorMessage = "This application should not be run with elevated privileges. Please run it as a regular user.";
 

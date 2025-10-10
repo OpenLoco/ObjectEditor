@@ -15,12 +15,12 @@ var rootCommand = new RootCommand("GUI Updater for OpenLoco Object Editor")
 	currentVersionOption,
 };
 
-rootCommand.SetAction(UpdateEditor);
-return await rootCommand.Parse(args).InvokeAsync();
-
 // taken from ObjectEditorModel.cs
 const string ApplicationName = "OpenLoco Object Editor";
 const string LoggingFileName = "objectEditorUpdater.log";
+
+rootCommand.SetAction(UpdateEditor);
+return await rootCommand.Parse(args).InvokeAsync();
 
 async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationToken)
 {

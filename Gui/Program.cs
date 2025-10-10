@@ -14,11 +14,11 @@ class Program
 	[STAThread]
 	public static void Main(string[] args)
 	{
-		PreventRunningAsAdmin();
+		//PreventRunningAsAdmin();
 		_ = BuildAvaloniaApp()
 			.With(new Win32PlatformOptions()
 			{
-				RenderingMode = [Win32RenderingMode.Vulkan],
+				RenderingMode = [Win32RenderingMode.Software],
 			})
 			.StartWithClassicDesktopLifetime(args);
 	}

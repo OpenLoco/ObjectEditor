@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# example usage:
+# ./build.sh 1.2.3
+
+# immediately abort script on error
 set -e
 
 # Define color variables for readability
@@ -8,8 +13,6 @@ FG_GREEN=$(tput setaf 46)
 BG_GREEN=$(tput setab 46)
 RESET=$(tput sgr0)
 
-# example usage:
-# ./build.sh 1.2.3
 
 # 1. Get the version from the first command-line argument
 if [ -z "$1" ]; then
@@ -18,14 +21,16 @@ if [ -z "$1" ]; then
 fi
 
 version="$1"
-framework=$(grep '<TargetFramework>' Gui/Gui.csproj | sed 's/.*<TargetFramework>\(.*\)<\/TargetFramework>.*/\1/')
 
 echo "=== Building Object Editor v${FG_BLUE}$version${RESET} for ${FG_BLUE}$framework${RESET} ==="
+
+# read .net version from csproj file
+framework=$(grep '<TargetFramework>' Gui/Gui.csproj | sed 's/.*<TargetFramework>\(.*\)<\/TargetFramework>.*/\1/')
 
 # 2. Write the version to version.txt. This is read by the UI to know the current version.
 echo "$version" > Gui/version.txt
 
-# 3. Build the project for different platforms
+# 3. Build the editor for different platforms
 echo "Building the ${FG_BLUE}Editor${RESET}"
 dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime win-x64
 dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime linux-x64
@@ -42,8 +47,7 @@ cp GuiUpdater/bin/Release/$framework/win-x64/publish/* Gui/bin/Release/$framewor
 cp GuiUpdater/bin/Release/$framework/linux-x64/publish/* Gui/bin/Release/$framework/linux-x64/publish
 cp GuiUpdater/bin/Release/$framework/osx-x64/publish/* Gui/bin/Release/$framework/osx-x64/publish
 
-# 5. Create the ZIP and tar archives
-
+# 5. Create the zip and tar archives
 pushd "Gui/bin/Release/$framework/"
 
 echo "Zipping ${FG_BLUE}win-x64${RESET}"

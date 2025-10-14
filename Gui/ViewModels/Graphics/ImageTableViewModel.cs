@@ -199,7 +199,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		GroupedImageViewModels.Clear();
 		foreach (var group in imageTable.Groups)
 		{
-			var givm = new GroupedImageViewModel(group.Name, group.GraphicsElements.Select(ge => new ImageViewModel(ge)));
+			var givm = new GroupedImageViewModel(group.Name, group.GraphicsElements.Select(ge => new ImageViewModel(ge, Model.PaletteMap)));
 			givm.SelectionModel.SelectionChanged += SelectionChanged;
 			GroupedImageViewModels.Add(givm);
 		}

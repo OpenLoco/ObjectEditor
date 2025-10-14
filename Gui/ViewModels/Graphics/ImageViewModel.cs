@@ -100,18 +100,25 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 
 	GraphicsElement Model { get; init; }
 
-	public ImageViewModel(GraphicsElement graphicsElement)
+	public ImageViewModel(GraphicsElement graphicsElement, PaletteMap paletteMap)
 	{
 		Model = graphicsElement;
+		UnderlyingImage = Model.Image!;
 
 		_ = this.WhenAnyValue(o => o.UnderlyingImage)
 			.Where(x => x != null)
-			.Subscribe(_ => DisplayedImage = UnderlyingImage!.ToAvaloniaBitmap());
+			.Subscribe(_ =>
+		{
+			DisplayedImage = UnderlyingImage!.ToAvaloniaBitmap();
+			this.RaisePropertyChanged(nameof(Width));
+			this.RaisePropertyChanged(nameof(Height));
+			Model.ImageData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
+			Model.Width = (short)UnderlyingImage.Width;
+			Model.Height = (short)UnderlyingImage.Height;
+		});
 
-		_ = this.WhenAnyValue(o => o.DisplayedImage)
+		_ = this.WhenAnyValue(o => o.DisplayedImage, o => o.XOffset, o => o.YOffset, o => o.Width, o => o.Height)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
-
-		UnderlyingImage = Model.Image!;
 	}
 
 	public void RecolourImage(ColourSwatch primary, ColourSwatch secondary, PaletteMap paletteMap)
@@ -147,18 +154,16 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 
 		if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
 		{
-			UnderlyingImage.Mutate(i => i.Crop(new Rectangle(0, 0, 1, 1)));
+			UnderlyingImage = UnderlyingImage.Clone(i => i.Crop(new Rectangle(0, 0, 1, 1)));
 			XOffset = 0;
 			YOffset = 0;
 		}
 		else
 		{
-			UnderlyingImage.Mutate(i => i.Crop(cropRegion));
+			UnderlyingImage = UnderlyingImage.Clone(i => i.Crop(cropRegion));
 			XOffset += (short)cropRegion.Left;
 			YOffset += (short)cropRegion.Top;
 		}
-
-		this.RaisePropertyChanged(nameof(UnderlyingImage));
 
 		static Rectangle FindCropRegion(Image<Rgba32> image)
 		{

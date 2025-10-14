@@ -77,8 +77,16 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 	[Reactive, Browsable(false)]
 	public Bitmap DisplayedImage { get; private set; }
 
-	[Reactive, Browsable(false)]
-	public Image<Rgba32> UnderlyingImage { get; set; }
+	[Browsable(false)]
+	public Image<Rgba32> UnderlyingImage
+	{
+		get => Model.Image!;
+		set
+		{
+			Model.Image = value;
+			this.RaisePropertyChanged(nameof(UnderlyingImage));
+		}
+	}
 
 	[Browsable(false)]
 	public Avalonia.Rect SelectedBitmapPreviewBorder
@@ -98,7 +106,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 
 		_ = this.WhenAnyValue(o => o.UnderlyingImage)
 			.Where(x => x != null)
-			.Subscribe(_ => UnderlyingImageChanged());
+			.Subscribe(_ => DisplayedImage = UnderlyingImage!.ToAvaloniaBitmap());
 
 		_ = this.WhenAnyValue(o => o.DisplayedImage)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedBitmapPreviewBorder)));
@@ -133,9 +141,6 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 		DisplayedImage = image!.ToAvaloniaBitmap();
 	}
 
-	void UnderlyingImageChanged()
-		=> DisplayedImage = UnderlyingImage!.ToAvaloniaBitmap();
-
 	public void CropImage()
 	{
 		var cropRegion = FindCropRegion(UnderlyingImage);
@@ -153,7 +158,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 			YOffset += (short)cropRegion.Top;
 		}
 
-		UnderlyingImageChanged();
+		this.RaisePropertyChanged(nameof(UnderlyingImage));
 
 		static Rectangle FindCropRegion(Image<Rgba32> image)
 		{

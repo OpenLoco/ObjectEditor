@@ -101,12 +101,16 @@ public class MainWindowViewModel : ViewModelBase
 				var log = laea.Log;
 				if (log.Level is LogLevel.Error)
 				{
-					// check if the logs window is already open
-					if (App.GetOpenWindows().Any(x => x.DataContext is LogWindowViewModel))
+					// Dispatch the UI-related work to the UI thread.
+					Avalonia.Threading.Dispatcher.UIThread.Post(() =>
 					{
-						return;
-					}
-					ShowLogsCommand.Execute();
+						// check if the logs window is already open
+						if (App.GetOpenWindows().Any(x => x.DataContext is LogWindowViewModel))
+						{
+							return;
+						}
+						ShowLogsCommand.Execute();
+					});
 				}
 			}
 		};

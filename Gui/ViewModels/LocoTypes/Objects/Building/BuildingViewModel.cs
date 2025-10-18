@@ -95,10 +95,10 @@ public class BuildingViewModel(BuildingObject model)
 	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
 
 	[Category("Building"), Length(1, BuildingObjectLoader.Constants.BuildingHeightCount)]
-	public BindingList<uint8_t> BuildingHeights { get; init; } = model.BuildingComponents.BuildingHeights.ToBindingList();
+	public BindingList<uint8_t> BuildingHeights { get; set; } = model.BuildingComponents.BuildingHeights.ToBindingList();
 
 	[Category("Building"), Length(1, BuildingObjectLoader.Constants.BuildingAnimationCount)]
-	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
+	public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	// note: these height sequences are massive. BLDCTY28 has 2 sequences, 512 in length and 1024 in length. Avalonia PropertyGrid takes 30+ seconds to render this. todo: don't use property grid in future
 	//[Reactive, Category("Building"), Length(1, BuildingObject.MaxElevatorHeightSequences), Browsable(false)] public BindingList<BindingList<uint8_t>> ElevatorHeightSequences { get; set; } // NumElevatorSequences

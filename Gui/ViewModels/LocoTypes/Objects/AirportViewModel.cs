@@ -86,20 +86,20 @@ public class AirportViewModel(AirportObject model)
 
 	[Category("Building")]
 	[Length(1, AirportObjectLoader.Constants.BuildingHeightCount)]
-	public BindingList<uint8_t> BuildingHeights { get; init; } = model.BuildingComponents.BuildingHeights.ToBindingList();
+	public BindingList<uint8_t> BuildingHeights { get; set; } = model.BuildingComponents.BuildingHeights.ToBindingList();
 
 	[Category("Building")]
 	[Length(1, AirportObjectLoader.Constants.BuildingAnimationCount)]
-	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
+	public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	[Category("Building")]
-	public BindingList<AirportBuilding> BuildingPositions { get; init; } = model.BuildingPositions.ToBindingList();
+	public BindingList<AirportBuilding> BuildingPositions { get; set; } = model.BuildingPositions.ToBindingList();
 
 	[Category("Movement")]
-	public BindingList<MovementNode> MovementNodes { get; init; } = model.MovementNodes.ToBindingList();
+	public BindingList<MovementNode> MovementNodes { get; set; } = model.MovementNodes.ToBindingList();
 
 	[Category("Movement")]
-	public BindingList<MovementEdge> MovementEdges { get; init; } = model.MovementEdges.ToBindingList();
+	public BindingList<MovementEdge> MovementEdges { get; set; } = model.MovementEdges.ToBindingList();
 
 	[Category("<unknown>")]
 	public uint8_t var_07

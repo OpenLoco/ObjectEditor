@@ -610,7 +610,7 @@ public class LoadSaveTests
 			Assert.That(struc.CostIndex, Is.EqualTo(2), nameof(struc.CostIndex));
 			Assert.That(struc.NumGrowthStages, Is.EqualTo(5), nameof(struc.NumGrowthStages));
 			Assert.That(struc.NumImageAngles, Is.EqualTo(1), nameof(struc.NumImageAngles));
-			Assert.That(struc.Flags, Is.EqualTo(LandObjectFlags.unk_00), nameof(struc.Flags));
+			Assert.That(struc.Flags, Is.EqualTo(LandObjectFlags.HasGrowthStages), nameof(struc.Flags));
 			Assert.That(struc.CostFactor, Is.EqualTo(20), nameof(struc.CostFactor));
 			Assert.That(struc.NumImagesPerGrowthStage, Is.Zero, nameof(struc.NumImagesPerGrowthStage));
 			Assert.That(struc.DistributionPattern, Is.Zero, nameof(struc.DistributionPattern));

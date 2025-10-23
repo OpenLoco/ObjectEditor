@@ -57,8 +57,8 @@ public abstract class BridgeObjectLoader : IDatObjectLoader
 			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
-			model.CompatibleTrackObjects = br.ReadS5HeaderList(compatibleTrackCount);
-			model.CompatibleRoadObjects = br.ReadS5HeaderList(compatibleRoadCount);
+			model.CompatibleTrackObjects = [.. br.ReadS5HeaderList(compatibleTrackCount)];
+			model.CompatibleRoadObjects = [.. br.ReadS5HeaderList(compatibleRoadCount)];
 
 			// image table
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;

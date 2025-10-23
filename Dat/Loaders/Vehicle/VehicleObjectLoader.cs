@@ -129,7 +129,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		}
 
 		// compatible vehicles
-		model.CompatibleVehicles = br.ReadS5HeaderList(numCompatibleVehicles).ToArray();
+		model.CompatibleVehicles = [.. br.ReadS5HeaderList(numCompatibleVehicles)];
 
 		// rack rail
 		if (model.Flags.HasFlag(VehicleObjectFlags.RackRail))
@@ -146,7 +146,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// driving start sounds
 		const int mask = 127;
 		var count = numStartSounds & mask;
-		model.StartSounds = br.ReadS5HeaderList(count).ToArray();
+		model.StartSounds = [.. br.ReadS5HeaderList(count)];
 	}
 
 	private static void LoadFixed(LocoBinaryReader br, VehicleObject model, out byte numRequiredTrackExtras, out byte numCompatibleVehicles, out byte numStartSounds)
@@ -166,9 +166,9 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		numCompatibleVehicles = br.ReadByte();
 		br.SkipUInt16(Constants.CompatibleVehicleCount);
 		br.SkipByte(Constants.RequiredTrackExtrasCount);
-		model.CarComponents = br.ReadCarComponents(Constants.MaxCarComponents);
-		model.BodySprites = br.ReadBodySprites(Constants.MaxBodySprites);
-		model.BogieSprites = br.ReadBogieSprites(Constants.MaxBogieSprites);
+		model.CarComponents = [.. br.ReadCarComponents(Constants.MaxCarComponents)];
+		model.BodySprites = [.. br.ReadBodySprites(Constants.MaxBodySprites)];
+		model.BogieSprites = [.. br.ReadBogieSprites(Constants.MaxBogieSprites)];
 		model.Power = br.ReadUInt16();
 		model.Speed = br.ReadInt16();
 		model.RackSpeed = br.ReadInt16();
@@ -178,7 +178,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		br.SkipByte(Constants.MaxCompatibleCargoCategories * 4); // CompatibleCargoCategories, read in LoadVariable
 		br.SkipByte(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
 		br.SkipByte(); // NumSimultaneousCargoTypes, manipulated in LoadVariable
-		model.ParticleEmitters = br.ReadEmitterAnimations(Constants.MaxEmitterAnimations);
+		model.ParticleEmitters = [.. br.ReadEmitterAnimations(Constants.MaxEmitterAnimations)];
 		model.ShipWakeSpacing = br.ReadByte(); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 		model.DesignedYear = br.ReadUInt16();
 		model.ObsoleteYear = br.ReadUInt16();
@@ -226,14 +226,14 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.Type.Convert());
 			bw.Write(model.NumCarComponents);
 			bw.WriteEmptyObjectId(); // TrackTypeId, not part of object definition
-			bw.Write((uint8_t)model.RequiredTrackExtras.Length);
+			bw.Write((uint8_t)model.RequiredTrackExtras.Count);
 			bw.Write(model.CostIndex);
 			bw.Write(model.CostFactor);
 			bw.Write(model.Reliability);
 			bw.Write(model.RunCostIndex);
 			bw.Write(model.RunCostFactor);
 			bw.Write((uint8_t)model.CompanyColourSchemeIndex.Convert());
-			bw.Write((uint8_t)model.CompatibleVehicles.Length);
+			bw.Write((uint8_t)model.CompatibleVehicles.Count);
 			bw.WriteEmptyBytes(Constants.CompatibleVehicleCount * 2);
 			bw.WriteEmptyBytes(Constants.RequiredTrackExtrasCount);
 			bw.Write(model.CarComponents.Fill(Constants.MaxCarComponents, new VehicleObjectCar()).ToArray());
@@ -284,7 +284,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			}
 
 			bw.Write(model.var_135.Fill(Constants.Var135PadSize, (byte)0).ToArray());
-			bw.Write((uint8_t)model.StartSounds.Length);
+			bw.Write((uint8_t)model.StartSounds.Count);
 			bw.WriteEmptyBytes(Constants.MaxStartSounds * 1); // StartSounds, not part of object
 
 			// sanity check
@@ -318,7 +318,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		// cargo types
 		for (var i = 0; i < Constants.MaxCompatibleCargoCategories; ++i) // CompatibleCargoTypesLength should == CompatibleCargoCategories.Length
 		{
-			if (model.MaxCargo.Length < i || model.MaxCargo[i] == 0)
+			if (model.MaxCargo.Count < i || model.MaxCargo[i] == 0)
 			{
 				bw.WriteEmptyBytes(1); // write a 0 for MaxCargo - this indicates no more cargo and we skip the rest
 				continue;

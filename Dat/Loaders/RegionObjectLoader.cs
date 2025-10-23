@@ -51,8 +51,8 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
-			model.CargoInfluenceObjects = br.ReadS5HeaderList(numCargoInfluenceObjects);
-			model.DependentObjects = br.ReadS5HeaderList();
+			model.CargoInfluenceObjects = [.. br.ReadS5HeaderList(numCargoInfluenceObjects)];
+			model.DependentObjects = [.. br.ReadS5HeaderList()];
 
 			// image table
 			// N/A but Region has an empty image table for some reason

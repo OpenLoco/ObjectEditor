@@ -63,12 +63,12 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
-			model.TracksAndRoads = br.ReadS5HeaderList(numCompatibleTracksAndRoads);
-			model.TrackMods = br.ReadS5HeaderList(numTrackMods);
-			model.Signals = br.ReadS5HeaderList(numSignals);
+			model.TracksAndRoads = [.. br.ReadS5HeaderList(numCompatibleTracksAndRoads)];
+			model.TrackMods = [.. br.ReadS5HeaderList(numTrackMods)];
+			model.Signals = [.. br.ReadS5HeaderList(numSignals)];
 			model.Tunnel = br.ReadS5Header();
-			model.Bridges = br.ReadS5HeaderList(numBridges);
-			model.Stations = br.ReadS5HeaderList(numStations);
+			model.Bridges = [.. br.ReadS5HeaderList(numBridges)];
+			model.Stations = [.. br.ReadS5HeaderList(numStations)];
 
 			// image table
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;

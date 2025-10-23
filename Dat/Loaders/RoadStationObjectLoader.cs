@@ -76,7 +76,7 @@ public abstract class RoadStationObjectLoader : IDatObjectLoader
 	private static void LoadVariable(LocoBinaryReader br, RoadStationObject model, byte compatibleRoadObjectCount)
 	{
 		// compatible road objects
-		model.CompatibleRoadObjects = br.ReadS5HeaderList(compatibleRoadObjectCount);
+		model.CompatibleRoadObjects = [.. br.ReadS5HeaderList(compatibleRoadObjectCount)];
 
 		// cargo
 		if (model.Flags.HasFlag(RoadStationObjectFlags.Passenger) || model.Flags.HasFlag(RoadStationObjectFlags.Freight))

@@ -78,7 +78,7 @@ public abstract class TrackStationObjectLoader : IDatObjectLoader
 	private static void LoadVariable(LocoBinaryReader br, TrackStationObject model, byte compatibleRoadObjectCount)
 	{
 		// compatible road objects
-		model.CompatibleTrackObjects = br.ReadS5HeaderList(compatibleRoadObjectCount);
+		model.CompatibleTrackObjects = [.. br.ReadS5HeaderList(compatibleRoadObjectCount)];
 
 		// cargo offsets
 		model.CargoOffsets = br.ReadCargoOffsets();

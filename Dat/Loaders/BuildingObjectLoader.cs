@@ -96,8 +96,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
 		model.BuildingComponents.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
 		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
-		model.ProducedCargo = br.ReadS5HeaderList(Constants.MaxProducedCargoType);
-		model.RequiredCargo = br.ReadS5HeaderList(Constants.MaxRequiredCargoType);
+		model.ProducedCargo = [.. br.ReadS5HeaderList(Constants.MaxProducedCargoType)];
+		model.RequiredCargo = [.. br.ReadS5HeaderList(Constants.MaxRequiredCargoType)];
 
 		// elevator sequences
 		for (var i = 0; i < numElevatorSequences; ++i)

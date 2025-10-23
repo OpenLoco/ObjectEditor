@@ -17,21 +17,21 @@ public class VehicleObject : ILocoStruct
 	public uint8_t RunCostIndex { get; set; }
 	public int16_t RunCostFactor { get; set; }
 	public CompanyColourType CompanyColourSchemeIndex { get; set; }
-	public ObjectModelHeader[] CompatibleVehicles { get; set; } = [];
-	public ObjectModelHeader[] RequiredTrackExtras { get; set; } = [];
-	public VehicleObjectCar[] CarComponents { get; set; } = [];
-	public BodySprite[] BodySprites { get; set; } = [];
-	public BogieSprite[] BogieSprites { get; set; } = [];
+	public List<ObjectModelHeader> CompatibleVehicles { get; set; } = [];
+	public List<ObjectModelHeader> RequiredTrackExtras { get; set; } = [];
+	public List<VehicleObjectCar> CarComponents { get; set; } = [];
+	public List<BodySprite> BodySprites { get; set; } = [];
+	public List<BogieSprite> BogieSprites { get; set; } = [];
 	public uint16_t Power { get; set; }
 	public Speed16 Speed { get; set; }
 	public Speed16 RackSpeed { get; set; }
 	public uint16_t Weight { get; set; }
 	public VehicleObjectFlags Flags { get; set; }
-	public uint8_t[] MaxCargo { get; set; } = new uint8_t[2]; // VehicleObjectLoader.Constants.MaxCompatibleCargoCategories
+	public List<uint8_t> MaxCargo { get; set; } = [0, 0]; // VehicleObjectLoader.Constants.MaxCompatibleCargoCategories
 	public List<CargoCategory>[] CompatibleCargoCategories { get; set; } = new List<CargoCategory>[2]; // VehicleObjectLoader.Constants.MaxCompatibleCargoCategories
 	public Dictionary<CargoCategory, uint8_t> CargoTypeSpriteOffsets { get; set; } = [];
 	public uint8_t NumSimultaneousCargoTypes { get; set; }
-	public EmitterAnimation[] ParticleEmitters { get; set; } = [];
+	public List<EmitterAnimation> ParticleEmitters { get; set; } = [];
 	public uint8_t ShipWakeSpacing { get; set; } // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
@@ -43,7 +43,7 @@ public class VehicleObject : ILocoStruct
 	public GearboxMotorSound? GearboxMotorSound { get; set; }
 	public ObjectModelHeader? Sound { get; set; }
 	public uint8_t[] var_135 { get; set; } = [];
-	public ObjectModelHeader[] StartSounds { get; set; } = [];
+	public List<ObjectModelHeader> StartSounds { get; set; } = [];
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
@@ -69,7 +69,7 @@ public class VehicleObject : ILocoStruct
 
 		if (Flags.HasFlag(VehicleObjectFlags.AnyRoadType))
 		{
-			if (RequiredTrackExtras.Length != 0)
+			if (RequiredTrackExtras.Count != 0)
 			{
 				yield return new ValidationResult($"{nameof(RequiredTrackExtras)} must be empty if {nameof(VehicleObjectFlags.AnyRoadType)} is set.", [nameof(RequiredTrackExtras), nameof(Flags)]);
 			}
@@ -80,7 +80,7 @@ public class VehicleObject : ILocoStruct
 			}
 		}
 
-		if (RequiredTrackExtras.Length > 4)
+		if (RequiredTrackExtras.Count > 4)
 		{
 			yield return new ValidationResult($"{nameof(RequiredTrackExtras)} must have at most 4 entries.", [nameof(RequiredTrackExtras)]);
 		}
@@ -90,7 +90,7 @@ public class VehicleObject : ILocoStruct
 			yield return new ValidationResult($"{nameof(NumSimultaneousCargoTypes)} must be between 0 and 2 inclusive.", [nameof(NumSimultaneousCargoTypes)]);
 		}
 
-		if (CompatibleVehicles.Length > 8)
+		if (CompatibleVehicles.Count > 8)
 		{
 			yield return new ValidationResult($"{nameof(CompatibleVehicles)} must have at most 8 entries.", [nameof(CompatibleVehicles)]);
 		}

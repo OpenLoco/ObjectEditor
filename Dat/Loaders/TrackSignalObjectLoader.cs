@@ -54,7 +54,7 @@ public abstract class TrackSignalObjectLoader : IDatObjectLoader
 			var stringTable = SawyerStreamReader.ReadStringTableStream(stream, ObjectAttributes.StringTable(DatObjectType), null);
 
 			// variable
-			model.CompatibleTrackObjects = br.ReadS5HeaderList(compatibleTrackCount);
+			model.CompatibleTrackObjects = [.. br.ReadS5HeaderList(compatibleTrackCount)];
 
 			// image table
 			var imageList = SawyerStreamReader.ReadImageTable(br).Table;

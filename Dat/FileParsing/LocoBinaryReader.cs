@@ -79,42 +79,36 @@ public class LocoBinaryReader : BinaryReader
 		return buffer;
 	}
 
-	public static List<ObjectModelHeader> ReadS5HeaderList(Stream stream, int count)
+	public static IEnumerable<ObjectModelHeader> ReadS5HeaderList(Stream stream, int count)
 	{
 		using var br = new LocoBinaryReader(stream);
 		return br.ReadS5HeaderList(count);
 	}
 
-	public List<ObjectModelHeader> ReadS5HeaderList(int count)
+	public IEnumerable<ObjectModelHeader> ReadS5HeaderList(int count)
 	{
-		List<ObjectModelHeader> result = [];
 		for (var i = 0; i < count; ++i)
 		{
 			var header = ReadS5Header();
 			if (header != null)
 			{
-				result.Add(header);
+				yield return header;
 			}
 		}
-
-		return result;
 	}
 
-	public List<ObjectModelHeader> ReadS5HeaderList()
+	public IEnumerable<ObjectModelHeader> ReadS5HeaderList()
 	{
-		List<ObjectModelHeader> result = [];
-
 		while (PeekByte() != LocoConstants.Terminator)
 		{
 			var header = ReadS5Header();
 			if (header != null)
 			{
-				result.Add(header);
+				yield return header;
 			}
 		}
 
 		SkipTerminator();
-		return result;
 	}
 
 	public ObjectModelHeader? ReadS5Header()
@@ -179,13 +173,11 @@ public class LocoBinaryReader : BinaryReader
 			ExtraSize = ReadInt16()
 		};
 
-	public VehicleObjectCar[] ReadCarComponents(int count)
+	public IEnumerable<VehicleObjectCar> ReadCarComponents(int count)
 	{
-		var result = new VehicleObjectCar[count];
-
 		for (var i = 0; i < count; ++i)
 		{
-			result[i] = new VehicleObjectCar()
+			yield return new VehicleObjectCar()
 			{
 				FrontBogiePosition = ReadByte(),
 				BackBogiePosition = ReadByte(),
@@ -195,17 +187,13 @@ public class LocoBinaryReader : BinaryReader
 				var_05 = ReadByte(),
 			};
 		}
-
-		return result;
 	}
 
-	public BodySprite[] ReadBodySprites(int count)
+	public IEnumerable<BodySprite> ReadBodySprites(int count)
 	{
-		var result = new BodySprite[count];
-
 		for (var i = 0; i < count; ++i)
 		{
-			result[i] = new BodySprite
+			yield return new BodySprite
 			{
 				NumFlatRotationFrames = ReadByte(),
 				NumSlopedRotationFrames = ReadByte(),
@@ -225,17 +213,13 @@ public class LocoBinaryReader : BinaryReader
 
 			SkipImageId(4);
 		}
-
-		return result;
 	}
 
-	public BogieSprite[] ReadBogieSprites(int count)
+	public IEnumerable<BogieSprite> ReadBogieSprites(int count)
 	{
-		var result = new BogieSprite[count];
-
 		for (var i = 0; i < count; ++i)
 		{
-			result[i] = new BogieSprite
+			yield return new BogieSprite
 			{
 				RollStates = ReadByte(),
 				Flags = (BogieSpriteFlags)ReadByte(),
@@ -247,25 +231,19 @@ public class LocoBinaryReader : BinaryReader
 
 			SkipImageId(3);
 		}
-
-		return result;
 	}
 
-	public EmitterAnimation[] ReadEmitterAnimations(int count)
+	public IEnumerable<EmitterAnimation> ReadEmitterAnimations(int count)
 	{
-		var result = new EmitterAnimation[count];
-
 		for (var i = 0; i < count; ++i)
 		{
 			SkipByte(); // object_id
-			result[i] = new EmitterAnimation
+			yield return new EmitterAnimation
 			{
 				EmitterVerticalPos = ReadByte(),
 				Type = (SimpleAnimationType)ReadByte(),
 			};
 		}
-
-		return result;
 	}
 
 	public FrictionSound ReadFrictionSound()

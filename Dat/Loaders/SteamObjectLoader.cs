@@ -85,7 +85,7 @@ public abstract class SteamObjectLoader : IDatObjectLoader
 
 		br.SkipTerminator();
 
-		model.SoundEffects = br.ReadS5HeaderList(numSoundEffects);
+		model.SoundEffects = [.. br.ReadS5HeaderList(numSoundEffects)];
 	}
 
 	public static void Save(Stream stream, LocoObject obj)

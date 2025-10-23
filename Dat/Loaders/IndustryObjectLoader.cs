@@ -133,9 +133,9 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 
 		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
 		model.Buildings = [.. br.ReadBytes(model.MaxNumBuildings)];
-		model.ProducedCargo = br.ReadS5HeaderList(Constants.MaxProducedCargoType);
-		model.RequiredCargo = br.ReadS5HeaderList(Constants.MaxRequiredCargoType);
-		model.WallTypes = br.ReadS5HeaderList(Constants.MaxWallTypeCount);
+		model.ProducedCargo = [.. br.ReadS5HeaderList(Constants.MaxProducedCargoType)];
+		model.RequiredCargo = [.. br.ReadS5HeaderList(Constants.MaxRequiredCargoType)];
+		model.WallTypes = [.. br.ReadS5HeaderList(Constants.MaxWallTypeCount)];
 		model.BuildingWall = br.ReadS5Header();
 		model.BuildingWallEntrance = br.ReadS5Header();
 	}

@@ -80,11 +80,11 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 
 	private static void LoadVariable(LocoBinaryReader br, RoadObject model, byte numBridges, byte numStations, byte numRoadMods, byte numCompatibleTracksAndRoads)
 	{
-		model.TracksAndRoads = br.ReadS5HeaderList(numCompatibleTracksAndRoads);
-		model.RoadMods = br.ReadS5HeaderList(numRoadMods);
+		model.TracksAndRoads = [.. br.ReadS5HeaderList(numCompatibleTracksAndRoads)];
+		model.RoadMods = [.. br.ReadS5HeaderList(numRoadMods)];
 		model.Tunnel = br.ReadS5Header();
-		model.Bridges = br.ReadS5HeaderList(numBridges);
-		model.Stations = br.ReadS5HeaderList(numStations);
+		model.Bridges = [.. br.ReadS5HeaderList(numBridges)];
+		model.Stations = [.. br.ReadS5HeaderList(numStations)];
 	}
 
 	public static void Save(Stream stream, LocoObject obj)

@@ -309,7 +309,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	[Category("Sound")]
 	public BindingList<ObjectModelHeader> StartSounds { get; set; }
 
-	[Category("<unknown>")]
+	[Category("<unknown>"), ReadOnly(true)]
 	public BindingList<uint8_t> var_135 { get; set; }
 
 	public override void CopyBackToModel()

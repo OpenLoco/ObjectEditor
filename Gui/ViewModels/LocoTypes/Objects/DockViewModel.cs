@@ -65,11 +65,11 @@ public class DockViewModel(DockObject model)
 
 	[Category("Building")]
 	[Length(1, DockObjectLoader.Constants.BuildingHeightCount)]
-	public BindingList<uint8_t> BuildingHeights { get; set; } = model.BuildingComponents.BuildingHeights.ToBindingList();
+	public BindingList<uint8_t> BuildingHeights { get; init; } = model.BuildingComponents.BuildingHeights.ToBindingList();
 
 	[Category("Building")]
 	[Length(1, DockObjectLoader.Constants.BuildingAnimationCount)]
-	public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
+	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	[Category("<unknown>")]
 	public uint8_t var_07

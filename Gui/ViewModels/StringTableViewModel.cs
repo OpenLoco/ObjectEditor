@@ -39,7 +39,7 @@ public class StringTableViewModel : ReactiveObject
 	public string? SelectedKey { get; set; }
 
 	[Reactive]
-	public BindingList<string> Keys { get; set; }
+	public BindingList<string> Keys { get; init; }
 
 	StringTable OriginalTable { get; init; }
 

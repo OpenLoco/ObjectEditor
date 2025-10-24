@@ -27,9 +27,9 @@ public class SteamViewModel(SteamObject model)
 		set => Model.var_0A = value;
 	}
 
-	public BindingList<ObjectModelHeader> SoundEffects { get; set; } = new(model.SoundEffects);
+	public BindingList<ObjectModelHeader> SoundEffects { get; init; } = new(model.SoundEffects);
 
-	public BindingList<SteamImageAndHeight> FrameInfoType0 { get; set; } = new(model.FrameInfoType0);
+	public BindingList<SteamImageAndHeight> FrameInfoType0 { get; init; } = new(model.FrameInfoType0);
 
-	public BindingList<SteamImageAndHeight> FrameInfoType1 { get; set; } = new(model.FrameInfoType1);
+	public BindingList<SteamImageAndHeight> FrameInfoType1 { get; init; } = new(model.FrameInfoType1);
 }

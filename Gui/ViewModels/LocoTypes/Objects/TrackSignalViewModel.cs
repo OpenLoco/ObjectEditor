@@ -65,5 +65,5 @@ public class TrackSignalViewModel(TrackSignalObject model)
 	}
 
 	[Length(0, TrackSignalObjectLoader.Constants.ModsLength)]
-	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; set; } = new(model.CompatibleTrackObjects);
+	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
 }

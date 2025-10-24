@@ -93,10 +93,10 @@ public class BridgeViewModel(BridgeObject model)
 	}
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; set; } = new(model.CompatibleTrackObjects);
+	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; set; } = new(model.CompatibleRoadObjects);
+	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects);
 
 	[Category("<unknown>")]
 	public uint8_t var_03

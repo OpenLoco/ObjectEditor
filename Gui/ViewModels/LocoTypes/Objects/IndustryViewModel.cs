@@ -55,15 +55,15 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("Production")]
-	public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; set; } = new(model.InitialProductionRate);
+	public BindingList<IndustryObjectProductionRateRange> InitialProductionRate { get; init; } = new(model.InitialProductionRate);
 
 	[Category("Production")]
 	[Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)]
-	public BindingList<ObjectModelHeader> ProducedCargo { get; set; } = new(model.ProducedCargo);
+	public BindingList<ObjectModelHeader> ProducedCargo { get; init; } = new(model.ProducedCargo);
 
 	[Category("Production")]
 	[Length(0, IndustryObjectLoader.Constants.MaxProducedCargoType)]
-	public BindingList<ObjectModelHeader> RequiredCargo { get; set; } = new(model.RequiredCargo);
+	public BindingList<ObjectModelHeader> RequiredCargo { get; init; } = new(model.RequiredCargo);
 
 	[Category("Production")]
 	public uint8_t MonthlyClosureChance
@@ -131,11 +131,11 @@ public class IndustryViewModel(IndustryObject model)
 
 	[Category("Building")]
 	[Length(1, IndustryObjectLoader.Constants.BuildingHeightCount)]
-	public BindingList<uint8_t> BuildingHeights { get; set; } = model.BuildingComponents.BuildingHeights.ToBindingList();
+	public BindingList<uint8_t> BuildingHeights { get; init; } = model.BuildingComponents.BuildingHeights.ToBindingList();
 
 	[Category("Building")]
 	[Length(1, IndustryObjectLoader.Constants.BuildingAnimationCount)]
-	public BindingList<BuildingPartAnimation> BuildingAnimations { get; set; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
+	public BindingList<BuildingPartAnimation> BuildingAnimations { get; init; } = model.BuildingComponents.BuildingAnimations.ToBindingList();
 
 	[Category("Building")]
 	public uint8_t MinNumBuildings
@@ -152,7 +152,7 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("Building")]
-	public BindingList<uint8_t> UnkBuildingData { get; set; } = model.Buildings.ToBindingList();
+	public BindingList<uint8_t> UnkBuildingData { get; init; } = model.Buildings.ToBindingList();
 
 	[Category("Building")]
 	public uint32_t BuildingSizeFlags
@@ -177,7 +177,7 @@ public class IndustryViewModel(IndustryObject model)
 
 	[Category("Building")]
 	[Length(0, IndustryObjectLoader.Constants.MaxWallTypeCount)]
-	public BindingList<ObjectModelHeader> WallTypes { get; set; } = model.WallTypes.ToBindingList();
+	public BindingList<ObjectModelHeader> WallTypes { get; init; } = model.WallTypes.ToBindingList();
 
 	[Category("Building")]
 	public ObjectModelHeader? BuildingWall
@@ -194,7 +194,7 @@ public class IndustryViewModel(IndustryObject model)
 	}
 
 	[Category("<unknown>")]
-	public BindingList<IndustryObjectUnk38> var_38 { get; set; } = model.var_38.ToBindingList();
+	public BindingList<IndustryObjectUnk38> var_38 { get; init; } = model.var_38.ToBindingList();
 
 	[Category("<unknown>")]
 	public uint8_t var_E8

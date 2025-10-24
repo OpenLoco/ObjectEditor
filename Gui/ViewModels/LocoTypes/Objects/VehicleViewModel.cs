@@ -196,10 +196,10 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	}
 
 	[Length(0, 8)]
-	public BindingList<ObjectModelHeader> CompatibleVehicles { get; set; }
+	public BindingList<ObjectModelHeader> CompatibleVehicles { get; init; }
 
 	[Length(0, 4)]
-	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; set; }
+	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; init; }
 
 	[Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")]
 	public uint8_t ShipWakeSpacing
@@ -248,16 +248,16 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	} // called "ColourType" in the loco codebase
 
 	[Category("Sprites")]
-	public BindingList<VehicleObjectCar> CarComponents { get; set; }
+	public BindingList<VehicleObjectCar> CarComponents { get; init; }
 
 	[Category("Sprites")]
-	public BindingList<BodySprite> BodySprites { get; set; }
+	public BindingList<BodySprite> BodySprites { get; init; }
 
 	[Category("Sprites")]
-	public BindingList<BogieSprite> BogieSprites { get; set; }
+	public BindingList<BogieSprite> BogieSprites { get; init; }
 
 	[Category("Sprites")]
-	public BindingList<EmitterAnimation> Animation { get; set; }
+	public BindingList<EmitterAnimation> Animation { get; init; }
 
 	[Category("Cargo")]
 	public CompatibleCargo CompatibleCargo1 { get; init; }
@@ -268,7 +268,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	[Category("Cargo")]
 	[Length(0, 32)]
 	[Description("This is a dictionary. For every cargo defined in both CompatibleCargoCategories, an entry must exist in this dictionary.")]
-	public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; set; }
+	public BindingList<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; init; }
 
 	[Category("Sound")]
 	[ConditionTarget]
@@ -307,10 +307,10 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	public GearboxMotorSound GearboxMotorSound { get; set; }
 
 	[Category("Sound")]
-	public BindingList<ObjectModelHeader> StartSounds { get; set; }
+	public BindingList<ObjectModelHeader> StartSounds { get; init; }
 
-	[Category("<unknown>"), ReadOnly(true)]
-	public BindingList<uint8_t> var_135 { get; set; }
+	[Category("<unknown>")]
+	public BindingList<uint8_t> var_135 { get; init; }
 
 	public override void CopyBackToModel()
 	{
@@ -346,5 +346,5 @@ public class CargoTypeSpriteOffset(CargoCategory CargoCategory, uint8_t Offset)
 public class CompatibleCargo(uint8_t MaxCargo, BindingList<CargoCategory> CompatibleCargoCategories)
 {
 	public byte MaxCargo { get; set; } = MaxCargo;
-	public BindingList<CargoCategory> CompatibleCargoCategories { get; set; } = CompatibleCargoCategories;
+	public BindingList<CargoCategory> CompatibleCargoCategories { get; init; } = CompatibleCargoCategories;
 }

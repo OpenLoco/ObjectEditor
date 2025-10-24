@@ -117,9 +117,10 @@ public class FolderTreeViewModel : ReactiveObject
 		Model = model;
 		Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = (int)(progress * 100);
 
+		var indexFilterModel = new FilterTypeViewModel() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) };
 		var availableFilterCategories = new List<FilterTypeViewModel>
 		{
-			new() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) },
+			indexFilterModel,
 			//new() { Type = typeof (MetadataModel), DisplayName = "Metadata", IconName = nameof(MetadataModel) }
 		};
 
@@ -219,6 +220,15 @@ public class FolderTreeViewModel : ReactiveObject
 		});
 
 		CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
+
+		// add default name filter
+		var defaultFilter = new FilterViewModel(Model, availableFilterCategories, RemoveFilter)
+		{
+			SelectedObjectType = indexFilterModel,
+			SelectedOperator = FilterOperator.Contains,
+		};
+		defaultFilter.SelectedProperty = defaultFilter.AvailableProperties.FirstOrDefault(p => p.Name == nameof(ObjectIndexEntry.DisplayName));
+		Filters.Add(defaultFilter);
 	}
 
 	protected void RemoveFilter(FilterViewModel filter)
@@ -382,7 +392,7 @@ public class FolderTreeViewModel : ReactiveObject
 
 		Dispatcher.UIThread.Invoke(new Action(() =>
 		{
-			if (Filters.Any() && Filters.All(x => x.IsValid))
+			if (Filters.Any() && Filters.All(x => x.IsValid) && CurrentDirectoryItems.Count != TreeDataGridSourceCount)
 			{
 				TreeDataGridSource.ExpandAll();
 			}

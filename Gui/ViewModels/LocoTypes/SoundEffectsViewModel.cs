@@ -47,7 +47,7 @@ public class SoundEffectsViewModel : BaseLocoFileViewModel
 		SaveCore(savePath);
 	}
 
-	public override void SaveAs()
+	public override void SaveAs(SaveParameters saveParameters)
 	{
 		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
 		var savePath = saveFile?.Path.LocalPath;

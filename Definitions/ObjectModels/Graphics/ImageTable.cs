@@ -1,9 +1,12 @@
+using System.Text.Json.Serialization;
+
 namespace Definitions.ObjectModels.Graphics;
 
 public record ImageTableGroup(string Name, List<GraphicsElement> GraphicsElements);
 
 public class ImageTable : IHasGraphicsElements
 {
+	[JsonIgnore]
 	public PaletteMap PaletteMap
 	{
 		get;

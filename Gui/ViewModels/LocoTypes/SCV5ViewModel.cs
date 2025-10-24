@@ -291,12 +291,12 @@ public class SCV5ViewModel : BaseLocoFileViewModel
 
 	public override void Save() => logger?.Warning("Save is not currently implemented");
 
-	public override void SaveAs() => logger?.Warning("SaveAs is not currently implemented");
+	public override void SaveAs(SaveParameters saveParameters) => logger?.Warning("SaveAs is not currently implemented");
 
 	//public override void Save()
 	//	=> Save(CurrentFile.Filename);
 
-	//public override void SaveAs()
+	//public override void SaveAs(SaveParameters saveParameters)
 	//{
 	//	var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.SCV5FileTypes)).Result;
 	//	if (saveFile == null)

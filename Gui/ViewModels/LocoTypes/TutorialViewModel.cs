@@ -91,7 +91,7 @@ public class TutorialViewModel : BaseLocoFileViewModel
 
 	public override void Save() => logger?.Warning("Save is not currently implemented");
 
-	public override void SaveAs() => logger?.Warning("SaveAs is not currently implemented");
+	public override void SaveAs(SaveParameters saveParameters) => logger?.Warning("SaveAs is not currently implemented");
 }
 
 public class ScoresViewModel : BaseLocoFileViewModel
@@ -103,7 +103,7 @@ public class ScoresViewModel : BaseLocoFileViewModel
 
 	public override void Save() => logger?.Warning("Save is not currently implemented");
 
-	public override void SaveAs() => logger?.Warning("SaveAs is not currently implemented");
+	public override void SaveAs(SaveParameters saveParameters) => logger?.Warning("SaveAs is not currently implemented");
 }
 
 public class LanguageViewModel : BaseLocoFileViewModel
@@ -115,5 +115,5 @@ public class LanguageViewModel : BaseLocoFileViewModel
 
 	public override void Save() => logger?.Warning("Save is not currently implemented");
 
-	public override void SaveAs() => logger?.Warning("SaveAs is not currently implemented");
+	public override void SaveAs(SaveParameters saveParameters) => logger?.Warning("SaveAs is not currently implemented");
 }

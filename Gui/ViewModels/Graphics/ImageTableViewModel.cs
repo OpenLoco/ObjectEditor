@@ -100,6 +100,12 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 		Model = imageTable;
 		Logger = logger;
+
+		if (buildingComponents != null)
+		{
+			BuildingComponents = new(buildingComponents, imageTable);
+		}
+
 		RecreateViewModelGroupsFromImageTable(Model);
 
 		// swatches/palettes
@@ -112,12 +118,6 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.PrimaryRemap);
 		SelectedSecondarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.SecondaryRemap);
-
-		// building components
-		if (buildingComponents != null)
-		{
-			BuildingComponents = new(buildingComponents, imageTable);
-		}
 
 		_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
 			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));

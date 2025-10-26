@@ -5,7 +5,7 @@ namespace Gui.ViewModels;
 
 public class Pos3ViewModel : MiniReactiveObject
 {
-	public Pos3 Pos;
+	public Pos3 Pos = new();
 
 	public coord_t X
 	{

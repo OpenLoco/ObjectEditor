@@ -1,11 +1,13 @@
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Objects.TrackExtra;
+using PropertyModels.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
 public class TrackExtraViewModel(TrackExtraObject model)
 	: LocoObjectViewModel<TrackExtraObject>(model)
 {
+	[EnumProhibitValues<TrackTraitFlags>(TrackTraitFlags.None)]
 	public TrackTraitFlags TrackPieces
 	{
 		get => Model.TrackPieces;

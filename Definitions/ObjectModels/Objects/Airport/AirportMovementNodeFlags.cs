@@ -3,7 +3,7 @@ namespace Definitions.ObjectModels.Objects.Airport;
 [Flags]
 public enum AirportMovementNodeFlags : uint16_t
 {
-	None = 0,
+	//None = 0,
 	Terminal = 1 << 0,
 	TakeoffEnd = 1 << 1,
 	Flag2 = 1 << 2,

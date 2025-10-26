@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Cargo;
+using PropertyModels.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
@@ -17,6 +18,7 @@ public class CargoViewModel(CargoObject model)
 		set => Model.CargoCategory = value;
 	}
 
+	[EnumProhibitValues<CargoObjectFlags>(CargoObjectFlags.None)]
 	public CargoObjectFlags Flags
 	{
 		get => Model.Flags;

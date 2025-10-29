@@ -35,15 +35,10 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		RoadOrTrackType = model.RoadOrTrackType;
 		RackRail = model.RackRail;
 
-		HasRackRail = model.Flags.HasFlag(VehicleObjectFlags.RackRail);
-
 		SimpleMotorSound = model.SimpleMotorSound ?? new SimpleMotorSound();
 		FrictionSound = model.FrictionSound ?? new FrictionSound();
 		GearboxMotorSound = model.GearboxMotorSound ?? new GearboxMotorSound();
 		Sound = model.Sound;
-
-		_ = this.WhenAnyValue(x => x.RackRail)
-			.Subscribe((_) => model.RackRail = RackRail);
 
 		#region Road/Track Type Binding
 
@@ -52,9 +47,6 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 
 		_ = this.WhenAnyValue(x => x.IsTrackTypeSettable)
 			.Subscribe((_) => this.RaisePropertyChanged(nameof(RoadOrTrackType)));
-
-		_ = this.WhenAnyValue(x => x.RoadOrTrackType)
-			.Subscribe((_) => model.RoadOrTrackType = RoadOrTrackType);
 
 		#endregion
 
@@ -165,10 +157,13 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	bool IsTrackTypeSettable
 		=> !model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road);
 
-	[Reactive]
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(IsTrackTypeSettable), true)]
-	public ObjectModelHeader? RoadOrTrackType { get; set; }
+	public ObjectModelHeader? RoadOrTrackType
+	{
+		get => model.RoadOrTrackType;
+		set => model.RoadOrTrackType = value;
+	}
 
 	[ConditionTarget]
 	public bool HasRackRail
@@ -177,16 +172,23 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		set
 		{
 			model.Flags = model.Flags.ToggleFlag(VehicleObjectFlags.RackRail, value);
-			RackRail = value && RackRail == null
-				? new ObjectModelHeader("<obj>", ObjectType.TrackExtra, ObjectSource.OpenLoco, 0)
-				: null;
+
+			if (RackRail == null && model.Flags.HasFlag(VehicleObjectFlags.RackRail))
+			{
+				RackRail = new ObjectModelHeader() { Name = "<obj>", ObjectSource = ObjectSource.Custom, ObjectType = ObjectType.TrackExtra };
+			}
+
+			this.RaisePropertyChanged(nameof(RackRail));
 		}
 	}
 
-	[Reactive]
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(HasRackRail), true)]
-	public ObjectModelHeader? RackRail { get; set; }
+	public ObjectModelHeader? RackRail
+	{
+		get => model.RackRail;
+		set => model.RackRail = value;
+	}
 
 	[Range(0, 4)]
 	public uint8_t NumCarComponents

@@ -1,11 +1,13 @@
 using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Objects.RoadExtra;
+using PropertyModels.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
 public class RoadExtraViewModel(RoadExtraObject model)
 	: LocoObjectViewModel<RoadExtraObject>(model)
 {
+	[EnumProhibitValues<RoadTraitFlags>(RoadTraitFlags.None)]
 	public RoadTraitFlags RoadPieces
 	{
 		get => Model.RoadPieces;

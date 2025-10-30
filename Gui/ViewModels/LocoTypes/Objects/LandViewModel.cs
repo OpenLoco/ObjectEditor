@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Land;
 using Definitions.ObjectModels.Types;
+using PropertyModels.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
@@ -24,6 +25,7 @@ public class LandViewModel(LandObject model)
 		set => Model.NumImageAngles = value;
 	}
 
+	[EnumProhibitValues<LandObjectFlags>(LandObjectFlags.None)]
 	public LandObjectFlags Flags
 	{
 		get => Model.Flags;

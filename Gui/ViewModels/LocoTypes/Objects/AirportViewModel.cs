@@ -1,6 +1,7 @@
 using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Airport;
 using Definitions.ObjectModels.Objects.Common;
+using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -11,6 +12,7 @@ namespace Gui.ViewModels;
 public class AirportViewModel(AirportObject model)
 	: LocoObjectViewModel<AirportObject>(model)
 {
+	[EnumProhibitValues<AirportObjectFlags>(AirportObjectFlags.None)]
 	public AirportObjectFlags Flags
 	{
 		get => Model.Flags;

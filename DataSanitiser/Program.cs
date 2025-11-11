@@ -85,6 +85,53 @@ static ObjectType TypeToStruct(Type type)
 		_ => throw new ArgumentOutOfRangeException(nameof(type), $"unknown struct type {type.FullName}")
 	};
 
+static void QueryBuildingProducedQuantity()
+{
+	var dir = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData";
+	var logger = new Logger();
+	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+
+	var results = new List<(ObjectIndexEntry Obj, (string ProducedName, int ProducedQuantity))>();
+
+	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Building))
+	{
+		try
+		{
+			var o = SawyerStreamReader.LoadFullObject(Path.Combine(dir, obj.FileName), logger);
+			if (o.LocoObject != null)
+			{
+				var struc = (BuildingObject)o.LocoObject.Object;
+				var header = o.DatFileInfo.S5Header;
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+
+				foreach (var cargo in struc.ProducedCargo.Zip(struc.ProducedQuantity))
+				{
+					results.Add((obj, (cargo.First.Name, cargo.Second)));
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
+		}
+	}
+
+	Console.WriteLine(results.Count);
+
+	const string csvHeader = "DatName, ProducedName, ProducedQuantity";
+	var lines = results
+		.OrderBy(x => x.Item2.ProducedQuantity)
+		.Select(x => string.Join(',', x.Obj.DisplayName, x.Item2.ProducedName, x.Item2.ProducedQuantity));
+
+	File.WriteAllLines("buildingProducedQuantities.csv", [csvHeader, .. lines]);
+
+	//foreach (var line in lines)
+	//{
+	//	Console.WriteLine(line);
+	//}
+}
+QueryBuildingProducedQuantity();
+
 static void QueryHeadquarters()
 {
 	var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
@@ -128,7 +175,7 @@ static void QueryHeadquarters()
 		Console.WriteLine(line);
 	}
 }
-QueryHeadquarters();
+//QueryHeadquarters();
 
 static void QueryCostIndex()
 {

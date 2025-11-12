@@ -568,7 +568,7 @@ public class LegacyRouteHandler()
 			Availability = request.InitialAvailability,
 			CreatedDate = createdDate,
 			ModifiedDate = modifiedDate,
-			UploadedDate = DateOnly.Today,
+			UploadedDate = DateOnly.UtcToday,
 			Authors = [],
 			Tags = [],
 			ObjectPacks = [],

@@ -53,7 +53,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		=> request.ToTable();
 
 	protected override DtoObjectEntry ToDtoEntryFunc(TblObject row)
-		=> row.ToDtoEntry() with { UploadedDate = DateOnly.Today };
+		=> row.ToDtoEntry() with { UploadedDate = DateOnly.UtcToday };
 
 	DtoObjectDescriptor ToDtoDescriptor(TblObject row)
 		=> new(
@@ -137,7 +137,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		// act
 		const int id = 2;
 		var results = await ClientHelpers.GetAsync<DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
-		var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.Today };
+		var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.UtcToday };
 
 		// assert
 		AssertDtoObjectDescriptorsAreEqual(results, descriptor);
@@ -153,7 +153,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		using (Assert.EnterMultipleScope())
 		{
 			var results = await ClientHelpers.GetAsync<DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
-			var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.Today };
+			var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.UtcToday };
 
 			// assert
 			AssertDtoObjectDescriptorsAreEqual(results, descriptor);
@@ -174,7 +174,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		var base64Bytes = Convert.ToBase64String(bytes);
 
 		// act
-		var dtoUploadDat = new DtoUploadDat(base64Bytes, xxHash3, ObjectAvailability.Available, DateOnly.Today, DateOnly.Today);
+		var dtoUploadDat = new DtoUploadDat(base64Bytes, xxHash3, ObjectAvailability.Available, DateOnly.UtcToday, DateOnly.UtcToday);
 		var results = await ClientHelpers.PostAsync<DtoUploadDat, DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, dtoUploadDat);
 
 		// assert
@@ -212,9 +212,9 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			ObjectType.Vehicle,
 			entry.VehicleType,
 			ObjectAvailability.Available,
-			DateOnly.Today,
-			DateOnly.Today,
-			DateOnly.Today,
+			DateOnly.UtcToday,
+			DateOnly.UtcToday,
+			DateOnly.UtcToday,
 			null, // licence
 			[], // authors
 			[], // tags

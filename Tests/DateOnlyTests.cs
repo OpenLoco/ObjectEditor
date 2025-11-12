@@ -9,6 +9,6 @@ public class DateOnlyTests
 	public void Today()
 	{
 		var today = DateTimeOffset.UtcNow;
-		Assert.That(DateOnly.Today, Is.EqualTo(new DateOnly(today.Year, today.Month, today.Day)));
+		Assert.That(DateOnly.UtcToday, Is.EqualTo(new DateOnly(today.Year, today.Month, today.Day)));
 	}
 }

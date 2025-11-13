@@ -13,6 +13,12 @@ public interface ILocoFileViewModel
 	public ReactiveCommand<Unit, Unit> DeleteLocalFileCommand { get; init; }
 
 	[Reactive]
+	public bool SaveIsVisible { get; set; }
+
+	[Reactive]
+	public bool SaveAsIsVisible { get; set; }
+
+	[Reactive]
 	public FileSystemItem CurrentFile { get; init; }
 
 	[Reactive]

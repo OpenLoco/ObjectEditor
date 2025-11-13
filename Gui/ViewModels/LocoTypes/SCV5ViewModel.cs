@@ -56,6 +56,8 @@ public class SCV5ViewModel : BaseLocoFileViewModel
 	public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		: base(currentFile, model)
 	{
+		SaveIsVisible = false;
+		SaveAsIsVisible = false;
 		Load();
 		DownloadMissingObjectsToGameObjDataCommand = ReactiveCommand.CreateFromTask<GameObjDataFolder>(DownloadMissingObjects);
 	}

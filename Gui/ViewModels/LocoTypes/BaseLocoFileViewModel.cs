@@ -76,4 +76,7 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 	public string SaveIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSave" : "FileDownload";
 	public string SaveAsIcon => CurrentFile.FileLocation == FileLocation.Local ? "ContentSavePlus" : "FileDownloadOutline";
 	public string DeleteLocalFileIcon => "DeleteForever";
+
+	public bool SaveIsVisible { get; set; } = true;
+	public bool SaveAsIsVisible { get; set; } = true;
 }

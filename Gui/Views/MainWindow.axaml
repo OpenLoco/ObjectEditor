@@ -265,13 +265,13 @@
 												<TextBlock Margin="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="{Binding ReloadText}"/>
 											</DockPanel>
 										</Button>
-										<Button Margin="4" Padding="2" Command="{Binding SaveCommand}" DockPanel.Dock="Left" HotKey="Ctrl+S" ToolTip.Tip="(Ctrl+S)">
+										<Button Margin="4" Padding="2" Command="{Binding SaveCommand}" IsVisible="{Binding SaveIsVisible}" DockPanel.Dock="Left" HotKey="Ctrl+S" ToolTip.Tip="(Ctrl+S)">
 											<DockPanel>
 												<materialIcons:MaterialIcon Width="24" Height="24" Margin="2" Kind="{Binding SaveIcon}"/>
 												<TextBlock Margin="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="{Binding SaveText}"/>
 											</DockPanel>
 										</Button>
-										<Button Margin="4" Padding="2" Command="{Binding SaveAsCommand}" DockPanel.Dock="Left" HotKey="Ctrl+Shift+S" ToolTip.Tip="(Ctrl+Shift+S)">
+										<Button Margin="4" Padding="2" Command="{Binding SaveAsCommand}" IsVisible="{Binding SaveAsIsVisible}" DockPanel.Dock="Left" HotKey="Ctrl+Shift+S" ToolTip.Tip="(Ctrl+Shift+S)">
 											<DockPanel>
 												<materialIcons:MaterialIcon Width="24" Height="24" Margin="2" Kind="{Binding SaveAsIcon}"/>
 												<TextBlock Margin="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="{Binding SaveAsText}"/>

@@ -33,7 +33,13 @@ public record TutorialActionB(uint16_t Unk1, uint16_t Unk2, uint16_t Unk3) : ITu
 public class TutorialViewModel : BaseLocoFileViewModel
 {
 	public TutorialViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model) => Load();
+		: base(currentFile, model)
+	{
+
+		SaveIsVisible = false;
+		SaveAsIsVisible = false;
+		Load();
+	}
 
 	[Reactive]
 	public ObservableCollection<ITutorialAction> TutorialInputs { get; set; } = [];

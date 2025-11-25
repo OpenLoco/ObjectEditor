@@ -15,11 +15,11 @@ public static class ObjectSourceConverter
 			_ => throw new NotImplementedException(),
 		};
 
-	public static ObjectSource Convert(this DatObjectSource objectSource)
+	public static ObjectSource Convert(this DatObjectSource objectSource, string datName, uint32_t datChecksum)
 		=> objectSource switch
 		{
 			DatObjectSource.Custom => ObjectSource.Custom,
-			DatObjectSource.Vanilla => ObjectSource.LocomotionSteam, // todo - can check the file checksum to determine if it's GoG or Steam
+			DatObjectSource.Vanilla => OriginalObjectFiles.GetFileSource(datName, datChecksum),
 			DatObjectSource.OpenLoco => ObjectSource.OpenLoco,
 			_ => throw new NotImplementedException(),
 		};

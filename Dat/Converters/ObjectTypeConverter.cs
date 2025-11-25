@@ -17,7 +17,7 @@ public static class S5HeaderConverter
 		=> new(
 			s5Header.Name,
 			s5Header.ObjectType.Convert(),
-			s5Header.ObjectSource.Convert(),
+			s5Header.ObjectSource.Convert(s5Header.Name, s5Header.Checksum),
 			s5Header.Checksum);
 }
 

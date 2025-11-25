@@ -72,11 +72,11 @@ public class LoadSaveTests
 
 		var (datInfo1, obj1, struc1) = LoadObject<T>(filename);
 		assertFunc(obj1, struc1);
-		var bytes1 = SawyerStreamWriter.WriteLocoObject(datInfo1.S5Header.Name, obj1.ObjectType, datInfo1.S5Header.ObjectSource.Convert(), datInfo1.ObjectHeader.Encoding, logger, obj1, true).ToArray();
+		var bytes1 = SawyerStreamWriter.WriteLocoObject(datInfo1.S5Header.Name, obj1.ObjectType, datInfo1.S5Header.ObjectSource.Convert(datInfo1.S5Header.Name, datInfo1.S5Header.Checksum), datInfo1.ObjectHeader.Encoding, logger, obj1, true).ToArray();
 
 		var (datInfo2, obj2, struc2) = LoadObject<T>(bytes1);
 		assertFunc(obj2, struc2);
-		var bytes2 = SawyerStreamWriter.WriteLocoObject(datInfo2.S5Header.Name, obj2.ObjectType, datInfo2.S5Header.ObjectSource.Convert(), datInfo2.ObjectHeader.Encoding, logger, obj2, true).ToArray();
+		var bytes2 = SawyerStreamWriter.WriteLocoObject(datInfo2.S5Header.Name, obj2.ObjectType, datInfo2.S5Header.ObjectSource.Convert(datInfo2.S5Header.Name, datInfo2.S5Header.Checksum), datInfo2.ObjectHeader.Encoding, logger, obj2, true).ToArray();
 
 		// grab headers first
 		var s5Header1 = S5Header.Read(bytes1.AsSpan()[0..S5Header.StructLength]);

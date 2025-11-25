@@ -315,9 +315,11 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			//};
 		}
 
+		var header = CurrentObject.DatFileInfo.S5Header;
+
 		SawyerStreamWriter.Save(filename,
-			ObjectModelHeaderViewModel?.Name ?? CurrentObject.DatFileInfo.S5Header.Name,
-			ObjectModelHeaderViewModel?.ObjectSource ?? CurrentObject.DatFileInfo.S5Header.ObjectSource.Convert(),
+			ObjectModelHeaderViewModel?.Name ?? header.Name,
+			ObjectModelHeaderViewModel?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
 			encodingToUse ?? ObjectHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
 			CurrentObject.LocoObject,
 			logger,

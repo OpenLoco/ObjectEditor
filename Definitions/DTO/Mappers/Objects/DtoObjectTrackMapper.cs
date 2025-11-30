@@ -14,7 +14,7 @@ public static class DtoObjectTrackMapper
 		CostIndex = tblobjecttrack.CostIndex,
 		CurveSpeed = tblobjecttrack.CurveSpeed,
 		Flags = tblobjecttrack.Flags,
-		DisplayOffset = tblobjecttrack.DisplayOffset,
+		VehicleDisplayListVerticalOffset = tblobjecttrack.VehicleDisplayListVerticalOffset,
 		Id = tblobjecttrack.Id,
 	};
 
@@ -29,7 +29,7 @@ public static class DtoObjectTrackMapper
 		CostIndex = model.CostIndex,
 		CurveSpeed = model.CurveSpeed,
 		Flags = model.Flags,
-		DisplayOffset = model.DisplayOffset,
+		VehicleDisplayListVerticalOffset = model.VehicleDisplayListVerticalOffset,
 		Id = model.Id,
 	};
 

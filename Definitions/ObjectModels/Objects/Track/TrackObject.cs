@@ -17,7 +17,7 @@ public class TrackObject : ILocoStruct
 	public ObjectModelHeader Tunnel { get; set; }
 	public Speed16 MaxCurveSpeed { get; set; }
 	public TrackObjectFlags Flags { get; set; }
-	public uint8_t DisplayOffset { get; set; }
+	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public uint8_t var_06 { get; set; }
 	public List<ObjectModelHeader> Bridges { get; set; } = [];
 	public List<ObjectModelHeader> Stations { get; set; } = [];

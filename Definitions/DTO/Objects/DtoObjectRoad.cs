@@ -13,7 +13,7 @@ public class DtoObjectRoad : IDtoSubObject
 	public Speed16 MaxSpeed { get; set; }
 	public RoadObjectFlags Flags { get; set; }
 	public uint8_t PaintStyle { get; set; }
-	public uint8_t DisplayOffset { get; set; }
+	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public TownSize TargetTownSize { get; set; }
 	public UniqueObjectId Id { get; set; }
 }

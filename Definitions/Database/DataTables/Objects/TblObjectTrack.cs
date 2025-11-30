@@ -12,7 +12,7 @@ public class TblObjectTrack : DbSubObject, IConvertibleToTable<TblObjectTrack, T
 	public uint8_t CostIndex { get; set; }
 	public Speed16 CurveSpeed { get; set; }
 	public TrackObjectFlags Flags { get; set; }
-	public uint8_t DisplayOffset { get; set; }
+	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 
 	//public TblObjectTunnel Tunnel { get; set; }
 	// public uint8_t var_06 {get; set; }
@@ -34,7 +34,7 @@ public class TblObjectTrack : DbSubObject, IConvertibleToTable<TblObjectTrack, T
 			CostIndex = obj.CostIndex,
 			CurveSpeed = obj.MaxCurveSpeed,
 			Flags = obj.Flags,
-			DisplayOffset = obj.DisplayOffset,
+			VehicleDisplayListVerticalOffset = obj.VehicleDisplayListVerticalOffset,
 			//Tunnel = obj.Tunnel,
 		};
 }

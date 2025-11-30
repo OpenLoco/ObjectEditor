@@ -14,7 +14,7 @@ public static class DtoObjectRoadMapper
 		MaxSpeed = tblobjectroad.MaxSpeed,
 		Flags = tblobjectroad.Flags,
 		PaintStyle = tblobjectroad.PaintStyle,
-		DisplayOffset = tblobjectroad.DisplayOffset,
+		VehicleDisplayListVerticalOffset = tblobjectroad.VehicleDisplayListVerticalOffset,
 		TargetTownSize = tblobjectroad.TargetTownSize,
 		Id = tblobjectroad.Id,
 	};
@@ -30,7 +30,7 @@ public static class DtoObjectRoadMapper
 		MaxSpeed = model.MaxSpeed,
 		Flags = model.Flags,
 		PaintStyle = model.PaintStyle,
-		DisplayOffset = model.DisplayOffset,
+		VehicleDisplayListVerticalOffset = model.VehicleDisplayListVerticalOffset,
 		TargetTownSize = model.TargetTownSize,
 		Id = model.Id,
 	};

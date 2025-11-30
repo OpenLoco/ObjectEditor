@@ -53,7 +53,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			var numMods = br.ReadByte();
 			br.SkipObjectId(Constants.MaxMods);
 			var numCompatible = br.ReadByte();
-			model.DisplayOffset = br.ReadByte();
+			model.VehicleDisplayListVerticalOffset = br.ReadByte();
 			br.SkipUInt16(); // _CompatibleRoads, not part of object definition
 			br.SkipUInt16(); // _CompatibleTracks, not part of object definition
 			model.TargetTownSize = ((DatTownSize)br.ReadByte()).Convert();
@@ -112,7 +112,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.RoadMods.Count);
 			bw.WriteEmptyObjectId(Constants.MaxMods);
 			bw.Write((uint8_t)model.TracksAndRoads.Count);
-			bw.Write(model.DisplayOffset);
+			bw.Write(model.VehicleDisplayListVerticalOffset);
 			bw.Write((uint16_t)0); // _CompatibleRoads, not part of object definition
 			bw.Write((uint16_t)0); // _CompatibleTracks, not part of object definition
 			bw.Write((uint8_t)model.TargetTownSize.Convert());

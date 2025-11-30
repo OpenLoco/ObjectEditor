@@ -34,10 +34,11 @@ public class RoadViewModel(RoadObject model)
 		set => Model.PaintStyle = value;
 	}
 
-	public uint8_t DisplayOffset
+	[Description("The vertical offset in pixels used to display a vehicle in a vehicle list (eg build menu, station train list, etc)")]
+	public uint8_t VehicleDisplayListVerticalOffset
 	{
-		get => Model.DisplayOffset;
-		set => Model.DisplayOffset = value;
+		get => Model.VehicleDisplayListVerticalOffset;
+		set => Model.VehicleDisplayListVerticalOffset = value;
 	}
 
 	public TownSize TargetTownSize

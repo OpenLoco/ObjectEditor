@@ -53,7 +53,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			br.SkipObjectId(Constants.MaxBridges);
 			var numStations = br.ReadByte();
 			br.SkipObjectId(Constants.MaxStations);
-			model.DisplayOffset = br.ReadByte();
+			model.VehicleDisplayListVerticalOffset = br.ReadByte();
 			model.pad_35 = br.ReadByte(); // pad_35, not part of object definition
 
 			// sanity check
@@ -110,7 +110,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			bw.WriteEmptyObjectId(Constants.MaxBridges); // Bridges, not part of object definition
 			bw.Write((uint8_t)model.Stations.Count);
 			bw.WriteEmptyObjectId(Constants.MaxStations); // Stations, not part of object definition
-			bw.Write(model.DisplayOffset);
+			bw.Write(model.VehicleDisplayListVerticalOffset);
 			bw.Write(model.pad_35); // pad_35, not part of object definition
 
 			// sanity check

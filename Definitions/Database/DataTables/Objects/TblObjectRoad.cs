@@ -12,7 +12,7 @@ public class TblObjectRoad : DbSubObject, IConvertibleToTable<TblObjectRoad, Roa
 	public Speed16 MaxSpeed { get; set; }
 	public RoadObjectFlags Flags { get; set; }
 	public uint8_t PaintStyle { get; set; }
-	public uint8_t DisplayOffset { get; set; }
+	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public TownSize TargetTownSize { get; set; }
 
 	//public TblObjectTunnel Tunnel { get; set; }
@@ -35,7 +35,7 @@ public class TblObjectRoad : DbSubObject, IConvertibleToTable<TblObjectRoad, Roa
 			MaxSpeed = obj.MaxCurveSpeed,
 			Flags = obj.Flags,
 			PaintStyle = obj.PaintStyle,
-			DisplayOffset = obj.DisplayOffset,
+			VehicleDisplayListVerticalOffset = obj.VehicleDisplayListVerticalOffset,
 			TargetTownSize = obj.TargetTownSize,
 			//Tunnel = obj.Tunnel,
 		};

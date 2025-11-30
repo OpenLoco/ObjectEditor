@@ -13,6 +13,6 @@ public class DtoObjectTrack : IDtoSubObject
 	public uint8_t CostIndex { get; set; }
 	public Speed16 CurveSpeed { get; set; }
 	public TrackObjectFlags Flags { get; set; }
-	public uint8_t DisplayOffset { get; set; }
+	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public UniqueObjectId Id { get; set; }
 }

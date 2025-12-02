@@ -56,7 +56,7 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 
 		var buttons = new HashSet<string>()
 		{
-			"Json",
+			"JSON (Experimental)",
 			$"DAT ({SawyerEncoding.Uncompressed})",
 			$"DAT ({SawyerEncoding.RunLengthSingle})",
 			$"DAT ({SawyerEncoding.RunLengthMulti})",
@@ -69,7 +69,7 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 			{
 				ButtonDefinitions = buttons.Select(x => new ButtonDefinition() { Name = x }),
 				ContentTitle = "Save As",
-				ContentMessage = "Save as DAT object or Json file?",
+				ContentMessage = "Save as DAT object or JSON file?",
 				Icon = Icon.Question,
 				WindowStartupLocation = WindowStartupLocation.CenterOwner,
 				CanResize = false,
@@ -86,7 +86,7 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 			return;
 		}
 
-		var type = result == "Json" ? SaveType.JSON : SaveType.DAT;
+		var type = result == "JSON (Experimental)" ? SaveType.JSON : SaveType.DAT;
 		SawyerEncoding? encoding = type == SaveType.DAT
 			? result switch
 			{

@@ -1,5 +1,4 @@
 using Definitions.ObjectModels.Types;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
@@ -31,11 +30,5 @@ public class ObjectModelHeaderViewModel(ObjectModelHeader model)
 	{
 		get => Model.ObjectType;
 		set => Model.ObjectType = value;
-	}
-
-	public string DatChecksumHex
-	{
-		get => string.Format($"0x{Model.DatChecksum:X}");
-		set => Model.DatChecksum = Convert.ToUInt32(value[2..], 16);
 	}
 }

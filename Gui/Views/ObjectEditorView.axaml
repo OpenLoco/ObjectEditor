@@ -17,7 +17,7 @@
 			<StackPanel Orientation="Vertical">
 				<StackPanel Margin="4" Orientation="Horizontal">
 					<ContentControl Content="{Binding ObjectModelHeaderViewModel}" />
-					<ContentControl Content="{Binding ObjectHeaderViewModel}" />
+					<ContentControl Content="{Binding ObjectDatHeaderViewModel}" />
 				</StackPanel>
 				<StackPanel Orientation="Horizontal">
 					<Button Margin="4" Command="{Binding ExportUncompressedCommand}" ToolTip.Tip="Equivalent to saving the object with 'Uncompressed' encoding">Export as uncompressed DAT</Button>

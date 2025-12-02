@@ -50,7 +50,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 	public ObjectModelHeaderViewModel? ObjectModelHeaderViewModel { get; set; }
 
 	[Reactive]
-	public ObjectHeaderViewModel? ObjectHeaderViewModel { get; set; }
+	public ObjectDatHeaderViewModel? ObjectDatHeaderViewModel { get; set; }
 
 	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
 
@@ -162,7 +162,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 				if (CurrentObject.LocoObject.Object is SoundObject soundObject)
 				{
-					ExtraContentViewModel = new AudioViewModel(logger, CurrentObject.DatInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
+					ExtraContentViewModel = new AudioViewModel(logger, CurrentObject.Metadata.InternalName, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
 				}
 				else
 				{
@@ -195,7 +195,11 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			if (CurrentObject != null)
 			{
 				ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatInfo.S5Header.Convert());
-				ObjectHeaderViewModel = new ObjectHeaderViewModel(CurrentObject.DatInfo.ObjectHeader);
+
+				ObjectDatHeaderViewModel = new ObjectDatHeaderViewModel(
+					CurrentObject.DatInfo.S5Header.Checksum,
+					CurrentObject.DatInfo.ObjectHeader.Encoding,
+					CurrentObject.DatInfo.ObjectHeader.DataLength);
 			}
 
 			if (CurrentObject?.Metadata != null)
@@ -241,7 +245,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? CurrentFile.FileName
 			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".dat"));
-		SaveCore(savePath, new SaveParameters(SaveType.DAT, ObjectHeaderViewModel?.DatEncoding));
+		SaveCore(savePath, new SaveParameters(SaveType.DAT, ObjectDatHeaderViewModel?.DatEncoding));
 	}
 
 	public override void SaveAs(SaveParameters saveParameters)
@@ -329,7 +333,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			SawyerStreamWriter.Save(filename,
 				ObjectModelHeaderViewModel?.Name ?? header.Name,
 				ObjectModelHeaderViewModel?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
-				saveParameters.SawyerEncoding ?? ObjectHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
+				saveParameters.SawyerEncoding ?? ObjectDatHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
 				CurrentObject.LocoObject,
 				logger,
 				Model.Settings.AllowSavingAsVanillaObject);

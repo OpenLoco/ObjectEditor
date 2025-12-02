@@ -177,11 +177,19 @@ public class ObjectEditorModel : IDisposable
 				? TryLoadOnlineFile(filesystemItem, out uiLocoFile)
 				: TryLoadLocalFile(filesystemItem, out uiLocoFile);
 
+			if (uiLocoFile?.LocoObject == null)
+			{
+				Logger.Warning($"Unable to load LocoObject for {filesystemItem.FileName}");
+			}
+
+			if (uiLocoFile?.Metadata == null)
+			{
+				Logger.Warning($"Unable to load Metadata for {filesystemItem.FileName}");
+			}
+
 			if (uiLocoFile?.DatInfo == null)
 			{
-				Logger.Error($"Unable to load {filesystemItem.FileName}");
-				uiLocoFile = null;
-				return false;
+				Logger.Warning($"Unable to load DatInfo for {filesystemItem.FileName}");
 			}
 
 			return result;
@@ -198,7 +206,7 @@ public class ObjectEditorModel : IDisposable
 	{
 		locoDatFile = null;
 
-		DatInfo? fileInfo = null;
+		DatHeaderInfo? fileInfo = null;
 		LocoObject? locoObject = null;
 		LocoObjectMetadata? metadata = null;
 		//List<Image<Rgba32>> images = [];
@@ -304,7 +312,7 @@ public class ObjectEditorModel : IDisposable
 					ObjectType = cachedLocoObjDto.ObjectType.Convert(),
 					ObjectSource = cachedLocoObjDto.ObjectSource.Convert()
 				};
-				fileInfo = new DatInfo(fakeS5Header, ObjectHeader.NullHeader);
+				fileInfo = new DatHeaderInfo(fakeS5Header, ObjectHeader.NullHeader);
 			}
 
 			metadata = new LocoObjectMetadata(cachedLocoObjDto.Name)
@@ -343,7 +351,7 @@ public class ObjectEditorModel : IDisposable
 	{
 		locoDatFile = null;
 
-		DatInfo? fileInfo = null;
+		DatHeaderInfo? fileInfo = null;
 		LocoObject? locoObject = null;
 		LocoObjectMetadata? metadata = null;
 

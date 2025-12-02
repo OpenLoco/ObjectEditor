@@ -90,7 +90,7 @@
 		<DataTemplate DataType="vm:ObjectModelHeaderViewModel" >
 			<vi:ObjectModelHeaderView />
 		</DataTemplate>
-		<DataTemplate DataType="vm:ObjectHeaderViewModel">
+		<DataTemplate DataType="vm:ObjectDatHeaderViewModel">
 			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="domt:ObjectModelHeader">

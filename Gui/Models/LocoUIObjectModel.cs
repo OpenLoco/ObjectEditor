@@ -9,5 +9,5 @@ public class LocoUIObjectModel
 {
 	public LocoObject? LocoObject { get; set; }
 	public LocoObjectMetadata? Metadata { get; set; }
-	public DatInfo? DatInfo { get; set; }
+	public DatHeaderInfo? DatInfo { get; set; }
 }

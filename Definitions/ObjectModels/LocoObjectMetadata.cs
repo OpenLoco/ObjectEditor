@@ -1,13 +1,10 @@
-using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace Gui.Models;
+namespace Definitions.ObjectModels;
 
-public class MetadataModel(string internalName)
+public class LocoObjectMetadata(string internalName)
 {
 	public UniqueObjectId UniqueObjectId { get; init; }
 

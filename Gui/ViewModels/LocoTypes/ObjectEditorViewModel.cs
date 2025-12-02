@@ -41,16 +41,16 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 	public string ExtraContentViewModelTabName { get; set; }
 
 	[Reactive]
+	public LocoUIObjectModel? CurrentObject { get; private set; }
+
+	[Reactive]
+	public LocoObjectMetadataViewModel? MetadataViewModel { get; set; }
+
+	[Reactive]
 	public ObjectModelHeaderViewModel? ObjectModelHeaderViewModel { get; set; }
 
 	[Reactive]
 	public ObjectHeaderViewModel? ObjectHeaderViewModel { get; set; }
-
-	[Reactive]
-	public MetadataViewModel? MetadataViewModel { get; set; }
-
-	[Reactive]
-	public UiDatLocoFile? CurrentObject { get; private set; }
 
 	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
 
@@ -162,7 +162,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 				if (CurrentObject.LocoObject.Object is SoundObject soundObject)
 				{
-					ExtraContentViewModel = new AudioViewModel(logger, CurrentObject.DatFileInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
+					ExtraContentViewModel = new AudioViewModel(logger, CurrentObject.DatInfo.S5Header.Name, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
 				}
 				else
 				{
@@ -194,13 +194,13 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 			if (CurrentObject != null)
 			{
-				ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatFileInfo.S5Header.Convert());
-				ObjectHeaderViewModel = new ObjectHeaderViewModel(CurrentObject.DatFileInfo.ObjectHeader);
+				ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatInfo.S5Header.Convert());
+				ObjectHeaderViewModel = new ObjectHeaderViewModel(CurrentObject.DatInfo.ObjectHeader);
 			}
 
 			if (CurrentObject?.Metadata != null)
 			{
-				MetadataViewModel = new MetadataViewModel(CurrentObject.Metadata);
+				MetadataViewModel = new LocoObjectMetadataViewModel(CurrentObject.Metadata);
 			}
 			else
 			{
@@ -296,7 +296,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			return;
 		}
 
-		logger.Info($"Saving {CurrentObject.DatFileInfo.S5Header.Name} to {filename}");
+		logger.Info($"Saving {CurrentObject.DatInfo.S5Header.Name} to {filename}");
 		StringTableViewModel?.WriteTableBackToObject();
 
 		// VM should auto-copy back now for everything but VehicleObject
@@ -324,7 +324,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 
 		if (saveParameters.SaveType == SaveType.DAT)
 		{
-			var header = CurrentObject.DatFileInfo.S5Header;
+			var header = CurrentObject.DatInfo.S5Header;
 
 			SawyerStreamWriter.Save(filename,
 				ObjectModelHeaderViewModel?.Name ?? header.Name,

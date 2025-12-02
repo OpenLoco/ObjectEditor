@@ -48,10 +48,10 @@ namespace Dat.Tests;
 [TestFixture]
 public class LoadSaveTests
 {
-	static (DatFileInfo, LocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
+	static (DatInfo, LocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
 		=> LoadObject<T>(File.ReadAllBytes(Path.Combine(TestConstants.BaseSteamObjDataPath, filename)));
 
-	static (DatFileInfo, LocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
+	static (DatInfo, LocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
 	{
 		var logger = new Logger();
 		var (datFileInfo, locoObject) = SawyerStreamReader.LoadFullObject(data.ToArray(), logger);

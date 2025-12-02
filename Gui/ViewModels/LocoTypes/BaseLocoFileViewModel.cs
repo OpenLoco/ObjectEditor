@@ -61,7 +61,6 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 			$"DAT ({SawyerEncoding.RunLengthSingle})",
 			$"DAT ({SawyerEncoding.RunLengthMulti})",
 			$"DAT ({SawyerEncoding.Rotate})",
-
 		};
 
 		var box = MessageBoxManager.GetMessageBoxCustom

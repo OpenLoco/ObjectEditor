@@ -162,7 +162,7 @@ public class ObjectEditorModel : IDisposable
 		}
 	}
 
-	public bool TryLoadObject(FileSystemItem filesystemItem, out UiDatLocoFile? uiLocoFile)
+	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)
 	{
 		uiLocoFile = null;
 
@@ -177,7 +177,7 @@ public class ObjectEditorModel : IDisposable
 				? TryLoadOnlineFile(filesystemItem, out uiLocoFile)
 				: TryLoadLocalFile(filesystemItem, out uiLocoFile);
 
-			if (uiLocoFile?.DatFileInfo == null)
+			if (uiLocoFile?.DatInfo == null)
 			{
 				Logger.Error($"Unable to load {filesystemItem.FileName}");
 				uiLocoFile = null;
@@ -194,13 +194,13 @@ public class ObjectEditorModel : IDisposable
 		}
 	}
 
-	bool TryLoadOnlineFile(FileSystemItem filesystemItem, out UiDatLocoFile? locoDatFile)
+	bool TryLoadOnlineFile(FileSystemItem filesystemItem, out LocoUIObjectModel? locoDatFile)
 	{
 		locoDatFile = null;
 
-		DatFileInfo? fileInfo = null;
+		DatInfo? fileInfo = null;
 		LocoObject? locoObject = null;
-		MetadataModel? metadata = null;
+		LocoObjectMetadata? metadata = null;
 		//List<Image<Rgba32>> images = [];
 
 		if (filesystemItem.Id == null)
@@ -304,10 +304,10 @@ public class ObjectEditorModel : IDisposable
 					ObjectType = cachedLocoObjDto.ObjectType.Convert(),
 					ObjectSource = cachedLocoObjDto.ObjectSource.Convert()
 				};
-				fileInfo = new DatFileInfo(fakeS5Header, ObjectHeader.NullHeader);
+				fileInfo = new DatInfo(fakeS5Header, ObjectHeader.NullHeader);
 			}
 
-			metadata = new MetadataModel(cachedLocoObjDto.Name)
+			metadata = new LocoObjectMetadata(cachedLocoObjDto.Name)
 			{
 				UniqueObjectId = cachedLocoObjDto.Id,
 				Description = cachedLocoObjDto.Description,
@@ -335,17 +335,17 @@ public class ObjectEditorModel : IDisposable
 			//}
 		}
 
-		locoDatFile = new UiDatLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
+		locoDatFile = new LocoUIObjectModel() { DatInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
 		return true;
 	}
 
-	bool TryLoadLocalFile(FileSystemItem filesystemItem, out UiDatLocoFile? locoDatFile)
+	bool TryLoadLocalFile(FileSystemItem filesystemItem, out LocoUIObjectModel? locoDatFile)
 	{
 		locoDatFile = null;
 
-		DatFileInfo? fileInfo = null;
+		DatInfo? fileInfo = null;
 		LocoObject? locoObject = null;
-		MetadataModel? metadata = null;
+		LocoObjectMetadata? metadata = null;
 
 		var filename = File.Exists(filesystemItem.FileName)
 			? filesystemItem.FileName
@@ -354,7 +354,7 @@ public class ObjectEditorModel : IDisposable
 		var obj = SawyerStreamReader.LoadFullObject(filename, logger: Logger);
 		fileInfo = obj.DatFileInfo;
 		locoObject = obj.LocoObject;
-		metadata = new MetadataModel("<unknown>")
+		metadata = new LocoObjectMetadata("<unknown>")
 		{
 			CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
 			ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset(),
@@ -362,7 +362,7 @@ public class ObjectEditorModel : IDisposable
 			//DatObjects = [new(0)],
 		}; // todo: look up the rest of the data from internet
 
-		locoDatFile = new UiDatLocoFile() { DatFileInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
+		locoDatFile = new LocoUIObjectModel() { DatInfo = fileInfo, LocoObject = locoObject, Metadata = metadata };
 		return true;
 	}
 

@@ -5,9 +5,9 @@ using System.ComponentModel;
 namespace Gui.Models;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class UiDatLocoFile
+public class LocoUIObjectModel
 {
-	public required DatFileInfo DatFileInfo { get; set; }
 	public LocoObject? LocoObject { get; set; }
-	public MetadataModel? Metadata { get; set; }
+	public LocoObjectMetadata? Metadata { get; set; }
+	public DatInfo? DatInfo { get; set; }
 }

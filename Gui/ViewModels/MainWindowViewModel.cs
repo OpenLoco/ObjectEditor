@@ -283,8 +283,8 @@ public class MainWindowViewModel : ViewModelBase
 		if (Model.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 		{
 			Model.Logger.Warning($"Successfully loaded {fsi.FileName}");
-			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatFileInfo.S5Header.Name, uiLocoFile.DatFileInfo.S5Header.Checksum);
-			var fsi2 = new FileSystemItem(uiLocoFile!.DatFileInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
+			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum);
+			var fsi2 = new FileSystemItem(uiLocoFile!.DatInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
 			SetObjectViewModel(fsi2);
 		}
 		else

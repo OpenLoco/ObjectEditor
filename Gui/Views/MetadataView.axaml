@@ -8,7 +8,7 @@
     xmlns:vm="using:Gui.ViewModels"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="vm:MetadataViewModel"
+    x:DataType="vm:LocoObjectMetadataViewModel"
     mc:Ignorable="d">
 
     <TabControl

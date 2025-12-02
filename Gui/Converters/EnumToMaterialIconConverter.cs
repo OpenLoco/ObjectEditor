@@ -1,4 +1,5 @@
 using Avalonia.Data.Converters;
+using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
@@ -57,7 +58,7 @@ public class EnumToMaterialIconConverter : IValueConverter
 	static readonly Dictionary<string, string> MiscMappings = new()
 	{
 		{ nameof(ObjectIndexEntry), "ViewList" },
-		{ nameof(MetadataModel), "ViewListOutline" },
+		{ nameof(LocoObjectMetadata), "ViewListOutline" },
 	};
 
 	static readonly Dictionary<ObjectType, string> ObjectMapping = new()

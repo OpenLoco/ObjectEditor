@@ -94,19 +94,19 @@ public static class SawyerStreamReader
 		return true;
 	}
 
-	public static (DatFileInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(string filename, ILogger logger, bool loadExtra = true)
+	public static (DatInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(string filename, ILogger logger, bool loadExtra = true)
 	{
 		using var fs = new FileStream(filename, FileMode.Open);
 		return LoadFullObject(fs, logger, filename, loadExtra);
 	}
 
-	public static (DatFileInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(byte[] data, ILogger logger, string filename = "<in-memory>", bool loadExtra = true)
+	public static (DatInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(byte[] data, ILogger logger, string filename = "<in-memory>", bool loadExtra = true)
 	{
 		using var ms = new MemoryStream(data);
 		return LoadFullObject(ms, logger, filename: filename, loadExtra: loadExtra);
 	}
 
-	public static (DatFileInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(Stream stream, ILogger logger, string filename, bool loadExtra = true)
+	public static (DatInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(Stream stream, ILogger logger, string filename, bool loadExtra = true)
 	{
 		logger.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
 
@@ -114,7 +114,7 @@ public static class SawyerStreamReader
 		if (obj == null || obj.Value.decodedData.Length == 0)
 		{
 			logger.Error($"{filename} was unable to be decoded");
-			return (new DatFileInfo(S5Header.NullHeader, ObjectHeader.NullHeader), null);
+			return (new DatInfo(S5Header.NullHeader, ObjectHeader.NullHeader), null);
 		}
 
 		var s5Header = obj.Value.s5Header;
@@ -124,14 +124,14 @@ public static class SawyerStreamReader
 		if (decodedData.Length == 0)
 		{
 			logger.Warning($"No data was decoded from {filename}, file is malformed.");
-			return (new DatFileInfo(s5Header, objectHeader), null);
+			return (new DatInfo(s5Header, objectHeader), null);
 		}
 
 		using (var decodedStream = new MemoryStream(decodedData))
 		{
 			var locoObject = ReadLocoObject(s5Header.ObjectType, decodedStream);
 			ValidateLocoStruct(s5Header, locoObject.Object, logger);
-			return new(new DatFileInfo(s5Header, objectHeader), locoObject);
+			return new(new DatInfo(s5Header, objectHeader), locoObject);
 		}
 	}
 

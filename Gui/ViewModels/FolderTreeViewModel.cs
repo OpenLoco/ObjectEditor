@@ -47,7 +47,7 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 		var availableFilterCategories = new List<FilterTypeViewModel>
 		{
 			new() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) },
-			new() { Type = typeof (MetadataModel), DisplayName = "Metadata", IconName = nameof(MetadataModel) }
+			new() { Type = typeof (LocoObjectMetadata), DisplayName = "Metadata", IconName = nameof(LocoObjectMetadata) }
 		};
 
 		//Filters.Add(new FilterViewModel(availableFilterCategories, RemoveFilter));

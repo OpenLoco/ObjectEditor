@@ -1,33 +1,16 @@
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
+using System.Text.Json.Serialization;
 
-namespace Definitions.ObjectModels;
-
-public class LocoObject
+namespace Definitions.ObjectModels
 {
-	public LocoObject(ObjectType objectType, ILocoStruct obj, StringTable stringTable, ImageTable? imageTable = null)
+	[JsonConverter(typeof(Serialization.LocoObjectJsonConverter))]
+	public class LocoObject(ObjectType objectType, ILocoStruct obj, StringTable stringTable, ImageTable? imageTable = null)
 	{
-		ObjectType = objectType;
-		Object = obj;
-		StringTable = stringTable;
-		ImageTable = imageTable;
+		public ObjectType ObjectType { get; init; } = objectType;
+		public ILocoStruct Object { get; set; } = obj;
+		public StringTable StringTable { get; set; } = stringTable;
+
+		public ImageTable? ImageTable { get; set; } = imageTable;
 	}
-
-	public ObjectType ObjectType { get; init; }
-	public ILocoStruct Object { get; set; }
-	public StringTable StringTable { get; set; }
-
-	public ImageTable? ImageTable { get; set; }
 }
-
-//public class LocoObjectWithGraphics : LocoObject
-//{
-//	public LocoObjectWithGraphics(ObjectType objectType, ILocoStruct obj, StringTable stringTable, ImageTable imageTable)
-//		: base(objectType, obj, stringTable)
-//	{
-//		ImageTable = imageTable;
-//	}
-
-//	public ImageTable ImageTable { get; set; }
-//}
-

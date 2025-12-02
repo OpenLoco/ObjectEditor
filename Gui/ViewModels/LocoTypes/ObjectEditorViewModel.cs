@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
@@ -123,7 +124,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		}
 	}
 
-	public static IObjectViewModel GetViewModelFromStruct(ILocoStruct locoStruct)
+	public static IObjectViewModel? GetViewModelFromStruct(ILocoStruct locoStruct)
 	{
 		var asm = Assembly
 			.GetExecutingAssembly()
@@ -135,7 +136,9 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 				&& type.BaseType.GetGenericTypeDefinition() == typeof(LocoObjectViewModel<>)
 				&& type.BaseType.GenericTypeArguments.Single() == locoStruct.GetType());
 
-		return (IObjectViewModel)Activator.CreateInstance(asm, locoStruct);
+		return asm == null
+			? null
+			: (IObjectViewModel?)Activator.CreateInstance(asm, locoStruct);
 	}
 
 	public override void Load()
@@ -238,25 +241,29 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? CurrentFile.FileName
 			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".dat"));
-		SaveCore(savePath);
+		SaveCore(savePath, new SaveParameters(SaveType.DAT, ObjectHeaderViewModel?.DatEncoding));
 	}
 
-	public override void SaveAs()
-		=> SaveAsCore();
+	public override void SaveAs(SaveParameters saveParameters)
+		=> SaveAsCore(saveParameters);
 
 	void SaveAsUncompressedDat()
-		=> SaveAsCore(SawyerEncoding.Uncompressed);
+		=> SaveAsCore(new SaveParameters(SaveType.DAT, SawyerEncoding.Uncompressed));
 
-	void SaveAsCore(SawyerEncoding? encodingToUse = null)
+	void SaveAsCore(SaveParameters saveParameters)
 	{
-		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+		var fileTypes = saveParameters.SaveType == SaveType.JSON
+			? PlatformSpecific.JsonFileTypes
+			: PlatformSpecific.DatFileTypes;
+
+		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(fileTypes)).Result;
 		if (saveFile != null)
 		{
-			SaveCore(saveFile.Path.LocalPath, encodingToUse);
+			SaveCore(saveFile.Path.LocalPath, saveParameters);
 		}
 	}
 
-	void SaveCore(string filename, SawyerEncoding? encodingToUse = null)
+	void SaveCore(string filename, SaveParameters saveParameters)
 	{
 		if (CurrentObject?.LocoObject == null)
 		{
@@ -315,15 +322,34 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			//};
 		}
 
-		var header = CurrentObject.DatFileInfo.S5Header;
+		if (saveParameters.SaveType == SaveType.DAT)
+		{
+			var header = CurrentObject.DatFileInfo.S5Header;
 
-		SawyerStreamWriter.Save(filename,
-			ObjectModelHeaderViewModel?.Name ?? header.Name,
-			ObjectModelHeaderViewModel?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
-			encodingToUse ?? ObjectHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
-			CurrentObject.LocoObject,
-			logger,
-			Model.Settings.AllowSavingAsVanillaObject);
+			SawyerStreamWriter.Save(filename,
+				ObjectModelHeaderViewModel?.Name ?? header.Name,
+				ObjectModelHeaderViewModel?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
+				saveParameters.SawyerEncoding ?? ObjectHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
+				CurrentObject.LocoObject,
+				logger,
+				Model.Settings.AllowSavingAsVanillaObject);
+		}
+		else
+		{
+			JsonSerializer.Serialize(
+				new FileStream(filename, FileMode.Create, FileAccess.Write),
+				CurrentObject.LocoObject,
+				new JsonSerializerOptions
+				{
+					WriteIndented = true,
+					//Converters =
+					//{
+					//	new LocoStructJsonConverterFactory(),
+					//	new ObjectTypeJsonConverter(),
+					//	new ObjectSourceJsonConverter(),
+					//}
+				});
+		}
 	}
 }
 

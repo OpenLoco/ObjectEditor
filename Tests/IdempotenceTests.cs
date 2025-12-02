@@ -67,21 +67,24 @@ public class IdempotenceTests
 
 		using (Assert.EnterMultipleScope())
 		{
+			Assert.That(actual, Is.Not.Null);
+			Assert.That(expected, Is.Not.Null);
+
 			Assert.That(JsonSerializer.Serialize((object)actual.Object), Is.EqualTo(JsonSerializer.Serialize((object)expected.Object)), "Object");
 			Assert.That(JsonSerializer.Serialize(actual.StringTable), Is.EqualTo(JsonSerializer.Serialize(expected.StringTable)), "String Table");
 
 			if (actual.ImageTable != null && expected.ImageTable != null)
 			{
 				var i = 0;
-				foreach (var ae in actual.ImageTable.GraphicsElements.Zip(expected.ImageTable.GraphicsElements))
+				foreach (var (First, Second) in actual.ImageTable.GraphicsElements.Zip(expected.ImageTable.GraphicsElements))
 				{
-					var ac = JsonSerializer.Serialize(ae.First);
-					var ex = JsonSerializer.Serialize(ae.Second);
+					var ac = JsonSerializer.Serialize(First);
+					var ex = JsonSerializer.Serialize(Second);
 
 					if (ac != ex)
 					{
-						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(ae.First, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img1);
-						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(ae.Second, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img2);
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(First, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img1);
+						_ = PaletteMap.TryConvertG1ToRgba32Bitmap(Second, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var img2);
 						img1.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-actual.bmp");
 						img2.SaveAsBmp($"{Path.GetFileName(filename)}-{i}-expected.bmp");
 					}
@@ -100,6 +103,8 @@ public class IdempotenceTests
 		var obj1 = SawyerStreamReader.LoadFullObject(filename, logger)!.LocoObject!.Object;
 
 		var vm = ObjectEditorViewModel.GetViewModelFromStruct(obj1);
+		Assert.That(vm, Is.Not.Null);
+
 		var obj2 = vm.GetILocoStruct();
 
 		var expected = JsonSerializer.Serialize((object)obj1);

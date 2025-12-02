@@ -48,7 +48,7 @@ public class G1ViewModel : BaseLocoFileViewModel
 		SawyerStreamWriter.SaveG1(savePath, Model.G1);
 	}
 
-	public override void SaveAs()
+	public override void SaveAs(SaveParameters saveParameters)
 	{
 		if (Model.G1 == null)
 		{

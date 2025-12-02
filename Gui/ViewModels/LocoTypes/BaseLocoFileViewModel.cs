@@ -1,14 +1,25 @@
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
+using Avalonia.Controls;
 using Common.Logging;
+using Dat.Data;
+using Definitions.ObjectModels.Types;
 using Gui.Models;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using Definitions.ObjectModels.Types;
 
 namespace Gui.ViewModels;
+
+public enum SaveType { JSON, DAT }
+
+// todo: add filename
+public record SaveParameters(SaveType SaveType, SawyerEncoding? SawyerEncoding);
 
 public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 {
@@ -19,7 +30,7 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 
 		ReloadCommand = ReactiveCommand.Create(Load);
 		SaveCommand = ReactiveCommand.CreateFromTask(SaveWrapper);
-		SaveAsCommand = ReactiveCommand.Create(SaveAs);
+		SaveAsCommand = ReactiveCommand.CreateFromTask(SaveAsWrapper);
 		DeleteLocalFileCommand = ReactiveCommand.CreateFromTask(DeleteWrapper);
 	}
 
@@ -36,8 +47,59 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 
 	public abstract void Load();
 	public abstract void Save();
-	public abstract void SaveAs();
+	public abstract void SaveAs(SaveParameters saveParameters);
 	public virtual void Delete() { }
+
+	async Task SaveAsWrapper()
+	{
+		// show save wizard here, asking the user to select a save type (DAT or JSON) and if its DAT, letting them select an option for the DAT encoding
+
+		var buttons = new HashSet<string>()
+		{
+			"JSON (Experimental)",
+			$"DAT ({SawyerEncoding.Uncompressed})",
+			$"DAT ({SawyerEncoding.RunLengthSingle})",
+			$"DAT ({SawyerEncoding.RunLengthMulti})",
+			$"DAT ({SawyerEncoding.Rotate})",
+
+		};
+
+		var box = MessageBoxManager.GetMessageBoxCustom
+			(new MessageBoxCustomParams
+			{
+				ButtonDefinitions = buttons.Select(x => new ButtonDefinition() { Name = x }),
+				ContentTitle = "Save As",
+				ContentMessage = "Save as DAT object or JSON file?",
+				Icon = Icon.Question,
+				WindowStartupLocation = WindowStartupLocation.CenterOwner,
+				CanResize = false,
+				//MaxWidth = 500,
+				MaxHeight = 800,
+				SizeToContent = SizeToContent.WidthAndHeight,
+				ShowInCenter = true,
+				Topmost = false,
+			});
+
+		var result = await box.ShowAsync();
+		if (!buttons.Contains(result))
+		{
+			return;
+		}
+
+		var type = result == "JSON (Experimental)" ? SaveType.JSON : SaveType.DAT;
+		SawyerEncoding? encoding = type == SaveType.DAT
+			? result switch
+			{
+				"DAT (Uncompressed)" => SawyerEncoding.Uncompressed,
+				"DAT (RunLengthSingle)" => SawyerEncoding.RunLengthSingle,
+				"DAT (RunLengthMulti)" => SawyerEncoding.RunLengthMulti,
+				"DAT (Rotate)" => SawyerEncoding.Rotate,
+				_ => null
+			}
+			: null;
+
+		SaveAs(new SaveParameters(type, encoding));
+	}
 
 	async Task SaveWrapper()
 	{
@@ -47,7 +109,7 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 			var box = MessageBoxManager.GetMessageBoxStandard("Confirm Save", $"{CurrentFile.FileName} is a vanilla Locomotion file - are you sure you want to overwrite it?", ButtonEnum.YesNo);
 			var result = await box.ShowAsync();
 
-			if (result != ButtonResult.Yes)
+			if (result == ButtonResult.Yes)
 			{
 				return;
 			}

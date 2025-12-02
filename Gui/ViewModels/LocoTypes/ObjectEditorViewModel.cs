@@ -124,7 +124,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		}
 	}
 
-	public static IObjectViewModel GetViewModelFromStruct(ILocoStruct locoStruct)
+	public static IObjectViewModel? GetViewModelFromStruct(ILocoStruct locoStruct)
 	{
 		var asm = Assembly
 			.GetExecutingAssembly()
@@ -136,7 +136,9 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 				&& type.BaseType.GetGenericTypeDefinition() == typeof(LocoObjectViewModel<>)
 				&& type.BaseType.GenericTypeArguments.Single() == locoStruct.GetType());
 
-		return (IObjectViewModel)Activator.CreateInstance(asm, locoStruct);
+		return asm == null
+			? null
+			: (IObjectViewModel?)Activator.CreateInstance(asm, locoStruct);
 	}
 
 	public override void Load()
@@ -327,7 +329,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			SawyerStreamWriter.Save(filename,
 				ObjectModelHeaderViewModel?.Name ?? header.Name,
 				ObjectModelHeaderViewModel?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
-				encodingToUse ?? ObjectHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
+				saveParameters.SawyerEncoding ?? ObjectHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
 				CurrentObject.LocoObject,
 				logger,
 				Model.Settings.AllowSavingAsVanillaObject);

@@ -29,6 +29,7 @@ public class EditorSettings
 	} = [];
 
 	public bool AllowSavingAsVanillaObject { get; set; }
+	public bool EnableOGValidation { get; set; }
 	public bool ShowLogsOnError { get; set; }
 	public bool AutoObjectDiscoveryAndUpload { get; set; }
 

@@ -29,6 +29,13 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		set => Model.AllowSavingAsVanillaObject = value;
 	}
 
+	[Category("Misc"), DisplayName("Enable OG Validation"), Description("If enabled, a button is displayed for objects to run validation checks to ensure the object meets OpenGraphics requirements.")]
+	public bool EnableOGValidation
+	{
+		get => Model.EnableOGValidation;
+		set => Model.EnableOGValidation = value;
+	}
+
 	[Category("Misc"), DisplayName("Show Logs window on Error"), Description("When an error occurs, display the Logs window automatically")]
 	public bool ShowLogsOnError
 	{

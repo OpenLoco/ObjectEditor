@@ -12,9 +12,13 @@ using Gui.Models;
 using Gui.Models.Audio;
 using Gui.ViewModels.Graphics;
 using Gui.Views;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Base;
+using MsBox.Avalonia.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -55,6 +59,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
 
 	public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; }
+	public ReactiveCommand<Unit, Unit> ValidateForOGCommand { get; }
 
 	[Reactive]
 	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.Locomotion;
@@ -91,6 +96,8 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			}
 		});
 
+		ValidateForOGCommand = ReactiveCommand.Create(ValidateForOG);
+
 		SelectObjectShowDialog = new();
 		_ = SelectObjectShowDialog.RegisterHandler(DoShowDialogAsync<ObjectSelectionWindowViewModel, ObjectSelectionWindow>);
 
@@ -104,6 +111,52 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		//	var result = await SelectObjectShowDialog.Handle(vm);
 		//	return result.SelectedObject;
 		//});
+	}
+
+	void ValidateForOG()
+	{
+		var validationErrors = new List<string>();
+
+		if (CurrentObject?.DatInfo is null)
+		{
+			validationErrors.Add("Object DAT info is null");
+			return;
+		}
+
+		// DAT name is prefixed by OG
+		if (!CurrentObject.DatInfo.S5Header.Name.StartsWith("OG"))
+		{
+			validationErrors.Add("✖ Internal header name is not prefixed with OG");
+		}
+
+		// OpenGraphics object source set
+		if (CurrentObject.DatInfo.S5Header.ObjectSource != DatObjectSource.OpenLoco)
+		{
+			validationErrors.Add("✖ Object source is not set to OpenLoco");
+		}
+
+		// Show message box
+		IMsBox<ButtonResult> box;
+		if (validationErrors.Count != 0)
+		{
+			var errorMsg = string.Join(Environment.NewLine, validationErrors);
+
+			box = MessageBoxManager.GetMessageBoxStandard(
+				"OG validation failed",
+				errorMsg,
+				ButtonEnum.Ok,
+				Icon.Error);
+		}
+		else
+		{
+			box = MessageBoxManager.GetMessageBoxStandard(
+				"OG validation succeeded",
+				"✔ No issues found. Object is valid for OpenGraphics.",
+				ButtonEnum.Ok,
+				Icon.Success);
+		}
+
+		_ = box.ShowAsync();
 	}
 
 	static async Task DoShowDialogAsync<TViewModel, TWindow>(IInteractionContext<TViewModel, TViewModel?> interaction) where TWindow : Window, new()

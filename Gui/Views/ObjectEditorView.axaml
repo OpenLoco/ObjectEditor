@@ -30,6 +30,17 @@
 							</MenuFlyout>
 						</SplitButton.Flyout>
 					</SplitButton>
+					<Button Margin="4" Command="{Binding ValidateForOGCommand}" Content="Validate for OG" ToolTip.Tip="Runs a series of checks to ensure this object meets OG requirements" IsVisible="{Binding Model.Settings.EnableOGValidation}">
+						<Button.Styles>
+							<Style>
+								<Style.Resources>
+									<SolidColorBrush x:Key="ButtonBackground">#FF19AE91</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#117A65</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPressed">#1FE0BA</SolidColorBrush>
+								</Style.Resources>
+							</Style>
+						</Button.Styles>
+					</Button>
 				</StackPanel>
 			</StackPanel>
 		</Border>

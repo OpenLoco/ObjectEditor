@@ -123,6 +123,57 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 			return;
 		}
 
+		// split the CurrentFile path on "opengraphics" folder
+		var dir = Path.GetRelativePath(Model.Settings.ObjDataDirectory, CurrentFile.FileName);
+		var parentDirName = Path.GetFileName(Path.GetDirectoryName(CurrentFile.FileName));
+
+		var expectedDatName = $"OG{parentDirName}.dat";
+		// handle 8 char length requirements
+		if (expectedDatName.Length > 8)
+		{
+			var baseName = parentDirName;
+
+			// strip off any trailing digits
+			var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
+			var lastLetter = parentDirName.LastIndexOfAny(letters);
+
+			var suffixDigits = string.Empty;
+			var baseNameCharsToKeep = Math.Min(baseName.Length, 6);
+			if (lastLetter >= 0) // if there are digits on the end, split them off to shorten the letter part of the name instead
+			{
+				var firstNumber = lastLetter + 1;
+				baseName = parentDirName[..firstNumber];
+				suffixDigits = parentDirName[firstNumber..];
+				baseNameCharsToKeep = Math.Min(baseName.Length, 6 - suffixDigits.Length);
+			}
+
+			expectedDatName = $"OG{baseName[..baseNameCharsToKeep]}{suffixDigits}";
+			if (expectedDatName.Length > 8)
+			{
+				// uhoh
+				validationErrors.Add($"✖ Expected name has more than 8 characters -> this is a bug, please report this to LeftofZen on discord or as an issue in the ObjectEditor repo");
+			}
+		}
+
+		// DAT name is NOT prefixed by OG_
+		if (CurrentObject.DatInfo.S5Header.Name != expectedDatName)
+		{
+			validationErrors.Add($"✖ Internal header name is not correct. Expected=\"{expectedDatName}\" Actual=\"{CurrentObject.DatInfo.S5Header.Name}\"");
+		}
+
+		var expectedFilename = $"OG_{parentDirName}.dat";
+		var actualFilename = Path.GetFileName(CurrentFile.FileName);
+		if (expectedFilename != actualFilename)
+		{
+			validationErrors.Add($"✖ Filename not correct. Expected=\"{expectedFilename}\" Actual=\"{actualFilename}\"");
+		}
+
+		// DAT name is NOT prefixed by OG_
+		if (CurrentObject.DatInfo.S5Header.Name.Contains('_'))
+		{
+			validationErrors.Add("✖ Internal header name should not contain an underscore");
+		}
+
 		// DAT name is prefixed by OG
 		if (!CurrentObject.DatInfo.S5Header.Name.StartsWith("OG"))
 		{

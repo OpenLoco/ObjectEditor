@@ -45,9 +45,9 @@ public static class SawyerStreamReader
 
 		if (hdrs.S5.IsVanilla())
 		{
-			if (OriginalObjectFiles.Names.TryGetValue(hdrs.S5.Name.Trim(), out var originalChecksum))
+			if (OriginalObjectFiles.Names.TryGetValue(hdrs.S5.Name.Trim(), out var fileInfo))
 			{
-				logger?.Debug($"{hdrs.S5.Name} is a vanilla object with checksums [Steam={originalChecksum.SteamChecksum} GoG={originalChecksum.GoGChecksum}]");
+				logger?.Debug($"{hdrs.S5.Name} is a vanilla object with checksums [Steam={fileInfo.SteamChecksum} GoG={fileInfo.GoGChecksum}]");
 			}
 			else
 			{

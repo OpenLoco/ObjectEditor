@@ -8,6 +8,7 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Sound;
+using Definitions.ObjectModels.Types;
 using Gui.Models;
 using Gui.Models.Audio;
 using Gui.ViewModels.Graphics;
@@ -127,45 +128,24 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		var dir = Path.GetRelativePath(Model.Settings.ObjDataDirectory, CurrentFile.FileName);
 		var parentDirName = Path.GetFileName(Path.GetDirectoryName(CurrentFile.FileName));
 
-		var expectedDatName = $"OG{parentDirName}.dat";
-		// handle 8 char length requirements
-		if (expectedDatName.Length > 8)
+		if (OriginalObjectFiles.Names.TryGetValue(parentDirName, out var fileInfo))
 		{
-			var baseName = parentDirName;
-
-			// strip off any trailing digits
-			var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
-			var lastLetter = parentDirName.LastIndexOfAny(letters);
-
-			var suffixDigits = string.Empty;
-			var baseNameCharsToKeep = Math.Min(baseName.Length, 6);
-			if (lastLetter >= 0) // if there are digits on the end, split them off to shorten the letter part of the name instead
+			// DAT name is the expected dat name
+			if (CurrentObject.DatInfo.S5Header.Name != fileInfo.OpenGraphicsName)
 			{
-				var firstNumber = lastLetter + 1;
-				baseName = parentDirName[..firstNumber];
-				suffixDigits = parentDirName[firstNumber..];
-				baseNameCharsToKeep = Math.Min(baseName.Length, 6 - suffixDigits.Length);
-			}
-
-			expectedDatName = $"OG{baseName[..baseNameCharsToKeep]}{suffixDigits}";
-			if (expectedDatName.Length > 8)
-			{
-				// uhoh
-				validationErrors.Add($"✖ Expected name has more than 8 characters -> this is a bug, please report this to LeftofZen on discord or as an issue in the ObjectEditor repo");
+				validationErrors.Add($"✖ Internal DAT header name is not correct. Actual=\"{CurrentObject.DatInfo.S5Header.Name}\" Expected=\"{fileInfo.OpenGraphicsName}\" ");
 			}
 		}
-
-		// DAT name is NOT prefixed by OG_
-		if (CurrentObject.DatInfo.S5Header.Name != expectedDatName)
+		else
 		{
-			validationErrors.Add($"✖ Internal header name is not correct. Expected=\"{expectedDatName}\" Actual=\"{CurrentObject.DatInfo.S5Header.Name}\"");
+			validationErrors.Add($"✖ Unable to find file info for the vanilla file. Name=\"{parentDirName}\".");
 		}
 
 		var expectedFilename = $"OG_{parentDirName}.dat";
 		var actualFilename = Path.GetFileName(CurrentFile.FileName);
 		if (expectedFilename != actualFilename)
 		{
-			validationErrors.Add($"✖ Filename not correct. Expected=\"{expectedFilename}\" Actual=\"{actualFilename}\"");
+			validationErrors.Add($"✖ Filename not correct. Actual=\"{actualFilename}\" Expected=\"{expectedFilename}\" ");
 		}
 
 		// DAT name is NOT prefixed by OG_
@@ -184,6 +164,12 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		if (CurrentObject.DatInfo.S5Header.ObjectSource != DatObjectSource.OpenLoco)
 		{
 			validationErrors.Add("✖ Object source is not set to OpenLoco");
+		}
+
+		// if Vehicle - use RunLengthSingle
+		if (CurrentObject.DatInfo.S5Header.ObjectType == DatObjectType.Vehicle && CurrentObject.DatInfo.ObjectHeader.Encoding != SawyerEncoding.RunLengthSingle)
+		{
+			validationErrors.Add("✖ Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
 		}
 
 		// Show message box

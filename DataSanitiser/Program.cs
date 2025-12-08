@@ -102,7 +102,7 @@ static void QueryBuildingProducedQuantity()
 			{
 				var struc = (BuildingObject)o.LocoObject.Object;
 				var header = o.DatFileInfo.S5Header;
-				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum, header.ObjectSource);
 
 				foreach (var cargo in struc.ProducedCargo.Zip(struc.ProducedQuantity))
 				{
@@ -149,7 +149,7 @@ static void QueryHeadquarters()
 			{
 				var struc = (BuildingObject)o.LocoObject.Object;
 				var header = o.DatFileInfo.S5Header;
-				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum, header.ObjectSource);
 
 				if (struc.Flags.HasFlag(BuildingObjectFlags.IsHeadquarters))
 				{
@@ -216,7 +216,7 @@ static void QueryCostIndex()
 				var costIndex = (byte)costIndexProperty.GetValue(o.LocoObject.Object);
 
 				var header = o.DatFileInfo.S5Header;
-				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum, header.ObjectSource);
 
 				results.Add((obj, source, o.LocoObject.ObjectType, costIndex));
 			}
@@ -255,7 +255,7 @@ static void QueryTrackStationOneSidedTrack()
 			{
 				var struc = (TrackStationObject)o.LocoObject.Object;
 				var header = o.DatFileInfo.S5Header;
-				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum, header.ObjectSource);
 
 				// Build a list of all enabled TrackTraitFlags for this object
 				var enabledFlags = new List<string>();
@@ -315,7 +315,7 @@ static void QueryIndustryHasShadows()
 			{
 				var struc = (IndustryObject)o.LocoObject.Object;
 				var header = o.DatFileInfo.S5Header;
-				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum, header.ObjectSource);
 
 				if (struc.Flags.HasFlag(IndustryObjectFlags.HasShadows))
 				{
@@ -357,7 +357,7 @@ static void QueryVehicleBodyUnkSprites()
 			{
 				var struc = (VehicleObject)o.LocoObject.Object;
 				var header = o.DatFileInfo.S5Header;
-				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum, header.ObjectSource);
 
 				if (struc.Flags.HasFlag(VehicleObjectFlags.AlternatingCarSprite))
 				{
@@ -400,7 +400,7 @@ static void QueryCargoCategories()
 				var struc = (CargoObject)o.LocoObject.Object;
 
 				var header = o.DatFileInfo.S5Header;
-				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum);
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum, header.ObjectSource);
 
 				results.Add((obj, struc.CargoCategory, o.LocoObject.StringTable.Table["Name"][LanguageId.English_UK], source));
 			}

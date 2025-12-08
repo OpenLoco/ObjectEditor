@@ -43,15 +43,17 @@ public class EditorSettings
 	public string ObjectIndicesFolder { get; set; } = string.Empty;
 	public string DownloadFolder { get; set; } = string.Empty;
 
+	public string LocomotionSteamObjDataFolder { get; set; } = string.Empty;
+	public string LocomotionGoGObjDataFolder { get; set; } = string.Empty;
 	public string AppDataObjDataFolder { get; set; } = string.Empty;
-	public string LocomotionObjDataFolder { get; set; } = string.Empty;
 	public string OpenLocoObjDataFolder { get; set; } = string.Empty;
 
 	public string GetGameObjDataFolder(GameObjDataFolder folder)
 		=> folder switch
 		{
 			GameObjDataFolder.AppData => AppDataObjDataFolder,
-			GameObjDataFolder.Locomotion => LocomotionObjDataFolder,
+			GameObjDataFolder.LocomotionSteam => LocomotionSteamObjDataFolder,
+			GameObjDataFolder.LocomotionGoG => LocomotionGoGObjDataFolder,
 			GameObjDataFolder.OpenLoco => OpenLocoObjDataFolder,
 			_ => throw new NotImplementedException(),
 		};

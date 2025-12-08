@@ -164,7 +164,7 @@ public class ObjectIndex
 		}
 
 		var remainingData = data[(S5Header.StructLength + ObjectHeader.StructLength)..];
-		var source = OriginalObjectFiles.GetFileSource(hdrs.S5.Name, hdrs.S5.Checksum);
+		var source = OriginalObjectFiles.GetFileSource(hdrs.S5.Name, hdrs.S5.Checksum, hdrs.S5.ObjectSource);
 
 		var createdTime = DateOnly.FromDateTime(File.GetCreationTimeUtc(absoluteFilename));
 		var modifiedTime = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(absoluteFilename));

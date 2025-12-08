@@ -47,8 +47,9 @@
 					<SplitButton Content="{Binding LastGameObjDataFolder, StringFormat='Download missing objects to {0} object folder'}" Command="{Binding DownloadMissingObjectsToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}" Margin="4">
 						<SplitButton.Flyout>
 							<MenuFlyout Placement="Bottom">
+								<MenuItem Header="Copy to Locomotion (Steam) game folder" Command="{Binding DownloadMissingObjectsToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.LocomotionSteam}"/>
+								<MenuItem Header="Copy to Locomotion (GoG) game folder" Command="{Binding DownloadMissingObjectsToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.LocomotionGoG}"/>
 								<MenuItem Header="Copy to AppData game folder" Command="{Binding DownloadMissingObjectsToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.AppData}"/>
-								<MenuItem Header="Copy to Locomotion game folder" Command="{Binding DownloadMissingObjectsToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.Locomotion}"/>
 								<MenuItem Header="Copy to OpenLoco game folder" Command="{Binding DownloadMissingObjectsToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.OpenLoco}"/>
 							</MenuFlyout>
 						</SplitButton.Flyout>

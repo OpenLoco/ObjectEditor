@@ -1,3 +1,3 @@
 namespace Gui;
 
-public enum GameObjDataFolder { AppData, Locomotion, OpenLoco }
+public enum GameObjDataFolder { LocomotionSteam, LocomotionGoG, AppData, OpenLoco }

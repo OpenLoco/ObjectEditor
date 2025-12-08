@@ -50,7 +50,7 @@ public class SCV5ViewModel : BaseLocoFileViewModel
 			: [];
 
 	[Reactive]
-	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.Locomotion;
+	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;
 	public ReactiveCommand<GameObjDataFolder, Unit> DownloadMissingObjectsToGameObjDataCommand { get; }
 
 	public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
@@ -141,7 +141,7 @@ public class SCV5ViewModel : BaseLocoFileViewModel
 
 		foreach (var obj in CurrentS5File.RequiredObjects)
 		{
-			if (OriginalObjectFiles.GetFileSource(obj.Name, obj.Checksum) is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+			if (OriginalObjectFiles.GetFileSource(obj.Name, obj.Checksum, obj.ObjectSource) is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 			{
 				continue;
 			}

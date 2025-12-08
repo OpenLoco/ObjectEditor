@@ -2,6 +2,7 @@ using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
 using System.ComponentModel;
+using System.Xml.Linq;
 
 namespace Dat.Types;
 
@@ -77,8 +78,6 @@ public class S5Header
 	public static readonly S5Header NullHeader = new(0x000000FF, "        ", 0);
 
 	public bool IsVanilla()
-		=> IsVanilla(Name, Checksum);
+		=> OriginalObjectFiles.GetFileSource(Name, Checksum, ObjectSource).Convert() != DatObjectSource.Custom;
 
-	public static bool IsVanilla(string name, uint checksum)
-		=> OriginalObjectFiles.GetFileSource(name, checksum).Convert() != DatObjectSource.Custom;
 }

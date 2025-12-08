@@ -63,7 +63,7 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 	public ReactiveCommand<Unit, Unit> ValidateForOGCommand { get; }
 
 	[Reactive]
-	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.Locomotion;
+	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;
 
 	//public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
 	public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }

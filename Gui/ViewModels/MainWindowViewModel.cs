@@ -208,9 +208,14 @@ public class MainWindowViewModel : ViewModelBase
 			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {Model.Settings.AppDataObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.AppDataObjDataFolder)));
 		}
 
-		if (Directory.Exists(Model.Settings.LocomotionObjDataFolder))
+		if (Directory.Exists(Model.Settings.LocomotionSteamObjDataFolder))
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.Locomotion)}] {Model.Settings.LocomotionObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionObjDataFolder)));
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionSteam)}] {Model.Settings.LocomotionSteamObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionSteamObjDataFolder)));
+		}
+
+		if (Directory.Exists(Model.Settings.LocomotionGoGObjDataFolder))
+		{
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionGoG)}] {Model.Settings.LocomotionGoGObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionGoGObjDataFolder)));
 		}
 
 		if (Directory.Exists(Model.Settings.OpenLocoObjDataFolder))
@@ -283,7 +288,7 @@ public class MainWindowViewModel : ViewModelBase
 		if (Model.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 		{
 			Model.Logger.Warning($"Successfully loaded {fsi.FileName}");
-			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum);
+			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum, uiLocoFile.DatInfo.S5Header.ObjectSource);
 			var fsi2 = new FileSystemItem(uiLocoFile!.DatInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
 			SetObjectViewModel(fsi2);
 		}
@@ -387,21 +392,27 @@ public class MainWindowViewModel : ViewModelBase
 			return;
 		}
 
-		if (Model.Settings.AppDataObjDataFolder == dirPath)
+		if (Model.Settings.LocomotionSteamObjDataFolder == dirPath)
 		{
-			Model.Logger.Warning("No need to add - this is the predefined AppData folder");
+			Model.Logger.Warning("No need to add - this is the predefined Locomotion (Steam) ObjData folder");
 			return;
 		}
 
-		if (Model.Settings.LocomotionObjDataFolder == dirPath)
+		if (Model.Settings.LocomotionGoGObjDataFolder == dirPath)
 		{
-			Model.Logger.Warning("No need to add - this is the predefined Locomotion ObjData folder");
+			Model.Logger.Warning("No need to add - this is the predefined Locomotion (GoG) ObjData folder");
 			return;
 		}
 
 		if (Model.Settings.OpenLocoObjDataFolder == dirPath)
 		{
 			Model.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");
+			return;
+		}
+
+		if (Model.Settings.AppDataObjDataFolder == dirPath)
+		{
+			Model.Logger.Warning("No need to add - this is the predefined AppData folder");
 			return;
 		}
 

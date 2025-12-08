@@ -6,12 +6,12 @@ public record OriginalObjectFile(uint SteamChecksum, uint GoGChecksum, uint Open
 
 public static class OriginalObjectFiles
 {
-	public static ObjectSource GetFileSource((string name, uint checksum) key)
-		=> GetFileSource(key.name, key.checksum);
+	public static ObjectSource GetFileSource((string name, uint checksum) key, DatObjectSource claimedSource)
+		=> GetFileSource(key.name, key.checksum, claimedSource);
 
-	public static ObjectSource GetFileSource(string name, uint checksum)
+	public static ObjectSource GetFileSource(string name, uint checksum, DatObjectSource claimedSource)
 	{
-		if (Names.TryGetValue(name, out var fileInfo))
+		if (claimedSource == DatObjectSource.Vanilla && Names.TryGetValue(name, out var fileInfo))
 		{
 			if (checksum == fileInfo.SteamChecksum)
 			{
@@ -21,14 +21,11 @@ public static class OriginalObjectFiles
 			{
 				return ObjectSource.LocomotionGoG;
 			}
-			else if (checksum == fileInfo.OpenGraphicsChecksum)
-			{
-				return ObjectSource.OpenLoco;
-			}
-			else if (name == fileInfo.OpenGraphicsName)
-			{
-				return ObjectSource.OpenLoco;
-			}
+		}
+
+		if (claimedSource == DatObjectSource.OpenLoco || Names.Any(x => x.Value.OpenGraphicsName == name))
+		{
+			return ObjectSource.OpenLoco;
 		}
 
 		return ObjectSource.Custom;

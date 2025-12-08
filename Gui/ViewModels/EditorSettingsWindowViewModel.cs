@@ -48,18 +48,25 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 	const string GameObjectFolderCategory = "Folders OpenLoco can use objects from";
 	const string UserObjectFolderCategory = "Folders where you store custom objects";
 
+	[PathBrowsable(PathBrowsableType.Directory), Category(GameObjectFolderCategory), DisplayName("Locomotion (Steam) ObjData Folder"), Description("The ObjData folder in your Steam Locomotion installation.")]
+	public string LocomotionSteamObjDataFolder
+	{
+		get => Model.LocomotionSteamObjDataFolder;
+		set => Model.LocomotionSteamObjDataFolder = value;
+	}
+
+	[PathBrowsable(PathBrowsableType.Directory), Category(GameObjectFolderCategory), DisplayName("Locomotion (GoG) ObjData Folder"), Description("The ObjData folder in your GoG Locomotion installation.")]
+	public string LocomotionGoGObjDataFolder
+	{
+		get => Model.LocomotionGoGObjDataFolder;
+		set => Model.LocomotionGoGObjDataFolder = value;
+	}
+
 	[PathBrowsable(PathBrowsableType.Directory), Category(GameObjectFolderCategory), DisplayName("AppData ObjData Folder"), Description("The ObjData folder in %AppData%\\OpenLoco\\objects.")]
 	public string AppDataObjDataFolder
 	{
 		get => Model.AppDataObjDataFolder;
 		set => Model.AppDataObjDataFolder = value;
-	}
-
-	[PathBrowsable(PathBrowsableType.Directory), Category(GameObjectFolderCategory), DisplayName("Locomotion ObjData Folder"), Description("The ObjData folder in your Locomotion installation.")]
-	public string LocomotionObjDataFolder
-	{
-		get => Model.LocomotionObjDataFolder;
-		set => Model.LocomotionObjDataFolder = value;
 	}
 
 	[PathBrowsable(PathBrowsableType.Directory), Category(GameObjectFolderCategory), DisplayName("OpenLoco ObjData Folder"), Description("The ObjData folder in the OpenLoco\\Objects directory.")]

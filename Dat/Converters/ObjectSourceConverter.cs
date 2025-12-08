@@ -19,7 +19,7 @@ public static class ObjectSourceConverter
 		=> objectSource switch
 		{
 			DatObjectSource.Custom => ObjectSource.Custom,
-			DatObjectSource.Vanilla => OriginalObjectFiles.GetFileSource(datName, datChecksum),
+			DatObjectSource.Vanilla => OriginalObjectFiles.GetFileSource(datName, datChecksum, objectSource),
 			DatObjectSource.OpenLoco => ObjectSource.OpenLoco,
 			_ => throw new NotImplementedException(),
 		};

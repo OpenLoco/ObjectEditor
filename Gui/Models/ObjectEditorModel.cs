@@ -73,8 +73,9 @@ public class ObjectEditorModel : IDisposable
 		// settings must be loaded or else the rest of the app cannot start
 		ArgumentNullException.ThrowIfNull(Settings);
 
-		InitialiseObjectIndiciesDirectory();
-		InitialiseDownloadDirectory();
+		Settings.ObjectIndicesFolder = InitialiseDirectory(Settings.ObjectIndicesFolder, "objectIndices");
+		Settings.CacheFolder = InitialiseDirectory(Settings.CacheFolder, "cache");
+		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
 
 		ObjectServiceClient = new(Settings, Logger);
 	}
@@ -134,32 +135,20 @@ public class ObjectEditorModel : IDisposable
 		}
 	}
 
-	void InitialiseObjectIndiciesDirectory()
+	string InitialiseDirectory(string folder, string defaultName)
 	{
-		if (string.IsNullOrEmpty(Settings.ObjectIndicesFolder))
+		if (string.IsNullOrEmpty(folder))
 		{
-			Settings.ObjectIndicesFolder = Path.Combine(ProgramDataPath, "objectIndices");
+			folder = Path.Combine(ProgramDataPath, defaultName);
 		}
 
-		if (!Directory.Exists(Settings.ObjectIndicesFolder))
+		if (!Directory.Exists(folder))
 		{
-			Logger.Info($"Object indices folder doesn't exist; creating now at \"{Settings.ObjectIndicesFolder}\"");
-			_ = Directory.CreateDirectory(Settings.ObjectIndicesFolder);
-		}
-	}
-
-	void InitialiseDownloadDirectory()
-	{
-		if (string.IsNullOrEmpty(Settings.DownloadFolder))
-		{
-			Settings.DownloadFolder = Path.Combine(ProgramDataPath, "downloads");
+			Logger.Info($"\"{defaultName}\" folder doesn't exist; creating now at \"{folder}\"");
+			_ = Directory.CreateDirectory(folder);
 		}
 
-		if (!Directory.Exists(Settings.DownloadFolder))
-		{
-			Logger.Info($"Download folder doesn't exist; creating now at \"{Settings.DownloadFolder}\"");
-			_ = Directory.CreateDirectory(Settings.DownloadFolder);
-		}
+		return folder;
 	}
 
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)
@@ -260,7 +249,7 @@ public class ObjectEditorModel : IDisposable
 
 				var filename = Path.GetInvalidFileNameChars().Aggregate(datObject.DatName, (current, c) => current.Replace(c, '_'));
 				filename = $"{filename}-{datObject.ObjectId}.dat";
-				var pathname = Path.Combine(Settings.DownloadFolder, filename);
+				var pathname = Path.Combine(Settings.CacheFolder, filename);
 				if (!File.Exists(pathname))
 				{
 					File.WriteAllBytes(pathname, datFile);

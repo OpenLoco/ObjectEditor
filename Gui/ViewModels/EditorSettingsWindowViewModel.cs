@@ -76,7 +76,14 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		set => Model.OpenLocoObjDataFolder = value;
 	}
 
-	[PathBrowsable(PathBrowsableType.Directory), Category(UserObjectFolderCategory), DisplayName("Downloads"), Description("The folder to store downloaded objects.")]
+	[PathBrowsable(PathBrowsableType.Directory), Category(UserObjectFolderCategory), DisplayName("Cache"), Description("The folder to store cached downloaded objects.")]
+	public string CacheFolder
+	{
+		get => Model.CacheFolder;
+		set => Model.CacheFolder = value;
+	}
+
+	[PathBrowsable(PathBrowsableType.Directory), Category(UserObjectFolderCategory), DisplayName("Downloads"), Description("The folder to store user-downloaded objects.")]
 	public string DownloadFolder
 	{
 		get => Model.DownloadFolder;

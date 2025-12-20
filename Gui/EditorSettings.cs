@@ -42,6 +42,7 @@ public class EditorSettings
 
 	public string ObjectIndicesFolder { get; set; } = string.Empty;
 	public string DownloadFolder { get; set; } = string.Empty;
+	public string CacheFolder { get; set; } = string.Empty;
 
 	public string LocomotionSteamObjDataFolder { get; set; } = string.Empty;
 	public string LocomotionGoGObjDataFolder { get; set; } = string.Empty;
@@ -120,19 +121,25 @@ public class EditorSettings
 
 		if (!Directory.Exists(ObjDataDirectory))
 		{
-			logger.Warning($"Invalid settings file: Directory \"{ObjDataDirectory}\" does not exist");
+			logger.Warning($"Invalid settings file: ObjData folder \"{ObjDataDirectory}\" does not exist");
 			return false;
 		}
 
-		if (!Directory.Exists(DownloadFolder))
+		if (!string.IsNullOrEmpty(CacheFolder) && !Directory.Exists(CacheFolder))
 		{
-			logger.Warning($"Invalid settings file: Directory \"{DownloadFolder}\" does not exist");
+			logger.Warning($"Invalid settings file: Cache folder \"{CacheFolder}\" does not exist");
 			return false;
 		}
 
-		if (!Directory.Exists(ObjectIndicesFolder))
+		if (!string.IsNullOrEmpty(DownloadFolder) && !Directory.Exists(DownloadFolder))
 		{
-			logger.Warning($"Invalid settings file: Directory \"{ObjectIndicesFolder}\" does not exist");
+			logger.Warning($"Invalid settings file: Download folder \"{DownloadFolder}\" does not exist");
+			return false;
+		}
+
+		if (!string.IsNullOrEmpty(ObjectIndicesFolder) && !Directory.Exists(ObjectIndicesFolder))
+		{
+			logger.Warning($"Invalid settings file: Object index folder \"{ObjectIndicesFolder}\" does not exist");
 			return false;
 		}
 

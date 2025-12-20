@@ -36,6 +36,7 @@ public class MainWindowViewModel : ViewModelBase
 
 	public ObservableCollection<MenuItemViewModel> ObjDataItems { get; init; } = [];
 
+	public ReactiveCommand<Unit, Unit> OpenCacheFolder { get; }
 	public ReactiveCommand<Unit, Unit> OpenDownloadFolder { get; }
 	public ReactiveCommand<Unit, Unit> OpenSettingsFolder { get; }
 	public ReactiveCommand<Unit, Task> OpenSingleObject { get; }
@@ -118,6 +119,7 @@ public class MainWindowViewModel : ViewModelBase
 		PopulateObjDataMenu();
 
 		OpenSingleObject = ReactiveCommand.Create(LoadSingleObject);
+		OpenCacheFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.CacheFolder, Model.Logger));
 		OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder, Model.Logger));
 		OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.ProgramDataPath, Model.Logger));
 		OpenG1 = ReactiveCommand.Create(LoadG1);

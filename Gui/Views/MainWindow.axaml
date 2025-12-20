@@ -191,7 +191,8 @@
 				<MenuItem Header="_Settings">
 					<MenuItem Command="{Binding EditSettingsCommand}" Header="Edit settings"/>
 					<MenuItem Command="{Binding OpenSettingsFolder}" Header="Open settings folder"/>
-					<MenuItem Command="{Binding OpenDownloadFolder}" Header="Open downloads folder"/>
+					<MenuItem Command="{Binding OpenDownloadFolder}" Header="Open user downloads folder"/>
+					<MenuItem Command="{Binding OpenCacheFolder}" Header="Open cached objects folder"/>
 					<MenuItem Command="{Binding ShowLogsCommand}" Header="Show logs"/>
 				</MenuItem>
 			</Menu>

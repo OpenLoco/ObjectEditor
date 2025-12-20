@@ -1,5 +1,7 @@
 using Definitions.ObjectModels.Objects.Cargo;
 using PropertyModels.ComponentModel.DataAnnotations;
+using ReactiveUI;
+using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
@@ -15,7 +17,30 @@ public class CargoViewModel(CargoObject model)
 	public CargoCategory CargoCategory
 	{
 		get => Model.CargoCategory;
-		set => Model.CargoCategory = value;
+		set
+		{
+			if (Model.CargoCategory != value)
+			{
+				Model.CargoCategory = value;
+				this.RaisePropertyChanged(nameof(CargoCategory));
+				this.RaisePropertyChanged(nameof(CargoCategoryOverride));
+			}
+		}
+	}
+
+	[Description("Allows the user to set a custom value for the cargo category.")]
+	public uint16_t CargoCategoryOverride
+	{
+		get => (uint16_t)Model.CargoCategory;
+		set
+		{
+			if ((uint16_t)Model.CargoCategory != value)
+			{
+				Model.CargoCategory = (CargoCategory)value;
+				this.RaisePropertyChanged(nameof(CargoCategory));
+				this.RaisePropertyChanged(nameof(CargoCategoryOverride));
+			}
+		}
 	}
 
 	[EnumProhibitValues<CargoObjectFlags>(CargoObjectFlags.None)]

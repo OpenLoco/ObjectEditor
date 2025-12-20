@@ -18,6 +18,7 @@ public class SoundViewModel(SoundObject model)
 		set => Model.Volume = value;
 	}
 
+	[ReadOnly(true)]
 	public SoundObjectData SoundObjectData
 	{
 		get => Model.SoundObjectData;

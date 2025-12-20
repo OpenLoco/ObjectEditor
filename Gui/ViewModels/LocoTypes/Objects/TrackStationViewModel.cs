@@ -76,15 +76,17 @@ public class TrackStationViewModel(TrackStationObject model)
 		set => Model.var_0B = value;
 	}
 
-	[Category("<unknown>")]
-	public uint8_t var_0D
-	{
-		get => Model.var_0D;
-		set => Model.var_0D = value;
-	}
+	// unused in loco
+	//[Category("<unused>")]
+	//public uint8_t var_0D
+	//{
+	//	get => Model.var_0D;
+	//	set => Model.var_0D = value;
+	//}
 
-	[Category("<unknown>")]
-	public uint8_t[][] var_6E { get; set; } = model.var_6E;
+	// unused in loco
+	//[Category("<unused>")]
+	//public uint8_t[][] var_6E { get; set; } = model.var_6E;
 
 	[Category("Cargo")]
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;

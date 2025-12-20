@@ -323,10 +323,8 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 				bw.WriteEmptyBytes(1); // write a 0 for MaxCargo - this indicates no more cargo and we skip the rest
 				continue;
 			}
-			else
-			{
-				bw.Write(model.MaxCargo[i]);
-			}
+
+			bw.Write(model.MaxCargo[i]);
 
 			var compatibleCargoCategories = model.CompatibleCargoCategories.Fill(Constants.MaxCompatibleCargoCategories, []).ToArray();
 			foreach (var cc in compatibleCargoCategories[i])

@@ -11,6 +11,6 @@ public enum RoadObjectFlags : uint16_t
 	NoWheelSlipping = 1 << 4,
 	unk_05 = 1 << 5,
 	IsRoad = 1 << 6, // If not set this is tram track
-	unk_07 = 1 << 7,
+	AllowUseByAllCompanies = 1 << 7, // If set, all companies can use this road. If unset, only the player company can use it.
 	CanHaveStreetLights = 1 << 8,
 }

@@ -141,14 +141,14 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 	{
 		None = 0,
 		IsOneWay = 1 << 0,
-		UseTracksMenu = 1 << 1, // Whether to show this in the tracks menu or the roads menu
+		UseTracksMenu = 1 << 1,
 		unk_02 = 1 << 2,
 		unk_03 = 1 << 3, // Likely isTram
-		NoWheelSlipping = 1 << 4, // Vehicles cannot slip on this road
+		NoWheelSlipping = 1 << 4,
 		unk_05 = 1 << 5,
 		IsRoad = 1 << 6, // If not set this is tram track
-		unk_07 = 1 << 7,
-		unk_08 = 1 << 8,
+		AllowUseByAllCompanies = 1 << 7, // If set, all companies can use this road. If unset, only the player company can use it.
+		CanHaveStreetLights = 1 << 8,
 	}
 
 	internal enum DatTownSize : uint8_t

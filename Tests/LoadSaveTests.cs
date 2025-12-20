@@ -703,7 +703,7 @@ public class LoadSaveTests
 				| RoadObjectFlags.unk_03
 				| RoadObjectFlags.NoWheelSlipping
 				| RoadObjectFlags.IsRoad
-				| RoadObjectFlags.unk_07
+				| RoadObjectFlags.AllowUseByAllCompanies
 				| RoadObjectFlags.CanHaveStreetLights), nameof(struc.Flags));
 
 			Assert.That(struc.RoadPieces, Is.EqualTo(

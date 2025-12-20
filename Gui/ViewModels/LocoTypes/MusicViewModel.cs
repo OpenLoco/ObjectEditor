@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class MusicViewModel : BaseLocoFileViewModel
+public class MusicViewModel : BaseFileViewModel
 {
 	[Reactive]
 	public AudioViewModel AudioViewModel { get; set; }
@@ -52,17 +52,18 @@ public class MusicViewModel : BaseLocoFileViewModel
 		SaveCore(savePath);
 	}
 
-	public override void SaveAs(SaveParameters saveParameters)
+	public override string SaveAs(SaveParameters saveParameters)
 	{
 		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
 		var savePath = saveFile?.Path.LocalPath;
 
 		if (savePath == null)
 		{
-			return;
+			return null;
 		}
 
 		SaveCore(savePath);
+		return savePath;
 	}
 
 	void SaveCore(string filename)

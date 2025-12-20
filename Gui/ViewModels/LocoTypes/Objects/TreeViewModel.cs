@@ -108,9 +108,9 @@ public class TreeViewModel(TreeObject model)
 	}
 
 	[Category("<unknown>")]
-	public TreeFlagsUnk var_3C
+	public TreeObjectSeasonalVariantFlags SeasonalVariants
 	{
-		get => Model.var_3C;
-		set => Model.var_3C = value;
+		get => Model.SeasonalVariants;
+		set => Model.SeasonalVariants = value;
 	}
 }

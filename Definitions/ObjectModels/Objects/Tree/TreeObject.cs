@@ -12,7 +12,7 @@ public class TreeObject : ILocoStruct
 	public uint8_t NumGrowthStages { get; set; }
 	public TreeObjectFlags Flags { get; set; }
 	public uint16_t ShadowImageOffset { get; set; }
-	public TreeFlagsUnk var_3C { get; set; } // something with images
+	public TreeObjectSeasonalVariantFlags SeasonalVariants { get; set; } // something with images
 	public uint8_t SeasonState { get; set; }
 	public uint8_t CurrentSeason { get; set; } // i don't think this is part of definition, its game state
 	public uint8_t CostIndex { get; set; }

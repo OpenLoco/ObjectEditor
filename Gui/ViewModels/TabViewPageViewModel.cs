@@ -12,29 +12,29 @@ namespace Gui.ViewModels;
 
 public class TabViewPageViewModel : ViewModelBase
 {
-	public ObservableCollection<ILocoFileViewModel> Documents { get; }
+	public ObservableCollection<IFileViewModel> Documents { get; }
 
 	public bool OpenInNewTab { get; set; }
 
 	public bool OpenInNewTabIsVisible => Documents.Any();
 
 	[Reactive]
-	public ILocoFileViewModel? SelectedDocument { get; set; }
+	public IFileViewModel? SelectedDocument { get; set; }
 
-	public ReactiveCommand<ILocoFileViewModel, Unit> RemoveTabCommand { get; }
+	public ReactiveCommand<IFileViewModel, Unit> RemoveTabCommand { get; }
 
 	[Reactive]
 	public ICommand CloseAllTabsCommand { get; set; }
 
 	[Reactive]
-	public ReactiveCommand<ILocoFileViewModel, Unit> CloseOtherTabsCommand { get; set; }
+	public ReactiveCommand<IFileViewModel, Unit> CloseOtherTabsCommand { get; set; }
 
 	public TabViewPageViewModel()
 	{
 		Documents = [];
-		RemoveTabCommand = ReactiveCommand.Create<ILocoFileViewModel>(RemoveDocument);
+		RemoveTabCommand = ReactiveCommand.Create<IFileViewModel>(RemoveDocument);
 		CloseAllTabsCommand = ReactiveCommand.Create(ClearDocuments);
-		CloseOtherTabsCommand = ReactiveCommand.Create<ILocoFileViewModel>(ClearDocumentsExcept);
+		CloseOtherTabsCommand = ReactiveCommand.Create<IFileViewModel>(ClearDocumentsExcept);
 
 		_ = this.WhenAnyValue(o => o.SelectedDocument)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(OpenInNewTabIsVisible)));
@@ -48,7 +48,7 @@ public class TabViewPageViewModel : ViewModelBase
 		}
 	}
 
-	public void AddDocument(ILocoFileViewModel model)
+	public void AddDocument(IFileViewModel model)
 	{
 		if (OpenInNewTab)
 		{
@@ -68,13 +68,13 @@ public class TabViewPageViewModel : ViewModelBase
 		SelectedDocument = model;
 	}
 
-	void RemoveDocument(ILocoFileViewModel tabToRemove)
+	void RemoveDocument(IFileViewModel tabToRemove)
 		=> _ = Documents.Remove(tabToRemove);
 
 	void ClearDocuments()
 		=> Documents.Clear();
 
-	void ClearDocumentsExcept(ILocoFileViewModel tabToKeep)
+	void ClearDocumentsExcept(IFileViewModel tabToKeep)
 	{
 		Documents.Clear();
 		Documents.Add(tabToKeep);

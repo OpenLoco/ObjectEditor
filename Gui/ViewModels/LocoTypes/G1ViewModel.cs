@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class G1ViewModel : BaseLocoFileViewModel
+public class G1ViewModel : BaseFileViewModel
 {
 	public G1ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		: base(currentFile, model) => Load();
@@ -48,22 +48,24 @@ public class G1ViewModel : BaseLocoFileViewModel
 		SawyerStreamWriter.SaveG1(savePath, Model.G1);
 	}
 
-	public override void SaveAs(SaveParameters saveParameters)
+	public override string? SaveAs(SaveParameters saveParameters)
 	{
 		if (Model.G1 == null)
 		{
 			logger?.Error("G1 was null and was unable to saved");
-			return;
+			return null;
 		}
 
 		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
 		if (saveFile == null)
 		{
-			return;
+			return null;
 		}
 
 		var savePath = saveFile.Path.LocalPath;
 		logger?.Info($"Saving G1.dat to {savePath}");
 		SawyerStreamWriter.SaveG1(savePath, Model.G1);
+
+		return savePath;
 	}
 }

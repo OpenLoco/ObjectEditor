@@ -5,7 +5,7 @@ using System.Reactive;
 
 namespace Gui.ViewModels;
 
-public interface ILocoFileViewModel
+public interface IFileViewModel
 {
 	public ReactiveCommand<Unit, Unit> ReloadCommand { get; init; }
 	public ReactiveCommand<Unit, Unit> SaveCommand { get; init; }

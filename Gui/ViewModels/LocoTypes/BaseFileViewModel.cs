@@ -21,9 +21,9 @@ public enum SaveType { JSON, DAT }
 // todo: add filename
 public record SaveParameters(SaveType SaveType, SawyerEncoding? SawyerEncoding);
 
-public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
+public abstract class BaseFileViewModel : ReactiveObject, IFileViewModel
 {
-	protected BaseLocoFileViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+	protected BaseFileViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 	{
 		CurrentFile = currentFile;
 		Model = model;
@@ -47,7 +47,7 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 
 	public abstract void Load();
 	public abstract void Save();
-	public abstract void SaveAs(SaveParameters saveParameters);
+	public abstract string? SaveAs(SaveParameters saveParameters);
 	public virtual void Delete() { }
 
 	async Task SaveAsWrapper()
@@ -97,7 +97,13 @@ public abstract class BaseLocoFileViewModel : ReactiveObject, ILocoFileViewModel
 			}
 			: null;
 
-		SaveAs(new SaveParameters(type, encoding));
+		var filename = SaveAs(new SaveParameters(type, encoding));
+
+		// Open the newly-saved document as a new tab in the tabviewpagemodel
+		if (filename != null)
+		{
+			// todo:
+		}
 	}
 
 	async Task SaveWrapper()

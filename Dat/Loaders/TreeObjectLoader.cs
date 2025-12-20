@@ -43,7 +43,7 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 			br.SkipImageId(Constants.ImageCount); // Image sprites, not part of object definition
 			br.SkipImageId(Constants.ImageCount); // Snow sprites, not part of object definition
 			model.ShadowImageOffset = br.ReadUInt16();
-			model.var_3C = ((DatTreeFlagsUnk)br.ReadByte()).Convert();
+			model.SeasonalVariants = ((DatTreeFlagsUnk)br.ReadByte()).Convert();
 			model.SeasonState = br.ReadByte();
 			model.CurrentSeason = br.ReadByte();
 			model.CostIndex = br.ReadByte();
@@ -90,7 +90,7 @@ public abstract class TreeObjectLoader : IDatObjectLoader
 			bw.WriteEmptyImageId(Constants.ImageCount); // Image sprites, not part
 			bw.WriteEmptyImageId(Constants.ImageCount); // Snow sprites, not part of object definition
 			bw.Write(model.ShadowImageOffset);
-			bw.Write((uint8_t)model.var_3C.Convert()); // Convert to Dat
+			bw.Write((uint8_t)model.SeasonalVariants.Convert()); // Convert to Dat
 			bw.Write(model.SeasonState);
 			bw.Write(model.CurrentSeason);
 			bw.Write(model.CostIndex);
@@ -151,9 +151,9 @@ internal static class TreeObjectFlagsConverter
 
 internal static class TreeFlagsUnkConverter
 {
-	public static TreeFlagsUnk Convert(this DatTreeFlagsUnk datTreeFlagsUnk)
-		=> (TreeFlagsUnk)datTreeFlagsUnk;
+	public static TreeObjectSeasonalVariantFlags Convert(this DatTreeFlagsUnk datTreeFlagsUnk)
+		=> (TreeObjectSeasonalVariantFlags)datTreeFlagsUnk;
 
-	public static DatTreeFlagsUnk Convert(this TreeFlagsUnk treeFlagsUnk)
+	public static DatTreeFlagsUnk Convert(this TreeObjectSeasonalVariantFlags treeFlagsUnk)
 		=> (DatTreeFlagsUnk)treeFlagsUnk;
 }

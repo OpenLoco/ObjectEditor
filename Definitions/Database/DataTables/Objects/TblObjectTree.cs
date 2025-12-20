@@ -20,7 +20,7 @@ public class TblObjectTree : DbSubObject, IConvertibleToTable<TblObjectTree, Tre
 	public uint32_t Colours { get; set; }
 	public int16_t Rating { get; set; }
 	public int16_t DemolishRatingReduction { get; set; }
-	public TreeFlagsUnk var_3C { get; set; } // something with images
+	public TreeObjectSeasonalVariantFlags SeasonalVariants { get; set; } // something with images
 
 	public static TblObjectTree FromObject(TblObject tbl, TreeObject obj)
 		=> new()

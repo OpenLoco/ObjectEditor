@@ -30,7 +30,7 @@ public interface ITutorialAction;
 public record TutorialActionA(KeyModifier KeyModifier, uint16_t MouseX, uint16_t MouseY, MouseButton MouseButton) : ITutorialAction;
 public record TutorialActionB(uint16_t Unk1, uint16_t Unk2, uint16_t Unk3) : ITutorialAction;
 
-public class TutorialViewModel : BaseLocoFileViewModel
+public class TutorialViewModel : BaseFileViewModel
 {
 	public TutorialViewModel(FileSystemItem currentFile, ObjectEditorModel model)
 		: base(currentFile, model)
@@ -89,31 +89,12 @@ public class TutorialViewModel : BaseLocoFileViewModel
 		this.RaisePropertyChanged(nameof(TutorialInputs));
 	}
 
-	public override void Save() => logger?.Warning("Save is not currently implemented");
+	public override void Save()
+		=> logger?.Warning("Save is not currently implemented");
 
-	public override void SaveAs(SaveParameters saveParameters) => logger?.Warning("SaveAs is not currently implemented");
-}
-
-public class ScoresViewModel : BaseLocoFileViewModel
-{
-	public ScoresViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model) => Load();
-
-	public override void Load() => logger?.Info($"Loading scores from {CurrentFile.FileName}");
-
-	public override void Save() => logger?.Warning("Save is not currently implemented");
-
-	public override void SaveAs(SaveParameters saveParameters) => logger?.Warning("SaveAs is not currently implemented");
-}
-
-public class LanguageViewModel : BaseLocoFileViewModel
-{
-	public LanguageViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model) => Load();
-
-	public override void Load() => logger?.Info($"Loading languages from {CurrentFile.FileName}");
-
-	public override void Save() => logger?.Warning("Save is not currently implemented");
-
-	public override void SaveAs(SaveParameters saveParameters) => logger?.Warning("SaveAs is not currently implemented");
+	public override string? SaveAs(SaveParameters saveParameters)
+	{
+		logger?.Warning("SaveAs is not currently implemented");
+		return null;
+	}
 }

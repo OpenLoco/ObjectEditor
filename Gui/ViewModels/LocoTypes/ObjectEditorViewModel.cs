@@ -8,7 +8,6 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Sound;
-using Definitions.ObjectModels.Types;
 using Gui.Models;
 using Gui.Models.Audio;
 using Gui.ViewModels.Graphics;
@@ -31,7 +30,7 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class ObjectEditorViewModel : BaseLocoFileViewModel
+public class ObjectEditorViewModel : BaseFileViewModel
 {
 	[Reactive]
 	public IObjectViewModel? CurrentObjectViewModel { get; set; }
@@ -338,13 +337,13 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		SaveCore(savePath, new SaveParameters(SaveType.DAT, ObjectDatHeaderViewModel?.DatEncoding));
 	}
 
-	public override void SaveAs(SaveParameters saveParameters)
+	public override string? SaveAs(SaveParameters saveParameters)
 		=> SaveAsCore(saveParameters);
 
 	void SaveAsUncompressedDat()
-		=> SaveAsCore(new SaveParameters(SaveType.DAT, SawyerEncoding.Uncompressed));
+		=> _ = SaveAsCore(new SaveParameters(SaveType.DAT, SawyerEncoding.Uncompressed));
 
-	void SaveAsCore(SaveParameters saveParameters)
+	string? SaveAsCore(SaveParameters saveParameters)
 	{
 		var fileTypes = saveParameters.SaveType == SaveType.JSON
 			? PlatformSpecific.JsonFileTypes
@@ -354,7 +353,9 @@ public class ObjectEditorViewModel : BaseLocoFileViewModel
 		if (saveFile != null)
 		{
 			SaveCore(saveFile.Path.LocalPath, saveParameters);
+			return saveFile.Path.LocalPath;
 		}
+		return null;
 	}
 
 	void SaveCore(string filename, SaveParameters saveParameters)

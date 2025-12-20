@@ -701,7 +701,7 @@ public class LoadSaveTests
 				RoadObjectFlags.IsOneWay
 				| RoadObjectFlags.unk_02
 				| RoadObjectFlags.unk_03
-				| RoadObjectFlags.unk_04
+				| RoadObjectFlags.NoWheelSlipping
 				| RoadObjectFlags.IsRoad
 				| RoadObjectFlags.unk_07
 				| RoadObjectFlags.CanHaveStreetLights), nameof(struc.Flags));
@@ -1046,7 +1046,7 @@ public class LoadSaveTests
 			//Assert.That(struc.Sprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.Sprites));
 			//Assert.That(struc.SnowSprites, Is.EquivalentTo(Array.CreateInstance(typeof(byte), 6)), nameof(struc.SnowSprites));
 			Assert.That(struc.ShadowImageOffset, Is.Zero, nameof(struc.ShadowImageOffset));
-			Assert.That(struc.var_3C, Is.EqualTo(TreeFlagsUnk.unk_00 | TreeFlagsUnk.unk_01 | TreeFlagsUnk.unk_02 | TreeFlagsUnk.unk_03), nameof(struc.var_3C));
+			Assert.That(struc.SeasonalVariants, Is.EqualTo(TreeObjectSeasonalVariantFlags.Variant0 | TreeObjectSeasonalVariantFlags.Variant1 | TreeObjectSeasonalVariantFlags.Variant2 | TreeObjectSeasonalVariantFlags.Variant3), nameof(struc.SeasonalVariants));
 			Assert.That(struc.SeasonState, Is.EqualTo(3), nameof(struc.SeasonState));
 			Assert.That(struc.CurrentSeason, Is.EqualTo(2), nameof(struc.CurrentSeason));
 			Assert.That(struc.CostIndex, Is.EqualTo(3), nameof(struc.CostIndex));

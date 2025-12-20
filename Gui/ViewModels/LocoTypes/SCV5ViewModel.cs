@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class SCV5ViewModel : BaseLocoFileViewModel
+public class SCV5ViewModel : BaseFileViewModel
 {
 	[Reactive]
 	public S5File? CurrentS5File { get; set; }
@@ -289,9 +289,14 @@ public class SCV5ViewModel : BaseLocoFileViewModel
 		}
 	}
 
-	public override void Save() => logger?.Warning("Save is not currently implemented");
+	public override void Save()
+		=> logger?.Warning("Save is not currently implemented");
 
-	public override void SaveAs(SaveParameters saveParameters) => logger?.Warning("SaveAs is not currently implemented");
+	public override string? SaveAs(SaveParameters saveParameters)
+	{
+		logger?.Warning("SaveAs is not currently implemented");
+		return null;
+	}
 
 	//public override void Save()
 	//	=> Save(CurrentFile.Filename);

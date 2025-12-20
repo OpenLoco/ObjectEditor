@@ -255,7 +255,7 @@
 						</DataTemplate>
 					</TabControl.ItemTemplate>
 					<TabControl.ContentTemplate>
-						<DataTemplate DataType="vm:ILocoFileViewModel">
+						<DataTemplate DataType="vm:IFileViewModel">
 							<Border BorderThickness="1">
 								<DockPanel>
 									<DockPanel DockPanel.Dock="Top">

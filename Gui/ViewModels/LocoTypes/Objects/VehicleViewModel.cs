@@ -309,6 +309,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	public GearboxMotorSound GearboxMotorSound { get; set; }
 
 	[Category("Sound")]
+	[Description("The sound the vehicle makes when starting or crossing a rail crossing. Essentially it's \"horn\"")]
 	public BindingList<ObjectModelHeader> StartSounds { get; init; }
 
 	[Category("<unknown>")]

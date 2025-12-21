@@ -47,7 +47,9 @@ public record ScenarioOptions(
 	[property: LocoStructOffset(0x41C1)] uint8_t MaxRiverWidth,
 	[property: LocoStructOffset(0x41C2)] uint8_t RiverbankWidth,
 	[property: LocoStructOffset(0x41C3)] uint8_t RiverMeanderRate,
-	[property: LocoStructOffset(0x41C4), LocoArrayLength(342), Browsable(false)] byte[] var_41C4)
+	[property: LocoStructOffset(0x41C4)] uint16_t MapSizeX,
+	[property: LocoStructOffset(0x41C6)] uint16_t MapSizeY,
+	[property: LocoStructOffset(0x41C8), LocoArrayLength(338), Browsable(false)] byte[] var_41C8)
 	: ILocoStruct
 {
 	public const int StructLength = 0x431A;

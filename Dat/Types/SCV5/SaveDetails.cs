@@ -17,7 +17,9 @@ public record SaveDetails(
 	[property: LocoStructOffset(0x247)] byte var_247,
 	[property: LocoStructOffset(0x248), LocoArrayLength(250 * 200), Browsable(false)] uint8_t[] Image,
 	[property: LocoStructOffset(0xC598)] CompanyFlags ChallengeFlags,
-	[property: LocoStructOffset(0xC59C), LocoArrayLength(124), Browsable(false)] byte[] var_C59C)
+	[property: LocoStructOffset(0xC59C)] uint16_t MapSizeX,
+	[property: LocoStructOffset(0xC59E)] uint16_t MapSizeY,
+	[property: LocoStructOffset(0xC5A0), LocoArrayLength(120), Browsable(false)] byte[] var_C59C)
 	: ILocoStruct
 {
 	public const int StructLength = 0xC618;

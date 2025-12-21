@@ -700,8 +700,8 @@ public class LoadSaveTests
 			Assert.That(struc.Flags, Is.EqualTo(
 				RoadObjectFlags.IsOneWay
 				| RoadObjectFlags.unk_02
-				| RoadObjectFlags.unk_03
-				| RoadObjectFlags.NoWheelSlipping
+				| RoadObjectFlags.AnyRoadTypeCompatible
+				| RoadObjectFlags.NoWheelSlip
 				| RoadObjectFlags.IsRoad
 				| RoadObjectFlags.AllowUseByAllCompanies
 				| RoadObjectFlags.CanHaveStreetLights), nameof(struc.Flags));

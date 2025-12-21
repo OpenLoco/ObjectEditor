@@ -59,7 +59,7 @@ public class RoadObject : ILocoStruct
 			yield return new ValidationResult("RoadMods.Count must be 2 or less", [nameof(RoadMods)]);
 		}
 
-		if (Flags.HasFlag(RoadObjectFlags.unk_03) && RoadMods.Count != 0)
+		if (Flags.HasFlag(RoadObjectFlags.AnyRoadTypeCompatible) && RoadMods.Count != 0)
 		{
 			yield return new ValidationResult("If unk_03 flag is set, RoadMods.Count must be 0", [nameof(Flags), nameof(RoadMods)]);
 		}

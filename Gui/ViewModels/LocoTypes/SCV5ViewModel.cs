@@ -38,14 +38,14 @@ public class SCV5ViewModel : BaseFileViewModel
 	[Reactive]
 	public Dictionary<ElementType, Bitmap> Maps { get; set; }
 
-	[Reactive, Range(0, Limits.kMapColumns - 1)]
+	[Reactive, Range(0, Limits.kMapColumnsVanilla - 1)]
 	public int TileElementX { get; set; }
 
-	[Reactive, Range(0, Limits.kMapRows - 1)]
+	[Reactive, Range(0, Limits.kMapRowsVanilla - 1)]
 	public int TileElementY { get; set; }
 
 	public ObservableCollection<TileElement> CurrentTileElements
-		=> CurrentS5File?.TileElementMap != null && TileElementX >= 0 && TileElementX < 384 && TileElementY >= 0 && TileElementY < 384
+		=> CurrentS5File?.TileElementMap != null && TileElementX >= 0 && TileElementX < CurrentS5File.GetMapSize().Width && TileElementY >= 0 && TileElementY < CurrentS5File.GetMapSize().Height
 			? [.. CurrentS5File.TileElementMap[TileElementX, TileElementY]]
 			: [];
 
@@ -199,7 +199,8 @@ public class SCV5ViewModel : BaseFileViewModel
 
 	void DrawMap()
 	{
-		Map = new WriteableBitmap(new Avalonia.PixelSize(384, 384), new Avalonia.Vector(92, 92), Avalonia.Platform.PixelFormat.Rgba8888);
+		(var mapWidth, var mapHeight) = CurrentS5File.GetMapSize();
+		Map = new WriteableBitmap(new Avalonia.PixelSize(mapWidth, mapHeight), new Avalonia.Vector(92, 92), Avalonia.Platform.PixelFormat.Rgba8888);
 		using (var fb = Map.Lock())
 		{
 			var teMap = CurrentS5File!.TileElementMap!;
@@ -211,7 +212,7 @@ public class SCV5ViewModel : BaseFileViewModel
 					unsafe
 					{
 						var rgba = (byte*)fb.Address;
-						var idx = ((x * 384) + y) * 4; // not sure why this has to be reversed to match loco
+						var idx = ((x * mapWidth) + y) * 4; // not sure why this has to be reversed to match loco
 
 						if (el.Type == ElementType.Surface)
 						{

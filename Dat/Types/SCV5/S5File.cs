@@ -104,6 +104,25 @@ public record S5File(
 	public List<TileElement>[,]? TileElementMap { get; set; }
 	byte[] OriginalTileElementData { get; set; } = [];
 
+	public (int Width, int Height) GetMapSize()
+		=> GetMapSize(SaveDetails, ScenarioOptions);
+
+	public static (int Width, int Height) GetMapSize(SaveDetails saveDetails, ScenarioOptions scenarioOptions)
+	{
+		if (saveDetails != null)
+		{
+			return (saveDetails.MapSizeX, saveDetails.MapSizeY);
+		}
+		else if (scenarioOptions != null)
+		{
+			return (scenarioOptions.MapSizeX, scenarioOptions.MapSizeY);
+		}
+		else
+		{
+			return (Limits.kMapColumnsVanilla, Limits.kMapRowsVanilla);
+		}
+	}
+
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 		=> [];
 
@@ -215,6 +234,8 @@ public record S5File(
 		byte[] tileElementData = [];
 		IGameState gameState;
 
+		var mapSize = GetMapSize(saveDetails, scenarioOptions);
+
 		if (header.Type == S5FileType.Scenario)
 		{
 			var gameStateA = SawyerStreamReader.ReadChunk<GameStateScenarioA>(ref data);
@@ -228,7 +249,7 @@ public record S5File(
 			if (gameStateA.GameStateFlags.HasFlag(GameStateFlags.TileManagerLoaded))
 			{
 				tileElementData = SawyerStreamReader.ReadChunkCore(ref data).ToArray();
-				(tileElements, tileElementMap) = ParseTileElements(tileElementData);
+				(tileElements, tileElementMap) = ParseTileElements(tileElementData, mapSize.Width, mapSize.Height);
 			}
 		}
 		else
@@ -237,7 +258,7 @@ public record S5File(
 			FixState();
 
 			tileElementData = SawyerStreamReader.ReadChunkCore(ref data).ToArray();
-			(tileElements, tileElementMap) = ParseTileElements(tileElementData);
+			(tileElements, tileElementMap) = ParseTileElements(tileElementData, mapSize.Width, mapSize.Height);
 		}
 
 		var checksum = BitConverter.ToUInt32(data[0..4]);
@@ -249,12 +270,12 @@ public record S5File(
 	static void FixState()
 	{ }
 
-	static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData)
+	static (List<TileElement>, List<TileElement>[,]) ParseTileElements(ReadOnlySpan<byte> tileElementData, int mapWidth, int mapHeight)
 	{
 		var numTileElements = tileElementData.Length / TileElement.StructLength;
 
 		List<TileElement> tileElements = [];
-		var tileElementMap = new List<TileElement>[Limits.kMapColumns, Limits.kMapRows];
+		var tileElementMap = new List<TileElement>[mapWidth, mapHeight];
 
 		var x = 0;
 		var y = 0;
@@ -275,12 +296,12 @@ public record S5File(
 
 			if (el.IsLast())
 			{
-				if (x == Limits.kMapColumns - 1)
+				if (x == mapWidth - 1)
 				{
-					y = (y + 1) % Limits.kMapRows;
+					y = (y + 1) % mapHeight;
 				}
 
-				x = (x + 1) % Limits.kMapColumns;
+				x = (x + 1) % mapWidth;
 			}
 
 			// el.IsLast() indicates its the last element on that tile

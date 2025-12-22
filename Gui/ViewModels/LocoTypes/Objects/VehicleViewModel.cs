@@ -46,11 +46,11 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 
 		#region Road/Track Type Binding
 
-		_ = this.WhenAnyValue(x => x.Mode, x => x.Flags)
-			.Subscribe((_) => this.RaisePropertyChanged(nameof(IsTrackTypeSettable)));
+		//_ = this.WhenAnyValue(x => x.Mode, x => x.Flags)
+		//	.Subscribe((_) => this.RaisePropertyChanged(nameof(AnyRoadOrTrackType)));
 
-		_ = this.WhenAnyValue(x => x.IsTrackTypeSettable)
-			.Subscribe((_) => this.RaisePropertyChanged(nameof(RoadOrTrackType)));
+		//_ = this.WhenAnyValue(x => x.AnyRoadOrTrackType)
+		//	.Subscribe((_) => this.RaisePropertyChanged(nameof(RoadOrTrackType)));
 
 		#endregion
 
@@ -163,7 +163,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		set => model.RackSpeed = value;
 	}
 
-	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None, VehicleObjectFlags.RackRail)]
+	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None, VehicleObjectFlags.RackRail, VehicleObjectFlags.AnyRoadType)]
 	public VehicleObjectFlags Flags
 	{
 		get => model.Flags;
@@ -174,12 +174,26 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		}
 	}
 
-	[Browsable(false)]
-	bool IsTrackTypeSettable
-		=> !model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road);
-
 	[ConditionTarget]
-	[PropertyVisibilityCondition(nameof(IsTrackTypeSettable), true)]
+	//bool IsTrackTypeSettable
+	//	=> !model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road);
+	public bool AnyRoadOrTrackType
+	{
+		get => model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType);
+		set
+		{
+			model.Flags = model.Flags.ToggleFlag(VehicleObjectFlags.AnyRoadType, value);
+
+			if (RoadOrTrackType == null && model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType))
+			{
+				RoadOrTrackType = new ObjectModelHeader() { Name = "<obj>", ObjectSource = ObjectSource.Custom, ObjectType = ObjectType.Road };
+			}
+
+			this.RaisePropertyChanged(nameof(RoadOrTrackType));
+		}
+	}
+	[ConditionTarget]
+	[PropertyVisibilityCondition(nameof(AnyRoadOrTrackType), false)]
 	public ObjectModelHeader? RoadOrTrackType
 	{
 		get => model.RoadOrTrackType;

@@ -26,7 +26,7 @@ public class BuildingComponentsViewModel : ReactiveObject
 	[Reactive] public int MaxHeight { get; set; }
 
 	[Reactive]
-	public BuildingComponentsModel BuildingComponentsModel { get; set; }
+	public BuildingComponents BuildingComponentsModel { get; set; }
 
 	[Reactive, Browsable(false)]
 	public ObservableCollection<uint8_t> BuildingHeights { get; set; } = [];
@@ -50,35 +50,41 @@ public class BuildingComponentsViewModel : ReactiveObject
 
 		_ = this.WhenAnyValue(x => x.VerticalLayerSpacing)
 			.Subscribe(ApplyOffsetToAllLayers);
+
+		_ = MessageBus.Current.Listen<BuildingComponents>().Subscribe(UpdateBuildingComponents);
 	}
 
-	public BuildingComponentsViewModel(BuildingComponentsModel buildingComponents, ImageTable imageTable) : this()
+	public BuildingComponentsViewModel(BuildingComponents buildingComponents, ImageTable imageTable) : this()
 	{
 		ArgumentNullException.ThrowIfNull(buildingComponents);
 		ArgumentNullException.ThrowIfNull(imageTable);
 
-		_ = this.WhenAnyValue(x => x.BuildingVariationViewModels)
-			.Where(x => x != null && ImageTable != null)
-			.Subscribe(_ => RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations));
-
 		ImageTable = imageTable;
-		BuildingHeights = new ObservableCollection<uint8_t>(buildingComponents.BuildingHeights);
-		BuildingAnimations = new ObservableCollection<BuildingPartAnimation>(buildingComponents.BuildingAnimations);
-
-		RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations);
-
-		BuildingVariations = buildingComponents.BuildingVariations;
-		BuildingComponentsModel = buildingComponents;
+		UpdateBuildingComponents(buildingComponents);
 	}
 
-	protected void RecomputeBuildingVariationViewModels(List<List<uint8_t>> buildingVariations)
+	void UpdateBuildingComponents(BuildingComponents buildingComponents)
+	{
+		_ = this.WhenAnyValue(x => x.BuildingVariationViewModels)
+		.Where(x => x != null && ImageTable != null)
+		.Subscribe(_ => RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations, buildingComponents.BuildingHeights));
+
+		BuildingHeights = new ObservableCollection<uint8_t>(buildingComponents.BuildingHeights);
+		BuildingAnimations = new ObservableCollection<BuildingPartAnimation>(buildingComponents.BuildingAnimations);
+		BuildingVariations = buildingComponents.BuildingVariations;
+		BuildingComponentsModel = buildingComponents;
+
+		RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations, buildingComponents.BuildingHeights);
+	}
+
+	protected void RecomputeBuildingVariationViewModels(List<List<uint8_t>> buildingVariations, List<byte> buildingHeights)
 	{
 		var layers = ImageTable.Groups.ConvertAll(x => x.GraphicsElements);
 
 		BuildingVariationViewModels.Clear();
 
 		MaxWidth = layers.Max(x => x.Max(y => y.Width)) + 16;
-		MaxHeight = (layers.Max(x => x.Max(y => y.Height)) * BuildingHeights.Count) + BuildingHeights.Sum(x => x) + buildingVariations.Max(x => x.Count) * (VerticalLayerSpacing * 2);
+		MaxHeight = (layers.Max(x => x.Max(y => y.Height)) * buildingHeights.Count) + buildingHeights.Sum(x => x) + buildingVariations.Max(x => x.Count) * (VerticalLayerSpacing * 2);
 
 		var x = 0;
 		foreach (var variation in buildingVariations)
@@ -99,18 +105,21 @@ public class BuildingComponentsViewModel : ReactiveObject
 				var cumulativeOffset = 0;
 				foreach (var variationItem in variation)
 				{
-					var layer = layers[variationItem];
-					var bl = new BuildingLayerViewModel
+					if (layers.Count > variationItem)
 					{
-						XBase = layer[i].XOffset + (MaxWidth / 2),
-						YBase = layer[i].YOffset - cumulativeOffset + MaxHeight * 0.80,
-						DisplayedImage = layer[i].Image.ToAvaloniaBitmap(),
-						XOffset = 0,
-						YOffset = 0,
-					};
+						var layer = layers[variationItem];
+						var bl = new BuildingLayerViewModel
+						{
+							XBase = layer[i].XOffset + (MaxWidth / 2),
+							YBase = layer[i].YOffset - cumulativeOffset + MaxHeight * 0.80,
+							DisplayedImage = layer[i].Image.ToAvaloniaBitmap(),
+							XOffset = 0,
+							YOffset = 0,
+						};
 
-					cumulativeOffset += BuildingHeights[variationItem];
-					bs.Layers.Add(bl);
+						cumulativeOffset += buildingHeights[variationItem];
+						bs.Layers.Add(bl);
+					}
 				}
 
 				bv.Directions.Add(bs); // [i] = bs;

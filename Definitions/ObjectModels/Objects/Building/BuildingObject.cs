@@ -7,7 +7,7 @@ namespace Definitions.ObjectModels.Objects.Building;
 
 public class BuildingObject : ILocoStruct, IHasBuildingComponents
 {
-	public BuildingComponentsModel BuildingComponents { get; set; } = new();
+	public BuildingComponents BuildingComponents { get; set; } = new();
 	public uint32_t Colours { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }

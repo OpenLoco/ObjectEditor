@@ -8,7 +8,7 @@ namespace Definitions.ObjectModels.Objects.Industry;
 public class IndustryObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint32_t FarmImagesPerGrowthStage { get; set; }
-	public BuildingComponentsModel BuildingComponents { get; set; } = new();
+	public BuildingComponents BuildingComponents { get; set; } = new();
 	[Length(4, 4)]
 	public List<List<uint8_t>> AnimationSequences { get; set; } = []; // Access with getAnimationSequence helper method
 	public List<IndustryObjectUnk38> var_38 { get; set; } = []; // Access with getUnk38 helper method

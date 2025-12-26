@@ -385,7 +385,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		logger.Info($"Saving {CurrentObject.DatInfo.S5Header.Name} to {filename}");
 		StringTableViewModel?.WriteTableBackToObject();
 
-		// VM should auto-copy back now for everything but VehicleObject
+		// VM should auto-copy back now for everything but VehicleObject and BuildingObject
 		CurrentObjectViewModel.CopyBackToModel();
 
 		// this is hacky but it should work

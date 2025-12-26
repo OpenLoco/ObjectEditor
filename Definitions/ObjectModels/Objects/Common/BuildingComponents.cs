@@ -1,14 +1,16 @@
 using Definitions.ObjectModels.Validation;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Common;
 
 public interface IHasBuildingComponents
 {
-	BuildingComponentsModel BuildingComponents { get; set; }
+	BuildingComponents BuildingComponents { get; set; }
 }
 
-public class BuildingComponentsModel : ILocoStruct
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class BuildingComponents : ILocoStruct
 {
 	[Length(1, 63)]
 	[CountEqualTo(nameof(BuildingAnimations))]
@@ -41,6 +43,17 @@ public class BuildingComponentsModel : ILocoStruct
 		if (BuildingVariations.Count is < 1 and <= 31)
 		{
 			yield return new ValidationResult($"{nameof(BuildingVariations)} must contain between 1 and 31 entries.", [nameof(BuildingVariations)]);
+		}
+
+		foreach (var bv in BuildingVariations)
+		{
+			foreach (var bvl in bv)
+			{
+				if (bvl >= BuildingHeights.Count)
+				{
+					yield return new ValidationResult($"A building variation layer index ({bvl}) is out of range. It must be less than the number of building heights ({BuildingHeights.Count}).", [nameof(BuildingVariations)]);
+				}
+			}
 		}
 
 		yield break;

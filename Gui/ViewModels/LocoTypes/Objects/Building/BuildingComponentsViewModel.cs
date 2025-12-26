@@ -37,7 +37,6 @@ public class BuildingComponentsViewModel : ReactiveObject
 	[Reactive]
 	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
 
-	//[Browsable(false)]
 	[Reactive]
 	public ObservableCollection<BuildingVariationViewModel> BuildingVariationViewModels { get; set; } = [];
 
@@ -66,8 +65,8 @@ public class BuildingComponentsViewModel : ReactiveObject
 	void UpdateBuildingComponents(BuildingComponents buildingComponents)
 	{
 		_ = this.WhenAnyValue(x => x.BuildingVariationViewModels)
-		.Where(x => x != null && ImageTable != null)
-		.Subscribe(_ => RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations, buildingComponents.BuildingHeights));
+			.Where(x => x != null && ImageTable != null)
+			.Subscribe(_ => RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations, buildingComponents.BuildingHeights));
 
 		BuildingHeights = new ObservableCollection<uint8_t>(buildingComponents.BuildingHeights);
 		BuildingAnimations = new ObservableCollection<BuildingPartAnimation>(buildingComponents.BuildingAnimations);

@@ -8,12 +8,14 @@ namespace Gui.ViewModels;
 public class CargoViewModel(CargoObject model)
 		: LocoObjectViewModel<CargoObject>(model)
 {
+	[Category("Cargo")]
 	public uint16_t CargoTransferTime
 	{
 		get => Model.CargoTransferTime;
 		set => Model.CargoTransferTime = value;
 	}
 
+	[Category("Cargo")]
 	public CargoCategory CargoCategory
 	{
 		get => Model.CargoCategory;

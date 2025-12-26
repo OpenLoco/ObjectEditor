@@ -8,6 +8,7 @@ using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Sound;
+using Definitions.ObjectModels.Types;
 using Gui.Models;
 using Gui.Models.Audio;
 using Gui.ViewModels.Graphics;
@@ -262,7 +263,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 					}
 					else
 					{
-						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents);
+						var bc = CurrentObject.LocoObject.ObjectType == ObjectType.Building ? (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
+						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, bc);
 					}
 				}
 			}

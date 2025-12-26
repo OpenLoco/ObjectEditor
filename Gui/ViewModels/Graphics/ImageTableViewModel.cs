@@ -94,7 +94,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	ImageTable Model { get; init; }
 
-	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponentsModel? buildingComponents = null)
+	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponents? buildingComponents = null)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 

@@ -18,7 +18,7 @@
 		<DataTemplate DataType="bvm:BuildingVariationViewModel">
 			<StackPanel>
 				<TextBlock Text="{Binding VariationName}"/>
-				<ItemsControl ItemsSource="{Binding Directions}" Background="Purple">
+				<ItemsControl ItemsSource="{Binding Directions}" Background="Orchid">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
 							<WrapPanel/>
@@ -31,8 +31,7 @@
 		<DataTemplate DataType="bvm:BuildingStackViewModel">
 			<StackPanel>
 				<TextBlock Text="{Binding Direction}"/>
-
-				<paz:ZoomBorder Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
+				<paz:ZoomBorder Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="SteelBlue">
 					<StackPanel>
 						<ItemsControl ItemsSource="{Binding Layers}" Background="Green">
 							<ItemsControl.ItemsPanel>
@@ -60,20 +59,23 @@
 		<bvm:DesignBuildingComponentsViewModel/>
 	</Design.DataContext>
 
-	<DockPanel>
-		<!--<ScrollViewer>
-			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" MaxWidth="1024" />
-		</ScrollViewer>-->
+	<Border BorderThickness="1" BorderBrush="Gray">
+		<DockPanel>
+			<TextBlock DockPanel.Dock="Top" FontSize="20" HorizontalAlignment="Center">Building Component Viewer</TextBlock>
+			<DockPanel DockPanel.Dock="Top">
+				<TextBlock Margin="4" Width="170" VerticalAlignment="Center" Text="{Binding VerticalLayerSpacing, StringFormat='Vertical Layer Offset: {0}'}"></TextBlock>
+				<Slider Margin="4" DockPanel.Dock="Right" Value="{Binding VerticalLayerSpacing, Mode=TwoWay}" TickPlacement="Outside" Minimum="0" Maximum="100" TickFrequency="10"/>
+			</DockPanel>
+			<ScrollViewer DockPanel.Dock="Top">
+				<ItemsControl ItemsSource="{Binding BuildingVariationViewModels}" Background="DarkOrchid" Margin="8">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<WrapPanel/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+				</ItemsControl>
+			</ScrollViewer>
+		</DockPanel>
+	</Border>
 
-		<ScrollViewer>
-			<ItemsControl ItemsSource="{Binding BuildingVariationViewModels}" Background="Red">
-				<ItemsControl.ItemsPanel>
-					<ItemsPanelTemplate>
-						<WrapPanel/>
-					</ItemsPanelTemplate>
-				</ItemsControl.ItemsPanel>
-			</ItemsControl>
-		</ScrollViewer>
-
-	</DockPanel>
 </UserControl>

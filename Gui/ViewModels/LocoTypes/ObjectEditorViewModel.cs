@@ -256,22 +256,13 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				else
 				{
 					CurrentObject.LocoObject.ImageTable?.PaletteMap = Model.PaletteMap;
-
-					// temporary hack to show building components
-					if (CurrentObject.LocoObject.ObjectType == Definitions.ObjectModels.Types.ObjectType.Building)
+					if (CurrentObject.LocoObject.ImageTable == null)
 					{
-						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents);
+						logger.Info($"{CurrentFile.DisplayName} has no image table");
 					}
 					else
 					{
-						if (CurrentObject.LocoObject.ImageTable == null)
-						{
-							logger.Info($"{CurrentFile.DisplayName} has no image table");
-						}
-						else
-						{
-							ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, null);
-						}
+						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents);
 					}
 				}
 			}
@@ -394,7 +385,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		logger.Info($"Saving {CurrentObject.DatInfo.S5Header.Name} to {filename}");
 		StringTableViewModel?.WriteTableBackToObject();
 
-		// VM should auto-copy back now for everything but VehicleObject
+		// VM should auto-copy back now for everything but VehicleObject and BuildingObject
 		CurrentObjectViewModel.CopyBackToModel();
 
 		// this is hacky but it should work

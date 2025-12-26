@@ -79,7 +79,8 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 			[0, 1],
 			[0, 1, 1],
 		];
+		List<uint8_t> buildingHeights = [16, 16];
 
-		RecomputeBuildingVariationViewModels(buildingVariations);
+		RecomputeBuildingVariationViewModels(buildingVariations, buildingHeights);
 	}
 }

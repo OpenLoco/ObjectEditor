@@ -16,7 +16,7 @@ public class AirportObject : ILocoStruct, IHasBuildingComponents
 
 	public uint8_t var_07 { get; set; }
 	public AirportObjectFlags Flags { get; set; }
-	public BuildingComponentsModel BuildingComponents { get; set; } = new();
+	public BuildingComponents BuildingComponents { get; set; } = new();
 	public List<AirportBuilding> BuildingPositions { get; set; } = [];
 	public uint32_t LargeTiles { get; set; }
 	public int8_t MinX { get; set; }

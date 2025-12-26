@@ -203,8 +203,8 @@
 				</Button.Flyout>
 			</Button>
 		</StackPanel>
-		<Grid ColumnDefinitions="*, Auto, 320">
-			<ScrollViewer Margin="4">
+		<Grid ColumnDefinitions="*, Auto, *, Auto, *">
+			<ScrollViewer Grid.Column="0" Margin="4">
 				<DockPanel>
 					<Panel Width="16" DockPanel.Dock="Right"></Panel>
 					<ItemsControl ItemsSource="{Binding GroupedImageViewModels}" Margin="4">
@@ -246,10 +246,12 @@
 			</ScrollViewer>
 			<GridSplitter Grid.Column="1" />
 			<DockPanel Grid.Column="2">
-				<StackPanel Margin="2" Orientation="Vertical" MaxHeight="512" DockPanel.Dock="Top">
-					<TextBlock Margin="0, 16, 0, 0" HorizontalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}"></TextBlock>
-					<Slider Minimum="1" Maximum="80" Value="{Binding AnimationSpeed}" />
-					<StackPanel Orientation="Horizontal">
+				<StackPanel Margin="2" DockPanel.Dock="Top" Orientation="Vertical" VerticalAlignment="Center">
+					<DockPanel DockPanel.Dock="Top">
+						<TextBlock Margin="4" Width="128" VerticalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}" />
+						<Slider Margin="4" DockPanel.Dock="Right" Value="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}' Mode=TwoWay}" TickPlacement="Outside" Minimum="1" Maximum="80" TickFrequency="10"/>
+					</DockPanel>
+					<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 						<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select preview background colour">
 							<DockPanel>
 								<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
@@ -284,7 +286,7 @@
 							</Button.Flyout>
 						</Button>
 					</StackPanel>
-					<paz:ZoomBorder Name="ZoomBorder" MinWidth="256" MinHeight="256" Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
+					<paz:ZoomBorder Name="ZoomBorder" MinHeight="256" Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
 						<!-- Image list -->
 						<Canvas HorizontalAlignment="Center" VerticalAlignment="Center" Background="Gray">
 							<!--Bounding box-->
@@ -297,9 +299,10 @@
 					</paz:ZoomBorder>
 					<TextBlock HorizontalAlignment="Center" Text="{Binding #ZoomBorder.ZoomX, StringFormat='Zoom: {0:F2}x | \'R\' to reset'}"></TextBlock>
 				</StackPanel>
-				<!--<ContentControl Content="{Binding BuildingComponents}" />-->
-				<ContentControl Content="{Binding SelectedImage}" />
+				<ContentControl Content="{Binding BuildingComponents}" />
 			</DockPanel>
+			<GridSplitter Grid.Column="3" />
+			<ContentControl Grid.Column="4" Content="{Binding SelectedImage}"/>
 		</Grid>
 	</DockPanel>
 </UserControl>

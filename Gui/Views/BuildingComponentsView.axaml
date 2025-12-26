@@ -18,7 +18,7 @@
 		<DataTemplate DataType="bvm:BuildingVariationViewModel">
 			<StackPanel>
 				<TextBlock Text="{Binding VariationName}"/>
-				<ItemsControl ItemsSource="{Binding Directions}" Background="Orchid">
+				<ItemsControl ItemsSource="{Binding Directions}" Background="DarkGray">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
 							<WrapPanel/>
@@ -67,7 +67,7 @@
 				<Slider Margin="4" DockPanel.Dock="Right" Value="{Binding VerticalLayerSpacing, Mode=TwoWay}" TickPlacement="Outside" Minimum="0" Maximum="100" TickFrequency="10"/>
 			</DockPanel>
 			<ScrollViewer DockPanel.Dock="Top">
-				<ItemsControl ItemsSource="{Binding BuildingVariationViewModels}" Background="DarkOrchid" Margin="8">
+				<ItemsControl ItemsSource="{Binding BuildingVariationViewModels}" Background="Gray" Margin="8">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate>
 							<WrapPanel/>

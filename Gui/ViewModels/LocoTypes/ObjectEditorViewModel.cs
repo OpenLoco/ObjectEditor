@@ -278,6 +278,13 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			{
 				ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatInfo.S5Header.Convert());
 
+				// an object saved as 'Vanilla' but isn't truly Vanilla will have its source auto-set to Custom
+				// but in this case, we do want to show the user this, so we'll default to Steam
+				if (CurrentObject.DatInfo.S5Header.ObjectSource == DatObjectSource.Vanilla && ObjectModelHeaderViewModel.ObjectSource == ObjectSource.Custom)
+				{
+					ObjectModelHeaderViewModel.ObjectSource = ObjectSource.LocomotionSteam;
+				}
+
 				ObjectDatHeaderViewModel = new ObjectDatHeaderViewModel(
 					CurrentObject.DatInfo.S5Header.Checksum,
 					CurrentObject.DatInfo.ObjectHeader.Encoding,

@@ -54,16 +54,17 @@ public class TestWebApplicationFactory<TProgram>
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		var testFolder = MakeServerFolderManagerTestDirectories();
+		ArgumentNullException.ThrowIfNull(testFolder, nameof(testFolder));
 
 		// Create a dummy palette file for testing
-		var dummyPaletteFile = Path.Combine(testFolder?.FullName ?? Path.GetTempPath(), "palette.png");
+		var dummyPaletteFile = Path.Combine(testFolder.FullName, "palette.png");
 		CreateDummyPaletteFile(dummyPaletteFile);
 
 		var testConfigurationBuilder =
 			new ConfigurationBuilder()
 				.AddInMemoryCollection(
 				[
-					new("ObjectService:RootFolder", testFolder?.FullName),
+					new("ObjectService:RootFolder", testFolder.FullName),
 					new("ObjectService:PaletteMapFile", dummyPaletteFile),
 					new("ObjectService:ShowScalar", "False"),
 				])

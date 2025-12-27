@@ -43,4 +43,16 @@ public static class Client
 			RoutesV2.Objects,
 			request);
 	}
+
+	public static async Task<bool> AddMissingObjectAsync(HttpClient client, DtoMissingObjectEntry entry, ILogger? logger = null)
+	{
+		logger?.Debug($"Posting missing object {entry.DatName} with checksum {entry.DatChecksum} to {client.BaseAddress?.OriginalString}{RoutesV2.Objects}{RoutesV2.Missing}");
+		var response = await ClientHelpers.PostAsync<DtoMissingObjectEntry, UniqueObjectId>(
+			client,
+			ApiVersion,
+			RoutesV2.Objects + RoutesV2.Missing,
+			entry,
+			logger);
+		return response != null;
+	}
 }

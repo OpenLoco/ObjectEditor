@@ -71,6 +71,36 @@ public class TrackViewModel(TrackObject model)
 		set => Model.CostIndex = value;
 	}
 
+	[Category("Cost"), ReadOnly(true), DisplayName("Effective Build Cost"), Description("The inflation-adjusted build cost for the year specified in settings")]
+	public int EffectiveBuildCost
+	{
+		get
+		{
+			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
+			return Common.Economy.GetInflationAdjustedCost(Model.BuildCostFactor, Model.CostIndex, year);
+		}
+	}
+
+	[Category("Cost"), ReadOnly(true), DisplayName("Effective Sell Cost"), Description("The inflation-adjusted sell cost for the year specified in settings")]
+	public int EffectiveSellCost
+	{
+		get
+		{
+			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
+			return Common.Economy.GetInflationAdjustedCost(Model.SellCostFactor, Model.CostIndex, year);
+		}
+	}
+
+	[Category("Cost"), ReadOnly(true), DisplayName("Effective Tunnel Cost"), Description("The inflation-adjusted tunnel cost for the year specified in settings")]
+	public int EffectiveTunnelCost
+	{
+		get
+		{
+			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
+			return Common.Economy.GetInflationAdjustedCost(Model.TunnelCostFactor, Model.CostIndex, year);
+		}
+	}
+
 	[Category("<unknown>")]
 	public uint8_t var_06
 	{

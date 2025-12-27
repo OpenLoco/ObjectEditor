@@ -9,6 +9,9 @@ using Scalar.AspNetCore;
 using System.Threading.RateLimiting;
 using Definitions.ObjectModels;
 using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -121,7 +124,24 @@ builder.Services
 	.AddIdentityApiEndpoints<TblUser>()
 	.AddEntityFrameworkStores<LocoDbContext>();
 
-
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+	options.TokenValidationParameters = new TokenValidationParameters
+	{
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+		ValidAudience = builder.Configuration["JwtSettings:Audience"],
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"] ?? throw new InvalidOperationException("JWT Key not configured"))),
+	};
+});
 
 builder.Services.AddAuthorization();
 
@@ -161,9 +181,8 @@ if (showScalar == true)
 		_ = options
 			.WithTitle("OpenLoco Object Service")
 			.WithTheme(ScalarTheme.Solarized)
-			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
-
-		//.AddPreferredSecuritySchemes("Bearer");
+			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+			.AddPreferredSecuritySchemes("Bearer");
 	});
 }
 

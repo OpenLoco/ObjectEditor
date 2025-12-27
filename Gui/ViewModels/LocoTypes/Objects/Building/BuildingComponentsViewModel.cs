@@ -42,6 +42,8 @@ public class BuildingComponentsViewModel : ReactiveObject
 
 	protected ImageTable ImageTable { get; set; }
 
+	protected BuildingObjectFlags? BuildingFlags { get; set; }
+
 	public BuildingComponentsViewModel()
 	{
 		_ = this.WhenAnyValue(x => x.BuildingVariations)
@@ -53,12 +55,13 @@ public class BuildingComponentsViewModel : ReactiveObject
 		_ = MessageBus.Current.Listen<BuildingComponents>().Subscribe(UpdateBuildingComponents);
 	}
 
-	public BuildingComponentsViewModel(BuildingComponents buildingComponents, ImageTable imageTable) : this()
+	public BuildingComponentsViewModel(BuildingComponents buildingComponents, ImageTable imageTable, BuildingObjectFlags? buildingFlags = null) : this()
 	{
 		ArgumentNullException.ThrowIfNull(buildingComponents);
 		ArgumentNullException.ThrowIfNull(imageTable);
 
 		ImageTable = imageTable;
+		BuildingFlags = buildingFlags;
 		UpdateBuildingComponents(buildingComponents);
 	}
 
@@ -85,6 +88,8 @@ public class BuildingComponentsViewModel : ReactiveObject
 		MaxWidth = layers.Max(x => x.Max(y => y.Width)) + 16;
 		MaxHeight = (layers.Max(x => x.Max(y => y.Height)) * buildingHeights.Count) + buildingHeights.Sum(x => x) + buildingVariations.Max(x => x.Count) * (VerticalLayerSpacing * 2);
 
+		var hasShadows = BuildingFlags?.HasFlag(BuildingObjectFlags.HasShadows) ?? false;
+
 		var x = 0;
 		foreach (var variation in buildingVariations)
 		{
@@ -102,7 +107,18 @@ public class BuildingComponentsViewModel : ReactiveObject
 				};
 
 				var cumulativeOffset = 0;
-				foreach (var variationItem in variation)
+
+				// When HasShadows flag is set, the first 4 images (part 0) are the base layer
+				// and the second 4 images (part 1) are the shadows.
+				// Shadows should be rendered first (below/behind the base layer).
+				var reorderedVariation = variation;
+				if (hasShadows && variation.Count >= 2)
+				{
+					// Reorder so shadows (part 1) come before base (part 0)
+					reorderedVariation = [variation[1], variation[0], .. variation.Skip(2)];
+				}
+
+				foreach (var variationItem in reorderedVariation)
 				{
 					if (layers.Count > variationItem)
 					{

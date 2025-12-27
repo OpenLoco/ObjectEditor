@@ -6,6 +6,7 @@ using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
@@ -264,7 +265,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 					else
 					{
 						var bc = CurrentObject.LocoObject.ObjectType == ObjectType.Building ? (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
-						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, bc);
+						var buildingFlags = CurrentObject.LocoObject.ObjectType == ObjectType.Building ? (CurrentObject.LocoObject.Object as BuildingObject)?.Flags : null;
+						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, bc, buildingFlags);
 					}
 				}
 			}

@@ -9,6 +9,7 @@ using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Index;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.IO.Hashing;
 
@@ -223,5 +224,35 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			new DtoStringTableDescriptor(expectedStringTable, 3));
 
 		AssertDtoObjectDescriptorsAreEqual(results, expected);
+	}
+
+	[Test]
+	public async Task AddMissingObjectAsync()
+	{
+		// arrange
+		var missingEntry = new DtoMissingObjectEntry("TESTOBJ1", 123456789, ObjectType.Vehicle);
+
+		// act
+		var success = await Client.AddMissingObjectAsync(HttpClient!, missingEntry, new Logger());
+
+		// assert
+		Assert.That(success, Is.True, "Adding missing object should return success");
+
+		// verify the object was added to the database
+		using var scope = testWebAppFactory.Services.CreateScope();
+		var context = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
+		var addedObject = await context.Objects
+			.Include(x => x.DatObjects)
+			.FirstOrDefaultAsync(x => x.Name == $"{missingEntry.DatName}_{missingEntry.DatChecksum}");
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(addedObject, Is.Not.Null, "Object should exist in database");
+			Assert.That(addedObject!.Availability, Is.EqualTo(ObjectAvailability.Missing));
+			Assert.That(addedObject.ObjectType, Is.EqualTo(ObjectType.Vehicle));
+			Assert.That(addedObject.DatObjects.Count, Is.EqualTo(1));
+			Assert.That(addedObject.DatObjects.First().DatName, Is.EqualTo(missingEntry.DatName));
+			Assert.That(addedObject.DatObjects.First().DatChecksum, Is.EqualTo(missingEntry.DatChecksum));
+		}
 	}
 }

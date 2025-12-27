@@ -19,6 +19,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	}
 
 	[Test]
+	[Ignore("Not applicable for identity endpoints")]
 	public override async Task ListAsync()
 	{
 		// Not applicable for identity endpoints
@@ -26,6 +27,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	}
 
 	[Test]
+	[Ignore("Not applicable for identity endpoints")]
 	public override async Task PostAsync()
 	{
 		// Not applicable for identity endpoints
@@ -33,6 +35,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	}
 
 	[Test]
+	[Ignore("Not applicable for identity endpoints")]
 	public override async Task GetAsync()
 	{
 		// Not applicable for identity endpoints
@@ -40,6 +43,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	}
 
 	[Test]
+	[Ignore("Not applicable for identity endpoints")]
 	public override async Task PutAsync()
 	{
 		// Not applicable for identity endpoints
@@ -47,6 +51,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	}
 
 	[Test]
+	[Ignore("Not applicable for identity endpoints")]
 	public override async Task DeleteAsync()
 	{
 		// Not applicable for identity endpoints
@@ -148,5 +153,40 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 
 		// assert
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+	}
+
+	[Test]
+	public async Task Users_WithAuthentication_ShouldSucceed()
+	{
+		// arrange - Register a user
+		var registerRequest = new DtoRegisterRequest(
+			Email: "authtest@example.com",
+			UserName: "authuser",
+			Password: "TestPassword123!"
+		);
+		_ = await HttpClient!.PostAsJsonAsync("/register", registerRequest);
+
+		// Login to get bearer token
+		var loginRequest = new
+		{
+			Email = "authtest@example.com",
+			Password = "TestPassword123!"
+		};
+		var loginResponse = await HttpClient!.PostAsJsonAsync("/login?useCookies=false", loginRequest);
+		Assert.That(loginResponse.IsSuccessStatusCode, Is.True);
+
+		var loginResult = await loginResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+		var accessToken = loginResult.GetProperty("accessToken").GetString();
+		Assert.That(accessToken, Is.Not.Null.And.Not.Empty);
+
+		// Add token to Authorization header
+		HttpClient!.DefaultRequestHeaders.Authorization = 
+			new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+		// act - Call protected endpoint with valid bearer token
+		var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{RoutesV2.Users}");
+
+		// assert - Should succeed with valid authentication
+		Assert.That(response.IsSuccessStatusCode, Is.True);
 	}
 }

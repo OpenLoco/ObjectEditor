@@ -12,6 +12,8 @@ using Microsoft.OpenApi;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -124,11 +126,14 @@ builder.Services
 	.AddIdentityApiEndpoints<TblUser>()
 	.AddEntityFrameworkStores<LocoDbContext>();
 
-builder.Services.AddAuthentication(options =>
+// Configure bearer token expiration from settings
+builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, options =>
 {
-	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
+	var durationInMinutes = builder.Configuration.GetValue<int?>("JwtSettings:DurationInMinutes") ?? 60;
+	options.BearerTokenExpiration = TimeSpan.FromMinutes(durationInMinutes);
+});
+
+builder.Services.AddAuthentication()
 .AddJwtBearer(options =>
 {
 	options.TokenValidationParameters = new TokenValidationParameters
@@ -143,7 +148,14 @@ builder.Services.AddAuthentication(options =>
 	};
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+	// Configure the default policy to accept both Identity Bearer tokens and JWT tokens
+	options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+		.AddAuthenticationSchemes(IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+		.RequireAuthenticatedUser()
+		.Build();
+});
 
 // Used for the Identity stuff to send emails to users
 // disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
@@ -154,6 +166,9 @@ var app = builder.Build();
 app.UseForwardedHeaders();
 app.UseHttpLogging();
 app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapIdentityApi<TblUser>();
 
 // defining routes here, after MapIdentityApi, will overwrite them, allowing us to customise them
@@ -185,9 +200,6 @@ if (showScalar == true)
 			.AddPreferredSecuritySchemes("Bearer");
 	});
 }
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.Run();
 

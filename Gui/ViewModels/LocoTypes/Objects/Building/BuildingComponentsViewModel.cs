@@ -115,10 +115,12 @@ public class BuildingComponentsViewModel : ReactiveObject
 				// When HasShadows flag is set, the first 4 images (part 0) are the base layer
 				// and the second 4 images (part 1) are the shadows.
 				// Shadows should be rendered first (below/behind the base layer).
+				// Example: variation [0, 1, 2] becomes [1, 0, 2] - swap first two parts, keep rest
 				var reorderedVariation = variation;
 				if (hasShadows && variation.Count >= minPartsForShadowReordering)
 				{
 					// Reorder so shadows (part 1) come before base (part 0)
+					// Skip(2) skips the first 2 parts we're explicitly including, avoiding duplication
 					reorderedVariation = [variation[shadowPartIndex], variation[basePartIndex], .. variation.Skip(minPartsForShadowReordering)];
 				}
 

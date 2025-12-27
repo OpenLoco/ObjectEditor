@@ -43,15 +43,28 @@ public class TestWebApplicationFactory<TProgram>
 		return testDirectory;
 	}
 
+	static void CreateDummyPaletteFile(string path)
+	{
+		// Create a 16x16 pixel PNG file for testing (palette map expects 16x16)
+		using var image = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(16, 16);
+		using var stream = File.Create(path);
+		image.Save(stream, new SixLabors.ImageSharp.Formats.Png.PngEncoder());
+	}
+
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		var testFolder = MakeServerFolderManagerTestDirectories();
+
+		// Create a dummy palette file for testing
+		var dummyPaletteFile = Path.Combine(testFolder?.FullName ?? Path.GetTempPath(), "palette.png");
+		CreateDummyPaletteFile(dummyPaletteFile);
 
 		var testConfigurationBuilder =
 			new ConfigurationBuilder()
 				.AddInMemoryCollection(
 				[
 					new("ObjectService:RootFolder", testFolder?.FullName),
+					new("ObjectService:PaletteMapFile", dummyPaletteFile),
 					new("ObjectService:ShowScalar", "False"),
 				])
 				.Build();

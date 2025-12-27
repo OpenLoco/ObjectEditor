@@ -9,6 +9,11 @@ using Scalar.AspNetCore;
 using System.Threading.RateLimiting;
 using Definitions.ObjectModels;
 using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,47 +122,57 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
-//builder.Services
-//.AddIdentityApiEndpoints<TblUser>()
-//.AddEntityFrameworkStores<LocoDbContext>();
+builder.Services
+	.AddIdentityApiEndpoints<TblUser>()
+	.AddEntityFrameworkStores<LocoDbContext>();
 
-//builder.Services.AddAuthentication(options =>
-//{
-//	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-//})
-//.AddJwtBearer(options =>
-//{
-//	options.TokenValidationParameters = new TokenValidationParameters
-//	{
-//		ValidateIssuer = true,
-//		ValidateAudience = true,
-//		ValidateLifetime = true,
-//		ValidateIssuerSigningKey = true,
-//		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-//		ValidAudience = builder.Configuration["JwtSettings:Audience"],
-//		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-//	};
-//});
+// Configure bearer token expiration from settings
+builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, options =>
+{
+	var durationInMinutes = builder.Configuration.GetValue<int?>("JwtSettings:DurationInMinutes") ?? 60;
+	options.BearerTokenExpiration = TimeSpan.FromMinutes(durationInMinutes);
+});
 
-//builder.Services.AddAuthorization();
-//builder.Services
-//	.AddAuthorizationBuilder()
-//	.AddPolicy(AdminPolicy.Name, AdminPolicy.Build);
+builder.Services.AddAuthentication()
+.AddJwtBearer(options =>
+{
+	options.TokenValidationParameters = new TokenValidationParameters
+	{
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+		ValidAudience = builder.Configuration["JwtSettings:Audience"],
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"] ?? throw new InvalidOperationException("JWT Key not configured"))),
+	};
+});
+
+builder.Services.AddAuthorization(options =>
+{
+	// Configure the default policy to accept both Identity Bearer tokens and JWT tokens
+	options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+		.AddAuthenticationSchemes(IdentityConstants.BearerScheme, JwtBearerDefaults.AuthenticationScheme)
+		.RequireAuthenticatedUser()
+		.Build();
+});
 
 // Used for the Identity stuff to send emails to users
 // disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
-//builder.Services.AddTransient<IEmailSender, EmailSender>();
+// builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
 app.UseForwardedHeaders();
 app.UseHttpLogging();
 app.UseRateLimiter();
-//app.MapLocoIdentityApi<TblUser>();
+app.UseAuthentication();
+app.UseAuthorization();
 
-// defining routes here, after MapLocoIdentityApi, will overwrite them, allowing us to customise them
-//app.MapPost("/register", () => Results.Ok());
+app.MapIdentityApi<TblUser>();
+
+// defining routes here, after MapIdentityApi, will overwrite them, allowing us to customise them
+// app.MapPost("/register", () => Results.Ok());
 
 _ = app
 	.MapHealthChecks("/health")
@@ -181,14 +196,10 @@ if (showScalar == true)
 		_ = options
 			.WithTitle("OpenLoco Object Service")
 			.WithTheme(ScalarTheme.Solarized)
-			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
-
-		//.AddPreferredSecuritySchemes("Bearer");
+			.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+			.AddPreferredSecuritySchemes("Bearer");
 	});
 }
-
-//app.UseAuthentication();
-//app.UseAuthorization();
 
 app.Run();
 

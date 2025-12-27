@@ -277,6 +277,26 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		set => model.RunCostFactor = value;
 	}
 
+	[Category("Cost"), ReadOnly(true), DisplayName("Effective Build Cost"), Description("The inflation-adjusted purchase cost for the year specified in settings")]
+	public int EffectiveBuildCost
+	{
+		get
+		{
+			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
+			return Common.Economy.GetInflationAdjustedCost(model.CostFactor, model.CostIndex, year);
+		}
+	}
+
+	[Category("Cost"), ReadOnly(true), DisplayName("Effective Run Cost"), Description("The inflation-adjusted running cost for the year specified in settings")]
+	public int EffectiveRunCost
+	{
+		get
+		{
+			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
+			return Common.Economy.GetInflationAdjustedCost(model.RunCostFactor, model.RunCostIndex, year);
+		}
+	}
+
 	[Category("Sprites")]
 	public CompanyColourType SpecialColourSchemeIndex
 	{

@@ -124,6 +124,7 @@ public class ObjectEditorModel : IDisposable
 	void LoadSettings()
 	{
 		Settings = EditorSettings.Load(SettingsFile, Logger);
+		GlobalSettings.CurrentSettings = Settings;
 
 		if (Settings.Validate(Logger))
 		{

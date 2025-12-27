@@ -92,6 +92,36 @@ public class BridgeViewModel(BridgeObject model)
 		set => Model.SellCostFactor = value;
 	}
 
+	[Category("Cost"), ReadOnly(true), DisplayName("Effective Base Cost"), Description("The inflation-adjusted base cost for the year specified in settings")]
+	public int EffectiveBaseCost
+	{
+		get
+		{
+			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
+			return Common.Economy.GetInflationAdjustedCost(Model.BaseCostFactor, Model.CostIndex, year);
+		}
+	}
+
+	[Category("Cost"), ReadOnly(true), DisplayName("Effective Height Cost"), Description("The inflation-adjusted height cost factor for the year specified in settings")]
+	public int EffectiveHeightCost
+	{
+		get
+		{
+			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
+			return Common.Economy.GetInflationAdjustedCost(Model.HeightCostFactor, Model.CostIndex, year);
+		}
+	}
+
+	[Category("Cost"), ReadOnly(true), DisplayName("Effective Sell Cost"), Description("The inflation-adjusted sell cost for the year specified in settings")]
+	public int EffectiveSellCost
+	{
+		get
+		{
+			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
+			return Common.Economy.GetInflationAdjustedCost(Model.SellCostFactor, Model.CostIndex, year);
+		}
+	}
+
 	[Category("Compatible")]
 	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
 

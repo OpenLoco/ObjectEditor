@@ -1,7 +1,6 @@
 using Definitions.Database;
 using Definitions.DTO.Identity;
 using Definitions.Web;
-using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Net;
 using System.Net.Http.Json;
@@ -57,47 +56,47 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public async Task Register_ShouldSucceed()
 	{
-		// Arrange
+		// arrange
 		var registerRequest = new DtoRegisterRequest(
 			Email: "test@example.com",
 			UserName: "testuser",
 			Password: "TestPassword123!"
 		);
 
-		// Act
+		// act
 		var response = await HttpClient!.PostAsJsonAsync("/register", registerRequest);
 
-		// Assert
+		// assert
 		Assert.That(response.IsSuccessStatusCode, Is.True);
 	}
 
 	[Test]
 	public async Task Register_WithInvalidEmail_ShouldFail()
 	{
-		// Arrange
+		// arrange
 		var registerRequest = new DtoRegisterRequest(
 			Email: "invalid-email",
 			UserName: "testuser",
 			Password: "TestPassword123!"
 		);
 
-		// Act
+		// act
 		var response = await HttpClient!.PostAsJsonAsync("/register", registerRequest);
 
-		// Assert
+		// assert
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
 	}
 
 	[Test]
 	public async Task Login_WithValidCredentials_ShouldSucceed()
 	{
-		// Arrange - First register a user
+		// arrange - First register a user
 		var registerRequest = new DtoRegisterRequest(
 			Email: "login@example.com",
 			UserName: "loginuser",
 			Password: "TestPassword123!"
 		);
-		await HttpClient!.PostAsJsonAsync("/register", registerRequest);
+		_ = await HttpClient!.PostAsJsonAsync("/register", registerRequest);
 
 		var loginRequest = new
 		{
@@ -105,10 +104,10 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 			Password = "TestPassword123!"
 		};
 
-		// Act
+		// act
 		var response = await HttpClient!.PostAsJsonAsync("/login?useCookies=false", loginRequest);
 
-		// Assert
+		// assert
 		Assert.That(response.IsSuccessStatusCode, Is.True);
 		var result = await response.Content.ReadAsStringAsync();
 		Assert.That(result, Is.Not.Empty);
@@ -117,37 +116,37 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 	[Test]
 	public async Task Login_WithInvalidCredentials_ShouldFail()
 	{
-		// Arrange
+		// arrange
 		var loginRequest = new
 		{
 			Email = "nonexistent@example.com",
 			Password = "WrongPassword123!"
 		};
 
-		// Act
+		// act
 		var response = await HttpClient!.PostAsJsonAsync("/login?useCookies=false", loginRequest);
 
-		// Assert
+		// assert
 		Assert.That(response.IsSuccessStatusCode, Is.False);
 	}
 
 	[Test]
 	public async Task Users_WithoutAuthentication_ShouldReturnUnauthorized()
 	{
-		// Act
+		// act
 		var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{RoutesV2.Users}");
 
-		// Assert
+		// assert
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 	}
 
 	[Test]
 	public async Task Roles_WithoutAuthentication_ShouldReturnUnauthorized()
 	{
-		// Act
+		// act
 		var response = await HttpClient!.GetAsync($"{RoutesV2.Prefix}{RoutesV2.Roles}");
 
-		// Assert
+		// assert
 		Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 	}
 }

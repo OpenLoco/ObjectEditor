@@ -81,6 +81,10 @@ public class BuildingComponentsViewModel : ReactiveObject
 
 	protected void RecomputeBuildingVariationViewModels(List<List<uint8_t>> buildingVariations, List<byte> buildingHeights)
 	{
+		const int minPartsForShadowReordering = 2;
+		const int shadowPartIndex = 1;
+		const int basePartIndex = 0;
+
 		var layers = ImageTable.Groups.ConvertAll(x => x.GraphicsElements);
 
 		BuildingVariationViewModels.Clear();
@@ -112,10 +116,10 @@ public class BuildingComponentsViewModel : ReactiveObject
 				// and the second 4 images (part 1) are the shadows.
 				// Shadows should be rendered first (below/behind the base layer).
 				var reorderedVariation = variation;
-				if (hasShadows && variation.Count >= 2)
+				if (hasShadows && variation.Count >= minPartsForShadowReordering)
 				{
 					// Reorder so shadows (part 1) come before base (part 0)
-					reorderedVariation = [variation[1], variation[0], .. variation.Skip(2)];
+					reorderedVariation = [variation[shadowPartIndex], variation[basePartIndex], .. variation.Skip(minPartsForShadowReordering)];
 				}
 
 				foreach (var variationItem in reorderedVariation)

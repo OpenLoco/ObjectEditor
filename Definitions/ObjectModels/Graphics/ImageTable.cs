@@ -75,7 +75,7 @@ public class ImageTable : IHasGraphicsElements
 			var toRemove = g.GraphicsElements.FirstOrDefault(x => x.ImageTableIndex == index);
 			if (toRemove != null)
 			{
-				g.GraphicsElements.Remove(toRemove);
+				_ = g.GraphicsElements.Remove(toRemove);
 				break;
 			}
 		}

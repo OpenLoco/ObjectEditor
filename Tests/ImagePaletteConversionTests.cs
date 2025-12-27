@@ -1,10 +1,10 @@
-using NUnit.Framework;
 using Common.Logging;
 using Dat.FileParsing;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using NUnit.Framework;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Dat.Tests;
 

@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Logging;
-using ReactiveUI.Avalonia;
 using Common;
+using ReactiveUI.Avalonia;
 using System;
 
 namespace Gui;

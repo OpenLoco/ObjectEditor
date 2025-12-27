@@ -1,5 +1,4 @@
 using Dat.Data;
-using Dat.Types;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;

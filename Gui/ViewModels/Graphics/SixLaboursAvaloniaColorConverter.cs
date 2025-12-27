@@ -1,6 +1,6 @@
 using SixLabors.ImageSharp.PixelFormats;
-using SLColour = SixLabors.ImageSharp.Color;
 using AvaColour = Avalonia.Media.Color;
+using SLColour = SixLabors.ImageSharp.Color;
 
 namespace Gui.ViewModels.Graphics;
 

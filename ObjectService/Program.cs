@@ -1,19 +1,19 @@
+using Definitions.Database;
+using Definitions.ObjectModels;
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using ObjectService.RouteHandlers;
-using Definitions.Database;
-using ObjectService;
-using Scalar.AspNetCore;
-using System.Threading.RateLimiting;
-using Definitions.ObjectModels;
-using Microsoft.OpenApi;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using ObjectService;
+using ObjectService.RouteHandlers;
+using Scalar.AspNetCore;
 using System.Text;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.BearerToken;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,14 +73,14 @@ builder.Services.AddSingleton(paletteMap);
 builder.Services.AddHttpLogging(logging =>
 {
 	// these are marked [redacted] in the logs unless specified here
-	logging.RequestHeaders.Add("Cdn-Loop");
-	logging.RequestHeaders.Add("Cf-Connecting-Ip");
-	logging.RequestHeaders.Add("Cf-Ipcountry");
-	logging.RequestHeaders.Add("Cf-Ray");
-	logging.RequestHeaders.Add("Cf-Visitor");
-	logging.RequestHeaders.Add("Cf-Warp-Tag-Id");
-	logging.RequestHeaders.Add("X-Forwarded-For");
-	logging.RequestHeaders.Add("X-Forwarded-Proto");
+	_ = logging.RequestHeaders.Add("Cdn-Loop");
+	_ = logging.RequestHeaders.Add("Cf-Connecting-Ip");
+	_ = logging.RequestHeaders.Add("Cf-Ipcountry");
+	_ = logging.RequestHeaders.Add("Cf-Ray");
+	_ = logging.RequestHeaders.Add("Cf-Visitor");
+	_ = logging.RequestHeaders.Add("Cf-Warp-Tag-Id");
+	_ = logging.RequestHeaders.Add("X-Forwarded-For");
+	_ = logging.RequestHeaders.Add("X-Forwarded-Proto");
 
 	logging.LoggingFields = HttpLoggingFields.All;
 	//logging.LoggingFields = HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.Duration; // this is `All` excluding `ResponseBody`

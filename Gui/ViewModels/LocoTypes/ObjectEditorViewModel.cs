@@ -256,7 +256,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				}
 				else
 				{
-					CurrentObject.LocoObject.ImageTable?.PaletteMap = Model.PaletteMap;
+					_ = (CurrentObject.LocoObject.ImageTable?.PaletteMap = Model.PaletteMap);
 					if (CurrentObject.LocoObject.ImageTable == null)
 					{
 						logger.Info($"{CurrentFile.DisplayName} has no image table");

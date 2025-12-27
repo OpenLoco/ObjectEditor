@@ -422,7 +422,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		var offsetsToRemove = CargoTypeSpriteOffsets.Where(x => !categoriesInUse.Contains(x.CargoCategoryViewModel.Category)).ToList();
 		foreach (var offset in offsetsToRemove)
 		{
-			CargoTypeSpriteOffsets.Remove(offset);
+			_ = CargoTypeSpriteOffsets.Remove(offset);
 		}
 	}
 
@@ -451,7 +451,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 					
 					if (!isStillUsed)
 					{
-						CargoTypeSpriteOffsets.Remove(offsetToRemove);
+						_ = CargoTypeSpriteOffsets.Remove(offsetToRemove);
 					}
 				}
 			}

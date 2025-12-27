@@ -18,11 +18,11 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 		// Fill the entire image with a background color (e.g., white)
 		image.Mutate(ctx =>
 		{
-			ctx.BackgroundColor(Color.White);
+			_ = ctx.BackgroundColor(Color.White);
 
 			// Draw a red rectangle
 			var border = 1;
-			ctx.Fill(Color.Red, new RectangleF(border, border, width - (2 * border), height - (2 * border)));
+			_ = ctx.Fill(Color.Red, new RectangleF(border, border, width - (2 * border), height - (2 * border)));
 
 			// Draw a blue circle
 			//ctx.Fill(Color.Blue, new EllipsePolygon(400, 300, 100));

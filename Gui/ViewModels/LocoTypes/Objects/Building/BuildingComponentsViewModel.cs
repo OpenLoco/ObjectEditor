@@ -42,6 +42,8 @@ public class BuildingComponentsViewModel : ReactiveObject
 
 	protected ImageTable ImageTable { get; set; }
 
+	protected BuildingObjectFlags? BuildingFlags { get; set; }
+
 	public BuildingComponentsViewModel()
 	{
 		_ = this.WhenAnyValue(x => x.BuildingVariations)
@@ -53,12 +55,13 @@ public class BuildingComponentsViewModel : ReactiveObject
 		_ = MessageBus.Current.Listen<BuildingComponents>().Subscribe(UpdateBuildingComponents);
 	}
 
-	public BuildingComponentsViewModel(BuildingComponents buildingComponents, ImageTable imageTable) : this()
+	public BuildingComponentsViewModel(BuildingComponents buildingComponents, ImageTable imageTable, BuildingObjectFlags? buildingFlags = null) : this()
 	{
 		ArgumentNullException.ThrowIfNull(buildingComponents);
 		ArgumentNullException.ThrowIfNull(imageTable);
 
 		ImageTable = imageTable;
+		BuildingFlags = buildingFlags;
 		UpdateBuildingComponents(buildingComponents);
 	}
 
@@ -78,12 +81,18 @@ public class BuildingComponentsViewModel : ReactiveObject
 
 	protected void RecomputeBuildingVariationViewModels(List<List<uint8_t>> buildingVariations, List<byte> buildingHeights)
 	{
+		const int minPartsForShadowReordering = 2;
+		const int shadowPartIndex = 1;
+		const int basePartIndex = 0;
+
 		var layers = ImageTable.Groups.ConvertAll(x => x.GraphicsElements);
 
 		BuildingVariationViewModels.Clear();
 
 		MaxWidth = layers.Max(x => x.Max(y => y.Width)) + 16;
 		MaxHeight = (layers.Max(x => x.Max(y => y.Height)) * buildingHeights.Count) + buildingHeights.Sum(x => x) + buildingVariations.Max(x => x.Count) * (VerticalLayerSpacing * 2);
+
+		var hasShadows = BuildingFlags?.HasFlag(BuildingObjectFlags.HasShadows) ?? false;
 
 		var x = 0;
 		foreach (var variation in buildingVariations)
@@ -102,7 +111,20 @@ public class BuildingComponentsViewModel : ReactiveObject
 				};
 
 				var cumulativeOffset = 0;
-				foreach (var variationItem in variation)
+
+				// When HasShadows flag is set, the first 4 images (part 0) are the base layer
+				// and the second 4 images (part 1) are the shadows.
+				// Shadows should be rendered first (below/behind the base layer).
+				// Example: variation [0, 1, 2] becomes [1, 0, 2] - swap first two parts, keep rest
+				var reorderedVariation = variation;
+				if (hasShadows && variation.Count >= minPartsForShadowReordering)
+				{
+					// Reorder so shadows (part 1) come before base (part 0)
+					// Skip(2) skips the first 2 parts we're explicitly including, avoiding duplication
+					reorderedVariation = [variation[shadowPartIndex], variation[basePartIndex], .. variation.Skip(minPartsForShadowReordering)];
+				}
+
+				foreach (var variationItem in reorderedVariation)
 				{
 					if (layers.Count > variationItem)
 					{

@@ -117,47 +117,27 @@ builder.Services.AddRateLimiter(rlOptions => rlOptions
 		};
 	}));
 
-//builder.Services
-//.AddIdentityApiEndpoints<TblUser>()
-//.AddEntityFrameworkStores<LocoDbContext>();
+builder.Services
+	.AddIdentityApiEndpoints<TblUser>()
+	.AddEntityFrameworkStores<LocoDbContext>();
 
-//builder.Services.AddAuthentication(options =>
-//{
-//	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-//})
-//.AddJwtBearer(options =>
-//{
-//	options.TokenValidationParameters = new TokenValidationParameters
-//	{
-//		ValidateIssuer = true,
-//		ValidateAudience = true,
-//		ValidateLifetime = true,
-//		ValidateIssuerSigningKey = true,
-//		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-//		ValidAudience = builder.Configuration["JwtSettings:Audience"],
-//		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-//	};
-//});
 
-//builder.Services.AddAuthorization();
-//builder.Services
-//	.AddAuthorizationBuilder()
-//	.AddPolicy(AdminPolicy.Name, AdminPolicy.Build);
+
+builder.Services.AddAuthorization();
 
 // Used for the Identity stuff to send emails to users
 // disabling this line effectively disables all email sending, as a default NoOpEmailSender is used in place
-//builder.Services.AddTransient<IEmailSender, EmailSender>();
+// builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
 app.UseForwardedHeaders();
 app.UseHttpLogging();
 app.UseRateLimiter();
-//app.MapLocoIdentityApi<TblUser>();
+app.MapIdentityApi<TblUser>();
 
-// defining routes here, after MapLocoIdentityApi, will overwrite them, allowing us to customise them
-//app.MapPost("/register", () => Results.Ok());
+// defining routes here, after MapIdentityApi, will overwrite them, allowing us to customise them
+// app.MapPost("/register", () => Results.Ok());
 
 _ = app
 	.MapHealthChecks("/health")
@@ -187,8 +167,8 @@ if (showScalar == true)
 	});
 }
 
-//app.UseAuthentication();
-//app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();
 

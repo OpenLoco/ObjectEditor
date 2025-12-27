@@ -21,11 +21,7 @@ public static class V2RouteBuilderExtensions
 	{
 		var v2 = endpoints.MapGroup(RoutesV2.Prefix);
 		_ = v2.MapServerRoutes();
-
-#if DEBUG
-		// not ready for prime time yet
 		_ = v2.MapAdminRoutes().RequireAuthorization();
-#endif
 
 		return v2;
 	}

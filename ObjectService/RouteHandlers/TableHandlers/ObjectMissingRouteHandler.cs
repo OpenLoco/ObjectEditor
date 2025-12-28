@@ -93,12 +93,12 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		return Results.Created($"Successfully added 'missing' DAT object {tblObject.Name} with checksum {entry.DatChecksum} and unique id {tblObject.Id}", tblObject.Id);
 	}
 
-	static Task<IResult> ReadNotImplementedAsync(UniqueObjectId id, [FromServices] LocoDbContext db)
+	static Task<IResult> ReadNotImplementedAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db)
 		=> Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-	static Task<IResult> UpdateNotImplementedAsync(UniqueObjectId id, DtoMissingObjectEntry request, [FromServices] LocoDbContext db)
+	static Task<IResult> UpdateNotImplementedAsync([FromRoute] UniqueObjectId id, [FromBody] DtoMissingObjectEntry request, [FromServices] LocoDbContext db)
 		=> Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
-	static Task<IResult> DeleteNotImplementedAsync(UniqueObjectId id, [FromServices] LocoDbContext db)
+	static Task<IResult> DeleteNotImplementedAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db)
 		=> Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 }

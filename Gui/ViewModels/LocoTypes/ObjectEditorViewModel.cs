@@ -159,7 +159,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		}
 
 		// split the CurrentFile path on "opengraphics" folder
-		var dir = Path.GetRelativePath(Model.Settings.ObjDataDirectory, CurrentFile.FileName);
+		_ = Path.GetRelativePath(Model.Settings.ObjDataDirectory, CurrentFile.FileName);
 		var parentDirName = Path.GetFileName(Path.GetDirectoryName(CurrentFile.FileName));
 
 		if (OriginalObjectFiles.Names.TryGetValue(parentDirName, out var fileInfo))
@@ -411,7 +411,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		CurrentObjectViewModel.CopyBackToModel();
 
 		// this is hacky but it should work
-		if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject so)
+		if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject)
 		{
 			var datWav = avm.GetAsDatWav(LocoAudioType.SoundEffect);
 			if (datWav == null)

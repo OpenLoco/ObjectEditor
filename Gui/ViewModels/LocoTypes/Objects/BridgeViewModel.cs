@@ -1,6 +1,8 @@
 using Definitions.ObjectModels.Objects.Bridge;
 using Definitions.ObjectModels.Types;
+using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
+using ReactiveUI;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
@@ -68,24 +70,30 @@ public class BridgeViewModel(BridgeObject model)
 	public uint8_t CostIndex
 	{
 		get => Model.CostIndex;
-		set => Model.CostIndex = value;
+		set
+		{
+			Model.CostIndex = value;
+			this.RaisePropertyChanged(nameof(BaseCostFactor));
+			this.RaisePropertyChanged(nameof(HeightCostFactor));
+			this.RaisePropertyChanged(nameof(SellCostFactor));
+		}
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BaseCostFactor
 	{
 		get => Model.BaseCostFactor;
 		set => Model.BaseCostFactor = value;
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t HeightCostFactor
 	{
 		get => Model.HeightCostFactor;
 		set => Model.HeightCostFactor = value;
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;

@@ -1,5 +1,7 @@
 using Definitions.ObjectModels.Objects.Tree;
+using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
+using ReactiveUI;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
@@ -48,17 +50,22 @@ public class TreeViewModel(TreeObject model)
 	public uint8_t CostIndex
 	{
 		get => Model.CostIndex;
-		set => Model.CostIndex = value;
+		set
+		{
+			Model.CostIndex = value;
+			this.RaisePropertyChanged(nameof(BuildCostFactor));
+			this.RaisePropertyChanged(nameof(ClearCostFactor));
+		}
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
 	public int16_t ClearCostFactor
 	{
 		get => Model.ClearCostFactor;

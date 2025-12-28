@@ -62,7 +62,7 @@ public class ServerFolderManager : IServerFolderManager
 		{
 			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
 			File.Delete(indexFile);
 			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!; // try again, recreating the index

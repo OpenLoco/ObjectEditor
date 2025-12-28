@@ -1,6 +1,5 @@
 namespace Definitions.DTO;
 
-
 public record DtoDatObjectEntry(
 	UniqueObjectId Id,
 	string DatName,

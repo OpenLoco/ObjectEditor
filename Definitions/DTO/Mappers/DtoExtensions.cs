@@ -100,6 +100,12 @@ public static class DtoExtensions
 	public static TblObject ToTable(this DtoObjectEntry dto)
 		=> new() { Id = dto.Id, Name = dto.InternalName, Description = dto.Description, ObjectSource = dto.ObjectSource, ObjectType = dto.ObjectType, VehicleType = dto.VehicleType, CreatedDate = dto.CreatedDate, ModifiedDate = dto.ModifiedDate, UploadedDate = dto.UploadedDate };
 
+	public static DtoObjectMissingEntry ToDtoEntry(this TblObjectMissing table)
+		=> new(table.Id, table.DatName, table.DatChecksum, table.ObjectType);
+
+	public static TblObjectMissing ToTable(this DtoObjectMissingEntry dto)
+		=> new() { Id = dto.Id, DatName = dto.DatName, DatChecksum = dto.DatChecksum, ObjectType = dto.ObjectType };
+
 	public static DtoScenarioEntry ToDtoEntry(this TblSC5File table)
 		=> new(table.Id, table.Name);
 

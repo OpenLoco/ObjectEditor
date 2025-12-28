@@ -3,6 +3,7 @@ using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
 using Dat.Types.SCV5;
+using Definitions.DTO;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
 using Index;
@@ -152,7 +153,7 @@ public class SCV5ViewModel : BaseFileViewModel
 			}
 
 			// obj is missing - we need to download
-			logger.Info($"Scenario {CurrentFile.DisplayName} has missing {obj.ObjectType} \"{obj.Name}\" with checksum {obj.Checksum}");
+			logger.Info($"Scenario {CurrentFile.DisplayName} has missing object. Name=\"{obj.Name}\" Checksum={obj.Checksum} ObjectType={obj.ObjectType} ");
 
 			var onlineObj = Model.ObjectIndexOnline
 				.Objects
@@ -160,24 +161,24 @@ public class SCV5ViewModel : BaseFileViewModel
 
 			if (onlineObj == null)
 			{
-				logger.Error($"Couldn't find a matching object in the online index for {obj.ObjectType} \"{obj.Name}\" with checksum {obj.Checksum}");
-				
+				logger.Error($"Couldn't find a matching object in the online index. Name=\"{obj.Name}\" Checksum={obj.Checksum} ObjectType={obj.ObjectType} ");
+
 				// Add this missing object to the server's missing objects list
-				var missingEntry = new Definitions.DTO.DtoMissingObjectEntry(
+				var missingEntry = new DtoObjectMissingUpload(
 					obj.Name,
 					obj.Checksum,
 					obj.ObjectType.Convert());
-				
+
 				var result = await Model.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
-				if (result != 0)
+				if (result != null)
 				{
-					logger.Info($"Successfully added missing object to server: {obj.Name} ({obj.Checksum})");
+					logger.Info($"Successfully added missing object to server: Id={result.Id} Name=\"{obj.Name}\" Checksum=({obj.Checksum})");
 				}
 				else
 				{
-					logger.Error($"Failed to add missing object to server: {obj.Name} ({obj.Checksum})");
+					logger.Error($"Failed to add missing object to server: Name=\"{obj.Name}\" Checksum=({obj.Checksum})");
 				}
-				
+
 				continue;
 			}
 

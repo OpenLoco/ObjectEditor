@@ -1,9 +1,7 @@
 using Common;
-using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
-using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,75 +27,42 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		logger.LogInformation("[ListAsync] List requested for missing objects");
 
 		return Results.Ok(
-			await db.Objects
-				.Where(x => x.Availability == ObjectAvailability.Missing)
+			await db.ObjectsMissing
 				.Select(x => x.ToDtoEntry())
 				.ToListAsync());
 	}
 
-	static async Task<IResult> CreateAsync([FromBody] DtoMissingObjectEntry entry, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
+	static async Task<IResult> CreateAsync([FromBody] DtoObjectMissingUpload entry, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{
 		logger.LogInformation("[CreateAsync] Create requested");
 
-		var objName = $"{entry.DatName}_{entry.DatChecksum}";
-		var existing = await db.Objects.FirstOrDefaultAsync(x => x.Name == objName);
+		var existing = await db.ObjectsMissing
+			.FirstOrDefaultAsync(x => x.DatName == entry.DatName && x.DatChecksum == entry.DatChecksum);
 		if (existing != null)
 		{
-			return Results.Conflict($"Object already exists in the database. DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existing.UploadedDate}");
+			return Results.Conflict($"Missing object already exists in the database. DatName={entry.DatName} DatChecksum={entry.DatChecksum}");
 		}
 
-		// double check it's missing
-		if (db.DoesObjectExist(entry.DatName, entry.DatChecksum, out var existingObject) && existingObject != null)
+		// save to db
+		var tblObjectMissing = new TblObjectMissing()
 		{
-			return Results.Conflict($"Object already exists in the database. UniqueId={existingObject.Id} DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existingObject.UploadedDate}");
-		}
-
-		// save to db if true
-		var tblObject = new TblObject()
-		{
-			Name = $"{entry.DatName}_{entry.DatChecksum}",
-			Description = string.Empty,
-			ObjectSource = ObjectSource.Custom,
-			ObjectType = entry.ObjectType,
-			VehicleType = null,
-			Availability = ObjectAvailability.Missing,
-			CreatedDate = null,
-			ModifiedDate = null,
-			UploadedDate = DateOnly.UtcToday,
-			Authors = [],
-			Tags = [],
-			ObjectPacks = [],
-			DatObjects = [],
-			StringTable = [],
-			SubObjectId = 0,
-			Licence = null,
-		};
-
-		_ = await db.Objects.AddAsync(tblObject);
-		_ = await db.SaveChangesAsync();
-
-		// make dat objects
-		//var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-		tblObject.DatObjects.Add(new TblDatObject()
-		{
-			ObjectId = tblObject.Id,
 			DatName = entry.DatName,
 			DatChecksum = entry.DatChecksum,
-			xxHash3 = 0,
-			Object = tblObject,
-		});
+			ObjectType = entry.ObjectType,
+		};
 
-		// save again
+		_ = await db.ObjectsMissing.AddAsync(tblObjectMissing);
 		_ = await db.SaveChangesAsync();
-		return Results.Created($"Successfully added 'missing' DAT object {tblObject.Name} with checksum {entry.DatChecksum} and unique id {tblObject.Id}", tblObject.Id);
+
+		return Results.Created($"Successfully added missing object {entry.DatName} with checksum {entry.DatChecksum} and unique id {tblObjectMissing.Id}", tblObjectMissing.ToDtoEntry());
 	}
 
 	static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{
 		logger.LogInformation("[ReadAsync] Read requested");
 
-		var existing = await db.Objects
-			.FirstOrDefaultAsync(x => x.Availability == ObjectAvailability.Missing && x.Id == id);
+		var existing = await db.ObjectsMissing
+			.FirstOrDefaultAsync(x => x.Id == id);
 
 		if (existing == null)
 		{
@@ -107,22 +72,26 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		return Results.Ok(existing.ToDtoEntry());
 	}
 
-	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoMissingObjectEntry request, [FromServices] LocoDbContext db)
-		=> await Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoObjectMissingUpload request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
+	{
+		logger.LogInformation("[UpdateAsync] UpdateAsync requested");
+
+		return await Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	}
 
 	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{
 		logger.LogInformation("[DeleteAsync] Delete requested");
 
-		var existing = await db.Objects
-			.FirstOrDefaultAsync(x => x.Availability == ObjectAvailability.Missing && x.Id == id);
+		var existing = await db.ObjectsMissing
+			.FirstOrDefaultAsync(x => x.Id == id);
 
 		if (existing == null)
 		{
 			return Results.NotFound();
 		}
 
-		_ = db.Objects.Remove(existing);
+		_ = db.ObjectsMissing.Remove(existing);
 		_ = await db.SaveChangesAsync();
 
 		return Results.Ok();

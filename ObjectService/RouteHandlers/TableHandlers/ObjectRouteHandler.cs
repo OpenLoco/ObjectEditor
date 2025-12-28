@@ -235,14 +235,18 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		if (existing != null)
 		{
-			if (existing.Availability == ObjectAvailability.Missing)
-			{
-				// we've found a missing object! it will already have an entry so we need to update it, not make a new entry
-				// see #196
-				//return UpdateAsync(existing.Id, request.ToDtoDescriptor(), db, logger);
-			}
-
 			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existing!.UploadedDate}");
+		}
+
+		// Check if this object was previously marked as missing
+		var missingEntry = await db.ObjectsMissing
+			.FirstOrDefaultAsync(x => x.DatName == hdrs.S5.Name && x.DatChecksum == hdrs.S5.Checksum);
+
+		if (missingEntry != null)
+		{
+			// we've found a missing object! delete it from the missing objects table since we're now adding the real object
+			// see #196
+			_ = db.ObjectsMissing.Remove(missingEntry);
 		}
 
 		if (db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObject))

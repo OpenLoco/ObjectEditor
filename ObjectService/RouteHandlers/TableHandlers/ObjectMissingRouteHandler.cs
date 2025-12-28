@@ -107,8 +107,8 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		return Results.Ok(existing);
 	}
 
-	static Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoMissingObjectEntry request, [FromServices] LocoDbContext db)
-		=> Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoMissingObjectEntry request, [FromServices] LocoDbContext db)
+		=> await Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{

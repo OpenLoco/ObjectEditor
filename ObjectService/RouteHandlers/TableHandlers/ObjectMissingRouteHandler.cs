@@ -21,6 +21,11 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 	public static Delegate UpdateDelegate => UpdateNotImplementedAsync;
 	public static Delegate DeleteDelegate => DeleteNotImplementedAsync;
 
+	public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
+	{
+		// No additional routes needed for missing objects beyond the standard CRUD operations
+	}
+
 	static async Task<IResult> ListMissingObjects([FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{
 		logger.LogInformation("[ListMissingObjects] List requested for missing objects");

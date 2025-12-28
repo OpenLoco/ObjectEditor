@@ -18,7 +18,7 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 	public DbSet<TblObject> Objects => Set<TblObject>();
 	public DbSet<TblStringTableRow> StringTable => Set<TblStringTableRow>();
 	public DbSet<TblDatObject> DatObjects => Set<TblDatObject>();
-	public DbSet<TblObjectMissing> MissingObjects => Set<TblObjectMissing>();
+	public DbSet<TblObjectMissing> ObjectsMissing => Set<TblObjectMissing>();
 
 	#region Objects
 

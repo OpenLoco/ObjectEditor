@@ -229,7 +229,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 	public async Task AddMissingObjectAsync()
 	{
 		// arrange
-		var missingEntry = new DtoMissingObjectEntry("TESTOBJ1", 123456789, ObjectType.Vehicle);
+		var missingEntry = new DtoObjectMissingEntry("TESTOBJ1", 123456789, ObjectType.Vehicle);
 
 		// act
 		var result = await Client.AddMissingObjectAsync(HttpClient!, missingEntry, new Logger());
@@ -239,7 +239,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 
 		// verify the object was added to the database
 		using var dbContext = GetDbContext();
-		var addedObject = await dbContext.MissingObjects
+		var addedObject = await dbContext.ObjectsMissing
 			.FirstOrDefaultAsync(x => x.DatName == missingEntry.DatName && x.DatChecksum == missingEntry.DatChecksum);
 
 		using (Assert.EnterMultipleScope())

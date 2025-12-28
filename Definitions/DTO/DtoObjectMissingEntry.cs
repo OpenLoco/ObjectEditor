@@ -2,7 +2,7 @@ using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
-public record DtoMissingObjectEntry(
+public record DtoObjectMissingEntry(
 	string DatName,
 	uint32_t DatChecksum,
 	ObjectType ObjectType);

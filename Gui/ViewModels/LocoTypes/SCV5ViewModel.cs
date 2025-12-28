@@ -163,7 +163,7 @@ public class SCV5ViewModel : BaseFileViewModel
 				logger.Error($"Couldn't find a matching object in the online index for {obj.ObjectType} \"{obj.Name}\" with checksum {obj.Checksum}");
 				
 				// Add this missing object to the server's missing objects list
-				var missingEntry = new Definitions.DTO.DtoMissingObjectEntry(
+				var missingEntry = new Definitions.DTO.DtoObjectMissingEntry(
 					obj.Name,
 					obj.Checksum,
 					obj.ObjectType.Convert());

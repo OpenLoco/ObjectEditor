@@ -239,14 +239,14 @@ public class ObjectRouteHandler : ITableRouteHandler
 		}
 
 		// Check if this object was previously marked as missing
-		var missingEntry = await db.MissingObjects
+		var missingEntry = await db.ObjectsMissing
 			.FirstOrDefaultAsync(x => x.DatName == hdrs.S5.Name && x.DatChecksum == hdrs.S5.Checksum);
 
 		if (missingEntry != null)
 		{
 			// we've found a missing object! delete it from the missing objects table since we're now adding the real object
 			// see #196
-			_ = db.MissingObjects.Remove(missingEntry);
+			_ = db.ObjectsMissing.Remove(missingEntry);
 		}
 
 		if (db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObject))

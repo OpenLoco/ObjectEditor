@@ -2,9 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.DTO.Comparers;
 
-public class DtoMissingObjectEntryComparer : IEqualityComparer<DtoMissingObjectEntry>
+public class DtoMissingObjectEntryComparer : IEqualityComparer<DtoObjectMissingEntry>
 {
-	public bool Equals(DtoMissingObjectEntry? x, DtoMissingObjectEntry? y)
+	public bool Equals(DtoObjectMissingEntry? x, DtoObjectMissingEntry? y)
 	{
 		if (x is null || y is null)
 		{
@@ -16,6 +16,6 @@ public class DtoMissingObjectEntryComparer : IEqualityComparer<DtoMissingObjectE
 			&& x.ObjectType == y.ObjectType;
 	}
 
-	public int GetHashCode([DisallowNull] DtoMissingObjectEntry obj)
+	public int GetHashCode([DisallowNull] DtoObjectMissingEntry obj)
 		=> HashCode.Combine(obj.DatName, obj.DatChecksum, obj.ObjectType);
 }

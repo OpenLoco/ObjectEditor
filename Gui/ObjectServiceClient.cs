@@ -70,6 +70,6 @@ public class ObjectServiceClient
 	public async Task<DtoObjectDescriptor?> UploadDatFileAsync(string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate)
 		=> await Client.UploadDatFileAsync(WebClient, filename, datFileBytes, creationDate, modifiedDate, Logger);
 
-	public async Task<UniqueObjectId> AddMissingObjectAsync(DtoMissingObjectEntry entry)
+	public async Task<UniqueObjectId> AddMissingObjectAsync(DtoObjectMissingEntry entry)
 		=> await Client.AddMissingObjectAsync(WebClient, entry, Logger);
 }

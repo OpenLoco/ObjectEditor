@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -72,7 +72,7 @@ namespace Definitions.Database.Migrations
                 defaultValue: (byte)0);
 
             migrationBuilder.CreateTable(
-                name: "MissingObjects",
+                name: "ObjectsMissing",
                 columns: table => new
                 {
                     Id = table.Column<ulong>(type: "INTEGER", nullable: false)
@@ -83,12 +83,12 @@ namespace Definitions.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MissingObjects", x => x.Id);
+                    table.PrimaryKey("PK_ObjectsMissing", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_MissingObjects_DatName_DatChecksum",
-                table: "MissingObjects",
+                name: "IX_ObjectsMissing_DatName_DatChecksum",
+                table: "ObjectsMissing",
                 columns: new[] { "DatName", "DatChecksum" },
                 unique: true);
         }
@@ -97,7 +97,7 @@ namespace Definitions.Database.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "MissingObjects");
+                name: "ObjectsMissing");
 
             migrationBuilder.DropColumn(
                 name: "InitialHeight",

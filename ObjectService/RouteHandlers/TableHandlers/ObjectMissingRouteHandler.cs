@@ -29,16 +29,16 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		logger.LogInformation("[ListAsync] List requested for missing objects");
 
 		return Results.Ok(
-			await db.MissingObjects
+			await db.ObjectsMissing
 				.Select(x => x.ToDtoEntry())
 				.ToListAsync());
 	}
 
-	static async Task<IResult> CreateAsync([FromBody] DtoMissingObjectEntry entry, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
+	static async Task<IResult> CreateAsync([FromBody] DtoObjectMissingEntry entry, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{
 		logger.LogInformation("[CreateAsync] Create requested");
 
-		var existing = await db.MissingObjects
+		var existing = await db.ObjectsMissing
 			.FirstOrDefaultAsync(x => x.DatName == entry.DatName && x.DatChecksum == entry.DatChecksum);
 		if (existing != null)
 		{
@@ -53,7 +53,7 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 			ObjectType = entry.ObjectType,
 		};
 
-		_ = await db.MissingObjects.AddAsync(tblObjectMissing);
+		_ = await db.ObjectsMissing.AddAsync(tblObjectMissing);
 		_ = await db.SaveChangesAsync();
 
 		return Results.Created($"Successfully added missing object {entry.DatName} with checksum {entry.DatChecksum} and unique id {tblObjectMissing.Id}", tblObjectMissing.Id);
@@ -63,7 +63,7 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 	{
 		logger.LogInformation("[ReadAsync] Read requested");
 
-		var existing = await db.MissingObjects
+		var existing = await db.ObjectsMissing
 			.FirstOrDefaultAsync(x => x.Id == id);
 
 		if (existing == null)
@@ -74,14 +74,14 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		return Results.Ok(existing.ToDtoEntry());
 	}
 
-	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoMissingObjectEntry request, [FromServices] LocoDbContext db)
+	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoObjectMissingEntry request, [FromServices] LocoDbContext db)
 		=> await Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 
 	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{
 		logger.LogInformation("[DeleteAsync] Delete requested");
 
-		var existing = await db.MissingObjects
+		var existing = await db.ObjectsMissing
 			.FirstOrDefaultAsync(x => x.Id == id);
 
 		if (existing == null)
@@ -89,7 +89,7 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 			return Results.NotFound();
 		}
 
-		_ = db.MissingObjects.Remove(existing);
+		_ = db.ObjectsMissing.Remove(existing);
 		_ = await db.SaveChangesAsync();
 
 		return Results.Ok();

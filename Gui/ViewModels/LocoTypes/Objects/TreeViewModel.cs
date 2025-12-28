@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Tree;
+using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
@@ -51,39 +52,7 @@ public class TreeViewModel(TreeObject model)
 		set => Model.CostIndex = value;
 	}
 
-	[Category("Cost")]
-	public int16_t BuildCostFactor
-	{
-		get => Model.BuildCostFactor;
-		set => Model.BuildCostFactor = value;
-	}
 
-	[Category("Cost")]
-	public int16_t ClearCostFactor
-	{
-		get => Model.ClearCostFactor;
-		set => Model.ClearCostFactor = value;
-	}
-
-	[Category("Cost"), ReadOnly(true), DisplayName("Effective Build Cost"), Description("The inflation-adjusted build cost for the year specified in settings")]
-	public int EffectiveBuildCost
-	{
-		get
-		{
-			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
-			return Common.Economy.GetInflationAdjustedCost(Model.BuildCostFactor, Model.CostIndex, year);
-		}
-	}
-
-	[Category("Cost"), ReadOnly(true), DisplayName("Effective Clear Cost"), Description("The inflation-adjusted clear cost for the year specified in settings")]
-	public int EffectiveClearCost
-	{
-		get
-		{
-			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
-			return Common.Economy.GetInflationAdjustedCost(Model.ClearCostFactor, Model.CostIndex, year);
-		}
-	}
 
 	[Category("Building")]
 	public uint8_t InitialHeight

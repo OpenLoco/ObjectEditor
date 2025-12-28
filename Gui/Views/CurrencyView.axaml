@@ -1,0 +1,44 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vi="using:Gui.Views"
+	xmlns:vm="using:Gui.ViewModels">
+	<Design.PreviewWith>
+		<vi:CurrencyView />
+	</Design.PreviewWith>
+
+	<Style Selector="vi|CurrencyView">
+		<Setter Property="Template">
+			<ControlTemplate>
+				<StackPanel x:DataType="vm:CurrencyEditorViewModel" Orientation="Horizontal" Spacing="8">
+					<!-- Cost Factor Input -->
+					<TextBlock Text="Factor:" VerticalAlignment="Center" />
+					<NumericUpDown Value="{Binding CostFactor}" 
+								   ShowButtonSpinner="True"
+								   Minimum="-32768"
+								   Maximum="32767"
+								   Width="100">
+						<NumericUpDown.FormatString>{0}</NumericUpDown.FormatString>
+					</NumericUpDown>
+					
+					<!-- Year Input -->
+					<TextBlock Text="Year:" VerticalAlignment="Center" Margin="8,0,0,0" />
+					<NumericUpDown Value="{Binding Year}" 
+								   ShowButtonSpinner="True"
+								   Minimum="1800"
+								   Maximum="2030"
+								   Width="80">
+						<NumericUpDown.FormatString>{0}</NumericUpDown.FormatString>
+					</NumericUpDown>
+					
+					<!-- Effective Cost Display -->
+					<TextBlock Text="→" VerticalAlignment="Center" Margin="8,0,0,0" />
+					<TextBlock Text="{Binding EffectiveCost, StringFormat='£{0:N0}'}" 
+							   VerticalAlignment="Center" 
+							   FontWeight="Bold"
+							   Foreground="{DynamicResource SystemAccentColor}" />
+				</StackPanel>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+</Styles>

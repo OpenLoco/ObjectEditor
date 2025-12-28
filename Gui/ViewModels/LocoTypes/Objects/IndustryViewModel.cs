@@ -3,6 +3,7 @@ using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
+using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using System.ComponentModel;
@@ -79,39 +80,7 @@ public class IndustryViewModel(IndustryObject model)
 		set => Model.CostIndex = value;
 	}
 
-	[Category("Cost")]
-	public int16_t BuildCostFactor
-	{
-		get => Model.BuildCostFactor;
-		set => Model.BuildCostFactor = value;
-	}
 
-	[Category("Cost")]
-	public int16_t SellCostFactor
-	{
-		get => Model.SellCostFactor;
-		set => Model.SellCostFactor = value;
-	}
-
-	[Category("Cost"), ReadOnly(true), DisplayName("Effective Build Cost"), Description("The inflation-adjusted build cost for the year specified in settings")]
-	public int EffectiveBuildCost
-	{
-		get
-		{
-			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
-			return Common.Economy.GetInflationAdjustedCost(Model.BuildCostFactor, Model.CostIndex, year);
-		}
-	}
-
-	[Category("Cost"), ReadOnly(true), DisplayName("Effective Sell Cost"), Description("The inflation-adjusted sell cost for the year specified in settings")]
-	public int EffectiveSellCost
-	{
-		get
-		{
-			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
-			return Common.Economy.GetInflationAdjustedCost(Model.SellCostFactor, Model.CostIndex, year);
-		}
-	}
 
 	[Category("Farm")]
 	public uint8_t FarmTileNumImageAngles

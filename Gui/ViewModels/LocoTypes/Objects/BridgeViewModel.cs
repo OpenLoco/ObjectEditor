@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Bridge;
 using Definitions.ObjectModels.Types;
+using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
@@ -71,55 +72,25 @@ public class BridgeViewModel(BridgeObject model)
 		set => Model.CostIndex = value;
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), Currency]
 	public int16_t BaseCostFactor
 	{
 		get => Model.BaseCostFactor;
 		set => Model.BaseCostFactor = value;
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), Currency]
 	public int16_t HeightCostFactor
 	{
 		get => Model.HeightCostFactor;
 		set => Model.HeightCostFactor = value;
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), Currency]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
 		set => Model.SellCostFactor = value;
-	}
-
-	[Category("Cost"), ReadOnly(true), DisplayName("Effective Base Cost"), Description("The inflation-adjusted base cost for the year specified in settings")]
-	public int EffectiveBaseCost
-	{
-		get
-		{
-			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
-			return Common.Economy.GetInflationAdjustedCost(Model.BaseCostFactor, Model.CostIndex, year);
-		}
-	}
-
-	[Category("Cost"), ReadOnly(true), DisplayName("Effective Height Cost"), Description("The inflation-adjusted height cost factor for the year specified in settings")]
-	public int EffectiveHeightCost
-	{
-		get
-		{
-			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
-			return Common.Economy.GetInflationAdjustedCost(Model.HeightCostFactor, Model.CostIndex, year);
-		}
-	}
-
-	[Category("Cost"), ReadOnly(true), DisplayName("Effective Sell Cost"), Description("The inflation-adjusted sell cost for the year specified in settings")]
-	public int EffectiveSellCost
-	{
-		get
-		{
-			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
-			return Common.Economy.GetInflationAdjustedCost(Model.SellCostFactor, Model.CostIndex, year);
-		}
 	}
 
 	[Category("Compatible")]

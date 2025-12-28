@@ -224,4 +224,33 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 
 		AssertDtoObjectDescriptorsAreEqual(results, expected);
 	}
+
+	[Test]
+	public async Task AddMissingObjectAsync()
+	{
+		// arrange
+		var missingEntry = new DtoMissingObjectEntry("TESTOBJ1", 123456789, ObjectType.Vehicle);
+
+		// act
+		var result = await Client.AddMissingObjectAsync(HttpClient!, missingEntry, new Logger());
+
+		// assert
+		Assert.That(result, Is.Not.Zero, "Adding missing object should return the new unique id for that object");
+
+		// verify the object was added to the database
+		using var dbContext = GetDbContext();
+		var addedObject = await dbContext.Objects
+			.Include(x => x.DatObjects)
+			.FirstOrDefaultAsync(x => x.Name == $"{missingEntry.DatName}_{missingEntry.DatChecksum}");
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(addedObject, Is.Not.Null, "Object should exist in database");
+			Assert.That(addedObject!.Availability, Is.EqualTo(ObjectAvailability.Missing));
+			Assert.That(addedObject.ObjectType, Is.EqualTo(ObjectType.Vehicle));
+			Assert.That(addedObject.DatObjects.Count, Is.EqualTo(1));
+			Assert.That(addedObject.DatObjects.First().DatName, Is.EqualTo(missingEntry.DatName));
+			Assert.That(addedObject.DatObjects.First().DatChecksum, Is.EqualTo(missingEntry.DatChecksum));
+		}
+	}
 }

@@ -30,8 +30,8 @@ public class ObjectRouteHandler : ITableRouteHandler
 	public static Delegate UpdateDelegate => UpdateAsync;
 	public static Delegate DeleteDelegate => DeleteAsync;
 
-	public static void MapRoutes(IEndpointRouteBuilder endpoints)
-		=> BaseTableRouteHandler.MapRoutes<ObjectRouteHandler>(endpoints);
+	public static void MapRoutes(IEndpointRouteBuilder parentRoute)
+		=> BaseTableRouteHandler.MapRoutes<ObjectRouteHandler>(parentRoute);
 
 	public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 	{
@@ -42,6 +42,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);
 		_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImagesAsync);
 	}
+
 	static async Task<IResult> ListMissingObjects([FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
 	{
 		logger.LogInformation("[ListMissingObjects] List requested for missing objects");

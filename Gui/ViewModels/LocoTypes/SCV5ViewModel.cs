@@ -160,7 +160,24 @@ public class SCV5ViewModel : BaseFileViewModel
 
 			if (onlineObj == null)
 			{
-				logger.Error("Couldn't find a matching object in the online index");
+				logger.Error($"Couldn't find a matching object in the online index for {obj.ObjectType} \"{obj.Name}\" with checksum {obj.Checksum}");
+				
+				// Add this missing object to the server's missing objects list
+				var missingEntry = new Definitions.DTO.DtoMissingObjectEntry(
+					obj.Name,
+					obj.Checksum,
+					obj.ObjectType.Convert());
+				
+				var result = await Model.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
+				if (result != 0)
+				{
+					logger.Info($"Successfully added missing object to server: {obj.Name} ({obj.Checksum})");
+				}
+				else
+				{
+					logger.Error($"Failed to add missing object to server: {obj.Name} ({obj.Checksum})");
+				}
+				
 				continue;
 			}
 

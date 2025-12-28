@@ -239,18 +239,15 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 
 		// verify the object was added to the database
 		using var dbContext = GetDbContext();
-		var addedObject = await dbContext.Objects
-			.Include(x => x.DatObjects)
-			.FirstOrDefaultAsync(x => x.Name == $"{missingEntry.DatName}_{missingEntry.DatChecksum}");
+		var addedObject = await dbContext.MissingObjects
+			.FirstOrDefaultAsync(x => x.DatName == missingEntry.DatName && x.DatChecksum == missingEntry.DatChecksum);
 
 		using (Assert.EnterMultipleScope())
 		{
-			Assert.That(addedObject, Is.Not.Null, "Object should exist in database");
-			Assert.That(addedObject!.Availability, Is.EqualTo(ObjectAvailability.Missing));
-			Assert.That(addedObject.ObjectType, Is.EqualTo(ObjectType.Vehicle));
-			Assert.That(addedObject.DatObjects.Count, Is.EqualTo(1));
-			Assert.That(addedObject.DatObjects.First().DatName, Is.EqualTo(missingEntry.DatName));
-			Assert.That(addedObject.DatObjects.First().DatChecksum, Is.EqualTo(missingEntry.DatChecksum));
+			Assert.That(addedObject, Is.Not.Null, "Missing object should exist in database");
+			Assert.That(addedObject!.ObjectType, Is.EqualTo(ObjectType.Vehicle));
+			Assert.That(addedObject.DatName, Is.EqualTo(missingEntry.DatName));
+			Assert.That(addedObject.DatChecksum, Is.EqualTo(missingEntry.DatChecksum));
 		}
 	}
 }

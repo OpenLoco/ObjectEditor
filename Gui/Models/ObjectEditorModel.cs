@@ -533,7 +533,7 @@ public class ObjectEditorModel : IDisposable
 		}
 
 		// todo: do something with createdObject
-		var createdObject = await ObjectServiceClient.UploadDatFileAsync(dat.FileName, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate);
+		_ = await ObjectServiceClient.UploadDatFileAsync(dat.FileName, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate);
 
 		await Task.Delay(100); // wait 100ms, ie don't DoS the server
 	}

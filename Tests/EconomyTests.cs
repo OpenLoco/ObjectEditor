@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Common.Tests;
+namespace Definitions.Tests;
 
 [TestFixture]
 public class EconomyTests

@@ -43,13 +43,6 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		set => Model.ShowLogsOnError = value;
 	}
 
-	[Category("Misc"), DisplayName("Inflation Year"), Description("The in-game year to use when calculating inflation-adjusted costs for objects. Defaults to 1950.")]
-	public int InflationYear
-	{
-		get => Model.InflationYear;
-		set => Model.InflationYear = value;
-	}
-
 	#region Object Folders
 
 	const string GameObjectFolderCategory = "Folders OpenLoco can use objects from";

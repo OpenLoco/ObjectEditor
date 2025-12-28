@@ -11,8 +11,13 @@ public class InflatableCurrencyAttribute(string CostIndexPropertyName, string? D
 {
 	/// <summary>
 	/// The name of the property that contains the CostIndex for this currency value.
-	/// Defaults to "CostIndex".
 	/// </summary>
 	public string CostIndexPropertyName { get; } = CostIndexPropertyName;
+
+	/// <summary>
+	/// The name of the property that contains the designed year associated with this currency value.
+	/// This is used as the default year value if it exists.
+	/// Defaults to <see langword="null"/>, meaning no designed year is used.
+	/// </summary>
 	public string DesignedYearPropertyName { get; } = DesignedYearPropertyName;
 }

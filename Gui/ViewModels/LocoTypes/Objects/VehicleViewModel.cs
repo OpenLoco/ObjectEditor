@@ -273,7 +273,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		get => model.RunCostIndex;
 		set
 		{
-			Model.CostIndex = value;
+			Model.RunCostIndex = value;
 			this.RaisePropertyChanged(nameof(RunCostFactor));
 		}
 	}

@@ -60,7 +60,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 	private static void LoadVariable(LocoBinaryReader br, SoundObject model)
 	{
 		model.NumUnkStructs = br.ReadUInt32();
-		var pcmDataLength = br.ReadUInt32(); // unused
+		_ = br.ReadUInt32(); // unused
 		model.UnkData = br.ReadBytes((int)model.NumUnkStructs * Constants.NumUnkStructs);
 		model.SoundObjectData = new SoundObjectData
 		{

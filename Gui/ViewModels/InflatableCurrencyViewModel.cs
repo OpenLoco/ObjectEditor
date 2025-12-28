@@ -1,52 +1,44 @@
+using Definitions;
 using ReactiveUI;
 
 namespace Gui.ViewModels;
 
 public class InflatableCurrencyViewModel : ReactiveObject
 {
-	private short _costFactor;
-	private byte _costIndex;
-	private int _year = 1950;
+	public const int DefaultYear = 1950;
 
 	public short CostFactor
 	{
-		get => _costFactor;
+		get;
 		set
 		{
-			_ = this.RaiseAndSetIfChanged(ref _costFactor, value);
+			_ = this.RaiseAndSetIfChanged(ref field, value);
 			this.RaisePropertyChanged(nameof(InflationAdjustedCost));
 		}
 	}
 
 	public byte CostIndex
 	{
-		get => _costIndex;
+		get;
 		set
 		{
-			_ = this.RaiseAndSetIfChanged(ref _costIndex, value);
+			_ = this.RaiseAndSetIfChanged(ref field, value);
 			this.RaisePropertyChanged(nameof(InflationAdjustedCost));
 		}
 	}
 
 	public int Year
 	{
-		get => _year;
+		get;
 		set
 		{
-			_ = this.RaiseAndSetIfChanged(ref _year, value);
+			_ = this.RaiseAndSetIfChanged(ref field, value);
 			this.RaisePropertyChanged(nameof(InflationAdjustedCost));
 		}
-	}
+	} = DefaultYear;
 
 	public int InflationAdjustedCost
-	{
-		get
-		{
-			if (_costIndex >= 32)
-			{
-				return 0;
-			}
-			return Common.Economy.GetInflationAdjustedCost(_costFactor, _costIndex, _year);
-		}
-	}
+		=> CostIndex >= 32
+			? 0
+			: Economy.GetInflationAdjustedCost(CostFactor, CostIndex, Year);
 }

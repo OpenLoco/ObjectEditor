@@ -72,7 +72,7 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 	public override Control? HandleNewProperty(PropertyCellContext context)
 	{
 		var propertyDescriptor = context.Property;
-		var target = context.Target;
+		_ = context.Target;
 
 		var currencyAttr = propertyDescriptor.Attributes.OfType<InflatableCurrencyAttribute>().FirstOrDefault();
 		if (currencyAttr == null)
@@ -104,21 +104,30 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 
 		if (control is InflatableCurrencyView cv)
 		{
+			if (cv is null)
+			{
+				return false;
+			}
+
 			var costFactor = (short)propertyDescriptor.GetValue(target)!;
 
 			// Get CostIndex from the target object
 			var costIndexProperty = TypeDescriptor.GetProperties(target)[currencyAttr.CostIndexPropertyName];
-			var costIndex = costIndexProperty != null ? (byte)costIndexProperty.GetValue(target)! : (byte)0;
+			var costIndex = costIndexProperty != null
+				? (uint8_t)costIndexProperty.GetValue(target)!
+				: (uint8_t)0;
 
 			var designedYearProperty = TypeDescriptor.GetProperties(target)[currencyAttr.DesignedYearPropertyName];
-			var designedYear = designedYearProperty != null ? (uint16_t)designedYearProperty.GetValue(target)! : (uint16_t)1950;
+			var designedYear = designedYearProperty != null
+				? (uint16_t)designedYearProperty.GetValue(target)!
+				: (uint16_t)1950;
 
-			var currVm = (InflatableCurrencyViewModel)cv?.DataContext;
+			var currVm = (InflatableCurrencyViewModel?)cv?.DataContext;
 			var year = currVm?.Year ?? designedYear;
 			// objects can actually set any year as designed year, even 0, so lets sanitize it
 			if (year < 1800)
 			{
-				year = 1950;
+				year = InflatableCurrencyViewModel.DefaultYear;
 			}
 
 			var model = new InflatableCurrencyViewModel

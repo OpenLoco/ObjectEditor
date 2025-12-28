@@ -31,13 +31,24 @@
 							</MenuFlyout>
 						</SplitButton.Flyout>
 					</SplitButton>
-					<Button Margin="4" Command="{Binding ValidateForOGCommand}" Content="Validate for OG" ToolTip.Tip="Runs a series of checks to ensure this object meets OG requirements" IsVisible="{Binding Model.Settings.EnableOGValidation}">
+					<Button Margin="4" Command="{Binding ValidateObjectCommand}" Content="Validate (Locomotion)" ToolTip.Tip="Runs a series of checks to ensure this object meets Locomotion requirements">
 						<Button.Styles>
 							<Style>
 								<Style.Resources>
-									<SolidColorBrush x:Key="ButtonBackground">#FF19AE91</SolidColorBrush>
-									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#117A65</SolidColorBrush>
-									<SolidColorBrush x:Key="ButtonBackgroundPressed">#1FE0BA</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackground">#4F759B</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#37526C</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPressed">#86A3C1</SolidColorBrush>
+								</Style.Resources>
+							</Style>
+						</Button.Styles>
+					</Button>
+					<Button Margin="4" Command="{Binding ValidateForOGCommand}" Content="Validate (OpenGraphics)" ToolTip.Tip="Runs a series of checks to ensure this object meets OG requirements" IsVisible="{Binding Model.Settings.EnableOGValidation}">
+						<Button.Styles>
+							<Style>
+								<Style.Resources>
+									<SolidColorBrush x:Key="ButtonBackground">#19AE91</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#0F6B59</SolidColorBrush>
+									<SolidColorBrush x:Key="ButtonBackgroundPressed">#3BE3C1</SolidColorBrush>
 								</Style.Resources>
 							</Style>
 						</Button.Styles>

@@ -22,16 +22,19 @@ public abstract class BaseRouteHandlerTestFixture
 	[Test] public abstract Task PutAsync();
 	[Test] public abstract Task DeleteAsync();
 
+	protected LocoDbContext GetDbContext()
+		=> testWebAppFactory
+			.Services
+			.CreateScope()
+			.ServiceProvider
+			.GetRequiredService<LocoDbContext>();
+
 	async Task SeedDataAsync()
 	{
-		using (var scope = testWebAppFactory.Services.CreateScope())
-		{
-			var dbContext = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
+		using var dbContext = GetDbContext();
+		await SeedDataCoreAsync(dbContext);
+		_ = await dbContext.SaveChangesAsync();
 
-			// Seed data
-			await SeedDataCoreAsync(dbContext);
-			_ = await dbContext.SaveChangesAsync();
-		}
 	}
 
 	protected abstract Task SeedDataCoreAsync(LocoDbContext db);

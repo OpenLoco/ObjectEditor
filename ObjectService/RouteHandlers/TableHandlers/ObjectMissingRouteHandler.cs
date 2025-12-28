@@ -44,13 +44,13 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		var existing = await db.Objects.FirstOrDefaultAsync(x => x.Name == objName);
 		if (existing != null)
 		{
-			return Results.Conflict($"Object already exists in the database. DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existing!.UploadedDate}");
+			return Results.Conflict($"Object already exists in the database. DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existing.UploadedDate}");
 		}
 
 		// double check it's missing
 		if (db.DoesObjectExist(entry.DatName, entry.DatChecksum, out var existingObject) && existingObject != null)
 		{
-			return Results.Conflict($"Object already exists in the database. UniqueId={existingObject.Id} DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existingObject!.UploadedDate}");
+			return Results.Conflict($"Object already exists in the database. UniqueId={existingObject.Id} DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existingObject.UploadedDate}");
 		}
 
 		// save to db if true

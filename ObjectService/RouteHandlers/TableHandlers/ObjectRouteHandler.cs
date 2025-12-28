@@ -35,79 +35,11 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 	{
-		_ = parentRoute.MapGet(RoutesV2.Missing, ListMissingObjects);
-		_ = parentRoute.MapPost(RoutesV2.Missing, AddMissingObject);
+		BaseTableRouteHandler.MapRoutes<ObjectMissingRouteHandler>(parentRoute);
 
 		var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
 		_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);
 		_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImagesAsync);
-	}
-
-	static async Task<IResult> ListMissingObjects([FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
-	{
-		logger.LogInformation("[ListMissingObjects] List requested for missing objects");
-
-		return Results.Ok(
-			await db.Objects
-				.Include(x => x.DatObjects)
-				.Where(x => x.Availability == ObjectAvailability.Missing)
-				.Select(x => x.ToDtoEntry())
-				.ToListAsync());
-	}
-
-	static async Task<IResult> AddMissingObject([FromBody] DtoMissingObjectEntry entry, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
-	{
-		var objName = $"{entry.DatName}_{entry.DatChecksum}";
-		var existing = await db.Objects.FirstOrDefaultAsync(x => x.Name == objName);
-		if (existing != null)
-		{
-			return Results.Conflict($"Object already exists in the database. DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existing!.UploadedDate}");
-		}
-
-		// double check it's missing
-		if (db.DoesObjectExist(entry.DatName, entry.DatChecksum, out var existingObject) && existingObject != null)
-		{
-			return Results.Conflict($"Object already exists in the database. UniqueId={existingObject.Id} DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existingObject!.UploadedDate}");
-		}
-
-		// save to db if true
-		var tblObject = new TblObject()
-		{
-			Name = $"{entry.DatName}_{entry.DatChecksum}",
-			Description = string.Empty,
-			ObjectSource = ObjectSource.Custom,
-			ObjectType = entry.ObjectType,
-			VehicleType = null,
-			Availability = ObjectAvailability.Missing,
-			CreatedDate = null,
-			ModifiedDate = null,
-			UploadedDate = DateOnly.UtcToday,
-			Authors = [],
-			Tags = [],
-			ObjectPacks = [],
-			DatObjects = [],
-			StringTable = [],
-			SubObjectId = 0,
-			Licence = null,
-		};
-
-		_ = await db.Objects.AddAsync(tblObject);
-		_ = await db.SaveChangesAsync();
-
-		// make dat objects
-		//var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-		tblObject.DatObjects.Add(new TblDatObject()
-		{
-			ObjectId = tblObject.Id,
-			DatName = entry.DatName,
-			DatChecksum = entry.DatChecksum,
-			xxHash3 = 0,
-			Object = tblObject,
-		});
-
-		// save again
-		_ = await db.SaveChangesAsync();
-		return Results.Created($"Successfully added 'missing' DAT object {tblObject.Name} with checksum {entry.DatChecksum} and unique id {tblObject.Id}", tblObject.Id);
 	}
 
 	//static async Task<IResult> CreateAsync(DtoObjectDescriptor request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)

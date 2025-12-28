@@ -2,20 +2,21 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.DTO.Comparers;
 
-public class DtoMissingObjectEntryComparer : IEqualityComparer<DtoObjectMissingEntry>
+public class DtoObjectMissingUploadComparer : IEqualityComparer<DtoObjectMissingUpload>
 {
-	public bool Equals(DtoObjectMissingEntry? x, DtoObjectMissingEntry? y)
+	public bool Equals(DtoObjectMissingUpload? x, DtoObjectMissingUpload? y)
 	{
 		if (x is null || y is null)
 		{
 			return false;
 		}
 
-		return x.DatName == y.DatName
+		return
+			x.DatName == y.DatName
 			&& x.DatChecksum == y.DatChecksum
 			&& x.ObjectType == y.ObjectType;
 	}
 
-	public int GetHashCode([DisallowNull] DtoObjectMissingEntry obj)
+	public int GetHashCode([DisallowNull] DtoObjectMissingUpload obj)
 		=> HashCode.Combine(obj.DatName, obj.DatChecksum, obj.ObjectType);
 }

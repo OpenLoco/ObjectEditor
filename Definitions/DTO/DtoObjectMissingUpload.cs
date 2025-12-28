@@ -2,8 +2,7 @@ using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
-public record DtoObjectMissingEntry(
-	UniqueObjectId Id,
+public record DtoObjectMissingUpload(
 	string DatName,
 	uint32_t DatChecksum,
-	ObjectType ObjectType) : IHasId;
+	ObjectType ObjectType);

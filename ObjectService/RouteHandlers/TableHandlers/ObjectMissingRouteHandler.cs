@@ -1,9 +1,7 @@
 using Common;
-using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
-using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +32,7 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 				.ToListAsync());
 	}
 
-	static async Task<IResult> CreateAsync([FromBody] DtoObjectMissingEntry entry, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
+	static async Task<IResult> CreateAsync([FromBody] DtoObjectMissingUpload entry, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{
 		logger.LogInformation("[CreateAsync] Create requested");
 
@@ -56,7 +54,7 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		_ = await db.ObjectsMissing.AddAsync(tblObjectMissing);
 		_ = await db.SaveChangesAsync();
 
-		return Results.Created($"Successfully added missing object {entry.DatName} with checksum {entry.DatChecksum} and unique id {tblObjectMissing.Id}", tblObjectMissing.Id);
+		return Results.Created($"Successfully added missing object {entry.DatName} with checksum {entry.DatChecksum} and unique id {tblObjectMissing.Id}", tblObjectMissing.ToDtoEntry());
 	}
 
 	static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
@@ -74,8 +72,12 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		return Results.Ok(existing.ToDtoEntry());
 	}
 
-	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoObjectMissingEntry request, [FromServices] LocoDbContext db)
-		=> await Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoObjectMissingUpload request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
+	{
+		logger.LogInformation("[UpdateAsync] UpdateAsync requested");
+
+		return await Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+	}
 
 	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{

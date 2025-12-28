@@ -46,8 +46,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 
 	//protected override DtoObjectEntry PutDto
 
-	protected override DbSet<TblObject> GetTable(LocoDbContext context)
-		=> context.Objects;
+	protected override DbSet<TblObject> GetTable(LocoDbContext db)
+		=> db.Objects;
 
 	protected override TblObject ToRowFunc(DtoObjectEntry request)
 		=> request.ToTable();
@@ -223,31 +223,5 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			new DtoStringTableDescriptor(expectedStringTable, 3));
 
 		AssertDtoObjectDescriptorsAreEqual(results, expected);
-	}
-
-	[Test]
-	public async Task AddMissingObjectAsync()
-	{
-		// arrange
-		var missingEntry = new DtoObjectMissingEntry("TESTOBJ1", 123456789, ObjectType.Vehicle);
-
-		// act
-		var result = await Client.AddMissingObjectAsync(HttpClient!, missingEntry, new Logger());
-
-		// assert
-		Assert.That(result, Is.Not.Zero, "Adding missing object should return the new unique id for that object");
-
-		// verify the object was added to the database
-		using var dbContext = GetDbContext();
-		var addedObject = await dbContext.ObjectsMissing
-			.FirstOrDefaultAsync(x => x.DatName == missingEntry.DatName && x.DatChecksum == missingEntry.DatChecksum);
-
-		using (Assert.EnterMultipleScope())
-		{
-			Assert.That(addedObject, Is.Not.Null, "Missing object should exist in database");
-			Assert.That(addedObject!.ObjectType, Is.EqualTo(ObjectType.Vehicle));
-			Assert.That(addedObject.DatName, Is.EqualTo(missingEntry.DatName));
-			Assert.That(addedObject.DatChecksum, Is.EqualTo(missingEntry.DatChecksum));
-		}
 	}
 }

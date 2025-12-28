@@ -85,6 +85,10 @@
       <DependentUpon>Pos3View.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\CurrencyView.axaml.cs">
+      <DependentUpon>CurrencyView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
 </Project>

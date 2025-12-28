@@ -1,0 +1,47 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:vi="using:Gui.Views"
+	xmlns:vm="using:Gui.ViewModels">
+	<Design.PreviewWith>
+		<vi:InflatableCurrencyView />
+	</Design.PreviewWith>
+
+	<Style Selector="vi|InflatableCurrencyView">
+		<Setter Property="Template">
+			<ControlTemplate>
+				<StackPanel x:DataType="vm:InflatableCurrencyViewModel" Orientation="Horizontal" Spacing="4">
+					<!-- Cost Factor Input -->
+					<!--<TextBlock Text="Factor:" VerticalAlignment="Center" />-->
+					<NumericUpDown Value="{Binding CostFactor}" 
+								   ShowButtonSpinner="True"
+								   Minimum="-32768"
+								   Maximum="32767"
+								   Width="128"
+								   FormatString="F0"
+								   ParsingNumberStyle="Integer">
+					</NumericUpDown>
+					
+					<!-- Year Input -->
+					<TextBlock Text="Year:" VerticalAlignment="Center" />
+					<NumericUpDown Value="{Binding Year}" 
+								   ShowButtonSpinner="True"
+								   Minimum="1800"
+								   Maximum="2100"
+								   Width="128"
+								   FormatString="F0"
+								   ParsingNumberStyle="Integer">
+					</NumericUpDown>
+					
+					<!-- Effective Cost Display -->
+					<TextBlock Text="→" VerticalAlignment="Center" />
+					<TextBox Text="{Binding InflationAdjustedCost}"
+							   VerticalAlignment="Center" 
+							   FontWeight="Bold"
+							   Width="64"
+							   IsReadOnly="True"/>
+				</StackPanel>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+</Styles>

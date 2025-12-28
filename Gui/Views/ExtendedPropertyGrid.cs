@@ -14,13 +14,14 @@ public class ExtendedPropertyGrid : PropertyGrid
 	public ExtendedPropertyGrid()
 	{
 		Factories.AddFactory(new Pos3CellEditFactory());
-		Factories.AddFactory(new CurrencyCellEditFactory());
+		Factories.AddFactory(new InflatableCurrencyCellEditFactory());
 	}
 }
 
 internal class Pos3CellEditFactory : AbstractCellEditFactory
 {
-	public override bool Accept(object accessToken) => accessToken is ExtendedPropertyGrid;
+	public override bool Accept(object accessToken)
+		=> accessToken is ExtendedPropertyGrid;
 
 	public override Control? HandleNewProperty(PropertyCellContext context)
 	{
@@ -32,9 +33,7 @@ internal class Pos3CellEditFactory : AbstractCellEditFactory
 			return null;
 		}
 
-		var control = new Pos3View();
-
-		return control;
+		return new Pos3View();
 	}
 
 	public override bool HandlePropertyChanged(PropertyCellContext context)
@@ -50,15 +49,14 @@ internal class Pos3CellEditFactory : AbstractCellEditFactory
 
 		ValidateProperty(control, propertyDescriptor, target);
 
-		if (control is Pos3View vv)
+		if (control is Pos3View pv)
 		{
 			var pos = (Pos3)propertyDescriptor.GetValue(target)!;
 
 			var model = new Pos3ViewModel { Pos = pos };
-			vv.DataContext = model;
+			pv.DataContext = model;
 
 			model.PropertyChanged += (s, e) => SetAndRaise(context, control, model.Pos);
-
 			return true;
 		}
 
@@ -66,30 +64,28 @@ internal class Pos3CellEditFactory : AbstractCellEditFactory
 	}
 }
 
-internal class CurrencyCellEditFactory : AbstractCellEditFactory
+internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 {
-	public override bool Accept(object accessToken) => accessToken is ExtendedPropertyGrid;
+	public override bool Accept(object accessToken)
+		=> accessToken is ExtendedPropertyGrid;
 
 	public override Control? HandleNewProperty(PropertyCellContext context)
 	{
 		var propertyDescriptor = context.Property;
 		var target = context.Target;
 
-		// Check if property has CurrencyAttribute
-		var currencyAttr = propertyDescriptor.Attributes.OfType<CurrencyAttribute>().FirstOrDefault();
+		var currencyAttr = propertyDescriptor.Attributes.OfType<InflatableCurrencyAttribute>().FirstOrDefault();
 		if (currencyAttr == null)
 		{
 			return null;
 		}
 
-		// Property must be int16_t (short)
 		if (propertyDescriptor.PropertyType != typeof(short))
 		{
 			return null;
 		}
 
-		var control = new CurrencyView();
-		return control;
+		return new InflatableCurrencyView();
 	}
 
 	public override bool HandlePropertyChanged(PropertyCellContext context)
@@ -98,7 +94,7 @@ internal class CurrencyCellEditFactory : AbstractCellEditFactory
 		var target = context.Target;
 		var control = context.CellEdit!;
 
-		var currencyAttr = propertyDescriptor.Attributes.OfType<CurrencyAttribute>().FirstOrDefault();
+		var currencyAttr = propertyDescriptor.Attributes.OfType<InflatableCurrencyAttribute>().FirstOrDefault();
 		if (currencyAttr == null || propertyDescriptor.PropertyType != typeof(short))
 		{
 			return false;
@@ -106,7 +102,7 @@ internal class CurrencyCellEditFactory : AbstractCellEditFactory
 
 		ValidateProperty(control, propertyDescriptor, target);
 
-		if (control is CurrencyView cv)
+		if (control is InflatableCurrencyView cv)
 		{
 			var costFactor = (short)propertyDescriptor.GetValue(target)!;
 
@@ -114,10 +110,18 @@ internal class CurrencyCellEditFactory : AbstractCellEditFactory
 			var costIndexProperty = TypeDescriptor.GetProperties(target)[currencyAttr.CostIndexPropertyName];
 			var costIndex = costIndexProperty != null ? (byte)costIndexProperty.GetValue(target)! : (byte)0;
 
-			// Get the year from GlobalSettings or use default
-			var year = GlobalSettings.CurrentSettings?.InflationYear ?? 1950;
+			var designedYearProperty = TypeDescriptor.GetProperties(target)[currencyAttr.DesignedYearPropertyName];
+			var designedYear = designedYearProperty != null ? (uint16_t)designedYearProperty.GetValue(target)! : (uint16_t)1950;
 
-			var model = new CurrencyEditorViewModel
+			var currVm = (InflatableCurrencyViewModel)cv?.DataContext;
+			var year = currVm?.Year ?? designedYear;
+			// objects can actually set any year as designed year, even 0, so lets sanitize it
+			if (year < 1800)
+			{
+				year = 1950;
+			}
+
+			var model = new InflatableCurrencyViewModel
 			{
 				CostFactor = costFactor,
 				CostIndex = costIndex,
@@ -126,22 +130,7 @@ internal class CurrencyCellEditFactory : AbstractCellEditFactory
 
 			cv.DataContext = model;
 
-			model.PropertyChanged += (s, e) =>
-			{
-				if (e.PropertyName == nameof(CurrencyEditorViewModel.CostFactor))
-				{
-					SetAndRaise(context, control, model.CostFactor);
-				}
-				else if (e.PropertyName == nameof(CurrencyEditorViewModel.Year))
-				{
-					// Update global settings with new year
-					if (GlobalSettings.CurrentSettings != null)
-					{
-						GlobalSettings.CurrentSettings.InflationYear = model.Year;
-					}
-				}
-			};
-
+			model.PropertyChanged += (s, e) => SetAndRaise(context, control, model.CostFactor);
 			return true;
 		}
 

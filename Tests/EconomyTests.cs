@@ -83,14 +83,14 @@ public class EconomyTests
 	[Test]
 	public void GetInflationAdjustedCost_InvalidCostIndex_ThrowsException()
 	{
-		Assert.Throws<ArgumentOutOfRangeException>(() =>
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() =>
 			Economy.GetInflationAdjustedCost(100, 32, 1900, 10));
 	}
 
 	[Test]
 	public void GetInflationAdjustedCost_InvalidDivisor_ThrowsException()
 	{
-		Assert.Throws<ArgumentOutOfRangeException>(() =>
+		_ = Assert.Throws<ArgumentOutOfRangeException>(() =>
 			Economy.GetInflationAdjustedCost(100, 0, 1900, 63));
 	}
 }

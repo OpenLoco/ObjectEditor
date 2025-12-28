@@ -1,4 +1,4 @@
-namespace Common;
+namespace Definitions;
 
 /// <summary>
 /// Provides economy-related calculations for Locomotion, including inflation and cost calculations.
@@ -23,7 +23,7 @@ public static class Economy
 	public static uint[] CalculateCurrencyMultiplicationFactors(int year)
 	{
 		var factors = new uint[32];
-		
+
 		// Initialize all factors to 1024 (base value)
 		for (var i = 0; i < 32; i++)
 		{
@@ -70,7 +70,7 @@ public static class Economy
 		var factors = CalculateCurrencyMultiplicationFactors(year);
 		var val = costFactor * (long)factors[costIndex];
 		var result = val / (1L << divisor);
-		
+
 		return (int)result;
 	}
 }

@@ -2,6 +2,7 @@ using Definitions.ObjectModels.Objects.Road;
 using Definitions.ObjectModels.Types;
 using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
+using ReactiveUI;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
@@ -48,8 +49,39 @@ public class RoadViewModel(RoadObject model)
 		set => Model.TargetTownSize = value;
 	}
 
+	[Category("Cost")]
+	public uint8_t CostIndex
+	{
+		get => Model.CostIndex;
+		set
+		{
+			Model.CostIndex = value;
+			this.RaisePropertyChanged(nameof(BuildCostFactor));
+			this.RaisePropertyChanged(nameof(SellCostFactor));
+			this.RaisePropertyChanged(nameof(TunnelCostFactor));
+		}
+	}
 
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	public int16_t BuildCostFactor
+	{
+		get => Model.BuildCostFactor;
+		set => Model.BuildCostFactor = value;
+	}
 
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	public int16_t SellCostFactor
+	{
+		get => Model.SellCostFactor;
+		set => Model.SellCostFactor = value;
+	}
+
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	public int16_t TunnelCostFactor
+	{
+		get => Model.TunnelCostFactor;
+		set => Model.TunnelCostFactor = value;
+	}
 
 	[Category("Compatible Objects")]
 	public ObjectModelHeader Tunnel

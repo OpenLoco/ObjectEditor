@@ -4,6 +4,7 @@ using Definitions.ObjectModels.Objects.TrackStation;
 using Definitions.ObjectModels.Types;
 using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
+using ReactiveUI;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
@@ -49,7 +50,31 @@ public class TrackStationViewModel(TrackStationObject model)
 		set => Model.Flags = value;
 	}
 
+	[Category("Cost")]
+	public uint8_t CostIndex
+	{
+		get => Model.CostIndex;
+		set
+		{
+			Model.CostIndex = value;
+			this.RaisePropertyChanged(nameof(BuildCostFactor));
+			this.RaisePropertyChanged(nameof(SellCostFactor));
+		}
+	}
 
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	public int16_t BuildCostFactor
+	{
+		get => Model.BuildCostFactor;
+		set => Model.BuildCostFactor = value;
+	}
+
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	public int16_t SellCostFactor
+	{
+		get => Model.SellCostFactor;
+		set => Model.SellCostFactor = value;
+	}
 
 	[Category("<unknown>")]
 	public uint8_t var_0B

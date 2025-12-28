@@ -2,6 +2,7 @@ using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Types;
 using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
+using ReactiveUI;
 using System.ComponentModel;
 using TrackObject = Definitions.ObjectModels.Objects.Track.TrackObject;
 
@@ -44,32 +45,38 @@ public class TrackViewModel(TrackObject model)
 		set => Model.VehicleDisplayListVerticalOffset = value;
 	}
 
-	[Category("Cost"), Currency]
+	[Category("Cost")]
+	public uint8_t CostIndex
+	{
+		get => Model.CostIndex;
+		set
+		{
+			Model.CostIndex = value;
+			this.RaisePropertyChanged(nameof(BuildCostFactor));
+			this.RaisePropertyChanged(nameof(SellCostFactor));
+			this.RaisePropertyChanged(nameof(TunnelCostFactor));
+		}
+	}
+
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), Currency]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Cost"), Currency]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
 	public int16_t TunnelCostFactor
 	{
 		get => Model.TunnelCostFactor;
 		set => Model.TunnelCostFactor = value;
-	}
-
-	[Category("Cost")]
-	public uint8_t CostIndex
-	{
-		get => Model.CostIndex;
-		set => Model.CostIndex = value;
 	}
 
 	[Category("<unknown>")]

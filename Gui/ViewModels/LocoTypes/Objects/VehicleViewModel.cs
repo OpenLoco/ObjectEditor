@@ -251,11 +251,15 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	public uint8_t CostIndex
 	{
 		get => model.CostIndex;
-		set => model.CostIndex = value;
+		set
+		{
+			Model.CostIndex = value;
+			this.RaisePropertyChanged(nameof(CostFactor));
+		}
 	}
 
 	[Category("Cost")]
-	[Range(1, int16_t.MaxValue)]
+	[Range(1, int16_t.MaxValue), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t CostFactor
 	{
 		get => model.CostFactor;
@@ -267,18 +271,20 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	public uint8_t RunCostIndex
 	{
 		get => model.RunCostIndex;
-		set => model.RunCostIndex = value;
+		set
+		{
+			Model.CostIndex = value;
+			this.RaisePropertyChanged(nameof(RunCostFactor));
+		}
 	}
 
 	[Category("Cost")]
-	[Range(0, int16_t.MaxValue)]
+	[Range(0, int16_t.MaxValue), InflatableCurrency(nameof(RunCostIndex), nameof(DesignedYear))]
 	public int16_t RunCostFactor
 	{
 		get => model.RunCostFactor;
 		set => model.RunCostFactor = value;
 	}
-
-
 
 	[Category("Sprites")]
 	public CompanyColourType SpecialColourSchemeIndex

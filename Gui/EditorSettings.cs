@@ -32,7 +32,6 @@ public class EditorSettings
 	public bool EnableOGValidation { get; set; }
 	public bool ShowLogsOnError { get; set; }
 	public bool AutoObjectDiscoveryAndUpload { get; set; }
-	public int InflationYear { get; set; } = 1950;
 
 	public bool UseHttps { get; set; }
 	public string ServerAddressHttp { get; set; } = "http://openloco.leftofzen.dev/";

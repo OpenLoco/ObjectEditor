@@ -2,7 +2,7 @@ using ReactiveUI;
 
 namespace Gui.ViewModels;
 
-public class CurrencyEditorViewModel : ReactiveObject
+public class InflatableCurrencyViewModel : ReactiveObject
 {
 	private short _costFactor;
 	private byte _costIndex;
@@ -13,8 +13,8 @@ public class CurrencyEditorViewModel : ReactiveObject
 		get => _costFactor;
 		set
 		{
-			this.RaiseAndSetIfChanged(ref _costFactor, value);
-			this.RaisePropertyChanged(nameof(EffectiveCost));
+			_ = this.RaiseAndSetIfChanged(ref _costFactor, value);
+			this.RaisePropertyChanged(nameof(InflationAdjustedCost));
 		}
 	}
 
@@ -23,8 +23,8 @@ public class CurrencyEditorViewModel : ReactiveObject
 		get => _costIndex;
 		set
 		{
-			this.RaiseAndSetIfChanged(ref _costIndex, value);
-			this.RaisePropertyChanged(nameof(EffectiveCost));
+			_ = this.RaiseAndSetIfChanged(ref _costIndex, value);
+			this.RaisePropertyChanged(nameof(InflationAdjustedCost));
 		}
 	}
 
@@ -33,12 +33,12 @@ public class CurrencyEditorViewModel : ReactiveObject
 		get => _year;
 		set
 		{
-			this.RaiseAndSetIfChanged(ref _year, value);
-			this.RaisePropertyChanged(nameof(EffectiveCost));
+			_ = this.RaiseAndSetIfChanged(ref _year, value);
+			this.RaisePropertyChanged(nameof(InflationAdjustedCost));
 		}
 	}
 
-	public int EffectiveCost
+	public int InflationAdjustedCost
 	{
 		get
 		{

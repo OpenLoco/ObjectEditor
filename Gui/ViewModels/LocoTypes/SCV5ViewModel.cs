@@ -168,8 +168,8 @@ public class SCV5ViewModel : BaseFileViewModel
 					obj.Checksum,
 					obj.ObjectType.Convert());
 				
-				var added = await Model.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
-				if (added)
+				var result = await Model.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
+				if (result != 0)
 				{
 					logger.Info($"Successfully added missing object to server: {obj.Name} ({obj.Checksum})");
 				}

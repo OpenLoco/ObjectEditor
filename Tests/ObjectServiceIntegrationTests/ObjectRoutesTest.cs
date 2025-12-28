@@ -9,7 +9,6 @@ using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Index;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.IO.Hashing;
 
@@ -233,15 +232,14 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		var missingEntry = new DtoMissingObjectEntry("TESTOBJ1", 123456789, ObjectType.Vehicle);
 
 		// act
-		var success = await Client.AddMissingObjectAsync(HttpClient!, missingEntry, new Logger());
+		var result = await Client.AddMissingObjectAsync(HttpClient!, missingEntry, new Logger());
 
 		// assert
-		Assert.That(success, Is.True, "Adding missing object should return success");
+		Assert.That(result, Is.Not.Zero, "Adding missing object should return the new unique id for that object");
 
 		// verify the object was added to the database
-		using var scope = testWebAppFactory.Services.CreateScope();
-		var context = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
-		var addedObject = await context.Objects
+		using var dbContext = GetDbContext();
+		var addedObject = await dbContext.Objects
 			.Include(x => x.DatObjects)
 			.FirstOrDefaultAsync(x => x.Name == $"{missingEntry.DatName}_{missingEntry.DatChecksum}");
 

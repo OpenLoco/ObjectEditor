@@ -104,7 +104,7 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 			return Results.NotFound();
 		}
 
-		return Results.Ok(existing);
+		return Results.Ok(existing.ToDtoEntry());
 	}
 
 	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, [FromBody] DtoMissingObjectEntry request, [FromServices] LocoDbContext db)

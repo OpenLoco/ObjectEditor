@@ -29,8 +29,7 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		logger.LogInformation("[ListAsync] List requested for missing objects");
 
 		return Results.Ok(
-			await db.Objects
-				.Where(x => x.Availability == ObjectAvailability.Missing)
+			await db.MissingObjects
 				.Select(x => x.ToDtoEntry())
 				.ToListAsync());
 	}
@@ -39,65 +38,33 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 	{
 		logger.LogInformation("[CreateAsync] Create requested");
 
-		var objName = $"{entry.DatName}_{entry.DatChecksum}";
-		var existing = await db.Objects.FirstOrDefaultAsync(x => x.Name == objName);
+		var existing = await db.MissingObjects
+			.FirstOrDefaultAsync(x => x.DatName == entry.DatName && x.DatChecksum == entry.DatChecksum);
 		if (existing != null)
 		{
-			return Results.Conflict($"Object already exists in the database. DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existing.UploadedDate}");
+			return Results.Conflict($"Missing object already exists in the database. DatName={entry.DatName} DatChecksum={entry.DatChecksum}");
 		}
 
-		// double check it's missing
-		if (db.DoesObjectExist(entry.DatName, entry.DatChecksum, out var existingObject) && existingObject != null)
+		// save to db
+		var tblObjectMissing = new TblObjectMissing()
 		{
-			return Results.Conflict($"Object already exists in the database. UniqueId={existingObject.Id} DatName={entry.DatName} DatChecksum={entry.DatChecksum} UploadedDate={existingObject.UploadedDate}");
-		}
-
-		// save to db if true
-		var tblObject = new TblObject()
-		{
-			Name = $"{entry.DatName}_{entry.DatChecksum}",
-			Description = string.Empty,
-			ObjectSource = ObjectSource.Custom,
-			ObjectType = entry.ObjectType,
-			VehicleType = null,
-			Availability = ObjectAvailability.Missing,
-			CreatedDate = null,
-			ModifiedDate = null,
-			UploadedDate = DateOnly.UtcToday,
-			Authors = [],
-			Tags = [],
-			ObjectPacks = [],
-			DatObjects = [],
-			StringTable = [],
-			SubObjectId = 0,
-			Licence = null,
-		};
-
-		_ = await db.Objects.AddAsync(tblObject);
-		_ = await db.SaveChangesAsync();
-
-		// make dat objects
-		//var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-		tblObject.DatObjects.Add(new TblDatObject()
-		{
-			ObjectId = tblObject.Id,
 			DatName = entry.DatName,
 			DatChecksum = entry.DatChecksum,
-			xxHash3 = 0,
-			Object = tblObject,
-		});
+			ObjectType = entry.ObjectType,
+		};
 
-		// save again
+		_ = await db.MissingObjects.AddAsync(tblObjectMissing);
 		_ = await db.SaveChangesAsync();
-		return Results.Created($"Successfully added 'missing' DAT object {tblObject.Name} with checksum {entry.DatChecksum} and unique id {tblObject.Id}", tblObject.Id);
+
+		return Results.Created($"Successfully added missing object {entry.DatName} with checksum {entry.DatChecksum} and unique id {tblObjectMissing.Id}", tblObjectMissing.Id);
 	}
 
 	static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{
 		logger.LogInformation("[ReadAsync] Read requested");
 
-		var existing = await db.Objects
-			.FirstOrDefaultAsync(x => x.Availability == ObjectAvailability.Missing && x.Id == id);
+		var existing = await db.MissingObjects
+			.FirstOrDefaultAsync(x => x.Id == id);
 
 		if (existing == null)
 		{
@@ -114,15 +81,15 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 	{
 		logger.LogInformation("[DeleteAsync] Delete requested");
 
-		var existing = await db.Objects
-			.FirstOrDefaultAsync(x => x.Availability == ObjectAvailability.Missing && x.Id == id);
+		var existing = await db.MissingObjects
+			.FirstOrDefaultAsync(x => x.Id == id);
 
 		if (existing == null)
 		{
 			return Results.NotFound();
 		}
 
-		_ = db.Objects.Remove(existing);
+		_ = db.MissingObjects.Remove(existing);
 		_ = await db.SaveChangesAsync();
 
 		return Results.Ok();

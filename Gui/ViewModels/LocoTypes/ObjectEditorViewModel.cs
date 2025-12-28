@@ -21,6 +21,7 @@ using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -60,6 +61,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
 
 	public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; }
+	public ReactiveCommand<Unit, Unit> ValidateObjectCommand { get; }
 	public ReactiveCommand<Unit, Unit> ValidateForOGCommand { get; }
 
 	[Reactive]
@@ -97,6 +99,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			}
 		});
 
+		ValidateObjectCommand = ReactiveCommand.Create(ValidateObject);
 		ValidateForOGCommand = ReactiveCommand.Create(ValidateForOG);
 
 		SelectObjectShowDialog = new();
@@ -112,6 +115,37 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		//	var result = await SelectObjectShowDialog.Handle(vm);
 		//	return result.SelectedObject;
 		//});
+	}
+
+	void ValidateObject()
+	{
+		var obj = CurrentObject?.LocoObject.Object;
+		var validationErrors = CurrentObject?.LocoObject.Object.Validate(new ValidationContext(CurrentObject?.LocoObject.Object)).ToList();
+		ShowValidationMessageBox(validationErrors);
+	}
+
+	void ShowValidationMessageBox<T>(IEnumerable<T> validationErrors)
+	{
+		// Show message box
+		IMsBox<ButtonResult> box;
+		if (validationErrors.Any())
+		{
+			var errorMsg = string.Join(Environment.NewLine, validationErrors);
+			box = MessageBoxManager.GetMessageBoxStandard(
+				"Validation failed",
+				errorMsg,
+				ButtonEnum.Ok,
+				Icon.Error);
+		}
+		else
+		{
+			box = MessageBoxManager.GetMessageBoxStandard(
+				"Validation succeeded",
+				"✔ No issues found. Object is valid.",
+				ButtonEnum.Ok,
+				Icon.Success);
+		}
+		_ = box.ShowAsync();
 	}
 
 	void ValidateForOG()
@@ -172,28 +206,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			validationErrors.Add("✖ Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
 		}
 
-		// Show message box
-		IMsBox<ButtonResult> box;
-		if (validationErrors.Count != 0)
-		{
-			var errorMsg = string.Join(Environment.NewLine, validationErrors);
-
-			box = MessageBoxManager.GetMessageBoxStandard(
-				"OG validation failed",
-				errorMsg,
-				ButtonEnum.Ok,
-				Icon.Error);
-		}
-		else
-		{
-			box = MessageBoxManager.GetMessageBoxStandard(
-				"OG validation succeeded",
-				"✔ No issues found. Object is valid for OpenGraphics.",
-				ButtonEnum.Ok,
-				Icon.Success);
-		}
-
-		_ = box.ShowAsync();
+		ShowValidationMessageBox(validationErrors);
 	}
 
 	static async Task DoShowDialogAsync<TViewModel, TWindow>(IInteractionContext<TViewModel, TViewModel?> interaction) where TWindow : Window, new()

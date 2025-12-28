@@ -13,12 +13,11 @@ public static class ImageTableGrouper
 		ImageTableNamer.NameImages(obj, objectType, imageList);
 
 		var imageTable = new ImageTable();
-
 		try
 		{
 			imageTable.Groups = [.. CreateGroups(obj, objectType, imageList)];
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
 			imageTable.Groups = [new("<parsing-error>", [.. imageList])];
 		}

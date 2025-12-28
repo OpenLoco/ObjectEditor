@@ -2,8 +2,10 @@ using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Dock;
 using Definitions.ObjectModels.Types;
+using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
+using ReactiveUI;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -42,17 +44,22 @@ public class DockViewModel(DockObject model)
 	public uint8_t CostIndex
 	{
 		get => Model.CostIndex;
-		set => Model.CostIndex = value;
+		set
+		{
+			Model.CostIndex = value;
+			this.RaisePropertyChanged(nameof(BuildCostFactor));
+			this.RaisePropertyChanged(nameof(SellCostFactor));
+		}
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;

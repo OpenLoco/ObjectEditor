@@ -8,22 +8,21 @@
 	</Design.PreviewWith>
 
 	<Style Selector="vi|Pos3View">
-		<!-- Set Defaults -->
 		<Setter Property="Template">
 			<ControlTemplate>
 				<StackPanel x:DataType="vm:Pos3ViewModel" Orientation="Horizontal">
+					<!-- X -->
 					<TextBlock Text="X" VerticalAlignment="Center" Padding="4"></TextBlock>
-					<!-- ReSharper disable once Xaml.BindingWithoutContextNotResolved -->
 					<NumericUpDown Value="{Binding X}"  ShowButtonSpinner="False">
 						<NumericUpDown.FormatString>{0}</NumericUpDown.FormatString>
 					</NumericUpDown>
+					<!-- Y -->
 					<TextBlock Text="Y" VerticalAlignment="Center" Padding="4"></TextBlock>
-					<!-- ReSharper disable once Xaml.BindingWithoutContextNotResolved -->
 					<NumericUpDown Value="{Binding Y}" ShowButtonSpinner="False">
 						<NumericUpDown.FormatString>{0}</NumericUpDown.FormatString>
 					</NumericUpDown>
+					<!-- Z -->
 					<TextBlock Text="Z" VerticalAlignment="Center" Padding="4"></TextBlock>
-					<!-- ReSharper disable once Xaml.BindingWithoutContextNotResolved -->
 					<NumericUpDown Value="{Binding Z}" ShowButtonSpinner="False">
 						<NumericUpDown.FormatString>{0}</NumericUpDown.FormatString>
 					</NumericUpDown>

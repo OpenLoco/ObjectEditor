@@ -17,12 +17,9 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 	public static string BaseRoute => RoutesV2.Missing;
 	public static Delegate ListDelegate => ListMissingObjects;
 	public static Delegate CreateDelegate => AddMissingObject;
-	public static Delegate ReadDelegate => NotImplementedAsync;
-	public static Delegate UpdateDelegate => NotImplementedAsync;
-	public static Delegate DeleteDelegate => NotImplementedAsync;
-
-	public static void MapRoutes(IEndpointRouteBuilder parentRoute)
-		=> BaseTableRouteHandler.MapRoutes<ObjectMissingRouteHandler>(parentRoute);
+	public static Delegate ReadDelegate => ReadNotImplementedAsync;
+	public static Delegate UpdateDelegate => UpdateNotImplementedAsync;
+	public static Delegate DeleteDelegate => DeleteNotImplementedAsync;
 
 	static async Task<IResult> ListMissingObjects([FromServices] LocoDbContext db, [FromServices] ILogger<ObjectMissingRouteHandler> logger)
 	{
@@ -91,6 +88,12 @@ public class ObjectMissingRouteHandler : ITableRouteHandler
 		return Results.Created($"Successfully added 'missing' DAT object {tblObject.Name} with checksum {entry.DatChecksum} and unique id {tblObject.Id}", tblObject.Id);
 	}
 
-	static Task<IResult> NotImplementedAsync()
+	static Task<IResult> ReadNotImplementedAsync(UniqueObjectId id, [FromServices] LocoDbContext db)
+		=> Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+
+	static Task<IResult> UpdateNotImplementedAsync(UniqueObjectId id, DtoMissingObjectEntry request, [FromServices] LocoDbContext db)
+		=> Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+
+	static Task<IResult> DeleteNotImplementedAsync(UniqueObjectId id, [FromServices] LocoDbContext db)
 		=> Task.FromResult(Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 }

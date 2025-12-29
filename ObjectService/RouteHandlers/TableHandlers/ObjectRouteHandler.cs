@@ -374,6 +374,8 @@ public class ObjectRouteHandler : ITableRouteHandler
 			.Include(x => x.Authors)
 			.Include(x => x.Tags)
 			.Include(x => x.ObjectPacks)
+			.Include(x => x.DatObjects)
+			.Include(x => x.StringTable)
 			.Where(x => x.Id == id)
 			.SingleOrDefaultAsync();
 
@@ -394,15 +396,8 @@ public class ObjectRouteHandler : ITableRouteHandler
 		logger.LogInformation("[UpdateAsync] Successfully updated object {ObjectId}", id);
 
 		// Return updated object
-		var updatedObj = await db.Objects
-			.Where(x => x.Id == id)
-			.Include(x => x.Licence)
-			.Include(x => x.DatObjects)
-			.Include(x => x.StringTable)
-			.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
-			.SingleOrDefaultAsync();
-
-		var descriptor = updatedObj?.ToDtoDescriptor();
+		var expandedObj = new ExpandedTbl<TblObject, TblObjectPack>(obj, obj.Authors, obj.Tags, obj.ObjectPacks);
+		var descriptor = expandedObj.ToDtoDescriptor();
 		return Results.Ok(descriptor);
 	}
 

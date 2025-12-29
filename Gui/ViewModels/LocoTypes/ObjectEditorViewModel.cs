@@ -353,7 +353,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		// Upload metadata to server when in online mode
 		if (CurrentFile.FileLocation == FileLocation.Online && CurrentFile.Id.HasValue && MetadataViewModel != null)
 		{
-			_ = Task.Run(async () => await UploadMetadataAsync(CurrentFile.Id.Value));
+			_ = UploadMetadataAsync(CurrentFile.Id.Value);
 		}
 	}
 
@@ -362,6 +362,12 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		if (MetadataViewModel?.Metadata == null)
 		{
 			logger.Warning("Cannot upload metadata - metadata is null");
+			return;
+		}
+
+		if (CurrentObject?.DatInfo == null)
+		{
+			logger.Warning("Cannot upload metadata - DatInfo is null");
 			return;
 		}
 
@@ -374,12 +380,12 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				Id: objectId,
 				Name: MetadataViewModel.Metadata.InternalName,
 				DisplayName: CurrentFile.DisplayName,
-				DatChecksum: CurrentObject?.DatInfo?.S5Header.Checksum,
+				DatChecksum: CurrentObject.DatInfo.S5Header.Checksum,
 				Description: MetadataViewModel.Metadata.Description,
-				ObjectSource: CurrentObject?.DatInfo?.S5Header.ObjectSource.Convert(
+				ObjectSource: CurrentObject.DatInfo.S5Header.ObjectSource.Convert(
 					CurrentObject.DatInfo.S5Header.Name, 
-					CurrentObject.DatInfo.S5Header.Checksum) ?? ObjectSource.Custom,
-				ObjectType: CurrentObject?.DatInfo?.S5Header.ObjectType.Convert() ?? ObjectType.Airport,
+					CurrentObject.DatInfo.S5Header.Checksum),
+				ObjectType: CurrentObject.DatInfo.S5Header.ObjectType.Convert(),
 				VehicleType: null,
 				Availability: MetadataViewModel.Metadata.Availability,
 				CreatedDate: MetadataViewModel.Metadata.CreatedDate.HasValue 
@@ -410,7 +416,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		}
 		catch (Exception ex)
 		{
-			logger.Error($"Error uploading metadata for object {objectId}:", ex);
+			logger.Error($"Error uploading metadata for object {objectId}", ex);
 		}
 	}
 

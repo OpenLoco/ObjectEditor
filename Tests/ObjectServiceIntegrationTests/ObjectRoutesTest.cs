@@ -36,7 +36,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		=> throw new NotImplementedException();
 
 	protected override DtoUploadDat PutRequestDto
-		=> throw new NotImplementedException();
+		=> throw new NotImplementedException("PUT operation uses DtoObjectDescriptor, not DtoUploadDat. Override PutAsync test instead.");
 
 	//protected override DtoUploadDat PostRequestDto
 	//	=> new(3, "test-name-3", "display-name-3", 123, "456", ObjectSource.Custom, ObjectType.Vehicle, Dat.Objects.VehicleType.Bus, Definitions.ObjectAvailability.Available, null, null, DateOnly.Today);
@@ -223,5 +223,52 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			new DtoStringTableDescriptor(expectedStringTable, 3));
 
 		AssertDtoObjectDescriptorsAreEqual(results, expected);
+	}
+
+	[Test]
+	public override async Task PutAsync()
+	{
+		// arrange
+		const int id = 2;
+		var existingObj = DbSeedData.ToList()[id - 1];
+		var updatedDescription = "Updated description";
+		var updatedCreatedDate = DateOnly.FromDateTime(new DateTime(2020, 1, 1));
+		var updatedModifiedDate = DateOnly.FromDateTime(new DateTime(2024, 12, 15));
+
+		var updateRequest = new DtoObjectDescriptor(
+			Id: id,
+			Name: existingObj.Name,
+			DisplayName: "test-display-name-2",
+			DatChecksum: null,
+			Description: updatedDescription,
+			ObjectSource: existingObj.ObjectSource,
+			ObjectType: existingObj.ObjectType,
+			VehicleType: existingObj.VehicleType,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: updatedCreatedDate,
+			ModifiedDate: updatedModifiedDate,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], id)
+		);
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+			HttpClient!, RoutesV2.Prefix, BaseRoute, id, updateRequest);
+
+		// assert
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result!.Id, Is.EqualTo(id));
+			Assert.That(result.Description, Is.EqualTo(updatedDescription));
+			Assert.That(result.CreatedDate, Is.EqualTo(updatedCreatedDate));
+			Assert.That(result.ModifiedDate, Is.EqualTo(updatedModifiedDate));
+			Assert.That(result.Availability, Is.EqualTo(ObjectAvailability.Available));
+		}
 	}
 }

@@ -5,6 +5,7 @@ using Common;
 using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
+using Definitions.DTO;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Objects.Sound;
@@ -348,6 +349,69 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			? CurrentFile.FileName
 			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".dat"));
 		SaveCore(savePath, new SaveParameters(SaveType.DAT, ObjectDatHeaderViewModel?.DatEncoding));
+
+		// Upload metadata to server when in online mode
+		if (CurrentFile.FileLocation == FileLocation.Online && CurrentFile.Id.HasValue && MetadataViewModel != null)
+		{
+			_ = Task.Run(async () => await UploadMetadataAsync(CurrentFile.Id.Value));
+		}
+	}
+
+	async Task UploadMetadataAsync(UniqueObjectId objectId)
+	{
+		if (MetadataViewModel?.Metadata == null)
+		{
+			logger.Warning("Cannot upload metadata - metadata is null");
+			return;
+		}
+
+		try
+		{
+			logger.Info($"Uploading metadata for object {objectId}");
+
+			// Create DTO from current metadata
+			var dtoRequest = new DtoObjectDescriptor(
+				Id: objectId,
+				Name: MetadataViewModel.Metadata.InternalName,
+				DisplayName: CurrentFile.DisplayName,
+				DatChecksum: CurrentObject?.DatInfo?.S5Header.Checksum,
+				Description: MetadataViewModel.Metadata.Description,
+				ObjectSource: CurrentObject?.DatInfo?.S5Header.ObjectSource.Convert(
+					CurrentObject.DatInfo.S5Header.Name, 
+					CurrentObject.DatInfo.S5Header.Checksum) ?? ObjectSource.Custom,
+				ObjectType: CurrentObject?.DatInfo?.S5Header.ObjectType.Convert() ?? ObjectType.Airport,
+				VehicleType: null,
+				Availability: MetadataViewModel.Metadata.Availability,
+				CreatedDate: MetadataViewModel.Metadata.CreatedDate.HasValue 
+					? DateOnly.FromDateTime(MetadataViewModel.Metadata.CreatedDate.Value.UtcDateTime) 
+					: null,
+				ModifiedDate: MetadataViewModel.Metadata.ModifiedDate.HasValue 
+					? DateOnly.FromDateTime(MetadataViewModel.Metadata.ModifiedDate.Value.UtcDateTime) 
+					: null,
+				UploadedDate: DateOnly.FromDateTime(MetadataViewModel.Metadata.UploadedDate.UtcDateTime),
+				Licence: MetadataViewModel.Metadata.Licence,
+				Authors: MetadataViewModel.Metadata.Authors,
+				Tags: MetadataViewModel.Metadata.Tags,
+				ObjectPacks: MetadataViewModel.Metadata.ObjectPacks,
+				DatObjects: MetadataViewModel.Metadata.DatObjects,
+				StringTable: new DtoStringTableDescriptor(new Dictionary<string, Dictionary<LanguageId, string>>(), objectId)
+			);
+
+			var result = await Model.ObjectServiceClient.UpdateObjectAsync(objectId, dtoRequest);
+
+			if (result != null)
+			{
+				logger.Info($"Successfully uploaded metadata for object {objectId}");
+			}
+			else
+			{
+				logger.Error($"Failed to upload metadata for object {objectId}");
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.Error($"Error uploading metadata for object {objectId}:", ex);
+		}
 	}
 
 	public override string? SaveAs(SaveParameters saveParameters)

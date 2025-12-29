@@ -24,6 +24,15 @@ public static class Client
 			id,
 			logger);
 
+	public static async Task<DtoObjectDescriptor?> UpdateObjectAsync(HttpClient client, UniqueObjectId id, DtoObjectDescriptor request, ILogger? logger = null)
+		=> await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+			client,
+			ApiVersion,
+			RoutesV2.Objects,
+			id,
+			request,
+			logger);
+
 	public static async Task<byte[]?> GetObjectFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
 		=> await ClientHelpers.SendRequestAsync(
 			client,

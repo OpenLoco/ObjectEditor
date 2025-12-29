@@ -368,7 +368,42 @@ public class ObjectRouteHandler : ITableRouteHandler
 	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
 	{
 		logger.LogInformation("[UpdateAsync] Update requested for object {ObjectId}", id);
-		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+
+		var obj = await db.Objects
+			.Include(x => x.Licence)
+			.Include(x => x.Authors)
+			.Include(x => x.Tags)
+			.Include(x => x.ObjectPacks)
+			.Where(x => x.Id == id)
+			.SingleOrDefaultAsync();
+
+		if (obj == null)
+		{
+			return Results.NotFound($"Object with id {id} not found");
+		}
+
+		// Update editable metadata fields
+		obj.Description = request.Description;
+		obj.CreatedDate = request.CreatedDate;
+		obj.ModifiedDate = request.ModifiedDate;
+		obj.Availability = request.Availability;
+
+		// Save changes
+		_ = await db.SaveChangesAsync();
+
+		logger.LogInformation("[UpdateAsync] Successfully updated object {ObjectId}", id);
+
+		// Return updated object
+		var updatedObj = await db.Objects
+			.Where(x => x.Id == id)
+			.Include(x => x.Licence)
+			.Include(x => x.DatObjects)
+			.Include(x => x.StringTable)
+			.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
+			.SingleOrDefaultAsync();
+
+		var descriptor = updatedObj?.ToDtoDescriptor();
+		return Results.Ok(descriptor);
 	}
 
 	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)

@@ -64,6 +64,9 @@ public class ObjectServiceClient
 	public async Task<DtoObjectDescriptor?> GetObjectAsync(UniqueObjectId id)
 		=> await Client.GetObjectAsync(WebClient, id, Logger);
 
+	public async Task<DtoObjectDescriptor?> UpdateObjectAsync(UniqueObjectId id, DtoObjectDescriptor request)
+		=> await Client.UpdateObjectAsync(WebClient, id, request, Logger);
+
 	public async Task<byte[]?> GetObjectFileAsync(UniqueObjectId id)
 		=> await Client.GetObjectFileAsync(WebClient, id, Logger);
 

@@ -58,8 +58,8 @@
                     Grid.Column="1"
                     Margin="4"
                     VerticalAlignment="Center"
-                    IsReadOnly="True"
-                    Text="{Binding Description}" />
+                    IsReadOnly="False"
+                    Text="{Binding Description, Mode=TwoWay}" />
 
                 <TextBlock
                     Grid.Row="2"
@@ -72,8 +72,8 @@
                     Grid.Column="1"
                     Margin="4"
                     VerticalAlignment="Center"
-                    IsEnabled="False"
-                    SelectedDate="{Binding CreatedDate}" />
+                    IsEnabled="True"
+                    SelectedDate="{Binding CreatedDate, Mode=TwoWay}" />
 
                 <TextBlock
                     Grid.Row="3"
@@ -86,8 +86,8 @@
                     Grid.Column="1"
                     Margin="4"
                     VerticalAlignment="Center"
-                    IsEnabled="False"
-                    SelectedDate="{Binding ModifiedDate}" />
+                    IsEnabled="True"
+                    SelectedDate="{Binding ModifiedDate, Mode=TwoWay}" />
 
                 <TextBlock
                     Grid.Row="4"

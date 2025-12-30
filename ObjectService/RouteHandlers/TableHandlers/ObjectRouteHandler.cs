@@ -368,7 +368,115 @@ public class ObjectRouteHandler : ITableRouteHandler
 	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
 	{
 		logger.LogInformation("[UpdateAsync] Update requested for object {ObjectId}", id);
-		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+
+		var obj = await db.Objects
+			.Include(x => x.Licence)
+			.Include(x => x.Authors)
+			.Include(x => x.Tags)
+			.Include(x => x.ObjectPacks)
+			.Include(x => x.DatObjects)
+			.Include(x => x.StringTable)
+			.Where(x => x.Id == id)
+			.SingleOrDefaultAsync();
+
+		if (obj == null)
+		{
+			return Results.NotFound($"Object with id {id} not found");
+		}
+
+		// Update editable metadata fields
+		obj.Description = request.Description;
+		obj.CreatedDate = request.CreatedDate;
+		obj.ModifiedDate = request.ModifiedDate;
+		obj.Availability = request.Availability;
+
+		// Update licence navigation property
+		if (request.Licence == null)
+		{
+			obj.Licence = null;
+		}
+		else
+		{
+			var licenceEntity = await db.Licences
+				.SingleOrDefaultAsync(l => l.Id == request.Licence.Id);
+
+			obj.Licence = licenceEntity;
+		}
+
+		// Update authors collection
+		if (request.Authors == null || request.Authors.Count == 0)
+		{
+			obj.Authors.Clear();
+		}
+		else
+		{
+			var authorIds = request.Authors
+				.Select(a => a.Id)
+				.ToList();
+
+			var authors = await db.Authors
+				.Where(a => authorIds.Contains(a.Id))
+				.ToListAsync();
+
+			obj.Authors.Clear();
+			foreach (var author in authors)
+			{
+				obj.Authors.Add(author);
+			}
+		}
+
+		// Update tags collection
+		if (request.Tags == null || request.Tags.Count == 0)
+		{
+			obj.Tags.Clear();
+		}
+		else
+		{
+			var tagIds = request.Tags
+				.Select(t => t.Id)
+				.ToList();
+
+			var tags = await db.Tags
+				.Where(t => tagIds.Contains(t.Id))
+				.ToListAsync();
+
+			obj.Tags.Clear();
+			foreach (var tag in tags)
+			{
+				obj.Tags.Add(tag);
+			}
+		}
+
+		// Update object packs collection
+		if (request.ObjectPacks == null || request.ObjectPacks.Count == 0)
+		{
+			obj.ObjectPacks.Clear();
+		}
+		else
+		{
+			var packIds = request.ObjectPacks
+				.Select(p => p.Id)
+				.ToList();
+
+			var packs = await db.ObjectPacks
+				.Where(p => packIds.Contains(p.Id))
+				.ToListAsync();
+
+			obj.ObjectPacks.Clear();
+			foreach (var pack in packs)
+			{
+				obj.ObjectPacks.Add(pack);
+			}
+		}
+		// Save changes
+		_ = await db.SaveChangesAsync();
+
+		logger.LogInformation("[UpdateAsync] Successfully updated object {ObjectId}", id);
+
+		// Return updated object
+		var expandedObj = new ExpandedTbl<TblObject, TblObjectPack>(obj, obj.Authors, obj.Tags, obj.ObjectPacks);
+		var descriptor = expandedObj.ToDtoDescriptor();
+		return Results.Ok(descriptor);
 	}
 
 	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
@@ -408,7 +516,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 				.TypeToStruct(objectType)
 				.GetProperties();
 
-			var metadataPropertiesForObject = typeof(ObjectMetadata).GetProperties();
+			var metadataPropertiesForObject = typeof(Definitions.SourceData.ObjectMetadata).GetProperties();
 
 			var allProperties = locoPropertiesForObject.Union(metadataPropertiesForObject);
 

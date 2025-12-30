@@ -8,6 +8,6 @@ namespace Gui.Models;
 public class LocoUIObjectModel
 {
 	public LocoObject? LocoObject { get; set; }
-	public LocoObjectMetadata? Metadata { get; set; }
+	public ObjectMetadata? Metadata { get; set; }
 	public DatHeaderInfo? DatInfo { get; set; }
 }

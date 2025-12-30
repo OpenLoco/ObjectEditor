@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace Definitions.ObjectModels;
 
-public class LocoObjectMetadata(string internalName)
+public class ObjectMetadata(string internalName)
 {
 	public UniqueObjectId UniqueObjectId { get; init; }
 

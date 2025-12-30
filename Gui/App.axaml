@@ -7,7 +7,6 @@
 	xmlns:domt="using:Definitions.ObjectModels.Types"
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:vi="using:Gui.Views"
-	xmlns:oldt="using:Dat.Types"
 	xmlns:log="using:Common.Logging"
 	xmlns:cnv="using:Gui.Converters"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
@@ -97,12 +96,6 @@
 		<DataTemplate DataType="domt:ObjectModelHeader">
 			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
 		</DataTemplate>
-		<!--<DataTemplate DataType="oldt:S5Header">
-			<pgc:PropertyGrid x:Name="propertyGrid_S5Header" DataContext="{Binding}" IsCategoryVisible="False" />
-		</DataTemplate>
-		<DataTemplate DataType="oldt:ObjectHeader">
-			<pgc:PropertyGrid x:Name="propertyGrid_ObjectHeader" DataContext="{Binding}" IsCategoryVisible="False" />
-		</DataTemplate>-->
 		<DataTemplate DataType="vm:SCV5ViewModel">
 			<vi:SCV5View />
 		</DataTemplate>

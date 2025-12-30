@@ -390,6 +390,84 @@ public class ObjectRouteHandler : ITableRouteHandler
 		obj.ModifiedDate = request.ModifiedDate;
 		obj.Availability = request.Availability;
 
+		// Update licence navigation property
+		if (request.Licence == null)
+		{
+			obj.Licence = null;
+		}
+		else
+		{
+			var licenceEntity = await db.Licences
+				.SingleOrDefaultAsync(l => l.Id == request.Licence.Id);
+
+			obj.Licence = licenceEntity;
+		}
+
+		// Update authors collection
+		if (request.Authors == null || request.Authors.Count == 0)
+		{
+			obj.Authors.Clear();
+		}
+		else
+		{
+			var authorIds = request.Authors
+				.Select(a => a.Id)
+				.ToList();
+
+			var authors = await db.Authors
+				.Where(a => authorIds.Contains(a.Id))
+				.ToListAsync();
+
+			obj.Authors.Clear();
+			foreach (var author in authors)
+			{
+				obj.Authors.Add(author);
+			}
+		}
+
+		// Update tags collection
+		if (request.Tags == null || request.Tags.Count == 0)
+		{
+			obj.Tags.Clear();
+		}
+		else
+		{
+			var tagIds = request.Tags
+				.Select(t => t.Id)
+				.ToList();
+
+			var tags = await db.Tags
+				.Where(t => tagIds.Contains(t.Id))
+				.ToListAsync();
+
+			obj.Tags.Clear();
+			foreach (var tag in tags)
+			{
+				obj.Tags.Add(tag);
+			}
+		}
+
+		// Update object packs collection
+		if (request.ObjectPacks == null || request.ObjectPacks.Count == 0)
+		{
+			obj.ObjectPacks.Clear();
+		}
+		else
+		{
+			var packIds = request.ObjectPacks
+				.Select(p => p.Id)
+				.ToList();
+
+			var packs = await db.ObjectPacks
+				.Where(p => packIds.Contains(p.Id))
+				.ToListAsync();
+
+			obj.ObjectPacks.Clear();
+			foreach (var pack in packs)
+			{
+				obj.ObjectPacks.Add(pack);
+			}
+		}
 		// Save changes
 		_ = await db.SaveChangesAsync();
 

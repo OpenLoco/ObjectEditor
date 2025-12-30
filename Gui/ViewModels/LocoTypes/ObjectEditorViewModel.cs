@@ -309,7 +309,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 			if (CurrentObject?.Metadata != null)
 			{
-				MetadataViewModel = new ObjectMetadataViewModel(CurrentObject.Metadata, Model.ObjectServiceClient);
+				MetadataViewModel = new ObjectMetadataViewModel(CurrentObject.Metadata, Model.ObjectServiceClient, logger);
 			}
 			else
 			{
@@ -355,7 +355,14 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		// Upload metadata to server when in online mode
 		if (CurrentFile.FileLocation == FileLocation.Online && CurrentFile.Id.HasValue && MetadataViewModel != null)
 		{
-			_ = UploadMetadataAsync(CurrentFile.Id.Value);
+			_ = UploadMetadataAsync(CurrentFile.Id.Value).ContinueWith(t =>
+			{
+				// Observe any exceptions to prevent unobserved task exceptions
+				if (t.Exception != null)
+				{
+					logger.Error($"Unhandled exception in metadata upload", t.Exception);
+				}
+			}, TaskContinuationOptions.OnlyOnFaulted);
 		}
 	}
 

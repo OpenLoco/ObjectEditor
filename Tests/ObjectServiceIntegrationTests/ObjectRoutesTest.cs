@@ -271,4 +271,218 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			Assert.That(result.Availability, Is.EqualTo(ObjectAvailability.Available));
 		}
 	}
+
+	[Test]
+	public async Task PutAsync_UpdatesLicence()
+	{
+		// arrange
+		const int objectId = 2;
+		
+		// Create a test licence
+		var licence = new TblLicence { Id = 1, Name = "Test Licence", Text = "Test licence text" };
+		using (var db = GetDbContext())
+		{
+			_ = await db.Licences.AddAsync(licence);
+			_ = await db.SaveChangesAsync();
+		}
+
+		var updateRequest = new DtoObjectDescriptor(
+			Id: objectId,
+			Name: "test-name-2",
+			DisplayName: "test-display-name-2",
+			DatChecksum: null,
+			Description: "Test description",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Vehicle,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: new DtoLicenceEntry(licence.Id, licence.Name, licence.Text),
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId)
+		);
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+
+		// assert
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result!.Licence, Is.Not.Null);
+			Assert.That(result.Licence!.Id, Is.EqualTo(licence.Id));
+			Assert.That(result.Licence.Name, Is.EqualTo(licence.Name));
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_UpdatesAuthors()
+	{
+		// arrange
+		const int objectId = 2;
+		
+		// Create test authors
+		var author1 = new TblAuthor { Id = 1, Name = "Test Author 1" };
+		var author2 = new TblAuthor { Id = 2, Name = "Test Author 2" };
+		using (var db = GetDbContext())
+		{
+			_ = await db.Authors.AddAsync(author1);
+			_ = await db.Authors.AddAsync(author2);
+			_ = await db.SaveChangesAsync();
+		}
+
+		var updateRequest = new DtoObjectDescriptor(
+			Id: objectId,
+			Name: "test-name-2",
+			DisplayName: "test-display-name-2",
+			DatChecksum: null,
+			Description: "Test description",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Vehicle,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [
+				new DtoAuthorEntry(author1.Id, author1.Name),
+				new DtoAuthorEntry(author2.Id, author2.Name)
+			],
+			Tags: [],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId)
+		);
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+
+		// assert
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result!.Authors, Is.Not.Null);
+			Assert.That(result.Authors.Count, Is.EqualTo(2));
+			Assert.That(result.Authors.Any(a => a.Id == author1.Id), Is.True);
+			Assert.That(result.Authors.Any(a => a.Id == author2.Id), Is.True);
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_UpdatesTags()
+	{
+		// arrange
+		const int objectId = 2;
+		
+		// Create test tags
+		var tag1 = new TblTag { Id = 1, Name = "Test Tag 1" };
+		var tag2 = new TblTag { Id = 2, Name = "Test Tag 2" };
+		using (var db = GetDbContext())
+		{
+			_ = await db.Tags.AddAsync(tag1);
+			_ = await db.Tags.AddAsync(tag2);
+			_ = await db.SaveChangesAsync();
+		}
+
+		var updateRequest = new DtoObjectDescriptor(
+			Id: objectId,
+			Name: "test-name-2",
+			DisplayName: "test-display-name-2",
+			DatChecksum: null,
+			Description: "Test description",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Vehicle,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [
+				new DtoTagEntry(tag1.Id, tag1.Name),
+				new DtoTagEntry(tag2.Id, tag2.Name)
+			],
+			ObjectPacks: [],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId)
+		);
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+
+		// assert
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result!.Tags, Is.Not.Null);
+			Assert.That(result.Tags.Count, Is.EqualTo(2));
+			Assert.That(result.Tags.Any(t => t.Id == tag1.Id), Is.True);
+			Assert.That(result.Tags.Any(t => t.Id == tag2.Id), Is.True);
+		}
+	}
+
+	[Test]
+	public async Task PutAsync_UpdatesObjectPacks()
+	{
+		// arrange
+		const int objectId = 2;
+		
+		// Create test object packs
+		var pack1 = new TblObjectPack { Id = 1, Name = "Test Pack 1", Description = "Test pack 1 description" };
+		var pack2 = new TblObjectPack { Id = 2, Name = "Test Pack 2", Description = "Test pack 2 description" };
+		using (var db = GetDbContext())
+		{
+			_ = await db.ObjectPacks.AddAsync(pack1);
+			_ = await db.ObjectPacks.AddAsync(pack2);
+			_ = await db.SaveChangesAsync();
+		}
+
+		var updateRequest = new DtoObjectDescriptor(
+			Id: objectId,
+			Name: "test-name-2",
+			DisplayName: "test-display-name-2",
+			DatChecksum: null,
+			Description: "Test description",
+			ObjectSource: ObjectSource.Custom,
+			ObjectType: ObjectType.Vehicle,
+			VehicleType: null,
+			Availability: ObjectAvailability.Available,
+			CreatedDate: null,
+			ModifiedDate: null,
+			UploadedDate: DateOnly.UtcToday,
+			Licence: null,
+			Authors: [],
+			Tags: [],
+			ObjectPacks: [
+				new DtoItemPackEntry(pack1.Id, pack1.Name, pack1.Description, null, null, DateOnly.UtcToday, null),
+				new DtoItemPackEntry(pack2.Id, pack2.Name, pack2.Description, null, null, DateOnly.UtcToday, null)
+			],
+			DatObjects: [],
+			StringTable: new DtoStringTableDescriptor([], objectId)
+		);
+
+		// act
+		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
+
+		// assert
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result!.ObjectPacks, Is.Not.Null);
+			Assert.That(result.ObjectPacks.Count, Is.EqualTo(2));
+			Assert.That(result.ObjectPacks.Any(p => p.Id == pack1.Id), Is.True);
+			Assert.That(result.ObjectPacks.Any(p => p.Id == pack2.Id), Is.True);
+		}
+	}
 }

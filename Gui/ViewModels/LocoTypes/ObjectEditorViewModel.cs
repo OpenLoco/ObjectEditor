@@ -136,7 +136,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				"Validation failed",
 				errorMsg,
 				ButtonEnum.Ok,
-				Icon.Error);
+				Icon.Error,
+				windowStartupLocation: WindowStartupLocation.CenterOwner);
 		}
 		else
 		{
@@ -144,7 +145,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				"Validation succeeded",
 				"✔ No issues found. Object is valid.",
 				ButtonEnum.Ok,
-				Icon.Success);
+				Icon.Success,
+				windowStartupLocation: WindowStartupLocation.CenterOwner);
 		}
 		_ = box.ShowAsync();
 	}

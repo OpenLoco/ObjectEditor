@@ -117,8 +117,11 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 				? (uint8_t)costIndexProperty.GetValue(target)!
 				: (uint8_t)0;
 
-			var designedYearProperty = TypeDescriptor.GetProperties(target)[currencyAttr.DesignedYearPropertyName];
-			var designedYear = designedYearProperty != null
+			var designedYearProperty = currencyAttr.DesignedYearPropertyName is null
+				? null
+				: TypeDescriptor.GetProperties(target)[currencyAttr.DesignedYearPropertyName];
+
+			var designedYear = designedYearProperty is not null
 				? (uint16_t)designedYearProperty.GetValue(target)!
 				: (uint16_t)1950;
 

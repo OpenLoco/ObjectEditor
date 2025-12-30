@@ -75,4 +75,16 @@ public class ObjectServiceClient
 
 	public async Task<DtoObjectMissingEntry?> AddMissingObjectAsync(DtoObjectMissingUpload entry)
 		=> await Client.AddMissingObjectAsync(WebClient, entry, Logger);
+
+	public async Task<IEnumerable<DtoLicenceEntry>> GetLicencesAsync()
+		=> await Client.GetLicencesAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoAuthorEntry>> GetAuthorsAsync()
+		=> await Client.GetAuthorsAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoTagEntry>> GetTagsAsync()
+		=> await Client.GetTagsAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoItemPackEntry>> GetObjectPacksAsync()
+		=> await Client.GetObjectPacksAsync(WebClient, Logger);
 }

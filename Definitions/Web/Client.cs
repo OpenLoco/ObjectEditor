@@ -63,4 +63,36 @@ public static class Client
 			entry,
 			logger);
 	}
+
+	public static async Task<IEnumerable<DtoLicenceEntry>> GetLicencesAsync(HttpClient client, ILogger? logger = null)
+		=> await ClientHelpers.GetAsync<IEnumerable<DtoLicenceEntry>>(
+			client,
+			ApiVersion,
+			RoutesV2.Licences,
+			null,
+			logger) ?? [];
+
+	public static async Task<IEnumerable<DtoAuthorEntry>> GetAuthorsAsync(HttpClient client, ILogger? logger = null)
+		=> await ClientHelpers.GetAsync<IEnumerable<DtoAuthorEntry>>(
+			client,
+			ApiVersion,
+			RoutesV2.Authors,
+			null,
+			logger) ?? [];
+
+	public static async Task<IEnumerable<DtoTagEntry>> GetTagsAsync(HttpClient client, ILogger? logger = null)
+		=> await ClientHelpers.GetAsync<IEnumerable<DtoTagEntry>>(
+			client,
+			ApiVersion,
+			RoutesV2.Tags,
+			null,
+			logger) ?? [];
+
+	public static async Task<IEnumerable<DtoItemPackEntry>> GetObjectPacksAsync(HttpClient client, ILogger? logger = null)
+		=> await ClientHelpers.GetAsync<IEnumerable<DtoItemPackEntry>>(
+			client,
+			ApiVersion,
+			RoutesV2.ObjectPacks,
+			null,
+			logger) ?? [];
 }

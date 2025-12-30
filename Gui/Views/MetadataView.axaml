@@ -128,7 +128,7 @@
                     Margin="4"
                     VerticalAlignment="Center"
                     IsEnabled="False"
-                    SelectedDate="{Binding UploadedDate}" />
+                    SelectedDate="{Binding UploadedDate, Mode=OneWay}" />
 
                 <TextBlock
                     Grid.Row="7"

@@ -16,7 +16,6 @@ public class ObjectMetadataViewModel : ReactiveObject
 		availability = metadata.Availability;
 		createdDate = metadata.CreatedDate;
 		modifiedDate = metadata.ModifiedDate;
-		uploadedDate = metadata.UploadedDate;
 	}
 
 	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"))
@@ -75,14 +74,6 @@ public class ObjectMetadataViewModel : ReactiveObject
 		}
 	}
 
-	DateTimeOffset uploadedDate;
-	public DateTimeOffset UploadedDate
-	{
-		get => uploadedDate;
-		set
-		{
-			_ = this.RaiseAndSetIfChanged(ref uploadedDate, value);
-			Metadata.UploadedDate = value;
-		}
-	}
+	// UploadedDate is readonly (server-managed)
+	public DateTimeOffset UploadedDate => Metadata.UploadedDate;
 }

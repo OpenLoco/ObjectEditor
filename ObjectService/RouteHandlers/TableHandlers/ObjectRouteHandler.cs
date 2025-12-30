@@ -438,7 +438,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 				.TypeToStruct(objectType)
 				.GetProperties();
 
-			var metadataPropertiesForObject = typeof(ObjectMetadata).GetProperties();
+			var metadataPropertiesForObject = typeof(Definitions.SourceData.ObjectMetadata).GetProperties();
 
 			var allProperties = locoPropertiesForObject.Union(metadataPropertiesForObject);
 

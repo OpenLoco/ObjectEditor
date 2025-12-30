@@ -58,7 +58,7 @@ public class EnumToMaterialIconConverter : IValueConverter
 	static readonly Dictionary<string, string> MiscMappings = new()
 	{
 		{ nameof(ObjectIndexEntry), "ViewList" },
-		{ nameof(LocoObjectMetadata), "ViewListOutline" },
+		{ nameof(ObjectMetadata), "ViewListOutline" },
 	};
 
 	static readonly Dictionary<ObjectType, string> ObjectMapping = new()

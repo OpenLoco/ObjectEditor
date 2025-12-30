@@ -51,7 +51,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 	public LocoUIObjectModel? CurrentObject { get; private set; }
 
 	[Reactive]
-	public LocoObjectMetadataViewModel? MetadataViewModel { get; set; }
+	public ObjectMetadataViewModel? MetadataViewModel { get; set; }
 
 	[Reactive]
 	public ObjectModelHeaderViewModel? ObjectModelHeaderViewModel { get; set; }
@@ -307,7 +307,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 			if (CurrentObject?.Metadata != null)
 			{
-				MetadataViewModel = new LocoObjectMetadataViewModel(CurrentObject.Metadata);
+				MetadataViewModel = new ObjectMetadataViewModel(CurrentObject.Metadata);
 			}
 			else
 			{

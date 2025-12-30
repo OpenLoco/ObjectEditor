@@ -307,7 +307,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 			if (CurrentObject?.Metadata != null)
 			{
-				MetadataViewModel = new ObjectMetadataViewModel(CurrentObject.Metadata);
+				MetadataViewModel = new ObjectMetadataViewModel(CurrentObject.Metadata, Model.ObjectServiceClient);
 			}
 			else
 			{

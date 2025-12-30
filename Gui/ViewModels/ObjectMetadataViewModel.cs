@@ -1,6 +1,9 @@
+using Definitions;
 using Definitions.ObjectModels;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Gui.ViewModels;
 
@@ -10,8 +13,10 @@ public class ObjectMetadataViewModel : ReactiveObject
 	{
 		Metadata = metadata;
 		description = metadata.Description;
+		availability = metadata.Availability;
 		createdDate = metadata.CreatedDate;
 		modifiedDate = metadata.ModifiedDate;
+		uploadedDate = metadata.UploadedDate;
 	}
 
 	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"))
@@ -19,6 +24,12 @@ public class ObjectMetadataViewModel : ReactiveObject
 	}
 
 	public ObjectMetadata Metadata { get; }
+
+	// InternalName is readonly (init-only in the model)
+	public string InternalName => Metadata.InternalName;
+
+	// Available values for Availability enum
+	public IEnumerable<ObjectAvailability> AvailabilityValues => Enum.GetValues<ObjectAvailability>();
 
 	string? description;
 	public string? Description
@@ -28,6 +39,17 @@ public class ObjectMetadataViewModel : ReactiveObject
 		{
 			_ = this.RaiseAndSetIfChanged(ref description, value);
 			Metadata.Description = value;
+		}
+	}
+
+	ObjectAvailability availability;
+	public ObjectAvailability Availability
+	{
+		get => availability;
+		set
+		{
+			_ = this.RaiseAndSetIfChanged(ref availability, value);
+			Metadata.Availability = value;
 		}
 	}
 
@@ -50,6 +72,17 @@ public class ObjectMetadataViewModel : ReactiveObject
 		{
 			_ = this.RaiseAndSetIfChanged(ref modifiedDate, value);
 			Metadata.ModifiedDate = value;
+		}
+	}
+
+	DateTimeOffset uploadedDate;
+	public DateTimeOffset UploadedDate
+	{
+		get => uploadedDate;
+		set
+		{
+			_ = this.RaiseAndSetIfChanged(ref uploadedDate, value);
+			Metadata.UploadedDate = value;
 		}
 	}
 }

@@ -8,13 +8,12 @@
     xmlns:vm="using:Gui.ViewModels"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="vm:LocoObjectMetadataViewModel"
+    x:DataType="vm:ObjectMetadataViewModel"
     mc:Ignorable="d">
 
     <TabControl
         Margin="8"
-        Background="{DynamicResource ExpanderContentBackground}"
-        DataContext="{Binding Metadata}">
+        Background="{DynamicResource ExpanderContentBackground}">
         <TabItem Header="Details">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -45,16 +44,30 @@
                     Margin="4"
                     VerticalAlignment="Center"
                     IsReadOnly="True"
-                    Text="{Binding UniqueObjectId}" />
+                    Text="{Binding Metadata.UniqueObjectId}" />
 
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="0"
                     Margin="4"
                     VerticalAlignment="Center"
-                    Text="Description" />
+                    Text="Internal Name" />
                 <TextBox
                     Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    IsReadOnly="True"
+                    Text="{Binding InternalName}" />
+
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Description" />
+                <TextBox
+                    Grid.Row="2"
                     Grid.Column="1"
                     Margin="4"
                     VerticalAlignment="Center"
@@ -62,13 +75,27 @@
                     Text="{Binding Description, Mode=TwoWay}" />
 
                 <TextBlock
-                    Grid.Row="2"
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    Text="Availability" />
+                <ComboBox
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Margin="4"
+                    VerticalAlignment="Center"
+                    ItemsSource="{Binding AvailabilityValues}"
+                    SelectedItem="{Binding Availability, Mode=TwoWay}" />
+
+                <TextBlock
+                    Grid.Row="4"
                     Grid.Column="0"
                     Margin="4"
                     VerticalAlignment="Center"
                     Text="Created Date" />
                 <DatePicker
-                    Grid.Row="2"
+                    Grid.Row="4"
                     Grid.Column="1"
                     Margin="4"
                     VerticalAlignment="Center"
@@ -76,13 +103,13 @@
                     SelectedDate="{Binding CreatedDate, Mode=TwoWay}" />
 
                 <TextBlock
-                    Grid.Row="3"
+                    Grid.Row="5"
                     Grid.Column="0"
                     Margin="4"
                     VerticalAlignment="Center"
                     Text="Modified Date" />
                 <DatePicker
-                    Grid.Row="3"
+                    Grid.Row="5"
                     Grid.Column="1"
                     Margin="4"
                     VerticalAlignment="Center"
@@ -90,13 +117,13 @@
                     SelectedDate="{Binding ModifiedDate, Mode=TwoWay}" />
 
                 <TextBlock
-                    Grid.Row="4"
+                    Grid.Row="6"
                     Grid.Column="0"
                     Margin="4"
                     VerticalAlignment="Center"
                     Text="Uploaded Date" />
                 <DatePicker
-                    Grid.Row="4"
+                    Grid.Row="6"
                     Grid.Column="1"
                     Margin="4"
                     VerticalAlignment="Center"
@@ -104,36 +131,22 @@
                     SelectedDate="{Binding UploadedDate}" />
 
                 <TextBlock
-                    Grid.Row="5"
+                    Grid.Row="7"
                     Grid.Column="0"
                     Margin="4"
                     VerticalAlignment="Center"
                     Text="Licence" />
                 <TextBox
-                    Grid.Row="5"
+                    Grid.Row="7"
                     Grid.Column="1"
                     Margin="4"
                     VerticalAlignment="Center"
                     IsReadOnly="True"
-                    Text="{Binding Licence.Name}" />
-
-                <TextBlock
-                    Grid.Row="6"
-                    Grid.Column="0"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Text="Availability" />
-                <TextBox
-                    Grid.Row="6"
-                    Grid.Column="1"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    IsReadOnly="True"
-                    Text="{Binding Availability}" />
+                    Text="{Binding Metadata.Licence.Name}" />
             </Grid>
         </TabItem>
         <TabItem Header="Authors">
-            <ListBox ItemsSource="{Binding Authors}">
+            <ListBox ItemsSource="{Binding Metadata.Authors}">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel />
@@ -151,7 +164,7 @@
             </ListBox>
         </TabItem>
         <TabItem Header="Tags">
-            <ListBox ItemsSource="{Binding Tags}">
+            <ListBox ItemsSource="{Binding Metadata.Tags}">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel />
@@ -167,7 +180,7 @@
             </ListBox>
         </TabItem>
         <TabItem Header="ObjectPacks">
-            <ListBox ItemsSource="{Binding ObjectPacks}">
+            <ListBox ItemsSource="{Binding Metadata.ObjectPacks}">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel />
@@ -183,7 +196,7 @@
             </ListBox>
         </TabItem>
         <TabItem Header="DatObjects">
-            <ListBox ItemsSource="{Binding DatObjects}">
+            <ListBox ItemsSource="{Binding Metadata.DatObjects}">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel />

@@ -146,12 +146,12 @@ public class LocoBinaryWriter : BinaryWriter
 	{
 		foreach (var bogie in bogies)
 		{
-			Write(bogie.RollStates);
+			Write(bogie.NumAnimationFrames);
 			Write((uint8_t)bogie.Flags);
 			Write(bogie.Width);
 			Write(bogie.HeightNegative);
 			Write(bogie.HeightPositive);
-			Write(bogie.NumRollSprites);
+			WriteEmptyBytes(1); // NumFramesPerRotation is not part of object definition, its calculated on load
 			WriteEmptyImageId(3); // image ids not part of object definition
 		}
 	}

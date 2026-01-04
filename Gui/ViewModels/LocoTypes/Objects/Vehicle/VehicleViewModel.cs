@@ -3,7 +3,6 @@ using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using DynamicData.Binding;
-using PropertyModels.ComponentModel;
 using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
@@ -17,7 +16,12 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace Gui.ViewModels;
+namespace Gui.ViewModels.LocoTypes.Objects.Vehicle;
+
+public class VehicleComponentsViewModel : ReactiveObject
+{
+
+}
 
 public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 {

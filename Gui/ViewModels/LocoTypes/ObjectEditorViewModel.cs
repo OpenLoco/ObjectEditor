@@ -229,8 +229,9 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		}
 	}
 
-	public static IObjectViewModel? GetViewModelFromStruct(ILocoStruct locoStruct)
+	public static IObjectViewModel? GetViewModelFromStruct(LocoObject locoObject)
 	{
+		var locoStruct = locoObject.Object;
 		var asm = Assembly
 			.GetExecutingAssembly()
 			.GetTypes()
@@ -259,10 +260,12 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		if (Model.TryLoadObject(CurrentFile, out var newObj))
 		{
 			CurrentObject = newObj;
+			StringTableViewModel = null;
+			ExtraContentViewModel = null;
 
 			if (CurrentObject?.LocoObject != null)
 			{
-				CurrentObjectViewModel = GetViewModelFromStruct(CurrentObject.LocoObject.Object);
+				CurrentObjectViewModel = GetViewModelFromStruct(CurrentObject.LocoObject);
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 
 				if (CurrentObject.LocoObject.Object is SoundObject soundObject)
@@ -282,11 +285,6 @@ public class ObjectEditorViewModel : BaseFileViewModel
 						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, bc);
 					}
 				}
-			}
-			else
-			{
-				StringTableViewModel = null;
-				ExtraContentViewModel = null;
 			}
 
 			if (CurrentObject != null)

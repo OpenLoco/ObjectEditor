@@ -97,6 +97,8 @@ public class LoadSaveTests
 		=> Assert.Multiple(() =>
 			{
 				Assert.That(actual.Name, Is.EqualTo(expected.Name));
+				Assert.That(actual.ObjectType, Is.EqualTo(expected.ObjectType));
+				Assert.That(actual.ObjectSource, Is.EqualTo(expected.ObjectSource));
 				Assert.That(actual.Flags, Is.EqualTo(expected.Flags));
 				Assert.That(actual.Checksum, Is.EqualTo(expected.Checksum));
 			});

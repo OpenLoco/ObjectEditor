@@ -582,18 +582,21 @@ public static class SawyerStreamWriter
 		{
 			// encode if necessary
 			List<DatG1Element32> encoded = [];
-			var offsetBytesIntoImageData = 0;
+			var offsetBytesIntoImageData = 0U;
+			var previousOffset = 0U;
 			foreach (var g1Element in g1Elements)
 			{
 				// this copies everything but it should be fine for now
 				var newElement = g1Element with
 				{
-					ImageData = g1Element.GetImageDataForSave(),
-					Offset = (uint)offsetBytesIntoImageData,
+					ImageData = g1Element.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious) ? [] : g1Element.GetImageDataForSave(),
+					Offset = g1Element.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious) ? previousOffset : offsetBytesIntoImageData,
 				};
 
-				offsetBytesIntoImageData += newElement.ImageData.Length;
+				offsetBytesIntoImageData += (uint)newElement.ImageData.Length;
 				encoded.Add(newElement);
+
+				previousOffset = newElement.Offset;
 			}
 
 			// write G1Header

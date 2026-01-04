@@ -320,12 +320,14 @@ public static class ImageTableGrouper
 			{
 				var numGentleFrames = bogieSprite.NumAnimationFrames * 32; // up/down 12 deg
 
-				// up
+				// gentle up
 				{
 					var gentleUpImageIdStart = offset;
 					offset += numGentleFrames / symmetryMultiplier;
 					yield return new($"[bogieSprite {counter}] gentle up", imageList[gentleUpImageIdStart..offset]);
 				}
+
+				// gentle down
 				{
 					var gentleDownImageIdStart = offset;
 					offset += numGentleFrames / symmetryMultiplier;
@@ -336,14 +338,14 @@ public static class ImageTableGrouper
 				{
 					var numSteepFrames = bogieSprite.NumAnimationFrames * 32; // up/down 25 deg
 
-					// up
+					// steep up
 					{
 						var steepUpImageIdStart = offset;
 						offset += numSteepFrames / symmetryMultiplier;
 						yield return new($"[bogieSprite {counter}] steep", imageList[steepUpImageIdStart..offset]);
 					}
 
-					// down
+					// steep down
 					{
 						var steepDownImageIdStart = offset;
 						offset += numSteepFrames / symmetryMultiplier;

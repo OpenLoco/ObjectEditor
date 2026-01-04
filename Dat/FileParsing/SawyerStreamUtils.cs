@@ -23,9 +23,9 @@ public static class SawyerStreamUtils
 		}
 
 		const uint32_t objectChecksumMagic = 0xF369A75B;
-		var checksum = ComputeChecksum(headerFlagByte, objectChecksumMagic); // 1295935387
-		checksum = ComputeChecksum(name, checksum); // 2991070967
-		checksum = ComputeChecksum(data, checksum); // 1733551639
+		var checksum = ComputeChecksum(headerFlagByte, objectChecksumMagic);
+		checksum = ComputeChecksum(name, checksum);
+		checksum = ComputeChecksum(data, checksum);
 		return checksum;
 	}
 

@@ -8,6 +8,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -559,18 +560,70 @@ public static class SawyerStreamWriter
 
 	public static void WriteStringTable(Stream ms, StringTable table)
 	{
+		const bool wantVanillaExact = false;
+		if (wantVanillaExact)
+		{
+			WriteVanillaStringTable(ms, table);
+		}
+		else
+		{
+			WriteSimpleStringTable(ms, table);
+		}
+	}
+
+	// this is a byte-perfect method for recreating the vanilla objects (specifically Currency)
+	// however it has unnecessary bytes when strings are missing in certain languages
+	// but other strings in the table have values for that language
+	static void WriteVanillaStringTable(Stream ms, StringTable table)
+	{
+		//var languagesUsed = table.Table
+		//	.Select(x => x.Value)
+		//	.Select(x => x
+		//		.Where(str => !string.IsNullOrEmpty(str.Value))
+		//		.Select(str => str.Key))
+		//	.SelectMany(x => x)
+		//	.Distinct()
+		//	.ToImmutableHashSet();
+
+		List<LanguageId> languagesUsed = [LanguageId.English_UK, LanguageId.English_US];
+
 		foreach (var ste in table.Table)
 		{
-			foreach (var language in ste.Value.Where(str => !string.IsNullOrEmpty(str.Value))) // skip strings with empty content
+			foreach (var language in ste.Value)
 			{
-				ms.WriteByte((byte)language.Key);
-
-				var strBytes = Encoding.Latin1.GetBytes(language.Value);
-				ms.Write(strBytes, 0, strBytes.Length);
-				ms.WriteByte((byte)'\0');
+				// skip strings with empty content
+				if (!string.IsNullOrEmpty(language.Value))
+				{
+					ms.WriteByte((uint8_t)language.Key);
+					ms.Write(Encoding.Latin1.GetBytes(language.Value));
+					ms.WriteByte((uint8_t)'\0');
+				}
+				else if (languagesUsed.Contains(language.Key)) // but if the string is empty, AND its language has other valid strings, vanilla objects actually wrote these useless bytes
+				{
+					// vanilla currency objects do this!!!!
+					ms.WriteByte((uint8_t)language.Key);
+					ms.WriteByte((uint8_t)'\0');
+				}
 			}
 
-			ms.WriteByte(0xff);
+			ms.WriteByte(LocoConstants.Terminator);
+		}
+	}
+
+	// this is a simplified and more-correct way to write the string table to bytes
+	// it is perfectly compatible with vanilla loco, but doesn't produce byte-accurate objects
+	static void WriteSimpleStringTable(Stream ms, StringTable table)
+	{
+		foreach (var ste in table.Table)
+		{
+			foreach (var language in ste.Value.Where(x => !string.IsNullOrEmpty(x.Value))) // skip strings with empty content
+			{
+				ms.WriteByte((uint8_t)language.Key);
+				ms.Write(Encoding.Latin1.GetBytes(language.Value));
+				ms.WriteByte((uint8_t)'\0');
+			}
+
+			ms.WriteByte(LocoConstants.Terminator);
 		}
 	}
 
@@ -593,7 +646,7 @@ public static class SawyerStreamWriter
 					Offset = g1Element.Flags.HasFlag(DatG1ElementFlags.DuplicatePrevious) ? previousOffset : offsetBytesIntoImageData,
 				};
 
-				offsetBytesIntoImageData += (uint)newElement.ImageData.Length;
+				offsetBytesIntoImageData += (uint32_t)newElement.ImageData.Length;
 				encoded.Add(newElement);
 
 				previousOffset = newElement.Offset;

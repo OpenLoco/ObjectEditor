@@ -78,19 +78,22 @@ public class LoadSaveTests
 		assertFunc(obj2, struc2);
 		var bytes2 = SawyerStreamWriter.WriteLocoObject(datInfo2.S5Header.Name, obj2.ObjectType, datInfo2.S5Header.ObjectSource.Convert(datInfo2.S5Header.Name, datInfo2.S5Header.Checksum), datInfo2.ObjectHeader.Encoding, logger, obj2, true).ToArray();
 
-		// grab headers first
-		var s5Header1 = S5Header.Read(bytes1.AsSpan()[0..S5Header.StructLength]);
-		var s5Header2 = S5Header.Read(bytes2.AsSpan()[0..S5Header.StructLength]);
-		AssertS5Headers(s5Header1, s5Header2);
+		using (Assert.EnterMultipleScope())
+		{
+			// grab headers first
+			var s5Header1 = S5Header.Read(bytes1.AsSpan()[0..S5Header.StructLength]);
+			var s5Header2 = S5Header.Read(bytes2.AsSpan()[0..S5Header.StructLength]);
+			AssertS5Headers(s5Header1, s5Header2);
 
-		var objHeader1 = ObjectHeader.Read(bytes1.AsSpan()[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
-		var objHeader2 = ObjectHeader.Read(bytes2.AsSpan()[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
-		AssertObjHeaders(objHeader1, objHeader2);
+			var objHeader1 = ObjectHeader.Read(bytes1.AsSpan()[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+			var objHeader2 = ObjectHeader.Read(bytes2.AsSpan()[S5Header.StructLength..(S5Header.StructLength + ObjectHeader.StructLength)]);
+			AssertObjHeaders(objHeader1, objHeader2);
 
-		// then grab object bytes
-		var bytes1ObjArr = bytes1[21..].ToArray();
-		var bytes2ObjArr = bytes2[21..].ToArray();
-		Assert.That(bytes1ObjArr.ToArray(), Is.EqualTo(bytes2ObjArr.ToArray()));
+			// then grab object bytes
+			var bytes1ObjArr = bytes1[21..].ToArray();
+			var bytes2ObjArr = bytes2[21..].ToArray();
+			Assert.That(bytes1ObjArr.ToArray(), Is.EqualTo(bytes2ObjArr.ToArray()));
+		}
 	}
 
 	static void AssertS5Headers(S5Header expected, S5Header actual)

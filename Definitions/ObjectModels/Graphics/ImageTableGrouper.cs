@@ -159,35 +159,23 @@ public static class ImageTableGrouper
 		}
 	}
 
-	static uint8_t getYawAccuracyFlat(uint8_t numFrames)
-	{
-		switch (numFrames)
+	static uint8_t GetYawAccuracyFlat(uint8_t numFrames)
+		=> numFrames switch
 		{
-			case 8:
-				return 1;
-			case 16:
-				return 2;
-			case 32:
-				return 3;
-			default:
-				return 4;
-		}
-	}
+			8 => 1,
+			16 => 2,
+			32 => 3,
+			_ => 4,
+		};
 
-	static uint8_t getYawAccuracySloped(uint8_t numFrames)
-	{
-		switch (numFrames)
+	static uint8_t GetYawAccuracySloped(uint8_t numFrames)
+		=> numFrames switch
 		{
-			case 4:
-				return 0;
-			case 8:
-				return 1;
-			case 16:
-				return 2;
-			default:
-				return 3;
-		}
-	}
+			4 => 0,
+			8 => 1,
+			16 => 2,
+			_ => 3,
+		};
 
 	private static IEnumerable<ImageTableGroup> CreateVehicleGroups(VehicleObject model, List<GraphicsElement> imageList)
 	{
@@ -206,7 +194,7 @@ public static class ImageTableGrouper
 			// flat
 			{
 				var flatImageIdStart = offset;
-				bodySprite._FlatYawAccuracy = getYawAccuracyFlat(bodySprite.NumFlatRotationFrames);
+				bodySprite._FlatYawAccuracy = GetYawAccuracyFlat(bodySprite.NumFlatRotationFrames);
 				bodySprite._NumFramesPerRotation = (uint8_t)(bodySprite.NumAnimationFrames * bodySprite.NumCargoFrames * bodySprite.NumRollFrames + (bodySprite.Flags.HasFlag(BodySpriteFlags.HasBrakingLights) ? 1 : 0));
 
 				var numFlatFrames = bodySprite._NumFramesPerRotation * bodySprite.NumFlatRotationFrames;
@@ -236,7 +224,7 @@ public static class ImageTableGrouper
 				}
 
 				{
-					bodySprite._SlopedYawAccuracy = getYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
+					bodySprite._SlopedYawAccuracy = GetYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
 					var numGentleFrames = bodySprite._NumFramesPerRotation * bodySprite.NumSlopedRotationFrames; // up/down deg12
 
 					// gentle up
@@ -342,14 +330,14 @@ public static class ImageTableGrouper
 					{
 						var steepUpImageIdStart = offset;
 						offset += numSteepFrames / symmetryMultiplier;
-						yield return new($"[bogieSprite {counter}] steep", imageList[steepUpImageIdStart..offset]);
+						yield return new($"[bogieSprite {counter}] steep up", imageList[steepUpImageIdStart..offset]);
 					}
 
 					// steep down
 					{
 						var steepDownImageIdStart = offset;
 						offset += numSteepFrames / symmetryMultiplier;
-						yield return new($"[bogieSprite {counter}] steep", imageList[steepDownImageIdStart..offset]);
+						yield return new($"[bogieSprite {counter}] steep down", imageList[steepDownImageIdStart..offset]);
 					}
 				}
 			}

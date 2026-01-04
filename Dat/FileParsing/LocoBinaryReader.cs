@@ -225,15 +225,15 @@ public class LocoBinaryReader : BinaryReader
 		{
 			yield return new BogieSprite
 			{
-				RollStates = ReadByte(),
+				NumAnimationFrames = ReadByte(),
 				Flags = (BogieSpriteFlags)ReadByte(),
 				Width = ReadByte(),
 				HeightNegative = ReadByte(),
 				HeightPositive = ReadByte(),
-				NumRollSprites = ReadByte(),
 			};
 
-			SkipImageId(3);
+			SkipByte(1); // NumFramesPerRotation is not part of object definition, its calculated on load
+			SkipImageId(3); // image ids not part of object definition
 		}
 	}
 

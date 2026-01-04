@@ -297,9 +297,11 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	public BindingList<VehicleObjectCar> CarComponents { get; init; }
 
 	[Category("Sprites")]
+	[EnumProhibitValues<BodySpriteFlags>(BodySpriteFlags.None)]
 	public BindingList<BodySprite> BodySprites { get; init; }
 
 	[Category("Sprites")]
+	[EnumProhibitValues<BogieSpriteFlags>(BogieSpriteFlags.None)]
 	public BindingList<BogieSprite> BogieSprites { get; init; }
 
 	[Category("Sprites")]

@@ -42,6 +42,7 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 		// Subscribe to BuildingAnimations changes
 		BuildingAnimations.ListChanged += OnBuildingComponentChanged;
 	}
+
 	public override void CopyBackToModel()
 	{
 		Model.BuildingComponents.BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())];

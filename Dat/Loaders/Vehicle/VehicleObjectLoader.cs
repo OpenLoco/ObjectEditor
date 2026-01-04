@@ -65,6 +65,8 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			// define groups
 			var imageTable = ImageTableGrouper.CreateImageTable(model, ObjectType, imageList);
 
+			// here, loco does additional image table setup based on the object type - we skip that for now
+
 			return new LocoObject(ObjectType, model, stringTable, imageTable);
 		}
 	}

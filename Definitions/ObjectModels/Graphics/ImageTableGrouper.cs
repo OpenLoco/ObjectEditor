@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Competitor;
+using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using System.Diagnostics;
 
@@ -78,7 +79,7 @@ public static class ImageTableGrouper
 			case ObjectType.Dock:
 				return CreateDockGroups(imageList);
 			case ObjectType.Vehicle:
-				return [new("<uncategorised>", [.. imageList])];
+				return CreateVehicleGroups((VehicleObject)obj, imageList);
 			case ObjectType.Tree:
 				return CreateTreeGroups(imageList);
 			case ObjectType.Snow:
@@ -147,14 +148,217 @@ public static class ImageTableGrouper
 
 	private static IEnumerable<ImageTableGroup> CreateCompetitorGroups(CompetitorObject model, List<GraphicsElement> imageList)
 	{
-		var index = 0;
+		var offset = 0;
 		foreach (var emotion in Enum.GetValues<EmotionFlags>())
 		{
 			if (model.Emotions.HasFlag(emotion))
 			{
-				yield return new(emotion.ToString().ToLower(), imageList[index..(index + 2)]);
-				index += 2;
+				yield return new(emotion.ToString().ToLower(), imageList[offset..(offset + 2)]);
+				offset += 2;
 			}
+		}
+	}
+
+	static uint8_t getYawAccuracyFlat(uint8_t numFrames)
+	{
+		switch (numFrames)
+		{
+			case 8:
+				return 1;
+			case 16:
+				return 2;
+			case 32:
+				return 3;
+			default:
+				return 4;
+		}
+	}
+
+	static uint8_t getYawAccuracySloped(uint8_t numFrames)
+	{
+		switch (numFrames)
+		{
+			case 4:
+				return 0;
+			case 8:
+				return 1;
+			case 16:
+				return 2;
+			default:
+				return 3;
+		}
+	}
+
+	private static IEnumerable<ImageTableGroup> CreateVehicleGroups(VehicleObject model, List<GraphicsElement> imageList)
+	{
+		var offset = 0;
+
+		var counter = 0;
+		foreach (var bodySprite in model.BodySprites)
+		{
+			if (!bodySprite.Flags.HasFlag(BodySpriteFlags.HasSprites))
+			{
+				continue;
+			}
+
+			var symmetryMultiplier = bodySprite.Flags.HasFlag(BodySpriteFlags.RotationalSymmetry) ? 2 : 1;
+
+			// flat
+			{
+				var flatImageIdStart = offset;
+				bodySprite._FlatYawAccuracy = getYawAccuracyFlat(bodySprite.NumFlatRotationFrames);
+				bodySprite._NumFramesPerRotation = (uint8_t)(bodySprite.NumAnimationFrames * bodySprite.NumCargoFrames * bodySprite.NumRollFrames + (bodySprite.Flags.HasFlag(BodySpriteFlags.HasBrakingLights) ? 1 : 0));
+
+				var numFlatFrames = bodySprite._NumFramesPerRotation * bodySprite.NumFlatRotationFrames;
+				offset += numFlatFrames / symmetryMultiplier;
+
+				yield return new($"[bodySprite {counter}] flat", imageList[flatImageIdStart..offset]);
+			}
+
+			if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasGentleSprites))
+			{
+				{
+					var numGentleTransitionFrames = bodySprite._NumFramesPerRotation * 4; // transition frames up/down deg6
+
+					// gentle transition up
+					{
+						var gentleTransitionUpImageIdStart = offset;
+						offset += numGentleTransitionFrames / symmetryMultiplier;
+						yield return new($"[bodySprite {counter}] gentle transition up", imageList[gentleTransitionUpImageIdStart..offset]);
+					}
+
+					// gentle transition down
+					{
+						var gentleTransitionDownImageIdStart = offset;
+						offset += numGentleTransitionFrames / symmetryMultiplier;
+						yield return new($"[bodySprite {counter}] gentle transition down", imageList[gentleTransitionDownImageIdStart..offset]);
+					}
+				}
+
+				{
+					bodySprite._SlopedYawAccuracy = getYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
+					var numGentleFrames = bodySprite._NumFramesPerRotation * bodySprite.NumSlopedRotationFrames; // up/down deg12
+
+					// gentle up
+					{
+						var gentleUpImageIdStart = offset;
+						offset += numGentleFrames / symmetryMultiplier;
+						yield return new($"[bodySprite {counter}] gentle up", imageList[gentleUpImageIdStart..offset]);
+					}
+
+					// gentle down
+					{
+						var gentleDownImageIdStart = offset;
+						offset += numGentleFrames / symmetryMultiplier;
+						yield return new($"[bodySprite {counter}] gentle down", imageList[gentleDownImageIdStart..offset]);
+					}
+				}
+
+				if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasSteepSprites))
+				{
+					{
+						var numSteepTransitionFrames = bodySprite._NumFramesPerRotation * 4; // transition frames up/down deg18
+
+						// steep transition up
+						{
+							var steepTransitionUpImageIdStart = offset;
+							offset += numSteepTransitionFrames / symmetryMultiplier;
+							yield return new($"[bodySprite {counter}] steep transition up", imageList[steepTransitionUpImageIdStart..offset]);
+						}
+
+						// steep transition down
+						{
+							var steepTransitionDownImageIdStart = offset;
+							offset += numSteepTransitionFrames / symmetryMultiplier;
+							yield return new($"[bodySprite {counter}] steep transition down", imageList[steepTransitionDownImageIdStart..offset]);
+						}
+					}
+
+					{
+						var numSteepFrames = bodySprite.NumSlopedRotationFrames * bodySprite._NumFramesPerRotation; // up/down deg25
+
+						// steep up
+						{
+							var steepUpImageIdStart = offset;
+							offset += numSteepFrames / symmetryMultiplier;
+							yield return new($"[bodySprite {counter}] steep up", imageList[steepUpImageIdStart..offset]);
+						}
+
+						// steep down
+						{
+							var steepDownImageIdStart = offset;
+							offset += numSteepFrames / symmetryMultiplier;
+							yield return new($"[bodySprite {counter}] steep down", imageList[steepDownImageIdStart..offset]);
+						}
+					}
+				}
+			}
+
+			counter++;
+		}
+
+		counter = 0;
+		foreach (var bogieSprite in model.BogieSprites)
+		{
+			if (!bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSprites))
+			{
+				continue;
+			}
+
+			var symmetryMultiplier = bogieSprite.Flags.HasFlag(BogieSpriteFlags.RotationalSymmetry) ? 2 : 1;
+
+			// flat
+			{
+				var flatImageIdStart = offset;
+				var numFlatFrames = bogieSprite.NumAnimationFrames * 32;
+				offset += numFlatFrames / symmetryMultiplier;
+
+				yield return new($"[bogieSprite {counter}] flat", imageList[flatImageIdStart..offset]);
+			}
+
+			if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasGentleSprites))
+			{
+				var numGentleFrames = bogieSprite.NumAnimationFrames * 32; // up/down 12 deg
+
+				// up
+				{
+					var gentleUpImageIdStart = offset;
+					offset += numGentleFrames / symmetryMultiplier;
+					yield return new($"[bogieSprite {counter}] gentle up", imageList[gentleUpImageIdStart..offset]);
+				}
+				{
+					var gentleDownImageIdStart = offset;
+					offset += numGentleFrames / symmetryMultiplier;
+					yield return new($"[bogieSprite {counter}] gentle down", imageList[gentleDownImageIdStart..offset]);
+				}
+
+				if (bogieSprite.Flags.HasFlag(BogieSpriteFlags.HasSteepSprites))
+				{
+					var numSteepFrames = bogieSprite.NumAnimationFrames * 32; // up/down 25 deg
+
+					// up
+					{
+						var steepUpImageIdStart = offset;
+						offset += numSteepFrames / symmetryMultiplier;
+						yield return new($"[bogieSprite {counter}] steep", imageList[steepUpImageIdStart..offset]);
+					}
+
+					// down
+					{
+						var steepDownImageIdStart = offset;
+						offset += numSteepFrames / symmetryMultiplier;
+						yield return new($"[bogieSprite {counter}] steep", imageList[steepDownImageIdStart..offset]);
+					}
+				}
+			}
+
+			counter++;
+		}
+
+		var remainder = imageList[offset..];
+		if (remainder.Count > 0)
+		{
+			yield return new("<uncategorised>", remainder);
 		}
 	}
 

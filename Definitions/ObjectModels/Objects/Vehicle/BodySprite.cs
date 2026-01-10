@@ -22,7 +22,7 @@ public class BodySprite : ILocoStruct
 	[Browsable(false)] public uint8_t _HeightPositive { get; set; }
 	[Browsable(false)] public uint8_t _FlatYawAccuracy { get; set; }
 	[Browsable(false)] public uint8_t _SlopedYawAccuracy { get; set; }
-	[Browsable(false)] public uint8_t _NumFramesPerRotation { get; set; }
+	[Browsable(false)] public uint8_t _NumPermutationsPerRotation { get; set; }
 
 	//public Dictionary<BodySpriteSlopeType, List<int>> ImageIds { get; set; } = [];
 	//public int NumImages { get; set; }

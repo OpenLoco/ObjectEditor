@@ -195,9 +195,9 @@ public static class ImageTableGrouper
 			{
 				var flatImageIdStart = offset;
 				bodySprite._FlatYawAccuracy = GetYawAccuracyFlat(bodySprite.NumFlatRotationFrames);
-				bodySprite._NumFramesPerRotation = (uint8_t)(bodySprite.NumAnimationFrames * bodySprite.NumCargoFrames * bodySprite.NumRollFrames + (bodySprite.Flags.HasFlag(BodySpriteFlags.HasBrakingLights) ? 1 : 0));
+				bodySprite._NumPermutationsPerRotation = (uint8_t)(bodySprite.NumAnimationFrames * bodySprite.NumCargoFrames * bodySprite.NumRollFrames + (bodySprite.Flags.HasFlag(BodySpriteFlags.HasBrakingLights) ? 1 : 0));
 
-				var numFlatFrames = bodySprite._NumFramesPerRotation * bodySprite.NumFlatRotationFrames;
+				var numFlatFrames = bodySprite._NumPermutationsPerRotation * bodySprite.NumFlatRotationFrames;
 				offset += numFlatFrames / symmetryMultiplier;
 
 				yield return new($"[bodySprite {counter}] flat", imageList[flatImageIdStart..offset]);
@@ -206,7 +206,7 @@ public static class ImageTableGrouper
 			if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasGentleSprites))
 			{
 				{
-					var numGentleTransitionFrames = bodySprite._NumFramesPerRotation * 4; // transition frames up/down deg6
+					var numGentleTransitionFrames = bodySprite._NumPermutationsPerRotation * 4; // transition frames up/down deg6
 
 					// gentle transition up
 					{
@@ -225,7 +225,7 @@ public static class ImageTableGrouper
 
 				{
 					bodySprite._SlopedYawAccuracy = GetYawAccuracySloped(bodySprite.NumSlopedRotationFrames);
-					var numGentleFrames = bodySprite._NumFramesPerRotation * bodySprite.NumSlopedRotationFrames; // up/down deg12
+					var numGentleFrames = bodySprite._NumPermutationsPerRotation * bodySprite.NumSlopedRotationFrames; // up/down deg12
 
 					// gentle up
 					{
@@ -245,7 +245,7 @@ public static class ImageTableGrouper
 				if (bodySprite.Flags.HasFlag(BodySpriteFlags.HasSteepSprites))
 				{
 					{
-						var numSteepTransitionFrames = bodySprite._NumFramesPerRotation * 4; // transition frames up/down deg18
+						var numSteepTransitionFrames = bodySprite._NumPermutationsPerRotation * 4; // transition frames up/down deg18
 
 						// steep transition up
 						{
@@ -263,7 +263,7 @@ public static class ImageTableGrouper
 					}
 
 					{
-						var numSteepFrames = bodySprite.NumSlopedRotationFrames * bodySprite._NumFramesPerRotation; // up/down deg25
+						var numSteepFrames = bodySprite.NumSlopedRotationFrames * bodySprite._NumPermutationsPerRotation; // up/down deg25
 
 						// steep up
 						{

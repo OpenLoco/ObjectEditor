@@ -136,7 +136,7 @@ public class LocoBinaryWriter : BinaryWriter
 			Write(body._HeightPositive);
 			Write(body._FlatYawAccuracy);
 			Write(body._SlopedYawAccuracy);
-			Write(body._NumFramesPerRotation);
+			Write(body._NumPermutationsPerRotation);
 
 			WriteEmptyImageId(4); // image ids not part of object definition
 		}

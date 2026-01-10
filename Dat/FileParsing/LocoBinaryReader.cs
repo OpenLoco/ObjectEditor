@@ -212,7 +212,7 @@ public class LocoBinaryReader : BinaryReader
 				_HeightPositive = ReadByte(),
 				_FlatYawAccuracy = ReadByte(),
 				_SlopedYawAccuracy = ReadByte(),
-				_NumFramesPerRotation = ReadByte(),
+				_NumPermutationsPerRotation = ReadByte(),
 			};
 
 			SkipImageId(4);

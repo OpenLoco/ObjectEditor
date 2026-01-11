@@ -6,6 +6,7 @@ using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
 
 namespace Dat.Loaders;
+
 public abstract class WaterObjectLoader : IDatObjectLoader
 {
 	public static class Constants

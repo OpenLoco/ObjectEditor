@@ -9,7 +9,13 @@ using NUnit.Framework.Internal;
 namespace ObjectService.Tests.Integration;
 
 [TestFixture]
-public class TagRoutesTest : BaseReferenceDataTableTestFixture<DtoTagEntry, DtoTagEntry, DtoTagEntry, TblTag>
+public class TagRoutesTest : BaseReferenceDataTableTestFixture<
+	DtoTagEntry,
+	DtoTagEntry,
+	DtoTagEntry,
+	DtoTagEntry,
+	DtoTagEntry,
+	TblTag>
 {
 	protected override IEnumerable<TblTag> DbSeedData =>
 	[

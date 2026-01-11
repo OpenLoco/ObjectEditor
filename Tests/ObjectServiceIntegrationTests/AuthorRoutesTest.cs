@@ -9,7 +9,13 @@ using NUnit.Framework.Internal;
 namespace ObjectService.Tests.Integration;
 
 [TestFixture]
-public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<DtoAuthorEntry, DtoAuthorEntry, DtoAuthorEntry, TblAuthor>
+public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<
+	DtoAuthorEntry,
+	DtoAuthorEntry,
+	DtoAuthorEntry,
+	DtoAuthorEntry,
+	DtoAuthorEntry,
+	TblAuthor>
 {
 	protected override IEnumerable<TblAuthor> DbSeedData =>
 	[

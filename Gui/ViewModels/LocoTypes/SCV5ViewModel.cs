@@ -164,7 +164,7 @@ public class SCV5ViewModel : BaseFileViewModel
 				logger.Error($"Couldn't find a matching object in the online index. Name=\"{obj.Name}\" Checksum={obj.Checksum} ObjectType={obj.ObjectType} ");
 
 				// Add this missing object to the server's missing objects list
-				var missingEntry = new DtoObjectMissingUpload(
+				var missingEntry = new DtoObjectMissingPost(
 					obj.Name,
 					obj.Checksum,
 					obj.ObjectType.Convert());

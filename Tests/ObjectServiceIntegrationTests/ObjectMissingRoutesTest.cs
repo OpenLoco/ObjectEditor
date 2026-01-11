@@ -10,7 +10,13 @@ namespace ObjectService.Tests.Integration;
 
 [TestFixture]
 public class ObjectMissingRoutesTest
-	: BaseReferenceDataTableTestFixture<DtoObjectMissingEntry, DtoObjectMissingUpload, DtoObjectMissingEntry, TblObjectMissing>
+	: BaseReferenceDataTableTestFixture<
+		DtoObjectMissingEntry,
+		DtoObjectMissingPost,
+		DtoObjectMissingEntry,
+		DtoObjectMissingEntry,
+		DtoObjectMissingEntry,
+		TblObjectMissing>
 {
 	public override string BaseRoute
 	=> RoutesV2.Objects + RoutesV2.Missing;
@@ -30,14 +36,14 @@ public class ObjectMissingRoutesTest
 		new() { Id = 2, DatName = "WATER1", DatChecksum = 456, ObjectType = ObjectType.Water },
 	];
 
-	protected override DtoObjectMissingUpload PostRequestDto
+	protected override DtoObjectMissingPost PostRequestDto
 		=> new("TESTOBJ1", 123456789, ObjectType.Vehicle);
 
 	protected override DtoObjectMissingEntry PostResponseDto
 		=> new(3, "TESTOBJ1", 123456789, ObjectType.Vehicle);
 
-	protected override DtoObjectMissingUpload PutRequestDto
-		=> new("TESTOBJ2", 123456788, ObjectType.StreetLight);
+	protected override DtoObjectMissingEntry PutRequestDto
+		=> new(1, "TESTOBJ2", 123456788, ObjectType.StreetLight);
 
 	protected override DtoObjectMissingEntry PutResponseDto
 		=> new(1, "TESTOBJ2", 123456788, ObjectType.StreetLight);

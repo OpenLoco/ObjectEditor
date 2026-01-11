@@ -487,7 +487,7 @@ public class LegacyRouteHandler()
 	#region POST
 
 	// eg: https://localhost:7230/v1/uploaddat/...
-	public static async Task<IResult> UploadDat(DtoUploadDat request, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+	public static async Task<IResult> UploadDat(DtoObjectPost request, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 	{
 		logger.LogInformation("[UploadDat] Upload requested");
 

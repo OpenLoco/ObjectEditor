@@ -2,9 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.DTO.Comparers;
 
-public class DtoObjectDescriptorComparer : IEqualityComparer<DtoObjectDescriptor>
+public class DtoObjectDescriptorComparer : IEqualityComparer<DtoObjectPostResponse>
 {
-	public bool Equals(DtoObjectDescriptor? x, DtoObjectDescriptor? y)
+	public bool Equals(DtoObjectPostResponse? x, DtoObjectPostResponse? y)
 	{
 		if (x is null || y is null)
 		{
@@ -31,6 +31,6 @@ public class DtoObjectDescriptorComparer : IEqualityComparer<DtoObjectDescriptor
 			&& x.StringTable.Equals(y.StringTable);
 	}
 
-	public int GetHashCode([DisallowNull] DtoObjectDescriptor obj)
+	public int GetHashCode([DisallowNull] DtoObjectPostResponse obj)
 		=> obj.GetHashCode();
 }

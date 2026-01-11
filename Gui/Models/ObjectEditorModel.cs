@@ -31,7 +31,7 @@ public class ObjectEditorModel : IDisposable
 
 	public ObjectIndex? ObjectIndexOnline { get; set; }
 
-	public Dictionary<UniqueObjectId, DtoObjectDescriptor> OnlineCache { get; } = [];
+	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
 
 	public PaletteMap PaletteMap { get; set; }
 
@@ -197,7 +197,7 @@ public class ObjectEditorModel : IDisposable
 
 		DatHeaderInfo? fileInfo = null;
 		LocoObject? locoObject = null;
-		LocoObjectMetadata? metadata = null;
+		ObjectMetadata? metadata = null;
 		//List<Image<Rgba32>> images = [];
 
 		if (filesystemItem.Id == null)
@@ -304,7 +304,7 @@ public class ObjectEditorModel : IDisposable
 				fileInfo = new DatHeaderInfo(fakeS5Header, ObjectHeader.NullHeader);
 			}
 
-			metadata = new LocoObjectMetadata(cachedLocoObjDto.Name)
+			metadata = new ObjectMetadata(cachedLocoObjDto.Name)
 			{
 				UniqueObjectId = cachedLocoObjDto.Id,
 				Description = cachedLocoObjDto.Description,
@@ -342,7 +342,7 @@ public class ObjectEditorModel : IDisposable
 
 		DatHeaderInfo? fileInfo = null;
 		LocoObject? locoObject = null;
-		LocoObjectMetadata? metadata = null;
+		ObjectMetadata? metadata = null;
 
 		var filename = File.Exists(filesystemItem.FileName)
 			? filesystemItem.FileName
@@ -351,7 +351,7 @@ public class ObjectEditorModel : IDisposable
 		var obj = SawyerStreamReader.LoadFullObject(filename, logger: Logger);
 		fileInfo = obj.DatFileInfo;
 		locoObject = obj.LocoObject;
-		metadata = new LocoObjectMetadata("<unknown>")
+		metadata = new ObjectMetadata("<unknown>")
 		{
 			CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
 			ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset(),

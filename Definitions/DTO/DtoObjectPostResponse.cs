@@ -4,7 +4,7 @@ using Definitions.ObjectModels.Types;
 
 namespace Definitions.DTO;
 
-public record DtoObjectDescriptor(
+public record DtoObjectPostResponse(
 	UniqueObjectId Id,
 	string Name,
 	string DisplayName,

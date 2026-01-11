@@ -72,10 +72,19 @@ public abstract class BaseRouteHandlerTestFixture
 	}
 }
 
-public abstract class BaseReferenceDataTableTestFixture<TGetDto, TRequestDto, TResponseDto, TRow> : BaseRouteHandlerTestFixture
+public abstract class BaseReferenceDataTableTestFixture<
+	TGetDto,
+	TPostRequestDto,
+	TPostResponseDto,
+	TPutRequestDto,
+	TPutResponseDto,
+	TRow>
+	: BaseRouteHandlerTestFixture
 	where TGetDto : class, IHasId
-	where TRequestDto : class // POST doens't have an ID, and PUT has its id as part of the route, not the body/object
-	where TResponseDto : class, IHasId
+	where TPostRequestDto : class // POST doesn't have an ID, and PUT has its id as part of the route, not the body/object
+	where TPostResponseDto : class, IHasId
+	where TPutRequestDto : class, IHasId
+	where TPutResponseDto : class, IHasId
 	where TRow : class, IHasId
 {
 	protected abstract DbSet<TRow> GetTable(LocoDbContext db);
@@ -83,10 +92,10 @@ public abstract class BaseReferenceDataTableTestFixture<TGetDto, TRequestDto, TR
 	protected abstract TGetDto ToDtoEntryFunc(TRow row);
 
 	protected abstract IEnumerable<TRow> DbSeedData { get; }
-	protected abstract TRequestDto PostRequestDto { get; }
-	protected abstract TResponseDto PostResponseDto { get; }
-	protected abstract TRequestDto PutRequestDto { get; }
-	protected abstract TResponseDto PutResponseDto { get; }
+	protected abstract TPostRequestDto PostRequestDto { get; }
+	protected abstract TPostResponseDto PostResponseDto { get; }
+	protected abstract TPutRequestDto PutRequestDto { get; }
+	protected abstract TPutResponseDto PutResponseDto { get; }
 
 	protected override async Task SeedDataCoreAsync(LocoDbContext db)
 	{
@@ -140,7 +149,7 @@ public abstract class BaseReferenceDataTableTestFixture<TGetDto, TRequestDto, TR
 	public override async Task PostAsync()
 	{
 		// act
-		var results = await ClientHelpers.PostAsync<TRequestDto, TResponseDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, PostRequestDto);
+		var results = await ClientHelpers.PostAsync<TPostRequestDto, TPostResponseDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, PostRequestDto);
 
 		// assert
 		Assert.That(results, Is.EqualTo(PostResponseDto));
@@ -151,7 +160,7 @@ public abstract class BaseReferenceDataTableTestFixture<TGetDto, TRequestDto, TR
 	{
 		// act
 		const int id = 1;
-		var results = await ClientHelpers.PutAsync<TRequestDto, TResponseDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, id, PutRequestDto);
+		var results = await ClientHelpers.PutAsync<TPutRequestDto, TPutResponseDto>(HttpClient!, RoutesV2.Prefix, BaseRoute, id, PutRequestDto);
 
 		// assert
 		Assert.That(results, Is.EqualTo(PutResponseDto));

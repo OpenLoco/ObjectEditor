@@ -358,7 +358,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				// Observe any exceptions to prevent unobserved task exceptions
 				if (t.Exception != null)
 				{
-					logger.Error($"Unhandled exception in metadata upload", t.Exception);
+					logger.Error("Unhandled exception in metadata upload", t.Exception);
 				}
 			}, TaskContinuationOptions.OnlyOnFaulted);
 		}
@@ -383,23 +383,23 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			logger.Info($"Uploading metadata for object {objectId}");
 
 			// Create DTO from current metadata
-			var dtoRequest = new DtoObjectDescriptor(
+			var dtoRequest = new DtoObjectPostResponse(
 				Id: objectId,
 				Name: MetadataViewModel.Metadata.InternalName,
 				DisplayName: CurrentFile.DisplayName,
 				DatChecksum: CurrentObject.DatInfo.S5Header.Checksum,
 				Description: MetadataViewModel.Metadata.Description,
 				ObjectSource: CurrentObject.DatInfo.S5Header.ObjectSource.Convert(
-					CurrentObject.DatInfo.S5Header.Name, 
+					CurrentObject.DatInfo.S5Header.Name,
 					CurrentObject.DatInfo.S5Header.Checksum),
 				ObjectType: CurrentObject.DatInfo.S5Header.ObjectType.Convert(),
 				VehicleType: null,
 				Availability: MetadataViewModel.Metadata.Availability,
-				CreatedDate: MetadataViewModel.Metadata.CreatedDate.HasValue 
-					? DateOnly.FromDateTime(MetadataViewModel.Metadata.CreatedDate.Value.UtcDateTime) 
+				CreatedDate: MetadataViewModel.Metadata.CreatedDate.HasValue
+					? DateOnly.FromDateTime(MetadataViewModel.Metadata.CreatedDate.Value.UtcDateTime)
 					: null,
-				ModifiedDate: MetadataViewModel.Metadata.ModifiedDate.HasValue 
-					? DateOnly.FromDateTime(MetadataViewModel.Metadata.ModifiedDate.Value.UtcDateTime) 
+				ModifiedDate: MetadataViewModel.Metadata.ModifiedDate.HasValue
+					? DateOnly.FromDateTime(MetadataViewModel.Metadata.ModifiedDate.Value.UtcDateTime)
 					: null,
 				UploadedDate: DateOnly.FromDateTime(MetadataViewModel.Metadata.UploadedDate.UtcDateTime),
 				Licence: MetadataViewModel.Metadata.Licence,

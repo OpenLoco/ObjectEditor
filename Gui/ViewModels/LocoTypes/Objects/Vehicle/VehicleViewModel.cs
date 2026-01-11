@@ -463,7 +463,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 				{
 					var isStillUsed = CompatibleCargo1.CargoCategories.Any(x => x.Category == item.Category)
 						|| CompatibleCargo2.CargoCategories.Any(x => x.Category == item.Category);
-					
+
 					if (!isStillUsed)
 					{
 						_ = CargoTypeSpriteOffsets.Remove(offsetToRemove);

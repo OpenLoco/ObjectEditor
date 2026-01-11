@@ -6,7 +6,7 @@ namespace Definitions.DTO.Mappers;
 
 public static class DtoExtensions
 {
-	public static DtoObjectDescriptor ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x /*, IDtoSubObject SubObject*/)
+	public static DtoObjectPostResponse ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x /*, IDtoSubObject SubObject*/)
 		=> new(
 			x!.Object.Id,
 			x!.Object.Name,

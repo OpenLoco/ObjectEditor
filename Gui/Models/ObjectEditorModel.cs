@@ -31,7 +31,7 @@ public class ObjectEditorModel : IDisposable
 
 	public ObjectIndex? ObjectIndexOnline { get; set; }
 
-	public Dictionary<UniqueObjectId, DtoObjectDescriptor> OnlineCache { get; } = [];
+	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
 
 	public PaletteMap PaletteMap { get; set; }
 

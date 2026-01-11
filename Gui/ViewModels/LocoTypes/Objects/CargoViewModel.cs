@@ -30,7 +30,7 @@ public class CargoViewModel(CargoObject model)
 		}
 	}
 
-	[Description("Allows the user to set a custom value for the cargo category.")]
+	[Category("Cargo"), Description("Allows the user to set a custom value for the cargo category.")]
 	public uint16_t CargoCategoryOverride
 	{
 		get => (uint16_t)Model.CargoCategory;

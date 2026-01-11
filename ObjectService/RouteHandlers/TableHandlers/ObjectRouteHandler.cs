@@ -184,7 +184,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 	//	return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
 	//}
 
-	static async Task<IResult> CreateDatAsync(DtoUploadDat request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+	static async Task<IResult> CreateDatAsync(DtoObjectPost request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 	{
 		logger.LogInformation("[CreateAsync] Upload requested");
 
@@ -365,7 +365,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return ReturnObject(descriptor, sfm, logger);
 	}
 
-	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectDescriptor request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectPostResponse request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
 	{
 		logger.LogInformation("[UpdateAsync] Update requested for object {ObjectId}", id);
 
@@ -657,7 +657,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return ReturnFile(obj, sfm, logger);
 	}
 
-	static IResult ReturnObject(DtoObjectDescriptor? dtoDescriptor, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
+	static IResult ReturnObject(DtoObjectPostResponse? dtoDescriptor, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 	{
 		logger.LogDebug("[ReturnObject]");
 

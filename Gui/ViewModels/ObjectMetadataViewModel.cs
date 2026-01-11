@@ -25,12 +25,12 @@ public class ObjectMetadataViewModel : ReactiveObject
 		modifiedDate = metadata.ModifiedDate;
 		selectedLicence = metadata.Licence;
 		this.logger = logger;
-		
+
 		// Initialize observable collections from metadata
 		Authors = new ObservableCollection<DtoAuthorEntry>(metadata.Authors);
 		Tags = new ObservableCollection<DtoTagEntry>(metadata.Tags);
 		ObjectPacks = new ObservableCollection<DtoItemPackEntry>(metadata.ObjectPacks);
-		
+
 		this.objectServiceClient = objectServiceClient;
 
 		// Initialize commands
@@ -176,8 +176,8 @@ public class ObjectMetadataViewModel : ReactiveObject
 		catch (Exception ex)
 		{
 			// Log the exception so users know why data failed to load
-			logger?.Warning($"Failed to load server data for metadata editing: {ex.Message}");
-			
+			logger?.Error("Failed to load server data for metadata editing", ex);
+
 			// If we can't load data (e.g., offline mode), just set empty lists
 			AvailableLicences = new ObservableCollection<DtoLicenceEntry?> { null };
 			AvailableAuthors = new ObservableCollection<DtoAuthorEntry>();

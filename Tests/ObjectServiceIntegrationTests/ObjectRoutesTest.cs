@@ -15,7 +15,13 @@ using System.IO.Hashing;
 namespace ObjectService.Tests.Integration;
 
 [TestFixture]
-public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry, DtoUploadDat, DtoObjectDescriptor, TblObject>
+public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
+	DtoObjectEntry,
+	DtoObjectPost,
+	DtoObjectPostResponse,
+	DtoObjectPostResponse,
+	DtoObjectPostResponse,
+	TblObject>
 {
 	public override string BaseRoute
 		=> RoutesV2.Objects;
@@ -26,16 +32,16 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		new() { Id = 2, Name = "test-name-2", SubObjectId = 2, ObjectType = ObjectType.Vehicle, Availability = ObjectAvailability.Available },
 	];
 
-	protected override DtoUploadDat PostRequestDto
+	protected override DtoObjectPost PostRequestDto
 		=> throw new NotImplementedException();
 
-	protected override DtoObjectDescriptor PostResponseDto
+	protected override DtoObjectPostResponse PostResponseDto
 		=> throw new NotImplementedException();
 
-	protected override DtoObjectDescriptor PutResponseDto
+	protected override DtoObjectPostResponse PutResponseDto
 		=> throw new NotImplementedException();
 
-	protected override DtoUploadDat PutRequestDto
+	protected override DtoObjectPostResponse PutRequestDto
 		=> throw new NotImplementedException("PUT operation uses DtoObjectDescriptor, not DtoUploadDat. Override PutAsync test instead.");
 
 	//protected override DtoUploadDat PostRequestDto
@@ -55,7 +61,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 	protected override DtoObjectEntry ToDtoEntryFunc(TblObject row)
 		=> row.ToDtoEntry() with { UploadedDate = DateOnly.UtcToday };
 
-	DtoObjectDescriptor ToDtoDescriptor(TblObject row)
+	DtoObjectPostResponse ToDtoDescriptor(TblObject row)
 		=> new(
 				row.Id,
 				row.Name,
@@ -78,7 +84,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 				//SubObject
 				);
 
-	static void AssertDtoObjectDescriptorsAreEqual(DtoObjectDescriptor? expected, DtoObjectDescriptor? actual)
+	static void AssertDtoObjectDescriptorsAreEqual(DtoObjectPostResponse? expected, DtoObjectPostResponse? actual)
 	{
 		using (Assert.EnterMultipleScope())
 		{
@@ -136,7 +142,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 	{
 		// act
 		const int id = 2;
-		var results = await ClientHelpers.GetAsync<DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+		var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
 		var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.UtcToday };
 
 		// assert
@@ -152,7 +158,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		// assert
 		using (Assert.EnterMultipleScope())
 		{
-			var results = await ClientHelpers.GetAsync<DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
+			var results = await ClientHelpers.GetAsync<DtoObjectPostResponse>(HttpClient!, RoutesV2.Prefix, BaseRoute, id);
 			var descriptor = ToDtoDescriptor(DbSeedData.ToList()[id - 1]) with { UploadedDate = DateOnly.UtcToday };
 
 			// assert
@@ -174,8 +180,8 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		var base64Bytes = Convert.ToBase64String(bytes);
 
 		// act
-		var dtoUploadDat = new DtoUploadDat(base64Bytes, xxHash3, ObjectAvailability.Available, DateOnly.UtcToday, DateOnly.UtcToday);
-		var results = await ClientHelpers.PostAsync<DtoUploadDat, DtoObjectDescriptor>(HttpClient!, RoutesV2.Prefix, BaseRoute, dtoUploadDat);
+		var dtoUploadDat = new DtoObjectPost(base64Bytes, xxHash3, ObjectAvailability.Available, DateOnly.UtcToday, DateOnly.UtcToday);
+		var results = await ClientHelpers.PostAsync<DtoObjectPost, DtoObjectPostResponse>(HttpClient!, RoutesV2.Prefix, BaseRoute, dtoUploadDat);
 
 		// assert
 		var expectedStringTable = new Dictionary<string, Dictionary<LanguageId, string>>()
@@ -202,7 +208,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			},
 		};
 
-		var expected = new DtoObjectDescriptor(
+		var expected = new DtoObjectPostResponse(
 			3,
 			"AZVOG15C_3072098364",
 			entry.DisplayName,
@@ -235,7 +241,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		var updatedCreatedDate = DateOnly.FromDateTime(new DateTime(2020, 1, 1));
 		var updatedModifiedDate = DateOnly.FromDateTime(new DateTime(2024, 12, 15));
 
-		var updateRequest = new DtoObjectDescriptor(
+		var updateRequest = new DtoObjectPostResponse(
 			Id: id,
 			Name: existingObj.Name,
 			DisplayName: "test-display-name-2",
@@ -257,7 +263,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		);
 
 		// act
-		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
 			HttpClient!, RoutesV2.Prefix, BaseRoute, id, updateRequest);
 
 		// assert
@@ -286,7 +292,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			_ = await db.SaveChangesAsync();
 		}
 
-		var updateRequest = new DtoObjectDescriptor(
+		var updateRequest = new DtoObjectPostResponse(
 			Id: objectId,
 			Name: "test-name-2",
 			DisplayName: "test-display-name-2",
@@ -308,7 +314,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		);
 
 		// act
-		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
 			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
@@ -337,7 +343,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			_ = await db.SaveChangesAsync();
 		}
 
-		var updateRequest = new DtoObjectDescriptor(
+		var updateRequest = new DtoObjectPostResponse(
 			Id: objectId,
 			Name: "test-name-2",
 			DisplayName: "test-display-name-2",
@@ -362,7 +368,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		);
 
 		// act
-		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
 			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
@@ -392,7 +398,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			_ = await db.SaveChangesAsync();
 		}
 
-		var updateRequest = new DtoObjectDescriptor(
+		var updateRequest = new DtoObjectPostResponse(
 			Id: objectId,
 			Name: "test-name-2",
 			DisplayName: "test-display-name-2",
@@ -417,7 +423,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		);
 
 		// act
-		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
 			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert
@@ -447,7 +453,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 			_ = await db.SaveChangesAsync();
 		}
 
-		var updateRequest = new DtoObjectDescriptor(
+		var updateRequest = new DtoObjectPostResponse(
 			Id: objectId,
 			Name: "test-name-2",
 			DisplayName: "test-display-name-2",
@@ -472,7 +478,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<DtoObjectEntry
 		);
 
 		// act
-		var result = await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+		var result = await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
 			HttpClient!, RoutesV2.Prefix, BaseRoute, objectId, updateRequest);
 
 		// assert

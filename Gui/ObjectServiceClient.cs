@@ -61,19 +61,19 @@ public class ObjectServiceClient
 	public async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync()
 		=> await Client.GetObjectListAsync(WebClient, Logger);
 
-	public async Task<DtoObjectDescriptor?> GetObjectAsync(UniqueObjectId id)
+	public async Task<DtoObjectPostResponse?> GetObjectAsync(UniqueObjectId id)
 		=> await Client.GetObjectAsync(WebClient, id, Logger);
 
-	public async Task<DtoObjectDescriptor?> UpdateObjectAsync(UniqueObjectId id, DtoObjectDescriptor request)
+	public async Task<DtoObjectPostResponse?> UpdateObjectAsync(UniqueObjectId id, DtoObjectPostResponse request)
 		=> await Client.UpdateObjectAsync(WebClient, id, request, Logger);
 
 	public async Task<byte[]?> GetObjectFileAsync(UniqueObjectId id)
 		=> await Client.GetObjectFileAsync(WebClient, id, Logger);
 
-	public async Task<DtoObjectDescriptor?> UploadDatFileAsync(string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate)
+	public async Task<DtoObjectPostResponse?> UploadDatFileAsync(string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate)
 		=> await Client.UploadDatFileAsync(WebClient, filename, datFileBytes, creationDate, modifiedDate, Logger);
 
-	public async Task<DtoObjectMissingEntry?> AddMissingObjectAsync(DtoObjectMissingUpload entry)
+	public async Task<DtoObjectMissingEntry?> AddMissingObjectAsync(DtoObjectMissingPost entry)
 		=> await Client.AddMissingObjectAsync(WebClient, entry, Logger);
 
 	public async Task<IEnumerable<DtoLicenceEntry>> GetLicencesAsync()

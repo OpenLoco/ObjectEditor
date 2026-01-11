@@ -16,16 +16,16 @@ public static class Client
 			null,
 			logger) ?? [];
 
-	public static async Task<DtoObjectDescriptor?> GetObjectAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
-		=> await ClientHelpers.GetAsync<DtoObjectDescriptor>(
+	public static async Task<DtoObjectPostResponse?> GetObjectAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
+		=> await ClientHelpers.GetAsync<DtoObjectPostResponse>(
 			client,
 			ApiVersion,
 			RoutesV2.Objects,
 			id,
 			logger);
 
-	public static async Task<DtoObjectDescriptor?> UpdateObjectAsync(HttpClient client, UniqueObjectId id, DtoObjectDescriptor request, ILogger? logger = null)
-		=> await ClientHelpers.PutAsync<DtoObjectDescriptor, DtoObjectDescriptor>(
+	public static async Task<DtoObjectPostResponse?> UpdateObjectAsync(HttpClient client, UniqueObjectId id, DtoObjectPostResponse request, ILogger? logger = null)
+		=> await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
 			client,
 			ApiVersion,
 			RoutesV2.Objects,
@@ -41,22 +41,22 @@ public static class Client
 			ClientHelpers.ReadBinaryContentAsync,
 			logger) ?? default;
 
-	public static async Task<DtoObjectDescriptor?> UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate, ILogger logger)
+	public static async Task<DtoObjectPostResponse?> UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate, ILogger logger)
 	{
 		var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
 		logger.Debug($"Posting {filename} to {client.BaseAddress?.OriginalString}{RoutesV2.Objects}");
-		var request = new DtoUploadDat(Convert.ToBase64String(datFileBytes), xxHash3, ObjectAvailability.Available, creationDate, modifiedDate);
-		return await ClientHelpers.PostAsync<DtoUploadDat, DtoObjectDescriptor>(
+		var request = new DtoObjectPost(Convert.ToBase64String(datFileBytes), xxHash3, ObjectAvailability.Available, creationDate, modifiedDate);
+		return await ClientHelpers.PostAsync<DtoObjectPost, DtoObjectPostResponse>(
 			client,
 			ApiVersion,
 			RoutesV2.Objects,
 			request);
 	}
 
-	public static async Task<DtoObjectMissingEntry?> AddMissingObjectAsync(HttpClient client, DtoObjectMissingUpload entry, ILogger? logger = null)
+	public static async Task<DtoObjectMissingEntry?> AddMissingObjectAsync(HttpClient client, DtoObjectMissingPost entry, ILogger? logger = null)
 	{
 		logger?.Debug($"Posting missing object {entry.DatName} with checksum {entry.DatChecksum} to {client.BaseAddress?.OriginalString}{RoutesV2.Objects}{RoutesV2.Missing}");
-		return await ClientHelpers.PostAsync<DtoObjectMissingUpload, DtoObjectMissingEntry>(
+		return await ClientHelpers.PostAsync<DtoObjectMissingPost, DtoObjectMissingEntry>(
 			client,
 			ApiVersion,
 			RoutesV2.Objects + RoutesV2.Missing,

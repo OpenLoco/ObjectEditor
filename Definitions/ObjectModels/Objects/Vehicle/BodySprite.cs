@@ -14,12 +14,15 @@ public class BodySprite : ILocoStruct
 	public uint8_t NumRollFrames { get; set; }
 	public uint8_t HalfLength { get; set; }
 	public BodySpriteFlags Flags { get; set; }
+
+	// the following properties are not written into the body sprite data structure,
+	// they are computed on loading the image table
 	[Browsable(false)] public uint8_t _Width { get; set; }
 	[Browsable(false)] public uint8_t _HeightNegative { get; set; }
 	[Browsable(false)] public uint8_t _HeightPositive { get; set; }
 	[Browsable(false)] public uint8_t _FlatYawAccuracy { get; set; }
 	[Browsable(false)] public uint8_t _SlopedYawAccuracy { get; set; }
-	[Browsable(false)] public uint8_t _NumFramesPerRotation { get; set; }
+	[Browsable(false)] public uint8_t _NumPermutationsPerRotation { get; set; }
 
 	//public Dictionary<BodySpriteSlopeType, List<int>> ImageIds { get; set; } = [];
 	//public int NumImages { get; set; }

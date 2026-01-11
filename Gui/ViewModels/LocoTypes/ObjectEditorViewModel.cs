@@ -136,7 +136,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				"Validation failed",
 				errorMsg,
 				ButtonEnum.Ok,
-				Icon.Error);
+				Icon.Error,
+				windowStartupLocation: WindowStartupLocation.CenterOwner);
 		}
 		else
 		{
@@ -144,7 +145,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				"Validation succeeded",
 				"✔ No issues found. Object is valid.",
 				ButtonEnum.Ok,
-				Icon.Success);
+				Icon.Success,
+				windowStartupLocation: WindowStartupLocation.CenterOwner);
 		}
 		_ = box.ShowAsync();
 	}
@@ -228,8 +230,9 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		}
 	}
 
-	public static IObjectViewModel? GetViewModelFromStruct(ILocoStruct locoStruct)
+	public static IObjectViewModel? GetViewModelFromStruct(LocoObject locoObject)
 	{
+		var locoStruct = locoObject.Object;
 		var asm = Assembly
 			.GetExecutingAssembly()
 			.GetTypes()
@@ -258,10 +261,12 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		if (Model.TryLoadObject(CurrentFile, out var newObj))
 		{
 			CurrentObject = newObj;
+			StringTableViewModel = null;
+			ExtraContentViewModel = null;
 
 			if (CurrentObject?.LocoObject != null)
 			{
-				CurrentObjectViewModel = GetViewModelFromStruct(CurrentObject.LocoObject.Object);
+				CurrentObjectViewModel = GetViewModelFromStruct(CurrentObject.LocoObject);
 				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
 
 				if (CurrentObject.LocoObject.Object is SoundObject soundObject)
@@ -281,11 +286,6 @@ public class ObjectEditorViewModel : BaseFileViewModel
 						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, bc);
 					}
 				}
-			}
-			else
-			{
-				StringTableViewModel = null;
-				ExtraContentViewModel = null;
 			}
 
 			if (CurrentObject != null)
@@ -307,7 +307,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 			if (CurrentObject?.Metadata != null)
 			{
-				MetadataViewModel = new ObjectMetadataViewModel(CurrentObject.Metadata, Model.ObjectServiceClient);
+				MetadataViewModel = new ObjectMetadataViewModel(CurrentObject.Metadata, Model.ObjectServiceClient, logger);
 			}
 			else
 			{
@@ -353,7 +353,14 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		// Upload metadata to server when in online mode
 		if (CurrentFile.FileLocation == FileLocation.Online && CurrentFile.Id.HasValue && MetadataViewModel != null)
 		{
-			_ = UploadMetadataAsync(CurrentFile.Id.Value);
+			_ = UploadMetadataAsync(CurrentFile.Id.Value).ContinueWith(t =>
+			{
+				// Observe any exceptions to prevent unobserved task exceptions
+				if (t.Exception != null)
+				{
+					logger.Error($"Unhandled exception in metadata upload", t.Exception);
+				}
+			}, TaskContinuationOptions.OnlyOnFaulted);
 		}
 	}
 

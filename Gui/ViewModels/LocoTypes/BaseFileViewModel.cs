@@ -111,7 +111,14 @@ public abstract class BaseFileViewModel : ReactiveObject, IFileViewModel
 		// note - this is the DAT file source, not the true source...
 		if (CurrentFile.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 		{
-			var box = MessageBoxManager.GetMessageBoxStandard("Confirm Save", $"{CurrentFile.FileName} is a vanilla Locomotion file - are you sure you want to overwrite it?", ButtonEnum.YesNo);
+			var msbParams = GetDefaultParams();
+			msbParams.ContentTitle = "Confirm Save";
+			msbParams.ContentMessage = $"{CurrentFile.FileName} is a vanilla Locomotion file - are you sure you want to overwrite it?";
+			msbParams.ButtonDefinitions = ButtonEnum.YesNo;
+			msbParams.Icon = Icon.Database;
+
+			var box = MessageBoxManager.GetMessageBoxStandard(msbParams);
+
 			var result = await box.ShowAsync();
 
 			if (result == ButtonResult.Yes)
@@ -125,7 +132,14 @@ public abstract class BaseFileViewModel : ReactiveObject, IFileViewModel
 
 	async Task DeleteWrapper()
 	{
-		var box = MessageBoxManager.GetMessageBoxStandard("Confirm Delete", $"Are you sure you would like to delete {CurrentFile.FileName}?", ButtonEnum.YesNo);
+		var msbParams = GetDefaultParams();
+		msbParams.ContentTitle = "Confirm Delete";
+		msbParams.ContentMessage = $"Are you sure you would like to delete {CurrentFile.FileName}?";
+		msbParams.ButtonDefinitions = ButtonEnum.YesNo;
+		msbParams.Icon = Icon.Stop;
+
+		var box = MessageBoxManager.GetMessageBoxStandard(msbParams);
+
 		var result = await box.ShowAsync();
 
 		if (result == ButtonResult.Yes)
@@ -133,6 +147,16 @@ public abstract class BaseFileViewModel : ReactiveObject, IFileViewModel
 			Delete();
 		}
 	}
+
+	MessageBoxStandardParams GetDefaultParams()
+		=> new()
+		{
+			WindowStartupLocation = WindowStartupLocation.CenterOwner,
+			Topmost = true,
+			SizeToContent = SizeToContent.WidthAndHeight,
+			ShowInCenter = true,
+			MinHeight = 170,
+		};
 
 	public string ReloadText => CurrentFile.FileLocation == FileLocation.Local ? "Reload" : "Redownload";
 	public string SaveText => CurrentFile.FileLocation == FileLocation.Local ? "Save" : "Download";

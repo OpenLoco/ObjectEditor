@@ -1,3 +1,4 @@
+using Common.Logging;
 using Definitions;
 using Definitions.DTO;
 using Definitions.ObjectModels;
@@ -14,14 +15,16 @@ namespace Gui.ViewModels;
 public class ObjectMetadataViewModel : ReactiveObject
 {
 	readonly Gui.ObjectServiceClient? objectServiceClient;
+	readonly ILogger? logger;
 
-	public ObjectMetadataViewModel(ObjectMetadata metadata, Gui.ObjectServiceClient? objectServiceClient = null)
+	public ObjectMetadataViewModel(ObjectMetadata metadata, Gui.ObjectServiceClient? objectServiceClient = null, ILogger? logger = null)
 	{
 		Metadata = metadata;
 		description = metadata.Description;
 		createdDate = metadata.CreatedDate;
 		modifiedDate = metadata.ModifiedDate;
 		selectedLicence = metadata.Licence;
+		this.logger = logger;
 		
 		// Initialize observable collections from metadata
 		Authors = new ObservableCollection<DtoAuthorEntry>(metadata.Authors);
@@ -79,7 +82,14 @@ public class ObjectMetadataViewModel : ReactiveObject
 		// Load data from server if we have a client
 		if (objectServiceClient != null)
 		{
-			_ = LoadServerDataAsync();
+			_ = LoadServerDataAsync().ContinueWith(t =>
+			{
+				// Log any exceptions that occur
+				if (t.Exception != null)
+				{
+					logger?.Error("Failed to load server data for metadata editing", t.Exception);
+				}
+			}, TaskContinuationOptions.OnlyOnFaulted);
 		}
 	}
 
@@ -163,8 +173,11 @@ public class ObjectMetadataViewModel : ReactiveObject
 			var objectPacks = await objectServiceClient.GetObjectPacksAsync();
 			AvailableObjectPacks = new ObservableCollection<DtoItemPackEntry>(objectPacks);
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			// Log the exception so users know why data failed to load
+			logger?.Warning($"Failed to load server data for metadata editing: {ex.Message}");
+			
 			// If we can't load data (e.g., offline mode), just set empty lists
 			AvailableLicences = new ObservableCollection<DtoLicenceEntry?> { null };
 			AvailableAuthors = new ObservableCollection<DtoAuthorEntry>();

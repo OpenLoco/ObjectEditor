@@ -253,7 +253,11 @@ public class ObjectRouteHandler : ITableRouteHandler
 		{
 			// todo: if we get here - the object doesn't exist but the dat object does - we should then link them
 			// save changes first to persist any missing object removal
-			_ = await db.SaveChangesAsync();
+			if (missingEntry != null)
+			{
+				_ = await db.SaveChangesAsync();
+			}
+
 			return Results.Accepted($"Object already exists in the database. DatName={hdrs.S5.Name} DatChecksum={hdrs.S5.Checksum} UploadedDate={existingObject!.UploadedDate}");
 		}
 

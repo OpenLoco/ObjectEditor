@@ -5,6 +5,7 @@ using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
 using Gui.ViewModels.LocoTypes.Objects.Building;
 using ReactiveUI;
@@ -94,7 +95,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 
 	ImageTable Model { get; init; }
 
-	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponents? buildingComponents = null)
+	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponents? buildingComponents = null, BuildingObjectFlags? buildingFlags = null)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 
@@ -116,7 +117,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		// building components
 		if (buildingComponents != null)
 		{
-			BuildingComponents = new(buildingComponents, imageTable);
+			BuildingComponents = new(buildingComponents, imageTable, buildingFlags);
 		}
 
 		_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)

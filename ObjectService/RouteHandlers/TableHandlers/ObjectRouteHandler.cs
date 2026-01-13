@@ -247,6 +247,9 @@ public class ObjectRouteHandler : ITableRouteHandler
 			// we've found a missing object! delete it from the missing objects table since we're now adding the real object
 			// see #196
 			_ = db.ObjectsMissing.Remove(missingEntry);
+			_ = await db.SaveChangesAsync();
+
+			logger.LogInformation("[CreateAsync] Missing object found! DatName={datName} DatChecksum={datChecksum} MissingId={missingId}", missingEntry.DatName, missingEntry.DatChecksum, missingEntry.Id);
 		}
 
 		if (db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObject))

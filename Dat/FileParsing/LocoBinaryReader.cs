@@ -188,7 +188,7 @@ public class LocoBinaryReader : BinaryReader
 				FrontBogieSpriteIndex = ReadByte(),
 				BackBogieSpriteIndex = ReadByte(),
 				BodySpriteIndex = ReadByte(),
-				var_05 = ReadByte(),
+				EmitterHorizontalOffset = ReadByte(),
 			};
 		}
 	}

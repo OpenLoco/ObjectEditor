@@ -11,7 +11,7 @@ public class VehicleObjectCar : ILocoStruct
 	public uint8_t FrontBogieSpriteIndex { get; set; }
 	public uint8_t BackBogieSpriteIndex { get; set; }
 	public uint8_t BodySpriteIndex { get; set; }
-	public uint8_t var_05 { get; set; }
+	public uint8_t EmitterHorizontalOffset { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 		=> [];

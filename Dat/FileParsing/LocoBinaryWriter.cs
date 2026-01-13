@@ -115,7 +115,7 @@ public class LocoBinaryWriter : BinaryWriter
 			Write(car.FrontBogieSpriteIndex);
 			Write(car.BackBogieSpriteIndex);
 			Write(car.BodySpriteIndex);
-			Write(car.var_05);
+			Write(car.EmitterHorizontalOffset);
 		}
 	}
 

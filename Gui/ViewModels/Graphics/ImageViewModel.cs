@@ -15,6 +15,26 @@ using System.Reactive.Linq;
 
 namespace Gui.ViewModels.Graphics;
 
+public class DesignImageViewModel : ImageViewModel
+{
+	public DesignImageViewModel()
+	{
+		Model = new GraphicsElement()
+		{
+			Flags = GraphicsElementFlags.None,
+			Name = "NewImage",
+			Width = 16,
+			Height = 16,
+			Image = new Image<Rgba32>(16, 16),
+			ImageTableIndex = 0,
+			XOffset = 1,
+			YOffset = 2,
+			ZoomOffset = 3
+		};
+		UnderlyingImage = Model.Image!;
+	}
+}
+
 public class ImageViewModel : ReactiveUI.ReactiveObject
 {
 	public string Name
@@ -98,7 +118,10 @@ public class ImageViewModel : ReactiveUI.ReactiveObject
 				DisplayedImage.Size.Width + 2,
 				DisplayedImage.Size.Height + 2);
 
-	GraphicsElement Model { get; init; }
+	protected GraphicsElement Model { get; init; }
+
+	public ImageViewModel()
+	{ }
 
 	public ImageViewModel(GraphicsElement graphicsElement, PaletteMap paletteMap)
 	{

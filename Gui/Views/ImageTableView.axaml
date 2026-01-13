@@ -1,22 +1,22 @@
 <UserControl
-	xmlns="https://github.com/avaloniaui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
-	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
-	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
-	xmlns:vi="using:Gui.Views"
-	xmlns:cnv="using:Gui.Converters"
-	xmlns:vmg="using:Gui.ViewModels.Graphics"
-	xmlns:vmlt="using:Gui.ViewModels.LocoTypes"
-	xmlns:system="clr-namespace:System;assembly=mscorlib"
-	mc:Ignorable="d"
-	d:DesignWidth="1200"
-	d:DesignHeight="900"
-	x:Class="Gui.Views.ImageTableView"
-	x:DataType="vmg:ImageTableViewModel">
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
+xmlns:paz="using:Avalonia.Controls.PanAndZoom"
+xmlns:vi="using:Gui.Views"
+xmlns:cnv="using:Gui.Converters"
+xmlns:vmg="using:Gui.ViewModels.Graphics"
+xmlns:vmlt="using:Gui.ViewModels.LocoTypes"
+xmlns:system="clr-namespace:System;assembly=mscorlib"
+mc:Ignorable="d"
+d:DesignWidth="1280"
+d:DesignHeight="720"
+x:Class="Gui.Views.ImageTableView"
+x:DataType="vmg:ImageTableViewModel">
 
 	<UserControl.Resources>
 		<amxc:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
@@ -213,9 +213,9 @@
 								<Expander Header="{Binding GroupName}" IsExpanded="True" Margin="4" Padding="0" HorizontalAlignment="Stretch">
 									<ListBox ItemsSource="{Binding Images}" SelectionMode="Multiple" Selection="{Binding SelectionModel}" Background="{Binding #ImageBackgroundColorView.Color, ConverterParameter={x:Static Brushes.Transparent}, Converter={StaticResource ColorToBrushConverter}}">
 										<!--<ListBox.ContextMenu>
-											<ContextMenu>
-												<MenuItem Header="Append new image" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).AppendImageCommand}" CommandParameter="{Binding GroupName}"/>
-											</ContextMenu>
+										<ContextMenu>
+										<MenuItem Header="Append new image" Command="{Binding $parent[Grid].((vmg:ImageTableViewModel)DataContext).AppendImageCommand}" CommandParameter="{Binding GroupName}"/>
+										</ContextMenu>
 										</ListBox.ContextMenu>-->
 										<ListBox.ItemsPanel>
 											<ItemsPanelTemplate>
@@ -249,13 +249,13 @@
 				<StackPanel Margin="2" DockPanel.Dock="Top" Orientation="Vertical" VerticalAlignment="Center">
 					<DockPanel DockPanel.Dock="Top">
 						<TextBlock Margin="4" Width="128" VerticalAlignment="Center" Text="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}'}" />
-						<Slider Margin="4" DockPanel.Dock="Right" Value="{Binding AnimationSpeed, StringFormat='Animation FPS: {0}' Mode=TwoWay}" TickPlacement="Outside" Minimum="1" Maximum="80" TickFrequency="10"/>
+						<Slider Margin="4" DockPanel.Dock="Right" Value="{Binding AnimationSpeed, Mode=TwoWay}" TickPlacement="Outside" Minimum="1" Maximum="80" TickFrequency="10"/>
 					</DockPanel>
-					<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+					<UniformGrid Rows="1">
 						<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select preview background colour">
 							<DockPanel>
 								<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
-								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Background</TextBlock>
+								<TextBlock VerticalAlignment="Center" Margin="4">Background</TextBlock>
 							</DockPanel>
 							<Button.Flyout >
 								<Flyout>
@@ -266,7 +266,7 @@
 						<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select border preview colour">
 							<DockPanel>
 								<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
-								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Border</TextBlock>
+								<TextBlock VerticalAlignment="Center" Margin="4">Border</TextBlock>
 							</DockPanel>
 							<Button.Flyout >
 								<Flyout>
@@ -277,7 +277,7 @@
 						<Button HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Select origin point colour">
 							<DockPanel>
 								<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
-								<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Origin</TextBlock>
+								<TextBlock VerticalAlignment="Center" Margin="4">Origin</TextBlock>
 							</DockPanel>
 							<Button.Flyout >
 								<Flyout>
@@ -285,7 +285,7 @@
 								</Flyout>
 							</Button.Flyout>
 						</Button>
-					</StackPanel>
+					</UniformGrid>
 					<paz:ZoomBorder Name="ZoomBorder" MinHeight="256" Stretch="None" ZoomSpeed="2.0" MinZoomX="0.5" MaxZoomX="64" MinZoomY="0.5" MaxZoomY="64" ClipToBounds="True" Focusable="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" PanButton="Left" Background="Gray">
 						<!-- Image list -->
 						<Canvas HorizontalAlignment="Center" VerticalAlignment="Center" Background="Gray">
@@ -299,10 +299,10 @@
 					</paz:ZoomBorder>
 					<TextBlock HorizontalAlignment="Center" Text="{Binding #ZoomBorder.ZoomX, StringFormat='Zoom: {0:F2}x | \'R\' to reset'}"></TextBlock>
 				</StackPanel>
-				<ContentControl Content="{Binding BuildingComponents}" />
+				<ContentControl Content="{Binding SelectedImage}"/>
 			</DockPanel>
 			<GridSplitter Grid.Column="3" />
-			<ContentControl Grid.Column="4" Content="{Binding SelectedImage}"/>
+			<ContentControl Grid.Column="4" Content="{Binding BuildingComponents}" />
 		</Grid>
 	</DockPanel>
 </UserControl>

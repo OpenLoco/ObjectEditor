@@ -12,7 +12,11 @@
 	x:Class="Gui.Views.ImageView"
 	x:DataType="vmg:ImageViewModel">
 
-	<ScrollViewer Margin="4" Name="SV">
+	<Design.DataContext>
+		<vmg:DesignImageViewModel/>
+	</Design.DataContext>
+
+	<ScrollViewer>
 		<DockPanel>
 			<Panel Width="16" DockPanel.Dock="Right"></Panel>
 			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />

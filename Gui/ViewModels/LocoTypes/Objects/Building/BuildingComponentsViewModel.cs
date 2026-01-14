@@ -78,6 +78,13 @@ public class BuildingComponentsViewModel : ReactiveObject
 
 	protected void RecomputeBuildingVariationViewModels(List<List<uint8_t>> buildingVariations, List<byte> buildingHeights)
 	{
+		if (!buildingVariations.Any() || !buildingHeights.Any())
+		{
+			// todo: log error
+			return;
+		}
+
+
 		var layers = ImageTable.Groups.ConvertAll(x => x.GraphicsElements);
 
 		BuildingVariationViewModels.Clear();

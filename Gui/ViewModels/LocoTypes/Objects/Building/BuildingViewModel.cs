@@ -29,35 +29,78 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 		ElevatorSequence3 = model.ElevatorHeightSequences.Count > 2 ? new(model.ElevatorHeightSequences[2]) : null;
 		ElevatorSequence4 = model.ElevatorHeightSequences.Count > 3 ? new(model.ElevatorHeightSequences[3]) : null;
 
+		#region Building Components Synchronization
+
 		// Subscribe to BuildingVariations changes (including nested lists)
-		BuildingVariations.ListChanged += OnBuildingComponentChanged;
+		BuildingVariations.ListChanged += OnBuildingVariationsChanged;
 		foreach (var variation in BuildingVariations)
 		{
-			variation.ListChanged += OnBuildingComponentChanged;
+			variation.ListChanged += OnBuildingVariationItemChanged;
 		}
 
 		// Subscribe to BuildingHeights changes
-		BuildingHeights.ListChanged += OnBuildingComponentChanged;
+		BuildingHeights.ListChanged += OnBuildingHeightsChanged;
 
 		// Subscribe to BuildingAnimations changes
-		BuildingAnimations.ListChanged += OnBuildingComponentChanged;
+		BuildingAnimations.ListChanged += OnBuildingAnimationsChanged;
+
+		#endregion
 	}
 
-	public override void CopyBackToModel()
+	void OnBuildingVariationsChanged(object? sender, ListChangedEventArgs e)
+	{
+		// Only handle when the outer list itself changes, not when inner list items change
+		if (e.ListChangedType == ListChangedType.ItemAdded && e.NewIndex >= 0 && e.NewIndex < BuildingVariations.Count)
+		{
+			BuildingVariations[e.NewIndex].ListChanged += OnBuildingVariationItemChanged;
+			SynchronizeBuildingComponentsToModel();
+			NotifyBuildingChanged();
+		}
+		else if (e.ListChangedType == ListChangedType.ItemDeleted)
+		{
+			SynchronizeBuildingComponentsToModel();
+			NotifyBuildingChanged();
+		}
+		else if (e.ListChangedType == ListChangedType.Reset)
+		{
+			// Re-subscribe to all items after reset
+			foreach (var variation in BuildingVariations)
+			{
+				variation.ListChanged += OnBuildingVariationItemChanged;
+			}
+			SynchronizeBuildingComponentsToModel();
+			NotifyBuildingChanged();
+		}
+		// Ignore ItemChanged events as they're handled by OnBuildingVariationItemChanged
+	}
+
+	void OnBuildingVariationItemChanged(object? sender, ListChangedEventArgs e)
+	{
+		SynchronizeBuildingComponentsToModel();
+		NotifyBuildingChanged();
+	}
+
+	void OnBuildingHeightsChanged(object? sender, ListChangedEventArgs e)
+	{
+		SynchronizeBuildingComponentsToModel();
+		NotifyBuildingChanged();
+	}
+
+	void OnBuildingAnimationsChanged(object? sender, ListChangedEventArgs e)
+	{
+		SynchronizeBuildingComponentsToModel();
+		NotifyBuildingChanged();
+	}
+
+	void SynchronizeBuildingComponentsToModel()
 	{
 		Model.BuildingComponents.BuildingVariations = [.. BuildingVariations.Select(x => x.ToList())];
 		Model.BuildingComponents.BuildingHeights = [.. BuildingHeights];
 		Model.BuildingComponents.BuildingAnimations = [.. BuildingAnimations];
 	}
 
-	void OnBuildingComponentChanged(object? sender, ListChangedEventArgs e)
+	void NotifyBuildingChanged()
 	{
-		// When a new nested list is added to BuildingVariations, subscribe to it
-		if (sender == BuildingVariations && e.ListChangedType == ListChangedType.ItemAdded)
-		{
-			BuildingVariations[e.NewIndex].ListChanged += OnBuildingComponentChanged;
-		}
-
 		MessageBus.Current.SendMessage(new BuildingComponents()
 		{
 			BuildingAnimations = [.. BuildingAnimations],

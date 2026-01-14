@@ -485,7 +485,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		StringTableViewModel?.WriteTableBackToObject();
 
 		// VM should auto-copy back now for everything but BuildingObject
-		CurrentObjectViewModel.CopyBackToModel();
+		//CurrentObjectViewModel.CopyBackToModel();
 
 		// this is hacky but it should work
 		if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject)

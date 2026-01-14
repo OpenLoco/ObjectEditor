@@ -1,5 +1,6 @@
 using Common;
 using Definitions.ObjectModels.Objects.Cargo;
+using Definitions.ObjectModels.Objects.TownNames;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using DynamicData.Binding;
@@ -38,7 +39,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		Animation = new(model.ParticleEmitters);
 		CompatibleCargo1 = new(model.CompatibleCargoCategories[0], model.MaxCargo[0]);
 		CompatibleCargo2 = new(model.CompatibleCargoCategories[1], model.MaxCargo[1]);
-		CargoTypeSpriteOffsets = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffset(x.Key, x.Value))]);
+		CargoTypeSpriteOffsets = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value))]);
 		StartSounds = new(model.StartSounds);
 		var_135 = new(model.var_135);
 		RoadOrTrackType = model.RoadOrTrackType;
@@ -89,6 +90,12 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 
 		#region Cargo Category Synchronization
 
+		// Bind MaxCargo changes back to model
+		_ = this.WhenAnyValue(x => x.CompatibleCargo1.MaxCargo)
+			.Subscribe(value => model.MaxCargo[0] = value);
+		_ = this.WhenAnyValue(x => x.CompatibleCargo2.MaxCargo)
+			.Subscribe(value => model.MaxCargo[1] = value);
+
 		CompatibleCargo1.CargoCategories.CollectionChanged += OnCompatibleCargo1Changed;
 		CompatibleCargo2.CargoCategories.CollectionChanged += OnCompatibleCargo2Changed;
 
@@ -100,6 +107,13 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		foreach (var item in CompatibleCargo2.CargoCategories)
 		{
 			item.PropertyChanged += OnCargoCategoryPropertyChanged;
+		}
+
+		// Bind CargoTypeSpriteOffsets changes back to model
+		CargoTypeSpriteOffsets.CollectionChanged += OnCargoTypeSpriteOffsetsChanged;
+		foreach (var item in CargoTypeSpriteOffsets)
+		{
+			item.PropertyChanged += OnCargoTypeSpriteOffsetPropertyChanged;
 		}
 
 		#endregion
@@ -312,15 +326,15 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	public BindingList<EmitterAnimation> Animation { get; init; }
 
 	[Category("Cargo")]
-	public CompatibleCargo CompatibleCargo1 { get; init; }
+	public CompatibleCargoViewModel CompatibleCargo1 { get; init; }
 
 	[Category("Cargo")]
-	public CompatibleCargo CompatibleCargo2 { get; init; }
+	public CompatibleCargoViewModel CompatibleCargo2 { get; init; }
 
 	[Category("Cargo")]
 	[Length(0, 32)]
 	[Description("This is a dictionary. For every cargo defined in both CompatibleCargoCategories, an entry must exist in this dictionary.")]
-	public ObservableCollection<CargoTypeSpriteOffset> CargoTypeSpriteOffsets { get; init; }
+	public ObservableCollection<CargoTypeSpriteOffsetViewModel> CargoTypeSpriteOffsets { get; init; }
 
 	[Category("Sound")]
 	[ConditionTarget]
@@ -369,12 +383,14 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 	{
 		HandleCargoCollectionPropertySubscriptions(e);
 		SynchronizeCargoTypeSpriteOffsets(e);
+		SynchronizeCargoCategoriesToModel();
 	}
 
 	void OnCompatibleCargo2Changed(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		HandleCargoCollectionPropertySubscriptions(e);
 		SynchronizeCargoTypeSpriteOffsets(e);
+		SynchronizeCargoCategoriesToModel();
 	}
 
 	void HandleCargoCollectionPropertySubscriptions(NotifyCollectionChangedEventArgs e)
@@ -417,6 +433,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		if (e.PropertyName == nameof(CargoCategoryViewModel.Category) && sender is CargoCategoryViewModel changedItem)
 		{
 			SynchronizeCategoryChange(changedItem);
+			SynchronizeCargoCategoriesToModel();
 		}
 	}
 
@@ -426,7 +443,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		var existingOffset = CargoTypeSpriteOffsets.FirstOrDefault(x => x.CargoCategoryViewModel.Category == changedItem.Category);
 		if (existingOffset == null)
 		{
-			CargoTypeSpriteOffsets.Add(new CargoTypeSpriteOffset(changedItem.Category, 0));
+			CargoTypeSpriteOffsets.Add(new CargoTypeSpriteOffsetViewModel(changedItem.Category, 0));
 		}
 
 		// remove anything from CargoTypeSpriteOffsets that has a Category no longer present in either CompatibleCargo1 or CompatibleCargo2
@@ -450,7 +467,7 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 				var existingOffset = CargoTypeSpriteOffsets.FirstOrDefault(x => x.CargoCategoryViewModel.Category == item.Category);
 				if (existingOffset == null)
 				{
-					CargoTypeSpriteOffsets.Add(new CargoTypeSpriteOffset(item.Category, 0));
+					CargoTypeSpriteOffsets.Add(new CargoTypeSpriteOffsetViewModel(item.Category, 0));
 				}
 			}
 		}
@@ -473,23 +490,79 @@ public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
 		}
 	}
 
-	public override void CopyBackToModel()
+	void OnCargoTypeSpriteOffsetsChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
-		// this should be done with the reactive properties, but for now we'll leave it like this
-		Model.MaxCargo = [CompatibleCargo1.MaxCargo, CompatibleCargo2.MaxCargo];
-		Model.CompatibleCargoCategories =
-		[
-			[.. CompatibleCargo1.CargoCategories.Select(x => x.Category).ToArray()],
-			[.. CompatibleCargo2.CargoCategories.Select(x => x.Category).ToArray()]
-		];
+		if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
+		{
+			foreach (CargoTypeSpriteOffsetViewModel item in e.NewItems)
+			{
+				item.PropertyChanged += OnCargoTypeSpriteOffsetPropertyChanged;
+				Model.CargoTypeSpriteOffsets[item.CargoCategoryViewModel.Category] = item.Offset;
+			}
+		}
+		else if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems != null)
+		{
+			foreach (CargoTypeSpriteOffsetViewModel item in e.OldItems)
+			{
+				item.PropertyChanged -= OnCargoTypeSpriteOffsetPropertyChanged;
+				_ = Model.CargoTypeSpriteOffsets.Remove(item.CargoCategoryViewModel.Category);
+			}
+		}
+		else if (e.Action == NotifyCollectionChangedAction.Replace)
+		{
+			if (e.OldItems != null)
+			{
+				foreach (CargoTypeSpriteOffsetViewModel item in e.OldItems)
+				{
+					item.PropertyChanged -= OnCargoTypeSpriteOffsetPropertyChanged;
+				}
+			}
+			if (e.NewItems != null)
+			{
+				foreach (CargoTypeSpriteOffsetViewModel item in e.NewItems)
+				{
+					item.PropertyChanged += OnCargoTypeSpriteOffsetPropertyChanged;
+					Model.CargoTypeSpriteOffsets[item.CargoCategoryViewModel.Category] = item.Offset;
+				}
+			}
+		}
+		else if (e.Action == NotifyCollectionChangedAction.Reset)
+		{
+			Model.CargoTypeSpriteOffsets.Clear();
+			foreach (var item in CargoTypeSpriteOffsets)
+			{
+				Model.CargoTypeSpriteOffsets[item.CargoCategoryViewModel.Category] = item.Offset;
+			}
+		}
+	}
 
+	void OnCargoTypeSpriteOffsetPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (sender is CargoTypeSpriteOffsetViewModel offsetViewModel)
+		{
+			if (e.PropertyName == nameof(CargoTypeSpriteOffsetViewModel.Offset))
+			{
+				Model.CargoTypeSpriteOffsets[offsetViewModel.CargoCategoryViewModel.Category] = offsetViewModel.Offset;
+			}
+			else if (e.PropertyName == nameof(CargoTypeSpriteOffsetViewModel.CargoCategoryViewModel))
+			{
+				Model.CargoTypeSpriteOffsets.Clear();
+				foreach (var item in CargoTypeSpriteOffsets)
+				{
+					Model.CargoTypeSpriteOffsets[item.CargoCategoryViewModel.Category] = item.Offset;
+				}
+			}
+		}
+	}
+
+	void SynchronizeCargoCategoriesToModel()
+	{
+		model.CompatibleCargoCategories[0] = [.. CompatibleCargo1.CargoCategories.Select(x => x.Category)];
+		model.CompatibleCargoCategories[1] = [.. CompatibleCargo2.CargoCategories.Select(x => x.Category)];
+
+		Model.NumSimultaneousCargoTypes = 0;
 		Model.NumSimultaneousCargoTypes += (byte)(CompatibleCargo1.CargoCategories.Count > 0 ? 1 : 0);
 		Model.NumSimultaneousCargoTypes += (byte)(CompatibleCargo2.CargoCategories.Count > 0 ? 1 : 0);
-
-		foreach (var ctso in CargoTypeSpriteOffsets)
-		{
-			Model.CargoTypeSpriteOffsets[ctso.CargoCategoryViewModel.Category] = ctso.Offset;
-		}
 	}
 }
 
@@ -534,36 +607,70 @@ public class CargoCategoryViewModel : ReactiveUI.ReactiveObject
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CargoTypeSpriteOffset : ReactiveUI.ReactiveObject
+public class CargoTypeSpriteOffsetViewModel : ReactiveUI.ReactiveObject
 {
-	public CargoTypeSpriteOffset(CargoCategory cargoCategory, uint8_t offset)
+	public CargoTypeSpriteOffsetViewModel(CargoCategory cargoCategory, uint8_t offset)
 	{
 		CargoCategoryViewModel = new CargoCategoryViewModel(cargoCategory);
 		Offset = offset;
 	}
 
-	public CargoTypeSpriteOffset()
+	public CargoTypeSpriteOffsetViewModel()
 		: this(CargoCategory.NULL, 0)
 	{ }
 
-	public CargoCategoryViewModel CargoCategoryViewModel { get; set; }
+	public CargoCategoryViewModel CargoCategoryViewModel
+	{
+		get;
+		set
+		{
+			if (field != value)
+			{
+				field = value;
+				this.RaisePropertyChanged(nameof(CargoCategoryViewModel));
+			}
+		}
+	}
 
-	public byte Offset { get; set; }
+	public byte Offset
+	{
+		get;
+		set
+		{
+			if (field != value)
+			{
+				field = value;
+				this.RaisePropertyChanged(nameof(Offset));
+			}
+		}
+	}
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CompatibleCargo : ReactiveUI.ReactiveObject
+public class CompatibleCargoViewModel : ReactiveUI.ReactiveObject
 {
-	public byte MaxCargo { get; set; }
+	public byte MaxCargo
+	{
+		get;
+		set
+		{
+			if (field != value)
+			{
+				field = value;
+				this.RaisePropertyChanged(nameof(MaxCargo));
+			}
+		}
+	}
+
 	public ObservableCollection<CargoCategoryViewModel> CargoCategories { get; init; }
 
-	public CompatibleCargo(IEnumerable<CargoCategory> compatibleCargoCategories, uint8_t maxCargo)
+	public CompatibleCargoViewModel(IEnumerable<CargoCategory> compatibleCargoCategories, uint8_t maxCargo)
 	{
 		MaxCargo = maxCargo;
 		CargoCategories = new(compatibleCargoCategories.Select(x => new CargoCategoryViewModel(x)));
 	}
 
-	public CompatibleCargo()
+	public CompatibleCargoViewModel()
 		: this([], 0)
 	{ }
 }

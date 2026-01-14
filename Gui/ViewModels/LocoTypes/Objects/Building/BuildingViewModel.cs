@@ -58,9 +58,6 @@ public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 			BuildingVariations[e.NewIndex].ListChanged += OnBuildingComponentChanged;
 		}
 
-		// 'live' updates are not needed
-		//CopyBackToModel();
-
 		MessageBus.Current.SendMessage(new BuildingComponents()
 		{
 			BuildingAnimations = [.. BuildingAnimations],

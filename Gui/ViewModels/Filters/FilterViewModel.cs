@@ -316,18 +316,24 @@ public class FilterViewModel : ReactiveObject
 		Expression? body = null;
 
 		var underlyingType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+		var isNullable = Nullable.GetUnderlyingType(member.Type) != null || !member.Type.IsValueType;
+
+		// For nullable value types, we need to access the .Value property
+		var memberToCompare = Nullable.GetUnderlyingType(member.Type) != null
+			? Expression.Property(member, "Value")
+			: member;
 
 		if (underlyingType.IsEnum && EnumValue != null)
 		{
-			var enumConstant = Expression.Constant(EnumValue, member.Type);
+			var enumConstant = Expression.Constant(EnumValue, underlyingType);
 
 			if (underlyingType.GetCustomAttribute<FlagsAttribute>() == null)
 			{
 
 				body = SelectedOperator switch
 				{
-					FilterOperator.Equals => Expression.Equal(member, enumConstant),
-					FilterOperator.NotEquals => Expression.NotEqual(member, enumConstant),
+					FilterOperator.Equals => Expression.Equal(memberToCompare, enumConstant),
+					FilterOperator.NotEquals => Expression.NotEqual(memberToCompare, enumConstant),
 					_ => null
 				};
 			}
@@ -341,11 +347,11 @@ public class FilterViewModel : ReactiveObject
 
 				body = SelectedOperator switch
 				{
-					FilterOperator.Equals => Expression.Equal(member, enumConstant),
-					FilterOperator.NotEquals => Expression.NotEqual(member, enumConstant),
+					FilterOperator.Equals => Expression.Equal(memberToCompare, enumConstant),
+					FilterOperator.NotEquals => Expression.NotEqual(memberToCompare, enumConstant),
 					FilterOperator.Contains => Expression.NotEqual(
 						Expression.And(
-							Expression.Convert(member, enumUnderlyingType),
+							Expression.Convert(memberToCompare, enumUnderlyingType),
 							convertedEnumConstant),
 						Expression.Constant(Convert.ChangeType(0, enumUnderlyingType), enumUnderlyingType)),
 					_ => null
@@ -357,8 +363,8 @@ public class FilterViewModel : ReactiveObject
 			var constant = Expression.Constant(BoolValue);
 			body = SelectedOperator switch
 			{
-				FilterOperator.Equals => Expression.Equal(member, constant),
-				FilterOperator.NotEquals => Expression.NotEqual(member, constant),
+				FilterOperator.Equals => Expression.Equal(memberToCompare, constant),
+				FilterOperator.NotEquals => Expression.NotEqual(memberToCompare, constant),
 				_ => null
 			};
 		}
@@ -367,16 +373,16 @@ public class FilterViewModel : ReactiveObject
 			try
 			{
 				var convertedValue = Convert.ChangeType(TextValue, underlyingType);
-				var constant = Expression.Constant(convertedValue, member.Type);
+				var constant = Expression.Constant(convertedValue, underlyingType);
 
 				body = SelectedOperator switch
 				{
-					FilterOperator.Equals => Expression.Equal(member, constant),
-					FilterOperator.NotEquals => Expression.NotEqual(member, constant),
-					FilterOperator.GreaterThan => Expression.GreaterThan(member, constant),
-					FilterOperator.GreaterThanOrEqual => Expression.GreaterThanOrEqual(member, constant),
-					FilterOperator.LessThan => Expression.LessThan(member, constant),
-					FilterOperator.LessThanOrEqual => Expression.LessThanOrEqual(member, constant),
+					FilterOperator.Equals => Expression.Equal(memberToCompare, constant),
+					FilterOperator.NotEquals => Expression.NotEqual(memberToCompare, constant),
+					FilterOperator.GreaterThan => Expression.GreaterThan(memberToCompare, constant),
+					FilterOperator.GreaterThanOrEqual => Expression.GreaterThanOrEqual(memberToCompare, constant),
+					FilterOperator.LessThan => Expression.LessThan(memberToCompare, constant),
+					FilterOperator.LessThanOrEqual => Expression.LessThanOrEqual(memberToCompare, constant),
 					_ => null
 				};
 			}
@@ -390,16 +396,16 @@ public class FilterViewModel : ReactiveObject
 			try
 			{
 				var convertedValue = Convert.ChangeType(DateValue, underlyingType);
-				var constant = Expression.Constant(convertedValue, member.Type);
+				var constant = Expression.Constant(convertedValue, underlyingType);
 
 				body = SelectedOperator switch
 				{
-					FilterOperator.Equals => Expression.Equal(member, constant),
-					FilterOperator.NotEquals => Expression.NotEqual(member, constant),
-					FilterOperator.GreaterThan => Expression.GreaterThan(member, constant),
-					FilterOperator.GreaterThanOrEqual => Expression.GreaterThanOrEqual(member, constant),
-					FilterOperator.LessThan => Expression.LessThan(member, constant),
-					FilterOperator.LessThanOrEqual => Expression.LessThanOrEqual(member, constant),
+					FilterOperator.Equals => Expression.Equal(memberToCompare, constant),
+					FilterOperator.NotEquals => Expression.NotEqual(memberToCompare, constant),
+					FilterOperator.GreaterThan => Expression.GreaterThan(memberToCompare, constant),
+					FilterOperator.GreaterThanOrEqual => Expression.GreaterThanOrEqual(memberToCompare, constant),
+					FilterOperator.LessThan => Expression.LessThan(memberToCompare, constant),
+					FilterOperator.LessThanOrEqual => Expression.LessThanOrEqual(memberToCompare, constant),
 					_ => null
 				};
 			}
@@ -408,7 +414,7 @@ public class FilterViewModel : ReactiveObject
 				return null; // Conversion failed
 			}
 		}
-		else if (underlyingType == typeof(string) && TextValue != null)
+		else if (underlyingType == typeof(string) && !string.IsNullOrEmpty(TextValue))
 		{
 			var method = typeof(string).GetMethod(nameof(string.Contains), [typeof(string), typeof(StringComparison)]);
 			var startsWithMethod = typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string), typeof(StringComparison)]);
@@ -435,6 +441,25 @@ public class FilterViewModel : ReactiveObject
 		if (body == null)
 		{
 			return null;
+		}
+
+		// Generic null check for all nullable types
+		if (isNullable)
+		{
+			Expression nullCheck;
+			
+			// For Nullable<T> value types, check HasValue property
+			if (Nullable.GetUnderlyingType(member.Type) != null)
+			{
+				nullCheck = Expression.Property(member, "HasValue");
+			}
+			// For reference types (like string), check for null
+			else
+			{
+				nullCheck = Expression.NotEqual(member, Expression.Constant(null, member.Type));
+			}
+
+			body = Expression.AndAlso(nullCheck, body);
 		}
 
 		return Expression.Lambda<Func<T, bool>>(body, parameter);

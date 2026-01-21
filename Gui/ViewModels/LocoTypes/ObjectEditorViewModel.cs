@@ -62,8 +62,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
 
 	public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; }
-	public ReactiveCommand<Unit, Unit> ValidateObjectCommand { get; }
-	public ReactiveCommand<Unit, Unit> ValidateForOGCommand { get; }
+	public ReactiveCommand<Unit, bool> ValidateObjectCommand { get; }
+	public ReactiveCommand<Unit, bool> ValidateForOGCommand { get; }
 
 	[Reactive]
 	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;
@@ -100,8 +100,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			}
 		});
 
-		ValidateObjectCommand = ReactiveCommand.Create(ValidateObject);
-		ValidateForOGCommand = ReactiveCommand.Create(ValidateForOG);
+		ValidateObjectCommand = ReactiveCommand.Create(() => ValidateObject(showPopupOnSuccess: true));
+		ValidateForOGCommand = ReactiveCommand.Create(() => ValidateForOG(showPopupOnSuccess: true));
 
 		SelectObjectShowDialog = new();
 		_ = SelectObjectShowDialog.RegisterHandler(DoShowDialogAsync<ObjectSelectionWindowViewModel, ObjectSelectionWindow>);
@@ -118,14 +118,15 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		//});
 	}
 
-	void ValidateObject()
+	bool ValidateObject(bool showPopupOnSuccess)
 	{
-		var obj = CurrentObject?.LocoObject.Object;
-		var validationErrors = CurrentObject?.LocoObject.Object.Validate(new ValidationContext(CurrentObject?.LocoObject.Object)).ToList();
-		ShowValidationMessageBox(validationErrors);
+		var obj = CurrentObject?.LocoObject?.Object;
+		var validationErrors = obj?.Validate(new ValidationContext(obj)).ToList() ?? [];
+		ShowValidationMessageBox(validationErrors, showPopupOnSuccess);
+		return validationErrors != null && validationErrors.Count == 0;
 	}
 
-	void ShowValidationMessageBox<T>(IEnumerable<T> validationErrors)
+	static void ShowValidationMessageBox<T>(IEnumerable<T> validationErrors, bool showPopupOnSuccess)
 	{
 		// Show message box
 		IMsBox<ButtonResult> box;
@@ -138,32 +139,51 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				ButtonEnum.Ok,
 				Icon.Error,
 				windowStartupLocation: WindowStartupLocation.CenterOwner);
+
+			_ = box.ShowAsync();
 		}
 		else
 		{
-			box = MessageBoxManager.GetMessageBoxStandard(
-				"Validation succeeded",
-				"✔ No issues found. Object is valid.",
-				ButtonEnum.Ok,
-				Icon.Success,
-				windowStartupLocation: WindowStartupLocation.CenterOwner);
+			if (showPopupOnSuccess)
+			{
+				box = MessageBoxManager.GetMessageBoxStandard(
+					"Validation succeeded",
+					"✔ No issues found. Object is valid.",
+					ButtonEnum.Ok,
+					Icon.Success,
+					windowStartupLocation: WindowStartupLocation.CenterOwner);
+
+				_ = box.ShowAsync();
+			}
 		}
-		_ = box.ShowAsync();
 	}
 
-	void ValidateForOG()
+	bool ValidateForOG(bool showPopupOnSuccess)
 	{
 		var validationErrors = new List<string>();
 
 		if (CurrentObject?.DatInfo is null)
 		{
 			validationErrors.Add("Object DAT info is null");
-			return;
+			return false;
+		}
+
+		var filename = CurrentFile.FileName;
+		if (string.IsNullOrEmpty(filename))
+		{
+			validationErrors.Add("Filename is null or empty");
+			return false;
 		}
 
 		// split the CurrentFile path on "opengraphics" folder
-		_ = Path.GetRelativePath(Model.Settings.ObjDataDirectory, CurrentFile.FileName);
+		_ = Path.GetRelativePath(Model.Settings.ObjDataDirectory, filename);
 		var parentDirName = Path.GetFileName(Path.GetDirectoryName(CurrentFile.FileName));
+
+		if (string.IsNullOrEmpty(parentDirName))
+		{
+			validationErrors.Add("Parent directory name is null or empty");
+			return false;
+		}
 
 		if (OriginalObjectFiles.Names.TryGetValue(parentDirName, out var fileInfo))
 		{
@@ -209,7 +229,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			validationErrors.Add("✖ Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
 		}
 
-		ShowValidationMessageBox(validationErrors);
+		ShowValidationMessageBox(validationErrors, showPopupOnSuccess);
+		return validationErrors != null && validationErrors.Count == 0;
 	}
 
 	static async Task DoShowDialogAsync<TViewModel, TWindow>(IInteractionContext<TViewModel, TViewModel?> interaction) where TWindow : Window, new()
@@ -480,6 +501,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			logger.Error($"Cannot save - directory does not exist: \"{saveDir}\"");
 			return;
 		}
+
+		ValidateObject(showPopupOnSuccess: false);
 
 		logger.Info($"Saving {CurrentObject.DatInfo.S5Header.Name} to {filename}");
 		StringTableViewModel?.WriteTableBackToObject();

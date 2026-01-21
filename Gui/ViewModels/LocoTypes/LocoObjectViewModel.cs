@@ -17,8 +17,4 @@ public abstract class LocoObjectViewModel<T> : ReactiveObject, IObjectViewModel<
 		ArgumentNullException.ThrowIfNull(model);
 		Model = model;
 	}
-
-	public virtual void CopyBackToModel()
-	{ }
-
 }

@@ -71,15 +71,15 @@ public class FolderTreeViewModel : ReactiveObject
 
 	private readonly BehaviorSubject<Func<ObjectIndexEntry, bool>> _filterSubject;
 
-	ObjectEditorModel Model { get; init; }
+	ObjectEditorContext EditorContext { get; init; }
 
 	[Reactive]
 	public string CurrentLocalDirectory { get; set; } = string.Empty;
 	public string CurrentDirectory => IsLocal
 		? CurrentLocalDirectory
-		: Model.Settings.UseHttps
-			? Model.Settings.ServerAddressHttps
-			: Model.Settings.ServerAddressHttp;
+		: EditorContext.Settings.UseHttps
+			? EditorContext.Settings.ServerAddressHttps
+			: EditorContext.Settings.ServerAddressHttp;
 
 	[Reactive]
 	public FileSystemItem? CurrentlySelectedObject { get; set; }
@@ -112,9 +112,9 @@ public class FolderTreeViewModel : ReactiveObject
 
 	public FolderTreeViewModel() { }
 
-	public FolderTreeViewModel(ObjectEditorModel model)
+	public FolderTreeViewModel(ObjectEditorContext editorContext)
 	{
-		Model = model;
+		EditorContext = editorContext;
 		Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = (int)(progress * 100);
 
 		var indexFilterModel = new FilterTypeViewModel() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) };
@@ -139,8 +139,8 @@ public class FolderTreeViewModel : ReactiveObject
 		}
 
 		RefreshDirectoryItems = ReactiveCommand.CreateFromTask(async () => await LoadDirectoryAsync(false));
-		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : Model.Settings.DownloadFolder, Model.Logger));
-		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(Model, availableFilterCategories, RemoveFilter)));
+		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : this.EditorContext.Settings.DownloadFolder, this.EditorContext.Logger));
+		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(this.EditorContext, availableFilterCategories, RemoveFilter)));
 		OpenFolderFor = ReactiveCommand.Create((FileSystemItem clickedOn) =>
 		{
 			if (IsLocal
@@ -150,7 +150,7 @@ public class FolderTreeViewModel : ReactiveObject
 			&& File.Exists(clickedOnObject.FileName))
 			{
 				var dir = Directory.GetParent(clickedOnObject.FileName)?.FullName;
-				PlatformSpecific.FolderOpenInDesktop(dir, Model.Logger, Path.GetFileName(clickedOnObject.FileName));
+				PlatformSpecific.FolderOpenInDesktop(dir, this.EditorContext.Logger, Path.GetFileName(clickedOnObject.FileName));
 
 			}
 		});
@@ -219,10 +219,10 @@ public class FolderTreeViewModel : ReactiveObject
 			this.RaisePropertyChanged(nameof(CurrentDirectory));
 		});
 
-		CurrentLocalDirectory = Model.Settings.ObjDataDirectory;
+		CurrentLocalDirectory = this.EditorContext.Settings.ObjDataDirectory;
 
 		// add default name filter
-		var defaultFilter = new FilterViewModel(Model, availableFilterCategories, RemoveFilter)
+		var defaultFilter = new FilterViewModel(this.EditorContext, availableFilterCategories, RemoveFilter)
 		{
 			SelectedObjectType = indexFilterModel,
 			SelectedOperator = FilterOperator.Contains,
@@ -283,7 +283,7 @@ public class FolderTreeViewModel : ReactiveObject
 
 	async Task LoadDirectoryAsync(bool useExistingIndex)
 	{
-		Model.Logger.Debug($"UseExistingIndex={useExistingIndex}");
+		EditorContext.Logger.Debug($"UseExistingIndex={useExistingIndex}");
 
 		if (IsLocal)
 		{
@@ -295,12 +295,12 @@ public class FolderTreeViewModel : ReactiveObject
 			await LoadOnlineDirectoryAsync(useExistingIndex);
 		}
 
-		await Model.CheckForDatFilesNotOnServer();
+		await EditorContext.CheckForDatFilesNotOnServer();
 	}
 
 	async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
 	{
-		Model.Logger.Debug($"Directory={directory} UseExistingIndex={useExistingIndex}");
+		EditorContext.Logger.Debug($"Directory={directory} UseExistingIndex={useExistingIndex}");
 
 		if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
 		{
@@ -308,11 +308,11 @@ public class FolderTreeViewModel : ReactiveObject
 			return;
 		}
 
-		await Model.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
+		await EditorContext.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
 
-		if (Model.ObjectIndex != null)
+		if (EditorContext.ObjectIndex != null)
 		{
-			var items = Model.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes);
+			var items = EditorContext.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes);
 			CurrentDirectoryItems.Clear();
 			CurrentDirectoryItems.AddRange(items);
 		}
@@ -322,7 +322,7 @@ public class FolderTreeViewModel : ReactiveObject
 
 	async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 	{
-		Model.Logger.Debug($"UseExistingIndex={useExistingIndex}");
+		EditorContext.Logger.Debug($"UseExistingIndex={useExistingIndex}");
 
 		if (Design.IsDesignMode)
 		{
@@ -330,9 +330,9 @@ public class FolderTreeViewModel : ReactiveObject
 			return;
 		}
 
-		if ((!useExistingIndex || Model.ObjectIndexOnline == null) && Model.ObjectServiceClient != null)
+		if ((!useExistingIndex || EditorContext.ObjectIndexOnline == null) && EditorContext.ObjectServiceClient != null)
 		{
-			Model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
+			EditorContext.ObjectIndexOnline = new ObjectIndex((await EditorContext.ObjectServiceClient.GetObjectListAsync())
 				.Select(x => new ObjectIndexEntry(
 					x.DisplayName,
 					null,
@@ -346,9 +346,9 @@ public class FolderTreeViewModel : ReactiveObject
 					x.VehicleType)));
 		}
 
-		if (Model.ObjectIndexOnline != null)
+		if (EditorContext.ObjectIndexOnline != null)
 		{
-			var items = Model.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes);
+			var items = EditorContext.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes);
 			CurrentDirectoryItems.Clear();
 			CurrentDirectoryItems.AddRange(items);
 
@@ -360,7 +360,7 @@ public class FolderTreeViewModel : ReactiveObject
 	{
 		var _treeGridDataSource = ConstructTreeView(
 			treeDataGridSource,
-			IsLocal ? Model.Settings.ObjDataDirectory : Model.Settings.DownloadFolder,
+			IsLocal ? EditorContext.Settings.ObjDataDirectory : EditorContext.Settings.DownloadFolder,
 			IsLocal ? FileLocation.Local : FileLocation.Online);
 
 		TreeDataGridSource = new HierarchicalTreeDataGridSource<FileSystemItem>(_treeGridDataSource)

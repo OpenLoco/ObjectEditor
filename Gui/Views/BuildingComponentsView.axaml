@@ -8,7 +8,7 @@
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:paz="using:Avalonia.Controls.PanAndZoom"
 	mc:Ignorable="d"
-	xmlns:bvm="using:Gui.ViewModels.LocoTypes.Objects.Building"
+	xmlns:bvm="using:Gui.ViewModels.Loco.Objects.Building"
 	x:DataType="bvm:BuildingComponentsViewModel"
 	x:Class="Gui.Views.BuildingComponentsView"
 	x:Name="Root">

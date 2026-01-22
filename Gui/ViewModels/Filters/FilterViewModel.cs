@@ -30,7 +30,7 @@ public class FilterTypeViewModel : ReactiveObject
 
 public class FilterViewModel : ReactiveObject
 {
-	private readonly ObjectEditorModel _model;
+	private readonly ObjectEditorContext _model;
 
 	[Reactive] public FilterTypeViewModel? SelectedObjectType { get; set; }
 	[Reactive] public PropertyInfo? SelectedProperty { get; set; }
@@ -59,9 +59,9 @@ public class FilterViewModel : ReactiveObject
 
 	public ObservableCollection<FilterTypeViewModel> AvailableFiltersList { get; set; } = [];
 
-	public FilterViewModel(ObjectEditorModel model, List<FilterTypeViewModel> availableFilters, Action<FilterViewModel> onRemove)
+	public FilterViewModel(ObjectEditorContext editorContext, List<FilterTypeViewModel> availableFilters, Action<FilterViewModel> onRemove)
 	{
-		_model = model;
+		_model = editorContext;
 		AvailableFiltersList.AddRange(availableFilters);
 		SelectedObjectType = AvailableFiltersList.FirstOrDefault();
 

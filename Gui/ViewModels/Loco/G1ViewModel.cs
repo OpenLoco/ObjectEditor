@@ -9,8 +9,8 @@ namespace Gui.ViewModels;
 
 public class G1ViewModel : BaseFileViewModel
 {
-	public G1ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model) => Load();
+	public G1ViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
+		: base(currentFile, editorContext) => Load();
 
 	[Reactive]
 	public ImageTableViewModel ImageTableViewModel { get; set; }
@@ -18,21 +18,21 @@ public class G1ViewModel : BaseFileViewModel
 	public override void Load()
 	{
 		logger.Info($"Loading G1 from {CurrentFile.FileName}");
-		Model.G1 = SawyerStreamReader.LoadG1(CurrentFile.FileName, Model.Logger);
+		EditorContext.G1 = SawyerStreamReader.LoadG1(CurrentFile.FileName, EditorContext.Logger);
 
-		if (Model.G1 == null)
+		if (EditorContext.G1 == null)
 		{
 			logger.Error($"G1 was unable to be loaded from {CurrentFile.FileName}");
 			return;
 		}
 
-		Model.G1.ImageTable.PaletteMap = Model.PaletteMap;
-		ImageTableViewModel = new ImageTableViewModel(Model.G1.ImageTable, logger);
+		EditorContext.G1.ImageTable.PaletteMap = EditorContext.PaletteMap;
+		ImageTableViewModel = new ImageTableViewModel(EditorContext.G1.ImageTable, logger);
 	}
 
 	public override void Save()
 	{
-		if (Model.G1 == null)
+		if (EditorContext.G1 == null)
 		{
 			logger?.Error("G1 was null and was unable to saved");
 			return;
@@ -41,16 +41,16 @@ public class G1ViewModel : BaseFileViewModel
 		//Model.G1.ImageTable.GraphicsElements = [.. ImageTableViewModel.ImageViewModels.Select(x => x.ToGraphicsElement())];
 
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
-			? Path.Combine(Model.Settings.ObjDataDirectory, CurrentFile.FileName)
-			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+			? Path.Combine(EditorContext.Settings.ObjDataDirectory, CurrentFile.FileName)
+			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 		logger?.Info($"Saving G1.dat to {savePath}");
-		SawyerStreamWriter.SaveG1(savePath, Model.G1);
+		SawyerStreamWriter.SaveG1(savePath, EditorContext.G1);
 	}
 
 	public override string? SaveAs(SaveParameters saveParameters)
 	{
-		if (Model.G1 == null)
+		if (EditorContext.G1 == null)
 		{
 			logger?.Error("G1 was null and was unable to saved");
 			return null;
@@ -64,7 +64,7 @@ public class G1ViewModel : BaseFileViewModel
 
 		var savePath = saveFile.Path.LocalPath;
 		logger?.Info($"Saving G1.dat to {savePath}");
-		SawyerStreamWriter.SaveG1(savePath, Model.G1);
+		SawyerStreamWriter.SaveG1(savePath, EditorContext.G1);
 
 		return savePath;
 	}

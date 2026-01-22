@@ -2,13 +2,13 @@ using Gui.Models;
 
 namespace Gui.ViewModels;
 
-public class LanguageViewModel : BaseFileViewModel
+public class ScoresViewModel : BaseFileViewModel
 {
-	public LanguageViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model) => Load();
+	public ScoresViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
+		: base(currentFile, editorContext) => Load();
 
 	public override void Load()
-		=> logger?.Info($"Loading languages from {CurrentFile.FileName}");
+		=> logger?.Info($"Loading scores from {CurrentFile.FileName}");
 
 	public override void Save()
 		=> logger?.Warning("Save is not currently implemented");

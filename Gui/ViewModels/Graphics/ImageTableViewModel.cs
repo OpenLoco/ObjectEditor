@@ -6,7 +6,7 @@ using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Common;
-using Gui.ViewModels.LocoTypes.Objects.Building;
+using Gui.ViewModels.Loco.Objects.Building;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;

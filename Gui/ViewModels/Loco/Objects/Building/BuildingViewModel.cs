@@ -10,7 +10,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace Gui.ViewModels.LocoTypes.Objects.Building;
+namespace Gui.ViewModels.Loco.Objects.Building;
 
 public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
 {

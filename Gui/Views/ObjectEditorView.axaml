@@ -42,7 +42,7 @@
 							</Style>
 						</Button.Styles>
 					</Button>
-					<Button Margin="4" Command="{Binding ValidateForOGCommand}" Content="Validate (OpenGraphics)" ToolTip.Tip="Runs a series of checks to ensure this object meets OG requirements" IsVisible="{Binding Model.Settings.EnableOGValidation}">
+					<Button Margin="4" Command="{Binding ValidateForOGCommand}" Content="Validate (OpenGraphics)" ToolTip.Tip="Runs a series of checks to ensure this object meets OG requirements" IsVisible="{Binding EditorContext.Settings.EnableOGValidation}">
 						<Button.Styles>
 							<Style>
 								<Style.Resources>

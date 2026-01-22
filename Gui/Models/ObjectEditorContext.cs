@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace Gui.Models;
 
-public class ObjectEditorModel : IDisposable
+public class ObjectEditorContext : IDisposable
 {
 	public EditorSettings Settings { get; private set; }
 
@@ -37,15 +37,15 @@ public class ObjectEditorModel : IDisposable
 
 	public G1Dat? G1 { get; set; }
 
-	public Dictionary<string, byte[]> Music { get; } = [];
+	//public Dictionary<string, byte[]> Music { get; } = [];
 
-	public Dictionary<string, byte[]> MiscellaneousTracks { get; } = [];
+	//public Dictionary<string, byte[]> MiscellaneousTracks { get; } = [];
 
-	public Dictionary<string, byte[]> SoundEffects { get; } = [];
+	//public Dictionary<string, byte[]> SoundEffects { get; } = [];
 
-	public Dictionary<string, byte[]> Tutorials { get; } = [];
+	//public Dictionary<string, byte[]> Tutorials { get; } = [];
 
-	public Collection<string> MiscFiles { get; } = [];
+	//public Collection<string> MiscFiles { get; } = [];
 
 	public const string ApplicationName = "OpenLoco Object Editor";
 	public const string LoggingFileName = "objectEditor.log";
@@ -62,7 +62,7 @@ public class ObjectEditorModel : IDisposable
 	readonly ConcurrentQueue<string> logQueue = new();
 	readonly SemaphoreSlim logFileLock = new(1, 1); // Allow only 1 concurrent write
 
-	public ObjectEditorModel()
+	public ObjectEditorContext()
 	{
 		Logger = new Logger();
 		LoggerObservableLogs = [];

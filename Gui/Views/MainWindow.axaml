@@ -17,7 +17,9 @@
 		xmlns:rtb="clr-namespace:AvRichTextBox;assembly=AvRichTextBox"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
 		xmlns:vi="using:Gui.Views"
-		xmlns:vm="using:Gui.ViewModels" Title="{Binding WindowTitle}" Width="1920" Height="1080" d:DesignHeight="900" d:DesignWidth="1440" x:DataType="vm:MainWindowViewModel" Icon="/Assets/loco_icon.png" mc:Ignorable="d">
+		xmlns:vm="using:Gui.ViewModels"
+		xmlns:vmlt="using:Gui.ViewModels.Loco.Tutorial"
+		Title="{Binding WindowTitle}" Width="1920" Height="1080" d:DesignHeight="900" d:DesignWidth="1440" x:DataType="vm:MainWindowViewModel" Icon="/Assets/loco_icon.png" mc:Ignorable="d">
 	<!--  https://docs.avaloniaui.net/docs/0.10.x/tutorials/music-store-app/creating-a-modern-looking-window  -->
 	<Design.DataContext>
 		<vm:MainWindowViewModel/>
@@ -151,7 +153,7 @@
 				</ItemsRepeater>
 			</ScrollViewer>
 		</DataTemplate>
-		<DataTemplate DataType="vm:TutorialViewModel">
+		<DataTemplate DataType="vmlt:TutorialViewModel">
 			<ScrollViewer>
 				<ItemsRepeater Background="{DynamicResource ExpanderContentBackground}" ItemsSource="{Binding TutorialInputs}">
 					<ItemsRepeater.ItemTemplate>

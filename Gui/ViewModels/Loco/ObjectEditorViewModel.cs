@@ -48,7 +48,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 	public string ExtraContentViewModelTabName { get; set; }
 
 	[Reactive]
-	public LocoUIObjectModel? CurrentObject { get; private set; }
+	public LocoUIObjectModel? Model { get; private set; }
 
 	[Reactive]
 	public ObjectMetadataViewModel? MetadataViewModel { get; set; }
@@ -71,8 +71,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 	//public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
 	public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
 
-	public ObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model)
+	public ObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
+		: base(currentFile, editorContext)
 	{
 		Load();
 
@@ -80,7 +80,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 		CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) =>
 		{
-			var folder = model.Settings.GetGameObjDataFolder(targetFolder);
+			var folder = editorContext.Settings.GetGameObjDataFolder(targetFolder);
 			if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
 			{
 				logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
@@ -120,7 +120,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 	bool ValidateObject(bool showPopupOnSuccess)
 	{
-		var obj = CurrentObject?.LocoObject?.Object;
+		var obj = Model?.LocoObject?.Object;
 		var validationErrors = obj?.Validate(new ValidationContext(obj)).ToList() ?? [];
 		ShowValidationMessageBox(validationErrors, showPopupOnSuccess);
 		return validationErrors != null && validationErrors.Count == 0;
@@ -162,7 +162,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 	{
 		var validationErrors = new List<string>();
 
-		if (CurrentObject?.DatInfo is null)
+		if (Model?.DatInfo is null)
 		{
 			validationErrors.Add("Object DAT info is null");
 			return false;
@@ -176,7 +176,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		}
 
 		// split the CurrentFile path on "opengraphics" folder
-		_ = Path.GetRelativePath(Model.Settings.ObjDataDirectory, filename);
+		_ = Path.GetRelativePath(EditorContext.Settings.ObjDataDirectory, filename);
 		var parentDirName = Path.GetFileName(Path.GetDirectoryName(CurrentFile.FileName));
 
 		if (string.IsNullOrEmpty(parentDirName))
@@ -188,9 +188,9 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		if (OriginalObjectFiles.Names.TryGetValue(parentDirName, out var fileInfo))
 		{
 			// DAT name is the expected dat name
-			if (CurrentObject.DatInfo.S5Header.Name != fileInfo.OpenGraphicsName)
+			if (Model.DatInfo.S5Header.Name != fileInfo.OpenGraphicsName)
 			{
-				validationErrors.Add($"✖ Internal DAT header name is not correct. Actual=\"{CurrentObject.DatInfo.S5Header.Name}\" Expected=\"{fileInfo.OpenGraphicsName}\" ");
+				validationErrors.Add($"✖ Internal DAT header name is not correct. Actual=\"{Model.DatInfo.S5Header.Name}\" Expected=\"{fileInfo.OpenGraphicsName}\" ");
 			}
 		}
 		else
@@ -206,25 +206,25 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		}
 
 		// DAT name is NOT prefixed by OG_
-		if (CurrentObject.DatInfo.S5Header.Name.Contains('_'))
+		if (Model.DatInfo.S5Header.Name.Contains('_'))
 		{
 			validationErrors.Add("✖ Internal header name should not contain an underscore");
 		}
 
 		// DAT name is prefixed by OG
-		if (!CurrentObject.DatInfo.S5Header.Name.StartsWith("OG"))
+		if (!Model.DatInfo.S5Header.Name.StartsWith("OG"))
 		{
 			validationErrors.Add("✖ Internal header name is not prefixed with OG");
 		}
 
 		// OpenGraphics object source set
-		if (CurrentObject.DatInfo.S5Header.ObjectSource != DatObjectSource.OpenLoco)
+		if (Model.DatInfo.S5Header.ObjectSource != DatObjectSource.OpenLoco)
 		{
 			validationErrors.Add("✖ Object source is not set to OpenLoco");
 		}
 
 		// if Vehicle - use RunLengthSingle
-		if (CurrentObject.DatInfo.S5Header.ObjectType == DatObjectType.Vehicle && CurrentObject.DatInfo.ObjectHeader.Encoding != SawyerEncoding.RunLengthSingle)
+		if (Model.DatInfo.S5Header.ObjectType == DatObjectType.Vehicle && Model.DatInfo.ObjectHeader.Encoding != SawyerEncoding.RunLengthSingle)
 		{
 			validationErrors.Add("✖ Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
 		}
@@ -279,62 +279,62 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 		logger.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.FileName}");
 
-		if (Model.TryLoadObject(CurrentFile, out var newObj))
+		if (EditorContext.TryLoadObject(CurrentFile, out var newObj))
 		{
-			CurrentObject = newObj;
+			Model = newObj;
 			StringTableViewModel = null;
 			ExtraContentViewModel = null;
 
-			if (CurrentObject?.LocoObject != null)
+			if (Model?.LocoObject != null)
 			{
-				CurrentObjectViewModel = GetViewModelFromStruct(CurrentObject.LocoObject);
-				StringTableViewModel = new(CurrentObject.LocoObject.StringTable);
+				CurrentObjectViewModel = GetViewModelFromStruct(Model.LocoObject);
+				StringTableViewModel = new(Model.LocoObject.StringTable);
 
-				if (CurrentObject.LocoObject.Object is SoundObject soundObject)
+				if (Model.LocoObject.Object is SoundObject soundObject)
 				{
-					ExtraContentViewModel = new AudioViewModel(logger, CurrentObject.Metadata.InternalName, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
+					ExtraContentViewModel = new AudioViewModel(logger, Model.Metadata.InternalName, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
 				}
 				else
 				{
-					_ = (CurrentObject.LocoObject.ImageTable?.PaletteMap = Model.PaletteMap);
-					if (CurrentObject.LocoObject.ImageTable == null)
+					_ = (Model.LocoObject.ImageTable?.PaletteMap = EditorContext.PaletteMap);
+					if (Model.LocoObject.ImageTable == null)
 					{
 						logger.Info($"{CurrentFile.DisplayName} has no image table");
 					}
 					else
 					{
-						var bc = CurrentObject.LocoObject.ObjectType == ObjectType.Building ? (CurrentObject.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
-						ExtraContentViewModel = new ImageTableViewModel(CurrentObject.LocoObject.ImageTable, Model.Logger, bc);
+						var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
+						ExtraContentViewModel = new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, bc);
 					}
 				}
 			}
 
-			if (CurrentObject != null)
+			if (Model != null)
 			{
-				ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(CurrentObject.DatInfo.S5Header.Convert());
+				ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(Model.DatInfo.S5Header.Convert());
 
 				// an object saved as 'Vanilla' but isn't truly Vanilla will have its source auto-set to Custom
 				// but in this case, we do want to show the user this, so we'll default to Steam
-				if (CurrentObject.DatInfo.S5Header.ObjectSource == DatObjectSource.Vanilla && ObjectModelHeaderViewModel.ObjectSource == ObjectSource.Custom)
+				if (Model.DatInfo.S5Header.ObjectSource == DatObjectSource.Vanilla && ObjectModelHeaderViewModel.ObjectSource == ObjectSource.Custom)
 				{
 					ObjectModelHeaderViewModel.ObjectSource = ObjectSource.LocomotionSteam;
 				}
 
 				ObjectDatHeaderViewModel = new ObjectDatHeaderViewModel(
-					CurrentObject.DatInfo.S5Header.Checksum,
-					CurrentObject.DatInfo.ObjectHeader.Encoding,
-					CurrentObject.DatInfo.ObjectHeader.DataLength);
+					Model.DatInfo.S5Header.Checksum,
+					Model.DatInfo.ObjectHeader.Encoding,
+					Model.DatInfo.ObjectHeader.DataLength);
 			}
 
-			if (CurrentObject?.Metadata != null)
+			if (Model?.Metadata != null)
 			{
-				MetadataViewModel = new ObjectMetadataViewModel(CurrentObject.Metadata, Model.ObjectServiceClient, logger);
+				MetadataViewModel = new ObjectMetadataViewModel(Model.Metadata, EditorContext.ObjectServiceClient, logger);
 			}
 			else
 			{
 				// todo: show warnings here
 				// in online mode, vanilla objects won't be downloaded so they hit this case, which is a valid use-case
-				CurrentObject = null;
+				Model = null;
 				CurrentObjectViewModel = null;
 			}
 		}
@@ -368,7 +368,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 	{
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? CurrentFile.FileName
-			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".dat"));
+			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".dat"));
 		SaveCore(savePath, new SaveParameters(SaveType.DAT, ObjectDatHeaderViewModel?.DatEncoding));
 
 		// Upload metadata to server when in online mode
@@ -393,7 +393,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			return;
 		}
 
-		if (CurrentObject?.DatInfo == null)
+		if (Model?.DatInfo == null)
 		{
 			logger.Warning("Cannot upload metadata - DatInfo is null");
 			return;
@@ -408,12 +408,12 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				Id: objectId,
 				Name: MetadataViewModel.Metadata.InternalName,
 				DisplayName: CurrentFile.DisplayName,
-				DatChecksum: CurrentObject.DatInfo.S5Header.Checksum,
+				DatChecksum: Model.DatInfo.S5Header.Checksum,
 				Description: MetadataViewModel.Metadata.Description,
-				ObjectSource: CurrentObject.DatInfo.S5Header.ObjectSource.Convert(
-					CurrentObject.DatInfo.S5Header.Name,
-					CurrentObject.DatInfo.S5Header.Checksum),
-				ObjectType: CurrentObject.DatInfo.S5Header.ObjectType.Convert(),
+				ObjectSource: Model.DatInfo.S5Header.ObjectSource.Convert(
+					Model.DatInfo.S5Header.Name,
+					Model.DatInfo.S5Header.Checksum),
+				ObjectType: Model.DatInfo.S5Header.ObjectType.Convert(),
 				VehicleType: null,
 				Availability: MetadataViewModel.Metadata.Availability,
 				CreatedDate: MetadataViewModel.Metadata.CreatedDate.HasValue
@@ -431,7 +431,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				StringTable: new DtoStringTableDescriptor(new Dictionary<string, Dictionary<LanguageId, string>>(), objectId)
 			);
 
-			var result = await Model.ObjectServiceClient.UpdateObjectAsync(objectId, dtoRequest);
+			var result = await EditorContext.ObjectServiceClient.UpdateObjectAsync(objectId, dtoRequest);
 
 			if (result != null)
 			{
@@ -471,7 +471,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 	void SaveCore(string filename, SaveParameters saveParameters)
 	{
-		if (CurrentObject?.LocoObject == null)
+		if (Model?.LocoObject == null)
 		{
 			logger.Error("Cannot save - loco object was null");
 			return;
@@ -504,11 +504,11 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 		ValidateObject(showPopupOnSuccess: false);
 
-		logger.Info($"Saving {CurrentObject.DatInfo.S5Header.Name} to {filename}");
+		logger.Info($"Saving {Model.DatInfo.S5Header.Name} to {filename}");
 		StringTableViewModel?.WriteTableBackToObject();
 
 		// this is hacky but it should work
-		if (ExtraContentViewModel is AudioViewModel avm && CurrentObject.LocoObject.Object is SoundObject)
+		if (ExtraContentViewModel is AudioViewModel avm && Model.LocoObject.Object is SoundObject)
 		{
 			var datWav = avm.GetAsDatWav(LocoAudioType.SoundEffect);
 			if (datWav == null)
@@ -529,21 +529,21 @@ public class ObjectEditorViewModel : BaseFileViewModel
 
 		if (saveParameters.SaveType == SaveType.DAT)
 		{
-			var header = CurrentObject.DatInfo.S5Header;
+			var header = Model.DatInfo.S5Header;
 
 			SawyerStreamWriter.Save(filename,
 				ObjectModelHeaderViewModel?.Name ?? header.Name,
 				ObjectModelHeaderViewModel?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
 				saveParameters.SawyerEncoding ?? ObjectDatHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
-				CurrentObject.LocoObject,
+				Model.LocoObject,
 				logger,
-				Model.Settings.AllowSavingAsVanillaObject);
+				EditorContext.Settings.AllowSavingAsVanillaObject);
 		}
 		else
 		{
 			JsonSerializer.Serialize(
 				new FileStream(filename, FileMode.Create, FileAccess.Write),
-				CurrentObject.LocoObject,
+				Model.LocoObject,
 				new JsonSerializerOptions
 				{
 					WriteIndented = true,

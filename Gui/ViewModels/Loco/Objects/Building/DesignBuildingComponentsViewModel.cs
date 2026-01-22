@@ -7,7 +7,7 @@ using SixLabors.ImageSharp.Processing;
 
 using System.Collections.Generic;
 
-namespace Gui.ViewModels.LocoTypes.Objects.Building;
+namespace Gui.ViewModels.Loco.Objects.Building;
 
 public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 {

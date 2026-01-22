@@ -17,7 +17,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace Gui.ViewModels.LocoTypes.Objects.Vehicle;
+namespace Gui.ViewModels.Loco.Objects.Vehicle;
 
 public class VehicleComponentsViewModel : ReactiveObject
 {

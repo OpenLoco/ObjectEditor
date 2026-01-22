@@ -1,7 +1,6 @@
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
-using Gui.Models;
 using PropertyModels.ComponentModel;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -13,7 +12,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using ReactiveObject = ReactiveUI.ReactiveObject;
 
-namespace Gui.ViewModels.LocoTypes.Objects.Building;
+namespace Gui.ViewModels.Loco.Objects.Building;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class BuildingComponentsViewModel : ReactiveObject
@@ -83,7 +82,6 @@ public class BuildingComponentsViewModel : ReactiveObject
 			// todo: log error
 			return;
 		}
-
 
 		var layers = ImageTable.Groups.ConvertAll(x => x.GraphicsElements);
 

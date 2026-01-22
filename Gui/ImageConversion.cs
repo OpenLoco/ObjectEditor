@@ -3,7 +3,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
 
-namespace Gui.Models;
+namespace Gui;
 
 public static class ImageConversion
 {

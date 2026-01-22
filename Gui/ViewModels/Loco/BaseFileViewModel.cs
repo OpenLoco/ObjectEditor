@@ -23,10 +23,10 @@ public record SaveParameters(SaveType SaveType, SawyerEncoding? SawyerEncoding);
 
 public abstract class BaseFileViewModel : ReactiveObject, IFileViewModel
 {
-	protected BaseFileViewModel(FileSystemItem currentFile, ObjectEditorModel model)
+	protected BaseFileViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 	{
 		CurrentFile = currentFile;
-		Model = model;
+		EditorContext = editorContext;
 
 		ReloadCommand = ReactiveCommand.Create(Load);
 		SaveCommand = ReactiveCommand.CreateFromTask(SaveWrapper);
@@ -36,9 +36,10 @@ public abstract class BaseFileViewModel : ReactiveObject, IFileViewModel
 
 	[Reactive]
 	public FileSystemItem CurrentFile { get; init; }
-	public ObjectEditorModel Model { get; init; }
 
-	protected ILogger logger => Model.Logger;
+	public ObjectEditorContext EditorContext { get; init; }
+
+	protected ILogger logger => EditorContext.Logger;
 
 	public ReactiveCommand<Unit, Unit> ReloadCommand { get; init; }
 	public ReactiveCommand<Unit, Unit> SaveCommand { get; init; }

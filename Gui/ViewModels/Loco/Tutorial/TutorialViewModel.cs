@@ -5,37 +5,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 
-namespace Gui.ViewModels;
-
-public enum MouseButton : uint16_t
-{
-	Released = 0,
-	LeftPressed = 1,
-	LeftReleased = 2,
-	RightPressed = 3,
-	RightReleased = 4,
-}
-
-public enum KeyModifier : uint8_t
-{
-	None = 0,
-	Shift = 1 << 0,
-	Control = 1 << 1,
-	Unknown = 1 << 2,
-	Cheat = 1 << 7,
-	Invalid = 0xFF,
-}
-
-public interface ITutorialAction;
-public record TutorialActionA(KeyModifier KeyModifier, uint16_t MouseX, uint16_t MouseY, MouseButton MouseButton) : ITutorialAction;
-public record TutorialActionB(uint16_t Unk1, uint16_t Unk2, uint16_t Unk3) : ITutorialAction;
+namespace Gui.ViewModels.Loco.Tutorial;
 
 public class TutorialViewModel : BaseFileViewModel
 {
-	public TutorialViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model)
+	public TutorialViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
+		: base(currentFile, editorContext)
 	{
-
 		SaveIsVisible = false;
 		SaveAsIsVisible = false;
 		Load();

@@ -54,8 +54,8 @@ public class SCV5ViewModel : BaseFileViewModel
 	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;
 	public ReactiveCommand<GameObjDataFolder, Unit> DownloadMissingObjectsToGameObjDataCommand { get; }
 
-	public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model)
+	public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
+		: base(currentFile, editorContext)
 	{
 		SaveIsVisible = false;
 		SaveAsIsVisible = false;
@@ -66,7 +66,7 @@ public class SCV5ViewModel : BaseFileViewModel
 	public override void Load()
 	{
 		logger?.Info($"Loading scenario from {CurrentFile.FileName}");
-		CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.FileName, Model.Logger);
+		CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.FileName, EditorContext.Logger);
 
 		if (CurrentS5File == null)
 		{
@@ -104,7 +104,7 @@ public class SCV5ViewModel : BaseFileViewModel
 
 	async Task DownloadMissingObjects(GameObjDataFolder targetFolder)
 	{
-		var folder = Model.Settings.GetGameObjDataFolder(targetFolder);
+		var folder = EditorContext.Settings.GetGameObjDataFolder(targetFolder);
 
 		if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
 		{
@@ -120,7 +120,7 @@ public class SCV5ViewModel : BaseFileViewModel
 			return;
 		}
 
-		if (Model.ObjectServiceClient == null)
+		if (EditorContext.ObjectServiceClient == null)
 		{
 			logger.Error("The object service client is null");
 			return;
@@ -128,12 +128,12 @@ public class SCV5ViewModel : BaseFileViewModel
 
 		var gameFolderIndex = ObjectIndex.LoadOrCreateIndex(folder, logger);
 
-		if (Model.ObjectIndexOnline == null)
+		if (EditorContext.ObjectIndexOnline == null)
 		{
 			// need to download the index, ie call /objects/list
 			logger.Info("Online index doesn't exist - downloading now");
 
-			Model.ObjectIndexOnline = new ObjectIndex((await Model.ObjectServiceClient.GetObjectListAsync())
+			EditorContext.ObjectIndexOnline = new ObjectIndex((await EditorContext.ObjectServiceClient.GetObjectListAsync())
 				.Select(x => new ObjectIndexEntry(x.DisplayName, null, x.Id, x.DatChecksum, null, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
 
 			logger.Info("Index downloaded");
@@ -155,7 +155,7 @@ public class SCV5ViewModel : BaseFileViewModel
 			// obj is missing - we need to download
 			logger.Info($"Scenario {CurrentFile.DisplayName} has missing object. Name=\"{obj.Name}\" Checksum={obj.Checksum} ObjectType={obj.ObjectType} ");
 
-			var onlineObj = Model.ObjectIndexOnline
+			var onlineObj = EditorContext.ObjectIndexOnline
 				.Objects
 				.FirstOrDefault(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum); // ideally would be SingleOrDefault but unfortunately DAT is not unique
 
@@ -169,7 +169,7 @@ public class SCV5ViewModel : BaseFileViewModel
 					obj.Checksum,
 					obj.ObjectType.Convert());
 
-				var result = await Model.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
+				var result = await EditorContext.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
 				if (result != null)
 				{
 					logger.Info($"Successfully added missing object to server: Id={result.Id} Name=\"{obj.Name}\" Checksum=({obj.Checksum})");
@@ -189,7 +189,7 @@ public class SCV5ViewModel : BaseFileViewModel
 			}
 
 			// download actual file
-			var downloadedObjBytes = await Model.ObjectServiceClient.GetObjectFileAsync(onlineObj.Id.Value);
+			var downloadedObjBytes = await EditorContext.ObjectServiceClient.GetObjectFileAsync(onlineObj.Id.Value);
 
 			if (downloadedObjBytes == null)
 			{

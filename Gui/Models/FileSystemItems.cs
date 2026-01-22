@@ -6,13 +6,6 @@ using System.Text.Json.Serialization;
 
 namespace Gui.Models;
 
-[Flags]
-public enum FileLocation
-{
-	Local,
-	Online,
-}
-
 public record FileSystemItem(
 	string DisplayName,
 	string? FileName, // only available in local mode

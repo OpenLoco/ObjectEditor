@@ -16,8 +16,8 @@ namespace Gui.ViewModels;
 
 public class SoundEffectsViewModel : BaseFileViewModel
 {
-	public SoundEffectsViewModel(FileSystemItem currentFile, ObjectEditorModel model)
-		: base(currentFile, model)
+	public SoundEffectsViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
+		: base(currentFile, editorContext)
 		=> Load();
 
 	public override void Load()
@@ -37,7 +37,7 @@ public class SoundEffectsViewModel : BaseFileViewModel
 	{
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? CurrentFile.FileName
-			: Path.Combine(Model.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
 
 		if (savePath == null)
 		{

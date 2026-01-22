@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
 
-namespace Gui.ViewModels.LocoTypes.Objects.Building;
+namespace Gui.ViewModels.Loco.Objects.Building;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class BuildingLayerViewModel : ReactiveObject

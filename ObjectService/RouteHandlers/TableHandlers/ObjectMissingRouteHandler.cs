@@ -48,7 +48,7 @@ public class ObjectMissingRouteHandler
 			return false;
 		}
 
-		if (Enum.IsDefined(request.ObjectType))
+		if (!Enum.IsDefined(request.ObjectType))
 		{
 			result = Results.BadRequest($"Invalid ObjectType: {request.ObjectType}");
 			return false;

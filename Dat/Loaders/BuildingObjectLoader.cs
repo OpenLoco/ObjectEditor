@@ -10,16 +10,6 @@ namespace Dat.Loaders;
 
 public abstract class BuildingObjectLoader : IDatObjectLoader
 {
-	public static class Constants
-	{
-		public const int BuildingVariationCount = 32;
-		public const int BuildingHeightCount = 4;
-		public const int BuildingAnimationCount = 2;
-		public const int MaxProducedCargoType = 2;
-		public const int MaxRequiredCargoType = 2;
-		public const int MaxElevatorHeightSequences = 4;
-	}
-
 	public static class StructSizes
 	{
 		public const int BuildingPartAnimation = 0x02;
@@ -48,7 +38,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			var numBuildingVariations = br.ReadByte();
 			br.SkipPointer(); // BuildingHeights, not part of object definition
 			br.SkipPointer(); // BuildingAnimations, not part of object definition
-			br.SkipPointer(Constants.BuildingVariationCount); // BuildingVariations, not part of object definition
+			br.SkipPointer(BuildingObject.Constants.MaxVariationsCount); // BuildingVariations, not part of object definition
 			model.Colours = br.ReadUInt32();
 			model.DesignedYear = br.ReadUInt16();
 			model.ObsoleteYear = br.ReadUInt16();
@@ -61,8 +51,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			model.AverageNumberOnMap = br.ReadByte();
 			model.ProducedQuantity.Add(br.ReadByte());
 			model.ProducedQuantity.Add(br.ReadByte());
-			br.SkipObjectId(Constants.MaxProducedCargoType);
-			br.SkipObjectId(Constants.MaxRequiredCargoType);
+			br.SkipObjectId(BuildingObject.Constants.MaxProducedCargoType);
+			br.SkipObjectId(BuildingObject.Constants.MaxRequiredCargoType);
 			model.var_A6 = br.ReadByte();
 			model.var_A7 = br.ReadByte();
 			model.var_A8 = br.ReadByte();
@@ -70,7 +60,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			model.DemolishRatingReduction = br.ReadInt16();
 			model.var_AC = br.ReadByte();
 			var numElevatorSequences = br.ReadByte();
-			br.SkipPointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
+			br.SkipPointer(BuildingObject.Constants.MaxElevatorHeightSequencesCount); // ElevatorHeightSequences, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -96,8 +86,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
 		model.BuildingComponents.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
 		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
-		model.ProducedCargo = [.. br.ReadS5HeaderList(Constants.MaxProducedCargoType)];
-		model.RequiredCargo = [.. br.ReadS5HeaderList(Constants.MaxRequiredCargoType)];
+		model.ProducedCargo = [.. br.ReadS5HeaderList(BuildingObject.Constants.MaxProducedCargoType)];
+		model.RequiredCargo = [.. br.ReadS5HeaderList(BuildingObject.Constants.MaxRequiredCargoType)];
 
 		// elevator sequences
 		for (var i = 0; i < numElevatorSequences; ++i)
@@ -121,7 +111,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.BuildingComponents.BuildingVariations.Count);
 			bw.WriteEmptyPointer();
 			bw.WriteEmptyPointer();
-			bw.WriteEmptyPointer(Constants.BuildingVariationCount);
+			bw.WriteEmptyPointer(BuildingObject.Constants.MaxVariationsCount);
 			bw.Write(model.Colours);
 			bw.Write(model.DesignedYear);
 			bw.Write(model.ObsoleteYear);
@@ -134,8 +124,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			bw.Write(model.AverageNumberOnMap);
 			bw.Write(model.ProducedQuantity[0]);
 			bw.Write(model.ProducedQuantity[1]);
-			bw.WriteEmptyObjectId(Constants.MaxProducedCargoType);
-			bw.WriteEmptyObjectId(Constants.MaxRequiredCargoType);
+			bw.WriteEmptyObjectId(BuildingObject.Constants.MaxProducedCargoType);
+			bw.WriteEmptyObjectId(BuildingObject.Constants.MaxRequiredCargoType);
 			bw.Write(model.var_A6);
 			bw.Write(model.var_A7);
 			bw.Write(model.var_A8);
@@ -143,7 +133,7 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			bw.Write(model.DemolishRatingReduction);
 			bw.Write(model.var_AC);
 			bw.Write((uint8_t)model.ElevatorHeightSequences.Count);
-			bw.WriteEmptyPointer(Constants.MaxElevatorHeightSequences); // ElevatorHeightSequences, not part of object definition
+			bw.WriteEmptyPointer(BuildingObject.Constants.MaxElevatorHeightSequencesCount); // ElevatorHeightSequences, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -164,8 +154,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		bw.Write(model.BuildingComponents.BuildingHeights);
 		bw.Write(model.BuildingComponents.BuildingAnimations);
 		bw.Write(model.BuildingComponents.BuildingVariations);
-		bw.WriteS5HeaderList(model.ProducedCargo, Constants.MaxProducedCargoType);
-		bw.WriteS5HeaderList(model.RequiredCargo, Constants.MaxRequiredCargoType);
+		bw.WriteS5HeaderList(model.ProducedCargo, BuildingObject.Constants.MaxProducedCargoType);
+		bw.WriteS5HeaderList(model.RequiredCargo, BuildingObject.Constants.MaxRequiredCargoType);
 
 		// elevator sequences
 		foreach (var unk in model.ElevatorHeightSequences)

@@ -7,6 +7,16 @@ namespace Definitions.ObjectModels.Objects.Building;
 
 public class BuildingObject : ILocoStruct, IHasBuildingComponents
 {
+	public static class Constants
+	{
+		public const int MaxVariationsCount = 32;
+		public const int MaxHeightsCount = 64;
+		public const int MaxAnimationsCount = 64;
+		public const int MaxProducedCargoType = 2;
+		public const int MaxRequiredCargoType = 2;
+		public const int MaxElevatorHeightSequencesCount = 4;
+	}
+
 	public BuildingComponents BuildingComponents { get; set; } = new();
 	public uint32_t Colours { get; set; }
 	public uint16_t DesignedYear { get; set; }

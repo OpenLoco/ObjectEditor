@@ -45,6 +45,20 @@ using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;
 
+sealed class SkipObjectSourceChecks : IDisposable
+{
+	private static readonly AsyncLocal<bool> skipChecks = new();
+
+	public static bool ShouldSkip
+		=> skipChecks.Value;
+
+	public SkipObjectSourceChecks()
+		=> skipChecks.Value = true;
+
+	public void Dispose()
+		=> skipChecks.Value = false;
+}
+
 [TestFixture]
 public class LoadSaveTests
 {
@@ -102,9 +116,13 @@ public class LoadSaveTests
 		{
 			Assert.That(actual.Name, Is.EqualTo(expected.Name));
 			Assert.That(actual.ObjectType, Is.EqualTo(expected.ObjectType));
-			//Assert.That(actual.ObjectSource, Is.EqualTo(expected.ObjectSource)); // ObjectSource is a bit tricky for now - there is a small discrepancy between load and save of the vanilla objects that causes the checksum to be different, and that causes the loading to mark them as Custom when they're really Vanilla
-			//Assert.That(actual.Flags, Is.EqualTo(expected.Flags)); // And because ObjectSource is part of Flags, the Flags are also wrong at the 7th bit, ie 128
-			// Assert.That(actual.Checksum, Is.EqualTo(expected.Checksum)); And because of THAT, the checksum is also different
+
+			if (!SkipObjectSourceChecks.ShouldSkip)
+			{
+				Assert.That(actual.ObjectSource, Is.EqualTo(expected.ObjectSource)); // ObjectSource is a bit tricky for now - there is a small discrepancy between load and save of the vanilla objects that causes the checksum to be different, and that causes the loading to mark them as Custom when they're really Vanilla
+				Assert.That(actual.Flags, Is.EqualTo(expected.Flags)); // And because ObjectSource is part of Flags, the Flags are also wrong at the 7th bit, ie 128
+				Assert.That(actual.Checksum, Is.EqualTo(expected.Checksum)); // And because of THAT, the checksum is also different
+			}
 		}
 	}
 
@@ -385,7 +403,10 @@ public class LoadSaveTests
 			}
 		}
 
-		LoadSaveGenericTest<CurrencyObject>(objectName, assertFunc);
+		using (new SkipObjectSourceChecks())
+		{
+			LoadSaveGenericTest<CurrencyObject>(objectName, assertFunc);
+		}
 	}
 
 	[TestCase("SHIPST1.DAT")]
@@ -945,7 +966,10 @@ public class LoadSaveTests
 			}
 		}
 
-		LoadSaveGenericTest<SoundObject>(objectName, assertFunc);
+		using (new SkipObjectSourceChecks())
+		{
+			LoadSaveGenericTest<SoundObject>(objectName, assertFunc);
+		}
 	}
 
 	[TestCase("STEAM.DAT")]
@@ -976,7 +1000,10 @@ public class LoadSaveTests
 			}
 		}
 
-		LoadSaveGenericTest<SteamObject>(objectName, assertFunc);
+		using (new SkipObjectSourceChecks())
+		{
+			LoadSaveGenericTest<SteamObject>(objectName, assertFunc);
+		}
 	}
 
 	[TestCase("SLIGHT1.DAT")]
@@ -997,7 +1024,10 @@ public class LoadSaveTests
 			}
 		}
 
-		LoadSaveGenericTest<StreetLightObject>(objectName, assertFunc);
+		using (new SkipObjectSourceChecks())
+		{
+			LoadSaveGenericTest<StreetLightObject>(objectName, assertFunc);
+		}
 	}
 
 	[TestCase("ATOWNNAM.DAT")]
@@ -1038,7 +1068,10 @@ public class LoadSaveTests
 			}
 		}
 
-		LoadSaveGenericTest<TownNamesObject>(objectName, assertFunc);
+		using (new SkipObjectSourceChecks())
+		{
+			LoadSaveGenericTest<TownNamesObject>(objectName, assertFunc);
+		}
 	}
 
 	[TestCase("TREXCAT1.DAT")]
@@ -1210,16 +1243,6 @@ public class LoadSaveTests
 		{
 			using (Assert.EnterMultipleScope())
 			{
-				//var s5header = obj.S5Header;
-				//Assert.That(s5header.Flags, Is.EqualTo(283680407), nameof(s5header.Flags));
-				//Assert.That(s5header.Name, Is.EqualTo("707     "), nameof(s5header.Name));
-				//Assert.That(s5header.Checksum, Is.EqualTo(1331114877), nameof(s5header.Checksum));
-				//Assert.That(s5header.ObjectType, Is.EqualTo(ObjectType.Vehicle), nameof(s5header.ObjectType));
-
-				//var objHeader = obj.ObjectHeader;
-				//Assert.That(objHeader.Encoding, Is.EqualTo(SawyerEncoding.RunLengthSingle), nameof(objHeader.Encoding));
-				//Assert.That(objHeader.DataLength, Is.EqualTo(159566), nameof(objHeader.DataLength));
-
 				Assert.That(struc.Mode, Is.EqualTo(TransportMode.Air), nameof(struc.Mode));
 				Assert.That(struc.Type, Is.EqualTo(VehicleType.Aircraft), nameof(struc.Type));
 				Assert.That(struc.NumCarComponents, Is.EqualTo(1), nameof(struc.NumCarComponents));
@@ -1277,7 +1300,10 @@ public class LoadSaveTests
 			}
 		}
 
-		LoadSaveGenericTest<VehicleObject>(objectName, assertFunc);
+		using (new SkipObjectSourceChecks())
+		{
+			LoadSaveGenericTest<VehicleObject>(objectName, assertFunc);
+		}
 	}
 
 	[TestCase("FENCE1.DAT")]

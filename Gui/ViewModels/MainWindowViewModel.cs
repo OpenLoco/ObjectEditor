@@ -368,7 +368,7 @@ public class MainWindowViewModel : ViewModelBase
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new LanguageViewModel(fsi, EditorContext));
+			CurrentTabModel.AddDocument(new LanguageFileViewModel(fsi, EditorContext));
 		}
 	}
 

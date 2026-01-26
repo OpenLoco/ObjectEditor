@@ -12,8 +12,11 @@ namespace Gui.ViewModels;
 
 public record LanguageTranslationModel(LanguageId Language, string Translation);
 
-public class StringTableViewModel : ReactiveObject
+public class StringTableViewModel : ReactiveObject, IViewModel
 {
+	public string ViewModelDisplayName
+		=> "String Table";
+
 	public StringTableViewModel(StringTable table)
 	{
 		OriginalTable = table;

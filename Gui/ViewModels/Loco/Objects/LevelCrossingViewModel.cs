@@ -3,7 +3,7 @@ using Definitions.ObjectModels.Objects.LevelCrossing;
 namespace Gui.ViewModels;
 
 public class LevelCrossingViewModel(LevelCrossingObject obj)
-	: LocoObjectViewModel<LevelCrossingObject>(obj)
+	: BaseViewModel<LevelCrossingObject>(obj)
 {
 
 	public int16_t BuildCostFactor

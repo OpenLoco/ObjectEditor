@@ -15,9 +15,10 @@ using System.Windows.Input;
 
 namespace Gui.ViewModels;
 
-public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
+public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 {
-	public string Name => "Audio Data";
+	public string ViewModelDisplayName
+		=> "Audio Data";
 
 	ILogger Logger { get; init; }
 

@@ -9,7 +9,7 @@ using TrackObject = Definitions.ObjectModels.Objects.Track.TrackObject;
 namespace Gui.ViewModels;
 
 public class TrackViewModel(TrackObject model)
-	: LocoObjectViewModel<TrackObject>(model)
+	: BaseViewModel<TrackObject>(model)
 {
 	[EnumProhibitValues<TrackObjectFlags>(TrackObjectFlags.None)]
 	public TrackObjectFlags Flags

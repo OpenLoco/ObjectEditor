@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Gui.ViewModels;
 
 public class TownNamesViewModel(TownNamesObject model)
-	: LocoObjectViewModel<TownNamesObject>(model)
+	: BaseViewModel<TownNamesObject>(model)
 {
 	[Length(6, 6)]
 	[Editable(false)]

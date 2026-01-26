@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Common.Logging;
 using Dat.Data;
 using Definitions.ObjectModels.Types;
+using DynamicData;
 using Gui.Models;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
@@ -9,9 +10,12 @@ using MsBox.Avalonia.Enums;
 using MsBox.Avalonia.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
@@ -21,13 +25,59 @@ public enum SaveType { JSON, DAT }
 // todo: add filename
 public record SaveParameters(SaveType SaveType, SawyerEncoding? SawyerEncoding);
 
-public abstract class BaseFileViewModel : ReactiveObject, IFileViewModel
+public abstract class BaseViewModel<T> : ReactiveObject, IViewModel where T : class
 {
-	protected BaseFileViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
+	protected BaseViewModel(T? model = default)
+	{
+		Model = model;
+
+		_ = _subViewModels.Connect()
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Bind(out _viewModels)
+			.Subscribe();
+	}
+
+	[Reactive]
+	public T? Model { get; protected set; }
+
+	private readonly SourceList<IViewModel> _subViewModels = new();
+	private readonly ReadOnlyObservableCollection<IViewModel> _viewModels;
+	public ReadOnlyObservableCollection<IViewModel> ViewModels
+		=> _viewModels;
+
+	protected void AddViewModel(IViewModel? vm)
+	{
+		if (vm != null)
+		{
+			_subViewModels.Add(vm);
+		}
+	}
+
+	protected void ClearViewModels()
+		=> _subViewModels.Clear();
+
+	public virtual string ViewModelDisplayName
+		=> typeof(T).Name;
+}
+
+public abstract class BaseViewModelWithEditorContext<T> : BaseViewModel<T> where T : class
+{
+	protected BaseViewModelWithEditorContext(ObjectEditorContext editorContext, T? model = default)
+		: base(model)
+		=> EditorContext = editorContext;
+
+	public ObjectEditorContext EditorContext { get; init; }
+
+	protected ILogger logger
+		=> EditorContext.Logger;
+}
+
+public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, IFileViewModel where T : class
+{
+	protected BaseFileViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext, T? model = default)
+		: base(editorContext, model)
 	{
 		CurrentFile = currentFile;
-		EditorContext = editorContext;
-
 		ReloadCommand = ReactiveCommand.Create(Load);
 		SaveCommand = ReactiveCommand.CreateFromTask(SaveWrapper);
 		SaveAsCommand = ReactiveCommand.CreateFromTask(SaveAsWrapper);
@@ -36,10 +86,6 @@ public abstract class BaseFileViewModel : ReactiveObject, IFileViewModel
 
 	[Reactive]
 	public FileSystemItem CurrentFile { get; init; }
-
-	public ObjectEditorContext EditorContext { get; init; }
-
-	protected ILogger logger => EditorContext.Logger;
 
 	public ReactiveCommand<Unit, Unit> ReloadCommand { get; init; }
 	public ReactiveCommand<Unit, Unit> SaveCommand { get; init; }

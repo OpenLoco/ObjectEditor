@@ -7,7 +7,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class TreeViewModel(TreeObject model)
-	: LocoObjectViewModel<TreeObject>(model)
+	: BaseViewModel<TreeObject>(model)
 {
 	[EnumProhibitValues<TreeObjectFlags>(TreeObjectFlags.None)]
 	public TreeObjectFlags Flags

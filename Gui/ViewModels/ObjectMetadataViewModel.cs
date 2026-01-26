@@ -12,24 +12,32 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class ObjectMetadataViewModel : ReactiveObject
+public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMetadata>, IViewModel
 {
-	readonly Gui.ObjectServiceClient? objectServiceClient;
+	public string ViewModelDisplayName
+		=> "Metadata";
+
+	readonly ObjectServiceClient? objectServiceClient;
 	readonly ILogger? logger;
 
-	public ObjectMetadataViewModel(ObjectMetadata metadata, Gui.ObjectServiceClient? objectServiceClient = null, ILogger? logger = null)
+	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"))
 	{
-		Metadata = metadata;
-		description = metadata.Description;
-		createdDate = metadata.CreatedDate;
-		modifiedDate = metadata.ModifiedDate;
-		selectedLicence = metadata.Licence;
+	}
+
+	public ObjectMetadataViewModel(ObjectMetadata model, Gui.ObjectServiceClient? objectServiceClient = null, ILogger? logger = null)
+		: base(null, model)
+	{
+		Model = model;
+		description = model.Description;
+		createdDate = model.CreatedDate;
+		modifiedDate = model.ModifiedDate;
+		selectedLicence = model.Licence;
 		this.logger = logger;
 
 		// Initialize observable collections from metadata
-		Authors = new ObservableCollection<DtoAuthorEntry>(metadata.Authors);
-		Tags = new ObservableCollection<DtoTagEntry>(metadata.Tags);
-		ObjectPacks = new ObservableCollection<DtoItemPackEntry>(metadata.ObjectPacks);
+		Authors = new ObservableCollection<DtoAuthorEntry>(model.Authors);
+		Tags = new ObservableCollection<DtoTagEntry>(model.Tags);
+		ObjectPacks = new ObservableCollection<DtoItemPackEntry>(model.ObjectPacks);
 
 		this.objectServiceClient = objectServiceClient;
 
@@ -93,17 +101,13 @@ public class ObjectMetadataViewModel : ReactiveObject
 		}
 	}
 
-	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"))
-	{
-	}
-
-	public ObjectMetadata Metadata { get; }
-
 	// InternalName is readonly (init-only in the model)
-	public string InternalName => Metadata.InternalName;
+	public string InternalName
+		=> Model.InternalName;
 
 	// Availability is readonly (user cannot change this)
-	public ObjectAvailability Availability => Metadata.Availability;
+	public ObjectAvailability Availability
+		=> Model.Availability;
 
 	// Collections for editing
 	public ObservableCollection<DtoAuthorEntry> Authors { get; }
@@ -161,17 +165,17 @@ public class ObjectMetadataViewModel : ReactiveObject
 			var licences = await objectServiceClient.GetLicencesAsync();
 			var licenceList = new List<DtoLicenceEntry?> { null }; // Add None option
 			licenceList.AddRange(licences);
-			AvailableLicences = new ObservableCollection<DtoLicenceEntry?>(licenceList);
+			AvailableLicences = new ObservableCollection<DtoLicenceEntry?>(licenceList.OrderBy(x => x?.Name));
 
 			// Load authors, tags, and object packs
 			var authors = await objectServiceClient.GetAuthorsAsync();
-			AvailableAuthors = new ObservableCollection<DtoAuthorEntry>(authors);
+			AvailableAuthors = new ObservableCollection<DtoAuthorEntry>(authors.OrderBy(x => x.Name));
 
 			var tags = await objectServiceClient.GetTagsAsync();
-			AvailableTags = new ObservableCollection<DtoTagEntry>(tags);
+			AvailableTags = new ObservableCollection<DtoTagEntry>(tags.OrderBy(x => x.Name));
 
 			var objectPacks = await objectServiceClient.GetObjectPacksAsync();
-			AvailableObjectPacks = new ObservableCollection<DtoItemPackEntry>(objectPacks);
+			AvailableObjectPacks = new ObservableCollection<DtoItemPackEntry>(objectPacks.OrderBy(x => x.Name));
 		}
 		catch (Exception ex)
 		{
@@ -179,38 +183,38 @@ public class ObjectMetadataViewModel : ReactiveObject
 			logger?.Error("Failed to load server data for metadata editing", ex);
 
 			// If we can't load data (e.g., offline mode), just set empty lists
-			AvailableLicences = new ObservableCollection<DtoLicenceEntry?> { null };
-			AvailableAuthors = new ObservableCollection<DtoAuthorEntry>();
-			AvailableTags = new ObservableCollection<DtoTagEntry>();
-			AvailableObjectPacks = new ObservableCollection<DtoItemPackEntry>();
+			AvailableLicences = [null];
+			AvailableAuthors = [];
+			AvailableTags = [];
+			AvailableObjectPacks = [];
 		}
 	}
 
 	// Commands for adding/removing items
 	void SyncAuthorsToMetadata()
 	{
-		Metadata.Authors.Clear();
+		Model.Authors.Clear();
 		foreach (var author in Authors)
 		{
-			Metadata.Authors.Add(author);
+			Model.Authors.Add(author);
 		}
 	}
 
 	void SyncTagsToMetadata()
 	{
-		Metadata.Tags.Clear();
+		Model.Tags.Clear();
 		foreach (var tag in Tags)
 		{
-			Metadata.Tags.Add(tag);
+			Model.Tags.Add(tag);
 		}
 	}
 
 	void SyncObjectPacksToMetadata()
 	{
-		Metadata.ObjectPacks.Clear();
+		Model.ObjectPacks.Clear();
 		foreach (var pack in ObjectPacks)
 		{
-			Metadata.ObjectPacks.Add(pack);
+			Model.ObjectPacks.Add(pack);
 		}
 	}
 
@@ -221,7 +225,7 @@ public class ObjectMetadataViewModel : ReactiveObject
 		set
 		{
 			_ = this.RaiseAndSetIfChanged(ref description, value);
-			Metadata.Description = value;
+			Model.Description = value;
 		}
 	}
 
@@ -232,7 +236,7 @@ public class ObjectMetadataViewModel : ReactiveObject
 		set
 		{
 			_ = this.RaiseAndSetIfChanged(ref selectedLicence, value);
-			Metadata.Licence = value;
+			Model.Licence = value;
 		}
 	}
 
@@ -243,7 +247,7 @@ public class ObjectMetadataViewModel : ReactiveObject
 		set
 		{
 			_ = this.RaiseAndSetIfChanged(ref createdDate, value);
-			Metadata.CreatedDate = value;
+			Model.CreatedDate = value;
 		}
 	}
 
@@ -254,10 +258,11 @@ public class ObjectMetadataViewModel : ReactiveObject
 		set
 		{
 			_ = this.RaiseAndSetIfChanged(ref modifiedDate, value);
-			Metadata.ModifiedDate = value;
+			Model.ModifiedDate = value;
 		}
 	}
 
 	// UploadedDate is readonly (server-managed)
-	public DateTimeOffset UploadedDate => Metadata.UploadedDate;
+	public DateTimeOffset UploadedDate
+		=> Model.UploadedDate;
 }

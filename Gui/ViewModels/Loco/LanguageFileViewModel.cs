@@ -2,9 +2,9 @@ using Gui.Models;
 
 namespace Gui.ViewModels;
 
-public class LanguageViewModel : BaseFileViewModel
+public class LanguageFileViewModel : BaseFileViewModel<LanguageFileModel>
 {
-	public LanguageViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
+	public LanguageFileViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext) => Load();
 
 	public override void Load()

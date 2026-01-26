@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class SoundEffectsViewModel : BaseFileViewModel
+public class SoundEffectsViewModel : BaseFileViewModel<DummyModel>
 {
 	public SoundEffectsViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
@@ -65,14 +65,14 @@ public class SoundEffectsViewModel : BaseFileViewModel
 	{
 		logger?.Info($"Saving sound effects to {filename}");
 
-		var sfx = AudioViewModels.Select(x => (x.Name, x.GetAsDatWav(LocoAudioType.SoundEffect)));
+		var sfx = AudioViewModels.Select(x => (x.ViewModelDisplayName, x.GetAsDatWav(LocoAudioType.SoundEffect)));
 
 		var failed = sfx.Where(x => x.Item2 == null).ToList();
 		if (failed.Count != 0)
 		{
 			foreach (var x in failed)
 			{
-				logger?.Error($"Failed to convert sound effect {x.Name} to the DAT format.");
+				logger?.Error($"Failed to convert sound effect {x.ViewModelDisplayName} to the DAT format.");
 			}
 
 			logger?.Error($"Failed to convert {failed.Count} sound effects to the DAT format. Cannot save file.");

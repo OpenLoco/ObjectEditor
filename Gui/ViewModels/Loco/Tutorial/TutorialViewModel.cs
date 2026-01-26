@@ -7,7 +7,7 @@ using System.IO;
 
 namespace Gui.ViewModels.Loco.Tutorial;
 
-public class TutorialViewModel : BaseFileViewModel
+public class TutorialViewModel : BaseFileViewModel<DummyModel>
 {
 	public TutorialViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)

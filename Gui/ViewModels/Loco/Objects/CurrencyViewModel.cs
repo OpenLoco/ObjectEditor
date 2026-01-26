@@ -3,7 +3,7 @@ using Definitions.ObjectModels.Objects.Currency;
 namespace Gui.ViewModels;
 
 public class CurrencyViewModel(CurrencyObject model)
-		: LocoObjectViewModel<CurrencyObject>(model)
+		: BaseViewModel<CurrencyObject>(model)
 {
 	public uint8_t Separator
 	{

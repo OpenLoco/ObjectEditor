@@ -22,10 +22,10 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class SCV5ViewModel : BaseFileViewModel
+public class SCV5ViewModel : BaseFileViewModel<S5File>
 {
-	[Reactive]
-	public S5File? CurrentS5File { get; set; }
+	//[Reactive]
+	//public S5File? Model { get; set; }
 
 	[Reactive]
 	public ObservableCollection<ObjectModelHeaderViewModel>? RequiredObjects { get; set; }
@@ -46,8 +46,8 @@ public class SCV5ViewModel : BaseFileViewModel
 	public int TileElementY { get; set; }
 
 	public ObservableCollection<TileElement> CurrentTileElements
-		=> CurrentS5File?.TileElementMap != null && TileElementX >= 0 && TileElementX < CurrentS5File.GetMapSize().Width && TileElementY >= 0 && TileElementY < CurrentS5File.GetMapSize().Height
-			? [.. CurrentS5File.TileElementMap[TileElementX, TileElementY]]
+		=> Model?.TileElementMap != null && TileElementX >= 0 && TileElementX < Model.GetMapSize().Width && TileElementY >= 0 && TileElementY < Model.GetMapSize().Height
+			? [.. Model.TileElementMap[TileElementX, TileElementY]]
 			: [];
 
 	[Reactive]
@@ -66,21 +66,21 @@ public class SCV5ViewModel : BaseFileViewModel
 	public override void Load()
 	{
 		logger?.Info($"Loading scenario from {CurrentFile.FileName}");
-		CurrentS5File = SawyerStreamReader.LoadSave(CurrentFile.FileName, EditorContext.Logger);
+		Model = SawyerStreamReader.LoadSave(CurrentFile.FileName, EditorContext.Logger);
 
-		if (CurrentS5File == null)
+		if (Model == null)
 		{
 			logger?.Error($"Unable to load {CurrentFile.FileName}");
 			return;
 		}
 
-		var ro = CurrentS5File.RequiredObjects
+		var ro = Model.RequiredObjects
 			.Where(x => x.Checksum != 0)
 			.Select(x => new ObjectModelHeaderViewModel(x.Convert()))
 			.OrderBy(x => x.Name);
 		RequiredObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. ro]);
 
-		var po = CurrentS5File.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1.Convert())).OrderBy(x => x.Name);
+		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1.Convert())).OrderBy(x => x.Name);
 		PackedObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. po]);
 
 		_ = this.WhenAnyValue(o => o.TileElementX)
@@ -89,7 +89,7 @@ public class SCV5ViewModel : BaseFileViewModel
 		_ = this.WhenAnyValue(o => o.TileElementY)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));
 
-		if (CurrentS5File.TileElementMap != null)
+		if (Model.TileElementMap != null)
 		{
 			try
 			{
@@ -114,7 +114,7 @@ public class SCV5ViewModel : BaseFileViewModel
 
 		LastGameObjDataFolder = targetFolder;
 
-		if (CurrentS5File == null)
+		if (Model == null)
 		{
 			logger.Error("Current S5File is null");
 			return;
@@ -140,7 +140,7 @@ public class SCV5ViewModel : BaseFileViewModel
 			// technically should check if the index is downloaded and valid now
 		}
 
-		foreach (var obj in CurrentS5File.RequiredObjects)
+		foreach (var obj in Model.RequiredObjects)
 		{
 			if (OriginalObjectFiles.GetFileSource(obj.Name, obj.Checksum, obj.ObjectSource) is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 			{
@@ -217,11 +217,11 @@ public class SCV5ViewModel : BaseFileViewModel
 
 	void DrawMap()
 	{
-		(var mapWidth, var mapHeight) = CurrentS5File.GetMapSize();
+		(var mapWidth, var mapHeight) = Model.GetMapSize();
 		Map = new WriteableBitmap(new Avalonia.PixelSize(mapWidth, mapHeight), new Avalonia.Vector(92, 92), Avalonia.Platform.PixelFormat.Rgba8888);
 		using (var fb = Map.Lock())
 		{
-			var teMap = CurrentS5File!.TileElementMap!;
+			var teMap = Model!.TileElementMap!;
 			for (var y = 0; y < teMap.GetLength(1); ++y)
 			{
 				for (var x = 0; x < teMap.GetLength(0); ++x)

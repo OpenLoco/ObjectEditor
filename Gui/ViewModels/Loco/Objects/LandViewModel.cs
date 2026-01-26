@@ -5,7 +5,7 @@ using PropertyModels.ComponentModel.DataAnnotations;
 namespace Gui.ViewModels;
 
 public class LandViewModel(LandObject model)
-	: LocoObjectViewModel<LandObject>(model)
+	: BaseViewModel<LandObject>(model)
 {
 	public uint8_t CostIndex
 	{

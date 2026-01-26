@@ -3,7 +3,7 @@ using Definitions.ObjectModels.Objects.Climate;
 namespace Gui.ViewModels;
 
 public class ClimateViewModel(ClimateObject model)
-	: LocoObjectViewModel<ClimateObject>(model)
+	: BaseViewModel<ClimateObject>(model)
 {
 	public Season FirstSeason
 	{

@@ -24,7 +24,7 @@ public class VehicleComponentsViewModel : ReactiveObject
 
 }
 
-public class VehicleViewModel : LocoObjectViewModel<VehicleObject>
+public class VehicleViewModel : BaseViewModel<VehicleObject>
 {
 	private readonly VehicleObject model;
 

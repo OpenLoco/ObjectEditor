@@ -12,7 +12,7 @@ using System.Linq;
 namespace Gui.ViewModels;
 
 public class AirportViewModel(AirportObject model)
-	: LocoObjectViewModel<AirportObject>(model)
+	: BaseViewModel<AirportObject>(model)
 {
 	[EnumProhibitValues<AirportObjectFlags>(AirportObjectFlags.None)]
 	public AirportObjectFlags Flags

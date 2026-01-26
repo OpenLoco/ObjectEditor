@@ -7,8 +7,11 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class ObjectDatHeaderViewModel(uint32_t checksum, SawyerEncoding encoding, uint datDataLength) : ReactiveObject
+public class ObjectDatHeaderViewModel(uint32_t checksum, SawyerEncoding encoding, uint datDataLength) : ReactiveObject, IViewModel
 {
+	public string ViewModelDisplayName
+		=> "Dat Header";
+
 	public ObjectDatHeaderViewModel()
 		: this(0, SawyerEncoding.Uncompressed, 0)
 	{ }

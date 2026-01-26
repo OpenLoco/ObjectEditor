@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class SteamViewModel(SteamObject model)
-		: LocoObjectViewModel<SteamObject>(model)
+		: BaseViewModel<SteamObject>(model)
 {
 	public uint8_t NumStationaryTicks
 	{

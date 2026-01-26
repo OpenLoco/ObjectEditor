@@ -8,7 +8,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class TrackExtraViewModel(TrackExtraObject model)
-	: LocoObjectViewModel<TrackExtraObject>(model)
+	: BaseViewModel<TrackExtraObject>(model)
 {
 	[EnumProhibitValues<TrackTraitFlags>(TrackTraitFlags.None)]
 	public TrackTraitFlags TrackPieces

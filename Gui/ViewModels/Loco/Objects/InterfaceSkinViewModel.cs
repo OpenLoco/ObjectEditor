@@ -3,7 +3,7 @@ using Definitions.ObjectModels.Objects.InterfaceSkin;
 
 namespace Gui.ViewModels;
 
-public class InterfaceSkinViewModel(InterfaceSkinObject model) : LocoObjectViewModel<InterfaceSkinObject>(model)
+public class InterfaceSkinViewModel(InterfaceSkinObject model) : BaseViewModel<InterfaceSkinObject>(model)
 {
 	public Colour MapTooltipObjectColour
 	{

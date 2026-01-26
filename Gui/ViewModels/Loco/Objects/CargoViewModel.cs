@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class CargoViewModel(CargoObject model)
-		: LocoObjectViewModel<CargoObject>(model)
+		: BaseViewModel<CargoObject>(model)
 {
 	[Category("Cargo")]
 	public uint16_t CargoTransferTime

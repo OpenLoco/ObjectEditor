@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
 
-public class ScaffoldingViewModel(ScaffoldingObject model) : LocoObjectViewModel<ScaffoldingObject>(model)
+public class ScaffoldingViewModel(ScaffoldingObject model) : BaseViewModel<ScaffoldingObject>(model)
 {
 	[Length(0, 3)]
 	public BindingList<uint16_t> SegmentHeights { get; init; } = new(model.SegmentHeights);

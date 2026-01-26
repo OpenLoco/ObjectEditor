@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class WaterViewModel(WaterObject model)
-	: LocoObjectViewModel<WaterObject>(model)
+	: BaseViewModel<WaterObject>(model)
 {
 	[Category("Cost")]
 	public uint8_t CostIndex

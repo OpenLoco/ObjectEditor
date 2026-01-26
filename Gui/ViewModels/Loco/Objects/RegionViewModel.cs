@@ -5,7 +5,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class RegionViewModel(RegionObject model)
-	: LocoObjectViewModel<RegionObject>(model)
+	: BaseViewModel<RegionObject>(model)
 {
 	public DrivingSide VehiclesDriveOnThe
 	{

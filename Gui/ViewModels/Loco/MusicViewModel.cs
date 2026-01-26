@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class MusicViewModel : BaseFileViewModel
+public class MusicViewModel : BaseFileViewModel<DummyModel>
 {
 	[Reactive]
 	public AudioViewModel AudioViewModel { get; set; }

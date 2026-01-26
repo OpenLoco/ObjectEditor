@@ -4,7 +4,7 @@ using PropertyModels.ComponentModel.DataAnnotations;
 namespace Gui.ViewModels;
 
 public class WallViewModel(WallObject model)
-	: LocoObjectViewModel<WallObject>(model)
+	: BaseViewModel<WallObject>(model)
 {
 	public uint8_t Height
 	{

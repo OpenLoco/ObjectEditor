@@ -8,7 +8,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class BridgeViewModel(BridgeObject model)
-	: LocoObjectViewModel<BridgeObject>(model)
+	: BaseViewModel<BridgeObject>(model)
 {
 	[EnumProhibitValues<BridgeObjectFlags>(BridgeObjectFlags.None)]
 	public BridgeObjectFlags Flags

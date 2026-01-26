@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace Gui.ViewModels.Loco.Objects.Building;
 
-public class BuildingViewModel : LocoObjectViewModel<BuildingObject>
+public class BuildingViewModel : BaseViewModel<BuildingObject>
 {
 	public BuildingViewModel(BuildingObject model) : base(model)
 	{

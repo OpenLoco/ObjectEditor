@@ -4,7 +4,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class SoundViewModel(SoundObject model)
-	: LocoObjectViewModel<SoundObject>(model)
+	: BaseViewModel<SoundObject>(model)
 {
 	public uint8_t ShouldLoop
 	{

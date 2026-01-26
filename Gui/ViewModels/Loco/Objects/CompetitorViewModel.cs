@@ -3,7 +3,7 @@ using Definitions.ObjectModels.Objects.Competitor;
 namespace Gui.ViewModels;
 
 public class CompetitorViewModel(CompetitorObject model)
-	: LocoObjectViewModel<CompetitorObject>(model)
+	: BaseViewModel<CompetitorObject>(model)
 {
 	public NamePrefixFlags AvailableNamePrefixes
 	{

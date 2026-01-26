@@ -13,7 +13,7 @@ using System.Linq;
 namespace Gui.ViewModels;
 
 public class DockViewModel(DockObject model)
-	: LocoObjectViewModel<DockObject>(model)
+	: BaseViewModel<DockObject>(model)
 {
 	[EnumProhibitValues<DockObjectFlags>(DockObjectFlags.None)]
 	public DockObjectFlags Flags

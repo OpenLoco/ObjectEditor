@@ -10,7 +10,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class TrackStationViewModel(TrackStationObject model)
-	: LocoObjectViewModel<TrackStationObject>(model)
+	: BaseViewModel<TrackStationObject>(model)
 {
 	public uint8_t PaintStyle
 	{

@@ -22,11 +22,13 @@ using System.Windows.Input;
 
 namespace Gui.ViewModels.Graphics;
 
-public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
+public class ImageTableViewModel : ReactiveObject, IViewModel
 {
-	public string Name => "Image Table";
+	public string ViewModelDisplayName
+		=> "Image Table";
 
-	public string ImageCount => $"Image count = {GroupedImageViewModels.Sum(x => x.Images.Count)}";
+	public string ImageCount
+		=> $"Image count = {GroupedImageViewModels.Sum(x => x.Images.Count)}";
 
 	// used in the axaml to bind the combobox to the list of swatches
 	public static ColourSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourSwatch>();

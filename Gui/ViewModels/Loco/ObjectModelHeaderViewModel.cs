@@ -11,7 +11,7 @@ public class DesignerObjectModelHeaderViewModel : ObjectModelHeaderViewModel
 }
 
 public class ObjectModelHeaderViewModel(ObjectModelHeader model)
-	: LocoObjectViewModel<ObjectModelHeader>(model)
+	: BaseViewModel<ObjectModelHeader>(model)
 {
 	[MaxLength(8)]
 	public string Name
@@ -31,4 +31,7 @@ public class ObjectModelHeaderViewModel(ObjectModelHeader model)
 		get => Model.ObjectType;
 		set => Model.ObjectType = value;
 	}
+
+	public override string ViewModelDisplayName
+		=> "Object Header";
 }

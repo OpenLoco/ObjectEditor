@@ -10,7 +10,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class RoadStationViewModel(RoadStationObject model)
-	: LocoObjectViewModel<RoadStationObject>(model)
+	: BaseViewModel<RoadStationObject>(model)
 {
 
 	public uint8_t PaintStyle

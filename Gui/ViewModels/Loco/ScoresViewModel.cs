@@ -2,7 +2,7 @@ using Gui.Models;
 
 namespace Gui.ViewModels;
 
-public class ScoresViewModel : BaseFileViewModel
+public class ScoresViewModel : BaseFileViewModel<DummyModel>
 {
 	public ScoresViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext) => Load();

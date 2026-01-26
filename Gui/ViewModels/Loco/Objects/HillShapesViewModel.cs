@@ -3,7 +3,7 @@ using Definitions.ObjectModels.Objects.HillShape;
 namespace Gui.ViewModels;
 
 public class HillShapesViewModel(HillShapesObject model)
-	: LocoObjectViewModel<HillShapesObject>(model)
+	: BaseViewModel<HillShapesObject>(model)
 {
 	public uint8_t HillHeightMapCount
 	{

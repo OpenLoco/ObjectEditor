@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Gui.ViewModels;
 
 public class TrackSignalViewModel(TrackSignalObject model)
-	: LocoObjectViewModel<TrackSignalObject>(model)
+	: BaseViewModel<TrackSignalObject>(model)
 {
 	[EnumProhibitValues<TrackSignalObjectFlags>(TrackSignalObjectFlags.None)]
 	public TrackSignalObjectFlags Flags

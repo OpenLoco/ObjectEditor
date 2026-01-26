@@ -14,7 +14,7 @@ using System.Linq;
 namespace Gui.ViewModels;
 
 public class IndustryViewModel(IndustryObject model)
-	: LocoObjectViewModel<IndustryObject>(model)
+	: BaseViewModel<IndustryObject>(model)
 {
 	[Description("Total industries of this type that can be created in a scenario. Note: this is not directly comparable to total industries and varies based on scenario total industries cap settings. At low industries cap this value is ~3x the amount of industries in a scenario.")]
 	public uint8_t TotalOfTypeInScenario

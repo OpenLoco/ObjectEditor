@@ -33,31 +33,28 @@ using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
-public class ObjectEditorViewModel : BaseFileViewModel
+public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 {
-	[Reactive]
-	public IObjectViewModel? CurrentObjectViewModel { get; set; }
+	//[Reactive]
+	//public IObjectViewModel? CurrentObjectViewModel { get; set; }
 
-	[Reactive]
-	public StringTableViewModel? StringTableViewModel { get; set; }
+	//[Reactive]
+	//public StringTableViewModel? StringTableViewModel { get; set; }
 
-	[Reactive]
-	public IExtraContentViewModel? ExtraContentViewModel { get; set; }
+	//[Reactive]
+	//public IViewModel? ExtraContentViewModel { get; set; }
 
-	[Reactive]
-	public string ExtraContentViewModelTabName { get; set; }
+	//[Reactive]
+	//public string ExtraContentViewModelTabName { get; set; }
 
-	[Reactive]
-	public LocoUIObjectModel? Model { get; private set; }
+	//[Reactive]
+	//public ObjectMetadataViewModel? MetadataViewModel { get; set; }
 
-	[Reactive]
-	public ObjectMetadataViewModel? MetadataViewModel { get; set; }
+	//[Reactive]
+	//public ObjectModelHeaderViewModel? ObjectModelHeaderViewModel { get; set; }
 
-	[Reactive]
-	public ObjectModelHeaderViewModel? ObjectModelHeaderViewModel { get; set; }
-
-	[Reactive]
-	public ObjectDatHeaderViewModel? ObjectDatHeaderViewModel { get; set; }
+	//[Reactive]
+	//public ObjectDatHeaderViewModel? ObjectDatHeaderViewModel { get; set; }
 
 	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
 
@@ -106,8 +103,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		SelectObjectShowDialog = new();
 		_ = SelectObjectShowDialog.RegisterHandler(DoShowDialogAsync<ObjectSelectionWindowViewModel, ObjectSelectionWindow>);
 
-		_ = this.WhenAnyValue(x => x.ExtraContentViewModel)
-			.Subscribe(x => ExtraContentViewModelTabName = ExtraContentViewModel?.Name ?? "<no-extra-content>");
+		//_ = this.WhenAnyValue(x => x.ExtraContentViewModel)
+		//	.Subscribe(x => ExtraContentViewModelTabName = ExtraContentViewModel?.Name ?? "<no-extra-content>");
 
 		//SelectObjectCommand = ReactiveCommand.CreateFromTask(async () =>
 		//{
@@ -251,7 +248,7 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		}
 	}
 
-	public static IObjectViewModel? GetViewModelFromStruct(LocoObject locoObject)
+	public static IViewModel? GetViewModelFromStruct(LocoObject locoObject)
 	{
 		var locoStruct = locoObject.Object;
 		var asm = Assembly
@@ -261,81 +258,70 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				=> type.IsClass
 				&& !type.IsAbstract
 				&& type.BaseType?.IsGenericType == true
-				&& type.BaseType.GetGenericTypeDefinition() == typeof(LocoObjectViewModel<>)
+				&& type.BaseType.GetGenericTypeDefinition() == typeof(BaseViewModel<>)
 				&& type.BaseType.GenericTypeArguments.Single() == locoStruct.GetType());
 
 		return asm == null
 			? null
-			: (IObjectViewModel?)Activator.CreateInstance(asm, locoStruct);
+			: (IViewModel?)Activator.CreateInstance(asm, locoStruct);
 	}
 
 	public override void Load()
 	{
 		// this stops any currently-playing sounds
-		if (ExtraContentViewModel is AudioViewModel svm)
+		foreach (var vm in ViewModels)
 		{
-			svm.Dispose();
+			if (vm is AudioViewModel avm)
+			{
+				avm.Dispose();
+			}
 		}
+
+		base.ClearViewModels();
 
 		logger.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.FileName}");
 
 		if (EditorContext.TryLoadObject(CurrentFile, out var newObj))
 		{
 			Model = newObj;
-			StringTableViewModel = null;
-			ExtraContentViewModel = null;
 
 			if (Model?.LocoObject != null)
 			{
-				CurrentObjectViewModel = GetViewModelFromStruct(Model.LocoObject);
-				StringTableViewModel = new(Model.LocoObject.StringTable);
+				base.AddViewModel(GetViewModelFromStruct(Model.LocoObject));
+				base.AddViewModel(new StringTableViewModel(Model.LocoObject.StringTable));
 
 				if (Model.LocoObject.Object is SoundObject soundObject)
 				{
-					ExtraContentViewModel = new AudioViewModel(logger, Model.Metadata.InternalName, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData);
+					base.AddViewModel(new AudioViewModel(logger, Model.Metadata.InternalName, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData));
 				}
 				else
 				{
-					_ = (Model.LocoObject.ImageTable?.PaletteMap = EditorContext.PaletteMap);
-					if (Model.LocoObject.ImageTable == null)
-					{
-						logger.Info($"{CurrentFile.DisplayName} has no image table");
-					}
-					else
-					{
-						var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
-						ExtraContentViewModel = new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, bc);
-					}
+					Model.LocoObject.ImageTable?.PaletteMap = EditorContext.PaletteMap;
+					var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
+					base.AddViewModel(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, bc));
 				}
 			}
 
 			if (Model != null)
 			{
-				ObjectModelHeaderViewModel = new ObjectModelHeaderViewModel(Model.DatInfo.S5Header.Convert());
+				var objectHeaderViewModel = new ObjectModelHeaderViewModel(Model.DatInfo.S5Header.Convert());
 
 				// an object saved as 'Vanilla' but isn't truly Vanilla will have its source auto-set to Custom
 				// but in this case, we do want to show the user this, so we'll default to Steam
-				if (Model.DatInfo.S5Header.ObjectSource == DatObjectSource.Vanilla && ObjectModelHeaderViewModel.ObjectSource == ObjectSource.Custom)
+				if (Model.DatInfo.S5Header.ObjectSource == DatObjectSource.Vanilla && objectHeaderViewModel.ObjectSource == ObjectSource.Custom)
 				{
-					ObjectModelHeaderViewModel.ObjectSource = ObjectSource.LocomotionSteam;
+					objectHeaderViewModel.ObjectSource = ObjectSource.LocomotionSteam;
 				}
-
-				ObjectDatHeaderViewModel = new ObjectDatHeaderViewModel(
+				base.AddViewModel(objectHeaderViewModel);
+				base.AddViewModel(new ObjectDatHeaderViewModel(
 					Model.DatInfo.S5Header.Checksum,
 					Model.DatInfo.ObjectHeader.Encoding,
-					Model.DatInfo.ObjectHeader.DataLength);
+					Model.DatInfo.ObjectHeader.DataLength));
 			}
 
 			if (Model?.Metadata != null)
 			{
-				MetadataViewModel = new ObjectMetadataViewModel(Model.Metadata, EditorContext.ObjectServiceClient, logger);
-			}
-			else
-			{
-				// todo: show warnings here
-				// in online mode, vanilla objects won't be downloaded so they hit this case, which is a valid use-case
-				Model = null;
-				CurrentObjectViewModel = null;
+				base.AddViewModel(new ObjectMetadataViewModel(Model.Metadata, EditorContext.ObjectServiceClient, logger));
 			}
 		}
 	}
@@ -369,10 +355,10 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? CurrentFile.FileName
 			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".dat"));
-		SaveCore(savePath, new SaveParameters(SaveType.DAT, ObjectDatHeaderViewModel?.DatEncoding));
+		SaveCore(savePath, new SaveParameters(SaveType.DAT, GetViewModel<ObjectDatHeaderViewModel>()?.DatEncoding ?? SawyerEncoding.Uncompressed));
 
 		// Upload metadata to server when in online mode
-		if (CurrentFile.FileLocation == FileLocation.Online && CurrentFile.Id.HasValue && MetadataViewModel != null)
+		if (CurrentFile.FileLocation == FileLocation.Online && CurrentFile.Id.HasValue)
 		{
 			_ = UploadMetadataAsync(CurrentFile.Id.Value).ContinueWith(t =>
 			{
@@ -385,9 +371,14 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		}
 	}
 
+	T? GetViewModel<T>() where T : class, IViewModel
+		=> ViewModels.SingleOrDefault(x => x is T) as T;
+
 	async Task UploadMetadataAsync(UniqueObjectId objectId)
 	{
-		if (MetadataViewModel?.Metadata == null)
+		var metadataModel = GetViewModel<ObjectMetadataViewModel>()?.Model;
+
+		if (metadataModel == null)
 		{
 			logger.Warning("Cannot upload metadata - metadata is null");
 			return;
@@ -406,29 +397,29 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			// Create DTO from current metadata
 			var dtoRequest = new DtoObjectPostResponse(
 				Id: objectId,
-				Name: MetadataViewModel.Metadata.InternalName,
+				Name: metadataModel.InternalName,
 				DisplayName: CurrentFile.DisplayName,
 				DatChecksum: Model.DatInfo.S5Header.Checksum,
-				Description: MetadataViewModel.Metadata.Description,
+				Description: metadataModel.Description,
 				ObjectSource: Model.DatInfo.S5Header.ObjectSource.Convert(
 					Model.DatInfo.S5Header.Name,
 					Model.DatInfo.S5Header.Checksum),
 				ObjectType: Model.DatInfo.S5Header.ObjectType.Convert(),
 				VehicleType: null,
-				Availability: MetadataViewModel.Metadata.Availability,
-				CreatedDate: MetadataViewModel.Metadata.CreatedDate.HasValue
-					? DateOnly.FromDateTime(MetadataViewModel.Metadata.CreatedDate.Value.UtcDateTime)
+				Availability: metadataModel.Availability,
+				CreatedDate: metadataModel.CreatedDate.HasValue
+					? DateOnly.FromDateTime(metadataModel.CreatedDate.Value.UtcDateTime)
 					: null,
-				ModifiedDate: MetadataViewModel.Metadata.ModifiedDate.HasValue
-					? DateOnly.FromDateTime(MetadataViewModel.Metadata.ModifiedDate.Value.UtcDateTime)
+				ModifiedDate: metadataModel.ModifiedDate.HasValue
+					? DateOnly.FromDateTime(metadataModel.ModifiedDate.Value.UtcDateTime)
 					: null,
-				UploadedDate: DateOnly.FromDateTime(MetadataViewModel.Metadata.UploadedDate.UtcDateTime),
-				Licence: MetadataViewModel.Metadata.Licence,
-				Authors: MetadataViewModel.Metadata.Authors,
-				Tags: MetadataViewModel.Metadata.Tags,
-				ObjectPacks: MetadataViewModel.Metadata.ObjectPacks,
-				DatObjects: MetadataViewModel.Metadata.DatObjects,
-				StringTable: new DtoStringTableDescriptor(new Dictionary<string, Dictionary<LanguageId, string>>(), objectId)
+				UploadedDate: DateOnly.FromDateTime(metadataModel.UploadedDate.UtcDateTime),
+				Licence: metadataModel.Licence,
+				Authors: metadataModel.Authors,
+				Tags: metadataModel.Tags,
+				ObjectPacks: metadataModel.ObjectPacks,
+				DatObjects: metadataModel.DatObjects,
+				StringTable: new DtoStringTableDescriptor([], objectId)
 			);
 
 			var result = await EditorContext.ObjectServiceClient.UpdateObjectAsync(objectId, dtoRequest);
@@ -477,7 +468,8 @@ public class ObjectEditorViewModel : BaseFileViewModel
 			return;
 		}
 
-		if (CurrentObjectViewModel == null)
+		var ovm = GetViewModel<IViewModel>();
+		if (ovm == null)
 		{
 			logger.Error("Cannot save - loco object viewmodel was null");
 			return;
@@ -505,10 +497,12 @@ public class ObjectEditorViewModel : BaseFileViewModel
 		ValidateObject(showPopupOnSuccess: false);
 
 		logger.Info($"Saving {Model.DatInfo.S5Header.Name} to {filename}");
-		StringTableViewModel?.WriteTableBackToObject();
+		var stvm = GetViewModel<StringTableViewModel>();
+		stvm?.WriteTableBackToObject();
 
 		// this is hacky but it should work
-		if (ExtraContentViewModel is AudioViewModel avm && Model.LocoObject.Object is SoundObject)
+		var avm = GetViewModel<AudioViewModel>();
+		if (avm != null && Model.LocoObject.Object is SoundObject)
 		{
 			var datWav = avm.GetAsDatWav(LocoAudioType.SoundEffect);
 			if (datWav == null)
@@ -516,25 +510,17 @@ public class ObjectEditorViewModel : BaseFileViewModel
 				logger.Error("AudioViewModel returned null data when trying to save as a sound object");
 				return;
 			}
-			//CurrentObject.LocoObject.Object = so with
-			//{
-			//	PcmData = datWav.Value.Data,
-			//	SoundObjectData = so.SoundObjectData with
-			//	{
-			//		PcmHeader = datWav.Value.Header,
-			//		Length = (uint)datWav.Value.Data.Length
-			//	}
-			//};
 		}
 
 		if (saveParameters.SaveType == SaveType.DAT)
 		{
 			var header = Model.DatInfo.S5Header;
+			var objectModelHeader = GetViewModel<ObjectModelHeaderViewModel>();
 
 			SawyerStreamWriter.Save(filename,
-				ObjectModelHeaderViewModel?.Name ?? header.Name,
-				ObjectModelHeaderViewModel?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
-				saveParameters.SawyerEncoding ?? ObjectDatHeaderViewModel?.DatEncoding ?? SawyerEncoding.Uncompressed,
+				objectModelHeader?.Name ?? header.Name,
+				objectModelHeader?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
+				saveParameters.SawyerEncoding ?? GetViewModel<ObjectDatHeaderViewModel>()?.DatEncoding ?? SawyerEncoding.Uncompressed,
 				Model.LocoObject,
 				logger,
 				EditorContext.Settings.AllowSavingAsVanillaObject);

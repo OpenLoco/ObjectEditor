@@ -8,7 +8,7 @@ using System.ComponentModel;
 namespace Gui.ViewModels;
 
 public class RoadExtraViewModel(RoadExtraObject model)
-	: LocoObjectViewModel<RoadExtraObject>(model)
+	: BaseViewModel<RoadExtraObject>(model)
 {
 	[EnumProhibitValues<RoadTraitFlags>(RoadTraitFlags.None)]
 	public RoadTraitFlags RoadPieces

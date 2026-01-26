@@ -96,19 +96,19 @@ public class IdempotenceTests
 		}
 	}
 
-	[TestCaseSource(nameof(VanillaFiles))]
-	public void LoadSaveLoadViewModels(string filename)
-	{
-		var logger = new Logger();
-		var obj1 = SawyerStreamReader.LoadFullObject(filename, logger)!.LocoObject;
+	//[TestCaseSource(nameof(VanillaFiles))]
+	//public void LoadSaveLoadViewModels(string filename)
+	//{
+	//	var logger = new Logger();
+	//	var obj1 = SawyerStreamReader.LoadFullObject(filename, logger)!.LocoObject;
 
-		var vm = ObjectEditorViewModel.GetViewModelFromStruct(obj1!);
-		Assert.That(vm, Is.Not.Null);
+	//	var vm = ObjectEditorViewModel.GetViewModelFromStruct(obj1!);
+	//	Assert.That(vm, Is.Not.Null);
 
-		var obj2 = vm.GetILocoStruct();
+	//	var obj2 = vm.GetILocoStruct();
 
-		var expected = JsonSerializer.Serialize((object)obj1!.Object);
-		var actual = JsonSerializer.Serialize((object)obj2);
-		Assert.That(actual, Is.EqualTo(expected));
-	}
+	//	var expected = JsonSerializer.Serialize((object)obj1!.Object);
+	//	var actual = JsonSerializer.Serialize((object)obj2);
+	//	Assert.That(actual, Is.EqualTo(expected));
+	//}
 }

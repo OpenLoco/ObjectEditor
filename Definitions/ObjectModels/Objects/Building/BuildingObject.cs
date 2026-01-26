@@ -16,7 +16,7 @@ public class BuildingObject : ILocoStruct, IHasBuildingComponents
 	public uint16_t SellCostFactor { get; set; }
 	public uint8_t ScaffoldingSegmentType { get; set; }
 	public Colour ScaffoldingColour { get; set; }
-	public uint8_t GeneratorFunction { get; set; }
+	public uint8_t GeneratorFunction { get; set; } // for misc buildings generator function, otherwise its a set of flags representing town densities the building can be built in
 	public uint8_t AverageNumberOnMap { get; set; }
 	public List<uint8_t> ProducedQuantity { get; set; } = [];
 	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];
@@ -40,6 +40,23 @@ public class BuildingObject : ILocoStruct, IHasBuildingComponents
 		if (ProducedQuantity.Count != 2)
 		{
 			yield return new ValidationResult($"{nameof(ProducedQuantity)} must have exactly 2 entries.", [nameof(ProducedQuantity)]);
+		}
+
+		if (Flags.HasFlag(BuildingObjectFlags.MiscBuilding))
+		{
+			if (GeneratorFunction >= 4)
+			{
+				yield return new ValidationResult($"Buildings with the {nameof(BuildingObjectFlags.MiscBuilding)} flag can only use generator functions < 4.", [nameof(GeneratorFunction)]);
+			}
+		}
+
+		if (var_AC != 0xFF)
+		{
+			// Max of 8 different building categories
+			if (var_AC >= 8)
+			{
+				yield return new ValidationResult($"{nameof(var_AC)} must either be 255 or < 8.", [nameof(var_AC)]);
+			}
 		}
 	}
 }

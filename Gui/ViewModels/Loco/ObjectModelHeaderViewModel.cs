@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gui.ViewModels;
@@ -32,6 +33,7 @@ public class ObjectModelHeaderViewModel(ObjectModelHeader model)
 		set => Model.ObjectType = value;
 	}
 
+	[Browsable(false)]
 	public override string ViewModelDisplayName
 		=> "Object Header";
 }

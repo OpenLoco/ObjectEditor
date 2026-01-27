@@ -92,11 +92,9 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 	[Reactive]
 	public ObservableCollection<ImageViewModel> LayeredImages { get; set; } = [];
 
-	public BuildingComponentsViewModel? BuildingComponents { get; set; }
-
 	ImageTable Model { get; init; }
 
-	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponents? buildingComponents = null)
+	public ImageTableViewModel(ImageTable imageTable, ILogger logger)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 
@@ -114,12 +112,6 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 
 		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.PrimaryRemap);
 		SelectedSecondarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.SecondaryRemap);
-
-		// building components
-		if (buildingComponents != null)
-		{
-			BuildingComponents = new(buildingComponents, imageTable);
-		}
 
 		_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
 			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));

@@ -59,23 +59,20 @@
 		<bvm:DesignBuildingComponentsViewModel/>
 	</Design.DataContext>
 
-	<Border BorderThickness="1" BorderBrush="Gray">
-		<DockPanel>
-			<TextBlock DockPanel.Dock="Top" FontSize="20" HorizontalAlignment="Center">Building Component Viewer</TextBlock>
-			<DockPanel DockPanel.Dock="Top">
-				<TextBlock Margin="4" Width="170" VerticalAlignment="Center" Text="{Binding VerticalLayerSpacing, StringFormat='Vertical Layer Offset: {0}'}"></TextBlock>
-				<Slider Margin="4" DockPanel.Dock="Right" Value="{Binding VerticalLayerSpacing, Mode=TwoWay}" TickPlacement="Outside" Minimum="0" Maximum="100" TickFrequency="10"/>
-			</DockPanel>
-			<ScrollViewer DockPanel.Dock="Top">
-				<ItemsControl ItemsSource="{Binding BuildingVariationViewModels}" Background="Gray" Margin="8">
-					<ItemsControl.ItemsPanel>
-						<ItemsPanelTemplate>
-							<WrapPanel/>
-						</ItemsPanelTemplate>
-					</ItemsControl.ItemsPanel>
-				</ItemsControl>
-			</ScrollViewer>
+	<DockPanel>
+		<DockPanel DockPanel.Dock="Top">
+			<TextBlock Margin="4" Width="170" VerticalAlignment="Center" Text="{Binding VerticalLayerSpacing, StringFormat='Vertical Layer Offset: {0}'}"></TextBlock>
+			<Slider Margin="4" DockPanel.Dock="Right" Value="{Binding VerticalLayerSpacing, Mode=TwoWay}" TickPlacement="Outside" Minimum="0" Maximum="100" TickFrequency="10"/>
 		</DockPanel>
-	</Border>
+		<ScrollViewer DockPanel.Dock="Top">
+			<ItemsControl ItemsSource="{Binding BuildingVariationViewModels}" Background="Gray" Margin="8">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel/>
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+			</ItemsControl>
+		</ScrollViewer>
+	</DockPanel>
 
 </UserControl>

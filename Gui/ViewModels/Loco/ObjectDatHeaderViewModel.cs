@@ -9,6 +9,7 @@ namespace Gui.ViewModels;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class ObjectDatHeaderViewModel(uint32_t checksum, SawyerEncoding encoding, uint datDataLength) : ReactiveObject, IViewModel
 {
+	[Browsable(false)]
 	public string ViewModelDisplayName
 		=> "Dat Header";
 
@@ -17,15 +18,15 @@ public class ObjectDatHeaderViewModel(uint32_t checksum, SawyerEncoding encoding
 	{ }
 
 	[Reactive]
-	public SawyerEncoding DatEncoding { get; set; } = encoding;
+	public SawyerEncoding Encoding { get; set; } = encoding;
 
 	[ReadOnly(true)]
-	public uint32_t DatDataLength { get; } = datDataLength;
+	public uint32_t DataLength { get; } = datDataLength;
 
-	public string DatChecksumHex
+	public string ChecksumHex
 	{
-		get => string.Format($"0x{datChecksum:X}");
-		set => datChecksum = Convert.ToUInt32(value[2..], 16);
+		get => string.Format($"0x{checksum:X}");
+		set => checksum = Convert.ToUInt32(value[2..], 16);
 	}
-	uint32_t datChecksum { get; set; } = checksum;
+	uint32_t checksum { get; set; } = checksum;
 }

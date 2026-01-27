@@ -13,6 +13,7 @@ using Definitions.ObjectModels.Types;
 using Gui.Models;
 using Gui.Models.Audio;
 using Gui.ViewModels.Graphics;
+using Gui.ViewModels.Loco.Objects.Building;
 using Gui.Views;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
@@ -35,29 +36,7 @@ namespace Gui.ViewModels;
 
 public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 {
-	//[Reactive]
-	//public IObjectViewModel? CurrentObjectViewModel { get; set; }
-
-	//[Reactive]
-	//public StringTableViewModel? StringTableViewModel { get; set; }
-
-	//[Reactive]
-	//public IViewModel? ExtraContentViewModel { get; set; }
-
-	//[Reactive]
-	//public string ExtraContentViewModelTabName { get; set; }
-
-	//[Reactive]
-	//public ObjectMetadataViewModel? MetadataViewModel { get; set; }
-
-	//[Reactive]
-	//public ObjectModelHeaderViewModel? ObjectModelHeaderViewModel { get; set; }
-
-	//[Reactive]
-	//public ObjectDatHeaderViewModel? ObjectDatHeaderViewModel { get; set; }
-
 	public ReactiveCommand<Unit, Unit> ExportUncompressedCommand { get; }
-
 	public ReactiveCommand<GameObjDataFolder, Unit> CopyToGameObjDataCommand { get; }
 	public ReactiveCommand<Unit, bool> ValidateObjectCommand { get; }
 	public ReactiveCommand<Unit, bool> ValidateForOGCommand { get; }
@@ -65,7 +44,6 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 	[Reactive]
 	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;
 
-	//public ReactiveCommand<Unit, ObjectIndexEntry?> SelectObjectCommand { get; }
 	public Interaction<ObjectSelectionWindowViewModel, ObjectSelectionWindowViewModel?> SelectObjectShowDialog { get; }
 
 	public ObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
@@ -74,45 +52,34 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		Load();
 
 		ExportUncompressedCommand = ReactiveCommand.Create(SaveAsUncompressedDat);
-
-		CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) =>
-		{
-			var folder = editorContext.Settings.GetGameObjDataFolder(targetFolder);
-			if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
-			{
-				logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
-				return;
-			}
-
-			LastGameObjDataFolder = targetFolder;
-
-			try
-			{
-				File.Copy(currentFile.FileName, Path.Combine(folder, Path.GetFileName(currentFile.FileName)));
-				logger.Info($"Copied {Path.GetFileName(currentFile.FileName)} to [[{targetFolder}]] {folder}");
-			}
-			catch (Exception ex)
-			{
-				logger.Error($"Could not copy {currentFile.FileName} to {folder}:", ex);
-			}
-		});
-
+		CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) => CopyToGameObjDataFolder(targetFolder, currentFile, editorContext));
 		ValidateObjectCommand = ReactiveCommand.Create(() => ValidateObject(showPopupOnSuccess: true));
 		ValidateForOGCommand = ReactiveCommand.Create(() => ValidateForOG(showPopupOnSuccess: true));
 
 		SelectObjectShowDialog = new();
 		_ = SelectObjectShowDialog.RegisterHandler(DoShowDialogAsync<ObjectSelectionWindowViewModel, ObjectSelectionWindow>);
+	}
 
-		//_ = this.WhenAnyValue(x => x.ExtraContentViewModel)
-		//	.Subscribe(x => ExtraContentViewModelTabName = ExtraContentViewModel?.Name ?? "<no-extra-content>");
+	private void CopyToGameObjDataFolder(GameObjDataFolder targetFolder, FileSystemItem currentFile, ObjectEditorContext editorContext)
+	{
+		var folder = editorContext.Settings.GetGameObjDataFolder(targetFolder);
+		if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+		{
+			logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
+			return;
+		}
 
-		//SelectObjectCommand = ReactiveCommand.CreateFromTask(async () =>
-		//{
-		//	var objects = model.ObjectIndex.Objects.Where(x => x.ObjectType == ObjectType.Tree);
-		//	var vm = new ObjectSelectionWindowViewModel(objects);
-		//	var result = await SelectObjectShowDialog.Handle(vm);
-		//	return result.SelectedObject;
-		//});
+		LastGameObjDataFolder = targetFolder;
+
+		try
+		{
+			File.Copy(currentFile.FileName, Path.Combine(folder, Path.GetFileName(currentFile.FileName)));
+			logger.Info($"Copied {Path.GetFileName(currentFile.FileName)} to [[{targetFolder}]] {folder}");
+		}
+		catch (Exception ex)
+		{
+			logger.Error($"Could not copy {currentFile.FileName} to {folder}:", ex);
+		}
 	}
 
 	bool ValidateObject(bool showPopupOnSuccess)
@@ -297,8 +264,14 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				else
 				{
 					Model.LocoObject.ImageTable?.PaletteMap = EditorContext.PaletteMap;
+
+					base.AddViewModel(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger));
+
 					var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
-					base.AddViewModel(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, bc));
+					if (bc != null)
+					{
+						base.AddViewModel(new BuildingComponentsViewModel(bc, Model.LocoObject.ImageTable));
+					}
 				}
 			}
 
@@ -355,7 +328,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? CurrentFile.FileName
 			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".dat"));
-		SaveCore(savePath, new SaveParameters(SaveType.DAT, GetViewModel<ObjectDatHeaderViewModel>()?.DatEncoding ?? SawyerEncoding.Uncompressed));
+		SaveCore(savePath, new SaveParameters(SaveType.DAT, GetViewModel<ObjectDatHeaderViewModel>()?.Encoding ?? SawyerEncoding.Uncompressed));
 
 		// Upload metadata to server when in online mode
 		if (CurrentFile.FileLocation == FileLocation.Online && CurrentFile.Id.HasValue)
@@ -520,7 +493,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			SawyerStreamWriter.Save(filename,
 				objectModelHeader?.Name ?? header.Name,
 				objectModelHeader?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
-				saveParameters.SawyerEncoding ?? GetViewModel<ObjectDatHeaderViewModel>()?.DatEncoding ?? SawyerEncoding.Uncompressed,
+				saveParameters.SawyerEncoding ?? GetViewModel<ObjectDatHeaderViewModel>()?.Encoding ?? SawyerEncoding.Uncompressed,
 				Model.LocoObject,
 				logger,
 				EditorContext.Settings.AllowSavingAsVanillaObject);

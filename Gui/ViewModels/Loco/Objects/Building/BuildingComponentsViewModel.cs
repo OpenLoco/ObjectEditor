@@ -15,8 +15,11 @@ using ReactiveObject = ReactiveUI.ReactiveObject;
 namespace Gui.ViewModels.Loco.Objects.Building;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class BuildingComponentsViewModel : ReactiveObject
+public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 {
+	public string ViewModelDisplayName
+		=> "Building Components";
+
 	[Reactive]
 	[Trackable(0, 64)]
 	public int VerticalLayerSpacing { get; set; }

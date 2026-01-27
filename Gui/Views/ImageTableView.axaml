@@ -6,6 +6,7 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
+xmlns:avc="using:Avalonia.Controls"
 xmlns:paz="using:Avalonia.Controls.PanAndZoom"
 xmlns:vi="using:Gui.Views"
 xmlns:cnv="using:Gui.Converters"
@@ -44,7 +45,7 @@ x:DataType="vmg:ImageTableViewModel">
 					</MenuFlyout>
 				</SplitButton.Flyout>
 			</SplitButton>
-			<Button Content="Colours" HorizontalAlignment="Stretch" Margin="2" Padding="2" >
+			<Button HorizontalAlignment="Stretch" Margin="2" Padding="2">
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Colours</TextBlock>
@@ -64,7 +65,11 @@ x:DataType="vmg:ImageTableViewModel">
 								</DockPanel>
 								<Button.Flyout>
 									<Flyout>
-										<ColorView Name="ImageBackgroundColorView" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+										<ColorView Name="ImageBackgroundColorView" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False">
+											<ColorView.Palette>
+												<avc:FluentColorPalette />
+											</ColorView.Palette>
+										</ColorView>
 									</Flyout>
 								</Button.Flyout>
 							</Button>
@@ -136,7 +141,7 @@ x:DataType="vmg:ImageTableViewModel">
 					</Flyout>
 				</Button.Flyout>
 			</Button>
-			<Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="2" Padding="2" Content="Bulk editing" ToolTip.Tip="Bulk image editing options">
+			<Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="2" Padding="2" ToolTip.Tip="Bulk image editing options">
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="FolderEdit" Width="24" Height="24" Margin="2" />
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Bulk editing</TextBlock>
@@ -203,7 +208,7 @@ x:DataType="vmg:ImageTableViewModel">
 				</Button.Flyout>
 			</Button>
 		</StackPanel>
-		<Grid ColumnDefinitions="*, Auto, *, Auto, *">
+		<Grid ColumnDefinitions="*, Auto, *">
 			<ScrollViewer Grid.Column="0" Margin="4">
 				<DockPanel>
 					<Panel Width="16" DockPanel.Dock="Right"></Panel>
@@ -259,7 +264,11 @@ x:DataType="vmg:ImageTableViewModel">
 							</DockPanel>
 							<Button.Flyout >
 								<Flyout>
-									<ColorView Name="ImageColorViewPreviewBackground" Palette="" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+									<ColorView Name="ImageColorViewPreviewBackground" Color="SteelBlue" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False">
+										<ColorView.Palette>
+											<avc:FluentColorPalette />
+										</ColorView.Palette>
+									</ColorView>
 								</Flyout>
 							</Button.Flyout>
 						</Button>
@@ -270,7 +279,11 @@ x:DataType="vmg:ImageTableViewModel">
 							</DockPanel>
 							<Button.Flyout >
 								<Flyout>
-									<ColorView Name="ImageColorViewBorder" Palette="" Color="Gold" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+									<ColorView Name="ImageColorViewBorder" Color="Gold" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False">
+										<ColorView.Palette>
+											<avc:FluentColorPalette />
+										</ColorView.Palette>
+									</ColorView>
 								</Flyout>
 							</Button.Flyout>
 						</Button>
@@ -281,7 +294,11 @@ x:DataType="vmg:ImageTableViewModel">
 							</DockPanel>
 							<Button.Flyout >
 								<Flyout>
-									<ColorView Name="ImageColorViewOriginPoint" Palette="" Color="Red" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False" />
+									<ColorView Name="ImageColorViewOriginPoint" Color="Red" IsColorModelVisible="False" IsColorSpectrumVisible="False" IsColorComponentsVisible="False">
+										<ColorView.Palette>
+											<avc:FluentColorPalette />
+										</ColorView.Palette>
+									</ColorView>
 								</Flyout>
 							</Button.Flyout>
 						</Button>
@@ -301,8 +318,6 @@ x:DataType="vmg:ImageTableViewModel">
 				</StackPanel>
 				<ContentControl Content="{Binding SelectedImage}"/>
 			</DockPanel>
-			<GridSplitter Grid.Column="3" />
-			<ContentControl Grid.Column="4" Content="{Binding BuildingComponents}" />
 		</Grid>
 	</DockPanel>
 </UserControl>

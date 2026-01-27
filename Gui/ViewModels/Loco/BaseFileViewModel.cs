@@ -13,6 +13,7 @@ using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -27,6 +28,10 @@ public record SaveParameters(SaveType SaveType, SawyerEncoding? SawyerEncoding);
 
 public abstract class BaseViewModel<T> : ReactiveObject, IViewModel where T : class
 {
+	[Browsable(false)]
+	public virtual string ViewModelDisplayName
+		=> typeof(T).Name;
+
 	protected BaseViewModel(T? model = default)
 	{
 		Model = model;
@@ -37,11 +42,13 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel where T : cl
 			.Subscribe();
 	}
 
-	[Reactive]
+	[Reactive, Browsable(false)]
 	public T? Model { get; protected set; }
 
 	private readonly SourceList<IViewModel> _subViewModels = new();
 	private readonly ReadOnlyObservableCollection<IViewModel> _viewModels;
+
+	[Browsable(false)]
 	public ReadOnlyObservableCollection<IViewModel> ViewModels
 		=> _viewModels;
 
@@ -55,9 +62,6 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel where T : cl
 
 	protected void ClearViewModels()
 		=> _subViewModels.Clear();
-
-	public virtual string ViewModelDisplayName
-		=> typeof(T).Name;
 }
 
 public abstract class BaseViewModelWithEditorContext<T> : BaseViewModel<T> where T : class
@@ -66,6 +70,7 @@ public abstract class BaseViewModelWithEditorContext<T> : BaseViewModel<T> where
 		: base(model)
 		=> EditorContext = editorContext;
 
+	[Browsable(false)]
 	public ObjectEditorContext EditorContext { get; init; }
 
 	protected ILogger logger

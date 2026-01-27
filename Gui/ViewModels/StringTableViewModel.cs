@@ -14,7 +14,7 @@ public record LanguageTranslationModel(LanguageId Language, string Translation);
 
 public class StringTableViewModel : ReactiveObject, IViewModel
 {
-	public string ViewModelDisplayName
+	public string DisplayName
 		=> "String Table";
 
 	public StringTableViewModel(StringTable table)

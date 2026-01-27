@@ -17,7 +17,7 @@ namespace Gui.ViewModels.Loco.Objects.Building;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 {
-	public string ViewModelDisplayName
+	public string DisplayName
 		=> "Building Components";
 
 	[Reactive]

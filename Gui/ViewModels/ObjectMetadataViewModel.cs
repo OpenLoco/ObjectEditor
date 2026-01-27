@@ -14,7 +14,7 @@ namespace Gui.ViewModels;
 
 public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMetadata>, IViewModel
 {
-	public string ViewModelDisplayName
+	public string DisplayName
 		=> "Metadata";
 
 	readonly ObjectServiceClient? objectServiceClient;

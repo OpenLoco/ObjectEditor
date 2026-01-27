@@ -48,25 +48,68 @@ x:DataType="vm:ObjectEditorViewModel">
 				</Button.Styles>
 			</Button>
 		</StackPanel>
-		<Grid ColumnDefinitions="60*, Auto, 40*">
-			<TabControl Grid.Column="0" ItemsSource="{Binding ViewModels}">
-				<TabControl.Styles>
-						<Style Selector="TabItem">
-							<Setter Property="Padding" Value="2, 0, 2, 0"/>
-							<Setter Property="FontSize" Value="14"/>
-						</Style>
-					</TabControl.Styles>
-				<TabControl.ItemTemplate>
-					<DataTemplate>
-						<TextBlock Text="{Binding ViewModelDisplayName}" />
-					</DataTemplate>
-				</TabControl.ItemTemplate>
-				<TabControl.ContentTemplate>
-					<DataTemplate>
-						<ContentControl Content="{Binding}" />
-					</DataTemplate>
-				</TabControl.ContentTemplate>
-			</TabControl>
-		</Grid>
+
+		<StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="6,0,6,6" Spacing="6">
+			<TextBlock Text="Groups:" VerticalAlignment="Center"/>
+			<TextBox Width="180" Text="{Binding NewGroupName}" Watermark="New group name"/>
+			<Button Content="Add Group" Command="{Binding AddGroupCommand}"/>
+		</StackPanel>
+
+		<ItemsControl ItemsSource="{Binding ViewModelGroups}">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<UniformGrid Columns="{Binding ViewModelGroups.Count}" Rows="1" />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+			<ItemsControl.ItemTemplate>
+				<DataTemplate x:DataType="vm:ViewModelGroup">
+					<DockPanel Margin="6">
+						<StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Top">
+							<TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="SemiBold" />
+							<Button Content="Remove Group" Command="{Binding RemoveGroupCommand}" IsEnabled="{Binding CanRemoveGroup}"/>
+						</StackPanel>
+
+						<StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Top" Margin="0,6,0,6">
+							<ComboBox Width="180" ItemsSource="{Binding AllViewModels}" SelectedItem="{Binding SelectedViewModelToAdd}">
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding DisplayName}" />
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+							<Button Content="Add ViewModel" Command="{Binding AddSelectedViewModelCommand}"/>
+
+							<ComboBox Width="180" ItemsSource="{Binding ViewModels}" SelectedItem="{Binding SelectedViewModelToRemove}">
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding DisplayName}" />
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+							<Button Content="Remove ViewModel" Command="{Binding RemoveSelectedViewModelCommand}"/>
+						</StackPanel>
+
+						<TabControl ItemsSource="{Binding ViewModels}">
+							<TabControl.Styles>
+								<Style Selector="TabItem">
+									<Setter Property="Padding" Value="2, 0, 2, 0"/>
+									<Setter Property="FontSize" Value="14"/>
+								</Style>
+							</TabControl.Styles>
+							<TabControl.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding DisplayName}" />
+								</DataTemplate>
+							</TabControl.ItemTemplate>
+							<TabControl.ContentTemplate>
+								<DataTemplate>
+									<ContentControl Content="{Binding}" />
+								</DataTemplate>
+							</TabControl.ContentTemplate>
+						</TabControl>
+					</DockPanel>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
 	</DockPanel>
 </UserControl>

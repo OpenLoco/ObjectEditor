@@ -34,6 +34,6 @@ public class ObjectModelHeaderViewModel(ObjectModelHeader model)
 	}
 
 	[Browsable(false)]
-	public override string ViewModelDisplayName
+	public override string DisplayName
 		=> "Object Header";
 }

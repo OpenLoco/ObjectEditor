@@ -17,7 +17,7 @@ namespace Gui.ViewModels;
 
 public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 {
-	public string ViewModelDisplayName
+	public string DisplayName
 		=> "Audio Data";
 
 	ILogger Logger { get; init; }

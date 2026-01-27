@@ -24,7 +24,7 @@ namespace Gui.ViewModels.Graphics;
 
 public class ImageTableViewModel : ReactiveObject, IViewModel
 {
-	public string ViewModelDisplayName
+	public string DisplayName
 		=> "Image Table";
 
 	public string ImageCount

@@ -236,7 +236,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 	public override void Load()
 	{
 		// this stops any currently-playing sounds
-		foreach (var vm in ViewModels)
+		foreach (var vm in ViewModelGroups.SelectMany(x => x.ViewModels))
 		{
 			if (vm is AudioViewModel avm)
 			{
@@ -244,7 +244,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			}
 		}
 
-		base.ClearViewModels();
+		ResetViewModelGroups("Object");
 
 		logger.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.FileName}");
 
@@ -252,26 +252,35 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		{
 			Model = newObj;
 
+			var objectGroup = DefaultViewModelGroup;
+
 			if (Model?.LocoObject != null)
 			{
-				base.AddViewModel(GetViewModelFromStruct(Model.LocoObject));
-				base.AddViewModel(new StringTableViewModel(Model.LocoObject.StringTable));
+				AddViewModelToGroup(GetViewModelFromStruct(Model.LocoObject), objectGroup);
+				AddViewModelToGroup(new StringTableViewModel(Model.LocoObject.StringTable), objectGroup);
+
+				var mediaGroup = AddViewModelGroup("Media");
 
 				if (Model.LocoObject.Object is SoundObject soundObject)
 				{
-					base.AddViewModel(new AudioViewModel(logger, Model.Metadata.InternalName, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData));
+					AddViewModelToGroup(new AudioViewModel(logger, Model.Metadata.InternalName, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData), mediaGroup);
 				}
 				else
 				{
 					Model.LocoObject.ImageTable?.PaletteMap = EditorContext.PaletteMap;
 
-					base.AddViewModel(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger));
+					AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger), mediaGroup);
 
 					var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
 					if (bc != null)
 					{
-						base.AddViewModel(new BuildingComponentsViewModel(bc, Model.LocoObject.ImageTable));
+						AddViewModelToGroup(new BuildingComponentsViewModel(bc, Model.LocoObject.ImageTable), mediaGroup);
 					}
+				}
+
+				if (!mediaGroup.ViewModels.Any())
+				{
+					RemoveViewModelGroup(mediaGroup);
 				}
 			}
 
@@ -285,16 +294,18 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				{
 					objectHeaderViewModel.ObjectSource = ObjectSource.LocomotionSteam;
 				}
-				base.AddViewModel(objectHeaderViewModel);
-				base.AddViewModel(new ObjectDatHeaderViewModel(
+
+				AddViewModelToGroup(objectHeaderViewModel, objectGroup);
+				AddViewModelToGroup(new ObjectDatHeaderViewModel(
 					Model.DatInfo.S5Header.Checksum,
 					Model.DatInfo.ObjectHeader.Encoding,
-					Model.DatInfo.ObjectHeader.DataLength));
+					Model.DatInfo.ObjectHeader.DataLength),
+					objectGroup);
 			}
 
 			if (Model?.Metadata != null)
 			{
-				base.AddViewModel(new ObjectMetadataViewModel(Model.Metadata, EditorContext.ObjectServiceClient, logger));
+				AddViewModelToGroup(new ObjectMetadataViewModel(Model.Metadata, EditorContext.ObjectServiceClient, logger), objectGroup);
 			}
 		}
 	}
@@ -345,7 +356,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 	}
 
 	T? GetViewModel<T>() where T : class, IViewModel
-		=> ViewModels.SingleOrDefault(x => x is T) as T;
+		=> ViewModelGroups.SelectMany(x => x.ViewModels).SingleOrDefault(x => x is T) as T;
 
 	async Task UploadMetadataAsync(UniqueObjectId objectId)
 	{

@@ -10,7 +10,7 @@ namespace Gui.ViewModels;
 public class ObjectDatHeaderViewModel(uint32_t checksum, SawyerEncoding encoding, uint datDataLength) : ReactiveObject, IViewModel
 {
 	[Browsable(false)]
-	public string ViewModelDisplayName
+	public string DisplayName
 		=> "Dat Header";
 
 	public ObjectDatHeaderViewModel()

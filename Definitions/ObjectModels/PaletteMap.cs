@@ -123,9 +123,11 @@ public class PaletteMap
 		{
 			for (var x = 0; x < img.Width; ++x)
 			{
+				var pixel = img[x, y];
+				pixel.A = pixel.A == 255 ? (byte)255 : (byte)0; // this sets any translucent pixels to be fully translucent. could add an editor setting to make it fully opaque too
+
 				if (isBgr)
 				{
-					var pixel = img[x, y];
 					bytes[index++] = pixel.B;
 					bytes[index++] = pixel.G;
 					bytes[index++] = pixel.R;
@@ -133,7 +135,7 @@ public class PaletteMap
 				else
 				{
 					index = (y * img.Width) + x;
-					bytes[index] = ColorToPaletteIndex(img[x, y]);
+					bytes[index] = ColorToPaletteIndex(pixel);
 				}
 			}
 		}

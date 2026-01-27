@@ -467,7 +467,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	static GraphicsElement GraphicsElementFromImage(GraphicsElementJson ele, Image<Rgba32> img, PaletteMap paletteMap, int index)
 	{
 		var flags = ele.Flags ?? GraphicsElementFlags.None;
-		return new GraphicsElement()
+		var ge = new GraphicsElement()
 		{
 			Width = (int16_t)img.Width,
 			Height = (int16_t)img.Height,
@@ -480,6 +480,12 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			Image = img,
 			ImageTableIndex = index,
 		};
+
+		ge.Image = paletteMap.TryConvertG1ToRgba32Bitmap(ge, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var convertedImage)
+			? convertedImage
+			: ImageTableHelpers.ErrorImage;
+
+		return ge;
 	}
 
 	async Task ExportImages(string directory, bool prependGroupAndImageNameInFilename)

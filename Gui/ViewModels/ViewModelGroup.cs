@@ -25,6 +25,8 @@ public sealed class ViewModelGroup : ReactiveObject, IViewModel
 			.Subscribe();
 
 		AddSelectedViewModelCommand = ReactiveCommand.Create(AddSelectedViewModel);
+		AddViewModelFromParameterCommand = ReactiveCommand.Create<IViewModel>(AddViewModelFromParameter);
+		RemoveViewModelCommand = ReactiveCommand.Create<IViewModel>(RemoveSpecificViewModel);
 		RemoveSelectedViewModelCommand = ReactiveCommand.Create(RemoveSelectedViewModel);
 		RemoveGroupCommand = ReactiveCommand.Create(RemoveGroup);
 	}
@@ -45,6 +47,8 @@ public sealed class ViewModelGroup : ReactiveObject, IViewModel
 		=> !_host.IsDefaultGroup(this);
 
 	public ReactiveCommand<Unit, Unit> AddSelectedViewModelCommand { get; }
+	public ReactiveCommand<IViewModel, Unit> AddViewModelFromParameterCommand { get; }
+	public ReactiveCommand<IViewModel, Unit> RemoveViewModelCommand { get; }
 	public ReactiveCommand<Unit, Unit> RemoveSelectedViewModelCommand { get; }
 	public ReactiveCommand<Unit, Unit> RemoveGroupCommand { get; }
 
@@ -74,6 +78,22 @@ public sealed class ViewModelGroup : ReactiveObject, IViewModel
 		if (SelectedViewModelToAdd != null)
 		{
 			_ = _host.MoveViewModelToGroup(SelectedViewModelToAdd, this);
+		}
+	}
+
+	void AddViewModelFromParameter(IViewModel vm)
+	{
+		if (vm != null)
+		{
+			_ = _host.MoveViewModelToGroup(vm, this);
+		}
+	}
+
+	void RemoveSpecificViewModel(IViewModel vm)
+	{
+		if (vm != null)
+		{
+			_ = _host.RemoveViewModelFromAllGroups(vm);
 		}
 	}
 

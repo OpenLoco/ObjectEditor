@@ -63,51 +63,63 @@ x:DataType="vm:ObjectEditorViewModel">
 			</ItemsControl.ItemsPanel>
 			<ItemsControl.ItemTemplate>
 				<DataTemplate x:DataType="vm:ViewModelGroup">
-					<DockPanel Margin="6">
-						<StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Top">
-							<TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="SemiBold" />
-							<Button Content="Remove Group" Command="{Binding RemoveGroupCommand}" IsEnabled="{Binding CanRemoveGroup}"/>
-						</StackPanel>
-
-						<StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Top" Margin="0,6,0,6">
-							<ComboBox Width="180" ItemsSource="{Binding AllViewModels}" SelectedItem="{Binding SelectedViewModelToAdd}">
-								<ComboBox.ItemTemplate>
+					<Border BorderThickness="1" Margin="4">
+						<DockPanel Margin="4">
+							<StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Top" Margin="0,0,0,6">
+								<TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+								<Button Content="✕" 
+										Padding="4,0"
+										Command="{Binding RemoveGroupCommand}"
+										IsEnabled="{Binding CanRemoveGroup}"
+										ToolTip.Tip="Remove this group"
+										VerticalAlignment="Center"/>
+								<Button Content="+" 
+										ToolTip.Tip="Add view to this group"
+										VerticalAlignment="Center">
+									<Button.Flyout>
+										<Flyout Placement="Bottom">
+											<ItemsControl ItemsSource="{Binding AllViewModels}">
+												<ItemsControl.ItemTemplate>
+													<DataTemplate>
+														<Button Content="{Binding DisplayName}"
+																Command="{Binding $parent[ItemsControl].((vm:ViewModelGroup)DataContext).AddViewModelFromParameterCommand}"
+																CommandParameter="{Binding}"
+																HorizontalAlignment="Stretch"
+																HorizontalContentAlignment="Left"
+																Margin="2"/>
+													</DataTemplate>
+												</ItemsControl.ItemTemplate>
+											</ItemsControl>
+										</Flyout>
+									</Button.Flyout>
+								</Button>
+							</StackPanel>
+							<TabControl ItemsSource="{Binding ViewModels}">
+								<TabControl.Styles>
+									<Style Selector="TabItem">
+										<Setter Property="Padding" Value="2, 0, 2, 0"/>
+									</Style>
+								</TabControl.Styles>
+								<TabControl.ItemTemplate>
 									<DataTemplate>
-										<TextBlock Text="{Binding DisplayName}" />
+										<StackPanel Orientation="Horizontal" Spacing="4">
+											<TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+											<Button Content="✕" 
+													Padding="4,0" 
+													Command="{Binding $parent[TabControl].((vm:ViewModelGroup)DataContext).RemoveViewModelCommand}" 
+													CommandParameter="{Binding}"
+													ToolTip.Tip="Close this view" />
+										</StackPanel>
 									</DataTemplate>
-								</ComboBox.ItemTemplate>
-							</ComboBox>
-							<Button Content="Add ViewModel" Command="{Binding AddSelectedViewModelCommand}"/>
-
-							<ComboBox Width="180" ItemsSource="{Binding ViewModels}" SelectedItem="{Binding SelectedViewModelToRemove}">
-								<ComboBox.ItemTemplate>
+								</TabControl.ItemTemplate>
+								<TabControl.ContentTemplate>
 									<DataTemplate>
-										<TextBlock Text="{Binding DisplayName}" />
+										<ContentControl Content="{Binding}" />
 									</DataTemplate>
-								</ComboBox.ItemTemplate>
-							</ComboBox>
-							<Button Content="Remove ViewModel" Command="{Binding RemoveSelectedViewModelCommand}"/>
-						</StackPanel>
-
-						<TabControl ItemsSource="{Binding ViewModels}">
-							<TabControl.Styles>
-								<Style Selector="TabItem">
-									<Setter Property="Padding" Value="2, 0, 2, 0"/>
-									<Setter Property="FontSize" Value="14"/>
-								</Style>
-							</TabControl.Styles>
-							<TabControl.ItemTemplate>
-								<DataTemplate>
-									<TextBlock Text="{Binding DisplayName}" />
-								</DataTemplate>
-							</TabControl.ItemTemplate>
-							<TabControl.ContentTemplate>
-								<DataTemplate>
-									<ContentControl Content="{Binding}" />
-								</DataTemplate>
-							</TabControl.ContentTemplate>
-						</TabControl>
-					</DockPanel>
+								</TabControl.ContentTemplate>
+							</TabControl>
+						</DockPanel>
+					</Border>
 				</DataTemplate>
 			</ItemsControl.ItemTemplate>
 		</ItemsControl>

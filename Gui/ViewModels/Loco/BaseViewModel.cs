@@ -45,9 +45,10 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 	public ReadOnlyObservableCollection<IViewModel> AllViewModels
 		=> _allViewModelsCollection;
 
-	//[Reactive]
+	[Browsable(false)]
 	public string NewGroupName { get; set; } = "New Group";
 
+	[Browsable(false)]
 	public ReactiveCommand<Unit, Unit> AddGroupCommand { get; }
 
 	private readonly SourceList<ViewModelGroup> _viewModelGroups = new();

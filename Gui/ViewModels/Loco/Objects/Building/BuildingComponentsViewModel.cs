@@ -124,7 +124,12 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 							YOffset = 0,
 						};
 
-						cumulativeOffset += buildingHeights[variationItem];
+						// this shouldn't be necessary to check, but some objects are fully invalid, eg USFIFACT, so without this
+						// check the editor will crash but we'd instead prefer to show the invalid object to allow fixing it
+						if (variationItem < buildingHeights.Count)
+						{
+							cumulativeOffset += buildingHeights[variationItem];
+						}
 						bs.Layers.Add(bl);
 					}
 				}

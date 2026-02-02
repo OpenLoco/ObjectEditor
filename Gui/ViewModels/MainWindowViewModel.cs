@@ -171,7 +171,7 @@ public class MainWindowViewModel : ViewModelBase
 			}
 
 			EditorContext.Logger.Info($"Attempting to update from {ApplicationVersion} to {LatestVersion}");
-			var t = Task.Run(() => VersionHelpers.StartAutoUpdater(EditorContext.Logger, ApplicationVersion, LatestVersion));
+			_ = Task.Run(() => VersionHelpers.StartAutoUpdater(EditorContext.Logger, ApplicationVersion, LatestVersion));
 
 		});
 

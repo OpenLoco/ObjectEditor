@@ -25,8 +25,8 @@ public class ObjectDatHeaderViewModel(uint32_t checksum, SawyerEncoding encoding
 
 	public string ChecksumHex
 	{
-		get => string.Format($"0x{checksum:X}");
-		set => checksum = Convert.ToUInt32(value[2..], 16);
+		get => string.Format($"0x{_checksum:X}");
+		set => _checksum = Convert.ToUInt32(value[2..], 16);
 	}
-	uint32_t checksum { get; set; } = checksum;
+	uint32_t _checksum { get; set; } = checksum;
 }

@@ -55,7 +55,8 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
 	public ReactiveCommand<Unit, Unit> DownloadLatestUpdate { get; }
 
-	public string WindowTitle => $"{ObjectEditorContext.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
+	public string WindowTitle
+		=> $"{ObjectEditorContext.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
 	[Reactive]
 	public SemanticVersion ApplicationVersion { get; set; }
@@ -194,7 +195,7 @@ public class MainWindowViewModel : ViewModelBase
 		}
 		catch (Exception ex)
 		{
-			Model.Logger.Error(ex);
+			EditorContext.Logger.Error(ex);
 		}
 #endif
 

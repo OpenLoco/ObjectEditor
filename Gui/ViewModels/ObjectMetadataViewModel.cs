@@ -53,7 +53,7 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 
 		RemoveAuthorCommand = ReactiveCommand.Create<DtoAuthorEntry>(author =>
 		{
-			Authors.Remove(author);
+			_ = Authors.Remove(author);
 			SyncAuthorsToMetadata();
 		});
 
@@ -68,7 +68,7 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 
 		RemoveTagCommand = ReactiveCommand.Create<DtoTagEntry>(tag =>
 		{
-			Tags.Remove(tag);
+			_ = Tags.Remove(tag);
 			SyncTagsToMetadata();
 		});
 
@@ -83,7 +83,7 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 
 		RemoveObjectPackCommand = ReactiveCommand.Create<DtoItemPackEntry>(pack =>
 		{
-			ObjectPacks.Remove(pack);
+			_ = ObjectPacks.Remove(pack);
 			SyncObjectPacksToMetadata();
 		});
 

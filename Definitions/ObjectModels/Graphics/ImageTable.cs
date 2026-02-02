@@ -23,6 +23,7 @@ public class ImageTable : IHasGraphicsElements
 					{
 						throw new Exception("Failed to convert image");
 					}
+
 					ge.Image = image;
 				}
 			}

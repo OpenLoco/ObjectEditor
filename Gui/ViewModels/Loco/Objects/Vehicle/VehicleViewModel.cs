@@ -104,6 +104,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 		{
 			item.PropertyChanged += OnCargoCategoryPropertyChanged;
 		}
+
 		foreach (var item in CompatibleCargo2.CargoCategories)
 		{
 			item.PropertyChanged += OnCargoCategoryPropertyChanged;
@@ -418,6 +419,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 					item.PropertyChanged -= OnCargoCategoryPropertyChanged;
 				}
 			}
+
 			if (e.NewItems != null)
 			{
 				foreach (CargoCategoryViewModel item in e.NewItems)
@@ -517,6 +519,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 					item.PropertyChanged -= OnCargoTypeSpriteOffsetPropertyChanged;
 				}
 			}
+
 			if (e.NewItems != null)
 			{
 				foreach (CargoTypeSpriteOffsetViewModel item in e.NewItems)

@@ -22,7 +22,6 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
@@ -263,28 +262,31 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 				if (Model.LocoObject.Object is SoundObject soundObject)
 				{
-					AddViewModelToGroup(new AudioViewModel(logger, Model.Metadata.InternalName, soundObject.SoundObjectData.PcmHeader, soundObject.PcmData), mediaGroup);
+					AddViewModelToGroup(new AudioViewModel(logger, Model.Metadata?.InternalName ?? Model.DatInfo?.S5Header.Name ?? "unk sound name", soundObject.SoundObjectData.PcmHeader, soundObject.PcmData), mediaGroup);
 				}
 				else
 				{
-					Model.LocoObject.ImageTable?.PaletteMap = EditorContext.PaletteMap;
+					_ = Model.LocoObject.ImageTable?.PaletteMap = EditorContext.PaletteMap;
 
-					AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger), mediaGroup);
-
-					var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
-					if (bc != null)
+					if (Model.LocoObject.ImageTable != null)
 					{
-						AddViewModelToGroup(new BuildingComponentsViewModel(bc, Model.LocoObject.ImageTable), mediaGroup);
+						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger), mediaGroup);
+
+						var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
+						if (bc != null)
+						{
+							AddViewModelToGroup(new BuildingComponentsViewModel(bc, Model.LocoObject.ImageTable), mediaGroup);
+						}
 					}
 				}
 
 				if (!mediaGroup.ViewModels.Any())
 				{
-					RemoveViewModelGroup(mediaGroup);
+					_ = RemoveViewModelGroup(mediaGroup);
 				}
 			}
 
-			if (Model != null)
+			if (Model?.DatInfo != null)
 			{
 				var objectHeaderViewModel = new ObjectModelHeaderViewModel(Model.DatInfo.S5Header.Convert());
 
@@ -339,6 +341,13 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
 			? CurrentFile.FileName
 			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension($"{CurrentFile.DisplayName}-{CurrentFile.Id}", ".dat"));
+
+		if (string.IsNullOrEmpty(savePath))
+		{
+			logger.Error($"Cannot save: savePath was null. EditorContext.Settings.DownloadFolder=\"{EditorContext.Settings.DownloadFolder}\" CurrentFile.Location=\"{CurrentFile.FileLocation}\" CurrentFile.DisplayName=\"{CurrentFile.DisplayName}\" CurrentFile.Id=\"{CurrentFile.Id}\"");
+			return;
+		}
+
 		SaveCore(savePath, new SaveParameters(SaveType.DAT, GetViewModel<ObjectDatHeaderViewModel>()?.Encoding ?? SawyerEncoding.Uncompressed));
 
 		// Upload metadata to server when in online mode
@@ -441,6 +450,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			SaveCore(saveFile.Path.LocalPath, saveParameters);
 			return saveFile.Path.LocalPath;
 		}
+
 		return null;
 	}
 
@@ -478,9 +488,9 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			return;
 		}
 
-		ValidateObject(showPopupOnSuccess: false);
+		_ = ValidateObject(showPopupOnSuccess: false);
 
-		logger.Info($"Saving {Model.DatInfo.S5Header.Name} to {filename}");
+		logger.Info($"Saving {Model.DatInfo?.S5Header.Name} to {filename}");
 		var stvm = GetViewModel<StringTableViewModel>();
 		stvm?.WriteTableBackToObject();
 
@@ -496,9 +506,9 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			}
 		}
 
-		if (saveParameters.SaveType == SaveType.DAT)
+		var header = Model.DatInfo?.S5Header;
+		if (saveParameters.SaveType == SaveType.DAT && header != null)
 		{
-			var header = Model.DatInfo.S5Header;
 			var objectModelHeader = GetViewModel<ObjectModelHeaderViewModel>();
 
 			SawyerStreamWriter.Save(filename,
@@ -514,26 +524,18 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			JsonSerializer.Serialize(
 				new FileStream(filename, FileMode.Create, FileAccess.Write),
 				Model.LocoObject,
-				new JsonSerializerOptions
-				{
-					WriteIndented = true,
-					//Converters =
-					//{
-					//	new LocoStructJsonConverterFactory(),
-					//	new ObjectTypeJsonConverter(),
-					//	new ObjectSourceJsonConverter(),
-					//}
-				});
+				options);
 		}
 	}
-}
 
-public class TreeNode(string title, string offsetText, ObservableCollection<TreeNode> nodes)
-{
-	public ObservableCollection<TreeNode> Nodes { get; } = nodes;
-	public string Title { get; } = title;
-	public string OffsetText { get; } = offsetText;
-	public TreeNode() : this("<empty>", "<empty>") { }
-
-	public TreeNode(string title, string offsetText) : this(title, offsetText, []) { }
+	readonly JsonSerializerOptions options = new()
+	{
+		WriteIndented = true,
+		//Converters =
+		//{
+		//	new LocoStructJsonConverterFactory(),
+		//	new ObjectTypeJsonConverter(),
+		//	new ObjectSourceJsonConverter(),
+		//}
+	};
 }

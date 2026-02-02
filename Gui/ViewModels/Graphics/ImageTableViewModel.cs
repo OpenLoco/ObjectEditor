@@ -5,8 +5,6 @@ using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
-using Definitions.ObjectModels.Objects.Common;
-using Gui.ViewModels.Loco.Objects.Building;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -106,8 +104,8 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 		ColourSwatches = [.. ColourSwatchesArr.Select(x => new ColourRemapSwatchViewModel()
 		{
 			Swatch = x,
-			Colour = Model.PaletteMap.GetRemapSwatchFromName(x)[0].Color.ToAvaloniaColor(),
-			GradientColours = [.. Model.PaletteMap.GetRemapSwatchFromName(x).Select(x => x.Color.ToAvaloniaColor())],
+			Colour = Model.PaletteMap.GetRemapSwatchFromName(x)?[0].Color.ToAvaloniaColor() ?? Avalonia.Media.Colors.Red,
+			GradientColours = [.. Model.PaletteMap.GetRemapSwatchFromName(x)?.Select(x => x.Color.ToAvaloniaColor()) ?? [Avalonia.Media.Colors.DarkRed]],
 		})];
 
 		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.PrimaryRemap);
@@ -150,7 +148,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 			}
 		});
 
-		TranslateXOffsetAllImagesCommand = ReactiveCommand.Create<string>((string amount) =>
+		TranslateXOffsetAllImagesCommand = ReactiveCommand.Create<string>(amount =>
 		{
 			if (short.TryParse(amount, out var result))
 			{
@@ -161,7 +159,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 			}
 		});
 
-		TranslateYOffsetAllImagesCommand = ReactiveCommand.Create<string>((string amount) =>
+		TranslateYOffsetAllImagesCommand = ReactiveCommand.Create<string>(amount =>
 		{
 			if (short.TryParse(amount, out var result))
 			{
@@ -197,6 +195,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 			givm.SelectionModel.SelectionChanged += SelectionChanged;
 			GroupedImageViewModels.Add(givm);
 		}
+
 		this.RaisePropertyChanged(nameof(GroupedImageViewModels));
 	}
 
@@ -392,7 +391,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 			var offsetsFile = Path.Combine(directory, "sprites.json");
 			if (File.Exists(offsetsFile))
 			{
-				offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(offsetsFile); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+				offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(offsetsFile) ?? []; // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 				ArgumentNullException.ThrowIfNull(offsets);
 				Logger.Debug($"Found sprites.json file with {offsets.Count} images");
 			}

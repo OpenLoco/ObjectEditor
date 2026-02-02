@@ -130,6 +130,7 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 						{
 							cumulativeOffset += buildingHeights[variationItem];
 						}
+
 						bs.Layers.Add(bl);
 					}
 				}

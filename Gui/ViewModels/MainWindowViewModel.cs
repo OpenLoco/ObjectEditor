@@ -111,6 +111,7 @@ public class MainWindowViewModel : ViewModelBase
 						{
 							return;
 						}
+
 						ShowLogsCommand.Execute();
 					});
 				}
@@ -163,6 +164,7 @@ public class MainWindowViewModel : ViewModelBase
 			{
 				EditorContext.Logger.Info($"{nameof(ApplicationVersion)} is null");
 			}
+
 			if (LatestVersion == null || LatestVersion == VersionHelpers.UnknownVersion)
 			{
 				EditorContext.Logger.Info($"{nameof(LatestVersion)} is null");

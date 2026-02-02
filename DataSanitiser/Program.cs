@@ -132,6 +132,7 @@ static void QueryBuildingVar_AC()
 	//	Console.WriteLine(line);
 	//}
 }
+
 QueryBuildingVar_AC();
 
 static void QueryBuildingProducedQuantity()

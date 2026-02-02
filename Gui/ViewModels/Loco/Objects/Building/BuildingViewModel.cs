@@ -1,4 +1,3 @@
-using Dat.Loaders;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
@@ -68,6 +67,7 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 			{
 				variation.ListChanged += OnBuildingVariationItemChanged;
 			}
+
 			SynchronizeBuildingComponentsToModel();
 			NotifyBuildingChanged();
 		}

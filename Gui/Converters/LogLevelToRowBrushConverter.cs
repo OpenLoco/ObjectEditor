@@ -38,6 +38,7 @@ public class LogLevelToRowBrushConverter : IValueConverter
 			{
 				return brush;
 			}
+
 			return Brushes.Red;
 		}
 		else if (value is LogLine { Level: LogLevel.Warning })
@@ -46,6 +47,7 @@ public class LogLevelToRowBrushConverter : IValueConverter
 			{
 				return brush;
 			}
+
 			return Brushes.Yellow;
 		}
 		else

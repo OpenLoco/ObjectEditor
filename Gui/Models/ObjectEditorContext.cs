@@ -351,7 +351,7 @@ public class ObjectEditorContext : IDisposable
 		var obj = SawyerStreamReader.LoadFullObject(filename, logger: Logger);
 		fileInfo = obj.DatFileInfo;
 		locoObject = obj.LocoObject;
-		metadata = new ObjectMetadata("<unknown>")
+		metadata = new ObjectMetadata("<none>")
 		{
 			CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
 			ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset(),

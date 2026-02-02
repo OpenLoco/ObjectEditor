@@ -118,6 +118,7 @@ public class FilterViewModel : ReactiveObject
 			{
 				AvailableOperators.Add(FilterOperator.Contains);
 			}
+
 			AvailableOperators.AddRange([FilterOperator.Equals, FilterOperator.NotEquals]);
 		}
 		else if (underlyingType == typeof(bool))
@@ -248,7 +249,7 @@ public class FilterViewModel : ReactiveObject
 		//	return BuildFilterExpression<MetadataModel>()?.Compile();
 		//}
 		// Otherwise, build a delegate that loads the object from disk
-		return (ObjectIndexEntry entry) => BuildObjectFilter(entry, isLocal);
+		return entry => BuildObjectFilter(entry, isLocal);
 	}
 
 	//bool BuildMetadataFilter(ObjectIndexEntry entry)

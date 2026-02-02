@@ -10,12 +10,26 @@ using System.Linq;
 
 namespace Gui.ViewModels;
 
-public record LanguageTranslationModel(LanguageId Language, string Translation);
+public class LanguageTranslationModel : ReactiveObject
+{
+	public LanguageTranslationModel(LanguageId language, string translation)
+	{
+		Language = language;
+		Translation = translation;
+	}
+
+	public LanguageId Language { get; init; }
+
+	[Reactive]
+	public string Translation { get; set; }
+}
 
 public class StringTableViewModel : ReactiveObject, IViewModel
 {
 	public string DisplayName
 		=> "String Table";
+
+	BindingList<LanguageTranslationModel>? subscribedInnerDictionary;
 
 	public StringTableViewModel(StringTable table)
 	{
@@ -30,6 +44,9 @@ public class StringTableViewModel : ReactiveObject, IViewModel
 
 		_ = this.WhenAnyValue(o => o.SelectedKey)
 			.Subscribe(_ => SelectedInnerDictionary = SelectedKey == null ? null : TableView[SelectedKey]);
+
+		_ = this.WhenAnyValue(o => o.SelectedInnerDictionary)
+			.Subscribe(SubscribeToSelectedInnerDictionary);
 	}
 
 	[Reactive]
@@ -46,28 +63,39 @@ public class StringTableViewModel : ReactiveObject, IViewModel
 
 	StringTable OriginalTable { get; init; }
 
-	public void WriteTableBackToObject() // potentially could be done when SelectedInnerDictionary items change
+	void SubscribeToSelectedInnerDictionary(BindingList<LanguageTranslationModel>? innerDictionary)
 	{
-		foreach (var key in TableView)
+		if (subscribedInnerDictionary != null)
 		{
-			foreach (var t in key.Value)
-			{
-				OriginalTable[key.Key][t.Language] = t.Translation;
-			}
+			subscribedInnerDictionary.ListChanged -= OnSelectedInnerDictionaryChanged;
+		}
+
+		subscribedInnerDictionary = innerDictionary;
+
+		if (subscribedInnerDictionary != null)
+		{
+			subscribedInnerDictionary.ListChanged += OnSelectedInnerDictionaryChanged;
+			UpdateSelectedInnerDictionaryInModel();
 		}
 	}
 
-	//public StringTable ToStringTable()
-	//{
-	//	var st = new StringTable();
-	//	foreach (var key in TableView)
-	//	{
-	//		foreach (var t in key.Value)
-	//		{
-	//			st[key.Key][t.Language] = t.Translation;
-	//		}
-	//	}
+	void OnSelectedInnerDictionaryChanged(object? sender, ListChangedEventArgs e)
+		=> UpdateSelectedInnerDictionaryInModel();
 
-	//	return st;
-	//}
+	void UpdateSelectedInnerDictionaryInModel()
+	{
+		if (SelectedKey == null || SelectedInnerDictionary == null)
+		{
+			return;
+		}
+
+		var target = OriginalTable[SelectedKey];
+		target.Clear();
+
+		foreach (var translation in SelectedInnerDictionary)
+		{
+			target[translation.Language] = translation.Translation;
+		}
+	}
+
 }

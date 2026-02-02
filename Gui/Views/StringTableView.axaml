@@ -30,5 +30,4 @@
 			</ItemsRepeater.ItemTemplate>
 		</ItemsRepeater>
 	</DockPanel>
-</UserControl
->
+</UserControl>

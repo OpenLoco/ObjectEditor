@@ -82,13 +82,13 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 	// in future, this method needs to resample the audio to convert to the specific music or sfx format that loco uses
 	public (SoundEffectWaveFormat Header, byte[] Data)? GetAsDatWav(LocoAudioType format)
 	{
-		if (WaveStream == null)
-		{
-			throw new InvalidOperationException("Cannot export a null WaveStream");
-		}
-
 		try
 		{
+			if (WaveStream == null)
+			{
+				throw new InvalidOperationException("Cannot export a null WaveStream");
+			}
+
 			CurrentWOEvent?.Stop();
 			WaveStream.Position = 0;
 

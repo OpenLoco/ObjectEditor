@@ -462,12 +462,12 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			return;
 		}
 
-		var ovm = GetViewModel<IViewModel>();
-		if (ovm == null)
-		{
-			logger.Error("Cannot save - loco object viewmodel was null");
-			return;
-		}
+		//var ovm = GetViewModel<IViewModel>();
+		//if (ovm == null)
+		//{
+		//	logger.Error("Cannot save - loco object viewmodel was null");
+		//	return;
+		//}
 
 		if (string.IsNullOrEmpty(filename))
 		{
@@ -491,8 +491,6 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		_ = ValidateObject(showPopupOnSuccess: false);
 
 		logger.Info($"Saving {Model.DatInfo?.S5Header.Name} to {filename}");
-		var stvm = GetViewModel<StringTableViewModel>();
-		stvm?.WriteTableBackToObject();
 
 		// this is hacky but it should work
 		var avm = GetViewModel<AudioViewModel>();

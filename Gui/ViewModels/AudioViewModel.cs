@@ -15,9 +15,10 @@ using System.Windows.Input;
 
 namespace Gui.ViewModels;
 
-public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposable
+public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 {
-	public string Name => "Audio Data";
+	public string DisplayName
+		=> "Audio Data";
 
 	ILogger Logger { get; init; }
 
@@ -81,13 +82,13 @@ public class AudioViewModel : ReactiveObject, IExtraContentViewModel, IDisposabl
 	// in future, this method needs to resample the audio to convert to the specific music or sfx format that loco uses
 	public (SoundEffectWaveFormat Header, byte[] Data)? GetAsDatWav(LocoAudioType format)
 	{
-		if (WaveStream == null)
-		{
-			throw new InvalidOperationException("Cannot export a null WaveStream");
-		}
-
 		try
 		{
+			if (WaveStream == null)
+			{
+				throw new InvalidOperationException("Cannot export a null WaveStream");
+			}
+
 			CurrentWOEvent?.Stop();
 			WaveStream.Position = 0;
 

@@ -1,0 +1,14 @@
+using Definitions.ObjectModels.Objects.Scaffolding;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+namespace Gui.ViewModels;
+
+public class ScaffoldingViewModel(ScaffoldingObject model) : BaseViewModel<ScaffoldingObject>(model)
+{
+	[Length(0, 3)]
+	public BindingList<uint16_t> SegmentHeights { get; init; } = new(model.SegmentHeights);
+
+	[Length(0, 3)]
+	public BindingList<uint16_t> RoofHeights { get; init; } = new(model.RoofHeights);
+}

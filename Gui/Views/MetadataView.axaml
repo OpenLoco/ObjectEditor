@@ -1,326 +1,324 @@
 <UserControl
-    x:Class="Gui.Views.MetadataView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:mo="using:Gui.Models"
-    xmlns:vm="using:Gui.ViewModels"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
-    x:DataType="vm:ObjectMetadataViewModel"
-    mc:Ignorable="d">
+	x:Class="Gui.Views.MetadataView"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:mo="using:Gui.Models"
+	xmlns:vm="using:Gui.ViewModels"
+	d:DesignHeight="450"
+	d:DesignWidth="800"
+	x:DataType="vm:ObjectMetadataViewModel"
+	mc:Ignorable="d">
 
-    <TabControl
-        Margin="8"
-        Background="{DynamicResource ExpanderContentBackground}">
-        <TabItem Header="Details">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+	<TabControl>
+		<TabItem Header="Details">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
 
-                <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Text="Unique Object Id" />
-                <TextBox
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    IsReadOnly="True"
-                    Text="{Binding Metadata.UniqueObjectId}" />
+				<TextBlock
+				Grid.Row="0"
+				Grid.Column="0"
+				Margin="4"
+				VerticalAlignment="Center"
+				Text="Unique Object Id" />
+				<TextBox
+				Grid.Row="0"
+				Grid.Column="1"
+				Margin="4"
+				VerticalAlignment="Center"
+				IsReadOnly="True"
+				Text="{Binding Model.UniqueObjectId}" />
 
-                <TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Text="Internal Name" />
-                <TextBox
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    IsReadOnly="True"
-                    Text="{Binding InternalName}" />
+				<TextBlock
+				Grid.Row="1"
+				Grid.Column="0"
+				Margin="4"
+				VerticalAlignment="Center"
+				Text="Internal Name" />
+				<TextBox
+				Grid.Row="1"
+				Grid.Column="1"
+				Margin="4"
+				VerticalAlignment="Center"
+				IsReadOnly="True"
+				Text="{Binding InternalName}" />
 
-                <TextBlock
-                    Grid.Row="2"
-                    Grid.Column="0"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Text="Description" />
-                <TextBox
-                    Grid.Row="2"
-                    Grid.Column="1"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    IsReadOnly="False"
-                    Text="{Binding Description, Mode=TwoWay}" />
+				<TextBlock
+				Grid.Row="2"
+				Grid.Column="0"
+				Margin="4"
+				VerticalAlignment="Center"
+				Text="Description" />
+				<TextBox
+				Grid.Row="2"
+				Grid.Column="1"
+				Margin="4"
+				VerticalAlignment="Center"
+				IsReadOnly="False"
+				Text="{Binding Description, Mode=TwoWay}" />
 
-                <TextBlock
-                    Grid.Row="3"
-                    Grid.Column="0"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Text="Availability" />
-                <TextBox
-                    Grid.Row="3"
-                    Grid.Column="1"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    IsReadOnly="True"
-                    Text="{Binding Availability}" />
+				<TextBlock
+				Grid.Row="3"
+				Grid.Column="0"
+				Margin="4"
+				VerticalAlignment="Center"
+				Text="Availability" />
+				<TextBox
+				Grid.Row="3"
+				Grid.Column="1"
+				Margin="4"
+				VerticalAlignment="Center"
+				IsReadOnly="True"
+				Text="{Binding Availability}" />
 
-                <TextBlock
-                    Grid.Row="4"
-                    Grid.Column="0"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Text="Created Date" />
-                <DatePicker
-                    Grid.Row="4"
-                    Grid.Column="1"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    IsEnabled="True"
-                    SelectedDate="{Binding CreatedDate, Mode=TwoWay}" />
+				<TextBlock
+				Grid.Row="4"
+				Grid.Column="0"
+				Margin="4"
+				VerticalAlignment="Center"
+				Text="Created Date" />
+				<DatePicker
+				Grid.Row="4"
+				Grid.Column="1"
+				Margin="4"
+				VerticalAlignment="Center"
+				IsEnabled="True"
+				SelectedDate="{Binding CreatedDate, Mode=TwoWay}" />
 
-                <TextBlock
-                    Grid.Row="5"
-                    Grid.Column="0"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Text="Modified Date" />
-                <DatePicker
-                    Grid.Row="5"
-                    Grid.Column="1"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    IsEnabled="True"
-                    SelectedDate="{Binding ModifiedDate, Mode=TwoWay}" />
+				<TextBlock
+				Grid.Row="5"
+				Grid.Column="0"
+				Margin="4"
+				VerticalAlignment="Center"
+				Text="Modified Date" />
+				<DatePicker
+				Grid.Row="5"
+				Grid.Column="1"
+				Margin="4"
+				VerticalAlignment="Center"
+				IsEnabled="True"
+				SelectedDate="{Binding ModifiedDate, Mode=TwoWay}" />
 
-                <TextBlock
-                    Grid.Row="6"
-                    Grid.Column="0"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Text="Uploaded Date" />
-                <DatePicker
-                    Grid.Row="6"
-                    Grid.Column="1"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    IsEnabled="False"
-                    SelectedDate="{Binding UploadedDate, Mode=OneWay}" />
+				<TextBlock
+				Grid.Row="6"
+				Grid.Column="0"
+				Margin="4"
+				VerticalAlignment="Center"
+				Text="Uploaded Date" />
+				<DatePicker
+				Grid.Row="6"
+				Grid.Column="1"
+				Margin="4"
+				VerticalAlignment="Center"
+				IsEnabled="False"
+				SelectedDate="{Binding UploadedDate, Mode=OneWay}" />
 
-                <TextBlock
-                    Grid.Row="7"
-                    Grid.Column="0"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Text="Licence" />
-                <ComboBox
-                    Grid.Row="7"
-                    Grid.Column="1"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    ItemsSource="{Binding AvailableLicences}"
-                    SelectedItem="{Binding SelectedLicence, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name, TargetNullValue=None, FallbackValue=None}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </Grid>
-        </TabItem>
-        <TabItem Header="Authors">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                
-                <!-- Add Author Section -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4">
-                    <ComboBox 
-                        Width="250"
-                        Margin="4"
-                        ItemsSource="{Binding AvailableAuthors}"
-                        x:Name="AuthorSelector">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                    <Button 
-                        Margin="4"
-                        Content="Add Author"
-                        Command="{Binding AddAuthorCommand}"
-                        CommandParameter="{Binding #AuthorSelector.SelectedItem}" />
-                </StackPanel>
-                
-                <!-- Authors List -->
-                <ListBox Grid.Row="1" ItemsSource="{Binding Authors}" Margin="4">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" Margin="4" />
-                                <Button 
-                                    Grid.Column="1" 
-                                    Content="Remove"
-                                    Margin="4"
-                                    Command="{Binding $parent[UserControl].((vm:ObjectMetadataViewModel)DataContext).RemoveAuthorCommand}"
-                                    CommandParameter="{Binding}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-        </TabItem>
-        <TabItem Header="Tags">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                
-                <!-- Add Tag Section -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4">
-                    <ComboBox 
-                        Width="250"
-                        Margin="4"
-                        ItemsSource="{Binding AvailableTags}"
-                        x:Name="TagSelector">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                    <Button 
-                        Margin="4"
-                        Content="Add Tag"
-                        Command="{Binding AddTagCommand}"
-                        CommandParameter="{Binding #TagSelector.SelectedItem}" />
-                </StackPanel>
-                
-                <!-- Tags List -->
-                <ListBox Grid.Row="1" ItemsSource="{Binding Tags}" Margin="4">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" Margin="4" />
-                                <Button 
-                                    Grid.Column="1" 
-                                    Content="Remove"
-                                    Margin="4"
-                                    Command="{Binding $parent[UserControl].((vm:ObjectMetadataViewModel)DataContext).RemoveTagCommand}"
-                                    CommandParameter="{Binding}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-        </TabItem>
-        <TabItem Header="ObjectPacks">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                
-                <!-- Add ObjectPack Section -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4">
-                    <ComboBox 
-                        Width="250"
-                        Margin="4"
-                        ItemsSource="{Binding AvailableObjectPacks}"
-                        x:Name="ObjectPackSelector">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                    <Button 
-                        Margin="4"
-                        Content="Add ObjectPack"
-                        Command="{Binding AddObjectPackCommand}"
-                        CommandParameter="{Binding #ObjectPackSelector.SelectedItem}" />
-                </StackPanel>
-                
-                <!-- ObjectPacks List -->
-                <ListBox Grid.Row="1" ItemsSource="{Binding ObjectPacks}" Margin="4">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" Margin="4">
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                    <TextBlock Text="{Binding Description}" FontStyle="Italic" />
-                                </StackPanel>
-                                <Button 
-                                    Grid.Column="1" 
-                                    Content="Remove"
-                                    Margin="4"
-                                    VerticalAlignment="Center"
-                                    Command="{Binding $parent[UserControl].((vm:ObjectMetadataViewModel)DataContext).RemoveObjectPackCommand}"
-                                    CommandParameter="{Binding}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-        </TabItem>
-        <TabItem Header="DatObjects">
-            <ListBox ItemsSource="{Binding Metadata.DatObjects}">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel />
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderThickness="2">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Margin="4" Text="{Binding DatName}" />
-                                <TextBlock Margin="4" Text="{Binding DatChecksum}" />
-                                <TextBlock Margin="4" Text="{Binding xxHash3}" />
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </TabItem>
-    </TabControl>
+				<TextBlock
+				Grid.Row="7"
+				Grid.Column="0"
+				Margin="4"
+				VerticalAlignment="Center"
+				Text="Licence" />
+				<ComboBox
+				Grid.Row="7"
+				Grid.Column="1"
+				Margin="4"
+				VerticalAlignment="Center"
+				ItemsSource="{Binding AvailableLicences}"
+				SelectedItem="{Binding SelectedLicence, Mode=TwoWay}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Name, TargetNullValue=None, FallbackValue=None}" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+			</Grid>
+		</TabItem>
+		<TabItem Header="Authors">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+
+				<!-- Add Author Section -->
+				<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4">
+					<ComboBox
+					Width="250"
+					Margin="4"
+					ItemsSource="{Binding AvailableAuthors}"
+					x:Name="AuthorSelector">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Name}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+					<Button
+					Margin="4"
+					Content="Add Author"
+					Command="{Binding AddAuthorCommand}"
+					CommandParameter="{Binding #AuthorSelector.SelectedItem}" />
+				</StackPanel>
+
+				<!-- Authors List -->
+				<ListBox Grid.Row="1" ItemsSource="{Binding Authors}" Margin="4">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" Margin="4" />
+								<Button
+								Grid.Column="1"
+								Content="Remove"
+								Margin="4"
+								Command="{Binding $parent[UserControl].((vm:ObjectMetadataViewModel)DataContext).RemoveAuthorCommand}"
+								CommandParameter="{Binding}" />
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Grid>
+		</TabItem>
+		<TabItem Header="Tags">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+
+				<!-- Add Tag Section -->
+				<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4">
+					<ComboBox
+					Width="250"
+					Margin="4"
+					ItemsSource="{Binding AvailableTags}"
+					x:Name="TagSelector">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Name}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+					<Button
+					Margin="4"
+					Content="Add Tag"
+					Command="{Binding AddTagCommand}"
+					CommandParameter="{Binding #TagSelector.SelectedItem}" />
+				</StackPanel>
+
+				<!-- Tags List -->
+				<ListBox Grid.Row="1" ItemsSource="{Binding Tags}" Margin="4">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" Margin="4" />
+								<Button
+								Grid.Column="1"
+								Content="Remove"
+								Margin="4"
+								Command="{Binding $parent[UserControl].((vm:ObjectMetadataViewModel)DataContext).RemoveTagCommand}"
+								CommandParameter="{Binding}" />
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Grid>
+		</TabItem>
+		<TabItem Header="ObjectPacks">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+
+				<!-- Add ObjectPack Section -->
+				<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4">
+					<ComboBox
+					Width="250"
+					Margin="4"
+					ItemsSource="{Binding AvailableObjectPacks}"
+					x:Name="ObjectPackSelector">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Name}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+					<Button
+					Margin="4"
+					Content="Add ObjectPack"
+					Command="{Binding AddObjectPackCommand}"
+					CommandParameter="{Binding #ObjectPackSelector.SelectedItem}" />
+				</StackPanel>
+
+				<!-- ObjectPacks List -->
+				<ListBox Grid.Row="1" ItemsSource="{Binding ObjectPacks}" Margin="4">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<StackPanel Grid.Column="0" Margin="4">
+									<TextBlock Text="{Binding Name}" FontWeight="Bold" />
+									<TextBlock Text="{Binding Description}" FontStyle="Italic" />
+								</StackPanel>
+								<Button
+								Grid.Column="1"
+								Content="Remove"
+								Margin="4"
+								VerticalAlignment="Center"
+								Command="{Binding $parent[UserControl].((vm:ObjectMetadataViewModel)DataContext).RemoveObjectPackCommand}"
+								CommandParameter="{Binding}" />
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Grid>
+		</TabItem>
+		<TabItem Header="DatObjects">
+			<ListBox ItemsSource="{Binding Model.DatObjects}">
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel />
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Border BorderThickness="2">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Margin="4" Text="{Binding DatName}" />
+								<TextBlock Margin="4" Text="{Binding DatChecksum}" />
+								<TextBlock Margin="4" Text="{Binding xxHash3}" />
+							</StackPanel>
+						</Border>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</TabItem>
+	</TabControl>
 </UserControl>

@@ -108,19 +108,22 @@
 		<DataTemplate DataType="vm:ObjectMetadataViewModel">
 			<vi:MetadataView />
 		</DataTemplate>
+		<DataTemplate DataType="vm:StringTableViewModel">
+			<vi:StringTableView />
+		</DataTemplate>
 		<DataTemplate DataType="vm:ObjectEditorViewModel">
 			<vi:ObjectEditorView />
 		</DataTemplate>
 		<DataTemplate DataType="vm:FolderTreeViewModel">
 			<vi:FolderTreeView />
 		</DataTemplate>
-		<DataTemplate DataType="vm:LocoTypes.Objects.Building.BuildingComponentsViewModel">
+		<DataTemplate DataType="vm:Loco.Objects.Building.BuildingComponentsViewModel">
 			<vi:BuildingComponentsView />
 		</DataTemplate>
 		<DataTemplate DataType="vm:G1ViewModel">
 			<ContentControl Content="{Binding ImageTableViewModel}" />
 		</DataTemplate>
-		<DataTemplate DataType="vm:IObjectViewModel">
+		<DataTemplate DataType="vm:IViewModel">
 			<ScrollViewer>
 				<vi:ExtendedPropertyGrid Background="{DynamicResource ExpanderContentBackground}" IsHeaderVisible="True" IsCategoryVisible="False" IsAutoNameWidth="True" IsQuickFilterVisible="True" DataContext="{Binding}" />
 			</ScrollViewer>

@@ -1,0 +1,33 @@
+<UserControl
+	x:Class="Gui.Views.StringTableView"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Gui.ViewModels"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+	x:DataType="vm:StringTableViewModel">
+
+	<DockPanel DataContext="{Binding}" >
+		<ListBox ItemsSource="{Binding Keys}" SelectedItem="{Binding SelectedKey}" DockPanel.Dock="Left" Background="{DynamicResource ScrollBarTrackFill}">
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+		<ItemsRepeater ItemsSource="{Binding SelectedInnerDictionary}" Background="{DynamicResource ExpanderContentBackground}">
+			<ItemsRepeater.Layout>
+				<UniformGridLayout Orientation="Vertical"/>
+			</ItemsRepeater.Layout>
+			<ItemsRepeater.ItemTemplate>
+				<DataTemplate>
+					<StackPanel Orientation="Horizontal" Margin="4">
+						<TextBlock Text="{Binding Language}" Margin="4" Width="128"></TextBlock>
+						<TextBox Text="{Binding Translation}" Width="256"></TextBox>
+					</StackPanel>
+				</DataTemplate>
+			</ItemsRepeater.ItemTemplate>
+		</ItemsRepeater>
+	</DockPanel>
+</UserControl>

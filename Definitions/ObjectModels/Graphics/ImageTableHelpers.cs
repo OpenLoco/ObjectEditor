@@ -21,6 +21,7 @@ public static class ImageTableHelpers
 				img[x, y] = isRed ? Color.Magenta : Color.White;
 			}
 		}
+
 		return img;
 	}
 

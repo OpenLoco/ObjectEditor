@@ -1,0 +1,74 @@
+using Dat.FileParsing;
+using Dat.Types;
+using Gui.Models;
+using Gui.ViewModels.Graphics;
+using ReactiveUI.Fody.Helpers;
+using System.IO;
+using System.Threading.Tasks;
+
+namespace Gui.ViewModels;
+
+public class G1ViewModel : BaseFileViewModel<G1Dat>
+{
+	public G1ViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
+		: base(currentFile, editorContext)
+		=> Load();
+
+	[Reactive]
+	public ImageTableViewModel ImageTableViewModel { get; set; }
+
+	public override void Load()
+	{
+		logger.Info($"Loading G1 from {CurrentFile.FileName}");
+		Model = SawyerStreamReader.LoadG1(CurrentFile.FileName, EditorContext.Logger);
+
+		if (Model == null)
+		{
+			logger.Error($"G1 was unable to be loaded from {CurrentFile.FileName}");
+			return;
+		}
+
+		Model.ImageTable.PaletteMap = EditorContext.PaletteMap;
+		EditorContext.G1 = Model; // todo: do we still need? can we do another way?
+		ImageTableViewModel = new ImageTableViewModel(Model.ImageTable, logger);
+	}
+
+	public override void Save()
+	{
+		if (Model == null)
+		{
+			logger?.Error("G1 was null and was unable to saved");
+			return;
+		}
+
+		//Model.G1.ImageTable.GraphicsElements = [.. ImageTableViewModel.ImageViewModels.Select(x => x.ToGraphicsElement())];
+
+		var savePath = CurrentFile.FileLocation == FileLocation.Local
+			? Path.Combine(EditorContext.Settings.ObjDataDirectory, CurrentFile.FileName)
+			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+
+		logger?.Info($"Saving G1.dat to {savePath}");
+		SawyerStreamWriter.SaveG1(savePath, Model);
+	}
+
+	public override string? SaveAs(SaveParameters saveParameters)
+	{
+		if (Model == null)
+		{
+			logger?.Error("G1 was null and was unable to saved");
+			return null;
+		}
+
+		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+		if (saveFile == null)
+		{
+			return null;
+		}
+
+		var savePath = saveFile.Path.LocalPath;
+		logger?.Info($"Saving G1.dat to {savePath}");
+		SawyerStreamWriter.SaveG1(savePath, Model);
+
+		return savePath;
+	}
+}

@@ -175,6 +175,7 @@ public class LoadSaveTests
 				Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(377));
 			}
 		}
+
 		LoadSaveGenericTest<AirportObject>(objectName, assertFunc);
 	}
 

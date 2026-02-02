@@ -85,6 +85,56 @@ static ObjectType TypeToStruct(Type type)
 		_ => throw new ArgumentOutOfRangeException(nameof(type), $"unknown struct type {type.FullName}")
 	};
 
+static void QueryBuildingVar_AC()
+{
+	var dir = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData";
+	var logger = new Logger();
+	var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+
+	var results = new List<(ObjectIndexEntry Obj, int var_ac)>();
+
+	foreach (var obj in index.Objects.Where(x => x.ObjectType == ObjectType.Building))
+	{
+		try
+		{
+			var o = SawyerStreamReader.LoadFullObject(Path.Combine(dir, obj.FileName), logger);
+			if (o.LocoObject != null)
+			{
+				var struc = (BuildingObject)o.LocoObject.Object;
+				var header = o.DatFileInfo.S5Header;
+				var source = OriginalObjectFiles.GetFileSource(header.Name, header.Checksum, header.ObjectSource);
+
+				if (source != ObjectSource.LocomotionSteam)
+				{
+					continue;
+				}
+
+				results.Add((obj, struc.var_AC));
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"{obj.FileName} - {ex.Message}");
+		}
+	}
+
+	Console.WriteLine(results.Count);
+
+	const string csvHeader = "DatName, Var_AC";
+	var lines = results
+		.OrderByDescending(x => x.var_ac)
+		.Select(x => string.Join(',', x.Obj.DisplayName, x.var_ac));
+
+	File.WriteAllLines("building_var_ac.csv", [csvHeader, .. lines]);
+
+	//foreach (var line in lines)
+	//{
+	//	Console.WriteLine(line);
+	//}
+}
+
+QueryBuildingVar_AC();
+
 static void QueryBuildingProducedQuantity()
 {
 	var dir = "Q:\\Steam\\steamapps\\common\\Locomotion\\ObjData";
@@ -130,7 +180,7 @@ static void QueryBuildingProducedQuantity()
 	//	Console.WriteLine(line);
 	//}
 }
-QueryBuildingProducedQuantity();
+//QueryBuildingProducedQuantity();
 
 static void QueryHeadquarters()
 {

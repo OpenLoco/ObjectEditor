@@ -21,23 +21,23 @@
 	<TabControl>
 		<TabItem Header="Header">
 			<ScrollViewer>
-				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmHeader" DataContext="{Binding CurrentS5File.Header}" IsCategoryVisible="False"/>
+				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmHeader" DataContext="{Binding Model.Header}" IsCategoryVisible="False"/>
 			</ScrollViewer>
 		</TabItem>
 		<TabItem Header="Landscape">
 			<ScrollViewer>
-				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmScenario" DataContext="{Binding CurrentS5File.ScenarioOptions}" IsCategoryVisible="False"/>
+				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmScenario" DataContext="{Binding Model.ScenarioOptions}" IsCategoryVisible="False"/>
 			</ScrollViewer>
 		</TabItem>
 		<TabItem Header="SaveGame">
 			<ScrollViewer>
-				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmSave" DataContext="{Binding CurrentS5File.SaveDetails}" IsCategoryVisible="False"/>
+				<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmSave" DataContext="{Binding Model.SaveDetails}" IsCategoryVisible="False"/>
 			</ScrollViewer>
 		</TabItem>
 		<TabItem Header="GameState">
 			<ScrollViewer>
 				<StackPanel Orientation="Vertical">
-					<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding CurrentS5File.GameState}" IsCategoryVisible="False"/>
+					<pgc:PropertyGrid x:Name="propertyGrid_ScenarioSaveGameVmGameState" DataContext="{Binding Model.GameState}" IsCategoryVisible="False"/>
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>

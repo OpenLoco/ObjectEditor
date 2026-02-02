@@ -1,115 +1,127 @@
 <UserControl
-	xmlns="https://github.com/avaloniaui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Gui.ViewModels"
-	xmlns:gui="using:Gui"
-	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
-	mc:Ignorable="d"
-	d:DesignWidth="1440"
-	d:DesignHeight="720"
-	x:Class="Gui.Views.ObjectEditorView"
-	x:DataType="vm:ObjectEditorViewModel">
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:vm="using:Gui.ViewModels"
+xmlns:gui="using:Gui"
+xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+mc:Ignorable="d"
+d:DesignWidth="1440"
+d:DesignHeight="720"
+x:Class="Gui.Views.ObjectEditorView"
+x:DataType="vm:ObjectEditorViewModel">
 
 	<DockPanel>
-		<Border DockPanel.Dock="Top" Margin="4" Background="{DynamicResource ExpanderContentBackground}">
-			<StackPanel Orientation="Vertical">
-				<StackPanel Margin="4" Orientation="Horizontal">
-					<ContentControl Content="{Binding ObjectModelHeaderViewModel}" />
-					<ContentControl Content="{Binding ObjectDatHeaderViewModel}" />
-				</StackPanel>
-				<StackPanel Orientation="Horizontal">
-					<Button Margin="4" Command="{Binding ExportUncompressedCommand}" ToolTip.Tip="Equivalent to saving the object with 'Uncompressed' encoding">Export as uncompressed DAT</Button>
-					<SplitButton Content="{Binding LastGameObjDataFolder, StringFormat='Copy to {0} object folder'}" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}" >
-						<SplitButton.Flyout>
-							<MenuFlyout Placement="Bottom">
-								<MenuItem Header="Copy to Locomotion (Steam) game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.LocomotionSteam}"/>
-								<MenuItem Header="Copy to Locomotion (GoG) game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.LocomotionGoG}"/>
-								<MenuItem Header="Copy to AppData game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.AppData}"/>
-								<MenuItem Header="Copy to OpenLoco game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.OpenLoco}"/>
-							</MenuFlyout>
-						</SplitButton.Flyout>
-					</SplitButton>
-					<Button Margin="4" Command="{Binding ValidateObjectCommand}" Content="Validate (Locomotion)" ToolTip.Tip="Runs a series of checks to ensure this object meets Locomotion requirements">
-						<Button.Styles>
-							<Style>
-								<Style.Resources>
-									<SolidColorBrush x:Key="ButtonBackground">#4F759B</SolidColorBrush>
-									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#37526C</SolidColorBrush>
-									<SolidColorBrush x:Key="ButtonBackgroundPressed">#86A3C1</SolidColorBrush>
-								</Style.Resources>
-							</Style>
-						</Button.Styles>
-					</Button>
-					<Button Margin="4" Command="{Binding ValidateForOGCommand}" Content="Validate (OpenGraphics)" ToolTip.Tip="Runs a series of checks to ensure this object meets OG requirements" IsVisible="{Binding Model.Settings.EnableOGValidation}">
-						<Button.Styles>
-							<Style>
-								<Style.Resources>
-									<SolidColorBrush x:Key="ButtonBackground">#19AE91</SolidColorBrush>
-									<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#0F6B59</SolidColorBrush>
-									<SolidColorBrush x:Key="ButtonBackgroundPressed">#3BE3C1</SolidColorBrush>
-								</Style.Resources>
-							</Style>
-						</Button.Styles>
-					</Button>
-				</StackPanel>
-			</StackPanel>
-		</Border>
-		<Grid ColumnDefinitions="60*, Auto, 40*">
-			<TabControl Grid.Column="0" >
-				<TabControl.Styles>
-					<Style Selector="TabItem">
-						<Setter Property="Padding" Value="8"/>
-						<Setter Property="FontSize" Value="14"/>
-						<Setter Property="Header" Value="no-extra-content"/>
+		<StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+			<Button Margin="4" Command="{Binding ExportUncompressedCommand}" ToolTip.Tip="Equivalent to saving the object with 'Uncompressed' encoding">Export as uncompressed DAT</Button>
+			<SplitButton Content="{Binding LastGameObjDataFolder, StringFormat='Copy to {0} object folder'}" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}" >
+				<SplitButton.Flyout>
+					<MenuFlyout Placement="Bottom">
+						<MenuItem Header="Copy to Locomotion (Steam) game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.LocomotionSteam}"/>
+						<MenuItem Header="Copy to Locomotion (GoG) game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.LocomotionGoG}"/>
+						<MenuItem Header="Copy to AppData game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.AppData}"/>
+						<MenuItem Header="Copy to OpenLoco game folder" Command="{Binding CopyToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.OpenLoco}"/>
+					</MenuFlyout>
+				</SplitButton.Flyout>
+			</SplitButton>
+			<Button Margin="4" Command="{Binding ValidateObjectCommand}" Content="Validate (Locomotion)" ToolTip.Tip="Runs a series of checks to ensure this object meets Locomotion requirements">
+				<Button.Styles>
+					<Style>
+						<Style.Resources>
+							<SolidColorBrush x:Key="ButtonBackground">#4F759B</SolidColorBrush>
+							<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#37526C</SolidColorBrush>
+							<SolidColorBrush x:Key="ButtonBackgroundPressed">#86A3C1</SolidColorBrush>
+						</Style.Resources>
 					</Style>
-				</TabControl.Styles>
-				<TabItem Header="{Binding ExtraContentViewModelTabName}">
-					<DockPanel>
-						<ContentControl Content="{Binding ExtraContentViewModel}" />
-					</DockPanel>
-				</TabItem>
-			</TabControl>
-			<GridSplitter Grid.Column="1"/>
-			<TabControl Grid.Column="2">
-				<TabControl.Styles>
-					<Style Selector="TabItem">
-						<Setter Property="Padding" Value="8"/>
-						<Setter Property="FontSize" Value="14"/>
+				</Button.Styles>
+			</Button>
+			<Button Margin="4" Command="{Binding ValidateForOGCommand}" Content="Validate (OpenGraphics)" ToolTip.Tip="Runs a series of checks to ensure this object meets OG requirements" IsVisible="{Binding EditorContext.Settings.EnableOGValidation}">
+				<Button.Styles>
+					<Style>
+						<Style.Resources>
+							<SolidColorBrush x:Key="ButtonBackground">#19AE91</SolidColorBrush>
+							<SolidColorBrush x:Key="ButtonBackgroundPointerOver">#0F6B59</SolidColorBrush>
+							<SolidColorBrush x:Key="ButtonBackgroundPressed">#3BE3C1</SolidColorBrush>
+						</Style.Resources>
 					</Style>
-				</TabControl.Styles>
-				<TabItem Header="Object">
-					<ContentControl Content="{Binding CurrentObjectViewModel}" />
-				</TabItem>
-				<TabItem Header="String Table">
-					<DockPanel DataContext="{Binding StringTableViewModel}" >
-						<ListBox ItemsSource="{Binding Keys}" SelectedItem="{Binding SelectedKey}" DockPanel.Dock="Left" Background="{DynamicResource ScrollBarTrackFill}">
-							<ListBox.ItemTemplate>
-								<DataTemplate>
-									<TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-								</DataTemplate>
-							</ListBox.ItemTemplate>
-						</ListBox>
-						<ItemsRepeater ItemsSource="{Binding SelectedInnerDictionary}" Background="{DynamicResource ExpanderContentBackground}">
-							<ItemsRepeater.Layout>
-								<UniformGridLayout Orientation="Vertical"/>
-							</ItemsRepeater.Layout>
-							<ItemsRepeater.ItemTemplate>
-								<DataTemplate>
-									<StackPanel Orientation="Horizontal" Margin="4">
-										<TextBlock Text="{Binding Language}" Margin="4" Width="128"></TextBlock>
-										<TextBox Text="{Binding Translation}" Width="256"></TextBox>
-									</StackPanel>
-								</DataTemplate>
-							</ItemsRepeater.ItemTemplate>
-						</ItemsRepeater>
-					</DockPanel>
-				</TabItem>
-				<TabItem Header="Metadata">
-					<ContentControl Content="{Binding MetadataViewModel}" />
-				</TabItem>
-			</TabControl>
-		</Grid>
+				</Button.Styles>
+			</Button>
+		</StackPanel>
+
+		<StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="6,0,6,6" Spacing="6">
+			<TextBlock Text="Groups:" VerticalAlignment="Center"/>
+			<TextBox Width="180" Text="{Binding NewGroupName}" Watermark="New group name"/>
+			<Button Content="Add Group" Command="{Binding AddGroupCommand}"/>
+		</StackPanel>
+
+		<ItemsControl ItemsSource="{Binding ViewModelGroups}">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<UniformGrid Columns="{Binding ViewModelGroups.Count}" Rows="1" />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+			<ItemsControl.ItemTemplate>
+				<DataTemplate x:DataType="vm:ViewModelGroup">
+					<Border BorderThickness="1" Margin="4">
+						<DockPanel Margin="4">
+							<StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Top" Margin="0,0,0,6">
+								<TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+								<Button Content="✕" 
+										Padding="4,0"
+										Command="{Binding RemoveGroupCommand}"
+										IsEnabled="{Binding CanRemoveGroup}"
+										ToolTip.Tip="Remove this group"
+										VerticalAlignment="Center"/>
+								<Button Content="+" 
+										ToolTip.Tip="Add view to this group"
+										VerticalAlignment="Center">
+									<Button.Flyout>
+										<Flyout Placement="Bottom">
+											<ItemsControl ItemsSource="{Binding AllViewModels}">
+												<ItemsControl.ItemTemplate>
+													<DataTemplate>
+														<Button Content="{Binding DisplayName}"
+																Command="{Binding $parent[ItemsControl].((vm:ViewModelGroup)DataContext).AddViewModelFromParameterCommand}"
+																CommandParameter="{Binding}"
+																HorizontalAlignment="Stretch"
+																HorizontalContentAlignment="Left"
+																Margin="2"/>
+													</DataTemplate>
+												</ItemsControl.ItemTemplate>
+											</ItemsControl>
+										</Flyout>
+									</Button.Flyout>
+								</Button>
+							</StackPanel>
+							<TabControl ItemsSource="{Binding ViewModels}">
+								<TabControl.Styles>
+									<Style Selector="TabItem">
+										<Setter Property="Padding" Value="2, 0, 2, 0"/>
+									</Style>
+								</TabControl.Styles>
+								<TabControl.ItemTemplate>
+									<DataTemplate>
+										<StackPanel Orientation="Horizontal" Spacing="4">
+											<TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+											<Button Content="✕" 
+													Padding="4,0" 
+													Command="{Binding $parent[TabControl].((vm:ViewModelGroup)DataContext).RemoveViewModelCommand}" 
+													CommandParameter="{Binding}"
+													ToolTip.Tip="Close this view" />
+										</StackPanel>
+									</DataTemplate>
+								</TabControl.ItemTemplate>
+								<TabControl.ContentTemplate>
+									<DataTemplate>
+										<ContentControl Content="{Binding}" />
+									</DataTemplate>
+								</TabControl.ContentTemplate>
+							</TabControl>
+						</DockPanel>
+					</Border>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
 	</DockPanel>
 </UserControl>

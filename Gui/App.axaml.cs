@@ -30,6 +30,7 @@ public partial class App : Application
 		{
 			return desktop.Windows;
 		}
+
 		return [];
 	}
 }

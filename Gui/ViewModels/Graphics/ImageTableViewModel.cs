@@ -5,8 +5,6 @@ using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
-using Definitions.ObjectModels.Objects.Common;
-using Gui.ViewModels.LocoTypes.Objects.Building;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -22,11 +20,13 @@ using System.Windows.Input;
 
 namespace Gui.ViewModels.Graphics;
 
-public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
+public class ImageTableViewModel : ReactiveObject, IViewModel
 {
-	public string Name => "Image Table";
+	public string DisplayName
+		=> "Image Table";
 
-	public string ImageCount => $"Image count = {GroupedImageViewModels.Sum(x => x.Images.Count)}";
+	public string ImageCount
+		=> $"Image count = {GroupedImageViewModels.Sum(x => x.Images.Count)}";
 
 	// used in the axaml to bind the combobox to the list of swatches
 	public static ColourSwatch[] ColourSwatchesArr { get; } = Enum.GetValues<ColourSwatch>();
@@ -90,11 +90,9 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 	[Reactive]
 	public ObservableCollection<ImageViewModel> LayeredImages { get; set; } = [];
 
-	public BuildingComponentsViewModel? BuildingComponents { get; set; }
-
 	ImageTable Model { get; init; }
 
-	public ImageTableViewModel(ImageTable imageTable, ILogger logger, BuildingComponents? buildingComponents = null)
+	public ImageTableViewModel(ImageTable imageTable, ILogger logger)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 
@@ -106,18 +104,12 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 		ColourSwatches = [.. ColourSwatchesArr.Select(x => new ColourRemapSwatchViewModel()
 		{
 			Swatch = x,
-			Colour = Model.PaletteMap.GetRemapSwatchFromName(x)[0].Color.ToAvaloniaColor(),
-			GradientColours = [.. Model.PaletteMap.GetRemapSwatchFromName(x).Select(x => x.Color.ToAvaloniaColor())],
+			Colour = Model.PaletteMap.GetRemapSwatchFromName(x)?[0].Color.ToAvaloniaColor() ?? Avalonia.Media.Colors.Red,
+			GradientColours = [.. Model.PaletteMap.GetRemapSwatchFromName(x)?.Select(x => x.Color.ToAvaloniaColor()) ?? [Avalonia.Media.Colors.DarkRed]],
 		})];
 
 		SelectedPrimarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.PrimaryRemap);
 		SelectedSecondarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.SecondaryRemap);
-
-		// building components
-		if (buildingComponents != null)
-		{
-			BuildingComponents = new(buildingComponents, imageTable);
-		}
 
 		_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
 			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));
@@ -156,7 +148,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			}
 		});
 
-		TranslateXOffsetAllImagesCommand = ReactiveCommand.Create<string>((string amount) =>
+		TranslateXOffsetAllImagesCommand = ReactiveCommand.Create<string>(amount =>
 		{
 			if (short.TryParse(amount, out var result))
 			{
@@ -167,7 +159,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			}
 		});
 
-		TranslateYOffsetAllImagesCommand = ReactiveCommand.Create<string>((string amount) =>
+		TranslateYOffsetAllImagesCommand = ReactiveCommand.Create<string>(amount =>
 		{
 			if (short.TryParse(amount, out var result))
 			{
@@ -203,6 +195,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			givm.SelectionModel.SelectionChanged += SelectionChanged;
 			GroupedImageViewModels.Add(givm);
 		}
+
 		this.RaisePropertyChanged(nameof(GroupedImageViewModels));
 	}
 
@@ -398,7 +391,7 @@ public class ImageTableViewModel : ReactiveObject, IExtraContentViewModel
 			var offsetsFile = Path.Combine(directory, "sprites.json");
 			if (File.Exists(offsetsFile))
 			{
-				offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(offsetsFile); // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
+				offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(offsetsFile) ?? []; // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 				ArgumentNullException.ThrowIfNull(offsets);
 				Logger.Debug($"Found sprites.json file with {offsets.Count} images");
 			}

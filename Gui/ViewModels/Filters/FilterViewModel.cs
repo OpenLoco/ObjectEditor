@@ -30,7 +30,7 @@ public class FilterTypeViewModel : ReactiveObject
 
 public class FilterViewModel : ReactiveObject
 {
-	private readonly ObjectEditorModel _model;
+	private readonly ObjectEditorContext _model;
 
 	[Reactive] public FilterTypeViewModel? SelectedObjectType { get; set; }
 	[Reactive] public PropertyInfo? SelectedProperty { get; set; }
@@ -59,9 +59,9 @@ public class FilterViewModel : ReactiveObject
 
 	public ObservableCollection<FilterTypeViewModel> AvailableFiltersList { get; set; } = [];
 
-	public FilterViewModel(ObjectEditorModel model, List<FilterTypeViewModel> availableFilters, Action<FilterViewModel> onRemove)
+	public FilterViewModel(ObjectEditorContext editorContext, List<FilterTypeViewModel> availableFilters, Action<FilterViewModel> onRemove)
 	{
-		_model = model;
+		_model = editorContext;
 		AvailableFiltersList.AddRange(availableFilters);
 		SelectedObjectType = AvailableFiltersList.FirstOrDefault();
 
@@ -118,6 +118,7 @@ public class FilterViewModel : ReactiveObject
 			{
 				AvailableOperators.Add(FilterOperator.Contains);
 			}
+
 			AvailableOperators.AddRange([FilterOperator.Equals, FilterOperator.NotEquals]);
 		}
 		else if (underlyingType == typeof(bool))
@@ -248,7 +249,7 @@ public class FilterViewModel : ReactiveObject
 		//	return BuildFilterExpression<MetadataModel>()?.Compile();
 		//}
 		// Otherwise, build a delegate that loads the object from disk
-		return (ObjectIndexEntry entry) => BuildObjectFilter(entry, isLocal);
+		return entry => BuildObjectFilter(entry, isLocal);
 	}
 
 	//bool BuildMetadataFilter(ObjectIndexEntry entry)

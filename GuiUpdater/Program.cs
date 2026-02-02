@@ -130,6 +130,7 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 				await response.Content.CopyToAsync(fs, cancellationToken);
 			}
 		}
+
 		Console.WriteLine($"Update downloaded to {tempZipPath}.");
 
 		Console.WriteLine($"Extracting update to {extractionPath}...");

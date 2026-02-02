@@ -7,6 +7,7 @@ using Dat.Data;
 using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
+using Gui.ViewModels.Loco.Tutorial;
 using NuGet.Versioning;
 using PropertyModels.Extensions;
 using ReactiveUI;
@@ -27,7 +28,7 @@ namespace Gui.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-	public ObjectEditorModel Model { get; }
+	public ObjectEditorContext EditorContext { get; }
 
 	public FolderTreeViewModel FolderTreeViewModel { get; }
 
@@ -54,7 +55,7 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
 	public ReactiveCommand<Unit, Unit> DownloadLatestUpdate { get; }
 
-	public string WindowTitle => $"{ObjectEditorModel.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
+	public string WindowTitle => $"{ObjectEditorContext.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
 	[Reactive]
 	public SemanticVersion ApplicationVersion { get; set; }
@@ -77,10 +78,10 @@ public class MainWindowViewModel : ViewModelBase
 	{
 		DefaultPaletteImage = Image.Load<Rgba32>(AssetLoader.Open(new Uri(DefaultPaletteImageString)));
 
-		Model = new();
+		EditorContext = new();
 		Task.Run(LoadDefaultPalette);
 
-		FolderTreeViewModel = new FolderTreeViewModel(Model);
+		FolderTreeViewModel = new FolderTreeViewModel(EditorContext);
 
 		_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 			.Subscribe((x) =>
@@ -94,9 +95,9 @@ public class MainWindowViewModel : ViewModelBase
 		_ = CurrentTabModel.WhenAnyValue(o => o.SelectedDocument)
 			.Subscribe((x) => FolderTreeViewModel.CurrentlySelectedObject = x?.CurrentFile);
 
-		Model.Logger.LogAdded += (sender, laea) =>
+		EditorContext.Logger.LogAdded += (sender, laea) =>
 		{
-			if (Model.Settings.ShowLogsOnError)
+			if (EditorContext.Settings.ShowLogsOnError)
 			{
 				// announce to users that something bad happened
 				var log = laea.Log;
@@ -110,6 +111,7 @@ public class MainWindowViewModel : ViewModelBase
 						{
 							return;
 						}
+
 						ShowLogsCommand.Execute();
 					});
 				}
@@ -119,9 +121,9 @@ public class MainWindowViewModel : ViewModelBase
 		PopulateObjDataMenu();
 
 		OpenSingleObject = ReactiveCommand.Create(LoadSingleObject);
-		OpenCacheFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.CacheFolder, Model.Logger));
-		OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(Model.Settings.DownloadFolder, Model.Logger));
-		OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorModel.ProgramDataPath, Model.Logger));
+		OpenCacheFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(EditorContext.Settings.CacheFolder, EditorContext.Logger));
+		OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(EditorContext.Settings.DownloadFolder, EditorContext.Logger));
+		OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorContext.ProgramDataPath, EditorContext.Logger));
 		OpenG1 = ReactiveCommand.Create(LoadG1);
 		OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
 		OpenMusic = ReactiveCommand.Create(LoadMusic);
@@ -136,15 +138,15 @@ public class MainWindowViewModel : ViewModelBase
 		OpenEditorSettingsWindow = new();
 		EditSettingsCommand = ReactiveCommand.CreateFromTask(async () =>
 		{
-			var vm = new EditorSettingsWindowViewModel(Model.Settings);
+			var vm = new EditorSettingsWindowViewModel(EditorContext.Settings);
 			var result = await OpenEditorSettingsWindow.Handle(vm);
-			Model.Settings.Save(ObjectEditorModel.SettingsFile, Model.Logger);
+			EditorContext.Settings.Save(ObjectEditorContext.SettingsFile, EditorContext.Logger);
 		});
 
 		OpenLogWindow = new();
 		ShowLogsCommand = ReactiveCommand.CreateFromTask(async () =>
 		{
-			var vm = new LogWindowViewModel(Model.LoggerObservableLogs);
+			var vm = new LogWindowViewModel(EditorContext.LoggerObservableLogs);
 			var result = await OpenLogWindow.Handle(vm);
 		});
 
@@ -160,15 +162,16 @@ public class MainWindowViewModel : ViewModelBase
 		{
 			if (ApplicationVersion == null || ApplicationVersion == VersionHelpers.UnknownVersion)
 			{
-				Model.Logger.Info($"{nameof(ApplicationVersion)} is null");
-			}
-			if (LatestVersion == null || LatestVersion == VersionHelpers.UnknownVersion)
-			{
-				Model.Logger.Info($"{nameof(LatestVersion)} is null");
+				EditorContext.Logger.Info($"{nameof(ApplicationVersion)} is null");
 			}
 
-			Model.Logger.Info($"Attempting to update from {ApplicationVersion} to {LatestVersion}");
-			var t = Task.Run(() => VersionHelpers.StartAutoUpdater(Model.Logger, ApplicationVersion, LatestVersion));
+			if (LatestVersion == null || LatestVersion == VersionHelpers.UnknownVersion)
+			{
+				EditorContext.Logger.Info($"{nameof(LatestVersion)} is null");
+			}
+
+			EditorContext.Logger.Info($"Attempting to update from {ApplicationVersion} to {LatestVersion}");
+			_ = Task.Run(() => VersionHelpers.StartAutoUpdater(EditorContext.Logger, ApplicationVersion, LatestVersion));
 
 		});
 
@@ -205,31 +208,31 @@ public class MainWindowViewModel : ViewModelBase
 		ObjDataItems.Add(new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
 		ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
 
-		if (Directory.Exists(Model.Settings.AppDataObjDataFolder))
+		if (Directory.Exists(EditorContext.Settings.AppDataObjDataFolder))
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {Model.Settings.AppDataObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.AppDataObjDataFolder)));
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {EditorContext.Settings.AppDataObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = EditorContext.Settings.AppDataObjDataFolder)));
 		}
 
-		if (Directory.Exists(Model.Settings.LocomotionSteamObjDataFolder))
+		if (Directory.Exists(EditorContext.Settings.LocomotionSteamObjDataFolder))
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionSteam)}] {Model.Settings.LocomotionSteamObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionSteamObjDataFolder)));
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionSteam)}] {EditorContext.Settings.LocomotionSteamObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = EditorContext.Settings.LocomotionSteamObjDataFolder)));
 		}
 
-		if (Directory.Exists(Model.Settings.LocomotionGoGObjDataFolder))
+		if (Directory.Exists(EditorContext.Settings.LocomotionGoGObjDataFolder))
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionGoG)}] {Model.Settings.LocomotionGoGObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.LocomotionGoGObjDataFolder)));
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionGoG)}] {EditorContext.Settings.LocomotionGoGObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = EditorContext.Settings.LocomotionGoGObjDataFolder)));
 		}
 
-		if (Directory.Exists(Model.Settings.OpenLocoObjDataFolder))
+		if (Directory.Exists(EditorContext.Settings.OpenLocoObjDataFolder))
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.OpenLoco)}] {Model.Settings.OpenLocoObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = Model.Settings.OpenLocoObjDataFolder)));
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.OpenLoco)}] {EditorContext.Settings.OpenLocoObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = EditorContext.Settings.OpenLocoObjDataFolder)));
 		}
 
 		ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
 
 		// add the rest
 		ObjDataItems.AddRange(
-			Model.Settings.ObjDataDirectories
+			EditorContext.Settings.ObjDataDirectories
 				.Select(x => new MenuItemViewModel(
 					x,
 					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
@@ -253,7 +256,7 @@ public class MainWindowViewModel : ViewModelBase
 	async Task LoadDefaultPalette()
 		=> await Task.Run(() =>
 		{
-			Model.PaletteMap = new PaletteMap(DefaultPaletteImage);
+			EditorContext.PaletteMap = new PaletteMap(DefaultPaletteImage);
 			CurrentTabModel.ReloadAll();
 		});
 
@@ -272,7 +275,7 @@ public class MainWindowViewModel : ViewModelBase
 			return;
 		}
 
-		Model.PaletteMap = new PaletteMap(path);
+		EditorContext.PaletteMap = new PaletteMap(path);
 		CurrentTabModel.ReloadAll();
 	}
 
@@ -287,16 +290,16 @@ public class MainWindowViewModel : ViewModelBase
 		var createdTime = DateOnly.FromDateTime(File.GetCreationTimeUtc(fsi.FileName));
 		var modifiedTime = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(fsi.FileName));
 
-		if (Model.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
+		if (EditorContext.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 		{
-			Model.Logger.Warning($"Successfully loaded {fsi.FileName}");
+			EditorContext.Logger.Warning($"Successfully loaded {fsi.FileName}");
 			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum, uiLocoFile.DatInfo.S5Header.ObjectSource);
 			var fsi2 = new FileSystemItem(uiLocoFile!.DatInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
 			SetObjectViewModel(fsi2);
 		}
 		else
 		{
-			Model.Logger.Warning($"Unable to load {fsi.FileName}");
+			EditorContext.Logger.Warning($"Unable to load {fsi.FileName}");
 		}
 	}
 
@@ -304,7 +307,7 @@ public class MainWindowViewModel : ViewModelBase
 	{
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new ObjectEditorViewModel(fsi, Model));
+			CurrentTabModel.AddDocument(new ObjectEditorViewModel(fsi, EditorContext));
 		}
 	}
 
@@ -313,7 +316,7 @@ public class MainWindowViewModel : ViewModelBase
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new G1ViewModel(fsi, Model));
+			CurrentTabModel.AddDocument(new G1ViewModel(fsi, EditorContext));
 		}
 	}
 
@@ -322,7 +325,7 @@ public class MainWindowViewModel : ViewModelBase
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.SCV5FileTypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new SCV5ViewModel(fsi, Model));
+			CurrentTabModel.AddDocument(new SCV5ViewModel(fsi, EditorContext));
 		}
 	}
 
@@ -331,7 +334,7 @@ public class MainWindowViewModel : ViewModelBase
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new MusicViewModel(fsi, Model));
+			CurrentTabModel.AddDocument(new MusicViewModel(fsi, EditorContext));
 		}
 	}
 
@@ -340,7 +343,7 @@ public class MainWindowViewModel : ViewModelBase
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new SoundEffectsViewModel(fsi, Model));
+			CurrentTabModel.AddDocument(new SoundEffectsViewModel(fsi, EditorContext));
 		}
 	}
 
@@ -349,7 +352,7 @@ public class MainWindowViewModel : ViewModelBase
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new TutorialViewModel(fsi, Model));
+			CurrentTabModel.AddDocument(new TutorialViewModel(fsi, EditorContext));
 		}
 	}
 
@@ -358,7 +361,7 @@ public class MainWindowViewModel : ViewModelBase
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new ScoresViewModel(fsi, Model));
+			CurrentTabModel.AddDocument(new ScoresViewModel(fsi, EditorContext));
 		}
 	}
 
@@ -367,7 +370,7 @@ public class MainWindowViewModel : ViewModelBase
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
 		if (fsi != null && !CurrentTabModel.DocumentExistsWithFile(fsi))
 		{
-			CurrentTabModel.AddDocument(new LanguageViewModel(fsi, Model));
+			CurrentTabModel.AddDocument(new LanguageFileViewModel(fsi, EditorContext));
 		}
 	}
 
@@ -384,37 +387,37 @@ public class MainWindowViewModel : ViewModelBase
 
 		if (!Directory.Exists(dirPath))
 		{
-			Model.Logger.Warning("Directory doesn't exist");
+			EditorContext.Logger.Warning("Directory doesn't exist");
 			return;
 		}
 
-		if (Model.Settings.ObjDataDirectories.Contains(dirPath))
+		if (EditorContext.Settings.ObjDataDirectories.Contains(dirPath))
 		{
-			Model.Logger.Warning("Object directory is already in the list");
+			EditorContext.Logger.Warning("Object directory is already in the list");
 			return;
 		}
 
-		if (Model.Settings.LocomotionSteamObjDataFolder == dirPath)
+		if (EditorContext.Settings.LocomotionSteamObjDataFolder == dirPath)
 		{
-			Model.Logger.Warning("No need to add - this is the predefined Locomotion (Steam) ObjData folder");
+			EditorContext.Logger.Warning("No need to add - this is the predefined Locomotion (Steam) ObjData folder");
 			return;
 		}
 
-		if (Model.Settings.LocomotionGoGObjDataFolder == dirPath)
+		if (EditorContext.Settings.LocomotionGoGObjDataFolder == dirPath)
 		{
-			Model.Logger.Warning("No need to add - this is the predefined Locomotion (GoG) ObjData folder");
+			EditorContext.Logger.Warning("No need to add - this is the predefined Locomotion (GoG) ObjData folder");
 			return;
 		}
 
-		if (Model.Settings.OpenLocoObjDataFolder == dirPath)
+		if (EditorContext.Settings.OpenLocoObjDataFolder == dirPath)
 		{
-			Model.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");
+			EditorContext.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");
 			return;
 		}
 
-		if (Model.Settings.AppDataObjDataFolder == dirPath)
+		if (EditorContext.Settings.AppDataObjDataFolder == dirPath)
 		{
-			Model.Logger.Warning("No need to add - this is the predefined AppData folder");
+			EditorContext.Logger.Warning("No need to add - this is the predefined AppData folder");
 			return;
 		}
 

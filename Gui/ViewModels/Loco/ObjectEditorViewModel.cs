@@ -307,7 +307,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 			if (Model?.Metadata != null)
 			{
-				AddViewModelToGroup(new ObjectMetadataViewModel(Model.Metadata, EditorContext.ObjectServiceClient, logger), objectGroup);
+				AddViewModelToGroup(new ObjectMetadataViewModel(Model.Metadata, EditorContext), objectGroup);
 			}
 		}
 	}

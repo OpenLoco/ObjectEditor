@@ -2,6 +2,8 @@ using Common.Logging;
 using Definitions;
 using Definitions.DTO;
 using Definitions.ObjectModels;
+using Gui.Models;
+using Microsoft.AspNetCore.Components.Forms;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -17,29 +19,23 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 	public string DisplayName
 		=> "Metadata";
 
-	readonly ObjectServiceClient? objectServiceClient;
-	readonly ILogger? logger;
-
-	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"))
+	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"), null)
 	{
 	}
 
-	public ObjectMetadataViewModel(ObjectMetadata model, Gui.ObjectServiceClient? objectServiceClient = null, ILogger? logger = null)
-		: base(null, model)
+	public ObjectMetadataViewModel(ObjectMetadata model, ObjectEditorContext editorContext)
+		: base(editorContext, model)
 	{
 		Model = model;
 		description = model.Description;
 		createdDate = model.CreatedDate;
 		modifiedDate = model.ModifiedDate;
 		selectedLicence = model.Licence;
-		this.logger = logger;
 
 		// Initialize observable collections from metadata
 		Authors = new ObservableCollection<DtoAuthorEntry>(model.Authors);
 		Tags = new ObservableCollection<DtoTagEntry>(model.Tags);
 		ObjectPacks = new ObservableCollection<DtoItemPackEntry>(model.ObjectPacks);
-
-		this.objectServiceClient = objectServiceClient;
 
 		// Initialize commands
 		AddAuthorCommand = ReactiveCommand.Create<DtoAuthorEntry?>(author =>
@@ -88,7 +84,7 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 		});
 
 		// Load data from server if we have a client
-		if (objectServiceClient != null)
+		if (editorContext.ObjectServiceClient != null)
 		{
 			_ = LoadServerDataAsync().ContinueWith(t =>
 			{
@@ -154,6 +150,7 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 
 	async Task LoadServerDataAsync()
 	{
+		var objectServiceClient = EditorContext.ObjectServiceClient;
 		if (objectServiceClient == null)
 		{
 			return;

@@ -21,11 +21,10 @@ fi
 
 version="$1"
 
-echo "=== Building Object Editor v${FG_BLUE}$version${RESET} for ${FG_BLUE}$framework${RESET} ==="
-
 # read .net version from csproj file
 framework=$(grep '<TargetFramework>' Gui/Gui.csproj | sed 's/.*<TargetFramework>\(.*\)<\/TargetFramework>.*/\1/')
 
+echo "=== Building Object Editor v${FG_BLUE}$version${RESET} for ${FG_BLUE}$framework${RESET} ==="
 
 
 build_windows() {

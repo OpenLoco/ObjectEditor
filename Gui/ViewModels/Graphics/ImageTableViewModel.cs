@@ -14,13 +14,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace Gui.ViewModels.Graphics;
 
-public class ImageTableViewModel : ReactiveObject, IViewModel
+public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 {
 	public string DisplayName
 		=> "Image Table";
@@ -81,6 +83,8 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 	public int AnimationSpeed { get; set; } = 40;
 	readonly DispatcherTimer animationTimer;
 	int currentFrameIndex;
+	readonly CompositeDisposable subscriptions = new();
+	bool disposed;
 
 	public readonly ILogger Logger;
 
@@ -112,14 +116,18 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 		SelectedSecondarySwatch = ColourSwatches.Single(x => x.Swatch == ColourSwatch.SecondaryRemap);
 
 		_ = this.WhenAnyValue(o => o.SelectedPrimarySwatch).Skip(1)
-			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));
+			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch))
+			.DisposeWith(subscriptions);
 		_ = this.WhenAnyValue(o => o.SelectedSecondarySwatch).Skip(1)
-			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch));
+			.Subscribe(_ => RecolourImages(SelectedPrimarySwatch.Swatch, SelectedSecondarySwatch.Swatch))
+			.DisposeWith(subscriptions);
 		_ = this.WhenAnyValue(o => o.AnimationSpeed)
 			.Where(_ => animationTimer != null)
-			.Subscribe(_ => animationTimer!.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed));
+			.Subscribe(_ => animationTimer!.Interval = TimeSpan.FromMilliseconds(1000 / AnimationSpeed))
+			.DisposeWith(subscriptions);
 		_ = this.WhenAnyValue(o => o.GroupedImageViewModels).Skip(1)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageCount)));
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageCount)))
+			.DisposeWith(subscriptions);
 
 		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
 		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImages);
@@ -188,6 +196,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 	private void RecreateViewModelGroupsFromImageTable(ImageTable imageTable)
 	{
 		// image tables
+		DisposeGroupedViewModels();
 		GroupedImageViewModels.Clear();
 		foreach (var group in imageTable.Groups)
 		{
@@ -528,5 +537,49 @@ public class ImageTableViewModel : ReactiveObject, IViewModel
 		var offsetsFile = Path.Combine(directory, "sprites.json");
 		Logger.Info($"Saving sprite offsets to {offsetsFile}");
 		await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
+	}
+
+	void DisposeGroupedViewModels()
+	{
+		foreach (var group in GroupedImageViewModels)
+		{
+			group.SelectionModel.SelectionChanged -= SelectionChanged;
+			foreach (var image in group.Images)
+			{
+				(image as IDisposable)?.Dispose();
+			}
+		}
+
+		foreach (var image in LayeredImages)
+		{
+			(image as IDisposable)?.Dispose();
+		}
+
+		LayeredImages.Clear();
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+
+	void Dispose(bool disposing)
+	{
+		if (disposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			SelectionModel.SelectionChanged -= SelectionChanged;
+			DisposeGroupedViewModels();
+			animationTimer.Stop();
+			animationTimer.Tick -= AnimationTimer_Tick;
+			subscriptions.Dispose();
+		}
+
+		disposed = true;
 	}
 }

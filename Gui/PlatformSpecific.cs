@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Common.Logging;
@@ -121,5 +122,29 @@ public static class PlatformSpecific
 			Title = "Select a new file name",
 			FileTypeChoices = filetypes,
 		});
+	}
+
+	public static async Task<string?> GetClipboardTextAsync()
+	{
+		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+			&& desktop.MainWindow is { } window)
+		{
+			return await TopLevel.GetTopLevel(window)?.Clipboard?.GetTextAsync();
+		}
+
+		return null;
+	}
+
+	public static async Task SetClipboardTextAsync(string text)
+	{
+		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+			&& desktop.MainWindow is { } window)
+		{
+			var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
+			if (clipboard != null)
+			{
+				await clipboard.SetTextAsync(text);
+			}
+		}
 	}
 }

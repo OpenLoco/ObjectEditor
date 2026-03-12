@@ -54,6 +54,18 @@
 							</MenuFlyout>
 						</SplitButton.Flyout>
 					</SplitButton>
+					<Button Margin="4" Command="{Binding PopulateRequiredObjectsFromFolderCommand}"
+							ToolTip.Tip="Clear the list and populate it with all objects from the currently loaded folder">
+						Populate from current folder
+					</Button>
+					<Button Margin="4" Command="{Binding CopyRequiredObjectsCommand}"
+							ToolTip.Tip="Copy the required objects list to clipboard as JSON">
+						Copy list
+					</Button>
+					<Button Margin="4" Command="{Binding PasteRequiredObjectsCommand}"
+							ToolTip.Tip="Replace the required objects list with objects from clipboard (JSON format)">
+						Paste list
+					</Button>
 					<TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding RequiredObjects.Count, StringFormat='Number of objects: {0}'}"></TextBlock>
 					<!--<TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Center" Text="" DockPanel.Dock="Top" />-->
 				</StackPanel>

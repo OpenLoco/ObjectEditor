@@ -1,11 +1,16 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Definitions.ObjectModels.Objects.Region;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
+using Gui.Views;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -24,7 +29,11 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 		CargoInfluenceObjects = new BindingList<ObjectModelHeader>(model.CargoInfluenceObjects);
 		CargoInfluenceTownFilter = new BindingList<CargoInfluenceTownFilterType>(model.CargoInfluenceTownFilter);
 
+		var hasSelection = this.WhenAnyValue(x => x.SelectedDependentObject).Select(obj => obj != null);
+
 		PopulateDependentObjectsFromFolderCommand = ReactiveCommand.CreateFromTask(PopulateDependentObjectsFromFolder);
+		AddDependentObjectCommand = ReactiveCommand.CreateFromTask(AddDependentObjectAsync);
+		RemoveSelectedDependentObjectCommand = ReactiveCommand.Create(RemoveSelectedDependentObject, hasSelection);
 		CopyDependentObjectsCommand = ReactiveCommand.CreateFromTask(CopyDependentObjectsAsync);
 		PasteDependentObjectsCommand = ReactiveCommand.CreateFromTask(PasteDependentObjectsAsync);
 		ClearDependentObjectsCommand = ReactiveCommand.Create(ClearDependentObjects);
@@ -45,6 +54,10 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 	[Browsable(false)]
 	public BindingList<ObjectModelHeader> DependentObjects { get; }
 
+	[Browsable(false)]
+	[Reactive]
+	public ObjectModelHeader? SelectedDependentObject { get; set; }
+
 	[Category("Cargo")]
 	public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; }
 
@@ -53,6 +66,12 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 
 	[Browsable(false)]
 	public ReactiveCommand<Unit, Unit> PopulateDependentObjectsFromFolderCommand { get; }
+
+	[Browsable(false)]
+	public ReactiveCommand<Unit, Unit> AddDependentObjectCommand { get; }
+
+	[Browsable(false)]
+	public ReactiveCommand<Unit, Unit> RemoveSelectedDependentObjectCommand { get; }
 
 	[Browsable(false)]
 	public ReactiveCommand<Unit, Unit> CopyDependentObjectsCommand { get; }
@@ -78,6 +97,37 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 		}
 
 		return Task.CompletedTask;
+	}
+
+	async Task AddDependentObjectAsync()
+	{
+		var objectIndex = editorContext?.ObjectIndex;
+		if (objectIndex == null)
+		{
+			return;
+		}
+
+		if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime app || app.MainWindow == null)
+		{
+			return;
+		}
+
+		var vm = new ObjectSelectionWindowViewModel(objectIndex.Objects);
+		var dialog = new ObjectSelectionWindow { DataContext = vm };
+		var result = await dialog.ShowDialog<ObjectSelectionWindowViewModel?>(app.MainWindow);
+
+		if (result?.SelectedObject is { DatChecksum: not null } selected)
+		{
+			DependentObjects.Add(new ObjectModelHeader(selected.DisplayName, selected.ObjectType, selected.ObjectSource, selected.DatChecksum.Value));
+		}
+	}
+
+	void RemoveSelectedDependentObject()
+	{
+		if (SelectedDependentObject != null)
+		{
+			DependentObjects.Remove(SelectedDependentObject);
+		}
 	}
 
 	async Task CopyDependentObjectsAsync()

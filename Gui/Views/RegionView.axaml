@@ -18,6 +18,16 @@
 		<TabItem Header="Dependent Objects">
 			<DockPanel>
 				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="4" Margin="4">
+					<Button Command="{Binding AddDependentObjectCommand}"
+							ToolTip.Tip="Select and add an object from the current folder to the list">
+						Add object
+					</Button>
+					<Button Command="{Binding RemoveSelectedDependentObjectCommand}"
+							Classes="danger"
+							ToolTip.Tip="Remove the currently selected object from the list">
+						Remove selected
+					</Button>
+					<Separator Width="8" />
 					<Button Command="{Binding PopulateDependentObjectsFromFolderCommand}"
 							ToolTip.Tip="Clear the list and populate it with all objects from the currently loaded folder">
 						Populate from current folder
@@ -40,6 +50,7 @@
 				</StackPanel>
 				<DataGrid
 					ItemsSource="{Binding DependentObjects}"
+					SelectedItem="{Binding SelectedDependentObject}"
 					AutoGenerateColumns="False"
 					CanUserSortColumns="True"
 					IsReadOnly="True">

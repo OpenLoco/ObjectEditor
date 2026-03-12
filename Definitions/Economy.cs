@@ -36,11 +36,11 @@ public static class Economy
 		var monthCount = baseYear * 12;
 
 		// Apply inflation for each month
-		for (var month = 0; month < monthCount; month++)
+		for (var month = monthCount; month > 0; month--)
 		{
 			for (var i = 0; i < 32; i++)
 			{
-				factors[i] += (uint)((ulong)InflationFactors[i] * factors[i] >> 12);
+				factors[i] += (uint)(((ulong)InflationFactors[i] * factors[i]) >> 12);
 			}
 		}
 
@@ -55,7 +55,7 @@ public static class Economy
 	/// <param name="year">The year to calculate the cost for</param>
 	/// <param name="divisor">The divisor to apply (default is 10, which is common for most objects)</param>
 	/// <returns>The inflation-adjusted cost</returns>
-	public static int GetInflationAdjustedCost(short costFactor, byte costIndex, int year, byte divisor = 10)
+	public static int GetInflationAdjustedCost(short costFactor, byte costIndex, int year, byte divisor)
 	{
 		if (costIndex >= 32)
 		{

@@ -278,7 +278,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 
 	[Category("Cost")]
-	[Range(1, int16_t.MaxValue), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Range(1, int16_t.MaxValue), InflatableCurrency(nameof(CostIndex), 6, nameof(DesignedYear))]
 	public int16_t CostFactor
 	{
 		get => model.CostFactor;
@@ -298,7 +298,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 
 	[Category("Cost")]
-	[Range(0, int16_t.MaxValue), InflatableCurrency(nameof(RunCostIndex), nameof(DesignedYear))]
+	[Range(0, int16_t.MaxValue), InflatableCurrency(nameof(RunCostIndex), 6, nameof(DesignedYear))]
 	public int16_t RunCostFactor
 	{
 		get => model.RunCostFactor;

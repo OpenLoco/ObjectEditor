@@ -52,14 +52,14 @@ public class DockViewModel(DockObject model)
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), 7, nameof(DesignedYear))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), 7, nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;

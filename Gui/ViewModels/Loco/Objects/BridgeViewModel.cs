@@ -79,21 +79,21 @@ public class BridgeViewModel(BridgeObject model)
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), 10, nameof(DesignedYear))]
 	public int16_t BaseCostFactor
 	{
 		get => Model.BaseCostFactor;
 		set => Model.BaseCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), 10, nameof(DesignedYear))]
 	public int16_t HeightCostFactor
 	{
 		get => Model.HeightCostFactor;
 		set => Model.HeightCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(nameof(CostIndex), 10, nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;

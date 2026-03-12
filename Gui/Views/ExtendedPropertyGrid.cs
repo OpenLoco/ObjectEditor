@@ -117,6 +117,7 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 				? (uint8_t)costIndexProperty.GetValue(target)!
 				: (uint8_t)0;
 
+			// get designed year from the target object, if not specified, default to 1950
 			var designedYearProperty = currencyAttr.DesignedYearPropertyName is null
 				? null
 				: TypeDescriptor.GetProperties(target)[currencyAttr.DesignedYearPropertyName];
@@ -124,6 +125,9 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 			var designedYear = designedYearProperty is not null
 				? (uint16_t)designedYearProperty.GetValue(target)!
 				: (uint16_t)1950;
+
+			// get divisor from the attribute, if not specified, default to 1
+			var divisor = currencyAttr.Divisor;
 
 			var currVm = (InflatableCurrencyViewModel?)cv?.DataContext;
 			var year = currVm?.Year ?? designedYear;
@@ -137,7 +141,8 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 			{
 				CostFactor = costFactor,
 				CostIndex = costIndex,
-				Year = year
+				Year = year,
+				Divisor = divisor,
 			};
 
 			cv.DataContext = model;

@@ -1,9 +1,11 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Common.Logging;
 using Definitions.ObjectModels.Objects.Region;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
 using Gui.Views;
+using Index;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.Generic;
@@ -82,21 +84,24 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 	[Browsable(false)]
 	public ReactiveCommand<Unit, Unit> ClearDependentObjectsCommand { get; }
 
-	Task PopulateDependentObjectsFromFolder()
+	async Task PopulateDependentObjectsFromFolder()
 	{
-		var objectIndex = editorContext?.ObjectIndex;
-		if (objectIndex == null)
+		var folders = await PlatformSpecific.OpenFolderPicker();
+		var dir = folders.FirstOrDefault();
+		if (dir == null)
 		{
-			return Task.CompletedTask;
+			return;
 		}
+
+		var dirPath = dir.Path.LocalPath;
+		var logger = editorContext?.Logger ?? new Logger();
+		var objectIndex = await ObjectIndex.CreateIndexAsync(dirPath, logger);
 
 		DependentObjects.Clear();
 		foreach (var entry in objectIndex.Objects.Where(x => x.DatChecksum.HasValue))
 		{
 			DependentObjects.Add(new ObjectModelHeader(entry.DisplayName, entry.ObjectType, entry.ObjectSource, entry.DatChecksum!.Value));
 		}
-
-		return Task.CompletedTask;
 	}
 
 	async Task AddDependentObjectAsync()

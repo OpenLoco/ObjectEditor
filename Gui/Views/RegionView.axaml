@@ -24,13 +24,13 @@
 					</Button>
 					<Button Command="{Binding RemoveSelectedDependentObjectCommand}"
 							Classes="danger"
-							ToolTip.Tip="Remove the currently selected object from the list">
+							ToolTip.Tip="Remove the currently selected object from the list (Delete)">
 						Remove selected
 					</Button>
 					<Separator Width="8" />
 					<Button Command="{Binding PopulateDependentObjectsFromFolderCommand}"
-							ToolTip.Tip="Clear the list and populate it with all objects from the currently loaded folder">
-						Populate from current folder
+							ToolTip.Tip="Clear the list and populate it with all objects from a selected folder">
+						Populate from folder
 					</Button>
 					<Button Command="{Binding CopyDependentObjectsCommand}"
 							ToolTip.Tip="Copy the dependent objects list to clipboard as JSON">
@@ -53,7 +53,11 @@
 					SelectedItem="{Binding SelectedDependentObject}"
 					AutoGenerateColumns="False"
 					CanUserSortColumns="True"
+					CanUserResizeColumns="True"
 					IsReadOnly="True">
+					<DataGrid.KeyBindings>
+						<KeyBinding Gesture="Delete" Command="{Binding RemoveSelectedDependentObjectCommand}" />
+					</DataGrid.KeyBindings>
 					<DataGrid.Columns>
 						<DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
 						<DataGridTextColumn Header="Type" Binding="{Binding ObjectType}" Width="Auto" />

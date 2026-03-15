@@ -129,7 +129,11 @@ public static class PlatformSpecific
 		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
 			&& desktop.MainWindow is { } window)
 		{
-			return await TopLevel.GetTopLevel(window)?.Clipboard?.GetTextAsync();
+			var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
+			if (clipboard != null)
+			{
+				return await clipboard.GetTextAsync();
+			}
 		}
 
 		return null;

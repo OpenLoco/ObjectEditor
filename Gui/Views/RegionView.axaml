@@ -15,57 +15,8 @@
 				<vi:ExtendedPropertyGrid DataContext="{Binding}" IsHeaderVisible="True" IsCategoryVisible="False" IsAutoNameWidth="True" IsQuickFilterVisible="True" />
 			</ScrollViewer>
 		</TabItem>
-		<TabItem Header="Dependent Objects">
-			<DockPanel>
-				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="4" Margin="4">
-					<Button Command="{Binding AddDependentObjectCommand}"
-							ToolTip.Tip="Select and add an object from the current folder to the list">
-						Add object
-					</Button>
-					<Button Command="{Binding RemoveSelectedDependentObjectCommand}"
-							Classes="danger"
-							ToolTip.Tip="Remove the currently selected object from the list (Delete)">
-						Remove selected
-					</Button>
-					<Separator Width="8" />
-					<Button Command="{Binding PopulateDependentObjectsFromFolderCommand}"
-							ToolTip.Tip="Clear the list and populate it with all objects from a selected folder">
-						Populate from folder
-					</Button>
-					<Button Command="{Binding CopyDependentObjectsCommand}"
-							ToolTip.Tip="Copy the dependent objects list to clipboard as JSON">
-						Copy list
-					</Button>
-					<Button Command="{Binding PasteDependentObjectsCommand}"
-							ToolTip.Tip="Replace the dependent objects list with objects from clipboard (JSON format)">
-						Paste list
-					</Button>
-					<Button Command="{Binding ClearDependentObjectsCommand}"
-							Classes="danger"
-							ToolTip.Tip="Remove all dependent objects from the list">
-						Clear
-					</Button>
-					<TextBlock VerticalAlignment="Center"
-							   Text="{Binding DependentObjects.Count, StringFormat='({0} items)'}" />
-				</StackPanel>
-				<DataGrid
-					ItemsSource="{Binding DependentObjects}"
-					SelectedItem="{Binding SelectedDependentObject}"
-					AutoGenerateColumns="False"
-					CanUserSortColumns="True"
-					CanUserResizeColumns="True"
-					IsReadOnly="True">
-					<DataGrid.KeyBindings>
-						<KeyBinding Gesture="Delete" Command="{Binding RemoveSelectedDependentObjectCommand}" />
-					</DataGrid.KeyBindings>
-					<DataGrid.Columns>
-						<DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
-						<DataGridTextColumn Header="Type" Binding="{Binding ObjectType}" Width="Auto" />
-						<DataGridTextColumn Header="Source" Binding="{Binding ObjectSource}" Width="Auto" />
-						<DataGridTextColumn Header="Checksum" Binding="{Binding DatChecksum}" Width="Auto" />
-					</DataGrid.Columns>
-				</DataGrid>
-			</DockPanel>
+		<TabItem Header="Required Objects">
+			<vi:RequiredObjectsView DataContext="{Binding RequiredObjects}" />
 		</TabItem>
 	</TabControl>
 </UserControl>

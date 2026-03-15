@@ -8,6 +8,7 @@
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 	xmlns:gui="using:Gui"
+	xmlns:vi="using:Gui.Views"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 	x:Class="Gui.Views.SCV5View"
 	x:DataType="vm:SCV5ViewModel">
@@ -43,8 +44,8 @@
 		</TabItem>
 		<TabItem Header="Required Objects">
 			<DockPanel>
-				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" >
-					<SplitButton Content="{Binding LastGameObjDataFolder, StringFormat='Download missing objects to {0} object folder'}" Command="{Binding DownloadMissingObjectsToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}" Margin="4">
+				<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="4">
+					<SplitButton Content="{Binding LastGameObjDataFolder, StringFormat='Download missing objects to {0} object folder'}" Command="{Binding DownloadMissingObjectsToGameObjDataCommand}" CommandParameter="{Binding LastGameObjDataFolder}">
 						<SplitButton.Flyout>
 							<MenuFlyout Placement="Bottom">
 								<MenuItem Header="Copy to Locomotion (Steam) game folder" Command="{Binding DownloadMissingObjectsToGameObjDataCommand}" CommandParameter="{x:Static gui:GameObjDataFolder.LocomotionSteam}"/>
@@ -54,39 +55,8 @@
 							</MenuFlyout>
 						</SplitButton.Flyout>
 					</SplitButton>
-					<Button Margin="4" Command="{Binding PopulateRequiredObjectsFromFolderCommand}"
-							ToolTip.Tip="Clear the list and populate it with all objects from the currently loaded folder">
-						Populate from current folder
-					</Button>
-					<Button Margin="4" Command="{Binding CopyRequiredObjectsCommand}"
-							ToolTip.Tip="Copy the required objects list to clipboard as JSON">
-						Copy list
-					</Button>
-					<Button Margin="4" Command="{Binding PasteRequiredObjectsCommand}"
-							ToolTip.Tip="Replace the required objects list with objects from clipboard (JSON format)">
-						Paste list
-					</Button>
-					<TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding RequiredObjects.Count, StringFormat='Number of objects: {0}'}"></TextBlock>
-					<!--<TextBlock Margin="4" VerticalAlignment="Center" HorizontalAlignment="Center" Text="" DockPanel.Dock="Top" />-->
 				</StackPanel>
-				<ScrollViewer>
-					<!-- todo: could use TreeDataGrid for this-->
-					<ItemsRepeater ItemsSource="{Binding RequiredObjects}">
-						<ItemsRepeater.Layout>
-							<UniformGridLayout Orientation="Horizontal"/>
-						</ItemsRepeater.Layout>
-						<ItemsRepeater.ItemTemplate>
-							<DataTemplate>
-								<Border Margin="4" BorderThickness="1">
-									<StackPanel>
-										<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
-										<ContentControl Content="{Binding}" />
-									</StackPanel>
-								</Border>
-							</DataTemplate>
-						</ItemsRepeater.ItemTemplate>
-					</ItemsRepeater>
-				</ScrollViewer>
+				<vi:RequiredObjectsView DataContext="{Binding RequiredObjects}" />
 			</DockPanel>
 		</TabItem>
 		<TabItem Header="Packed Objects">

@@ -18,7 +18,6 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
@@ -28,8 +27,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	//[Reactive]
 	//public S5File? Model { get; set; }
 
-	[Reactive]
-	public ObservableCollection<ObjectModelHeaderViewModel>? RequiredObjects { get; set; }
+	public RequiredObjectsListViewModel RequiredObjects { get; }
 
 	[Reactive]
 	public ObservableCollection<ObjectModelHeaderViewModel>? PackedObjects { get; set; }
@@ -54,20 +52,15 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	[Reactive]
 	public GameObjDataFolder LastGameObjDataFolder { get; set; } = GameObjDataFolder.LocomotionSteam;
 	public ReactiveCommand<GameObjDataFolder, Unit> DownloadMissingObjectsToGameObjDataCommand { get; }
-	public ReactiveCommand<Unit, Unit> PopulateRequiredObjectsFromFolderCommand { get; }
-	public ReactiveCommand<Unit, Unit> CopyRequiredObjectsCommand { get; }
-	public ReactiveCommand<Unit, Unit> PasteRequiredObjectsCommand { get; }
 
 	public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
 	{
+		RequiredObjects = new RequiredObjectsListViewModel(editorContext);
 		SaveIsVisible = false;
 		SaveAsIsVisible = false;
 		Load();
 		DownloadMissingObjectsToGameObjDataCommand = ReactiveCommand.CreateFromTask<GameObjDataFolder>(DownloadMissingObjects);
-		PopulateRequiredObjectsFromFolderCommand = ReactiveCommand.CreateFromTask(PopulateRequiredObjectsFromFolder);
-		CopyRequiredObjectsCommand = ReactiveCommand.CreateFromTask(CopyRequiredObjectsAsync);
-		PasteRequiredObjectsCommand = ReactiveCommand.CreateFromTask(PasteRequiredObjectsAsync);
 	}
 
 	public override void Load()
@@ -81,11 +74,10 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			return;
 		}
 
-		var ro = Model.RequiredObjects
+		var headers = Model.RequiredObjects
 			.Where(x => x.Checksum != 0)
-			.Select(x => new ObjectModelHeaderViewModel(x.Convert()))
-			.OrderBy(x => x.Name);
-		RequiredObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. ro]);
+			.Select(x => x.Convert());
+		RequiredObjects.Replace(headers);
 
 		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1.Convert())).OrderBy(x => x.Name);
 		PackedObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. po]);
@@ -221,65 +213,6 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 		return;
 	}
-
-	Task PopulateRequiredObjectsFromFolder()
-	{
-		var objectIndex = EditorContext?.ObjectIndex;
-		if (objectIndex == null)
-		{
-			return Task.CompletedTask;
-		}
-
-		var headers = objectIndex.Objects
-			.Where(x => x.DatChecksum.HasValue)
-			.Select(x => new ObjectModelHeaderViewModel(new ObjectModelHeader(x.DisplayName, x.ObjectType, x.ObjectSource, x.DatChecksum!.Value)))
-			.OrderBy(x => x.Name);
-
-		RequiredObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. headers]);
-
-		return Task.CompletedTask;
-	}
-
-	async Task CopyRequiredObjectsAsync()
-	{
-		if (RequiredObjects == null)
-		{
-			return;
-		}
-
-		var headers = RequiredObjects.Select(x => x.Model).OfType<ObjectModelHeader>().ToList();
-		var json = JsonSerializer.Serialize(headers, JsonSerializerOptions);
-		await PlatformSpecific.SetClipboardTextAsync(json);
-	}
-
-	async Task PasteRequiredObjectsAsync()
-	{
-		var text = await PlatformSpecific.GetClipboardTextAsync();
-		if (string.IsNullOrWhiteSpace(text))
-		{
-			return;
-		}
-
-		List<ObjectModelHeader>? headers;
-		try
-		{
-			headers = JsonSerializer.Deserialize<List<ObjectModelHeader>>(text, JsonSerializerOptions);
-		}
-		catch (JsonException)
-		{
-			return;
-		}
-
-		if (headers == null)
-		{
-			return;
-		}
-
-		RequiredObjects = new ObservableCollection<ObjectModelHeaderViewModel>(
-			headers.Select(h => new ObjectModelHeaderViewModel(h)).OrderBy(x => x.Name));
-	}
-
-	static readonly JsonSerializerOptions JsonSerializerOptions = new() { WriteIndented = false };
 
 	void DrawMap()
 	{

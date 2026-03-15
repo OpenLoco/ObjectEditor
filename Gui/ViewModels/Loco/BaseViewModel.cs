@@ -53,7 +53,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 		=> _allViewModelsCollection;
 
 	[Browsable(false)]
-	public string NewGroupName { get; set; } = "New Group";
+	public string NewGroupName { get; set; } = "<unnamed>";
 
 	[Browsable(false)]
 	public ReactiveCommand<Unit, Unit> AddGroupCommand { get; }

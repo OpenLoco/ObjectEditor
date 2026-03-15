@@ -3,15 +3,19 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Common.Logging;
 using Definitions.ObjectModels.Objects.Region;
 using Definitions.ObjectModels.Types;
+using DynamicData;
 using Gui.Models;
 using Gui.Views;
 using Index;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -21,15 +25,24 @@ namespace Gui.ViewModels;
 public class RegionViewModel : BaseViewModel<RegionObject>
 {
 	readonly ObjectEditorContext? editorContext;
+	readonly SourceCache<ObjectModelHeader, uint> dependentObjects = new(x => x.DatChecksum);
+	readonly CompositeDisposable dependentObjectsSubscriptions = [];
+	readonly ReadOnlyObservableCollection<ObjectModelHeader> dependentObjectsCollection;
 
 	public RegionViewModel(RegionObject model, ObjectEditorContext? editorContext = null)
 		: base(model)
 	{
 		this.editorContext = editorContext;
 
-		DependentObjects = new BindingList<ObjectModelHeader>(model.DependentObjects);
-		CargoInfluenceObjects = new BindingList<ObjectModelHeader>(model.CargoInfluenceObjects);
-		CargoInfluenceTownFilter = new BindingList<CargoInfluenceTownFilterType>(model.CargoInfluenceTownFilter);
+		_ = dependentObjects.Connect()
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Bind(out dependentObjectsCollection)
+			.Subscribe(Observer.Create<IChangeSet<ObjectModelHeader, uint>>(_ => SyncDependentObjectsToModel()))
+			.DisposeWith(dependentObjectsSubscriptions);
+
+		dependentObjects.Edit(updater => updater.AddOrUpdate(model.DependentObjects));
+		CargoInfluenceObjects = new(model.CargoInfluenceObjects);
+		CargoInfluenceTownFilter = new(model.CargoInfluenceTownFilter);
 
 		var hasSelection = this.WhenAnyValue(x => x.SelectedDependentObject).Select(obj => obj != null);
 
@@ -54,7 +67,8 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 	}
 
 	[Browsable(false)]
-	public BindingList<ObjectModelHeader> DependentObjects { get; }
+	public ReadOnlyObservableCollection<ObjectModelHeader> DependentObjects
+		=> dependentObjectsCollection;
 
 	[Browsable(false)]
 	[Reactive]
@@ -97,11 +111,11 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 		var logger = editorContext?.Logger ?? new Logger();
 		var objectIndex = await ObjectIndex.CreateIndexAsync(dirPath, logger);
 
-		DependentObjects.Clear();
-		foreach (var entry in objectIndex.Objects.Where(x => x.DatChecksum.HasValue))
-		{
-			DependentObjects.Add(new ObjectModelHeader(entry.DisplayName, entry.ObjectType, entry.ObjectSource, entry.DatChecksum!.Value));
-		}
+		var headers = objectIndex.Objects
+			  .Where(x => x.DatChecksum.HasValue)
+			  .Select(entry => new ObjectModelHeader(entry.DisplayName, entry.ObjectType, entry.ObjectSource, entry.DatChecksum!.Value));
+
+		ReplaceDependentObjects(headers);
 	}
 
 	async Task AddDependentObjectAsync()
@@ -123,7 +137,7 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 
 		if (result?.SelectedObject is { DatChecksum: not null } selected)
 		{
-			DependentObjects.Add(new ObjectModelHeader(selected.DisplayName, selected.ObjectType, selected.ObjectSource, selected.DatChecksum.Value));
+			dependentObjects.AddOrUpdate(new ObjectModelHeader(selected.DisplayName, selected.ObjectType, selected.ObjectSource, selected.DatChecksum.Value));
 		}
 	}
 
@@ -131,13 +145,13 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 	{
 		if (SelectedDependentObject != null)
 		{
-			DependentObjects.Remove(SelectedDependentObject);
+			dependentObjects.RemoveKey(SelectedDependentObject.DatChecksum);
 		}
 	}
 
 	async Task CopyDependentObjectsAsync()
 	{
-		var json = JsonSerializer.Serialize(DependentObjects.ToList(), JsonSerializerOptions);
+		var json = JsonSerializer.Serialize(DependentObjects, JsonSerializerOptions);
 		await PlatformSpecific.SetClipboardTextAsync(json);
 	}
 
@@ -164,15 +178,35 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 			return;
 		}
 
-		DependentObjects.Clear();
-		foreach (var header in headers)
-		{
-			DependentObjects.Add(header);
-		}
+		ReplaceDependentObjects(headers);
 	}
 
 	void ClearDependentObjects()
-		=> DependentObjects.Clear();
+		=> dependentObjects.Clear();
+
+	void ReplaceDependentObjects(IEnumerable<ObjectModelHeader> headers)
+		=> dependentObjects.Edit(updater =>
+		{
+			updater.Clear();
+			updater.AddOrUpdate(headers);
+		});
+
+	void SyncDependentObjectsToModel()
+	{
+		Model.DependentObjects.Clear();
+		Model.DependentObjects.AddRange(DependentObjects);
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			dependentObjectsSubscriptions.Dispose();
+			dependentObjects.Dispose();
+		}
+
+		base.Dispose(disposing);
+	}
 
 	static readonly JsonSerializerOptions JsonSerializerOptions = new() { WriteIndented = false };
 }

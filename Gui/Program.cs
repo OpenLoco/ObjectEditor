@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Logging;
-using Common;
 using ReactiveUI.Avalonia;
 using System;
 

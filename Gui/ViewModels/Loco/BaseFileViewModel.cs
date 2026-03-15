@@ -116,7 +116,7 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 
 			var result = await box.ShowAsync();
 
-			if (result == ButtonResult.Yes)
+			if (result == ButtonResult.No)
 			{
 				return;
 			}

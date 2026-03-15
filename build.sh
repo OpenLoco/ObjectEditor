@@ -30,10 +30,10 @@ framework=$(grep '<TargetFramework>' Gui/Gui.csproj | sed 's/.*<TargetFramework>
 
 build_windows() {
     echo "Building the ${FG_BLUE}Editor${RESET} (win-x64)"
-    dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime win-x64
+    dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime win-x64 --no-restore
 
     echo "Building the ${FG_BLUE}Updater${RESET} (win-x64)"
-    dotnet publish GuiUpdater/GuiUpdater.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime win-x64
+    dotnet publish GuiUpdater/GuiUpdater.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime win-x64 --no-restore
 
     echo "Copying ${FG_BLUE}Updater${RESET} files into ${FG_BLUE}Gui${RESET} folders (win-x64)"
     cp GuiUpdater/bin/Release/$framework/win-x64/publish/* Gui/bin/Release/$framework/win-x64/publish
@@ -47,21 +47,21 @@ build_windows() {
 
 build_linux() {
     echo "Building the ${FG_BLUE}Editor${RESET} (linux-x64)"
-    dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime linux-x64
+    dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime linux-x64 --no-restore
 
     echo "Building the ${FG_BLUE}Updater${RESET} (linux-x64)"
-    dotnet publish GuiUpdater/GuiUpdater.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime linux-x64
+    dotnet publish GuiUpdater/GuiUpdater.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime linux-x64 --no-restore
 
     echo "Copying ${FG_BLUE}Updater${RESET} files into ${FG_BLUE}Gui${RESET} folders (linux-x64)"
     cp GuiUpdater/bin/Release/$framework/linux-x64/publish/* Gui/bin/Release/$framework/linux-x64/publish
 
-    echo "Zipping ${FG_BLUE}linux-x64${RESET}"
+    echo "Creating bzip2 tarball for ${FG_BLUE}linux-x64${RESET}"
     pushd "Gui/bin/Release/$framework/linux-x64/publish"
     chmod +x "./ObjectEditor"
     chmod +x "./ObjectEditorUpdater"
-    touch "object-editor-$version-linux-x64.tar"
-    tar --exclude="object-editor-$version-linux-x64.tar" -jcf "object-editor-$version-linux-x64.tar" .
-    mv "object-editor-$version-linux-x64.tar" ../../..
+    touch "object-editor-$version-linux-x64.tar.bz2"
+    tar --exclude="object-editor-$version-linux-x64.tar.bz2" -jcf "object-editor-$version-linux-x64.tar.bz2" .
+    mv "object-editor-$version-linux-x64.tar.bz2" ../../..
     popd
 }
 
@@ -71,13 +71,12 @@ build_macos() {
     mac_bundle_id="com.openloco.objecteditor"
     macos_publish_dir="Gui/bin/Release/$framework/osx-x64/publish"
     macos_bundle_dir="$macos_publish_dir/$app_name.app"
-    macos_plist_template="Gui/Packaging/macOS/Info.plist"
 
     echo "Building the ${FG_BLUE}Editor${RESET} (osx-x64)"
-    dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime osx-x64
+    dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime osx-x64 --no-restore
 
     echo "Building the ${FG_BLUE}Updater${RESET} (osx-x64)"
-    dotnet publish GuiUpdater/GuiUpdater.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime osx-x64
+    dotnet publish GuiUpdater/GuiUpdater.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime osx-x64 --no-restore
 
     echo "Copying ${FG_BLUE}Updater${RESET} files into ${FG_BLUE}Gui${RESET} folders (osx-x64)"
     cp GuiUpdater/bin/Release/$framework/osx-x64/publish/* Gui/bin/Release/$framework/osx-x64/publish
@@ -114,13 +113,13 @@ build_macos() {
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>CFBundleIconFile</key>
-    <string>loco_icon.icns</string>
+    <string>loco_icon.png</string>
   </dict>
 </plist>
 EOF
 
-    if [ -f "Gui/Assets/loco_icon.icns" ]; then
-        cp "Gui/Assets/loco_icon.icns" "$macos_bundle_dir/Contents/Resources/"
+    if [ -f "Gui/Assets/loco_icon.png" ]; then
+        cp "Gui/Assets/loco_icon.png" "$macos_bundle_dir/Contents/Resources/"
     fi
 
     echo "Zipping ${FG_BLUE}osx-x64${RESET}"

@@ -182,8 +182,10 @@ public class FolderTreeViewModel : ReactiveObject
 			.AutoRefresh(f => f.EnumValue)
 			.AutoRefresh(f => f.TextValue)
 			.ToCollection()
-			.Throttle(TimeSpan.FromMilliseconds(500))
-			.Select(_ => CreateFilterPredicate())
+			.Throttle(TimeSpan.FromMilliseconds(500), RxApp.MainThreadScheduler)
+			.Select(_ => Observable.Start(CreateFilterPredicate, RxApp.TaskpoolScheduler))
+			.Switch()
+			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_filterSubject);
 
 		_ = CurrentDirectoryItems.Connect()

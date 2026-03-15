@@ -6,13 +6,17 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 
 namespace Gui.ViewModels;
 
-public sealed class ViewModelGroup : ReactiveObject, IViewModel
+public sealed class ViewModelGroup : ReactiveObject, IViewModel, IDisposable
 {
 	readonly IViewModelGroupHost _host;
+	readonly CompositeDisposable subscriptions = new();
+	bool disposed;
 
 	public ViewModelGroup(string displayName, IViewModelGroupHost host)
 	{
@@ -22,7 +26,8 @@ public sealed class ViewModelGroup : ReactiveObject, IViewModel
 		_ = _viewModels.Connect()
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Bind(out _viewModelsCollection)
-			.Subscribe();
+			.Subscribe()
+			.DisposeWith(subscriptions);
 
 		AddSelectedViewModelCommand = ReactiveCommand.Create(AddSelectedViewModel);
 		AddViewModelFromParameterCommand = ReactiveCommand.Create<IViewModel>(AddViewModelFromParameter);
@@ -111,5 +116,26 @@ public sealed class ViewModelGroup : ReactiveObject, IViewModel
 		{
 			_ = _host.RemoveViewModelGroup(this);
 		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
+	}
+
+	void Dispose(bool disposing)
+	{
+		if (disposed)
+		{
+			return;
+		}
+
+		if (disposing)
+		{
+			subscriptions.Dispose();
+		}
+
+		disposed = true;
 	}
 }

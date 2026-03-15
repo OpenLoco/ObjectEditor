@@ -17,12 +17,13 @@
 	<DockPanel>
 		<TextBox DockPanel.Dock="Top" Watermark="Search" Text="{Binding SearchTerm}"></TextBox>
 		<UniformGrid Rows="1" Columns="2" DockPanel.Dock="Bottom">
-			<Button Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Confirm</Button>
-			<Button Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">Cancel</Button>
+			<Button Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding ConfirmCommand}">Confirm</Button>
+			<Button Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding CancelCommand}">Cancel</Button>
 		</UniformGrid>
 		<ListBox SelectedItem="{Binding SelectedObject}" ItemsSource="{Binding ObjectView}" SelectionMode="Single">
 			<ListBox.ItemTemplate>
 				<DataTemplate>
+					<TextBlock Text="{Binding DisplayName}" />
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 		</ListBox>

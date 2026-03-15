@@ -27,8 +27,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	//[Reactive]
 	//public S5File? Model { get; set; }
 
-	[Reactive]
-	public ObservableCollection<ObjectModelHeaderViewModel>? RequiredObjects { get; set; }
+	public RequiredObjectsListViewModel RequiredObjects { get; }
 
 	[Reactive]
 	public ObservableCollection<ObjectModelHeaderViewModel>? PackedObjects { get; set; }
@@ -57,6 +56,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	public SCV5ViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
 	{
+		RequiredObjects = new RequiredObjectsListViewModel(editorContext);
 		SaveIsVisible = false;
 		SaveAsIsVisible = false;
 		Load();
@@ -74,11 +74,10 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			return;
 		}
 
-		var ro = Model.RequiredObjects
+		var headers = Model.RequiredObjects
 			.Where(x => x.Checksum != 0)
-			.Select(x => new ObjectModelHeaderViewModel(x.Convert()))
-			.OrderBy(x => x.Name);
-		RequiredObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. ro]);
+			.Select(x => x.Convert());
+		RequiredObjects.Replace(headers);
 
 		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1.Convert())).OrderBy(x => x.Name);
 		PackedObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. po]);
@@ -140,43 +139,43 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			// technically should check if the index is downloaded and valid now
 		}
 
-		foreach (var obj in Model.RequiredObjects)
+		foreach (var obj in RequiredObjects.Items)
 		{
-			if (OriginalObjectFiles.GetFileSource(obj.Name, obj.Checksum, obj.ObjectSource) is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
+			if (OriginalObjectFiles.GetFileSource(obj.Name, obj.DatChecksum, obj.ObjectSource.Convert()) is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 			{
 				continue;
 			}
 
-			if (gameFolderIndex.Objects.Contains(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum))
+			if (gameFolderIndex.Objects.Contains(x => x.DisplayName == obj.Name && x.DatChecksum == obj.DatChecksum))
 			{
 				continue;
 			}
 
 			// obj is missing - we need to download
-			logger.Info($"Scenario {CurrentFile.DisplayName} has missing object. Name=\"{obj.Name}\" Checksum={obj.Checksum} ObjectType={obj.ObjectType} ");
+			logger.Info($"Scenario {CurrentFile.DisplayName} has missing object. Name=\"{obj.Name}\" Checksum={obj.DatChecksum} ObjectType={obj.ObjectType} ");
 
 			var onlineObj = EditorContext.ObjectIndexOnline
 				.Objects
-				.FirstOrDefault(x => x.DisplayName == obj.Name && x.DatChecksum == obj.Checksum); // ideally would be SingleOrDefault but unfortunately DAT is not unique
+				.FirstOrDefault(x => x.DisplayName == obj.Name && x.DatChecksum == obj.DatChecksum); // ideally would be SingleOrDefault but unfortunately DAT is not unique
 
 			if (onlineObj == null)
 			{
-				logger.Error($"Couldn't find a matching object in the online index. Name=\"{obj.Name}\" Checksum={obj.Checksum} ObjectType={obj.ObjectType} ");
+				logger.Error($"Couldn't find a matching object in the online index. Name=\"{obj.Name}\" Checksum={obj.DatChecksum} ObjectType={obj.ObjectType} ");
 
 				// Add this missing object to the server's missing objects list
 				var missingEntry = new DtoObjectMissingPost(
 					obj.Name,
-					obj.Checksum,
-					obj.ObjectType.Convert());
+					obj.DatChecksum,
+					obj.ObjectType);
 
 				var result = await EditorContext.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
 				if (result != null)
 				{
-					logger.Info($"Successfully added missing object to server: Id={result.Id} Name=\"{obj.Name}\" Checksum=({obj.Checksum})");
+					logger.Info($"Successfully added missing object to server: Id={result.Id} Name=\"{obj.Name}\" Checksum=({obj.DatChecksum})");
 				}
 				else
 				{
-					logger.Error($"Failed to add missing object to server: Name=\"{obj.Name}\" Checksum=({obj.Checksum})");
+					logger.Error($"Failed to add missing object to server: Name=\"{obj.Name}\" Checksum=({obj.DatChecksum})");
 				}
 
 				continue;

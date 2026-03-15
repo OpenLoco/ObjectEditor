@@ -1,0 +1,22 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Gui.ViewModels"
+	xmlns:vi="using:Gui.Views"
+	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+	x:Class="Gui.Views.RegionView"
+	x:DataType="vm:RegionViewModel">
+
+	<TabControl>
+		<TabItem Header="Properties">
+			<ScrollViewer>
+				<vi:ExtendedPropertyGrid DataContext="{Binding}" IsHeaderVisible="True" IsCategoryVisible="False" IsAutoNameWidth="True" IsQuickFilterVisible="True" />
+			</ScrollViewer>
+		</TabItem>
+		<TabItem Header="Required Objects">
+			<vi:RequiredObjectsView DataContext="{Binding RequiredObjects}" />
+		</TabItem>
+	</TabControl>
+</UserControl>

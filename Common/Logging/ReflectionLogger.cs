@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -5,12 +6,14 @@ namespace Common.Logging;
 
 public static class ReflectionLogger
 {
+	[RequiresUnreferencedCode("ReflectionLogger uses reflection to enumerate public properties and fields of objects, which may be trimmed.")]
 	public static string ToString<T>(T obj)
 	{
 		var sb = new StringBuilder();
 		return ToString(obj, sb).ToString();
 	}
 
+	[RequiresUnreferencedCode("ReflectionLogger uses reflection to enumerate public properties and fields of objects, which may be trimmed.")]
 	static StringBuilder ToString<T>(T obj, StringBuilder sb)
 	{
 		if (obj == null)

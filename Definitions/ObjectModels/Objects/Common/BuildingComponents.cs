@@ -2,12 +2,14 @@ using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Validation;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Objects.Common;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class BuildingComponents : ILocoStruct
 {
+#pragma warning disable IL2026 // LengthAttribute constructor uses reflection to get 'Count' on non-ICollection types; our properties use List<T> which implements ICollection so Count is preserved.
 	[Length(1, BuildingObject.Constants.MaxAnimationsCount)]
 	[CountEqualTo(nameof(BuildingAnimations))]
 	public List<uint8_t> BuildingHeights { get; set; } = [];
@@ -18,6 +20,7 @@ public class BuildingComponents : ILocoStruct
 
 	[Length(1, BuildingObject.Constants.MaxVariationsCount)]
 	public List<List<uint8_t>> BuildingVariations { get; set; } = [];
+#pragma warning restore IL2026
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

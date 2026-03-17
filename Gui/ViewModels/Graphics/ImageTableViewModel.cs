@@ -12,6 +12,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
@@ -96,6 +97,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 	ImageTable Model { get; init; }
 
+	[RequiresUnreferencedCode("ImageTableViewModel uses ReactiveUI APIs (WhenAnyValue, ReactiveCommand) which require reflection and may not work correctly when trimming application code.")]
 	public ImageTableViewModel(ImageTable imageTable, ILogger logger)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);

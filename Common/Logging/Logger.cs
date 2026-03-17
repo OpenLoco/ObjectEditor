@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Common.Logging;
 
@@ -10,6 +11,7 @@ public class Logger : ILogger
 
 	public event EventHandler<LogAddedEventArgs>? LogAdded;
 
+	[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "StackFrame.GetMethod() is used only for diagnostic logging of the caller's class name and is safe to call even if metadata is trimmed.")]
 	public void Log(LogLevel level, string message, string callerMemberName = "", string sourceFilePath = "", int sourceLineNumber = 0)
 	{
 		// Get the class name using reflection

@@ -20,6 +20,7 @@
     <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <ApplicationIcon>Assets\loco_icon.ico</ApplicationIcon>
+    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>

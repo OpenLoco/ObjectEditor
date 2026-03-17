@@ -9,8 +9,10 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 {
 	public uint32_t FarmImagesPerGrowthStage { get; set; }
 	public BuildingComponents BuildingComponents { get; set; } = new();
+#pragma warning disable IL2026 // LengthAttribute constructor uses reflection to get 'Count' on non-ICollection types; our properties use List<T> which implements ICollection so Count is preserved.
 	[Length(4, 4)]
 	public List<List<uint8_t>> AnimationSequences { get; set; } = []; // Access with getAnimationSequence helper method
+#pragma warning restore IL2026
 	public List<IndustryObjectUnk38> var_38 { get; set; } = []; // Access with getUnk38 helper method
 	public uint8_t MinNumBuildings { get; set; }
 	public uint8_t MaxNumBuildings { get; set; }
@@ -25,6 +27,7 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 	public uint8_t ScaffoldingSegmentType { get; set; }
 	public Colour ScaffoldingColour { get; set; }
 
+#pragma warning disable IL2026 // LengthAttribute constructor uses reflection to get 'Count' on non-ICollection types; our properties use List<T> which implements ICollection so Count is preserved.
 	[Length(2, 2)]
 	public List<IndustryObjectProductionRateRange> InitialProductionRate { get; set; } = []; // 2 entries, min and max production rate
 
@@ -33,6 +36,7 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 
 	[Length(3, 3)]
 	public List<ObjectModelHeader> RequiredCargo { get; set; } = []; // Cargo required by this industry
+#pragma warning restore IL2026
 
 	public Colour MapColour { get; set; }
 	public IndustryObjectFlags Flags { get; set; }
@@ -50,7 +54,9 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
+#pragma warning disable IL2026 // ValidationContext constructor uses reflection; this usage is safe as the target types are always present at runtime.
 		var bcValidationContext = new ValidationContext(BuildingComponents);
+#pragma warning restore IL2026
 		foreach (var result in BuildingComponents.Validate(bcValidationContext))
 		{
 			yield return result;

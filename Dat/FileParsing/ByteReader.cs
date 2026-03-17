@@ -1,11 +1,13 @@
 using Dat.Types;
 using Definitions.ObjectModels;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Dat.FileParsing;
 
 public static class ByteReader
 {
-	public static object ReadT(ReadOnlySpan<byte> data, Type t, int offset, int arrLength = 0, bool isVariableLoad = false)
+	[RequiresUnreferencedCode("ReadT uses reflection-based type handling and may call ReadLocoStruct which requires unreferenced code.")]
+	public static object ReadT(ReadOnlySpan<byte> data, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type t, int offset, int arrLength = 0, bool isVariableLoad = false)
 	{
 		if (t == typeof(uint8_t))
 		{
@@ -178,10 +180,12 @@ public static class ByteReader
 		}
 	}
 
+	[RequiresUnreferencedCode("ReadLocoStruct uses reflection to read public properties and invoke constructors of the target type, which may be trimmed.")]
 	public static T ReadLocoStruct<T>(ReadOnlySpan<byte> data) where T : class
 		=> (T)ReadLocoStruct(data, typeof(T));
 
-	public static ILocoStruct ReadLocoStruct(ReadOnlySpan<byte> data, Type t)
+	[RequiresUnreferencedCode("ReadLocoStruct uses reflection to read public properties and invoke constructors of the target type, which may be trimmed.")]
+	public static ILocoStruct ReadLocoStruct(ReadOnlySpan<byte> data, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] Type t)
 	{
 		var properties = t.GetProperties();
 		var args = new List<object>();
@@ -258,7 +262,8 @@ public static class ByteReader
 		return (ILocoStruct?)Activator.CreateInstance(t, [.. args]) ?? throw new InvalidDataException("couldn't parse");
 	}
 
-	public static IList<ILocoStruct> ReadLocoStructArray(ReadOnlySpan<byte> data, Type t, int count, int structSize) // could get struct size from attribute, but easier just to pass in
+	[RequiresUnreferencedCode("ReadLocoStructArray uses reflection to read public properties and invoke constructors of the target type, which may be trimmed.")]
+	public static IList<ILocoStruct> ReadLocoStructArray(ReadOnlySpan<byte> data, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] Type t, int count, int structSize) // could get struct size from attribute, but easier just to pass in
 	{
 		// cannot use ReadOnlySpan with yield return :|
 		var list = new List<ILocoStruct>();
@@ -285,6 +290,7 @@ public static class ByteReader
 	//	return list;
 	//}
 
+	[RequiresUnreferencedCode("ReadLocoStructArray uses reflection to read public properties and invoke constructors of the target type, which may be trimmed.")]
 	public static IList<T> ReadLocoStructArray<T>(ReadOnlySpan<byte> data, int count, int structSize) where T : class
 	{
 		// cannot use ReadOnlySpan with yield return :|

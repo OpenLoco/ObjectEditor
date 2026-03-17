@@ -55,6 +55,7 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 	bool disposed;
 
+	[System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("AudioViewModel uses ReactiveUI APIs (WhenAnyValue, ReactiveCommand) which require reflection and may not work correctly when trimming application code.")]
 	public AudioViewModel(ILogger logger, string soundName)
 	{
 		_ = this.WhenAnyValue(o => o.WaveStream)
@@ -69,10 +70,12 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		ExportSoundCommand = ReactiveCommand.Create(ExportSoundAsync);
 	}
 
+	[System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("AudioViewModel uses ReactiveUI APIs (WhenAnyValue, ReactiveCommand) which require reflection and may not work correctly when trimming application code.")]
 	public AudioViewModel(ILogger logger, string soundName, string filename)
 		: this(logger, soundName)
 		=> ImportSoundFromFile(filename);
 
+	[System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("AudioViewModel uses ReactiveUI APIs (WhenAnyValue, ReactiveCommand) which require reflection and may not work correctly when trimming application code.")]
 	public AudioViewModel(ILogger logger, string soundName, SoundEffectWaveFormat locoWaveFormat, byte[] pcmData)
 		: this(logger, soundName)
 		=> WaveStream = new RawSourceWaveStream(

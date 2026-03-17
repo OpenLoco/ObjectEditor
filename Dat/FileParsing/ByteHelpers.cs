@@ -1,10 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Dat.FileParsing;
 
 public static class ByteHelpers
 {
-	public static int GetObjectSize(Type type)
+	public static int GetObjectSize([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type)
 	{
 		var size = 0;
 		if (type == typeof(byte) || type == typeof(sbyte))

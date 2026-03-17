@@ -41,7 +41,9 @@ public class BuildingObject : ILocoStruct, IHasBuildingComponents
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{
+#pragma warning disable IL2026 // ValidationContext constructor uses reflection; this usage is safe as the target types are always present at runtime.
 		var bcValidationContext = new ValidationContext(BuildingComponents);
+#pragma warning restore IL2026
 		foreach (var result in BuildingComponents.Validate(bcValidationContext))
 		{
 			yield return result;

@@ -7,6 +7,7 @@ using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Dat.Loaders;
 
@@ -160,6 +161,7 @@ internal record DatSoundObject(
 	uint pcmDataLength;
 	byte[] unkData;
 
+	[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "LoadVariable calls ReadLocoStruct which uses reflection. The required types (DatSoundObjectData) are always statically referenced and preserved.")]
 	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
 	{
 		// unknown structs
@@ -183,6 +185,7 @@ internal record DatSoundObject(
 		return remainingData[remainingData.Length..];
 	}
 
+	[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "SaveVariable calls WriteLocoStruct which uses reflection. The required types (DatSoundObjectData) are always statically referenced and preserved.")]
 	public ReadOnlySpan<byte> SaveVariable()
 	{
 		using (var ms = new MemoryStream())

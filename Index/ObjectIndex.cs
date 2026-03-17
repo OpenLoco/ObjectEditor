@@ -8,6 +8,7 @@ using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Hashing;
 using System.Text.Json.Serialization;
 
@@ -50,15 +51,19 @@ public class ObjectIndex
 	//	return entry != null;
 	//}
 
+	[RequiresUnreferencedCode("SaveIndexAsync uses reflection-based JSON serialization via JsonFile.SerializeToFileAsync.")]
 	public async Task SaveIndexAsync(string indexFile)
 		=> await JsonFile.SerializeToFileAsync(this, indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
 
+	[RequiresUnreferencedCode("LoadIndexAsync uses reflection-based JSON deserialization via JsonFile.DeserializeFromFileAsync.")]
 	public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
 		=> await JsonFile.DeserializeFromFileAsync<ObjectIndex?>(indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
 
+	[RequiresUnreferencedCode("LoadOrCreateIndex uses reflection-based JSON serialization/deserialization via ObjectIndex.LoadOrCreateIndexAsync.")]
 	public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
 		=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
 
+	[RequiresUnreferencedCode("LoadOrCreateIndexAsync uses reflection-based JSON serialization/deserialization via LoadIndexAsync and SaveIndexAsync.")]
 	public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 	{
 		var indexPath = Path.Combine(directory, DefaultIndexFileName);

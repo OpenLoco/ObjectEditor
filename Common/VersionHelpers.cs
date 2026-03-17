@@ -120,7 +120,7 @@ public static class VersionHelpers
 		if (response.IsSuccessStatusCode)
 		{
 			var jsonResponse = response.Content.ReadAsStringAsync().Result;
-			var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
+			var body = JsonSerializer.Deserialize(jsonResponse, CommonJsonContext.Default.VersionCheckBody);
 			var versionText = body?.TagName;
 			return GetVersionFromText(versionText);
 		}

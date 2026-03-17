@@ -112,6 +112,7 @@ public class FolderTreeViewModel : ReactiveObject
 
 	public FolderTreeViewModel() { }
 
+	[System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("FolderTreeViewModel uses ReactiveUI APIs (WhenAnyValue, ReactiveCommand, Observable.FromEventPattern) and FilterViewModel which require reflection and may not work correctly when trimming application code.")]
 	public FolderTreeViewModel(ObjectEditorContext editorContext)
 	{
 		EditorContext = editorContext;

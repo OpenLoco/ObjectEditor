@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -13,6 +14,8 @@ namespace Definitions.ObjectModels.Serialization
 		private const string ImageTableProp = nameof(LocoObject.ImageTable);
 		private const string ObjectClrTypeProp = "ObjectClrType";
 
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "LocoObjectJsonConverter uses reflection-based JSON serialization and Type.GetType() for dynamic type resolution. Callers are responsible for ensuring required types are preserved.")]
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2057", Justification = "The type name stored in JSON is always a valid assembly-qualified type name written by this same converter.")]
 		public override LocoObject? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 		{
 			using var doc = JsonDocument.ParseValue(ref reader);
@@ -65,6 +68,7 @@ namespace Definitions.ObjectModels.Serialization
 			return new LocoObject(objectType, locoStruct, stringTable, imageTable);
 		}
 
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "LocoObjectJsonConverter uses reflection-based JSON serialization and runtime type information. Callers are responsible for ensuring required types are preserved.")]
 		public override void Write(Utf8JsonWriter writer, LocoObject value, JsonSerializerOptions options)
 		{
 			if (value is null)

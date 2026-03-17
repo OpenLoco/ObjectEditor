@@ -1,5 +1,6 @@
 using Common.Logging;
 using Microsoft.AspNetCore.Http;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 
 namespace Definitions.Web;
@@ -16,6 +17,7 @@ public static class ClientHelpers
 		}
 	}
 
+	[RequiresUnreferencedCode("ReadJsonContentAsync uses reflection-based JSON deserialization which may not work correctly when trimming application code.")]
 	internal static async Task<T?> ReadJsonContentAsync<T>(HttpContent content)
 		=> await content.ReadFromJsonAsync<T?>();
 
@@ -26,6 +28,7 @@ public static class ClientHelpers
 	//	return options;
 	//}
 
+	[RequiresUnreferencedCode("GetAsync uses reflection-based JSON deserialization which may not work correctly when trimming application code.")]
 	public static async Task<T?> GetAsync<T>(HttpClient client, string apiRoute, string route, UniqueObjectId? resourceId = null, ILogger? logger = null)
 		=> await SendRequestAsync(
 			client,
@@ -42,6 +45,7 @@ public static class ClientHelpers
 			null,
 			logger) != null;
 
+	[RequiresUnreferencedCode("PostAsync uses reflection-based JSON serialization/deserialization which may not work correctly when trimming application code.")]
 	public static async Task<TResponse?> PostAsync<TRequest, TResponse>(HttpClient client, string apiRoute, string route, TRequest request, ILogger? logger = null)
 		=> await SendRequestAsync(
 			client,
@@ -50,6 +54,7 @@ public static class ClientHelpers
 			ReadJsonContentAsync<TResponse?>,
 			logger) ?? default;
 
+	[RequiresUnreferencedCode("PutAsync uses reflection-based JSON serialization/deserialization which may not work correctly when trimming application code.")]
 	public static async Task<TResponse?> PutAsync<TRequest, TResponse>(HttpClient client, string apiRoute, string route, UniqueObjectId resourceId, TRequest request, ILogger? logger = null)
 		=> await SendRequestAsync(
 			client,

@@ -11,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive;
@@ -21,8 +22,9 @@ namespace Gui.ViewModels.Filters;
 
 public class FilterTypeViewModel : ReactiveObject
 {
-	public Type Type { get; set; }
-	public string DisplayName { get; set; }
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+	public required Type Type { get; set; }
+	public required string DisplayName { get; set; }
 	public string IconName { get; set; } = "CircleSmall";
 
 	public IBrush? BackgroundColour { get; set; }
@@ -59,6 +61,7 @@ public class FilterViewModel : ReactiveObject
 
 	public ObservableCollection<FilterTypeViewModel> AvailableFiltersList { get; set; } = [];
 
+	[RequiresUnreferencedCode("FilterViewModel uses ReactiveUI APIs (WhenAnyValue, ReactiveCommand) and reflection-based LINQ Expressions, which may not work correctly when trimming application code.")]
 	public FilterViewModel(ObjectEditorContext editorContext, List<FilterTypeViewModel> availableFilters, Action<FilterViewModel> onRemove)
 	{
 		_model = editorContext;
@@ -232,6 +235,7 @@ public class FilterViewModel : ReactiveObject
 		return null;
 	}
 
+	[RequiresUnreferencedCode("BuildExpression uses reflection-based LINQ Expressions and ReactiveUI APIs which may not work correctly when trimming application code.")]
 	public Func<ObjectIndexEntry, bool>? BuildExpression(bool isLocal)
 	{
 		if (SelectedProperty == null || SelectedObjectType == null)
@@ -257,6 +261,7 @@ public class FilterViewModel : ReactiveObject
 	//	return BuildFilterExpression<MetadataModel>()?.Compile();
 	//}
 
+	[RequiresUnreferencedCode("BuildObjectFilter uses reflection-based LINQ Expressions which may not work correctly when trimming application code.")]
 	bool BuildObjectFilter(ObjectIndexEntry entry, bool isLocal)
 	{
 		if (!isLocal)
@@ -286,6 +291,7 @@ public class FilterViewModel : ReactiveObject
 		return BuildObjectFilterExpression(SelectedObjectType.Type)?.Compile().Invoke(locoObject) ?? false;
 	}
 
+	[RequiresUnreferencedCode("BuildFilterExpression uses System.Linq.Expressions.Expression.Property which requires reflection and may not work correctly when trimming application code.")]
 	private Expression<Func<T, bool>>? BuildFilterExpression<T>()
 	{
 		if (SelectedProperty == null)
@@ -299,7 +305,8 @@ public class FilterViewModel : ReactiveObject
 		return CreateFilterExpression<T>(parameter, member);
 	}
 
-	private Expression<Func<ILocoStruct, bool>>? BuildObjectFilterExpression(Type t)
+	[RequiresUnreferencedCode("BuildObjectFilterExpression uses System.Linq.Expressions.Expression.Property which requires reflection and may not work correctly when trimming application code.")]
+	private Expression<Func<ILocoStruct, bool>>? BuildObjectFilterExpression([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type t)
 	{
 		if (SelectedProperty == null)
 		{
@@ -312,6 +319,7 @@ public class FilterViewModel : ReactiveObject
 		return CreateFilterExpression<ILocoStruct>(parameter, member);
 	}
 
+	[RequiresUnreferencedCode("CreateFilterExpression uses System.Linq.Expressions.Expression.Property which requires reflection and may not work correctly when trimming application code.")]
 	private Expression<Func<T, bool>>? CreateFilterExpression<T>(ParameterExpression parameter, MemberExpression member)
 	{
 		Expression? body = null;

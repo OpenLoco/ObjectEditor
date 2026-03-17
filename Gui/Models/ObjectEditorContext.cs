@@ -14,6 +14,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -62,6 +63,7 @@ public class ObjectEditorContext : IDisposable
 	readonly ConcurrentQueue<string> logQueue = new();
 	readonly SemaphoreSlim logFileLock = new(1, 1); // Allow only 1 concurrent write
 
+	[RequiresUnreferencedCode("ObjectEditorContext constructor calls LoadSettings which uses reflection-based JSON deserialization.")]
 	public ObjectEditorContext()
 	{
 		Logger = new Logger();
@@ -121,6 +123,7 @@ public class ObjectEditorContext : IDisposable
 		}
 	}
 
+	[RequiresUnreferencedCode("LoadSettings uses EditorSettings.Load which uses reflection-based JSON deserialization.")]
 	void LoadSettings()
 	{
 		Settings = EditorSettings.Load(SettingsFile, Logger);
@@ -151,6 +154,7 @@ public class ObjectEditorContext : IDisposable
 		return folder;
 	}
 
+	[RequiresUnreferencedCode("TryLoadObject calls SawyerStreamReader.LoadFullObject and EditorSettings.Load which use reflection-based operations.")]
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)
 	{
 		uiLocoFile = null;
@@ -366,6 +370,7 @@ public class ObjectEditorContext : IDisposable
 	static Task? indexerTask;
 	static readonly SemaphoreSlim taskLock = new(1, 1);
 
+	[RequiresUnreferencedCode("LoadObjDirectoryAsync calls LoadObjDirectoryAsyncCore which uses reflection-based JSON serialization.")]
 	public async Task LoadObjDirectoryAsync(string directory, IProgress<float> progress, bool useExistingIndex)
 	{
 		// Check if a task is already running WITHOUT waiting on the semaphore
@@ -395,6 +400,7 @@ public class ObjectEditorContext : IDisposable
 		await indexerTask;
 	}
 
+	[RequiresUnreferencedCode("LoadObjDirectoryAsyncCore uses reflection-based JSON serialization and SawyerStreamReader operations.")]
 	async Task LoadObjDirectoryAsyncCore(string directory, IProgress<float> progress, bool useExistingIndex)
 	{
 		if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory) || progress == null)

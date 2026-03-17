@@ -1,5 +1,6 @@
 using Common.Logging;
 using Definitions.DTO;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Hashing;
 
 namespace Definitions.Web;
@@ -8,6 +9,7 @@ public static class Client
 {
 	public const string ApiVersion = RoutesV2.Prefix;
 
+	[RequiresUnreferencedCode("GetObjectListAsync uses reflection-based JSON deserialization via ClientHelpers.GetAsync.")]
 	public static async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync(HttpClient client, ILogger? logger = null)
 		=> await ClientHelpers.GetAsync<IEnumerable<DtoObjectEntry>>(
 			client,
@@ -16,6 +18,7 @@ public static class Client
 			null,
 			logger) ?? [];
 
+	[RequiresUnreferencedCode("GetObjectAsync uses reflection-based JSON deserialization via ClientHelpers.GetAsync.")]
 	public static async Task<DtoObjectPostResponse?> GetObjectAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
 		=> await ClientHelpers.GetAsync<DtoObjectPostResponse>(
 			client,
@@ -24,6 +27,7 @@ public static class Client
 			id,
 			logger);
 
+	[RequiresUnreferencedCode("UpdateObjectAsync uses reflection-based JSON serialization/deserialization via ClientHelpers.PutAsync.")]
 	public static async Task<DtoObjectPostResponse?> UpdateObjectAsync(HttpClient client, UniqueObjectId id, DtoObjectPostResponse request, ILogger? logger = null)
 		=> await ClientHelpers.PutAsync<DtoObjectPostResponse, DtoObjectPostResponse>(
 			client,
@@ -41,6 +45,7 @@ public static class Client
 			ClientHelpers.ReadBinaryContentAsync,
 			logger) ?? default;
 
+	[RequiresUnreferencedCode("UploadDatFileAsync uses reflection-based JSON serialization/deserialization via ClientHelpers.PostAsync.")]
 	public static async Task<DtoObjectPostResponse?> UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate, ILogger logger)
 	{
 		var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
@@ -53,6 +58,7 @@ public static class Client
 			request);
 	}
 
+	[RequiresUnreferencedCode("AddMissingObjectAsync uses reflection-based JSON serialization/deserialization via ClientHelpers.PostAsync.")]
 	public static async Task<DtoObjectMissingEntry?> AddMissingObjectAsync(HttpClient client, DtoObjectMissingPost entry, ILogger? logger = null)
 	{
 		logger?.Debug($"Posting missing object {entry.DatName} with checksum {entry.DatChecksum} to {client.BaseAddress?.OriginalString}{RoutesV2.Objects}{RoutesV2.Missing}");
@@ -64,6 +70,7 @@ public static class Client
 			logger);
 	}
 
+	[RequiresUnreferencedCode("GetLicencesAsync uses reflection-based JSON deserialization via ClientHelpers.GetAsync.")]
 	public static async Task<IEnumerable<DtoLicenceEntry>> GetLicencesAsync(HttpClient client, ILogger? logger = null)
 		=> await ClientHelpers.GetAsync<IEnumerable<DtoLicenceEntry>>(
 			client,
@@ -72,6 +79,7 @@ public static class Client
 			null,
 			logger) ?? [];
 
+	[RequiresUnreferencedCode("GetAuthorsAsync uses reflection-based JSON deserialization via ClientHelpers.GetAsync.")]
 	public static async Task<IEnumerable<DtoAuthorEntry>> GetAuthorsAsync(HttpClient client, ILogger? logger = null)
 		=> await ClientHelpers.GetAsync<IEnumerable<DtoAuthorEntry>>(
 			client,
@@ -80,6 +88,7 @@ public static class Client
 			null,
 			logger) ?? [];
 
+	[RequiresUnreferencedCode("GetTagsAsync uses reflection-based JSON deserialization via ClientHelpers.GetAsync.")]
 	public static async Task<IEnumerable<DtoTagEntry>> GetTagsAsync(HttpClient client, ILogger? logger = null)
 		=> await ClientHelpers.GetAsync<IEnumerable<DtoTagEntry>>(
 			client,
@@ -88,6 +97,7 @@ public static class Client
 			null,
 			logger) ?? [];
 
+	[RequiresUnreferencedCode("GetObjectPacksAsync uses reflection-based JSON deserialization via ClientHelpers.GetAsync.")]
 	public static async Task<IEnumerable<DtoItemPackEntry>> GetObjectPacksAsync(HttpClient client, ILogger? logger = null)
 		=> await ClientHelpers.GetAsync<IEnumerable<DtoItemPackEntry>>(
 			client,

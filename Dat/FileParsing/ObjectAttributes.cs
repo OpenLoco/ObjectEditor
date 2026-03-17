@@ -1,11 +1,12 @@
 using Dat.Data;
 using Definitions.ObjectModels;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Dat.FileParsing;
 
 public static class ObjectAttributes
 {
-	public static int StructSize<T>() where T : ILocoStruct
+	public static int StructSize<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>() where T : ILocoStruct
 		=> AttributeHelper.Get<LocoStructSizeAttribute>(typeof(T))!.Size;
 
 	//public static ObjectType ObjectType<T>() // where T : ILocoStruct

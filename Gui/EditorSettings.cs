@@ -2,6 +2,7 @@ using Common.Json;
 using Common.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -72,6 +73,7 @@ public class EditorSettings
 	[JsonIgnore]
 	public const string DefaultFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
 
+	[RequiresUnreferencedCode("Load uses reflection-based JSON deserialization (JsonSerializer.Deserialize) which may not work correctly when trimming application code.")]
 	public static EditorSettings Load(string filename, ILogger logger)
 	{
 		if (!File.Exists(filename))
@@ -88,9 +90,11 @@ public class EditorSettings
 		return settings;
 	}
 
+	[RequiresUnreferencedCode("Save uses reflection-based JSON serialization (JsonSerializer.Serialize) which may not work correctly when trimming application code.")]
 	public void Save(string filename, ILogger logger)
 		=> Save(this, filename, logger);
 
+	[RequiresUnreferencedCode("Save uses reflection-based JSON serialization (JsonSerializer.Serialize) which may not work correctly when trimming application code.")]
 	static void Save(EditorSettings settings, string filename, ILogger logger)
 	{
 		var text = JsonSerializer.Serialize(settings, options: JsonFile.DefaultSerializerOptions);

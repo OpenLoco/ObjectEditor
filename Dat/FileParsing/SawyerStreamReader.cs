@@ -8,6 +8,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Sound;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Dat.FileParsing;
@@ -94,18 +95,21 @@ public static class SawyerStreamReader
 		return true;
 	}
 
+	[RequiresUnreferencedCode("LoadFullObject calls ValidateLocoStruct which uses DataAnnotations validation requiring reflection.")]
 	public static (DatHeaderInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(string filename, ILogger logger, bool loadExtra = true)
 	{
 		using var fs = new FileStream(filename, FileMode.Open);
 		return LoadFullObject(fs, logger, filename, loadExtra);
 	}
 
+	[RequiresUnreferencedCode("LoadFullObject calls ValidateLocoStruct which uses DataAnnotations validation requiring reflection.")]
 	public static (DatHeaderInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(byte[] data, ILogger logger, string filename = "<in-memory>", bool loadExtra = true)
 	{
 		using var ms = new MemoryStream(data);
 		return LoadFullObject(ms, logger, filename: filename, loadExtra: loadExtra);
 	}
 
+	[RequiresUnreferencedCode("LoadFullObject calls ValidateLocoStruct which uses DataAnnotations validation requiring reflection.")]
 	public static (DatHeaderInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(Stream stream, ILogger logger, string filename, bool loadExtra = true)
 	{
 		logger.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
@@ -135,6 +139,7 @@ public static class SawyerStreamReader
 		}
 	}
 
+	[RequiresUnreferencedCode("ValidateLocoStruct uses DataAnnotations validation which requires reflection and may not work correctly when trimming application code.")]
 	static void ValidateLocoStruct(S5Header s5Header, ILocoStruct locoStruct, ILogger? logger)
 	{
 		var warnings = new List<string>();
@@ -240,6 +245,7 @@ public static class SawyerStreamReader
 		}
 	}
 
+	[RequiresUnreferencedCode("ReadImageTable calls ReadLocoStruct which uses reflection-based parsing requiring unreferenced code.")]
 	public static (G1Header Header, List<GraphicsElement> Table) ReadImageTable(LocoBinaryReader br)
 	{
 		if (br.BaseStream.Length - br.BaseStream.Position < ObjectAttributes.StructSize<G1Header>())
@@ -416,6 +422,7 @@ public static class SawyerStreamReader
 			_ => throw new InvalidDataException("Unknown chunk encoding scheme"),
 		};
 
+	[RequiresUnreferencedCode("ReadChunk calls ReadLocoStruct which uses reflection-based parsing requiring unreferenced code.")]
 	public static T ReadChunk<T>(ref ReadOnlySpan<byte> data) where T : class
 		=> ByteReader.ReadLocoStruct<T>(ReadChunkCore(ref data));
 

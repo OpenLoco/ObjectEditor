@@ -9,6 +9,7 @@ using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Dat.FileParsing;
@@ -81,6 +82,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
+	[RequiresUnreferencedCode("SaveMusicToDat calls WriteLocoStruct which uses reflection-based serialization requiring unreferenced code.")]
 	public static byte[] SaveMusicToDat(DatMusicWaveFormat header, byte[] data)
 	{
 		using (var ms = new MemoryStream())
@@ -96,6 +98,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
+	[RequiresUnreferencedCode("Save calls WriteLocoObject which uses DataAnnotations validation and WriteLocoStruct requiring reflection.")]
 	public static void Save(string filename, string objName, ObjectSource objectSource, SawyerEncoding encoding, LocoObject locoObject, ILogger logger, bool allowWritingAsVanilla)
 	{
 		ArgumentNullException.ThrowIfNull(locoObject);
@@ -369,6 +372,7 @@ public static class SawyerStreamWriter
 		return ms.ToArray();
 	}
 
+	[RequiresUnreferencedCode("WriteChunk calls WriteLocoStruct which uses reflection-based serialization requiring unreferenced code.")]
 	public static ReadOnlySpan<byte> WriteChunk(ILocoStruct str, SawyerEncoding encoding)
 		=> WriteChunkCore(ByteWriter.WriteLocoStruct(str), encoding);
 
@@ -490,6 +494,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
+	[RequiresUnreferencedCode("WriteLocoObject uses DataAnnotations validation (Validator.TryValidateObject) which requires reflection and may not work correctly when trimming application code.")]
 	public static MemoryStream WriteLocoObject(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
 	{
 		var validationResults = new List<ValidationResult>();

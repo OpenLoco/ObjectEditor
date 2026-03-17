@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,6 +15,7 @@ public static class JsonFile
 		AllowTrailingCommas = true
 	};
 
+	[RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
 	public static async Task SerializeToFileAsync<T>(T obj, string filePath, JsonSerializerOptions? options = null)
 	{
 		await using (var fileStream = new FileStream(
@@ -28,6 +30,7 @@ public static class JsonFile
 		}
 	}
 
+	[RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
 	public static async Task<T?> DeserializeFromFileAsync<T>(string filePath, JsonSerializerOptions? options = null)
 	{
 		await using (var fileStream = new FileStream(

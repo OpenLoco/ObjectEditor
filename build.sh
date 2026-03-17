@@ -32,9 +32,9 @@ echo "$version" > Gui/version.txt
 
 # 3. Build the editor for different platforms
 echo "Building the ${FG_BLUE}Editor${RESET}"
-dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime win-x64
-dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime linux-x64
-dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime osx-x64
+dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:PublishTrimmed=true -p:Version=$version --self-contained --runtime win-x64
+dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:PublishTrimmed=true -p:Version=$version --self-contained --runtime linux-x64
+dotnet publish Gui/Gui.csproj -c Release -p:WarningLevel=0 -p:PublishSingleFile=true -p:PublishTrimmed=true -p:Version=$version --self-contained --runtime osx-x64
 
 echo "Building the ${FG_BLUE}Updater${RESET}"
 dotnet publish GuiUpdater/GuiUpdater.csproj -c Release -p:PublishSingleFile=true -p:Version=$version --self-contained --runtime win-x64

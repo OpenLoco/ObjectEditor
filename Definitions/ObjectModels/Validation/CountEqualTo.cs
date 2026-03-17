@@ -1,11 +1,13 @@
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Definitions.ObjectModels.Validation;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class CountEqualToAttribute(string otherProperty) : ValidationAttribute
 {
+	[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075", Justification = "ValidationContext.ObjectType is expected to have its public properties preserved when validation is performed via DataAnnotations.")]
 	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
 	{
 		var otherPropertyInfo = validationContext.ObjectType.GetProperty(otherProperty);

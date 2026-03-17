@@ -1,10 +1,12 @@
 using Definitions.ObjectModels;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Dat.FileParsing;
 
 public static class ByteWriter
 {
-	public static void WriteT(Span<byte> data, Type t, int offset, object val)
+	[RequiresUnreferencedCode("WriteT uses reflection-based type handling and may call WriteLocoStruct which requires unreferenced code.")]
+	public static void WriteT(Span<byte> data, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type t, int offset, object val)
 	{
 		if (t == typeof(uint8_t))
 		{
@@ -76,6 +78,7 @@ public static class ByteWriter
 		}
 	}
 
+	[RequiresUnreferencedCode("WriteLocoStruct uses reflection to enumerate public properties of the object type, which may be trimmed.")]
 	public static ReadOnlySpan<byte> WriteLocoStruct(ILocoStruct obj)
 	{
 		ArgumentNullException.ThrowIfNull(obj);

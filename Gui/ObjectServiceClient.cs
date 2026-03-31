@@ -58,6 +58,9 @@ public class ObjectServiceClient
 
 	//public async Task<DtoLoginRequest>
 
+	public async Task<IEnumerable<T>> GetListAsync<T>(ApiEndpointGroup endpointGroup)
+		=> await Client.GetListAsync<T>(WebClient, endpointGroup, Logger);
+
 	public async Task<IEnumerable<DtoObjectEntry>> GetObjectListAsync()
 		=> await Client.GetObjectListAsync(WebClient, Logger);
 
@@ -87,4 +90,7 @@ public class ObjectServiceClient
 
 	public async Task<IEnumerable<DtoItemPackEntry>> GetObjectPacksAsync()
 		=> await Client.GetObjectPacksAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoScenarioEntry>> GetScenariosAsync()
+		=> await Client.GetScenariosAsync(WebClient, Logger);
 }

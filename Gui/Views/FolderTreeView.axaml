@@ -61,7 +61,14 @@
 							<materialIcons:MaterialIcon Kind="DatabaseRefresh" Width="24" Height="24" Margin="2" />
 						</DockPanel>
 					</Button>
-					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Objects in current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+					<ComboBox ItemsSource="{Binding OnlineBrowseTargets}"
+							  SelectedItem="{Binding SelectedOnlineBrowseTarget}"
+							  DisplayMemberBinding="{Binding DisplayName}"
+							  IsVisible="{Binding IsOnline}"
+							  Margin="2"
+							  MinWidth="160"
+							  DockPanel.Dock="Left"/>
+					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Items in current view" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
 			</Border>
 			<Border Grid.Row="2" BorderThickness="4">
@@ -145,7 +152,7 @@
 									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
 									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 									<StackPanel.ContextMenu>
-										<ContextMenu IsVisible="{Binding IsLeafNode}">
+										<ContextMenu IsVisible="{Binding CanOpenFolder}">
 											<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
 										</ContextMenu>
 									</StackPanel.ContextMenu>
@@ -157,7 +164,7 @@
 									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 									<StackPanel.ContextMenu>
-										<ContextMenu IsVisible="{Binding IsLeafNode}">
+										<ContextMenu IsVisible="{Binding CanOpenFolder}">
 											<MenuItem Header="Open folder" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
 										</ContextMenu>
 									</StackPanel.ContextMenu>

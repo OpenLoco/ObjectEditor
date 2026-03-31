@@ -3,7 +3,6 @@ using Common;
 using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
-using Index;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -232,7 +231,7 @@ public class FilterViewModel : ReactiveObject
 		return null;
 	}
 
-	public Func<ObjectIndexEntry, bool>? BuildExpression(bool isLocal)
+	public Func<FileSystemItem, bool>? BuildExpression(bool isLocal)
 	{
 		if (SelectedProperty == null || SelectedObjectType == null)
 		{
@@ -240,9 +239,9 @@ public class FilterViewModel : ReactiveObject
 		}
 
 		// If the filter is on the index itself, build a fast expression tree
-		if (SelectedObjectType.Type == typeof(ObjectIndexEntry))
+		if (SelectedObjectType.Type == typeof(FileSystemItem))
 		{
-			return BuildFilterExpression<ObjectIndexEntry>()?.Compile();
+			return BuildFilterExpression<FileSystemItem>()?.Compile();
 		}
 		//else if (SelectedObjectType.Type == typeof(MetadataModel))
 		//{
@@ -257,7 +256,7 @@ public class FilterViewModel : ReactiveObject
 	//	return BuildFilterExpression<MetadataModel>()?.Compile();
 	//}
 
-	bool BuildObjectFilter(ObjectIndexEntry entry, bool isLocal)
+	bool BuildObjectFilter(FileSystemItem entry, bool isLocal)
 	{
 		if (!isLocal)
 		{
@@ -265,13 +264,12 @@ public class FilterViewModel : ReactiveObject
 			return false;
 		}
 
-		if (ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
+		if (entry.ObjectType == null || ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
 		{
 			return false;
 		}
 
-		var fileSystemItem = FolderTreeViewModel.IndexEntryToFileSystemItem(entry, _model.Settings.ObjDataDirectory, FileLocation.Local);
-		if (!_model.TryLoadObject(fileSystemItem, out var locoFile) || locoFile?.LocoObject == null)
+		if (!_model.TryLoadObject(entry, out var locoFile) || locoFile?.LocoObject == null)
 		{
 			return false;
 		}

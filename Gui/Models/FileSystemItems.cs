@@ -19,6 +19,24 @@ public record FileSystemItem(
 	ObservableCollection<FileSystemItem>? SubNodes = null)
 {
 	[JsonIgnore]
+	public bool CanOpen
+		=> FileLocation == global::Gui.Models.FileLocation.Local
+			|| (FileLocation == global::Gui.Models.FileLocation.Online
+				&& OnlineApiEndpointGroup == global::Gui.Models.OnlineApiEndpointGroup.Objects
+				&& Id != null
+				&& ObjectType != null);
+
+	[JsonIgnore]
+	public bool CanOpenFolder
+		=> FileLocation == global::Gui.Models.FileLocation.Local && IsLeafNode && !string.IsNullOrEmpty(FileName);
+
+	public uint? DatChecksum { get; init; }
+
+	public ulong? xxHash3 { get; init; }
+
+	public OnlineApiEndpointGroup? OnlineApiEndpointGroup { get; init; }
+
+	[JsonIgnore]
 	public bool HasChildren
 		=> SubNodes != null && SubNodes.Count > 0;
 

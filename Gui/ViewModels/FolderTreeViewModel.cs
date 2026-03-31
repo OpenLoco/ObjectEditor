@@ -5,8 +5,10 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Common;
 using Dat.Data;
+using Definitions.DTO;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
+using Definitions.Web;
 using DynamicData;
 using DynamicData.Binding;
 using Gui.Models;
@@ -38,15 +40,15 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 			null,
 			null,
 			null,
-			ObjectType.Airport,
+			FileLocation.Local,
 			ObjectSource.Custom,
-			null,
+			ObjectType.Airport,
 			null,
 			null));
 
 		var availableFilterCategories = new List<FilterTypeViewModel>
 		{
-			new() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) },
+			new() { Type = typeof(FileSystemItem), DisplayName = "Index data", IconName = nameof(FileSystemItem) },
 			new() { Type = typeof (ObjectMetadata), DisplayName = "Metadata", IconName = nameof(ObjectMetadata) }
 		};
 
@@ -58,10 +60,10 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 public class FolderTreeViewModel : ReactiveObject
 {
 	[Reactive]
-	protected SourceList<ObjectIndexEntry> CurrentDirectoryItems { get; set; } = new();
+	protected SourceList<FileSystemItem> CurrentDirectoryItems { get; set; } = new();
 
 	public HierarchicalTreeDataGridSource<FileSystemItem> TreeDataGridSource { get; set; }
-	ReadOnlyObservableCollection<ObjectIndexEntry> treeDataGridSource;
+	ReadOnlyObservableCollection<FileSystemItem> treeDataGridSource;
 	public int TreeDataGridSourceCount => treeDataGridSource?.Count ?? 0;
 
 	public ObservableCollection<FilterViewModel> Filters { get; } = [];
@@ -69,7 +71,7 @@ public class FolderTreeViewModel : ReactiveObject
 	public ReactiveCommand<Unit, Unit> ExpandAllCommand { get; }
 	public ReactiveCommand<Unit, Unit> CollapseAllCommand { get; }
 
-	private readonly BehaviorSubject<Func<ObjectIndexEntry, bool>> _filterSubject;
+	private readonly BehaviorSubject<Func<FileSystemItem, bool>> _filterSubject;
 
 	ObjectEditorContext EditorContext { get; init; }
 
@@ -94,9 +96,20 @@ public class FolderTreeViewModel : ReactiveObject
 	public ReactiveCommand<FileSystemItem, Unit>? OpenFolderFor { get; }
 
 	public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
+	public ObservableCollection<OnlineBrowseTargetOption> OnlineBrowseTargets { get; } =
+	[
+		new(OnlineApiEndpointGroup.Objects, "Objects", "Objects", Client.ObjectsEndpointGroup),
+		new(OnlineApiEndpointGroup.ObjectPacks, "Object packs", "Object packs", Client.ObjectPacksEndpointGroup),
+		new(OnlineApiEndpointGroup.Scenarios, "Scenarios", "Scenarios", Client.ScenariosEndpointGroup),
+	];
 
 	[Reactive]
 	public int SelectedTabIndex { get; set; }
+
+	[Reactive]
+	public OnlineBrowseTargetOption SelectedOnlineBrowseTarget { get; set; }
+
+	readonly Dictionary<OnlineApiEndpointGroup, IReadOnlyList<FileSystemItem>> onlineDirectoryItemsCache = [];
 
 	public bool IsLocal
 	{
@@ -105,19 +118,30 @@ public class FolderTreeViewModel : ReactiveObject
 	}
 
 	public string RecreateText
-		=> IsLocal ? "Recreate index" : "Download object list";
+		=> IsLocal
+			? "Recreate index"
+			: $"Download {CurrentItemLabelPlural.ToLowerInvariant()} list";
 
 	public string DirectoryFileCount
-		=> $"Objects: {CurrentDirectoryItems.Count}";
+		=> $"{CurrentItemLabelPlural}: {CurrentDirectoryItems.Count}";
+
+	public string CurrentItemLabelPlural
+		=> IsLocal
+			? "Objects"
+			: SelectedOnlineBrowseTarget?.ItemLabelPlural ?? "Items";
+
+	public bool IsOnline
+		=> !IsLocal;
 
 	public FolderTreeViewModel() { }
 
 	public FolderTreeViewModel(ObjectEditorContext editorContext)
 	{
 		EditorContext = editorContext;
+		SelectedOnlineBrowseTarget = OnlineBrowseTargets.First();
 		Progress.ProgressChanged += (_, progress) => IndexOrDownloadProgress = (int)(progress * 100);
 
-		var indexFilterModel = new FilterTypeViewModel() { Type = typeof(ObjectIndexEntry), DisplayName = "Index data", IconName = nameof(ObjectIndexEntry) };
+		var indexFilterModel = new FilterTypeViewModel() { Type = typeof(FileSystemItem), DisplayName = "Index data", IconName = nameof(FileSystemItem) };
 		var availableFilterCategories = new List<FilterTypeViewModel>
 		{
 			indexFilterModel,
@@ -171,7 +195,7 @@ public class FolderTreeViewModel : ReactiveObject
 			}
 		});
 
-		_filterSubject = new BehaviorSubject<Func<ObjectIndexEntry, bool>>(t => true);
+		_filterSubject = new BehaviorSubject<Func<FileSystemItem, bool>>(t => true);
 
 		var filtersChanged = Filters.ToObservableChangeSet()
 			.Skip(1)
@@ -211,6 +235,7 @@ public class FolderTreeViewModel : ReactiveObject
 		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
 		_ = this.WhenAnyValue(o => o.CurrentDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true));
 		_ = this.WhenAnyValue(o => o.CurrentDirectoryItems).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
+		_ = this.WhenAnyValue(o => o.SelectedOnlineBrowseTarget).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(false));
 
 		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ =>
 		{
@@ -219,6 +244,8 @@ public class FolderTreeViewModel : ReactiveObject
 			this.RaisePropertyChanged(nameof(TreeDataGridSourceCount));
 			this.RaisePropertyChanged(nameof(RecreateText));
 			this.RaisePropertyChanged(nameof(CurrentDirectory));
+			this.RaisePropertyChanged(nameof(CurrentItemLabelPlural));
+			this.RaisePropertyChanged(nameof(IsOnline));
 		});
 
 		CurrentLocalDirectory = this.EditorContext.Settings.ObjDataDirectory;
@@ -229,7 +256,7 @@ public class FolderTreeViewModel : ReactiveObject
 			SelectedObjectType = indexFilterModel,
 			SelectedOperator = FilterOperator.Contains,
 		};
-		defaultFilter.SelectedProperty = defaultFilter.AvailableProperties.FirstOrDefault(p => p.Name == nameof(ObjectIndexEntry.DisplayName));
+		defaultFilter.SelectedProperty = defaultFilter.AvailableProperties.FirstOrDefault(p => p.Name == nameof(FileSystemItem.DisplayName));
 		Filters.Add(defaultFilter);
 	}
 
@@ -237,9 +264,9 @@ public class FolderTreeViewModel : ReactiveObject
 		=> Filters.Remove(filter);
 
 	// this needs to be async as it blocks the UI when building expressions is slow
-	private Func<ObjectIndexEntry, bool> CreateFilterPredicate()
+	private Func<FileSystemItem, bool> CreateFilterPredicate()
 	{
-		var filterDelegates = new List<Func<ObjectIndexEntry, bool>>();
+		var filterDelegates = new List<Func<FileSystemItem, bool>>();
 
 		foreach (var filter in Filters.Where(x => x.IsValid))
 		{
@@ -316,7 +343,7 @@ public class FolderTreeViewModel : ReactiveObject
 		{
 			var items = EditorContext.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes);
 			CurrentDirectoryItems.Clear();
-			CurrentDirectoryItems.AddRange(items);
+			CurrentDirectoryItems.AddRange(items.Select(x => IndexEntryToFileSystemItem(x, directory, FileLocation.Local)));
 		}
 
 		UpdateDirectoryItemsView();
@@ -332,38 +359,16 @@ public class FolderTreeViewModel : ReactiveObject
 			return;
 		}
 
-		if ((!useExistingIndex || EditorContext.ObjectIndexOnline == null) && EditorContext.ObjectServiceClient != null)
-		{
-			EditorContext.ObjectIndexOnline = new ObjectIndex((await EditorContext.ObjectServiceClient.GetObjectListAsync())
-				.Select(x => new ObjectIndexEntry(
-					x.DisplayName,
-					null,
-					x.Id,
-					x.DatChecksum,
-					null,
-					x.ObjectType,
-					x.ObjectSource,
-					x.CreatedDate,
-					x.ModifiedDate,
-					x.VehicleType)));
-		}
+		var items = await GetOnlineDirectoryItemsAsync(useExistingIndex);
+		CurrentDirectoryItems.Clear();
+		CurrentDirectoryItems.AddRange(items);
 
-		if (EditorContext.ObjectIndexOnline != null)
-		{
-			var items = EditorContext.ObjectIndexOnline.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes);
-			CurrentDirectoryItems.Clear();
-			CurrentDirectoryItems.AddRange(items);
-
-			UpdateDirectoryItemsView();
-		}
+		UpdateDirectoryItemsView();
 	}
 
 	protected void UpdateDirectoryItemsView()
 	{
-		var _treeGridDataSource = ConstructTreeView(
-			treeDataGridSource,
-			IsLocal ? EditorContext.Settings.ObjDataDirectory : EditorContext.Settings.DownloadFolder,
-			IsLocal ? FileLocation.Local : FileLocation.Online);
+		var _treeGridDataSource = ConstructTreeView(treeDataGridSource);
 
 		TreeDataGridSource = new HierarchicalTreeDataGridSource<FileSystemItem>(_treeGridDataSource)
 		{
@@ -420,14 +425,25 @@ public class FolderTreeViewModel : ReactiveObject
 		// fallback - DisplayName is never null
 		computedFileName ??= x.DisplayName;
 
-		return new FileSystemItem(x.DisplayName, Path.Combine(baseDirectory, computedFileName), x.Id, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource, x.ObjectType, x.VehicleType);
+		return new FileSystemItem(x.DisplayName, Path.Combine(baseDirectory, computedFileName), x.Id, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource, x.ObjectType, x.VehicleType)
+		{
+			DatChecksum = x.DatChecksum,
+			xxHash3 = x.xxHash3,
+			OnlineApiEndpointGroup = fileLocation == FileLocation.Online ? OnlineApiEndpointGroup.Objects : null,
+		};
 	}
 
-	static List<FileSystemItem> ConstructTreeView(IEnumerable<ObjectIndexEntry> index, string baseDirectory, FileLocation fileLocation)
+	static List<FileSystemItem> ConstructTreeView(IEnumerable<FileSystemItem> items)
 	{
+		if (!items.Any(x => x.ObjectType != null))
+		{
+			return [.. items.OrderBy(x => x.DisplayName)];
+		}
+
 		var result = new List<FileSystemItem>();
-		var groupedObjects = index
-			.GroupBy(x => x.ObjectType)
+		var groupedObjects = items
+			.Where(x => x.ObjectType != null)
+			.GroupBy(x => x.ObjectType!.Value)
 			.OrderBy(fsg => fsg.Key.ToString());
 
 		foreach (var objGroup in groupedObjects)
@@ -441,7 +457,6 @@ public class FolderTreeViewModel : ReactiveObject
 					.OrderBy(vg => vg.Key.ToString()))
 				{
 					var vehicleSubNodes = new ObservableCollection<FileSystemItem>(vg
-						.Select(x => IndexEntryToFileSystemItem(x, baseDirectory, fileLocation))
 						.OrderBy(x => x.DisplayName));
 
 					if (vg.Key == null)
@@ -462,7 +477,6 @@ public class FolderTreeViewModel : ReactiveObject
 			else
 			{
 				subNodes = new ObservableCollection<FileSystemItem>(objGroup
-					.Select(x => IndexEntryToFileSystemItem(x, baseDirectory, fileLocation))
 					.OrderBy(x => x.DisplayName));
 			}
 
@@ -476,4 +490,70 @@ public class FolderTreeViewModel : ReactiveObject
 
 		return result;
 	}
+
+	async Task<IReadOnlyList<FileSystemItem>> GetOnlineDirectoryItemsAsync(bool useExistingIndex)
+	{
+		if (EditorContext.ObjectServiceClient == null)
+		{
+			return [];
+		}
+
+		var selectedGroup = SelectedOnlineBrowseTarget.Group;
+		if (useExistingIndex && onlineDirectoryItemsCache.TryGetValue(selectedGroup, out var existingItems))
+		{
+			return existingItems;
+		}
+
+		var items = selectedGroup switch
+			{
+				OnlineApiEndpointGroup.Objects => await GetOnlineObjectDirectoryItemsAsync(useExistingIndex),
+				OnlineApiEndpointGroup.ObjectPacks => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoItemPackEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+					.OrderBy(x => x.Name)
+					.Select(CreateOnlineObjectPackFileSystemItem)],
+				OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+					.OrderBy(x => x.Name)
+					.Select(CreateOnlineScenarioFileSystemItem)],
+			_ => throw new NotImplementedException(),
+		};
+
+		onlineDirectoryItemsCache[selectedGroup] = items;
+		return items;
+	}
+
+	async Task<IReadOnlyList<FileSystemItem>> GetOnlineObjectDirectoryItemsAsync(bool useExistingIndex)
+	{
+		if ((!useExistingIndex || EditorContext.ObjectIndexOnline == null) && EditorContext.ObjectServiceClient != null)
+		{
+			EditorContext.ObjectIndexOnline = new ObjectIndex((await EditorContext.ObjectServiceClient.GetListAsync<DtoObjectEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.Select(x => new ObjectIndexEntry(
+					x.DisplayName,
+					null,
+					x.Id,
+					x.DatChecksum,
+					null,
+					x.ObjectType,
+					x.ObjectSource,
+					x.CreatedDate,
+					x.ModifiedDate,
+					x.VehicleType)));
+		}
+
+		return EditorContext.ObjectIndexOnline == null
+			? []
+			: [.. EditorContext.ObjectIndexOnline.Objects
+				.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes)
+				.Select(x => IndexEntryToFileSystemItem(x, EditorContext.Settings.DownloadFolder, FileLocation.Online))];
+	}
+
+	static FileSystemItem CreateOnlineObjectPackFileSystemItem(DtoItemPackEntry item)
+		=> new(item.Name, null, item.Id, item.CreatedDate, item.ModifiedDate, FileLocation.Online)
+		{
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.ObjectPacks,
+		};
+
+	static FileSystemItem CreateOnlineScenarioFileSystemItem(DtoScenarioEntry item)
+		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
+		{
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
+		};
 }

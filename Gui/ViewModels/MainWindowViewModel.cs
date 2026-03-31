@@ -87,7 +87,7 @@ public class MainWindowViewModel : ViewModelBase
 		_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 			.Subscribe((x) =>
 			{
-				if (x != null && (x.SubNodes == null || x.SubNodes?.Count == 0))
+				if (x != null && x.CanOpen && (x.SubNodes == null || x.SubNodes?.Count == 0))
 				{
 					SetObjectViewModel(x);
 				}

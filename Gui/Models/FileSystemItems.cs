@@ -3,6 +3,8 @@ using Definitions.ObjectModels.Types;
 using System;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
+using FileLocationKind = Gui.Models.FileLocation;
+using OnlineApiEndpointGroupKind = Gui.Models.OnlineApiEndpointGroup;
 
 namespace Gui.Models;
 
@@ -20,15 +22,15 @@ public record FileSystemItem(
 {
 	[JsonIgnore]
 	public bool CanOpen
-		=> FileLocation == global::Gui.Models.FileLocation.Local
-			|| (FileLocation == global::Gui.Models.FileLocation.Online
-				&& OnlineApiEndpointGroup == global::Gui.Models.OnlineApiEndpointGroup.Objects
+		=> FileLocation == FileLocationKind.Local
+			|| (FileLocation == FileLocationKind.Online
+				&& OnlineApiEndpointGroup == OnlineApiEndpointGroupKind.Objects
 				&& Id != null
 				&& ObjectType != null);
 
 	[JsonIgnore]
 	public bool CanOpenFolder
-		=> FileLocation == global::Gui.Models.FileLocation.Local && IsLeafNode && !string.IsNullOrEmpty(FileName);
+		=> FileLocation == FileLocationKind.Local && IsLeafNode && !string.IsNullOrEmpty(FileName);
 
 	public uint? DatChecksum { get; init; }
 

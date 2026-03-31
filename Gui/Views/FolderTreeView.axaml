@@ -68,7 +68,7 @@
 							  Margin="2"
 							  MinWidth="160"
 							  DockPanel.Dock="Left"/>
-					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Items in current view" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
 			</Border>
 			<Border Grid.Row="2" BorderThickness="4">

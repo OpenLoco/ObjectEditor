@@ -107,7 +107,7 @@ public class FolderTreeViewModel : ReactiveObject
 	public int SelectedTabIndex { get; set; }
 
 	[Reactive]
-	public OnlineBrowseTargetOption SelectedOnlineBrowseTarget { get; set; }
+	public OnlineBrowseTargetOption SelectedOnlineBrowseTarget { get; set; } = null!;
 
 	readonly Dictionary<OnlineApiEndpointGroup, IReadOnlyList<FileSystemItem>> onlineDirectoryItemsCache = [];
 
@@ -416,7 +416,7 @@ public class FolderTreeViewModel : ReactiveObject
 			ObjectSource.LocomotionGoG => "GoG",
 			ObjectSource.OpenLoco => "OpenLoco",
 			null => string.Empty,
-			_ => throw new NotImplementedException(),
+			_ => throw new NotImplementedException($"Unsupported object source: {os}"),
 		};
 
 	public static FileSystemItem IndexEntryToFileSystemItem(ObjectIndexEntry x, string baseDirectory, FileLocation fileLocation)
@@ -513,7 +513,7 @@ public class FolderTreeViewModel : ReactiveObject
 				OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
 					.OrderBy(x => x.Name)
 					.Select(CreateOnlineScenarioFileSystemItem)],
-			_ => throw new NotImplementedException(),
+			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
 		};
 
 		onlineDirectoryItemsCache[selectedGroup] = items;

@@ -11,6 +11,11 @@ public static class Client
 	public static ApiEndpointGroup ObjectsEndpointGroup { get; } = new(RoutesV2.Objects);
 	public static ApiEndpointGroup ObjectPacksEndpointGroup { get; } = new(RoutesV2.ObjectPacks);
 	public static ApiEndpointGroup ScenariosEndpointGroup { get; } = new(RoutesV2.Scenarios);
+	public static ApiEndpointGroup SC5FilePacksEndpointGroup { get; } = new(RoutesV2.SC5FilePacks);
+	public static ApiEndpointGroup AuthorsEndpointGroup { get; } = new(RoutesV2.Authors);
+	public static ApiEndpointGroup TagsEndpointGroup { get; } = new(RoutesV2.Tags);
+	public static ApiEndpointGroup LicencesEndpointGroup { get; } = new(RoutesV2.Licences);
+	public static ApiEndpointGroup MissingObjectsEndpointGroup { get; } = new(RoutesV2.Objects + RoutesV2.Missing);
 
 	public static async Task<IEnumerable<T>> GetListAsync<T>(HttpClient client, ApiEndpointGroup endpointGroup, ILogger? logger = null)
 		=> await ClientHelpers.GetAsync<IEnumerable<T>>(
@@ -72,17 +77,23 @@ public static class Client
 	}
 
 	public static async Task<IEnumerable<DtoLicenceEntry>> GetLicencesAsync(HttpClient client, ILogger? logger = null)
-		=> await GetListAsync<DtoLicenceEntry>(client, new(RoutesV2.Licences), logger);
+		=> await GetListAsync<DtoLicenceEntry>(client, LicencesEndpointGroup, logger);
 
 	public static async Task<IEnumerable<DtoAuthorEntry>> GetAuthorsAsync(HttpClient client, ILogger? logger = null)
-		=> await GetListAsync<DtoAuthorEntry>(client, new(RoutesV2.Authors), logger);
+		=> await GetListAsync<DtoAuthorEntry>(client, AuthorsEndpointGroup, logger);
 
 	public static async Task<IEnumerable<DtoTagEntry>> GetTagsAsync(HttpClient client, ILogger? logger = null)
-		=> await GetListAsync<DtoTagEntry>(client, new(RoutesV2.Tags), logger);
+		=> await GetListAsync<DtoTagEntry>(client, TagsEndpointGroup, logger);
 
 	public static async Task<IEnumerable<DtoItemPackEntry>> GetObjectPacksAsync(HttpClient client, ILogger? logger = null)
 		=> await GetListAsync<DtoItemPackEntry>(client, ObjectPacksEndpointGroup, logger);
 
 	public static async Task<IEnumerable<DtoScenarioEntry>> GetScenariosAsync(HttpClient client, ILogger? logger = null)
 		=> await GetListAsync<DtoScenarioEntry>(client, ScenariosEndpointGroup, logger);
+
+	public static async Task<IEnumerable<DtoItemPackEntry>> GetSC5FilePacksAsync(HttpClient client, ILogger? logger = null)
+		=> await GetListAsync<DtoItemPackEntry>(client, SC5FilePacksEndpointGroup, logger);
+
+	public static async Task<IEnumerable<DtoObjectMissingEntry>> GetMissingObjectsAsync(HttpClient client, ILogger? logger = null)
+		=> await GetListAsync<DtoObjectMissingEntry>(client, MissingObjectsEndpointGroup, logger);
 }

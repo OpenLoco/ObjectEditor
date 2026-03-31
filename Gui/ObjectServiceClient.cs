@@ -93,4 +93,10 @@ public class ObjectServiceClient
 
 	public async Task<IEnumerable<DtoScenarioEntry>> GetScenariosAsync()
 		=> await Client.GetScenariosAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoItemPackEntry>> GetSC5FilePacksAsync()
+		=> await Client.GetSC5FilePacksAsync(WebClient, Logger);
+
+	public async Task<IEnumerable<DtoObjectMissingEntry>> GetMissingObjectsAsync()
+		=> await Client.GetMissingObjectsAsync(WebClient, Logger);
 }

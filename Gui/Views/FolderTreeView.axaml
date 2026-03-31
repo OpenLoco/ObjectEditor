@@ -65,6 +65,8 @@
 							  SelectedItem="{Binding SelectedOnlineBrowseTarget}"
 							  DisplayMemberBinding="{Binding DisplayName}"
 							  IsVisible="{Binding IsOnline}"
+							  AutomationProperties.Name="Online content type"
+							  ToolTip.Tip="Select the type of online content to browse"
 							  Margin="2"
 							  MinWidth="160"
 							  DockPanel.Dock="Left"/>

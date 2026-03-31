@@ -96,18 +96,24 @@ public class FolderTreeViewModel : ReactiveObject
 	public ReactiveCommand<FileSystemItem, Unit>? OpenFolderFor { get; }
 
 	public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
+	static OnlineBrowseTargetOption DefaultOnlineBrowseTarget { get; } = new(OnlineApiEndpointGroup.Objects, "Objects", "Objects", Client.ObjectsEndpointGroup);
 	public ObservableCollection<OnlineBrowseTargetOption> OnlineBrowseTargets { get; } =
 	[
-		new(OnlineApiEndpointGroup.Objects, "Objects", "Objects", Client.ObjectsEndpointGroup),
+		DefaultOnlineBrowseTarget,
 		new(OnlineApiEndpointGroup.ObjectPacks, "Object packs", "Object packs", Client.ObjectPacksEndpointGroup),
 		new(OnlineApiEndpointGroup.Scenarios, "Scenarios", "Scenarios", Client.ScenariosEndpointGroup),
+		new(OnlineApiEndpointGroup.SC5FilePacks, "SC5 file packs", "SC5 file packs", Client.SC5FilePacksEndpointGroup),
+		new(OnlineApiEndpointGroup.Tags, "Tags", "Tags", Client.TagsEndpointGroup),
+		new(OnlineApiEndpointGroup.Authors, "Authors", "Authors", Client.AuthorsEndpointGroup),
+		new(OnlineApiEndpointGroup.Licences, "Licences", "Licences", Client.LicencesEndpointGroup),
+		new(OnlineApiEndpointGroup.MissingObjects, "Missing objects", "Missing objects", Client.MissingObjectsEndpointGroup),
 	];
 
 	[Reactive]
 	public int SelectedTabIndex { get; set; }
 
 	[Reactive]
-	public OnlineBrowseTargetOption SelectedOnlineBrowseTarget { get; set; } = null!;
+	public OnlineBrowseTargetOption SelectedOnlineBrowseTarget { get; set; } = DefaultOnlineBrowseTarget;
 
 	readonly Dictionary<OnlineApiEndpointGroup, IReadOnlyList<FileSystemItem>> onlineDirectoryItemsCache = [];
 
@@ -505,14 +511,29 @@ public class FolderTreeViewModel : ReactiveObject
 		}
 
 		var items = selectedGroup switch
-			{
-				OnlineApiEndpointGroup.Objects => await GetOnlineObjectDirectoryItemsAsync(useExistingIndex),
-				OnlineApiEndpointGroup.ObjectPacks => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoItemPackEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-					.OrderBy(x => x.Name)
-					.Select(CreateOnlineObjectPackFileSystemItem)],
-				OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-					.OrderBy(x => x.Name)
-					.Select(CreateOnlineScenarioFileSystemItem)],
+		{
+			OnlineApiEndpointGroup.Objects => await GetOnlineObjectDirectoryItemsAsync(useExistingIndex),
+			OnlineApiEndpointGroup.ObjectPacks => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoItemPackEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.OrderBy(x => x.Name)
+				.Select(CreateOnlineObjectPackFileSystemItem)],
+			OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.OrderBy(x => x.Name)
+				.Select(CreateOnlineScenarioFileSystemItem)],
+			OnlineApiEndpointGroup.SC5FilePacks => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoItemPackEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.OrderBy(x => x.Name)
+				.Select(CreateOnlineSC5FilePackFileSystemItem)],
+			OnlineApiEndpointGroup.Tags => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoTagEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.OrderBy(x => x.Name)
+				.Select(CreateOnlineTagFileSystemItem)],
+			OnlineApiEndpointGroup.Authors => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoAuthorEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.OrderBy(x => x.Name)
+				.Select(CreateOnlineAuthorFileSystemItem)],
+			OnlineApiEndpointGroup.Licences => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoLicenceEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.OrderBy(x => x.Name)
+				.Select(CreateOnlineLicenceFileSystemItem)],
+			OnlineApiEndpointGroup.MissingObjects => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoObjectMissingEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.OrderBy(x => x.DatName)
+				.Select(CreateOnlineMissingObjectFileSystemItem)],
 			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
 		};
 
@@ -551,9 +572,40 @@ public class FolderTreeViewModel : ReactiveObject
 			OnlineApiEndpointGroup = OnlineApiEndpointGroup.ObjectPacks,
 		};
 
+	static FileSystemItem CreateOnlineSC5FilePackFileSystemItem(DtoItemPackEntry item)
+		=> new(item.Name, null, item.Id, item.CreatedDate, item.ModifiedDate, FileLocation.Online)
+		{
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.SC5FilePacks,
+		};
+
 	static FileSystemItem CreateOnlineScenarioFileSystemItem(DtoScenarioEntry item)
 		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
 		{
 			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
+		};
+
+	static FileSystemItem CreateOnlineTagFileSystemItem(DtoTagEntry item)
+		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
+		{
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Tags,
+		};
+
+	static FileSystemItem CreateOnlineAuthorFileSystemItem(DtoAuthorEntry item)
+		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
+		{
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Authors,
+		};
+
+	static FileSystemItem CreateOnlineLicenceFileSystemItem(DtoLicenceEntry item)
+		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
+		{
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Licences,
+		};
+
+	static FileSystemItem CreateOnlineMissingObjectFileSystemItem(DtoObjectMissingEntry item)
+		=> new(item.DatName, null, item.Id, null, null, FileLocation.Online, ObjectType: item.ObjectType)
+		{
+			DatChecksum = item.DatChecksum,
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.MissingObjects,
 		};
 }

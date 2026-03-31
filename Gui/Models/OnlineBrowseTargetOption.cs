@@ -7,6 +7,11 @@ public enum OnlineApiEndpointGroup
 	Objects,
 	ObjectPacks,
 	Scenarios,
+	SC5FilePacks,
+	Tags,
+	Authors,
+	Licences,
+	MissingObjects,
 }
 
 public record OnlineBrowseTargetOption(

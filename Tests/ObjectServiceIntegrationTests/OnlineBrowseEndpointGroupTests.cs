@@ -66,4 +66,76 @@ public class OnlineBrowseEndpointGroupTests
 			Path.Combine(ServerFolderManager.CustomFolderName, "desert.SC5"),
 		}));
 	}
+
+	[Test]
+	public async Task GetListAsync_ReturnsAuthorsTagsAndLicencesFromConfiguredEndpointGroups()
+	{
+		using var scope = testWebAppFactory!.Services.CreateScope();
+		var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
+		await db.Authors.AddRangeAsync(
+		[
+			new TblAuthor { Id = 1, Name = "Alice" },
+			new TblAuthor { Id = 2, Name = "Bob" },
+		]);
+		await db.Tags.AddRangeAsync(
+		[
+			new TblTag { Id = 1, Name = "Industrial" },
+			new TblTag { Id = 2, Name = "Passenger" },
+		]);
+		await db.Licences.AddRangeAsync(
+		[
+			new TblLicence { Id = 1, Name = "CC-BY", Text = "Creative Commons" },
+			new TblLicence { Id = 2, Name = "GPL", Text = "GNU GPL" },
+		]);
+		_ = await db.SaveChangesAsync();
+
+		var authors = await Client.GetListAsync<DtoAuthorEntry>(httpClient!, Client.AuthorsEndpointGroup);
+		var tags = await Client.GetListAsync<DtoTagEntry>(httpClient!, Client.TagsEndpointGroup);
+		var licences = await Client.GetListAsync<DtoLicenceEntry>(httpClient!, Client.LicencesEndpointGroup);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(authors.Select(x => x.Name), Is.EqualTo(new[] { "Alice", "Bob" }));
+			Assert.That(tags.Select(x => x.Name), Is.EqualTo(new[] { "Industrial", "Passenger" }));
+			Assert.That(licences.Select(x => x.Name), Is.EqualTo(new[] { "CC-BY", "GPL" }));
+		}
+	}
+
+	[Test]
+	public async Task GetListAsync_ReturnsMissingObjectsFromConfiguredEndpointGroup()
+	{
+		using var scope = testWebAppFactory!.Services.CreateScope();
+		var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
+		await db.ObjectsMissing.AddRangeAsync(
+		[
+			new TblObjectMissing { Id = 1, DatName = "AIRPORTX", DatChecksum = 123, ObjectType = Definitions.ObjectModels.Types.ObjectType.Airport },
+			new TblObjectMissing { Id = 2, DatName = "ROADY", DatChecksum = 456, ObjectType = Definitions.ObjectModels.Types.ObjectType.RoadExtra },
+		]);
+		_ = await db.SaveChangesAsync();
+
+		var results = await Client.GetListAsync<DtoObjectMissingEntry>(httpClient!, Client.MissingObjectsEndpointGroup);
+
+		using (Assert.EnterMultipleScope())
+		{
+			Assert.That(results.Select(x => x.DatName), Is.EqualTo(new[] { "AIRPORTX", "ROADY" }));
+			Assert.That(results.Select(x => x.DatChecksum), Is.EqualTo(new uint[] { 123, 456 }));
+		}
+	}
+
+	[Test]
+	public async Task GetListAsync_ReturnsSC5FilePacksFromConfiguredEndpointGroup()
+	{
+		using var scope = testWebAppFactory!.Services.CreateScope();
+		var db = scope.ServiceProvider.GetRequiredService<LocoDbContext>();
+		await db.SC5FilePacks.AddRangeAsync(
+		[
+			new TblSC5FilePack { Id = 1, Name = "Challenge Pack", Description = "Hard scenarios" },
+			new TblSC5FilePack { Id = 2, Name = "Starter Pack", Description = "Easy scenarios" },
+		]);
+		_ = await db.SaveChangesAsync();
+
+		var results = await Client.GetListAsync<DtoItemPackEntry>(httpClient!, Client.SC5FilePacksEndpointGroup);
+
+		Assert.That(results.Select(x => x.Name), Is.EqualTo(new[] { "Challenge Pack", "Starter Pack" }));
+	}
 }

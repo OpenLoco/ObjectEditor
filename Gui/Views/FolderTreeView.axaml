@@ -5,6 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:mo="using:Gui.Models"
+	xmlns:vi="using:Gui.Views"
 	xmlns:cnv="using:Gui.Converters"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	mc:Ignorable="d" d:DesignWidth="448" d:DesignHeight="768"
@@ -75,7 +76,7 @@
 			</Border>
 			<Border Grid.Row="2" BorderThickness="4">
 				<DockPanel>
-					<StackPanel Orientation="Vertical" Margin="4" DockPanel.Dock="Top" Spacing="4">
+					<StackPanel Orientation="Vertical" Margin="4" DockPanel.Dock="Top" Spacing="4" IsVisible="{Binding SupportsFilters}">
 						<ItemsControl ItemsSource="{Binding Filters}">
 							<ItemsControl.Styles>
 								<Style Selector="ItemsPresenter > ContentPresenter, ItemsControl > ContentPresenter:nth-child(odd)">
@@ -124,19 +125,22 @@
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
 						<DockPanel>
-							<TextBlock DockPanel.Dock="Left" Margin="4" Text="{Binding TreeDataGridSourceCount, StringFormat='\{0\} results'}" VerticalAlignment="Center" />
-							<Button Command="{Binding ExpandAllCommand}" ToolTip.Tip="Expand all categories" DockPanel.Dock="Right" >
+							<TextBlock DockPanel.Dock="Left" Margin="4" Text="{Binding ResultsCount, StringFormat='\{0\} results'}" VerticalAlignment="Center" />
+							<Button Command="{Binding ExpandAllCommand}" ToolTip.Tip="Expand all categories" DockPanel.Dock="Right" IsVisible="{Binding SupportsHierarchyCommands}">
 								<materialIcons:MaterialIcon Kind="ExpandAll" Width="24" Height="24" Margin="2" />
 							</Button>
-							<Button Command="{Binding CollapseAllCommand}" ToolTip.Tip="Collapse all catagories" DockPanel.Dock="Right" >
+							<Button Command="{Binding CollapseAllCommand}" ToolTip.Tip="Collapse all catagories" DockPanel.Dock="Right" IsVisible="{Binding SupportsHierarchyCommands}">
 								<materialIcons:MaterialIcon Kind="CollapseAll" Width="24" Height="24" Margin="2" />
 							</Button>
-							<Button Command="{Binding AddFilterCommand}" ToolTip.Tip="Add a search filter" DockPanel.Dock="Right" HorizontalAlignment="Right">
+							<Button Command="{Binding AddFilterCommand}" ToolTip.Tip="Add a search filter" DockPanel.Dock="Right" HorizontalAlignment="Right" IsVisible="{Binding SupportsFilters}">
 								<materialIcons:MaterialIcon Kind="Plus" Width="24" Height="24" Margin="2" />
 							</Button>
 						</DockPanel>
 					</StackPanel>
-					<TreeDataGrid Source="{Binding TreeDataGridSource}" CanUserResizeColumns="True" CanUserSortColumns="True" >
+					<DockPanel DockPanel.Dock="Top" Margin="4" IsVisible="{Binding HasOnlineBrowseResults}">
+						<TextBlock DockPanel.Dock="Left" Margin="4" Text="{Binding ResultsCount, StringFormat='\{0\} results'}" VerticalAlignment="Center" />
+					</DockPanel>
+					<TreeDataGrid Source="{Binding TreeDataGridSource}" CanUserResizeColumns="True" CanUserSortColumns="True" IsVisible="{Binding UsesTreeDataGrid}">
 						<TreeDataGrid.Styles>
 							<Style Selector="TreeDataGrid TreeDataGridRow">
 								<Setter Property="Height" Value="32"/>
@@ -174,6 +178,7 @@
 							</DataTemplate>
 						</TreeDataGrid.Resources>
 					</TreeDataGrid>
+					<vi:OnlineBrowseResultsView IsVisible="{Binding HasOnlineBrowseResults}" />
 				</DockPanel>
 			</Border>
 		</Grid>

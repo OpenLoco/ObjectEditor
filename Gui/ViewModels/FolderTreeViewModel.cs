@@ -7,6 +7,7 @@ using Common;
 using Dat.Data;
 using Definitions.DTO;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using DynamicData;
@@ -57,23 +58,75 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 	}
 }
 
+public class DesignerOnlineBrowseResultsViewModel : FolderTreeViewModel
+{
+	public DesignerOnlineBrowseResultsViewModel()
+	{
+		SelectedTabIndex = 1;
+		SelectedOnlineBrowseTarget = new OnlineBrowseTargetOption(OnlineApiEndpointGroup.ObjectPacks, "Object packs", "Object packs", Client.ObjectPacksEndpointGroup);
+
+		CurrentOnlineBrowseResults.Add(new OnlineItemPackBrowseResult(
+			default,
+			"Industrial Expansion Vol. 2",
+			"A curated pack of late-game factories, freight stock, and heavy infrastructure objects.",
+			new DateOnly(2025, 10, 12),
+			new DateOnly(2026, 3, 18),
+			new DateOnly(2026, 3, 19),
+			new DtoLicenceEntry(default, "CC BY-SA 4.0", "Share and adapt with attribution."),
+			[new DtoAuthorEntry(default, "Alex Mercer"), new DtoAuthorEntry(default, "Jordan Pike")],
+			[new DtoTagEntry(default, "industry"), new DtoTagEntry(default, "steel"), new DtoTagEntry(default, "late-game")],
+			[
+				new FileSystemItem("Red River Steelworks", null, default, new DateOnly(2025, 10, 12), new DateOnly(2026, 3, 18), FileLocation.Online, ObjectSource.Custom, ObjectType.Industry),
+				new FileSystemItem("Heavy Haul Hopper", null, default, new DateOnly(2025, 10, 12), new DateOnly(2026, 3, 18), FileLocation.Online, ObjectSource.Custom, ObjectType.Vehicle, VehicleType.Train),
+				new FileSystemItem("Portside Container Crane", null, default, new DateOnly(2025, 10, 12), new DateOnly(2026, 3, 18), FileLocation.Online, ObjectSource.Custom, ObjectType.Scaffolding)
+			],
+			OnlineApiEndpointGroup.ObjectPacks));
+
+		CurrentOnlineBrowseResults.Add(new OnlineItemPackBrowseResult(
+			default,
+			"Continental Challenge Scenarios",
+			"Five medium-to-large maps focused on passenger demand and mountainous routing.",
+			new DateOnly(2025, 7, 4),
+			null,
+			new DateOnly(2026, 2, 2),
+			null,
+			[new DtoAuthorEntry(default, "Marin Voss")],
+			[new DtoTagEntry(default, "scenario"), new DtoTagEntry(default, "challenging")],
+			[
+				new FileSystemItem("Highland Corridor", null, default, null, null, FileLocation.Online, ObjectType: ObjectType.ScenarioText),
+				new FileSystemItem("Three Seas Express", null, default, null, null, FileLocation.Online, ObjectType: ObjectType.ScenarioText)
+			],
+			OnlineApiEndpointGroup.SC5FilePacks));
+
+		CurrentOnlineBrowseResults.Add(new OnlineLicenceBrowseResult(
+			default,
+			"OpenLoco Community Licence",
+			"Free to use, modify, and redistribute within the OpenLoco ecosystem provided authors remain credited and derivatives document substantive changes."));
+
+		CurrentOnlineBrowseResults.Add(new OnlineAuthorBrowseResult(default, "Casey Rowan"));
+		CurrentOnlineBrowseResults.Add(new OnlineTagBrowseResult(default, "stations"));
+		CurrentOnlineBrowseResults.Add(new OnlineMissingObjectBrowseResult(default, "STEELMILL.DAT", 0x4A91C2F0, ObjectType.Industry));
+	}
+}
+
 public class FolderTreeViewModel : ReactiveObject
 {
 	[Reactive]
 	protected SourceList<FileSystemItem> CurrentDirectoryItems { get; set; } = new();
 
-	public HierarchicalTreeDataGridSource<FileSystemItem> TreeDataGridSource { get; set; }
-	ReadOnlyObservableCollection<FileSystemItem> treeDataGridSource;
+	public HierarchicalTreeDataGridSource<FileSystemItem>? TreeDataGridSource { get; set; }
+	ReadOnlyObservableCollection<FileSystemItem>? treeDataGridSource;
 	public int TreeDataGridSourceCount => treeDataGridSource?.Count ?? 0;
+	public ObservableCollection<object> CurrentOnlineBrowseResults { get; } = [];
 
 	public ObservableCollection<FilterViewModel> Filters { get; } = [];
-	public ReactiveCommand<Unit, Unit> AddFilterCommand { get; }
-	public ReactiveCommand<Unit, Unit> ExpandAllCommand { get; }
-	public ReactiveCommand<Unit, Unit> CollapseAllCommand { get; }
+	public ReactiveCommand<Unit, Unit>? AddFilterCommand { get; }
+	public ReactiveCommand<Unit, Unit>? ExpandAllCommand { get; }
+	public ReactiveCommand<Unit, Unit>? CollapseAllCommand { get; }
 
-	private readonly BehaviorSubject<Func<FileSystemItem, bool>> _filterSubject;
+	private readonly BehaviorSubject<Func<FileSystemItem, bool>> _filterSubject = new(t => true);
 
-	ObjectEditorContext EditorContext { get; init; }
+	ObjectEditorContext EditorContext { get; init; } = null!;
 
 	[Reactive]
 	public string CurrentLocalDirectory { get; set; } = string.Empty;
@@ -94,12 +147,13 @@ public class FolderTreeViewModel : ReactiveObject
 	public ReactiveCommand<Unit, Unit>? RefreshDirectoryItems { get; }
 	public ReactiveCommand<Unit, Unit>? OpenCurrentFolder { get; }
 	public ReactiveCommand<FileSystemItem, Unit>? OpenFolderFor { get; }
+	public ReactiveCommand<FileSystemItem, Unit>? SelectOnlineBrowseFileSystemItem { get; }
 
 	public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
-	static OnlineBrowseTargetOption DefaultOnlineBrowseTarget { get; } = new(OnlineApiEndpointGroup.Objects, "Objects", "Objects", Client.ObjectsEndpointGroup);
+	static OnlineBrowseTargetOption ObjectOnlineBrowseTarget { get; } = new(OnlineApiEndpointGroup.Objects, "Objects", "Objects", Client.ObjectsEndpointGroup);
 	public ObservableCollection<OnlineBrowseTargetOption> OnlineBrowseTargets { get; } =
 	[
-		DefaultOnlineBrowseTarget,
+		ObjectOnlineBrowseTarget,
 		new(OnlineApiEndpointGroup.ObjectPacks, "Object packs", "Object packs", Client.ObjectPacksEndpointGroup),
 		new(OnlineApiEndpointGroup.Scenarios, "Scenarios", "Scenarios", Client.ScenariosEndpointGroup),
 		new(OnlineApiEndpointGroup.SC5FilePacks, "SC5 file packs", "SC5 file packs", Client.SC5FilePacksEndpointGroup),
@@ -113,9 +167,10 @@ public class FolderTreeViewModel : ReactiveObject
 	public int SelectedTabIndex { get; set; }
 
 	[Reactive]
-	public OnlineBrowseTargetOption SelectedOnlineBrowseTarget { get; set; } = DefaultOnlineBrowseTarget;
+	public OnlineBrowseTargetOption SelectedOnlineBrowseTarget { get; set; } = ObjectOnlineBrowseTarget;
 
 	readonly Dictionary<OnlineApiEndpointGroup, IReadOnlyList<FileSystemItem>> onlineDirectoryItemsCache = [];
+	readonly Dictionary<OnlineApiEndpointGroup, IReadOnlyList<object>> onlineBrowseResultsCache = [];
 
 	public bool IsLocal
 	{
@@ -129,7 +184,7 @@ public class FolderTreeViewModel : ReactiveObject
 			: $"Download {CurrentItemLabelPlural.ToLowerInvariant()} list";
 
 	public string DirectoryFileCount
-		=> $"{CurrentItemLabelPlural}: {CurrentDirectoryItems.Count}";
+		=> $"{CurrentItemLabelPlural}: {ResultsCount}";
 
 	public string CurrentItemLabelPlural
 		=> IsLocal
@@ -138,6 +193,21 @@ public class FolderTreeViewModel : ReactiveObject
 
 	public bool IsOnline
 		=> !IsLocal;
+
+	public bool UsesTreeDataGrid
+		=> IsLocal || SelectedOnlineBrowseTarget.Group is OnlineApiEndpointGroup.Objects or OnlineApiEndpointGroup.Scenarios;
+
+	public bool HasOnlineBrowseResults
+		=> IsOnline && !UsesTreeDataGrid;
+
+	public bool SupportsFilters
+		=> UsesTreeDataGrid;
+
+	public bool SupportsHierarchyCommands
+		=> UsesTreeDataGrid;
+
+	public int ResultsCount
+		=> UsesTreeDataGrid ? TreeDataGridSourceCount : CurrentOnlineBrowseResults.Count;
 
 	public FolderTreeViewModel() { }
 
@@ -171,6 +241,7 @@ public class FolderTreeViewModel : ReactiveObject
 		RefreshDirectoryItems = ReactiveCommand.CreateFromTask(async () => await LoadDirectoryAsync(false));
 		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : this.EditorContext.Settings.DownloadFolder, this.EditorContext.Logger));
 		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(this.EditorContext, availableFilterCategories, RemoveFilter)));
+		SelectOnlineBrowseFileSystemItem = ReactiveCommand.Create<FileSystemItem>(item => CurrentlySelectedObject = item);
 		OpenFolderFor = ReactiveCommand.Create((FileSystemItem clickedOn) =>
 		{
 			if (IsLocal
@@ -180,7 +251,10 @@ public class FolderTreeViewModel : ReactiveObject
 			&& File.Exists(clickedOnObject.FileName))
 			{
 				var dir = Directory.GetParent(clickedOnObject.FileName)?.FullName;
-				PlatformSpecific.FolderOpenInDesktop(dir, this.EditorContext.Logger, Path.GetFileName(clickedOnObject.FileName));
+				if (!string.IsNullOrEmpty(dir))
+				{
+					PlatformSpecific.FolderOpenInDesktop(dir, this.EditorContext.Logger, Path.GetFileName(clickedOnObject.FileName));
+				}
 
 			}
 		});
@@ -201,7 +275,11 @@ public class FolderTreeViewModel : ReactiveObject
 			}
 		});
 
-		_filterSubject = new BehaviorSubject<Func<FileSystemItem, bool>>(t => true);
+		CurrentOnlineBrowseResults.CollectionChanged += (_, _) =>
+		{
+			this.RaisePropertyChanged(nameof(ResultsCount));
+			this.RaisePropertyChanged(nameof(DirectoryFileCount));
+		};
 
 		var filtersChanged = Filters.ToObservableChangeSet()
 			.Skip(1)
@@ -225,7 +303,7 @@ public class FolderTreeViewModel : ReactiveObject
 
 		_ = this.WhenAnyValue(x => x.TreeDataGridSource)
 			.Where(x => x?.RowSelection != null)
-			.Select(x => Observable.FromEventPattern<TreeSelectionModelSelectionChangedEventArgs<FileSystemItem>>(x.RowSelection, nameof(x.RowSelection.SelectionChanged)))
+			.Select(x => Observable.FromEventPattern<TreeSelectionModelSelectionChangedEventArgs<FileSystemItem>>(x!.RowSelection!, nameof(x.RowSelection.SelectionChanged)))
 			.Switch()
 			.Subscribe(e =>
 			{
@@ -238,20 +316,20 @@ public class FolderTreeViewModel : ReactiveObject
 		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
 
 		//_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
-		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
+		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => RaiseBrowseModeProperties());
 		_ = this.WhenAnyValue(o => o.CurrentDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true));
 		_ = this.WhenAnyValue(o => o.CurrentDirectoryItems).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
-		_ = this.WhenAnyValue(o => o.SelectedOnlineBrowseTarget).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(false));
+		_ = this.WhenAnyValue(o => o.SelectedOnlineBrowseTarget).Skip(1).Subscribe(async _ =>
+		{
+			RaiseBrowseModeProperties();
+			await LoadDirectoryAsync(false);
+		});
 
 		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ =>
 		{
 			CurrentlySelectedObject = null;
-			this.RaisePropertyChanged(nameof(DirectoryFileCount));
 			this.RaisePropertyChanged(nameof(TreeDataGridSourceCount));
-			this.RaisePropertyChanged(nameof(RecreateText));
-			this.RaisePropertyChanged(nameof(CurrentDirectory));
-			this.RaisePropertyChanged(nameof(CurrentItemLabelPlural));
-			this.RaisePropertyChanged(nameof(IsOnline));
+			RaiseBrowseModeProperties();
 		});
 
 		CurrentLocalDirectory = this.EditorContext.Settings.ObjDataDirectory;
@@ -268,6 +346,20 @@ public class FolderTreeViewModel : ReactiveObject
 
 	protected void RemoveFilter(FilterViewModel filter)
 		=> Filters.Remove(filter);
+
+	void RaiseBrowseModeProperties()
+	{
+		this.RaisePropertyChanged(nameof(DirectoryFileCount));
+		this.RaisePropertyChanged(nameof(ResultsCount));
+		this.RaisePropertyChanged(nameof(RecreateText));
+		this.RaisePropertyChanged(nameof(CurrentDirectory));
+		this.RaisePropertyChanged(nameof(CurrentItemLabelPlural));
+		this.RaisePropertyChanged(nameof(IsOnline));
+		this.RaisePropertyChanged(nameof(UsesTreeDataGrid));
+		this.RaisePropertyChanged(nameof(HasOnlineBrowseResults));
+		this.RaisePropertyChanged(nameof(SupportsFilters));
+		this.RaisePropertyChanged(nameof(SupportsHierarchyCommands));
+	}
 
 	// this needs to be async as it blocks the UI when building expressions is slow
 	private Func<FileSystemItem, bool> CreateFilterPredicate()
@@ -336,6 +428,7 @@ public class FolderTreeViewModel : ReactiveObject
 	async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
 	{
 		EditorContext.Logger.Debug($"Directory={directory} UseExistingIndex={useExistingIndex}");
+		CurrentOnlineBrowseResults.Clear();
 
 		if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
 		{
@@ -365,16 +458,30 @@ public class FolderTreeViewModel : ReactiveObject
 			return;
 		}
 
-		var items = await GetOnlineDirectoryItemsAsync(useExistingIndex);
-		CurrentDirectoryItems.Clear();
-		CurrentDirectoryItems.AddRange(items);
+		if (UsesTreeDataGrid)
+		{
+			var items = await GetOnlineTreeItemsAsync(useExistingIndex);
+			CurrentOnlineBrowseResults.Clear();
+			CurrentDirectoryItems.Clear();
+			CurrentDirectoryItems.AddRange(items);
+		}
+		else
+		{
+			var results = await GetOnlineBrowseResultsAsync(useExistingIndex);
+			CurrentDirectoryItems.Clear();
 
-		UpdateDirectoryItemsView();
+			CurrentOnlineBrowseResults.Clear();
+			CurrentOnlineBrowseResults.AddRange(results);
+
+		}
+
+		//UpdateDirectoryItemsView();
 	}
 
 	protected void UpdateDirectoryItemsView()
 	{
-		var _treeGridDataSource = ConstructTreeView(treeDataGridSource);
+		IEnumerable<FileSystemItem> treeItems = treeDataGridSource is null ? Array.Empty<FileSystemItem>() : treeDataGridSource;
+		var _treeGridDataSource = ConstructTreeView(treeItems);
 
 		TreeDataGridSource = new HierarchicalTreeDataGridSource<FileSystemItem>(_treeGridDataSource)
 		{
@@ -497,7 +604,7 @@ public class FolderTreeViewModel : ReactiveObject
 		return result;
 	}
 
-	async Task<IReadOnlyList<FileSystemItem>> GetOnlineDirectoryItemsAsync(bool useExistingIndex)
+	async Task<IReadOnlyList<FileSystemItem>> GetOnlineTreeItemsAsync(bool useExistingIndex)
 	{
 		if (EditorContext.ObjectServiceClient == null)
 		{
@@ -513,31 +620,49 @@ public class FolderTreeViewModel : ReactiveObject
 		var items = selectedGroup switch
 		{
 			OnlineApiEndpointGroup.Objects => await GetOnlineObjectDirectoryItemsAsync(useExistingIndex),
-			OnlineApiEndpointGroup.ObjectPacks => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoItemPackEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-				.OrderBy(x => x.Name)
-				.Select(CreateOnlineObjectPackFileSystemItem)],
 			OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
 				.OrderBy(x => x.Name)
 				.Select(CreateOnlineScenarioFileSystemItem)],
-			OnlineApiEndpointGroup.SC5FilePacks => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoItemPackEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-				.OrderBy(x => x.Name)
-				.Select(CreateOnlineSC5FilePackFileSystemItem)],
-			OnlineApiEndpointGroup.Tags => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoTagEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-				.OrderBy(x => x.Name)
-				.Select(CreateOnlineTagFileSystemItem)],
-			OnlineApiEndpointGroup.Authors => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoAuthorEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-				.OrderBy(x => x.Name)
-				.Select(CreateOnlineAuthorFileSystemItem)],
-			OnlineApiEndpointGroup.Licences => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoLicenceEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-				.OrderBy(x => x.Name)
-				.Select(CreateOnlineLicenceFileSystemItem)],
-			OnlineApiEndpointGroup.MissingObjects => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoObjectMissingEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-				.OrderBy(x => x.DatName)
-				.Select(CreateOnlineMissingObjectFileSystemItem)],
 			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
 		};
 
 		onlineDirectoryItemsCache[selectedGroup] = items;
+		return items;
+	}
+
+	async Task<IReadOnlyList<object>> GetOnlineBrowseResultsAsync(bool useExistingIndex)
+	{
+		if (EditorContext.ObjectServiceClient == null)
+		{
+			return [];
+		}
+
+		var selectedGroup = SelectedOnlineBrowseTarget.Group;
+		if (useExistingIndex && onlineBrowseResultsCache.TryGetValue(selectedGroup, out var existingItems))
+		{
+			return existingItems;
+		}
+
+		IReadOnlyList<object> items = selectedGroup switch
+		{
+			OnlineApiEndpointGroup.ObjectPacks => [.. (await GetOnlineObjectPackBrowseResultsAsync()).Cast<object>()],
+			OnlineApiEndpointGroup.SC5FilePacks => [.. (await GetOnlineSC5FilePackBrowseResultsAsync()).Cast<object>()],
+			OnlineApiEndpointGroup.Tags => [.. (await EditorContext.ObjectServiceClient.GetTagsAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineTagBrowseResult(x.Id, x.Name))],
+			OnlineApiEndpointGroup.Authors => [.. (await EditorContext.ObjectServiceClient.GetAuthorsAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineAuthorBrowseResult(x.Id, x.Name))],
+			OnlineApiEndpointGroup.Licences => [.. (await EditorContext.ObjectServiceClient.GetLicencesAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineLicenceBrowseResult(x.Id, x.Name, x.Text))],
+			OnlineApiEndpointGroup.MissingObjects => [.. (await EditorContext.ObjectServiceClient.GetMissingObjectsAsync())
+				.OrderBy(x => x.DatName)
+				.Select(x => (object)new OnlineMissingObjectBrowseResult(x.Id, x.DatName, x.DatChecksum, x.ObjectType))],
+			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
+		};
+
+		onlineBrowseResultsCache[selectedGroup] = items;
 		return items;
 	}
 
@@ -566,46 +691,84 @@ public class FolderTreeViewModel : ReactiveObject
 				.Select(x => IndexEntryToFileSystemItem(x, EditorContext.Settings.DownloadFolder, FileLocation.Online))];
 	}
 
-	static FileSystemItem CreateOnlineObjectPackFileSystemItem(DtoItemPackEntry item)
-		=> new(item.Name, null, item.Id, item.CreatedDate, item.ModifiedDate, FileLocation.Online)
+	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetOnlineObjectPackBrowseResultsAsync()
+	{
+		if (EditorContext.ObjectServiceClient == null)
 		{
-			OnlineApiEndpointGroup = OnlineApiEndpointGroup.ObjectPacks,
-		};
+			return [];
+		}
 
-	static FileSystemItem CreateOnlineSC5FilePackFileSystemItem(DtoItemPackEntry item)
-		=> new(item.Name, null, item.Id, item.CreatedDate, item.ModifiedDate, FileLocation.Online)
+		var packs = (await EditorContext.ObjectServiceClient.GetObjectPacksAsync())
+			.OrderBy(x => x.Name)
+			.ToList();
+
+		return [.. await Task.WhenAll(packs.Select(async pack =>
+			CreateOnlineItemPackBrowseResult(
+				pack,
+				await EditorContext.ObjectServiceClient.GetObjectPackAsync(pack.Id),
+				OnlineApiEndpointGroup.ObjectPacks,
+				descriptor => descriptor.Items.OrderBy(x => x.DisplayName).Select(CreateOnlineObjectFileSystemItem))))];
+	}
+
+	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetOnlineSC5FilePackBrowseResultsAsync()
+	{
+		if (EditorContext.ObjectServiceClient == null)
 		{
-			OnlineApiEndpointGroup = OnlineApiEndpointGroup.SC5FilePacks,
+			return [];
+		}
+
+		var packs = (await EditorContext.ObjectServiceClient.GetSC5FilePacksAsync())
+			.OrderBy(x => x.Name)
+			.ToList();
+
+		return [.. await Task.WhenAll(packs.Select(async pack =>
+			CreateOnlineItemPackBrowseResult(
+				pack,
+				await EditorContext.ObjectServiceClient.GetSC5FilePackAsync(pack.Id),
+				OnlineApiEndpointGroup.SC5FilePacks,
+				descriptor => descriptor.Items.OrderBy(x => x.Name).Select(CreateOnlineScenarioFileSystemItem))))];
+	}
+
+	OnlineItemPackBrowseResult CreateOnlineItemPackBrowseResult<T>(
+		DtoItemPackEntry item,
+		DtoItemPackDescriptor<T>? descriptor,
+		OnlineApiEndpointGroup group,
+		Func<DtoItemPackDescriptor<T>, IEnumerable<FileSystemItem>> itemFactory)
+	{
+		var authors = descriptor?.Authors.OrderBy(x => x.Name).ToArray() ?? Array.Empty<DtoAuthorEntry>();
+		var tags = descriptor?.Tags.OrderBy(x => x.Name).ToArray() ?? Array.Empty<DtoTagEntry>();
+		IReadOnlyList<FileSystemItem> items = descriptor == null ? Array.Empty<FileSystemItem>() : [.. itemFactory(descriptor)];
+
+		return new OnlineItemPackBrowseResult(
+			item.Id,
+			descriptor?.Name ?? item.Name,
+			descriptor?.Description ?? item.Description,
+			descriptor?.CreatedDate ?? item.CreatedDate,
+			descriptor?.ModifiedDate ?? item.ModifiedDate,
+			descriptor?.UploadedDate ?? item.UploadedDate,
+			descriptor?.Licence ?? item.Licence,
+			authors,
+			tags,
+			items,
+			group);
+	}
+
+	FileSystemItem CreateOnlineObjectFileSystemItem(DtoObjectEntry item)
+	{
+		// temp hack since object service returns these weird <---> names
+		var displayName = item.DisplayName == "<--->" ? item.Description : item.DisplayName;
+		var computedFileName = Path.Combine(EditorContext.Settings.DownloadFolder, $"{item.DisplayName}-{item.Id}.dat");
+
+		return new FileSystemItem(item.DisplayName, computedFileName, item.Id, item.CreatedDate, item.ModifiedDate, FileLocation.Online, item.ObjectSource, item.ObjectType, item.VehicleType)
+		{
+			DatChecksum = item.DatChecksum,
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Objects,
 		};
+	}
 
 	static FileSystemItem CreateOnlineScenarioFileSystemItem(DtoScenarioEntry item)
 		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
 		{
 			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
-		};
-
-	static FileSystemItem CreateOnlineTagFileSystemItem(DtoTagEntry item)
-		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
-		{
-			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Tags,
-		};
-
-	static FileSystemItem CreateOnlineAuthorFileSystemItem(DtoAuthorEntry item)
-		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
-		{
-			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Authors,
-		};
-
-	static FileSystemItem CreateOnlineLicenceFileSystemItem(DtoLicenceEntry item)
-		=> new(item.Name, null, item.Id, null, null, FileLocation.Online)
-		{
-			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Licences,
-		};
-
-	static FileSystemItem CreateOnlineMissingObjectFileSystemItem(DtoObjectMissingEntry item)
-		=> new(item.DatName, null, item.Id, null, null, FileLocation.Online, ObjectType: item.ObjectType)
-		{
-			DatChecksum = item.DatChecksum,
-			OnlineApiEndpointGroup = OnlineApiEndpointGroup.MissingObjects,
 		};
 }

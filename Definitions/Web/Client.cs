@@ -88,11 +88,27 @@ public static class Client
 	public static async Task<IEnumerable<DtoItemPackEntry>> GetObjectPacksAsync(HttpClient client, ILogger? logger = null)
 		=> await GetListAsync<DtoItemPackEntry>(client, ObjectPacksEndpointGroup, logger);
 
+	public static async Task<DtoItemPackDescriptor<DtoObjectEntry>?> GetObjectPackAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
+		=> (await ClientHelpers.GetAsync<IEnumerable<DtoItemPackDescriptor<DtoObjectEntry>>>(
+			client,
+			ApiVersion,
+			RoutesV2.ObjectPacks,
+			id,
+			logger))?.FirstOrDefault();
+
 	public static async Task<IEnumerable<DtoScenarioEntry>> GetScenariosAsync(HttpClient client, ILogger? logger = null)
 		=> await GetListAsync<DtoScenarioEntry>(client, ScenariosEndpointGroup, logger);
 
 	public static async Task<IEnumerable<DtoItemPackEntry>> GetSC5FilePacksAsync(HttpClient client, ILogger? logger = null)
 		=> await GetListAsync<DtoItemPackEntry>(client, SC5FilePacksEndpointGroup, logger);
+
+	public static async Task<DtoItemPackDescriptor<DtoScenarioEntry>?> GetSC5FilePackAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
+		=> (await ClientHelpers.GetAsync<IEnumerable<DtoItemPackDescriptor<DtoScenarioEntry>>>(
+			client,
+			ApiVersion,
+			RoutesV2.SC5FilePacks,
+			id,
+			logger))?.FirstOrDefault();
 
 	public static async Task<IEnumerable<DtoObjectMissingEntry>> GetMissingObjectsAsync(HttpClient client, ILogger? logger = null)
 		=> await GetListAsync<DtoObjectMissingEntry>(client, MissingObjectsEndpointGroup, logger);

@@ -75,6 +75,7 @@ public class DownloadRoutesTest
 
 		var outsidePath = Path.Combine(rootFolder, "outside.SC5");
 		await File.WriteAllBytesAsync(outsidePath, [7, 7, 7]);
+		await File.WriteAllBytesAsync(Path.Combine(sfm.ScenariosFolder, @"..\outside-windows.SC5"), [6, 6, 6]);
 
 		var pack = new TblSC5FilePack
 		{
@@ -84,6 +85,7 @@ public class DownloadRoutesTest
 			[
 				new TblSC5File { Id = 1, Name = safeRelativePath },
 				new TblSC5File { Id = 2, Name = Path.Combine("..", "outside.SC5") },
+				new TblSC5File { Id = 3, Name = @"..\outside-windows.SC5" },
 			],
 		};
 
@@ -123,9 +125,11 @@ public class DownloadRoutesTest
 
 		var outsidePath = Path.Combine(rootFolder, "outside.dat");
 		await File.WriteAllBytesAsync(outsidePath, [8, 8, 8]);
+		await File.WriteAllBytesAsync(Path.Combine(sfm.ObjectsFolder, @"..\outside-windows.dat"), [5, 5, 5]);
 
 		sfm.ObjectIndex.Objects.Add(new ObjectIndexEntry("SAFEOBJ", safeRelativePath, null, 111, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
 		sfm.ObjectIndex.Objects.Add(new ObjectIndexEntry("UNSAFEOBJ", Path.Combine("..", "outside.dat"), null, 222, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
+		sfm.ObjectIndex.Objects.Add(new ObjectIndexEntry("WINDOWSOBJ", @"..\outside-windows.dat", null, 333, null, ObjectType.Vehicle, ObjectSource.Custom, null, null));
 
 		var obj = new TblObject
 		{
@@ -139,6 +143,7 @@ public class DownloadRoutesTest
 			[
 				new TblDatObject { Id = 1, DatName = "SAFEOBJ", DatChecksum = 111, xxHash3 = 1, ObjectId = 1 },
 				new TblDatObject { Id = 2, DatName = "UNSAFEOBJ", DatChecksum = 222, xxHash3 = 2, ObjectId = 1 },
+				new TblDatObject { Id = 3, DatName = "WINDOWSOBJ", DatChecksum = 333, xxHash3 = 3, ObjectId = 1 },
 			],
 		};
 

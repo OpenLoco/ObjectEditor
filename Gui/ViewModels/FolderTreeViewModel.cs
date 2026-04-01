@@ -779,6 +779,45 @@ public class FolderTreeViewModel : ReactiveObject
 			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
 		};
 
+	static string SanitizeDownloadName(string? name, bool stripDirectoryComponents, bool stripExtension, string fallbackName)
+	{
+		var sanitizedName = name ?? string.Empty;
+		if (stripDirectoryComponents)
+		{
+			sanitizedName = sanitizedName.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? string.Empty;
+		}
+
+		if (stripExtension)
+		{
+			sanitizedName = Path.GetFileNameWithoutExtension(sanitizedName);
+		}
+
+		sanitizedName = Path.GetInvalidFileNameChars().Aggregate(sanitizedName, (current, c) => current.Replace(c, '_'));
+		sanitizedName = sanitizedName
+			.Replace('/', '_')
+			.Replace('\\', '_')
+			.Replace("..", "__", StringComparison.Ordinal);
+
+		return string.IsNullOrWhiteSpace(sanitizedName) ? fallbackName : sanitizedName;
+	}
+
+	async Task ShowDownloadFailureDialogAsync(string contentMessage)
+	{
+		var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
+		{
+			ContentTitle = "Download failed",
+			ContentMessage = contentMessage,
+			ButtonDefinitions = ButtonEnum.Ok,
+			Icon = Icon.Warning,
+			WindowStartupLocation = WindowStartupLocation.CenterOwner,
+			Topmost = true,
+			ShowInCenter = true,
+			SizeToContent = SizeToContent.WidthAndHeight,
+			MinHeight = 170,
+		});
+		_ = await box.ShowAsync();
+	}
+
 	async Task DownloadOnlineItemAsync(FileSystemItem item)
 	{
 		if (EditorContext.ObjectServiceClient == null || item.Id == null)
@@ -800,10 +839,24 @@ public class FolderTreeViewModel : ReactiveObject
 		}
 
 		var extension = item.OnlineApiEndpointGroup == OnlineApiEndpointGroup.Scenarios ? ".SC5" : ".dat";
-		var safeName = Path.GetInvalidFileNameChars().Aggregate(item.DisplayName, (current, c) => current.Replace(c, '_'));
+		var safeName = SanitizeDownloadName(item.DisplayName, stripDirectoryComponents: true, stripExtension: true, fallbackName: "download");
 		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safeName}-{item.Id}{extension}");
-		await File.WriteAllBytesAsync(filename, fileBytes);
-		EditorContext.Logger.Info($"Downloaded \"{item.DisplayName}\" to \"{filename}\"");
+		try
+		{
+			await using var outputStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, useAsync: true);
+			await outputStream.WriteAsync(fileBytes);
+			EditorContext.Logger.Info($"Downloaded \"{item.DisplayName}\" to \"{filename}\"");
+		}
+		catch (IOException ex)
+		{
+			EditorContext.Logger.Error($"Failed to download \"{item.DisplayName}\" to \"{filename}\"", ex);
+			await ShowDownloadFailureDialogAsync($"Could not create:\n{filename}\n\nThe destination file may already exist, be locked by another process, or the download folder may be unavailable.");
+		}
+		catch (UnauthorizedAccessException ex)
+		{
+			EditorContext.Logger.Error($"Failed to download \"{item.DisplayName}\" to \"{filename}\" due to insufficient permissions", ex);
+			await ShowDownloadFailureDialogAsync($"You do not have permission to write to:\n{filename}\n\nPlease check folder permissions or choose a different download folder.");
+		}
 	}
 
 	async Task DownloadOnlinePackAsync(OnlineItemPackBrowseResult pack)
@@ -826,7 +879,7 @@ public class FolderTreeViewModel : ReactiveObject
 			return;
 		}
 
-		var safePackName = Path.GetInvalidFileNameChars().Aggregate(pack.Name, (current, c) => current.Replace(c, '_'));
+		var safePackName = SanitizeDownloadName(pack.Name, stripDirectoryComponents: false, stripExtension: false, fallbackName: "pack");
 		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safePackName}-{pack.Id}.zip");
 		try
 		{
@@ -837,19 +890,7 @@ public class FolderTreeViewModel : ReactiveObject
 		catch (IOException ex)
 		{
 			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" to \"{filename}\"", ex);
-			var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
-			{
-				ContentTitle = "Download failed",
-				ContentMessage = $"Could not create:\n{filename}\n\nA file may already exist or be locked by another process.",
-				ButtonDefinitions = ButtonEnum.Ok,
-				Icon = Icon.Warning,
-				WindowStartupLocation = WindowStartupLocation.CenterOwner,
-				Topmost = true,
-				ShowInCenter = true,
-				SizeToContent = SizeToContent.WidthAndHeight,
-				MinHeight = 170,
-			});
-			_ = await box.ShowAsync();
+			await ShowDownloadFailureDialogAsync($"Could not create:\n{filename}\n\nThe destination file may already exist, be locked by another process, or the download folder may be unavailable.");
 		}
 	}
 }

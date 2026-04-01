@@ -158,7 +158,7 @@
 									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
 									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 									<StackPanel.ContextMenu>
-										<ContextMenu>
+										<ContextMenu IsVisible="{Binding HasContextActions}" IsEnabled="{Binding HasContextActions}">
 											<MenuItem Header="Open folder" IsVisible="{Binding CanOpenFolder}" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
 											<MenuItem Header="Download" IsVisible="{Binding CanDownload}" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).DownloadOnlineItemCommand}" CommandParameter="{Binding}" />
 										</ContextMenu>
@@ -171,7 +171,7 @@
 									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 									<StackPanel.ContextMenu>
-										<ContextMenu>
+										<ContextMenu IsVisible="{Binding HasContextActions}" IsEnabled="{Binding HasContextActions}">
 											<MenuItem Header="Open folder" IsVisible="{Binding CanOpenFolder}" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).OpenFolderFor}" CommandParameter="{Binding}" />
 											<MenuItem Header="Download" IsVisible="{Binding CanDownload}" Command="{Binding $parent[TreeDataGrid].((vm:FolderTreeViewModel)DataContext).DownloadOnlineItemCommand}" CommandParameter="{Binding}" />
 										</ContextMenu>

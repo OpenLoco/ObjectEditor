@@ -2,7 +2,7 @@ namespace ObjectService.RouteHandlers;
 
 public static class RouteHelpers
 {
-	static readonly char[] PathSeparators = [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
+	static readonly char[] PathSeparators = ['/', '\\'];
 
 	public static string MakeNicePlural(string name)
 		=> $"{name.Replace("RouteHandler", string.Empty)}s";
@@ -37,7 +37,7 @@ public static class RouteHelpers
 		}
 
 		fullPath = candidateFullPath;
-		normalizedRelativePath = relativePath.Replace('\\', '/');
+		normalizedRelativePath = string.Join('/', segments);
 		return true;
 	}
 }

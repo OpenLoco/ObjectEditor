@@ -38,6 +38,10 @@ public record FileSystemItem(
 	public bool CanOpenFolder
 		=> FileLocation == FileLocationKind.Local && IsLeafNode && !string.IsNullOrEmpty(FileName);
 
+	[JsonIgnore]
+	public bool HasContextActions
+		=> CanOpenFolder || CanDownload;
+
 	public uint? DatChecksum { get; init; }
 
 	public ulong? xxHash3 { get; init; }

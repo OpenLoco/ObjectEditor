@@ -10,7 +10,7 @@ public static class DtoExtensions
 		=> new(
 			x!.Object.Id,
 			x!.Object.Name,
-			x!.Object.DatObjects.FirstOrDefault()?.DatName ?? "<--->",
+			x!.Object.DatObjects.FirstOrDefault()?.DatName ?? x!.Object.DatObjects.FirstOrDefault()?.Object?.Name ?? "<no-display-name>",
 			x!.Object.DatObjects.FirstOrDefault()?.DatChecksum ?? 0,
 			x!.Object.Description,
 			x!.Object.ObjectSource,

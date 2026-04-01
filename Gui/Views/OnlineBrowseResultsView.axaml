@@ -1,0 +1,132 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Gui.ViewModels"
+	xmlns:mo="using:Gui.Models"
+	xmlns:cnv="using:Gui.Converters"
+	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+	mc:Ignorable="d"
+	d:DesignWidth="448"
+	d:DesignHeight="768"
+	x:Class="Gui.Views.OnlineBrowseResultsView"
+	x:DataType="vm:FolderTreeViewModel">
+
+	<Design.DataContext>
+		<vm:DesignerOnlineBrowseResultsViewModel/>
+	</Design.DataContext>
+
+	<UserControl.Resources>
+		<cnv:EnumToMaterialIconConverter x:Key="EnumToMaterialIconConverter"/>
+	</UserControl.Resources>
+
+	<UserControl.DataTemplates>
+		<DataTemplate DataType="mo:OnlineAuthorBrowseResult">
+			<Border Margin="0,0,0,8" Background="{DynamicResource ExpanderContentBackground}" Padding="10">
+				<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+					<materialIcons:MaterialIcon Kind="Account" Width="24" Height="24" Margin="2" />
+					<StackPanel Grid.Column="1" Spacing="2">
+						<TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Name}" />
+						<TextBlock Opacity="0.7" Text="{Binding Id}" />
+					</StackPanel>
+				</Grid>
+			</Border>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:OnlineTagBrowseResult">
+			<Border Margin="0,0,0,8" Background="{DynamicResource ExpanderContentBackground}" Padding="10">
+				<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+					<materialIcons:MaterialIcon Kind="Tag" Width="24" Height="24" Margin="2" />
+					<StackPanel Grid.Column="1" Spacing="2">
+						<TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Name}" />
+						<TextBlock Opacity="0.7" Text="{Binding Id}" />
+					</StackPanel>
+				</Grid>
+			</Border>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:OnlineLicenceBrowseResult">
+			<Border Margin="0,0,0,8" Background="{DynamicResource ExpanderContentBackground}" Padding="10">
+				<Expander IsExpanded="True">
+					<Expander.Header>
+						<Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+							<materialIcons:MaterialIcon Kind="License" Width="24" Height="24" Margin="2" />
+							<StackPanel Grid.Column="1" Spacing="2">
+								<TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Name}" />
+								<TextBlock Opacity="0.7" Text="{Binding Id}" />
+							</StackPanel>
+						</Grid>
+					</Expander.Header>
+					<TextBox Margin="0,8,0,0" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" Text="{Binding Text}" IsVisible="{Binding HasText}" />
+				</Expander>
+			</Border>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:OnlineMissingObjectBrowseResult">
+			<Border Margin="0,0,0,8" Background="{DynamicResource ExpanderContentBackground}" Padding="10">
+				<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+					<materialIcons:MaterialIcon Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+					<StackPanel Grid.Column="1" Spacing="2">
+						<TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding DatName}" />
+						<TextBlock Opacity="0.7" Text="{Binding Id}" />
+					</StackPanel>
+					<StackPanel Grid.Column="2" HorizontalAlignment="Right" Spacing="2">
+						<TextBlock HorizontalAlignment="Right" FontWeight="SemiBold" Text="{Binding ObjectType}" />
+						<TextBlock HorizontalAlignment="Right" FontFamily="Consolas" Opacity="0.7" Text="{Binding DatChecksumHex}" />
+					</StackPanel>
+				</Grid>
+			</Border>
+		</DataTemplate>
+
+		<DataTemplate DataType="mo:OnlineItemPackBrowseResult">
+			<Border Background="{DynamicResource ExpanderContentBackground}" Padding="4">
+				<Expander IsExpanded="True">
+					<Expander.Header>
+						<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+							<materialIcons:MaterialIcon Grid.Column="0" Kind="PackageVariantClosed" Width="24" Height="24" />
+							<StackPanel Grid.Column="1" VerticalAlignment="Center">
+								<TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Name}" />
+							</StackPanel>
+							<StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+								<TextBlock HorizontalAlignment="Right" Text="{Binding ItemCountText}" />
+							</StackPanel>
+						</Grid>
+					</Expander.Header>
+
+					<StackPanel Spacing="8">
+						<TextBlock TextWrapping="Wrap" Text="{Binding Description}" IsVisible="{Binding HasDescription}" />
+						<TextBlock Opacity="0.7" Text="{Binding CreatedDate, StringFormat='Created: {0}'}" IsVisible="{Binding HasModifiedDate}"/>
+						<TextBlock Opacity="0.7" Text="{Binding ModifiedDate, StringFormat='Modified: {0}'}" IsVisible="{Binding HasModifiedDate}"/>
+						<TextBlock Opacity="0.7" Text="{Binding UploadedDate, StringFormat='Uploaded: {0}'}" />
+						<TextBlock Opacity="0.7" TextWrapping="Wrap" Text="{Binding AuthorsText, StringFormat='Authors: {0}'}" IsVisible="{Binding HasAuthors}" />
+						<TextBlock Opacity="0.7" TextWrapping="Wrap" Text="{Binding TagsText, StringFormat='Tags: {0}'}" IsVisible="{Binding HasTags}" />
+						<TextBlock Opacity="0.7" Text="{Binding LicenceName, StringFormat='Licence: {0}'}" />
+
+						<StackPanel Spacing="4">
+							<TextBlock FontWeight="SemiBold" Text="{Binding ItemCountText}" />
+							<ItemsControl ItemsSource="{Binding Items}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate DataType="mo:FileSystemItem">
+										<Button Background="Transparent" BorderThickness="1" Padding="4" HorizontalContentAlignment="Stretch" Command="{Binding $parent[UserControl].((vm:FolderTreeViewModel)DataContext).SelectOnlineBrowseFileSystemItem}" CommandParameter="{Binding}">
+											<Grid ColumnDefinitions="Auto, Auto,Auto, Auto" ColumnSpacing="8">
+												<materialIcons:MaterialIcon Grid.Column="0" VerticalAlignment="Center" Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="20" Height="20" Margin="2" />
+												<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding DisplayName}" />
+												<TextBlock Grid.Column="2" VerticalAlignment="Center" Opacity="0.7" Text="{Binding ObjectSource}" />
+												<TextBlock Grid.Column="3" VerticalAlignment="Center" Opacity="0.7" Text="{Binding ObjectType}" />
+											</Grid>
+										</Button>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</StackPanel>
+					</StackPanel>
+				</Expander>
+			</Border>
+		</DataTemplate>
+	</UserControl.DataTemplates>
+
+	<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+		<ItemsControl ItemsSource="{Binding CurrentOnlineBrowseResults}" Margin="4" />
+	</ScrollViewer>
+</UserControl>

@@ -80,7 +80,7 @@ public class DownloadRoutesTest
 		var pack = new TblSC5FilePack
 		{
 			Id = 1,
-			Name = "Scenario Pack",
+			Name = "Scenario/Pack\r\nbad",
 			SC5Files =
 			[
 				new TblSC5File { Id = 1, Name = safeRelativePath },
@@ -100,6 +100,7 @@ public class DownloadRoutesTest
 		{
 			Assert.That(response.IsSuccessStatusCode, Is.True);
 			Assert.That(response.Content.Headers.ContentType?.MediaType, Is.EqualTo("application/zip"));
+			Assert.That(response.Content.Headers.ContentDisposition?.FileName?.Trim('"'), Is.EqualTo("Scenario_Pack__bad.zip"));
 			Assert.That(archive.Entries.Select(x => x.FullName), Is.EqualTo(new[] { safeRelativePath.Replace('\\', '/') }));
 			await using var entryStream = archive.Entries.Single().Open();
 			using var entryMemoryStream = new MemoryStream();
@@ -150,7 +151,7 @@ public class DownloadRoutesTest
 		var pack = new TblObjectPack
 		{
 			Id = 1,
-			Name = "Object Pack",
+			Name = "Object\\Pack:unsafe",
 			Objects = [obj],
 		};
 
@@ -165,6 +166,7 @@ public class DownloadRoutesTest
 		{
 			Assert.That(response.IsSuccessStatusCode, Is.True);
 			Assert.That(response.Content.Headers.ContentType?.MediaType, Is.EqualTo("application/zip"));
+			Assert.That(response.Content.Headers.ContentDisposition?.FileName?.Trim('"'), Is.EqualTo("Object_Pack_unsafe.zip"));
 			Assert.That(archive.Entries.Select(x => x.FullName), Is.EqualTo(new[] { safeRelativePath.Replace('\\', '/') }));
 			await using var entryStream = archive.Entries.Single().Open();
 			using var entryMemoryStream = new MemoryStream();

@@ -113,6 +113,6 @@ public class ObjectPackRouteHandler : ITableRouteHandler
 		}
 
 		zipStream.Position = 0;
-		return Results.File(zipStream, "application/zip", $"{pack.Name}.zip");
+		return Results.File(zipStream, "application/zip", RouteHelpers.MakeSafeHttpDownloadFileName(pack.Name, ".zip", "objectpack"));
 	}
 }

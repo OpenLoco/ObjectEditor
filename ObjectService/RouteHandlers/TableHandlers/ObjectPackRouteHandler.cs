@@ -69,7 +69,14 @@ public class ObjectPackRouteHandler : ITableRouteHandler
 		}
 
 		var sfm = sp.GetRequiredService<ServerFolderManager>();
-		var zipStream = new MemoryStream();
+		var tempZipPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.zip");
+		var zipStream = new FileStream(
+			tempZipPath,
+			FileMode.Create,
+			FileAccess.ReadWrite,
+			FileShare.None,
+			bufferSize: 4096,
+			options: FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 
 		using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
 		{
@@ -82,19 +89,25 @@ public class ObjectPackRouteHandler : ITableRouteHandler
 
 				foreach (var dat in obj.DatObjects)
 				{
-					if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null || string.IsNullOrEmpty(entry.FileName))
+					if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
 					{
 						continue;
 					}
 
-					var filePath = Path.Combine(sfm.ObjectsFolder, entry.FileName);
-					if (!File.Exists(filePath))
+					if (!RouteHelpers.TryGetSafeRelativePathUnderRoot(sfm.ObjectsFolder, entry.FileName, out var fullFilePath, out var entryName))
 					{
 						continue;
 					}
 
-					// Use the relative path from the objects folder as the entry name to avoid duplicate filename collisions
-					archive.CreateEntryFromFile(filePath, entry.FileName.Replace('\\', '/'));
+					if (!File.Exists(fullFilePath))
+					{
+						continue;
+					}
+
+					await using var fileStream = File.OpenRead(fullFilePath);
+					var zipEntry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+					await using var entryStream = zipEntry.Open();
+					await fileStream.CopyToAsync(entryStream);
 				}
 			}
 		}

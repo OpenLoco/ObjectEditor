@@ -23,7 +23,9 @@ public class ScenarioRouteHandler : ITableRouteHandler
 	}
 
 	static string[] GetSortedScenarioFiles(string scenarioFolder)
-		=> [.. Directory.GetFiles(scenarioFolder, "*.SC5", SearchOption.AllDirectories).OrderBy(x => x)];
+		=> [.. Directory
+			.GetFiles(scenarioFolder, "*.SC5", SearchOption.AllDirectories)
+			.OrderBy(x => Path.GetRelativePath(scenarioFolder, x), StringComparer.Ordinal)];
 
 	static async Task<IResult> ListAsync([FromServices] IServiceProvider sp)
 		=> await Task.Run(() =>
@@ -36,21 +38,20 @@ public class ScenarioRouteHandler : ITableRouteHandler
 			return Results.Ok(filenames.ToList());
 		});
 
-	static async Task<IResult> GetScenarioFileAsync([FromRoute] UniqueObjectId id, [FromServices] IServiceProvider sp)
-		=> await Task.Run(() =>
+	static Task<IResult> GetScenarioFileAsync([FromRoute] UniqueObjectId id, [FromServices] IServiceProvider sp)
+	{
+		var sfm = sp.GetRequiredService<ServerFolderManager>();
+		var files = GetSortedScenarioFiles(sfm.ScenariosFolder);
+
+		if (id >= (ulong)files.Length)
 		{
-			var sfm = sp.GetRequiredService<ServerFolderManager>();
-			var files = GetSortedScenarioFiles(sfm.ScenariosFolder);
+			return Task.FromResult<IResult>(Results.NotFound());
+		}
 
-			if (id >= (ulong)files.Length)
-			{
-				return Results.NotFound();
-			}
-
-			var path = files[(int)id];
-			const string contentType = "application/octet-stream";
-			return Results.File(path, contentType, Path.GetFileName(path));
-		});
+		var path = files[(int)id];
+		const string contentType = "application/octet-stream";
+		return Task.FromResult<IResult>(Results.File(path, contentType, Path.GetFileName(path)));
+	}
 
 	static async Task<IResult> CreateAsync(DtoScenarioEntry request)
 		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));

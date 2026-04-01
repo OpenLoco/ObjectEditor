@@ -67,20 +67,33 @@ public class SC5FilePackRouteHandler : ITableRouteHandler
 		}
 
 		var sfm = sp.GetRequiredService<ServerFolderManager>();
-		var zipStream = new MemoryStream();
+		var tempZipPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.zip");
+		var zipStream = new FileStream(
+			tempZipPath,
+			FileMode.Create,
+			FileAccess.ReadWrite,
+			FileShare.None,
+			bufferSize: 4096,
+			options: FileOptions.Asynchronous | FileOptions.DeleteOnClose);
 
 		using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
 		{
 			foreach (var sc5File in pack.SC5Files)
 			{
-				var filePath = Path.Combine(sfm.ScenariosFolder, sc5File.Name);
-				if (!File.Exists(filePath))
+				if (!RouteHelpers.TryGetSafeRelativePathUnderRoot(sfm.ScenariosFolder, sc5File.Name, out var fullFilePath, out var entryName))
 				{
 					continue;
 				}
 
-				// Use the relative path as the entry name to avoid duplicate filename collisions
-				archive.CreateEntryFromFile(filePath, sc5File.Name.Replace('\\', '/'));
+				if (!File.Exists(fullFilePath))
+				{
+					continue;
+				}
+
+				await using var fileStream = File.OpenRead(fullFilePath);
+				var entry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+				await using var entryStream = entry.Open();
+				await fileStream.CopyToAsync(entryStream);
 			}
 		}
 

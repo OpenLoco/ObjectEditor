@@ -15,6 +15,9 @@ using DynamicData.Binding;
 using Gui.Models;
 using Gui.ViewModels.Filters;
 using Index;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -824,8 +827,29 @@ public class FolderTreeViewModel : ReactiveObject
 		}
 
 		var safePackName = Path.GetInvalidFileNameChars().Aggregate(pack.Name, (current, c) => current.Replace(c, '_'));
-		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safePackName}.zip");
-		await File.WriteAllBytesAsync(filename, fileBytes);
-		EditorContext.Logger.Info($"Downloaded pack \"{pack.Name}\" to \"{filename}\"");
+		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safePackName}-{pack.Id}.zip");
+		try
+		{
+			await using var outputStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, useAsync: true);
+			await outputStream.WriteAsync(fileBytes);
+			EditorContext.Logger.Info($"Downloaded pack \"{pack.Name}\" to \"{filename}\"");
+		}
+		catch (IOException ex)
+		{
+			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" to \"{filename}\"", ex);
+			var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
+			{
+				ContentTitle = "Download failed",
+				ContentMessage = $"Could not create:\n{filename}\n\nA file may already exist or be locked by another process.",
+				ButtonDefinitions = ButtonEnum.Ok,
+				Icon = Icon.Warning,
+				WindowStartupLocation = WindowStartupLocation.CenterOwner,
+				Topmost = true,
+				ShowInCenter = true,
+				SizeToContent = SizeToContent.WidthAndHeight,
+				MinHeight = 170,
+			});
+			_ = await box.ShowAsync();
+		}
 	}
 }

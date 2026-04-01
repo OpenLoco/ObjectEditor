@@ -148,6 +148,8 @@ public class FolderTreeViewModel : ReactiveObject
 	public ReactiveCommand<Unit, Unit>? OpenCurrentFolder { get; }
 	public ReactiveCommand<FileSystemItem, Unit>? OpenFolderFor { get; }
 	public ReactiveCommand<FileSystemItem, Unit>? SelectOnlineBrowseFileSystemItem { get; }
+	public ReactiveCommand<FileSystemItem, Unit>? DownloadOnlineItemCommand { get; private set; }
+	public ReactiveCommand<OnlineItemPackBrowseResult, Unit>? DownloadOnlinePackCommand { get; private set; }
 
 	public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 	static OnlineBrowseTargetOption ObjectOnlineBrowseTarget { get; } = new(OnlineApiEndpointGroup.Objects, "Objects", "Objects", Client.ObjectsEndpointGroup);
@@ -242,6 +244,8 @@ public class FolderTreeViewModel : ReactiveObject
 		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : this.EditorContext.Settings.DownloadFolder, this.EditorContext.Logger));
 		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(this.EditorContext, availableFilterCategories, RemoveFilter)));
 		SelectOnlineBrowseFileSystemItem = ReactiveCommand.Create<FileSystemItem>(item => CurrentlySelectedObject = item);
+		DownloadOnlineItemCommand = ReactiveCommand.CreateFromTask<FileSystemItem>(DownloadOnlineItemAsync);
+		DownloadOnlinePackCommand = ReactiveCommand.CreateFromTask<OnlineItemPackBrowseResult>(DownloadOnlinePackAsync);
 		OpenFolderFor = ReactiveCommand.Create((FileSystemItem clickedOn) =>
 		{
 			if (IsLocal
@@ -771,4 +775,57 @@ public class FolderTreeViewModel : ReactiveObject
 		{
 			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
 		};
+
+	async Task DownloadOnlineItemAsync(FileSystemItem item)
+	{
+		if (EditorContext.ObjectServiceClient == null || item.Id == null)
+		{
+			return;
+		}
+
+		byte[]? fileBytes = item.OnlineApiEndpointGroup switch
+		{
+			OnlineApiEndpointGroup.Objects => await EditorContext.ObjectServiceClient.GetObjectFileAsync(item.Id.Value),
+			OnlineApiEndpointGroup.Scenarios => await EditorContext.ObjectServiceClient.GetScenarioFileAsync(item.Id.Value),
+			_ => null,
+		};
+
+		if (fileBytes == null || fileBytes.Length == 0)
+		{
+			EditorContext.Logger.Error($"Failed to download \"{item.DisplayName}\" (Id={item.Id})");
+			return;
+		}
+
+		var extension = item.OnlineApiEndpointGroup == OnlineApiEndpointGroup.Scenarios ? ".SC5" : ".dat";
+		var safeName = Path.GetInvalidFileNameChars().Aggregate(item.DisplayName, (current, c) => current.Replace(c, '_'));
+		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safeName}-{item.Id}{extension}");
+		await File.WriteAllBytesAsync(filename, fileBytes);
+		EditorContext.Logger.Info($"Downloaded \"{item.DisplayName}\" to \"{filename}\"");
+	}
+
+	async Task DownloadOnlinePackAsync(OnlineItemPackBrowseResult pack)
+	{
+		if (EditorContext.ObjectServiceClient == null)
+		{
+			return;
+		}
+
+		byte[]? fileBytes = pack.Group switch
+		{
+			OnlineApiEndpointGroup.ObjectPacks => await EditorContext.ObjectServiceClient.GetObjectPackFileAsync(pack.Id),
+			OnlineApiEndpointGroup.SC5FilePacks => await EditorContext.ObjectServiceClient.GetSC5FilePackFileAsync(pack.Id),
+			_ => null,
+		};
+
+		if (fileBytes == null || fileBytes.Length == 0)
+		{
+			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" (Id={pack.Id})");
+			return;
+		}
+
+		var safePackName = Path.GetInvalidFileNameChars().Aggregate(pack.Name, (current, c) => current.Replace(c, '_'));
+		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safePackName}.zip");
+		await File.WriteAllBytesAsync(filename, fileBytes);
+		EditorContext.Logger.Info($"Downloaded pack \"{pack.Name}\" to \"{filename}\"");
+	}
 }

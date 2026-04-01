@@ -88,8 +88,11 @@
 							<StackPanel Grid.Column="1" VerticalAlignment="Center">
 								<TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Name}" />
 							</StackPanel>
-							<StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-								<TextBlock HorizontalAlignment="Right" Text="{Binding ItemCountText}" />
+							<StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="4">
+								<TextBlock VerticalAlignment="Center" Text="{Binding ItemCountText}" />
+								<Button ToolTip.Tip="Download pack" Command="{Binding $parent[UserControl].((vm:FolderTreeViewModel)DataContext).DownloadOnlinePackCommand}" CommandParameter="{Binding}">
+									<materialIcons:MaterialIcon Kind="Download" Width="20" Height="20" />
+								</Button>
 							</StackPanel>
 						</Grid>
 					</Expander.Header>

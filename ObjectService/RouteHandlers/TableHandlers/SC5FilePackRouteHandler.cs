@@ -5,6 +5,7 @@ using Definitions.SourceData;
 using Definitions.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IO.Compression;
 
 namespace ObjectService.RouteHandlers.TableHandlers;
 
@@ -21,7 +22,10 @@ public class SC5FilePackRouteHandler : ITableRouteHandler
 		=> BaseTableRouteHandler.MapRoutes<SC5FilePackRouteHandler>(endpoints);
 
 	public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
-	{ }
+	{
+		var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
+		_ = resourceRoute.MapGet(RoutesV2.File, GetSC5FilePackFileAsync);
+	}
 
 	public static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db)
 		=> Results.Ok(
@@ -49,4 +53,38 @@ public class SC5FilePackRouteHandler : ITableRouteHandler
 
 	public static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db)
 		=> await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+
+	public static async Task<IResult> GetSC5FilePackFileAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp)
+	{
+		var pack = await db.SC5FilePacks
+			.Where(x => x.Id == id)
+			.Include(x => x.SC5Files)
+			.SingleOrDefaultAsync();
+
+		if (pack == null)
+		{
+			return Results.NotFound();
+		}
+
+		var sfm = sp.GetRequiredService<ServerFolderManager>();
+		var zipStream = new MemoryStream();
+
+		using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
+		{
+			foreach (var sc5File in pack.SC5Files)
+			{
+				var filePath = Path.Combine(sfm.ScenariosFolder, sc5File.Name);
+				if (!File.Exists(filePath))
+				{
+					continue;
+				}
+
+				// Use the relative path as the entry name to avoid duplicate filename collisions
+				archive.CreateEntryFromFile(filePath, sc5File.Name.Replace('\\', '/'));
+			}
+		}
+
+		zipStream.Position = 0;
+		return Results.File(zipStream, "application/zip", $"{pack.Name}.zip");
+	}
 }

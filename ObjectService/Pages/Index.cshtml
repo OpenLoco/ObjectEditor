@@ -26,6 +26,83 @@
 	</div>
 </section>
 
+<section id="theme-studio-panel" class="panel theme-studio" data-theme-studio hidden>
+	<div class="theme-studio-header">
+		<div>
+			<p class="eyebrow">Theme Studio</p>
+			<h2>Trial an eight-colour palette</h2>
+			<p class="lede">Paste or pick eight hex colours and the page will derive the rest of the theme tokens automatically. The palette is stored only in this browser and follows the light/dark toggle.</p>
+		</div>
+	</div>
+	<form class="theme-palette-form" data-theme-palette-form>
+		<div class="theme-palette-grid">
+			<label class="field palette-field">
+				<span>Accent</span>
+				<div class="palette-input-row">
+					<input type="color" value="#F6C945" data-palette-picker="accent" aria-label="Accent colour picker" />
+					<input type="text" value="#F6C945" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="accent" aria-label="Accent hex colour" />
+				</div>
+			</label>
+			<label class="field palette-field">
+				<span>Surface</span>
+				<div class="palette-input-row">
+					<input type="color" value="#D9D9D6" data-palette-picker="surface" aria-label="Surface colour picker" />
+					<input type="text" value="#D9D9D6" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="surface" aria-label="Surface hex colour" />
+				</div>
+			</label>
+			<label class="field palette-field">
+				<span>Muted</span>
+				<div class="palette-input-row">
+					<input type="color" value="#8A8D8F" data-palette-picker="muted" aria-label="Muted colour picker" />
+					<input type="text" value="#8A8D8F" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="muted" aria-label="Muted hex colour" />
+				</div>
+			</label>
+			<label class="field palette-field">
+				<span>Background</span>
+				<div class="palette-input-row">
+					<input type="color" value="#2E2F33" data-palette-picker="background" aria-label="Background colour picker" />
+					<input type="text" value="#2E2F33" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="background" aria-label="Background hex colour" />
+				</div>
+			</label>
+			<label class="field palette-field">
+				<span>Contrast</span>
+				<div class="palette-input-row">
+					<input type="color" value="#FFF6E0" data-palette-picker="contrast" aria-label="Contrast colour picker" />
+					<input type="text" value="#FFF6E0" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="contrast" aria-label="Contrast hex colour" />
+				</div>
+			</label>
+			<label class="field palette-field">
+				<span>Success</span>
+				<div class="palette-input-row">
+					<input type="color" value="#4E8D57" data-palette-picker="success" aria-label="Success colour picker" />
+					<input type="text" value="#4E8D57" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="success" aria-label="Success hex colour" />
+				</div>
+			</label>
+			<label class="field palette-field">
+				<span>Warning</span>
+				<div class="palette-input-row">
+					<input type="color" value="#B97A1F" data-palette-picker="warning" aria-label="Warning colour picker" />
+					<input type="text" value="#B97A1F" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="warning" aria-label="Warning hex colour" />
+				</div>
+			</label>
+			<label class="field palette-field">
+				<span>Error</span>
+				<div class="palette-input-row">
+					<input type="color" value="#B44C43" data-palette-picker="error" aria-label="Error colour picker" />
+					<input type="text" value="#B44C43" maxlength="7" spellcheck="false" autocomplete="off" data-palette-input="error" aria-label="Error hex colour" />
+				</div>
+			</label>
+		</div>
+
+		<div class="form-actions">
+			<button type="submit" class="button button-primary">Apply palette</button>
+			<button type="button" class="button button-secondary" data-theme-palette-reset>Use default palette</button>
+		</div>
+
+		<p class="theme-studio-status muted" data-theme-palette-status aria-live="polite">Stored locally in this browser. Light and dark mode reuse the same palette definitions.</p>
+	</form>
+</section>
+
 <section class="panel">
 	<form method="get" class="filter-form">
 		<div class="field field-search">

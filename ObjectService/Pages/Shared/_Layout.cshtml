@@ -22,22 +22,275 @@
 	<script>
 		(() => {
 			const storageKey = "object-service-theme";
+			const paletteStorageKey = "object-service-theme-palette-v2";
+			const legacyPaletteStorageKey = "object-service-theme-palette";
 			const root = document.documentElement;
+			const paletteFields = ["accent", "surface", "muted", "background", "contrast", "success", "warning", "error"];
+			const defaultPalette = {
+				accent: "#F6C945",
+				surface: "#D9D9D6",
+				muted: "#8A8D8F",
+				background: "#2E2F33",
+				contrast: "#FFF6E0",
+					success: "#46F65A",
+					warning: "#F6C945",
+					error: "#F64646",
+			};
 
-			try
-			{
-				const storedTheme = window.localStorage.getItem(storageKey);
-				if (storedTheme === "light" || storedTheme === "dark")
+			const normaliseHex = (value) => {
+				if (typeof value !== "string")
 				{
-					root.dataset.theme = storedTheme;
-					return;
+					return null;
 				}
-			}
-			catch
+
+				const trimmed = value.trim();
+				if (/^#?[0-9a-fA-F]{6}$/.test(trimmed) === false)
+				{
+					return null;
+				}
+
+				return `#${trimmed.replace("#", "").toUpperCase()}`;
+			};
+
+			const rgba = (hex, alpha) => {
+				const value = normaliseHex(hex);
+				if (value === null)
+				{
+					return null;
+				}
+
+				const red = parseInt(value.slice(1, 3), 16);
+				const green = parseInt(value.slice(3, 5), 16);
+				const blue = parseInt(value.slice(5, 7), 16);
+				return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+			};
+
+			const normalisePalette = (candidate) => {
+				if (candidate === null || typeof candidate !== "object")
+				{
+					return null;
+				}
+
+				const palette = {};
+				for (const field of paletteFields)
+				{
+					const value = normaliseHex(candidate[field] ?? defaultPalette[field]);
+					if (value === null)
+					{
+						return null;
+					}
+
+					palette[field] = value;
+				}
+
+				return palette;
+			};
+
+			const buildTokens = (theme, palette) => {
+				if (theme === "dark")
+				{
+					return {
+						bg: palette.background,
+						"bg-accent": palette.muted,
+						"bg-end": palette.background,
+						panel: rgba(palette.background, 0.84),
+						"panel-strong": rgba(palette.background, 0.96),
+						"panel-glass": rgba(palette.background, 0.78),
+						"surface-raised": rgba(palette.muted, 0.18),
+						"surface-subtle": rgba(palette.muted, 0.12),
+						"surface-table": rgba(palette.muted, 0.16),
+						border: rgba(palette.surface, 0.18),
+						"border-soft": rgba(palette.surface, 0.1),
+						"field-border": rgba(palette.surface, 0.22),
+						"field-bg": rgba(palette.background, 0.94),
+						text: palette.contrast,
+						muted: palette.surface,
+						accent: palette.accent,
+						"accent-strong": palette.contrast,
+						"accent-soft": rgba(palette.accent, 0.2),
+						"accent-soft-strong": rgba(palette.accent, 0.14),
+						"accent-border": rgba(palette.accent, 0.32),
+						"accent-border-strong": rgba(palette.accent, 0.4),
+						success: palette.success,
+						"success-soft": rgba(palette.success, 0.18),
+						"success-border": rgba(palette.success, 0.3),
+						warning: palette.warning,
+						"warning-soft": rgba(palette.warning, 0.14),
+						"warning-border": rgba(palette.warning, 0.26),
+						error: palette.error,
+						"error-soft": rgba(palette.error, 0.16),
+						"error-border": rgba(palette.error, 0.28),
+						danger: palette.error,
+						"danger-soft": rgba(palette.error, 0.16),
+						"danger-border": rgba(palette.error, 0.28),
+						"disabled-bg": rgba(palette.muted, 0.12),
+						"disabled-border": rgba(palette.muted, 0.22),
+						"button-primary-text": palette.background,
+						"page-glow-accent": rgba(palette.accent, 0.18),
+						"page-glow-warning": rgba(palette.warning, 0.12),
+						"image-grid-accent": rgba(palette.accent, 0.08),
+						"image-grid-warning": rgba(palette.warning, 0.08),
+						"image-shadow": "rgba(0, 0, 0, 0.32)",
+						shadow: "0 18px 48px rgba(0, 0, 0, 0.28)",
+					};
+				}
+
+				return {
+					bg: palette.contrast,
+					"bg-accent": palette.accent,
+					"bg-end": palette.surface,
+					panel: rgba(palette.contrast, 0.84),
+					"panel-strong": palette.contrast,
+					"panel-glass": rgba(palette.contrast, 0.74),
+					"surface-raised": rgba(palette.contrast, 0.68),
+					"surface-subtle": rgba(palette.surface, 0.58),
+					"surface-table": rgba(palette.surface, 0.52),
+					border: rgba(palette.background, 0.16),
+					"border-soft": rgba(palette.background, 0.08),
+					"field-border": rgba(palette.background, 0.18),
+					"field-bg": rgba(palette.contrast, 0.9),
+					text: palette.background,
+					muted: palette.muted,
+					accent: palette.accent,
+					"accent-strong": palette.background,
+					"accent-soft": rgba(palette.accent, 0.18),
+					"accent-soft-strong": rgba(palette.accent, 0.12),
+					"accent-border": rgba(palette.accent, 0.32),
+					"accent-border-strong": rgba(palette.accent, 0.4),
+					success: palette.success,
+					"success-soft": rgba(palette.success, 0.14),
+					"success-border": rgba(palette.success, 0.24),
+					warning: palette.warning,
+					"warning-soft": rgba(palette.warning, 0.14),
+					"warning-border": rgba(palette.warning, 0.24),
+					error: palette.error,
+					"error-soft": rgba(palette.error, 0.12),
+					"error-border": rgba(palette.error, 0.24),
+					danger: palette.error,
+					"danger-soft": rgba(palette.error, 0.12),
+					"danger-border": rgba(palette.error, 0.24),
+					"disabled-bg": rgba(palette.surface, 0.42),
+					"disabled-border": rgba(palette.muted, 0.22),
+					"button-primary-text": palette.background,
+					"page-glow-accent": rgba(palette.accent, 0.24),
+					"page-glow-warning": rgba(palette.warning, 0.22),
+					"image-grid-accent": rgba(palette.accent, 0.08),
+					"image-grid-warning": rgba(palette.warning, 0.08),
+					"image-shadow": rgba(palette.background, 0.18),
+					shadow: `0 18px 48px ${rgba(palette.background, 0.14)}`,
+				};
+			};
+
+			const migrateLegacyPalette = (candidate) => {
+				if (candidate === null || typeof candidate !== "object")
+				{
+					return null;
+				}
+
+				const migratedCandidate = {
+					...candidate,
+					background: candidate.contrast,
+					contrast: candidate.background,
+				};
+
+				return normalisePalette(migratedCandidate);
+			};
+
+			const applyPalette = (element, theme, palette) => {
+				const tokens = buildTokens(theme, palette);
+				for (const [name, value] of Object.entries(tokens))
+				{
+					element.style.setProperty(`--${name}`, value);
+				}
+			};
+
+			const clearPalette = (element) => {
+				for (const name of Object.keys(buildTokens("light", defaultPalette)))
+				{
+					element.style.removeProperty(`--${name}`);
+				}
+			};
+
+			const readStorage = (key) => {
+				try
+				{
+					return window.localStorage.getItem(key);
+				}
+				catch
+				{
+					return null;
+				}
+			};
+
+			const writeStorage = (key, value) => {
+				try
+				{
+					window.localStorage.setItem(key, value);
+				}
+				catch
+				{
+				}
+			};
+
+			const removeStorage = (key) => {
+				try
+				{
+					window.localStorage.removeItem(key);
+				}
+				catch
+				{
+				}
+			};
+
+			const getStoredPalette = (key, isLegacy = false) => {
+				const rawPalette = readStorage(key);
+				if (rawPalette === null)
+				{
+					return null;
+				}
+
+				try
+				{
+					const parsedPalette = JSON.parse(rawPalette);
+					return isLegacy ? migrateLegacyPalette(parsedPalette) : normalisePalette(parsedPalette);
+				}
+				catch
+				{
+					return null;
+				}
+			};
+
+			window.objectServiceThemeTools = {
+				applyPalette,
+				buildTokens,
+				clearPalette,
+				defaultPalette,
+				getStoredPalette,
+				normaliseHex,
+				normalisePalette,
+				paletteFields,
+				readStorage,
+				removeStorage,
+				writeStorage,
+			};
+
+			const storedTheme = readStorage(storageKey);
+			if (storedTheme === "light" || storedTheme === "dark")
 			{
+				root.dataset.theme = storedTheme;
+			}
+			else
+			{
+				root.dataset.theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 			}
 
-			root.dataset.theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+			const storedPalette = getStoredPalette(paletteStorageKey) ?? getStoredPalette(legacyPaletteStorageKey, true);
+			if (storedPalette !== null)
+			{
+				writeStorage(paletteStorageKey, JSON.stringify(storedPalette));
+				removeStorage(legacyPaletteStorageKey);
+				applyPalette(root, root.dataset.theme, storedPalette);
+			}
 		})();
 	</script>
 	<link rel="stylesheet" href="~/css/object-explorer.css" asp-append-version="true" />
@@ -55,6 +308,9 @@
 					<span class="health-indicator-dot" aria-hidden="true"></span>
 					<span>Server @healthReport.Status</span>
 				</span>
+				<button type="button" class="button button-secondary theme-studio-toggle" data-theme-studio-toggle aria-controls="theme-studio-panel" aria-expanded="false" hidden>
+					Theme palette
+				</button>
 				<button type="button" class="button button-secondary theme-toggle" data-theme-toggle aria-label="Toggle between light and dark mode" aria-pressed="false">
 					Dark mode
 				</button>

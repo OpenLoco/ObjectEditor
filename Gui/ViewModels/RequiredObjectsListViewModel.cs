@@ -35,7 +35,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 		this.editorContext = editorContext;
 
 		_ = sourceCache.Connect()
-			.ObserveOn(RxApp.MainThreadScheduler)
+		   .ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Bind(out itemsCollection)
 			.Subscribe()
 			.DisposeWith(subscriptions);

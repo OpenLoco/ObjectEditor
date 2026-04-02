@@ -13,7 +13,7 @@ public class BogieSprite : ILocoStruct
 	public uint8_t HeightPositive { get; set; }
 
 	[Browsable(false)]
-	public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds { get; set; } = new();
+	public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds { get; set; } = [];
 
 	[Browsable(false)]
 	public int NumImages { get; set; }

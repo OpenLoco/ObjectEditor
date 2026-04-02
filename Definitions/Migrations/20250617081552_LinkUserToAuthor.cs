@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class LinkUserToAuthor : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class LinkUserToAuthor : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.AddColumn<ulong>(
 			name: "AssociatedAuthorId",
 			table: "Authors",
@@ -103,11 +103,11 @@ namespace Definitions.Database.Migrations;
 			principalTable: "Authors",
 			principalColumn: "Id",
 			onDelete: ReferentialAction.Cascade);
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropForeignKey(
 			name: "FK_AspNetUsers_Authors_AssociatedAuthorId",
 			table: "AspNetUsers");
@@ -189,5 +189,5 @@ namespace Definitions.Database.Migrations;
 			nullable: false,
 			oldClrType: typeof(ulong),
 			oldType: "INTEGER");
-        }
-    }
+	}
+}

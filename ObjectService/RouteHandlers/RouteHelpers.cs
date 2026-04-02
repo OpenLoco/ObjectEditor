@@ -2,10 +2,11 @@ namespace ObjectService.RouteHandlers;
 
 public static class RouteHelpers
 {
-	static readonly char[] PathSeparators = ['/', '\\'];
 	static readonly StringComparison PathComparison = OperatingSystem.IsWindows()
 		? StringComparison.OrdinalIgnoreCase
 		: StringComparison.Ordinal;
+	static readonly char[] PathSeparators = ['/', '\\'];
+	static readonly char[] HttpUnsafeFilenameChars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\0'];
 
 	public static string MakeNicePlural(string name)
 		=> $"{name.Replace("RouteHandler", string.Empty)}s";
@@ -50,7 +51,7 @@ public static class RouteHelpers
 			? string.Empty
 			: extension.StartsWith('.') ? extension : $".{extension}";
 
-		var sanitizedBaseName = new string((baseName ?? string.Empty)
+		var sanitizedBaseName = new string([.. (baseName ?? string.Empty)
 			.Select(c =>
 			{
 				if (char.IsControl(c) || HttpUnsafeFilenameChars.Contains(c))
@@ -64,8 +65,7 @@ public static class RouteHelpers
 				}
 
 				return c is >= ' ' and <= '~' ? c : '_';
-			})
-			.ToArray());
+			})]);
 
 		var collapsedWhitespace = string.Join(' ', sanitizedBaseName.Split(' ', StringSplitOptions.RemoveEmptyEntries));
 		sanitizedBaseName = collapsedWhitespace.Trim(' ', '.');

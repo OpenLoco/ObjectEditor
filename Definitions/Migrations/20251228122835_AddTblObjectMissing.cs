@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations
 {
-    /// <inheritdoc />
-    public partial class AddTblObjectMissing : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	public partial class AddTblObjectMissing : Migration
+	{
+		/// <inheritdoc />
+		protected override void Up(MigrationBuilder migrationBuilder)
+		{
 			_ = migrationBuilder.RenameColumn(
 				name: "ShipWakeOffset",
 				table: "ObjVehicle",
@@ -91,11 +91,11 @@ namespace Definitions.Database.Migrations
 				table: "ObjectsMissing",
 				columns: ["DatName", "DatChecksum"],
 				unique: true);
-        }
+		}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+		/// <inheritdoc />
+		protected override void Down(MigrationBuilder migrationBuilder)
+		{
 			_ = migrationBuilder.DropTable(
 				name: "ObjectsMissing");
 
@@ -150,6 +150,6 @@ namespace Definitions.Database.Migrations
 				name: "Flags",
 				table: "ObjAirport",
 				newName: "AllowedPlaneTypes");
-        }
-    }
+		}
+	}
 }

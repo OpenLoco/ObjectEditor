@@ -83,7 +83,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	public int AnimationSpeed { get; set; } = 40;
 	readonly DispatcherTimer animationTimer;
 	int currentFrameIndex;
-	readonly CompositeDisposable subscriptions = new();
+	readonly CompositeDisposable subscriptions = [];
 	bool disposed;
 
 	public readonly ILogger Logger;

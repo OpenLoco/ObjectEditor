@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class SubObjectFKIndex : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class SubObjectFKIndex : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_ObjWater_Id",
 			table: "ObjWater",
@@ -213,11 +213,11 @@ namespace Definitions.Database.Migrations;
 			table: "ObjAirport",
 			column: "Id",
 			unique: true);
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropIndex(
 			name: "IX_ObjWater_Id",
 			table: "ObjWater");
@@ -353,5 +353,5 @@ namespace Definitions.Database.Migrations;
 		_ = migrationBuilder.DropIndex(
 			name: "IX_ObjAirport_Id",
 			table: "ObjAirport");
-        }
-    }
+	}
+}

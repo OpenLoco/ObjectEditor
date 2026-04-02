@@ -70,7 +70,8 @@
 							  ToolTip.Tip="Select the type of online content to browse"
 							  Margin="2"
 							  MinWidth="160"
-							  DockPanel.Dock="Left"/>
+							  DockPanel.Dock="Left"
+							  VerticalAlignment="Center"/>
 					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
 			</Border>
@@ -155,7 +156,7 @@
 							<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
 							<DataTemplate x:Key="Object" DataType="mo:FileSystemItem">
 								<StackPanel Orientation="Horizontal" ToolTip.Tip="{Binding FileName}">
-									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
+									<materialIcons:MaterialIcon Kind="{Binding DisplayIcon, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>
 									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 									<StackPanel.ContextMenu>
 										<ContextMenu IsVisible="{Binding HasContextActions}" IsEnabled="{Binding HasContextActions}">
@@ -168,7 +169,7 @@
 							<!-- Edit template for Name column cells -->
 							<DataTemplate x:Key="Edit" DataType="mo:FileSystemItem">
 								<StackPanel Orientation="Horizontal" >
-									<materialIcons:MaterialIcon Kind="{Binding DisplayName, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
+									<materialIcons:MaterialIcon Kind="{Binding DisplayIcon, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2" />
 									<TextBlock VerticalAlignment="Center" Text="{Binding NameComputed}"/>
 									<StackPanel.ContextMenu>
 										<ContextMenu IsVisible="{Binding HasContextActions}" IsEnabled="{Binding HasContextActions}">

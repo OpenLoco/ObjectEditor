@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class ReaddAvailability : Migration
-    {
+/// <inheritdoc />
+public partial class ReaddAvailability : Migration
+{
 	/// <inheritdoc />
 	protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.AddColumn<int>(
 			name: "Availability",

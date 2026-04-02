@@ -20,6 +20,10 @@ public record FileSystemItem(
 	VehicleType? VehicleType = null,
 	ObservableCollection<FileSystemItem>? SubNodes = null)
 {
+	public uint? DatChecksum { get; init; }
+
+	public ulong? xxHash3 { get; init; }
+
 	[JsonIgnore]
 	public bool CanOpen
 		=> FileLocation == FileLocationKind.Local
@@ -42,10 +46,7 @@ public record FileSystemItem(
 	public bool HasContextActions
 		=> CanOpenFolder || CanDownload;
 
-	public uint? DatChecksum { get; init; }
-
-	public ulong? xxHash3 { get; init; }
-
+	[JsonIgnore]
 	public OnlineApiEndpointGroup? OnlineApiEndpointGroup { get; init; }
 
 	[JsonIgnore]
@@ -55,6 +56,10 @@ public record FileSystemItem(
 	[JsonIgnore]
 	public bool IsLeafNode
 		=> !HasChildren;
+
+	[JsonIgnore]
+	public string? DisplayIcon
+		=> HasChildren ? DisplayName : ObjectSource.ToString();
 
 	[JsonIgnore]
 	public string NameComputed

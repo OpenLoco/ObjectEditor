@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class RenameStringTable : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class RenameStringTable : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropForeignKey(
 			name: "FK_TblStringTable_Objects_ObjectId",
 			table: "TblStringTable");
@@ -44,11 +44,11 @@ namespace Definitions.Database.Migrations;
 			principalTable: "Objects",
 			principalColumn: "Id",
 			onDelete: ReferentialAction.Cascade);
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropForeignKey(
 			name: "FK_StringTable_Objects_ObjectId",
 			table: "StringTable");
@@ -83,5 +83,5 @@ namespace Definitions.Database.Migrations;
 			principalTable: "Objects",
 			principalColumn: "Id",
 			onDelete: ReferentialAction.Cascade);
-        }
-    }
+	}
+}

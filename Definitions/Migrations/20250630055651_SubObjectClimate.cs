@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class SubObjectClimate : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class SubObjectClimate : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.AddColumn<byte>(
 			name: "FirstSeason",
 			table: "ObjClimate",
@@ -58,11 +58,11 @@ namespace Definitions.Database.Migrations;
 			type: "INTEGER",
 			nullable: false,
 			defaultValue: (byte)0);
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropColumn(
 			name: "FirstSeason",
 			table: "ObjClimate");
@@ -90,5 +90,5 @@ namespace Definitions.Database.Migrations;
 		_ = migrationBuilder.DropColumn(
 			name: "WinterSnowLine",
 			table: "ObjClimate");
-        }
-    }
+	}
+}

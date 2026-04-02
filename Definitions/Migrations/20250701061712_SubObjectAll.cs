@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class SubObjectAll : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class SubObjectAll : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.AddColumn<short>(
 			name: "CostFactor",
 			table: "ObjWater",
@@ -1661,11 +1661,11 @@ namespace Definitions.Database.Migrations;
 			type: "INTEGER",
 			nullable: false,
 			defaultValue: (short)0);
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropColumn(
 			name: "CostFactor",
 			table: "ObjWater");
@@ -2609,5 +2609,5 @@ namespace Definitions.Database.Migrations;
 		_ = migrationBuilder.DropColumn(
 			name: "SellCostFactor",
 			table: "ObjAirport");
-        }
-    }
+	}
+}

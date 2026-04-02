@@ -38,17 +38,86 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 	{
 		IsLocal = true;
 		CurrentLocalDirectory = "test/directory";
-		CurrentDirectoryItems.Add(new(
-			"local-displayname1",
-			"local-filename1",
-			null,
-			null,
-			null,
-			FileLocation.Local,
-			ObjectSource.Custom,
-			ObjectType.Airport,
-			null,
-			null));
+		CurrentDirectoryItems.AddRange(
+		  [
+			  new(
+				"Andromeda International",
+				"test/directory/airports/andromeda_international.dat",
+				null,
+				new DateOnly(2025, 1, 8),
+				new DateOnly(2025, 3, 14),
+				FileLocation.Local,
+				ObjectSource.LocomotionSteam,
+				ObjectType.Airport),
+			new(
+				"Crescent Central",
+				"test/directory/buildings/crescent_central.dat",
+				null,
+				new DateOnly(2024, 11, 20),
+				new DateOnly(2025, 2, 2),
+				FileLocation.Local,
+				ObjectSource.LocomotionGoG,
+				ObjectType.Building),
+			new(
+				"Westhaven Steelworks",
+				"test/directory/industries/westhaven_steelworks.dat",
+				null,
+				new DateOnly(2024, 10, 4),
+				new DateOnly(2025, 1, 17),
+				FileLocation.Local,
+				ObjectSource.OpenLoco,
+				ObjectType.Industry),
+			new(
+			 "Maple Street Road Stop",
+				"test/directory/stations/maple_street_road_stop.dat",
+				null,
+				new DateOnly(2025, 2, 10),
+				new DateOnly(2025, 2, 28),
+				FileLocation.Local,
+				ObjectSource.Custom,
+				ObjectType.RoadStation),
+			new(
+				"Atlas Express",
+				"test/directory/vehicles/atlas_express.dat",
+				null,
+				new DateOnly(2024, 9, 12),
+				new DateOnly(2025, 1, 9),
+				FileLocation.Local,
+				ObjectSource.Custom,
+				ObjectType.Vehicle,
+				VehicleType.Train),
+			new(
+				"Harbor Queen",
+				"test/directory/vehicles/harbor_queen.dat",
+				null,
+				new DateOnly(2024, 12, 1),
+				new DateOnly(2025, 2, 6),
+				FileLocation.Local,
+				ObjectSource.Custom,
+				ObjectType.Vehicle,
+				VehicleType.Ship),
+			new(
+				"CityLink Tram",
+				"test/directory/vehicles/citylink_tram.dat",
+				null,
+				new DateOnly(2025, 1, 30),
+				new DateOnly(2025, 3, 5),
+				FileLocation.Local,
+				ObjectSource.Custom,
+				ObjectType.Vehicle,
+				VehicleType.Tram),
+			new(
+				"Oak Valley Trees",
+				"test/directory/walls/oak_valley_trees.dat",
+				null,
+				new DateOnly(2024, 8, 19),
+				new DateOnly(2024, 12, 22),
+				FileLocation.Local,
+				ObjectSource.Custom,
+				ObjectType.Tree),
+		]);
+
+		UpdateDirectoryItemsView();
 
 		var availableFilterCategories = new List<FilterTypeViewModel>
 		{
@@ -297,10 +366,10 @@ public class FolderTreeViewModel : ReactiveObject
 			.AutoRefresh(f => f.EnumValue)
 			.AutoRefresh(f => f.TextValue)
 			.ToCollection()
-			.Throttle(TimeSpan.FromMilliseconds(500), RxApp.MainThreadScheduler)
-			.Select(_ => Observable.Start(CreateFilterPredicate, RxApp.TaskpoolScheduler))
+			.Throttle(TimeSpan.FromMilliseconds(500), RxSchedulers.MainThreadScheduler)
+			.Select(_ => Observable.Start(CreateFilterPredicate, RxSchedulers.TaskpoolScheduler))
 			.Switch()
-			.ObserveOn(RxApp.MainThreadScheduler)
+		   .ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Subscribe(_filterSubject);
 
 		_ = CurrentDirectoryItems.Connect()
@@ -487,7 +556,9 @@ public class FolderTreeViewModel : ReactiveObject
 
 	protected void UpdateDirectoryItemsView()
 	{
-		IEnumerable<FileSystemItem> treeItems = treeDataGridSource is null ? Array.Empty<FileSystemItem>() : treeDataGridSource;
+		IEnumerable<FileSystemItem> treeItems = treeDataGridSource is null
+			? CurrentDirectoryItems.Items
+			: treeDataGridSource;
 		var _treeGridDataSource = ConstructTreeView(treeItems);
 
 		TreeDataGridSource = new HierarchicalTreeDataGridSource<FileSystemItem>(_treeGridDataSource)

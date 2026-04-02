@@ -181,7 +181,7 @@ public class IdentityRoutesTest : BaseRouteHandlerTestFixture
 		Assert.That(accessToken, Is.Not.Null.And.Not.Empty);
 
 		// Add token to Authorization header
-		HttpClient!.DefaultRequestHeaders.Authorization = 
+		HttpClient!.DefaultRequestHeaders.Authorization =
 			new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
 		// act - Call protected endpoint with valid bearer token

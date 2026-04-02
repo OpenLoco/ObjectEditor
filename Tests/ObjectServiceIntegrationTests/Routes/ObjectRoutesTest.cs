@@ -284,7 +284,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	{
 		// arrange
 		const int objectId = 2;
-		
+
 		// Create a test licence
 		var licence = new TblLicence { Id = 1, Name = "Test Licence", Text = "Test licence text" };
 		using (var db = GetDbContext())
@@ -333,7 +333,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	{
 		// arrange
 		const int objectId = 2;
-		
+
 		// Create test authors
 		var author1 = new TblAuthor { Id = 1, Name = "Test Author 1" };
 		var author2 = new TblAuthor { Id = 2, Name = "Test Author 2" };
@@ -388,7 +388,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	{
 		// arrange
 		const int objectId = 2;
-		
+
 		// Create test tags
 		var tag1 = new TblTag { Id = 1, Name = "Test Tag 1" };
 		var tag2 = new TblTag { Id = 2, Name = "Test Tag 2" };
@@ -443,7 +443,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	{
 		// arrange
 		const int objectId = 2;
-		
+
 		// Create test object packs
 		var pack1 = new TblObjectPack { Id = 1, Name = "Test Pack 1", Description = "Test pack 1 description" };
 		var pack2 = new TblObjectPack { Id = 2, Name = "Test Pack 2", Description = "Test pack 2 description" };

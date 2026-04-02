@@ -27,13 +27,13 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 		Model = model;
 
 		_ = _allViewModels.Connect()
-			.ObserveOn(RxApp.MainThreadScheduler)
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Bind(out _allViewModelsCollection)
 			.Subscribe()
 			.DisposeWith(subscriptions);
 
 		_ = _viewModelGroups.Connect()
-			.ObserveOn(RxApp.MainThreadScheduler)
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Bind(out _viewModelGroupsCollection)
 			.Subscribe()
 			.DisposeWith(subscriptions);

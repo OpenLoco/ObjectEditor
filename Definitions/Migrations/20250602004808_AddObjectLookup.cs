@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class AddObjectLookup : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class AddObjectLookup : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropColumn(
 			name: "Availability",
 			table: "Objects");
@@ -53,11 +53,11 @@ namespace Definitions.Database.Migrations;
 			table: "ObjectDatLookups",
 			column: "xxHash3",
 			unique: true);
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropTable(
 			name: "ObjectDatLookups");
 
@@ -67,5 +67,5 @@ namespace Definitions.Database.Migrations;
 			type: "INTEGER",
 			nullable: false,
 			defaultValue: 0);
-        }
-    }
+	}
+}

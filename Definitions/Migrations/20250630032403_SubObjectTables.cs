@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class SubObjectTables : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class SubObjectTables : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropForeignKey(
 			name: "FK_DatObjects_Objects_ObjectId",
 			table: "DatObjects");
@@ -915,11 +915,11 @@ namespace Definitions.Database.Migrations;
 			principalTable: "ObjHeader",
 			principalColumn: "Id",
 			onDelete: ReferentialAction.Cascade);
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropForeignKey(
 			name: "FK_DatObjects_ObjHeader_ObjectId",
 			table: "DatObjects");
@@ -1132,5 +1132,5 @@ namespace Definitions.Database.Migrations;
 			principalTable: "Objects",
 			principalColumn: "Id",
 			onDelete: ReferentialAction.Cascade);
-        }
-    }
+	}
+}

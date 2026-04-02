@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class DefaultDateTime : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class DefaultDateTime : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.AlterColumn<DateOnly>(
 			name: "UploadedDate",
 			table: "SC5Files",
@@ -49,11 +49,11 @@ namespace Definitions.Database.Migrations;
 			oldClrType: typeof(DateOnly),
 			oldType: "TEXT",
 			oldDefaultValueSql: "datetime(datetime('now', 'localtime'), 'utc')");
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropForeignKey(
 			name: "FK_ObjWater_Objects_ParentId",
 			table: "ObjWater");
@@ -1619,5 +1619,5 @@ namespace Definitions.Database.Migrations;
 			principalTable: "DbSubObject",
 			principalColumn: "Id",
 			onDelete: ReferentialAction.Cascade);
-        }
-    }
+	}
+}

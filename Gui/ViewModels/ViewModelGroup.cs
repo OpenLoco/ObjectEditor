@@ -15,7 +15,7 @@ namespace Gui.ViewModels;
 public sealed class ViewModelGroup : ReactiveObject, IViewModel, IDisposable
 {
 	readonly IViewModelGroupHost _host;
-	readonly CompositeDisposable subscriptions = new();
+	readonly CompositeDisposable subscriptions = [];
 	bool disposed;
 
 	public ViewModelGroup(string displayName, IViewModelGroupHost host)
@@ -24,7 +24,7 @@ public sealed class ViewModelGroup : ReactiveObject, IViewModel, IDisposable
 		DisplayName = displayName;
 
 		_ = _viewModels.Connect()
-			.ObserveOn(RxApp.MainThreadScheduler)
+		   .ObserveOn(RxSchedulers.MainThreadScheduler)
 			.Bind(out _viewModelsCollection)
 			.Subscribe()
 			.DisposeWith(subscriptions);

@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class AddIdentity : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class AddIdentity : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.CreateTable(
 			name: "AspNetRoles",
 			columns: table => new
@@ -191,11 +191,11 @@ namespace Definitions.Database.Migrations;
 			table: "AspNetUsers",
 			column: "NormalizedUserName",
 			unique: true);
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropTable(
 			name: "AspNetRoleClaims");
 
@@ -216,5 +216,5 @@ namespace Definitions.Database.Migrations;
 
 		_ = migrationBuilder.DropTable(
 			name: "AspNetUsers");
-        }
-    }
+	}
+}

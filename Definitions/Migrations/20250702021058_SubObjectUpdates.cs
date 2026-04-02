@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Definitions.Database.Migrations;
 
-    /// <inheritdoc />
-    public partial class SubObjectUpdates : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+/// <inheritdoc />
+public partial class SubObjectUpdates : Migration
+{
+	/// <inheritdoc />
+	protected override void Up(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.DropColumn(
 			name: "Flags2",
 			table: "ObjWall");
@@ -71,11 +71,11 @@ namespace Definitions.Database.Migrations;
 			name: "Length",
 			table: "ObjSound",
 			newName: "ShouldLoop");
-        }
+	}
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+	/// <inheritdoc />
+	protected override void Down(MigrationBuilder migrationBuilder)
+	{
 		_ = migrationBuilder.RenameColumn(
 			name: "Volume",
 			table: "ObjSound",
@@ -176,5 +176,5 @@ namespace Definitions.Database.Migrations;
 			type: "INTEGER",
 			nullable: false,
 			defaultValue: 0ul);
-        }
-    }
+	}
+}

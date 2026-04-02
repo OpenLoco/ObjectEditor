@@ -129,7 +129,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 	public ImageViewModel()
 	{ }
 
-	readonly CompositeDisposable subscriptions = new();
+	readonly CompositeDisposable subscriptions = [];
 	bool disposed;
 
 	public ImageViewModel(GraphicsElement graphicsElement, PaletteMap paletteMap)

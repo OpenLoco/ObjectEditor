@@ -4,27 +4,12 @@
 	ViewData["Title"] = "Object Explorer";
 }
 
-<section class="hero-panel">
-	<div>
-		<p class="eyebrow">Server Explorer</p>
-		<h1>Object Explorer</h1>
-		<p class="lede">Search internal names, DAT names, or string-table text, then Inspect or Download the object.</p>
+@section HeaderContent {
+	<div class="site-header-stat">
+		<span>Total objects</span>
+		<strong>@Model.Results.TotalCount</strong>
 	</div>
-	<div class="stat-grid">
-		<div class="stat-card">
-			<span>Total objects</span>
-			<strong>@Model.Results.TotalCount</strong>
-		</div>
-		<div class="stat-card">
-			<span>Matching filters</span>
-			<strong>@Model.Results.FilteredCount</strong>
-		</div>
-		<div class="stat-card">
-			<span>Current page</span>
-			<strong>@Model.Results.Page / @Model.Results.TotalPages</strong>
-		</div>
-	</div>
-</section>
+}
 
 <section id="theme-studio-panel" class="panel theme-studio" data-theme-studio hidden>
 	<div class="theme-studio-header">
@@ -148,6 +133,17 @@
 			<a class="button button-secondary" asp-page="/Index">Reset</a>
 		</div>
 	</form>
+
+	<div class="filter-summary stat-grid">
+		<div class="stat-card">
+			<span>Matching filters</span>
+			<strong>@Model.Results.FilteredCount</strong>
+		</div>
+		<div class="stat-card">
+			<span>Current page</span>
+			<strong>@Model.Results.Page / @Model.Results.TotalPages</strong>
+		</div>
+	</div>
 </section>
 
 @if (Model.Results.Items.Count == 0)

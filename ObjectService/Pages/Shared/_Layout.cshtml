@@ -300,8 +300,8 @@
 		<header class="site-header">
 			<a class="brand" asp-page="/Index">OpenLoco Object Service</a>
 			<div class="site-header-actions">
+				@await RenderSectionAsync("HeaderContent", required: false)
 				<nav class="site-nav">
-					<a asp-page="/Index">Explorer</a>
 					<a href="/api">API</a>
 				</nav>
 				<span class="health-indicator @healthClass" title="@healthDescription">

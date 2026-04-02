@@ -5,8 +5,9 @@ using Definitions.ObjectModels.Types;
 using Definitions.Web;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using ObjectService.Tests.Integration;
 
-namespace ObjectService.Tests.Integration;
+namespace Tests.ObjectServiceIntegrationTests.Routes;
 
 [TestFixture]
 public class ObjectMissingRoutesTest

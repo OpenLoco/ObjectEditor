@@ -70,7 +70,7 @@ public class G1Tests
 		Assert.That(d2, Is.EqualTo(d1.ImageData).AsCollection);
 	}
 
-	public void AssertG1ElementsEqual(GraphicsElement expected, GraphicsElement actual, int i)
+	public static void AssertG1ElementsEqual(GraphicsElement expected, GraphicsElement actual, int i)
 	{
 		//Assert.That(actual.Offset, Is.EqualTo(expected.Offset), $"[{i}]");
 		Assert.That(actual.Width, Is.EqualTo(expected.Width), $"[{i}]");

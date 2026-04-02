@@ -73,6 +73,15 @@ public class ObjectServiceClient
 	public async Task<byte[]?> GetObjectFileAsync(UniqueObjectId id)
 		=> await Client.GetObjectFileAsync(WebClient, id, Logger);
 
+	public async Task<byte[]?> GetScenarioFileAsync(UniqueObjectId id)
+		=> await Client.GetScenarioFileAsync(WebClient, id, Logger);
+
+	public async Task<byte[]?> GetSC5FilePackFileAsync(UniqueObjectId id)
+		=> await Client.GetSC5FilePackFileAsync(WebClient, id, Logger);
+
+	public async Task<byte[]?> GetObjectPackFileAsync(UniqueObjectId id)
+		=> await Client.GetObjectPackFileAsync(WebClient, id, Logger);
+
 	public async Task<DtoObjectPostResponse?> UploadDatFileAsync(string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate)
 		=> await Client.UploadDatFileAsync(WebClient, filename, datFileBytes, creationDate, modifiedDate, Logger);
 

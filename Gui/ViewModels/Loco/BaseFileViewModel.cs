@@ -106,7 +106,7 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 		// note - this is the DAT file source, not the true source...
 		if (CurrentFile.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 		{
-			var msbParams = GetDefaultParams();
+			var msbParams = BaseFileViewModel<T>.GetDefaultParams();
 			msbParams.ContentTitle = "Confirm Save";
 			msbParams.ContentMessage = $"{CurrentFile.FileName} is a vanilla Locomotion file - are you sure you want to overwrite it?";
 			msbParams.ButtonDefinitions = ButtonEnum.YesNo;
@@ -127,7 +127,7 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 
 	async Task DeleteWrapper()
 	{
-		var msbParams = GetDefaultParams();
+		var msbParams = BaseFileViewModel<T>.GetDefaultParams();
 		msbParams.ContentTitle = "Confirm Delete";
 		msbParams.ContentMessage = $"Are you sure you would like to delete {CurrentFile.FileName}?";
 		msbParams.ButtonDefinitions = ButtonEnum.YesNo;
@@ -143,7 +143,7 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 		}
 	}
 
-	MessageBoxStandardParams GetDefaultParams()
+	static MessageBoxStandardParams GetDefaultParams()
 		=> new()
 		{
 			WindowStartupLocation = WindowStartupLocation.CenterOwner,

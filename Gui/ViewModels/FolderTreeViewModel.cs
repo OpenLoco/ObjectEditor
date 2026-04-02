@@ -15,6 +15,9 @@ using DynamicData.Binding;
 using Gui.Models;
 using Gui.ViewModels.Filters;
 using Index;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -148,6 +151,8 @@ public class FolderTreeViewModel : ReactiveObject
 	public ReactiveCommand<Unit, Unit>? OpenCurrentFolder { get; }
 	public ReactiveCommand<FileSystemItem, Unit>? OpenFolderFor { get; }
 	public ReactiveCommand<FileSystemItem, Unit>? SelectOnlineBrowseFileSystemItem { get; }
+	public ReactiveCommand<FileSystemItem, Unit>? DownloadOnlineItemCommand { get; private set; }
+	public ReactiveCommand<OnlineItemPackBrowseResult, Unit>? DownloadOnlinePackCommand { get; private set; }
 
 	public ObservableCollection<ObjectDisplayMode> DisplayModeItems { get; } = [.. Enum.GetValues<ObjectDisplayMode>()];
 	static OnlineBrowseTargetOption ObjectOnlineBrowseTarget { get; } = new(OnlineApiEndpointGroup.Objects, "Objects", "Objects", Client.ObjectsEndpointGroup);
@@ -242,6 +247,8 @@ public class FolderTreeViewModel : ReactiveObject
 		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : this.EditorContext.Settings.DownloadFolder, this.EditorContext.Logger));
 		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(this.EditorContext, availableFilterCategories, RemoveFilter)));
 		SelectOnlineBrowseFileSystemItem = ReactiveCommand.Create<FileSystemItem>(item => CurrentlySelectedObject = item);
+		DownloadOnlineItemCommand = ReactiveCommand.CreateFromTask<FileSystemItem>(DownloadOnlineItemAsync);
+		DownloadOnlinePackCommand = ReactiveCommand.CreateFromTask<OnlineItemPackBrowseResult>(DownloadOnlinePackAsync);
 		OpenFolderFor = ReactiveCommand.Create((FileSystemItem clickedOn) =>
 		{
 			if (IsLocal
@@ -729,7 +736,7 @@ public class FolderTreeViewModel : ReactiveObject
 				descriptor => descriptor.Items.OrderBy(x => x.Name).Select(CreateOnlineScenarioFileSystemItem))))];
 	}
 
-	OnlineItemPackBrowseResult CreateOnlineItemPackBrowseResult<T>(
+	static OnlineItemPackBrowseResult CreateOnlineItemPackBrowseResult<T>(
 		DtoItemPackEntry item,
 		DtoItemPackDescriptor<T>? descriptor,
 		OnlineApiEndpointGroup group,
@@ -771,4 +778,102 @@ public class FolderTreeViewModel : ReactiveObject
 		{
 			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
 		};
+
+	static async Task ShowDownloadFailureDialogAsync(string contentMessage)
+	{
+		var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
+		{
+			ContentTitle = "Download failed",
+			ContentMessage = contentMessage,
+			ButtonDefinitions = ButtonEnum.Ok,
+			Icon = Icon.Warning,
+			WindowStartupLocation = WindowStartupLocation.CenterOwner,
+			Topmost = true,
+			ShowInCenter = true,
+			SizeToContent = SizeToContent.WidthAndHeight,
+			MinHeight = 170,
+		});
+		_ = await box.ShowAsync();
+	}
+
+	async Task DownloadOnlineItemAsync(FileSystemItem item)
+	{
+		if (EditorContext.ObjectServiceClient == null || item.Id == null)
+		{
+			return;
+		}
+
+		var fileBytes = item.OnlineApiEndpointGroup switch
+		{
+			OnlineApiEndpointGroup.Objects => await EditorContext.ObjectServiceClient.GetObjectFileAsync(item.Id.Value),
+			OnlineApiEndpointGroup.Scenarios => await EditorContext.ObjectServiceClient.GetScenarioFileAsync(item.Id.Value),
+			_ => null,
+		};
+
+		if (fileBytes == null || fileBytes.Length == 0)
+		{
+			EditorContext.Logger.Error($"Failed to download \"{item.DisplayName}\" (Id={item.Id})");
+			return;
+		}
+
+		var extension = item.OnlineApiEndpointGroup == OnlineApiEndpointGroup.Scenarios ? ".SC5" : ".dat";
+		var safeName = DownloadNameHelper.SanitizeBaseName(item.DisplayName, stripDirectoryComponents: true, stripExtension: true, fallbackName: "download");
+		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safeName}-{item.Id}{extension}");
+		try
+		{
+			await using var outputStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, useAsync: true);
+			await outputStream.WriteAsync(fileBytes);
+			EditorContext.Logger.Info($"Downloaded \"{item.DisplayName}\" to \"{filename}\"");
+		}
+		catch (IOException ex)
+		{
+			EditorContext.Logger.Error($"Failed to download \"{item.DisplayName}\" to \"{filename}\"", ex);
+			await ShowDownloadFailureDialogAsync($"Could not create:\n{filename}\n\nThe destination file may already exist, be locked by another process, or the download folder may be unavailable.");
+		}
+		catch (UnauthorizedAccessException ex)
+		{
+			EditorContext.Logger.Error($"Failed to download \"{item.DisplayName}\" to \"{filename}\" due to insufficient permissions", ex);
+			await ShowDownloadFailureDialogAsync($"You do not have permission to write to:\n{filename}\n\nPlease check folder permissions or choose a different download folder.");
+		}
+	}
+
+	async Task DownloadOnlinePackAsync(OnlineItemPackBrowseResult pack)
+	{
+		if (EditorContext.ObjectServiceClient == null)
+		{
+			return;
+		}
+
+		var fileBytes = pack.Group switch
+		{
+			OnlineApiEndpointGroup.ObjectPacks => await EditorContext.ObjectServiceClient.GetObjectPackFileAsync(pack.Id),
+			OnlineApiEndpointGroup.SC5FilePacks => await EditorContext.ObjectServiceClient.GetSC5FilePackFileAsync(pack.Id),
+			_ => null,
+		};
+
+		if (fileBytes == null || fileBytes.Length == 0)
+		{
+			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" (Id={pack.Id})");
+			return;
+		}
+
+		var safePackName = DownloadNameHelper.SanitizeBaseName(pack.Name, stripDirectoryComponents: false, stripExtension: false, fallbackName: "pack");
+		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safePackName}-{pack.Id}.zip");
+		try
+		{
+			await using var outputStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, useAsync: true);
+			await outputStream.WriteAsync(fileBytes);
+			EditorContext.Logger.Info($"Downloaded pack \"{pack.Name}\" to \"{filename}\"");
+		}
+		catch (IOException ex)
+		{
+			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" to \"{filename}\"", ex);
+			await ShowDownloadFailureDialogAsync($"Could not create:\n{filename}\n\nThe destination file may already exist, be locked by another process, or the download folder may be unavailable.");
+		}
+		catch (UnauthorizedAccessException ex)
+		{
+			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" to \"{filename}\" due to insufficient permissions", ex);
+			await ShowDownloadFailureDialogAsync($"You do not have permission to write to:\n{filename}\n\nPlease check folder permissions or choose a different download folder.");
+		}
+	}
 }

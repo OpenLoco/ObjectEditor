@@ -83,14 +83,13 @@
 			<Border Background="{DynamicResource ExpanderContentBackground}" Padding="4">
 				<Expander IsExpanded="True">
 					<Expander.Header>
-						<Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+						<Grid ColumnDefinitions="Auto,*,Auto, Auto" ColumnSpacing="8">
 							<materialIcons:MaterialIcon Grid.Column="0" Kind="PackageVariantClosed" Width="24" Height="24" />
-							<StackPanel Grid.Column="1" VerticalAlignment="Center">
-								<TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Name}" />
-							</StackPanel>
-							<StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-								<TextBlock HorizontalAlignment="Right" Text="{Binding ItemCountText}" />
-							</StackPanel>
+							<TextBlock Grid.Column="1" FontSize="14" VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding Name}" />
+							<TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{Binding ItemCountText}" />
+							<Button Grid.Column="3" ToolTip.Tip="Download pack" Command="{Binding $parent[UserControl].((vm:FolderTreeViewModel)DataContext).DownloadOnlinePackCommand}" CommandParameter="{Binding}">
+								<materialIcons:MaterialIcon Kind="Download" Width="16" Height="24" />
+							</Button>
 						</Grid>
 					</Expander.Header>
 
@@ -108,8 +107,8 @@
 							<ItemsControl ItemsSource="{Binding Items}">
 								<ItemsControl.ItemTemplate>
 									<DataTemplate DataType="mo:FileSystemItem">
-										<Button Background="Transparent" BorderThickness="1" Padding="4" HorizontalContentAlignment="Stretch" Command="{Binding $parent[UserControl].((vm:FolderTreeViewModel)DataContext).SelectOnlineBrowseFileSystemItem}" CommandParameter="{Binding}">
-											<Grid ColumnDefinitions="Auto, Auto,Auto, Auto" ColumnSpacing="8">
+										<Button Background="Transparent" BorderThickness="1" Padding="4" Command="{Binding $parent[UserControl].((vm:FolderTreeViewModel)DataContext).SelectOnlineBrowseFileSystemItem}" CommandParameter="{Binding}">
+											<Grid ColumnDefinitions="Auto, Auto, Auto, Auto" ColumnSpacing="8">
 												<materialIcons:MaterialIcon Grid.Column="0" VerticalAlignment="Center" Kind="{Binding ObjectType, Converter={StaticResource EnumToMaterialIconConverter}}" Width="20" Height="20" Margin="2" />
 												<TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding DisplayName}" />
 												<TextBlock Grid.Column="2" VerticalAlignment="Center" Opacity="0.7" Text="{Binding ObjectSource}" />

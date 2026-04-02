@@ -29,8 +29,18 @@ public record FileSystemItem(
 				&& ObjectType != null);
 
 	[JsonIgnore]
+	public bool CanDownload
+		=> FileLocation == FileLocationKind.Online
+			&& Id != null
+			&& OnlineApiEndpointGroup is OnlineApiEndpointGroupKind.Objects or OnlineApiEndpointGroupKind.Scenarios;
+
+	[JsonIgnore]
 	public bool CanOpenFolder
 		=> FileLocation == FileLocationKind.Local && IsLeafNode && !string.IsNullOrEmpty(FileName);
+
+	[JsonIgnore]
+	public bool HasContextActions
+		=> CanOpenFolder || CanDownload;
 
 	public uint? DatChecksum { get; init; }
 

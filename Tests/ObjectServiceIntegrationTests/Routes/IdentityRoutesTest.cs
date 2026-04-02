@@ -2,10 +2,11 @@ using Definitions.Database;
 using Definitions.DTO.Identity;
 using Definitions.Web;
 using NUnit.Framework;
+using ObjectService.Tests.Integration;
 using System.Net;
 using System.Net.Http.Json;
 
-namespace ObjectService.Tests.Integration;
+namespace Tests.ObjectServiceIntegrationTests.Routes;
 
 [TestFixture]
 public class IdentityRoutesTest : BaseRouteHandlerTestFixture

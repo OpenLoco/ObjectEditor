@@ -39,9 +39,9 @@ namespace Definitions.Database.Migrations;
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_ObjectDatLookups_DatName_DatChecksum",
 			table: "ObjectDatLookups",
-			columns: new[] { "DatName", "DatChecksum" },
+			columns: ["DatName", "DatChecksum"],
 			unique: true,
-			descending: new[] { true, false });
+			descending: [true, false]);
 
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_ObjectDatLookups_ObjectId",

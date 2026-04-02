@@ -22,7 +22,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 	readonly CompositeDisposable subscriptions = new();
 	bool disposed;
 
-	protected BaseViewModel(T? model = default)
+	protected BaseViewModel(T model)
 	{
 		Model = model;
 
@@ -43,7 +43,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 	}
 
 	[Reactive, Browsable(false)]
-	public T? Model { get; protected set; }
+	public T Model { get; protected set; }
 
 	private readonly SourceList<IViewModel> _allViewModels = new();
 	private readonly ReadOnlyObservableCollection<IViewModel> _allViewModelsCollection;
@@ -99,7 +99,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 			return false;
 		}
 
-		DisposeViewModels(group.ViewModels);
+		BaseViewModel<T>.DisposeViewModels(group.ViewModels);
 		group.ClearViewModels();
 		var removed = _viewModelGroups.Remove(group);
 		(group as IDisposable)?.Dispose();
@@ -150,7 +150,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 
 	protected void ClearViewModels()
 	{
-		DisposeViewModels(ViewModelGroups.SelectMany(group => group.ViewModels));
+		BaseViewModel<T>.DisposeViewModels(ViewModelGroups.SelectMany(group => group.ViewModels));
 
 		foreach (var group in ViewModelGroups)
 		{
@@ -160,7 +160,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 		_allViewModels.Clear();
 	}
 
-	void DisposeViewModels(IEnumerable<IViewModel> viewModels)
+	static void DisposeViewModels(IEnumerable<IViewModel> viewModels)
 	{
 		foreach (var viewModel in viewModels.ToHashSet())
 		{

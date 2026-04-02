@@ -53,6 +53,30 @@ public static class Client
 			ClientHelpers.ReadBinaryContentAsync,
 			logger) ?? default;
 
+	public static async Task<byte[]?> GetScenarioFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
+		=> await ClientHelpers.SendRequestAsync(
+			client,
+			ApiVersion + RoutesV2.Scenarios + $"/{id}/file",
+			() => client.GetAsync(ApiVersion + RoutesV2.Scenarios + $"/{id}/file"),
+			ClientHelpers.ReadBinaryContentAsync,
+			logger) ?? default;
+
+	public static async Task<byte[]?> GetSC5FilePackFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
+		=> await ClientHelpers.SendRequestAsync(
+			client,
+			ApiVersion + RoutesV2.SC5FilePacks + $"/{id}/file",
+			() => client.GetAsync(ApiVersion + RoutesV2.SC5FilePacks + $"/{id}/file"),
+			ClientHelpers.ReadBinaryContentAsync,
+			logger) ?? default;
+
+	public static async Task<byte[]?> GetObjectPackFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
+		=> await ClientHelpers.SendRequestAsync(
+			client,
+			ApiVersion + RoutesV2.ObjectPacks + $"/{id}/file",
+			() => client.GetAsync(ApiVersion + RoutesV2.ObjectPacks + $"/{id}/file"),
+			ClientHelpers.ReadBinaryContentAsync,
+			logger) ?? default;
+
 	public static async Task<DtoObjectPostResponse?> UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate, ILogger logger)
 	{
 		var xxHash3 = XxHash3.HashToUInt64(datFileBytes);

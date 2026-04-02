@@ -78,9 +78,9 @@ public partial class AddStringTable : Migration
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_DatObjects_DatName_DatChecksum",
 			table: "DatObjects",
-			columns: new[] { "DatName", "DatChecksum" },
+			columns: ["DatName", "DatChecksum"],
 			unique: true,
-			descending: new[] { true, false });
+			descending: [true, false]);
 
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_DatObjects_ObjectId",
@@ -156,16 +156,16 @@ public partial class AddStringTable : Migration
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_Objects_DatName_DatChecksum",
 			table: "Objects",
-			columns: new[] { "DatName", "DatChecksum" },
+			columns: ["DatName", "DatChecksum"],
 			unique: true,
-			descending: new[] { true, false });
+			descending: [true, false]);
 
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_ObjectDatLookups_DatName_DatChecksum",
 			table: "ObjectDatLookups",
-			columns: new[] { "DatName", "DatChecksum" },
+			columns: ["DatName", "DatChecksum"],
 			unique: true,
-			descending: new[] { true, false });
+			descending: [true, false]);
 
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_ObjectDatLookups_ObjectId",

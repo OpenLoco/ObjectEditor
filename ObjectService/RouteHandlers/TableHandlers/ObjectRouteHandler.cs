@@ -602,7 +602,12 @@ public class ObjectRouteHandler : ITableRouteHandler
 			return Results.NotFound();
 		}
 
-		var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.FileName); // handle windows paths by replacing path separator
+		if (index?.FileName == null)
+		{
+			return Results.NotFound();
+		}
+
+		var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index.FileName); // handle windows paths by replacing path separator
 		logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
 
 		var fileExists = File.Exists(pathOnDisk);
@@ -620,7 +625,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
 		{
 			var count = 0;
-			foreach (var g1 in locoObj!.LocoObject!.ImageTable.GraphicsElements)
+			foreach (var g1 in locoObj!.LocoObject!.ImageTable?.GraphicsElements ?? [])
 			{
 				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image))
 				{

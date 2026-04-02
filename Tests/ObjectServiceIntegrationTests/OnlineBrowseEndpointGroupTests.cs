@@ -3,7 +3,6 @@ using Definitions.DTO;
 using Definitions.Web;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using ObjectService;
 
 namespace ObjectService.Tests.Integration;
 

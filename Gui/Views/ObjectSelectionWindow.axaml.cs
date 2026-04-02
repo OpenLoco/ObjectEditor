@@ -1,7 +1,6 @@
 using Gui.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
-using System;
 using System.Reactive;
 
 namespace Gui.Views;

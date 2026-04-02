@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\artifacts\**;**/artifacts/**</DefaultItemExcludes>
+    <MSBuildProjectExtensionsPath Condition="'$(BaseIntermediateOutputPath)' != ''">$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
+    <GenerateAssemblyInfo Condition="$([System.String]::Copy('$(BaseIntermediateOutputPath)').Contains('artifacts'))">false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute Condition="$([System.String]::Copy('$(BaseIntermediateOutputPath)').Contains('artifacts'))">false</GenerateTargetFrameworkAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="**\obj\**\*.cs;**/obj/**/*.cs;**\bin\**\*.cs;**/bin/**/*.cs;**\artifacts\**\*.cs;**/artifacts/**/*.cs" />
+  </ItemGroup>
+</Project>

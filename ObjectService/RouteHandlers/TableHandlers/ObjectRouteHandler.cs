@@ -565,16 +565,15 @@ public class ObjectRouteHandler : ITableRouteHandler
 		}
 	}
 
-	// eg: http://localhost:7229/v1/objects/{id}/images
-	static async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+	// eg: http://localhost:7229/v2/objects/{id}/images
+	static async Task<IResult> GetObjectImagesAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ServerFolderManager sfm, [FromServices] PaletteMap paletteMap, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
 	{
 		logger.LogInformation("[GetObjectImages] Get requested for object {ObjectId}", id);
 
-		// currently we MUST have a DAT backing object
 		var obj = await db.Objects
+			.AsNoTracking()
 			.Include(x => x.DatObjects)
-			.Where(x => x.Id == id)
-			.SingleOrDefaultAsync();
+			.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
 
 		if (obj == null)
 		{
@@ -583,51 +582,53 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			logger.LogWarning("Indexed object is a vanilla object");
+			logger.LogWarning("Indexed object is a vanilla object.");
 			return Results.Forbid();
 		}
 
 		if (obj.Availability == ObjectAvailability.Unavailable)
 		{
-			logger.LogWarning("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot be downloaded", obj.Id, obj.Name);
+			logger.LogWarning("Object [Id={Id} Name={Name}] is marked as Unavailable and cannot expose images", obj.Id, obj.Name);
 			return Results.Forbid();
 		}
 
-		var sfm = sp.GetRequiredService<ServerFolderManager>();
-		var pm = sp.GetRequiredService<PaletteMap>();
-
-		var dat = obj.DatObjects.First();
-		if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index))
+		var dat = obj.DatObjects.FirstOrDefault();
+		if (dat == null)
 		{
+			logger.LogWarning("Object {ObjectId} has no DAT entries to load image data from", id);
 			return Results.NotFound();
 		}
 
-		if (index?.FileName == null)
+		if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var index) || string.IsNullOrWhiteSpace(index?.FileName))
 		{
+			logger.LogWarning("Object {ObjectId} DAT {DatName} was not found in the server object index", id, dat.DatName);
 			return Results.NotFound();
 		}
 
-		var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index.FileName); // handle windows paths by replacing path separator
-		logger.LogInformation("Loading file from {PathOnDisk}", pathOnDisk);
-
-		var fileExists = File.Exists(pathOnDisk);
-		if (!fileExists)
+		var pathOnDisk = Path.Combine(sfm.ObjectsFolder, index!.FileName!);
+		if (!File.Exists(pathOnDisk))
 		{
-			logger.LogWarning("Indexed object had {PathOnDisk} but the file wasn't found there; suggest re-indexing the server object folder", pathOnDisk);
+			logger.LogWarning("Indexed object file for {ObjectId} was not found on disk at {PathOnDisk}", id, pathOnDisk);
 			return Results.NotFound();
 		}
 
-		var dummyLogger = new Logger(); // todo: make both libraries and server use a single logging interface
-
-		var locoObj = SawyerStreamReader.LoadFullObject(pathOnDisk, dummyLogger, true);
+		var dummyLogger = new Logger();
+		var (_, locoObject) = SawyerStreamReader.LoadFullObject(pathOnDisk, dummyLogger, true);
+		if (locoObject == null)
+		{
+			logger.LogWarning("Object {ObjectId} could not be loaded from {PathOnDisk} to render images", id, pathOnDisk);
+			return Results.NotFound();
+		}
 
 		await using var memoryStream = new MemoryStream();
 		using (var zipArchive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
 		{
 			var count = 0;
-			foreach (var g1 in locoObj!.LocoObject!.ImageTable?.GraphicsElements ?? [])
+			foreach (var g1 in locoObject.ImageTable?.GraphicsElements ?? [])
 			{
-				if (!pm.TryConvertG1ToRgba32Bitmap(g1, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image))
+				cancellationToken.ThrowIfCancellationRequested();
+
+				if (!paletteMap.TryConvertG1ToRgba32Bitmap(g1, ColourSwatch.PrimaryRemap, ColourSwatch.SecondaryRemap, out var image) || image == null)
 				{
 					continue;
 				}

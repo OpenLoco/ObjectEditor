@@ -1,5 +1,4 @@
 using Avalonia.Media;
-using Common;
 using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;

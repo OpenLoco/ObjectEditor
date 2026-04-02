@@ -53,6 +53,14 @@ public static class Client
 			ClientHelpers.ReadBinaryContentAsync,
 			logger) ?? default;
 
+	public static async Task<byte[]?> GetObjectImagesAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
+		=> await ClientHelpers.SendRequestAsync(
+			client,
+			ApiVersion + RoutesV2.Objects + $"/{id}{RoutesV2.Images}",
+			() => client.GetAsync(ApiVersion + RoutesV2.Objects + $"/{id}{RoutesV2.Images}"),
+			ClientHelpers.ReadBinaryContentAsync,
+			logger) ?? default;
+
 	public static async Task<byte[]?> GetScenarioFileAsync(HttpClient client, UniqueObjectId id, ILogger? logger = null)
 		=> await ClientHelpers.SendRequestAsync(
 			client,

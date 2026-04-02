@@ -1,0 +1,171 @@
+@page "/objects/{id}"
+@model ObjectService.Pages.Objects.DetailsModel
+@{
+	var item = Model.ObjectDetails!;
+	ViewData["Title"] = item.DisplayName;
+}
+
+<section class="detail-hero panel">
+	<div>
+		<a class="back-link" asp-page="/Index">Back to explorer</a>
+		<p class="eyebrow">@item.ObjectType@if (item.VehicleType != null){<text> / @item.VehicleType</text>} / @item.ObjectSource</p>
+		<h1>@item.DisplayName</h1>
+		<p class="muted">Internal name: @item.InternalName</p>
+		<p class="lede">@(string.IsNullOrWhiteSpace(item.Description) ? "No description is stored for this object yet." : item.Description)</p>
+	</div>
+
+	<div class="detail-actions">
+		<span class="status-chip status-@item.Availability.ToString().ToLowerInvariant()">@item.Availability</span>
+		<a class="button button-secondary" href="@item.ApiUrl">Open JSON</a>
+		@if (item.CanDownloadAnyFile)
+		{
+			<a class="button button-primary" href="@item.DownloadUrl">Download DAT</a>
+		}
+		else
+		{
+			<span class="button button-disabled">Downloads unavailable</span>
+		}
+	</div>
+</section>
+
+<div class="detail-grid">
+	<section class="panel">
+		<h2>Metadata</h2>
+		<dl class="meta-grid">
+			<div>
+				<dt>Primary DAT</dt>
+				<dd>@(item.PrimaryDatName ?? "-")</dd>
+			</div>
+			<div>
+				<dt>Created</dt>
+				<dd>@(item.CreatedDate?.ToString("yyyy-MM-dd") ?? "-")</dd>
+			</div>
+			<div>
+				<dt>Modified</dt>
+				<dd>@(item.ModifiedDate?.ToString("yyyy-MM-dd") ?? "-")</dd>
+			</div>
+			<div>
+				<dt>Uploaded</dt>
+				<dd>@item.UploadedDate.ToString("yyyy-MM-dd")</dd>
+			</div>
+			<div>
+				<dt>Licence</dt>
+				<dd>@(item.LicenceName ?? "-")</dd>
+			</div>
+			<div>
+				<dt>Files indexed</dt>
+				<dd>@item.Files.Count</dd>
+			</div>
+		</dl>
+
+		@if (!string.IsNullOrWhiteSpace(item.LicenceText))
+		{
+			<div class="note-block">@item.LicenceText</div>
+		}
+	</section>
+
+	<section class="panel">
+		<h2>Relationships</h2>
+		<div class="stacked-list">
+			<div>
+				<h3>Authors</h3>
+				<p>@(item.Authors.Count > 0 ? string.Join(", ", item.Authors) : "No authors linked")</p>
+			</div>
+			<div>
+				<h3>Tags</h3>
+				<p>@(item.Tags.Count > 0 ? string.Join(", ", item.Tags) : "No tags linked")</p>
+			</div>
+			<div>
+				<h3>Object packs</h3>
+				<p>@(item.ObjectPacks.Count > 0 ? string.Join(", ", item.ObjectPacks) : "No packs linked")</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="panel panel-span">
+		<h2>Image table</h2>
+		@if (item.HasImages)
+		{
+			<div class="image-gallery-grid">
+				@foreach (var image in item.Images)
+				{
+					<figure class="image-card">
+						<div class="image-frame">
+							<img src="@image.DataUrl" alt="Object image @image.Index" loading="lazy" />
+						</div>
+						<figcaption>
+							<strong>Entry @image.Index</strong>
+							<span>@image.Width x @image.Height px</span>
+						</figcaption>
+					</figure>
+				}
+			</div>
+		}
+		else
+		{
+			<p class="muted">@(item.ImageTableMessage ?? "No renderable images were found for this object.")</p>
+		}
+	</section>
+
+	<section class="panel panel-span">
+		<h2>Associated DAT Objects</h2>
+		@if (item.Files.Count == 0)
+		{
+			<p class="muted">No DAT files are linked to this object.</p>
+		}
+		else
+		{
+			<div class="table-wrap">
+				<table>
+					<thead>
+						<tr>
+							<th>DAT name</th>
+							<th>Checksum</th>
+							<th>xxHash3</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var file in item.Files)
+						{
+							<tr>
+								<td>@file.DatName</td>
+								<td>@($"0x{file.DatChecksum:X8}")</td>
+								<td>@($"0x{file.xxHash3:X16}")</td>
+								<td><span>@file.StatusText</span></td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</section>
+
+	<section class="panel panel-span">
+		<h2>String table</h2>
+		@if (item.StringTableGroups.Count == 0)
+		{
+			<p class="muted">No string-table rows are stored for this object.</p>
+		}
+		else
+		{
+			<div class="string-table-grid">
+				@foreach (var group in item.StringTableGroups)
+				{
+					<section class="string-group">
+						<h3>@group.Key</h3>
+						<ul>
+							@foreach (var value in group.Values)
+							{
+								<li>
+									<strong>@value.Language</strong>
+									<span>@value.Text</span>
+								</li>
+							}
+						</ul>
+					</section>
+				}
+			</div>
+		}
+	</section>
+</div>

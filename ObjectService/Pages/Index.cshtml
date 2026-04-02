@@ -1,0 +1,170 @@
+@page "/"
+@model ObjectService.Pages.IndexModel
+@{
+	ViewData["Title"] = "Object Explorer";
+}
+
+<section class="hero-panel">
+	<div>
+		<p class="eyebrow">Server Explorer</p>
+		<h1>Object Explorer</h1>
+		<p class="lede">Search internal names, DAT names, or string-table text, then Inspect or Download the object.</p>
+	</div>
+	<div class="stat-grid">
+		<div class="stat-card">
+			<span>Total objects</span>
+			<strong>@Model.Results.TotalCount</strong>
+		</div>
+		<div class="stat-card">
+			<span>Matching filters</span>
+			<strong>@Model.Results.FilteredCount</strong>
+		</div>
+		<div class="stat-card">
+			<span>Current page</span>
+			<strong>@Model.Results.Page / @Model.Results.TotalPages</strong>
+		</div>
+	</div>
+</section>
+
+<section class="panel">
+	<form method="get" class="filter-form">
+		<div class="field field-search">
+			<label asp-for="Search">Search</label>
+			<input asp-for="Search" placeholder="DAT name, internal name, or string-table text" />
+		</div>
+
+		<div class="field">
+			<label asp-for="ObjectType">Object type</label>
+			<select asp-for="ObjectType">
+				<option value="">All types</option>
+				@foreach (var objectType in Model.ObjectTypes)
+				{
+					<option value="@objectType">@objectType</option>
+				}
+			</select>
+		</div>
+
+		<div class="field">
+			<label asp-for="ObjectSource">Source</label>
+			<select asp-for="ObjectSource">
+				<option value="">All sources</option>
+				@foreach (var objectSource in Model.ObjectSources)
+				{
+					<option value="@objectSource">@objectSource</option>
+				}
+			</select>
+		</div>
+
+		<div class="field">
+			<label asp-for="Availability">Availability</label>
+			<select asp-for="Availability">
+				<option value="">Any state</option>
+				@foreach (var state in Model.AvailabilityStates)
+				{
+					<option value="@state">@state</option>
+				}
+			</select>
+		</div>
+
+		<div class="form-actions">
+			<button type="submit" class="button button-primary">Apply filters</button>
+			<a class="button button-secondary" asp-page="/Index">Reset</a>
+		</div>
+	</form>
+</section>
+
+@if (Model.Results.Items.Count == 0)
+{
+	<section class="panel empty-state">
+		<h2>No objects matched the current query.</h2>
+		<p>Try a broader search term or clear one of the filters.</p>
+	</section>
+}
+else
+{
+	<section class="object-grid">
+		@foreach (var item in Model.Results.Items)
+		{
+			<article class="object-card">
+				<div class="card-header">
+					<div>
+						<p class="eyebrow">@item.ObjectType@if (item.VehicleType != null){<text> / @item.VehicleType</text>}</p>
+						<h2>@item.ResolvedTitle</h2>
+						<p class="muted">@item.InternalName</p>
+					</div>
+					<span class="status-chip status-@item.Availability.ToString().ToLowerInvariant()">@item.Availability</span>
+				</div>
+
+				<div class="chip-row">
+					<span class="chip">@item.ObjectSource</span>
+					<span class="chip">Uploaded @item.UploadedDate.ToString("yyyy-MM-dd")</span>
+					@if (!string.IsNullOrWhiteSpace(item.DatName))
+					{
+						<span class="chip">@item.DatName</span>
+					}
+				</div>
+
+				<dl class="card-meta">
+					<div>
+						<dt>Checksum</dt>
+						<dd>@(item.DatChecksum is uint checksum ? $"0x{checksum:X8}" : "-")</dd>
+					</div>
+					<div>
+						<dt>Public file</dt>
+						<dd>@(item.CanDownload ? "Available" : "Unavailable")</dd>
+					</div>
+				</dl>
+
+				<div class="card-actions">
+					<a class="button button-primary" asp-page="/Objects/Details" asp-route-id="@item.Id">Inspect</a>
+					<a class="button button-secondary" href="@item.ApiUrl">JSON</a>
+					@if (item.CanDownload)
+					{
+						<a class="button button-secondary" href="@item.DownloadUrl">DAT</a>
+					}
+					else
+					{
+						<span class="button button-disabled">DAT unavailable</span>
+					}
+				</div>
+			</article>
+		}
+	</section>
+
+	@if (Model.Results.TotalPages > 1)
+	{
+		<nav class="pagination">
+			@if (Model.Results.HasPreviousPage)
+			{
+				<a class="button button-secondary"
+				   asp-page="/Index"
+				   asp-route-Search="@Model.Search"
+				   asp-route-ObjectType="@Model.ObjectType"
+				   asp-route-ObjectSource="@Model.ObjectSource"
+				   asp-route-Availability="@Model.Availability"
+				   asp-route-Page="@(Model.Results.Page - 1)">Previous</a>
+			}
+			else
+			{
+				<span class="button button-disabled">Previous</span>
+			}
+
+			<span class="pagination-label">Page @Model.Results.Page of @Model.Results.TotalPages</span>
+
+			@if (Model.Results.HasNextPage)
+			{
+				<a class="button button-secondary"
+				   asp-page="/Index"
+				   asp-route-Search="@Model.Search"
+				   asp-route-ObjectType="@Model.ObjectType"
+				   asp-route-ObjectSource="@Model.ObjectSource"
+				   asp-route-Availability="@Model.Availability"
+				   asp-route-Page="@(Model.Results.Page + 1)">Next</a>
+			}
+			else
+			{
+				<span class="button button-disabled">Next</span>
+			}
+		</nav>
+	}
+}

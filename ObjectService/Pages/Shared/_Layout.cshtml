@@ -1,0 +1,70 @@
+@using Microsoft.Extensions.Diagnostics.HealthChecks
+@inject HealthCheckService HealthCheckService
+@{
+	var healthReport = await HealthCheckService.CheckHealthAsync();
+	var healthDescription = healthReport.Entries.Values
+		.Select(x => x.Description)
+		.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))
+		?? healthReport.Status.ToString();
+	var healthClass = healthReport.Status switch
+	{
+		HealthStatus.Healthy => "health-indicator-healthy",
+		HealthStatus.Degraded => "health-indicator-degraded",
+		_ => "health-indicator-unhealthy",
+	};
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - OpenLoco Object Service</title>
+	<script>
+		(() => {
+			const storageKey = "object-service-theme";
+			const root = document.documentElement;
+
+			try
+			{
+				const storedTheme = window.localStorage.getItem(storageKey);
+				if (storedTheme === "light" || storedTheme === "dark")
+				{
+					root.dataset.theme = storedTheme;
+					return;
+				}
+			}
+			catch
+			{
+			}
+
+			root.dataset.theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+		})();
+	</script>
+	<link rel="stylesheet" href="~/css/object-explorer.css" asp-append-version="true" />
+</head>
+<body>
+	<div class="site-shell">
+		<header class="site-header">
+			<a class="brand" asp-page="/Index">OpenLoco Object Service</a>
+			<div class="site-header-actions">
+				<nav class="site-nav">
+					<a asp-page="/Index">Explorer</a>
+					<a href="/api">API</a>
+				</nav>
+				<span class="health-indicator @healthClass" title="@healthDescription">
+					<span class="health-indicator-dot" aria-hidden="true"></span>
+					<span>Server @healthReport.Status</span>
+				</span>
+				<button type="button" class="button button-secondary theme-toggle" data-theme-toggle aria-label="Toggle between light and dark mode" aria-pressed="false">
+					Dark mode
+				</button>
+			</div>
+		</header>
+
+		<main class="site-main">
+			@RenderBody()
+		</main>
+	</div>
+	<script src="~/js/theme-toggle.js" asp-append-version="true"></script>
+</body>
+</html>

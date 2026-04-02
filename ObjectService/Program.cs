@@ -10,7 +10,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using ObjectService;
+using ObjectService.Frontend;
 using ObjectService.RouteHandlers;
+using ObjectService.Services;
 using Scalar.AspNetCore;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -43,14 +45,20 @@ builder.Services.AddOpenApi(options =>
 
 // (options => _ = options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+	.AddCheck<ObjectServiceHealthCheck>("object-service");
 builder.Services.AddProblemDetails();
+builder.Services.AddRazorPages();
+builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<LocoDbContext>(options =>
 {
 	_ = options.UseSqlite(connectionString);
 	_ = options.EnableDetailedErrors();
 	_ = options.EnableSensitiveDataLogging();
 });
+
+builder.Services.AddScoped<ObjectExplorerService>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -167,6 +175,7 @@ var app = builder.Build();
 app.UseForwardedHeaders();
 app.UseHttpLogging();
 app.UseRateLimiter();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -178,6 +187,8 @@ app.MapIdentityApi<TblUser>();
 _ = app
 	.MapHealthChecks("/health")
 	.RequireRateLimiting(tokenPolicy);
+
+_ = app.MapRazorPages();
 
 _ = app.MapV2Routes()
 	.RequireRateLimiting(tokenPolicy);

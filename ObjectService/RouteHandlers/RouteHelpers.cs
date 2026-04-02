@@ -43,4 +43,37 @@ public static class RouteHelpers
 		normalizedRelativePath = string.Join('/', segments);
 		return true;
 	}
+
+	public static string MakeSafeHttpDownloadFileName(string? baseName, string extension, string fallbackBaseName)
+	{
+		var normalizedExtension = string.IsNullOrWhiteSpace(extension)
+			? string.Empty
+			: extension.StartsWith('.') ? extension : $".{extension}";
+
+		var sanitizedBaseName = new string((baseName ?? string.Empty)
+			.Select(c =>
+			{
+				if (char.IsControl(c) || HttpUnsafeFilenameChars.Contains(c))
+				{
+					return '_';
+				}
+
+				if (char.IsWhiteSpace(c))
+				{
+					return ' ';
+				}
+
+				return c is >= ' ' and <= '~' ? c : '_';
+			})
+			.ToArray());
+
+		var collapsedWhitespace = string.Join(' ', sanitizedBaseName.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+		sanitizedBaseName = collapsedWhitespace.Trim(' ', '.');
+		if (string.IsNullOrWhiteSpace(sanitizedBaseName))
+		{
+			sanitizedBaseName = fallbackBaseName;
+		}
+
+		return $"{sanitizedBaseName}{normalizedExtension}";
+	}
 }

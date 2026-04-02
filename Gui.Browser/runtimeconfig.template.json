@@ -1,0 +1,11 @@
+{
+  "wasmHostProperties": {
+    "perHostConfig": [
+      {
+        "name": "browser",
+        "html-path": "wwwroot/index.html",
+        "Host": "browser"
+      }
+    ]
+  }
+}

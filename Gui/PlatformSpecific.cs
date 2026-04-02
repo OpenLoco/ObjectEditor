@@ -28,6 +28,11 @@ public static class PlatformSpecific
 
 	static void FolderOpenInDesktopCore(string directory, string? filename = null)
 	{
+		if (OperatingSystem.IsBrowser())
+		{
+			throw new PlatformNotSupportedException("Opening folders from the browser build is not supported.");
+		}
+
 		if (!Directory.Exists(directory))
 		{
 			throw new ArgumentException($"The specified folder does not exist. Folder=\"{directory}\"", nameof(directory));
@@ -68,9 +73,7 @@ public static class PlatformSpecific
 
 	public static async Task<IReadOnlyList<IStorageFolder>> OpenFolderPicker()
 	{
-		// See IoCFileOps project for an example of how to accomplish this.
-		if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
-			|| desktop.MainWindow?.StorageProvider is not { } provider)
+		if (GetStorageProvider() is not { } provider)
 		{
 			throw new ArgumentNullException("ApplicationLifetime|StorageProvider", "Missing StorageProvider instance.");
 		}
@@ -92,9 +95,7 @@ public static class PlatformSpecific
 
 	public static async Task<IReadOnlyList<IStorageFile>> OpenFilePicker(IReadOnlyList<FilePickerFileType> filetypes)
 	{
-		// See IoCFileOps project for an example of how to accomplish this.
-		if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
-			|| desktop.MainWindow?.StorageProvider is not { } provider)
+		if (GetStorageProvider() is not { } provider)
 		{
 			throw new ArgumentNullException("ApplicationLifetime|StorageProvider", "Missing StorageProvider instance.");
 		}
@@ -109,9 +110,7 @@ public static class PlatformSpecific
 
 	public static async Task<IStorageFile?> SaveFilePicker(IReadOnlyList<FilePickerFileType> filetypes)
 	{
-		// See IoCFileOps project for an example of how to accomplish this.
-		if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop
-			|| desktop.MainWindow?.StorageProvider is not { } provider)
+		if (GetStorageProvider() is not { } provider)
 		{
 			throw new ArgumentNullException("ApplicationLifetime|StorageProvider", "Missing StorageProvider instance.");
 		}
@@ -126,10 +125,9 @@ public static class PlatformSpecific
 
 	public static async Task<string?> GetClipboardTextAsync()
 	{
-		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-			&& desktop.MainWindow is { } window)
+		if (GetTopLevel() is { } topLevel)
 		{
-			var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
+			var clipboard = topLevel.Clipboard;
 			if (clipboard != null)
 			{
 				return await clipboard.GetTextAsync();
@@ -141,14 +139,32 @@ public static class PlatformSpecific
 
 	public static async Task SetClipboardTextAsync(string text)
 	{
-		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-			&& desktop.MainWindow is { } window)
+		if (GetTopLevel() is { } topLevel)
 		{
-			var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
+			var clipboard = topLevel.Clipboard;
 			if (clipboard != null)
 			{
 				await clipboard.SetTextAsync(text);
 			}
 		}
+	}
+
+	static IStorageProvider? GetStorageProvider()
+		=> GetTopLevel()?.StorageProvider;
+
+	static TopLevel? GetTopLevel()
+	{
+		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+		{
+			return desktop.MainWindow;
+		}
+
+		if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView
+			&& singleView.MainView is Control control)
+		{
+			return TopLevel.GetTopLevel(control);
+		}
+
+		return null;
 	}
 }

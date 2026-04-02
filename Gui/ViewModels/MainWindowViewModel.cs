@@ -137,19 +137,23 @@ public class MainWindowViewModel : ViewModelBase
 		UseCustomPalette = ReactiveCommand.Create(LoadCustomPalette);
 
 		OpenEditorSettingsWindow = new();
-		EditSettingsCommand = ReactiveCommand.CreateFromTask(async () =>
-		{
-			var vm = new EditorSettingsWindowViewModel(EditorContext.Settings);
-			var result = await OpenEditorSettingsWindow.Handle(vm);
-			EditorContext.Settings.Save(ObjectEditorContext.SettingsFile, EditorContext.Logger);
-		});
+		EditSettingsCommand = OperatingSystem.IsBrowser()
+			? ReactiveCommand.Create(() => { })
+			: ReactiveCommand.CreateFromTask(async () =>
+			{
+				var vm = new EditorSettingsWindowViewModel(EditorContext.Settings);
+				var result = await OpenEditorSettingsWindow.Handle(vm);
+				EditorContext.Settings.Save(ObjectEditorContext.SettingsFile, EditorContext.Logger);
+			});
 
 		OpenLogWindow = new();
-		ShowLogsCommand = ReactiveCommand.CreateFromTask(async () =>
-		{
-			var vm = new LogWindowViewModel(EditorContext.LoggerObservableLogs);
-			var result = await OpenLogWindow.Handle(vm);
-		});
+		ShowLogsCommand = OperatingSystem.IsBrowser()
+			? ReactiveCommand.Create(() => { })
+			: ReactiveCommand.CreateFromTask(async () =>
+			{
+				var vm = new LogWindowViewModel(EditorContext.LoggerObservableLogs);
+				var result = await OpenLogWindow.Handle(vm);
+			});
 
 		#region Version
 
@@ -179,6 +183,13 @@ public class MainWindowViewModel : ViewModelBase
 		});
 
 		ApplicationVersion = VersionHelpers.GetCurrentAppVersion();
+
+		if (OperatingSystem.IsBrowser())
+		{
+			LatestVersionText = "browser build";
+			IsUpdateAvailable = false;
+			return;
+		}
 
 #if !DEBUG
 		try

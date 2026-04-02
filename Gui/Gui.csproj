@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType Condition="'$(BuildingForBrowser)' == 'true'">Library</OutputType>
+    <OutputType Condition="'$(BuildingForBrowser)' != 'true'">WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <StartupObject>Gui.Program</StartupObject>
+    <StartupObject Condition="'$(BuildingForBrowser)' != 'true'">Gui.Program</StartupObject>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/OpenLoco/OpenLocoObjectEditor</RepositoryUrl>
@@ -19,7 +20,7 @@
     <Version>1.2.3</Version>
     <Authors>LeftofZen</Authors>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-    <ApplicationIcon>Assets\loco_icon.ico</ApplicationIcon>
+    <ApplicationIcon Condition="'$(BuildingForBrowser)' != 'true'">Assets\loco_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,6 +60,7 @@
     <PackageReference Include="NAudio" Version="2.3.0" />
     <PackageReference Include="NuGet.Versioning" Version="7.3.0" />
     <PackageReference Include="PanAndZoom" Version="11.3.9.1" />
+    <PackageReference Include="ReactiveUI.Avalonia" Version="11.4.12" />
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
     <PackageReference Include="ReactiveUI.Validation" Version="7.0.5" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
@@ -67,7 +69,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
-    <ProjectReference Include="..\GuiUpdater\GuiUpdater.csproj" />
+    <ProjectReference Condition="'$(BuildingForBrowser)' != 'true'" Include="..\GuiUpdater\GuiUpdater.csproj" />
     <ProjectReference Include="..\Index\Index.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,4 @@
 using Common.Logging;
-using Microsoft.AspNetCore.Http;
 using System.Net.Http.Json;
 
 namespace Definitions.Web;

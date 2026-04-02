@@ -159,7 +159,7 @@ A modern implementation of 'LocoTool' for Locomotion `dat` file parsing and edit
 - Open `ObjectEditor.sln` in Visual Studio
   - You'll need the `Avalonia for Visual Studio` plugin to use the visual XAML previewer, but it isn't required to actually build or run the editor
 - Desktop build: `dotnet build Gui/Gui.csproj`
-- Browser build: `dotnet build Gui.Browser/Gui.Browser.csproj -p:BuildingForBrowser=true`
+- Browser build: `dotnet build Gui.Browser/Gui.Browser.csproj`
 - Browser run: `dotnet run --project Gui.Browser/Gui.Browser.csproj`
   - This starts Avalonia's local WebAssembly host and prints the local browser URL to open
   - Desktop-only features such as opening local folders and separate popup windows remain unavailable in the browser build

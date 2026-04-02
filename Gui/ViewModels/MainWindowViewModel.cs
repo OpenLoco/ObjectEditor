@@ -58,6 +58,8 @@ public class MainWindowViewModel : ViewModelBase
 	public string WindowTitle
 		=> $"{ObjectEditorContext.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
+	public bool SupportsDesktopFeatures => !OperatingSystem.IsBrowser();
+
 	[Reactive]
 	public SemanticVersion ApplicationVersion { get; set; }
 	SemanticVersion? LatestVersion { get; set; }
@@ -138,7 +140,7 @@ public class MainWindowViewModel : ViewModelBase
 
 		OpenEditorSettingsWindow = new();
 		EditSettingsCommand = OperatingSystem.IsBrowser()
-			? ReactiveCommand.Create(() => { })
+			? CreateBrowserUnsupportedCommand()
 			: ReactiveCommand.CreateFromTask(async () =>
 			{
 				var vm = new EditorSettingsWindowViewModel(EditorContext.Settings);
@@ -148,7 +150,7 @@ public class MainWindowViewModel : ViewModelBase
 
 		OpenLogWindow = new();
 		ShowLogsCommand = OperatingSystem.IsBrowser()
-			? ReactiveCommand.Create(() => { })
+			? CreateBrowserUnsupportedCommand()
 			: ReactiveCommand.CreateFromTask(async () =>
 			{
 				var vm = new LogWindowViewModel(EditorContext.LoggerObservableLogs);
@@ -251,6 +253,9 @@ public class MainWindowViewModel : ViewModelBase
 					x,
 					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
 	}
+
+	static ReactiveCommand<Unit, Unit> CreateBrowserUnsupportedCommand()
+		=> ReactiveCommand.Create(() => { });
 
 	public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
 	{

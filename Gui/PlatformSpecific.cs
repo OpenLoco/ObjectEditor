@@ -160,9 +160,9 @@ public static class PlatformSpecific
 		}
 
 		if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView
-			&& singleView.MainView is Control control)
+			&& singleView.MainView is Control mainViewControl)
 		{
-			return TopLevel.GetTopLevel(control);
+			return TopLevel.GetTopLevel(mainViewControl);
 		}
 
 		return null;

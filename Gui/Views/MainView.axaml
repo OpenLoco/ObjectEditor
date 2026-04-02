@@ -191,11 +191,11 @@
 					<MenuItem Command="{Binding UseCustomPalette}" Header="Load custom palette"/>
 				</MenuItem>
 				<MenuItem Header="_Settings">
-					<MenuItem Command="{Binding EditSettingsCommand}" Header="Edit settings"/>
-					<MenuItem Command="{Binding OpenSettingsFolder}" Header="Open settings folder"/>
-					<MenuItem Command="{Binding OpenDownloadFolder}" Header="Open user downloads folder"/>
-					<MenuItem Command="{Binding OpenCacheFolder}" Header="Open cached objects folder"/>
-					<MenuItem Command="{Binding ShowLogsCommand}" Header="Show logs"/>
+					<MenuItem Command="{Binding EditSettingsCommand}" Header="Edit settings" IsEnabled="{Binding SupportsDesktopFeatures}"/>
+					<MenuItem Command="{Binding OpenSettingsFolder}" Header="Open settings folder" IsEnabled="{Binding SupportsDesktopFeatures}"/>
+					<MenuItem Command="{Binding OpenDownloadFolder}" Header="Open user downloads folder" IsEnabled="{Binding SupportsDesktopFeatures}"/>
+					<MenuItem Command="{Binding OpenCacheFolder}" Header="Open cached objects folder" IsEnabled="{Binding SupportsDesktopFeatures}"/>
+					<MenuItem Command="{Binding ShowLogsCommand}" Header="Show logs" IsEnabled="{Binding SupportsDesktopFeatures}"/>
 				</MenuItem>
 			</Menu>
 			<StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal" Spacing="32">

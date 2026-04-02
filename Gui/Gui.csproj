@@ -69,7 +69,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
-    <ProjectReference Condition="'$(BuildingForBrowser)' != 'true'" Include="..\GuiUpdater\GuiUpdater.csproj" />
     <ProjectReference Include="..\Index\Index.csproj" />
   </ItemGroup>
 

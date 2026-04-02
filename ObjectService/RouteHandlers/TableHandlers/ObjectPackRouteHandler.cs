@@ -1,3 +1,5 @@
+using Definitions;
+using Common;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
@@ -87,6 +89,11 @@ public class ObjectPackRouteHandler : ITableRouteHandler
 					continue;
 				}
 
+				if (obj.Availability == ObjectAvailability.Unavailable)
+				{
+					continue;
+				}
+
 				foreach (var dat in obj.DatObjects)
 				{
 					if (!sfm.ObjectIndex.TryFind((dat.DatName, dat.DatChecksum), out var entry) || entry == null)
@@ -113,6 +120,7 @@ public class ObjectPackRouteHandler : ITableRouteHandler
 		}
 
 		zipStream.Position = 0;
-		return Results.File(zipStream, "application/zip", $"{pack.Name}.zip");
+		var downloadFileName = DownloadNameHelper.MakeSafeDownloadFileName(pack.Name, ".zip", "object-pack");
+		return Results.File(zipStream, "application/zip", downloadFileName);
 	}
 }

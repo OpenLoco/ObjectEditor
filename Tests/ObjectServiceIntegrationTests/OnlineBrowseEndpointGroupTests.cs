@@ -43,7 +43,7 @@ public class OnlineBrowseEndpointGroupTests
 
 		using (Assert.EnterMultipleScope())
 		{
-			Assert.That(results.Select(x => x.Name), Is.EqualTo(new[] { "Swiss rails", "UK renewal set" }));
+			Assert.That(results.Select(x => x.Name), Is.EqualTo(["Swiss rails", "UK renewal set"]));
 			Assert.That(results.All(x => x.Id > 0), Is.True);
 		}
 	}
@@ -60,11 +60,11 @@ public class OnlineBrowseEndpointGroupTests
 
 		var results = await Client.GetListAsync<DtoScenarioEntry>(httpClient!, Client.ScenariosEndpointGroup);
 
-		Assert.That(results.Select(x => x.Name), Is.EqualTo(new[]
-		{
+		Assert.That(results.Select(x => x.Name), Is.EqualTo(
+		[
 			Path.Combine(ServerFolderManager.CustomFolderName, "alpine.SC5"),
 			Path.Combine(ServerFolderManager.CustomFolderName, "desert.SC5"),
-		}));
+		]));
 	}
 
 	[Test]
@@ -95,9 +95,9 @@ public class OnlineBrowseEndpointGroupTests
 
 		using (Assert.EnterMultipleScope())
 		{
-			Assert.That(authors.Select(x => x.Name), Is.EqualTo(new[] { "Alice", "Bob" }));
-			Assert.That(tags.Select(x => x.Name), Is.EqualTo(new[] { "Industrial", "Passenger" }));
-			Assert.That(licences.Select(x => x.Name), Is.EqualTo(new[] { "CC-BY", "GPL" }));
+			Assert.That(authors.Select(x => x.Name), Is.EqualTo(["Alice", "Bob"]));
+			Assert.That(tags.Select(x => x.Name), Is.EqualTo(["Industrial", "Passenger"]));
+			Assert.That(licences.Select(x => x.Name), Is.EqualTo(["CC-BY", "GPL"]));
 		}
 	}
 
@@ -117,7 +117,7 @@ public class OnlineBrowseEndpointGroupTests
 
 		using (Assert.EnterMultipleScope())
 		{
-			Assert.That(results.Select(x => x.DatName), Is.EqualTo(new[] { "AIRPORTX", "ROADY" }));
+			Assert.That(results.Select(x => x.DatName), Is.EqualTo(["AIRPORTX", "ROADY"]));
 			Assert.That(results.Select(x => x.DatChecksum), Is.EqualTo(new uint[] { 123, 456 }));
 		}
 	}
@@ -136,6 +136,6 @@ public class OnlineBrowseEndpointGroupTests
 
 		var results = await Client.GetListAsync<DtoItemPackEntry>(httpClient!, Client.SC5FilePacksEndpointGroup);
 
-		Assert.That(results.Select(x => x.Name), Is.EqualTo(new[] { "Challenge Pack", "Starter Pack" }));
+		Assert.That(results.Select(x => x.Name), Is.EqualTo(["Challenge Pack", "Starter Pack"]));
 	}
 }

@@ -1,3 +1,4 @@
+using Common;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.DTO.Mappers;
@@ -98,6 +99,7 @@ public class SC5FilePackRouteHandler : ITableRouteHandler
 		}
 
 		zipStream.Position = 0;
-		return Results.File(zipStream, "application/zip", $"{pack.Name}.zip");
+		var downloadFileName = DownloadNameHelper.MakeSafeDownloadFileName(pack.Name, ".zip", "scenario-pack");
+		return Results.File(zipStream, "application/zip", downloadFileName);
 	}
 }

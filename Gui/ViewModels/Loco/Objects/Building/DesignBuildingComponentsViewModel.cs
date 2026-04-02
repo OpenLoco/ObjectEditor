@@ -11,7 +11,7 @@ namespace Gui.ViewModels.Loco.Objects.Building;
 
 public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 {
-	public Image<Rgba32> CreateDummyImage(int width, int height)
+	public static Image<Rgba32> CreateDummyImage(int width, int height)
 	{
 		var image = new Image<Rgba32>(width, height);
 

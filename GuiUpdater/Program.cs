@@ -52,38 +52,28 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 		Console.WriteLine("Current version is empty");
 	}
 
-	// current version
-	if (SemanticVersion.TryParse(currentVersionString, out var currentVersion) || currentVersion == null || currentVersion == VersionHelpers.UnknownVersion)
-	{
-		Console.WriteLine($"Current version: {currentVersion}");
-	}
-	else
-	{
-		Console.WriteLine("Unable to parse current version - will attempt to download the latest version");
-	}
-
 	// latest version
-	SemanticVersion? latestVersion = null;
-	try
-	{
-		Console.WriteLine("Checking for the latest version...");
-		latestVersion = VersionHelpers.GetLatestAppVersion(VersionHelpers.ObjectEditorName);
-		Console.WriteLine($"Latest version available: {latestVersion}");
-	}
-	catch (Exception ex)
-	{
-		Console.Error.WriteLine($"An error occurred while checking for the latest version: {ex.Message}");
-		return;
-	}
+	var latestVersion = GetLatestVersion();
 
 	if (latestVersion == null)
 	{
-		Console.Error.WriteLine("Unable to determine the latest version");
+		Console.Error.WriteLine("Unable to determine the latest version. Cannot automatically update.");
 		return;
 	}
 
+	// current version
+	if (currentVersionString == null || !SemanticVersion.TryParse(currentVersionString, out var currentVersion) || currentVersion == null || currentVersion == VersionHelpers.UnknownVersion)
+	{
+		Console.WriteLine("Unable to parse current version - will attempt to download the latest version");
+		currentVersion = null;
+	}
+	else
+	{
+		Console.WriteLine($"Current version: {currentVersion}");
+	}
+
 	// compare versions
-	if (latestVersion <= currentVersion)
+	if (currentVersion != null && latestVersion <= currentVersion)
 	{
 		Console.WriteLine("Current version is the latest version - no update needed");
 		return;
@@ -152,4 +142,23 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 
 	Console.WriteLine($"Restarting editor at: {appPath}");
 	_ = Process.Start(new ProcessStartInfo(appPath) { UseShellExecute = false, CreateNoWindow = true, });
+}
+
+static SemanticVersion? GetLatestVersion()
+{
+	// latest version
+	SemanticVersion? latestVersion = null;
+
+	try
+	{
+		Console.WriteLine("Checking for the latest version...");
+		latestVersion = VersionHelpers.GetLatestAppVersion(VersionHelpers.ObjectEditorName);
+		Console.WriteLine($"Latest version available: {latestVersion}");
+	}
+	catch (Exception ex)
+	{
+		Console.Error.WriteLine($"An error occurred while checking for the latest version: {ex.Message}");
+	}
+
+	return latestVersion;
 }

@@ -12,7 +12,7 @@ namespace ObjectService.Tests.Integration;
 public class TestWebApplicationFactory<TProgram>
 	: WebApplicationFactory<TProgram> where TProgram : class
 {
-	DirectoryInfo? MakeServerFolderManagerTestDirectories()
+	static DirectoryInfo? MakeServerFolderManagerTestDirectories()
 	{
 		// parent dir
 		var testDirectory = Directory.CreateTempSubdirectory("ObjectServiceTest");
@@ -53,7 +53,7 @@ public class TestWebApplicationFactory<TProgram>
 
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
-		var testFolder = MakeServerFolderManagerTestDirectories();
+		var testFolder = TestWebApplicationFactory<TProgram>.MakeServerFolderManagerTestDirectories();
 		ArgumentNullException.ThrowIfNull(testFolder, nameof(testFolder));
 
 		// Create a dummy palette file for testing

@@ -113,7 +113,7 @@ public class MainWindowViewModel : ViewModelBase
 							return;
 						}
 
-						ShowLogsCommand.Execute();
+						ShowLogsCommand?.Execute();
 					});
 				}
 			}
@@ -164,11 +164,13 @@ public class MainWindowViewModel : ViewModelBase
 			if (ApplicationVersion == null || ApplicationVersion == VersionHelpers.UnknownVersion)
 			{
 				EditorContext.Logger.Info($"{nameof(ApplicationVersion)} is null");
+				ApplicationVersion = VersionHelpers.UnknownVersion;
 			}
 
 			if (LatestVersion == null || LatestVersion == VersionHelpers.UnknownVersion)
 			{
 				EditorContext.Logger.Info($"{nameof(LatestVersion)} is null");
+				LatestVersion = VersionHelpers.UnknownVersion;
 			}
 
 			EditorContext.Logger.Info($"Attempting to update from {ApplicationVersion} to {LatestVersion}");

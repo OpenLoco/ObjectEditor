@@ -10,9 +10,10 @@ using Definitions.Web;
 using Index;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using ObjectService.Tests.Integration;
 using System.IO.Hashing;
 
-namespace ObjectService.Tests.Integration;
+namespace Tests.ObjectServiceIntegrationTests.Routes;
 
 [TestFixture]
 public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
@@ -61,7 +62,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 	protected override DtoObjectEntry ToDtoEntryFunc(TblObject row)
 		=> row.ToDtoEntry() with { UploadedDate = DateOnly.UtcToday };
 
-	DtoObjectPostResponse ToDtoDescriptor(TblObject row)
+	static DtoObjectPostResponse ToDtoDescriptor(TblObject row)
 		=> new(
 				row.Id,
 				row.Name,

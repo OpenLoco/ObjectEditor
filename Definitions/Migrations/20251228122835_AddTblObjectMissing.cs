@@ -89,7 +89,7 @@ namespace Definitions.Database.Migrations
 			_ = migrationBuilder.CreateIndex(
 				name: "IX_ObjectsMissing_DatName_DatChecksum",
 				table: "ObjectsMissing",
-				columns: new[] { "DatName", "DatChecksum" },
+				columns: ["DatName", "DatChecksum"],
 				unique: true);
         }
 

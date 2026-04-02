@@ -33,8 +33,9 @@ builder.Services.AddOpenApi(options =>
 			Name = "Left of Zen",
 			Email = "leftofzen@openloco.io"
 		};
-		document.Servers.Clear();
-		document.Servers.Add(new OpenApiServer() { Url = "https://openloco.leftofzen.dev" });
+
+		document.Servers?.Clear();
+		document.Servers?.Add(new OpenApiServer() { Url = "https://openloco.leftofzen.dev" });
 
 		return Task.CompletedTask;
 	});

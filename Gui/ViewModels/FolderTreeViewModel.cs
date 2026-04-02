@@ -736,7 +736,7 @@ public class FolderTreeViewModel : ReactiveObject
 				descriptor => descriptor.Items.OrderBy(x => x.Name).Select(CreateOnlineScenarioFileSystemItem))))];
 	}
 
-	OnlineItemPackBrowseResult CreateOnlineItemPackBrowseResult<T>(
+	static OnlineItemPackBrowseResult CreateOnlineItemPackBrowseResult<T>(
 		DtoItemPackEntry item,
 		DtoItemPackDescriptor<T>? descriptor,
 		OnlineApiEndpointGroup group,
@@ -779,29 +779,7 @@ public class FolderTreeViewModel : ReactiveObject
 			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Scenarios,
 		};
 
-	static string SanitizeDownloadName(string? name, bool stripDirectoryComponents, bool stripExtension, string fallbackName)
-	{
-		var sanitizedName = name ?? string.Empty;
-		if (stripDirectoryComponents)
-		{
-			sanitizedName = sanitizedName.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? string.Empty;
-		}
-
-		if (stripExtension)
-		{
-			sanitizedName = Path.GetFileNameWithoutExtension(sanitizedName);
-		}
-
-		sanitizedName = Path.GetInvalidFileNameChars().Aggregate(sanitizedName, (current, c) => current.Replace(c, '_'));
-		sanitizedName = sanitizedName
-			.Replace('/', '_')
-			.Replace('\\', '_')
-			.Replace("..", "__", StringComparison.Ordinal);
-
-		return string.IsNullOrWhiteSpace(sanitizedName) ? fallbackName : sanitizedName;
-	}
-
-	async Task ShowDownloadFailureDialogAsync(string contentMessage)
+	static async Task ShowDownloadFailureDialogAsync(string contentMessage)
 	{
 		var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
 		{
@@ -825,7 +803,7 @@ public class FolderTreeViewModel : ReactiveObject
 			return;
 		}
 
-		byte[]? fileBytes = item.OnlineApiEndpointGroup switch
+		var fileBytes = item.OnlineApiEndpointGroup switch
 		{
 			OnlineApiEndpointGroup.Objects => await EditorContext.ObjectServiceClient.GetObjectFileAsync(item.Id.Value),
 			OnlineApiEndpointGroup.Scenarios => await EditorContext.ObjectServiceClient.GetScenarioFileAsync(item.Id.Value),
@@ -839,7 +817,7 @@ public class FolderTreeViewModel : ReactiveObject
 		}
 
 		var extension = item.OnlineApiEndpointGroup == OnlineApiEndpointGroup.Scenarios ? ".SC5" : ".dat";
-		var safeName = SanitizeDownloadName(item.DisplayName, stripDirectoryComponents: true, stripExtension: true, fallbackName: "download");
+		var safeName = DownloadNameHelper.SanitizeBaseName(item.DisplayName, stripDirectoryComponents: true, stripExtension: true, fallbackName: "download");
 		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safeName}-{item.Id}{extension}");
 		try
 		{
@@ -866,7 +844,7 @@ public class FolderTreeViewModel : ReactiveObject
 			return;
 		}
 
-		byte[]? fileBytes = pack.Group switch
+		var fileBytes = pack.Group switch
 		{
 			OnlineApiEndpointGroup.ObjectPacks => await EditorContext.ObjectServiceClient.GetObjectPackFileAsync(pack.Id),
 			OnlineApiEndpointGroup.SC5FilePacks => await EditorContext.ObjectServiceClient.GetSC5FilePackFileAsync(pack.Id),
@@ -879,7 +857,7 @@ public class FolderTreeViewModel : ReactiveObject
 			return;
 		}
 
-		var safePackName = SanitizeDownloadName(pack.Name, stripDirectoryComponents: false, stripExtension: false, fallbackName: "pack");
+		var safePackName = DownloadNameHelper.SanitizeBaseName(pack.Name, stripDirectoryComponents: false, stripExtension: false, fallbackName: "pack");
 		var filename = Path.Combine(EditorContext.Settings.DownloadFolder, $"{safePackName}-{pack.Id}.zip");
 		try
 		{
@@ -891,6 +869,11 @@ public class FolderTreeViewModel : ReactiveObject
 		{
 			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" to \"{filename}\"", ex);
 			await ShowDownloadFailureDialogAsync($"Could not create:\n{filename}\n\nThe destination file may already exist, be locked by another process, or the download folder may be unavailable.");
+		}
+		catch (UnauthorizedAccessException ex)
+		{
+			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" to \"{filename}\" due to insufficient permissions", ex);
+			await ShowDownloadFailureDialogAsync($"You do not have permission to write to:\n{filename}\n\nPlease check folder permissions or choose a different download folder.");
 		}
 	}
 }

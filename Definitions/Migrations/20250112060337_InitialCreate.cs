@@ -409,9 +409,9 @@ public partial class InitialCreate : Migration
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_Objects_DatName_DatChecksum",
 			table: "Objects",
-			columns: new[] { "DatName", "DatChecksum" },
+			columns: ["DatName", "DatChecksum"],
 			unique: true,
-			descending: new[] { true, false });
+			descending: [true, false]);
 
 		_ = migrationBuilder.CreateIndex(
 			name: "IX_Objects_LicenceId",

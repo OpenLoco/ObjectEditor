@@ -5,8 +5,9 @@ using Definitions.Web;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using ObjectService.Tests.Integration;
 
-namespace ObjectService.Tests.Integration;
+namespace Tests.ObjectServiceIntegrationTests.Routes;
 
 [TestFixture]
 public class TagRoutesTest : BaseReferenceDataTableTestFixture<

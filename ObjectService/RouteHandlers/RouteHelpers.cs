@@ -3,6 +3,9 @@ namespace ObjectService.RouteHandlers;
 public static class RouteHelpers
 {
 	static readonly char[] PathSeparators = ['/', '\\'];
+	static readonly StringComparison PathComparison = OperatingSystem.IsWindows()
+		? StringComparison.OrdinalIgnoreCase
+		: StringComparison.Ordinal;
 
 	public static string MakeNicePlural(string name)
 		=> $"{name.Replace("RouteHandler", string.Empty)}s";
@@ -31,7 +34,7 @@ public static class RouteHelpers
 
 		var combinedPath = Path.Combine(rootFullPath, relativePath);
 		var candidateFullPath = Path.GetFullPath(combinedPath);
-		if (!candidateFullPath.StartsWith(rootFullPath, StringComparison.OrdinalIgnoreCase))
+		if (!candidateFullPath.StartsWith(rootFullPath, PathComparison))
 		{
 			return false;
 		}

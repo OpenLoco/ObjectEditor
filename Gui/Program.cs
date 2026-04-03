@@ -34,13 +34,22 @@ public class Program
 
 	// Avalonia configuration, don't remove; also used by visual designer.
 	public static AppBuilder BuildAvaloniaApp()
-		=> AppBuilder.Configure<App>()
-			.UsePlatformDetect()
+	{
+		var builder = AppBuilder.Configure<App>()
 			.WithInterFont()
-			.With(new Win32PlatformOptions
-			{
-				RenderingMode = [Win32RenderingMode.Software]
-			})
 			.LogToTrace(LogEventLevel.Verbose, LogArea.Binding)
 			.UseReactiveUI(_ => { });
+
+		if (!OperatingSystem.IsBrowser())
+		{
+			builder = builder
+				.UsePlatformDetect()
+				.With(new Win32PlatformOptions
+				{
+					RenderingMode = [Win32RenderingMode.Software]
+				});
+		}
+
+		return builder;
+	}
 }

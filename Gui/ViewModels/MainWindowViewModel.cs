@@ -85,6 +85,10 @@ public class MainWindowViewModel : ViewModelBase
 		Task.Run(LoadDefaultPalette);
 
 		FolderTreeViewModel = new FolderTreeViewModel(EditorContext);
+		if (OperatingSystem.IsBrowser())
+		{
+			FolderTreeViewModel.SelectedTabIndex = 1;
+		}
 
 		_ = FolderTreeViewModel.WhenAnyValue(o => o.CurrentlySelectedObject)
 			.Subscribe((x) =>

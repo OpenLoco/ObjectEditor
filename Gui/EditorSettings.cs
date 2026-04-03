@@ -74,6 +74,11 @@ public class EditorSettings
 
 	public static EditorSettings Load(string filename, ILogger logger)
 	{
+		if (OperatingSystem.IsBrowser())
+		{
+			return new EditorSettings();
+		}
+
 		if (!File.Exists(filename))
 		{
 			logger.Info($"Settings file doesn't exist; creating now at \"{filename}\"");
@@ -93,6 +98,11 @@ public class EditorSettings
 
 	static void Save(EditorSettings settings, string filename, ILogger logger)
 	{
+		if (OperatingSystem.IsBrowser())
+		{
+			return;
+		}
+
 		var text = JsonSerializer.Serialize(settings, options: JsonFile.DefaultSerializerOptions);
 
 		var parentDir = Path.GetDirectoryName(filename);
@@ -113,6 +123,11 @@ public class EditorSettings
 
 	public bool Validate(ILogger logger)
 	{
+		if (OperatingSystem.IsBrowser())
+		{
+			return true;
+		}
+
 		if (string.IsNullOrEmpty(ObjDataDirectory))
 		{
 			logger.Warning("Invalid settings file: Object directory was null or empty");

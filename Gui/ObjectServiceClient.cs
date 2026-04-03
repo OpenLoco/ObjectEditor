@@ -37,9 +37,9 @@ public class ObjectServiceClient
 		if (Uri.TryCreate(serverAddress, new(), out var serverUri))
 		{
 			CookieContainer = new CookieContainer();
-			var handler = new HttpClientHandler() { CookieContainer = CookieContainer };
-
-			WebClient = new HttpClient(handler) { BaseAddress = serverUri };
+			WebClient = OperatingSystem.IsBrowser()
+				? new HttpClient() { BaseAddress = serverUri }
+				: new HttpClient(new HttpClientHandler() { CookieContainer = CookieContainer }) { BaseAddress = serverUri };
 
 			var currentAppVersion = VersionHelpers.GetCurrentAppVersion();
 			WebClient.DefaultRequestHeaders.UserAgent.ParseAdd($"ObjectEditor/{currentAppVersion}");

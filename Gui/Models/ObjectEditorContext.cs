@@ -49,11 +49,12 @@ public class ObjectEditorContext : IDisposable
 
 	public const string ApplicationName = "OpenLoco Object Editor";
 	public const string LoggingFileName = "objectEditor.log";
+	public static bool IsBrowserEnvironment => OperatingSystem.IsBrowser();
 
 	// stores settings.json, objectEditor.log, etc
-	public static string ProgramDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
-	public static string SettingsFile => Path.Combine(ProgramDataPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? EditorSettings.DefaultFileName);
-	public static string LoggingFile => Path.Combine(ProgramDataPath, LoggingFileName);
+	public static string ProgramDataPath => IsBrowserEnvironment ? string.Empty : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
+	public static string SettingsFile => IsBrowserEnvironment ? EditorSettings.DefaultFileName : Path.Combine(ProgramDataPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? EditorSettings.DefaultFileName);
+	public static string LoggingFile => IsBrowserEnvironment ? LoggingFileName : Path.Combine(ProgramDataPath, LoggingFileName);
 
 	public ObservableCollection<LogLine> LoggerObservableLogs { get; init; } = [];
 
@@ -68,14 +69,9 @@ public class ObjectEditorContext : IDisposable
 		LoggerObservableLogs = [];
 		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log).ConfigureAwait(false);
 
-		LoadSettings();
-
-		// settings must be loaded or else the rest of the app cannot start
-		ArgumentNullException.ThrowIfNull(Settings);
-
-		Settings.ObjectIndicesFolder = InitialiseDirectory(Settings.ObjectIndicesFolder, "objectIndices");
-		Settings.CacheFolder = InitialiseDirectory(Settings.CacheFolder, "cache");
-		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
+		Settings = IsBrowserEnvironment
+			? CreateBrowserSettings()
+			: LoadSettings();
 
 		ObjectServiceClient = new(Settings, Logger);
 	}
@@ -92,6 +88,14 @@ public class ObjectEditorContext : IDisposable
 
 	async Task WriteLogsToFileAsync()
 	{
+		if (IsBrowserEnvironment)
+		{
+			while (logQueue.TryDequeue(out _))
+			{ }
+
+			return;
+		}
+
 		if (logQueue.IsEmpty)
 		{
 			return;
@@ -121,11 +125,11 @@ public class ObjectEditorContext : IDisposable
 		}
 	}
 
-	void LoadSettings()
+	EditorSettings LoadSettings()
 	{
-		Settings = EditorSettings.Load(SettingsFile, Logger);
+		var settings = EditorSettings.Load(SettingsFile, Logger);
 
-		if (Settings.Validate(Logger))
+		if (settings.Validate(Logger))
 		{
 			Logger.Info("Settings loaded and validated successfully.");
 		}
@@ -133,10 +137,21 @@ public class ObjectEditorContext : IDisposable
 		{
 			Logger.Error("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
 		}
+
+		settings.ObjectIndicesFolder = InitialiseDirectory(settings.ObjectIndicesFolder, "objectIndices");
+		settings.CacheFolder = InitialiseDirectory(settings.CacheFolder, "cache");
+		settings.DownloadFolder = InitialiseDirectory(settings.DownloadFolder, "downloads");
+
+		return settings;
 	}
 
 	string InitialiseDirectory(string folder, string defaultName)
 	{
+		if (IsBrowserEnvironment)
+		{
+			return folder;
+		}
+
 		if (string.IsNullOrEmpty(folder))
 		{
 			folder = Path.Combine(ProgramDataPath, defaultName);
@@ -150,6 +165,14 @@ public class ObjectEditorContext : IDisposable
 
 		return folder;
 	}
+
+	static EditorSettings CreateBrowserSettings()
+		=> new()
+		{
+			UseHttps = true,
+			ShowLogsOnError = false,
+			AutoObjectDiscoveryAndUpload = false,
+		};
 
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)
 	{

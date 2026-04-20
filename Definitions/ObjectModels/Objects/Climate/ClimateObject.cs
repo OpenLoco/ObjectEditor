@@ -10,7 +10,7 @@ public enum Season
 	Summer = 3,
 }
 
-public class ClimateObject : ILocoStruct
+public class ClimateObject : ILocoValidation
 {
 	public Season FirstSeason { get; set; }
 	public uint8_t SeasonLength1 { get; set; }

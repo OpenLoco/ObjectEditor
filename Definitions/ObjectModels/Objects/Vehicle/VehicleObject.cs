@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
-public class VehicleObject : ILocoStruct
+public class VehicleObject : ILocoValidation
 {
 	public TransportMode Mode { get; set; }
 	public VehicleType Type { get; set; }

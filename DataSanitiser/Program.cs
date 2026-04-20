@@ -242,7 +242,7 @@ static void QueryCostIndex()
 		.Where(t =>
 			t.IsClass &&
 			!t.IsAbstract &&
-			typeof(ILocoStruct).IsAssignableFrom(t) &&
+			typeof(ILocoValidation).IsAssignableFrom(t) &&
 			t.GetProperty("CostIndex", BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase) != null)
 		.Select(TypeToStruct)
 		.ToHashSet();

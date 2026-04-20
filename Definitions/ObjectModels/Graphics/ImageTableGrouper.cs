@@ -7,7 +7,7 @@ namespace Definitions.ObjectModels.Graphics;
 
 public static class ImageTableGrouper
 {
-	public static ImageTable CreateImageTable(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
+	public static ImageTable CreateImageTable(ILocoValidation obj, ObjectType objectType, List<GraphicsElement> imageList)
 	{
 		var originalCount = imageList.Count;
 
@@ -28,7 +28,7 @@ public static class ImageTableGrouper
 		return imageTable;
 	}
 
-	private static IEnumerable<ImageTableGroup> CreateGroups(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
+	private static IEnumerable<ImageTableGroup> CreateGroups(ILocoValidation obj, ObjectType objectType, List<GraphicsElement> imageList)
 	{
 		switch (objectType)
 		{

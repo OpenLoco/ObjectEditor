@@ -181,7 +181,7 @@ public static class ByteReader
 	public static T ReadLocoStruct<T>(ReadOnlySpan<byte> data) where T : class
 		=> (T)ReadLocoStruct(data, typeof(T));
 
-	public static ILocoStruct ReadLocoStruct(ReadOnlySpan<byte> data, Type t)
+	public static ILocoValidation ReadLocoStruct(ReadOnlySpan<byte> data, Type t)
 	{
 		var properties = t.GetProperties();
 		var args = new List<object>();
@@ -255,13 +255,13 @@ public static class ByteReader
 			args.Add(ReadT(data, p.PropertyType, offsetAttr.Offset, arrLength, variableAttr != null));
 		}
 
-		return (ILocoStruct?)Activator.CreateInstance(t, [.. args]) ?? throw new InvalidDataException("couldn't parse");
+		return (ILocoValidation?)Activator.CreateInstance(t, [.. args]) ?? throw new InvalidDataException("couldn't parse");
 	}
 
-	public static IList<ILocoStruct> ReadLocoStructArray(ReadOnlySpan<byte> data, Type t, int count, int structSize) // could get struct size from attribute, but easier just to pass in
+	public static IList<ILocoValidation> ReadLocoStructArray(ReadOnlySpan<byte> data, Type t, int count, int structSize) // could get struct size from attribute, but easier just to pass in
 	{
 		// cannot use ReadOnlySpan with yield return :|
-		var list = new List<ILocoStruct>();
+		var list = new List<ILocoValidation>();
 		for (var i = 0; i < count; ++i)
 		{
 			var range = data[(i * structSize)..((i + 1) * structSize)];

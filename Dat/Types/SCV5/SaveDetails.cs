@@ -20,7 +20,7 @@ public record SaveDetails(
 	[property: LocoStructOffset(0xC59C)] uint16_t MapSizeX,
 	[property: LocoStructOffset(0xC59E)] uint16_t MapSizeY,
 	[property: LocoStructOffset(0xC5A0), LocoArrayLength(120), Browsable(false)] byte[] var_C59C)
-	: ILocoStruct
+	: ILocoValidation
 {
 	public const int StructLength = 0xC618;
 

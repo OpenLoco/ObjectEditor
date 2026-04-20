@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Airport;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class AirportBuilding : ILocoStruct
+public class AirportBuilding : ILocoValidation
 {
 	public uint8_t Index { get; set; }
 	public uint8_t Rotation { get; set; }

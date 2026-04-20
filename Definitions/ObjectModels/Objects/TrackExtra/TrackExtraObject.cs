@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.TrackExtra;
 
-public class TrackExtraObject : ILocoStruct
+public class TrackExtraObject : ILocoValidation
 {
 	public TrackTraitFlags TrackPieces { get; set; }
 	public uint8_t PaintStyle { get; set; }

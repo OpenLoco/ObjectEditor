@@ -14,7 +14,7 @@ public record S5FileHeader(
 	[property: LocoStructOffset(0x04)] uint32_t Version,
 	[property: LocoStructOffset(0x08)] uint32_t Magic,
 	[property: LocoStructOffset(0x0C), LocoArrayLength(20)] byte[] Padding)
-	: ILocoStruct
+	: ILocoValidation
 {
 	public const int StructLength = 0x20;
 

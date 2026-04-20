@@ -61,7 +61,7 @@ public static class ByteWriter
 		else if (t.IsClass)
 		{
 			var objectSize = ByteHelpers.GetObjectSize(t);
-			var bytes = WriteLocoStruct((ILocoStruct)val);
+			var bytes = WriteLocoStruct((ILocoValidation)val);
 
 			if (bytes.Length != objectSize)
 			{
@@ -76,7 +76,7 @@ public static class ByteWriter
 		}
 	}
 
-	public static ReadOnlySpan<byte> WriteLocoStruct(ILocoStruct obj)
+	public static ReadOnlySpan<byte> WriteLocoStruct(ILocoValidation obj)
 	{
 		ArgumentNullException.ThrowIfNull(obj);
 

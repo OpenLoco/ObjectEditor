@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Wall;
 
-public class WallObject : ILocoStruct
+public class WallObject : ILocoValidation
 {
 	public uint8_t ToolId { get; set; } // unused in loco???
 	public WallObjectFlags1 Flags1 { get; set; } = WallObjectFlags1.None;

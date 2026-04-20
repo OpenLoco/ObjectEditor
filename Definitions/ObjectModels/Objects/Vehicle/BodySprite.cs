@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class BodySprite : ILocoStruct
+public class BodySprite : ILocoValidation
 {
 	public uint8_t NumFlatRotationFrames { get; set; }
 	public uint8_t NumSlopedRotationFrames { get; set; }

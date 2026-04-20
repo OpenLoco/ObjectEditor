@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Dat.Types.SCV5;
 
 [LocoStructSize(0x270)]
-public class Town : ILocoStruct
+public class Town : ILocoValidation
 {
 	[LocoArrayLength(0x270)] public uint8_t[] var_0 { get; set; }
 

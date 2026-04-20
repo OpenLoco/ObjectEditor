@@ -296,17 +296,17 @@ public class FilterViewModel : ReactiveObject
 		return CreateFilterExpression<T>(parameter, member);
 	}
 
-	private Expression<Func<ILocoStruct, bool>>? BuildObjectFilterExpression(Type t)
+	private Expression<Func<ILocoValidation, bool>>? BuildObjectFilterExpression(Type t)
 	{
 		if (SelectedProperty == null)
 		{
 			return null;
 		}
 
-		var parameter = Expression.Parameter(typeof(ILocoStruct), "x");
+		var parameter = Expression.Parameter(typeof(ILocoValidation), "x");
 		var convertedParameter = Expression.Convert(parameter, t); // Cast the interface to the concrete type
 		var member = Expression.Property(convertedParameter, SelectedProperty.Name);
-		return CreateFilterExpression<ILocoStruct>(parameter, member);
+		return CreateFilterExpression<ILocoValidation>(parameter, member);
 	}
 
 	private Expression<Func<T, bool>>? CreateFilterExpression<T>(ParameterExpression parameter, MemberExpression member)

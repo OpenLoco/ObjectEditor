@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Airport;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class MovementEdge : ILocoStruct
+public class MovementEdge : ILocoValidation
 {
 	public uint8_t var_00 { get; set; }
 	public uint8_t CurrNode { get; set; }

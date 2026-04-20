@@ -9,19 +9,19 @@ public interface IHasGraphicsElements
 
 public interface IImageTableNameProvider
 {
-	bool TryGetImageName<T>(T model, int id, [MaybeNullWhen(false)] out string value) where T : ILocoStruct;
+	bool TryGetImageName<T>(T model, int id, [MaybeNullWhen(false)] out string value) where T : ILocoValidation;
 }
 
-public interface IImageTableNameProvider<T> where T : ILocoStruct
+public interface IImageTableNameProvider<T> where T : ILocoValidation
 {
 	bool TryGetImageName(T model, int id, [MaybeNullWhen(false)] out string value);
 }
 
-public abstract class ImageTableNamer<T> : IImageTableNameProvider, IImageTableNameProvider<T> where T : ILocoStruct
+public abstract class ImageTableNamer<T> : IImageTableNameProvider, IImageTableNameProvider<T> where T : ILocoValidation
 {
 	public abstract bool TryGetImageName(T model, int id, [MaybeNullWhen(false)] out string value);
 
-	public bool TryGetImageName<T1>(T1 model, int id, [MaybeNullWhen(false)] out string value) where T1 : ILocoStruct
+	public bool TryGetImageName<T1>(T1 model, int id, [MaybeNullWhen(false)] out string value) where T1 : ILocoValidation
 	{
 		if (model is T tModel)
 		{
@@ -37,7 +37,7 @@ public class DefaultImageTableNameProvider : IImageTableNameProvider
 {
 	public static DefaultImageTableNameProvider Instance { get; } = new();
 
-	public bool TryGetImageName<T>(T model, int id, [MaybeNullWhen(false)] out string value) where T : ILocoStruct
+	public bool TryGetImageName<T>(T model, int id, [MaybeNullWhen(false)] out string value) where T : ILocoValidation
 	{
 		value = GetImageName(id);
 		return true;

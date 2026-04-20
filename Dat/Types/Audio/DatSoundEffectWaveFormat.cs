@@ -15,7 +15,7 @@ public record DatSoundEffectWaveFormat(
 	[property: LocoStructOffset(0x0B)] int16_t BlockAlign,
 	[property: LocoStructOffset(0x0D)] int16_t BitsPerSample,
 	[property: LocoStructOffset(0x010)] int16_t ExtraSize
-	) : ILocoStruct
+	) : ILocoValidation
 {
 	public DatSoundEffectWaveFormat() : this(0, 0, 0, 0, 0, 0, 0)
 	{ }

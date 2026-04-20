@@ -16,7 +16,7 @@ public record ScenarioObjective(
 	[property: LocoStructOffset(0x0B)] uint8_t DeliveredCargoType,
 	[property: LocoStructOffset(0x0C)] uint32_t DeliveredCargoAmount,
 	[property: LocoStructOffset(0x10)] uint8_t TimeLimitYears)
-	: ILocoStruct
+	: ILocoValidation
 {
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 		=> [];

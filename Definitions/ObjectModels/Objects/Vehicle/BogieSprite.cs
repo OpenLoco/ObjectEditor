@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class BogieSprite : ILocoStruct
+public class BogieSprite : ILocoValidation
 {
 	public uint8_t NumAnimationFrames { get; set; }
 	public BogieSpriteFlags Flags { get; set; }

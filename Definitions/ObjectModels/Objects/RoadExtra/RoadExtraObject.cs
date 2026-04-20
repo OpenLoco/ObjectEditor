@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.RoadExtra;
 
-public class RoadExtraObject : ILocoStruct
+public class RoadExtraObject : ILocoValidation
 {
 	public RoadTraitFlags RoadPieces { get; set; } = RoadTraitFlags.None;
 	public uint8_t PaintStyle { get; set; }

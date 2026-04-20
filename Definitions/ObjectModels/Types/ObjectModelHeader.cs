@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Types;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class ObjectModelHeader(string name, ObjectType objectType, ObjectSource objectSource, uint datchecksum) : ILocoStruct
+public class ObjectModelHeader(string name, ObjectType objectType, ObjectSource objectSource, uint datchecksum) : ILocoValidation
 {
 	public ObjectModelHeader()
 		: this(string.Empty, ObjectType.Airport, ObjectSource.Custom, 0)

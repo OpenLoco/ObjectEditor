@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Tree;
 
-public class TreeObject : ILocoStruct
+public class TreeObject : ILocoValidation
 {
 	public uint8_t InitialHeight { get; set; }
 	public uint8_t Height { get; set; }

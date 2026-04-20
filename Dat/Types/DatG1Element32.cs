@@ -28,7 +28,7 @@ public record DatG1Element32(
 	[property: LocoStructOffset(0x0A)] int16_t YOffset,
 	[property: LocoStructOffset(0x0C)] DatG1ElementFlags Flags,
 	[property: LocoStructOffset(0x0E)] int16_t ZoomOffset
-) : ILocoStruct
+) : ILocoValidation
 {
 	public static int StructLength => 0x10;
 

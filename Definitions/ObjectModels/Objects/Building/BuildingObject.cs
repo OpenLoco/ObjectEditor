@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Building;
 
-public class BuildingObject : ILocoStruct, IHasBuildingComponents
+public class BuildingObject : ILocoValidation, IHasBuildingComponents
 {
 	public static class Constants
 	{

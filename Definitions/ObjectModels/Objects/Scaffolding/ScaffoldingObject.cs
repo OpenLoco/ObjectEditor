@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Scaffolding;
 
-public class ScaffoldingObject : ILocoStruct
+public class ScaffoldingObject : ILocoValidation
 {
 	[Length(3, 3)]
 	public List<uint16_t> SegmentHeights { get; set; } = [];

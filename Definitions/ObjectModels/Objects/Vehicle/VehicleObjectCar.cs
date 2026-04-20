@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class VehicleObjectCar : ILocoStruct
+public class VehicleObjectCar : ILocoValidation
 {
 	public uint8_t FrontBogiePosition { get; set; }
 	public uint8_t BackBogiePosition { get; set; }

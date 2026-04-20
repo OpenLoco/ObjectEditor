@@ -62,10 +62,10 @@ sealed class SkipObjectSourceChecks : IDisposable
 [TestFixture]
 public class LoadSaveTests
 {
-	static (DatHeaderInfo, LocoObject, T) LoadObject<T>(string filename) where T : ILocoStruct
+	static (DatHeaderInfo, LocoObject, T) LoadObject<T>(string filename) where T : ILocoValidation
 		=> LoadObject<T>(File.ReadAllBytes(Path.Combine(TestConstants.BaseSteamObjDataPath, filename)));
 
-	static (DatHeaderInfo, LocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoStruct
+	static (DatHeaderInfo, LocoObject, T) LoadObject<T>(ReadOnlySpan<byte> data) where T : ILocoValidation
 	{
 		var logger = new Logger();
 		var (datFileInfo, locoObject) = SawyerStreamReader.LoadFullObject(data.ToArray(), logger);
@@ -80,7 +80,7 @@ public class LoadSaveTests
 		return (datFileInfo, locoObject!, (T)locoObject!.Object);
 	}
 
-	static void LoadSaveGenericTest<T>(string filename, Action<LocoObject, T> assertFunc) where T : ILocoStruct
+	static void LoadSaveGenericTest<T>(string filename, Action<LocoObject, T> assertFunc) where T : ILocoValidation
 	{
 		var logger = new Logger();
 

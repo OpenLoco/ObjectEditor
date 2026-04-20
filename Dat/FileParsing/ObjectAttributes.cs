@@ -5,7 +5,7 @@ namespace Dat.FileParsing;
 
 public static class ObjectAttributes
 {
-	public static int StructSize<T>() where T : ILocoStruct
+	public static int StructSize<T>() where T : ILocoValidation
 		=> AttributeHelper.Get<LocoStructSizeAttribute>(typeof(T))!.Size;
 
 	//public static ObjectType ObjectType<T>() // where T : ILocoStruct

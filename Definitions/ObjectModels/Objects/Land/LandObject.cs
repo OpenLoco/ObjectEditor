@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Land;
 
-public class LandObject : ILocoStruct
+public class LandObject : ILocoValidation
 {
 	public uint8_t CostIndex { get; set; }
 	public uint8_t NumGrowthStages { get; set; }

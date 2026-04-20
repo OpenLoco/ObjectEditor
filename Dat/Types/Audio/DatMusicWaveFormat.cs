@@ -19,7 +19,7 @@ public record DatMusicWaveFormat(
 	[property: LocoStructOffset(0x20)] uint16_t BlockAlign, // (BitsPerSample* Channels) / 8.1 - 8 bit mono2 - 8 bit stereo/16 bit mono4 - 16 bit stereo
 	[property: LocoStructOffset(0x22)] uint16_t BitsPerSample,
 	[property: LocoStructOffset(0x24)] uint32_t DataMarker,
-	[property: LocoStructOffset(0x28)] uint32_t DataLength) : ILocoStruct
+	[property: LocoStructOffset(0x28)] uint32_t DataLength) : ILocoValidation
 {
 	public const int StructLength = 0x2C;
 

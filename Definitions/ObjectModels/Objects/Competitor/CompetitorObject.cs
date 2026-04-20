@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Competitor;
 
-public class CompetitorObject : ILocoStruct
+public class CompetitorObject : ILocoValidation
 {
 	public NamePrefixFlags AvailableNamePrefixes { get; set; } // bitset
 	public PlaystyleFlags AvailablePlayStyles { get; set; } // bitset

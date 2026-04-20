@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Currency;
 
-public class CurrencyObject : ILocoStruct
+public class CurrencyObject : ILocoValidation
 {
 	public uint8_t Separator { get; set; }
 	public uint8_t Factor { get; set; }

@@ -146,7 +146,7 @@ public record GameStateScenarioA(
 	[property: LocoStructOffset(0xB959), LocoArrayLength(0xB96C - 0xB969), Browsable(false)] uint8_t[] var_B969
 	//[property: LocoStructOffset(0xB96C), LocoArrayLength((int)Limits.kMaxCompanies)] Company[] Companies // this isn't actually part of the data chunk in a scenario!
 	)
-	: ILocoStruct
+	: ILocoValidation
 {
 	//public const int StructLength = 0x4A0644;
 
@@ -162,7 +162,7 @@ public record GameStateScenarioB(
 	[property: LocoStructOffset(0xC300), LocoArrayLength((int)Limits.kMaxIndustries), Browsable(false)] Industry[] Industries,
 	[property: LocoStructOffset(0x2EC80), LocoArrayLength((int)Limits.kMaxStations), Browsable(false)] Station[] Stations
 //[property: LocoStructOffset(0x123480), LocoArrayLength((int)Limits.kMaxEntities)] Entity[] Entities  // this isn't actually part of the data chunk in a scenario!
-) : ILocoStruct
+) : ILocoValidation
 {
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 		=> [];
@@ -176,7 +176,7 @@ public record GameStateScenarioC(
 	[property: LocoStructOffset(0xC180), LocoArrayLength((int)Limits.kMaxUserStrings * 32), Browsable(false)] uint8_t[] UserStrings,
 	[property: LocoStructOffset(0x1C180), LocoArrayLength((int)(Limits.kMaxVehicles * Limits.kMaxRoutingsPerVehicle)), Browsable(false)] uint16_t[] Routings,
 	[property: LocoStructOffset(0x3B580), LocoArrayLength((int)Limits.kMaxWaves), Browsable(false)] uint8_t[] Orders
-) : ILocoStruct
+) : ILocoValidation
 {
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 		=> [];
@@ -314,7 +314,7 @@ public record GameStateSave([property: LocoStructOffset(0x00), LocoArrayLength(2
 	[property: LocoStructOffset(0x442A44), LocoArrayLength((int)(Limits.kMaxVehicles * Limits.kMaxRoutingsPerVehicle))] uint16_t[] Routings,
 	[property: LocoStructOffset(0x461E44), LocoArrayLength((int)Limits.kMaxOrders)] uint8_t[] Orders
 	)
-	: ILocoStruct, IGameState
+	: ILocoValidation, IGameState
 {
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 		=> [];

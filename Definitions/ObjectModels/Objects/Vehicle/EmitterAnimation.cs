@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class EmitterAnimation : ILocoStruct
+public class EmitterAnimation : ILocoValidation
 {
 	public ObjectModelHeader AnimationObject { get; set; } // will be SteamObject
 	public uint8_t EmitterVerticalPos { get; set; }

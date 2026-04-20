@@ -128,7 +128,7 @@ internal record DatSoundObjectData(
 	[property: LocoStructOffset(0x04)] int32_t Offset,
 	[property: LocoStructOffset(0x08)] uint32_t Length,
 	[property: LocoStructOffset(0x0C)] DatSoundEffectWaveFormat PcmHeader
-	) : ILocoStruct
+	) : ILocoValidation
 {
 	public DatSoundObjectData() : this(0, 0, 0, new DatSoundEffectWaveFormat())
 	{ }
@@ -150,7 +150,7 @@ internal record DatSoundObject(
 	[property: LocoStructOffset(0x06)] uint8_t ShouldLoop, // 0 means no loop, any other number means loop (usually 1)
 	[property: LocoStructOffset(0x07), Browsable(false)] uint8_t pad_07,
 	[property: LocoStructOffset(0x08)] uint32_t Volume
-	) : ILocoStruct, ILocoStructVariableData
+	) : ILocoValidation, ILocoStructVariableData
 {
 	[Editable(false)] public DatSoundObjectData SoundObjectData { get; set; }
 

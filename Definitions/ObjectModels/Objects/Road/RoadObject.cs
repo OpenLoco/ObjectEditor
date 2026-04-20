@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Road;
 
-public class RoadObject : ILocoStruct
+public class RoadObject : ILocoValidation
 {
 	public RoadTraitFlags RoadPieces { get; set; }
 	public int16_t BuildCostFactor { get; set; }

@@ -59,7 +59,7 @@ namespace Definitions.ObjectModels.Serialization
 			var concreteType = Type.GetType(clrTypeName, throwOnError: true)
 				?? throw new JsonException($"Could not resolve type '{clrTypeName}'.");
 
-			var locoStruct = (ILocoStruct?)objEl.Deserialize(concreteType, options)
+			var locoStruct = (ILocoValidation?)objEl.Deserialize(concreteType, options)
 				?? throw new JsonException($"Could not deserialize '{ObjectProp}' as '{concreteType}'.");
 
 			return new LocoObject(objectType, locoStruct, stringTable, imageTable);

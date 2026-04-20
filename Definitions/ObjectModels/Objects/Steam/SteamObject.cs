@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Steam;
 
-public class SteamObject : ILocoStruct
+public class SteamObject : ILocoValidation
 {
 	public uint8_t NumStationaryTicks { get; set; }
 	public uint8_t SpriteWidth { get; set; }

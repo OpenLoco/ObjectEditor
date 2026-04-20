@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.InterfaceSkin;
 
-public class InterfaceSkinObject : ILocoStruct
+public class InterfaceSkinObject : ILocoValidation
 {
 	public Colour MapTooltipObjectColour { get; set; }
 	public Colour MapTooltipCargoColour { get; set; }

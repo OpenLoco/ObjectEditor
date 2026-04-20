@@ -369,7 +369,7 @@ public static class SawyerStreamWriter
 		return ms.ToArray();
 	}
 
-	public static ReadOnlySpan<byte> WriteChunk(ILocoStruct str, SawyerEncoding encoding)
+	public static ReadOnlySpan<byte> WriteChunk(ILocoValidation str, SawyerEncoding encoding)
 		=> WriteChunkCore(ByteWriter.WriteLocoStruct(str), encoding);
 
 	public static byte[] WriteChunkCore(ReadOnlySpan<byte> source, SawyerEncoding encoding)

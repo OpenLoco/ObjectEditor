@@ -8,7 +8,7 @@ namespace Dat.Types;
 public record G1Header(
 	[property: LocoStructOffset(0x00)] uint32_t NumEntries,
 	[property: LocoStructOffset(0x04)] uint32_t TotalSize
-	) : ILocoStruct
+	) : ILocoValidation
 {
 	public static int StructLength => 0x08;
 	public byte[] ImageData = [];

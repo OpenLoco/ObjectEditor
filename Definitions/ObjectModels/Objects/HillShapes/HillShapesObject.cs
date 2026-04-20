@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.HillShape;
 
-public class HillShapesObject : ILocoStruct
+public class HillShapesObject : ILocoValidation
 {
 	public uint8_t HillHeightMapCount { get; set; }
 	public uint8_t MountainHeightMapCount { get; set; }

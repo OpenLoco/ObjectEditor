@@ -135,7 +135,7 @@ public static class SawyerStreamReader
 		}
 	}
 
-	static void ValidateLocoStruct(S5Header s5Header, ILocoStruct locoStruct, ILogger? logger)
+	static void ValidateLocoStruct(S5Header s5Header, ILocoValidation locoStruct, ILogger? logger)
 	{
 		var warnings = new List<string>();
 

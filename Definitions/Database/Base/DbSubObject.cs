@@ -70,9 +70,9 @@ public abstract class DtoSubObject : DbIdObject, IDtoSubObject
 
 public static class DbSubObjectHelper
 {
-	static async Task<string> AddOrUpdate<TSubObject, TDat>(LocoDbContext db, DbSet<TSubObject> subObjTable, TblObject parentObj, ILocoStruct datObj)
+	static async Task<string> AddOrUpdate<TSubObject, TDat>(LocoDbContext db, DbSet<TSubObject> subObjTable, TblObject parentObj, ILocoValidation datObj)
 		where TSubObject : class, IDbSubObject, IConvertibleToTable<TSubObject, TDat>
-		where TDat : ILocoStruct
+		where TDat : ILocoValidation
 	{
 		var subObj = TSubObject.FromObject(parentObj, (TDat)datObj);
 		return await AddOrUpdateCore<TSubObject, TDat>(db, subObjTable, parentObj, subObj);
@@ -80,7 +80,7 @@ public static class DbSubObjectHelper
 
 	static async Task<string> AddOrUpdateCore<TSubObject, TDat>(LocoDbContext db, DbSet<TSubObject> subObjTable, TblObject parentObj, TSubObject subObj)
 		where TSubObject : class, IDbSubObject, IConvertibleToTable<TSubObject, TDat>
-		where TDat : ILocoStruct
+		where TDat : ILocoValidation
 	{
 		var existingSubObj = await subObjTable.SingleOrDefaultAsync(x => x.Id == parentObj.SubObjectId);
 		if (existingSubObj != null)
@@ -141,7 +141,7 @@ public static class DbSubObjectHelper
 			_ => throw new NotImplementedException(),
 		};
 
-	public static async Task<string> AddOrUpdate(LocoDbContext db, TblObject obj, ILocoStruct locoStruct)
+	public static async Task<string> AddOrUpdate(LocoDbContext db, TblObject obj, ILocoValidation locoStruct)
 		=> obj.ObjectType switch
 		{
 			ObjectType.Airport => await AddOrUpdate<TblObjectAirport, AirportObject>(db, db.ObjAirport, obj, (AirportObject)locoStruct),

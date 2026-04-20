@@ -95,7 +95,7 @@ public record S5File(
 	List<(S5Header, byte[])> PackedObjects,
 	uint32_t Checksum
 	)
-	: ILocoStruct
+	: ILocoValidation
 {
 	public const int StructLength = 0x20;
 	public const int RequiredObjectsCount = 859;

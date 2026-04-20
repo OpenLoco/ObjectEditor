@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.LevelCrossing;
 
-public class LevelCrossingObject : ILocoStruct
+public class LevelCrossingObject : ILocoValidation
 {
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }

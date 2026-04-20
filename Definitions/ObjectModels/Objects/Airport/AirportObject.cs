@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Airport;
 
-public class AirportObject : ILocoStruct, IHasBuildingComponents
+public class AirportObject : ILocoValidation, IHasBuildingComponents
 {
 	[Range(1, int16_t.MaxValue, ErrorMessage = "BuildCostFactor must be greater than 0")]
 	public int16_t BuildCostFactor { get; set; }

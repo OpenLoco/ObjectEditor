@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Industry;
 
-public class IndustryObject : ILocoStruct, IHasBuildingComponents
+public class IndustryObject : ILocoValidation, IHasBuildingComponents
 {
 	public uint32_t FarmImagesPerGrowthStage { get; set; }
 	public BuildingComponents BuildingComponents { get; set; } = new();

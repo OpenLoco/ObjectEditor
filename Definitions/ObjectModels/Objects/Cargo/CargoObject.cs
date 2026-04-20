@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Cargo;
 
-public class CargoObject : ILocoStruct
+public class CargoObject : ILocoValidation
 {
 	public uint16_t UnitWeight { get; set; }
 	public uint16_t CargoTransferTime { get; set; }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Bridge;
 
-public class BridgeObject : ILocoStruct
+public class BridgeObject : ILocoValidation
 {
 	public BridgeObjectFlags Flags { get; set; }
 	public uint8_t var_03 { get; set; } // unknown - padding?

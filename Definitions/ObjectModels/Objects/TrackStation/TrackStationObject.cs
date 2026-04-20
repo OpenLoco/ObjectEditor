@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.TrackStation;
 
-public class TrackStationObject : ILocoStruct
+public class TrackStationObject : ILocoValidation
 {
 	public uint8_t PaintStyle { get; set; }
 	public uint8_t Height { get; set; }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.TrackSignal;
 
-public class TrackSignalObject : ILocoStruct
+public class TrackSignalObject : ILocoValidation
 {
 	public TrackSignalObjectFlags Flags { get; set; }
 	public uint8_t AnimationSpeed { get; set; }

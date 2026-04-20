@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.RoadStation;
 
-public class RoadStationObject : ILocoStruct
+public class RoadStationObject : ILocoValidation
 {
 	public uint8_t PaintStyle { get; set; }
 	public uint8_t Height { get; set; }

@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Definitions.ObjectModels.Objects.Common;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class BuildingComponents : ILocoStruct
+public class BuildingComponents : ILocoValidation
 {
 	[Length(1, BuildingObject.Constants.MaxAnimationsCount)]
 	[CountEqualTo(nameof(BuildingAnimations))]

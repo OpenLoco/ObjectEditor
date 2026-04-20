@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Dat.Types.SCV5;
 
 [LocoStructSize(0x8FA8)]
-public class Company : ILocoStruct
+public class Company : ILocoValidation
 {
 	public uint16_t Name { get; set; }                 // 0x0000
 	public uint16_t OwnerName { get; set; }            // 0x0002

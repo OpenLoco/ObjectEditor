@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Water;
 
-public class WaterObject : ILocoStruct
+public class WaterObject : ILocoValidation
 {
 	public uint8_t CostIndex { get; set; }
 	public uint8_t var_03 { get; set; }

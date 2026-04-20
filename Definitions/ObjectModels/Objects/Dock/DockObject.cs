@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Definitions.ObjectModels.Objects.Dock;
 
-public class DockObject : ILocoStruct, IHasBuildingComponents
+public class DockObject : ILocoValidation, IHasBuildingComponents
 {
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }

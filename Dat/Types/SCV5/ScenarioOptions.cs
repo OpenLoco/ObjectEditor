@@ -50,7 +50,7 @@ public record ScenarioOptions(
 	[property: LocoStructOffset(0x41C4)] uint16_t MapSizeX,
 	[property: LocoStructOffset(0x41C6)] uint16_t MapSizeY,
 	[property: LocoStructOffset(0x41C8), LocoArrayLength(338), Browsable(false)] byte[] var_41C8)
-	: ILocoStruct
+	: ILocoValidation
 {
 	public const int StructLength = 0x431A;
 

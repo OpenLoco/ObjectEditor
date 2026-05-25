@@ -14,7 +14,7 @@ public class DockObject : ILocoStruct, IHasBuildingComponents
 	public BuildingComponents BuildingComponents { get; set; } = new();
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-	public Pos2 BoatPosition { get; set; }
+	public Pos2 BoatPosition { get; set; } = new();
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

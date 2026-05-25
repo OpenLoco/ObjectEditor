@@ -104,11 +104,6 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 
 		if (control is InflatableCurrencyView cv)
 		{
-			if (cv is null)
-			{
-				return false;
-			}
-
 			var costFactor = (short)propertyDescriptor.GetValue(target)!;
 
 			// Get CostIndex from the target object
@@ -125,7 +120,7 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 				? (uint16_t)designedYearProperty.GetValue(target)!
 				: (uint16_t)1950;
 
-			var currVm = (InflatableCurrencyViewModel?)cv?.DataContext;
+			var currVm = (InflatableCurrencyViewModel?)cv.DataContext;
 			var year = currVm?.Year ?? designedYear;
 			// objects can actually set any year as designed year, even 0, so lets sanitize it
 			if (year < 1800)

@@ -69,7 +69,7 @@ public class IdempotenceTests
 			Assert.That(actual, Is.Not.Null);
 			Assert.That(expected, Is.Not.Null);
 
-			Assert.That(JsonSerializer.Serialize((object)actual.Object), Is.EqualTo(JsonSerializer.Serialize((object)expected.Object)), "Object");
+			Assert.That(JsonSerializer.Serialize((object)actual!.Object), Is.EqualTo(JsonSerializer.Serialize((object)expected!.Object)), "Object");
 			Assert.That(JsonSerializer.Serialize(actual.StringTable), Is.EqualTo(JsonSerializer.Serialize(expected.StringTable)), "String Table");
 
 			if (actual.ImageTable != null && expected.ImageTable != null)

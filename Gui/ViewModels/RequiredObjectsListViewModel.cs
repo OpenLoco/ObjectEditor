@@ -134,7 +134,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 
 		var headers = objectIndex.Objects
 			.Where(x => x.DatChecksum.HasValue)
-			.Select(entry => new ObjectModelHeader(entry.DisplayName, entry.ObjectType, entry.ObjectSource, entry.DatChecksum.Value));
+			.Select(entry => new ObjectModelHeader(entry.DisplayName, entry.ObjectType, entry.ObjectSource, entry.DatChecksum!.Value));
 
 		Replace(headers);
 	}

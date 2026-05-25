@@ -11,7 +11,7 @@ namespace Gui.ViewModels;
 public class MusicViewModel : BaseFileViewModel<DummyModel>
 {
 	[Reactive]
-	public AudioViewModel AudioViewModel { get; set; }
+	public AudioViewModel? AudioViewModel { get; set; }
 
 	public MusicViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
@@ -52,9 +52,9 @@ public class MusicViewModel : BaseFileViewModel<DummyModel>
 		SaveCore(savePath);
 	}
 
-	public override string SaveAs(SaveParameters saveParameters)
+	public override async Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
-		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes);
 		var savePath = saveFile?.Path.LocalPath;
 
 		if (savePath == null)
@@ -69,6 +69,12 @@ public class MusicViewModel : BaseFileViewModel<DummyModel>
 	void SaveCore(string filename)
 	{
 		logger?.Info($"Saving music to {filename}");
+
+		if (AudioViewModel == null)
+		{
+			logger?.Error("AudioViewModel is null, cannot save.");
+			return;
+		}
 
 		var datWav = AudioViewModel.GetAsDatWav(LocoAudioType.Music);
 		if (datWav == null)

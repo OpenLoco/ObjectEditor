@@ -559,6 +559,8 @@ public static class SawyerStreamWriter
 
 	public static void WriteStringTable(Stream ms, StringTable table)
 	{
+		// flip to true to byte-perfect-match vanilla objects (e.g. Currency); see WriteVanillaStringTable note below.
+#pragma warning disable CS0162 // unreachable code is intentional
 		const bool wantVanillaExact = false;
 		if (wantVanillaExact)
 		{
@@ -568,6 +570,7 @@ public static class SawyerStreamWriter
 		{
 			WriteSimpleStringTable(ms, table);
 		}
+#pragma warning restore CS0162
 	}
 
 	// this is a byte-perfect method for recreating the vanilla objects (specifically Currency)

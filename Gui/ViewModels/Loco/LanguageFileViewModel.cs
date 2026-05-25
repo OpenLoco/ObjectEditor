@@ -1,4 +1,5 @@
 using Gui.Models;
+using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
 
@@ -13,9 +14,9 @@ public class LanguageFileViewModel : BaseFileViewModel<LanguageFileModel>
 	public override void Save()
 		=> logger?.Warning("Save is not currently implemented");
 
-	public override string? SaveAs(SaveParameters saveParameters)
+	public override Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
 		logger?.Warning("SaveAs is not currently implemented");
-		return null;
+		return Task.FromResult<string?>(null);
 	}
 }

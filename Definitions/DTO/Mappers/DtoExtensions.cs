@@ -7,20 +7,22 @@ namespace Definitions.DTO.Mappers;
 public static class DtoExtensions
 {
 	public static DtoObjectPostResponse ToDtoDescriptor(this ExpandedTbl<TblObject, TblObjectPack> x /*, IDtoSubObject SubObject*/)
-		=> new(
-			x!.Object.Id,
-			x!.Object.Name,
-			x!.Object.DatObjects.FirstOrDefault()?.DatName ?? x!.Object.DatObjects.FirstOrDefault()?.Object?.Name ?? "<no-display-name>",
-			x!.Object.DatObjects.FirstOrDefault()?.DatChecksum ?? 0,
-			x!.Object.Description,
-			x!.Object.ObjectSource,
-			x!.Object.ObjectType,
-			x!.Object.VehicleType,
-			x!.Object.Availability,
-			x!.Object.CreatedDate,
-			x!.Object.ModifiedDate,
-			x!.Object.UploadedDate,
-			x!.Object.Licence?.ToDtoEntry(),
+	{
+		var firstDatObject = x.Object.DatObjects.FirstOrDefault();
+		return new(
+			x.Object.Id,
+			x.Object.Name,
+			firstDatObject?.DatName ?? firstDatObject?.Object?.Name ?? "<no-display-name>",
+			firstDatObject?.DatChecksum ?? 0,
+			x.Object.Description,
+			x.Object.ObjectSource,
+			x.Object.ObjectType,
+			x.Object.VehicleType,
+			x.Object.Availability,
+			x.Object.CreatedDate,
+			x.Object.ModifiedDate,
+			x.Object.UploadedDate,
+			x.Object.Licence?.ToDtoEntry(),
 			[.. x.Authors.Select(x => x.ToDtoEntry())],
 			[.. x.Tags.Select(x => x.ToDtoEntry())],
 			[.. x.Packs.Select(x => x.ToDtoEntry())],
@@ -28,6 +30,7 @@ public static class DtoExtensions
 			x.Object.StringTable.ToDtoDescriptor(x.Object.Id)
 			//SubObject
 			);
+	}
 
 	public static DtoStringTableDescriptor ToDtoDescriptor(this ICollection<TblStringTableRow> x, UniqueObjectId ObjectId)
 	{
@@ -131,13 +134,13 @@ public static class DtoExtensions
 		=> new() { Name = dto.Name, Id = dto.Id, Text = dto.Text };
 
 	public static DtoUserEntry ToDtoEntry(this TblUser table)
-		=> new(table.Id, table.UserName);
+		=> new(table.Id, table.UserName ?? string.Empty);
 
 	public static TblUser ToTable(this DtoUserEntry dto)
 		=> new() { UserName = dto.UserName, Id = dto.Id };
 
 	public static DtoRoleEntry ToDtoEntry(this TblUserRole table)
-		=> new(table.Id, table.Name);
+		=> new(table.Id, table.Name ?? string.Empty);
 
 	public static TblUserRole ToTable(this DtoRoleEntry dto)
 		=> new() { Name = dto.Name, Id = dto.Id };

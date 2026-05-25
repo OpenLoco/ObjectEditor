@@ -55,17 +55,37 @@ public class ServerFolderManager : IServerFolderManager
 
 		RootDirectory = rootDirectory;
 
-		var logger = new Logger();
+		Common.Logging.ILogger logger = new Logger();
 
 		var indexFile = Path.Combine(rootDirectory, ObjectsFolderName);
 		try
 		{
 			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
-			File.Delete(indexFile);
-			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!; // try again, recreating the index
+			// Index file is corrupt or otherwise unreadable. Log the original failure
+			// before destroying the file so we can diagnose recurring corruption.
+			logger.Error($"Failed to load object index at \"{indexFile}\"; deleting and recreating.", ex);
+			try
+			{
+				File.Delete(indexFile);
+			}
+			catch (Exception deleteEx)
+			{
+				logger.Error($"Failed to delete corrupt index file \"{indexFile}\".", deleteEx);
+				throw;
+			}
+
+			try
+			{
+				ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
+			}
+			catch (Exception retryEx)
+			{
+				logger.Error($"Failed to recreate object index at \"{indexFile}\".", retryEx);
+				throw;
+			}
 		}
 
 		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder), nameof(ObjectsOriginalFolder));

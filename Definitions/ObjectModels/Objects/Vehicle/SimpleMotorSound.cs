@@ -6,7 +6,7 @@ namespace Definitions.ObjectModels.Objects.Vehicle;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class SimpleMotorSound
 {
-	public ObjectModelHeader SoundObject { get; set; }
+	public ObjectModelHeader SoundObject { get; set; } = null!;
 	public uint16_t IdleFrequency { get; set; }
 	public uint8_t IdleVolume { get; set; }
 	public uint16_t CoastingFrequency { get; set; }

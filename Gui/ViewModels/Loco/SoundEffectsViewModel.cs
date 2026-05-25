@@ -46,9 +46,9 @@ public class SoundEffectsViewModel : BaseFileViewModel<DummyModel>
 		SaveCore(savePath);
 	}
 
-	public override string? SaveAs(SaveParameters saveParameters)
+	public override async Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
-		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes);
 		var savePath = saveFile?.Path.LocalPath;
 
 		if (savePath == null)

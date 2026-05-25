@@ -211,8 +211,9 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 			WaveStream.Position = 0;
 			Logger.Info($"Successfully loaded {filename}");
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			Logger.Error($"Failed to load audio file \"{filename}\".", ex);
 			WaveStream?.Dispose();
 			WaveStream = null;
 		}

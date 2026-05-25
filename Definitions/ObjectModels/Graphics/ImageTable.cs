@@ -9,7 +9,7 @@ public class ImageTable : IHasGraphicsElements
 	[JsonIgnore]
 	public PaletteMap PaletteMap
 	{
-		get;
+		get => field!;
 		set
 		{
 			ArgumentNullException.ThrowIfNull(value);

@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace Gui.ViewModels;
@@ -40,7 +41,7 @@ public class TabViewPageViewModel : ViewModelBase
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(OpenInNewTabIsVisible)));
 	}
 
-	public async void ReloadAll()
+	public async Task ReloadAllAsync()
 	{
 		foreach (var model in Documents)
 		{

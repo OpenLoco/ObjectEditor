@@ -4,6 +4,8 @@ using Definitions.SourceData;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
+#pragma warning disable CS8602 // utility script; DB columns are non-null by convention
+
 var db = LocoDbContext.GetDbFromFile(LocoDbContext.DefaultDb);
 
 Console.WriteLine("loading");

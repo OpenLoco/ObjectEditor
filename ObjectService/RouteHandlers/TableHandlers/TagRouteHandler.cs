@@ -33,7 +33,7 @@ public class TagRouteHandler
 	{
 		if (string.IsNullOrWhiteSpace(request.Name))
 		{
-			result = Results.BadRequest("Cannot add an empty or whitespace-only name.");
+			result = Results.Problem("Cannot add an empty or whitespace-only name.", statusCode: StatusCodes.Status400BadRequest);
 			return false;
 		}
 

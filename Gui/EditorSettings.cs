@@ -13,7 +13,7 @@ public class EditorSettings
 {
 	public string ObjDataDirectory
 	{
-		get;
+		get => field ??= string.Empty;
 		set
 		{
 			field = value;
@@ -82,10 +82,37 @@ public class EditorSettings
 			return newSettings;
 		}
 
-		var text = File.ReadAllText(filename);
-		var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: JsonFile.DefaultSerializerOptions); // todo: try-catch this for invalid settings files
-		ArgumentNullException.ThrowIfNull(settings);
-		return settings;
+		try
+		{
+			var text = File.ReadAllText(filename);
+			var settings = JsonSerializer.Deserialize<EditorSettings>(text, options: JsonFile.DefaultSerializerOptions);
+			if (settings != null)
+			{
+				return settings;
+			}
+
+			logger.Warning($"Settings file at \"{filename}\" deserialized to null; backing up and recreating with defaults.");
+		}
+		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+		{
+			logger.Error($"Failed to load settings from \"{filename}\"; backing up and recreating with defaults.", ex);
+		}
+
+		// Move the bad file aside so we don't silently destroy whatever the user had.
+		try
+		{
+			var backup = $"{filename}.bad-{DateTime.UtcNow:yyyyMMddHHmmss}";
+			File.Move(filename, backup, overwrite: true);
+			logger.Info($"Backed up invalid settings file to \"{backup}\"");
+		}
+		catch (Exception backupEx)
+		{
+			logger.Error($"Failed to back up invalid settings file \"{filename}\"; it will be overwritten.", backupEx);
+		}
+
+		var defaults = new EditorSettings();
+		Save(defaults, filename, logger);
+		return defaults;
 	}
 
 	public void Save(string filename, ILogger logger)

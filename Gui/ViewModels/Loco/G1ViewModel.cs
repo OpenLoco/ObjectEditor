@@ -15,12 +15,18 @@ public class G1ViewModel : BaseFileViewModel<G1Dat>
 		=> Load();
 
 	[Reactive]
-	public ImageTableViewModel ImageTableViewModel { get; set; }
+	public ImageTableViewModel? ImageTableViewModel { get; set; }
 
 	public override void Load()
 	{
 		logger.Info($"Loading G1 from {CurrentFile.FileName}");
-		Model = SawyerStreamReader.LoadG1(CurrentFile.FileName, EditorContext.Logger);
+		if (CurrentFile.FileName == null)
+		{
+			logger.Error("G1 file name was null");
+			return;
+		}
+
+		Model = SawyerStreamReader.LoadG1(CurrentFile.FileName, EditorContext.Logger)!;
 
 		if (Model == null)
 		{
@@ -44,14 +50,14 @@ public class G1ViewModel : BaseFileViewModel<G1Dat>
 		//Model.G1.ImageTable.GraphicsElements = [.. ImageTableViewModel.ImageViewModels.Select(x => x.ToGraphicsElement())];
 
 		var savePath = CurrentFile.FileLocation == FileLocation.Local
-			? Path.Combine(EditorContext.Settings.ObjDataDirectory, CurrentFile.FileName)
-			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName, ".dat"));
+			? Path.Combine(EditorContext.Settings.ObjDataDirectory, CurrentFile.FileName ?? string.Empty)
+			: Path.Combine(EditorContext.Settings.DownloadFolder, Path.ChangeExtension(CurrentFile.DisplayName ?? string.Empty, ".dat"));
 
 		logger?.Info($"Saving G1.dat to {savePath}");
 		SawyerStreamWriter.SaveG1(savePath, Model);
 	}
 
-	public override string? SaveAs(SaveParameters saveParameters)
+	public override async Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
 		if (Model == null)
 		{
@@ -59,7 +65,7 @@ public class G1ViewModel : BaseFileViewModel<G1Dat>
 			return null;
 		}
 
-		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes)).Result;
+		var saveFile = await PlatformSpecific.SaveFilePicker(PlatformSpecific.DatFileTypes);
 		if (saveFile == null)
 		{
 			return null;

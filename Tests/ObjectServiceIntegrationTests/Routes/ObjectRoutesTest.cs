@@ -92,7 +92,7 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 			Assert.That(expected, Is.Not.Null);
 			Assert.That(actual, Is.Not.Null);
 
-			Assert.That(expected.Id, Is.EqualTo(actual.Id));
+			Assert.That(expected!.Id, Is.EqualTo(actual!.Id));
 			Assert.That(expected.Name, Is.EqualTo(actual.Name));
 			Assert.That(expected.DisplayName, Is.EqualTo(actual.DisplayName));
 			Assert.That(expected.DatChecksum, Is.EqualTo(actual.DatChecksum));
@@ -174,8 +174,9 @@ public class ObjectRoutesTest : BaseReferenceDataTableTestFixture<
 		var logger = new Logger();
 		var index = ObjectIndex.LoadOrCreateIndex(objDirectory, logger);
 		_ = index.TryFind(7051740550869341430, out var entry); // randomly selected and hardcoded object
+		Assert.That(entry, Is.Not.Null);
 
-		var filename = Path.Combine(objDirectory, entry.FileName);
+		var filename = Path.Combine(objDirectory, entry!.FileName ?? string.Empty);
 		var bytes = File.ReadAllBytes(filename);
 		var xxHash3 = XxHash3.HashToUInt64(bytes);
 		var base64Bytes = Convert.ToBase64String(bytes);

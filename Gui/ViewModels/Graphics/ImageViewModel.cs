@@ -124,7 +124,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 				DisplayedImage.Size.Width + 2,
 				DisplayedImage.Size.Height + 2);
 
-	protected GraphicsElement Model { get; init; }
+	protected GraphicsElement Model { get; init; } = null!;
 
 	public ImageViewModel()
 	{ }

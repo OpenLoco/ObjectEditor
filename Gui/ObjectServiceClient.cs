@@ -24,22 +24,24 @@ public class ObjectServiceClient
 
 	public HttpClient WebClient { get; }
 
-	public ILogger Logger { get; init; }
+	public ILogger Logger { get; } = null!;
 
 	public CookieContainer CookieContainer { get; set; }
 
 	public ObjectServiceClient(EditorSettings settings, ILogger logger)
 	{
+		Logger = logger;
+		CookieContainer = new CookieContainer();
+		var handler = new HttpClientHandler() { CookieContainer = CookieContainer };
+		WebClient = new HttpClient(handler);
+
 		var serverAddress = settings.UseHttps
 			? settings.ServerAddressHttps
 			: settings.ServerAddressHttp;
 
 		if (Uri.TryCreate(serverAddress, new(), out var serverUri))
 		{
-			CookieContainer = new CookieContainer();
-			var handler = new HttpClientHandler() { CookieContainer = CookieContainer };
-
-			WebClient = new HttpClient(handler) { BaseAddress = serverUri };
+			WebClient.BaseAddress = serverUri;
 
 			var currentAppVersion = VersionHelpers.GetCurrentAppVersion();
 			WebClient.DefaultRequestHeaders.UserAgent.ParseAdd($"ObjectEditor/{currentAppVersion}");
@@ -50,8 +52,6 @@ public class ObjectServiceClient
 		{
 			Logger?.Error($"Unable to parse object service address \"{serverAddress}\". Online functionality will not work until the address is corrected and the editor is restarted.");
 		}
-
-		Logger = logger;
 
 		//LocoUser = new LocalUser(settings.ServerEmail, settings.ServerPassword);
 	}

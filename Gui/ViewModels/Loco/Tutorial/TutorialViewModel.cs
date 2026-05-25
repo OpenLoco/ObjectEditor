@@ -4,6 +4,7 @@ using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Gui.ViewModels.Loco.Tutorial;
 
@@ -23,6 +24,12 @@ public class TutorialViewModel : BaseFileViewModel<DummyModel>
 	public override void Load()
 	{
 		logger?.Info($"Loading tutorial from {CurrentFile.FileName}");
+		if (CurrentFile.FileName == null)
+		{
+			logger?.Error("Tutorial file name was null");
+			return;
+		}
+
 		var bytes = File.ReadAllBytes(CurrentFile.FileName).AsSpan();
 
 		// each tutorial action is 4 parts of 2 bytes each, so 8 bytes per action
@@ -68,9 +75,9 @@ public class TutorialViewModel : BaseFileViewModel<DummyModel>
 	public override void Save()
 		=> logger?.Warning("Save is not currently implemented");
 
-	public override string? SaveAs(SaveParameters saveParameters)
+	public override Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
 		logger?.Warning("SaveAs is not currently implemented");
-		return null;
+		return Task.FromResult<string?>(null);
 	}
 }

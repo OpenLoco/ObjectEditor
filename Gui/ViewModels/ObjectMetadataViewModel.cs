@@ -14,10 +14,10 @@ namespace Gui.ViewModels;
 
 public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMetadata>, IViewModel
 {
-	public string DisplayName
+	public new string DisplayName
 		=> "Metadata";
 
-	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"), null)
+	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"), null!)
 	{
 	}
 

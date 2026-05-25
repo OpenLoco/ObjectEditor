@@ -9,14 +9,19 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using ReactiveObject = ReactiveUI.ReactiveObject;
 
 namespace Gui.ViewModels.Loco.Objects.Building;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class BuildingComponentsViewModel : ReactiveObject, IViewModel
+public class BuildingComponentsViewModel : ReactiveObject, IViewModel, IDisposable
 {
+	readonly CompositeDisposable _subscriptions = new();
+	IDisposable? _modelSubscription;
+	bool _disposed;
 	public string DisplayName
 		=> "Building Components";
 
@@ -28,7 +33,7 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 	[Reactive] public int MaxHeight { get; set; }
 
 	[Reactive]
-	public BuildingComponents BuildingComponentsModel { get; set; }
+	public BuildingComponents BuildingComponentsModel { get; set; } = new();
 
 	[Reactive, Browsable(false)]
 	public ObservableCollection<uint8_t> BuildingHeights { get; set; } = [];
@@ -42,17 +47,21 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 	[Reactive]
 	public ObservableCollection<BuildingVariationViewModel> BuildingVariationViewModels { get; set; } = [];
 
-	protected ImageTable ImageTable { get; set; }
+	protected ImageTable ImageTable { get; set; } = new();
 
 	public BuildingComponentsViewModel()
 	{
-		_ = this.WhenAnyValue(x => x.BuildingVariations)
-			.Subscribe(_ => this.RaisePropertyChanged(nameof(BuildingVariationViewModels)));
+		this.WhenAnyValue(x => x.BuildingVariations)
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(BuildingVariationViewModels)))
+			.DisposeWith(_subscriptions);
 
-		_ = this.WhenAnyValue(x => x.VerticalLayerSpacing)
-			.Subscribe(ApplyOffsetToAllLayers);
+		this.WhenAnyValue(x => x.VerticalLayerSpacing)
+			.Subscribe(ApplyOffsetToAllLayers)
+			.DisposeWith(_subscriptions);
 
-		_ = MessageBus.Current.Listen<BuildingComponents>().Subscribe(UpdateBuildingComponents);
+		MessageBus.Current.Listen<BuildingComponents>()
+			.Subscribe(UpdateBuildingComponents)
+			.DisposeWith(_subscriptions);
 	}
 
 	public BuildingComponentsViewModel(BuildingComponents buildingComponents, ImageTable imageTable) : this()
@@ -66,7 +75,10 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 
 	void UpdateBuildingComponents(BuildingComponents buildingComponents)
 	{
-		_ = this.WhenAnyValue(x => x.BuildingVariationViewModels)
+		// Replace any previous per-model subscription so we don't accumulate handlers
+		// every time the model is swapped.
+		_modelSubscription?.Dispose();
+		_modelSubscription = this.WhenAnyValue(x => x.BuildingVariationViewModels)
 			.Where(x => x != null && ImageTable != null)
 			.Subscribe(_ => RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations, buildingComponents.BuildingHeights));
 
@@ -119,7 +131,7 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 						{
 							XBase = layer[i].XOffset + (MaxWidth / 2),
 							YBase = layer[i].YOffset - cumulativeOffset + MaxHeight * 0.80,
-							DisplayedImage = layer[i].Image.ToAvaloniaBitmap(),
+							DisplayedImage = layer[i].Image?.ToAvaloniaBitmap(),
 							XOffset = 0,
 							YOffset = 0,
 						};
@@ -166,6 +178,19 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel
 				}
 			}
 		}
+	}
+
+	public void Dispose()
+	{
+		if (_disposed)
+		{
+			return;
+		}
+
+		_disposed = true;
+		_modelSubscription?.Dispose();
+		_subscriptions.Dispose();
+		GC.SuppressFinalize(this);
 	}
 }
 

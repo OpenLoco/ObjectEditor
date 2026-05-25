@@ -46,7 +46,7 @@ public abstract class BaseRouteHandlerTestFixture
 		using (Assert.EnterMultipleScope())
 		{
 			var config = testWebAppFactory.Services.GetRequiredService<IConfiguration>();
-			Assert.That(config["ObjectService:RootFolder"].StartsWith(Path.GetTempPath()));
+			Assert.That(config["ObjectService:RootFolder"]!.StartsWith(Path.GetTempPath()));
 			Assert.That(Directory.Exists(config["ObjectService:RootFolder"]), Is.True);
 			Assert.That(config.GetValue<bool>("ObjectService:ShowScalar"), Is.False);
 		}
@@ -141,7 +141,7 @@ public abstract class BaseReferenceDataTableTestFixture<
 		using (Assert.EnterMultipleScope())
 		{
 			var results = await ClientHelpers.GetAsync<IEnumerable<TGetDto>>(HttpClient!, RoutesV2.Prefix, BaseRoute);
-			Assert.That(results.First(), Is.EqualTo(ToDtoEntryFunc(DbSeedData.ToList()[id])));
+			Assert.That(results!.First(), Is.EqualTo(ToDtoEntryFunc(DbSeedData.ToList()[id])));
 		}
 	}
 

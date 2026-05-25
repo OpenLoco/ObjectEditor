@@ -132,7 +132,9 @@ public static class PlatformSpecific
 			var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
 			if (clipboard != null)
 			{
+#pragma warning disable CS0618 // ClipboardExtensions.TryGetTextAsync not available in current Avalonia version
 				return await clipboard.GetTextAsync();
+#pragma warning restore CS0618
 			}
 		}
 

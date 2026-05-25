@@ -190,7 +190,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 		{
-			return Results.BadRequest($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.");
+			return Results.Problem($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		byte[]? datFileBytes;
@@ -200,33 +200,33 @@ public class ObjectRouteHandler : ITableRouteHandler
 		}
 		catch (FormatException ex)
 		{
-			return Results.BadRequest(ex.Message);
+			return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		if (datFileBytes == null || datFileBytes.Length == 0)
 		{
-			return Results.BadRequest($"Unable to decode {nameof(request.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.");
+			return Results.Problem($"Unable to decode {nameof(request.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)
 		{
-			return Results.BadRequest("Unable to accept file sizes > 5MB");
+			return Results.Problem($"Uploads are limited to {ServerLimits.MaximumUploadFileSize / (1024 * 1024)}MB.", statusCode: StatusCodes.Status413PayloadTooLarge);
 		}
 
 		var ssrLogger = new Logger();
 		if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
 		{
-			return Results.BadRequest("Provided data had invalid dat file headers");
+			return Results.Problem("Provided data had invalid dat file headers", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		if (hdrs.S5.IsVanilla())
 		{
-			return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
+			return Results.Problem("Uploading vanilla objects is not allowed.", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
 		{
-			return Results.BadRequest("Invalid DAT file.");
+			return Results.Problem("Invalid DAT file.", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		// todo: check the nested DAT objects and update appropriately, even if this top object exists already
@@ -265,7 +265,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		if (LocoObject == null)
 		{
-			return Results.BadRequest("Could not parse DAT object from request");
+			return Results.Problem("Could not parse DAT object from request", statusCode: StatusCodes.Status400BadRequest);
 
 			// cannot proceed
 		}
@@ -349,7 +349,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", response);
 	}
 
-	static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+	static async Task<IResult> ReadAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
 	{
 		logger.LogInformation("[ReadAsync] Read requested for object {ObjectId}", id);
 
@@ -359,7 +359,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			.Include(x => x.DatObjects)
 			.Include(x => x.StringTable)
 			.Select(x => new ExpandedTbl<TblObject, TblObjectPack>(x, x.Authors, x.Tags, x.ObjectPacks))
-			.SingleOrDefaultAsync();
+			.SingleOrDefaultAsync(cancellationToken);
 
 		//var subObject = DbSubObjectHelper.GetDbSubForType(db, eObj.Object.ObjectType, id);
 		var descriptor = eObj?.ToDtoDescriptor(/*subObject*/);
@@ -368,7 +368,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return ReturnObject(descriptor, sfm, logger);
 	}
 
-	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectPostResponse request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectPostResponse request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
 	{
 		logger.LogInformation("[UpdateAsync] Update requested for object {ObjectId}", id);
 
@@ -380,7 +380,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			.Include(x => x.DatObjects)
 			.Include(x => x.StringTable)
 			.Where(x => x.Id == id)
-			.SingleOrDefaultAsync();
+			.SingleOrDefaultAsync(cancellationToken);
 
 		if (obj == null)
 		{
@@ -401,7 +401,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		else
 		{
 			var licenceEntity = await db.Licences
-				.SingleOrDefaultAsync(l => l.Id == request.Licence.Id);
+				.SingleOrDefaultAsync(l => l.Id == request.Licence.Id, cancellationToken);
 
 			obj.Licence = licenceEntity;
 		}
@@ -419,7 +419,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 			var authors = await db.Authors
 				.Where(a => authorIds.Contains(a.Id))
-				.ToListAsync();
+				.ToListAsync(cancellationToken);
 
 			obj.Authors.Clear();
 			foreach (var author in authors)
@@ -441,7 +441,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 			var tags = await db.Tags
 				.Where(t => tagIds.Contains(t.Id))
-				.ToListAsync();
+				.ToListAsync(cancellationToken);
 
 			obj.Tags.Clear();
 			foreach (var tag in tags)
@@ -463,7 +463,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 			var packs = await db.ObjectPacks
 				.Where(p => packIds.Contains(p.Id))
-				.ToListAsync();
+				.ToListAsync(cancellationToken);
 
 			obj.ObjectPacks.Clear();
 			foreach (var pack in packs)
@@ -472,7 +472,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			}
 		}
 		// Save changes
-		_ = await db.SaveChangesAsync();
+		_ = await db.SaveChangesAsync(cancellationToken);
 
 		logger.LogInformation("[UpdateAsync] Successfully updated object {ObjectId}", id);
 
@@ -482,14 +482,14 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return Results.Ok(descriptor);
 	}
 
-	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+	static async Task<IResult> DeleteAsync([FromRoute] UniqueObjectId id, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
 	{
 		logger.LogInformation("[DeleteAsync] Delete requested for object {ObjectId}", id);
 		// for now we could soft-delete by marking an object as Unavailable?
-		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
+		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented), cancellationToken);
 	}
 
-	static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger)
+	static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
 	{
 		logger.LogInformation("[ListAsync] List requested for object");
 
@@ -552,7 +552,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 				//}
 			}
 
-			var results = await query.ToListAsync();
+			var results = await query.ToListAsync(cancellationToken);
 			return Results.Ok(results);
 
 			// transform query into linq/db query

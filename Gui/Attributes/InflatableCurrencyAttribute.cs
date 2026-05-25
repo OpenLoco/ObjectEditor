@@ -19,5 +19,5 @@ public class InflatableCurrencyAttribute(string CostIndexPropertyName, string? D
 	/// This is used as the default year value if it exists.
 	/// Defaults to <see langword="null"/>, meaning no designed year is used.
 	/// </summary>
-	public string DesignedYearPropertyName { get; } = DesignedYearPropertyName;
+	public string? DesignedYearPropertyName { get; } = DesignedYearPropertyName;
 }

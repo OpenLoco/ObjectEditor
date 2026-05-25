@@ -1,3 +1,13 @@
+// This program is a library of one-off database sanitisation helpers. Unused local functions
+// (CS8321) are intentionally retained as runnable queries.
+// Database/DAT result types pervasively have nullable references that this script
+// dereferences without guards by design (it's a maintenance utility, not production code).
+#pragma warning disable CS8321
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+#pragma warning disable CS8629 // Nullable value type may be null.
+
 using Common.Logging;
 using Dat.Data;
 using Dat.FileParsing;
@@ -215,7 +225,6 @@ static void QueryHeadquarters()
 
 	Console.WriteLine(results.Count);
 
-	const string csvHeader = "DatName, ObjectSource";
 	var lines = results
 		.OrderBy(x => x.Obj.DisplayName)
 		.Select(x => string.Join(',', x.Obj.DisplayName, x.ObjectSource));

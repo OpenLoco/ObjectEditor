@@ -53,7 +53,7 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 	}
 
 	// latest version
-	var latestVersion = GetLatestVersion();
+	var latestVersion = await GetLatestVersionAsync(cancellationToken);
 
 	if (latestVersion == null)
 	{
@@ -144,21 +144,18 @@ async Task UpdateEditor(ParseResult parseResult, CancellationToken cancellationT
 	_ = Process.Start(new ProcessStartInfo(appPath) { UseShellExecute = false, CreateNoWindow = true, });
 }
 
-static SemanticVersion? GetLatestVersion()
+static async Task<SemanticVersion?> GetLatestVersionAsync(CancellationToken cancellationToken)
 {
-	// latest version
-	SemanticVersion? latestVersion = null;
-
 	try
 	{
 		Console.WriteLine("Checking for the latest version...");
-		latestVersion = VersionHelpers.GetLatestAppVersion(VersionHelpers.ObjectEditorName);
+		var latestVersion = await VersionHelpers.GetLatestAppVersionAsync(VersionHelpers.ObjectEditorName, cancellationToken: cancellationToken);
 		Console.WriteLine($"Latest version available: {latestVersion}");
+		return latestVersion;
 	}
 	catch (Exception ex)
 	{
 		Console.Error.WriteLine($"An error occurred while checking for the latest version: {ex.Message}");
+		return null;
 	}
-
-	return latestVersion;
 }

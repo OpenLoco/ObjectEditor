@@ -10,10 +10,10 @@ namespace Gui.ViewModels.Loco.Objects.Building;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class BuildingLayerViewModel : ReactiveObject
 {
-	[Reactive] public Bitmap DisplayedImage { get; set; }
+	[Reactive] public Bitmap? DisplayedImage { get; set; }
 
-	public double Width => DisplayedImage.Size.Width;
-	public double Height => DisplayedImage.Size.Height;
+	public double Width => DisplayedImage?.Size.Width ?? 0;
+	public double Height => DisplayedImage?.Size.Height ?? 0;
 
 	public double X => XBase + XOffset;
 	public double Y => YBase + YOffset;

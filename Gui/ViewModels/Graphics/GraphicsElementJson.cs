@@ -10,7 +10,6 @@ public record GraphicsElementJson(
 	[property: JsonPropertyName("zoomOffset")] int16_t? ZoomOffset,
 	[property: JsonPropertyName("flags")] GraphicsElementFlags? Flags,
 	[property: JsonPropertyName("name")] string? Name
-	// todo: add name
 	)
 {
 	public GraphicsElementJson()

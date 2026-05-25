@@ -26,6 +26,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -181,8 +183,11 @@ public class DesignerOnlineBrowseResultsViewModel : FolderTreeViewModel
 	}
 }
 
-public class FolderTreeViewModel : ReactiveObject
+public class FolderTreeViewModel : ReactiveObject, IDisposable
 {
+	readonly CompositeDisposable _subscriptions = new();
+	bool _disposed;
+
 	[Reactive]
 	protected SourceList<FileSystemItem> CurrentDirectoryItems { get; set; } = new();
 
@@ -370,12 +375,14 @@ public class FolderTreeViewModel : ReactiveObject
 			.Select(_ => Observable.Start(CreateFilterPredicate, RxSchedulers.TaskpoolScheduler))
 			.Switch()
 		   .ObserveOn(RxSchedulers.MainThreadScheduler)
-			.Subscribe(_filterSubject);
+			.Subscribe(_filterSubject)
+			.DisposeWith(_subscriptions);
 
 		_ = CurrentDirectoryItems.Connect()
 			.Filter(_filterSubject)
 			.Bind(out treeDataGridSource)
-			.Subscribe(_ => UpdateDirectoryItemsView());
+			.Subscribe(_ => UpdateDirectoryItemsView())
+			.DisposeWith(_subscriptions);
 
 		_ = this.WhenAnyValue(x => x.TreeDataGridSource)
 			.Where(x => x?.RowSelection != null)
@@ -386,27 +393,28 @@ public class FolderTreeViewModel : ReactiveObject
 				CurrentlySelectedObject = e.EventArgs.SelectedItems.Count == 1
 					? e.EventArgs.SelectedItems[0]
 					: null;
-			});
+			})
+			.DisposeWith(_subscriptions);
 
-		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true));
-		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory)));
+		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true)).DisposeWith(_subscriptions);
+		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory))).DisposeWith(_subscriptions);
 
 		//_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
-		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => RaiseBrowseModeProperties());
-		_ = this.WhenAnyValue(o => o.CurrentDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true));
-		_ = this.WhenAnyValue(o => o.CurrentDirectoryItems).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
+		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => RaiseBrowseModeProperties()).DisposeWith(_subscriptions);
+		_ = this.WhenAnyValue(o => o.CurrentDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true)).DisposeWith(_subscriptions);
+		_ = this.WhenAnyValue(o => o.CurrentDirectoryItems).Skip(1).Subscribe(_ => UpdateDirectoryItemsView()).DisposeWith(_subscriptions);
 		_ = this.WhenAnyValue(o => o.SelectedOnlineBrowseTarget).Skip(1).Subscribe(async _ =>
 		{
 			RaiseBrowseModeProperties();
 			await LoadDirectoryAsync(false);
-		});
+		}).DisposeWith(_subscriptions);
 
 		_ = this.WhenAnyValue(o => o.TreeDataGridSource).Skip(1).Subscribe(_ =>
 		{
 			CurrentlySelectedObject = null;
 			this.RaisePropertyChanged(nameof(TreeDataGridSourceCount));
 			RaiseBrowseModeProperties();
-		});
+		}).DisposeWith(_subscriptions);
 
 		CurrentLocalDirectory = this.EditorContext.Settings.ObjDataDirectory;
 
@@ -946,5 +954,18 @@ public class FolderTreeViewModel : ReactiveObject
 			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" to \"{filename}\" due to insufficient permissions", ex);
 			await ShowDownloadFailureDialogAsync($"You do not have permission to write to:\n{filename}\n\nPlease check folder permissions or choose a different download folder.");
 		}
+	}
+
+	public void Dispose()
+	{
+		if (_disposed)
+		{
+			return;
+		}
+
+		_disposed = true;
+		_subscriptions.Dispose();
+		_filterSubject.Dispose();
+		GC.SuppressFinalize(this);
 	}
 }

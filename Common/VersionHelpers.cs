@@ -2,10 +2,10 @@ using Common.Logging;
 using NuGet.Versioning;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json;
 
 namespace Common;
 
@@ -111,21 +111,25 @@ public static class VersionHelpers
 		}
 	}
 
+	// A single, process-wide HttpClient avoids socket exhaustion that comes from
+	// creating a new instance on every call. Kept internal-static deliberately:
+	// there's no DI container in `Common`, so we cannot inject IHttpClientFactory here.
+	static readonly HttpClient sharedHttpClient = new();
+
 	// thanks for this one @IntelOrca, https://github.com/IntelOrca/PeggleEdit/blob/master/src/peggleedit/Forms/MainMDIForm.cs#L848-L861
-	public static SemanticVersion GetLatestAppVersion(string productName, SemanticVersion? currentVersion = null)
+	public static async Task<SemanticVersion> GetLatestAppVersionAsync(string productName, SemanticVersion? currentVersion = null, CancellationToken cancellationToken = default)
 	{
-		var client = new HttpClient();
-		client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName, currentVersion?.ToString()));
-		var response = client.GetAsync(GithubLatestReleaseAPI).Result;
-		if (response.IsSuccessStatusCode)
+		using var request = new HttpRequestMessage(HttpMethod.Get, GithubLatestReleaseAPI);
+		request.Headers.UserAgent.Add(new ProductInfoHeaderValue(productName, currentVersion?.ToString()));
+
+		using var response = await sharedHttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		if (!response.IsSuccessStatusCode)
 		{
-			var jsonResponse = response.Content.ReadAsStringAsync().Result;
-			var body = JsonSerializer.Deserialize<VersionCheckBody>(jsonResponse);
-			var versionText = body?.TagName;
-			return GetVersionFromText(versionText);
+			return UnknownVersion;
 		}
 
-		return UnknownVersion;
+		var body = await response.Content.ReadFromJsonAsync<VersionCheckBody>(cancellationToken).ConfigureAwait(false);
+		return GetVersionFromText(body?.TagName);
 	}
 
 	public static readonly SemanticVersion UnknownVersion = new(0, 0, 0, "unknown");

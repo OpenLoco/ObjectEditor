@@ -181,9 +181,19 @@ public class MainWindowViewModel : ViewModelBase
 		ApplicationVersion = VersionHelpers.GetCurrentAppVersion();
 
 #if !DEBUG
+		// Fire-and-forget: the network check must not block the UI thread.
+		// Failures are logged inside CheckForLatestVersionAsync.
+		_ = CheckForLatestVersionAsync();
+#endif
+
+	}
+
+#if !DEBUG
+	async Task CheckForLatestVersionAsync()
+	{
 		try
 		{
-			LatestVersion = VersionHelpers.GetLatestAppVersion(VersionHelpers.ObjectEditorName);
+			LatestVersion = await VersionHelpers.GetLatestAppVersionAsync(VersionHelpers.ObjectEditorName);
 			if (LatestVersion > ApplicationVersion)
 			{
 				LatestVersionText = $"newer version exists: {LatestVersion}";
@@ -199,10 +209,9 @@ public class MainWindowViewModel : ViewModelBase
 		{
 			EditorContext.Logger.Error(ex);
 		}
-#endif
-
-		#endregion
 	}
+#endif
+		#endregion
 
 	void PopulateObjDataMenu()
 	{
@@ -257,11 +266,10 @@ public class MainWindowViewModel : ViewModelBase
 	}
 
 	async Task LoadDefaultPalette()
-		=> await Task.Run(() =>
-		{
-			EditorContext.PaletteMap = new PaletteMap(DefaultPaletteImage);
-			CurrentTabModel.ReloadAll();
-		});
+	{
+		EditorContext.PaletteMap = await Task.Run(() => new PaletteMap(DefaultPaletteImage));
+		await CurrentTabModel.ReloadAllAsync();
+	}
 
 	async Task LoadCustomPalette()
 	{
@@ -279,13 +287,13 @@ public class MainWindowViewModel : ViewModelBase
 		}
 
 		EditorContext.PaletteMap = new PaletteMap(path);
-		CurrentTabModel.ReloadAll();
+		await CurrentTabModel.ReloadAllAsync();
 	}
 
 	public async Task LoadSingleObject()
 	{
 		var fsi = await GetFileSystemItemFromUser(PlatformSpecific.DatFileTypes);
-		if (fsi == null)
+		if (fsi == null || fsi.FileName == null)
 		{
 			return;
 		}
@@ -296,8 +304,8 @@ public class MainWindowViewModel : ViewModelBase
 		if (EditorContext.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 		{
 			EditorContext.Logger.Warning($"Successfully loaded {fsi.FileName}");
-			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum, uiLocoFile.DatInfo.S5Header.ObjectSource);
-			var fsi2 = new FileSystemItem(uiLocoFile!.DatInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
+			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo!.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum, uiLocoFile.DatInfo.S5Header.ObjectSource);
+			var fsi2 = new FileSystemItem(uiLocoFile.DatInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
 			SetObjectViewModel(fsi2);
 		}
 		else

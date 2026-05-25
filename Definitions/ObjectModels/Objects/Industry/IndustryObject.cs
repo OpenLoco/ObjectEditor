@@ -88,7 +88,7 @@ public class IndustryObject : ILocoStruct, IHasBuildingComponents
 			yield return new ValidationResult("var_E8 must be between 0 and 8", [nameof(var_E8)]);
 		}
 
-		if (FarmTileNumImageAngles is not 1 or 2 or 4)
+		if (FarmTileNumImageAngles is not (1 or 2 or 4))
 		{
 			yield return new ValidationResult("FarmTileNumImageAngles must be 1, 2, or 4", [nameof(FarmTileNumImageAngles)]);
 		}

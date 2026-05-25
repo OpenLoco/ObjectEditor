@@ -10,7 +10,7 @@ public class RoadObject : ILocoStruct
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
 	public int16_t TunnelCostFactor { get; set; }
-	public ObjectModelHeader Tunnel { get; set; }
+	public ObjectModelHeader Tunnel { get; set; } = null!;
 	public int16_t MaxCurveSpeed { get; set; }
 	public RoadObjectFlags Flags { get; set; }
 	public List<ObjectModelHeader> Bridges { get; set; } = [];

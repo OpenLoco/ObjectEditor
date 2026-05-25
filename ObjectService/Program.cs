@@ -54,8 +54,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<LocoDbContext>(options =>
 {
 	_ = options.UseSqlite(connectionString);
-	_ = options.EnableDetailedErrors();
-	_ = options.EnableSensitiveDataLogging();
+	if (builder.Environment.IsDevelopment())
+	{
+		// EnableSensitiveDataLogging exposes parameter values in logs, which can
+		// leak PII / secrets. Restrict to the Development environment.
+		_ = options.EnableDetailedErrors();
+		_ = options.EnableSensitiveDataLogging();
+	}
 });
 
 builder.Services.AddScoped<ObjectExplorerService>();
@@ -96,7 +101,7 @@ builder.Services.AddHttpLogging(logging =>
 	logging.CombineLogs = true;
 });
 
-var tokenPolicy = "token";
+const string tokenPolicy = "token";
 
 var rateLimiterSection = builder.Configuration.GetSection("ObjectService:RateLimiter");
 ArgumentNullException.ThrowIfNull(rateLimiterSection);

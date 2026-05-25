@@ -23,8 +23,8 @@ public static class DownloadNameHelper
 		sanitizedName = sanitizedName
 			.Replace('/', '_')
 			.Replace('\\', '_')
-			.Replace("..", "__", StringComparison.Ordinal)
-			.Trim(' ', '.');
+			.Trim(' ', '.')
+			.Replace("..", "__", StringComparison.Ordinal);
 
 		return string.IsNullOrWhiteSpace(sanitizedName) ? fallbackName : sanitizedName;
 	}

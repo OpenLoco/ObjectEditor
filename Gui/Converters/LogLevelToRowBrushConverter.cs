@@ -32,9 +32,11 @@ public class LogLevelToRowBrushConverter : IValueConverter
 			return Brushes.Magenta;
 		}
 
+		var app = Application.Current;
+
 		if (value is LogLine { Level: LogLevel.Error })
 		{
-			if (Application.Current.TryGetResource($"Danger{resourceKey}Brush", Application.Current.ActualThemeVariant, out var resource) && resource is ISolidColorBrush brush)
+			if (app != null && app.TryGetResource($"Danger{resourceKey}Brush", app.ActualThemeVariant, out var resource) && resource is ISolidColorBrush brush)
 			{
 				return brush;
 			}
@@ -43,7 +45,7 @@ public class LogLevelToRowBrushConverter : IValueConverter
 		}
 		else if (value is LogLine { Level: LogLevel.Warning })
 		{
-			if (Application.Current.TryGetResource($"Warning{resourceKey}Brush", Application.Current.ActualThemeVariant, out var resource) && resource is ISolidColorBrush brush)
+			if (app != null && app.TryGetResource($"Warning{resourceKey}Brush", app.ActualThemeVariant, out var resource) && resource is ISolidColorBrush brush)
 			{
 				return brush;
 			}
@@ -52,7 +54,7 @@ public class LogLevelToRowBrushConverter : IValueConverter
 		}
 		else
 		{
-			if (Application.Current.TryGetResource($"Text{resourceKey}Brush", Application.Current.ActualThemeVariant, out var resource) && resource is ISolidColorBrush brush)
+			if (app != null && app.TryGetResource($"Text{resourceKey}Brush", app.ActualThemeVariant, out var resource) && resource is ISolidColorBrush brush)
 			{
 				return brush;
 			}

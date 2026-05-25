@@ -1,3 +1,7 @@
+// One-off database import utility. Tolerates nullable record fields without explicit guards.
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8629 // Nullable value type may be null.
+
 using Common;
 using Common.Json;
 using Common.Logging;

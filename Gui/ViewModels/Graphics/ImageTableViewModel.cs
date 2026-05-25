@@ -227,10 +227,14 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		currentFrameIndex = (currentFrameIndex + 1) % SelectionModel.SelectedItems.Count;
 	}
 
-	void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+	void SelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
 	{
+		if (sender is not SelectionModel<ImageViewModel> sm)
+		{
+			return;
+		}
+
 		// need to unselect the current selection
-		var sm = (SelectionModel<ImageViewModel>)sender;
 		if (SelectionModel != null && SelectionModel != sm)
 		{
 			SelectionModel.SelectionChanged -= SelectionChanged;

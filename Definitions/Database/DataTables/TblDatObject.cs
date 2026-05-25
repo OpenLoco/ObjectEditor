@@ -14,5 +14,5 @@ public class TblDatObject : DbIdObject
 
 	public required UniqueObjectId ObjectId { get; set; } // FK property
 
-	public TblObject Object { get; set; } // navigation property. a DAT object must ALWAYS reference an OL object
+	public TblObject Object { get; set; } = null!; // navigation property. a DAT object must ALWAYS reference an OL object
 }

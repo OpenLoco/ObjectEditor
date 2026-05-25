@@ -56,8 +56,12 @@ public class ObjectIndex
 	public static async Task<ObjectIndex?> LoadIndexAsync(string indexFile)
 		=> await JsonFile.DeserializeFromFileAsync<ObjectIndex?>(indexFile, JsonFile.DefaultSerializerOptions).ConfigureAwait(false);
 
+	// Synchronous wrapper retained for the various console utility apps (DataQuery,
+	// DataSanitiser, DatabaseImporter, etc.) which have no SynchronizationContext and
+	// cannot meaningfully be made async-from-Main everywhere. Avoid calling this from
+	// UI thread code — use LoadOrCreateIndexAsync instead.
 	public static ObjectIndex LoadOrCreateIndex(string directory, ILogger logger, IProgress<float>? progress = null)
-		=> LoadOrCreateIndexAsync(directory, logger, progress).Result;
+		=> LoadOrCreateIndexAsync(directory, logger, progress).GetAwaiter().GetResult();
 
 	public static async Task<ObjectIndex> LoadOrCreateIndexAsync(string directory, ILogger logger, IProgress<float>? progress = null)
 	{

@@ -35,7 +35,7 @@ public class GraphicsElement // follows G1Element32, except XOffset and YOffset 
 	//public IndexedImageFrame<Rgba32>? Image { get; set; }
 
 	[JsonIgnore] // this is calculated based on object type, its not really a part of the object definition itself
-	public string Name { get; set; } // taken from IImageNameProvider
+	public string Name { get; set; } = string.Empty; // taken from IImageNameProvider
 
 	public int ImageTableIndex { get; set; }
 }

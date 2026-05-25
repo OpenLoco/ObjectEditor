@@ -116,6 +116,31 @@ public class LegacyRouteHandler()
 	{
 		logger.LogInformation("[ListObjects]");
 
+		// Cap free-text query parameters to a reasonable length. Without this an
+		// attacker can issue arbitrarily long `LIKE %…%` scans against SQLite.
+		const int maxQueryStringLength = 256;
+		var validationErrors = new Dictionary<string, string[]>();
+		if (datName?.Length > maxQueryStringLength)
+		{
+			validationErrors[nameof(datName)] = [$"Must be {maxQueryStringLength} characters or fewer."];
+		}
+		if (description?.Length > maxQueryStringLength)
+		{
+			validationErrors[nameof(description)] = [$"Must be {maxQueryStringLength} characters or fewer."];
+		}
+		if (authorName?.Length > maxQueryStringLength)
+		{
+			validationErrors[nameof(authorName)] = [$"Must be {maxQueryStringLength} characters or fewer."];
+		}
+		if (tagName?.Length > maxQueryStringLength)
+		{
+			validationErrors[nameof(tagName)] = [$"Must be {maxQueryStringLength} characters or fewer."];
+		}
+		if (validationErrors.Count > 0)
+		{
+			return Results.ValidationProblem(validationErrors);
+		}
+
 		var query = db.Objects
 			.Include(x => x.DatObjects)
 			.AsQueryable();
@@ -147,7 +172,7 @@ public class LegacyRouteHandler()
 			// can only query vehicle type if it's a vehicle. if ObjectType is unspecified, that is fine
 			if (objectType is not null and not ObjectType.Vehicle)
 			{
-				return Results.BadRequest("Cannot query for a Vehicle type on non-Vehicle objects");
+				return Results.Problem("Cannot query for a Vehicle type on non-Vehicle objects", statusCode: StatusCodes.Status400BadRequest);
 			}
 
 			query = query.Where(x => x.VehicleType == vehicleType);
@@ -508,7 +533,7 @@ public class LegacyRouteHandler()
 
 		if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 		{
-			return Results.BadRequest($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.");
+			return Results.Problem($"{nameof(request.DatBytesAsBase64)} cannot be null - it must contain the valid bytes of a loco dat object.", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		byte[]? datFileBytes;
@@ -518,33 +543,33 @@ public class LegacyRouteHandler()
 		}
 		catch (FormatException ex)
 		{
-			return Results.BadRequest(ex.Message);
+			return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		if (datFileBytes == null || datFileBytes.Length == 0)
 		{
-			return Results.BadRequest($"Unable to decode {nameof(request.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.");
+			return Results.Problem($"Unable to decode {nameof(request.DatBytesAsBase64)} - it must contain the valid bytes of a loco dat object.", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		if (datFileBytes.Length > ServerLimits.MaximumUploadFileSize)
 		{
-			return Results.BadRequest("Unable to accept file sizes > 5MB");
+			return Results.Problem($"Uploads are limited to {ServerLimits.MaximumUploadFileSize / (1024 * 1024)}MB.", statusCode: StatusCodes.Status413PayloadTooLarge);
 		}
 
 		var ssrLogger = new Logger();
 		if (!SawyerStreamReader.TryGetHeadersFromBytes(datFileBytes, out var hdrs, ssrLogger))
 		{
-			return Results.BadRequest("Provided data had invalid dat file headers");
+			return Results.Problem("Provided data had invalid dat file headers", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		if (hdrs.S5.IsVanilla())
 		{
-			return Results.BadRequest("Nice try genius. Uploading vanilla objects is not allowed.");
+			return Results.Problem("Uploading vanilla objects is not allowed.", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		if (!hdrs.S5.IsValid() || !hdrs.Obj.IsValid())
 		{
-			return Results.BadRequest("Invalid DAT file.");
+			return Results.Problem("Invalid DAT file.", statusCode: StatusCodes.Status400BadRequest);
 		}
 
 		if (db.DoesObjectExist(hdrs.S5.Name, hdrs.S5.Checksum, out var existingObject))

@@ -49,7 +49,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 	{
 		Load();
 
-		ExportUncompressedCommand = ReactiveCommand.Create(SaveAsUncompressedDat);
+		ExportUncompressedCommand = ReactiveCommand.CreateFromTask(SaveAsUncompressedDatAsync);
 		CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) => CopyToGameObjDataFolder(targetFolder, currentFile, editorContext));
 		ValidateObjectCommand = ReactiveCommand.Create(() => ValidateObject(showPopupOnSuccess: true));
 		ValidateForOGCommand = ReactiveCommand.Create(() => ValidateForOG(showPopupOnSuccess: true));
@@ -71,8 +71,9 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		try
 		{
-			File.Copy(currentFile.FileName, Path.Combine(folder, Path.GetFileName(currentFile.FileName)));
-			logger.Info($"Copied {Path.GetFileName(currentFile.FileName)} to [[{targetFolder}]] {folder}");
+			var srcFile = currentFile.FileName ?? string.Empty;
+			File.Copy(srcFile, Path.Combine(folder, Path.GetFileName(srcFile) ?? string.Empty));
+			logger.Info($"Copied {Path.GetFileName(srcFile)} to [[{targetFolder}]] {folder}");
 		}
 		catch (Exception ex)
 		{
@@ -260,7 +261,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		if (EditorContext.TryLoadObject(CurrentFile, out var newObj))
 		{
-			Model = newObj;
+			Model = newObj!;
 
 			var objectGroup = DefaultViewModelGroup;
 
@@ -443,19 +444,19 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		}
 	}
 
-	public override string? SaveAs(SaveParameters saveParameters)
-		=> SaveAsCore(saveParameters);
+	public override Task<string?> SaveAsAsync(SaveParameters saveParameters)
+		=> SaveAsCoreAsync(saveParameters);
 
-	void SaveAsUncompressedDat()
-		=> _ = SaveAsCore(new SaveParameters(SaveType.DAT, SawyerEncoding.Uncompressed));
+	Task SaveAsUncompressedDatAsync()
+		=> SaveAsCoreAsync(new SaveParameters(SaveType.DAT, SawyerEncoding.Uncompressed));
 
-	string? SaveAsCore(SaveParameters saveParameters)
+	async Task<string?> SaveAsCoreAsync(SaveParameters saveParameters)
 	{
 		var fileTypes = saveParameters.SaveType == SaveType.JSON
 			? PlatformSpecific.JsonFileTypes
 			: PlatformSpecific.DatFileTypes;
 
-		var saveFile = Task.Run(async () => await PlatformSpecific.SaveFilePicker(fileTypes)).Result;
+		var saveFile = await PlatformSpecific.SaveFilePicker(fileTypes);
 		if (saveFile != null)
 		{
 			SaveCore(saveFile.Path.LocalPath, saveParameters);

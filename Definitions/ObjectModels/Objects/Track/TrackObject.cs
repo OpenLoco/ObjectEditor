@@ -14,7 +14,7 @@ public class TrackObject : ILocoStruct
 	public int16_t SellCostFactor { get; set; }
 	public int16_t TunnelCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public ObjectModelHeader Tunnel { get; set; }
+	public ObjectModelHeader Tunnel { get; set; } = null!;
 	public Speed16 MaxCurveSpeed { get; set; }
 	public TrackObjectFlags Flags { get; set; }
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }

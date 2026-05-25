@@ -6,15 +6,19 @@ namespace Gui.ViewModels;
 
 public class EditorSettingsWindowViewModel : ViewModelBase
 {
-	EditorSettings Model { get; }
+	EditorSettings Model { get; } = new();
 
 	public EditorSettingsWindowViewModel()
-	{ }
+	{
+		ObjDataDirectories = [];
+		ServerAddressHttps = string.Empty;
+	}
 
 	public EditorSettingsWindowViewModel(EditorSettings settings)
 	{
 		Model = settings;
 		ObjDataDirectories = new(settings.ObjDataDirectories);
+		ServerAddressHttps = settings.ServerAddressHttps;
 	}
 
 	public void Commit()

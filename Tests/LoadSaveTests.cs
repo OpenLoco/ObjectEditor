@@ -1,3 +1,9 @@
+// LoadSave/round-trip tests dereference parsed object graphs whose
+// inner reference members are nullable in the model definitions.
+// The test code intentionally asserts non-null via Assert.That(... NotNull)
+// before access, so suppress CS8602 file-wide rather than littering each access.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+
 using Dat.Converters;
 using Dat.FileParsing;
 using Dat.Loaders;

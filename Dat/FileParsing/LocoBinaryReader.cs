@@ -14,6 +14,9 @@ public class LocoBinaryReader : BinaryReader
 	public LocoBinaryReader(Stream input) : base(input, Encoding.UTF8, leaveOpen: true)
 	{ }
 
+	// suppress CS0809: these overrides are intentionally marked [Obsolete] to surface incorrect usage
+	// at compile time. The base members are non-obsolete, which is exactly the point of this override.
+#pragma warning disable CS0809
 	[Obsolete("This method does not correctly read bytes from the stream. Use PeekByte instead.")]
 	public override int PeekChar()
 		=> throw new NotImplementedException("This method does not correctly read bytes from the stream. Use PeekByte instead.");
@@ -21,6 +24,7 @@ public class LocoBinaryReader : BinaryReader
 	[Obsolete("Use as specific Read method for the data type you want to read.")]
 	public override int Read()
 		=> throw new NotImplementedException("Use as specific Read method for the data type you want to read.");
+#pragma warning restore CS0809
 
 	public void SkipTerminator()
 		=> SkipByte(1);

@@ -36,7 +36,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	public WriteableBitmap? Map { get; set; }
 
 	[Reactive]
-	public Dictionary<ElementType, Bitmap> Maps { get; set; }
+	public Dictionary<ElementType, Bitmap> Maps { get; set; } = [];
 
 	[Reactive, Range(0, Limits.kMapColumnsVanilla - 1)]
 	public int TileElementX { get; set; }
@@ -66,7 +66,13 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	public override void Load()
 	{
 		logger?.Info($"Loading scenario from {CurrentFile.FileName}");
-		Model = SawyerStreamReader.LoadSave(CurrentFile.FileName, EditorContext.Logger);
+		if (CurrentFile.FileName == null)
+		{
+			logger?.Error("Scenario file name was null");
+			return;
+		}
+
+		Model = SawyerStreamReader.LoadSave(CurrentFile.FileName, EditorContext.Logger)!;
 
 		if (Model == null)
 		{
@@ -125,7 +131,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			return;
 		}
 
-		var gameFolderIndex = ObjectIndex.LoadOrCreateIndex(folder, logger);
+		var gameFolderIndex = await ObjectIndex.LoadOrCreateIndexAsync(folder, logger).ConfigureAwait(true);
 
 		if (EditorContext.ObjectIndexOnline == null)
 		{
@@ -310,10 +316,10 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	public override void Save()
 		=> logger?.Warning("Save is not currently implemented");
 
-	public override string? SaveAs(SaveParameters saveParameters)
+	public override Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
 		logger?.Warning("SaveAs is not currently implemented");
-		return null;
+		return Task.FromResult<string?>(null);
 	}
 
 	//public override void Save()

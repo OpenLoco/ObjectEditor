@@ -19,8 +19,8 @@ namespace Gui.ViewModels.Filters;
 
 public class FilterTypeViewModel : ReactiveObject
 {
-	public Type Type { get; set; }
-	public string DisplayName { get; set; }
+	public required Type Type { get; set; }
+	public required string DisplayName { get; set; }
 	public string IconName { get; set; } = "CircleSmall";
 
 	public IBrush? BackgroundColour { get; set; }
@@ -263,7 +263,7 @@ public class FilterViewModel : ReactiveObject
 			return false;
 		}
 
-		if (entry.ObjectType == null || ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
+		if (entry.ObjectType == null || SelectedObjectType == null || ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
 		{
 			return false;
 		}
@@ -384,9 +384,10 @@ public class FilterViewModel : ReactiveObject
 					_ => null
 				};
 			}
-			catch (Exception)
+			catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
 			{
-				return null; // Conversion failed
+				_model.Logger.Debug($"Filter value \"{TextValue}\" could not be converted to {underlyingType.Name}: {ex.Message}");
+				return null;
 			}
 		}
 		else if (underlyingType == typeof(DateOnly) && DateValue != null)
@@ -407,9 +408,10 @@ public class FilterViewModel : ReactiveObject
 					_ => null
 				};
 			}
-			catch (Exception)
+			catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
 			{
-				return null; // Conversion failed
+				_model.Logger.Debug($"Filter date value could not be converted to {underlyingType.Name}: {ex.Message}");
+				return null;
 			}
 		}
 		else if (underlyingType == typeof(string) && !string.IsNullOrEmpty(TextValue))
@@ -445,7 +447,7 @@ public class FilterViewModel : ReactiveObject
 		if (isNullable)
 		{
 			Expression nullCheck;
-			
+
 			// For Nullable<T> value types, check HasValue property
 			if (Nullable.GetUnderlyingType(member.Type) != null)
 			{

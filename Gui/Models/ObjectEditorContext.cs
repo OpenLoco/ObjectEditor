@@ -21,19 +21,19 @@ using System.Threading.Tasks;
 
 namespace Gui.Models;
 
-public class ObjectEditorContext : IDisposable
+public class ObjectEditorContext : IDisposable, IAsyncDisposable
 {
 	public EditorSettings Settings { get; private set; }
 
 	public ILogger Logger { get; init; }
 
-	public ObjectIndex ObjectIndex { get; private set; }
+	public ObjectIndex ObjectIndex { get; private set; } = new();
 
 	public ObjectIndex? ObjectIndexOnline { get; set; }
 
 	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
 
-	public PaletteMap PaletteMap { get; set; }
+	public PaletteMap PaletteMap { get; set; } = null!;
 
 	public G1Dat? G1 { get; set; }
 
@@ -215,7 +215,11 @@ public class ObjectEditorContext : IDisposable
 				return false;
 			}
 
-			cachedLocoObjDto = Task.Run(async () => await ObjectServiceClient.GetObjectAsync(filesystemItem.Id.Value)).Result;
+			// Synchronous bridge: TryLoadObject is a sync API used by many callers, so we must
+			// block here. Task.Run pushes the await onto the thread pool (no captured UI
+			// SynchronizationContext), avoiding the classic UI deadlock. GetAwaiter().GetResult()
+			// is preferred over .Result so exceptions are not wrapped in AggregateException.
+			cachedLocoObjDto = Task.Run(() => ObjectServiceClient.GetObjectAsync(filesystemItem.Id.Value)).GetAwaiter().GetResult();
 
 			if (cachedLocoObjDto == null)
 			{
@@ -346,7 +350,7 @@ public class ObjectEditorContext : IDisposable
 
 		var filename = File.Exists(filesystemItem.FileName)
 			? filesystemItem.FileName
-			: Path.Combine(Settings.ObjDataDirectory, filesystemItem.FileName);
+			: Path.Combine(Settings.ObjDataDirectory, filesystemItem.FileName ?? string.Empty);
 
 		var obj = SawyerStreamReader.LoadFullObject(filename, logger: Logger);
 		fileInfo = obj.DatFileInfo;
@@ -440,7 +444,7 @@ public class ObjectEditorContext : IDisposable
 				Logger.Warning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
 				Logger.Warning($"Objects in index but not on disk: {string.Join(',', a)}");
 				Logger.Warning($"Objects on disk but not in index: {string.Join(',', b)}");
-				await UpdateIndex(directory, progress, a.Concat(b)).ConfigureAwait(false);
+				await UpdateIndex(directory, progress, a.Concat(b).Where(x => x != null)!).ConfigureAwait(false);
 			}
 		}
 		else
@@ -522,7 +526,7 @@ public class ObjectEditorContext : IDisposable
 	public async Task UploadDatToServer(ObjectIndexEntry dat)
 	{
 		Logger.Info($"Uploading {dat.FileName} to object repository");
-		var filename = Path.Combine(Settings.ObjDataDirectory, dat.FileName);
+		var filename = Path.Combine(Settings.ObjDataDirectory, dat.FileName ?? string.Empty);
 		var creationDate = DateOnly.FromDateTime(File.GetCreationTimeUtc(filename));
 		var modifiedDate = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(filename));
 
@@ -533,7 +537,7 @@ public class ObjectEditorContext : IDisposable
 		}
 
 		// todo: do something with createdObject
-		_ = await ObjectServiceClient.UploadDatFileAsync(dat.FileName, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate);
+		_ = await ObjectServiceClient.UploadDatFileAsync(dat.FileName ?? string.Empty, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate);
 
 		await Task.Delay(100); // wait 100ms, ie don't DoS the server
 	}
@@ -553,16 +557,31 @@ public class ObjectEditorContext : IDisposable
 	public void Dispose()
 	{
 		Dispose(true);
-		GC.SuppressFinalize(this); // Important for proper disposal
+		GC.SuppressFinalize(this);
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await CloseAsync().ConfigureAwait(false);
+		GC.SuppressFinalize(this);
 	}
 
 	protected virtual void Dispose(bool disposing)
 	{
-		if (disposing)
+		if (!disposing)
 		{
-			// Wait for logging to complete synchronously.
-			Task.Run(CloseAsync).Wait(); // <--- Key change
-			logFileLock?.Dispose(); // Dispose of the semaphore
+			return;
+		}
+
+		// Synchronous Dispose path: run the async cleanup on the thread pool to avoid any
+		// captured UI SynchronizationContext deadlock. Prefer DisposeAsync() where possible.
+		try
+		{
+			Task.Run(CloseAsync).GetAwaiter().GetResult();
+		}
+		catch
+		{
+			// Best-effort cleanup; never throw from Dispose.
 		}
 	}
 }

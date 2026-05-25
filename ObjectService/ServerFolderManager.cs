@@ -55,7 +55,7 @@ public class ServerFolderManager : IServerFolderManager
 
 		RootDirectory = rootDirectory;
 
-		Common.Logging.ILogger logger = new Logger();
+		Microsoft.Extensions.Logging.ILogger logger = new Logger();
 
 		var indexFile = Path.Combine(rootDirectory, ObjectsFolderName);
 		try
@@ -66,14 +66,14 @@ public class ServerFolderManager : IServerFolderManager
 		{
 			// Index file is corrupt or otherwise unreadable. Log the original failure
 			// before destroying the file so we can diagnose recurring corruption.
-			logger.Error($"Failed to load object index at \"{indexFile}\"; deleting and recreating.", ex);
+			logger.LogError(ex, "Failed to load object index at \"{IndexFile}\"; deleting and recreating.", indexFile);
 			try
 			{
 				File.Delete(indexFile);
 			}
 			catch (Exception deleteEx)
 			{
-				logger.Error($"Failed to delete corrupt index file \"{indexFile}\".", deleteEx);
+				logger.LogError(deleteEx, "Failed to delete corrupt index file \"{IndexFile}\".", indexFile);
 				throw;
 			}
 
@@ -83,7 +83,7 @@ public class ServerFolderManager : IServerFolderManager
 			}
 			catch (Exception retryEx)
 			{
-				logger.Error($"Failed to recreate object index at \"{indexFile}\".", retryEx);
+				logger.LogError(retryEx, "Failed to recreate object index at \"{IndexFile}\".", indexFile);
 				throw;
 			}
 		}

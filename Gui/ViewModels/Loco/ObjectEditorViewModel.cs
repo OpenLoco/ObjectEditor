@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
@@ -14,6 +15,7 @@ using Gui.Models.Audio;
 using Gui.ViewModels.Graphics;
 using Gui.ViewModels.Loco.Objects.Building;
 using Gui.Views;
+using Microsoft.Extensions.Logging;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Enums;
@@ -63,7 +65,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		var folder = editorContext.Settings.GetGameObjDataFolder(targetFolder);
 		if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
 		{
-			logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
+			Logger.LogError("The specified [{TargetFolder}] ObjData directory is invalid: \"{Folder}\"", targetFolder, folder);
 			return;
 		}
 
@@ -73,11 +75,11 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		{
 			var srcFile = currentFile.FileName ?? string.Empty;
 			File.Copy(srcFile, Path.Combine(folder, Path.GetFileName(srcFile) ?? string.Empty));
-			logger.Info($"Copied {Path.GetFileName(srcFile)} to [[{targetFolder}]] {folder}");
+			Logger.LogInformation("Copied {Path} to [[{TargetFolder}]] {Folder}", Path.GetFileName(srcFile), targetFolder, folder);
 		}
 		catch (Exception ex)
 		{
-			logger.Error($"Could not copy {currentFile.FileName} to {folder}:", ex);
+			Logger.LogError(ex, "Could not copy {FileName} to {Folder}:", currentFile.FileName, folder);
 		}
 	}
 
@@ -257,7 +259,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		ResetViewModelGroups("Object");
 
-		logger.Info($"Loading {CurrentFile.DisplayName} from {CurrentFile.FileName}");
+		Logger.LogInformation("Loading {DisplayName} from {FileName}", CurrentFile.DisplayName, CurrentFile.FileName);
 
 		if (EditorContext.TryLoadObject(CurrentFile, out var newObj))
 		{
@@ -274,7 +276,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 				if (Model.LocoObject.Object is SoundObject soundObject)
 				{
-					AddViewModelToGroup(new AudioViewModel(logger, Model.Metadata?.InternalName ?? Model.DatInfo?.S5Header.Name ?? "unk sound name", soundObject.SoundObjectData.PcmHeader, soundObject.PcmData), mediaGroup);
+					AddViewModelToGroup(new AudioViewModel(Logger, Model.Metadata?.InternalName ?? Model.DatInfo?.S5Header.Name ?? "unk sound name", soundObject.SoundObjectData.PcmHeader, soundObject.PcmData), mediaGroup);
 				}
 				else
 				{
@@ -328,19 +330,19 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 	{
 		if (CurrentFile.FileLocation != FileLocation.Local)
 		{
-			logger.Error("Cannot delete non-local files");
+			Logger.LogError("Cannot delete non-local files");
 			return;
 		}
 
 		// delete file
 		if (File.Exists(CurrentFile.FileName))
 		{
-			logger.Info($"Deleting file \"{CurrentFile.FileName}\"");
+			Logger.LogInformation("Deleting file \"{FileName}\"", CurrentFile.FileName);
 			File.Delete(CurrentFile.FileName);
 		}
 		else
 		{
-			logger.Info($"File already deleted \"{CurrentFile.FileName}\"");
+			Logger.LogInformation("File already deleted \"{FileName}\"", CurrentFile.FileName);
 		}
 
 		// note: it is not really possible to delete the entry from the index since if the user
@@ -356,7 +358,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		if (string.IsNullOrEmpty(savePath))
 		{
-			logger.Error($"Cannot save: savePath was null. EditorContext.Settings.DownloadFolder=\"{EditorContext.Settings.DownloadFolder}\" CurrentFile.Location=\"{CurrentFile.FileLocation}\" CurrentFile.DisplayName=\"{CurrentFile.DisplayName}\" CurrentFile.Id=\"{CurrentFile.Id}\"");
+			Logger.LogError("Cannot save: savePath was null. EditorContext.Settings.DownloadFolder=\"{DownloadFolder}\" CurrentFile.Location=\"{FileLocation}\" CurrentFile.DisplayName=\"{DisplayName}\" CurrentFile.Id=\"{Id}\"", EditorContext.Settings.DownloadFolder, CurrentFile.FileLocation, CurrentFile.DisplayName, CurrentFile.Id);
 			return;
 		}
 
@@ -370,7 +372,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				// Observe any exceptions to prevent unobserved task exceptions
 				if (t.Exception != null)
 				{
-					logger.Error("Unhandled exception in metadata upload", t.Exception);
+					Logger.LogError(t.Exception, "Unhandled exception in metadata upload");
 				}
 			}, TaskContinuationOptions.OnlyOnFaulted);
 		}
@@ -385,19 +387,19 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		if (metadataModel == null)
 		{
-			logger.Warning("Cannot upload metadata - metadata is null");
+			Logger.LogWarning("Cannot upload metadata - metadata is null");
 			return;
 		}
 
 		if (Model?.DatInfo == null)
 		{
-			logger.Warning("Cannot upload metadata - DatInfo is null");
+			Logger.LogWarning("Cannot upload metadata - DatInfo is null");
 			return;
 		}
 
 		try
 		{
-			logger.Info($"Uploading metadata for object {objectId}");
+			Logger.LogInformation("Uploading metadata for object {ObjectId}", objectId);
 
 			// Create DTO from current metadata
 			var dtoRequest = new DtoObjectPostResponse(
@@ -431,16 +433,16 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 			if (result != null)
 			{
-				logger.Info($"Successfully uploaded metadata for object {objectId}");
+				Logger.LogInformation("Successfully uploaded metadata for object {ObjectId}", objectId);
 			}
 			else
 			{
-				logger.Error($"Failed to upload metadata for object {objectId}");
+				Logger.LogError("Failed to upload metadata for object {ObjectId}", objectId);
 			}
 		}
 		catch (Exception ex)
 		{
-			logger.Error($"Error uploading metadata for object {objectId}", ex);
+			Logger.LogError(ex, "Error uploading metadata for object {ObjectId}", objectId);
 		}
 	}
 
@@ -470,7 +472,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 	{
 		if (Model?.LocoObject == null)
 		{
-			logger.Error("Cannot save - loco object was null");
+			Logger.LogError("Cannot save - loco object was null");
 			return;
 		}
 
@@ -483,7 +485,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		if (string.IsNullOrEmpty(filename))
 		{
-			logger.Error("Cannot save - filename was empty");
+			Logger.LogError("Cannot save - filename was empty");
 			return;
 		}
 
@@ -491,18 +493,18 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		if (string.IsNullOrEmpty(saveDir))
 		{
-			logger.Error("Cannot save - directory is null or empty");
+			Logger.LogError("Cannot save - directory is null or empty");
 			return;
 		}
 		else if (!Directory.Exists(saveDir))
 		{
-			logger.Error($"Cannot save - directory does not exist: \"{saveDir}\"");
+			Logger.LogError("Cannot save - directory does not exist: \"{SaveDir}\"", saveDir);
 			return;
 		}
 
 		_ = ValidateObject(showPopupOnSuccess: false);
 
-		logger.Info($"Saving {Model.DatInfo?.S5Header.Name} to {filename}");
+		Logger.LogInformation("Saving {Name} to {Filename}", Model.DatInfo?.S5Header.Name, filename);
 
 		// this is hacky but it should work
 		var avm = GetViewModel<AudioViewModel>();
@@ -511,7 +513,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			var datWav = avm.GetAsDatWav(LocoAudioType.SoundEffect);
 			if (datWav == null)
 			{
-				logger.Error("AudioViewModel returned null data when trying to save as a sound object");
+				Logger.LogError("AudioViewModel returned null data when trying to save as a sound object");
 				return;
 			}
 		}
@@ -526,7 +528,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 				objectModelHeader?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
 				saveParameters.SawyerEncoding ?? GetViewModel<ObjectDatHeaderViewModel>()?.Encoding ?? SawyerEncoding.Uncompressed,
 				Model.LocoObject,
-				logger,
+				Logger,
 				EditorContext.Settings.AllowSavingAsVanillaObject);
 		}
 		else

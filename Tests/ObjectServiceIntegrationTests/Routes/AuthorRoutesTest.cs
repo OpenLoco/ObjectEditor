@@ -36,7 +36,6 @@ public class AuthorRoutesTest : BaseReferenceDataTableTestFixture<
 	protected override DtoAuthorEntry PutResponseDto
 		=> new(1, "Charles");
 
-
 	public override string BaseRoute
 		=> RoutesV2.Authors;
 

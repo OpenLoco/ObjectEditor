@@ -1,4 +1,4 @@
-﻿namespace Definitions.ObjectModels.Objects.Cargo;
+namespace Definitions.ObjectModels.Objects.Cargo;
 
 public enum CargoCategory : uint16_t
 {

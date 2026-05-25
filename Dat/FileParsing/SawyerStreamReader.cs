@@ -7,6 +7,7 @@ using Dat.Types.SCV5;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Sound;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -31,7 +32,7 @@ public static class SawyerStreamReader
 		}
 		catch (InvalidDataException ex)
 		{
-			logger?.Error(ex);
+			logger?.LogError(ex);
 			return (hdrs.S5, hdrs.Obj, []);
 		}
 
@@ -40,18 +41,18 @@ public static class SawyerStreamReader
 
 		if (computedChecksum != hdrs.S5.Checksum)
 		{
-			logger?.Error($"{hdrs.S5.Name} had incorrect checksum. Header={hdrs.S5.Checksum} Computed={computedChecksum}");
+			logger?.LogError("{Name} had incorrect checksum. Header={Checksum} Computed={ComputedChecksum}", hdrs.S5.Name, hdrs.S5.Checksum, computedChecksum);
 		}
 
 		if (hdrs.S5.IsVanilla())
 		{
 			if (OriginalObjectFiles.Names.TryGetValue(hdrs.S5.Name.Trim(), out var fileInfo))
 			{
-				logger?.Debug($"{hdrs.S5.Name} is a vanilla object with checksums [Steam={fileInfo.SteamChecksum} GoG={fileInfo.GoGChecksum}]");
+				logger?.LogDebug("{Name} is a vanilla object with checksums [Steam={SteamChecksum} GoG={GoGChecksum}]", hdrs.S5.Name, fileInfo.SteamChecksum, fileInfo.GoGChecksum);
 			}
 			else
 			{
-				logger?.Warning($"{hdrs.S5.Name} is marked as vanilla but is not in the original object list!");
+				logger?.LogWarning("{Name} is marked as vanilla but is not in the original object list!", hdrs.S5.Name);
 			}
 		}
 
@@ -79,13 +80,13 @@ public static class SawyerStreamReader
 
 		if (!s5.IsValid())
 		{
-			logger.Error("S5 header was invalid");
+			logger.LogError("S5 header was invalid");
 			return false;
 		}
 
 		if (!oh.IsValid())
 		{
-			logger.Error("Object header was invalid");
+			logger.LogError("Object header was invalid");
 			return false;
 		}
 
@@ -108,12 +109,12 @@ public static class SawyerStreamReader
 
 	public static (DatHeaderInfo DatFileInfo, LocoObject? LocoObject) LoadFullObject(Stream stream, ILogger logger, string filename, bool loadExtra = true)
 	{
-		logger.Info($"Full-loading \"{filename}\" with loadExtra={loadExtra}");
+		logger.LogInformation("Full-loading \"{Filename}\" with loadExtra={LoadExtra}", filename, loadExtra);
 
 		var obj = LoadAndDecode(stream, logger);
 		if (obj == null || obj.Value.decodedData.Length == 0)
 		{
-			logger.Error($"{filename} was unable to be decoded");
+			logger.LogError("{Filename} was unable to be decoded", filename);
 			return (new DatHeaderInfo(S5Header.NullHeader, ObjectHeader.NullHeader), null);
 		}
 
@@ -123,7 +124,7 @@ public static class SawyerStreamReader
 
 		if (decodedData.Length == 0)
 		{
-			logger.Warning($"No data was decoded from {filename}, file is malformed.");
+			logger.LogWarning("No data was decoded from {Filename}, file is malformed.", filename);
 			return (new DatHeaderInfo(s5Header, objectHeader), null);
 		}
 
@@ -159,17 +160,17 @@ public static class SawyerStreamReader
 			{
 				foreach (var warning in warnings)
 				{
-					logger?.Warning(warning);
+					logger?.LogWarning(warning);
 				}
 			}
 			else
 			{
-				logger?.Info($"\"{s5Header.Name}\" validated successfully");
+				logger?.LogInformation("\"{Name}\" validated successfully", s5Header.Name);
 			}
 		}
 		catch (NotImplementedException)
 		{
-			logger?.Debug2($"{s5Header.ObjectType} object type is missing validation function");
+			logger?.LogTrace("{ObjectType} object type is missing validation function", s5Header.ObjectType);
 		}
 	}
 
@@ -191,7 +192,7 @@ public static class SawyerStreamReader
 
 		if (stream.Length == 0 || stringNames.Length == 0)
 		{
-			logger?.Warning("No data for language table");
+			logger?.LogWarning("No data for language table");
 			return stringTable;
 		}
 
@@ -235,7 +236,7 @@ public static class SawyerStreamReader
 		using (var br = new LocoBinaryReader(ms))
 		{
 			var (g1Header, imageTable) = ReadImageTable(br);
-			logger.Info($"FileLength={new FileInfo(filename).Length} NumEntries={g1Header.NumEntries} TotalSize={g1Header.TotalSize} ImageTableLength={ms.Position}");
+			logger.LogInformation("FileLength={Length} NumEntries={NumEntries} TotalSize={TotalSize} ImageTableLength={Position}", new FileInfo(filename).Length, g1Header.NumEntries, g1Header.TotalSize, ms.Position);
 			return new G1Dat(g1Header, imageTable);
 		}
 	}

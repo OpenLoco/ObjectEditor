@@ -1,8 +1,10 @@
+using Common.Logging;
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models;
 using Gui.Models.Audio;
+using Microsoft.Extensions.Logging;
 using PropertyModels.Extensions;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -25,7 +27,7 @@ public class SoundEffectsViewModel : BaseFileViewModel<DummyModel>
 
 		var soundIdNames = Enum.GetValues<DatSoundId>();
 		AudioViewModels = SawyerStreamReader.LoadSoundEffectsFromCSS(CurrentFile.FileName)
-			.Select((x, i) => new AudioViewModel(logger, soundIdNames[i].ToString(), x.header, x.data))
+			.Select((x, i) => new AudioViewModel(Logger, soundIdNames[i].ToString(), x.header, x.data))
 			.ToBindingList();
 	}
 
@@ -62,7 +64,7 @@ public class SoundEffectsViewModel : BaseFileViewModel<DummyModel>
 
 	void SaveCore(string filename)
 	{
-		logger?.Info($"Saving sound effects to {filename}");
+		Logger.LogInformation("Saving sound effects to {Filename}", filename);
 
 		var sfx = AudioViewModels.Select(x => (x.DisplayName, x.GetAsDatWav(LocoAudioType.SoundEffect)));
 
@@ -71,10 +73,10 @@ public class SoundEffectsViewModel : BaseFileViewModel<DummyModel>
 		{
 			foreach (var x in failed)
 			{
-				logger?.Error($"Failed to convert sound effect {x.DisplayName} to the DAT format.");
+				Logger.LogError("Failed to convert sound effect {DisplayName} to the DAT format.", x.DisplayName);
 			}
 
-			logger?.Error($"Failed to convert {failed.Count} sound effects to the DAT format. Cannot save file.");
+			Logger.LogError("Failed to convert {Count} sound effects to the DAT format. Cannot save file.", failed.Count);
 			return;
 		}
 

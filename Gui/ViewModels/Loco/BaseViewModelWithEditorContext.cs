@@ -1,5 +1,5 @@
-using Common.Logging;
 using Gui.Models;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 
 namespace Gui.ViewModels;
@@ -13,6 +13,6 @@ public abstract class BaseViewModelWithEditorContext<T> : BaseViewModel<T> where
 	[Browsable(false)]
 	public ObjectEditorContext EditorContext { get; init; }
 
-	protected ILogger logger
+	protected ILogger Logger
 		=> EditorContext.Logger;
 }

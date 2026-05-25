@@ -4,6 +4,7 @@ using Avalonia.Controls.Selection;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Common;
+using Common.Logging;
 using Dat.Data;
 using Definitions.DTO;
 using Definitions.ObjectModels;
@@ -15,6 +16,7 @@ using DynamicData.Binding;
 using Gui.Models;
 using Gui.ViewModels.Filters;
 using Index;
+using Microsoft.Extensions.Logging;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
@@ -494,7 +496,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 
 	async Task LoadDirectoryAsync(bool useExistingIndex)
 	{
-		EditorContext.Logger.Debug($"UseExistingIndex={useExistingIndex}");
+		EditorContext.Logger.LogDebug("UseExistingIndex={UseExistingIndex}", useExistingIndex);
 
 		if (IsLocal)
 		{
@@ -511,7 +513,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 
 	async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
 	{
-		EditorContext.Logger.Debug($"Directory={directory} UseExistingIndex={useExistingIndex}");
+		EditorContext.Logger.LogDebug("Directory={Directory} UseExistingIndex={UseExistingIndex}", directory, useExistingIndex);
 		CurrentOnlineBrowseResults.Clear();
 
 		if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
@@ -534,7 +536,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 
 	async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
 	{
-		EditorContext.Logger.Debug($"UseExistingIndex={useExistingIndex}");
+		EditorContext.Logger.LogDebug("UseExistingIndex={UseExistingIndex}", useExistingIndex);
 
 		if (Design.IsDesignMode)
 		{
@@ -891,7 +893,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 
 		if (fileBytes == null || fileBytes.Length == 0)
 		{
-			EditorContext.Logger.Error($"Failed to download \"{item.DisplayName}\" (Id={item.Id})");
+			EditorContext.Logger.LogError("Failed to download \"{DisplayName}\" (Id={Id})", item.DisplayName, item.Id);
 			return;
 		}
 
@@ -902,16 +904,16 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		{
 			await using var outputStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, useAsync: true);
 			await outputStream.WriteAsync(fileBytes);
-			EditorContext.Logger.Info($"Downloaded \"{item.DisplayName}\" to \"{filename}\"");
+			EditorContext.Logger.LogInformation("Downloaded \"{DisplayName}\" to \"{Filename}\"", item.DisplayName, filename);
 		}
 		catch (IOException ex)
 		{
-			EditorContext.Logger.Error($"Failed to download \"{item.DisplayName}\" to \"{filename}\"", ex);
+			EditorContext.Logger.LogError(ex, "Failed to download \"{DisplayName}\" to \"{Filename}\"", item.DisplayName, filename);
 			await ShowDownloadFailureDialogAsync($"Could not create:\n{filename}\n\nThe destination file may already exist, be locked by another process, or the download folder may be unavailable.");
 		}
 		catch (UnauthorizedAccessException ex)
 		{
-			EditorContext.Logger.Error($"Failed to download \"{item.DisplayName}\" to \"{filename}\" due to insufficient permissions", ex);
+			EditorContext.Logger.LogError(ex, "Failed to download \"{DisplayName}\" to \"{Filename}\" due to insufficient permissions", item.DisplayName, filename);
 			await ShowDownloadFailureDialogAsync($"You do not have permission to write to:\n{filename}\n\nPlease check folder permissions or choose a different download folder.");
 		}
 	}
@@ -932,7 +934,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 
 		if (fileBytes == null || fileBytes.Length == 0)
 		{
-			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" (Id={pack.Id})");
+			EditorContext.Logger.LogError("Failed to download pack \"{Name}\" (Id={Id})", pack.Name, pack.Id);
 			return;
 		}
 
@@ -942,16 +944,16 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		{
 			await using var outputStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4096, useAsync: true);
 			await outputStream.WriteAsync(fileBytes);
-			EditorContext.Logger.Info($"Downloaded pack \"{pack.Name}\" to \"{filename}\"");
+			EditorContext.Logger.LogInformation("Downloaded pack \"{Name}\" to \"{Filename}\"", pack.Name, filename);
 		}
 		catch (IOException ex)
 		{
-			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" to \"{filename}\"", ex);
+			EditorContext.Logger.LogError(ex, "Failed to download pack \"{Name}\" to \"{Filename}\"", pack.Name, filename);
 			await ShowDownloadFailureDialogAsync($"Could not create:\n{filename}\n\nThe destination file may already exist, be locked by another process, or the download folder may be unavailable.");
 		}
 		catch (UnauthorizedAccessException ex)
 		{
-			EditorContext.Logger.Error($"Failed to download pack \"{pack.Name}\" to \"{filename}\" due to insufficient permissions", ex);
+			EditorContext.Logger.LogError(ex, "Failed to download pack \"{Name}\" to \"{Filename}\" due to insufficient permissions", pack.Name, filename);
 			await ShowDownloadFailureDialogAsync($"You do not have permission to write to:\n{filename}\n\nPlease check folder permissions or choose a different download folder.");
 		}
 	}

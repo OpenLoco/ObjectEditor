@@ -1,5 +1,6 @@
 using Common.Json;
 using Common.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -76,7 +77,7 @@ public class EditorSettings
 	{
 		if (!File.Exists(filename))
 		{
-			logger.Info($"Settings file doesn't exist; creating now at \"{filename}\"");
+			logger.LogInformation("Settings file doesn't exist; creating now at \"{Filename}\"", filename);
 			var newSettings = new EditorSettings();
 			Save(newSettings, filename, logger);
 			return newSettings;
@@ -91,11 +92,11 @@ public class EditorSettings
 				return settings;
 			}
 
-			logger.Warning($"Settings file at \"{filename}\" deserialized to null; backing up and recreating with defaults.");
+			logger.LogWarning("Settings file at \"{Filename}\" deserialized to null; backing up and recreating with defaults.", filename);
 		}
 		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
 		{
-			logger.Error($"Failed to load settings from \"{filename}\"; backing up and recreating with defaults.", ex);
+			logger.LogError(ex, "Failed to load settings from \"{Filename}\"; backing up and recreating with defaults.", filename);
 		}
 
 		// Move the bad file aside so we don't silently destroy whatever the user had.
@@ -103,11 +104,11 @@ public class EditorSettings
 		{
 			var backup = $"{filename}.bad-{DateTime.UtcNow:yyyyMMddHHmmss}";
 			File.Move(filename, backup, overwrite: true);
-			logger.Info($"Backed up invalid settings file to \"{backup}\"");
+			logger.LogInformation("Backed up invalid settings file to \"{Backup}\"", backup);
 		}
 		catch (Exception backupEx)
 		{
-			logger.Error($"Failed to back up invalid settings file \"{filename}\"; it will be overwritten.", backupEx);
+			logger.LogError(backupEx, "Failed to back up invalid settings file \"{Filename}\"; it will be overwritten.", filename);
 		}
 
 		var defaults = new EditorSettings();
@@ -134,7 +135,7 @@ public class EditorSettings
 		}
 		catch (Exception ex)
 		{
-			logger.Error(ex);
+			logger.LogError(ex);
 		}
 	}
 
@@ -142,31 +143,31 @@ public class EditorSettings
 	{
 		if (string.IsNullOrEmpty(ObjDataDirectory))
 		{
-			logger.Warning("Invalid settings file: Object directory was null or empty");
+			logger.LogWarning("Invalid settings file: Object directory was null or empty");
 			return false;
 		}
 
 		if (!Directory.Exists(ObjDataDirectory))
 		{
-			logger.Warning($"Invalid settings file: ObjData folder \"{ObjDataDirectory}\" does not exist");
+			logger.LogWarning("Invalid settings file: ObjData folder \"{ObjDataDirectory}\" does not exist", ObjDataDirectory);
 			return false;
 		}
 
 		if (!string.IsNullOrEmpty(CacheFolder) && !Directory.Exists(CacheFolder))
 		{
-			logger.Warning($"Invalid settings file: Cache folder \"{CacheFolder}\" does not exist");
+			logger.LogWarning("Invalid settings file: Cache folder \"{CacheFolder}\" does not exist", CacheFolder);
 			return false;
 		}
 
 		if (!string.IsNullOrEmpty(DownloadFolder) && !Directory.Exists(DownloadFolder))
 		{
-			logger.Warning($"Invalid settings file: Download folder \"{DownloadFolder}\" does not exist");
+			logger.LogWarning("Invalid settings file: Download folder \"{DownloadFolder}\" does not exist", DownloadFolder);
 			return false;
 		}
 
 		if (!string.IsNullOrEmpty(ObjectIndicesFolder) && !Directory.Exists(ObjectIndicesFolder))
 		{
-			logger.Warning($"Invalid settings file: Object index folder \"{ObjectIndicesFolder}\" does not exist");
+			logger.LogWarning("Invalid settings file: Object index folder \"{ObjectIndicesFolder}\" does not exist", ObjectIndicesFolder);
 			return false;
 		}
 

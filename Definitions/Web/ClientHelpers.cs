@@ -1,5 +1,6 @@
 using Common.Logging;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 
 namespace Definitions.Web;
@@ -69,11 +70,11 @@ public static class ClientHelpers
 		{
 			if (!Uri.TryCreate(client.BaseAddress, route, out var uri))
 			{
-				logger?.Error($"Unable to create a URI from base=\"{client.BaseAddress}\" and route=\"{route}\"");
+				logger?.LogError("Unable to create a URI from base=\"{BaseAddress}\" and route=\"{Route}\"", client.BaseAddress, route);
 				return default;
 			}
 
-			logger?.Debug($"Sending to {uri}");
+			logger?.LogDebug("Sending to {Uri}", uri);
 			using var response = await httpFunc();
 
 			if (!response.IsSuccessStatusCode)
@@ -82,24 +83,24 @@ public static class ClientHelpers
 
 				if (string.IsNullOrEmpty(error))
 				{
-					logger?.Error($"Failed. StatusCode={response.StatusCode} ReasonPhrase={response.ReasonPhrase}");
+					logger?.LogError("Failed. StatusCode={StatusCode} ReasonPhrase={ReasonPhrase}", response.StatusCode, response.ReasonPhrase);
 				}
 				else
 				{
-					logger?.Error($"Failed. Error={error}");
+					logger?.LogError("Failed. Error={Error}", error);
 				}
 
 				return default;
 			}
 
-			logger?.Debug($"Received success response: {response.StatusCode}");
+			logger?.LogDebug("Received success response: {StatusCode}", response.StatusCode);
 
 			if (contentReaderFunc != null)
 			{
 				var data = await contentReaderFunc(response.Content);
 				if (data == null)
 				{
-					logger?.Error($"Received data but couldn't parse it: {response}");
+					logger?.LogError("Received data but couldn't parse it: {Response}", response);
 					return default;
 				}
 
@@ -112,7 +113,7 @@ public static class ClientHelpers
 		}
 		catch (Exception ex)
 		{
-			logger?.Error(ex);
+			logger?.LogError(ex);
 			return default;
 		}
 	}

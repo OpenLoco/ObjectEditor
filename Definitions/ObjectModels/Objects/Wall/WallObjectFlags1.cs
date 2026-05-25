@@ -1,4 +1,4 @@
-﻿namespace Definitions.ObjectModels.Objects.Wall;
+namespace Definitions.ObjectModels.Objects.Wall;
 
 [Flags]
 public enum WallObjectFlags1 : uint8_t

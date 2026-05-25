@@ -9,6 +9,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Index;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
@@ -25,7 +26,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 {
 	public EditorSettings Settings { get; private set; }
 
-	public ILogger Logger { get; init; }
+	public Logger Logger { get; init; }
 
 	public ObjectIndex ObjectIndex { get; private set; } = new();
 
@@ -127,11 +128,11 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 		if (Settings.Validate(Logger))
 		{
-			Logger.Info("Settings loaded and validated successfully.");
+			Logger.LogInformation("Settings loaded and validated successfully.");
 		}
 		else
 		{
-			Logger.Error("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
+			Logger.LogError("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
 		}
 	}
 
@@ -144,7 +145,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 		if (!Directory.Exists(folder))
 		{
-			Logger.Info($"\"{defaultName}\" folder doesn't exist; creating now at \"{folder}\"");
+			Logger.LogInformation("\"{DefaultName}\" folder doesn't exist; creating now at \"{Folder}\"", defaultName, folder);
 			_ = Directory.CreateDirectory(folder);
 		}
 
@@ -168,24 +169,24 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 			if (uiLocoFile?.LocoObject == null)
 			{
-				Logger.Warning($"Unable to load LocoObject for {filesystemItem.FileName}");
+				Logger.LogWarning("Unable to load LocoObject for {FileName}", filesystemItem.FileName);
 			}
 
 			if (uiLocoFile?.Metadata == null)
 			{
-				Logger.Warning($"Unable to load Metadata for {filesystemItem.FileName}");
+				Logger.LogWarning("Unable to load Metadata for {FileName}", filesystemItem.FileName);
 			}
 
 			if (uiLocoFile?.DatInfo == null)
 			{
-				Logger.Warning($"Unable to load DatInfo for {filesystemItem.FileName}");
+				Logger.LogWarning("Unable to load DatInfo for {FileName}", filesystemItem.FileName);
 			}
 
 			return result;
 		}
 		catch (Exception ex)
 		{
-			Logger.Error($"Unable to load {filesystemItem.FileName}", ex);
+			Logger.LogError(ex, "Unable to load {FileName}", filesystemItem.FileName);
 			uiLocoFile = null;
 			return false;
 		}
@@ -207,11 +208,11 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 		if (!OnlineCache.TryGetValue(filesystemItem.Id.Value, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
 		{
-			Logger.Debug($"Didn't find object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} in cache - downloading it from {ObjectServiceClient.WebClient.BaseAddress}");
+			Logger.LogDebug("Didn't find object {DisplayName} with unique id {Id} in cache - downloading it from {BaseAddress}", filesystemItem.DisplayName, filesystemItem.Id, ObjectServiceClient.WebClient.BaseAddress);
 
 			if (ObjectServiceClient == null)
 			{
-				Logger.Error("Object service client is null");
+				Logger.LogError("Object service client is null");
 				return false;
 			}
 
@@ -223,31 +224,31 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 			if (cachedLocoObjDto == null)
 			{
-				Logger.Error($"Unable to download object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} from online - received no data");
+				Logger.LogError("Unable to download object {DisplayName} with unique id {Id} from online - received no data", filesystemItem.DisplayName, filesystemItem.Id);
 				return false;
 			}
 
-			Logger.Debug(cachedLocoObjDto.ToString());
-			Logger.Info($"Object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} has {cachedLocoObjDto.DatObjects.Count} attached DAT objects: [{string.Join(',', cachedLocoObjDto.DatObjects)}]");
+			Logger.LogDebug(cachedLocoObjDto.ToString());
+			Logger.LogInformation("Object {DisplayName} with unique id {Id} has {Count} attached DAT objects: [{Value}]", filesystemItem.DisplayName, filesystemItem.Id, cachedLocoObjDto.DatObjects.Count, string.Join(',', cachedLocoObjDto.DatObjects));
 
 			foreach (var datObject in cachedLocoObjDto.DatObjects)
 			{
 				if (cachedLocoObjDto.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG)
 				{
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Any available metadata will still be shown");
+					Logger.LogWarning("Unable to download object {DisplayName} with unique id {Id} from online - requested object is a vanilla object and it is illegal to distribute copyright material. Any available metadata will still be shown", filesystemItem.DisplayName, filesystemItem.Id);
 					continue;
 				}
 
 				if (string.IsNullOrEmpty(datObject.DatBytesAsBase64))
 				{
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} from online - received no DAT object data. Any available metadata will still be shown");
+					Logger.LogWarning("Unable to download object {DisplayName} with unique id {Id} from online - received no DAT object data. Any available metadata will still be shown", filesystemItem.DisplayName, filesystemItem.Id);
 					continue;
 				}
 
 				var datFile = Convert.FromBase64String(datObject.DatBytesAsBase64);
 				if (datFile == null || datFile.Length == 0)
 				{
-					Logger.Warning($"Unable to download object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} from online - received DAT object data, but it was unable to be decoded. Any available metadata will still be shown");
+					Logger.LogWarning("Unable to download object {DisplayName} with unique id {Id} from online - received DAT object data, but it was unable to be decoded. Any available metadata will still be shown", filesystemItem.DisplayName, filesystemItem.Id);
 					continue;
 				}
 
@@ -257,26 +258,26 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				if (!File.Exists(pathname))
 				{
 					File.WriteAllBytes(pathname, datFile);
-					Logger.Info($"Saved the downloaded object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} as {pathname}");
+					Logger.LogInformation("Saved the downloaded object {DisplayName} with unique id {Id} as {Pathname}", filesystemItem.DisplayName, filesystemItem.Id, pathname);
 
 					//var obj = SawyerStreamReader.LoadFullObjectFromStream(datFile, Logger, $"{filesystemItem.Filename}-{filesystemItem.DisplayName}", true);
 					//fileInfo = obj.DatFileInfo;
 					//locoObject = obj.LocoObject;
 					//if (obj.LocoObject == null)
 					//{
-					//	Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
+					//	Logger.Warning("Unable to load {DisplayName} from the received DAT object data", filesystemItem.DisplayName);
 					//}
 				}
 			}
 
-			Logger.Info($"Downloaded object \"{filesystemItem.DisplayName}\" with unique id {filesystemItem.Id} and added it to the local cache");
-			Logger.Debug($"{filesystemItem.DisplayName} has authors=[{string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? [])}], tags=[{string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? [])}], objectpacks=[{string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? [])}], licence={cachedLocoObjDto?.Licence} datobjects=[{string.Join(",", cachedLocoObjDto?.DatObjects?.Select(x => x.DatName) ?? [])}]");
+			Logger.LogInformation("Downloaded object \"{DisplayName}\" with unique id {Id} and added it to the local cache", filesystemItem.DisplayName, filesystemItem.Id);
+			Logger.LogDebug("{DisplayName} has authors=[{Value}], tags=[{Value2}], objectpacks=[{Value3}], licence={Licence} datobjects=[{Value4}]", filesystemItem.DisplayName, string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? []), string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? []), string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? []), cachedLocoObjDto?.Licence, string.Join(",", cachedLocoObjDto?.DatObjects?.Select(x => x.DatName) ?? []));
 
 			OnlineCache.Add(filesystemItem.Id.Value, cachedLocoObjDto!);
 		}
 		else
 		{
-			Logger.Debug($"Found object {filesystemItem.DisplayName} with unique id {filesystemItem.Id} in cache - reusing it");
+			Logger.LogDebug("Found object {DisplayName} with unique id {Id} in cache - reusing it", filesystemItem.DisplayName, filesystemItem.Id);
 		}
 
 		if (cachedLocoObjDto != null)
@@ -294,12 +295,12 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				locoObject = obj.LocoObject;
 				if (obj.LocoObject == null)
 				{
-					Logger.Warning($"Unable to load {filesystemItem.DisplayName} from the received DAT object data");
+					Logger.LogWarning("Unable to load {DisplayName} from the received DAT object data", filesystemItem.DisplayName);
 				}
 			}
 			else
 			{
-				Logger.Warning($"Cached object {filesystemItem.DisplayName} had no data in DatBytes");
+				Logger.LogWarning("Cached object {DisplayName} had no data in DatBytes", filesystemItem.DisplayName);
 				var fakeS5Header = new S5Header(0, firstLinkedDatFile.DatName, firstLinkedDatFile.DatChecksum)
 				{
 					ObjectType = cachedLocoObjDto.ObjectType.Convert(),
@@ -403,7 +404,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	{
 		if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory) || progress == null)
 		{
-			Logger.Error($"Couldn't start loading obj dir: {directory}");
+			Logger.LogError("Couldn't start loading obj dir: {Directory}", directory);
 			return;
 		}
 
@@ -419,17 +420,17 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				var index = await ObjectIndex.LoadIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
 				ArgumentNullException.ThrowIfNull(index, nameof(index));
 				ObjectIndex = index;
-				Logger.Info($"Loaded index for {directory} with {ObjectIndex.Objects.Count} objects.");
+				Logger.LogInformation("Loaded index for {Directory} with {Count} objects.", directory, ObjectIndex.Objects.Count);
 			}
 			catch (Exception ex)
 			{
-				Logger.Error(ex);
+				Logger.LogError(ex);
 				exception = true;
 			}
 
 			if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.FileName) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DisplayName))))
 			{
-				Logger.Warning("Index file format has changed or otherwise appears to be malformed - recreating now.");
+				Logger.LogWarning("Index file format has changed or otherwise appears to be malformed - recreating now.");
 				await RecreateIndex(directory, progress).ConfigureAwait(false);
 				return;
 			}
@@ -441,9 +442,9 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			var b = allFiles.Except(objectIndexFilenames);
 			if (a.Any() || b.Any())
 			{
-				Logger.Warning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
-				Logger.Warning($"Objects in index but not on disk: {string.Join(',', a)}");
-				Logger.Warning($"Objects on disk but not in index: {string.Join(',', b)}");
+				Logger.LogWarning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
+				Logger.LogWarning("Objects in index but not on disk: {Value}", string.Join(',', a));
+				Logger.LogWarning("Objects on disk but not in index: {Value}", string.Join(',', b));
 				await UpdateIndex(directory, progress, a.Concat(b).Where(x => x != null)!).ConfigureAwait(false);
 			}
 		}
@@ -454,38 +455,38 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 		async Task UpdateIndex(string directory, IProgress<float> progress, IEnumerable<string> filesToAdd)
 		{
-			Logger.Info($"Updating index file for {directory}");
+			Logger.LogInformation("Updating index file for {Directory}", directory);
 			_ = ObjectIndex.UpdateIndex(directory, Logger, filesToAdd, progress);
 
 			if (string.IsNullOrEmpty(Settings.IndexFileName))
 			{
-				Logger.Error("Index filename was null or empty.");
+				Logger.LogError("Index filename was null or empty.");
 				return;
 			}
 
 			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.Info($"Index was saved to {Settings.IndexFileName}");
+			Logger.LogInformation("Index was saved to {IndexFileName}", Settings.IndexFileName);
 		}
 
 		async Task RecreateIndex(string directory, IProgress<float> progress)
 		{
-			Logger.Info($"Recreating index file for {directory}");
+			Logger.LogInformation("Recreating index file for {Directory}", directory);
 			ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress).ConfigureAwait(false);
 
 			if (ObjectIndex == null)
 			{
-				Logger.Error("Index was unable to be created.");
+				Logger.LogError("Index was unable to be created.");
 				return;
 			}
 
 			if (string.IsNullOrEmpty(Settings.IndexFileName))
 			{
-				Logger.Error("Index filename was null or empty.");
+				Logger.LogError("Index filename was null or empty.");
 				return;
 			}
 
 			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.Info($"New index was saved to {Settings.IndexFileName}");
+			Logger.LogInformation("New index was saved to {IndexFileName}", Settings.IndexFileName);
 		}
 	}
 
@@ -496,7 +497,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			return;
 		}
 
-		Logger.Debug("Comparing local objects to object repository");
+		Logger.LogDebug("Comparing local objects to object repository");
 
 		var localButNotOnline = ObjectIndex.Objects.ExceptBy(ObjectIndexOnline.Objects.Select(
 			x => (x.DisplayName, x.DatChecksum)),
@@ -504,11 +505,11 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 		if (localButNotOnline.Count != 0)
 		{
-			Logger.Info($"Found {localButNotOnline.Count} objects that aren't known to the object repository!");
+			Logger.LogInformation("Found {Count} objects that aren't known to the object repository!", localButNotOnline.Count);
 
 			// would you like to upload?
 			var isEnabledString = Settings.AutoObjectDiscoveryAndUpload ? "enabled" : "disabled";
-			Logger.Info($"Automatic object discovery and upload to master service is {isEnabledString}");
+			Logger.LogInformation("Automatic object discovery and upload to master service is {IsEnabledString}", isEnabledString);
 			if (Settings.AutoObjectDiscoveryAndUpload)
 			{
 				foreach (var dat in localButNotOnline)
@@ -519,20 +520,20 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		}
 		else
 		{
-			Logger.Debug("Found no new objects locally compared to the object repository.");
+			Logger.LogDebug("Found no new objects locally compared to the object repository.");
 		}
 	}
 
 	public async Task UploadDatToServer(ObjectIndexEntry dat)
 	{
-		Logger.Info($"Uploading {dat.FileName} to object repository");
+		Logger.LogInformation("Uploading {FileName} to object repository", dat.FileName);
 		var filename = Path.Combine(Settings.ObjDataDirectory, dat.FileName ?? string.Empty);
 		var creationDate = DateOnly.FromDateTime(File.GetCreationTimeUtc(filename));
 		var modifiedDate = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(filename));
 
 		if (ObjectServiceClient == null)
 		{
-			Logger.Error("Object service client is null");
+			Logger.LogError("Object service client is null");
 			return;
 		}
 

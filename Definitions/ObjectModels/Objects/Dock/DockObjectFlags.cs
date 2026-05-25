@@ -1,4 +1,4 @@
-﻿namespace Definitions.ObjectModels.Objects.Dock;
+namespace Definitions.ObjectModels.Objects.Dock;
 
 [Flags]
 public enum DockObjectFlags : uint16_t

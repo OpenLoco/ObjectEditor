@@ -1,5 +1,5 @@
-using Common.Logging;
 using Definitions.DTO;
+using Microsoft.Extensions.Logging;
 using System.IO.Hashing;
 
 namespace Definitions.Web;
@@ -88,7 +88,7 @@ public static class Client
 	public static async Task<DtoObjectPostResponse?> UploadDatFileAsync(HttpClient client, string filename, byte[] datFileBytes, DateOnly creationDate, DateOnly modifiedDate, ILogger logger)
 	{
 		var xxHash3 = XxHash3.HashToUInt64(datFileBytes);
-		logger.Debug($"Posting {filename} to {client.BaseAddress?.OriginalString}{RoutesV2.Objects}");
+		logger.LogDebug("Posting {Filename} to {OriginalString}{Objects}", filename, client.BaseAddress?.OriginalString, RoutesV2.Objects);
 		var request = new DtoObjectPost(Convert.ToBase64String(datFileBytes), xxHash3, ObjectAvailability.Available, creationDate, modifiedDate);
 		return await ClientHelpers.PostAsync<DtoObjectPost, DtoObjectPostResponse>(
 			client,
@@ -99,7 +99,7 @@ public static class Client
 
 	public static async Task<DtoObjectMissingEntry?> AddMissingObjectAsync(HttpClient client, DtoObjectMissingPost entry, ILogger? logger = null)
 	{
-		logger?.Debug($"Posting missing object {entry.DatName} with checksum {entry.DatChecksum} to {client.BaseAddress?.OriginalString}{RoutesV2.Objects}{RoutesV2.Missing}");
+		logger?.LogDebug("Posting missing object {DatName} with checksum {DatChecksum} to {OriginalString}{Objects}{Missing}", entry.DatName, entry.DatChecksum, client.BaseAddress?.OriginalString, RoutesV2.Objects, RoutesV2.Missing);
 		return await ClientHelpers.PostAsync<DtoObjectMissingPost, DtoObjectMissingEntry>(
 			client,
 			ApiVersion,

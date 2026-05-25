@@ -5,6 +5,7 @@ using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SixLabors.ImageSharp;
@@ -326,7 +327,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 		if (group == null)
 		{
-			Logger.Error($"Couldn't find group named {groupName}");
+			Logger.LogError("Couldn't find group named {GroupName}", groupName);
 			return;
 		}
 
@@ -382,17 +383,17 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	{
 		if (string.IsNullOrEmpty(directory))
 		{
-			Logger.Error($"Directory is invalid: \"{directory}\"");
+			Logger.LogError("Directory is invalid: \"{Directory}\"", directory);
 			return;
 		}
 
 		if (!Directory.Exists(directory))
 		{
-			Logger.Error($"Directory does not exist: \"{directory}\"");
+			Logger.LogError("Directory does not exist: \"{Directory}\"", directory);
 			return;
 		}
 
-		Logger.Info($"Importing images from {directory}");
+		Logger.LogInformation("Importing images from {Directory}", directory);
 
 		ClearSelectionModel();
 
@@ -406,7 +407,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			{
 				offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(offsetsFile) ?? []; // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
 				ArgumentNullException.ThrowIfNull(offsets);
-				Logger.Debug($"Found sprites.json file with {offsets.Count} images");
+				Logger.LogDebug("Found sprites.json file with {Count} images", offsets.Count);
 			}
 			else
 			{
@@ -417,7 +418,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 					.Select((x, i) => new GraphicsElementJson(sanitised[i], x.XOffset, x.YOffset, x.Name))
 					.Fill(files.Length, GraphicsElementJson.Zero)];
 
-				Logger.Debug($"Didn't find sprites.json file, using existing GraphicsElement offsets with {offsets.Count} images");
+				Logger.LogDebug("Didn't find sprites.json file, using existing GraphicsElement offsets with {Count} images", offsets.Count);
 			}
 
 			var all = GroupedImageViewModels.SelectMany(x => x.Images).ToList();
@@ -444,7 +445,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 					var ge = group.GraphicsElements[i];
 					if (ge.ImageTableIndex < 0 || ge.ImageTableIndex >= importedImages.Count)
 					{
-						Logger.Error($"Image[{ge.ImageTableIndex}] is out of range; only {importedImages.Count} were loaded. This graphics element will be set to empty.");
+						Logger.LogError("Image[{ImageTableIndex}] is out of range; only {Count} were loaded. This graphics element will be set to empty.", ge.ImageTableIndex, importedImages.Count);
 						group.GraphicsElements[i] = ImageTableHelpers.GetErrorGraphicsElement(ge.ImageTableIndex);
 					}
 					else
@@ -466,7 +467,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 		catch (Exception ex)
 		{
-			Logger.Error(ex);
+			Logger.LogError(ex);
 		}
 	}
 
@@ -498,17 +499,17 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	{
 		if (string.IsNullOrEmpty(directory))
 		{
-			Logger.Error($"Directory is invalid: \"{directory}\"");
+			Logger.LogError("Directory is invalid: \"{Directory}\"", directory);
 			return;
 		}
 
 		if (!Directory.Exists(directory))
 		{
-			Logger.Error($"Directory does not exist: \"{directory}\"");
+			Logger.LogError("Directory does not exist: \"{Directory}\"", directory);
 			return;
 		}
 
-		Logger.Info($"Exporting images to {directory}");
+		Logger.LogInformation("Exporting images to {Directory}", directory);
 
 		var offsets = new List<GraphicsElementJson>();
 
@@ -539,7 +540,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 
 		var offsetsFile = Path.Combine(directory, "sprites.json");
-		Logger.Info($"Saving sprite offsets to {offsetsFile}");
+		Logger.LogInformation("Saving sprite offsets to {OffsetsFile}", offsetsFile);
 		await JsonFile.SerializeToFileAsync(offsets, offsetsFile);
 	}
 

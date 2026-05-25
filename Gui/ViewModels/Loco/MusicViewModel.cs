@@ -1,7 +1,9 @@
+using Common.Logging;
 using Dat.Data;
 using Dat.FileParsing;
 using Gui.Models;
 using Gui.Models.Audio;
+using Microsoft.Extensions.Logging;
 using ReactiveUI.Fody.Helpers;
 using System.IO;
 using System.Threading.Tasks;
@@ -19,7 +21,7 @@ public class MusicViewModel : BaseFileViewModel<DummyModel>
 
 	public override void Load()
 		=> AudioViewModel = new AudioViewModel(
-			logger,
+			Logger,
 			GetDisplayName(CurrentFile.DisplayName),
 			CurrentFile.FileName!);
 
@@ -68,18 +70,18 @@ public class MusicViewModel : BaseFileViewModel<DummyModel>
 
 	void SaveCore(string filename)
 	{
-		logger?.Info($"Saving music to {filename}");
+		Logger.LogInformation("Saving music to {Filename}", filename);
 
 		if (AudioViewModel == null)
 		{
-			logger?.Error("AudioViewModel is null, cannot save.");
+			Logger.LogError("AudioViewModel is null, cannot save.");
 			return;
 		}
 
 		var datWav = AudioViewModel.GetAsDatWav(LocoAudioType.Music);
 		if (datWav == null)
 		{
-			logger?.Error("Failed to get music data for saving.");
+			Logger.LogError("Failed to get music data for saving.");
 			return;
 		}
 

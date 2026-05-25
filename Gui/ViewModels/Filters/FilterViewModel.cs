@@ -2,6 +2,7 @@ using Avalonia.Media;
 using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
+using Microsoft.Extensions.Logging;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -386,7 +387,7 @@ public class FilterViewModel : ReactiveObject
 			}
 			catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
 			{
-				_model.Logger.Debug($"Filter value \"{TextValue}\" could not be converted to {underlyingType.Name}: {ex.Message}");
+				_model.Logger.LogDebug("Filter value \"{TextValue}\" could not be converted to {Name}: {Message}", TextValue, underlyingType.Name, ex.Message);
 				return null;
 			}
 		}
@@ -410,7 +411,7 @@ public class FilterViewModel : ReactiveObject
 			}
 			catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
 			{
-				_model.Logger.Debug($"Filter date value could not be converted to {underlyingType.Name}: {ex.Message}");
+				_model.Logger.LogDebug("Filter date value could not be converted to {Name}: {Message}", underlyingType.Name, ex.Message);
 				return null;
 			}
 		}

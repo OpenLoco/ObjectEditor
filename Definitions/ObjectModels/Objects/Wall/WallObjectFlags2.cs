@@ -1,4 +1,4 @@
-﻿namespace Definitions.ObjectModels.Objects.Wall;
+namespace Definitions.ObjectModels.Objects.Wall;
 
 // this is copied from OpenRCT2: https://github.com/OpenRCT2/OpenRCT2/blob/develop/src/openrct2/object/WallSceneryEntry.h
 [Flags]

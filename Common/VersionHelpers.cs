@@ -1,4 +1,5 @@
 using Common.Logging;
+using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using System.Diagnostics;
 using System.Net.Http.Headers;
@@ -32,7 +33,7 @@ public static class VersionHelpers
 
 	public static void StartAutoUpdater(ILogger logger, SemanticVersion currentVersion, SemanticVersion latestVersion)
 	{
-		logger.Debug("Attempting to kill existing updater processes");
+		logger.LogDebug("Attempting to kill existing updater processes");
 		try
 		{
 			// kill any existing processes of the updater
@@ -45,14 +46,14 @@ public static class VersionHelpers
 				}
 				catch (Exception ex)
 				{
-					logger.Error(ex, "Failed to kill existing ObjectEditorUpdater process.");
+					logger.LogError(ex, "Failed to kill existing ObjectEditorUpdater process.");
 				}
 			}
 
 			var editorExe = $"{ObjectEditorUpdaterName}.exe";
 			if (!File.Exists(editorExe))
 			{
-				logger.Error($"Cannot find the auto-updater executable: {editorExe}. You'll need to manually download the update.");
+				logger.LogError("Cannot find the auto-updater executable: {EditorExe}. You'll need to manually download the update.", editorExe);
 				return;
 			}
 
@@ -71,24 +72,24 @@ public static class VersionHelpers
 				CreateNoWindow = true,
 			};
 
-			logger.Debug($"CurrentProcessId: {Environment.ProcessId}");
-			logger.Debug($"CurrentProcessPath: {Environment.ProcessPath}");
-			logger.Debug($"Attempting to start auto-updater \"{startInfo}\"");
+			logger.LogDebug("CurrentProcessId: {ProcessId}", Environment.ProcessId);
+			logger.LogDebug("CurrentProcessPath: {ProcessPath}", Environment.ProcessPath);
+			logger.LogDebug("Attempting to start auto-updater \"{StartInfo}\"", startInfo);
 			var process = Process.Start(startInfo);
 
 			if (process != null)
 			{
-				logger.Info($"Started auto-updater process (PID {process.Id}) to update from {currentVersion} to {latestVersion}. Editor will now close");
+				logger.LogInformation("Started auto-updater process (PID {Id}) to update from {CurrentVersion} to {LatestVersion}. Editor will now close", process.Id, currentVersion, latestVersion);
 				Environment.Exit(0);
 			}
 			else
 			{
-				logger.Error("Failed to start auto-updater process. You'll need to manually download the update.");
+				logger.LogError("Failed to start auto-updater process. You'll need to manually download the update.");
 			}
 		}
 		catch (Exception ex)
 		{
-			logger.Error($"Failed to start auto-updater: {ex}");
+			logger.LogError("Failed to start auto-updater: {Ex}", ex);
 		}
 	}
 

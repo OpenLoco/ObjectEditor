@@ -114,7 +114,7 @@ public class LegacyRouteHandler()
 		LocoDbContext db,
 		[FromServices] ILogger<LegacyRouteHandler> logger)
 	{
-		logger.LogInformation("[ListObjects]");
+		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[ListObjects]");
 
 		// Cap free-text query parameters to a reasonable length. Without this an
 		// attacker can issue arbitrarily long `LIKE %…%` scans against SQLite.
@@ -265,7 +265,7 @@ public class LegacyRouteHandler()
 
 		if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			logger.LogWarning("Indexed object is a vanilla object.");
+			Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "Indexed object is a vanilla object.");
 			return Results.Forbid();
 		}
 
@@ -529,7 +529,7 @@ public class LegacyRouteHandler()
 	// eg: https://localhost:7230/v1/uploaddat/...
 	public static async Task<IResult> UploadDat(DtoObjectPost request, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
 	{
-		logger.LogInformation("[UploadDat] Upload requested");
+		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[UploadDat] Upload requested");
 
 		if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 		{
@@ -637,7 +637,7 @@ public class LegacyRouteHandler()
 
 	public static async Task<IResult> UploadObject([FromServices] ILogger<LegacyRouteHandler> logger)
 	{
-		logger.LogWarning("[UploadDat] - not implemented");
+		Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "[UploadDat] - not implemented");
 		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 
@@ -647,13 +647,13 @@ public class LegacyRouteHandler()
 
 	public static async Task<IResult> UpdateDat([FromServices] ILogger<LegacyRouteHandler> logger)
 	{
-		logger.LogWarning("[UploadDat] - not implemented");
+		Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "[UploadDat] - not implemented");
 		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 
 	public static async Task<IResult> UpdateObject([FromServices] ILogger<LegacyRouteHandler> logger)
 	{
-		logger.LogWarning("[UploadDat] - not implemented");
+		Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "[UploadDat] - not implemented");
 		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 

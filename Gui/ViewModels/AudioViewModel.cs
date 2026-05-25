@@ -1,6 +1,7 @@
 using Common.Logging;
 using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models.Audio;
+using Microsoft.Extensions.Logging;
 using NAudio.Wave;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -101,7 +102,7 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 		catch (Exception ex)
 		{
-			Logger.Error(ex, "Error while converting audio to Loco format");
+			Logger.LogError(ex, "Error while converting audio to Loco format");
 			return null;
 		}
 	}
@@ -148,7 +149,7 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 			using (CurrentWOEvent = new WaveOutEvent())
 			{
-				Logger.Info($"{WaveStream.WaveFormat}");
+				Logger.LogInformation("{WaveFormat}", WaveStream.WaveFormat);
 				WaveStream.Position = 0;
 				CurrentWOEvent.Init(WaveStream);
 				CurrentWOEvent.Play();
@@ -190,7 +191,7 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 			WaveStream?.Dispose();
 			WaveStream = null;
 
-			Logger.Info($"Loading {filename}");
+			Logger.LogInformation("Loading {Filename}", filename);
 			var extension = Path.GetExtension(filename).ToLower();
 
 			if (extension == ".mp3")
@@ -204,16 +205,16 @@ public class AudioViewModel : ReactiveObject, IViewModel, IDisposable
 
 			if (WaveStream == null)
 			{
-				Logger.Error($"Unsupported audio file format: {extension}");
+				Logger.LogError("Unsupported audio file format: {Extension}", extension);
 				return;
 			}
 
 			WaveStream.Position = 0;
-			Logger.Info($"Successfully loaded {filename}");
+			Logger.LogInformation("Successfully loaded {Filename}", filename);
 		}
 		catch (Exception ex)
 		{
-			Logger.Error($"Failed to load audio file \"{filename}\".", ex);
+			Logger.LogError(ex, "Failed to load audio file \"{Filename}\".", filename);
 			WaveStream?.Dispose();
 			WaveStream = null;
 		}

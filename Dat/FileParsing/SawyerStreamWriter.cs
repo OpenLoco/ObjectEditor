@@ -8,6 +8,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Sound;
 using Definitions.ObjectModels.Types;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -100,7 +101,7 @@ public static class SawyerStreamWriter
 	{
 		ArgumentNullException.ThrowIfNull(locoObject);
 
-		logger.Info($"Writing \"{objName}\" to {filename}");
+		logger.LogInformation("Writing \"{ObjName}\" to {Filename}", objName, filename);
 
 		var objBytes = WriteLocoObject(objName, locoObject.ObjectType, objectSource, encoding, logger, locoObject, allowWritingAsVanilla).ToArray();
 
@@ -114,11 +115,11 @@ public static class SawyerStreamWriter
 		catch (Exception ex)
 		{
 			// will usually be UnauthorizedAccessException
-			logger?.Error(ex);
+			logger?.LogError(ex);
 			return;
 		}
 
-		logger.Info($"{objName} successfully saved to {filename}");
+		logger.LogInformation("{ObjName} successfully saved to {Filename}", objName, filename);
 	}
 
 	public static byte[] Encode(SawyerEncoding encoding, ReadOnlySpan<byte> data)
@@ -509,7 +510,7 @@ public static class SawyerStreamWriter
 		if (sourceGame == DatObjectSource.Vanilla && !allowWritingAsVanilla)
 		{
 			sourceGame = DatObjectSource.Custom;
-			logger.Warning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
+			logger.LogWarning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
 		}
 
 		var s5Header = new S5Header(objName, 0)

@@ -6,6 +6,7 @@ using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.IO.Hashing;
@@ -69,13 +70,13 @@ public class ObjectIndex
 		ObjectIndex? index = null;
 		if (File.Exists(indexPath))
 		{
-			logger.Info("Index file found - loading it");
+			logger.LogInformation("Index file found - loading it");
 			index = await LoadIndexAsync(indexPath).ConfigureAwait(false);
 		}
 
 		if (index == null)
 		{
-			logger.Info("Index file not found - creating it");
+			logger.LogInformation("Index file not found - creating it");
 			index = await CreateIndexAsync(directory, logger, progress).ConfigureAwait(false);
 			await index.SaveIndexAsync(indexPath).ConfigureAwait(false);
 		}
@@ -97,7 +98,7 @@ public class ObjectIndex
 
 		foreach (var f in failed)
 		{
-			logger.Error($"Failed to load {f}");
+			logger.LogError("Failed to load {F}", f);
 		}
 
 		return this;
@@ -137,7 +138,7 @@ public class ObjectIndex
 			}
 			catch (Exception ex)
 			{
-				logger.Error(ex);
+				logger.LogError(ex);
 			}
 
 			if (entry == null)
@@ -163,7 +164,7 @@ public class ObjectIndex
 
 		if (!SawyerStreamReader.TryGetHeadersFromBytes(data, out var hdrs, logger))
 		{
-			logger.Error($"{relativeFilename} must have valid S5 and Object headers to call this method", nameof(relativeFilename));
+			logger.LogError("{RelativeFilename} must have valid S5 and Object headers to call this method", relativeFilename);
 			return null;
 		}
 

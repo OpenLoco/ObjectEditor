@@ -1,4 +1,6 @@
+using Common.Logging;
 using Gui.Models;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -23,10 +25,10 @@ public class TutorialViewModel : BaseFileViewModel<DummyModel>
 
 	public override void Load()
 	{
-		logger?.Info($"Loading tutorial from {CurrentFile.FileName}");
+		Logger.LogInformation("Loading tutorial from {FileName}", CurrentFile.FileName);
 		if (CurrentFile.FileName == null)
 		{
-			logger?.Error("Tutorial file name was null");
+			Logger.LogError("Tutorial file name was null");
 			return;
 		}
 
@@ -73,11 +75,11 @@ public class TutorialViewModel : BaseFileViewModel<DummyModel>
 	}
 
 	public override void Save()
-		=> logger?.Warning("Save is not currently implemented");
+		=> Logger.LogWarning("Save is not currently implemented");
 
 	public override Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
-		logger?.Warning("SaveAs is not currently implemented");
+		Logger.LogWarning("SaveAs is not currently implemented");
 		return Task.FromResult<string?>(null);
 	}
 }

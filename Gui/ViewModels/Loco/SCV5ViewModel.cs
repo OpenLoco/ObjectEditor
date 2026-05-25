@@ -1,4 +1,5 @@
 using Avalonia.Media.Imaging;
+using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
@@ -7,6 +8,7 @@ using Definitions.DTO;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
 using Index;
+using Microsoft.Extensions.Logging;
 using PropertyModels.Extensions;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -65,10 +67,10 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 	public override void Load()
 	{
-		logger?.Info($"Loading scenario from {CurrentFile.FileName}");
+		Logger.LogInformation("Loading scenario from {FileName}", CurrentFile.FileName);
 		if (CurrentFile.FileName == null)
 		{
-			logger?.Error("Scenario file name was null");
+			Logger.LogError("Scenario file name was null");
 			return;
 		}
 
@@ -76,7 +78,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 		if (Model == null)
 		{
-			logger?.Error($"Unable to load {CurrentFile.FileName}");
+			Logger.LogError("Unable to load {FileName}", CurrentFile.FileName);
 			return;
 		}
 
@@ -102,7 +104,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			}
 			catch (Exception ex)
 			{
-				logger?.Error(ex);
+				Logger.LogError(ex);
 			}
 		}
 	}
@@ -113,7 +115,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 		if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
 		{
-			logger.Error($"The specified [{targetFolder}] ObjData directory is invalid: \"{folder}\"");
+			Logger.LogError("The specified [{TargetFolder}] ObjData directory is invalid: \"{Folder}\"", targetFolder, folder);
 			return;
 		}
 
@@ -121,27 +123,27 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 		if (Model == null)
 		{
-			logger.Error("Current S5File is null");
+			Logger.LogError("Current S5File is null");
 			return;
 		}
 
 		if (EditorContext.ObjectServiceClient == null)
 		{
-			logger.Error("The object service client is null");
+			Logger.LogError("The object service client is null");
 			return;
 		}
 
-		var gameFolderIndex = await ObjectIndex.LoadOrCreateIndexAsync(folder, logger).ConfigureAwait(true);
+		var gameFolderIndex = await ObjectIndex.LoadOrCreateIndexAsync(folder, Logger).ConfigureAwait(true);
 
 		if (EditorContext.ObjectIndexOnline == null)
 		{
 			// need to download the index, ie call /objects/list
-			logger.Info("Online index doesn't exist - downloading now");
+			Logger.LogInformation("Online index doesn't exist - downloading now");
 
 			EditorContext.ObjectIndexOnline = new ObjectIndex((await EditorContext.ObjectServiceClient.GetObjectListAsync())
 				.Select(x => new ObjectIndexEntry(x.DisplayName, null, x.Id, x.DatChecksum, null, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
 
-			logger.Info("Index downloaded");
+			Logger.LogInformation("Index downloaded");
 			// technically should check if the index is downloaded and valid now
 		}
 
@@ -158,7 +160,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			}
 
 			// obj is missing - we need to download
-			logger.Info($"Scenario {CurrentFile.DisplayName} has missing object. Name=\"{obj.Name}\" Checksum={obj.DatChecksum} ObjectType={obj.ObjectType} ");
+			Logger.LogInformation("Scenario {DisplayName} has missing object. Name=\"{Name}\" Checksum={DatChecksum} ObjectType={ObjectType} ", CurrentFile.DisplayName, obj.Name, obj.DatChecksum, obj.ObjectType);
 
 			var onlineObj = EditorContext.ObjectIndexOnline
 				.Objects
@@ -166,7 +168,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 			if (onlineObj == null)
 			{
-				logger.Error($"Couldn't find a matching object in the online index. Name=\"{obj.Name}\" Checksum={obj.DatChecksum} ObjectType={obj.ObjectType} ");
+				Logger.LogError("Couldn't find a matching object in the online index. Name=\"{Name}\" Checksum={DatChecksum} ObjectType={ObjectType} ", obj.Name, obj.DatChecksum, obj.ObjectType);
 
 				// Add this missing object to the server's missing objects list
 				var missingEntry = new DtoObjectMissingPost(
@@ -177,11 +179,11 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 				var result = await EditorContext.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
 				if (result != null)
 				{
-					logger.Info($"Successfully added missing object to server: Id={result.Id} Name=\"{obj.Name}\" Checksum=({obj.DatChecksum})");
+					Logger.LogInformation("Successfully added missing object to server: Id={Id} Name=\"{Name}\" Checksum=({DatChecksum})", result.Id, obj.Name, obj.DatChecksum);
 				}
 				else
 				{
-					logger.Error($"Failed to add missing object to server: Name=\"{obj.Name}\" Checksum=({obj.DatChecksum})");
+					Logger.LogError("Failed to add missing object to server: Name=\"{Name}\" Checksum=({DatChecksum})", obj.Name, obj.DatChecksum);
 				}
 
 				continue;
@@ -189,7 +191,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 			if (onlineObj.Id == null)
 			{
-				logger.Error("Downloaded object had no Id - this is a problem with the server");
+				Logger.LogError("Downloaded object had no Id - this is a problem with the server");
 				continue;
 			}
 
@@ -198,7 +200,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 			if (downloadedObjBytes == null)
 			{
-				logger.Error("Downloaded bytes was null");
+				Logger.LogError("Downloaded bytes was null");
 				continue;
 			}
 
@@ -208,11 +210,11 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 			if (File.Exists(filename))
 			{
-				logger.Warning($"{filename} already exists - will NOT overwrite it");
+				Logger.LogWarning("{Filename} already exists - will NOT overwrite it", filename);
 				continue;
 			}
 
-			logger.Info($"Writing file to {filename}");
+			Logger.LogInformation("Writing file to {Filename}", filename);
 
 			await File.WriteAllBytesAsync(filename, downloadedObjBytes);
 		}
@@ -314,11 +316,11 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 	}
 
 	public override void Save()
-		=> logger?.Warning("Save is not currently implemented");
+		=> Logger.LogWarning("Save is not currently implemented");
 
 	public override Task<string?> SaveAsAsync(SaveParameters saveParameters)
 	{
-		logger?.Warning("SaveAs is not currently implemented");
+		Logger.LogWarning("SaveAs is not currently implemented");
 		return Task.FromResult<string?>(null);
 	}
 
@@ -338,7 +340,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 	//void Save(string filename)
 	//{
-	//	logger?.Info($"Saving scenario/save/landscape to {filename}");
+	//	logger?.Info("Saving scenario/save/landscape to {Filename}", filename);
 
 	//	var newFile = CurrentS5File with
 	//	{

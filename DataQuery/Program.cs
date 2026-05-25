@@ -1,10 +1,16 @@
 // See https://aka.ms/new-console-template for more information
 using OpenLoco.Common.Logging;
+using Common.Logging;
 using OpenLoco.Dat.Data;
+using Common.Logging;
 using OpenLoco.Dat.FileParsing;
+using Common.Logging;
 using OpenLoco.Dat.Objects;
+using Common.Logging;
 using OpenLoco.Definitions.Database;
+using Common.Logging;
 using System.Reflection;
+using Common.Logging;
 
 var dir = "Q:\\Games\\Locomotion\\Server\\Objects";
 var logger = new Logger();

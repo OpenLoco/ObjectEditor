@@ -2,12 +2,12 @@ using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Common;
-using Common.Logging;
 using Dat.Data;
 using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
 using Gui.ViewModels.Loco.Tutorial;
+using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using PropertyModels.Extensions;
 using ReactiveUI;
@@ -163,17 +163,17 @@ public class MainWindowViewModel : ViewModelBase
 		{
 			if (ApplicationVersion == null || ApplicationVersion == VersionHelpers.UnknownVersion)
 			{
-				EditorContext.Logger.Info($"{nameof(ApplicationVersion)} is null");
+				EditorContext.Logger.LogInformation("{Nameof} is null", nameof(ApplicationVersion));
 				ApplicationVersion = VersionHelpers.UnknownVersion;
 			}
 
 			if (LatestVersion == null || LatestVersion == VersionHelpers.UnknownVersion)
 			{
-				EditorContext.Logger.Info($"{nameof(LatestVersion)} is null");
+				EditorContext.Logger.LogInformation("{Nameof} is null", nameof(LatestVersion));
 				LatestVersion = VersionHelpers.UnknownVersion;
 			}
 
-			EditorContext.Logger.Info($"Attempting to update from {ApplicationVersion} to {LatestVersion}");
+			EditorContext.Logger.LogInformation("Attempting to update from {ApplicationVersion} to {LatestVersion}", ApplicationVersion, LatestVersion);
 			_ = Task.Run(() => VersionHelpers.StartAutoUpdater(EditorContext.Logger, ApplicationVersion, LatestVersion));
 
 		});
@@ -303,14 +303,14 @@ public class MainWindowViewModel : ViewModelBase
 
 		if (EditorContext.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
 		{
-			EditorContext.Logger.Warning($"Successfully loaded {fsi.FileName}");
+			EditorContext.Logger.LogWarning("Successfully loaded {FileName}", fsi.FileName);
 			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo!.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum, uiLocoFile.DatInfo.S5Header.ObjectSource);
 			var fsi2 = new FileSystemItem(uiLocoFile.DatInfo.S5Header.Name, fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local, source);
 			SetObjectViewModel(fsi2);
 		}
 		else
 		{
-			EditorContext.Logger.Warning($"Unable to load {fsi.FileName}");
+			EditorContext.Logger.LogWarning("Unable to load {FileName}", fsi.FileName);
 		}
 	}
 
@@ -398,37 +398,37 @@ public class MainWindowViewModel : ViewModelBase
 
 		if (!Directory.Exists(dirPath))
 		{
-			EditorContext.Logger.Warning("Directory doesn't exist");
+			EditorContext.Logger.LogWarning("Directory doesn't exist");
 			return;
 		}
 
 		if (EditorContext.Settings.ObjDataDirectories.Contains(dirPath))
 		{
-			EditorContext.Logger.Warning("Object directory is already in the list");
+			EditorContext.Logger.LogWarning("Object directory is already in the list");
 			return;
 		}
 
 		if (EditorContext.Settings.LocomotionSteamObjDataFolder == dirPath)
 		{
-			EditorContext.Logger.Warning("No need to add - this is the predefined Locomotion (Steam) ObjData folder");
+			EditorContext.Logger.LogWarning("No need to add - this is the predefined Locomotion (Steam) ObjData folder");
 			return;
 		}
 
 		if (EditorContext.Settings.LocomotionGoGObjDataFolder == dirPath)
 		{
-			EditorContext.Logger.Warning("No need to add - this is the predefined Locomotion (GoG) ObjData folder");
+			EditorContext.Logger.LogWarning("No need to add - this is the predefined Locomotion (GoG) ObjData folder");
 			return;
 		}
 
 		if (EditorContext.Settings.OpenLocoObjDataFolder == dirPath)
 		{
-			EditorContext.Logger.Warning("No need to add - this is the predefined OpenLoco object folder");
+			EditorContext.Logger.LogWarning("No need to add - this is the predefined OpenLoco object folder");
 			return;
 		}
 
 		if (EditorContext.Settings.AppDataObjDataFolder == dirPath)
 		{
-			EditorContext.Logger.Warning("No need to add - this is the predefined AppData folder");
+			EditorContext.Logger.LogWarning("No need to add - this is the predefined AppData folder");
 			return;
 		}
 

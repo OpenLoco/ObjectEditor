@@ -2,6 +2,7 @@ using Common;
 using Common.Logging;
 using Definitions.DTO;
 using Definitions.Web;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -46,11 +47,11 @@ public class ObjectServiceClient
 			var currentAppVersion = VersionHelpers.GetCurrentAppVersion();
 			WebClient.DefaultRequestHeaders.UserAgent.ParseAdd($"ObjectEditor/{currentAppVersion}");
 
-			Logger?.Info($"Successfully registered object service with address \"{serverUri}\"");
+			Logger.LogInformation("Successfully registered object service with address \"{ServerUri}\"", serverUri);
 		}
 		else
 		{
-			Logger?.Error($"Unable to parse object service address \"{serverAddress}\". Online functionality will not work until the address is corrected and the editor is restarted.");
+			Logger.LogError("Unable to parse object service address \"{ServerAddress}\". Online functionality will not work until the address is corrected and the editor is restarted.", serverAddress);
 		}
 
 		//LocoUser = new LocalUser(settings.ServerEmail, settings.ServerPassword);

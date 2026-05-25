@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace Common.Logging;
 
 public record LogLine(DateTime Time, LogLevel Level, string Caller, string Message)

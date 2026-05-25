@@ -1,31 +1,39 @@
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace Common.Logging;
 
-public class Logger : ILogger
+// Simple in-process logger that implements the standard Microsoft.Extensions.Logging.ILogger
+// while preserving the historical event/queue surface that the GUI's LogWindow binds to.
+public sealed class Logger : ILogger
 {
-	public readonly ConcurrentQueue<LogLine> Logs = [];
-	public LogLevel Level = LogLevel.Debug;
+	public ConcurrentQueue<LogLine> Logs { get; } = new();
+	public LogLevel MinLevel { get; set; } = LogLevel.Debug;
 
 	public event EventHandler<LogAddedEventArgs>? LogAdded;
 
-	public void Log(LogLevel level, string message, string callerMemberName = "", string sourceFilePath = "", int sourceLineNumber = 0)
+	public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+	public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None && logLevel >= MinLevel;
+
+	public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
 	{
-		// Get the class name using reflection
-		var frame = new StackFrame(2); // Skip the Log methods
-		var method = frame.GetMethod();
-		var className = method?.DeclaringType?.Name ?? "<unknown_class>";
+		ArgumentNullException.ThrowIfNull(formatter);
 
-		//var fullCaller = $"[{className}.{callerMemberName}] ({sourceFilePath}:{sourceLineNumber})";
-		var caller = $"[{className}.{callerMemberName}]";
-
-		var log = new LogLine(DateTime.Now, level, caller, message);
-		Logs.Enqueue(log);
-
-		if (Level <= level)
+		if (!IsEnabled(logLevel))
 		{
-			LogAdded?.Invoke(this, new LogAddedEventArgs(log));
+			return;
 		}
+
+		var message = formatter(state, exception);
+		if (exception != null)
+		{
+			message = $"{message} - {exception.Message} - {exception.StackTrace}";
+		}
+
+		var caller = string.IsNullOrEmpty(eventId.Name) ? string.Empty : $"[{eventId.Name}]";
+		var line = new LogLine(DateTime.Now, logLevel, caller, message);
+		Logs.Enqueue(line);
+		LogAdded?.Invoke(this, new LogAddedEventArgs(line));
 	}
 }

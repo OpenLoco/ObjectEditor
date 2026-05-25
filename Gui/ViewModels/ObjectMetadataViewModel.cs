@@ -1,3 +1,4 @@
+using Common.Logging;
 using Definitions;
 using Definitions.DTO;
 using Definitions.ObjectModels;
@@ -89,7 +90,7 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 				// Log any exceptions that occur
 				if (t.Exception != null)
 				{
-					logger?.Error("Failed to load server data for metadata editing", t.Exception);
+					Logger.LogError(t.Exception, "Failed to load server data for metadata editing");
 				}
 			}, TaskContinuationOptions.OnlyOnFaulted);
 		}
@@ -175,7 +176,7 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 		catch (Exception ex)
 		{
 			// Log the exception so users know why data failed to load
-			logger?.Error("Failed to load server data for metadata editing", ex);
+			Logger.LogError(ex, "Failed to load server data for metadata editing");
 
 			// If we can't load data (e.g., offline mode), just set empty lists
 			AvailableLicences = [null];

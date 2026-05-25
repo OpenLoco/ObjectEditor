@@ -186,7 +186,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	static async Task<IResult> CreateDatAsync(DtoObjectPost request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 	{
-		logger.LogInformation("[CreateAsync] Upload requested");
+		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[CreateAsync] Upload requested");
 
 		if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 		{
@@ -491,7 +491,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
 	{
-		logger.LogInformation("[ListAsync] List requested for object");
+		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[ListAsync] List requested for object");
 
 		if (context.Request.Query.Count == 0)
 		{
@@ -582,7 +582,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			logger.LogWarning("Indexed object is a vanilla object.");
+			Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "Indexed object is a vanilla object.");
 			return Results.Forbid();
 		}
 
@@ -668,7 +668,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	static IResult ReturnObject(DtoObjectPostResponse? dtoDescriptor, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 	{
-		logger.LogDebug("[ReturnObject]");
+		Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "[ReturnObject]");
 
 		if (dtoDescriptor == null)
 		{
@@ -705,7 +705,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 			if (dtoDescriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 			{
-				logger.LogWarning("User attempted to download a vanilla object");
+				Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "User attempted to download a vanilla object");
 				dat.DatBytesAsBase64 = null;
 			}
 			else
@@ -719,7 +719,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	static IResult ReturnFile(TblObject? obj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 	{
-		logger.LogDebug("[ReturnFile]");
+		Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "[ReturnFile]");
 
 		if (obj == null)
 		{
@@ -728,7 +728,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			logger.LogDebug("User attempted to download a vanilla object");
+			Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "User attempted to download a vanilla object");
 			return Results.Forbid();
 		}
 

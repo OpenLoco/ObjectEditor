@@ -14,6 +14,7 @@ using Definitions.Web;
 using DynamicData;
 using DynamicData.Binding;
 using Gui.Models;
+using Gui.Operations;
 using Gui.ViewModels.Filters;
 using Index;
 using Microsoft.Extensions.Logging;
@@ -522,7 +523,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 			return;
 		}
 
-		await EditorContext.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
+		await EditorContext.OperationQueue.Enqueue(new IndexFolderOperation(EditorContext, directory, useExistingIndex, extraReceiver: Progress)).Completion;
 
 		if (EditorContext.ObjectIndex != null)
 		{
@@ -544,22 +545,28 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 			return;
 		}
 
-		if (UsesTreeDataGrid)
-		{
-			var items = await GetOnlineTreeItemsAsync(useExistingIndex);
-			CurrentOnlineBrowseResults.Clear();
-			CurrentDirectoryItems.Clear();
-			CurrentDirectoryItems.AddRange(items);
-		}
-		else
-		{
-			var results = await GetOnlineBrowseResultsAsync(useExistingIndex);
-			CurrentDirectoryItems.Clear();
+		await EditorContext.OperationQueue.Enqueue(new DelegateOperation(
+			$"Loading online {CurrentItemLabelPlural.ToLowerInvariant()}",
+			async (_, _) =>
+			{
+				if (UsesTreeDataGrid)
+				{
+					var items = await GetOnlineTreeItemsAsync(useExistingIndex);
+					CurrentOnlineBrowseResults.Clear();
+					CurrentDirectoryItems.Clear();
+					CurrentDirectoryItems.AddRange(items);
+				}
+				else
+				{
+					var results = await GetOnlineBrowseResultsAsync(useExistingIndex);
+					CurrentDirectoryItems.Clear();
 
-			CurrentOnlineBrowseResults.Clear();
-			CurrentOnlineBrowseResults.AddRange(results);
-
-		}
+					CurrentOnlineBrowseResults.Clear();
+					CurrentOnlineBrowseResults.AddRange(results);
+				}
+			},
+			initialStatus: CurrentDirectory,
+			supportsCancellation: false)).Completion;
 
 		//UpdateDirectoryItemsView();
 	}
@@ -884,6 +891,20 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 			return;
 		}
 
+		await EditorContext.OperationQueue.Enqueue(new DelegateOperation(
+			$"Downloading {item.DisplayName}",
+			(_, _) => DownloadOnlineItemCoreAsync(item),
+			initialStatus: item.Id.ToString(),
+			supportsCancellation: false)).Completion;
+	}
+
+	async Task DownloadOnlineItemCoreAsync(FileSystemItem item)
+	{
+		if (EditorContext.ObjectServiceClient == null || item.Id == null)
+		{
+			return;
+		}
+
 		var fileBytes = item.OnlineApiEndpointGroup switch
 		{
 			OnlineApiEndpointGroup.Objects => await EditorContext.ObjectServiceClient.GetObjectFileAsync(item.Id.Value),
@@ -919,6 +940,19 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	}
 
 	async Task DownloadOnlinePackAsync(OnlineItemPackBrowseResult pack)
+	{
+		if (EditorContext.ObjectServiceClient == null)
+		{
+			return;
+		}
+
+		await EditorContext.OperationQueue.Enqueue(new DelegateOperation(
+			$"Downloading pack {pack.Name}",
+			(_, _) => DownloadOnlinePackCoreAsync(pack),
+			supportsCancellation: false)).Completion;
+	}
+
+	async Task DownloadOnlinePackCoreAsync(OnlineItemPackBrowseResult pack)
 	{
 		if (EditorContext.ObjectServiceClient == null)
 		{

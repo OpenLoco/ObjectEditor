@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Dat.Data;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
+using Gui.Operations;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
@@ -22,7 +23,7 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 		: base(editorContext, model)
 	{
 		CurrentFile = currentFile;
-		ReloadCommand = ReactiveCommand.Create(Load);
+		ReloadCommand = ReactiveCommand.CreateFromTask(LoadAsync);
 		SaveCommand = ReactiveCommand.CreateFromTask(SaveWrapper);
 		SaveAsCommand = ReactiveCommand.CreateFromTask(SaveAsWrapper);
 		DeleteLocalFileCommand = ReactiveCommand.CreateFromTask(DeleteWrapper);
@@ -40,6 +41,21 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 	public abstract void Save();
 	public abstract Task<string?> SaveAsAsync(SaveParameters saveParameters);
 	public virtual void Delete() { }
+
+	/// <summary>
+	/// Enqueues <see cref="Load"/> on the central operation queue and runs it on the threadpool.
+	/// Subclasses' <see cref="Load"/> implementations construct nested view-models and mutate the
+	/// DynamicData-backed <c>ViewModelGroups</c> source list, which uses
+	/// <c>RxSchedulers.MainThreadScheduler</c> to marshal the resulting collection changes to the
+	/// UI thread — so <see cref="Load"/> itself is safe to invoke off-thread, and the dispatcher
+	/// stays free to animate the queue progress bar while the load runs.
+	/// </summary>
+	public Task LoadAsync()
+		=> EditorContext.OperationQueue.Enqueue(new DelegateOperation(
+			$"Loading {CurrentFile.DisplayName ?? CurrentFile.FileName ?? "object"}",
+			(_, _) => Task.Run(Load),
+			initialStatus: CurrentFile.FileName,
+			supportsCancellation: false)).Completion;
 
 	async Task SaveAsWrapper()
 	{
@@ -115,7 +131,10 @@ public abstract class BaseFileViewModel<T> : BaseViewModelWithEditorContext<T>, 
 			}
 		}
 
-		Save();
+		await EditorContext.OperationQueue.Enqueue(new DelegateOperation(
+			$"Saving {CurrentFile.DisplayName ?? CurrentFile.FileName}",
+			(_, _) => Task.Run(Save),
+			supportsCancellation: false)).Completion;
 	}
 
 	async Task DeleteWrapper()

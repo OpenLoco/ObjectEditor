@@ -14,7 +14,7 @@ public class G1ViewModel : BaseFileViewModel<G1Dat>
 {
 	public G1ViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
-		=> Load();
+		=> _ = LoadAsync();
 
 	[Reactive]
 	public ImageTableViewModel? ImageTableViewModel { get; set; }
@@ -38,7 +38,7 @@ public class G1ViewModel : BaseFileViewModel<G1Dat>
 
 		Model.ImageTable.PaletteMap = EditorContext.PaletteMap;
 		EditorContext.G1 = Model; // todo: do we still need? can we do another way?
-		ImageTableViewModel = new ImageTableViewModel(Model.ImageTable, Logger);
+		ImageTableViewModel = new ImageTableViewModel(Model.ImageTable, Logger) { OperationQueue = EditorContext.OperationQueue };
 	}
 
 	public override void Save()

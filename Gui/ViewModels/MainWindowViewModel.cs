@@ -6,6 +6,7 @@ using Dat.Data;
 using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
+using Gui.Operations;
 using Gui.ViewModels.Loco.Tutorial;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -31,6 +32,8 @@ public class MainWindowViewModel : ViewModelBase
 	public ObjectEditorContext EditorContext { get; }
 
 	public FolderTreeViewModel FolderTreeViewModel { get; }
+
+	public OperationQueueViewModel OperationQueue => EditorContext.OperationQueue;
 
 	[Reactive]
 	public TabViewPageViewModel CurrentTabModel { get; set; } = new();
@@ -265,11 +268,15 @@ public class MainWindowViewModel : ViewModelBase
 			: new FileSystemItem(Path.GetFileName(path), path, null, DateOnly.FromDateTime(File.GetCreationTimeUtc(path)), DateOnly.FromDateTime(File.GetLastWriteTimeUtc(path)), FileLocation.Local);
 	}
 
-	async Task LoadDefaultPalette()
-	{
-		EditorContext.PaletteMap = await Task.Run(() => new PaletteMap(DefaultPaletteImage));
-		await CurrentTabModel.ReloadAllAsync();
-	}
+	Task LoadDefaultPalette()
+		=> EditorContext.OperationQueue.Enqueue(new DelegateOperation(
+			"Loading default palette",
+			async (_, _) =>
+			{
+				EditorContext.PaletteMap = await Task.Run(() => new PaletteMap(DefaultPaletteImage));
+				await CurrentTabModel.ReloadAllAsync();
+			},
+			supportsCancellation: false)).Completion;
 
 	async Task LoadCustomPalette()
 	{
@@ -286,8 +293,15 @@ public class MainWindowViewModel : ViewModelBase
 			return;
 		}
 
-		EditorContext.PaletteMap = new PaletteMap(path);
-		await CurrentTabModel.ReloadAllAsync();
+		await EditorContext.OperationQueue.Enqueue(new DelegateOperation(
+			"Loading custom palette",
+			async (_, _) =>
+			{
+				EditorContext.PaletteMap = await Task.Run(() => new PaletteMap(path));
+				await CurrentTabModel.ReloadAllAsync();
+			},
+			initialStatus: path,
+			supportsCancellation: false)).Completion;
 	}
 
 	public async Task LoadSingleObject()
@@ -301,7 +315,20 @@ public class MainWindowViewModel : ViewModelBase
 		var createdTime = DateOnly.FromDateTime(File.GetCreationTimeUtc(fsi.FileName));
 		var modifiedTime = DateOnly.FromDateTime(File.GetLastWriteTimeUtc(fsi.FileName));
 
-		if (EditorContext.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var uiLocoFile) && uiLocoFile != null)
+		var tcs = new TaskCompletionSource<(bool ok, LocoUIObjectModel? model)>();
+		var handle = EditorContext.OperationQueue.Enqueue(new DelegateOperation(
+			$"Loading {Path.GetFileName(fsi.FileName)}",
+			(_, _) => Task.Run(() =>
+			{
+				var ok = EditorContext.TryLoadObject(new FileSystemItem(Path.GetFileName(fsi.FileName), fsi.FileName, fsi.Id, createdTime, modifiedTime, FileLocation.Local), out var model);
+				tcs.SetResult((ok, model));
+			}),
+			initialStatus: fsi.FileName,
+			supportsCancellation: false));
+		await handle.Completion;
+		var (loaded, uiLocoFile) = await tcs.Task;
+
+		if (loaded && uiLocoFile != null)
 		{
 			EditorContext.Logger.LogWarning("Successfully loaded {FileName}", fsi.FileName);
 			var source = OriginalObjectFiles.GetFileSource(uiLocoFile.DatInfo!.S5Header.Name, uiLocoFile.DatInfo.S5Header.Checksum, uiLocoFile.DatInfo.S5Header.ObjectSource);

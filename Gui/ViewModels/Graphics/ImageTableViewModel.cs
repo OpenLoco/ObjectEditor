@@ -5,6 +5,9 @@ using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Gui.Models;
+using Gui.Models.Operations;
+using Gui.Operations;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -82,12 +85,21 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 	[Reactive]
 	public int AnimationSpeed { get; set; } = 40;
-	readonly DispatcherTimer animationTimer;
+	// Avalonia's DispatcherTimer.Start() calls VerifyAccess(), so creation/start must happen on
+	// the UI thread. Load() runs on the threadpool, so we defer the timer's construction via a
+	// Dispatcher.UIThread.Post — this lets ImageTableViewModel be constructed safely from any thread.
+	DispatcherTimer? animationTimer;
 	int currentFrameIndex;
 	readonly CompositeDisposable subscriptions = [];
 	bool disposed;
 
 	public readonly ILogger Logger;
+
+	/// <summary>
+	/// Central operation queue used to surface long-running image batch operations
+	/// (import/export/crop-all) and their progress.
+	/// </summary>
+	public required IOperationQueue OperationQueue { get; init; }
 
 	[Reactive]
 	public ObservableCollection<GroupedImageViewModel> GroupedImageViewModels { get; set; } = [];
@@ -130,14 +142,14 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageCount)))
 			.DisposeWith(subscriptions);
 
-		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
-		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImages);
+		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImagesAsync);
+		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImagesAsync);
 		ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImage);
 		CropImageCommand = ReactiveCommand.Create(CropImage);
 		DeleteImageCommand = ReactiveCommand.CreateFromTask(DeleteImage);
 		InsertImageAtCommand = ReactiveCommand.CreateFromTask<bool>(InsertImageAt);
 		AppendImageCommand = ReactiveCommand.CreateFromTask<string>(AppendImage);
-		CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
+		CropAllImagesCommand = ReactiveCommand.CreateFromTask(CropAllImagesAsync);
 
 		ZeroOffsetAllImagesCommand = ReactiveCommand.Create(() =>
 		{
@@ -185,13 +197,23 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		};
 		SelectionModel.SelectionChanged += SelectionChanged;
 
-		// Set up the animation timer
-		animationTimer = new DispatcherTimer
+		// Set up the animation timer on the UI thread. DispatcherTimer.Start() calls VerifyAccess(),
+		// which throws when invoked from a non-UI thread; since ImageTableViewModel is constructed
+		// from a Load() running on the threadpool, we Post the timer wiring to the dispatcher.
+		Dispatcher.UIThread.Post(() =>
 		{
-			Interval = TimeSpan.FromMilliseconds(25) // Adjust animation speed as needed
-		};
-		animationTimer.Tick += AnimationTimer_Tick;
-		animationTimer.Start();
+			if (disposed)
+			{
+				return;
+			}
+
+			animationTimer = new DispatcherTimer
+			{
+				Interval = TimeSpan.FromMilliseconds(1000d / Math.Max(1, AnimationSpeed))
+			};
+			animationTimer.Tick += AnimationTimer_Tick;
+			animationTimer.Start();
+		}, DispatcherPriority.Background);
 	}
 
 	private void RecreateViewModelGroupsFromImageTable(ImageTable imageTable)
@@ -258,26 +280,31 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		SelectionModel.Clear();
 	}
 
-	public async Task ImportImages()
+	public async Task ImportImagesAsync()
 	{
-		animationTimer.Stop();
+		animationTimer?.Stop();
 
 		var folders = await PlatformSpecific.OpenFolderPicker();
 		using (var dir = folders.FirstOrDefault())
 		{
 			if (dir == null)
 			{
+				animationTimer?.Start();
 				return;
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			await ImportImages(dirPath);
+			await OperationQueue.Enqueue(new DelegateOperation(
+				"Importing images",
+				(progress, _) => ImportImagesAsync(dirPath, progress),
+				initialStatus: dirPath,
+				supportsCancellation: false)).Completion;
 		}
 
-		animationTimer.Start();
+		animationTimer?.Start();
 	}
 
-	public async Task ExportImages(bool prependGroupAndImageNameInFilename)
+	public async Task ExportImagesAsync(bool prependGroupAndImageNameInFilename)
 	{
 		var folders = await PlatformSpecific.OpenFolderPicker();
 		var dir = folders.FirstOrDefault();
@@ -287,7 +314,11 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 
 		var dirPath = dir.Path.LocalPath;
-		await ExportImages(dirPath, prependGroupAndImageNameInFilename);
+		await OperationQueue.Enqueue(new DelegateOperation(
+			"Exporting images",
+			(progress, _) => ExportImagesAsync(dirPath, prependGroupAndImageNameInFilename, progress),
+			initialStatus: dirPath,
+			supportsCancellation: false)).Completion;
 	}
 
 	public async Task ReplaceImage()
@@ -373,13 +404,21 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 	}
 
+	Task CropAllImagesAsync()
+	{
+		var images = GroupedImageViewModels.SelectMany(x => x.Images).ToList();
+		return images.Count == 0
+			? Task.CompletedTask
+			: OperationQueue.Enqueue(new CropAllImagesOperation(images)).Completion;
+	}
+
 	public static string TrimZeroes(string str)
 	{
 		var result = str.Trim().TrimStart('0');
 		return result.Length == 0 ? "0" : result;
 	}
 
-	async Task ImportImages(string directory)
+	async Task ImportImagesAsync(string directory, IProgress<ProgressReport> progress)
 	{
 		if (string.IsNullOrEmpty(directory))
 		{
@@ -436,6 +475,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 					: graphicsElement.Name;
 
 				importedImages.Add(graphicsElement);
+				progress.Report(new ProgressReport((i + 1) / (double)offsets.Count, $"Loaded {i + 1} / {offsets.Count}"));
 			}
 
 			foreach (var group in Model.Groups)
@@ -495,7 +535,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		return ge;
 	}
 
-	async Task ExportImages(string directory, bool prependGroupAndImageNameInFilename)
+	async Task ExportImagesAsync(string directory, bool prependGroupAndImageNameInFilename, IProgress<ProgressReport> progress)
 	{
 		if (string.IsNullOrEmpty(directory))
 		{
@@ -515,9 +555,13 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 		var invalidChars = Path.GetInvalidFileNameChars();
 
-		foreach (var item in GroupedImageViewModels
+		var items = GroupedImageViewModels
 			.SelectMany(group => group.Images, (group, image) => new { group.GroupName, Image = image })
-			.OrderBy(x => x.Image.ImageTableIndex))
+			.OrderBy(x => x.Image.ImageTableIndex)
+			.ToList();
+
+		var processed = 0;
+		foreach (var item in items)
 		{
 			var image = item.Image;
 
@@ -537,6 +581,8 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			await image.UnderlyingImage.SaveAsPngAsync(path);
 
 			offsets.Add(new GraphicsElementJson(fileName, image.ToGraphicsElement(Model.PaletteMap)));
+			processed++;
+			progress.Report(new ProgressReport(processed / (double)items.Count, $"Exported {processed} / {items.Count}"));
 		}
 
 		var offsetsFile = Path.Combine(directory, "sprites.json");
@@ -580,8 +626,11 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		{
 			SelectionModel.SelectionChanged -= SelectionChanged;
 			DisposeGroupedViewModels();
-			animationTimer.Stop();
-			animationTimer.Tick -= AnimationTimer_Tick;
+			if (animationTimer != null)
+			{
+				animationTimer.Stop();
+				animationTimer.Tick -= AnimationTimer_Tick;
+			}
 			subscriptions.Dispose();
 		}
 

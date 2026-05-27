@@ -14,7 +14,7 @@ public record FileSystemItem(
 	UniqueObjectId? Id, // only available in online-mode
 	DateOnly? CreatedDate = null,
 	DateOnly? ModifiedDate = null,
-	FileLocation? FileLocation = null,
+	FileLocationKind? FileLocation = null,
 	ObjectSource? ObjectSource = null,
 	ObjectType? ObjectType = null,
 	VehicleType? VehicleType = null,
@@ -47,7 +47,7 @@ public record FileSystemItem(
 		=> CanOpenFolder || CanDownload;
 
 	[JsonIgnore]
-	public OnlineApiEndpointGroup? OnlineApiEndpointGroup { get; init; }
+	public OnlineApiEndpointGroupKind? OnlineApiEndpointGroup { get; init; }
 
 	[JsonIgnore]
 	public bool HasChildren

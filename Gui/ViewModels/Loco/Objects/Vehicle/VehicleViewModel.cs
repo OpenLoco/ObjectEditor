@@ -571,7 +571,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 // todo: use this in CargoObject
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CargoCategoryViewModel : ReactiveUI.ReactiveObject
+public class CargoCategoryViewModel : ReactiveObject
 {
 	public CargoCategory Category
 	{
@@ -610,7 +610,7 @@ public class CargoCategoryViewModel : ReactiveUI.ReactiveObject
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CargoTypeSpriteOffsetViewModel : ReactiveUI.ReactiveObject
+public class CargoTypeSpriteOffsetViewModel : ReactiveObject
 {
 	public CargoTypeSpriteOffsetViewModel(CargoCategory cargoCategory, uint8_t offset)
 	{
@@ -650,7 +650,7 @@ public class CargoTypeSpriteOffsetViewModel : ReactiveUI.ReactiveObject
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CompatibleCargoViewModel : ReactiveUI.ReactiveObject
+public class CompatibleCargoViewModel : ReactiveObject
 {
 	public byte MaxCargo
 	{

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<LangVersion>preview</LangVersion>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+		<StartupObject>DatabaseTools.Program</StartupObject>
+		<AssemblyName>DatabaseTools</AssemblyName>
+		<!-- These scripts are utility code; suppress nullability noise so we don't need to wrap every DB column access. -->
+		<NoWarn>$(NoWarn);CS8321;CS8602;CS8603;CS8604;CS8605;CS8629</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="12.0.3" />
+		<PackageReference Include="Avalonia.Desktop" Version="12.0.3" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.3" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.3" />
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.16" />
+		<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Dat\Dat.csproj" />
+		<ProjectReference Include="..\Definitions\Definitions.csproj" />
+		<ProjectReference Include="..\Index\Index.csproj" />
+	</ItemGroup>
+
+</Project>

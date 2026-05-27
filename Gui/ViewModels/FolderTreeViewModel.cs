@@ -186,7 +186,7 @@ public class DesignerOnlineBrowseResultsViewModel : FolderTreeViewModel
 
 public class FolderTreeViewModel : ReactiveObject, IDisposable
 {
-	readonly CompositeDisposable _subscriptions = new();
+	readonly CompositeDisposable _subscriptions = [];
 	bool _disposed;
 
 	[Reactive]
@@ -676,8 +676,8 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 			}
 			else
 			{
-				subNodes = new ObservableCollection<FileSystemItem>(objGroup
-					.OrderBy(x => x.DisplayName));
+				subNodes = [with(objGroup
+					.OrderBy(x => x.DisplayName))];
 			}
 
 			result.Add(new FileSystemItem(

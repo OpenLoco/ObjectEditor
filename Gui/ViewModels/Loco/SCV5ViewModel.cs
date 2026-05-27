@@ -88,7 +88,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 		RequiredObjects.Replace(headers);
 
 		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1.Convert())).OrderBy(x => x.Name);
-		PackedObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. po]);
+		PackedObjects = [with([.. po])];
 
 		_ = this.WhenAnyValue(o => o.TileElementX)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));

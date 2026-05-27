@@ -94,17 +94,17 @@ public class TrackViewModel(TrackObject model)
 	}
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> TracksAndRoads { get; init; } = new(model.TracksAndRoads);
+	public BindingList<ObjectModelHeader> TracksAndRoads { get; init; } = [with(model.TracksAndRoads)];
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> TrackExtras { get; init; } = new(model.TrackMods);
+	public BindingList<ObjectModelHeader> TrackExtras { get; init; } = [with(model.TrackMods)];
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Signals { get; init; } = new(model.Signals);
+	public BindingList<ObjectModelHeader> Signals { get; init; } = [with(model.Signals)];
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Bridges { get; init; } = new(model.Bridges);
+	public BindingList<ObjectModelHeader> Bridges { get; init; } = [with(model.Bridges)];
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Stations { get; init; } = new(model.Stations);
+	public BindingList<ObjectModelHeader> Stations { get; init; } = [with(model.Stations)];
 }

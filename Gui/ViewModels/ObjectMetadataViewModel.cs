@@ -32,9 +32,9 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 		selectedLicence = model.Licence;
 
 		// Initialize observable collections from metadata
-		Authors = new ObservableCollection<DtoAuthorEntry>(model.Authors);
-		Tags = new ObservableCollection<DtoTagEntry>(model.Tags);
-		ObjectPacks = new ObservableCollection<DtoItemPackEntry>(model.ObjectPacks);
+		Authors = [with(model.Authors)];
+		Tags = [with(model.Tags)];
+		ObjectPacks = [with(model.ObjectPacks)];
 
 		// Initialize commands
 		AddAuthorCommand = ReactiveCommand.Create<DtoAuthorEntry?>(author =>
@@ -161,17 +161,17 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 			var licences = await objectServiceClient.GetLicencesAsync();
 			var licenceList = new List<DtoLicenceEntry?> { null }; // Add None option
 			licenceList.AddRange(licences);
-			AvailableLicences = new ObservableCollection<DtoLicenceEntry?>(licenceList.OrderBy(x => x?.Name));
+			AvailableLicences = [with(licenceList.OrderBy(x => x?.Name))];
 
 			// Load authors, tags, and object packs
 			var authors = await objectServiceClient.GetAuthorsAsync();
-			AvailableAuthors = new ObservableCollection<DtoAuthorEntry>(authors.OrderBy(x => x.Name));
+			AvailableAuthors = [with(authors.OrderBy(x => x.Name))];
 
 			var tags = await objectServiceClient.GetTagsAsync();
-			AvailableTags = new ObservableCollection<DtoTagEntry>(tags.OrderBy(x => x.Name));
+			AvailableTags = [with(tags.OrderBy(x => x.Name))];
 
 			var objectPacks = await objectServiceClient.GetObjectPacksAsync();
-			AvailableObjectPacks = new ObservableCollection<DtoItemPackEntry>(objectPacks.OrderBy(x => x.Name));
+			AvailableObjectPacks = [with(objectPacks.OrderBy(x => x.Name))];
 		}
 		catch (Exception ex)
 		{

@@ -91,7 +91,7 @@ public class AirportViewModel(AirportObject model)
 
 	[Category("Building")]
 	[Length(1, AirportObjectLoader.Constants.BuildingVariationCount)]
-	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
+	public BindingList<BindingList<uint8_t>> BuildingVariations { get; init; } = [with(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList())];
 
 	[Category("Building")]
 	[Length(1, AirportObjectLoader.Constants.BuildingHeightCount)]

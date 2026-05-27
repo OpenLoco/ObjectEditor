@@ -21,7 +21,7 @@ public class PaletteMap
 			for (var x = 0; x < img.Width; ++x)
 			{
 				var index = (byte)((y * img.Height) + x);
-				Palette[index] = (img[x, y], index);
+				Palette[index] = (Color.FromPixel(img[x, y]), index);
 			}
 		}
 	}
@@ -42,7 +42,7 @@ public class PaletteMap
 	public static (Color Color, byte Index) Transparent
 		=> (TransparentPixel, 0); //Palette[0];
 
-	public static readonly Color TransparentPixel = Color.FromRgba(0, 0, 0, 0);
+	public static readonly Color TransparentPixel = Color.FromPixel(new Rgba32(0, 0, 0, 0));
 
 	public (Color Color, byte Index)[] TextRendering
 		=> Palette[1..7];
@@ -135,7 +135,7 @@ public class PaletteMap
 				else
 				{
 					index = (y * img.Width) + x;
-					bytes[index] = ColorToPaletteIndex(pixel);
+					bytes[index] = ColorToPaletteIndex(Color.FromPixel(pixel));
 				}
 			}
 		}
@@ -190,7 +190,7 @@ public class PaletteMap
 					var b = graphicsElement.ImageData[index++];
 					var g = graphicsElement.ImageData[index++];
 					var r = graphicsElement.ImageData[index++];
-					image[x, y] = Color.FromRgb(r, g, b);
+					image[x, y] = new Rgba32(r, g, b);
 				}
 				else
 				{
@@ -223,7 +223,7 @@ public class PaletteMap
 						}
 					}
 
-					image[x, y] = colour ?? Palette[paletteIndex].Color;
+					image[x, y] = (colour ?? Palette[paletteIndex].Color).ToPixel<Rgba32>();
 					index++;
 				}
 			}

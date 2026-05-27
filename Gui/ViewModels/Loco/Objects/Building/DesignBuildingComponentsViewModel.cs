@@ -1,7 +1,6 @@
 using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Common;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
@@ -20,21 +19,17 @@ public class DesignBuildingComponentsViewModel : BuildingComponentsViewModel
 		{
 			_ = ctx.BackgroundColor(Color.White);
 
-			// Draw a red rectangle
+			// Draw a red rectangle border
 			var border = 1;
-			_ = ctx.Fill(Color.Red, new RectangleF(border, border, width - (2 * border), height - (2 * border)));
-
-			// Draw a blue circle
-			//ctx.Fill(Color.Blue, new EllipsePolygon(400, 300, 100));
-
-			// Draw text
-			// You'll need to load a font for this
-			// Example: Font font = SystemFonts.CreateFont("Arial", 24);
-			// ctx.DrawText("Hello, ImageSharp!", font, Color.Black, new PointF(50, 450));
+			var red = Color.Red.ToPixel<Rgba32>();
+			for (var y = border; y < height - border; y++)
+			{
+				for (var x = border; x < width - border; x++)
+				{
+					image[x, y] = red;
+				}
+			}
 		});
-
-		// Save the image to a file
-		//image.Save("myGeneratedImage.png");
 
 		return image;
 	}

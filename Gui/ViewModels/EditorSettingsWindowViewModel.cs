@@ -17,7 +17,7 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 	public EditorSettingsWindowViewModel(EditorSettings settings)
 	{
 		Model = settings;
-		ObjDataDirectories = new(settings.ObjDataDirectories);
+		ObjDataDirectories = [with(settings.ObjDataDirectories)];
 		ServerAddressHttps = settings.ServerAddressHttps;
 	}
 

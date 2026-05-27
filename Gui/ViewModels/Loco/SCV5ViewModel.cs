@@ -1,5 +1,4 @@
 using Avalonia.Media.Imaging;
-using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;
@@ -88,7 +87,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 		RequiredObjects.Replace(headers);
 
 		var po = Model.PackedObjects.ConvertAll(x => new ObjectModelHeaderViewModel(x.Item1.Convert())).OrderBy(x => x.Name);
-		PackedObjects = new ObservableCollection<ObjectModelHeaderViewModel>([.. po]);
+		PackedObjects = [with([.. po])];
 
 		_ = this.WhenAnyValue(o => o.TileElementX)
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentTileElements)));
@@ -104,7 +103,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex);
+				Logger.LogError(ex, "Failed to draw map for scenario \"{FileName}\"", CurrentFile.FileName);
 			}
 		}
 	}

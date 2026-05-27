@@ -91,14 +91,14 @@ public class RoadViewModel(RoadObject model)
 	}
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Bridges { get; set; } = new(model.Bridges);
+	public BindingList<ObjectModelHeader> Bridges { get; set; } = [with(model.Bridges)];
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Stations { get; set; } = new(model.Stations);
+	public BindingList<ObjectModelHeader> Stations { get; set; } = [with(model.Stations)];
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> Mods { get; set; } = new(model.RoadMods);
+	public BindingList<ObjectModelHeader> Mods { get; set; } = [with(model.RoadMods)];
 
 	[Category("Compatible Objects")]
-	public BindingList<ObjectModelHeader> TracksAndRoads { get; set; } = new(model.TracksAndRoads);
+	public BindingList<ObjectModelHeader> TracksAndRoads { get; set; } = [with(model.TracksAndRoads)];
 }

@@ -1,5 +1,4 @@
 using Common.Json;
-using Common.Logging;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -135,7 +134,7 @@ public class EditorSettings
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex);
+			logger.LogError(ex, "Failed to save settings to \"{Filename}\"", filename);
 		}
 	}
 

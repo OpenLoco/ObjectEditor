@@ -19,7 +19,7 @@ namespace Gui.ViewModels.Loco.Objects.Building;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class BuildingComponentsViewModel : ReactiveObject, IViewModel, IDisposable
 {
-	readonly CompositeDisposable _subscriptions = new();
+	readonly CompositeDisposable _subscriptions = [];
 	IDisposable? _modelSubscription;
 	bool _disposed;
 	public string DisplayName
@@ -82,8 +82,8 @@ public class BuildingComponentsViewModel : ReactiveObject, IViewModel, IDisposab
 			.Where(x => x != null && ImageTable != null)
 			.Subscribe(_ => RecomputeBuildingVariationViewModels(buildingComponents.BuildingVariations, buildingComponents.BuildingHeights));
 
-		BuildingHeights = new ObservableCollection<uint8_t>(buildingComponents.BuildingHeights);
-		BuildingAnimations = new ObservableCollection<BuildingPartAnimation>(buildingComponents.BuildingAnimations);
+		BuildingHeights = [with(buildingComponents.BuildingHeights)];
+		BuildingAnimations = [with(buildingComponents.BuildingAnimations)];
 		BuildingVariations = buildingComponents.BuildingVariations;
 		BuildingComponentsModel = buildingComponents;
 

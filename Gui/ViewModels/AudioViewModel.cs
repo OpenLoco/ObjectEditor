@@ -1,4 +1,3 @@
-using Common.Logging;
 using Definitions.ObjectModels.Objects.Sound;
 using Gui.Models.Audio;
 using Microsoft.Extensions.Logging;

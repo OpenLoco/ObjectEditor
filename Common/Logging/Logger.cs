@@ -12,9 +12,11 @@ public sealed class Logger : ILogger
 
 	public event EventHandler<LogAddedEventArgs>? LogAdded;
 
-	public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+	public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+		=> null;
 
-	public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None && logLevel >= MinLevel;
+	public bool IsEnabled(LogLevel logLevel)
+		=> logLevel != LogLevel.None && logLevel >= MinLevel;
 
 	public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
 	{

@@ -6,6 +6,37 @@
     <GenerateTargetFrameworkAttribute Condition="$([System.String]::Copy('$(BaseIntermediateOutputPath)').Contains('artifacts'))">false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
+  <!--
+    Both SixLabors.ImageSharp v4+ and Avalonia v12+ require a commercial license at build
+    time. To keep the keys out of source control, we resolve them from the Gui project's
+    dotnet user-secrets store (UserSecretsId bf384273-e7b4-474c-8282-c6354ec799f7),
+    falling back to environment variables, and propagate the resulting MSBuild properties
+    to every project in the solution.
+  -->
+  <PropertyGroup Condition="'$(SixLaborsLicenseKey)' == '' AND '$(SIXLABORS_LICENSE_KEY)' != ''">
+    <SixLaborsLicenseKey>$(SIXLABORS_LICENSE_KEY)</SixLaborsLicenseKey>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(AvaloniaUILicenseKey)' == '' AND '$(AVALONIA_LICENSE_KEY)' != ''">
+    <AvaloniaUILicenseKey>$(AVALONIA_LICENSE_KEY)</AvaloniaUILicenseKey>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(SixLaborsLicenseKey)' == '' OR '$(AvaloniaUILicenseKey)' == ''">
+    <_LicenseUserSecretsPath>$([System.IO.Path]::Combine('$(APPDATA)', 'Microsoft', 'UserSecrets', 'bf384273-e7b4-474c-8282-c6354ec799f7', 'secrets.json'))</_LicenseUserSecretsPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="('$(SixLaborsLicenseKey)' == '' OR '$(AvaloniaUILicenseKey)' == '') AND Exists('$(_LicenseUserSecretsPath)')">
+    <_LicenseUserSecretsJson>$([System.IO.File]::ReadAllText('$(_LicenseUserSecretsPath)'))</_LicenseUserSecretsJson>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(SixLaborsLicenseKey)' == '' AND '$(_LicenseUserSecretsJson)' != ''">
+    <SixLaborsLicenseKey>$([System.Text.RegularExpressions.Regex]::Match($(_LicenseUserSecretsJson), '&quot;SixLaborsLicenseKey&quot;\s*:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</SixLaborsLicenseKey>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(AvaloniaUILicenseKey)' == '' AND '$(_LicenseUserSecretsJson)' != ''">
+    <AvaloniaUILicenseKey>$([System.Text.RegularExpressions.Regex]::Match($(_LicenseUserSecretsJson), '&quot;AvaloniaUILicenseKey&quot;\s*:\s*&quot;([^&quot;]+)&quot;').Groups[1].Value)</AvaloniaUILicenseKey>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="**\obj\**\*.cs;**/obj/**/*.cs;**\bin\**\*.cs;**/bin/**/*.cs;**\artifacts\**\*.cs;**/artifacts/**/*.cs" />
   </ItemGroup>

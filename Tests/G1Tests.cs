@@ -1,10 +1,10 @@
-using Common.Logging;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.ObjectModels.Graphics;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
+using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;
 

@@ -23,8 +23,8 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 			.Subscribe(Observer.Create<IChangeSet<ObjectModelHeader, uint>>(_ => SyncRequiredObjectsToModel()))
 			.DisposeWith(modelSyncSubscriptions);
 
-		CargoInfluenceObjects = new(model.CargoInfluenceObjects);
-		CargoInfluenceTownFilter = new(model.CargoInfluenceTownFilter);
+		CargoInfluenceObjects = [with(model.CargoInfluenceObjects)];
+		CargoInfluenceTownFilter = [with(model.CargoInfluenceTownFilter)];
 	}
 
 	public DrivingSide VehiclesDriveOnThe

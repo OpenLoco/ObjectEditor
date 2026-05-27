@@ -141,7 +141,7 @@
 					<DockPanel DockPanel.Dock="Top" Margin="4" IsVisible="{Binding HasOnlineBrowseResults}">
 						<TextBlock DockPanel.Dock="Left" Margin="4" Text="{Binding ResultsCount, StringFormat='\{0\} results'}" VerticalAlignment="Center" />
 					</DockPanel>
-					<TreeDataGrid Source="{Binding TreeDataGridSource}" CanUserResizeColumns="True" CanUserSortColumns="True" IsVisible="{Binding UsesTreeDataGrid}">
+					<TreeDataGrid Name="ObjectsTreeDataGrid" CanUserResizeColumns="True" CanUserSortColumns="True" IsVisible="{Binding UsesTreeDataGrid}">
 						<TreeDataGrid.Styles>
 							<Style Selector="TreeDataGrid TreeDataGridRow">
 								<Setter Property="Height" Value="32"/>
@@ -153,7 +153,6 @@
 						</TreeDataGrid.Styles>
 						<TreeDataGrid.Resources>
 							<!-- Template for Name column cells -->
-							<!-- Copied from App.axaml Window.DataTemplates as you cannot give a key there -->
 							<DataTemplate x:Key="Object" DataType="mo:FileSystemItem">
 								<StackPanel Orientation="Horizontal" ToolTip.Tip="{Binding FileName}">
 									<materialIcons:MaterialIcon Kind="{Binding DisplayIcon, Converter={StaticResource EnumToMaterialIconConverter}}" Width="24" Height="24" Margin="2"/>

@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;

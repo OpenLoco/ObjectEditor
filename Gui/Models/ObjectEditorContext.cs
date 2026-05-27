@@ -60,6 +60,8 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public ObjectServiceClient ObjectServiceClient { get; init; }
 
+	public ObjectServiceModel ObjectServiceModel { get; init; }
+
 	readonly ConcurrentQueue<string> logQueue = new();
 	readonly SemaphoreSlim logFileLock = new(1, 1); // Allow only 1 concurrent write
 
@@ -79,6 +81,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
 
 		ObjectServiceClient = new(Settings, Logger);
+		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
 	}
 
 	public async Task LogAsync(LogLine log)
@@ -424,7 +427,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex);
+				Logger.LogError(ex, "Failed to load index from \"{IndexFileName}\"", Settings.IndexFileName);
 				exception = true;
 			}
 

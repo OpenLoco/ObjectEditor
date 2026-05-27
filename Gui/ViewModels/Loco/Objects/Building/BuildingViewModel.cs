@@ -15,11 +15,11 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 {
 	public BuildingViewModel(BuildingObject model) : base(model)
 	{
-		ProducedCargo = new(model.ProducedCargo);
-		RequiredCargo = new(model.RequiredCargo);
-		ProducedQuantity = new(model.ProducedQuantity);
+		ProducedCargo = [with(model.ProducedCargo)];
+		RequiredCargo = [with(model.RequiredCargo)];
+		ProducedQuantity = [with(model.ProducedQuantity)];
 
-		BuildingVariations = new(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList());
+		BuildingVariations = [with(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList())];
 		BuildingHeights = model.BuildingComponents.BuildingHeights.ToBindingList();
 		BuildingAnimations = model.BuildingComponents.BuildingAnimations.ToBindingList();
 

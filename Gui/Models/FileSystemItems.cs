@@ -64,4 +64,15 @@ public record FileSystemItem(
 	[JsonIgnore]
 	public string NameComputed
 		=> $"{DisplayName}{(SubNodes == null ? string.Empty : $" ({SubNodes.Count})")}"; // nested interpolated string...what have i become
+
+	[JsonIgnore]
+	public string NiceObjectSource
+		=> ObjectSource switch
+		{
+			Definitions.ObjectModels.Types.ObjectSource.Custom => "Custom",
+			Definitions.ObjectModels.Types.ObjectSource.LocomotionSteam => "Steam",
+			Definitions.ObjectModels.Types.ObjectSource.LocomotionGoG => "GoG",
+			Definitions.ObjectModels.Types.ObjectSource.OpenLoco => "OpenLoco",
+			_ => string.Empty,
+		};
 }

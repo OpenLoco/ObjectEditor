@@ -13,5 +13,5 @@ public static class SixLaboursAvaloniaColorConverter
 	}
 
 	public static SLColour ToSixLaborsColor(this AvaColour color)
-		=> SLColour.FromRgba(color.R, color.G, color.B, color.A);
+		=> SLColour.FromPixel(new Rgba32(color.R, color.G, color.B, color.A));
 }

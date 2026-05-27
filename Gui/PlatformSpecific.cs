@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using Microsoft.Extensions.Logging;
 using System;
@@ -132,9 +133,7 @@ public static class PlatformSpecific
 			var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
 			if (clipboard != null)
 			{
-#pragma warning disable CS0618 // ClipboardExtensions.TryGetTextAsync not available in current Avalonia version
-				return await clipboard.GetTextAsync();
-#pragma warning restore CS0618
+				return await clipboard.TryGetTextAsync();
 			}
 		}
 

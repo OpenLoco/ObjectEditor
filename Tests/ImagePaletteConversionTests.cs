@@ -23,7 +23,7 @@ public class ImagePaletteConversionTests
 	{
 		var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 		var paletteMap = Image.Load<Rgba32>(paletteFile);
-		paletteMap[0, 0] = PaletteMap.Transparent.Color;
+		paletteMap[0, 0] = PaletteMap.Transparent.Color.ToPixel<Rgba32>();
 		paletteMap.SaveAsPng(paletteFile);
 	}
 

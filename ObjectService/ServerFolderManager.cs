@@ -1,4 +1,3 @@
-using Common.Logging;
 using Index;
 
 namespace ObjectService;
@@ -55,7 +54,7 @@ public class ServerFolderManager : IServerFolderManager
 
 		RootDirectory = rootDirectory;
 
-		Microsoft.Extensions.Logging.ILogger logger = new Logger();
+		ILogger logger = new Common.Logging.Logger();
 
 		var indexFile = Path.Combine(rootDirectory, ObjectsFolderName);
 		try

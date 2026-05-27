@@ -4,7 +4,6 @@ using Avalonia.Controls.Selection;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Common;
-using Common.Logging;
 using Dat.Data;
 using Definitions.DTO;
 using Definitions.ObjectModels;

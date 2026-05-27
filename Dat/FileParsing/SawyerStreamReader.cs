@@ -1,4 +1,3 @@
-using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
 using Dat.Loaders;
@@ -32,7 +31,7 @@ public static class SawyerStreamReader
 		}
 		catch (InvalidDataException ex)
 		{
-			logger?.LogError(ex);
+			logger?.LogError(ex, "An error occurred while decoding {ObjName}", hdrs.S5.Name);
 			return (hdrs.S5, hdrs.Obj, []);
 		}
 

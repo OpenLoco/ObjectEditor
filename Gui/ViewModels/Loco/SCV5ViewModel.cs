@@ -1,5 +1,4 @@
 using Avalonia.Media.Imaging;
-using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
 using Dat.FileParsing;

@@ -1,4 +1,3 @@
-using Common.Logging;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using System.Diagnostics;

@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using Common.Logging;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

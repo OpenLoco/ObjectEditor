@@ -104,7 +104,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex);
+				Logger.LogError(ex, "Failed to draw map for scenario \"{FileName}\"", CurrentFile.FileName);
 			}
 		}
 	}

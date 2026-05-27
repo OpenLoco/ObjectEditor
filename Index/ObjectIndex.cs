@@ -138,7 +138,7 @@ public class ObjectIndex
 			}
 			catch (Exception ex)
 			{
-				logger.LogError(ex);
+				logger.LogError(ex, "Failed to parse file \"{Filename}\"", filename);
 			}
 
 			if (entry == null)

@@ -424,7 +424,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex);
+				Logger.LogError(ex, "Failed to load index from \"{IndexFileName}\"", Settings.IndexFileName);
 				exception = true;
 			}
 

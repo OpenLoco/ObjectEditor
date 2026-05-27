@@ -135,7 +135,7 @@ public class EditorSettings
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex);
+			logger.LogError(ex, "Failed to save settings to \"{Filename}\"", filename);
 		}
 	}
 

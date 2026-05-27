@@ -23,7 +23,7 @@ public static class PlatformSpecific
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex);
+			logger.LogError(ex, "Failed to open folder \"{Directory}\"", directory);
 		}
 	}
 

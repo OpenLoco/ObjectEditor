@@ -5,7 +5,6 @@ using Definitions.ObjectModels.Types;
 using DynamicData;
 using Gui.Models;
 using Gui.Views;
-using Index;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -130,11 +129,10 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 
 		var dirPath = dir.Path.LocalPath;
 		var logger = editorContext?.Logger ?? new Logger();
-		var objectIndex = await ObjectIndex.CreateIndexAsync(dirPath, logger);
+		var scan = await Dat.Services.DatFolderScanner.ScanDirectoryAsync(dirPath, logger);
 
-		var headers = objectIndex.Objects
-			.Where(x => x.DatChecksum.HasValue)
-			.Select(entry => new ObjectModelHeader(entry.DisplayName, entry.ObjectType, entry.ObjectSource, entry.DatChecksum!.Value));
+		var headers = scan.Succeeded
+			.Select(entry => new ObjectModelHeader(entry.DatName, entry.ObjectType, entry.ObjectSource, entry.DatChecksum));
 
 		Replace(headers);
 	}

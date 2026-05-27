@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class ObjectMissingRouteHandler
-	: BaseDataTableRouteHandler<ObjectMissingRouteHandler, DtoObjectMissingEntry, TblObjectMissing>
-	, ITableRouteConfig<DtoObjectMissingEntry, TblObjectMissing>
+	: BaseDataTableRouteHandler<ObjectMissingRouteHandler, LocoDbContext, DtoObjectMissingEntry, TblObjectMissing>
+	, ITableRouteConfig<LocoDbContext, DtoObjectMissingEntry, TblObjectMissing>
 {
 	public static string GetBaseRoute()
 	=> RoutesV2.Missing;

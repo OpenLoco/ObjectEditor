@@ -3,7 +3,7 @@ using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
-using Index;
+using Definitions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

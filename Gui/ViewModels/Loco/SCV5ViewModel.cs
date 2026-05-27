@@ -6,7 +6,7 @@ using Dat.Types.SCV5;
 using Definitions.DTO;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
-using Index;
+using Definitions;
 using Microsoft.Extensions.Logging;
 using PropertyModels.Extensions;
 using ReactiveUI;
@@ -132,7 +132,10 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			return;
 		}
 
-		var gameFolderIndex = await ObjectIndex.LoadOrCreateIndexAsync(folder, Logger).ConfigureAwait(true);
+		var gameFolderScan = await Dat.Services.DatFolderScanner.ScanDirectoryAsync(folder, Logger).ConfigureAwait(true);
+		var gameFolderIndex = new ObjectIndex(gameFolderScan.Succeeded.Select(r => new ObjectIndexEntry(
+			r.DatName, r.RelativePath, null, r.DatChecksum, r.xxHash3,
+			r.ObjectType, r.ObjectSource, r.CreatedDate, r.ModifiedDate, r.VehicleType)));
 
 		if (EditorContext.ObjectIndexOnline == null)
 		{

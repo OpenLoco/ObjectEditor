@@ -12,7 +12,6 @@ using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
 using Definitions.Web;
-using Index;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;

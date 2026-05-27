@@ -1,4 +1,6 @@
+using Definitions;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Common;
@@ -6,6 +8,7 @@ using Dat.Data;
 using Definitions.ObjectModels;
 using DynamicData;
 using Gui.Models;
+using Gui.Services;
 using Gui.ViewModels.Loco.Tutorial;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -67,6 +70,38 @@ public class MainWindowViewModel : ViewModelBase
 
 	[Reactive]
 	public bool IsUpdateAvailable { get; set; }
+
+	#region Local server status indicator
+
+	[Reactive]
+	public string LocalServerStatusText { get; private set; } = string.Empty;
+
+	[Reactive]
+	public string LocalServerStatusMessage { get; private set; } = string.Empty;
+
+	[Reactive]
+	public string LocalServerIcon { get; private set; } = "ServerOff";
+
+	[Reactive]
+	public IBrush LocalServerBrush { get; private set; } = Brushes.Gray;
+
+	#endregion
+
+	#region Remote master server status indicator
+
+	[Reactive]
+	public string RemoteServerStatusText { get; private set; } = string.Empty;
+
+	[Reactive]
+	public string RemoteServerStatusMessage { get; private set; } = string.Empty;
+
+	[Reactive]
+	public string RemoteServerIcon { get; private set; } = "CloudQuestion";
+
+	[Reactive]
+	public IBrush RemoteServerBrush { get; private set; } = Brushes.Gray;
+
+	#endregion
 
 	const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
 	Image<Rgba32> DefaultPaletteImage { get; init; }
@@ -142,6 +177,10 @@ public class MainWindowViewModel : ViewModelBase
 			var vm = new EditorSettingsWindowViewModel(EditorContext.Settings);
 			var result = await OpenEditorSettingsWindow.Handle(vm);
 			EditorContext.Settings.Save(ObjectEditorContext.SettingsFile, EditorContext.Logger);
+
+			// Hot-reapply: stop/start the embedded host so any changes to its dependent
+			// paths (objects root, palette, port) take effect immediately, without an editor restart.
+			await EditorContext.RestartLocalServerAsync();
 		});
 
 		OpenLogWindow = new();
@@ -186,6 +225,103 @@ public class MainWindowViewModel : ViewModelBase
 		_ = CheckForLatestVersionAsync();
 #endif
 
+		WireLocalServerStatus();
+		WireRemoteServerStatus();
+	}
+
+	void WireLocalServerStatus()
+	{
+		// React to host state/address changes and recompute the indicator props on the UI
+		// thread. ObserveOn(RxSchedulers.MainThreadScheduler) keeps Avalonia bindings happy.
+		_ = EditorContext.LocalServerHost
+			.WhenAnyValue(o => o.State, o => o.StatusMessage, o => o.BaseAddress)
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
+			.Subscribe(_ => UpdateLocalServerIndicator());
+
+		UpdateLocalServerIndicator();
+	}
+
+	void WireRemoteServerStatus()
+	{
+		_ = EditorContext.RemoteServerMonitor
+			.WhenAnyValue(o => o.State, o => o.StatusMessage, o => o.Address)
+			.ObserveOn(RxSchedulers.MainThreadScheduler)
+			.Subscribe(_ => UpdateRemoteServerIndicator());
+
+		UpdateRemoteServerIndicator();
+	}
+
+	void UpdateLocalServerIndicator()
+	{
+		var host = EditorContext.LocalServerHost;
+
+		switch (host.State)
+		{
+			case EmbeddedHostState.Starting:
+				LocalServerIcon = "ServerNetwork";
+				LocalServerBrush = Brushes.DarkOrange;
+				LocalServerStatusText = "Local server starting";
+				LocalServerStatusMessage = host.StatusMessage ?? "Starting...";
+				break;
+			case EmbeddedHostState.Running:
+				LocalServerIcon = "ServerNetwork";
+				LocalServerBrush = Brushes.MediumSeaGreen;
+				LocalServerStatusText = $"Local server: {host.BaseAddress?.Authority}";
+				LocalServerStatusMessage = host.StatusMessage ?? $"Running at {host.BaseAddress}";
+				break;
+			case EmbeddedHostState.Failed:
+				LocalServerIcon = "ServerOff";
+				LocalServerBrush = Brushes.IndianRed;
+				LocalServerStatusText = "Local server failed";
+				LocalServerStatusMessage = host.StatusMessage ?? "Failed to start.";
+				break;
+			case EmbeddedHostState.Stopped:
+				LocalServerIcon = "ServerOff";
+				LocalServerBrush = Brushes.Gray;
+				LocalServerStatusText = "Local server stopped";
+				LocalServerStatusMessage = host.StatusMessage ?? "Stopped.";
+				break;
+			default:
+				LocalServerIcon = "ServerOff";
+				LocalServerBrush = Brushes.Gray;
+				LocalServerStatusText = "Local server: not started";
+				LocalServerStatusMessage = host.StatusMessage ?? "Not started.";
+				break;
+		}
+	}
+
+	void UpdateRemoteServerIndicator()
+	{
+		var monitor = EditorContext.RemoteServerMonitor;
+		var authority = monitor.Address?.Authority ?? "not configured";
+
+		switch (monitor.State)
+		{
+			case RemoteServerState.Checking:
+				RemoteServerIcon = "CloudSync";
+				RemoteServerBrush = Brushes.DarkOrange;
+				RemoteServerStatusText = $"Master server: checking {authority}";
+				RemoteServerStatusMessage = monitor.StatusMessage ?? "Checking...";
+				break;
+			case RemoteServerState.Reachable:
+				RemoteServerIcon = "CloudCheck";
+				RemoteServerBrush = Brushes.MediumSeaGreen;
+				RemoteServerStatusText = $"Master server: {authority}";
+				RemoteServerStatusMessage = monitor.StatusMessage ?? $"Reachable at {monitor.Address}";
+				break;
+			case RemoteServerState.Unreachable:
+				RemoteServerIcon = "CloudOff";
+				RemoteServerBrush = Brushes.IndianRed;
+				RemoteServerStatusText = $"Master server: unreachable";
+				RemoteServerStatusMessage = monitor.StatusMessage ?? $"Unreachable: {authority}";
+				break;
+			default:
+				RemoteServerIcon = "CloudQuestion";
+				RemoteServerBrush = Brushes.Gray;
+				RemoteServerStatusText = $"Master server: {authority}";
+				RemoteServerStatusMessage = monitor.StatusMessage ?? "Status unknown.";
+				break;
+		}
 	}
 
 #if !DEBUG

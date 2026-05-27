@@ -5,7 +5,6 @@ using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.ObjectModels.Types;
 using Definitions.Web;
-using Index;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

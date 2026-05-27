@@ -68,9 +68,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Dat\Dat.csproj" />
     <ProjectReference Include="..\Definitions\Definitions.csproj" />
     <ProjectReference Include="..\GuiUpdater\GuiUpdater.csproj" />
-    <ProjectReference Include="..\Index\Index.csproj" />
+    <!-- Referenced so the GUI can host an in-process ObjectService instance as a "local backend". -->
+    <ProjectReference Include="..\ObjectService\ObjectService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

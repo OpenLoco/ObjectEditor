@@ -3,7 +3,7 @@ using Definitions.ObjectModels.Types;
 using System;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
-using FileLocationKind = Gui.Models.FileLocation;
+using FileLocationKind = Definitions.FileLocation;
 using OnlineApiEndpointGroupKind = Gui.Models.OnlineApiEndpointGroup;
 
 namespace Gui.Models;

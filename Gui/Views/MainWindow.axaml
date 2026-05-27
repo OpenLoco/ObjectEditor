@@ -199,6 +199,18 @@
 				</MenuItem>
 			</Menu>
 			<StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal" Spacing="32">
+				<Border BorderThickness="1" Margin="4" Background="{DynamicResource ButtonBackground}" ToolTip.Tip="{Binding LocalServerStatusMessage}">
+					<StackPanel Orientation="Horizontal" Spacing="4" Margin="6,2,6,2" VerticalAlignment="Center">
+						<materialIcons:MaterialIcon Width="18" Height="18" Margin="2" Kind="{Binding LocalServerIcon}" Foreground="{Binding LocalServerBrush}"/>
+						<TextBlock VerticalAlignment="Center" Text="{Binding LocalServerStatusText}"/>
+					</StackPanel>
+				</Border>
+				<Border BorderThickness="1" Margin="4" Background="{DynamicResource ButtonBackground}" ToolTip.Tip="{Binding RemoteServerStatusMessage}">
+					<StackPanel Orientation="Horizontal" Spacing="4" Margin="6,2,6,2" VerticalAlignment="Center">
+						<materialIcons:MaterialIcon Width="18" Height="18" Margin="2" Kind="{Binding RemoteServerIcon}" Foreground="{Binding RemoteServerBrush}"/>
+						<TextBlock VerticalAlignment="Center" Text="{Binding RemoteServerStatusText}"/>
+					</StackPanel>
+				</Border>
 				<Border BorderThickness="1" Margin="4" Background="{DynamicResource ButtonBackground}">
 					<StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding IsUpdateAvailable}">
 						<TextBlock Margin="4" HorizontalAlignment="Stretch" VerticalAlignment="Center">

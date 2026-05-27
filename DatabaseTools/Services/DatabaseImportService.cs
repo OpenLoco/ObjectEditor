@@ -5,7 +5,6 @@ using Definitions;
 using Definitions.Database;
 using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
-using Index;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -143,20 +142,20 @@ public static class DatabaseImportService
 			if (!db.Objects.Any() && File.Exists(objectMetadataJson) && Directory.Exists(settings.ObjectDirectory))
 			{
 				log("Seeding Objects");
-				var index = ObjectIndex.LoadOrCreateIndex(settings.ObjectDirectory, logger);
+				var scan = Dat.Services.DatFolderScanner.ScanDirectory(settings.ObjectDirectory, logger);
 				var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText(objectMetadataJson), jsonOptions);
 				var objectMetadataDict = objectMetadata!.ToDictionary(x => x.InternalName, x => x);
 				var gameReleaseDate = new DateOnly(2004, 09, 07);
 
-				foreach (var objIndex in index!.Objects.DistinctBy(x => (x.DisplayName, x.DatChecksum)))
+				foreach (var objIndex in scan.Succeeded.DistinctBy(x => (x.DatName, x.DatChecksum)))
 				{
-					if (!objectMetadataDict.TryGetValue(objIndex.DisplayName, out var meta))
+					if (!objectMetadataDict.TryGetValue(objIndex.DatName, out var meta))
 					{
 						meta = new ObjectMetadata(Guid.NewGuid().ToString(), null, [], [], [], null, ObjectAvailability.Available, DateOnly.UtcToday, null, DateOnly.UtcToday, ObjectSource.Custom);
-						objectMetadataDict.Add(objIndex.DisplayName, meta);
+						objectMetadataDict.Add(objIndex.DatName, meta);
 					}
 
-					var filename = Path.Combine(settings.ObjectDirectory, objIndex.FileName);
+					var filename = objIndex.FullPath;
 					var creationTime = objIndex.ObjectSource is ObjectSource.LocomotionSteam or ObjectSource.LocomotionGoG
 						? gameReleaseDate
 						: DateOnly.FromDateTime(File.GetLastWriteTimeUtc(filename));
@@ -186,9 +185,10 @@ public static class DatabaseImportService
 					var addedObj = db.Add(tblLocoObject);
 					var locoLookupTbl = new TblDatObject
 					{
-						DatName = objIndex.DisplayName,
-						DatChecksum = objIndex.DatChecksum.Value,
-						xxHash3 = objIndex.xxHash3.Value,
+						DatName = objIndex.DatName,
+						DatChecksum = objIndex.DatChecksum,
+						xxHash3 = objIndex.xxHash3,
+						FileName = objIndex.RelativePath,
 						ObjectId = addedObj.Entity.Id,
 						Object = tblLocoObject,
 					};

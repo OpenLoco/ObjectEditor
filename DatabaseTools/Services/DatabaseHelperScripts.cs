@@ -48,7 +48,7 @@ using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Objects.Wall;
 using Definitions.ObjectModels.Objects.Water;
 using Definitions.ObjectModels.Types;
-using Index;
+using Definitions;
 using Microsoft.EntityFrameworkCore;
 using System.IO.Hashing;
 using System.Reflection;
@@ -103,7 +103,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var results = new List<(ObjectIndexEntry Obj, int var_ac)>();
 
@@ -143,7 +144,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var results = new List<(ObjectIndexEntry Obj, (string ProducedName, int ProducedQuantity))>();
 
@@ -179,7 +181,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
 
@@ -216,7 +219,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource, ObjectType ObjectType, byte CostIndex)>();
 
@@ -267,7 +271,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource, List<string> Flags)>();
 
@@ -323,7 +328,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
 
@@ -361,7 +367,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var results = new List<(ObjectIndexEntry Obj, ObjectSource ObjectSource)>();
 
@@ -399,7 +406,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var results = new List<(ObjectIndexEntry Obj, CargoCategory CargoCategory, string LocalisedName, ObjectSource ObjectSource)>();
 
@@ -433,7 +441,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var results = new List<(ObjectIndexEntry Obj, byte CostIndex, short? RunCostIndex)>();
 
@@ -492,7 +501,8 @@ public static class DatabaseHelperScripts
 			?? throw new InvalidOperationException($"Database not found at {settings.DatabaseFile}");
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var objects = await db.DatObjects.Include(x => x.Object).ToListAsync();
 
@@ -522,7 +532,8 @@ public static class DatabaseHelperScripts
 			?? throw new InvalidOperationException($"Database not found at {settings.DatabaseFile}");
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var objects = await db.Objects.Include(x => x.DatObjects).ToListAsync();
 
@@ -565,7 +576,8 @@ public static class DatabaseHelperScripts
 			?? throw new InvalidOperationException($"Database not found at {settings.DatabaseFile}");
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 
 		var objects = await db.Objects
 			.Include(x => x.DatObjects)
@@ -622,7 +634,8 @@ public static class DatabaseHelperScripts
 	{
 		var dir = settings.ObjectDirectory;
 		var logger = new Logger();
-		var index = ObjectIndex.LoadOrCreateIndex(dir, logger);
+		using var indexDb = LocoDbContext.GetDbFromFile(settings.DatabaseFile);
+		var index = ObjectIndex.FromDb(indexDb);
 		using var db = LocoDbContext.GetDbFromFile(settings.DatabaseFile)
 			?? throw new InvalidOperationException($"Database not found at {settings.DatabaseFile}");
 

@@ -1,14 +1,17 @@
+using Definitions;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Common;
 using Common.Logging;
 using Dat.Converters;
 using Dat.FileParsing;
+using Dat.Services;
 using Dat.Types;
+using Definitions.Database;
 using Definitions.DTO;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
-using Index;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using System;
@@ -17,8 +20,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Gui.Services;
 
 namespace Gui.Models;
 
@@ -62,6 +68,20 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public ObjectServiceModel ObjectServiceModel { get; init; }
 
+	// Always non-null. Reflects the lifecycle of the in-process ObjectService - the GUI's
+	// only backend. The remote ServerAddress* settings are only used as a fallback if the
+	// embedded host fails to start (e.g. paths are misconfigured and unrecoverable).
+	public Gui.Services.EmbeddedObjectServiceHost LocalServerHost { get; }
+
+	// Always non-null. Background poller that surfaces the reachability of the configured
+	// remote master ObjectService, independently of the embedded local host.
+	public Gui.Services.RemoteServerMonitor RemoteServerMonitor { get; }
+
+	// Fires every time the embedded host transitions to Running. Consumers (e.g. post-startup
+	// re-indexers) can subscribe to be notified that the local backend is live without
+	// having to poll.
+	public event EventHandler? LocalServerStarted;
+
 	readonly ConcurrentQueue<string> logQueue = new();
 	readonly SemaphoreSlim logFileLock = new(1, 1); // Allow only 1 concurrent write
 
@@ -76,12 +96,230 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		// settings must be loaded or else the rest of the app cannot start
 		ArgumentNullException.ThrowIfNull(Settings);
 
-		Settings.ObjectIndicesFolder = InitialiseDirectory(Settings.ObjectIndicesFolder, "objectIndices");
 		Settings.CacheFolder = InitialiseDirectory(Settings.CacheFolder, "cache");
 		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
 
-		ObjectServiceClient = new(Settings, Logger);
+		LocalServerHost = new Gui.Services.EmbeddedObjectServiceHost(Logger);
+
+		// Make sure the host has a usable objects-root folder and palette file to point
+		// at - even if the user hasn't filled them in.
+		EnsureLocalServerDefaults();
+
+		// Resolve the loopback URL up front so ObjectServiceClient can be wired to the
+		// local host before Kestrel has finished binding. The actual server start is then
+		// fire-and-forget on a background task; the client will simply see failed requests
+		// until the host transitions to Running.
+		var localBaseAddress = PrepareLocalServerUri();
+
+		ObjectServiceClient = new(Settings, Logger, localBaseAddress);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
+
+		if (localBaseAddress is not null)
+		{
+			_ = Task.Run(() => StartLocalServerAsync(localBaseAddress));
+		}
+
+		// When the embedded ObjectService finishes coming up, scan the active user folder
+		// (if any) so a freshly-created local DB gets populated without manual intervention.
+		LocalServerStarted += (_, _) => _ = Task.Run(ReindexConfiguredFoldersAsync);
+
+		RemoteServerMonitor = new Gui.Services.RemoteServerMonitor(Logger);
+		RemoteServerMonitor.Configure(GetRemoteServerUri());
+	}
+
+	Uri? GetRemoteServerUri()
+	{
+		var address = Settings.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
+		return Uri.TryCreate(address, UriKind.Absolute, out var uri) ? uri : null;
+	}
+
+	// Fills in sensible defaults for the embedded ObjectService when the user hasn't
+	// configured paths yet. Lets the feature work out-of-the-box from a clean settings file:
+	// the objects root lives under %APPDATA%/.../LocalServer and the palette is extracted
+	// from the bundled Avalonia asset on first run.
+	void EnsureLocalServerDefaults()
+	{
+		var changed = false;
+
+		if (string.IsNullOrWhiteSpace(Settings.LocalServerObjectsRoot))
+		{
+			Settings.LocalServerObjectsRoot = Path.Combine(ProgramDataPath, "LocalServer");
+			Logger.LogInformation("Defaulted LocalServerObjectsRoot to \"{Path}\"", Settings.LocalServerObjectsRoot);
+			changed = true;
+		}
+
+		if (string.IsNullOrWhiteSpace(Settings.LocalServerPaletteMapFile))
+		{
+			var palettePath = Path.Combine(ProgramDataPath, "palette.png");
+			if (!File.Exists(palettePath))
+			{
+				try
+				{
+					_ = Directory.CreateDirectory(ProgramDataPath);
+					using var src = AssetLoader.Open(new Uri("avares://ObjectEditor/Assets/palette.png"));
+					using var dst = File.Create(palettePath);
+					src.CopyTo(dst);
+					Logger.LogInformation("Extracted bundled palette.png to \"{Path}\"", palettePath);
+				}
+				catch (Exception ex)
+				{
+					Logger.LogWarning(ex, "Failed to extract bundled palette.png; the local server will fail to start until LocalServerPaletteMapFile is set manually.");
+					return;
+				}
+			}
+
+			Settings.LocalServerPaletteMapFile = palettePath;
+			Logger.LogInformation("Defaulted LocalServerPaletteMapFile to \"{Path}\"", palettePath);
+			changed = true;
+		}
+
+		if (changed)
+		{
+			Settings.Save(SettingsFile, Logger);
+		}
+	}
+
+	// Best-effort reindex of the user's configured obj-data folder(s) into the local DB.
+	// Runs on the thread pool, swallows individual-folder errors so one bad path can't
+	// stall the whole pass.
+	async Task ReindexConfiguredFoldersAsync()	{
+		try
+		{
+			var folders = new List<string>();
+			if (!string.IsNullOrWhiteSpace(Settings.ObjDataDirectory))
+			{
+				folders.Add(Settings.ObjDataDirectory);
+			}
+
+			if (Settings.ObjDataDirectories is { Count: > 0 })
+			{
+				foreach (var dir in Settings.ObjDataDirectories)
+				{
+					if (!folders.Contains(dir, StringComparer.OrdinalIgnoreCase))
+					{
+						folders.Add(dir);
+					}
+				}
+			}
+
+			if (folders.Count == 0)
+			{
+				Logger.LogInformation("No user obj-data folders configured; skipping post-startup reindex.");
+				return;
+			}
+
+			// Note: LoadObjDirectoryAsync uses a single shared indexerTask + semaphore, so
+			// calls are serialised. RebuildFromFolderAsync wipes the DB between calls, so
+			// for now we only fully reindex the *first* (active) folder and log the rest.
+			var primary = folders[0];
+			if (!Directory.Exists(primary))
+			{
+				Logger.LogWarning("Configured obj-data folder does not exist: {Directory}", primary);
+				return;
+			}
+
+			Logger.LogInformation("Reindexing user obj-data folder into local DB: {Directory}", primary);
+			var progress = new Progress<float>();
+			await LoadObjDirectoryAsync(primary, progress, useExistingIndex: true);
+
+			if (folders.Count > 1)
+			{
+				Logger.LogInformation("Additional configured folders not auto-reindexed (only the active folder is currently scanned): {Folders}", string.Join(", ", folders.Skip(1)));
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error during post-startup reindex of user folders.");
+		}
+	}
+
+	// Decides whether the embedded server should be started and, if so, returns the URL it
+	// will bind to. The port is reserved synchronously so the caller knows the final URL
+	// before Kestrel starts. Returns null only when the required paths cannot be resolved.
+	Uri? PrepareLocalServerUri()
+	{
+		if (string.IsNullOrWhiteSpace(Settings.LocalServerObjectsRoot)
+			|| string.IsNullOrWhiteSpace(Settings.LocalServerPaletteMapFile)
+			|| string.IsNullOrWhiteSpace(Settings.DatabaseFile))
+		{
+			Logger.LogWarning("One or more of LocalServerObjectsRoot, LocalServerPaletteMapFile, DatabaseFile is empty. Local server will not start; falling back to remote server.");
+			return null;
+		}
+
+		var port = Settings.LocalServerPort > 0 ? Settings.LocalServerPort : ReserveLoopbackPort();
+		return new Uri($"http://127.0.0.1:{port}/");
+	}
+
+	// Briefly opens a TcpListener on port 0 to ask the OS for a free loopback port. There
+	// is a small race window between Stop() and Kestrel binding, but for localhost-only
+	// startup it's acceptable.
+	static int ReserveLoopbackPort()
+	{
+		var listener = new TcpListener(IPAddress.Loopback, 0);
+		listener.Start();
+		try
+		{
+			return ((IPEndPoint)listener.LocalEndpoint).Port;
+		}
+		finally
+		{
+			listener.Stop();
+		}
+	}
+
+	async Task StartLocalServerAsync(Uri targetUri)
+	{
+		try
+		{
+			var options = new ObjectService.Hosting.ObjectServiceHostOptions
+			{
+				RootFolder = Settings.LocalServerObjectsRoot,
+				DatabaseFile = Settings.DatabaseFile,
+				PaletteMapFile = Settings.LocalServerPaletteMapFile,
+				HttpUrl = targetUri.ToString().TrimEnd('/'),
+				JwtKey = EmbeddedObjectServiceHost.GenerateEphemeralJwtKey(),
+				IsServer = false,
+			};
+			await LocalServerHost.StartAsync(options);
+
+			if (LocalServerHost.IsRunning)
+			{
+				LocalServerStarted?.Invoke(this, EventArgs.Empty);
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Failed to start embedded ObjectService; falling back to remote server for any subsequent calls.");
+		}
+	}
+
+	// Stops the currently-running embedded host (if any), recomputes the target URL from
+	// the current settings, re-targets the ObjectServiceClient, and (if applicable) kicks
+	// off a fresh background start. Safe to call from the UI thread.
+	public async Task RestartLocalServerAsync()
+	{
+		try
+		{
+			await LocalServerHost.StopAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error while stopping embedded ObjectService during restart.");
+		}
+
+		// Pick up any path defaults that may have been cleared by the user.
+		EnsureLocalServerDefaults();
+
+		var newBaseAddress = PrepareLocalServerUri();
+		ObjectServiceClient.RetargetBaseAddress(newBaseAddress);
+
+		// Remote address may have changed via settings; re-point the monitor at the new URI.
+		RemoteServerMonitor.Configure(GetRemoteServerUri());
+
+		if (newBaseAddress is not null)
+		{
+			_ = Task.Run(() => StartLocalServerAsync(newBaseAddress));
+		}
 	}
 
 	public async Task LogAsync(LogLine log)
@@ -414,82 +652,36 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.ObjDataDirectory = directory;
 		Settings.Save(SettingsFile, Logger);
 
-		if (useExistingIndex && File.Exists(Settings.IndexFileName))
+		var indexService = new LocalObjectIndexService(
+			() => LocoDbContext.GetDbFromFile(Settings.DatabaseFile)
+				?? throw new FileNotFoundException($"Database file not found: {Settings.DatabaseFile}"),
+			Logger);
+
+		if (useExistingIndex)
 		{
-			var exception = false;
+			ObjectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
+			Logger.LogInformation("Loaded index for {Directory} with {Count} objects from {Db}.", directory, ObjectIndex.Objects.Count, Settings.DatabaseFile);
 
-			try
-			{
-				var index = await ObjectIndex.LoadIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-				ArgumentNullException.ThrowIfNull(index, nameof(index));
-				ObjectIndex = index;
-				Logger.LogInformation("Loaded index for {Directory} with {Count} objects.", directory, ObjectIndex.Objects.Count);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "Failed to load index from \"{IndexFileName}\"", Settings.IndexFileName);
-				exception = true;
-			}
-
-			if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.FileName) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DisplayName))))
-			{
-				Logger.LogWarning("Index file format has changed or otherwise appears to be malformed - recreating now.");
-				await RecreateIndex(directory, progress).ConfigureAwait(false);
-				return;
-			}
-
-			var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.FileName);
+			// Reconcile against on-disk files; rescan deltas.
+			var indexed = ObjectIndex.Objects.Select(x => x.FileName).Where(x => !string.IsNullOrEmpty(x)).Cast<string>().ToHashSet();
 			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-
-			var a = objectIndexFilenames.Except(allFiles);
-			var b = allFiles.Except(objectIndexFilenames);
-			if (a.Any() || b.Any())
+			var added = allFiles.Except(indexed).ToList();
+			var removed = indexed.Except(allFiles).ToList();
+			if (added.Count > 0 || removed.Count > 0)
 			{
-				Logger.LogWarning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
-				Logger.LogWarning("Objects in index but not on disk: {Value}", string.Join(',', a));
-				Logger.LogWarning("Objects on disk but not in index: {Value}", string.Join(',', b));
-				await UpdateIndex(directory, progress, a.Concat(b).Where(x => x != null)!).ConfigureAwait(false);
+				Logger.LogWarning("Index and files on disk don't match; rebuilding from folder.");
+				Logger.LogWarning("Objects in index but not on disk: {Value}", string.Join(',', removed));
+				Logger.LogWarning("Objects on disk but not in index: {Value}", string.Join(',', added));
+				await indexService.RebuildFromFolderAsync(directory, progress).ConfigureAwait(false);
+				ObjectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
 			}
 		}
 		else
 		{
-			await RecreateIndex(directory, progress).ConfigureAwait(false);
-		}
-
-		async Task UpdateIndex(string directory, IProgress<float> progress, IEnumerable<string> filesToAdd)
-		{
-			Logger.LogInformation("Updating index file for {Directory}", directory);
-			_ = ObjectIndex.UpdateIndex(directory, Logger, filesToAdd, progress);
-
-			if (string.IsNullOrEmpty(Settings.IndexFileName))
-			{
-				Logger.LogError("Index filename was null or empty.");
-				return;
-			}
-
-			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.LogInformation("Index was saved to {IndexFileName}", Settings.IndexFileName);
-		}
-
-		async Task RecreateIndex(string directory, IProgress<float> progress)
-		{
-			Logger.LogInformation("Recreating index file for {Directory}", directory);
-			ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress).ConfigureAwait(false);
-
-			if (ObjectIndex == null)
-			{
-				Logger.LogError("Index was unable to be created.");
-				return;
-			}
-
-			if (string.IsNullOrEmpty(Settings.IndexFileName))
-			{
-				Logger.LogError("Index filename was null or empty.");
-				return;
-			}
-
-			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.LogInformation("New index was saved to {IndexFileName}", Settings.IndexFileName);
+			Logger.LogInformation("Rebuilding index for {Directory}", directory);
+			await indexService.RebuildFromFolderAsync(directory, progress).ConfigureAwait(false);
+			ObjectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
+			Logger.LogInformation("New index has {Count} objects.", ObjectIndex.Objects.Count);
 		}
 	}
 
@@ -548,6 +740,26 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public async Task CloseAsync()
 	{
+		// Stop the embedded ObjectService (if running) before we tear down logging,
+		// so any shutdown logs from Kestrel still have somewhere to go.
+		try
+		{
+			await LocalServerHost.DisposeAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error while stopping embedded ObjectService.");
+		}
+
+		try
+		{
+			await RemoteServerMonitor.DisposeAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error while stopping remote server monitor.");
+		}
+
 		// Wait for any pending writes to complete.
 		await logFileLock.WaitAsync(); // Acquire the semaphore
 		_ = logFileLock.Release(); // Release it immediately after. This is just to wait.

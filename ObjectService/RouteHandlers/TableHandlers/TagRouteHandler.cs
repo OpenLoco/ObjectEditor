@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class TagRouteHandler
-	: BaseDataTableRouteHandler<TagRouteHandler, DtoTagEntry, TblTag>
-	, ITableRouteConfig<DtoTagEntry, TblTag>
+	: BaseDataTableRouteHandler<TagRouteHandler, LocoDbContext, DtoTagEntry, TblTag>
+	, ITableRouteConfig<LocoDbContext, DtoTagEntry, TblTag>
 {
 	public static string GetBaseRoute()
 		=> RoutesV2.Tags;

@@ -12,7 +12,6 @@ using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
 using Definitions.Web;
-using Index;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
@@ -180,7 +179,6 @@ public class ObjectRouteHandler : ITableRouteHandler
 	//	sfm.ObjectIndex.Objects.Add(
 	//		new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
 
-	//	_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
 	//	return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
 	//}
 
@@ -339,11 +337,9 @@ public class ObjectRouteHandler : ITableRouteHandler
 		// save again
 		_ = await db.SaveChangesAsync();
 
-		// update server index
+		// update server index (in-memory projection; DB is source of truth)
 		sfm.ObjectIndex.Objects.Add(
 			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
-
-		_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
 
 		var response = new ExpandedTbl<TblObject, TblObjectPack>(tblObject, [], [], []).ToDtoDescriptor();
 		return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", response);

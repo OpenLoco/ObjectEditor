@@ -16,9 +16,24 @@ public partial class App : Application
 	{
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
+			var mainVm = new MainWindowViewModel();
 			desktop.MainWindow = new MainWindow
 			{
-				DataContext = new MainWindowViewModel(),
+				DataContext = mainVm,
+			};
+
+			// Ensure the embedded ObjectService (if started) and any other context-owned
+			// resources are cleaned up when the application is shutting down.
+			desktop.ShutdownRequested += (_, _) =>
+			{
+				try
+				{
+					mainVm.EditorContext.DisposeAsync().AsTask().GetAwaiter().GetResult();
+				}
+				catch
+				{
+					// best-effort: never throw from shutdown
+				}
 			};
 		}
 

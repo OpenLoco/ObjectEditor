@@ -1,3 +1,4 @@
+using Definitions;
 using Dat.FileParsing;
 using Dat.Types;
 using Gui.Models;

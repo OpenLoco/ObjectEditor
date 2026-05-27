@@ -137,4 +137,29 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 	}
 
 	#endregion
+
+	#region Local Server
+
+	[Category("Local Server"), DisplayName("Port"), Description("Local loopback port. Set to 0 to pick an ephemeral port automatically.")]
+	public int LocalServerPort
+	{
+		get => Model.LocalServerPort;
+		set => Model.LocalServerPort = value;
+	}
+
+	[Category("Local Server"), DisplayName("Objects root folder"), Description("Filesystem root that the embedded server serves .dat objects from."), PathBrowsable(PathBrowsableType.Directory)]
+	public string LocalServerObjectsRoot
+	{
+		get => Model.LocalServerObjectsRoot;
+		set => Model.LocalServerObjectsRoot = value;
+	}
+
+	[Category("Local Server"), DisplayName("Palette map file"), Description("Path to the palette PNG used by the embedded server for rendering object previews.")]
+	public string LocalServerPaletteMapFile
+	{
+		get => Model.LocalServerPaletteMapFile;
+		set => Model.LocalServerPaletteMapFile = value;
+	}
+
+	#endregion
 }

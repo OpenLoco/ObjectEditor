@@ -39,4 +39,9 @@ public sealed record ObjectServiceHostOptions
 	// False for the embedded GUI host: uses ClientLocoDbContext and skips Identity
 	// migration entirely, so client databases never get the server-only Identity tables.
 	public bool IsServer { get; init; } = true;
+
+	// PID of the process that owns this host. When set to a PID other than the current
+	// process, a watchdog hosted service polls it; if the parent goes away the embedded
+	// server stops itself so it can never outlive its owner.
+	public int? ParentProcessId { get; init; }
 }

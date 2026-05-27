@@ -11,6 +11,10 @@ public static class RoutesV2
 	public const string Authors = "/authors";
 	public const string Tags = "/tags";
 	public const string Licences = "/licences";
+	public const string Folders = "/folders";
+
+	// extra Folders routes
+	public const string Index = "/index";
 
 	// extra Objects routes
 	public const string File = "/file";

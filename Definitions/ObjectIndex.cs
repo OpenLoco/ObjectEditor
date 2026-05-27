@@ -4,10 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Definitions;
 
-// Thin in-memory container of ObjectIndexEntry projections. The legacy
-// JSON-on-disk implementation has been removed; the local client builds this
-// from the SQLite DB (LocalObjectIndexService) and the server builds it from
-// its own DB. Kept as a class so existing UI bindings on Objects remain valid.
+// Thin in-memory container of ObjectIndexEntry projections. The local client
+// builds this from the SQLite DB (LocalObjectIndexService) and the server builds
+// it from its own DB. Kept as a class so existing UI bindings on Objects remain valid.
 public class ObjectIndex
 {
 	public ObservableCollection<ObjectIndexEntry> Objects { get; init; } = [];

@@ -55,6 +55,7 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Task> UseCustomPalette { get; }
 	public ReactiveCommand<Unit, Unit> EditSettingsCommand { get; }
 	public ReactiveCommand<Unit, Unit> ShowLogsCommand { get; }
+	public ReactiveCommand<Unit, Unit> ShowLocalServerLogsCommand { get; }
 	public ReactiveCommand<Unit, Process?> OpenDownloadLink { get; }
 	public ReactiveCommand<Unit, Unit> DownloadLatestUpdate { get; }
 
@@ -187,6 +188,11 @@ public class MainWindowViewModel : ViewModelBase
 		ShowLogsCommand = ReactiveCommand.CreateFromTask(async () =>
 		{
 			var vm = new LogWindowViewModel(EditorContext.LoggerObservableLogs);
+			var result = await OpenLogWindow.Handle(vm);
+		});
+		ShowLocalServerLogsCommand = ReactiveCommand.CreateFromTask(async () =>
+		{
+			var vm = new LogWindowViewModel(EditorContext.LocalServerObservableLogs);
 			var result = await OpenLogWindow.Handle(vm);
 		});
 
@@ -353,27 +359,27 @@ public class MainWindowViewModel : ViewModelBase
 	{
 		ObjDataItems.Clear();
 
-		ObjDataItems.Add(new MenuItemViewModel("Add new folder", ReactiveCommand.Create(SelectNewFolder)));
+		ObjDataItems.Add(new MenuItemViewModel("Add new folder", ReactiveCommand.CreateFromTask(SelectNewFolder)));
 		ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
 
 		if (Directory.Exists(EditorContext.Settings.AppDataObjDataFolder))
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {EditorContext.Settings.AppDataObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = EditorContext.Settings.AppDataObjDataFolder)));
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.AppData)}] {EditorContext.Settings.AppDataObjDataFolder}", ReactiveCommand.CreateFromTask(() => IndexFolderViaServerAsync(EditorContext.Settings.AppDataObjDataFolder))));
 		}
 
 		if (Directory.Exists(EditorContext.Settings.LocomotionSteamObjDataFolder))
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionSteam)}] {EditorContext.Settings.LocomotionSteamObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = EditorContext.Settings.LocomotionSteamObjDataFolder)));
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionSteam)}] {EditorContext.Settings.LocomotionSteamObjDataFolder}", ReactiveCommand.CreateFromTask(() => IndexFolderViaServerAsync(EditorContext.Settings.LocomotionSteamObjDataFolder))));
 		}
 
 		if (Directory.Exists(EditorContext.Settings.LocomotionGoGObjDataFolder))
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionGoG)}] {EditorContext.Settings.LocomotionGoGObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = EditorContext.Settings.LocomotionGoGObjDataFolder)));
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.LocomotionGoG)}] {EditorContext.Settings.LocomotionGoGObjDataFolder}", ReactiveCommand.CreateFromTask(() => IndexFolderViaServerAsync(EditorContext.Settings.LocomotionGoGObjDataFolder))));
 		}
 
 		if (Directory.Exists(EditorContext.Settings.OpenLocoObjDataFolder))
 		{
-			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.OpenLoco)}] {EditorContext.Settings.OpenLocoObjDataFolder}", ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = EditorContext.Settings.OpenLocoObjDataFolder)));
+			ObjDataItems.Add(new MenuItemViewModel($"[{nameof(GameObjDataFolder.OpenLoco)}] {EditorContext.Settings.OpenLocoObjDataFolder}", ReactiveCommand.CreateFromTask(() => IndexFolderViaServerAsync(EditorContext.Settings.OpenLocoObjDataFolder))));
 		}
 
 		ObjDataItems.Add(new MenuItemViewModel("-", ReactiveCommand.Create(() => { })));
@@ -383,7 +389,43 @@ public class MainWindowViewModel : ViewModelBase
 			EditorContext.Settings.ObjDataDirectories
 				.Select(x => new MenuItemViewModel(
 					x,
-					ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = x))));
+					ReactiveCommand.CreateFromTask(() => IndexFolderViaServerAsync(x)))));
+	}
+
+	// POSTs the folder path to the local ObjectService so the server can index
+	// the contents into its database, then asks the folder tree to refresh.
+	async Task IndexFolderViaServerAsync(string folderPath)
+	{
+		if (string.IsNullOrWhiteSpace(folderPath))
+		{
+			return;
+		}
+
+		try
+		{
+			EditorContext.Logger.LogInformation("Requesting local server to index folder \"{Path}\"", folderPath);
+			var response = await EditorContext.ObjectServiceClient.IndexFolderAsync(folderPath);
+			if (response is null)
+			{
+				EditorContext.Logger.LogWarning("Local server returned no response when indexing folder \"{Path}\"", folderPath);
+				return;
+			}
+
+			EditorContext.Logger.LogInformation(
+				"Indexed folder \"{Path}\": scanned={Scanned} added={Added} skipped={Skipped} failed={Failed}",
+				response.Path, response.ScannedCount, response.AddedCount, response.SkippedCount, response.FailedCount);
+		}
+		catch (Exception ex)
+		{
+			EditorContext.Logger.LogError(ex, "Failed to request indexing of folder \"{Path}\"", folderPath);
+			return;
+		}
+
+		// Refresh the tree so the new entries show up.
+		if (FolderTreeViewModel.RefreshDirectoryItems is { } refresh)
+		{
+			_ = refresh.Execute().Subscribe();
+		}
 	}
 
 	public static async Task<FileSystemItem?> GetFileSystemItemFromUser(IReadOnlyList<FilePickerFileType> filetypes)
@@ -568,11 +610,15 @@ public class MainWindowViewModel : ViewModelBase
 			return;
 		}
 
-		FolderTreeViewModel.CurrentLocalDirectory = dirPath; // this will cause the reindexing
+		// Persist the new directory and ask the local server to index it.
+		EditorContext.Settings.ObjDataDirectories.Add(dirPath);
+		EditorContext.Settings.Save(ObjectEditorContext.SettingsFile, EditorContext.Logger);
+
+		await IndexFolderViaServerAsync(dirPath);
+
 		var menuItem = new MenuItemViewModel(
 			dirPath,
-			ReactiveCommand.Create(() => FolderTreeViewModel.CurrentLocalDirectory = dirPath)
-			/*ReactiveCommand.Create(() => ObjDataItems.RemoveAt(ObjDataItems.Count))*/);
+			ReactiveCommand.CreateFromTask(() => IndexFolderViaServerAsync(dirPath)));
 
 		ObjDataItems.Add(menuItem);
 	}

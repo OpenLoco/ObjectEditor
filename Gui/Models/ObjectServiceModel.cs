@@ -1,6 +1,5 @@
 using Avalonia.Threading;
 using Definitions.DTO;
-using Gui.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

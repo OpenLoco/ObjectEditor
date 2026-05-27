@@ -155,7 +155,20 @@ public sealed class EmbeddedObjectServiceHost : ReactiveObject, IAsyncDisposable
 				return;
 			}
 
-			await app.StopAsync(cancellationToken);
+			// Cap Kestrel's shutdown drain so the GUI can never be held open by an
+			// in-flight request or a misbehaving connection.
+			using var stopCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			stopCts.CancelAfter(TimeSpan.FromSeconds(3));
+
+			try
+			{
+				await app.StopAsync(stopCts.Token);
+			}
+			catch (OperationCanceledException)
+			{
+				logger.LogWarning("Embedded ObjectService stop timed out; forcing dispose.");
+			}
+
 			await app.DisposeAsync();
 			app = null;
 			BaseAddress = null;

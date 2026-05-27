@@ -11,7 +11,7 @@ namespace Gui.Models;
 public record FileSystemItem(
 	string DisplayName,
 	string? FileName, // only available in local mode
-	UniqueObjectId? Id, // only available in online-mode
+	UniqueObjectId? Id, // only available in remote mode
 	DateOnly? CreatedDate = null,
 	DateOnly? ModifiedDate = null,
 	FileLocationKind? FileLocation = null,
@@ -26,11 +26,11 @@ public record FileSystemItem(
 
 	[JsonIgnore]
 	public bool CanOpen
-		=> FileLocation == FileLocationKind.Local
-			|| (FileLocation == FileLocationKind.Online
-				&& OnlineApiEndpointGroup == OnlineApiEndpointGroupKind.Objects
-				&& Id != null
-				&& ObjectType != null);
+		// Items delivered by a server (any FileLocation) have an Id and are openable via
+		// the API; items without an Id are raw disk files from the file-open dialog and
+		// only openable when present on disk.
+		=> (Id != null && ObjectType != null && OnlineApiEndpointGroup == OnlineApiEndpointGroupKind.Objects)
+			|| (FileLocation == FileLocationKind.Local && Id == null && !string.IsNullOrEmpty(FileName));
 
 	[JsonIgnore]
 	public bool CanDownload

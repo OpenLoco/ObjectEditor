@@ -37,8 +37,6 @@ public class DesignerFolderTreeViewModel : FolderTreeViewModel
 {
 	public DesignerFolderTreeViewModel()
 	{
-		IsLocal = true;
-		CurrentLocalDirectory = "test/directory";
 		CurrentDirectoryItems.AddRange(
 		  [
 			  new(
@@ -135,7 +133,6 @@ public class DesignerOnlineBrowseResultsViewModel : FolderTreeViewModel
 {
 	public DesignerOnlineBrowseResultsViewModel()
 	{
-		SelectedTabIndex = 1;
 		SelectedOnlineBrowseTarget = new OnlineBrowseTargetOption(OnlineApiEndpointGroup.ObjectPacks, "Object packs", "Object packs", Client.ObjectPacksEndpointGroup);
 
 		CurrentOnlineBrowseResults.Add(new OnlineItemPackBrowseResult(
@@ -215,14 +212,6 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	ObjectEditorContext EditorContext { get; init; } = null!;
 
 	[Reactive]
-	public string CurrentLocalDirectory { get; set; } = string.Empty;
-	public string CurrentDirectory => IsLocal
-		? CurrentLocalDirectory
-		: EditorContext.Settings.UseHttps
-			? EditorContext.Settings.ServerAddressHttps
-			: EditorContext.Settings.ServerAddressHttp;
-
-	[Reactive]
 	public FileSystemItem? CurrentlySelectedObject { get; set; }
 
 	[Reactive]
@@ -231,7 +220,6 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	Progress<float> Progress { get; } = new();
 
 	public ReactiveCommand<Unit, Unit>? RefreshDirectoryItems { get; }
-	public ReactiveCommand<Unit, Unit>? OpenCurrentFolder { get; }
 	public ReactiveCommand<FileSystemItem, Unit>? OpenFolderFor { get; }
 	public ReactiveCommand<FileSystemItem, Unit>? SelectOnlineBrowseFileSystemItem { get; }
 	public ReactiveCommand<FileSystemItem, Unit>? DownloadOnlineItemCommand { get; private set; }
@@ -252,41 +240,25 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	];
 
 	[Reactive]
-	public int SelectedTabIndex { get; set; }
-
-	[Reactive]
 	public OnlineBrowseTargetOption SelectedOnlineBrowseTarget { get; set; } = ObjectOnlineBrowseTarget;
 
-	readonly Dictionary<OnlineApiEndpointGroup, IReadOnlyList<FileSystemItem>> onlineDirectoryItemsCache = [];
-	readonly Dictionary<OnlineApiEndpointGroup, IReadOnlyList<object>> onlineBrowseResultsCache = [];
-
-	public bool IsLocal
-	{
-		get => SelectedTabIndex == 0;
-		set => SelectedTabIndex = value ? 0 : 1;
-	}
+	readonly Dictionary<(OnlineApiEndpointGroup Group, FileLocation Location), IReadOnlyList<FileSystemItem>> onlineDirectoryItemsCache = [];
+	readonly Dictionary<(OnlineApiEndpointGroup Group, FileLocation Location), IReadOnlyList<object>> onlineBrowseResultsCache = [];
 
 	public string RecreateText
-		=> IsLocal
-			? "Recreate index"
-			: $"Download {CurrentItemLabelPlural.ToLowerInvariant()} list";
+		=> $"Refresh {CurrentItemLabelPlural.ToLowerInvariant()} list";
 
 	public string DirectoryFileCount
 		=> $"{CurrentItemLabelPlural}: {ResultsCount}";
 
 	public string CurrentItemLabelPlural
-		=> IsLocal
-			? "Objects"
-			: SelectedOnlineBrowseTarget?.ItemLabelPlural ?? "Items";
-
-	public bool IsOnline
-		=> !IsLocal;
+		=> SelectedOnlineBrowseTarget?.ItemLabelPlural ?? "Items";
 
 	public bool UsesTreeDataGrid
-		=> IsLocal || SelectedOnlineBrowseTarget.Group is OnlineApiEndpointGroup.Objects or OnlineApiEndpointGroup.Scenarios;
+		=> SelectedOnlineBrowseTarget.Group is OnlineApiEndpointGroup.Objects or OnlineApiEndpointGroup.Scenarios;
 
 	public bool HasOnlineBrowseResults
-		=> IsOnline && !UsesTreeDataGrid;
+		=> !UsesTreeDataGrid;
 
 	public bool SupportsFilters
 		=> UsesTreeDataGrid;
@@ -327,15 +299,14 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		}
 
 		RefreshDirectoryItems = ReactiveCommand.CreateFromTask(async () => await LoadDirectoryAsync(false));
-		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : this.EditorContext.Settings.DownloadFolder, this.EditorContext.Logger));
 		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(this.EditorContext, availableFilterCategories, RemoveFilter)));
 		SelectOnlineBrowseFileSystemItem = ReactiveCommand.Create<FileSystemItem>(item => CurrentlySelectedObject = item);
 		DownloadOnlineItemCommand = ReactiveCommand.CreateFromTask<FileSystemItem>(DownloadOnlineItemAsync);
 		DownloadOnlinePackCommand = ReactiveCommand.CreateFromTask<OnlineItemPackBrowseResult>(DownloadOnlinePackAsync);
 		OpenFolderFor = ReactiveCommand.Create((FileSystemItem clickedOn) =>
 		{
-			if (IsLocal
-			&& clickedOn is FileSystemItem clickedOnObject
+			if (
+			   clickedOn is FileSystemItem clickedOnObject
 			&& clickedOnObject.FileLocation == FileLocation.Local
 			&& (clickedOnObject.SubNodes == null || clickedOnObject.SubNodes.Count == 0)
 			&& File.Exists(clickedOnObject.FileName))
@@ -380,16 +351,9 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 			.Subscribe(_ => UpdateDirectoryItemsView())
 			.DisposeWith(_subscriptions);
 
-		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true)).DisposeWith(_subscriptions);
-		_ = this.WhenAnyValue(o => o.CurrentLocalDirectory).Skip(1).Subscribe(_ => this.RaisePropertyChanged(nameof(CurrentDirectory))).DisposeWith(_subscriptions);
-
-		//_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => UpdateDirectoryItemsView());
-		_ = this.WhenAnyValue(o => o.SelectedTabIndex).Skip(1).Subscribe(_ => RaiseBrowseModeProperties()).DisposeWith(_subscriptions);
-		_ = this.WhenAnyValue(o => o.CurrentDirectory).Skip(1).Subscribe(async _ => await LoadDirectoryAsync(true)).DisposeWith(_subscriptions);
 		_ = this.WhenAnyValue(o => o.CurrentDirectoryItems).Skip(1).Subscribe(_ => UpdateDirectoryItemsView()).DisposeWith(_subscriptions);
 		_ = this.WhenAnyValue(o => o.SelectedOnlineBrowseTarget).Skip(1).Subscribe(async _ =>
 		{
-			RaiseBrowseModeProperties();
 			await LoadDirectoryAsync(false);
 		}).DisposeWith(_subscriptions);
 
@@ -397,10 +361,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		{
 			CurrentlySelectedObject = null;
 			this.RaisePropertyChanged(nameof(TreeDataGridSourceCount));
-			RaiseBrowseModeProperties();
 		}).DisposeWith(_subscriptions);
-
-		CurrentLocalDirectory = this.EditorContext.Settings.ObjDataDirectory;
 
 		// add default name filter
 		var defaultFilter = new FilterViewModel(this.EditorContext, availableFilterCategories, RemoveFilter)
@@ -415,20 +376,6 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	protected void RemoveFilter(FilterViewModel filter)
 		=> Filters.Remove(filter);
 
-	void RaiseBrowseModeProperties()
-	{
-		this.RaisePropertyChanged(nameof(DirectoryFileCount));
-		this.RaisePropertyChanged(nameof(ResultsCount));
-		this.RaisePropertyChanged(nameof(RecreateText));
-		this.RaisePropertyChanged(nameof(CurrentDirectory));
-		this.RaisePropertyChanged(nameof(CurrentItemLabelPlural));
-		this.RaisePropertyChanged(nameof(IsOnline));
-		this.RaisePropertyChanged(nameof(UsesTreeDataGrid));
-		this.RaisePropertyChanged(nameof(HasOnlineBrowseResults));
-		this.RaisePropertyChanged(nameof(SupportsFilters));
-		this.RaisePropertyChanged(nameof(SupportsHierarchyCommands));
-	}
-
 	// this needs to be async as it blocks the UI when building expressions is slow
 	private Func<FileSystemItem, bool> CreateFilterPredicate()
 	{
@@ -438,7 +385,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		{
 			try
 			{
-				var filterDelegate = filter.BuildExpression(IsLocal);
+				var filterDelegate = filter.BuildExpression();
 				if (filterDelegate != null)
 				{
 					filterDelegates.Add(filterDelegate);
@@ -480,45 +427,8 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	{
 		EditorContext.Logger.LogDebug("UseExistingIndex={UseExistingIndex}", useExistingIndex);
 
-		if (IsLocal)
-		{
-			// local
-			await LoadObjDirectoryAsync(CurrentLocalDirectory, useExistingIndex);
-		}
-		else // remote
-		{
-			await LoadOnlineDirectoryAsync(useExistingIndex);
-		}
-
-		await EditorContext.CheckForDatFilesNotOnServer();
-	}
-
-	async Task LoadObjDirectoryAsync(string directory, bool useExistingIndex)
-	{
-		EditorContext.Logger.LogDebug("Directory={Directory} UseExistingIndex={UseExistingIndex}", directory, useExistingIndex);
 		CurrentOnlineBrowseResults.Clear();
-
-		if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
-		{
-			CurrentDirectoryItems.Clear();
-			return;
-		}
-
-		await EditorContext.LoadObjDirectoryAsync(directory, Progress, useExistingIndex);
-
-		if (EditorContext.ObjectIndex != null)
-		{
-			var items = EditorContext.ObjectIndex.Objects.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes);
-			CurrentDirectoryItems.Clear();
-			CurrentDirectoryItems.AddRange(items.Select(x => IndexEntryToFileSystemItem(x, directory, FileLocation.Local)));
-		}
-
-		UpdateDirectoryItemsView();
-	}
-
-	async Task LoadOnlineDirectoryAsync(bool useExistingIndex)
-	{
-		EditorContext.Logger.LogDebug("UseExistingIndex={UseExistingIndex}", useExistingIndex);
+		CurrentDirectoryItems.Clear();
 
 		if (Design.IsDesignMode)
 		{
@@ -526,24 +436,172 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 			return;
 		}
 
+		// The GUI is provider-agnostic: every browse target is fetched from both the
+		// local backend and the remote master, then merged. Both servers expose the
+		// same HTTP API; whichever is reachable contributes whatever it has.
+		var sources = new (ObjectServiceClient? Client, FileLocation Location)[]
+		{
+			(EditorContext.ObjectServiceClient, FileLocation.Local),
+			(EditorContext.RemoteObjectServiceClient, FileLocation.Online),
+		};
+
 		if (UsesTreeDataGrid)
 		{
-			var items = await GetOnlineTreeItemsAsync(useExistingIndex);
-			CurrentOnlineBrowseResults.Clear();
-			CurrentDirectoryItems.Clear();
-			CurrentDirectoryItems.AddRange(items);
+			foreach (var (client, location) in sources)
+			{
+				try
+				{
+					var items = await GetTreeItemsAsync(client, location, useExistingIndex);
+					if (items.Count > 0)
+					{
+						CurrentDirectoryItems.AddRange(items);
+					}
+				}
+				catch (Exception ex)
+				{
+					EditorContext.Logger.LogDebug(ex, "Failed to fetch {Group} from {Location} server.", SelectedOnlineBrowseTarget.Group, location);
+				}
+			}
+
+			UpdateDirectoryItemsView();
 		}
 		else
 		{
-			var results = await GetOnlineBrowseResultsAsync(useExistingIndex);
-			CurrentDirectoryItems.Clear();
-
-			CurrentOnlineBrowseResults.Clear();
-			CurrentOnlineBrowseResults.AddRange(results);
-
+			foreach (var (client, location) in sources)
+			{
+				try
+				{
+					var results = await GetBrowseResultsAsync(client, location, useExistingIndex);
+					if (results.Count > 0)
+					{
+						CurrentOnlineBrowseResults.AddRange(results);
+					}
+				}
+				catch (Exception ex)
+				{
+					EditorContext.Logger.LogDebug(ex, "Failed to fetch {Group} from {Location} server.", SelectedOnlineBrowseTarget.Group, location);
+				}
+			}
 		}
 
-		//UpdateDirectoryItemsView();
+		await EditorContext.CheckForDatFilesNotOnServer();
+	}
+
+	async Task<IReadOnlyList<FileSystemItem>> GetTreeItemsAsync(ObjectServiceClient? client, FileLocation fileLocation, bool useExistingIndex)
+	{
+		if (client == null)
+		{
+			return [];
+		}
+
+		var selectedGroup = SelectedOnlineBrowseTarget.Group;
+
+		// Objects flow through the shared ObjectIndex cache on EditorContext.
+		if (selectedGroup == OnlineApiEndpointGroup.Objects)
+		{
+			Action<ObjectIndex> setCachedIndex = fileLocation == FileLocation.Local
+				? idx => EditorContext.ObjectIndex = idx
+				: idx => EditorContext.ObjectIndexOnline = idx;
+			Func<ObjectIndex?> getCachedIndex = fileLocation == FileLocation.Local
+				? () => EditorContext.ObjectIndex
+				: () => EditorContext.ObjectIndexOnline;
+
+			return await GetObjectDirectoryItemsAsync(client, fileLocation, setCachedIndex, getCachedIndex, useExistingIndex);
+		}
+
+		var cacheKey = (selectedGroup, fileLocation);
+		if (useExistingIndex && onlineDirectoryItemsCache.TryGetValue(cacheKey, out var existingItems))
+		{
+			return existingItems;
+		}
+
+		IReadOnlyList<FileSystemItem> items = selectedGroup switch
+		{
+			OnlineApiEndpointGroup.Scenarios => [.. (await client.GetListAsync<DtoScenarioEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.OrderBy(x => x.Name)
+				.Select(CreateOnlineScenarioFileSystemItem)],
+			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
+		};
+
+		onlineDirectoryItemsCache[cacheKey] = items;
+		return items;
+	}
+
+	async Task<IReadOnlyList<object>> GetBrowseResultsAsync(ObjectServiceClient? client, FileLocation fileLocation, bool useExistingIndex)
+	{
+		if (client == null)
+		{
+			return [];
+		}
+
+		var selectedGroup = SelectedOnlineBrowseTarget.Group;
+		var cacheKey = (selectedGroup, fileLocation);
+		if (useExistingIndex && onlineBrowseResultsCache.TryGetValue(cacheKey, out var existingItems))
+		{
+			return existingItems;
+		}
+
+		IReadOnlyList<object> items = selectedGroup switch
+		{
+			OnlineApiEndpointGroup.ObjectPacks => [.. (await GetObjectPackBrowseResultsAsync(client)).Cast<object>()],
+			OnlineApiEndpointGroup.SC5FilePacks => [.. (await GetSC5FilePackBrowseResultsAsync(client)).Cast<object>()],
+			OnlineApiEndpointGroup.Tags => [.. (await client.GetTagsAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineTagBrowseResult(x.Id, x.Name))],
+			OnlineApiEndpointGroup.Authors => [.. (await client.GetAuthorsAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineAuthorBrowseResult(x.Id, x.Name))],
+			OnlineApiEndpointGroup.Licences => [.. (await client.GetLicencesAsync())
+				.OrderBy(x => x.Name)
+				.Select(x => (object)new OnlineLicenceBrowseResult(x.Id, x.Name, x.Text))],
+			OnlineApiEndpointGroup.MissingObjects => [.. (await client.GetMissingObjectsAsync())
+				.OrderBy(x => x.DatName)
+				.Select(x => (object)new OnlineMissingObjectBrowseResult(x.Id, x.DatName, x.DatChecksum, x.ObjectType))],
+			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
+		};
+
+		onlineBrowseResultsCache[cacheKey] = items;
+		return items;
+	}
+
+	async Task<IReadOnlyList<FileSystemItem>> GetObjectDirectoryItemsAsync(
+		ObjectServiceClient? client,
+		FileLocation fileLocation,
+		Action<ObjectIndex> setCachedIndex,
+		Func<ObjectIndex?> getCachedIndex,
+		bool useExistingIndex)
+	{
+		if (client == null)
+		{
+			return [];
+		}
+
+		var cached = getCachedIndex();
+		if (!useExistingIndex || cached == null)
+		{
+			var entries = (await client.GetListAsync<DtoObjectEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
+				.Select(x => new ObjectIndexEntry(
+					x.DisplayName,
+					null,
+					x.Id,
+					x.DatChecksum,
+					null,
+					x.ObjectType,
+					x.ObjectSource,
+					x.CreatedDate,
+					x.ModifiedDate,
+					x.VehicleType));
+			cached = new ObjectIndex(entries);
+			setCachedIndex(cached);
+		}
+
+		var baseDir = fileLocation == FileLocation.Online
+			? EditorContext.Settings.DownloadFolder
+			: EditorContext.Settings.DownloadFolder;
+
+		return [.. cached.Objects
+			.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes)
+			.Select(x => IndexEntryToFileSystemItem(x, baseDir, fileLocation))];
 	}
 
 	protected void UpdateDirectoryItemsView()
@@ -574,17 +632,49 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		{
 			DatChecksum = x.DatChecksum,
 			xxHash3 = x.xxHash3,
-			OnlineApiEndpointGroup = fileLocation == FileLocation.Online ? OnlineApiEndpointGroup.Objects : null,
+			// Both "Local" and "Online" entries are now delivered by an HTTP ObjectService;
+			// only the originating client differs. Tagging both with Objects lets the load
+			// path dispatch via API regardless of which server produced the entry.
+			OnlineApiEndpointGroup = OnlineApiEndpointGroup.Objects,
 		};
 	}
 
 	static List<FileSystemItem> ConstructTreeView(IEnumerable<FileSystemItem> items)
 	{
-		if (!items.Any(x => x.ObjectType != null))
+		var materialised = items as IReadOnlyCollection<FileSystemItem> ?? [.. items];
+		if (!materialised.Any(x => x.ObjectType != null))
 		{
-			return [.. items.OrderBy(x => x.DisplayName)];
+			return [.. materialised.OrderBy(x => x.DisplayName)];
 		}
 
+		// Top-level grouping by FileLocation (Local / Online). Each group's children are the
+		// usual ObjectType -> [VehicleType ->] item hierarchy. We only emit the wrapping
+		// node for non-empty groups so the tree stays tidy if (for example) the remote
+		// master server is unreachable.
+		var result = new List<FileSystemItem>();
+		foreach (var locationGroup in materialised
+			.GroupBy(x => x.FileLocation)
+			.OrderBy(g => g.Key))
+		{
+			var locationNodes = BuildObjectTypeNodes(locationGroup);
+			if (locationNodes.Count == 0)
+			{
+				continue;
+			}
+
+			result.Add(new FileSystemItem(
+				locationGroup.Key.ToString() ?? string.Empty,
+				null,
+				null,
+				FileLocation: locationGroup.Key,
+				SubNodes: [.. locationNodes]));
+		}
+
+		return result;
+	}
+
+	static List<FileSystemItem> BuildObjectTypeNodes(IEnumerable<FileSystemItem> items)
+	{
 		var result = new List<FileSystemItem>();
 		var groupedObjects = items
 			.Where(x => x.ObjectType != null)
@@ -636,127 +726,30 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		return result;
 	}
 
-	async Task<IReadOnlyList<FileSystemItem>> GetOnlineTreeItemsAsync(bool useExistingIndex)
+	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetObjectPackBrowseResultsAsync(ObjectServiceClient client)
 	{
-		if (EditorContext.ObjectServiceClient == null)
-		{
-			return [];
-		}
-
-		var selectedGroup = SelectedOnlineBrowseTarget.Group;
-		if (useExistingIndex && onlineDirectoryItemsCache.TryGetValue(selectedGroup, out var existingItems))
-		{
-			return existingItems;
-		}
-
-		var items = selectedGroup switch
-		{
-			OnlineApiEndpointGroup.Objects => await GetOnlineObjectDirectoryItemsAsync(useExistingIndex),
-			OnlineApiEndpointGroup.Scenarios => [.. (await EditorContext.ObjectServiceClient.GetListAsync<DtoScenarioEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-				.OrderBy(x => x.Name)
-				.Select(CreateOnlineScenarioFileSystemItem)],
-			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
-		};
-
-		onlineDirectoryItemsCache[selectedGroup] = items;
-		return items;
-	}
-
-	async Task<IReadOnlyList<object>> GetOnlineBrowseResultsAsync(bool useExistingIndex)
-	{
-		if (EditorContext.ObjectServiceClient == null)
-		{
-			return [];
-		}
-
-		var selectedGroup = SelectedOnlineBrowseTarget.Group;
-		if (useExistingIndex && onlineBrowseResultsCache.TryGetValue(selectedGroup, out var existingItems))
-		{
-			return existingItems;
-		}
-
-		IReadOnlyList<object> items = selectedGroup switch
-		{
-			OnlineApiEndpointGroup.ObjectPacks => [.. (await GetOnlineObjectPackBrowseResultsAsync()).Cast<object>()],
-			OnlineApiEndpointGroup.SC5FilePacks => [.. (await GetOnlineSC5FilePackBrowseResultsAsync()).Cast<object>()],
-			OnlineApiEndpointGroup.Tags => [.. (await EditorContext.ObjectServiceClient.GetTagsAsync())
-				.OrderBy(x => x.Name)
-				.Select(x => (object)new OnlineTagBrowseResult(x.Id, x.Name))],
-			OnlineApiEndpointGroup.Authors => [.. (await EditorContext.ObjectServiceClient.GetAuthorsAsync())
-				.OrderBy(x => x.Name)
-				.Select(x => (object)new OnlineAuthorBrowseResult(x.Id, x.Name))],
-			OnlineApiEndpointGroup.Licences => [.. (await EditorContext.ObjectServiceClient.GetLicencesAsync())
-				.OrderBy(x => x.Name)
-				.Select(x => (object)new OnlineLicenceBrowseResult(x.Id, x.Name, x.Text))],
-			OnlineApiEndpointGroup.MissingObjects => [.. (await EditorContext.ObjectServiceClient.GetMissingObjectsAsync())
-				.OrderBy(x => x.DatName)
-				.Select(x => (object)new OnlineMissingObjectBrowseResult(x.Id, x.DatName, x.DatChecksum, x.ObjectType))],
-			_ => throw new NotImplementedException($"Unsupported endpoint group: {selectedGroup}"),
-		};
-
-		onlineBrowseResultsCache[selectedGroup] = items;
-		return items;
-	}
-
-	async Task<IReadOnlyList<FileSystemItem>> GetOnlineObjectDirectoryItemsAsync(bool useExistingIndex)
-	{
-		if ((!useExistingIndex || EditorContext.ObjectIndexOnline == null) && EditorContext.ObjectServiceClient != null)
-		{
-			EditorContext.ObjectIndexOnline = new ObjectIndex((await EditorContext.ObjectServiceClient.GetListAsync<DtoObjectEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
-				.Select(x => new ObjectIndexEntry(
-					x.DisplayName,
-					null,
-					x.Id,
-					x.DatChecksum,
-					null,
-					x.ObjectType,
-					x.ObjectSource,
-					x.CreatedDate,
-					x.ModifiedDate,
-					x.VehicleType)));
-		}
-
-		return EditorContext.ObjectIndexOnline == null
-			? []
-			: [.. EditorContext.ObjectIndexOnline.Objects
-				.Where(x => (int)x.ObjectType < Limits.kMaxObjectTypes)
-				.Select(x => IndexEntryToFileSystemItem(x, EditorContext.Settings.DownloadFolder, FileLocation.Online))];
-	}
-
-	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetOnlineObjectPackBrowseResultsAsync()
-	{
-		if (EditorContext.ObjectServiceClient == null)
-		{
-			return [];
-		}
-
-		var packs = (await EditorContext.ObjectServiceClient.GetObjectPacksAsync())
+		var packs = (await client.GetObjectPacksAsync())
 			.OrderBy(x => x.Name)
 			.ToList();
 
 		return [.. await Task.WhenAll(packs.Select(async pack =>
 			CreateOnlineItemPackBrowseResult(
 				pack,
-				await EditorContext.ObjectServiceClient.GetObjectPackAsync(pack.Id),
+				await client.GetObjectPackAsync(pack.Id),
 				OnlineApiEndpointGroup.ObjectPacks,
 				descriptor => descriptor.Items.OrderBy(x => x.DisplayName).Select(CreateOnlineObjectFileSystemItem))))];
 	}
 
-	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetOnlineSC5FilePackBrowseResultsAsync()
+	async Task<IReadOnlyList<OnlineItemPackBrowseResult>> GetSC5FilePackBrowseResultsAsync(ObjectServiceClient client)
 	{
-		if (EditorContext.ObjectServiceClient == null)
-		{
-			return [];
-		}
-
-		var packs = (await EditorContext.ObjectServiceClient.GetSC5FilePacksAsync())
+		var packs = (await client.GetSC5FilePacksAsync())
 			.OrderBy(x => x.Name)
 			.ToList();
 
 		return [.. await Task.WhenAll(packs.Select(async pack =>
 			CreateOnlineItemPackBrowseResult(
 				pack,
-				await EditorContext.ObjectServiceClient.GetSC5FilePackAsync(pack.Id),
+				await client.GetSC5FilePackAsync(pack.Id),
 				OnlineApiEndpointGroup.SC5FilePacks,
 				descriptor => descriptor.Items.OrderBy(x => x.Name).Select(CreateOnlineScenarioFileSystemItem))))];
 	}
@@ -823,15 +816,21 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 
 	async Task DownloadOnlineItemAsync(FileSystemItem item)
 	{
-		if (EditorContext.ObjectServiceClient == null || item.Id == null)
+		// Download from whichever server produced the item; Local -> embedded server,
+		// Online -> remote master. Keeps the operation truly provider-agnostic.
+		var client = item.FileLocation == FileLocation.Online
+			? EditorContext.RemoteObjectServiceClient
+			: EditorContext.ObjectServiceClient;
+
+		if (client == null || item.Id == null)
 		{
 			return;
 		}
 
 		var fileBytes = item.OnlineApiEndpointGroup switch
 		{
-			OnlineApiEndpointGroup.Objects => await EditorContext.ObjectServiceClient.GetObjectFileAsync(item.Id.Value),
-			OnlineApiEndpointGroup.Scenarios => await EditorContext.ObjectServiceClient.GetScenarioFileAsync(item.Id.Value),
+			OnlineApiEndpointGroup.Objects => await client.GetObjectFileAsync(item.Id.Value),
+			OnlineApiEndpointGroup.Scenarios => await client.GetScenarioFileAsync(item.Id.Value),
 			_ => null,
 		};
 

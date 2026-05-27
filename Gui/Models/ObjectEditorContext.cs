@@ -34,7 +34,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public Logger Logger { get; init; }
 
-	public ObjectIndex ObjectIndex { get; private set; } = new();
+	public ObjectIndex ObjectIndex { get; set; } = new();
 
 	public ObjectIndex? ObjectIndexOnline { get; set; }
 
@@ -64,7 +64,19 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public ObservableCollection<LogLine> LoggerObservableLogs { get; init; } = [];
 
+	// Dedicated logger for the embedded ObjectService. Routed to its own observable
+	// collection so the local-server log popup shows only server-originated lines,
+	// while still writing to the shared on-disk log file (with a [LocalServer] tag).
+	public Logger LocalServerLogger { get; init; }
+
+	public ObservableCollection<LogLine> LocalServerObservableLogs { get; init; } = [];
+
 	public ObjectServiceClient ObjectServiceClient { get; init; }
+
+	// Second client wired to the configured remote master ObjectService. The GUI talks to
+	// both clients via the same HTTP API so local and remote objects can be browsed
+	// uniformly; the only difference is which server answered the request.
+	public ObjectServiceClient RemoteObjectServiceClient { get; init; }
 
 	public ObjectServiceModel ObjectServiceModel { get; init; }
 
@@ -89,7 +101,11 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	{
 		Logger = new Logger();
 		LoggerObservableLogs = [];
-		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log).ConfigureAwait(false);
+		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log, LoggerObservableLogs, tag: null).ConfigureAwait(false);
+
+		LocalServerLogger = new Logger();
+		LocalServerObservableLogs = [];
+		LocalServerLogger.LogAdded += (sender, laea) => LogAsync(laea.Log, LocalServerObservableLogs, tag: "LocalServer").ConfigureAwait(false);
 
 		LoadSettings();
 
@@ -99,7 +115,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.CacheFolder = InitialiseDirectory(Settings.CacheFolder, "cache");
 		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
 
-		LocalServerHost = new Gui.Services.EmbeddedObjectServiceHost(Logger);
+		LocalServerHost = new Gui.Services.EmbeddedObjectServiceHost(LocalServerLogger);
 
 		// Make sure the host has a usable objects-root folder and palette file to point
 		// at - even if the user hasn't filled them in.
@@ -113,6 +129,10 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 		ObjectServiceClient = new(Settings, Logger, localBaseAddress);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
+
+		// Remote master server: same client class, just pointed at the configured address.
+		// Passing null asks the client to resolve the base URL from EditorSettings.
+		RemoteObjectServiceClient = new(Settings, Logger, baseAddressOverride: null);
 
 		if (localBaseAddress is not null)
 		{
@@ -279,6 +299,10 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				HttpUrl = targetUri.ToString().TrimEnd('/'),
 				JwtKey = EmbeddedObjectServiceHost.GenerateEphemeralJwtKey(),
 				IsServer = false,
+				// Tie the embedded server's lifetime to this GUI process. In-process this is
+				// a no-op (same PID); if the host is ever re-architected as a child process
+				// the watchdog will reap it when the GUI dies.
+				ParentProcessId = Environment.ProcessId,
 			};
 			await LocalServerHost.StartAsync(options);
 
@@ -313,7 +337,8 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		var newBaseAddress = PrepareLocalServerUri();
 		ObjectServiceClient.RetargetBaseAddress(newBaseAddress);
 
-		// Remote address may have changed via settings; re-point the monitor at the new URI.
+		// Remote address may have changed via settings; re-point the monitor and client at the new URI.
+		RemoteObjectServiceClient.RetargetBaseAddress(null);
 		RemoteServerMonitor.Configure(GetRemoteServerUri());
 
 		if (newBaseAddress is not null)
@@ -322,13 +347,16 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		}
 	}
 
-	public async Task LogAsync(LogLine log)
+	public Task LogAsync(LogLine log) => LogAsync(log, LoggerObservableLogs, tag: null);
+
+	async Task LogAsync(LogLine log, ObservableCollection<LogLine> sink, string? tag)
 	{
 		// update UI
-		Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, log));
+		Dispatcher.UIThread.Post(() => sink.Insert(0, log));
 
-		// update log file on disk
-		logQueue.Enqueue(log.ToString());
+		// update log file on disk - prefix server lines so the merged file remains useful.
+		var text = tag is null ? log.ToString() : $"[{tag}] {log}";
+		logQueue.Enqueue(text);
 		await WriteLogsToFileAsync();
 	}
 
@@ -404,7 +432,11 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 		try
 		{
-			var result = filesystemItem.FileLocation == FileLocation.Online
+			// Dispatch by data source rather than FileLocation: an item with an Id was
+			// produced by a server (local or remote) and must be fetched via the matching
+			// HTTP client. Items without an Id are raw disk files from the file-open
+			// dialog and load straight off disk.
+			var result = filesystemItem.Id != null
 				? TryLoadOnlineFile(filesystemItem, out uiLocoFile)
 				: TryLoadLocalFile(filesystemItem, out uiLocoFile);
 
@@ -449,19 +481,26 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 		if (!OnlineCache.TryGetValue(filesystemItem.Id.Value, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
 		{
-			Logger.LogDebug("Didn't find object {DisplayName} with unique id {Id} in cache - downloading it from {BaseAddress}", filesystemItem.DisplayName, filesystemItem.Id, ObjectServiceClient.WebClient.BaseAddress);
+			// Pick the client by FileLocation: Local items came from the embedded server,
+			// Online items came from the remote master. The GUI treats them uniformly,
+			// but each must round-trip back to its originating server.
+			var client = filesystemItem.FileLocation == FileLocation.Online
+				? RemoteObjectServiceClient
+				: ObjectServiceClient;
 
-			if (ObjectServiceClient == null)
+			if (client == null)
 			{
 				Logger.LogError("Object service client is null");
 				return false;
 			}
 
+			Logger.LogDebug("Didn't find object {DisplayName} with unique id {Id} in cache - downloading it from {BaseAddress}", filesystemItem.DisplayName, filesystemItem.Id, client.WebClient.BaseAddress);
+
 			// Synchronous bridge: TryLoadObject is a sync API used by many callers, so we must
 			// block here. Task.Run pushes the await onto the thread pool (no captured UI
 			// SynchronizationContext), avoiding the classic UI deadlock. GetAwaiter().GetResult()
 			// is preferred over .Result so exceptions are not wrapped in AggregateException.
-			cachedLocoObjDto = Task.Run(() => ObjectServiceClient.GetObjectAsync(filesystemItem.Id.Value)).GetAwaiter().GetResult();
+			cachedLocoObjDto = Task.Run(() => client.GetObjectAsync(filesystemItem.Id.Value)).GetAwaiter().GetResult();
 
 			if (cachedLocoObjDto == null)
 			{

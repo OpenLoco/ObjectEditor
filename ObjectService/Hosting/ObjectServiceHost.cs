@@ -48,6 +48,11 @@ public static class ObjectServiceHost
 			overrides["Kestrel:Endpoints:HttpsDefaultCert:Url"] = options.HttpsUrl;
 		}
 
+		if (options.ParentProcessId is int pid)
+		{
+			overrides["ObjectService:ParentProcessId"] = pid.ToString();
+		}
+
 		_ = builder.Configuration.AddInMemoryCollection(overrides);
 	}
 
@@ -152,6 +157,18 @@ public static class ObjectServiceHost
 
 		_ = builder.Services.AddScoped<ObjectExplorerService>();
 		_ = builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+		// Parent-process watchdog: if the owning GUI process goes away (clean exit or
+		// crash), this hosted service triggers IHostApplicationLifetime.StopApplication
+		// so the embedded server cannot keep listening.
+		var parentPid = builder.Configuration.GetValue<int?>("ObjectService:ParentProcessId");
+		if (parentPid is int pid)
+		{
+			_ = builder.Services.AddHostedService(sp => new ParentProcessWatchdog(
+				pid,
+				sp.GetRequiredService<IHostApplicationLifetime>(),
+				sp.GetRequiredService<ILogger<ParentProcessWatchdog>>()));
+		}
 
 		var objRoot = builder.Configuration["ObjectService:RootFolder"];
 		var paletteMapFile = builder.Configuration["ObjectService:PaletteMapFile"];

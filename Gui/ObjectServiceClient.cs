@@ -136,4 +136,7 @@ public class ObjectServiceClient
 
 	public async Task<IEnumerable<DtoObjectMissingEntry>> GetMissingObjectsAsync()
 		=> await Client.GetMissingObjectsAsync(WebClient, Logger);
+
+	public async Task<DtoIndexFolderResponse?> IndexFolderAsync(string folderPath)
+		=> await Client.IndexFolderAsync(WebClient, folderPath, Logger);
 }

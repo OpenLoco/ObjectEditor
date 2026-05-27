@@ -231,7 +231,7 @@ public class FilterViewModel : ReactiveObject
 		return null;
 	}
 
-	public Func<FileSystemItem, bool>? BuildExpression(bool isLocal)
+	public Func<FileSystemItem, bool>? BuildExpression()
 	{
 		if (SelectedProperty == null || SelectedObjectType == null)
 		{
@@ -248,7 +248,7 @@ public class FilterViewModel : ReactiveObject
 		//	return BuildFilterExpression<MetadataModel>()?.Compile();
 		//}
 		// Otherwise, build a delegate that loads the object from disk
-		return entry => BuildObjectFilter(entry, isLocal);
+		return entry => BuildObjectFilter(entry);
 	}
 
 	//bool BuildMetadataFilter(ObjectIndexEntry entry)
@@ -256,14 +256,8 @@ public class FilterViewModel : ReactiveObject
 	//	return BuildFilterExpression<MetadataModel>()?.Compile();
 	//}
 
-	bool BuildObjectFilter(FileSystemItem entry, bool isLocal)
+	bool BuildObjectFilter(FileSystemItem entry)
 	{
-		if (!isLocal)
-		{
-			// online mode not supported yet
-			return false;
-		}
-
 		if (entry.ObjectType == null || SelectedObjectType == null || ObjectTypeMapping.StructTypeToObjectType(SelectedObjectType.Type) != entry.ObjectType)
 		{
 			return false;

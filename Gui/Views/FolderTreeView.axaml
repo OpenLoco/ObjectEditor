@@ -22,39 +22,12 @@
 	</UserControl.Resources>
 
 	<DockPanel>
-		<TabStrip DockPanel.Dock="Top" Margin="2" SelectedIndex="{Binding SelectedTabIndex}" HorizontalAlignment="Center" Name="LocalOnlineTab">
-			<TabItem>
-				<TabItem.Header>
-					<DockPanel>
-						<materialIcons:MaterialIcon Kind="DesktopClassic" Width="24" Height="24" Margin="2" />
-						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Local" />
-					</DockPanel>
-				</TabItem.Header>
-			</TabItem>
-			<TabItem>
-				<TabItem.Header>
-					<DockPanel>
-						<materialIcons:MaterialIcon Kind="Web" Width="24" Height="24" Margin="2" />
-						<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4" Text="Online" />
-					</DockPanel>
-				</TabItem.Header>
-			</TabItem>
-		</TabStrip>
 		<Grid Background="{DynamicResource ExpanderHeaderBackground}">
 			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="Auto"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
 			<Border Grid.Row="0" BorderThickness="1">
-				<DockPanel>
-					<Button Command="{Binding OpenCurrentFolder}" BorderThickness="0" DockPanel.Dock="Right" MinWidth="48" MaxWidth="48" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Open folder">
-						<materialIcons:MaterialIcon Kind="FolderOpen" Width="24" Height="24" Margin="2" />
-					</Button>
-					<TextBox Text="{Binding CurrentDirectory}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
-				</DockPanel>
-			</Border>
-			<Border Grid.Row="1" BorderThickness="1">
 				<DockPanel>
 					<Button Command="{Binding RefreshDirectoryItems}" BorderThickness="0" DockPanel.Dock="Right" MinWidth="48" MaxWidth="48" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="{Binding RecreateText}">
 						<DockPanel>
@@ -65,7 +38,6 @@
 					<ComboBox ItemsSource="{Binding OnlineBrowseTargets}"
 							  SelectedItem="{Binding SelectedOnlineBrowseTarget}"
 							  DisplayMemberBinding="{Binding DisplayName}"
-							  IsVisible="{Binding IsOnline}"
 							  AutomationProperties.Name="Online content type"
 							  ToolTip.Tip="Select the type of online content to browse"
 							  Margin="2"
@@ -75,7 +47,7 @@
 					<TextBox Text="{Binding DirectoryFileCount}" BorderThickness="0" DockPanel.Dock="Right" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 				</DockPanel>
 			</Border>
-			<Border Grid.Row="2" BorderThickness="4">
+			<Border Grid.Row="1" BorderThickness="4">
 				<DockPanel>
 					<StackPanel Orientation="Vertical" Margin="4" DockPanel.Dock="Top" Spacing="4" IsVisible="{Binding SupportsFilters}">
 						<ItemsControl ItemsSource="{Binding Filters}">

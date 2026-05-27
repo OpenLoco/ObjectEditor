@@ -38,6 +38,7 @@ public static class V2RouteBuilderExtensions
 		ScenarioRouteHandler.MapRoutes(routeGroup);
 		SC5FilePackRouteHandler.MapRoutes(routeGroup);
 		ObjectPackRouteHandler.MapRoutes(routeGroup);
+		FolderRouteHandler.MapRoutes(routeGroup);
 
 		return routeGroup;
 	}

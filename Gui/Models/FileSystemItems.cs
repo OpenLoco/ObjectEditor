@@ -73,6 +73,8 @@ public record FileSystemItem(
 			Definitions.ObjectModels.Types.ObjectSource.LocomotionSteam => "Steam",
 			Definitions.ObjectModels.Types.ObjectSource.LocomotionGoG => "GoG",
 			Definitions.ObjectModels.Types.ObjectSource.OpenLoco => "OpenLoco",
-			_ => string.Empty,
+			null => string.Empty,
+			_ => throw new NotImplementedException($"Unhandled {nameof(Definitions.ObjectModels.Types.ObjectSource)} value: {ObjectSource}"),
 		};
+
 }

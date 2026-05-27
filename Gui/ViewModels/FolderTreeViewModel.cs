@@ -564,17 +564,6 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		this.RaisePropertyChanged(nameof(TreeRoot));
 	}
 
-	static string GetNiceObjectSource(ObjectSource? os)
-		=> os switch
-		{
-			ObjectSource.Custom => "Custom",
-			ObjectSource.LocomotionSteam => "Steam",
-			ObjectSource.LocomotionGoG => "GoG",
-			ObjectSource.OpenLoco => "OpenLoco",
-			null => string.Empty,
-			_ => throw new NotImplementedException($"Unsupported object source: {os}"),
-		};
-
 	public static FileSystemItem IndexEntryToFileSystemItem(ObjectIndexEntry x, string baseDirectory, FileLocation fileLocation)
 	{
 		var computedFileName = fileLocation == FileLocation.Online ? $"{x.DisplayName}-{x.Id}.dat" : x.FileName;

@@ -35,11 +35,6 @@ public class ObjectServiceModel
 
 	public async Task ReloadAsync()
 	{
-		if (client == null)
-		{
-			return;
-		}
-
 		await loadLock.WaitAsync();
 		try
 		{
@@ -66,7 +61,7 @@ public class ObjectServiceModel
 				packs = [];
 			}
 
-			Dispatcher.UIThread.Post(() =>
+			await Dispatcher.UIThread.InvokeAsync(() =>
 			{
 				Replace(AvailableLicences, licences);
 				Replace(AvailableAuthors, authors);

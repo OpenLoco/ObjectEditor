@@ -6,6 +6,7 @@ using Definitions.Database;
 using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
 using Microsoft.EntityFrameworkCore;
+using ObjectService.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -142,7 +143,7 @@ public static class DatabaseImportService
 			if (!db.Objects.Any() && File.Exists(objectMetadataJson) && Directory.Exists(settings.ObjectDirectory))
 			{
 				log("Seeding Objects");
-				var scan = Dat.Services.DatFolderScanner.ScanDirectory(settings.ObjectDirectory, logger);
+				var scan = DatFolderScanner.ScanDirectory(settings.ObjectDirectory, logger);
 				var objectMetadata = JsonSerializer.Deserialize<IEnumerable<ObjectMetadata>>(File.ReadAllText(objectMetadataJson), jsonOptions);
 				var objectMetadataDict = objectMetadata!.ToDictionary(x => x.InternalName, x => x);
 				var gameReleaseDate = new DateOnly(2004, 09, 07);

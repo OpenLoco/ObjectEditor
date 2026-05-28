@@ -21,7 +21,7 @@ namespace Gui.Services;
 // ObjectServiceClient can target it via the resolved BaseAddress.
 public sealed class EmbeddedObjectServiceHost : ReactiveObject, IAsyncDisposable
 {
-	readonly ILogger logger;
+	readonly Common.Logging.Logger logger;
 	readonly SemaphoreSlim lifecycleLock = new(1, 1);
 	WebApplication? app;
 
@@ -36,7 +36,7 @@ public sealed class EmbeddedObjectServiceHost : ReactiveObject, IAsyncDisposable
 
 	public bool IsRunning => State == EmbeddedHostState.Running;
 
-	public EmbeddedObjectServiceHost(ILogger logger)
+	public EmbeddedObjectServiceHost(Common.Logging.Logger logger)
 	{
 		this.logger = logger;
 	}
@@ -68,8 +68,12 @@ public sealed class EmbeddedObjectServiceHost : ReactiveObject, IAsyncDisposable
 
 			var builder = WebApplication.CreateBuilder();
 
-			// Suppress noisy console output from the embedded host - the GUI owns presentation.
+			// Replace the default console/debug providers with a single bridge into the
+			// GUI's LocalServerLogger so request/response activity from Kestrel + ASP.NET
+			// Core surfaces in the local-server log window. ClearProviders() alone would
+			// silence the embedded host entirely.
 			builder.Logging.ClearProviders();
+			_ = builder.Logging.AddProvider(new CommonLoggerProvider(logger));
 
 			ObjectServiceHost.ApplyOptionsToConfiguration(builder, options);
 			ObjectServiceHost.ConfigureBuilder(builder);

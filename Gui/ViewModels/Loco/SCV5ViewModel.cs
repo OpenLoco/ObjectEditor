@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using ObjectService.Services;
 
 namespace Gui.ViewModels;
 
@@ -132,7 +133,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			return;
 		}
 
-		var gameFolderScan = await Dat.Services.DatFolderScanner.ScanDirectoryAsync(folder, Logger).ConfigureAwait(true);
+		var gameFolderScan = await DatFolderScanner.ScanDirectoryAsync(folder, Logger).ConfigureAwait(true);
 		var gameFolderIndex = new ObjectIndex(gameFolderScan.Succeeded.Select(r => new ObjectIndexEntry(
 			r.DatName, r.RelativePath, null, r.DatChecksum, r.xxHash3,
 			r.ObjectType, r.ObjectSource, r.CreatedDate, r.ModifiedDate, r.VehicleType)));

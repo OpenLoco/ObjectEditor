@@ -1,18 +1,19 @@
-using Definitions;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Common;
 using Common.Logging;
 using Dat.Converters;
 using Dat.FileParsing;
-using Dat.Services;
 using Dat.Types;
+using Definitions;
 using Definitions.Database;
 using Definitions.DTO;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
+using Gui.Services;
 using Microsoft.Extensions.Logging;
+using ObjectService.Services;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
@@ -24,7 +25,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Gui.Services;
 
 namespace Gui.Models;
 
@@ -202,7 +202,8 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	// Best-effort reindex of the user's configured obj-data folder(s) into the local DB.
 	// Runs on the thread pool, swallows individual-folder errors so one bad path can't
 	// stall the whole pass.
-	async Task ReindexConfiguredFoldersAsync()	{
+	async Task ReindexConfiguredFoldersAsync()
+	{
 		try
 		{
 			var folders = new List<string>();

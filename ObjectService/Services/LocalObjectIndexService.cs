@@ -1,9 +1,8 @@
 using Definitions;
 using Definitions.Database;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
-namespace Dat.Services;
+namespace ObjectService.Services;
 
 // Database-backed local object index. Replaces the JSON-based ObjectIndex used by
 // the editor client. Each scanned .dat file becomes a TblObject (one per unique
@@ -134,7 +133,7 @@ public class LocalObjectIndexService
 				ObjectType = first.ObjectType,
 				ObjectSource = first.ObjectSource,
 				VehicleType = first.VehicleType,
-				Availability = ObjectAvailability.Unavailable,
+				Availability = ObjectAvailability.Available,
 				CreatedDate = first.CreatedDate,
 				ModifiedDate = first.ModifiedDate,
 				SubObjectId = 0,

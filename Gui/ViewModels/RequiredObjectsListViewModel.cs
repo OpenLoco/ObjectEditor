@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Common.Logging;
+using Definitions;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Gui.Models;
@@ -90,7 +91,7 @@ public class RequiredObjectsListViewModel : ReactiveObject, IDisposable
 
 	async Task AddItemAsync()
 	{
-		var objectIndex = editorContext?.ObjectIndex;
+		var objectIndex = editorContext?.GetObjectIndex(FileLocation.Local);
 		if (objectIndex == null)
 		{
 			return;

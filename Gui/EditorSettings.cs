@@ -56,7 +56,7 @@ public class EditorSettings
 	public string DownloadFolder { get; set; } = string.Empty;
 	public string CacheFolder { get; set; } = string.Empty;
 
-	public string DatabaseFile { get; set; } = LocoDbContext.DefaultDb;
+	public string DatabaseFile { get; set; } = BaseLocoDbContext.DefaultDb;
 
 	public string LocomotionSteamObjDataFolder { get; set; } = string.Empty;
 	public string LocomotionGoGObjDataFolder { get; set; } = string.Empty;

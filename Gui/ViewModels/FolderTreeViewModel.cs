@@ -496,17 +496,10 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 
 		var selectedGroup = SelectedOnlineBrowseTarget.Group;
 
-		// Objects flow through the shared ObjectIndex cache on EditorContext.
+		// Objects flow through the per-server ObjectIndex cache on EditorContext.
 		if (selectedGroup == OnlineApiEndpointGroup.Objects)
 		{
-			Action<ObjectIndex> setCachedIndex = fileLocation == FileLocation.Local
-				? idx => EditorContext.ObjectIndex = idx
-				: idx => EditorContext.ObjectIndexOnline = idx;
-			Func<ObjectIndex?> getCachedIndex = fileLocation == FileLocation.Local
-				? () => EditorContext.ObjectIndex
-				: () => EditorContext.ObjectIndexOnline;
-
-			return await GetObjectDirectoryItemsAsync(client, fileLocation, setCachedIndex, getCachedIndex, useExistingIndex);
+			return await GetObjectDirectoryItemsAsync(client, fileLocation, useExistingIndex);
 		}
 
 		var cacheKey = (selectedGroup, fileLocation);
@@ -567,8 +560,6 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 	async Task<IReadOnlyList<FileSystemItem>> GetObjectDirectoryItemsAsync(
 		ObjectServiceClient? client,
 		FileLocation fileLocation,
-		Action<ObjectIndex> setCachedIndex,
-		Func<ObjectIndex?> getCachedIndex,
 		bool useExistingIndex)
 	{
 		if (client == null)
@@ -576,7 +567,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 			return [];
 		}
 
-		var cached = getCachedIndex();
+		var cached = EditorContext.GetObjectIndex(client, fileLocation);
 		if (!useExistingIndex || cached == null)
 		{
 			var entries = (await client.GetListAsync<DtoObjectEntry>(SelectedOnlineBrowseTarget.EndpointGroup))
@@ -590,9 +581,10 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 					x.ObjectSource,
 					x.CreatedDate,
 					x.ModifiedDate,
-					x.VehicleType));
+					x.VehicleType,
+					x.Availability));
 			cached = new ObjectIndex(entries);
-			setCachedIndex(cached);
+			EditorContext.SetObjectIndex(client, fileLocation, cached);
 		}
 
 		var baseDir = fileLocation == FileLocation.Online
@@ -628,7 +620,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		// fallback - DisplayName is never null
 		computedFileName ??= x.DisplayName;
 
-		return new FileSystemItem(x.DisplayName, Path.Combine(baseDirectory, computedFileName), x.Id, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource, x.ObjectType, x.VehicleType)
+		return new FileSystemItem(x.DisplayName, Path.Combine(baseDirectory, computedFileName), x.Id, x.CreatedDate, x.ModifiedDate, fileLocation, x.ObjectSource, x.ObjectType, x.VehicleType, x.Availability)
 		{
 			DatChecksum = x.DatChecksum,
 			xxHash3 = x.xxHash3,

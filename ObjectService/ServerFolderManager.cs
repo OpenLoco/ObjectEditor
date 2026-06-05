@@ -58,7 +58,7 @@ public class ServerFolderManager : IServerFolderManager
 
 		try
 		{
-			using var db = LocoDbContext.GetDbFromFile(databasePath)
+			using var db = BaseLocoDbContext.GetDbFromFile(databasePath)
 				?? throw new FileNotFoundException($"Database file not found: {databasePath}");
 			ObjectIndex = ObjectIndex.FromDb(db);
 		}

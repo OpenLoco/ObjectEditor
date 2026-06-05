@@ -16,7 +16,8 @@ public record ObjectIndexEntry(
 	ObjectSource ObjectSource,
 	DateOnly? CreatedDate,
 	DateOnly? ModifiedDate,
-	VehicleType? VehicleType = null)
+	VehicleType? VehicleType = null,
+	ObjectAvailability Availability = ObjectAvailability.Available)
 {
 	public string SimpleText => $"{DisplayName} | {FileName}";
 }

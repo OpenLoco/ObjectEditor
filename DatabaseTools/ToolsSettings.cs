@@ -8,7 +8,7 @@ namespace DatabaseTools;
 
 public class ToolsSettings : ReactiveObject
 {
-	[Reactive] public string DatabaseFile { get; set; } = LocoDbContext.DefaultDb;
+	[Reactive] public string DatabaseFile { get; set; } = BaseLocoDbContext.DefaultDb;
 
 	[Reactive] public string ObjectDirectory { get; set; } = "Q:\\Games\\Locomotion\\Server\\Objects";
 

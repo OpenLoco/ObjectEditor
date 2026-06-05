@@ -1,3 +1,4 @@
+using Definitions;
 using Definitions.Database;
 using Definitions.ObjectModels;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -34,6 +35,7 @@ public static class ObjectServiceHost
 			["ObjectService:RootFolder"] = options.RootFolder,
 			["ObjectService:PaletteMapFile"] = options.PaletteMapFile,
 			["ObjectService:ShowScalar"] = options.ShowScalar ? "true" : "false",
+			["ObjectService:IsServer"] = options.IsServer ? "true" : "false",
 			["JwtSettings:Key"] = options.JwtKey,
 			["JwtSettings:Issuer"] = options.JwtIssuer,
 			["JwtSettings:Audience"] = options.JwtAudience,
@@ -102,6 +104,19 @@ public static class ObjectServiceHost
 				.Options;
 			await using var clientLocoDb = new ClientLocoDbContext(clientLocoOptions);
 			_ = await clientLocoDb.Database.EnsureCreatedAsync(cancellationToken);
+
+			var nonAvailableObjects = await clientLocoDb.Objects
+				.Where(x => x.Availability != ObjectAvailability.Available)
+				.ToListAsync(cancellationToken);
+			foreach (var obj in nonAvailableObjects)
+			{
+				obj.Availability = ObjectAvailability.Available;
+			}
+
+			if (nonAvailableObjects.Count > 0)
+			{
+				_ = await clientLocoDb.SaveChangesAsync(cancellationToken);
+			}
 		}
 	}
 

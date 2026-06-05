@@ -86,7 +86,8 @@ public class LocalObjectIndexService
 				d.Object.ObjectSource,
 				d.Object.CreatedDate,
 				d.Object.ModifiedDate,
-				d.Object.VehicleType))
+				d.Object.VehicleType,
+				ObjectAvailability.Available))
 			.ToListAsync(cancellationToken);
 		return new ObjectIndex(rows);
 	}

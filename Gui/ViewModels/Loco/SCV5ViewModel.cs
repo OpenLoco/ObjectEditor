@@ -127,9 +127,10 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			return;
 		}
 
-		if (EditorContext.ObjectServiceClient == null)
+		var onlineClient = EditorContext.RemoteObjectServiceClient;
+		if (onlineClient == null)
 		{
-			Logger.LogError("The object service client is null");
+			Logger.LogError("The remote object service client is null");
 			return;
 		}
 
@@ -138,13 +139,15 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			r.DatName, r.RelativePath, null, r.DatChecksum, r.xxHash3,
 			r.ObjectType, r.ObjectSource, r.CreatedDate, r.ModifiedDate, r.VehicleType)));
 
-		if (EditorContext.ObjectIndexOnline == null)
+		var onlineIndex = EditorContext.GetObjectIndex(onlineClient, FileLocation.Online);
+		if (onlineIndex == null)
 		{
 			// need to download the index, ie call /objects/list
 			Logger.LogInformation("Online index doesn't exist - downloading now");
 
-			EditorContext.ObjectIndexOnline = new ObjectIndex((await EditorContext.ObjectServiceClient.GetObjectListAsync())
-				.Select(x => new ObjectIndexEntry(x.DisplayName, null, x.Id, x.DatChecksum, null, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType)));
+			onlineIndex = new ObjectIndex((await onlineClient.GetObjectListAsync())
+				.Select(x => new ObjectIndexEntry(x.DisplayName, null, x.Id, x.DatChecksum, null, x.ObjectType, x.ObjectSource, x.CreatedDate, x.ModifiedDate, x.VehicleType, x.Availability)));
+			EditorContext.SetObjectIndex(onlineClient, FileLocation.Online, onlineIndex);
 
 			Logger.LogInformation("Index downloaded");
 			// technically should check if the index is downloaded and valid now
@@ -165,7 +168,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			// obj is missing - we need to download
 			Logger.LogInformation("Scenario {DisplayName} has missing object. Name=\"{Name}\" Checksum={DatChecksum} ObjectType={ObjectType} ", CurrentFile.DisplayName, obj.Name, obj.DatChecksum, obj.ObjectType);
 
-			var onlineObj = EditorContext.ObjectIndexOnline
+			var onlineObj = onlineIndex
 				.Objects
 				.FirstOrDefault(x => x.DisplayName == obj.Name && x.DatChecksum == obj.DatChecksum); // ideally would be SingleOrDefault but unfortunately DAT is not unique
 
@@ -179,7 +182,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 					obj.DatChecksum,
 					obj.ObjectType);
 
-				var result = await EditorContext.ObjectServiceClient.AddMissingObjectAsync(missingEntry);
+				var result = await onlineClient.AddMissingObjectAsync(missingEntry);
 				if (result != null)
 				{
 					Logger.LogInformation("Successfully added missing object to server: Id={Id} Name=\"{Name}\" Checksum=({DatChecksum})", result.Id, obj.Name, obj.DatChecksum);
@@ -199,7 +202,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 			}
 
 			// download actual file
-			var downloadedObjBytes = await EditorContext.ObjectServiceClient.GetObjectFileAsync(onlineObj.Id.Value);
+			var downloadedObjBytes = await onlineClient.GetObjectFileAsync(onlineObj.Id.Value);
 
 			if (downloadedObjBytes == null)
 			{

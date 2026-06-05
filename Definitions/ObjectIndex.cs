@@ -1,8 +1,11 @@
 using System.Collections.ObjectModel;
 using Definitions.Database;
+using Definitions.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace Definitions;
+
+public sealed record ObjectIndexKey(string Address, string Name, FileLocation FileLocation);
 
 // Thin in-memory container of ObjectIndexEntry projections. The local client
 // builds this from the SQLite DB (LocalObjectIndexService) and the server builds
@@ -10,6 +13,8 @@ namespace Definitions;
 public class ObjectIndex
 {
 	public ObservableCollection<ObjectIndexEntry> Objects { get; init; } = [];
+
+	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
 
 	public ObjectIndex()
 	{ }
@@ -54,7 +59,8 @@ public class ObjectIndex
 				d.Object.ObjectSource,
 				d.Object.CreatedDate,
 				d.Object.ModifiedDate,
-				d.Object.VehicleType))
+				d.Object.VehicleType,
+				d.Object.Availability))
 			.ToList();
 		return new ObjectIndex(rows);
 	}

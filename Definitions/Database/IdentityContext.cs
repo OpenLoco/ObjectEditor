@@ -24,7 +24,7 @@ public class IdentityContext : IdentityDbContext<TblUser, TblUserRole, UniqueObj
 		{
 			// Default to the same SQLite file used by LocoDbContext for the design-time/CLI case
 			_ = builder.UseSqlite(
-				$"Data Source={LocoDbContext.DefaultDb}",
+				$"Data Source={BaseLocoDbContext.DefaultDb}",
 				sql => sql.MigrationsHistoryTable(MigrationsHistoryTableName));
 		}
 	}

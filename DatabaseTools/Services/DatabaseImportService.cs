@@ -17,7 +17,7 @@ public static class DatabaseImportService
 	public static Task SeedAllAsync(ToolsSettings settings, Action<string> log)
 		=> Task.Run(() =>
 		{
-			using var db = LocoDbContext.GetDbFromFile(settings.DatabaseFile)
+			using var db = BaseLocoDbContext.GetDbFromFile(settings.DatabaseFile)
 				?? throw new InvalidOperationException($"Database not found at {settings.DatabaseFile}");
 
 			log($"Database: {settings.DatabaseFile}");

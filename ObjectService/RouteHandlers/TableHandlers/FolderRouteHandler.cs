@@ -37,7 +37,7 @@ public static class FolderRouteHandler
 
 		logger.LogInformation("[IndexFolder] Indexing folder \"{Path}\"", path);
 
-		LocoDbContext ContextFactory() => LocoDbContext.GetDbFromFile(sfm.DatabasePath)
+		LocoDbContext ContextFactory() => BaseLocoDbContext.GetDbFromFile(sfm.DatabasePath)
 			?? throw new FileNotFoundException($"Database file not found: {sfm.DatabasePath}");
 
 		// Scan the directory once so we can report scanned/failed counts.

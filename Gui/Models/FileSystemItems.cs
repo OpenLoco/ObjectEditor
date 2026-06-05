@@ -1,5 +1,6 @@
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
+using Definitions;
 using System;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
@@ -18,6 +19,7 @@ public record FileSystemItem(
 	ObjectSource? ObjectSource = null,
 	ObjectType? ObjectType = null,
 	VehicleType? VehicleType = null,
+	ObjectAvailability? Availability = null,
 	ObservableCollection<FileSystemItem>? SubNodes = null)
 {
 	public uint? DatChecksum { get; init; }

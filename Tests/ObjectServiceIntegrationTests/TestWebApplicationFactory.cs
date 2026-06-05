@@ -12,6 +12,13 @@ namespace ObjectService.Tests.Integration;
 public class TestWebApplicationFactory<TProgram>
 	: WebApplicationFactory<TProgram> where TProgram : class
 {
+	readonly bool isServer;
+
+	public TestWebApplicationFactory(bool isServer = true)
+	{
+		this.isServer = isServer;
+	}
+
 	static DirectoryInfo? MakeServerFolderManagerTestDirectories()
 	{
 		// parent dir
@@ -66,6 +73,7 @@ public class TestWebApplicationFactory<TProgram>
 				[
 					new("ObjectService:RootFolder", testFolder.FullName),
 					new("ObjectService:PaletteMapFile", dummyPaletteFile),
+					new("ObjectService:IsServer", isServer ? "True" : "False"),
 					new("ObjectService:ShowScalar", "False"),
 				])
 				.Build();

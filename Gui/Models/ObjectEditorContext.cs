@@ -7,7 +7,6 @@ using Dat.FileParsing;
 using Dat.Types;
 using Definitions;
 using Definitions.Database;
-using Definitions.DTO;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
@@ -34,11 +33,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public Logger Logger { get; init; }
 
-	public ObjectIndex ObjectIndex { get; set; } = new();
-
-	public ObjectIndex? ObjectIndexOnline { get; set; }
-
-	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
+	public Dictionary<ObjectIndexKey, ObjectIndex> ObjectIndexes { get; } = [];
 
 	public PaletteMap PaletteMap { get; set; } = null!;
 
@@ -152,6 +147,41 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		var address = Settings.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
 		return Uri.TryCreate(address, UriKind.Absolute, out var uri) ? uri : null;
 	}
+
+	public ObjectIndexKey GetObjectIndexKey(ObjectServiceClient client, FileLocation fileLocation, string? name = null)
+	{
+		var baseAddress = client.WebClient.BaseAddress;
+		var address = baseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+		var serverName = name ?? (fileLocation == FileLocation.Local ? "Local" : baseAddress?.Host ?? "Online");
+		return new ObjectIndexKey(address, serverName, fileLocation);
+	}
+
+	public ObjectIndex GetOrAddObjectIndex(ObjectServiceClient client, FileLocation fileLocation, string? name = null)
+	{
+		var key = GetObjectIndexKey(client, fileLocation, name);
+		if (!ObjectIndexes.TryGetValue(key, out var index))
+		{
+			index = new ObjectIndex();
+			ObjectIndexes[key] = index;
+		}
+
+		return index;
+	}
+
+	public ObjectIndex? GetObjectIndex(ObjectServiceClient client, FileLocation fileLocation, string? name = null)
+	{
+		var key = GetObjectIndexKey(client, fileLocation, name);
+		return ObjectIndexes.TryGetValue(key, out var index) ? index : null;
+	}
+
+	public ObjectIndex? GetObjectIndex(FileLocation fileLocation)
+	{
+		var client = fileLocation == FileLocation.Local ? ObjectServiceClient : RemoteObjectServiceClient;
+		return GetObjectIndex(client, fileLocation);
+	}
+
+	public void SetObjectIndex(ObjectServiceClient client, FileLocation fileLocation, ObjectIndex index, string? name = null)
+		=> ObjectIndexes[GetObjectIndexKey(client, fileLocation, name)] = index;
 
 	// Fills in sensible defaults for the embedded ObjectService when the user hasn't
 	// configured paths yet. Lets the feature work out-of-the-box from a clean settings file:
@@ -480,21 +510,23 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		if (!OnlineCache.TryGetValue(filesystemItem.Id.Value, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
+		// Pick the client by FileLocation: Local items came from the embedded server,
+		// Online items came from the remote master. The GUI treats them uniformly,
+		// but each must round-trip back to its originating server.
+		var fileLocation = filesystemItem.FileLocation ?? FileLocation.Local;
+		var client = fileLocation == FileLocation.Online
+			? RemoteObjectServiceClient
+			: ObjectServiceClient;
+
+		if (client == null)
 		{
-			// Pick the client by FileLocation: Local items came from the embedded server,
-			// Online items came from the remote master. The GUI treats them uniformly,
-			// but each must round-trip back to its originating server.
-			var client = filesystemItem.FileLocation == FileLocation.Online
-				? RemoteObjectServiceClient
-				: ObjectServiceClient;
+			Logger.LogError("Object service client is null");
+			return false;
+		}
 
-			if (client == null)
-			{
-				Logger.LogError("Object service client is null");
-				return false;
-			}
-
+		var objectIndex = GetOrAddObjectIndex(client, fileLocation);
+		if (!objectIndex.OnlineCache.TryGetValue(filesystemItem.Id.Value, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
+		{
 			Logger.LogDebug("Didn't find object {DisplayName} with unique id {Id} in cache - downloading it from {BaseAddress}", filesystemItem.DisplayName, filesystemItem.Id, client.WebClient.BaseAddress);
 
 			// Synchronous bridge: TryLoadObject is a sync API used by many callers, so we must
@@ -554,7 +586,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			Logger.LogInformation("Downloaded object \"{DisplayName}\" with unique id {Id} and added it to the local cache", filesystemItem.DisplayName, filesystemItem.Id);
 			Logger.LogDebug("{DisplayName} has authors=[{Value}], tags=[{Value2}], objectpacks=[{Value3}], licence={Licence} datobjects=[{Value4}]", filesystemItem.DisplayName, string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? []), string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? []), string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? []), cachedLocoObjDto?.Licence, string.Join(",", cachedLocoObjDto?.DatObjects?.Select(x => x.DatName) ?? []));
 
-			OnlineCache.Add(filesystemItem.Id.Value, cachedLocoObjDto!);
+			objectIndex.OnlineCache.Add(filesystemItem.Id.Value, cachedLocoObjDto!);
 		}
 		else
 		{
@@ -641,7 +673,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		{
 			CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
 			ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset(),
-			Availability = Definitions.ObjectAvailability.Available,
+			Availability = ObjectAvailability.Available,
 			//DatObjects = [new(0)],
 		}; // todo: look up the rest of the data from internet
 
@@ -693,17 +725,18 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.Save(SettingsFile, Logger);
 
 		var indexService = new LocalObjectIndexService(
-			() => LocoDbContext.GetDbFromFile(Settings.DatabaseFile)
+			() => BaseLocoDbContext.GetDbFromFile(Settings.DatabaseFile)
 				?? throw new FileNotFoundException($"Database file not found: {Settings.DatabaseFile}"),
 			Logger);
 
 		if (useExistingIndex)
 		{
-			ObjectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
-			Logger.LogInformation("Loaded index for {Directory} with {Count} objects from {Db}.", directory, ObjectIndex.Objects.Count, Settings.DatabaseFile);
+			var objectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
+			SetObjectIndex(ObjectServiceClient, FileLocation.Local, objectIndex);
+			Logger.LogInformation("Loaded index for {Directory} with {Count} objects from {Db}.", directory, objectIndex.Objects.Count, Settings.DatabaseFile);
 
 			// Reconcile against on-disk files; rescan deltas.
-			var indexed = ObjectIndex.Objects.Select(x => x.FileName).Where(x => !string.IsNullOrEmpty(x)).Cast<string>().ToHashSet();
+			var indexed = objectIndex.Objects.Select(x => x.FileName).Where(x => !string.IsNullOrEmpty(x)).Cast<string>().ToHashSet();
 			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
 			var added = allFiles.Except(indexed).ToList();
 			var removed = indexed.Except(allFiles).ToList();
@@ -713,30 +746,39 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				Logger.LogWarning("Objects in index but not on disk: {Value}", string.Join(',', removed));
 				Logger.LogWarning("Objects on disk but not in index: {Value}", string.Join(',', added));
 				await indexService.RebuildFromFolderAsync(directory, progress).ConfigureAwait(false);
-				ObjectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
+				objectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
+				SetObjectIndex(ObjectServiceClient, FileLocation.Local, objectIndex);
 			}
 		}
 		else
 		{
 			Logger.LogInformation("Rebuilding index for {Directory}", directory);
 			await indexService.RebuildFromFolderAsync(directory, progress).ConfigureAwait(false);
-			ObjectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
-			Logger.LogInformation("New index has {Count} objects.", ObjectIndex.Objects.Count);
+			var objectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
+			SetObjectIndex(ObjectServiceClient, FileLocation.Local, objectIndex);
+			Logger.LogInformation("New index has {Count} objects.", objectIndex.Objects.Count);
 		}
 	}
 
 	public async Task CheckForDatFilesNotOnServer()
 	{
-		if (ObjectIndex == null || ObjectIndexOnline == null || ObjectIndexOnline.Objects.Count == 0)
+		var localIndexes = ObjectIndexes.Where(x => x.Key.FileLocation == FileLocation.Local).Select(x => x.Value).ToList();
+		var onlineIndexes = ObjectIndexes.Where(x => x.Key.FileLocation == FileLocation.Online && x.Value.Objects.Count > 0).ToList();
+		if (localIndexes.Count == 0 || onlineIndexes.Count == 0)
 		{
 			return;
 		}
 
 		Logger.LogDebug("Comparing local objects to object repository");
 
-		var localButNotOnline = ObjectIndex.Objects.ExceptBy(ObjectIndexOnline.Objects.Select(
-			x => (x.DisplayName, x.DatChecksum)),
-			x => (x.DisplayName, x.DatChecksum)).ToList();
+		var onlineKeys = onlineIndexes
+			.SelectMany(x => x.Value.Objects)
+			.Select(x => (x.DisplayName, x.DatChecksum))
+			.ToHashSet();
+		var localButNotOnline = localIndexes
+			.SelectMany(x => x.Objects)
+			.ExceptBy(onlineKeys, x => (x.DisplayName, x.DatChecksum))
+			.ToList();
 
 		if (localButNotOnline.Count != 0)
 		{

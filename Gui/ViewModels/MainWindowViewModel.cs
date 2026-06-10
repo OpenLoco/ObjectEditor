@@ -207,7 +207,7 @@ public class MainWindowViewModel : ViewModelBase
 		}
 		catch (Exception ex)
 		{
-			EditorContext.Logger.Error(ex);
+			EditorContext.Logger.LogError(ex, "Unable to get latest version info");
 		}
 	}
 #endif

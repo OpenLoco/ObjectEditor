@@ -408,6 +408,11 @@ public static class ImageTableGrouper
 		yield return new("truck", imageList[450..458]);
 		yield return new("ship", imageList[458..466]);
 		yield return new("toolbar-map", imageList[466..470]);
+
+		// custom images added by OG
+		yield return new("high-res-logo", imageList[470..471]);
+		yield return new("blueprints", imageList[471..490]);
+		yield return new("<uncategorised>", imageList[490..]);
 	}
 
 	private static IEnumerable<ImageTableGroup> CreateScaffoldingGroups(List<GraphicsElement> imageList)

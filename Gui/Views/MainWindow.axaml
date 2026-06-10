@@ -166,7 +166,7 @@
 		</DataTemplate>
 	</Window.DataTemplates>
 	<DockPanel>
-		<vi:OperationQueuePanel DockPanel.Dock="Bottom" DataContext="{Binding OperationQueue}"/>
+		<vi:OperationQueuePanel DockPanel.Dock="Right" DataContext="{Binding OperationQueue}"/>
 		<DockPanel>
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>

@@ -60,7 +60,7 @@ public static class ImageTableGrouper
 			case ObjectType.LevelCrossing:
 				return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.StreetLight:
-				return CreateStreetLightGroups(imageList);
+				return CreateGroupsFromConfig(ObjectType.StreetLight, imageList);
 			case ObjectType.Tunnel:
 				return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.Bridge:
@@ -78,13 +78,13 @@ public static class ImageTableGrouper
 			case ObjectType.Road:
 				return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.Airport:
-				return CreateAirportGroups(imageList);
+				return CreateGroupsFromConfig(ObjectType.Airport, imageList);
 			case ObjectType.Dock:
-				return CreateDockGroups(imageList);
+				return CreateGroupsFromConfig(ObjectType.Dock, imageList);
 			case ObjectType.Vehicle:
 				return CreateVehicleGroups((VehicleObject)obj, imageList);
 			case ObjectType.Tree:
-				return CreateTreeGroups(imageList);
+				return CreateGroupsFromConfig(ObjectType.Tree, imageList);
 			case ObjectType.Snow:
 				return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.Climate:
@@ -92,9 +92,9 @@ public static class ImageTableGrouper
 			case ObjectType.HillShapes:
 				return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.Building:
-				return CreateBuildingGroups(imageList);
+				return CreateGroupsFromConfig(ObjectType.Building, imageList);
 			case ObjectType.Industry:
-				return CreateBuildingGroups(imageList);
+				return CreateGroupsFromConfig(ObjectType.Industry, imageList);
 			case ObjectType.Region:
 				return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.Competitor:
@@ -150,13 +150,40 @@ public static class ImageTableGrouper
 				continue; // no images for this group
 			}
 
-			if (nextStart > imageList.Count)
+			if (current.ChunkSize is null)
 			{
-				yield return new("<uncategorised>", imageList[current.Start..actualEnd]);
-				break;
+				if (nextStart > imageList.Count)
+				{
+					yield return new("<uncategorised>", imageList[current.Start..actualEnd]);
+					break;
+				}
+
+				yield return new(current.Name, imageList[current.Start..actualEnd]);
+				continue;
 			}
 
-			yield return new(current.Name, imageList[current.Start..actualEnd]);
+			if (current.ChunkSize <= 0)
+			{
+				continue;
+			}
+
+			var actualChunkSize = current.ChunkSize.Value;
+			var chunkIndex = 0;
+			for (var chunkStart = current.Start; chunkStart < actualEnd; chunkStart += actualChunkSize)
+			{
+				var chunkEnd = Math.Min(chunkStart + actualChunkSize, actualEnd);
+				var chunkName = current.Name.Contains("{i}")
+					? current.Name.Replace("{i}", chunkIndex.ToString())
+					: current.Name;
+
+				yield return new(chunkName, imageList[chunkStart..chunkEnd]);
+				chunkIndex++;
+			}
+
+			if (nextStart > imageList.Count)
+			{
+				break;
+			}
 		}
 	}
 
@@ -184,24 +211,6 @@ public static class ImageTableGrouper
 	}
 
 	private static IReadOnlyDictionary<ObjectType, ImageTableGroupConfiguration> GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfiguration>();
-
-	private static IEnumerable<ImageTableGroup> CreateAirportGroups(List<GraphicsElement> imageList)
-	{
-		yield return new("preview", imageList[0..1]);
-
-		foreach (var group in imageList
-			.Skip(1)
-			.Chunk(4)
-			.Select((x, i) => new ImageTableGroup($"Part {i}", [.. x])))
-		{
-			yield return group;
-		}
-	}
-
-	private static IEnumerable<ImageTableGroup> CreateBuildingGroups(List<GraphicsElement> imageList)
-		=> imageList
-			.Chunk(4)
-			.Select((x, i) => new ImageTableGroup($"Part {i}", [.. x]));
 
 	private static IEnumerable<ImageTableGroup> CreateCompetitorGroups(CompetitorObject model, List<GraphicsElement> imageList)
 	{
@@ -409,26 +418,4 @@ public static class ImageTableGrouper
 		}
 	}
 
-	private static IEnumerable<ImageTableGroup> CreateDockGroups(List<GraphicsElement> imageList)
-	{
-		yield return new("preview", [imageList[0]]);
-
-		foreach (var group in imageList
-			.Skip(1)
-			.Chunk(4)
-			.Select((x, i) => new ImageTableGroup($"Part {i}", [.. x])))
-		{
-			yield return group;
-		}
-	}
-
-	private static IEnumerable<ImageTableGroup> CreateStreetLightGroups(List<GraphicsElement> imageList)
-		=> imageList
-			.Chunk(4)
-			.Select((x, i) => new ImageTableGroup($"Year group {i}", [.. x]));
-
-	private static IEnumerable<ImageTableGroup> CreateTreeGroups(List<GraphicsElement> imageList)
-		=> imageList
-			.Chunk(4)
-			.Select((x, i) => new ImageTableGroup($"Variation {i}", [.. x]));
 }

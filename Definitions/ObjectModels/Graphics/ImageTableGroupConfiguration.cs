@@ -4,7 +4,8 @@ namespace Definitions.ObjectModels.Graphics;
 
 internal sealed record ImageTableGroupDefinition(
 	[property: JsonPropertyName("name")] string Name,
-	[property: JsonPropertyName("start")] int Start
+	[property: JsonPropertyName("start")] int Start,
+	[property: JsonPropertyName("chunkSize")] int? ChunkSize = null
 );
 
 internal sealed record ImageTableGroupConfiguration(

@@ -89,6 +89,36 @@
         ]
     },
     {
+        "objectType": "StreetLight",
+        "groups": [{ "name": "Year group {i}", "start": 0, "chunkSize": 4 }]
+    },
+    {
+        "objectType": "Tree",
+        "groups": [{ "name": "Variation {i}", "start": 0, "chunkSize": 4 }]
+    },
+    {
+        "objectType": "Dock",
+        "groups": [
+            { "name": "preview", "start": 0 },
+            { "name": "Part {i}", "start": 1, "chunkSize": 4 }
+        ]
+    },
+    {
+        "objectType": "Airport",
+        "groups": [
+            { "name": "preview", "start": 0 },
+            { "name": "Part {i}", "start": 1, "chunkSize": 4 }
+        ]
+    },
+    {
+        "objectType": "Building",
+        "groups": [{ "name": "Part {i}", "start": 0, "chunkSize": 4 }]
+    },
+    {
+        "objectType": "Industry",
+        "groups": [{ "name": "Part {i}", "start": 0, "chunkSize": 4 }]
+    },
+    {
         "objectType": "Scaffolding",
         "groups": [
             { "name": "type 0", "start": 0 },

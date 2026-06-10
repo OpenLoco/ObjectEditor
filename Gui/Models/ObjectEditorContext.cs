@@ -6,6 +6,7 @@ using Dat.FileParsing;
 using Dat.Types;
 using Definitions.DTO;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Index;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -79,6 +81,10 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.ObjectIndicesFolder = InitialiseDirectory(Settings.ObjectIndicesFolder, "objectIndices");
 		Settings.CacheFolder = InitialiseDirectory(Settings.CacheFolder, "cache");
 		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
+		Settings.ConfigFolder = InitialiseDirectory(Settings.ConfigFolder, "config");
+
+		EnsureDefaultImageTableGroupConfigExists(Settings.ConfigFolder);
+		ImageTableGrouper.LoadGroupConfigurationFile(Path.Combine(Settings.ConfigFolder, "ImageTableGroups.json"));
 
 		ObjectServiceClient = new(Settings, Logger);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
@@ -153,6 +159,34 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		}
 
 		return folder;
+	}
+
+	void EnsureDefaultImageTableGroupConfigExists(string configFolder)
+	{
+		var configFilePath = Path.Combine(configFolder, "ImageTableGroups.json");
+		if (File.Exists(configFilePath))
+		{
+			return;
+		}
+
+		try
+		{
+			using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Gui.ImageTableGroups.json");
+			if (stream == null)
+			{
+				Logger.LogError("Default image table group configuration resource not found.");
+				return;
+			}
+
+			using var reader = new StreamReader(stream);
+			var text = reader.ReadToEnd();
+			File.WriteAllText(configFilePath, text);
+			Logger.LogInformation("Copied default ImageTableGroups.json to {ConfigFilePath}", configFilePath);
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Failed to create default ImageTableGroups.json at {ConfigFilePath}", configFilePath);
+		}
 	}
 
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)

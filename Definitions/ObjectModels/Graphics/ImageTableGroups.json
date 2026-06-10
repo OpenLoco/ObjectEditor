@@ -1,0 +1,100 @@
+[
+    {
+        "objectType": "InterfaceSkin",
+        "groups": [
+            { "name": "preview", "start": 0 },
+            { "name": "toolbar", "start": 1 },
+            { "name": "build-vehicle", "start": 31 },
+            { "name": "toolbar", "start": 43 },
+            { "name": "paint", "start": 49 },
+            { "name": "population", "start": 57 },
+            { "name": "performance-index", "start": 65 },
+            { "name": "cargo-units", "start": 73 },
+            { "name": "cargo-distance", "start": 81 },
+            { "name": "production", "start": 89 },
+            { "name": "wrench", "start": 97 },
+            { "name": "finances", "start": 113 },
+            { "name": "cup", "start": 129 },
+            { "name": "ratings", "start": 145 },
+            { "name": "transported", "start": 161 },
+            { "name": "cogs", "start": 168 },
+            { "name": "toolbar", "start": 172 },
+            { "name": "tab-train", "start": 203 },
+            { "name": "tab-aircraft", "start": 211 },
+            { "name": "tab-bus", "start": 219 },
+            { "name": "tab-tram", "start": 227 },
+            { "name": "tab-truck", "start": 235 },
+            { "name": "tab-ship", "start": 243 },
+            { "name": "build-train", "start": 251 },
+            { "name": "build-aircraft", "start": 267 },
+            { "name": "build-bus", "start": 283 },
+            { "name": "build-tram", "start": 299 },
+            { "name": "build-truck", "start": 315 },
+            { "name": "build-ship", "start": 331 },
+            { "name": "build-industry", "start": 347 },
+            { "name": "build-town", "start": 363 },
+            { "name": "build-buildings", "start": 379 },
+            { "name": "build-misc-buildings", "start": 395 },
+            { "name": "build-extra", "start": 411 },
+            { "name": "train", "start": 418 },
+            { "name": "aircraft", "start": 426 },
+            { "name": "bus", "start": 434 },
+            { "name": "tram", "start": 442 },
+            { "name": "truck", "start": 450 },
+            { "name": "ship", "start": 458 },
+            { "name": "toolbar-map", "start": 466 },
+            { "name": "high-res-logo", "start": 470 },
+            { "name": "blueprints", "start": 471 },
+            { "name": "<uncategorised>", "start": 490 }
+        ]
+    },
+    {
+        "objectType": "Water",
+        "groups": [
+            { "name": "zoom 1", "start": 0 },
+            { "name": "zoom 2", "start": 10 },
+            { "name": "zoom 3", "start": 20 },
+            { "name": "zoom 4", "start": 30 },
+            { "name": "palettes", "start": 40 },
+            { "name": "icon-animation", "start": 42 },
+            { "name": "icon-interaction", "start": 58 },
+            { "name": "animation", "start": 60 },
+            { "name": "<uncategorised>", "start": 76 }
+        ]
+    },
+    {
+        "objectType": "Bridge",
+        "groups": [
+            { "name": "preview", "start": 0 },
+            { "name": "base plates", "start": 1 },
+            { "name": "unk", "start": 6 },
+            { "name": "<uncategorised>", "start": 12 }
+        ]
+    },
+    {
+        "objectType": "Cargo",
+        "groups": [
+            { "name": "preview", "start": 0 },
+            { "name": "station variations", "start": 1 }
+        ]
+    },
+    {
+        "objectType": "CliffEdge",
+        "groups": [
+            { "name": "left west", "start": 0 },
+            { "name": "right east", "start": 16 },
+            { "name": "right west", "start": 32 },
+            { "name": "left east", "start": 48 },
+            { "name": "far-side slopes", "start": 64 }
+        ]
+    },
+    {
+        "objectType": "Scaffolding",
+        "groups": [
+            { "name": "type 0", "start": 0 },
+            { "name": "type 1", "start": 10 },
+            { "name": "type 2", "start": 24 },
+            { "name": "<uncategorised>", "start": 36 }
+        ]
+    }
+]

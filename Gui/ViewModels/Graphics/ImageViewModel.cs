@@ -280,7 +280,8 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 		{
 			subscriptions.Dispose();
 			DisplayedImage?.Dispose();
-			Model.Image?.Dispose();
+			// The underlying GraphicsElement image is owned by the model and may be shared across view models.
+			// Do not dispose it here during regrouping.
 		}
 
 		disposed = true;

@@ -31,6 +31,16 @@ public static class ImageTableGrouper
 		return imageTable;
 	}
 
+public static IEnumerable<ImageTableGroup> CreateGroupsForExistingImages(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
+{
+	var originalCount = imageList.Count;
+	var groups = CreateGroups(obj, objectType, imageList).ToList();
+
+	Debug.Assert(groups.SelectMany(g => g.GraphicsElements).Count() == originalCount, "Image grouping lost or gained images");
+
+	return groups;
+}
+
 	private static IEnumerable<ImageTableGroup> CreateGroups(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
 	{
 		switch (objectType)

@@ -52,6 +52,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public const string ApplicationName = "OpenLoco Object Editor";
 	public const string LoggingFileName = "objectEditor.log";
+	public const string ImageTableGroupsConfigFileName = "ImageTableGroups.json";
 
 	// stores settings.json, objectEditor.log, etc
 	public static string ProgramDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
@@ -84,7 +85,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.ConfigFolder = InitialiseDirectory(Settings.ConfigFolder, "config");
 
 		EnsureDefaultImageTableGroupConfigExists(Settings.ConfigFolder);
-		ImageTableGrouper.LoadGroupConfigurationFile(Path.Combine(Settings.ConfigFolder, "ImageTableGroups.json"));
+		ImageTableGrouper.LoadGroupConfigurationFile(Path.Combine(Settings.ConfigFolder, ImageTableGroupsConfigFileName));
 
 		ObjectServiceClient = new(Settings, Logger);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
@@ -163,7 +164,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	void EnsureDefaultImageTableGroupConfigExists(string configFolder)
 	{
-		var configFilePath = Path.Combine(configFolder, "ImageTableGroups.json");
+		var configFilePath = Path.Combine(configFolder, ImageTableGroupsConfigFileName);
 		if (File.Exists(configFilePath))
 		{
 			return;
@@ -181,11 +182,11 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			using var reader = new StreamReader(stream);
 			var text = reader.ReadToEnd();
 			File.WriteAllText(configFilePath, text);
-			Logger.LogInformation("Copied default ImageTableGroups.json to {ConfigFilePath}", configFilePath);
+			Logger.LogInformation("Copied default {ImageTableGroupsConfigFileName} to {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Failed to create default ImageTableGroups.json at {ConfigFilePath}", configFilePath);
+			Logger.LogError(ex, "Failed to create default {ImageTableGroupsConfigFileName} at {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
 		}
 	}
 

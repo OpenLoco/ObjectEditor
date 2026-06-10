@@ -283,7 +283,8 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 					if (Model.LocoObject.ImageTable != null)
 					{
-						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger), mediaGroup);
+						var configFilePath = Path.Combine(EditorContext.Settings.ConfigFolder, ObjectEditorContext.ImageTableGroupsConfigFileName);
+						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, Model.LocoObject.ObjectType, Model.LocoObject.Object, configFilePath), mediaGroup);
 
 						var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
 						if (bc != null)

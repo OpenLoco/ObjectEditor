@@ -28,12 +28,17 @@ x:DataType="vmg:ImageTableViewModel">
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
 			<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8" Text="{Binding ImageCount}" />
-			<Button Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import a directory of .pngs">
+			<SplitButton Command="{Binding ImportImagesCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Import a directory of .pngs">
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="FolderUpload" Width="24" Height="24" Margin="2" />
 					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Import</TextBlock>
 				</DockPanel>
-			</Button>
+				<SplitButton.Flyout>
+					<MenuFlyout Placement="BottomEdgeAlignedRight">
+						<MenuItem Header="Import json offsets" Command="{Binding ImportJsonOffsetsCommand}" ToolTip.Tip="Import only the sprites.json offsets" />
+					</MenuFlyout>
+				</SplitButton.Flyout>
+			</SplitButton>
 			<SplitButton Command="{Binding ExportImagesCommand}" CommandParameter="{x:False}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Export all images as .pngs to a directory, using the image table index as the filename">
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="FolderDownload" Width="24" Height="24" Margin="2" />

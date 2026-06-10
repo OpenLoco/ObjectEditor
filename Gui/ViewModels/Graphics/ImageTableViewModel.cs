@@ -46,6 +46,9 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 	public ICommand ImportImagesCommand { get; set; }
 
 	[Reactive]
+	public ICommand ImportJsonOffsetsCommand { get; set; }
+
+	[Reactive]
 	public ICommand ExportImagesCommand { get; set; }
 
 	[Reactive]
@@ -129,13 +132,14 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			.Subscribe(_ => this.RaisePropertyChanged(nameof(ImageCount)))
 			.DisposeWith(subscriptions);
 
-		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImages);
-		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImages);
-		ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImage);
+		ImportImagesCommand = ReactiveCommand.CreateFromTask(ImportImagesAsync);
+		ImportJsonOffsetsCommand = ReactiveCommand.CreateFromTask(ImportJsonOffsetsAsync);
+		ExportImagesCommand = ReactiveCommand.CreateFromTask<bool>(ExportImagesAsync);
+		ReplaceImageCommand = ReactiveCommand.CreateFromTask(ReplaceImageAsync);
 		CropImageCommand = ReactiveCommand.Create(CropImage);
-		DeleteImageCommand = ReactiveCommand.CreateFromTask(DeleteImage);
-		InsertImageAtCommand = ReactiveCommand.CreateFromTask<bool>(InsertImageAt);
-		AppendImageCommand = ReactiveCommand.CreateFromTask<string>(AppendImage);
+		DeleteImageCommand = ReactiveCommand.CreateFromTask(DeleteImageAsync);
+		InsertImageAtCommand = ReactiveCommand.CreateFromTask<bool>(InsertImageAtAsync);
+		AppendImageCommand = ReactiveCommand.CreateFromTask<string>(AppendImageAsync);
 		CropAllImagesCommand = ReactiveCommand.Create(CropAllImages);
 
 		ZeroOffsetAllImagesCommand = ReactiveCommand.Create(() =>
@@ -257,7 +261,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		SelectionModel.Clear();
 	}
 
-	public async Task ImportImages()
+	public async Task ImportImagesAsync()
 	{
 		animationTimer.Stop();
 
@@ -270,13 +274,32 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			}
 
 			var dirPath = dir.Path.LocalPath;
-			await ImportImages(dirPath);
+			await ImportImagesAsync(dirPath);
 		}
 
 		animationTimer.Start();
 	}
 
-	public async Task ExportImages(bool prependGroupAndImageNameInFilename)
+	public async Task ImportJsonOffsetsAsync()
+	{
+		animationTimer.Stop();
+
+		var files = await PlatformSpecific.OpenFilePicker(PlatformSpecific.JsonFileTypes);
+		using (var file = files.FirstOrDefault())
+		{
+			if (file == null)
+			{
+				return;
+			}
+
+			var dirPath = file.Path.LocalPath;
+			await ImportSpritesJsonAsync(dirPath);
+		}
+
+		animationTimer.Start();
+	}
+
+	public async Task ExportImagesAsync(bool prependGroupAndImageNameInFilename)
 	{
 		var folders = await PlatformSpecific.OpenFolderPicker();
 		var dir = folders.FirstOrDefault();
@@ -289,7 +312,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		await ExportImages(dirPath, prependGroupAndImageNameInFilename);
 	}
 
-	public async Task ReplaceImage()
+	public async Task ReplaceImageAsync()
 	{
 		var openFile = await PlatformSpecific.OpenFilePicker(PlatformSpecific.PngFileTypes);
 		if (openFile == null)
@@ -306,7 +329,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		_ = SelectedImage?.UnderlyingImage = Image.Load<Rgba32>(filename);
 	}
 
-	public async Task DeleteImage()
+	public async Task DeleteImageAsync()
 	{
 		if (SelectedImage == null)
 		{
@@ -320,7 +343,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		await Task.CompletedTask;
 	}
 
-	private async Task AppendImage(string groupName)
+	private async Task AppendImageAsync(string groupName)
 	{
 		var group = Model.Groups.FirstOrDefault(x => x.Name == groupName);
 
@@ -330,15 +353,14 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			return;
 		}
 
-		// this doesn't work
-		// because the groups don't store which indices they own, then
+		// this doesn't work, because the groups don't store which indices they own, then
 		// if a group is ever empty we can't ever add something into it with the correct index
 		group.GraphicsElements.Add(ImageTableHelpers.GetErrorGraphicsElement(Model.Groups.Sum(x => x.GraphicsElements.Count)));
 		RecreateViewModelGroupsFromImageTable(Model);
 		await Task.CompletedTask;
 	}
 
-	private async Task InsertImageAt(bool insertBefore)
+	private async Task InsertImageAtAsync(bool insertBefore)
 	{
 		if (SelectedImage == null)
 		{
@@ -378,7 +400,74 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		return result.Length == 0 ? "0" : result;
 	}
 
-	async Task ImportImages(string directory)
+	async Task ImportSpritesJsonAsync(string filename)
+	{
+		var offsets = await LoadSpritesJsonFileAsync(filename);
+		if (offsets == null)
+		{
+			Logger.LogError("Failed to load offsets from {Filename}", filename);
+			return;
+		}
+
+		var itvms = GroupedImageViewModels.SelectMany(x => x.Images).ToList();
+
+		foreach (var (offset, i) in offsets.Select((o, index) => (o, index)))
+		{
+			if (itvms.Count <= i)
+			{
+				Logger.LogError("Offset for Image[{Index}] is provided in the sprites.json file, but only {Count} images are available in the current image table. This offset will be skipped.", i, itvms.Count);
+				continue;
+			}
+			var ivm = itvms[i];
+			if (ivm == null)
+			{
+				Logger.LogError("Image[{Index}] is not found in the current image table.", i);
+				continue;
+			}
+
+			ivm.XOffset = offset.XOffset;
+			ivm.YOffset = offset.YOffset;
+		}
+	}
+
+	async Task<ICollection<GraphicsElementJson>?> LoadSpritesJsonFileAsync(string filename)
+	{
+		if (!File.Exists(filename))
+		{
+			return null;
+		}
+
+		var offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(filename) ?? null;
+		Logger.LogDebug("Found sprites.json file with {Count} images", offsets?.Count ?? 0);
+		return offsets;
+	}
+
+	async Task<ICollection<GraphicsElementJson>> LoadOffsetsAsync(string directory)
+	{
+		if (string.IsNullOrEmpty(directory))
+		{
+			Logger.LogError("Directory is invalid: \"{Directory}\"", directory);
+			return Array.Empty<GraphicsElementJson>();
+		}
+
+		var offsetsFile = Path.Combine(directory, "sprites.json");
+		var offsets = await LoadSpritesJsonFileAsync(offsetsFile);
+		if (offsets == null)
+		{
+			var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
+			var sanitised = files.Select(TrimZeroes).ToList();
+
+			offsets = [.. GroupedImageViewModels.SelectMany(x => x.Images)
+				.Select((x, i) => new GraphicsElementJson(sanitised[i], x.XOffset, x.YOffset, x.Name))
+				.Fill(files.Length, GraphicsElementJson.Zero)];
+
+			Logger.LogDebug("Didn't find sprites.json file, using existing GraphicsElement offsets with {Count} images", offsets.Count);
+		}
+
+		return offsets ?? [];
+	}
+
+	async Task ImportImagesAsync(string directory)
 	{
 		if (string.IsNullOrEmpty(directory))
 		{
@@ -398,29 +487,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 		try
 		{
-			ICollection<GraphicsElementJson> offsets;
-
-			// check for offsets file
-			var offsetsFile = Path.Combine(directory, "sprites.json");
-			if (File.Exists(offsetsFile))
-			{
-				offsets = await JsonFile.DeserializeFromFileAsync<ICollection<GraphicsElementJson>>(offsetsFile) ?? []; // sprites.json is an unnamed array so we need ICollection here, not IEnumerable
-				ArgumentNullException.ThrowIfNull(offsets);
-				Logger.LogDebug("Found sprites.json file with {Count} images", offsets.Count);
-			}
-			else
-			{
-				var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
-				var sanitised = files.Select(TrimZeroes).ToList();
-
-				offsets = [.. GroupedImageViewModels.SelectMany(x => x.Images)
-					.Select((x, i) => new GraphicsElementJson(sanitised[i], x.XOffset, x.YOffset, x.Name))
-					.Fill(files.Length, GraphicsElementJson.Zero)];
-
-				Logger.LogDebug("Didn't find sprites.json file, using existing GraphicsElement offsets with {Count} images", offsets.Count);
-			}
-
-			var all = GroupedImageViewModels.SelectMany(x => x.Images).ToList();
+			var offsets = await LoadOffsetsAsync(directory);
 
 			// load files
 			var importedImages = new List<GraphicsElement>();

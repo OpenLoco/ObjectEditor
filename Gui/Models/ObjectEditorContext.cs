@@ -8,6 +8,7 @@ using Definitions.DTO;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
+using Gui.ViewModels;
 using Index;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
@@ -59,6 +60,16 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	public ObservableCollection<LogLine> LoggerObservableLogs { get; init; } = [];
 
 	public ObjectServiceClient ObjectServiceClient { get; init; }
+
+	/// <summary>
+	/// Central queue for long-running operations (indexing, downloads, file load/save,
+	/// image batch ops, etc). Operations are enqueued as <see cref="Operations.IOperation"/>
+	/// instances; the queue handles concurrency, cancellation, and surfacing progress in
+	/// the bottom-of-window panel. View-models should not contain any progress UI of their
+	/// own &mdash; just enqueue and (optionally) await the returned handle's
+	/// <see cref="Operations.OperationHandle.Completion"/>.
+	/// </summary>
+	public OperationQueueViewModel OperationQueue { get; } = new();
 
 	public ObjectServiceModel ObjectServiceModel { get; init; }
 

@@ -7,7 +7,7 @@ namespace Gui.ViewModels;
 public class ScoresViewModel : BaseFileViewModel<DummyModel>
 {
 	public ScoresViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
-		: base(currentFile, editorContext) => Load();
+		: base(currentFile, editorContext) => _ = LoadAsync();
 
 	public override void Load()
 		=> Logger.LogInformation("Loading scores from {FileName}", CurrentFile.FileName);

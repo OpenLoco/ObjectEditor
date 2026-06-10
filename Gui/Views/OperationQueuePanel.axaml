@@ -1,0 +1,94 @@
+<UserControl
+	x:Class="Gui.Views.OperationQueuePanel"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:mo="using:Gui.Models.Operations"
+	xmlns:vm="using:Gui.ViewModels"
+	d:DesignHeight="120"
+	d:DesignWidth="900"
+	x:DataType="vm:OperationQueueViewModel"
+	mc:Ignorable="d">
+
+	<Design.DataContext>
+		<vm:OperationQueueViewModel/>
+	</Design.DataContext>
+
+	<Border
+		Padding="4"
+		Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+		BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+		BorderThickness="0,1,0,0"
+		IsVisible="{Binding Operations.Count}">
+		<ItemsControl ItemsSource="{Binding Operations}">
+			<ItemsControl.ItemTemplate>
+				<DataTemplate DataType="mo:OperationHandle">
+					<Border
+						Margin="2"
+						Padding="8,4"
+						Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+						CornerRadius="4">
+						<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+							<TextBlock
+								Grid.Row="0"
+								Grid.Column="0"
+								FontWeight="SemiBold"
+								Text="{Binding Title}"
+								TextTrimming="CharacterEllipsis"/>
+
+							<TextBlock
+								Grid.Row="1"
+								Grid.Column="0"
+								FontSize="11"
+								IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+								Opacity="0.75"
+								Text="{Binding StatusMessage}"
+								TextTrimming="CharacterEllipsis"/>
+
+							<TextBlock
+								Grid.Row="1"
+								Grid.Column="0"
+								FontSize="11"
+								Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
+								IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+								Text="{Binding ErrorMessage}"
+								TextTrimming="CharacterEllipsis"/>
+
+							<ProgressBar
+								Grid.Row="2"
+								Grid.Column="0"
+								Height="6"
+								Margin="0,4,0,0"
+								IsIndeterminate="{Binding IsIndeterminate}"
+								Maximum="100"
+								Minimum="0"
+								Value="{Binding Progress}"/>
+
+							<StackPanel
+								Grid.Row="0"
+								Grid.RowSpan="3"
+								Grid.Column="1"
+								Margin="8,0,0,0"
+								Orientation="Horizontal"
+								Spacing="4"
+								VerticalAlignment="Center">
+								<TextBlock
+									FontSize="11"
+									IsVisible="{Binding !IsIndeterminate}"
+									Opacity="0.7"
+									Text="{Binding Progress, StringFormat={}{0:0}%}"
+									VerticalAlignment="Center"/>
+								<Button
+									Padding="6,2"
+									Command="{Binding CancelCommand}"
+									Content="Cancel"
+									FontSize="11"/>
+							</StackPanel>
+						</Grid>
+					</Border>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+	</Border>
+</UserControl>

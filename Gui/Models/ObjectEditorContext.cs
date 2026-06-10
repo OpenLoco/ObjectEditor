@@ -165,9 +165,17 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	void EnsureDefaultImageTableGroupConfigExists(string configFolder)
 	{
 		var configFilePath = Path.Combine(configFolder, ImageTableGroupsConfigFileName);
-		if (File.Exists(configFilePath))
+		var assemblyPath = Assembly.GetExecutingAssembly().Location;
+		var assemblyWriteTimeUtc = File.GetLastWriteTimeUtc(assemblyPath);
+		var fileExists = File.Exists(configFilePath);
+
+		if (fileExists)
 		{
-			return;
+			var existingWriteTimeUtc = File.GetLastWriteTimeUtc(configFilePath);
+			if (assemblyWriteTimeUtc <= existingWriteTimeUtc)
+			{
+				return;
+			}
 		}
 
 		try
@@ -182,7 +190,15 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			using var reader = new StreamReader(stream);
 			var text = reader.ReadToEnd();
 			File.WriteAllText(configFilePath, text);
-			Logger.LogInformation("Copied default {ImageTableGroupsConfigFileName} to {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
+
+			if (fileExists)
+			{
+				Logger.LogInformation("Replaced outdated {ImageTableGroupsConfigFileName} from assembly at {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
+			}
+			else
+			{
+				Logger.LogInformation("Installed default {ImageTableGroupsConfigFileName} from assembly to {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
+			}
 		}
 		catch (Exception ex)
 		{

@@ -31,17 +31,17 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	public VehicleViewModel(VehicleObject model) : base(model)
 	{
 		this.model = model;
-		CompatibleVehicles = new(model.CompatibleVehicles);
-		RequiredTrackExtras = new(model.RequiredTrackExtras);
-		CarComponents = new(model.CarComponents);
-		BodySprites = new(model.BodySprites);
-		BogieSprites = new(model.BogieSprites);
-		Animation = new(model.ParticleEmitters);
+		CompatibleVehicles = [with(model.CompatibleVehicles)];
+		RequiredTrackExtras = [with(model.RequiredTrackExtras)];
+		CarComponents = [with(model.CarComponents)];
+		BodySprites = [with(model.BodySprites)];
+		BogieSprites = [with(model.BogieSprites)];
+		Animation = [with(model.ParticleEmitters)];
 		CompatibleCargo1 = new(model.CompatibleCargoCategories[0], model.MaxCargo[0]);
 		CompatibleCargo2 = new(model.CompatibleCargoCategories[1], model.MaxCargo[1]);
-		CargoTypeSpriteOffsets = new([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value))]);
-		StartSounds = new(model.StartSounds);
-		var_135 = new(model.var_135);
+		CargoTypeSpriteOffsets = [with([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value))])];
+		StartSounds = [with(model.StartSounds)];
+		var_135 = [with(model.var_135)];
 		RoadOrTrackType = model.RoadOrTrackType;
 		RackRail = model.RackRail;
 
@@ -571,7 +571,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 // todo: use this in CargoObject
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CargoCategoryViewModel : ReactiveUI.ReactiveObject
+public class CargoCategoryViewModel : ReactiveObject
 {
 	public CargoCategory Category
 	{
@@ -610,7 +610,7 @@ public class CargoCategoryViewModel : ReactiveUI.ReactiveObject
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CargoTypeSpriteOffsetViewModel : ReactiveUI.ReactiveObject
+public class CargoTypeSpriteOffsetViewModel : ReactiveObject
 {
 	public CargoTypeSpriteOffsetViewModel(CargoCategory cargoCategory, uint8_t offset)
 	{
@@ -650,7 +650,7 @@ public class CargoTypeSpriteOffsetViewModel : ReactiveUI.ReactiveObject
 }
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class CompatibleCargoViewModel : ReactiveUI.ReactiveObject
+public class CompatibleCargoViewModel : ReactiveObject
 {
 	public byte MaxCargo
 	{
@@ -670,7 +670,7 @@ public class CompatibleCargoViewModel : ReactiveUI.ReactiveObject
 	public CompatibleCargoViewModel(IEnumerable<CargoCategory> compatibleCargoCategories, uint8_t maxCargo)
 	{
 		MaxCargo = maxCargo;
-		CargoCategories = new(compatibleCargoCategories.Select(x => new CargoCategoryViewModel(x)));
+		CargoCategories = [with(compatibleCargoCategories.Select(x => new CargoCategoryViewModel(x)))];
 	}
 
 	public CompatibleCargoViewModel()

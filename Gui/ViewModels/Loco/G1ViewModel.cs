@@ -1,4 +1,3 @@
-using Common.Logging;
 using Dat.FileParsing;
 using Dat.Types;
 using Gui.Models;

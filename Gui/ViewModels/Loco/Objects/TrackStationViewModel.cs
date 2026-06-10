@@ -99,5 +99,5 @@ public class TrackStationViewModel(TrackStationObject model)
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = new(model.CompatibleTrackObjects);
+	public BindingList<ObjectModelHeader> CompatibleTrackObjects { get; init; } = [with(model.CompatibleTrackObjects)];
 }

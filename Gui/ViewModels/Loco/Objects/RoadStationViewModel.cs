@@ -88,5 +88,5 @@ public class RoadStationViewModel(RoadStationObject model)
 	public CargoOffset[][][] CargoOffsets { get; init; } = model.CargoOffsets;
 
 	[Category("Compatible")]
-	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = new(model.CompatibleRoadObjects);
+	public BindingList<ObjectModelHeader> CompatibleRoadObjects { get; init; } = [with(model.CompatibleRoadObjects)];
 }

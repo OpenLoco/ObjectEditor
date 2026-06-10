@@ -1,4 +1,3 @@
-using Common.Logging;
 using Dat.Converters;
 using Dat.Data;
 using Dat.Loaders;
@@ -115,7 +114,7 @@ public static class SawyerStreamWriter
 		catch (Exception ex)
 		{
 			// will usually be UnauthorizedAccessException
-			logger?.LogError(ex);
+			logger?.LogError(ex, "An error occurred while saving {ObjName}", objName);
 			return;
 		}
 

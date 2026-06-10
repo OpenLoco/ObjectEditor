@@ -65,7 +65,7 @@ public static class ByteWriterT
 		var typeSize = ByteHelpers.GetObjectSize(typeof(T));
 		for (var i = 0; i < count; i++)
 		{
-			Write<T>(data, offset + (i * typeSize), arr[i]);
+			Write(data, offset + (i * typeSize), arr[i]);
 		}
 
 		return arr;

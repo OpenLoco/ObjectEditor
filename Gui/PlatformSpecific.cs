@@ -1,8 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
-using Common.Logging;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ public static class PlatformSpecific
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex);
+			logger.LogError(ex, "Failed to open folder \"{Directory}\"", directory);
 		}
 	}
 
@@ -133,9 +133,7 @@ public static class PlatformSpecific
 			var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
 			if (clipboard != null)
 			{
-#pragma warning disable CS0618 // ClipboardExtensions.TryGetTextAsync not available in current Avalonia version
-				return await clipboard.GetTextAsync();
-#pragma warning restore CS0618
+				return await clipboard.TryGetTextAsync();
 			}
 		}
 

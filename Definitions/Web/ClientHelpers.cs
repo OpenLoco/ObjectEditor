@@ -1,4 +1,3 @@
-using Common.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
@@ -113,7 +112,7 @@ public static class ClientHelpers
 		}
 		catch (Exception ex)
 		{
-			logger?.LogError(ex);
+			logger?.LogError(ex, "An error occurred while sending the request.");
 			return default;
 		}
 	}

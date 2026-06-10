@@ -1,4 +1,3 @@
-using Common.Logging;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
@@ -6,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using Logger = Common.Logging.Logger;
 
 namespace Dat.Tests;
 
@@ -23,7 +23,7 @@ public class ImagePaletteConversionTests
 	{
 		var paletteFile = Path.Combine(BasePalettePath, PaletteFileName);
 		var paletteMap = Image.Load<Rgba32>(paletteFile);
-		paletteMap[0, 0] = PaletteMap.Transparent.Color;
+		paletteMap[0, 0] = PaletteMap.Transparent.Color.ToPixel<Rgba32>();
 		paletteMap.SaveAsPng(paletteFile);
 	}
 

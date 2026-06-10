@@ -45,12 +45,12 @@ public class ScenarioRouteHandler : ITableRouteHandler
 
 		if (id >= (ulong)files.Length)
 		{
-			return Task.FromResult<IResult>(Results.NotFound());
+			return Task.FromResult(Results.NotFound());
 		}
 
 		var path = files[(int)id];
 		const string contentType = "application/octet-stream";
-		return Task.FromResult<IResult>(Results.File(path, contentType, Path.GetFileName(path)));
+		return Task.FromResult(Results.File(path, contentType, Path.GetFileName(path)));
 	}
 
 	static async Task<IResult> CreateAsync(DtoScenarioEntry request)

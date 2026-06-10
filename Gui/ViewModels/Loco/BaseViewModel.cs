@@ -19,7 +19,7 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 	public virtual string DisplayName
 		=> typeof(T).Name;
 
-	readonly CompositeDisposable subscriptions = new();
+	readonly CompositeDisposable subscriptions = [];
 	bool disposed;
 
 	protected BaseViewModel(T model)

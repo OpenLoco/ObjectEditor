@@ -2,7 +2,6 @@ using Avalonia.Controls.Selection;
 using Avalonia.Threading;
 using Common;
 using Common.Json;
-using Common.Logging;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using Gui.Models;
@@ -507,7 +506,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex);
+			Logger.LogError(ex, "An error occurred while importing images from {Directory}", directory);
 		}
 	}
 

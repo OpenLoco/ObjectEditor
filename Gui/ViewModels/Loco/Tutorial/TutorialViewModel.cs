@@ -1,4 +1,3 @@
-using Common.Logging;
 using Gui.Models;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;

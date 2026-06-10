@@ -166,8 +166,6 @@
 		</DataTemplate>
 	</Window.DataTemplates>
 	<DockPanel>
-		<vi:OperationQueuePanel DockPanel.Dock="Right" DataContext="{Binding OperationQueue}"/>
-		<DockPanel>
 		<DockPanel DockPanel.Dock="Top">
 			<Menu>
 				<MenuItem Header="_File">
@@ -297,6 +295,5 @@
 				</TabControl>
 			</DockPanel>
 		</Grid>
-	</DockPanel>
 	</DockPanel>
 </Window>

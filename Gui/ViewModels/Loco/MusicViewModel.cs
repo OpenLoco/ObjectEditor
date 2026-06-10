@@ -16,7 +16,7 @@ public class MusicViewModel : BaseFileViewModel<DummyModel>
 
 	public MusicViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
-		=> _ = LoadAsync();
+		=> Load();
 
 	public override void Load()
 		=> AudioViewModel = new AudioViewModel(

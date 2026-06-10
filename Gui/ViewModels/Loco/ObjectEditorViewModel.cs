@@ -48,7 +48,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 	public ObjectEditorViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
 	{
-		_ = LoadAsync();
+		Load();
 
 		ExportUncompressedCommand = ReactiveCommand.CreateFromTask(SaveAsUncompressedDatAsync);
 		CopyToGameObjDataCommand = ReactiveCommand.Create((GameObjDataFolder targetFolder) => CopyToGameObjDataFolder(targetFolder, currentFile, editorContext));
@@ -283,7 +283,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 					if (Model.LocoObject.ImageTable != null)
 					{
-						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger) { OperationQueue = EditorContext.OperationQueue }, mediaGroup);
+						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger), mediaGroup);
 
 						var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
 						if (bc != null)

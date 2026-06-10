@@ -16,7 +16,7 @@ public class TutorialViewModel : BaseFileViewModel<DummyModel>
 	{
 		SaveIsVisible = false;
 		SaveAsIsVisible = false;
-		_ = LoadAsync();
+		Load();
 	}
 
 	[Reactive]

@@ -18,7 +18,7 @@ public class SoundEffectsViewModel : BaseFileViewModel<DummyModel>
 {
 	public SoundEffectsViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
 		: base(currentFile, editorContext)
-		=> _ = LoadAsync();
+		=> Load();
 
 	public override void Load()
 	{

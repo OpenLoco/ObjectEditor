@@ -7,7 +7,7 @@ namespace Gui.ViewModels;
 public class LanguageFileViewModel : BaseFileViewModel<LanguageFileModel>
 {
 	public LanguageFileViewModel(FileSystemItem currentFile, ObjectEditorContext editorContext)
-		: base(currentFile, editorContext) => _ = LoadAsync();
+		: base(currentFile, editorContext) => Load();
 
 	public override void Load()
 		=> Logger.LogInformation("Loading languages from {FileName}", CurrentFile.FileName);

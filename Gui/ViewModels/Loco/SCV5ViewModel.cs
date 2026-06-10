@@ -60,7 +60,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 		RequiredObjects = new RequiredObjectsListViewModel(editorContext);
 		SaveIsVisible = false;
 		SaveAsIsVisible = false;
-		_ = LoadAsync();
+		Load();
 		DownloadMissingObjectsToGameObjDataCommand = ReactiveCommand.CreateFromTask<GameObjDataFolder>(DownloadMissingObjects);
 	}
 

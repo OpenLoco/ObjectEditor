@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class UserRouteHandler
-	: BaseDataTableRouteHandler<UserRouteHandler, DtoUserEntry, TblUser>
-	, ITableRouteConfig<DtoUserEntry, TblUser>
+	: BaseDataTableRouteHandler<UserRouteHandler, IdentityContext, DtoUserEntry, TblUser>
+	, ITableRouteConfig<IdentityContext, DtoUserEntry, TblUser>
 {
 	public static string GetBaseRoute()
 		=> RoutesV2.Users;
@@ -17,7 +17,7 @@ public class UserRouteHandler
 	public static void MapRoutes(IEndpointRouteBuilder endpoints)
 		=> BaseTableRouteHandler.MapRoutes<UserRouteHandler>(endpoints);
 
-	public static DbSet<TblUser> GetTable(LocoDbContext db)
+	public static DbSet<TblUser> GetTable(IdentityContext db)
 		=> db.Users;
 
 	public static DtoUserEntry ToDtoFunc(TblUser table)
@@ -29,7 +29,7 @@ public class UserRouteHandler
 	public static TblUser ToRowFunc(DtoUserEntry request)
 		=> request.ToTable();
 
-	public static bool TryValidateCreate([FromBody] DtoUserEntry request, [FromServices] LocoDbContext db, out IResult? result)
+	public static bool TryValidateCreate([FromBody] DtoUserEntry request, [FromServices] IdentityContext db, out IResult? result)
 	{
 		if (string.IsNullOrWhiteSpace(request.UserName))
 		{

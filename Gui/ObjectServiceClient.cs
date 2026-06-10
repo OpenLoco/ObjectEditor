@@ -10,36 +10,38 @@ using System.Threading.Tasks;
 
 namespace Gui;
 
-//public class LocalUser(string Email, string Password)
-//{
-//	public string Email { get; } = Email;
-//	public string Password { get; } = Password;
-//	public string UserName { get; set; } // set when user logs in
-//	public TblAuthor? AssociatedAuthor { get; set; }
-//}
-
 public class ObjectServiceClient
 {
-	//public LocalUser LocoUser { get; set; }
-
 	public HttpClient WebClient { get; }
 
 	public ILogger Logger { get; } = null!;
 
 	public CookieContainer CookieContainer { get; set; }
 
-	public ObjectServiceClient(EditorSettings settings, ILogger logger)
+	readonly EditorSettings settings;
+
+	public ObjectServiceClient(EditorSettings settings, ILogger logger, Uri? baseAddressOverride = null)
 	{
+		this.settings = settings;
 		Logger = logger;
 		CookieContainer = new CookieContainer();
 		var handler = new HttpClientHandler() { CookieContainer = CookieContainer };
 		WebClient = new HttpClient(handler);
 
-		var serverAddress = settings.UseHttps
-			? settings.ServerAddressHttps
-			: settings.ServerAddressHttp;
+		// baseAddressOverride wins when supplied (eg. an in-process EmbeddedObjectServiceHost).
+		// Otherwise fall back to the configured remote server address.
+		Uri? serverUri = baseAddressOverride;
+		string? serverAddress = baseAddressOverride?.ToString();
 
-		if (Uri.TryCreate(serverAddress, new(), out var serverUri))
+		if (serverUri is null)
+		{
+			serverAddress = settings.UseHttps
+				? settings.ServerAddressHttps
+				: settings.ServerAddressHttp;
+			_ = Uri.TryCreate(serverAddress, UriKind.Absolute, out serverUri);
+		}
+
+		if (serverUri is not null)
 		{
 			WebClient.BaseAddress = serverUri;
 
@@ -52,11 +54,31 @@ public class ObjectServiceClient
 		{
 			Logger.LogError("Unable to parse object service address \"{ServerAddress}\". Online functionality will not work until the address is corrected and the editor is restarted.", serverAddress);
 		}
-
-		//LocoUser = new LocalUser(settings.ServerEmail, settings.ServerPassword);
 	}
 
-	//public async Task<DtoLoginRequest>
+	// Used when the embedded ObjectService is started or restarted after construction (eg.
+	// hot-reapply after settings change). Pass null to fall back to the configured remote
+	// server address from EditorSettings.
+	public void RetargetBaseAddress(Uri? newBaseAddress)
+	{
+		if (newBaseAddress is not null)
+		{
+			WebClient.BaseAddress = newBaseAddress;
+			Logger.LogInformation("Object service client retargeted to \"{ServerUri}\"", newBaseAddress);
+			return;
+		}
+
+		var serverAddress = settings.UseHttps ? settings.ServerAddressHttps : settings.ServerAddressHttp;
+		if (Uri.TryCreate(serverAddress, UriKind.Absolute, out var remoteUri))
+		{
+			WebClient.BaseAddress = remoteUri;
+			Logger.LogInformation("Object service client reverted to remote address \"{ServerUri}\"", remoteUri);
+		}
+		else
+		{
+			Logger.LogWarning("Object service client could not revert to remote address; \"{ServerAddress}\" is not a valid URI.", serverAddress);
+		}
+	}
 
 	public async Task<IEnumerable<T>> GetListAsync<T>(ApiEndpointGroup endpointGroup)
 		=> await Client.GetListAsync<T>(WebClient, endpointGroup, Logger);
@@ -114,4 +136,7 @@ public class ObjectServiceClient
 
 	public async Task<IEnumerable<DtoObjectMissingEntry>> GetMissingObjectsAsync()
 		=> await Client.GetMissingObjectsAsync(WebClient, Logger);
+
+	public async Task<DtoIndexFolderResponse?> IndexFolderAsync(string folderPath)
+		=> await Client.IndexFolderAsync(WebClient, folderPath, Logger);
 }

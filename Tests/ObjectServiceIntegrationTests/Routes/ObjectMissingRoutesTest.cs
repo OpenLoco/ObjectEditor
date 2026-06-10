@@ -3,7 +3,9 @@ using Definitions.DTO;
 using Definitions.DTO.Mappers;
 using Definitions.ObjectModels.Types;
 using Definitions.Web;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using ObjectService.Tests.Integration;
 
@@ -48,4 +50,19 @@ public class ObjectMissingRoutesTest
 
 	protected override DtoObjectMissingEntry PutResponseDto
 		=> new(1, "TESTOBJ2", 123456788, ObjectType.StreetLight);
+
+	[Test]
+	public async Task MissingObjectsRoute_IsNotMapped_WhenHostIsLocal()
+	{
+		using var localFactory = new TestWebApplicationFactory<Program>(isServer: false);
+		_ = localFactory.CreateClient();
+
+		var endpoints = localFactory.Services.GetRequiredService<EndpointDataSource>().Endpoints;
+		var routePatterns = endpoints
+			.OfType<RouteEndpoint>()
+			.Select(x => x.RoutePattern.RawText);
+
+		Assert.That(routePatterns, Does.Not.Contain(RoutesV2.Prefix + RoutesV2.Objects + RoutesV2.Missing));
+		await Task.CompletedTask;
+	}
 }

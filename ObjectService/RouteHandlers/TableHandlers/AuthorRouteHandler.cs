@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ObjectService.RouteHandlers;
 
 public class AuthorRouteHandler
-	: BaseDataTableRouteHandler<AuthorRouteHandler, DtoAuthorEntry, TblAuthor>
-	, ITableRouteConfig<DtoAuthorEntry, TblAuthor>
+	: BaseDataTableRouteHandler<AuthorRouteHandler, LocoDbContext, DtoAuthorEntry, TblAuthor>
+	, ITableRouteConfig<LocoDbContext, DtoAuthorEntry, TblAuthor>
 {
 	public static string GetBaseRoute()
 		=> RoutesV2.Authors;

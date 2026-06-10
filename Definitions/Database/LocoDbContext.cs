@@ -1,9 +1,12 @@
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Definitions.Database;
 
-public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjectId>
+// Holds the object-domain schema shared by both the server-side and client-side hosting
+// modes. Identity tables live in IdentityContext (server-only) and are not part of this
+// hierarchy. Use ClientLocoDbContext or ServerLocoDbContext to materialise a concrete
+// context; this base class only carries the schema definition.
+public abstract class BaseLocoDbContext : DbContext
 {
 	#region ReferenceData
 
@@ -102,13 +105,13 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 
 	#endregion
 
-	public LocoDbContext()
-	{ }
-
-	public LocoDbContext(DbContextOptions<LocoDbContext> options) : base(options)
-	{ }
-
 	public const string DefaultDb = "Q:\\Games\\Locomotion\\Database\\loco-test.db";
+
+	protected BaseLocoDbContext()
+	{ }
+
+	protected BaseLocoDbContext(DbContextOptions options) : base(options)
+	{ }
 
 	protected override void OnConfiguring(DbContextOptionsBuilder builder)
 	{
@@ -130,32 +133,6 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 		return null;
 	}
 
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
-	{
-		base.OnModelCreating(modelBuilder);
-
-		//_ = modelBuilder.Entity<TblObject>()
-		//	.HasAlternateKey(o => new { o.SubObjectId, o.ObjectType });
-
-		// Configure the one-to-many relationship
-		//modelBuilder.Entity<OrderItem>()
-		//	.HasOne(oi => oi.Order) // OrderItem has one Order
-		//	.WithMany(o => o.OrderItems) // Order has many OrderItems
-		//	.HasForeignKey(oi => new { oi.OrderNumber, oi.CustomerCode }); // The composite foreign key on OrderItem
-
-		_ = modelBuilder.Entity<TblObject>()
-			.Property(b => b.UploadedDate)
-			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
-		_ = modelBuilder.Entity<TblSC5File>()
-			.Property(b => b.UploadedDate)
-			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
-		_ = modelBuilder.Entity<TblObjectPack>()
-			.Property(b => b.UploadedDate)
-			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
-		_ = modelBuilder.Entity<TblSC5FilePack>()
-			.Property(b => b.UploadedDate)
-			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
-	}
 
 	public bool DoesObjectExist(string datName, uint datChecksum, out TblObject? existingObject)
 	{
@@ -172,4 +149,34 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 		existingObject = existingEntityInDb ?? existingEntityInChangeTracker;
 		return existingObject != null;
 	}
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		base.OnModelCreating(modelBuilder);
+
+		_ = modelBuilder.Entity<TblObject>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblSC5File>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblObjectPack>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+		_ = modelBuilder.Entity<TblSC5FilePack>()
+			.Property(b => b.UploadedDate)
+			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+	}
+}
+
+// Existing concrete context. Kept under this name so that the EF migrations snapshot in
+// /Definitions/Migrations/Loco continues to apply without regeneration. Both the standalone
+// server and the existing tests/tools still bind to this type at runtime.
+public class LocoDbContext : BaseLocoDbContext
+{
+	public LocoDbContext()
+	{ }
+
+	public LocoDbContext(DbContextOptions<LocoDbContext> options) : base(options)
+	{ }
 }

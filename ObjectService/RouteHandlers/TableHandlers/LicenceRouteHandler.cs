@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class LicenceRouteHandler
-	: BaseDataTableRouteHandler<LicenceRouteHandler, DtoLicenceEntry, TblLicence>
-	, ITableRouteConfig<DtoLicenceEntry, TblLicence>
+	: BaseDataTableRouteHandler<LicenceRouteHandler, LocoDbContext, DtoLicenceEntry, TblLicence>
+	, ITableRouteConfig<LocoDbContext, DtoLicenceEntry, TblLicence>
 {
 	public static string GetBaseRoute()
 		=> RoutesV2.Licences;

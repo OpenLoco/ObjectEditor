@@ -1,15 +1,18 @@
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Common;
 using Common.Logging;
 using Dat.Converters;
 using Dat.FileParsing;
 using Dat.Types;
-using Definitions.DTO;
+using Definitions;
+using Definitions.Database;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using DynamicData;
-using Index;
+using Gui.Services;
 using Microsoft.Extensions.Logging;
+using ObjectService.Services;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
@@ -17,6 +20,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,11 +33,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public Logger Logger { get; init; }
 
-	public ObjectIndex ObjectIndex { get; private set; } = new();
-
-	public ObjectIndex? ObjectIndexOnline { get; set; }
-
-	public Dictionary<UniqueObjectId, DtoObjectPostResponse> OnlineCache { get; } = [];
+	public Dictionary<ObjectIndexKey, ObjectIndex> ObjectIndexes { get; } = [];
 
 	public PaletteMap PaletteMap { get; set; } = null!;
 
@@ -58,9 +59,35 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public ObservableCollection<LogLine> LoggerObservableLogs { get; init; } = [];
 
+	// Dedicated logger for the embedded ObjectService. Routed to its own observable
+	// collection so the local-server log popup shows only server-originated lines,
+	// while still writing to the shared on-disk log file (with a [LocalServer] tag).
+	public Logger LocalServerLogger { get; init; }
+
+	public ObservableCollection<LogLine> LocalServerObservableLogs { get; init; } = [];
+
 	public ObjectServiceClient ObjectServiceClient { get; init; }
 
+	// Second client wired to the configured remote master ObjectService. The GUI talks to
+	// both clients via the same HTTP API so local and remote objects can be browsed
+	// uniformly; the only difference is which server answered the request.
+	public ObjectServiceClient RemoteObjectServiceClient { get; init; }
+
 	public ObjectServiceModel ObjectServiceModel { get; init; }
+
+	// Always non-null. Reflects the lifecycle of the in-process ObjectService - the GUI's
+	// only backend. The remote ServerAddress* settings are only used as a fallback if the
+	// embedded host fails to start (e.g. paths are misconfigured and unrecoverable).
+	public Gui.Services.EmbeddedObjectServiceHost LocalServerHost { get; }
+
+	// Always non-null. Background poller that surfaces the reachability of the configured
+	// remote master ObjectService, independently of the embedded local host.
+	public Gui.Services.RemoteServerMonitor RemoteServerMonitor { get; }
+
+	// Fires every time the embedded host transitions to Running. Consumers (e.g. post-startup
+	// re-indexers) can subscribe to be notified that the local backend is live without
+	// having to poll.
+	public event EventHandler? LocalServerStarted;
 
 	readonly ConcurrentQueue<string> logQueue = new();
 	readonly SemaphoreSlim logFileLock = new(1, 1); // Allow only 1 concurrent write
@@ -69,28 +96,298 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	{
 		Logger = new Logger();
 		LoggerObservableLogs = [];
-		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log).ConfigureAwait(false);
+		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log, LoggerObservableLogs, tag: null).ConfigureAwait(false);
+
+		LocalServerLogger = new Logger();
+		LocalServerObservableLogs = [];
+		LocalServerLogger.LogAdded += (sender, laea) => LogAsync(laea.Log, LocalServerObservableLogs, tag: "LocalServer").ConfigureAwait(false);
 
 		LoadSettings();
 
 		// settings must be loaded or else the rest of the app cannot start
 		ArgumentNullException.ThrowIfNull(Settings);
 
-		Settings.ObjectIndicesFolder = InitialiseDirectory(Settings.ObjectIndicesFolder, "objectIndices");
 		Settings.CacheFolder = InitialiseDirectory(Settings.CacheFolder, "cache");
 		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
 
-		ObjectServiceClient = new(Settings, Logger);
+		LocalServerHost = new Gui.Services.EmbeddedObjectServiceHost(LocalServerLogger);
+
+		// Make sure the host has a usable objects-root folder and palette file to point
+		// at - even if the user hasn't filled them in.
+		EnsureLocalServerDefaults();
+
+		// Resolve the loopback URL up front so ObjectServiceClient can be wired to the
+		// local host before Kestrel has finished binding. The actual server start is then
+		// fire-and-forget on a background task; the client will simply see failed requests
+		// until the host transitions to Running.
+		var localBaseAddress = PrepareLocalServerUri();
+
+		ObjectServiceClient = new(Settings, Logger, localBaseAddress);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
+
+		// Remote master server: same client class, just pointed at the configured address.
+		// Passing null asks the client to resolve the base URL from EditorSettings.
+		RemoteObjectServiceClient = new(Settings, Logger, baseAddressOverride: null);
+
+		if (localBaseAddress is not null)
+		{
+			_ = Task.Run(() => StartLocalServerAsync(localBaseAddress));
+		}
+
+		// When the embedded ObjectService finishes coming up, scan the active user folder
+		// (if any) so a freshly-created local DB gets populated without manual intervention.
+		LocalServerStarted += (_, _) => _ = Task.Run(ReindexConfiguredFoldersAsync);
+
+		RemoteServerMonitor = new Gui.Services.RemoteServerMonitor(Logger);
+		RemoteServerMonitor.Configure(GetRemoteServerUri());
 	}
 
-	public async Task LogAsync(LogLine log)
+	Uri? GetRemoteServerUri()
+	{
+		var address = Settings.UseHttps ? Settings.ServerAddressHttps : Settings.ServerAddressHttp;
+		return Uri.TryCreate(address, UriKind.Absolute, out var uri) ? uri : null;
+	}
+
+	public ObjectIndexKey GetObjectIndexKey(ObjectServiceClient client, FileLocation fileLocation, string? name = null)
+	{
+		var baseAddress = client.WebClient.BaseAddress;
+		var address = baseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+		var serverName = name ?? (fileLocation == FileLocation.Local ? "Local" : baseAddress?.Host ?? "Online");
+		return new ObjectIndexKey(address, serverName, fileLocation);
+	}
+
+	public ObjectIndex GetOrAddObjectIndex(ObjectServiceClient client, FileLocation fileLocation, string? name = null)
+	{
+		var key = GetObjectIndexKey(client, fileLocation, name);
+		if (!ObjectIndexes.TryGetValue(key, out var index))
+		{
+			index = new ObjectIndex();
+			ObjectIndexes[key] = index;
+		}
+
+		return index;
+	}
+
+	public ObjectIndex? GetObjectIndex(ObjectServiceClient client, FileLocation fileLocation, string? name = null)
+	{
+		var key = GetObjectIndexKey(client, fileLocation, name);
+		return ObjectIndexes.TryGetValue(key, out var index) ? index : null;
+	}
+
+	public ObjectIndex? GetObjectIndex(FileLocation fileLocation)
+	{
+		var client = fileLocation == FileLocation.Local ? ObjectServiceClient : RemoteObjectServiceClient;
+		return GetObjectIndex(client, fileLocation);
+	}
+
+	public void SetObjectIndex(ObjectServiceClient client, FileLocation fileLocation, ObjectIndex index, string? name = null)
+		=> ObjectIndexes[GetObjectIndexKey(client, fileLocation, name)] = index;
+
+	// Fills in sensible defaults for the embedded ObjectService when the user hasn't
+	// configured paths yet. Lets the feature work out-of-the-box from a clean settings file:
+	// the objects root lives under %APPDATA%/.../LocalServer and the palette is extracted
+	// from the bundled Avalonia asset on first run.
+	void EnsureLocalServerDefaults()
+	{
+		var changed = false;
+
+		if (string.IsNullOrWhiteSpace(Settings.LocalServerObjectsRoot))
+		{
+			Settings.LocalServerObjectsRoot = Path.Combine(ProgramDataPath, "LocalServer");
+			Logger.LogInformation("Defaulted LocalServerObjectsRoot to \"{Path}\"", Settings.LocalServerObjectsRoot);
+			changed = true;
+		}
+
+		if (string.IsNullOrWhiteSpace(Settings.LocalServerPaletteMapFile))
+		{
+			var palettePath = Path.Combine(ProgramDataPath, "palette.png");
+			if (!File.Exists(palettePath))
+			{
+				try
+				{
+					_ = Directory.CreateDirectory(ProgramDataPath);
+					using var src = AssetLoader.Open(new Uri("avares://ObjectEditor/Assets/palette.png"));
+					using var dst = File.Create(palettePath);
+					src.CopyTo(dst);
+					Logger.LogInformation("Extracted bundled palette.png to \"{Path}\"", palettePath);
+				}
+				catch (Exception ex)
+				{
+					Logger.LogWarning(ex, "Failed to extract bundled palette.png; the local server will fail to start until LocalServerPaletteMapFile is set manually.");
+					return;
+				}
+			}
+
+			Settings.LocalServerPaletteMapFile = palettePath;
+			Logger.LogInformation("Defaulted LocalServerPaletteMapFile to \"{Path}\"", palettePath);
+			changed = true;
+		}
+
+		if (changed)
+		{
+			Settings.Save(SettingsFile, Logger);
+		}
+	}
+
+	// Best-effort reindex of the user's configured obj-data folder(s) into the local DB.
+	// Runs on the thread pool, swallows individual-folder errors so one bad path can't
+	// stall the whole pass.
+	async Task ReindexConfiguredFoldersAsync()
+	{
+		try
+		{
+			var folders = new List<string>();
+			if (!string.IsNullOrWhiteSpace(Settings.ObjDataDirectory))
+			{
+				folders.Add(Settings.ObjDataDirectory);
+			}
+
+			if (Settings.ObjDataDirectories is { Count: > 0 })
+			{
+				foreach (var dir in Settings.ObjDataDirectories)
+				{
+					if (!folders.Contains(dir, StringComparer.OrdinalIgnoreCase))
+					{
+						folders.Add(dir);
+					}
+				}
+			}
+
+			if (folders.Count == 0)
+			{
+				Logger.LogInformation("No user obj-data folders configured; skipping post-startup reindex.");
+				return;
+			}
+
+			// Note: LoadObjDirectoryAsync uses a single shared indexerTask + semaphore, so
+			// calls are serialised. RebuildFromFolderAsync wipes the DB between calls, so
+			// for now we only fully reindex the *first* (active) folder and log the rest.
+			var primary = folders[0];
+			if (!Directory.Exists(primary))
+			{
+				Logger.LogWarning("Configured obj-data folder does not exist: {Directory}", primary);
+				return;
+			}
+
+			Logger.LogInformation("Reindexing user obj-data folder into local DB: {Directory}", primary);
+			var progress = new Progress<float>();
+			await LoadObjDirectoryAsync(primary, progress, useExistingIndex: true);
+
+			if (folders.Count > 1)
+			{
+				Logger.LogInformation("Additional configured folders not auto-reindexed (only the active folder is currently scanned): {Folders}", string.Join(", ", folders.Skip(1)));
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error during post-startup reindex of user folders.");
+		}
+	}
+
+	// Decides whether the embedded server should be started and, if so, returns the URL it
+	// will bind to. The port is reserved synchronously so the caller knows the final URL
+	// before Kestrel starts. Returns null only when the required paths cannot be resolved.
+	Uri? PrepareLocalServerUri()
+	{
+		if (string.IsNullOrWhiteSpace(Settings.LocalServerObjectsRoot)
+			|| string.IsNullOrWhiteSpace(Settings.LocalServerPaletteMapFile)
+			|| string.IsNullOrWhiteSpace(Settings.DatabaseFile))
+		{
+			Logger.LogWarning("One or more of LocalServerObjectsRoot, LocalServerPaletteMapFile, DatabaseFile is empty. Local server will not start; falling back to remote server.");
+			return null;
+		}
+
+		var port = Settings.LocalServerPort > 0 ? Settings.LocalServerPort : ReserveLoopbackPort();
+		return new Uri($"http://127.0.0.1:{port}/");
+	}
+
+	// Briefly opens a TcpListener on port 0 to ask the OS for a free loopback port. There
+	// is a small race window between Stop() and Kestrel binding, but for localhost-only
+	// startup it's acceptable.
+	static int ReserveLoopbackPort()
+	{
+		var listener = new TcpListener(IPAddress.Loopback, 0);
+		listener.Start();
+		try
+		{
+			return ((IPEndPoint)listener.LocalEndpoint).Port;
+		}
+		finally
+		{
+			listener.Stop();
+		}
+	}
+
+	async Task StartLocalServerAsync(Uri targetUri)
+	{
+		try
+		{
+			var options = new ObjectService.Hosting.ObjectServiceHostOptions
+			{
+				RootFolder = Settings.LocalServerObjectsRoot,
+				DatabaseFile = Settings.DatabaseFile,
+				PaletteMapFile = Settings.LocalServerPaletteMapFile,
+				HttpUrl = targetUri.ToString().TrimEnd('/'),
+				JwtKey = EmbeddedObjectServiceHost.GenerateEphemeralJwtKey(),
+				IsServer = false,
+				// Tie the embedded server's lifetime to this GUI process. In-process this is
+				// a no-op (same PID); if the host is ever re-architected as a child process
+				// the watchdog will reap it when the GUI dies.
+				ParentProcessId = Environment.ProcessId,
+			};
+			await LocalServerHost.StartAsync(options);
+
+			if (LocalServerHost.IsRunning)
+			{
+				LocalServerStarted?.Invoke(this, EventArgs.Empty);
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Failed to start embedded ObjectService; falling back to remote server for any subsequent calls.");
+		}
+	}
+
+	// Stops the currently-running embedded host (if any), recomputes the target URL from
+	// the current settings, re-targets the ObjectServiceClient, and (if applicable) kicks
+	// off a fresh background start. Safe to call from the UI thread.
+	public async Task RestartLocalServerAsync()
+	{
+		try
+		{
+			await LocalServerHost.StopAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error while stopping embedded ObjectService during restart.");
+		}
+
+		// Pick up any path defaults that may have been cleared by the user.
+		EnsureLocalServerDefaults();
+
+		var newBaseAddress = PrepareLocalServerUri();
+		ObjectServiceClient.RetargetBaseAddress(newBaseAddress);
+
+		// Remote address may have changed via settings; re-point the monitor and client at the new URI.
+		RemoteObjectServiceClient.RetargetBaseAddress(null);
+		RemoteServerMonitor.Configure(GetRemoteServerUri());
+
+		if (newBaseAddress is not null)
+		{
+			_ = Task.Run(() => StartLocalServerAsync(newBaseAddress));
+		}
+	}
+
+	public Task LogAsync(LogLine log) => LogAsync(log, LoggerObservableLogs, tag: null);
+
+	async Task LogAsync(LogLine log, ObservableCollection<LogLine> sink, string? tag)
 	{
 		// update UI
-		Dispatcher.UIThread.Post(() => LoggerObservableLogs.Insert(0, log));
+		Dispatcher.UIThread.Post(() => sink.Insert(0, log));
 
-		// update log file on disk
-		logQueue.Enqueue(log.ToString());
+		// update log file on disk - prefix server lines so the merged file remains useful.
+		var text = tag is null ? log.ToString() : $"[{tag}] {log}";
+		logQueue.Enqueue(text);
 		await WriteLogsToFileAsync();
 	}
 
@@ -166,7 +463,11 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 		try
 		{
-			var result = filesystemItem.FileLocation == FileLocation.Online
+			// Dispatch by data source rather than FileLocation: an item with an Id was
+			// produced by a server (local or remote) and must be fetched via the matching
+			// HTTP client. Items without an Id are raw disk files from the file-open
+			// dialog and load straight off disk.
+			var result = filesystemItem.Id != null
 				? TryLoadOnlineFile(filesystemItem, out uiLocoFile)
 				: TryLoadLocalFile(filesystemItem, out uiLocoFile);
 
@@ -209,21 +510,30 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			return false;
 		}
 
-		if (!OnlineCache.TryGetValue(filesystemItem.Id.Value, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
-		{
-			Logger.LogDebug("Didn't find object {DisplayName} with unique id {Id} in cache - downloading it from {BaseAddress}", filesystemItem.DisplayName, filesystemItem.Id, ObjectServiceClient.WebClient.BaseAddress);
+		// Pick the client by FileLocation: Local items came from the embedded server,
+		// Online items came from the remote master. The GUI treats them uniformly,
+		// but each must round-trip back to its originating server.
+		var fileLocation = filesystemItem.FileLocation ?? FileLocation.Local;
+		var client = fileLocation == FileLocation.Online
+			? RemoteObjectServiceClient
+			: ObjectServiceClient;
 
-			if (ObjectServiceClient == null)
-			{
-				Logger.LogError("Object service client is null");
-				return false;
-			}
+		if (client == null)
+		{
+			Logger.LogError("Object service client is null");
+			return false;
+		}
+
+		var objectIndex = GetOrAddObjectIndex(client, fileLocation);
+		if (!objectIndex.OnlineCache.TryGetValue(filesystemItem.Id.Value, out var cachedLocoObjDto)) // issue - if an object doesn't download its full file, it's 'header' will remain in cache but unable to attempt redownload
+		{
+			Logger.LogDebug("Didn't find object {DisplayName} with unique id {Id} in cache - downloading it from {BaseAddress}", filesystemItem.DisplayName, filesystemItem.Id, client.WebClient.BaseAddress);
 
 			// Synchronous bridge: TryLoadObject is a sync API used by many callers, so we must
 			// block here. Task.Run pushes the await onto the thread pool (no captured UI
 			// SynchronizationContext), avoiding the classic UI deadlock. GetAwaiter().GetResult()
 			// is preferred over .Result so exceptions are not wrapped in AggregateException.
-			cachedLocoObjDto = Task.Run(() => ObjectServiceClient.GetObjectAsync(filesystemItem.Id.Value)).GetAwaiter().GetResult();
+			cachedLocoObjDto = Task.Run(() => client.GetObjectAsync(filesystemItem.Id.Value)).GetAwaiter().GetResult();
 
 			if (cachedLocoObjDto == null)
 			{
@@ -276,7 +586,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			Logger.LogInformation("Downloaded object \"{DisplayName}\" with unique id {Id} and added it to the local cache", filesystemItem.DisplayName, filesystemItem.Id);
 			Logger.LogDebug("{DisplayName} has authors=[{Value}], tags=[{Value2}], objectpacks=[{Value3}], licence={Licence} datobjects=[{Value4}]", filesystemItem.DisplayName, string.Join(", ", cachedLocoObjDto?.Authors?.Select(x => x.Name) ?? []), string.Join(", ", cachedLocoObjDto?.Tags?.Select(x => x.Name) ?? []), string.Join(", ", cachedLocoObjDto?.ObjectPacks?.Select(x => x.Name) ?? []), cachedLocoObjDto?.Licence, string.Join(",", cachedLocoObjDto?.DatObjects?.Select(x => x.DatName) ?? []));
 
-			OnlineCache.Add(filesystemItem.Id.Value, cachedLocoObjDto!);
+			objectIndex.OnlineCache.Add(filesystemItem.Id.Value, cachedLocoObjDto!);
 		}
 		else
 		{
@@ -363,7 +673,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		{
 			CreatedDate = filesystemItem.CreatedDate?.ToDateTimeOffset(),
 			ModifiedDate = filesystemItem.ModifiedDate?.ToDateTimeOffset(),
-			Availability = Definitions.ObjectAvailability.Available,
+			Availability = ObjectAvailability.Available,
 			//DatObjects = [new(0)],
 		}; // todo: look up the rest of the data from internet
 
@@ -414,97 +724,61 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.ObjDataDirectory = directory;
 		Settings.Save(SettingsFile, Logger);
 
-		if (useExistingIndex && File.Exists(Settings.IndexFileName))
+		var indexService = new LocalObjectIndexService(
+			() => BaseLocoDbContext.GetDbFromFile(Settings.DatabaseFile)
+				?? throw new FileNotFoundException($"Database file not found: {Settings.DatabaseFile}"),
+			Logger);
+
+		if (useExistingIndex)
 		{
-			var exception = false;
+			var objectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
+			SetObjectIndex(ObjectServiceClient, FileLocation.Local, objectIndex);
+			Logger.LogInformation("Loaded index for {Directory} with {Count} objects from {Db}.", directory, objectIndex.Objects.Count, Settings.DatabaseFile);
 
-			try
-			{
-				var index = await ObjectIndex.LoadIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-				ArgumentNullException.ThrowIfNull(index, nameof(index));
-				ObjectIndex = index;
-				Logger.LogInformation("Loaded index for {Directory} with {Count} objects.", directory, ObjectIndex.Objects.Count);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "Failed to load index from \"{IndexFileName}\"", Settings.IndexFileName);
-				exception = true;
-			}
-
-			if (exception || ObjectIndex?.Objects == null || ObjectIndex.Objects.Any(x => string.IsNullOrEmpty(x.FileName) || (x is ObjectIndexEntry xx && string.IsNullOrEmpty(xx.DisplayName))))
-			{
-				Logger.LogWarning("Index file format has changed or otherwise appears to be malformed - recreating now.");
-				await RecreateIndex(directory, progress).ConfigureAwait(false);
-				return;
-			}
-
-			var objectIndexFilenames = ObjectIndex.Objects.Select(x => x.FileName);
+			// Reconcile against on-disk files; rescan deltas.
+			var indexed = objectIndex.Objects.Select(x => x.FileName).Where(x => !string.IsNullOrEmpty(x)).Cast<string>().ToHashSet();
 			var allFiles = SawyerStreamUtils.GetDatFilesInDirectory(directory).ToArray();
-
-			var a = objectIndexFilenames.Except(allFiles);
-			var b = allFiles.Except(objectIndexFilenames);
-			if (a.Any() || b.Any())
+			var added = allFiles.Except(indexed).ToList();
+			var removed = indexed.Except(allFiles).ToList();
+			if (added.Count > 0 || removed.Count > 0)
 			{
-				Logger.LogWarning("Index file and files on disk don't match; re-indexing those files and updating the index now.");
-				Logger.LogWarning("Objects in index but not on disk: {Value}", string.Join(',', a));
-				Logger.LogWarning("Objects on disk but not in index: {Value}", string.Join(',', b));
-				await UpdateIndex(directory, progress, a.Concat(b).Where(x => x != null)!).ConfigureAwait(false);
+				Logger.LogWarning("Index and files on disk don't match; rebuilding from folder.");
+				Logger.LogWarning("Objects in index but not on disk: {Value}", string.Join(',', removed));
+				Logger.LogWarning("Objects on disk but not in index: {Value}", string.Join(',', added));
+				await indexService.RebuildFromFolderAsync(directory, progress).ConfigureAwait(false);
+				objectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
+				SetObjectIndex(ObjectServiceClient, FileLocation.Local, objectIndex);
 			}
 		}
 		else
 		{
-			await RecreateIndex(directory, progress).ConfigureAwait(false);
-		}
-
-		async Task UpdateIndex(string directory, IProgress<float> progress, IEnumerable<string> filesToAdd)
-		{
-			Logger.LogInformation("Updating index file for {Directory}", directory);
-			_ = ObjectIndex.UpdateIndex(directory, Logger, filesToAdd, progress);
-
-			if (string.IsNullOrEmpty(Settings.IndexFileName))
-			{
-				Logger.LogError("Index filename was null or empty.");
-				return;
-			}
-
-			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.LogInformation("Index was saved to {IndexFileName}", Settings.IndexFileName);
-		}
-
-		async Task RecreateIndex(string directory, IProgress<float> progress)
-		{
-			Logger.LogInformation("Recreating index file for {Directory}", directory);
-			ObjectIndex = await ObjectIndex.CreateIndexAsync(directory, Logger, progress).ConfigureAwait(false);
-
-			if (ObjectIndex == null)
-			{
-				Logger.LogError("Index was unable to be created.");
-				return;
-			}
-
-			if (string.IsNullOrEmpty(Settings.IndexFileName))
-			{
-				Logger.LogError("Index filename was null or empty.");
-				return;
-			}
-
-			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.LogInformation("New index was saved to {IndexFileName}", Settings.IndexFileName);
+			Logger.LogInformation("Rebuilding index for {Directory}", directory);
+			await indexService.RebuildFromFolderAsync(directory, progress).ConfigureAwait(false);
+			var objectIndex = await indexService.BuildObjectIndexAsync().ConfigureAwait(false);
+			SetObjectIndex(ObjectServiceClient, FileLocation.Local, objectIndex);
+			Logger.LogInformation("New index has {Count} objects.", objectIndex.Objects.Count);
 		}
 	}
 
 	public async Task CheckForDatFilesNotOnServer()
 	{
-		if (ObjectIndex == null || ObjectIndexOnline == null || ObjectIndexOnline.Objects.Count == 0)
+		var localIndexes = ObjectIndexes.Where(x => x.Key.FileLocation == FileLocation.Local).Select(x => x.Value).ToList();
+		var onlineIndexes = ObjectIndexes.Where(x => x.Key.FileLocation == FileLocation.Online && x.Value.Objects.Count > 0).ToList();
+		if (localIndexes.Count == 0 || onlineIndexes.Count == 0)
 		{
 			return;
 		}
 
 		Logger.LogDebug("Comparing local objects to object repository");
 
-		var localButNotOnline = ObjectIndex.Objects.ExceptBy(ObjectIndexOnline.Objects.Select(
-			x => (x.DisplayName, x.DatChecksum)),
-			x => (x.DisplayName, x.DatChecksum)).ToList();
+		var onlineKeys = onlineIndexes
+			.SelectMany(x => x.Value.Objects)
+			.Select(x => (x.DisplayName, x.DatChecksum))
+			.ToHashSet();
+		var localButNotOnline = localIndexes
+			.SelectMany(x => x.Objects)
+			.ExceptBy(onlineKeys, x => (x.DisplayName, x.DatChecksum))
+			.ToList();
 
 		if (localButNotOnline.Count != 0)
 		{
@@ -548,6 +822,26 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public async Task CloseAsync()
 	{
+		// Stop the embedded ObjectService (if running) before we tear down logging,
+		// so any shutdown logs from Kestrel still have somewhere to go.
+		try
+		{
+			await LocalServerHost.DisposeAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error while stopping embedded ObjectService.");
+		}
+
+		try
+		{
+			await RemoteServerMonitor.DisposeAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error while stopping remote server monitor.");
+		}
+
 		// Wait for any pending writes to complete.
 		await logFileLock.WaitAsync(); // Acquire the semaphore
 		_ = logFileLock.Release(); // Release it immediately after. This is just to wait.

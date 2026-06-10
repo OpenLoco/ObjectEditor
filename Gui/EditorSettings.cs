@@ -1,9 +1,9 @@
 using Common.Json;
+using Definitions.Database;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -37,12 +37,26 @@ public class EditorSettings
 	public string ServerAddressHttp { get; set; } = "http://openloco.leftofzen.dev/";
 	public string ServerAddressHttps { get; set; } = "https://openloco.leftofzen.dev/";
 
-	//public string ServerEmail { get; set; }
-	//public string ServerPassword { get; set; }
+	// The GUI always hosts its own in-process ObjectService instance and the
+	// ObjectServiceClient points at it; the remote ServerAddress* values are only
+	// used as a fallback if the embedded host fails to start.
+	// See Gui/Services/EmbeddedObjectServiceHost.cs.
 
-	public string ObjectIndicesFolder { get; set; } = string.Empty;
+	// 0 = pick an ephemeral port; any non-zero value is used as the fixed loopback port.
+	public int LocalServerPort { get; set; }
+
+	// Root folder on disk that the embedded ObjectService serves .dat files from.
+	// Auto-populated under %APPDATA% on first run if left empty.
+	public string LocalServerObjectsRoot { get; set; } = string.Empty;
+
+	// Path to the palette PNG used by the embedded ObjectService for rendering.
+	// Auto-extracted from the bundled Avalonia asset on first run if left empty.
+	public string LocalServerPaletteMapFile { get; set; } = string.Empty;
+
 	public string DownloadFolder { get; set; } = string.Empty;
 	public string CacheFolder { get; set; } = string.Empty;
+
+	public string DatabaseFile { get; set; } = BaseLocoDbContext.DefaultDb;
 
 	public string LocomotionSteamObjDataFolder { get; set; } = string.Empty;
 	public string LocomotionGoGObjDataFolder { get; set; } = string.Empty;
@@ -58,16 +72,6 @@ public class EditorSettings
 			GameObjDataFolder.OpenLoco => OpenLocoObjDataFolder,
 			_ => throw new NotImplementedException(),
 		};
-
-	[JsonIgnore]
-	public string IndexFileName
-	{
-		get
-		{
-			var filename = Convert.ToBase64String(Encoding.UTF8.GetBytes(ObjDataDirectory));
-			return Path.Combine(ObjectIndicesFolder, $"{filename}.json");
-		}
-	}
 
 	[JsonIgnore]
 	public const string DefaultFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
@@ -161,12 +165,6 @@ public class EditorSettings
 		if (!string.IsNullOrEmpty(DownloadFolder) && !Directory.Exists(DownloadFolder))
 		{
 			logger.LogWarning("Invalid settings file: Download folder \"{DownloadFolder}\" does not exist", DownloadFolder);
-			return false;
-		}
-
-		if (!string.IsNullOrEmpty(ObjectIndicesFolder) && !Directory.Exists(ObjectIndicesFolder))
-		{
-			logger.LogWarning("Invalid settings file: Object index folder \"{ObjectIndicesFolder}\" does not exist", ObjectIndicesFolder);
 			return false;
 		}
 

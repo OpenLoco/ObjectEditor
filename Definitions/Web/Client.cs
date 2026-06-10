@@ -144,4 +144,15 @@ public static class Client
 
 	public static async Task<IEnumerable<DtoObjectMissingEntry>> GetMissingObjectsAsync(HttpClient client, ILogger? logger = null)
 		=> await GetListAsync<DtoObjectMissingEntry>(client, MissingObjectsEndpointGroup, logger);
+
+	public static async Task<DtoIndexFolderResponse?> IndexFolderAsync(HttpClient client, string folderPath, ILogger? logger = null)
+	{
+		logger?.LogDebug("Posting index-folder request for \"{Path}\" to {BaseAddress}{Folders}{Index}", folderPath, client.BaseAddress?.OriginalString, RoutesV2.Folders, RoutesV2.Index);
+		return await ClientHelpers.PostAsync<DtoIndexFolderRequest, DtoIndexFolderResponse>(
+			client,
+			ApiVersion,
+			RoutesV2.Folders + RoutesV2.Index,
+			new DtoIndexFolderRequest(folderPath),
+			logger);
+	}
 }

@@ -12,9 +12,9 @@ using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
 using Definitions.Web;
-using Index;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
 using static ObjectService.RouteHandlers.TableHandlers.V1DtoExtensions;
@@ -114,7 +114,7 @@ public class LegacyRouteHandler()
 		LocoDbContext db,
 		[FromServices] ILogger<LegacyRouteHandler> logger)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[ListObjects]");
+		LoggerExtensions.LogInformation(logger, "[ListObjects]");
 
 		// Cap free-text query parameters to a reasonable length. Without this an
 		// attacker can issue arbitrarily long `LIKE %…%` scans against SQLite.
@@ -265,7 +265,7 @@ public class LegacyRouteHandler()
 
 		if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "Indexed object is a vanilla object.");
+			LoggerExtensions.LogWarning(logger, "Indexed object is a vanilla object.");
 			return Results.Forbid();
 		}
 
@@ -527,9 +527,9 @@ public class LegacyRouteHandler()
 	#region POST
 
 	// eg: https://localhost:7230/v1/uploaddat/...
-	public static async Task<IResult> UploadDat(DtoObjectPost request, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp)
+	public static async Task<IResult> UploadDat(DtoObjectPost request, [FromServices] LocoDbContext db, [FromServices] ILogger<LegacyRouteHandler> logger, [FromServices] IServiceProvider sp, [FromServices] IConfiguration configuration)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[UploadDat] Upload requested");
+		LoggerExtensions.LogInformation(logger, "[UploadDat] Upload requested");
 
 		if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 		{
@@ -605,7 +605,7 @@ public class LegacyRouteHandler()
 			ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
 			ObjectType = hdrs.S5.ObjectType.Convert(),
 			VehicleType = vehicleType,
-			Availability = request.InitialAvailability,
+			Availability = configuration.GetValue<bool?>("ObjectService:IsServer") != false ? request.InitialAvailability : ObjectAvailability.Available,
 			CreatedDate = createdDate,
 			ModifiedDate = modifiedDate,
 			UploadedDate = DateOnly.UtcToday,
@@ -630,14 +630,14 @@ public class LegacyRouteHandler()
 		_ = await db.SaveChangesAsync();
 
 		sfm.ObjectIndex.Objects.Add(
-			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, locoTbl.Id, hdrs.S5.Checksum, request.xxHash3, locoTbl.ObjectType, locoTbl.ObjectSource, createdDate, modifiedDate, locoTbl.VehicleType));
+			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, locoTbl.Id, hdrs.S5.Checksum, request.xxHash3, locoTbl.ObjectType, locoTbl.ObjectSource, createdDate, modifiedDate, locoTbl.VehicleType, locoTbl.Availability));
 
 		return Results.Created($"Successfully added {locoTbl.Name} with unique id {locoTbl.Id}", locoTbl.Id);
 	}
 
 	public static async Task<IResult> UploadObject([FromServices] ILogger<LegacyRouteHandler> logger)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "[UploadDat] - not implemented");
+		LoggerExtensions.LogWarning(logger, "[UploadDat] - not implemented");
 		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 
@@ -647,13 +647,13 @@ public class LegacyRouteHandler()
 
 	public static async Task<IResult> UpdateDat([FromServices] ILogger<LegacyRouteHandler> logger)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "[UploadDat] - not implemented");
+		LoggerExtensions.LogWarning(logger, "[UploadDat] - not implemented");
 		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 
 	public static async Task<IResult> UpdateObject([FromServices] ILogger<LegacyRouteHandler> logger)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "[UploadDat] - not implemented");
+		LoggerExtensions.LogWarning(logger, "[UploadDat] - not implemented");
 		return await Task.Run(() => Results.Problem(statusCode: StatusCodes.Status501NotImplemented));
 	}
 

@@ -1,7 +1,7 @@
+using Definitions;
 using Definitions.ObjectModels.Types;
 using Gui.Models;
 using Gui.ViewModels;
-using Index;
 using NUnit.Framework;
 
 namespace Tests.Models;

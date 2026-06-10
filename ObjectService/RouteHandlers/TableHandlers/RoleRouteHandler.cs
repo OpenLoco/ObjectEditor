@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ObjectService.RouteHandlers.TableHandlers;
 
 public class RoleRouteHandler
-	: BaseDataTableRouteHandler<RoleRouteHandler, DtoRoleEntry, TblUserRole>
-	, ITableRouteConfig<DtoRoleEntry, TblUserRole>
+	: BaseDataTableRouteHandler<RoleRouteHandler, IdentityContext, DtoRoleEntry, TblUserRole>
+	, ITableRouteConfig<IdentityContext, DtoRoleEntry, TblUserRole>
 {
 	public static string GetBaseRoute()
 		=> RoutesV2.Roles;
@@ -17,7 +17,7 @@ public class RoleRouteHandler
 	public static void MapRoutes(IEndpointRouteBuilder endpoints)
 		=> BaseTableRouteHandler.MapRoutes<RoleRouteHandler>(endpoints);
 
-	public static DbSet<TblUserRole> GetTable(LocoDbContext db)
+	public static DbSet<TblUserRole> GetTable(IdentityContext db)
 		=> db.Roles;
 
 	public static DtoRoleEntry ToDtoFunc(TblUserRole table)
@@ -29,7 +29,7 @@ public class RoleRouteHandler
 	public static TblUserRole ToRowFunc(DtoRoleEntry request)
 		=> request.ToTable();
 
-	public static bool TryValidateCreate(DtoRoleEntry request, [FromServices] LocoDbContext db, out IResult? result)
+	public static bool TryValidateCreate(DtoRoleEntry request, [FromServices] IdentityContext db, out IResult? result)
 	{
 		if (string.IsNullOrWhiteSpace(request.Name))
 		{

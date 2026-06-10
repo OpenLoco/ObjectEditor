@@ -1,5 +1,5 @@
-using Index;
-
+using Definitions;
+using Definitions.Database;
 namespace ObjectService;
 
 public interface IServerFolderManager
@@ -22,7 +22,6 @@ public class TestServerFolderManager : IServerFolderManager
 ///   - SoundEffects
 ///   - Tutorials
 /// - Objects
-///   - objectIndex.json
 ///   - Custom
 ///       - ...
 ///   - Original
@@ -45,7 +44,7 @@ public class ServerFolderManager : IServerFolderManager
 {
 	string RootDirectory { get; init; }
 
-	public ServerFolderManager(string rootDirectory)
+	public ServerFolderManager(string rootDirectory, string databasePath)
 	{
 		if (!Directory.Exists(rootDirectory))
 		{
@@ -53,38 +52,20 @@ public class ServerFolderManager : IServerFolderManager
 		}
 
 		RootDirectory = rootDirectory;
+		DatabasePath = databasePath;
 
 		ILogger logger = new Common.Logging.Logger();
 
-		var indexFile = Path.Combine(rootDirectory, ObjectsFolderName);
 		try
 		{
-			ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
+			using var db = BaseLocoDbContext.GetDbFromFile(databasePath)
+				?? throw new FileNotFoundException($"Database file not found: {databasePath}");
+			ObjectIndex = ObjectIndex.FromDb(db);
 		}
 		catch (Exception ex)
 		{
-			// Index file is corrupt or otherwise unreadable. Log the original failure
-			// before destroying the file so we can diagnose recurring corruption.
-			logger.LogError(ex, "Failed to load object index at \"{IndexFile}\"; deleting and recreating.", indexFile);
-			try
-			{
-				File.Delete(indexFile);
-			}
-			catch (Exception deleteEx)
-			{
-				logger.LogError(deleteEx, "Failed to delete corrupt index file \"{IndexFile}\".", indexFile);
-				throw;
-			}
-
-			try
-			{
-				ObjectIndex = ObjectIndex.LoadOrCreateIndex(indexFile, logger)!;
-			}
-			catch (Exception retryEx)
-			{
-				logger.LogError(retryEx, "Failed to recreate object index at \"{IndexFile}\".", indexFile);
-				throw;
-			}
+			logger.LogError(ex, "Failed to build object index from database \"{DatabasePath}\".", databasePath);
+			throw;
 		}
 
 		ArgumentOutOfRangeException.ThrowIfNotEqual(true, Directory.Exists(ObjectsOriginalFolder), nameof(ObjectsOriginalFolder));
@@ -127,9 +108,11 @@ public class ServerFolderManager : IServerFolderManager
 	public const string SteamFolderName = "Steam";
 	public const string GoGFolderName = "GoG";
 
+
+	public string DatabasePath { get; init; }
 	#region Objects
 
-	public string IndexFile => Path.Combine(RootDirectory, ObjectsFolderName, ObjectIndex.DefaultIndexFileName);
+	public string IndexFile => DatabasePath;
 	public string ObjectsFolder => Path.Combine(RootDirectory, ObjectsFolderName);
 	public string ObjectsOriginalFolder => Path.Combine(ObjectsFolder, OriginalFolderName);
 	public string ObjectsCustomFolder => Path.Combine(ObjectsFolder, CustomFolderName);
@@ -162,4 +145,35 @@ public class ServerFolderManager : IServerFolderManager
 	public string ScenariosSteamFolder => Path.Combine(ScenariosOriginalFolder, SteamFolderName);
 
 	#endregion
+
+	// Creates the entire folder tree expected by ServerFolderManager under the given root.
+	// Idempotent: existing folders are left untouched. Use this to bootstrap a fresh local
+	// objects root (eg the GUI's embedded backend) before constructing the manager.
+	public static void EnsureFolderStructure(string rootDirectory)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
+
+		string[] required =
+		[
+			Path.Combine(rootDirectory, ObjectsFolderName, OriginalFolderName),
+			Path.Combine(rootDirectory, ObjectsFolderName, CustomFolderName),
+			Path.Combine(rootDirectory, GameDataFolderName, GraphicsFolderName, OriginalFolderName),
+			Path.Combine(rootDirectory, GameDataFolderName, GraphicsFolderName, CustomFolderName),
+			Path.Combine(rootDirectory, GameDataFolderName, MusicFolderName, OriginalFolderName),
+			Path.Combine(rootDirectory, GameDataFolderName, MusicFolderName, CustomFolderName),
+			Path.Combine(rootDirectory, GameDataFolderName, SoundEffectsFolderName, OriginalFolderName),
+			Path.Combine(rootDirectory, GameDataFolderName, SoundEffectsFolderName, CustomFolderName),
+			Path.Combine(rootDirectory, GameDataFolderName, TutorialsFolderName, OriginalFolderName),
+			Path.Combine(rootDirectory, GameDataFolderName, TutorialsFolderName, CustomFolderName),
+			Path.Combine(rootDirectory, LandscapesFolderName),
+			Path.Combine(rootDirectory, ScenariosFolderName, OriginalFolderName, GoGFolderName),
+			Path.Combine(rootDirectory, ScenariosFolderName, OriginalFolderName, SteamFolderName),
+			Path.Combine(rootDirectory, ScenariosFolderName, CustomFolderName),
+		];
+
+		foreach (var path in required)
+		{
+			_ = Directory.CreateDirectory(path);
+		}
+	}
 }

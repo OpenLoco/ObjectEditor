@@ -26,7 +26,7 @@
 		<ProjectReference Include="..\Common\Common.csproj" />
 		<ProjectReference Include="..\Dat\Dat.csproj" />
 		<ProjectReference Include="..\Definitions\Definitions.csproj" />
-		<ProjectReference Include="..\Index\Index.csproj" />
+		<ProjectReference Include="..\ObjectService\ObjectService.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,3 +1,4 @@
+using Definitions;
 using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels.Objects.Sound;

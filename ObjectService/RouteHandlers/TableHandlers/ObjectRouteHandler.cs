@@ -12,9 +12,9 @@ using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Definitions.SourceData;
 using Definitions.Web;
-using Index;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SixLabors.ImageSharp;
 using System.IO.Compression;
 using System.IO.Hashing;
@@ -35,12 +35,19 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	public static void MapAdditionalRoutes(IEndpointRouteBuilder parentRoute)
 	{
-		BaseTableRouteHandler.MapRoutes<ObjectMissingRouteHandler>(parentRoute);
+		var configuration = parentRoute.ServiceProvider.GetRequiredService<IConfiguration>();
+		if (IsServer(configuration))
+		{
+			BaseTableRouteHandler.MapRoutes<ObjectMissingRouteHandler>(parentRoute);
+		}
 
 		var resourceRoute = parentRoute.MapGroup(RoutesV2.ResourceRoute);
 		_ = resourceRoute.MapGet(RoutesV2.File, GetObjectFileAsync);
 		_ = resourceRoute.MapGet(RoutesV2.Images, GetObjectImagesAsync);
 	}
+
+	static bool IsServer(IConfiguration configuration)
+		=> configuration.GetValue<bool?>("ObjectService:IsServer") ?? true;
 
 	//static async Task<IResult> CreateAsync(DtoObjectDescriptor request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
 	//{
@@ -180,13 +187,12 @@ public class ObjectRouteHandler : ITableRouteHandler
 	//	sfm.ObjectIndex.Objects.Add(
 	//		new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
 
-	//	_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
 	//	return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", tblObject.Id);
 	//}
 
-	static async Task<IResult> CreateDatAsync(DtoObjectPost request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger)
+	static async Task<IResult> CreateDatAsync(DtoObjectPost request, [FromServices] LocoDbContext db, [FromServices] IServiceProvider sp, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IConfiguration configuration)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[CreateAsync] Upload requested");
+		LoggerExtensions.LogInformation(logger, "[CreateAsync] Upload requested");
 
 		if (string.IsNullOrEmpty(request.DatBytesAsBase64))
 		{
@@ -290,7 +296,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 			ObjectSource = ObjectSource.Custom, // not possible to upload vanilla objects
 			ObjectType = hdrs.S5.ObjectType.Convert(),
 			VehicleType = vehicleType,
-			Availability = request.InitialAvailability,
+			Availability = IsServer(configuration) ? request.InitialAvailability : ObjectAvailability.Available,
 			CreatedDate = request.CreatedDate,
 			ModifiedDate = request.ModifiedDate,
 			UploadedDate = DateOnly.UtcToday,
@@ -339,11 +345,9 @@ public class ObjectRouteHandler : ITableRouteHandler
 		// save again
 		_ = await db.SaveChangesAsync();
 
-		// update server index
+		// update server index (in-memory projection; DB is source of truth)
 		sfm.ObjectIndex.Objects.Add(
-			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType));
-
-		_ = sfm.ObjectIndex.SaveIndexAsync(sfm.IndexFile);
+			new ObjectIndexEntry(hdrs.S5.Name, saveFileName, tblObject.Id, hdrs.S5.Checksum, xxHash3, tblObject.ObjectType, tblObject.ObjectSource, tblObject.CreatedDate, tblObject.UploadedDate, tblObject.VehicleType, tblObject.Availability));
 
 		var response = new ExpandedTbl<TblObject, TblObjectPack>(tblObject, [], [], []).ToDtoDescriptor();
 		return Results.Created($"Successfully added {tblObject.Name} with unique id {tblObject.Id}", response);
@@ -368,7 +372,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		return ReturnObject(descriptor, sfm, logger);
 	}
 
-	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectPostResponse request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
+	static async Task<IResult> UpdateAsync([FromRoute] UniqueObjectId id, DtoObjectPostResponse request, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, [FromServices] IConfiguration configuration, CancellationToken cancellationToken)
 	{
 		logger.LogInformation("[UpdateAsync] Update requested for object {ObjectId}", id);
 
@@ -391,7 +395,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 		obj.Description = request.Description;
 		obj.CreatedDate = request.CreatedDate;
 		obj.ModifiedDate = request.ModifiedDate;
-		obj.Availability = request.Availability;
+		obj.Availability = IsServer(configuration) ? request.Availability : ObjectAvailability.Available;
 
 		// Update licence navigation property
 		if (request.Licence == null)
@@ -491,7 +495,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	static async Task<IResult> ListAsync(HttpContext context, [FromServices] LocoDbContext db, [FromServices] ILogger<ObjectRouteHandler> logger, CancellationToken cancellationToken)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "[ListAsync] List requested for object");
+		LoggerExtensions.LogInformation(logger, "[ListAsync] List requested for object");
 
 		if (context.Request.Query.Count == 0)
 		{
@@ -582,7 +586,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "Indexed object is a vanilla object.");
+			LoggerExtensions.LogWarning(logger, "Indexed object is a vanilla object.");
 			return Results.Forbid();
 		}
 
@@ -668,7 +672,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	static IResult ReturnObject(DtoObjectPostResponse? dtoDescriptor, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "[ReturnObject]");
+		LoggerExtensions.LogDebug(logger, "[ReturnObject]");
 
 		if (dtoDescriptor == null)
 		{
@@ -705,7 +709,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 			if (dtoDescriptor.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 			{
-				Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger, "User attempted to download a vanilla object");
+				LoggerExtensions.LogWarning(logger, "User attempted to download a vanilla object");
 				dat.DatBytesAsBase64 = null;
 			}
 			else
@@ -719,7 +723,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 	static IResult ReturnFile(TblObject? obj, ServerFolderManager sfm, ILogger<ObjectRouteHandler> logger)
 	{
-		Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "[ReturnFile]");
+		LoggerExtensions.LogDebug(logger, "[ReturnFile]");
 
 		if (obj == null)
 		{
@@ -728,7 +732,7 @@ public class ObjectRouteHandler : ITableRouteHandler
 
 		if (obj.ObjectSource is ObjectSource.LocomotionGoG or ObjectSource.LocomotionSteam)
 		{
-			Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "User attempted to download a vanilla object");
+			LoggerExtensions.LogDebug(logger, "User attempted to download a vanilla object");
 			return Results.Forbid();
 		}
 

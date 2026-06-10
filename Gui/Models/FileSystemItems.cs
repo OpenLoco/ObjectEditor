@@ -1,9 +1,10 @@
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
+using Definitions;
 using System;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
-using FileLocationKind = Gui.Models.FileLocation;
+using FileLocationKind = Definitions.FileLocation;
 using OnlineApiEndpointGroupKind = Gui.Models.OnlineApiEndpointGroup;
 
 namespace Gui.Models;
@@ -11,13 +12,14 @@ namespace Gui.Models;
 public record FileSystemItem(
 	string DisplayName,
 	string? FileName, // only available in local mode
-	UniqueObjectId? Id, // only available in online-mode
+	UniqueObjectId? Id, // only available in remote mode
 	DateOnly? CreatedDate = null,
 	DateOnly? ModifiedDate = null,
 	FileLocationKind? FileLocation = null,
 	ObjectSource? ObjectSource = null,
 	ObjectType? ObjectType = null,
 	VehicleType? VehicleType = null,
+	ObjectAvailability? Availability = null,
 	ObservableCollection<FileSystemItem>? SubNodes = null)
 {
 	public uint? DatChecksum { get; init; }
@@ -26,11 +28,11 @@ public record FileSystemItem(
 
 	[JsonIgnore]
 	public bool CanOpen
-		=> FileLocation == FileLocationKind.Local
-			|| (FileLocation == FileLocationKind.Online
-				&& OnlineApiEndpointGroup == OnlineApiEndpointGroupKind.Objects
-				&& Id != null
-				&& ObjectType != null);
+		// Items delivered by a server (any FileLocation) have an Id and are openable via
+		// the API; items without an Id are raw disk files from the file-open dialog and
+		// only openable when present on disk.
+		=> (Id != null && ObjectType != null && OnlineApiEndpointGroup == OnlineApiEndpointGroupKind.Objects)
+			|| (FileLocation == FileLocationKind.Local && Id == null && !string.IsNullOrEmpty(FileName));
 
 	[JsonIgnore]
 	public bool CanDownload

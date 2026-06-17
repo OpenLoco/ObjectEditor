@@ -311,9 +311,11 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 					objectHeaderViewModel.ObjectSource = ObjectSource.LocomotionSteam;
 				}
 
-				AddViewModelToGroup(objectHeaderViewModel, objectGroup);
+				AddViewModelToGroup(
+					objectHeaderViewModel,
+					objectGroup);
+
 				AddViewModelToGroup(new ObjectDatHeaderViewModel(
-					Model.DatInfo.S5Header.Checksum,
 					Model.DatInfo.ObjectHeader.Encoding,
 					Model.DatInfo.ObjectHeader.DataLength),
 					objectGroup);

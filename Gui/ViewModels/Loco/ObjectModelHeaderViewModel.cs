@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Types;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -14,6 +15,10 @@ public class DesignerObjectModelHeaderViewModel : ObjectModelHeaderViewModel
 public class ObjectModelHeaderViewModel(ObjectModelHeader model)
 	: BaseViewModel<ObjectModelHeader>(model)
 {
+	[Browsable(false)]
+	public override string DisplayName
+		=> "Object Header";
+
 	[MaxLength(8)]
 	public string Name
 	{
@@ -33,7 +38,15 @@ public class ObjectModelHeaderViewModel(ObjectModelHeader model)
 		set => Model.ObjectType = value;
 	}
 
-	[Browsable(false)]
-	public override string DisplayName
-		=> "Object Header";
+	public uint DatChecksumInt
+	{
+		get => Model.DatChecksum;
+		set => Model.DatChecksum = value;
+	}
+
+	public string DatChecksumHex
+	{
+		get => string.Format($"0x{DatChecksumInt:X}");
+		set => DatChecksumInt = Convert.ToUInt32(value[2..], 16);
+	}
 }

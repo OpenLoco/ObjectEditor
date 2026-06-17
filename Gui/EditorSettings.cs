@@ -43,6 +43,7 @@ public class EditorSettings
 	public string ObjectIndicesFolder { get; set; } = string.Empty;
 	public string DownloadFolder { get; set; } = string.Empty;
 	public string CacheFolder { get; set; } = string.Empty;
+	public string ConfigFolder { get; set; } = string.Empty;
 
 	public string LocomotionSteamObjDataFolder { get; set; } = string.Empty;
 	public string LocomotionGoGObjDataFolder { get; set; } = string.Empty;
@@ -149,6 +150,11 @@ public class EditorSettings
 		if (!Directory.Exists(ObjDataDirectory))
 		{
 			logger.LogWarning("Invalid settings file: ObjData folder \"{ObjDataDirectory}\" does not exist", ObjDataDirectory);
+			return false;
+		}
+		if (!string.IsNullOrEmpty(ConfigFolder) && !Directory.Exists(ConfigFolder))
+		{
+			logger.LogWarning("Invalid settings file: Config folder \"{ConfigFolder}\" does not exist", ConfigFolder);
 			return false;
 		}
 

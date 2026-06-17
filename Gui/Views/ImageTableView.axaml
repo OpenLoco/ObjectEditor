@@ -50,6 +50,12 @@ x:DataType="vmg:ImageTableViewModel">
 					</MenuFlyout>
 				</SplitButton.Flyout>
 			</SplitButton>
+			<Button Command="{Binding ReloadImageTableGroupingCommand}" HorizontalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Reload image table grouping from the JSON configuration file">
+				<DockPanel>
+					<materialIcons:MaterialIcon Kind="Refresh" Width="24" Height="24" Margin="2" />
+					<TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4">Reload grouping</TextBlock>
+				</DockPanel>
+			</Button>
 			<Button HorizontalAlignment="Stretch" Margin="2" Padding="2">
 				<DockPanel>
 					<materialIcons:MaterialIcon Kind="Palette" Width="24" Height="24" Margin="2" />

@@ -6,6 +6,7 @@ using Dat.FileParsing;
 using Dat.Types;
 using Definitions.DTO;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Index;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -50,6 +52,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	public const string ApplicationName = "OpenLoco Object Editor";
 	public const string LoggingFileName = "objectEditor.log";
+	public const string ImageTableGroupsConfigFileName = "ImageTableGroups.json";
 
 	// stores settings.json, objectEditor.log, etc
 	public static string ProgramDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
@@ -79,6 +82,10 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.ObjectIndicesFolder = InitialiseDirectory(Settings.ObjectIndicesFolder, "objectIndices");
 		Settings.CacheFolder = InitialiseDirectory(Settings.CacheFolder, "cache");
 		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
+		Settings.ConfigFolder = InitialiseDirectory(Settings.ConfigFolder, "config");
+
+		EnsureDefaultImageTableGroupConfigExists(Settings.ConfigFolder);
+		ImageTableGrouper.LoadGroupConfigurationFile(Path.Combine(Settings.ConfigFolder, ImageTableGroupsConfigFileName));
 
 		ObjectServiceClient = new(Settings, Logger);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
@@ -153,6 +160,50 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		}
 
 		return folder;
+	}
+
+	void EnsureDefaultImageTableGroupConfigExists(string configFolder)
+	{
+		var configFilePath = Path.Combine(configFolder, ImageTableGroupsConfigFileName);
+		var assemblyPath = Assembly.GetExecutingAssembly().Location;
+		var assemblyWriteTimeUtc = File.GetLastWriteTimeUtc(assemblyPath);
+		var fileExists = File.Exists(configFilePath);
+
+		if (fileExists)
+		{
+			var existingWriteTimeUtc = File.GetLastWriteTimeUtc(configFilePath);
+			if (assemblyWriteTimeUtc <= existingWriteTimeUtc)
+			{
+				return;
+			}
+		}
+
+		try
+		{
+			using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Gui.ImageTableGroups.json");
+			if (stream == null)
+			{
+				Logger.LogError("Default image table group configuration resource not found.");
+				return;
+			}
+
+			using var reader = new StreamReader(stream);
+			var text = reader.ReadToEnd();
+			File.WriteAllText(configFilePath, text);
+
+			if (fileExists)
+			{
+				Logger.LogInformation("Replaced outdated {ImageTableGroupsConfigFileName} from assembly at {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
+			}
+			else
+			{
+				Logger.LogInformation("Installed default {ImageTableGroupsConfigFileName} from assembly to {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Failed to create default {ImageTableGroupsConfigFileName} at {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
+		}
 	}
 
 	public bool TryLoadObject(FileSystemItem filesystemItem, out LocoUIObjectModel? uiLocoFile)

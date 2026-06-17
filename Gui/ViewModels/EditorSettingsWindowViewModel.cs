@@ -26,7 +26,7 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		Model.ObjDataDirectories = [.. ObjDataDirectories];
 	}
 
-	[Category("Misc"), DisplayName("Allow saving as vanilla object"), Description("If enabled, the editor will allow saving objects with \"Vanilla\" flag set. If disabled, the object will be forcefully saved as \"Custom\" instead.")]
+	[Category("Misc"), DisplayName("Allow saving with vanilla object source"), Description("If enabled, the editor will allow saving objects with \"Vanilla\" object source flag set. If disabled, the object will be forcefully saved as \"Custom\" instead.")]
 	public bool AllowSavingAsVanillaObject
 	{
 		get => Model.AllowSavingAsVanillaObject;

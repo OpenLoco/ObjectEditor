@@ -490,7 +490,7 @@ public static class SawyerStreamWriter
 		}
 	}
 
-	public static MemoryStream WriteLocoObject(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanilla)
+	public static MemoryStream WriteLocoObject(string objName, ObjectType objectType, ObjectSource objectSource, SawyerEncoding encoding, ILogger logger, LocoObject obj, bool allowWritingAsVanillaObjectSource)
 	{
 		var validationResults = new List<ValidationResult>();
 		if (!Validator.TryValidateObject(obj.Object, new ValidationContext(obj.Object), validationResults))
@@ -506,10 +506,10 @@ public static class SawyerStreamWriter
 
 		// s5 header
 		var sourceGame = objectSource.Convert();
-		if (sourceGame == DatObjectSource.Vanilla && !allowWritingAsVanilla)
+		if (sourceGame == DatObjectSource.Vanilla && !allowWritingAsVanillaObjectSource)
 		{
 			sourceGame = DatObjectSource.Custom;
-			logger.LogWarning("Cannot save an object as 'Vanilla' - using 'Custom' instead");
+			logger.LogWarning("Cannot save an object with object source as 'Vanilla' - using 'Custom' instead");
 		}
 
 		var s5Header = new S5Header(objName, 0)

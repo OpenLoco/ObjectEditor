@@ -1116,7 +1116,7 @@ public class LoadSaveTests
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 				Assert.That(struc.MaxCurveSpeed, Is.EqualTo(400), nameof(struc.MaxCurveSpeed));
 				Assert.That(struc.VehicleDisplayListVerticalOffset, Is.EqualTo(3), nameof(struc.VehicleDisplayListVerticalOffset));
-				Assert.That(struc.Flags, Is.EqualTo(TrackObjectFlags.unk_00), nameof(struc.Flags));
+				Assert.That(struc.Flags, Is.EqualTo(TrackObjectFlags.HasRackRail), nameof(struc.Flags));
 				// Mods
 				Assert.That(struc.Bridges, Has.Count.EqualTo(5), nameof(struc.Bridges));
 				Assert.That(struc.TracksAndRoads, Has.Count.EqualTo(7), nameof(struc.TracksAndRoads));

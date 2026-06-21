@@ -1,0 +1,70 @@
+<UserControl
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:vm="using:Gui.ViewModels"
+xmlns:gui="using:Gui"
+mc:Ignorable="d"
+x:Class="Gui.Views.ViewModelGroupView"
+x:DataType="vm:ViewModelGroup">
+
+	<Border BorderThickness="1" Margin="4">
+		<DockPanel Margin="4">
+			<StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Top" Margin="0,0,0,6">
+				<TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+				<Button Content="✕"
+						Padding="4,0"
+						Command="{Binding RemoveGroupCommand}"
+						IsEnabled="{Binding CanRemoveGroup}"
+						ToolTip.Tip="Remove this group"
+						VerticalAlignment="Center"/>
+				<Button Content="+"
+						ToolTip.Tip="Add view to this group"
+						VerticalAlignment="Center">
+					<Button.Flyout>
+						<Flyout Placement="Bottom">
+							<ItemsControl ItemsSource="{Binding AllViewModels}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Button Content="{Binding DisplayName}"
+												Command="{Binding $parent[ItemsControl].((vm:ViewModelGroup)DataContext).AddViewModelFromParameterCommand}"
+												CommandParameter="{Binding}"
+												HorizontalAlignment="Stretch"
+												HorizontalContentAlignment="Left"
+												Margin="2"/>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</Flyout>
+					</Button.Flyout>
+				</Button>
+			</StackPanel>
+			<TabControl ItemsSource="{Binding ViewModels}">
+				<TabControl.Styles>
+					<Style Selector="TabItem">
+						<Setter Property="Padding" Value="2, 0, 2, 0"/>
+					</Style>
+				</TabControl.Styles>
+				<TabControl.ItemTemplate>
+					<DataTemplate>
+						<StackPanel Orientation="Horizontal" Spacing="4">
+							<TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+							<Button Content="✕"
+									Padding="4,0"
+									Command="{Binding $parent[TabControl].((vm:ViewModelGroup)DataContext).RemoveViewModelCommand}"
+									CommandParameter="{Binding}"
+									ToolTip.Tip="Close this view" />
+						</StackPanel>
+					</DataTemplate>
+				</TabControl.ItemTemplate>
+				<TabControl.ContentTemplate>
+					<DataTemplate>
+						<ContentControl Content="{Binding}" />
+					</DataTemplate>
+				</TabControl.ContentTemplate>
+			</TabControl>
+		</DockPanel>
+	</Border>
+
+</UserControl>

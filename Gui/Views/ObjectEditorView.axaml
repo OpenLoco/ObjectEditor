@@ -5,6 +5,7 @@ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:vm="using:Gui.ViewModels"
 xmlns:gui="using:Gui"
+xmlns:views="using:Gui.Views"
 xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
 mc:Ignorable="d"
 d:DesignWidth="1440"
@@ -47,13 +48,15 @@ x:DataType="vm:ObjectEditorViewModel">
 					</Style>
 				</Button.Styles>
 			</Button>
+			<Separator Width="1" Height="NaN" Margin="10,0" />
+			<StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="6">
+				<TextBlock Text="Groups:" VerticalAlignment="Center"/>
+				<TextBox Width="180" MaxHeight="24" Text="{Binding NewGroupName}" Watermark="New group name"/>
+				<Button Content="+" Command="{Binding AddGroupCommand}"/>
+			</StackPanel>
+			<Separator Width="1" Height="NaN" Margin="10,0" />
 		</StackPanel>
 
-		<StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="6,0,6,6" Spacing="6">
-			<TextBlock Text="Groups:" VerticalAlignment="Center"/>
-			<TextBox Width="180" Text="{Binding NewGroupName}" Watermark="New group name"/>
-			<Button Content="Add Group" Command="{Binding AddGroupCommand}"/>
-		</StackPanel>
 
 		<ItemsControl ItemsSource="{Binding ViewModelGroups}">
 			<ItemsControl.ItemsPanel>
@@ -63,63 +66,7 @@ x:DataType="vm:ObjectEditorViewModel">
 			</ItemsControl.ItemsPanel>
 			<ItemsControl.ItemTemplate>
 				<DataTemplate x:DataType="vm:ViewModelGroup">
-					<Border BorderThickness="1" Margin="4">
-						<DockPanel Margin="4">
-							<StackPanel Orientation="Horizontal" Spacing="6" DockPanel.Dock="Top" Margin="0,0,0,6">
-								<TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-								<Button Content="✕" 
-										Padding="4,0"
-										Command="{Binding RemoveGroupCommand}"
-										IsEnabled="{Binding CanRemoveGroup}"
-										ToolTip.Tip="Remove this group"
-										VerticalAlignment="Center"/>
-								<Button Content="+" 
-										ToolTip.Tip="Add view to this group"
-										VerticalAlignment="Center">
-									<Button.Flyout>
-										<Flyout Placement="Bottom">
-											<ItemsControl ItemsSource="{Binding AllViewModels}">
-												<ItemsControl.ItemTemplate>
-													<DataTemplate>
-														<Button Content="{Binding DisplayName}"
-																Command="{Binding $parent[ItemsControl].((vm:ViewModelGroup)DataContext).AddViewModelFromParameterCommand}"
-																CommandParameter="{Binding}"
-																HorizontalAlignment="Stretch"
-																HorizontalContentAlignment="Left"
-																Margin="2"/>
-													</DataTemplate>
-												</ItemsControl.ItemTemplate>
-											</ItemsControl>
-										</Flyout>
-									</Button.Flyout>
-								</Button>
-							</StackPanel>
-							<TabControl ItemsSource="{Binding ViewModels}">
-								<TabControl.Styles>
-									<Style Selector="TabItem">
-										<Setter Property="Padding" Value="2, 0, 2, 0"/>
-									</Style>
-								</TabControl.Styles>
-								<TabControl.ItemTemplate>
-									<DataTemplate>
-										<StackPanel Orientation="Horizontal" Spacing="4">
-											<TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-											<Button Content="✕" 
-													Padding="4,0" 
-													Command="{Binding $parent[TabControl].((vm:ViewModelGroup)DataContext).RemoveViewModelCommand}" 
-													CommandParameter="{Binding}"
-													ToolTip.Tip="Close this view" />
-										</StackPanel>
-									</DataTemplate>
-								</TabControl.ItemTemplate>
-								<TabControl.ContentTemplate>
-									<DataTemplate>
-										<ContentControl Content="{Binding}" />
-									</DataTemplate>
-								</TabControl.ContentTemplate>
-							</TabControl>
-						</DockPanel>
-					</Border>
+					<views:ViewModelGroupView />
 				</DataTemplate>
 			</ItemsControl.ItemTemplate>
 		</ItemsControl>

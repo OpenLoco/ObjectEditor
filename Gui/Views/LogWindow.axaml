@@ -11,7 +11,7 @@
 	x:DataType="vm:LogWindowViewModel"
 	Title="LogViewer"
 	WindowStartupLocation="CenterOwner"
-	SystemDecorations="Full"
+	WindowDecorations="Full"
 	Width="1600"
 	Height="768"
 	ShowInTaskbar="True">

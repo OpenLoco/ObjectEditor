@@ -6,7 +6,7 @@ namespace Gui.ViewModels;
 
 public abstract class BaseViewModelWithEditorContext<T> : BaseViewModel<T> where T : class
 {
-	protected BaseViewModelWithEditorContext(ObjectEditorContext editorContext, T? model = default)
+	protected BaseViewModelWithEditorContext(ObjectEditorContext editorContext, T? model)
 		: base(model)
 		=> EditorContext = editorContext;
 

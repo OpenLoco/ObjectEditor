@@ -86,8 +86,8 @@
 				<Image Source="{Binding Map}" RenderOptions.BitmapInterpolationMode="None" DockPanel.Dock="Right"/>
 				<StackPanel Orientation="Vertical" DockPanel.Dock="Left" MaxWidth="256">
 					<StackPanel Orientation="Horizontal" >
-						<TextBox Watermark="X" Text="{Binding TileElementX}"></TextBox>
-						<TextBox Watermark="Y" Text="{Binding TileElementY}"></TextBox>
+						<TextBox PlaceholderText="X" Text="{Binding TileElementX}"></TextBox>
+						<TextBox PlaceholderText="Y" Text="{Binding TileElementY}"></TextBox>
 					</StackPanel>
 					<ItemsRepeater ItemsSource="{Binding CurrentTileElements}">
 						<ItemsRepeater.Layout>

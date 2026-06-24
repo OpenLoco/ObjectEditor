@@ -14,11 +14,7 @@ public class ObjectMetadataViewModel : BaseViewModelWithEditorContext<ObjectMeta
 	public new string DisplayName
 		=> "Metadata";
 
-	public ObjectMetadataViewModel() : this(new ObjectMetadata("<empty>"), null!)
-	{
-	}
-
-	public ObjectMetadataViewModel(ObjectMetadata model, ObjectEditorContext editorContext)
+	public ObjectMetadataViewModel(ObjectEditorContext editorContext, ObjectMetadata model)
 		: base(editorContext, model)
 	{
 		Model = model;

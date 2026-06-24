@@ -51,7 +51,7 @@ x:DataType="vm:FolderTreeViewModel">
 				<Button Command="{Binding OpenCurrentFolder}" BorderThickness="0" DockPanel.Dock="Right" MinWidth="48" MaxWidth="48" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="Open folder">
 					<materialIcons:MaterialIcon Kind="FolderOpen" Width="24" Height="24" Margin="2" />
 				</Button>
-				<TextBox Text="{Binding CurrentDirectory}" BorderThickness="0" DockPanel.Dock="Right" Watermark="Current directory" UseFloatingWatermark="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
+				<TextBox Text="{Binding CurrentDirectory}" BorderThickness="0" DockPanel.Dock="Right" PlaceholderText="Current directory" UseFloatingPlaceholder="True" IsReadOnly="True" VerticalContentAlignment="Center" Margin="2"/>
 			</DockPanel>
 			<DockPanel Grid.Row="1">
 				<Button Command="{Binding RefreshDirectoryItems}" BorderThickness="0" DockPanel.Dock="Right" MinWidth="48" MaxWidth="48" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2" Padding="2" ToolTip.Tip="{Binding RecreateText}">
@@ -111,7 +111,7 @@ x:DataType="vm:FolderTreeViewModel">
 											<ComboBox ItemsSource="{Binding AvailableOperators}" SelectedItem="{Binding SelectedOperator}"/>
 										</StackPanel>
 										<Grid DockPanel.Dock="Bottom">
-											<TextBox Text="{Binding TextValue}" Watermark="Value" IsVisible="{Binding IsTextValue}"/>
+											<TextBox Text="{Binding TextValue}" PlaceholderText="Value" IsVisible="{Binding IsTextValue}"/>
 											<DatePicker SelectedDate="{Binding DateValue}" IsVisible="{Binding IsDateValue}"/>
 											<ComboBox ItemsSource="{Binding AvailableEnumValues}" SelectedItem="{Binding EnumValue}" IsVisible="{Binding IsEnumValue}"/>
 											<CheckBox IsChecked="{Binding BoolValue}" IsVisible="{Binding IsBoolValue}" />

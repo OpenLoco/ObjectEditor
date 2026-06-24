@@ -10,7 +10,7 @@
 	x:DataType="vm:EditorSettingsWindowViewModel"
 	Title="EditSettingsWindow"
 	WindowStartupLocation="CenterOwner"
-	SystemDecorations="Full"
+	WindowDecorations="Full"
 	Width="800"
 	Height="600"
 	ShowInTaskbar="False"

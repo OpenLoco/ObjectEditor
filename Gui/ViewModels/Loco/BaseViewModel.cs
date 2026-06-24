@@ -22,9 +22,9 @@ public abstract class BaseViewModel<T> : ReactiveObject, IViewModel, IViewModelG
 	readonly CompositeDisposable subscriptions = [];
 	bool disposed;
 
-	protected BaseViewModel(T model)
+	protected BaseViewModel(T? model)
 	{
-		Model = model;
+		Model = model!;
 
 		_ = _allViewModels.Connect()
 			.ObserveOn(RxSchedulers.MainThreadScheduler)

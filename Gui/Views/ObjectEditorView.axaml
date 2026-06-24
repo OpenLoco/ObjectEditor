@@ -51,7 +51,7 @@ x:DataType="vm:ObjectEditorViewModel">
 			<Separator Width="1" Height="NaN" Margin="10,0" />
 			<StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="6">
 				<TextBlock Text="Groups:" VerticalAlignment="Center"/>
-				<TextBox Width="180" MaxHeight="24" Text="{Binding NewGroupName}" Watermark="New group name"/>
+				<TextBox Width="180" MaxHeight="24" Text="{Binding NewGroupName}" PlaceholderText="New group name"/>
 				<Button Content="+" Command="{Binding AddGroupCommand}"/>
 			</StackPanel>
 			<Separator Width="1" Height="NaN" Margin="10,0" />

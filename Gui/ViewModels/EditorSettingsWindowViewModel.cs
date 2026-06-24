@@ -49,8 +49,9 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 
 	#region Object Folders
 
-	const string GameObjectFolderCategory = "Folders OpenLoco can use objects from";
-	const string UserObjectFolderCategory = "Folders where you store custom objects";
+	const string GameObjectFolderCategory = "Locomotion/OpenLoco ObjData Folders";
+	const string UserObjectFolderCategory = "Custom Object Folders";
+	const string ConfigFolderCategory = "Configuration Folders";
 
 	[PathBrowsable(PathBrowsableType.Directory), Category(GameObjectFolderCategory), DisplayName("Locomotion (Steam) ObjData Folder"), Description("The ObjData folder in your Steam Locomotion installation.")]
 	public string LocomotionSteamObjDataFolder
@@ -94,6 +95,20 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		set => Model.DownloadFolder = value;
 	}
 
+	[PathBrowsable(PathBrowsableType.Directory), Category(ConfigFolderCategory), DisplayName("Config"), Description("The folder to dynamic editor config.")]
+	public string ConfigFolder
+	{
+		get => Model.ConfigFolder;
+		set => Model.ConfigFolder = value;
+	}
+
+	[PathBrowsable(PathBrowsableType.Directory), Category(ConfigFolderCategory), DisplayName("Object Indices"), Description("The folder to store object index files (which are created one for each directory you ask the editor to index).")]
+	public string ObjectIndicesFolder
+	{
+		get => Model.ObjectIndicesFolder;
+		set => Model.ObjectIndicesFolder = value;
+	}
+
 	[ReadOnly(true), Category(UserObjectFolderCategory), DisplayName("Current ObjectData folder"), Description("The currently-selected ObjectData folder. This is readonly and only used to remember the previous location when you start up the editor.")]
 	public string CurrentObjDataFolder
 	{
@@ -101,7 +116,7 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		set => Model.ObjDataDirectory = value;
 	}
 
-	[Category(UserObjectFolderCategory), DisplayName("ObjectData folders"), Description("The list of all ObjectData folders.")]
+	[Category(UserObjectFolderCategory), DisplayName("ObjectData folders"), Description("The list of all ObjectData folders that have been indexed.")]
 	public ObservableCollection<string> ObjDataDirectories { get; set; }
 
 	#endregion

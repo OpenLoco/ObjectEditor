@@ -14,11 +14,12 @@ using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -51,13 +52,21 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 	//public Collection<string> MiscFiles { get; } = [];
 
 	public const string ApplicationName = "OpenLoco Object Editor";
+	public const string SettingsFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
 	public const string LoggingFileName = "objectEditor.log";
-	public const string ImageTableGroupsConfigFileName = "ImageTableGroups.json";
+	public const string ImageTableGroupsFileName = "imageTableGroups.json";
+
+	public string DefaultConfigFolder { get; set; } = "config";
+	public string DefaultDownloadFolder { get; set; } = "downloads";
+	public string DefaultCacheFolder { get; set; } = "cache";
+	public string DefaultObjectIndicesFolder { get; set; } = "objectIndices";
 
 	// stores settings.json, objectEditor.log, etc
 	public static string ProgramDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
-	public static string SettingsFile => Path.Combine(ProgramDataPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? EditorSettings.DefaultFileName);
-	public static string LoggingFile => Path.Combine(ProgramDataPath, LoggingFileName);
+	public static string SettingsFilePathName => Path.Combine(ProgramDataPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? SettingsFileName);
+	public static string LoggingFilePathName => Path.Combine(ProgramDataPath, LoggingFileName);
+
+	public string ImageTableGroupsPathName => Path.Combine(Settings.ConfigFolder, ImageTableGroupsFileName);
 
 	public ObservableCollection<LogLine> LoggerObservableLogs { get; init; } = [];
 
@@ -83,9 +92,6 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		Settings.CacheFolder = InitialiseDirectory(Settings.CacheFolder, "cache");
 		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
 		Settings.ConfigFolder = InitialiseDirectory(Settings.ConfigFolder, "config");
-
-		EnsureDefaultImageTableGroupConfigExists(Settings.ConfigFolder);
-		ImageTableGrouper.LoadGroupConfigurationFile(Path.Combine(Settings.ConfigFolder, ImageTableGroupsConfigFileName));
 
 		ObjectServiceClient = new(Settings, Logger);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
@@ -116,7 +122,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				{
 					try
 					{
-						await File.AppendAllTextAsync(LoggingFile, logMessage + Environment.NewLine);
+						await File.AppendAllTextAsync(LoggingFilePathName, logMessage + Environment.NewLine);
 					}
 					catch (Exception ex)
 					{
@@ -134,7 +140,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	void LoadSettings()
 	{
-		Settings = EditorSettings.Load(SettingsFile, Logger);
+		Settings = EditorSettings.Load(SettingsFilePathName, Logger);
 
 		if (Settings.Validate(Logger))
 		{
@@ -162,47 +168,63 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		return folder;
 	}
 
-	void EnsureDefaultImageTableGroupConfigExists(string configFolder)
-	{
-		var configFilePath = Path.Combine(configFolder, ImageTableGroupsConfigFileName);
-		var assemblyPath = Assembly.GetExecutingAssembly().Location;
-		var assemblyWriteTimeUtc = File.GetLastWriteTimeUtc(assemblyPath);
-		var fileExists = File.Exists(configFilePath);
+	public async Task LoadAsync()
+		=> await EnsureDefaultImageTableGroupsConfigFileAsync(Logger, ImageTableGroupsPathName);
 
-		if (fileExists)
+	static async Task EnsureDefaultImageTableGroupsConfigFileAsync(Logger logger, string imageTableGroupsPathName)
+	{
+		logger.LogInformation("Attempting to load image table group config from '{ImageTableGroupsFileName}'", imageTableGroupsPathName);
+		var defaultImageTableGroups = await ReadDefaultImageTableGroupsConfigAsync(logger, imageTableGroupsPathName);
+		if (defaultImageTableGroups == null)
 		{
-			var existingWriteTimeUtc = File.GetLastWriteTimeUtc(configFilePath);
-			if (assemblyWriteTimeUtc <= existingWriteTimeUtc)
-			{
-				return;
-			}
+			logger.LogError("Failed to load default image table group configuration - groups will not be automatically created for existing images. Please ensure the default config file is present and valid at '{ImageTableGroupsFileName}'", imageTableGroupsPathName);
+			return;
 		}
 
-		try
+		var currentImageTableGroups = defaultImageTableGroups;
+
+		if (File.Exists(imageTableGroupsPathName))
 		{
-			using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Gui.ImageTableGroups.json");
-			if (stream == null)
+			var jsonVersion = ImageTableGrouper.ReadImageTableGroupVersion(logger, imageTableGroupsPathName);
+			if (jsonVersion == null || jsonVersion < VersionHelpers.GetCurrentAppVersion())
 			{
-				Logger.LogError("Default image table group configuration resource not found.");
-				return;
-			}
-
-			using var reader = new StreamReader(stream);
-			var text = reader.ReadToEnd();
-			File.WriteAllText(configFilePath, text);
-
-			if (fileExists)
-			{
-				Logger.LogInformation("Replaced outdated {ImageTableGroupsConfigFileName} from assembly at {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
+				currentImageTableGroups = defaultImageTableGroups;
 			}
 			else
 			{
-				Logger.LogInformation("Installed default {ImageTableGroupsConfigFileName} from assembly to {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
+				await File.WriteAllTextAsync(imageTableGroupsPathName, defaultImageTableGroups);
+			}
+		}
+		else
+		{
+			await File.WriteAllTextAsync(imageTableGroupsPathName, defaultImageTableGroups);
+		}
+
+		ImageTableGrouper.LoadGroupConfigurationFile(logger, currentImageTableGroups);
+	}
+
+	static async Task<string?> ReadDefaultImageTableGroupsConfigAsync(Logger logger, string imageTableGroupsFileName)
+	{
+		try
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var currentVersion = VersionHelpers.GetCurrentAppVersion();
+			using var assemblyStream = assembly.GetManifestResourceStream("Gui.ImageTableGroups.json");
+			if (assemblyStream == null)
+			{
+				logger.LogError("Default image table group configuration resource not found.");
+				return null;
+			}
+
+			using (var reader = new StreamReader(assemblyStream, leaveOpen: true))
+			{
+				return await reader.ReadToEndAsync();
 			}
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Failed to create default {ImageTableGroupsConfigFileName} at {ConfigFilePath}", ImageTableGroupsConfigFileName, configFilePath);
+			logger.LogError(ex, "Failed to create default image table group config file.");
+			return null;
 		}
 	}
 
@@ -454,6 +476,15 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		await indexerTask;
 	}
 
+	public string IndexFileName
+	{
+		get
+		{
+			var filename = Convert.ToBase64String(Encoding.UTF8.GetBytes(Settings.ObjDataDirectory));
+			return Path.Combine(Settings.ObjectIndicesFolder, $"{filename}.json");
+		}
+	}
+
 	async Task LoadObjDirectoryAsyncCore(string directory, IProgress<float> progress, bool useExistingIndex)
 	{
 		if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory) || progress == null)
@@ -463,22 +494,22 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		}
 
 		Settings.ObjDataDirectory = directory;
-		Settings.Save(SettingsFile, Logger);
+		Settings.Save(SettingsFilePathName, Logger);
 
-		if (useExistingIndex && File.Exists(Settings.IndexFileName))
+		if (useExistingIndex && File.Exists(IndexFileName))
 		{
 			var exception = false;
 
 			try
 			{
-				var index = await ObjectIndex.LoadIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
+				var index = await ObjectIndex.LoadIndexAsync(IndexFileName).ConfigureAwait(false);
 				ArgumentNullException.ThrowIfNull(index, nameof(index));
 				ObjectIndex = index;
 				Logger.LogInformation("Loaded index for {Directory} with {Count} objects.", directory, ObjectIndex.Objects.Count);
 			}
 			catch (Exception ex)
 			{
-				Logger.LogError(ex, "Failed to load index from \"{IndexFileName}\"", Settings.IndexFileName);
+				Logger.LogError(ex, "Failed to load index from \"{IndexFileName}\"", IndexFileName);
 				exception = true;
 			}
 
@@ -512,14 +543,14 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			Logger.LogInformation("Updating index file for {Directory}", directory);
 			_ = ObjectIndex.UpdateIndex(directory, Logger, filesToAdd, progress);
 
-			if (string.IsNullOrEmpty(Settings.IndexFileName))
+			if (string.IsNullOrEmpty(IndexFileName))
 			{
 				Logger.LogError("Index filename was null or empty.");
 				return;
 			}
 
-			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.LogInformation("Index was saved to {IndexFileName}", Settings.IndexFileName);
+			await ObjectIndex.SaveIndexAsync(IndexFileName).ConfigureAwait(false);
+			Logger.LogInformation("Index was saved to {IndexFileName}", IndexFileName);
 		}
 
 		async Task RecreateIndex(string directory, IProgress<float> progress)
@@ -533,14 +564,14 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				return;
 			}
 
-			if (string.IsNullOrEmpty(Settings.IndexFileName))
+			if (string.IsNullOrEmpty(IndexFileName))
 			{
 				Logger.LogError("Index filename was null or empty.");
 				return;
 			}
 
-			await ObjectIndex.SaveIndexAsync(Settings.IndexFileName).ConfigureAwait(false);
-			Logger.LogInformation("New index was saved to {IndexFileName}", Settings.IndexFileName);
+			await ObjectIndex.SaveIndexAsync(IndexFileName).ConfigureAwait(false);
+			Logger.LogInformation("New index was saved to {IndexFileName}", IndexFileName);
 		}
 	}
 

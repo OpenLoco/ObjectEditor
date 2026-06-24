@@ -1,7 +1,10 @@
 using Common.Json;
+using Common.Logging;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
+using Microsoft.Extensions.Logging;
+using NuGet.Versioning;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -31,15 +34,15 @@ public static class ImageTableGrouper
 		return imageTable;
 	}
 
-public static IEnumerable<ImageTableGroup> CreateGroupsForExistingImages(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
-{
-	var originalCount = imageList.Count;
-	var groups = CreateGroups(obj, objectType, imageList).ToList();
+	public static IEnumerable<ImageTableGroup> CreateGroupsForExistingImages(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
+	{
+		var originalCount = imageList.Count;
+		var groups = CreateGroups(obj, objectType, imageList).ToList();
 
-	Debug.Assert(groups.SelectMany(g => g.GraphicsElements).Count() == originalCount, "Image grouping lost or gained images");
+		Debug.Assert(groups.SelectMany(g => g.GraphicsElements).Count() == originalCount, "Image grouping lost or gained images");
 
-	return groups;
-}
+		return groups;
+	}
 
 	private static IEnumerable<ImageTableGroup> CreateGroups(ILocoStruct obj, ObjectType objectType, List<GraphicsElement> imageList)
 	{
@@ -128,13 +131,13 @@ public static IEnumerable<ImageTableGroup> CreateGroupsForExistingImages(ILocoSt
 		return [new("<json-file-error>", [.. imageList])];
 	}
 
-	private static bool TryGetGroupConfiguration(ObjectType objectType, [NotNullWhen(true)] out ImageTableGroupConfiguration? configuration)
+	private static bool TryGetGroupConfiguration(ObjectType objectType, [NotNullWhen(true)] out ImageTableGroupConfigurationType? configuration)
 	{
 		configuration = null;
 		return GroupConfigurations.TryGetValue(objectType, out configuration);
 	}
 
-	private static IEnumerable<ImageTableGroup> CreateGroupsFromConfig(ImageTableGroupConfiguration configuration, List<GraphicsElement> imageList)
+	private static IEnumerable<ImageTableGroup> CreateGroupsFromConfig(ImageTableGroupConfigurationType configuration, List<GraphicsElement> imageList)
 	{
 		var groups = configuration.Groups.OrderBy(group => group.Start).ToList();
 		for (var index = 0; index < groups.Count; index++)
@@ -197,30 +200,53 @@ public static IEnumerable<ImageTableGroup> CreateGroupsForExistingImages(ILocoSt
 		}
 	}
 
-	public static void LoadGroupConfigurationFile(string configFilePath)
+	public static SemanticVersion? ReadImageTableGroupVersion(Logger logger, string imageTableGroupsFileName)
 	{
-		if (string.IsNullOrEmpty(configFilePath) || !File.Exists(configFilePath))
+		var existingText = File.ReadAllText(imageTableGroupsFileName);
+		if (string.IsNullOrWhiteSpace(existingText))
 		{
-			GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfiguration>();
-			return;
+			logger.LogError("Existing image table group configuration file is empty");
+			return null;
 		}
 
 		try
 		{
-			var json = File.ReadAllText(configFilePath);
-			var configurations = JsonSerializer.Deserialize<List<ImageTableGroupConfiguration>>(json, JsonFile.DefaultSerializerOptions) ?? [];
-			GroupConfigurations = configurations
+			using var doc = JsonDocument.Parse(existingText);
+			if (doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("version", out var verProp) && verProp.ValueKind == JsonValueKind.String)
+			{
+				var existingVersionText = verProp.GetString();
+				if (!string.IsNullOrEmpty(existingVersionText) && SemanticVersion.TryParse(existingVersionText, out var existingVersion))
+				{
+					logger.LogDebug("Existing image table group configuration version: {version}", existingVersion);
+					return existingVersion;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Error occurred while reading image table group version");
+		}
+
+		return null;
+	}
+
+	public static void LoadGroupConfigurationFile(ILogger logger, string json)
+	{
+		try
+		{
+			var itgc = JsonSerializer.Deserialize<ImageTableGroupConfiguration>(json, JsonFile.DefaultSerializerOptions);
+			GroupConfigurations = itgc?.Definitions
 				.Select(configuration => (configuration, success: Enum.TryParse<ObjectType>(configuration.ObjectType, ignoreCase: true, out var objectType), objectType))
 				.Where(pair => pair.success)
-				.ToDictionary(pair => pair.objectType, pair => pair.configuration);
+				.ToDictionary(pair => pair.objectType, pair => pair.configuration) ?? [];
 		}
-		catch (JsonException)
+		catch (JsonException ex)
 		{
-			GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfiguration>();
+			logger.LogError(ex, "Image table group config is not valid JSON or version could not be read");
 		}
 	}
 
-	private static IReadOnlyDictionary<ObjectType, ImageTableGroupConfiguration> GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfiguration>();
+	private static IReadOnlyDictionary<ObjectType, ImageTableGroupConfigurationType> GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfigurationType>();
 
 	private static IEnumerable<ImageTableGroup> CreateCompetitorGroups(CompetitorObject model, List<GraphicsElement> imageList)
 	{

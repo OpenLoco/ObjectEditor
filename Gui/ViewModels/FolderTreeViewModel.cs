@@ -327,8 +327,8 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 		}
 
 		RefreshDirectoryItems = ReactiveCommand.CreateFromTask(async () => await LoadDirectoryAsync(false));
-		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : this.EditorContext.Settings.DownloadFolder, this.EditorContext.Logger));
-		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(this.EditorContext, availableFilterCategories, RemoveFilter)));
+		OpenCurrentFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(IsLocal ? CurrentLocalDirectory : EditorContext.Settings.DownloadFolder, EditorContext.Logger));
+		AddFilterCommand = ReactiveCommand.Create(() => Filters.Add(new FilterViewModel(EditorContext, availableFilterCategories, RemoveFilter)));
 		SelectOnlineBrowseFileSystemItem = ReactiveCommand.Create<FileSystemItem>(item => CurrentlySelectedObject = item);
 		DownloadOnlineItemCommand = ReactiveCommand.CreateFromTask<FileSystemItem>(DownloadOnlineItemAsync);
 		DownloadOnlinePackCommand = ReactiveCommand.CreateFromTask<OnlineItemPackBrowseResult>(DownloadOnlinePackAsync);
@@ -343,7 +343,7 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 				var dir = Directory.GetParent(clickedOnObject.FileName)?.FullName;
 				if (!string.IsNullOrEmpty(dir))
 				{
-					PlatformSpecific.FolderOpenInDesktop(dir, this.EditorContext.Logger, Path.GetFileName(clickedOnObject.FileName));
+					PlatformSpecific.FolderOpenInDesktop(dir, EditorContext.Logger, Path.GetFileName(clickedOnObject.FileName));
 				}
 
 			}
@@ -400,10 +400,10 @@ public class FolderTreeViewModel : ReactiveObject, IDisposable
 			RaiseBrowseModeProperties();
 		}).DisposeWith(_subscriptions);
 
-		CurrentLocalDirectory = this.EditorContext.Settings.ObjDataDirectory;
+		CurrentLocalDirectory = EditorContext.Settings.ObjDataDirectory;
 
 		// add default name filter
-		var defaultFilter = new FilterViewModel(this.EditorContext, availableFilterCategories, RemoveFilter)
+		var defaultFilter = new FilterViewModel(EditorContext, availableFilterCategories, RemoveFilter)
 		{
 			SelectedObjectType = indexFilterModel,
 			SelectedOperator = FilterOperator.Contains,

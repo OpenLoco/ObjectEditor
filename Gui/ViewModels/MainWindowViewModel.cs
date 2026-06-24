@@ -80,6 +80,7 @@ public class MainWindowViewModel : ViewModelBase
 		DefaultPaletteImage = Image.Load<Rgba32>(AssetLoader.Open(new Uri(DefaultPaletteImageString)));
 
 		EditorContext = new();
+		Task.Run(EditorContext.LoadAsync);
 		Task.Run(LoadDefaultPalette);
 
 		FolderTreeViewModel = new FolderTreeViewModel(EditorContext);
@@ -141,7 +142,7 @@ public class MainWindowViewModel : ViewModelBase
 		{
 			var vm = new EditorSettingsWindowViewModel(EditorContext.Settings);
 			var result = await OpenEditorSettingsWindow.Handle(vm);
-			EditorContext.Settings.Save(ObjectEditorContext.SettingsFile, EditorContext.Logger);
+			EditorContext.Settings.Save(ObjectEditorContext.SettingsFilePathName, EditorContext.Logger);
 		});
 
 		OpenLogWindow = new();

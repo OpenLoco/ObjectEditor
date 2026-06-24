@@ -283,7 +283,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 					if (Model.LocoObject.ImageTable != null)
 					{
-						var configFilePath = Path.Combine(EditorContext.Settings.ConfigFolder, ObjectEditorContext.ImageTableGroupsConfigFileName);
+						var configFilePath = Path.Combine(EditorContext.Settings.ConfigFolder, ObjectEditorContext.ImageTableGroupsFileName);
 						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, Model.LocoObject.ObjectType, Model.LocoObject.Object, configFilePath), mediaGroup);
 
 						var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
@@ -360,7 +360,7 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		if (string.IsNullOrEmpty(savePath))
 		{
-			Logger.LogError("Cannot save: savePath was null. EditorContext.Settings.DownloadFolder=\"{DownloadFolder}\" CurrentFile.Location=\"{FileLocation}\" CurrentFile.DisplayName=\"{DisplayName}\" CurrentFile.Id=\"{Id}\"", EditorContext.Settings.DownloadFolder, CurrentFile.FileLocation, CurrentFile.DisplayName, CurrentFile.Id);
+			Logger.LogError("Cannot save: savePath was null. EditorContext.Settings.DownloadsFolder=\"{DownloadsFolder}\" CurrentFile.Location=\"{FileLocation}\" CurrentFile.DisplayName=\"{DisplayName}\" CurrentFile.Id=\"{Id}\"", EditorContext.Settings.DownloadFolder, CurrentFile.FileLocation, CurrentFile.DisplayName, CurrentFile.Id);
 			return;
 		}
 

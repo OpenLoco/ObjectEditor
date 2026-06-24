@@ -403,7 +403,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			return Task.CompletedTask;
 		}
 
-		ImageTableGrouper.LoadGroupConfigurationFile(groupingConfigFilePath);
+		ImageTableGrouper.LoadGroupConfigurationFile(Logger, groupingConfigFilePath);
 
 		var imageList = Model.GraphicsElements.OrderBy(x => x.ImageTableIndex).ToList();
 

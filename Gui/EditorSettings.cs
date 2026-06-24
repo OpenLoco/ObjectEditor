@@ -3,9 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Gui;
 
@@ -40,10 +38,10 @@ public class EditorSettings
 	//public string ServerEmail { get; set; }
 	//public string ServerPassword { get; set; }
 
-	public string ObjectIndicesFolder { get; set; } = string.Empty;
-	public string DownloadFolder { get; set; } = string.Empty;
 	public string CacheFolder { get; set; } = string.Empty;
 	public string ConfigFolder { get; set; } = string.Empty;
+	public string DownloadFolder { get; set; } = string.Empty;
+	public string ObjectIndicesFolder { get; set; } = string.Empty;
 
 	public string LocomotionSteamObjDataFolder { get; set; } = string.Empty;
 	public string LocomotionGoGObjDataFolder { get; set; } = string.Empty;
@@ -59,19 +57,6 @@ public class EditorSettings
 			GameObjDataFolder.OpenLoco => OpenLocoObjDataFolder,
 			_ => throw new NotImplementedException(),
 		};
-
-	[JsonIgnore]
-	public string IndexFileName
-	{
-		get
-		{
-			var filename = Convert.ToBase64String(Encoding.UTF8.GetBytes(ObjDataDirectory));
-			return Path.Combine(ObjectIndicesFolder, $"{filename}.json");
-		}
-	}
-
-	[JsonIgnore]
-	public const string DefaultFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
 
 	public static EditorSettings Load(string filename, ILogger logger)
 	{
@@ -152,6 +137,7 @@ public class EditorSettings
 			logger.LogWarning("Invalid settings file: ObjData folder \"{ObjDataDirectory}\" does not exist", ObjDataDirectory);
 			return false;
 		}
+
 		if (!string.IsNullOrEmpty(ConfigFolder) && !Directory.Exists(ConfigFolder))
 		{
 			logger.LogWarning("Invalid settings file: Config folder \"{ConfigFolder}\" does not exist", ConfigFolder);

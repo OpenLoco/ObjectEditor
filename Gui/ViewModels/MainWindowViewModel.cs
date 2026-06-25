@@ -56,7 +56,7 @@ public class MainWindowViewModel : ViewModelBase
 	public ReactiveCommand<Unit, Unit> DownloadLatestUpdate { get; }
 
 	public string WindowTitle
-		=> $"{ObjectEditorContext.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
+		=> $"{EditorSettings.ApplicationName} - {ApplicationVersion} ({LatestVersionText})";
 
 	[Reactive]
 	public SemanticVersion ApplicationVersion { get; set; }
@@ -80,7 +80,6 @@ public class MainWindowViewModel : ViewModelBase
 		DefaultPaletteImage = Image.Load<Rgba32>(AssetLoader.Open(new Uri(DefaultPaletteImageString)));
 
 		EditorContext = new();
-		Task.Run(EditorContext.LoadAsync);
 		Task.Run(LoadDefaultPalette);
 
 		FolderTreeViewModel = new FolderTreeViewModel(EditorContext);
@@ -125,7 +124,7 @@ public class MainWindowViewModel : ViewModelBase
 		OpenSingleObject = ReactiveCommand.Create(LoadSingleObject);
 		OpenCacheFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(EditorContext.Settings.CacheFolder, EditorContext.Logger));
 		OpenDownloadFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(EditorContext.Settings.DownloadFolder, EditorContext.Logger));
-		OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(ObjectEditorContext.ProgramDataPath, EditorContext.Logger));
+		OpenSettingsFolder = ReactiveCommand.Create(() => PlatformSpecific.FolderOpenInDesktop(EditorSettings.ProgramDataPath, EditorContext.Logger));
 		OpenG1 = ReactiveCommand.Create(LoadG1);
 		OpenSCV5 = ReactiveCommand.Create(LoadSCV5);
 		OpenMusic = ReactiveCommand.Create(LoadMusic);
@@ -142,7 +141,7 @@ public class MainWindowViewModel : ViewModelBase
 		{
 			var vm = new EditorSettingsWindowViewModel(EditorContext.Settings);
 			var result = await OpenEditorSettingsWindow.Handle(vm);
-			EditorContext.Settings.Save(ObjectEditorContext.SettingsFilePathName, EditorContext.Logger);
+			EditorContext.Settings.Save(EditorSettings.SettingsFilePathName, EditorContext.Logger);
 		});
 
 		OpenLogWindow = new();

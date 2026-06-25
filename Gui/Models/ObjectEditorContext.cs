@@ -6,7 +6,6 @@ using Dat.FileParsing;
 using Dat.Types;
 using Definitions.DTO;
 using Definitions.ObjectModels;
-using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Index;
@@ -18,7 +17,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,23 +49,6 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 
 	//public Collection<string> MiscFiles { get; } = [];
 
-	public const string ApplicationName = "OpenLoco Object Editor";
-	public const string SettingsFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
-	public const string LoggingFileName = "objectEditor.log";
-	public const string ImageTableGroupsFileName = "imageTableGroups.json";
-
-	public string DefaultConfigFolder { get; set; } = "config";
-	public string DefaultDownloadFolder { get; set; } = "downloads";
-	public string DefaultCacheFolder { get; set; } = "cache";
-	public string DefaultObjectIndicesFolder { get; set; } = "objectIndices";
-
-	// stores settings.json, objectEditor.log, etc
-	public static string ProgramDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
-	public static string SettingsFilePathName => Path.Combine(ProgramDataPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? SettingsFileName);
-	public static string LoggingFilePathName => Path.Combine(ProgramDataPath, LoggingFileName);
-
-	public string ImageTableGroupsPathName => Path.Combine(Settings.ConfigFolder, ImageTableGroupsFileName);
-
 	public ObservableCollection<LogLine> LoggerObservableLogs { get; init; } = [];
 
 	public ObjectServiceClient ObjectServiceClient { get; init; }
@@ -83,15 +64,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		LoggerObservableLogs = [];
 		Logger.LogAdded += (sender, laea) => LogAsync(laea.Log).ConfigureAwait(false);
 
-		LoadSettings();
-
-		// settings must be loaded or else the rest of the app cannot start
-		ArgumentNullException.ThrowIfNull(Settings);
-
-		Settings.ObjectIndicesFolder = InitialiseDirectory(Settings.ObjectIndicesFolder, "objectIndices");
-		Settings.CacheFolder = InitialiseDirectory(Settings.CacheFolder, "cache");
-		Settings.DownloadFolder = InitialiseDirectory(Settings.DownloadFolder, "downloads");
-		Settings.ConfigFolder = InitialiseDirectory(Settings.ConfigFolder, "config");
+		Settings = EditorSettings.Load(EditorSettings.SettingsFilePathName, Logger);
 
 		ObjectServiceClient = new(Settings, Logger);
 		ObjectServiceModel = new ObjectServiceModel(ObjectServiceClient, Logger);
@@ -122,7 +95,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 				{
 					try
 					{
-						await File.AppendAllTextAsync(LoggingFilePathName, logMessage + Environment.NewLine);
+						await File.AppendAllTextAsync(EditorSettings.LoggingFilePathName, logMessage + Environment.NewLine);
 					}
 					catch (Exception ex)
 					{
@@ -135,96 +108,6 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			{
 				_ = logFileLock.Release(); // Release the semaphore
 			}
-		}
-	}
-
-	void LoadSettings()
-	{
-		Settings = EditorSettings.Load(SettingsFilePathName, Logger);
-
-		if (Settings.Validate(Logger))
-		{
-			Logger.LogInformation("Settings loaded and validated successfully.");
-		}
-		else
-		{
-			Logger.LogError("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
-		}
-	}
-
-	string InitialiseDirectory(string folder, string defaultName)
-	{
-		if (string.IsNullOrEmpty(folder))
-		{
-			folder = Path.Combine(ProgramDataPath, defaultName);
-		}
-
-		if (!Directory.Exists(folder))
-		{
-			Logger.LogInformation("\"{DefaultName}\" folder doesn't exist; creating now at \"{Folder}\"", defaultName, folder);
-			_ = Directory.CreateDirectory(folder);
-		}
-
-		return folder;
-	}
-
-	public async Task LoadAsync()
-		=> await EnsureDefaultImageTableGroupsConfigFileAsync(Logger, ImageTableGroupsPathName);
-
-	static async Task EnsureDefaultImageTableGroupsConfigFileAsync(Logger logger, string imageTableGroupsPathName)
-	{
-		logger.LogInformation("Attempting to load image table group config from '{ImageTableGroupsFileName}'", imageTableGroupsPathName);
-		var defaultImageTableGroups = await ReadDefaultImageTableGroupsConfigAsync(logger, imageTableGroupsPathName);
-		if (defaultImageTableGroups == null)
-		{
-			logger.LogError("Failed to load default image table group configuration - groups will not be automatically created for existing images. Please ensure the default config file is present and valid at '{ImageTableGroupsFileName}'", imageTableGroupsPathName);
-			return;
-		}
-
-		var currentImageTableGroups = defaultImageTableGroups;
-
-		if (File.Exists(imageTableGroupsPathName))
-		{
-			var jsonVersion = ImageTableGrouper.ReadImageTableGroupVersion(logger, imageTableGroupsPathName);
-			if (jsonVersion == null || jsonVersion < VersionHelpers.GetCurrentAppVersion())
-			{
-				currentImageTableGroups = defaultImageTableGroups;
-			}
-			else
-			{
-				await File.WriteAllTextAsync(imageTableGroupsPathName, defaultImageTableGroups);
-			}
-		}
-		else
-		{
-			await File.WriteAllTextAsync(imageTableGroupsPathName, defaultImageTableGroups);
-		}
-
-		ImageTableGrouper.LoadGroupConfigurationFile(logger, currentImageTableGroups);
-	}
-
-	static async Task<string?> ReadDefaultImageTableGroupsConfigAsync(Logger logger, string imageTableGroupsFileName)
-	{
-		try
-		{
-			var assembly = Assembly.GetExecutingAssembly();
-			var currentVersion = VersionHelpers.GetCurrentAppVersion();
-			using var assemblyStream = assembly.GetManifestResourceStream("Gui.ImageTableGroups.json");
-			if (assemblyStream == null)
-			{
-				logger.LogError("Default image table group configuration resource not found.");
-				return null;
-			}
-
-			using (var reader = new StreamReader(assemblyStream, leaveOpen: true))
-			{
-				return await reader.ReadToEndAsync();
-			}
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Failed to create default image table group config file.");
-			return null;
 		}
 	}
 
@@ -494,7 +377,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		}
 
 		Settings.ObjDataDirectory = directory;
-		Settings.Save(SettingsFilePathName, Logger);
+		Settings.Save(EditorSettings.SettingsFilePathName, Logger);
 
 		if (useExistingIndex && File.Exists(IndexFileName))
 		{

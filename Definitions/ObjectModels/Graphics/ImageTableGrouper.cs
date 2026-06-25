@@ -1,5 +1,4 @@
 using Common.Json;
-using Common.Logging;
 using Definitions.ObjectModels.Objects.Competitor;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
@@ -7,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json;
 
 namespace Definitions.ObjectModels.Graphics;
@@ -200,49 +200,132 @@ public static class ImageTableGrouper
 		}
 	}
 
-	public static SemanticVersion? ReadImageTableGroupVersion(Logger logger, string imageTableGroupsFileName)
+	public static void InitialiseImageTableGroupsConfigFile(SemanticVersion currentAppVersion, string imageTableGroupsPathName, string defaultImageTableGroupsPathName, ILogger logger)
 	{
-		var existingText = File.ReadAllText(imageTableGroupsFileName);
-		if (string.IsNullOrWhiteSpace(existingText))
+		EnsureDefaultImageTableGroupsConfigFileExists(defaultImageTableGroupsPathName, logger);
+		LoadImageGroupsConfigFile(currentAppVersion, imageTableGroupsPathName, defaultImageTableGroupsPathName, logger);
+	}
+
+	static void EnsureDefaultImageTableGroupsConfigFileExists(string defaultImageTableGroupsPathName, ILogger logger)
+	{
+		var defaultImageTableGroups = LoadDefaultImageGroupsConfigFile(logger);
+		if (defaultImageTableGroups == null)
 		{
-			logger.LogError("Existing image table group configuration file is empty");
+			logger.LogError("Failed to load default image table group configuration - groups will not be automatically created for existing images. Please ensure the default config file is present and valid at '{ImageTableGroupsFileName}'", defaultImageTableGroupsPathName);
+			return;
+		}
+
+		File.WriteAllText(defaultImageTableGroupsPathName, defaultImageTableGroups);
+
+		static string? LoadDefaultImageGroupsConfigFile(ILogger logger)
+		{
+			try
+			{
+				var assembly = Assembly.GetExecutingAssembly();
+				using var assemblyStream = assembly.GetManifestResourceStream("Gui.ImageTableGroups.json");
+				if (assemblyStream == null)
+				{
+					logger.LogError("Default image table group configuration resource not found.");
+					return null;
+				}
+
+				using (var reader = new StreamReader(assemblyStream, leaveOpen: true))
+				{
+					return reader.ReadToEnd();
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "Failed to create default image table group config file.");
+				return null;
+			}
+		}
+	}
+
+	public static void LoadImageGroupsConfigFile(SemanticVersion currentAppVersion, string imageTableGroupsPathName, string defaultImageTableGroupsPathName, ILogger logger)
+	{
+		var imageGroupConfigFileToUse = FileToUse(currentAppVersion, imageTableGroupsPathName, defaultImageTableGroupsPathName, logger);
+
+		LoadFileReal(imageGroupConfigFileToUse, logger);
+
+		static string FileToUse(SemanticVersion currentAppVersion, string imageTableGroupsPathName, string defaultImageTableGroupsPathName, ILogger logger)
+		{
+			var imageGroupConfigFileToUse = defaultImageTableGroupsPathName;
+			logger.LogInformation("Attempting to load image table group config from '{ImageTableGroupsFileName}'", imageTableGroupsPathName);
+
+			if (File.Exists(imageTableGroupsPathName))
+			{
+				var jsonVersion = ReadImageTableGroupVersion(imageTableGroupsPathName, logger);
+				if (jsonVersion != null && jsonVersion == currentAppVersion)
+				{
+					logger.LogInformation("Using current image table group config file with version {Version} from '{ImageTableGroupsFileName}'", jsonVersion, imageTableGroupsPathName);
+					imageGroupConfigFileToUse = imageTableGroupsPathName;
+				}
+				else
+				{
+					logger.LogWarning("Image table group config file version {Version} is older than the current app version ({AppVersion}) - loading default config file instead.", jsonVersion, currentAppVersion);
+				}
+			}
+			else
+			{
+				logger.LogWarning("Image table group config file not found at '{ImageTableGroupsFileName}' - loading default config file instead.", imageTableGroupsPathName);
+			}
+
+			return imageGroupConfigFileToUse;
+		}
+
+		static SemanticVersion? ReadImageTableGroupVersion(string imageTableGroupsFileName, ILogger logger)
+		{
+			var existingText = File.ReadAllText(imageTableGroupsFileName);
+			if (string.IsNullOrWhiteSpace(existingText))
+			{
+				logger.LogError("Existing image table group configuration file is empty");
+				return null;
+			}
+
+			try
+			{
+				using var doc = JsonDocument.Parse(existingText);
+				if (doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("version", out var verProp) && verProp.ValueKind == JsonValueKind.String)
+				{
+					var existingVersionText = verProp.GetString();
+					if (!string.IsNullOrEmpty(existingVersionText) && SemanticVersion.TryParse(existingVersionText, out var existingVersion))
+					{
+						logger.LogDebug("Existing image table group configuration version: {version}", existingVersion);
+						return existingVersion;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "Error occurred while reading image table group version");
+			}
+
 			return null;
 		}
 
-		try
+		static void LoadFileReal(string imageTableGroupsPathName, ILogger logger)
 		{
-			using var doc = JsonDocument.Parse(existingText);
-			if (doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.TryGetProperty("version", out var verProp) && verProp.ValueKind == JsonValueKind.String)
+			try
 			{
-				var existingVersionText = verProp.GetString();
-				if (!string.IsNullOrEmpty(existingVersionText) && SemanticVersion.TryParse(existingVersionText, out var existingVersion))
+				ArgumentNullException.ThrowIfNull(imageTableGroupsPathName, nameof(imageTableGroupsPathName));
+				if (!File.Exists(imageTableGroupsPathName))
 				{
-					logger.LogDebug("Existing image table group configuration version: {version}", existingVersion);
-					return existingVersion;
+					throw new FileNotFoundException("Image table group configuration file not found", imageTableGroupsPathName);
 				}
+
+				var json = File.ReadAllText(imageTableGroupsPathName);
+				var itgc = JsonSerializer.Deserialize<ImageTableGroupConfiguration>(json, JsonFile.DefaultSerializerOptions);
+				GroupConfigurations = itgc?.Definitions
+					.Select(configuration => (configuration, success: Enum.TryParse<ObjectType>(configuration.ObjectType, ignoreCase: true, out var objectType), objectType))
+					.Where(pair => pair.success)
+					.ToDictionary(pair => pair.objectType, pair => pair.configuration) ?? [];
+				logger.LogInformation("Loaded image table group configuration for {Count} object types", GroupConfigurations.Count);
 			}
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Error occurred while reading image table group version");
-		}
-
-		return null;
-	}
-
-	public static void LoadGroupConfigurationFile(ILogger logger, string json)
-	{
-		try
-		{
-			var itgc = JsonSerializer.Deserialize<ImageTableGroupConfiguration>(json, JsonFile.DefaultSerializerOptions);
-			GroupConfigurations = itgc?.Definitions
-				.Select(configuration => (configuration, success: Enum.TryParse<ObjectType>(configuration.ObjectType, ignoreCase: true, out var objectType), objectType))
-				.Where(pair => pair.success)
-				.ToDictionary(pair => pair.objectType, pair => pair.configuration) ?? [];
-		}
-		catch (JsonException ex)
-		{
-			logger.LogError(ex, "Image table group config is not valid JSON or version could not be read");
+			catch (JsonException ex)
+			{
+				logger.LogError(ex, "Image table group config is not valid JSON or version could not be read");
+			}
 		}
 	}
 

@@ -95,11 +95,18 @@ public class EditorSettingsWindowViewModel : ViewModelBase
 		set => Model.DownloadFolder = value;
 	}
 
-	[PathBrowsable(PathBrowsableType.Directory), Category(ConfigFolderCategory), DisplayName("Config"), Description("The folder to dynamic editor config.")]
+	[PathBrowsable(PathBrowsableType.Directory), Category(ConfigFolderCategory), DisplayName("Config"), Description("The folder for dynamic editor config.")]
 	public string ConfigFolder
 	{
 		get => Model.ConfigFolder;
 		set => Model.ConfigFolder = value;
+	}
+
+	[PathBrowsable(PathBrowsableType.File), Category(ConfigFolderCategory), DisplayName("ImageTableGroupConfigFile"), Description("The file for image table group configuration.")]
+	public string ImageTableGroupConfigFile
+	{
+		get => Model.ImageTableGroupsConfigFile;
+		set => Model.ImageTableGroupsConfigFile = value;
 	}
 
 	[PathBrowsable(PathBrowsableType.Directory), Category(ConfigFolderCategory), DisplayName("Object Indices"), Description("The folder to store object index files (which are created one for each directory you ask the editor to index).")]

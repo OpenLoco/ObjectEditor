@@ -1,4 +1,6 @@
+using Common;
 using Common.Json;
+using Definitions.ObjectModels.Graphics;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -9,6 +11,19 @@ namespace Gui;
 
 public class EditorSettings
 {
+	public const string ApplicationName = "OpenLoco Object Editor";
+	public const string SettingsFileName = "settings.json"; // "settings-dev.json" for dev, "settings.json" for prod
+	public const string LoggingFileName = "objectEditor.log";
+	public const string DefaultImageTableGroupsFileName = "imageTableGroups.json";
+
+	// stores settings.json, objectEditor.log, etc
+	public static string ProgramDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationName);
+	public static string SettingsFilePathName => Path.Combine(ProgramDataPath, Environment.GetEnvironmentVariable("ENV_SETTINGS_FILE") ?? SettingsFileName);
+	public static string LoggingFilePathName => Path.Combine(ProgramDataPath, LoggingFileName);
+
+	//public string ImageTableGroupsPathName =>
+	//	ImageTableGroupConfigFile ?? Path.Combine(ConfigFolder, DefaultImageTableGroupsFileName);
+
 	public string ObjDataDirectory
 	{
 		get => field ??= string.Empty;
@@ -37,16 +52,28 @@ public class EditorSettings
 
 	//public string ServerEmail { get; set; }
 	//public string ServerPassword { get; set; }
+	public const string DefaultCacheFolder  = "cache";
+	public const string DefaultConfigFolder  = "config";
+	public const string DefaultDownloadFolder = "downloads";
+	public const string DefaultObjectIndicesFolder = "objectIndices";
 
-	public string CacheFolder { get; set; } = string.Empty;
-	public string ConfigFolder { get; set; } = string.Empty;
-	public string DownloadFolder { get; set; } = string.Empty;
-	public string ObjectIndicesFolder { get; set; } = string.Empty;
+	public string CacheFolder { get; set; } = DefaultCacheFolder;
+	public string ConfigFolder { get; set; } = DefaultConfigFolder;
+	public string DownloadFolder { get; set; } = DefaultDownloadFolder;
+	public string ObjectIndicesFolder { get; set; } = DefaultObjectIndicesFolder;
+
+	public string ImageTableGroupsConfigFile { get; set; } = string.Empty;
+	public static string DefaultImageTableGroupsConfigFile => Path.Combine(ProgramDataPath, DefaultConfigFolder, DefaultImageTableGroupsFileName);
 
 	public string LocomotionSteamObjDataFolder { get; set; } = string.Empty;
 	public string LocomotionGoGObjDataFolder { get; set; } = string.Empty;
 	public string AppDataObjDataFolder { get; set; } = string.Empty;
 	public string OpenLocoObjDataFolder { get; set; } = string.Empty;
+
+	public EditorSettings()
+	{
+		ImageTableGroupsConfigFile = DefaultImageTableGroupsConfigFile;
+	}
 
 	public string GetGameObjDataFolder(GameObjDataFolder folder)
 		=> folder switch
@@ -59,6 +86,25 @@ public class EditorSettings
 		};
 
 	public static EditorSettings Load(string filename, ILogger logger)
+	{
+		var settings = LoadCore(filename, logger);
+		ArgumentNullException.ThrowIfNull(settings);
+
+		if (settings.Validate(logger))
+		{
+			logger.LogInformation("Settings loaded and validated successfully.");
+		}
+		else
+		{
+			logger.LogError("Unable to validate settings file - please delete it and it will be recreated on next editor start-up.");
+		}
+
+		settings.PostSetup(logger);
+
+		return settings;
+	}
+
+	static EditorSettings LoadCore(string filename, ILogger logger)
 	{
 		if (!File.Exists(filename))
 		{
@@ -99,6 +145,31 @@ public class EditorSettings
 		var defaults = new EditorSettings();
 		Save(defaults, filename, logger);
 		return defaults;
+	}
+
+	void PostSetup(ILogger logger)
+	{
+		ObjectIndicesFolder = InitialiseDirectory(ObjectIndicesFolder, DefaultObjectIndicesFolder, logger);
+		CacheFolder = InitialiseDirectory(CacheFolder, DefaultCacheFolder, logger);
+		DownloadFolder = InitialiseDirectory(DownloadFolder, DefaultDownloadFolder, logger);
+		ConfigFolder = InitialiseDirectory(ConfigFolder, DefaultConfigFolder, logger);
+		ImageTableGrouper.InitialiseImageTableGroupsConfigFile(VersionHelpers.GetCurrentAppVersion(), ImageTableGroupsConfigFile, DefaultImageTableGroupsConfigFile, logger);
+	}
+
+	static string InitialiseDirectory(string folder, string defaultName, ILogger logger)
+	{
+		if (string.IsNullOrEmpty(folder))
+		{
+			folder = Path.Combine(ProgramDataPath, defaultName);
+		}
+
+		if (!Directory.Exists(folder))
+		{
+			logger.LogInformation("\"{DefaultName}\" folder doesn't exist; creating now at \"{Folder}\"", defaultName, folder);
+			_ = Directory.CreateDirectory(folder);
+		}
+
+		return folder;
 	}
 
 	public void Save(string filename, ILogger logger)
@@ -159,6 +230,12 @@ public class EditorSettings
 		if (!string.IsNullOrEmpty(ObjectIndicesFolder) && !Directory.Exists(ObjectIndicesFolder))
 		{
 			logger.LogWarning("Invalid settings file: Object index folder \"{ObjectIndicesFolder}\" does not exist", ObjectIndicesFolder);
+			return false;
+		}
+
+		if (!string.IsNullOrEmpty(ImageTableGroupsConfigFile) && !File.Exists(ImageTableGroupsConfigFile))
+		{
+			logger.LogWarning("Invalid settings file: Image table group config file \"{ImageTableGroupConfigFile}\" does not exist", ImageTableGroupsConfigFile);
 			return false;
 		}
 

@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.ImageTable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;

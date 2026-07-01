@@ -1,7 +1,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace Definitions.ObjectModels.Graphics;
+namespace Definitions.ObjectModels.Graphics.ImageTable;
 
 public static class ImageTableHelpers
 {

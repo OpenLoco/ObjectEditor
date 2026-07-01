@@ -5,6 +5,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.ImageTable;
 using Definitions.ObjectModels.Objects.InterfaceSkin;
 using Definitions.ObjectModels.Types;
 

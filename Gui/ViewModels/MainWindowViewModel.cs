@@ -69,7 +69,7 @@ public class MainWindowViewModel : ViewModelBase
 	public bool IsUpdateAvailable { get; set; }
 
 	const string DefaultPaletteImageString = "avares://ObjectEditor/Assets/palette.png";
-	Image<Rgba32> DefaultPaletteImage { get; init; }
+	Image<Rgba32> DefaultPaletteImage { get; set; }
 
 	public Interaction<EditorSettingsWindowViewModel, EditorSettingsWindowViewModel?> OpenEditorSettingsWindow { get; }
 
@@ -77,10 +77,9 @@ public class MainWindowViewModel : ViewModelBase
 
 	public MainWindowViewModel()
 	{
-		DefaultPaletteImage = Image.Load<Rgba32>(AssetLoader.Open(new Uri(DefaultPaletteImageString)));
-
 		EditorContext = new();
 		Task.Run(LoadDefaultPalette);
+		Task.Run(EditorContext.InitialiseDefaultImageTableGroupConfiguration);
 
 		FolderTreeViewModel = new FolderTreeViewModel(EditorContext);
 
@@ -267,6 +266,7 @@ public class MainWindowViewModel : ViewModelBase
 
 	async Task LoadDefaultPalette()
 	{
+		DefaultPaletteImage = await Image.LoadAsync<Rgba32>(AssetLoader.Open(new Uri(DefaultPaletteImageString)));
 		EditorContext.PaletteMap = await Task.Run(() => new PaletteMap(DefaultPaletteImage));
 		await CurrentTabModel.ReloadAllAsync();
 	}

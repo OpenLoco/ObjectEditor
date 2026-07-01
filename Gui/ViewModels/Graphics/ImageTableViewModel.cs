@@ -4,7 +4,9 @@ using Common;
 using Common.Json;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.ImageTable;
 using Definitions.ObjectModels.Types;
+using Gui.Models;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -103,19 +105,19 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 	readonly ObjectType? objectType;
 	readonly ILocoStruct? objectModel;
-	readonly string? groupingConfigFilePath;
+	ObjectEditorContext EditorContext { get; init; }
 
 	ImageTable Model { get; init; }
 
-	public ImageTableViewModel(ImageTable imageTable, ILogger logger, ObjectType? objectType = null, ILocoStruct? objectModel = null, string? groupingConfigFilePath = null)
+	public ImageTableViewModel(ImageTable imageTable, ObjectEditorContext editorContext, ObjectType? objectType = null, ILocoStruct? objectModel = null)
 	{
 		ArgumentNullException.ThrowIfNull(imageTable);
 
 		Model = imageTable;
-		Logger = logger;
+		EditorContext = editorContext;
+		Logger = editorContext.Logger;
 		this.objectType = objectType;
 		this.objectModel = objectModel;
-		this.groupingConfigFilePath = groupingConfigFilePath;
 		RecreateViewModelGroupsFromImageTable(Model);
 
 		// swatches/palettes
@@ -171,8 +173,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			}
 		});
 
-		var canReloadGrouping = objectType.HasValue && !string.IsNullOrEmpty(groupingConfigFilePath);
-		ReloadImageTableGroupingCommand = ReactiveCommand.CreateFromTask(ReloadImageTableGroupingAsync, Observable.Return(canReloadGrouping));
+		ReloadImageTableGroupingCommand = ReactiveCommand.CreateFromTask(ReloadImageTableGroupingAsync);
 
 		TranslateXOffsetAllImagesCommand = ReactiveCommand.Create<string>(amount =>
 		{
@@ -388,8 +389,7 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		await Task.CompletedTask;
 	}
 
-	// model stuff
-	Task ReloadImageTableGroupingAsync()
+	public Task ReloadImageTableGroupingAsync()
 	{
 		if (!objectType.HasValue || objectModel == null)
 		{
@@ -397,26 +397,21 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			return Task.CompletedTask;
 		}
 
-		if (string.IsNullOrEmpty(groupingConfigFilePath))
-		{
-			Logger.LogWarning("Cannot reload image table grouping because the grouping configuration file path is not configured.");
-			return Task.CompletedTask;
-		}
+		EditorContext.ReloadCustomImageTableGroupsConfig();
 
-		ImageTableGrouper.LoadImageGroupsConfigFile(VersionHelpers.GetCurrentAppVersion(), groupingConfigFilePath, EditorSettings.DefaultImageTableGroupsConfigFile, Logger);
+		//ImageTableGrouper.LoadImageGroupsConfigFileCore(groupingConfigFilePath, Logger);
 
 		var imageList = Model.GraphicsElements.OrderBy(x => x.ImageTableIndex).ToList();
 
 		try
 		{
-			List<ImageTableGroup> groups = [.. ImageTableGrouper.CreateGroupsForExistingImages(objectModel, objectType.Value, imageList)];
-			Model.Groups = groups;
+			Model.Groups = ImageTableGrouper.CreateGroupsForExistingImages(EditorContext.ImageTableGroupConfiguration, objectModel, objectType.Value, imageList);
 			RecreateViewModelGroupsFromImageTable(Model);
-			Logger.LogInformation("Reloaded image table grouping from {ConfigFilePath}", groupingConfigFilePath);
+			Logger.LogInformation("Reloaded image table grouping from {ConfigFilePath}", EditorContext.Settings.ImageTableGroupsConfigFile);
 		}
 		catch (Exception ex)
 		{
-			Logger.LogError(ex, "Failed to reload image table grouping from {ConfigFilePath}", groupingConfigFilePath);
+			Logger.LogError(ex, "Failed to reload image table grouping from {ConfigFilePath}", EditorContext.Settings.ImageTableGroupsConfigFile);
 		}
 
 		return Task.CompletedTask;

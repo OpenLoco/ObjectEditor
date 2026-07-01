@@ -64,7 +64,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="ObjectModels\Graphics\ImageTableGroups.json">
+    <None Update="ObjectModels\Graphics\ImageTable\ImageTableGroups.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

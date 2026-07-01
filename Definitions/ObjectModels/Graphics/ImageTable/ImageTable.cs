@@ -1,8 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Definitions.ObjectModels.Graphics;
-
-public record ImageTableGroup(string Name, List<GraphicsElement> GraphicsElements);
+namespace Definitions.ObjectModels.Graphics.ImageTable;
 
 public class ImageTable : IHasGraphicsElements
 {

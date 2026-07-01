@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Definitions.ObjectModels.Graphics;
+namespace Definitions.ObjectModels.Graphics.ImageTable;
 
 public interface IHasGraphicsElements
 {

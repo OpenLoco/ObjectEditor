@@ -1,15 +1,19 @@
 using Avalonia.Threading;
 using Common;
+using Common.Json;
 using Common.Logging;
 using Dat.Converters;
 using Dat.FileParsing;
 using Dat.Types;
 using Definitions.DTO;
 using Definitions.ObjectModels;
+using Definitions.ObjectModels.Graphics.ImageTable;
 using Definitions.ObjectModels.Types;
 using DynamicData;
 using Index;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
+using NuGet.Versioning;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Concurrent;
@@ -17,7 +21,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +32,8 @@ namespace Gui.Models;
 public class ObjectEditorContext : IDisposable, IAsyncDisposable
 {
 	public EditorSettings Settings { get; private set; }
+
+	public ImageTableGroupConfigurationJson ImageTableGroupConfiguration { get; set; }
 
 	public Logger Logger { get; init; }
 
@@ -509,6 +517,86 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 		_ = await ObjectServiceClient.UploadDatFileAsync(dat.FileName ?? string.Empty, await File.ReadAllBytesAsync(filename), creationDate, modifiedDate);
 
 		await Task.Delay(100); // wait 100ms, ie don't DoS the server
+	}
+
+	public async Task InitialiseDefaultImageTableGroupConfiguration()
+	{
+		// ensure the default file is created, and if not copy it from the assembly resources
+		var defaultConfig = await EnsureDefaultImageTableGroupsConfigFileExists();
+		if (defaultConfig == null)
+		{
+			Logger.LogError("Failed to load default image table groups configuration file.");
+			return;
+		}
+
+		// try load custom
+		var appVersion = VersionHelpers.GetCurrentAppVersion();
+		var userConfig = ImageTableGrouper.LoadImageGroupsConfigFileCore(Settings.ImageTableGroupsConfigFile, Logger);
+
+		if (userConfig != null && SemanticVersion.TryParse(userConfig.Version, out var userConfigVersion) && userConfigVersion <= appVersion)
+		{
+			ImageTableGroupConfiguration = userConfig;
+		}
+		else
+		{
+			ImageTableGroupConfiguration = defaultConfig;
+		}
+	}
+
+	public void ReloadCustomImageTableGroupsConfig()
+		=> ImageTableGroupConfiguration = ImageTableGrouper.LoadImageGroupsConfigFileCore(Settings.ImageTableGroupsConfigFile, Logger);
+
+	async Task<ImageTableGroupConfigurationJson?> EnsureDefaultImageTableGroupsConfigFileExists()
+	{
+		var defaultConfigFile = EditorSettings.DefaultImageTableGroupsConfigFile;
+
+		if (string.IsNullOrEmpty(defaultConfigFile))
+		{
+			Logger.LogError("Default image table groups configuration file path is null or empty.");
+			return null;
+		}
+
+		var defaultConfig = ImageTableGrouper.LoadImageGroupsConfigFileCore(defaultConfigFile, Logger);
+
+		if (defaultConfig != null)
+		{
+			return defaultConfig;
+		}
+
+
+		Logger.LogWarning("Default image table groups configuration file doesn't exist: {DefaultConfigFile}", defaultConfigFile);
+		var embeddedConfig = await LoadDefaultImageTableGroupsConfigFileAsync(Logger);
+		if (embeddedConfig != null)
+		{
+			await JsonSerializer.SerializeAsync(new FileStream(defaultConfigFile, FileMode.OpenOrCreate), embeddedConfig, JsonFile.DefaultSerializerOptions);
+			return embeddedConfig;
+		}
+		else
+		{
+			Logger.LogError("Failed to load embedded default image table groups configuration file.");
+			return null;
+		}
+
+		static async Task<ImageTableGroupConfigurationJson?> LoadDefaultImageTableGroupsConfigFileAsync(ILogger logger)
+		{
+			try
+			{
+				var assembly = Assembly.GetExecutingAssembly();
+				using var assemblyStream = assembly?.GetManifestResourceStream("Gui.ImageTableGroups.json");
+				if (assemblyStream == null)
+				{
+					logger.LogError("Default image table group configuration resource not found.");
+					return null;
+				}
+
+				return await JsonSerializer.DeserializeAsync<ImageTableGroupConfigurationJson>(assemblyStream, JsonFile.DefaultSerializerOptions);
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "Failed to create default image table group config file.");
+				return null;
+			}
+		}
 	}
 
 	public async Task CloseAsync()

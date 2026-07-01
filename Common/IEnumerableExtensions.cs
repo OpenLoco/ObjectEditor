@@ -17,4 +17,41 @@ public static class IEnumerableExtensions
 			yield return fillValue;
 		}
 	}
+
+	public static bool HasDuplicates<T>(this IEnumerable<T> source)
+	{
+		if (source is ICollection<T> collection && collection.Count <= 1)
+		{
+			return false;
+		}
+
+		var seen = new HashSet<T>();
+		foreach (var item in source)
+		{
+			if (!seen.Add(item))
+			{
+				return true;
+			}
+
+		}
+
+		return false;
+	}
+
+	public static IEnumerable<T> GetDuplicates<T>(this IEnumerable<T> source)
+	{
+		var seen = new HashSet<T>();
+		var duplicates = new HashSet<T>();
+
+		foreach (var item in source)
+		{
+			if (!seen.Add(item))
+			{
+				if (duplicates.Add(item))
+				{
+					yield return item;
+				}
+			}
+		}
+	}
 }

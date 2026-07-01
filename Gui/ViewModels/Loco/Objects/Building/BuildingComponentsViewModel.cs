@@ -1,4 +1,4 @@
-using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.ImageTable;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
 using PropertyModels.ComponentModel;

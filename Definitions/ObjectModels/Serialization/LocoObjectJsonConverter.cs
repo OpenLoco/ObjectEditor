@@ -1,4 +1,4 @@
-using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.ImageTable;
 using Definitions.ObjectModels.Types;
 using System.Text.Json;
 using System.Text.Json.Serialization;

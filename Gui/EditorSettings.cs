@@ -1,6 +1,6 @@
 using Common;
 using Common.Json;
-using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.ImageTable;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

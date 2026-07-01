@@ -5,6 +5,7 @@ using Dat.Data;
 using Dat.FileParsing;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
+using Definitions.ObjectModels.Graphics.ImageTable;
 using Definitions.ObjectModels.Objects.Industry;
 using Definitions.ObjectModels.Types;
 using static Dat.Loaders.IndustryObjectLoader;

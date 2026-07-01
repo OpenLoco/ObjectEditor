@@ -1,0 +1,3 @@
+- remove image naming from code, use a config file like groups
+- move naming and grouping out of the image table and into the gui/viewmodel only
+- dat loading will create a dat image table, and the extra stuff added later in viewmodel

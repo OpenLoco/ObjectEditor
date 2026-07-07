@@ -11,11 +11,7 @@ public class DesignLogWindowViewModel : LogWindowViewModel
 	{ }
 }
 
-public class LogWindowViewModel : ViewModelBase
+public class LogWindowViewModel(ObservableCollection<LogLine> logs) : ViewModelBase
 {
-	public ObservableCollection<LogLine> Logs { get; init; }
-
-	public LogWindowViewModel(ObservableCollection<LogLine> logs)
-		=> Logs = logs;
-
+	public ObservableCollection<LogLine> Logs { get; init; } = logs;
 }

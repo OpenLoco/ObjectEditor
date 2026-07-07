@@ -1044,29 +1044,29 @@ public class LoadSaveTests
 		{
 			using (Assert.EnterMultipleScope())
 			{
-				Assert.That(struc.Categories[0].Count, Is.EqualTo(2), nameof(struc.Categories) + "[0] Count");
-				Assert.That(struc.Categories[0].Bias, Is.EqualTo(30), nameof(struc.Categories) + "[0] Bias");
-				Assert.That(struc.Categories[0].Offset, Is.EqualTo(93), nameof(struc.Categories) + "[0] Offset");
+				Assert.That(struc.MorphemeCategories[0].DatCount, Is.EqualTo(2), nameof(struc.MorphemeCategories) + "[0] Count");
+				Assert.That(struc.MorphemeCategories[0].Bias, Is.EqualTo(30), nameof(struc.MorphemeCategories) + "[0] Bias");
+				Assert.That(struc.MorphemeCategories[0].DatOffset, Is.EqualTo(93), nameof(struc.MorphemeCategories) + "[0] Offset");
 
-				Assert.That(struc.Categories[1].Count, Is.EqualTo(94), nameof(struc.Categories) + "[1] Count");
-				Assert.That(struc.Categories[1].Bias, Is.Zero, nameof(struc.Categories) + "[1] Bias");
-				Assert.That(struc.Categories[1].Offset, Is.EqualTo(110), nameof(struc.Categories) + "[1] Offset");
+				Assert.That(struc.MorphemeCategories[1].DatCount, Is.EqualTo(94), nameof(struc.MorphemeCategories) + "[1] Count");
+				Assert.That(struc.MorphemeCategories[1].Bias, Is.Zero, nameof(struc.MorphemeCategories) + "[1] Bias");
+				Assert.That(struc.MorphemeCategories[1].DatOffset, Is.EqualTo(110), nameof(struc.MorphemeCategories) + "[1] Offset");
 
-				Assert.That(struc.Categories[2].Count, Is.Zero, nameof(struc.Categories) + "[2] Count");
-				Assert.That(struc.Categories[2].Bias, Is.Zero, nameof(struc.Categories) + "[2] Bias");
-				Assert.That(struc.Categories[2].Offset, Is.Zero, nameof(struc.Categories) + "[2] Offset");
+				Assert.That(struc.MorphemeCategories[2].DatCount, Is.Zero, nameof(struc.MorphemeCategories) + "[2] Count");
+				Assert.That(struc.MorphemeCategories[2].Bias, Is.Zero, nameof(struc.MorphemeCategories) + "[2] Bias");
+				Assert.That(struc.MorphemeCategories[2].DatOffset, Is.Zero, nameof(struc.MorphemeCategories) + "[2] Offset");
 
-				Assert.That(struc.Categories[3].Count, Is.Zero, nameof(struc.Categories) + "[3] Count");
-				Assert.That(struc.Categories[3].Bias, Is.Zero, nameof(struc.Categories) + "[3] Bias");
-				Assert.That(struc.Categories[3].Offset, Is.Zero, nameof(struc.Categories) + "[3] Offset");
+				Assert.That(struc.MorphemeCategories[3].DatCount, Is.Zero, nameof(struc.MorphemeCategories) + "[3] Count");
+				Assert.That(struc.MorphemeCategories[3].Bias, Is.Zero, nameof(struc.MorphemeCategories) + "[3] Bias");
+				Assert.That(struc.MorphemeCategories[3].DatOffset, Is.Zero, nameof(struc.MorphemeCategories) + "[3] Offset");
 
-				Assert.That(struc.Categories[4].Count, Is.EqualTo(18), nameof(struc.Categories) + "[4] Count");
-				Assert.That(struc.Categories[4].Bias, Is.Zero, nameof(struc.Categories) + "[4] Bias");
-				Assert.That(struc.Categories[4].Offset, Is.EqualTo(923), nameof(struc.Categories) + "[4] Offset");
+				Assert.That(struc.MorphemeCategories[4].DatCount, Is.EqualTo(18), nameof(struc.MorphemeCategories) + "[4] Count");
+				Assert.That(struc.MorphemeCategories[4].Bias, Is.Zero, nameof(struc.MorphemeCategories) + "[4] Bias");
+				Assert.That(struc.MorphemeCategories[4].DatOffset, Is.EqualTo(923), nameof(struc.MorphemeCategories) + "[4] Offset");
 
-				Assert.That(struc.Categories[5].Count, Is.EqualTo(6), nameof(struc.Categories) + "[5] Count");
-				Assert.That(struc.Categories[5].Bias, Is.EqualTo(20), nameof(struc.Categories) + "[5] Bias");
-				Assert.That(struc.Categories[5].Offset, Is.EqualTo(1071), nameof(struc.Categories) + "[5] Offset");
+				Assert.That(struc.MorphemeCategories[5].DatCount, Is.EqualTo(6), nameof(struc.MorphemeCategories) + "[5] Count");
+				Assert.That(struc.MorphemeCategories[5].Bias, Is.EqualTo(20), nameof(struc.MorphemeCategories) + "[5] Bias");
+				Assert.That(struc.MorphemeCategories[5].DatOffset, Is.EqualTo(1071), nameof(struc.MorphemeCategories) + "[5] Offset");
 
 				Assert.That(obj.StringTable["Name"][LanguageId.English_UK], Is.EqualTo("North-American style town names"));
 				Assert.That(obj.StringTable["Name"][LanguageId.English_US], Is.EqualTo("North-American style town names"));

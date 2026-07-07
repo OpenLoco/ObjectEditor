@@ -10,18 +10,12 @@ using System.Linq;
 
 namespace Gui.ViewModels;
 
-public class LanguageTranslationModel : ReactiveObject
+public class LanguageTranslationModel(LanguageId language, string translation) : ReactiveObject
 {
-	public LanguageTranslationModel(LanguageId language, string translation)
-	{
-		Language = language;
-		Translation = translation;
-	}
-
-	public LanguageId Language { get; init; }
+	public LanguageId Language { get; init; } = language;
 
 	[Reactive]
-	public string Translation { get; set; }
+	public string Translation { get; set; } = translation;
 }
 
 public class StringTableViewModel : ReactiveObject, IViewModel

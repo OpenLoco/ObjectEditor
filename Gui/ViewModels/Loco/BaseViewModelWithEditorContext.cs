@@ -4,14 +4,10 @@ using System.ComponentModel;
 
 namespace Gui.ViewModels;
 
-public abstract class BaseViewModelWithEditorContext<T> : BaseViewModel<T> where T : class
+public abstract class BaseViewModelWithEditorContext<T>(ObjectEditorContext editorContext, T? model) : BaseViewModel<T>(model) where T : class
 {
-	protected BaseViewModelWithEditorContext(ObjectEditorContext editorContext, T? model)
-		: base(model)
-		=> EditorContext = editorContext;
-
 	[Browsable(false)]
-	public ObjectEditorContext EditorContext { get; init; }
+	public ObjectEditorContext EditorContext { get; init; } = editorContext;
 
 	protected ILogger Logger
 		=> EditorContext.Logger;

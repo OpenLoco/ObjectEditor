@@ -22,7 +22,7 @@ public static class LanguageIdConverter
 			LanguageId.Chinese_Traditional => DatLanguageId.Chinese_Traditional,
 			LanguageId.id_12 => DatLanguageId.id_12,
 			LanguageId.Portuguese => DatLanguageId.Portuguese,
-			_ => throw new NotImplementedException(),
+			_ => throw new NotImplementedException($"Conversion not implemented for LanguageId: {languageId}"),
 		};
 
 	public static LanguageId Convert(this DatLanguageId languageId)
@@ -42,6 +42,6 @@ public static class LanguageIdConverter
 			DatLanguageId.Chinese_Traditional => LanguageId.Chinese_Traditional,
 			DatLanguageId.id_12 => LanguageId.id_12,
 			DatLanguageId.Portuguese => LanguageId.Portuguese,
-			_ => throw new NotImplementedException(),
+			_ => throw new NotImplementedException($"Conversion not implemented for DatLanguageId: {languageId}"),
 		};
 }

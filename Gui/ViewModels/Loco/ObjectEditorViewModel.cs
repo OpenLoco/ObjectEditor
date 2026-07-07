@@ -478,13 +478,6 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			return;
 		}
 
-		//var ovm = GetViewModel<IViewModel>();
-		//if (ovm == null)
-		//{
-		//	logger.Error("Cannot save - loco object viewmodel was null");
-		//	return;
-		//}
-
 		if (string.IsNullOrEmpty(filename))
 		{
 			Logger.LogError("Cannot save - filename was empty");
@@ -506,6 +499,11 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		_ = ValidateObject(showPopupOnSuccess: false);
 
+		foreach (var viewModel in ViewModelGroups.SelectMany(x => x.ViewModels).OfType<BaseViewModel>())
+		{
+			viewModel.SynchronizeToModel();
+		}
+
 		Logger.LogInformation("Saving {Name} to {Filename}", Model.DatInfo?.S5Header.Name, filename);
 
 		// this is hacky but it should work
@@ -524,11 +522,12 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		if (saveParameters.SaveType == SaveType.DAT && header != null)
 		{
 			var objectModelHeader = GetViewModel<ObjectModelHeaderViewModel>();
+			var objectModelDatHeader = GetViewModel<ObjectDatHeaderViewModel>();
 
 			SawyerStreamWriter.Save(filename,
 				objectModelHeader?.Name ?? header.Name,
 				objectModelHeader?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
-				saveParameters.SawyerEncoding ?? GetViewModel<ObjectDatHeaderViewModel>()?.Encoding ?? SawyerEncoding.Uncompressed,
+				saveParameters.SawyerEncoding ?? objectModelDatHeader?.Encoding ?? SawyerEncoding.Uncompressed,
 				Model.LocoObject,
 				Logger,
 				EditorContext.Settings.AllowSavingAsVanillaObject);

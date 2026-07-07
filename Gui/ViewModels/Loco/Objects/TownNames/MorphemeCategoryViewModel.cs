@@ -4,10 +4,13 @@ using System.ComponentModel;
 namespace Gui.ViewModels.Loco.Objects.TownNames;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
-public class MorphemeCategoryViewModel
+public class MorphemeCategoryViewModel(byte bias, ObservableCollection<StringTableEntryViewModel> morphemes)
 {
 	[Description("Controls chance to skip / bias selection. When bias is 0, all morphemes are equally likely to be selected. Higher values increase the likelihood of selecting morphemes with lower indices.")]
-	public uint8_t Bias { get; set; }
+	public uint8_t Bias { get; set; } = bias;
 
-	public ObservableCollection<StringTableEntryViewModel> Morphemes { get; set; } = [];
+	public ObservableCollection<StringTableEntryViewModel> Morphemes { get; set; } = morphemes;
+
+	public MorphemeCategoryViewModel()
+		: this(0, []) { }
 }

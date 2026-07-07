@@ -499,6 +499,11 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 		_ = ValidateObject(showPopupOnSuccess: false);
 
+		foreach (var viewModel in ViewModelGroups.SelectMany(x => x.ViewModels).OfType<BaseViewModel>())
+		{
+			viewModel.SynchronizeToModel();
+		}
+
 		Logger.LogInformation("Saving {Name} to {Filename}", Model.DatInfo?.S5Header.Name, filename);
 
 		// this is hacky but it should work

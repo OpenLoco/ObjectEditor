@@ -2,6 +2,7 @@ using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Building;
 using Definitions.ObjectModels.Objects.Common;
 using Definitions.ObjectModels.Types;
+using Gui.Attributes;
 using PropertyModels.ComponentModel.DataAnnotations;
 using PropertyModels.Extensions;
 using ReactiveUI;
@@ -175,7 +176,7 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 		set => Model.CostIndex = value;
 	}
 
-	[Category("Cost")]
+	[Category("Cost"), InflatableCurrency(8, nameof(CostIndex))]
 	public uint16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;

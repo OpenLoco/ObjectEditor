@@ -118,27 +118,12 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 			var designedYearProperty = currencyAttr.DesignedYearPropertyName is null
 				? null
 				: TypeDescriptor.GetProperties(target)[currencyAttr.DesignedYearPropertyName];
-
 			var designedYear = designedYearProperty is not null
 				? (uint16_t)designedYearProperty.GetValue(target)!
 				: (uint16_t)1950;
 
 			var currVm = (InflatableCurrencyViewModel?)cv.DataContext;
-			var wrappedModel = GetWrappedModel(target);
-			var objectType = ObjectTypeMapping.StructTypeToObjectType(wrappedModel.GetType());
-
-			// inflation cost usage type
-			var inflationCostUsage = InflationCostUsage.None;
-			if (objectType == ObjectType.Vehicle)
-			{
-				inflationCostUsage = InflationCostUsage.Vehicle_BuildCost;
-			}
-			else if (objectType == ObjectType.Building)
-			{
-				inflationCostUsage = InflationCostUsage.Building_BuildCost;
-			}
-
-			var divisor = (byte)GetInflationDivisorForObjectType(objectType, inflationCostUsage);
+			var divisor = currencyAttr.InflationDivisor;
 
 			var year = currVm?.Year ?? designedYear;
 			// objects can actually set any year as designed year, even 0, so lets sanitize it
@@ -162,19 +147,5 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 		}
 
 		return false;
-	}
-
-	private static object GetWrappedModel(object target)
-	{
-		for (var currentType = target.GetType(); currentType is not null; currentType = currentType.BaseType)
-		{
-			var modelProperty = currentType.GetProperty("Model", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-			if (modelProperty?.GetValue(target) is { } model)
-			{
-				return model;
-			}
-		}
-
-		return target;
 	}
 }

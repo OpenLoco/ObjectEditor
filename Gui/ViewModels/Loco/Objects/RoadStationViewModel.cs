@@ -63,14 +63,14 @@ public class RoadStationViewModel(RoadStationObject model)
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(8, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex), nameof(DesignedYear))]
+	[Category("Cost"), InflatableCurrency(8, nameof(CostIndex), nameof(DesignedYear))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;

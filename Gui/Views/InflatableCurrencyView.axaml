@@ -27,7 +27,7 @@ xmlns:vm="using:Gui.ViewModels">
 							<!-- Year Input -->
 							<TextBlock Text="Year:" VerticalAlignment="Center" ToolTip.Tip="The year for the inflation calculation."/>
 							<NumericUpDown Value="{Binding Year}"
-										   Background="LightGoldenrodYellow"
+										   Background="DarkGray"
 										   ShowButtonSpinner="True"
 										   Minimum="1800"
 										   Maximum="2100"
@@ -39,7 +39,7 @@ xmlns:vm="using:Gui.ViewModels">
 							<!-- Divisor Display -->
 							<TextBlock Text="Div:" VerticalAlignment="Center" ToolTip.Tip="The divisor for the inflation calculation. This is not editable because it is hardcoded in OpenLoco." />
 							<TextBox Text="{Binding Divisor, StringFormat='{}{0}'}"
-									 Background="LightGoldenrodYellow"
+									 Background="DarkGray"
 									 VerticalAlignment="Center"
 									 Width="48"
 									 IsReadOnly="True"
@@ -48,9 +48,9 @@ xmlns:vm="using:Gui.ViewModels">
 							<!-- Exchange Rate Input -->
 							<TextBlock Text="Rate:" VerticalAlignment="Center" ToolTip.Tip="The exchange rate for the inflation calculation." />
 							<NumericUpDown Value="{Binding ExchangeRate}"
-										   Background="LightGoldenrodYellow"
+										   Background="DarkGray"
 										   ShowButtonSpinner="True"
-										   Minimum="1"
+										   Minimum="0"
 										   Width="96"
 										   FormatString="F0"
 										   ParsingNumberStyle="Integer">
@@ -60,7 +60,7 @@ xmlns:vm="using:Gui.ViewModels">
 							<!-- Effective Cost Display -->
 							<TextBlock Text="→" VerticalAlignment="Center" ToolTip.Tip="The inflation-adjusted cost that you should see in-game." />
 							<TextBox Text="{Binding InflationAdjustedCost}"
-									 Background="LightGreen"
+									 Background="DarkGreen" 
 									 VerticalAlignment="Center"
 									 FontWeight="Bold"
 									 Width="64"

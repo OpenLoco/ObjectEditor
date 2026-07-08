@@ -1,5 +1,3 @@
-using Definitions.ObjectModels.Types;
-
 namespace Definitions;
 
 /// <summary>
@@ -8,27 +6,6 @@ namespace Definitions;
 /// </summary>
 public static class Economy
 {
-	public enum InflationCostUsage
-	{
-		None,
-		Building_BuildCost,
-		Vehicle_BuildCost
-	}
-
-	public static int GetInflationDivisorForObjectType(ObjectType objectType, InflationCostUsage usage = InflationCostUsage.None)
-		=> objectType switch
-		{
-			ObjectType.Water or ObjectType.Land or ObjectType.TrackSignal or ObjectType.LevelCrossing or ObjectType.Bridge or ObjectType.TrackExtra or ObjectType.Track or ObjectType.RoadExtra or ObjectType.Road => 10,
-			ObjectType.Tunnel or ObjectType.TrackStation or ObjectType.RoadStation => 8,
-			ObjectType.Airport => 6,
-			ObjectType.Dock => 7,
-			ObjectType.Vehicle => usage == InflationCostUsage.Vehicle_BuildCost ? 6 : 10, // 6 is build cost, 10 is run cost
-			ObjectType.Tree => 12,
-			ObjectType.Building => usage == InflationCostUsage.Building_BuildCost ? 10 : 8, // 10 is build cost, 8 is clear cost
-			ObjectType.Industry => 3,
-			_ => 0,
-		};
-
 	// Inflation factors from OpenLoco (kInflationFactors)
 	private static readonly uint[] InflationFactors =
 	[

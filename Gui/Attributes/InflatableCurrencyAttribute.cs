@@ -7,8 +7,16 @@ namespace Gui.Attributes;
 /// The property must be of type int16_t and have a corresponding CostIndex property.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public class InflatableCurrencyAttribute(string CostIndexPropertyName, string? DesignedYearPropertyName = null) : Attribute
+public class InflatableCurrencyAttribute(
+	byte Divisor,
+	string CostIndexPropertyName,
+	string? DesignedYearPropertyName = null) : Attribute
 {
+	/// <summary>
+	/// The divisor for this currency value
+	/// </summary>
+	public byte InflationDivisor { get; } = Divisor;
+
 	/// <summary>
 	/// The name of the property that contains the CostIndex for this currency value.
 	/// </summary>

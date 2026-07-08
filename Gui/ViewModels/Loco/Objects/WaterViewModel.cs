@@ -19,7 +19,7 @@ public class WaterViewModel(WaterObject model)
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t CostFactor
 	{
 		get => Model.CostFactor;

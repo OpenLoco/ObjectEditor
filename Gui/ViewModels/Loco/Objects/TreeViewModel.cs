@@ -58,14 +58,14 @@ public class TreeViewModel(TreeObject model)
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(12, nameof(CostIndex))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(12, nameof(CostIndex))]
 	public int16_t ClearCostFactor
 	{
 		get => Model.ClearCostFactor;

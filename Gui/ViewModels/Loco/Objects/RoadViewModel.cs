@@ -62,21 +62,21 @@ public class RoadViewModel(RoadObject model)
 		}
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t BuildCostFactor
 	{
 		get => Model.BuildCostFactor;
 		set => Model.BuildCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t SellCostFactor
 	{
 		get => Model.SellCostFactor;
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Cost"), InflatableCurrency(nameof(CostIndex))]
+	[Category("Cost"), InflatableCurrency(10, nameof(CostIndex))]
 	public int16_t TunnelCostFactor
 	{
 		get => Model.TunnelCostFactor;

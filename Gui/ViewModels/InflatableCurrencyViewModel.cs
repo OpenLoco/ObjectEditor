@@ -56,10 +56,10 @@ public class InflatableCurrencyViewModel : ReactiveObject
 			_ = this.RaiseAndSetIfChanged(ref field, value);
 			this.RaisePropertyChanged(nameof(InflationAdjustedCost));
 		}
-	} = 1;
+	}
 
 	public int InflationAdjustedCost
 		=> CostIndex >= 32
 			? 0
-			: Economy.GetInflationAdjustedCost(CostFactor, CostIndex, Year, Divisor) * Math.Max(1, ExchangeRate);
+			: Economy.GetInflationAdjustedCost(CostFactor, CostIndex, Year, Divisor) * (int)Math.Pow(2, Math.Max(0, ExchangeRate));
 }

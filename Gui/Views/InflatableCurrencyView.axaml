@@ -1,8 +1,8 @@
 <Styles
-	xmlns="https://github.com/avaloniaui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:vi="using:Gui.Views"
-	xmlns:vm="using:Gui.ViewModels">
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:vi="using:Gui.Views"
+xmlns:vm="using:Gui.ViewModels">
 	<Design.PreviewWith>
 		<vi:InflatableCurrencyView />
 	</Design.PreviewWith>
@@ -13,7 +13,8 @@
 				<StackPanel x:DataType="vm:InflatableCurrencyViewModel" Orientation="Horizontal" Spacing="4">
 					<!-- Cost Factor Input -->
 					<!--<TextBlock Text="Factor:" VerticalAlignment="Center" />-->
-					<NumericUpDown Value="{Binding CostFactor}" 
+					<NumericUpDown Value="{Binding CostFactor}"
+								   VerticalAlignment="Center"
 								   ShowButtonSpinner="True"
 								   Minimum="-32768"
 								   Maximum="32767"
@@ -21,25 +22,51 @@
 								   FormatString="F0"
 								   ParsingNumberStyle="Integer">
 					</NumericUpDown>
-					
-					<!-- Year Input -->
-					<TextBlock Text="Year:" VerticalAlignment="Center" />
-					<NumericUpDown Value="{Binding Year}" 
-								   ShowButtonSpinner="True"
-								   Minimum="1800"
-								   Maximum="2100"
-								   Width="128"
-								   FormatString="F0"
-								   ParsingNumberStyle="Integer">
-					</NumericUpDown>
-					
-					<!-- Effective Cost Display -->
-					<TextBlock Text="→" VerticalAlignment="Center" />
-					<TextBox Text="{Binding InflationAdjustedCost}"
-							   VerticalAlignment="Center" 
-							   FontWeight="Bold"
-							   Width="64"
-							   IsReadOnly="True"/>
+					<Border Background="{DynamicResource ButtonBackground}">
+						<StackPanel Orientation="Horizontal" Spacing="4" Margin="4" >
+							<!-- Year Input -->
+							<TextBlock Text="Year:" VerticalAlignment="Center" ToolTip.Tip="The year for the inflation calculation."/>
+							<NumericUpDown Value="{Binding Year}"
+										   Background="LightGoldenrodYellow"
+										   ShowButtonSpinner="True"
+										   Minimum="1800"
+										   Maximum="2100"
+										   Width="128"
+										   FormatString="F0"
+										   ParsingNumberStyle="Integer">
+							</NumericUpDown>
+
+							<!-- Divisor Display -->
+							<TextBlock Text="Div:" VerticalAlignment="Center" ToolTip.Tip="The divisor for the inflation calculation. This is not editable because it is hardcoded in OpenLoco." />
+							<TextBox Text="{Binding Divisor, StringFormat='{}{0}'}"
+									 Background="LightGoldenrodYellow"
+									 VerticalAlignment="Center"
+									 Width="48"
+									 IsReadOnly="True"
+									 Focusable="False"/>
+
+							<!-- Exchange Rate Input -->
+							<TextBlock Text="Rate:" VerticalAlignment="Center" ToolTip.Tip="The exchange rate for the inflation calculation." />
+							<NumericUpDown Value="{Binding ExchangeRate}"
+										   Background="LightGoldenrodYellow"
+										   ShowButtonSpinner="True"
+										   Minimum="1"
+										   Width="96"
+										   FormatString="F0"
+										   ParsingNumberStyle="Integer">
+							</NumericUpDown>
+
+
+							<!-- Effective Cost Display -->
+							<TextBlock Text="→" VerticalAlignment="Center" ToolTip.Tip="The inflation-adjusted cost that you should see in-game." />
+							<TextBox Text="{Binding InflationAdjustedCost}"
+									 Background="LightGreen"
+									 VerticalAlignment="Center"
+									 FontWeight="Bold"
+									 Width="64"
+									 IsReadOnly="True"/>
+						</StackPanel>
+					</Border>
 				</StackPanel>
 			</ControlTemplate>
 		</Setter>

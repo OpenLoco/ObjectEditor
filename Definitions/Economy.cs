@@ -1,3 +1,5 @@
+using Definitions.ObjectModels.Types;
+
 namespace Definitions;
 
 /// <summary>
@@ -6,6 +8,27 @@ namespace Definitions;
 /// </summary>
 public static class Economy
 {
+	public enum InflationCostUsage
+	{
+		None,
+		Building_BuildCost,
+		Vehicle_BuildCost
+	}
+
+	public static int GetInflationDivisorForObjectType(ObjectType objectType, InflationCostUsage usage = InflationCostUsage.None)
+		=> objectType switch
+		{
+			ObjectType.Water or ObjectType.Land or ObjectType.TrackSignal or ObjectType.LevelCrossing or ObjectType.Bridge or ObjectType.TrackExtra or ObjectType.Track or ObjectType.RoadExtra or ObjectType.Road => 10,
+			ObjectType.Tunnel or ObjectType.TrackStation or ObjectType.RoadStation => 8,
+			ObjectType.Airport => 6,
+			ObjectType.Dock => 7,
+			ObjectType.Vehicle => usage == InflationCostUsage.Vehicle_BuildCost ? 6 : 10, // 6 is build cost, 10 is run cost
+			ObjectType.Tree => 12,
+			ObjectType.Building => usage == InflationCostUsage.Building_BuildCost ? 10 : 8, // 10 is build cost, 8 is clear cost
+			ObjectType.Industry => 3,
+			_ => 0,
+		};
+
 	// Inflation factors from OpenLoco (kInflationFactors)
 	private static readonly uint[] InflationFactors =
 	[
@@ -25,7 +48,7 @@ public static class Economy
 		var factors = new uint[32];
 
 		// Initialize all factors to 1024 (base value)
-		for (var i = 0; i < 32; i++)
+		for (var i = 0; i < 32; ++i)
 		{
 			factors[i] = 1024;
 		}
@@ -38,9 +61,9 @@ public static class Economy
 		// Apply inflation for each month
 		for (var month = 0; month < monthCount; month++)
 		{
-			for (var i = 0; i < 32; i++)
+			for (var i = 0; i < 32; ++i)
 			{
-				factors[i] += (uint)((ulong)InflationFactors[i] * factors[i] >> 12);
+				factors[i] += (uint)((InflationFactors[i] * (ulong)factors[i]) >> 12);
 			}
 		}
 
@@ -55,7 +78,7 @@ public static class Economy
 	/// <param name="year">The year to calculate the cost for</param>
 	/// <param name="divisor">The divisor to apply (default is 10, which is common for most objects)</param>
 	/// <returns>The inflation-adjusted cost</returns>
-	public static int GetInflationAdjustedCost(short costFactor, byte costIndex, int year, byte divisor = 10)
+	public static int GetInflationAdjustedCost(short costFactor, byte costIndex, int year, byte divisor)
 	{
 		if (costIndex >= 32)
 		{
@@ -68,7 +91,7 @@ public static class Economy
 		}
 
 		var factors = CalculateCurrencyMultiplicationFactors(year);
-		var val = costFactor * (long)factors[costIndex];
+		var val = costFactor * factors[costIndex];
 		var result = val / (1L << divisor);
 
 		return (int)result;

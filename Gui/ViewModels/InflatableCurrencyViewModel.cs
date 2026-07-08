@@ -1,5 +1,6 @@
 using Definitions;
 using ReactiveUI;
+using System;
 
 namespace Gui.ViewModels;
 
@@ -37,8 +38,28 @@ public class InflatableCurrencyViewModel : ReactiveObject
 		}
 	} = DefaultYear;
 
+	public byte Divisor
+	{
+		get;
+		set
+		{
+			_ = this.RaiseAndSetIfChanged(ref field, value);
+			this.RaisePropertyChanged(nameof(InflationAdjustedCost));
+		}
+	}
+
+	public int ExchangeRate
+	{
+		get;
+		set
+		{
+			_ = this.RaiseAndSetIfChanged(ref field, value);
+			this.RaisePropertyChanged(nameof(InflationAdjustedCost));
+		}
+	} = 1;
+
 	public int InflationAdjustedCost
 		=> CostIndex >= 32
 			? 0
-			: Economy.GetInflationAdjustedCost(CostFactor, CostIndex, Year);
+			: Economy.GetInflationAdjustedCost(CostFactor, CostIndex, Year, Divisor) * Math.Max(1, ExchangeRate);
 }

@@ -81,6 +81,22 @@ public class EconomyTests
 	}
 
 	[Test]
+	public void GetInflationAdjustedCost_RealObject_114()
+	{
+		// Sell costs use negative factors
+		var cost = Economy.GetInflationAdjustedCost(92, 8, 1960, 6);
+		Assert.That(cost, Is.EqualTo(84670));
+	}
+
+	[Test]
+	public void GetInflationAdjustedCost_RealObject_Special()
+	{
+		// Sell costs use negative factors
+		var cost = Economy.GetInflationAdjustedCost(64, 8, 1950, 6);
+		Assert.That(cost, Is.EqualTo(34556));
+	}
+
+	[Test]
 	public void GetInflationAdjustedCost_InvalidCostIndex_ThrowsException()
 	{
 		_ = Assert.Throws<ArgumentOutOfRangeException>(() =>

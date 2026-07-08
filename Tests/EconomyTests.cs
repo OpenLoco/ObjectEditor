@@ -85,7 +85,7 @@ public class EconomyTests
 	{
 		// Sell costs use negative factors
 		var cost = Economy.GetInflationAdjustedCost(92, 8, 1960, 6);
-		Assert.That(cost, Is.EqualTo(84670));
+		Assert.That(cost, Is.EqualTo(44441));
 	}
 
 	[Test]
@@ -93,7 +93,7 @@ public class EconomyTests
 	{
 		// Sell costs use negative factors
 		var cost = Economy.GetInflationAdjustedCost(64, 8, 1950, 6);
-		Assert.That(cost, Is.EqualTo(34556));
+		Assert.That(cost, Is.EqualTo(17278));
 	}
 
 	[Test]

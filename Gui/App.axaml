@@ -123,6 +123,9 @@
 		<DataTemplate DataType="vm:Loco.Objects.Building.BuildingComponentsViewModel">
 			<vi:BuildingComponentsView />
 		</DataTemplate>
+		<DataTemplate DataType="vm:Loco.Objects.TownNames.TownNamesPreviewViewModel">
+			<vi:TownNamesPreviewView />
+		</DataTemplate>
 		<DataTemplate DataType="vm:G1ViewModel">
 			<ContentControl Content="{Binding ImageTableViewModel}" />
 		</DataTemplate>

@@ -1,0 +1,46 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Gui.ViewModels.Loco.Objects.TownNames"
+	mc:Ignorable="d"
+	x:DataType="vm:TownNamesPreviewViewModel"
+	x:Class="Gui.Views.TownNamesPreviewView"
+	x:Name="Root">
+
+	<Design.DataContext>
+		<vm:DesignTownNamesPreviewViewModel/>
+	</Design.DataContext>
+
+	<DockPanel>
+		<Button
+			DockPanel.Dock="Top"
+			Margin="4"
+			Padding="8,4"
+			HorizontalAlignment="Left"
+			Command="{Binding GenerateNamesCommand}">
+			Regenerate Names
+		</Button>
+		<ScrollViewer>
+			<ItemsControl ItemsSource="{Binding GeneratedNames}">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<StackPanel />
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Border Margin="4,2" Padding="8,4" BorderBrush="{DynamicResource ButtonBackground}" BorderThickness="1" CornerRadius="4">
+							<StackPanel Orientation="Horizontal">
+								<TextBlock Text="{Binding Name}" FontSize="16" VerticalAlignment="Center" />
+								<TextBlock Text="{Binding FlagsDisplay, StringFormat=' [{0}]'}" FontSize="11" Foreground="Gray" VerticalAlignment="Center" Margin="8,0,0,0" />
+							</StackPanel>
+						</Border>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+	</DockPanel>
+
+</UserControl>

@@ -5,7 +5,19 @@ namespace Gui.ViewModels.Loco.Objects.TownNames;
 public class DesignTownNamesPreviewViewModel : TownNamesPreviewViewModel
 {
 	public DesignTownNamesPreviewViewModel()
-		: base(new TownNamesViewModel(new TownNamesObject()))
+		: base(new TownNamesViewModel(
+			new TownNamesObject()
+			{
+				MorphemeCategories =
+				[
+					new(),
+					new(),
+					new(),
+					new(),
+					new(),
+					new()
+				]
+			}))
 	{
 		NoneFlagNames =
 		[

@@ -18,9 +18,9 @@ public class TownNamesViewModelTests
 		});
 
 		var viewModel = new TownNamesViewModel(model);
-		viewModel.MorphemeCategories[0].Bias = 9;
-		viewModel.MorphemeCategories[0].Morphemes.Clear();
-		viewModel.MorphemeCategories[0].Morphemes.Add(new StringTableEntryViewModel("new", LocationFlags.AdjacentToLargeWaterBody));
+		viewModel.MorphemeCategory1.Bias = 9;
+		viewModel.MorphemeCategory1.Morphemes.Clear();
+		viewModel.MorphemeCategory1.Morphemes.Add(new StringTableEntryViewModel("new", LocationFlags.AdjacentToLargeWaterBody));
 
 		viewModel.SynchronizeToModel();
 

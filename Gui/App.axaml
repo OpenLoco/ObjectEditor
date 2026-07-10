@@ -1,18 +1,18 @@
 <Application
-	xmlns="https://github.com/avaloniaui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-	xmlns:local="using:Gui"
-	xmlns:domc="using:Definitions.ObjectModels.Objects.Common"
-	xmlns:domt="using:Definitions.ObjectModels.Types"
-	xmlns:vm="using:Gui.ViewModels"
-	xmlns:vi="using:Gui.Views"
-	xmlns:log="using:Common.Logging"
-	xmlns:cnv="using:Gui.Converters"
-	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
-	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	x:Class="Gui.App"
-	RequestedThemeVariant="Default">
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+xmlns:local="using:Gui"
+xmlns:domc="using:Definitions.ObjectModels.Objects.Common"
+xmlns:domt="using:Definitions.ObjectModels.Types"
+xmlns:vm="using:Gui.ViewModels"
+xmlns:vi="using:Gui.Views"
+xmlns:log="using:Common.Logging"
+xmlns:cnv="using:Gui.Converters"
+xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+x:Class="Gui.App"
+RequestedThemeVariant="Default">
 	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 	<Application.Styles>
 		<FluentTheme />
@@ -135,9 +135,25 @@
 			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="vm:Loco.Objects.TownNames.GeneratedNameEntry">
-			<TextBlock Text="{Binding Name}" 
-					   ToolTip.Tip="{Binding ComponentsDisplay}"
-					   Margin="0,2" />
+			<TextBlock Text="{Binding Name}" Margin="0,2">
+				<ToolTip.Tip>
+					<ItemsControl ItemsSource="{Binding MorphemeComponents}">
+						<ItemsControl.ItemsPanel>
+							<ItemsPanelTemplate>
+								<StackPanel Orientation="Horizontal" Spacing="4"/>
+							</ItemsPanelTemplate>
+						</ItemsControl.ItemsPanel>
+
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Border BorderBrush="Gray" BorderThickness="1" CornerRadius="3" Padding="4,2">
+									<TextBlock Text="{Binding .}"/>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</ToolTip.Tip>
+			</TextBlock>
 		</DataTemplate>
 	</Application.DataTemplates>
 

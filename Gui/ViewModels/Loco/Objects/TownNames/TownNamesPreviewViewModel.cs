@@ -11,25 +11,9 @@ using ReactiveObject = ReactiveUI.ReactiveObject;
 
 namespace Gui.ViewModels.Loco.Objects.TownNames;
 
-public class GeneratedNameEntry
-{
-	public List<string> MorphemeComponents { get; set; } = [];
-	public LocationFlags Flags { get; set; } = LocationFlags.None;
-
-	public string FlagsDisplay
-		=> Flags == LocationFlags.None ? "-" : Flags.ToString();
-
-	public string Name
-		=> string.Join("", MorphemeComponents);
-
-	public string ComponentsDisplay
-		=> string.Join(" | ", MorphemeComponents
-			.Select((x, i) => $"{i}:\"{x}\""));
-}
-
 public class TownNamesPreviewViewModel : ReactiveObject, IViewModel
 {
-	readonly TownNamesViewModel _townNamesVm;
+	readonly TownNamesViewModel townNamesVm;
 
 	public string DisplayName => "Name Preview";
 
@@ -52,7 +36,7 @@ public class TownNamesPreviewViewModel : ReactiveObject, IViewModel
 	public TownNamesPreviewViewModel(TownNamesViewModel townNamesViewModel)
 	{
 		ArgumentNullException.ThrowIfNull(townNamesViewModel);
-		_townNamesVm = townNamesViewModel;
+		townNamesVm = townNamesViewModel;
 
 		GenerateNamesCommand = ReactiveCommand.Create(GenerateNames);
 	}
@@ -79,30 +63,37 @@ public class TownNamesPreviewViewModel : ReactiveObject, IViewModel
 		}
 	}
 
-	GeneratedNameEntry GenerateSingleName(LocationFlags targetFlag)
+	GeneratedNameEntry GenerateSingleName(LocationFlags targetLocationFlag)
 	{
 		List<string> morphemeComponents = [];
+		List<MorphemeCategoryViewModel> categories = [
+			townNamesVm.MorphemeCategory1,
+			townNamesVm.MorphemeCategory2,
+			townNamesVm.MorphemeCategory3,
+			townNamesVm.MorphemeCategory4,
+			townNamesVm.MorphemeCategory5,
+			townNamesVm.MorphemeCategory6];
 
-		foreach (var category in _townNamesVm.MorphemeCategories)
+		foreach (var category in categories)
 		{
 			// if the morphemes contains location-hinted entries, use those, else use generics
-			var relevantMorphemes = category.Morphemes.Where(m => m.LocationHint == targetFlag).ToList();
-			if (relevantMorphemes.Count == 0)
+			var locationMorphemes = category.Morphemes.Where(m => m.LocationHint == targetLocationFlag).ToList();
+			if (locationMorphemes.Count == 0)
 			{
-				relevantMorphemes = category.Morphemes.Where(m => m.LocationHint == LocationFlags.None).ToList();
+				locationMorphemes = category.Morphemes.Where(m => m.LocationHint == LocationFlags.None).ToList();
 			}
 
-			if (relevantMorphemes.Count == 0)
+			if (locationMorphemes.Count == 0)
 			{
 				morphemeComponents.Add(string.Empty);
 				continue;
 			}
 
-			var index = _random.Next(relevantMorphemes.Count + category.Bias);
+			var index = _random.Next(locationMorphemes.Count + category.Bias);
 
-			if (index >= 0 && index < relevantMorphemes.Count)
+			if (index >= 0 && index < locationMorphemes.Count)
 			{
-				var entry = relevantMorphemes[index];
+				var entry = locationMorphemes[index];
 				morphemeComponents.Add(entry.Text);
 			}
 			else
@@ -115,7 +106,7 @@ public class TownNamesPreviewViewModel : ReactiveObject, IViewModel
 		return new GeneratedNameEntry
 		{
 			MorphemeComponents = morphemeComponents,
-			Flags = targetFlag,
+			Flags = targetLocationFlag,
 		};
 	}
 }

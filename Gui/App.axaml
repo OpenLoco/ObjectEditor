@@ -134,6 +134,11 @@
 				<vi:ExtendedPropertyGrid Background="{DynamicResource ExpanderContentBackground}" IsHeaderVisible="True" IsCategoryVisible="False" IsAutoNameWidth="True" IsQuickFilterVisible="True" DataContext="{Binding}" />
 			</ScrollViewer>
 		</DataTemplate>
+		<DataTemplate DataType="vm:Loco.Objects.TownNames.GeneratedNameEntry">
+			<TextBlock Text="{Binding Name}" 
+					   ToolTip.Tip="{Binding ComponentsDisplay}"
+					   Margin="0,2" />
+		</DataTemplate>
 	</Application.DataTemplates>
 
 	<Application.Resources>

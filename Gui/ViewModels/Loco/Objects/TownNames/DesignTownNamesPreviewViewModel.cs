@@ -7,33 +7,42 @@ public class DesignTownNamesPreviewViewModel : TownNamesPreviewViewModel
 	public DesignTownNamesPreviewViewModel()
 		: base(new TownNamesViewModel(new TownNamesObject()))
 	{
-		GeneratedNames =
+		NoneFlagNames =
 		[
-			new() { Name = "Bridgeton", Flags = LocationFlags.None },
-			new() { Name = "Riverdale", Flags = LocationFlags.None },
-			new() { Name = "Oakhaven", Flags = LocationFlags.None },
-			new() { Name = "Millbrook", Flags = LocationFlags.None },
-			new() { Name = "Fairview", Flags = LocationFlags.None },
-			new() { Name = "Westwood", Flags = LocationFlags.None },
-			new() { Name = "Northgate", Flags = LocationFlags.None },
-			new() { Name = "Southmere", Flags = LocationFlags.None },
-			new() { Name = "Eastleigh", Flags = LocationFlags.None },
-			new() { Name = "Greenfield", Flags = LocationFlags.None },
-			new() { Name = "Portside", Flags = LocationFlags.AdjacentToLargeWaterBody },
-			new() { Name = "Harborview", Flags = LocationFlags.AdjacentToLargeWaterBody },
-			new() { Name = "Baymouth", Flags = LocationFlags.AdjacentToLargeWaterBody },
-			new() { Name = "Seabrink", Flags = LocationFlags.AdjacentToLargeWaterBody },
-			new() { Name = "Coastal", Flags = LocationFlags.AdjacentToLargeWaterBody },
-			new() { Name = "Hillcrest", Flags = LocationFlags.NotMountainous },
-			new() { Name = "Ridgefield", Flags = LocationFlags.NotMountainous },
-			new() { Name = "Highland", Flags = LocationFlags.NotMountainous },
-			new() { Name = "Mountainview", Flags = LocationFlags.NotMountainous },
-			new() { Name = "Summit", Flags = LocationFlags.NotMountainous },
-			new() { Name = "Brookside", Flags = LocationFlags.AdjacentToSmallWaterBody },
-			new() { Name = "Creekview", Flags = LocationFlags.AdjacentToSmallWaterBody },
-			new() { Name = "Lakewood", Flags = LocationFlags.AdjacentToSmallWaterBody },
-			new() { Name = "Pondfield", Flags = LocationFlags.AdjacentToSmallWaterBody },
-			new() { Name = "Streamvale", Flags = LocationFlags.AdjacentToSmallWaterBody },
+			new() { MorphemeComponents = ["Bridge", "", "ton"], Flags = LocationFlags.None },
+			new() { MorphemeComponents = ["River"], Flags = LocationFlags.None },
+			new() { MorphemeComponents = ["Oak"], Flags = LocationFlags.None },
+			new() { MorphemeComponents = ["Mill"], Flags = LocationFlags.None },
+			new() { MorphemeComponents = ["Fair"], Flags = LocationFlags.None },
+			new() { MorphemeComponents = ["West"], Flags = LocationFlags.None },
+			new() { MorphemeComponents = ["North"], Flags = LocationFlags.None },
+			new() { MorphemeComponents = ["South"], Flags = LocationFlags.None },
+			new() { MorphemeComponents = ["East"], Flags = LocationFlags.None },
+			new() { MorphemeComponents = ["Green"], Flags = LocationFlags.None },
+		];
+		SmallWaterNames =
+		[
+			new() { MorphemeComponents = ["Brook"], Flags = LocationFlags.AdjacentToSmallWaterBody },
+			new() { MorphemeComponents = ["Creek"], Flags = LocationFlags.AdjacentToSmallWaterBody },
+			new() { MorphemeComponents = ["Lake"], Flags = LocationFlags.AdjacentToSmallWaterBody },
+			new() { MorphemeComponents = ["Pond"], Flags = LocationFlags.AdjacentToSmallWaterBody },
+			new() { MorphemeComponents = ["Stream"], Flags = LocationFlags.AdjacentToSmallWaterBody },
+		];
+		LargeWaterNames =
+		[
+			new() { MorphemeComponents = ["Port"], Flags = LocationFlags.AdjacentToLargeWaterBody },
+			new() { MorphemeComponents = ["Harbor"], Flags = LocationFlags.AdjacentToLargeWaterBody },
+			new() { MorphemeComponents = ["Bay"], Flags = LocationFlags.AdjacentToLargeWaterBody },
+			new() { MorphemeComponents = ["Seabrink"], Flags = LocationFlags.AdjacentToLargeWaterBody },
+			new() { MorphemeComponents = ["Coastal"], Flags = LocationFlags.AdjacentToLargeWaterBody },
+		];
+		MountainousNames =
+		[
+			new() { MorphemeComponents = ["Hill"], Flags = LocationFlags.Mountainous },
+			new() { MorphemeComponents = ["Ridge"], Flags = LocationFlags.Mountainous },
+			new() { MorphemeComponents = ["High"], Flags = LocationFlags.Mountainous },
+			new() { MorphemeComponents = ["Mountain"], Flags = LocationFlags.Mountainous },
+			new() { MorphemeComponents = ["Shillhaven"], Flags = LocationFlags.Mountainous },
 		];
 	}
 }

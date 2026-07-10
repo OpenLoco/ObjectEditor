@@ -2,34 +2,51 @@ using Definitions.ObjectModels.Objects.TownNames;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using ReactiveObject = ReactiveUI.ReactiveObject;
 
 namespace Gui.ViewModels.Loco.Objects.TownNames;
 
 public class GeneratedNameEntry
 {
-	public string Name { get; set; } = string.Empty;
+	public List<string> MorphemeComponents { get; set; } = [];
 	public LocationFlags Flags { get; set; } = LocationFlags.None;
-	public string FlagsDisplay => Flags == LocationFlags.None ? "—" : Flags.ToString();
+
+	public string FlagsDisplay
+		=> Flags == LocationFlags.None ? "-" : Flags.ToString();
+
+	public string Name
+		=> string.Join("", MorphemeComponents);
+
+	public string ComponentsDisplay
+		=> string.Join(" | ", MorphemeComponents
+			.Select((x, i) => $"{i}:\"{x}\""));
 }
 
-public class TownNamesPreviewViewModel : ReactiveObject, IViewModel, IDisposable
+public class TownNamesPreviewViewModel : ReactiveObject, IViewModel
 {
 	readonly TownNamesViewModel _townNamesVm;
-	readonly CompositeDisposable _subscriptions = [];
-	bool _disposed;
 
 	public string DisplayName => "Name Preview";
 
 	[Reactive, Browsable(false)]
 	public ObservableCollection<GeneratedNameEntry> GeneratedNames { get; set; } = [];
+
+	[Reactive, Browsable(false)]
+	public ObservableCollection<GeneratedNameEntry> NoneFlagNames { get; set; } = [];
+
+	[Reactive, Browsable(false)]
+	public ObservableCollection<GeneratedNameEntry> LargeWaterNames { get; set; } = [];
+
+	[Reactive, Browsable(false)]
+	public ObservableCollection<GeneratedNameEntry> MountainousNames { get; set; } = [];
+
+	[Reactive, Browsable(false)]
+	public ObservableCollection<GeneratedNameEntry> SmallWaterNames { get; set; } = [];
 
 	public ReactiveCommand<Unit, Unit> GenerateNamesCommand { get; }
 
@@ -41,55 +58,50 @@ public class TownNamesPreviewViewModel : ReactiveObject, IViewModel, IDisposable
 		_townNamesVm = townNamesViewModel;
 
 		GenerateNamesCommand = ReactiveCommand.Create(GenerateNames);
-
-		// Reactively regenerate when any morpheme data changes in the TownNamesViewModel
-		this.WhenAnyValue(x => x._townNamesVm.MorphemeCategories)
-			.Where(x => x != null)
-			.Subscribe(_ => GenerateNames())
-			.DisposeWith(_subscriptions);
 	}
 
 	void GenerateNames()
 	{
-		GeneratedNames.Clear();
+		NoneFlagNames.Clear();
+		LargeWaterNames.Clear();
+		MountainousNames.Clear();
+		SmallWaterNames.Clear();
 
-		GenerateForFlag(LocationFlags.None, 10);
-		GenerateForFlag(LocationFlags.AdjacentToLargeWaterBody, 5);
-		GenerateForFlag(LocationFlags.NotMountainous, 5);
-		GenerateForFlag(LocationFlags.AdjacentToSmallWaterBody, 5);
+		const int NumToGenerate = 20;
+		GenerateForFlag(LocationFlags.None, NoneFlagNames, NumToGenerate);
+		GenerateForFlag(LocationFlags.Mountainous, MountainousNames, NumToGenerate);
+		GenerateForFlag(LocationFlags.AdjacentToSmallWaterBody, SmallWaterNames, NumToGenerate);
+		GenerateForFlag(LocationFlags.AdjacentToLargeWaterBody, LargeWaterNames, NumToGenerate);
 	}
 
-	void GenerateForFlag(LocationFlags targetFlag, int count)
+	void GenerateForFlag(LocationFlags targetFlag, ObservableCollection<GeneratedNameEntry> targetCollection, int count)
 	{
-		var attempts = 0;
-		const int maxAttempts = 1000;
-
-		while (GeneratedNames.Count(x => x.Flags == targetFlag) < count && attempts < maxAttempts)
+		while (targetCollection.Count < count)
 		{
-			attempts++;
 			var entry = GenerateSingleName();
 			if (entry.Flags == targetFlag)
 			{
-				GeneratedNames.Add(entry);
+				targetCollection.Add(entry);
 			}
 		}
 	}
 
 	GeneratedNameEntry GenerateSingleName()
 	{
-		// Read the current live data from the TownNamesViewModel (reflects user edits)
 		var categories = _townNamesVm.MorphemeCategories;
 
 		var rand = (uint)_random.Next();
+		var name = string.Empty;
+		var locationFlags = LocationFlags.None;
 
-		var name = "";
-		LocationFlags locationFlags = LocationFlags.None;
+		List<string> morphemeComponents = [];
 
 		foreach (var category in categories)
 		{
 			var morphemes = category.Morphemes;
 			if (morphemes.Count == 0)
 			{
+				morphemeComponents.Add(string.Empty);
 				continue;
 			}
 
@@ -102,7 +114,12 @@ public class TownNamesPreviewViewModel : ReactiveObject, IViewModel, IDisposable
 			{
 				var entry = morphemes[index];
 				name += entry.Text;
+				morphemeComponents.Add(entry.Text);
 				locationFlags |= entry.LocationHint;
+			}
+			else
+			{
+				morphemeComponents.Add(string.Empty);
 			}
 
 			for (var shifts = morphemes.Count + category.Bias; shifts > 0; shifts >>= 1)
@@ -113,20 +130,8 @@ public class TownNamesPreviewViewModel : ReactiveObject, IViewModel, IDisposable
 
 		return new GeneratedNameEntry
 		{
-			Name = name,
+			MorphemeComponents = morphemeComponents,
 			Flags = locationFlags,
 		};
-	}
-
-	public void Dispose()
-	{
-		if (_disposed)
-		{
-			return;
-		}
-
-		_disposed = true;
-		_subscriptions.Dispose();
-		GC.SuppressFinalize(this);
 	}
 }

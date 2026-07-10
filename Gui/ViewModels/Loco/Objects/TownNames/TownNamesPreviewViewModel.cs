@@ -34,9 +34,6 @@ public class TownNamesPreviewViewModel : ReactiveObject, IViewModel
 	public string DisplayName => "Name Preview";
 
 	[Reactive, Browsable(false)]
-	public ObservableCollection<GeneratedNameEntry> GeneratedNames { get; set; } = [];
-
-	[Reactive, Browsable(false)]
 	public ObservableCollection<GeneratedNameEntry> NoneFlagNames { get; set; } = [];
 
 	[Reactive, Browsable(false)]
@@ -63,75 +60,62 @@ public class TownNamesPreviewViewModel : ReactiveObject, IViewModel
 	void GenerateNames()
 	{
 		NoneFlagNames.Clear();
+		SmallWaterNames.Clear();
 		LargeWaterNames.Clear();
 		MountainousNames.Clear();
-		SmallWaterNames.Clear();
 
 		const int NumToGenerate = 20;
 		GenerateForFlag(LocationFlags.None, NoneFlagNames, NumToGenerate);
-		GenerateForFlag(LocationFlags.Mountainous, MountainousNames, NumToGenerate);
 		GenerateForFlag(LocationFlags.AdjacentToSmallWaterBody, SmallWaterNames, NumToGenerate);
 		GenerateForFlag(LocationFlags.AdjacentToLargeWaterBody, LargeWaterNames, NumToGenerate);
+		GenerateForFlag(LocationFlags.Mountainous, MountainousNames, NumToGenerate);
 	}
 
 	void GenerateForFlag(LocationFlags targetFlag, ObservableCollection<GeneratedNameEntry> targetCollection, int count)
 	{
-		while (targetCollection.Count < count)
+		for (var i = 0; i < count; i++)
 		{
-			var entry = GenerateSingleName();
-			if (entry.Flags == targetFlag)
-			{
-				targetCollection.Add(entry);
-			}
+			targetCollection.Add(GenerateSingleName(targetFlag));
 		}
 	}
 
-	GeneratedNameEntry GenerateSingleName()
+	GeneratedNameEntry GenerateSingleName(LocationFlags targetFlag)
 	{
-		var categories = _townNamesVm.MorphemeCategories;
-
-		var rand = (uint)_random.Next();
-		var name = string.Empty;
-		var locationFlags = LocationFlags.None;
-
 		List<string> morphemeComponents = [];
 
-		foreach (var category in categories)
+		foreach (var category in _townNamesVm.MorphemeCategories)
 		{
-			var morphemes = category.Morphemes;
-			if (morphemes.Count == 0)
+			// if the morphemes contains location-hinted entries, use those, else use generics
+			var relevantMorphemes = category.Morphemes.Where(m => m.LocationHint == targetFlag).ToList();
+			if (relevantMorphemes.Count == 0)
+			{
+				relevantMorphemes = category.Morphemes.Where(m => m.LocationHint == LocationFlags.None).ToList();
+			}
+
+			if (relevantMorphemes.Count == 0)
 			{
 				morphemeComponents.Add(string.Empty);
 				continue;
 			}
 
-			var ax = (ushort)(rand & 0xFFFF);
-			var dx = (ushort)(morphemes.Count + category.Bias);
-			var product = (uint)ax * dx;
-			var index = (short)((product >> 16) - category.Bias);
+			var index = _random.Next(relevantMorphemes.Count + category.Bias);
 
-			if (index >= 0 && index < morphemes.Count)
+			if (index >= 0 && index < relevantMorphemes.Count)
 			{
-				var entry = morphemes[index];
-				name += entry.Text;
+				var entry = relevantMorphemes[index];
 				morphemeComponents.Add(entry.Text);
-				locationFlags |= entry.LocationHint;
 			}
 			else
 			{
+				// entry skipped due to bias, add empty string to maintain component count
 				morphemeComponents.Add(string.Empty);
-			}
-
-			for (var shifts = morphemes.Count + category.Bias; shifts > 0; shifts >>= 1)
-			{
-				rand = (rand >> 1) | (rand << 31);
 			}
 		}
 
 		return new GeneratedNameEntry
 		{
 			MorphemeComponents = morphemeComponents,
-			Flags = locationFlags,
+			Flags = targetFlag,
 		};
 	}
 }

@@ -27,27 +27,31 @@
 				<Border Grid.Column="0" Margin="4" Padding="8" BorderBrush="{DynamicResource ButtonBackground}" BorderThickness="1" CornerRadius="4">
 					<StackPanel>
 						<TextBlock Text="No Flags"  FontWeight="Bold" Margin="0,0,0,4" />
+						<TextBlock Text="(no requirements)" FontWeight="Thin" Margin="0,0,0,4" />
 						<Separator></Separator>
 						<ItemsControl ItemsSource="{Binding NoneFlagNames}" />
 					</StackPanel>
 				</Border>
-				<Border Grid.Column="3" Margin="4" Padding="8" BorderBrush="{DynamicResource ButtonBackground}" BorderThickness="1" CornerRadius="4">
+				<Border Grid.Column="1" Margin="4" Padding="8" BorderBrush="{DynamicResource ButtonBackground}" BorderThickness="1" CornerRadius="4">
 					<StackPanel>
 						<TextBlock Text="Small Water" FontWeight="Bold" Margin="0,0,0,4" />
+						<TextBlock Text="(>= 15 nearby water tiles)" FontWeight="Thin" Margin="0,0,0,4" />
 						<Separator></Separator>
 						<ItemsControl ItemsSource="{Binding SmallWaterNames}" />
 					</StackPanel>
 				</Border>
-				<Border Grid.Column="1" Margin="4" Padding="8" BorderBrush="{DynamicResource ButtonBackground}" BorderThickness="1" CornerRadius="4">
+				<Border Grid.Column="2" Margin="4" Padding="8" BorderBrush="{DynamicResource ButtonBackground}" BorderThickness="1" CornerRadius="4">
 					<StackPanel>
 						<TextBlock Text="Large Water" FontWeight="Bold" Margin="0,0,0,4" />
+						<TextBlock Text="(>= 65 nearby water tiles)" FontWeight="Thin" Margin="0,0,0,4" />
 						<Separator></Separator>
 						<ItemsControl ItemsSource="{Binding LargeWaterNames}" />
 					</StackPanel>
 				</Border>
-				<Border Grid.Column="2" Margin="4" Padding="8" BorderBrush="{DynamicResource ButtonBackground}" BorderThickness="1" CornerRadius="4">
+				<Border Grid.Column="3" Margin="4" Padding="8" BorderBrush="{DynamicResource ButtonBackground}" BorderThickness="1" CornerRadius="4">
 					<StackPanel>
 						<TextBlock Text="Mountainous" FontWeight="Bold" Margin="0,0,0,4" />
+						<TextBlock Text="(>= 192 land tile height)" FontWeight="Thin" Margin="0,0,0,4" />
 						<Separator></Separator>
 						<ItemsControl ItemsSource="{Binding MountainousNames}" />
 					</StackPanel>

@@ -73,6 +73,7 @@ RequestedThemeVariant="Default">
 			<Setter Property="IsCategoryVisible" Value="False" />
 			<Setter Property="IsQuickFilterVisible" Value="False" />
 			<Setter Property="IsAutoNameWidth" Value="True" />
+			<Setter Property="Background" Value="{DynamicResource ExpanderContentBackground}" />
 		</Style>
 
 		<Style Selector="vi|ExtendedPropertyGrid">
@@ -81,6 +82,7 @@ RequestedThemeVariant="Default">
 			<Setter Property="IsCategoryVisible" Value="False" />
 			<Setter Property="IsQuickFilterVisible" Value="True" />
 			<Setter Property="IsAutoNameWidth" Value="True" />
+			<Setter Property="Background" Value="{DynamicResource ExpanderContentBackground}" />
 		</Style>
 
 	</Application.Styles>
@@ -122,6 +124,9 @@ RequestedThemeVariant="Default">
 		</DataTemplate>
 		<DataTemplate DataType="vm:Loco.Objects.Building.BuildingComponentsViewModel">
 			<vi:BuildingComponentsView />
+		</DataTemplate>
+		<DataTemplate DataType="vm:Loco.Objects.TownNames.TownNamesViewModel">
+			<vi:TownNamesView />
 		</DataTemplate>
 		<DataTemplate DataType="vm:Loco.Objects.TownNames.TownNamesPreviewViewModel">
 			<vi:TownNamesPreviewView />

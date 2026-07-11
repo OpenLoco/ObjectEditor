@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Definitions.ObjectModels.Objects.TownNames;
 
 public readonly struct StringTableEntry
@@ -6,9 +8,10 @@ public readonly struct StringTableEntry
 
 	public LocationFlags LocationHint { get; }
 
-	public StringTableEntry(string text, LocationFlags type)
+	[JsonConstructor]
+	public StringTableEntry(string text, LocationFlags locationHint)
 	{
 		Text = text;
-		LocationHint = type;
+		LocationHint = locationHint;
 	}
 }

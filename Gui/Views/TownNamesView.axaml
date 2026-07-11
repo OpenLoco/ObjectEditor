@@ -1,0 +1,41 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Gui.ViewModels.Loco.Objects.TownNames"
+	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	mc:Ignorable="d"
+	x:DataType="vm:TownNamesViewModel"
+	x:Class="Gui.Views.TownNamesView"
+	x:Name="Root">
+
+	<Design.DataContext>
+		<vm:DesignTownNamesViewModel/>
+	</Design.DataContext>
+
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="4" Spacing="4">
+			<Button
+				Padding="8,4"
+				Command="{Binding ImportJsonCommand}">
+				Import JSON
+			</Button>
+			<Button
+				Padding="8,4"
+				Command="{Binding ExportJsonCommand}">
+				Export JSON
+			</Button>
+		</StackPanel>
+		<ScrollViewer>
+			<pgc:PropertyGrid
+				DataContext="{Binding}"
+				IsTitleVisible="False"
+				IsHeaderVisible="False"
+				IsCategoryVisible="False"
+				IsQuickFilterVisible="False"
+				IsAutoNameWidth="True" />
+		</ScrollViewer>
+	</DockPanel>
+
+</UserControl>

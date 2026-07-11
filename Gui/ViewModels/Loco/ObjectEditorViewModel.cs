@@ -13,6 +13,7 @@ using Gui.Models;
 using Gui.Models.Audio;
 using Gui.ViewModels.Graphics;
 using Gui.ViewModels.Loco.Objects.Building;
+using Gui.ViewModels.Loco.Objects.TownNames;
 using Gui.Views;
 using Microsoft.Extensions.Logging;
 using MsBox.Avalonia;
@@ -247,12 +248,16 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 	public override void Load()
 	{
-		// this stops any currently-playing sounds
+		// this stops any currently-playing sounds and disposes preview viewmodels
 		foreach (var vm in ViewModelGroups.SelectMany(x => x.ViewModels))
 		{
 			if (vm is AudioViewModel avm)
 			{
 				avm.Dispose();
+			}
+			else if (vm is IDisposable disposable)
+			{
+				disposable.Dispose();
 			}
 		}
 
@@ -286,10 +291,25 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 						var configFilePath = Path.Combine(EditorContext.Settings.ConfigFolder, ObjectEditorContext.ImageTableGroupsFileName);
 						AddViewModelToGroup(new ImageTableViewModel(Model.LocoObject.ImageTable, EditorContext.Logger, Model.LocoObject.ObjectType, Model.LocoObject.Object, configFilePath), mediaGroup);
 
-						var bc = Model.LocoObject.ObjectType == ObjectType.Building ? (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents : null;
-						if (bc != null)
+						// object-specific extra viewmodels
+						if (Model.LocoObject.ObjectType == ObjectType.Building)
 						{
-							AddViewModelToGroup(new BuildingComponentsViewModel(bc, Model.LocoObject.ImageTable), mediaGroup);
+							var bc = (Model.LocoObject.Object as IHasBuildingComponents)?.BuildingComponents;
+							if (bc != null)
+							{
+								AddViewModelToGroup(new BuildingComponentsViewModel(bc, Model.LocoObject.ImageTable), mediaGroup);
+							}
+						}
+
+					}
+
+					// no image table but custom name previewer
+					if (Model.LocoObject.ObjectType == ObjectType.TownNames)
+					{
+						var townNamesVm = GetViewModel<TownNamesViewModel>();
+						if (townNamesVm != null)
+						{
+							AddViewModelToGroup(new TownNamesPreviewViewModel(townNamesVm), mediaGroup);
 						}
 					}
 				}

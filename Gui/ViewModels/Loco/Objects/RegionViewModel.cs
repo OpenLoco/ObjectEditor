@@ -27,16 +27,10 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 		CargoInfluenceTownFilter = [with(model.CargoInfluenceTownFilter)];
 	}
 
-	public DrivingSide VehiclesDriveOnThe
+	public DrivingSide VehicleDrivingSide
 	{
-		get => Model.VehiclesDriveOnThe;
-		set => Model.VehiclesDriveOnThe = value;
-	}
-
-	public uint8_t pad_07
-	{
-		get => Model.pad_07;
-		set => Model.pad_07 = value;
+		get => Model.VehicleDrivingSide;
+		set => Model.VehicleDrivingSide = value;
 	}
 
 	[Browsable(false)]

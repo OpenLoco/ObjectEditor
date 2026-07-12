@@ -122,7 +122,7 @@ public static class DatabaseHelperScripts
 						continue;
 					}
 
-					results.Add((obj, struc.var_AC));
+					results.Add((obj, (byte)struc.TownAmenityCategory));
 				}
 			}
 			catch (Exception ex)
@@ -155,7 +155,7 @@ public static class DatabaseHelperScripts
 				if (o.LocoObject != null)
 				{
 					var struc = (BuildingObject)o.LocoObject.Object;
-					foreach (var cargo in struc.ProducedCargo.Zip(struc.ProducedQuantity))
+					foreach (var cargo in struc.ProducedCargoType.Zip(struc.ProducedQuantity))
 					{
 						results.Add((obj, (cargo.First.Name, cargo.Second)));
 					}

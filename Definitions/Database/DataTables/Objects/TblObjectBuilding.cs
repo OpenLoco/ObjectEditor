@@ -27,7 +27,7 @@ public class TblObjectBuilding : DbSubObject, IConvertibleToTable<TblObjectBuild
 	//List<S5Header> RequiredCargo { get; set; }
 	//List<uint8_t> var_A6 { get; set; }
 	//List<uint8_t> var_A8 { get; set; }
-	//public uint8_t var_AC { get; set; }
+	//public uint8_t TownAmenityCategory { get; set; }
 	//public uint8_t NumElevatorSequences { get; set; }
 	//List<uint8_t[]> _ElevatorHeightSequences // 0xAE ->0xB2->0xB6->0xBA->0xBE (4 byte pointers)
 

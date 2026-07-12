@@ -258,7 +258,7 @@ public class LoadSaveTests
 				// CollectionAssert.AreEqual(struc.var_A8, Array.CreateInstance(typeof(byte), 2), nameof(struc.var_A8));
 				// CollectionAssert.AreEqual(struc.var_A4, Array.CreateInstance(typeof(byte), 2), nameof(struc.var_A4));
 				Assert.That(struc.DemolishRatingReduction, Is.Zero, nameof(struc.DemolishRatingReduction));
-				Assert.That(struc.var_AC, Is.EqualTo(255), nameof(struc.var_AC));
+				Assert.That(struc.TownAmenityCategory, Is.EqualTo(TownAmenityCategory.None), nameof(struc.TownAmenityCategory));
 				Assert.That(struc.ElevatorHeightSequences, Is.Empty, nameof(struc.ElevatorHeightSequences));
 				//Assert.That(struc.ElevatorHeightSequences[0].Count, Is.Zero, nameof(struc.ElevatorHeightSequences) + "[0]");
 				//Assert.That(struc.ElevatorHeightSequences[1].Count, Is.Zero, nameof(struc.ElevatorHeightSequences) + "[1]");

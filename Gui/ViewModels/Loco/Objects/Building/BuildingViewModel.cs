@@ -16,9 +16,11 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 {
 	public BuildingViewModel(BuildingObject model) : base(model)
 	{
-		ProducedCargo = [with(model.ProducedCargo)];
-		RequiredCargo = [with(model.RequiredCargo)];
 		ProducedQuantity = [with(model.ProducedQuantity)];
+		ProducedCargoType = [with(model.ProducedCargoType)];
+		ConsumedCargoType = [with(model.ConsumedCargoType)];
+		ProducedCargoQuantity = [with(model.ProducedCargoQuantity)];
+		ConsumedCargoQuantity = [with(model.ConsumedCargoQuantity)];
 
 		BuildingVariations = [with(model.BuildingComponents.BuildingVariations.Select(x => x.ToBindingList()).ToBindingList())];
 		BuildingHeights = model.BuildingComponents.BuildingHeights.ToBindingList();
@@ -183,9 +185,11 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 		set => Model.SellCostFactor = value;
 	}
 
-	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeader> ProducedCargo { get; set; }
-	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeader> RequiredCargo { get; set; }
 	[Category("Production"), Length(1, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<uint8_t> ProducedQuantity { get; set; }
+	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeader> ProducedCargoType { get; set; }
+	[Category("Production"), Length(0, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<ObjectModelHeader> ConsumedCargoType { get; set; }
+	[Category("Production"), Length(1, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<uint8_t> ProducedCargoQuantity { get; set; }
+	[Category("Production"), Length(1, BuildingObject.Constants.MaxProducedCargoType)] public BindingList<uint8_t> ConsumedCargoQuantity { get; set; }
 
 	//[Category("Building")]
 	//public BuildingComponents BuildingComponents
@@ -218,38 +222,9 @@ public class BuildingViewModel : BaseViewModel<BuildingObject>
 	[Category("Elevator"), Browsable(false)]
 	public BindingList<uint8_t>? ElevatorSequence4 { get; init; }
 
-	[Category("<unknown>")]
-	public uint8_t var_A6
+	public TownAmenityCategory TownAmenityCategory
 	{
-		get => Model.var_A6;
-		set => Model.var_A6 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint8_t var_A7
-	{
-		get => Model.var_A7;
-		set => Model.var_A7 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint8_t var_A8
-	{
-		get => Model.var_A8;
-		set => Model.var_A8 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint8_t var_A9
-	{
-		get => Model.var_A9;
-		set => Model.var_A9 = value;
-	}
-
-	[Category("<unknown>")]
-	public uint8_t var_AC
-	{
-		get => Model.var_AC;
-		set => Model.var_AC = value;
+		get => Model.TownAmenityCategory;
+		set => Model.TownAmenityCategory = value;
 	}
 }

@@ -53,7 +53,7 @@ public class MainWindowViewModel : ViewModelBase
 
 		HelperScripts =
 		[
-			new("Query: Building var_AC", "Dumps Building var_AC values for Locomotion-Steam buildings to CSV.", DatabaseHelperScripts.QueryBuildingVar_AC),
+			new("Query: Building TownAmenityCategory", "Dumps Building TownAmenityCategory values for Locomotion-Steam buildings to CSV.", DatabaseHelperScripts.QueryBuildingVar_AC),
 			new("Query: Building produced quantity", "Dumps building produced cargo and quantities to CSV.", DatabaseHelperScripts.QueryBuildingProducedQuantity),
 			new("Query: Headquarters buildings", "Logs buildings flagged as headquarters.", DatabaseHelperScripts.QueryHeadquarters),
 			new("Query: Cost index (vanilla)", "Logs CostIndex on every vanilla object that exposes one.", DatabaseHelperScripts.QueryCostIndex),

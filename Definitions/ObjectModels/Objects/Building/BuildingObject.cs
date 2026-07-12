@@ -29,14 +29,12 @@ public class BuildingObject : ILocoStruct, IHasBuildingComponents
 	public uint8_t GeneratorFunction { get; set; } // for misc buildings generator function, otherwise its a set of flags representing town densities the building can be built in
 	public uint8_t AverageNumberOnMap { get; set; }
 	public List<uint8_t> ProducedQuantity { get; set; } = [];
-	public List<ObjectModelHeader> ProducedCargo { get; set; } = [];
-	public List<ObjectModelHeader> RequiredCargo { get; set; } = [];
-	public uint8_t var_A6 { get; set; }
-	public uint8_t var_A7 { get; set; }
-	public uint8_t var_A8 { get; set; }
-	public uint8_t var_A9 { get; set; }
+	public List<ObjectModelHeader> ProducedCargoType { get; set; } = [];
+	public List<ObjectModelHeader> ConsumedCargoType { get; set; } = [];
+	public List<uint8_t> ProducedCargoQuantity { get; set; } = [];
+	public List<uint8_t> ConsumedCargoQuantity { get; set; } = [];
 	public int16_t DemolishRatingReduction { get; set; }
-	public uint8_t var_AC { get; set; }
+	public TownAmenityCategory TownAmenityCategory { get; set; }
 	public List<uint8_t[]> ElevatorHeightSequences { get; set; } = [];
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -60,12 +58,12 @@ public class BuildingObject : ILocoStruct, IHasBuildingComponents
 			}
 		}
 
-		if (var_AC != 0xFF)
+		if (TownAmenityCategory != TownAmenityCategory.None)
 		{
 			// Max of 8 different building categories
-			if (var_AC >= 8)
+			if ((int)TownAmenityCategory >= 8)
 			{
-				yield return new ValidationResult($"{nameof(var_AC)} must either be 255 or < 8.", [nameof(var_AC)]);
+				yield return new ValidationResult($"{nameof(TownAmenityCategory)} must either be {TownAmenityCategory.None} or < 8.", [nameof(TownAmenityCategory)]);
 			}
 		}
 	}

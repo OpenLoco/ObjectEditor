@@ -56,12 +56,12 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			model.ProducedQuantity.Add(br.ReadByte());
 			br.SkipObjectId(BuildingObject.Constants.MaxProducedCargoType);
 			br.SkipObjectId(BuildingObject.Constants.MaxRequiredCargoType);
-			model.var_A6 = br.ReadByte();
-			model.var_A7 = br.ReadByte();
-			model.var_A8 = br.ReadByte();
-			model.var_A9 = br.ReadByte();
+			model.ProducedCargoQuantity.Add(br.ReadByte());
+			model.ProducedCargoQuantity.Add(br.ReadByte());
+			model.ConsumedCargoQuantity.Add(br.ReadByte());
+			model.ConsumedCargoQuantity.Add(br.ReadByte());
 			model.DemolishRatingReduction = br.ReadInt16();
-			model.var_AC = br.ReadByte();
+			model.TownAmenityCategory = ((DatTownAmenityCategory)br.ReadByte()).Convert();
 			var numElevatorSequences = br.ReadByte();
 			br.SkipPointer(BuildingObject.Constants.MaxElevatorHeightSequencesCount); // ElevatorHeightSequences, not part of object definition
 
@@ -89,8 +89,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		model.BuildingComponents.BuildingHeights = br.ReadBuildingHeights(numBuildingParts);
 		model.BuildingComponents.BuildingAnimations = br.ReadBuildingAnimations(numBuildingParts);
 		model.BuildingComponents.BuildingVariations = br.ReadBuildingVariations(numBuildingVariations);
-		model.ProducedCargo = [.. br.ReadS5HeaderList(BuildingObject.Constants.MaxProducedCargoType)];
-		model.RequiredCargo = [.. br.ReadS5HeaderList(BuildingObject.Constants.MaxRequiredCargoType)];
+		model.ProducedCargoType = [.. br.ReadS5HeaderList(BuildingObject.Constants.MaxProducedCargoType)];
+		model.ConsumedCargoType = [.. br.ReadS5HeaderList(BuildingObject.Constants.MaxRequiredCargoType)];
 
 		// elevator sequences
 		for (var i = 0; i < numElevatorSequences; ++i)
@@ -129,12 +129,12 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 			bw.Write(model.ProducedQuantity[1]);
 			bw.WriteEmptyObjectId(BuildingObject.Constants.MaxProducedCargoType);
 			bw.WriteEmptyObjectId(BuildingObject.Constants.MaxRequiredCargoType);
-			bw.Write(model.var_A6);
-			bw.Write(model.var_A7);
-			bw.Write(model.var_A8);
-			bw.Write(model.var_A9);
+			bw.Write(model.ProducedCargoQuantity[0]);
+			bw.Write(model.ProducedCargoQuantity[1]);
+			bw.Write(model.ConsumedCargoQuantity[0]);
+			bw.Write(model.ConsumedCargoQuantity[1]);
 			bw.Write(model.DemolishRatingReduction);
-			bw.Write(model.var_AC);
+			bw.Write((uint8_t)model.TownAmenityCategory);
 			bw.Write((uint8_t)model.ElevatorHeightSequences.Count);
 			bw.WriteEmptyPointer(BuildingObject.Constants.MaxElevatorHeightSequencesCount); // ElevatorHeightSequences, not part of object definition
 
@@ -157,8 +157,8 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		bw.Write(model.BuildingComponents.BuildingHeights);
 		bw.Write(model.BuildingComponents.BuildingAnimations);
 		bw.Write(model.BuildingComponents.BuildingVariations);
-		bw.WriteS5HeaderList(model.ProducedCargo, BuildingObject.Constants.MaxProducedCargoType);
-		bw.WriteS5HeaderList(model.RequiredCargo, BuildingObject.Constants.MaxRequiredCargoType);
+		bw.WriteS5HeaderList(model.ProducedCargoType, BuildingObject.Constants.MaxProducedCargoType);
+		bw.WriteS5HeaderList(model.ConsumedCargoType, BuildingObject.Constants.MaxRequiredCargoType);
 
 		// elevator sequences
 		foreach (var unk in model.ElevatorHeightSequences)
@@ -178,6 +178,19 @@ public abstract class BuildingObjectLoader : IDatObjectLoader
 		IsHeadquarters = 1 << 3,
 		HasShadows = 1 << 4,
 	}
+
+	internal enum DatTownAmenityCategory : uint8_t
+	{
+		Religious = 0,
+		Unk1 = 1, // No vanilla object uses this category
+		Hotel = 2,
+		Park = 3,
+		Courthouse = 4,
+		Landmark = 5, // e.g. a fountain
+		Unk6 = 6,     // No vanilla object uses this category
+		Unk7 = 7,     // No vanilla object uses this category
+		None = 0xFF,  // Most buildings will have this category
+	};
 }
 
 internal static class BuildingObjectFlagsConverter
@@ -187,4 +200,13 @@ internal static class BuildingObjectFlagsConverter
 
 	public static DatBuildingObjectFlags Convert(this BuildingObjectFlags buildingObjectFlags)
 		=> (DatBuildingObjectFlags)buildingObjectFlags;
+}
+
+internal static class TownAmenityCategoryConverter
+{
+	public static TownAmenityCategory Convert(this DatTownAmenityCategory datTownAmenityCategory)
+		=> (TownAmenityCategory)datTownAmenityCategory;
+
+	public static DatTownAmenityCategory Convert(this TownAmenityCategory townAmenityCategory)
+		=> (DatTownAmenityCategory)townAmenityCategory;
 }

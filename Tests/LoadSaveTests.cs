@@ -386,7 +386,6 @@ public class LoadSaveTests
 				Assert.That(struc.Intelligence, Is.EqualTo(7), nameof(struc.Intelligence));
 				Assert.That(struc.Aggressiveness, Is.EqualTo(5), nameof(struc.Aggressiveness));
 				Assert.That(struc.Competitiveness, Is.EqualTo(6), nameof(struc.Competitiveness));
-				Assert.That(struc.var_37, Is.Zero, nameof(struc.var_37));
 
 				Assert.That(obj.ImageTable.GraphicsElements, Has.Count.EqualTo(18));
 			}

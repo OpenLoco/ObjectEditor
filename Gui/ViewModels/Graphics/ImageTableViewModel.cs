@@ -1,6 +1,5 @@
 using Avalonia.Controls.Selection;
 using Avalonia.Threading;
-using Common;
 using Common.Json;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
@@ -403,7 +402,17 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 			return Task.CompletedTask;
 		}
 
-		ImageTableGrouper.LoadGroupConfigurationFile(Logger, groupingConfigFilePath);
+		if (File.Exists(groupingConfigFilePath))
+		{
+			Logger.LogInformation("Reloading image table grouping from {ConfigFilePath}", groupingConfigFilePath);
+			var json = File.ReadAllText(groupingConfigFilePath);
+			ImageTableGrouper.LoadGroupConfigurationJson(Logger, json);
+		}
+		else
+		{
+			Logger.LogWarning("Cannot reload image table grouping because the grouping configuration file does not exist at {ConfigFilePath}", groupingConfigFilePath);
+			return Task.CompletedTask;
+		}
 
 		var imageList = Model.GraphicsElements.OrderBy(x => x.ImageTableIndex).ToList();
 
@@ -489,31 +498,6 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 		return offsets;
 	}
 
-	async Task<ICollection<GraphicsElementJson>> LoadOffsetsAsync(string directory)
-	{
-		if (string.IsNullOrEmpty(directory))
-		{
-			Logger.LogError("Directory is invalid: \"{Directory}\"", directory);
-			return Array.Empty<GraphicsElementJson>();
-		}
-
-		var offsetsFile = Path.Combine(directory, "sprites.json");
-		var offsets = await LoadSpritesJsonFileAsync(offsetsFile);
-		if (offsets == null)
-		{
-			var files = Directory.GetFiles(directory, "*.png", SearchOption.AllDirectories);
-			var sanitised = files.Select(TrimZeroes).ToList();
-
-			offsets = [.. GroupedImageViewModels.SelectMany(x => x.Images)
-				.Select((x, i) => new GraphicsElementJson(sanitised[i], x.XOffset, x.YOffset, x.Name))
-				.Fill(files.Length, GraphicsElementJson.Zero)];
-
-			Logger.LogDebug("Didn't find sprites.json file, using existing GraphicsElement offsets with {Count} images", offsets.Count);
-		}
-
-		return offsets ?? [];
-	}
-
 	async Task ImportImagesAsync(string directory)
 	{
 		if (string.IsNullOrEmpty(directory))
@@ -530,20 +514,35 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 
 		Logger.LogInformation("Importing images from {Directory}", directory);
 
+		// Step 1: Clear selection model
 		ClearSelectionModel();
 
 		try
 		{
-			var offsets = await LoadOffsetsAsync(directory);
+			// Step 2: Load sprites.json file
+			var spritesFile = Path.Combine(directory, "sprites.json");
+			var sprites = await LoadSpritesJsonFileAsync(spritesFile);
 
-			// load files
-			var importedImages = new List<GraphicsElement>();
-			foreach (var (offset, i) in offsets.Select((x, i) => (x, i)))
+			if (sprites == null || sprites.Count == 0)
 			{
-				var is1Pixel = string.IsNullOrEmpty(offset.Path);
-				var img = is1Pixel ? ImageTableHelpers.OnePixelTransparent : Image.Load<Rgba32>(Path.Combine(directory, offset.Path));
-				var newOffset = is1Pixel ? offset with { Flags = GraphicsElementFlags.HasTransparency } : offset;
-				var graphicsElement = GraphicsElementFromImage(newOffset, img, Model.PaletteMap, i);
+				Logger.LogError("No sprites.json found or file is empty in {Directory}. Import aborted.", directory);
+				return;
+			}
+
+			// Step 3: Load all PNG files referenced in sprites.json
+			var importedImages = new List<GraphicsElement>();
+			foreach (var (sprite, i) in sprites.Select((x, i) => (x, i)))
+			{
+				var is1Pixel = string.IsNullOrEmpty(sprite.Path);
+				var img = is1Pixel
+					? ImageTableHelpers.OnePixelTransparent
+					: Image.Load<Rgba32>(Path.Combine(directory, sprite.Path));
+
+				var effectiveSprite = is1Pixel
+					? sprite with { Flags = GraphicsElementFlags.HasTransparency }
+					: sprite;
+
+				var graphicsElement = GraphicsElementFromImage(effectiveSprite, img, Model.PaletteMap, i);
 				graphicsElement.Name = string.IsNullOrEmpty(graphicsElement.Name)
 					? DefaultImageTableNameProvider.GetImageName(i)
 					: graphicsElement.Name;
@@ -551,32 +550,14 @@ public class ImageTableViewModel : ReactiveObject, IViewModel, IDisposable
 				importedImages.Add(graphicsElement);
 			}
 
-			foreach (var group in Model.Groups)
-			{
-				for (var i = 0; i < group.GraphicsElements.Count; i++)
-				{
-					var ge = group.GraphicsElements[i];
-					if (ge.ImageTableIndex < 0 || ge.ImageTableIndex >= importedImages.Count)
-					{
-						Logger.LogError("Image[{ImageTableIndex}] is out of range; only {Count} were loaded. This graphics element will be set to empty.", ge.ImageTableIndex, importedImages.Count);
-						group.GraphicsElements[i] = ImageTableHelpers.GetErrorGraphicsElement(ge.ImageTableIndex);
-					}
-					else
-					{
-						group.GraphicsElements[i] = importedImages[ge.ImageTableIndex];
-					}
-				}
-			}
+			// Step 4: Clear the existing model image table
+			Model.Groups.Clear();
 
-			// if there are any extras, add them to a new group
-			var totalExistingElements = Model.Groups.Sum(x => x.GraphicsElements.Count);
-			if (importedImages.Count > totalExistingElements)
-			{
-				var newGroup = new ImageTableGroup("<uncategorised-imported>", importedImages[totalExistingElements..]);
-				Model.Groups.Add(newGroup);
-			}
+			// Step 5: Set the new image table as a single flat group from sprites.json and loaded PNGs
+			Model.Groups.Add(new ImageTableGroup("<temp>", importedImages));
 
-			RecreateViewModelGroupsFromImageTable(Model);
+			// Step 6: Recreate the viewmodel groups
+			await ReloadImageTableGroupingAsync();
 		}
 		catch (Exception ex)
 		{

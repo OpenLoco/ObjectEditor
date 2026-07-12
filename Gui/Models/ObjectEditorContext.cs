@@ -200,7 +200,7 @@ public class ObjectEditorContext : IDisposable, IAsyncDisposable
 			await File.WriteAllTextAsync(imageTableGroupsPathName, defaultImageTableGroups);
 		}
 
-		ImageTableGrouper.LoadGroupConfigurationFile(logger, currentImageTableGroups);
+		ImageTableGrouper.LoadGroupConfigurationJson(logger, currentImageTableGroups);
 	}
 
 	static async Task<string?> ReadDefaultImageTableGroupsConfigAsync(Logger logger, string imageTableGroupsFileName)

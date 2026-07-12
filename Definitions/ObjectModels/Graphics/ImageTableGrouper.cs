@@ -230,7 +230,7 @@ public static class ImageTableGrouper
 		return null;
 	}
 
-	public static void LoadGroupConfigurationFile(ILogger logger, string json)
+	public static void LoadGroupConfigurationJson(ILogger logger, string json)
 	{
 		try
 		{

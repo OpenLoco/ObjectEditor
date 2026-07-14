@@ -1,14 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.PropertyGrid.Controls;
 using Avalonia.PropertyGrid.Controls.Factories;
-using Definitions.ObjectModels;
 using Definitions.ObjectModels.Types;
 using Gui.Attributes;
 using Gui.ViewModels;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
-using static Definitions.Economy;
 
 namespace Gui.Views;
 

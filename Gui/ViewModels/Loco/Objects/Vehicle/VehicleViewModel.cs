@@ -1,6 +1,5 @@
 using Common;
 using Definitions.ObjectModels.Objects.Cargo;
-using Definitions.ObjectModels.Objects.TownNames;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using DynamicData.Binding;
@@ -18,11 +17,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace Gui.ViewModels.Loco.Objects.Vehicle;
-
-public class VehicleComponentsViewModel : ReactiveObject
-{
-
-}
 
 public class VehicleViewModel : BaseViewModel<VehicleObject>
 {

@@ -34,13 +34,13 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 	}
 
 	[Browsable(false)]
-	public RequiredObjectsListViewModel RequiredObjects { get; }
+	public RequiredObjectsListViewModel RequiredObjects { get; init; }
 
 	[Category("Cargo")]
-	public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; }
+	public BindingList<ObjectModelHeader> CargoInfluenceObjects { get; init; }
 
 	[Category("Cargo")]
-	public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; }
+	public BindingList<CargoInfluenceTownFilterType> CargoInfluenceTownFilter { get; init; }
 
 	void SyncRequiredObjectsToModel()
 	{

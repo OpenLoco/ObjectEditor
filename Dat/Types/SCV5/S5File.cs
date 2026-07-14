@@ -112,18 +112,22 @@ public record S5File(
 
 	public static (int Width, int Height) GetMapSize(SaveDetails saveDetails, ScenarioOptions scenarioOptions)
 	{
+		var (x, y) = (0, 0);
 		if (saveDetails != null)
 		{
-			return (saveDetails.MapSizeX, saveDetails.MapSizeY);
+			(x, y) = (saveDetails.MapSizeX, saveDetails.MapSizeY);
 		}
 		else if (scenarioOptions != null)
 		{
-			return (scenarioOptions.MapSizeX, scenarioOptions.MapSizeY);
+			(x, y) = (scenarioOptions.MapSizeX, scenarioOptions.MapSizeY);
 		}
-		else
+
+		if (x == 0 || y == 0)
 		{
-			return (Limits.kMapColumnsVanilla, Limits.kMapRowsVanilla);
+			(x, y) = (Limits.kMapColumnsVanilla, Limits.kMapRowsVanilla);
 		}
+
+		return (x, y);
 	}
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

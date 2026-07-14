@@ -66,7 +66,7 @@ public class SCV5ViewModel : BaseFileViewModel<S5File>
 
 	public override void Load()
 	{
-		Logger.LogInformation("Loading scenario from {FileName}", CurrentFile.FileName);
+		Logger.LogInformation("Loading scenario/save from {FileName}", CurrentFile.FileName);
 		if (CurrentFile.FileName == null)
 		{
 			Logger.LogError("Scenario file name was null");

@@ -20,7 +20,7 @@ public class RegionViewModel : BaseViewModel<RegionObject>
 		RequiredObjects.AddOrUpdate(model.DependentObjects);
 
 		_ = RequiredObjects.Connect()
-			.Subscribe(Observer.Create<IChangeSet<ObjectModelHeader, uint>>(_ => SyncRequiredObjectsToModel()))
+			.Subscribe(Observer.Create<IChangeSet<ObjectModelHeader>>(_ => SyncRequiredObjectsToModel()))
 			.DisposeWith(modelSyncSubscriptions);
 
 		CargoInfluenceObjects = [with(model.CargoInfluenceObjects)];

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Definitions.ObjectModels.Objects.Vehicle;
 
@@ -12,10 +13,10 @@ public class BogieSprite : ILocoStruct
 	public uint8_t HeightNegative { get; set; }
 	public uint8_t HeightPositive { get; set; }
 
-	[Browsable(false)]
+	[JsonIgnore, Browsable(false)]
 	public Dictionary<BogieSpriteSlopeType, List<int>> ImageIds { get; set; } = [];
 
-	[Browsable(false)]
+	[JsonIgnore, Browsable(false)]
 	public int NumImages { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

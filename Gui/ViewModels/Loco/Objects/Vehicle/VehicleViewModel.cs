@@ -177,7 +177,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 		set => model.RackSpeed = value;
 	}
 
-	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None, VehicleObjectFlags.RackRail, VehicleObjectFlags.AnyRoadType)]
+	[EnumProhibitValues<VehicleObjectFlags>(VehicleObjectFlags.None, VehicleObjectFlags.RackRail, VehicleObjectFlags.AnyRoadType, VehicleObjectFlags.unk_10)]
 	public VehicleObjectFlags Flags
 	{
 		get => model.Flags;

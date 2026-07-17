@@ -10,11 +10,9 @@ public class TblObjectTrackSignal : DbSubObject, IConvertibleToTable<TblObjectTr
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
+	public uint8_t var_0B { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-
-	//public ICollection<UniqueObjectId> CompatibleTrack { get; set; }
-	//public uint8_t var_0B { get; set; }
 
 	public static TblObjectTrackSignal FromObject(TblObject tbl, TrackSignalObject obj)
 		=> new()
@@ -26,6 +24,7 @@ public class TblObjectTrackSignal : DbSubObject, IConvertibleToTable<TblObjectTr
 			BuildCostFactor = obj.BuildCostFactor,
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
+			var_0B = obj.var_0B,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
 		};

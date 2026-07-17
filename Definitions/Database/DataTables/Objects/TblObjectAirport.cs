@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Airport;
+using System.Text.Json;
 
 namespace Definitions.Database;
 
@@ -15,19 +16,11 @@ public class TblObjectAirport : DbSubObject, IConvertibleToTable<TblObjectAirpor
 	public int8_t MaxY { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-
-	//public uint8_t var_07 { get; set; }
-	//public List<uint8_t> BuildingHeights { get; set; }
-	//public uint8_t NumBuildingParts { get; set; }
-	//public List<BuildingPartAnimation> BuildingAnimations { get; set; }
-	//public uint8_t NumBuildingVariations { get; set; }
-	//public List<List<uint8_t>> BuildingVariations { get; set; }
-	//public List<AirportBuilding> BuildingPositions { get; set; }
-	//public uint8_t NumMovementNodes { get; set; }
-	//public List<MovementNode> MovementNodes { get; set; }
-	//public uint8_t NumMovementEdges { get; set; }
-	//public List<MovementEdge> MovementEdges { get; set; }
-	//public uint8_t[] var_B6 { get; set; }
+	public uint32_t var_B6 { get; set; }
+	public string BuildingComponents { get; set; } = "null";
+	public string BuildingPositions { get; set; } = "[]";
+	public string MovementNodes { get; set; } = "[]";
+	public string MovementEdges { get; set; } = "[]";
 
 	public static TblObjectAirport FromObject(TblObject tbl, AirportObject obj)
 		=> new()
@@ -44,5 +37,10 @@ public class TblObjectAirport : DbSubObject, IConvertibleToTable<TblObjectAirpor
 			MaxY = obj.MaxY,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
+			var_B6 = obj.var_B6,
+			BuildingComponents = JsonSerializer.Serialize(obj.BuildingComponents),
+			BuildingPositions = JsonSerializer.Serialize(obj.BuildingPositions),
+			MovementNodes = JsonSerializer.Serialize(obj.MovementNodes),
+			MovementEdges = JsonSerializer.Serialize(obj.MovementEdges),
 		};
 }

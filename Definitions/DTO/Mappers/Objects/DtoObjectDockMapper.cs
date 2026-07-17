@@ -1,4 +1,5 @@
 using Definitions.Database;
+using Definitions.DTO.Objects;
 
 namespace Definitions.DTO.Mappers;
 
@@ -10,12 +11,11 @@ public static class DtoObjectDockMapper
 		SellCostFactor = tblobjectdock.SellCostFactor,
 		CostIndex = tblobjectdock.CostIndex,
 		Flags = tblobjectdock.Flags,
-		NumBuildingPartAnimations = tblobjectdock.NumBuildingPartAnimations,
-		NumBuildingVariationParts = tblobjectdock.NumBuildingVariationParts,
 		DesignedYear = tblobjectdock.DesignedYear,
 		ObsoleteYear = tblobjectdock.ObsoleteYear,
 		BoatPositionX = tblobjectdock.BoatPositionX,
 		BoatPositionY = tblobjectdock.BoatPositionY,
+		BuildingComponents = tblobjectdock.BuildingComponents,
 		Id = tblobjectdock.Id,
 	};
 
@@ -26,14 +26,11 @@ public static class DtoObjectDockMapper
 		SellCostFactor = model.SellCostFactor,
 		CostIndex = model.CostIndex,
 		Flags = model.Flags,
-		NumBuildingPartAnimations = model.NumBuildingPartAnimations,
-		NumBuildingVariationParts = model.NumBuildingVariationParts,
 		DesignedYear = model.DesignedYear,
 		ObsoleteYear = model.ObsoleteYear,
 		BoatPositionX = model.BoatPositionX,
 		BoatPositionY = model.BoatPositionY,
+		BuildingComponents = model.BuildingComponents,
 		Id = model.Id,
 	};
-
 }
-

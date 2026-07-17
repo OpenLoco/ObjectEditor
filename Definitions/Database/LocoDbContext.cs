@@ -94,6 +94,42 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 
 	#endregion
 
+	#region JunctionTables
+
+	public DbSet<TblBridgeCompatibleTrack> BridgeCompatibleTracks => Set<TblBridgeCompatibleTrack>();
+	public DbSet<TblBridgeCompatibleRoad> BridgeCompatibleRoads => Set<TblBridgeCompatibleRoad>();
+	public DbSet<TblVehicleCompatibleVehicle> VehicleCompatibleVehicles => Set<TblVehicleCompatibleVehicle>();
+	public DbSet<TblVehicleRequiredTrackExtra> VehicleRequiredTrackExtras => Set<TblVehicleRequiredTrackExtra>();
+	public DbSet<TblVehicleStartSound> VehicleStartSounds => Set<TblVehicleStartSound>();
+	public DbSet<TblBuildingProducedCargo> BuildingProducedCargos => Set<TblBuildingProducedCargo>();
+	public DbSet<TblBuildingConsumedCargo> BuildingConsumedCargos => Set<TblBuildingConsumedCargo>();
+	public DbSet<TblIndustryProducedCargo> IndustryProducedCargos => Set<TblIndustryProducedCargo>();
+	public DbSet<TblIndustryRequiredCargo> IndustryRequiredCargos => Set<TblIndustryRequiredCargo>();
+	public DbSet<TblIndustryWallType> IndustryWallTypes => Set<TblIndustryWallType>();
+	public DbSet<TblTrackTrackMod> TrackTrackMods => Set<TblTrackTrackMod>();
+	public DbSet<TblTrackSignal> TrackSignals => Set<TblTrackSignal>();
+	public DbSet<TblTrackCompatibleTrackRoad> TrackCompatibleTrackRoads => Set<TblTrackCompatibleTrackRoad>();
+	public DbSet<TblTrackBridge> TrackBridges => Set<TblTrackBridge>();
+	public DbSet<TblTrackStation> TrackStations => Set<TblTrackStation>();
+	public DbSet<TblRoadBridge> RoadBridges => Set<TblRoadBridge>();
+	public DbSet<TblRoadStation> RoadStations => Set<TblRoadStation>();
+	public DbSet<TblRoadRoadMod> RoadRoadMods => Set<TblRoadRoadMod>();
+	public DbSet<TblRoadCompatibleTrackRoad> RoadCompatibleTrackRoads => Set<TblRoadCompatibleTrackRoad>();
+	public DbSet<TblTrackStationCompatibleTrack> TrackStationCompatibleTracks => Set<TblTrackStationCompatibleTrack>();
+	public DbSet<TblTrackSignalCompatibleTrack> TrackSignalCompatibleTracks => Set<TblTrackSignalCompatibleTrack>();
+	public DbSet<TblRoadStationCompatibleRoad> RoadStationCompatibleRoads => Set<TblRoadStationCompatibleRoad>();
+	public DbSet<TblRegionCargoInfluence> RegionCargoInfluences => Set<TblRegionCargoInfluence>();
+	public DbSet<TblRegionDependentObject> RegionDependentObjects => Set<TblRegionDependentObject>();
+	public DbSet<TblSteamSoundEffect> SteamSoundEffects => Set<TblSteamSoundEffect>();
+
+	#endregion
+
+	#region NormalizedTables
+
+	public DbSet<TblVehicleEmitterAnimation> VehicleEmitterAnimations => Set<TblVehicleEmitterAnimation>();
+
+	#endregion
+
 	#region Other
 
 	public DbSet<TblObjectPack> ObjectPacks => Set<TblObjectPack>();
@@ -130,6 +166,13 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 		return null;
 	}
 
+	protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+	{
+		base.ConfigureConventions(configurationBuilder);
+		// Store all enum values as text strings
+		_ = configurationBuilder.Properties<Enum>().HaveConversion<string>();
+	}
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
@@ -155,6 +198,33 @@ public class LocoDbContext : IdentityDbContext<TblUser, TblUserRole, UniqueObjec
 		_ = modelBuilder.Entity<TblSC5FilePack>()
 			.Property(b => b.UploadedDate)
 			.HasDefaultValueSql("date('now')"); // this is necessary, it seems like a bug in sqlite
+
+		// Junction table composite keys
+		_ = modelBuilder.Entity<TblBridgeCompatibleTrack>().HasKey(x => new { x.BridgeId, x.TrackId });
+		_ = modelBuilder.Entity<TblBridgeCompatibleRoad>().HasKey(x => new { x.BridgeId, x.RoadId });
+		_ = modelBuilder.Entity<TblVehicleCompatibleVehicle>().HasKey(x => new { x.VehicleId, x.CompatibleVehicleId });
+		_ = modelBuilder.Entity<TblVehicleRequiredTrackExtra>().HasKey(x => new { x.VehicleId, x.TrackExtraId });
+		_ = modelBuilder.Entity<TblVehicleStartSound>().HasKey(x => new { x.VehicleId, x.SoundId });
+		_ = modelBuilder.Entity<TblBuildingProducedCargo>().HasKey(x => new { x.BuildingId, x.CargoId });
+		_ = modelBuilder.Entity<TblBuildingConsumedCargo>().HasKey(x => new { x.BuildingId, x.CargoId });
+		_ = modelBuilder.Entity<TblIndustryProducedCargo>().HasKey(x => new { x.IndustryId, x.CargoId });
+		_ = modelBuilder.Entity<TblIndustryRequiredCargo>().HasKey(x => new { x.IndustryId, x.CargoId });
+		_ = modelBuilder.Entity<TblIndustryWallType>().HasKey(x => new { x.IndustryId, x.WallId });
+		_ = modelBuilder.Entity<TblTrackTrackMod>().HasKey(x => new { x.TrackId, x.TrackExtraId });
+		_ = modelBuilder.Entity<TblTrackSignal>().HasKey(x => new { x.TrackId, x.TrackSignalId });
+		_ = modelBuilder.Entity<TblTrackCompatibleTrackRoad>().HasKey(x => new { x.TrackId, x.CompatibleTrackRoadId });
+		_ = modelBuilder.Entity<TblTrackBridge>().HasKey(x => new { x.TrackId, x.BridgeId });
+		_ = modelBuilder.Entity<TblTrackStation>().HasKey(x => new { x.TrackId, x.TrackStationId });
+		_ = modelBuilder.Entity<TblRoadBridge>().HasKey(x => new { x.RoadId, x.BridgeId });
+		_ = modelBuilder.Entity<TblRoadStation>().HasKey(x => new { x.RoadId, x.RoadStationId });
+		_ = modelBuilder.Entity<TblRoadRoadMod>().HasKey(x => new { x.RoadId, x.RoadExtraId });
+		_ = modelBuilder.Entity<TblRoadCompatibleTrackRoad>().HasKey(x => new { x.RoadId, x.CompatibleTrackRoadId });
+		_ = modelBuilder.Entity<TblTrackStationCompatibleTrack>().HasKey(x => new { x.TrackStationId, x.TrackId });
+		_ = modelBuilder.Entity<TblTrackSignalCompatibleTrack>().HasKey(x => new { x.TrackSignalId, x.TrackId });
+		_ = modelBuilder.Entity<TblRoadStationCompatibleRoad>().HasKey(x => new { x.RoadStationId, x.RoadId });
+		_ = modelBuilder.Entity<TblRegionCargoInfluence>().HasKey(x => new { x.RegionId, x.CargoId });
+		_ = modelBuilder.Entity<TblRegionDependentObject>().HasKey(x => new { x.RegionId, x.DependentObjectId });
+		_ = modelBuilder.Entity<TblSteamSoundEffect>().HasKey(x => new { x.SteamId, x.SoundId });
 	}
 
 	public bool DoesObjectExist(string datName, uint datChecksum, out TblObject? existingObject)

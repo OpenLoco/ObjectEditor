@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Dock;
+using System.Text.Json;
 
 namespace Definitions.Database;
 
@@ -8,19 +9,13 @@ public class TblObjectDock : DbSubObject, IConvertibleToTable<TblObjectDock, Doc
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
 	public DockObjectFlags Flags { get; set; }
-	public uint8_t NumBuildingPartAnimations { get; set; }
-	public uint8_t NumBuildingVariationParts { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 
-	// these map to [Pos2 BoatPosition] in the Dock object
 	public coord_t BoatPositionX { get; set; }
 	public coord_t BoatPositionY { get; set; }
 
-	// public uint8_t var_07 { get; set; } // probably padding
-	// public List<uint8_t> BuildingPartHeights { get; set; }
-	// public List<uint16_t> BuildingPartAnimations { get; set; }
-	// public List<uint8_t> BuildingVariationParts { get; set; }
+	public string BuildingComponents { get; set; } = "null";
 
 	public static TblObjectDock FromObject(TblObject tbl, DockObject obj)
 		=> new()
@@ -30,11 +25,10 @@ public class TblObjectDock : DbSubObject, IConvertibleToTable<TblObjectDock, Doc
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
 			Flags = obj.Flags,
-			NumBuildingPartAnimations = (uint8_t)obj.BuildingComponents.BuildingAnimations.Count,
-			NumBuildingVariationParts = (uint8_t)obj.BuildingComponents.BuildingVariations.Count,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
 			BoatPositionX = obj.BoatPosition.X,
 			BoatPositionY = obj.BoatPosition.Y,
+			BuildingComponents = JsonSerializer.Serialize(obj.BuildingComponents),
 		};
 }

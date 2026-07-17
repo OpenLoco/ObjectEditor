@@ -1,5 +1,7 @@
+using Definitions.ObjectModels.Objects.Shared;
 using Definitions.ObjectModels.Objects.Track;
 using Definitions.ObjectModels.Objects.TrackStation;
+using System.Text.Json;
 
 namespace Definitions.Database;
 
@@ -11,15 +13,13 @@ public class TblObjectTrackStation : DbSubObject, IConvertibleToTable<TblObjectT
 	public int16_t BuildCostFactor { get; set; }
 	public int16_t SellCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
+	public uint8_t var_0B { get; set; }
 	public TrackStationObjectFlags Flags { get; set; }
+	public uint8_t var_0D { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
-
-	//public ICollection<UniqueObjectId> CompatibleTrack { get; set; } // only used for runtime loco { get; set; } this isn't part of object 'definition'
-	//public ICollection<uint8_t> CargoOffsetBytes { get; set; }
-	//public ICollection<uint8_t> ManualPower { get; set; }
-	//public uint8_t var_0B { get; set; }
-	//public uint8_t var_0D { get; set; }
+	public string CargoOffsets { get; set; } = "[]";
+	public string var_6E { get; set; } = "[]";
 
 	public static TblObjectTrackStation FromObject(TblObject tbl, TrackStationObject obj)
 		=> new()
@@ -31,8 +31,12 @@ public class TblObjectTrackStation : DbSubObject, IConvertibleToTable<TblObjectT
 			BuildCostFactor = obj.BuildCostFactor,
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
+			var_0B = obj.var_0B,
 			Flags = obj.Flags,
+			var_0D = obj.var_0D,
 			DesignedYear = obj.DesignedYear,
 			ObsoleteYear = obj.ObsoleteYear,
+			CargoOffsets = JsonSerializer.Serialize(obj.CargoOffsets),
+			var_6E = JsonSerializer.Serialize(obj.var_6E),
 		};
 }

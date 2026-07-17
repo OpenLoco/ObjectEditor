@@ -1,4 +1,5 @@
 using Definitions.Database;
+using Definitions.DTO.Objects;
 
 namespace Definitions.DTO.Mappers;
 
@@ -23,9 +24,15 @@ public static class DtoObjectIndustryMapper
 		Flags = tblobjectindustry.Flags,
 		FarmTileNumImageAngles = tblobjectindustry.FarmTileNumImageAngles,
 		FarmGrowthStageWithNoProduction = tblobjectindustry.FarmGrowthStageWithNoProduction,
-		FarmIdealSize = tblobjectindustry.FarmIdealSize,
+		FarmNumFields = tblobjectindustry.FarmNumFields,
 		FarmNumStagesOfGrowth = tblobjectindustry.FarmNumStagesOfGrowth,
 		MonthlyClosureChance = tblobjectindustry.MonthlyClosureChance,
+		var_E8 = tblobjectindustry.var_E8,
+		BuildingComponents = tblobjectindustry.BuildingComponents,
+		AnimationSequences = tblobjectindustry.AnimationSequences,
+		var_38 = tblobjectindustry.var_38,
+		InitialProductionRate = tblobjectindustry.InitialProductionRate,
+		Buildings = tblobjectindustry.Buildings,
 		Id = tblobjectindustry.Id,
 	};
 
@@ -49,11 +56,15 @@ public static class DtoObjectIndustryMapper
 		Flags = model.Flags,
 		FarmTileNumImageAngles = model.FarmTileNumImageAngles,
 		FarmGrowthStageWithNoProduction = model.FarmGrowthStageWithNoProduction,
-		FarmIdealSize = model.FarmIdealSize,
+		FarmNumFields = model.FarmNumFields,
 		FarmNumStagesOfGrowth = model.FarmNumStagesOfGrowth,
 		MonthlyClosureChance = model.MonthlyClosureChance,
+		var_E8 = model.var_E8,
+		BuildingComponents = model.BuildingComponents,
+		AnimationSequences = model.AnimationSequences,
+		var_38 = model.var_38,
+		InitialProductionRate = model.InitialProductionRate,
+		Buildings = model.Buildings,
 		Id = model.Id,
 	};
-
 }
-

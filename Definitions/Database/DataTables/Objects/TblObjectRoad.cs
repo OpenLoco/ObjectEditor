@@ -9,19 +9,14 @@ public class TblObjectRoad : DbSubObject, IConvertibleToTable<TblObjectRoad, Roa
 	public int16_t SellCostFactor { get; set; }
 	public int16_t TunnelCostFactor { get; set; }
 	public uint8_t CostIndex { get; set; }
-	public Speed16 MaxSpeed { get; set; }
+	public Speed16 MaxCurveSpeed { get; set; }
 	public RoadObjectFlags Flags { get; set; }
 	public uint8_t PaintStyle { get; set; }
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public TownSize TargetTownSize { get; set; }
-
-	//public TblObjectTunnel Tunnel { get; set; }
-	//public uint16_t _CompatibleRoads { get; set; } // bitset
-	//public uint16_t _CompatibleTracks { get; set; } // bitset
-	//public ICollection<TblBridgeObject> Bridges { get; set; }
-	//public ICollection<TblRoadExtraObject> Mods { get; set; }
-	//public ICollection<TblRoadObject> RoadsAndTracks { get; set; }
-	//public ICollection<TblRoadStationObject> Stations { get; set; }
+	public uint8_t pad_2F { get; set; }
+	public UniqueObjectId TunnelId { get; set; }
+	public TblObjectTunnel? Tunnel { get; set; }
 
 	public static TblObjectRoad FromObject(TblObject tbl, RoadObject obj)
 		=> new()
@@ -32,11 +27,11 @@ public class TblObjectRoad : DbSubObject, IConvertibleToTable<TblObjectRoad, Roa
 			SellCostFactor = obj.SellCostFactor,
 			TunnelCostFactor = obj.TunnelCostFactor,
 			CostIndex = obj.CostIndex,
-			MaxSpeed = obj.MaxCurveSpeed,
+			MaxCurveSpeed = obj.MaxCurveSpeed,
 			Flags = obj.Flags,
 			PaintStyle = obj.PaintStyle,
 			VehicleDisplayListVerticalOffset = obj.VehicleDisplayListVerticalOffset,
 			TargetTownSize = obj.TargetTownSize,
-			//Tunnel = obj.Tunnel,
+			pad_2F = obj.pad_2F,
 		};
 }

@@ -130,7 +130,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 				continue;
 			}
 
-			anim.AnimationObject = br.ReadS5Header();
+			anim.SteamObject = br.ReadS5Header();
 		}
 
 		// compatible vehicles
@@ -342,7 +342,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		}
 
 		// particle emitter animations
-		bw.WriteS5HeaderList(model.ParticleEmitters.Where(x => x.AnimationObject != null).Select(x => x.AnimationObject));
+		bw.WriteS5HeaderList(model.ParticleEmitters.Where(x => x.SteamObject != null).Select(x => x.SteamObject!));
 
 		// compatible vehicles
 		bw.WriteS5HeaderList(model.CompatibleVehicles);

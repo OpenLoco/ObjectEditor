@@ -122,6 +122,9 @@ RequestedThemeVariant="Default">
 		<DataTemplate DataType="vm:FolderTreeViewModel">
 			<vi:FolderTreeView />
 		</DataTemplate>
+		<DataTemplate DataType="vm:Loco.Objects.Vehicle.VehicleViewModel">
+			<vi:VehicleView />
+		</DataTemplate>
 		<DataTemplate DataType="vm:Loco.Objects.Building.BuildingComponentsViewModel">
 			<vi:BuildingComponentsView />
 		</DataTemplate>

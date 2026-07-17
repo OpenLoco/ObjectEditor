@@ -1,0 +1,33 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:vm="using:Gui.ViewModels.Loco.Objects.Vehicle"
+	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	x:Class="Gui.Views.VehicleView"
+	x:DataType="vm:VehicleViewModel">
+
+	<ScrollViewer>
+		<StackPanel Spacing="8">
+			<!-- Main properties via PropertyGrid -->
+			<pgc:PropertyGrid DataContext="{Binding}"/>
+
+			<!-- Particle Emitters custom section -->
+			<Expander Header="Particle Emitters" IsExpanded="True">
+				<ItemsControl ItemsSource="{Binding ParticleEmitters}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel Spacing="4"/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vm:EmitterAnimationViewModel">
+							<Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,2">
+								<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False"/>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</Expander>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

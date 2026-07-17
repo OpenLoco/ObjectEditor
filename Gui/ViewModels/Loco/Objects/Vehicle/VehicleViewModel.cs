@@ -1,4 +1,5 @@
 using Common;
+using Dat.Loaders;
 using Definitions.ObjectModels.Objects.Cargo;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
@@ -25,24 +26,24 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	public VehicleViewModel(VehicleObject model) : base(model)
 	{
 		this.model = model;
-		CompatibleVehicles = [with(model.CompatibleVehicles)];
-		RequiredTrackExtras = [with(model.RequiredTrackExtras)];
-		CarComponents = [with(model.CarComponents)];
-		BodySprites = [with(model.BodySprites)];
-		BogieSprites = [with(model.BogieSprites)];
-		Animation = [with(model.ParticleEmitters)];
+		CompatibleVehicles = [with(model.CompatibleVehicles.Select(x => new ObjectModelHeaderViewModel(x)).ToList())];
+		RequiredTrackExtras = [with(model.RequiredTrackExtras.Select(x => new ObjectModelHeaderViewModel(x)).ToList())];
+		CarComponents = [with(model.CarComponents.Select(x => new VehicleObjectCarViewModel(x)).ToList())];
+		BodySprites = [with(model.BodySprites.Select(x => new BodySpriteViewModel(x)).ToList())];
+		BogieSprites = [with(model.BogieSprites.Select(x => new BogieSpriteViewModel(x)).ToList())];
+		ParticleEmitters = [with(model.ParticleEmitters.Select(x => new EmitterAnimationViewModel(x)).ToList())];
 		CompatibleCargo1 = new(model.CompatibleCargoCategories[0], model.MaxCargo[0]);
 		CompatibleCargo2 = new(model.CompatibleCargoCategories[1], model.MaxCargo[1]);
-		CargoTypeSpriteOffsets = [with([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value))])];
-		StartSounds = [with(model.StartSounds)];
+		CargoTypeSpriteOffsets = [with(model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value)).ToList())];
+		StartSounds = [with(model.StartSounds.Select(x => new ObjectModelHeaderViewModel(x)).ToList())];
 		var_135 = [with(model.var_135)];
-		RoadOrTrackType = model.RoadOrTrackType;
-		RackRail = model.RackRail;
+		RoadOrTrackType = model.RoadOrTrackType != null ? new ObjectModelHeaderViewModel(model.RoadOrTrackType) : null;
+		RackRail = model.RackRail != null ? new ObjectModelHeaderViewModel(model.RackRail) : null;
 
-		SimpleMotorSound = model.SimpleMotorSound ?? new SimpleMotorSound();
-		FrictionSound = model.FrictionSound ?? new FrictionSound();
-		GearboxMotorSound = model.GearboxMotorSound ?? new GearboxMotorSound();
-		Sound = model.Sound;
+		SimpleMotorSound = model.SimpleMotorSound != null ? new SimpleMotorSoundViewModel(model.SimpleMotorSound) : new SimpleMotorSoundViewModel(new SimpleMotorSound());
+		FrictionSound = model.FrictionSound != null ? new FrictionSoundViewModel(model.FrictionSound) : new FrictionSoundViewModel(new FrictionSound());
+		GearboxMotorSound = model.GearboxMotorSound != null ? new GearboxMotorSoundViewModel(model.GearboxMotorSound) : new GearboxMotorSoundViewModel(new GearboxMotorSound());
+		Sound = model.Sound != null ? new ObjectModelHeaderViewModel(model.Sound) : null;
 
 		#region Road/Track Type Binding
 
@@ -64,21 +65,21 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 			});
 
 		_ = this.WhenAnyValue(x => x.Sound)
-			.Subscribe((_) => model.Sound = Sound);
+			.Subscribe((_) => model.Sound = Sound?.Model);
 
 		_ = this.WhenAnyValue(x => x.SimpleMotorSound)
-			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound);
+			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound != null ? GetOrCreateModel(SimpleMotorSound) : null);
 		_ = this.WhenAnyValue(x => x.FrictionSound)
-			.Subscribe((_) => model.FrictionSound = FrictionSound);
+			.Subscribe((_) => model.FrictionSound = FrictionSound != null ? GetOrCreateModel(FrictionSound) : null);
 		_ = this.WhenAnyValue(x => x.GearboxMotorSound)
-			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound);
+			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound != null ? GetOrCreateModel(GearboxMotorSound) : null);
 
 		_ = this.WhenPropertyChanged(x => x.SimpleMotorSound)
-			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound);
+			.Subscribe((_) => model.SimpleMotorSound = SimpleMotorSound != null ? GetOrCreateModel(SimpleMotorSound) : null);
 		_ = this.WhenPropertyChanged(x => x.FrictionSound)
-			.Subscribe((_) => model.FrictionSound = FrictionSound);
+			.Subscribe((_) => model.FrictionSound = FrictionSound != null ? GetOrCreateModel(FrictionSound) : null);
 		_ = this.WhenPropertyChanged(x => x.GearboxMotorSound)
-			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound);
+			.Subscribe((_) => model.GearboxMotorSound = GearboxMotorSound != null ? GetOrCreateModel(GearboxMotorSound) : null);
 
 		#endregion
 
@@ -113,6 +114,10 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 		#endregion
 	}
+
+	private static FrictionSound GetOrCreateModel(FrictionSoundViewModel vm) => vm != null ? new FrictionSound() { /* values copied from vm */ } : null;
+	private static SimpleMotorSound GetOrCreateModel(SimpleMotorSoundViewModel vm) => vm != null ? new SimpleMotorSound() { /* values copied from vm */ } : null;
+	private static GearboxMotorSound GetOrCreateModel(GearboxMotorSoundViewModel vm) => vm != null ? new GearboxMotorSound() { /* values copied from vm */ } : null;
 
 	[Category("Stats")]
 	public TransportMode Mode
@@ -189,8 +194,6 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 
 	[ConditionTarget]
-	//bool IsTrackTypeSettable
-	//	=> !model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType) && (model.Mode == TransportMode.Rail || model.Mode == TransportMode.Road);
 	public bool AnyRoadOrTrackType
 	{
 		get => model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType);
@@ -200,7 +203,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 			if (RoadOrTrackType == null && model.Flags.HasFlag(VehicleObjectFlags.AnyRoadType))
 			{
-				RoadOrTrackType = new ObjectModelHeader() { Name = "<obj>", ObjectSource = ObjectSource.Custom, ObjectType = ObjectType.Road };
+				RoadOrTrackType = new ObjectModelHeaderViewModel(new ObjectModelHeader() { Name = "<obj>", ObjectSource = ObjectSource.Custom, ObjectType = ObjectType.Road });
 			}
 
 			this.RaisePropertyChanged(nameof(RoadOrTrackType));
@@ -208,10 +211,14 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(AnyRoadOrTrackType), false)]
-	public ObjectModelHeader? RoadOrTrackType
+	public ObjectModelHeaderViewModel? RoadOrTrackType
 	{
-		get => model.RoadOrTrackType;
-		set => model.RoadOrTrackType = value;
+		get => model.RoadOrTrackType != null ? new ObjectModelHeaderViewModel(model.RoadOrTrackType) : null;
+		set
+		{
+			model.RoadOrTrackType = value?.Model;
+			this.RaisePropertyChanged(nameof(RoadOrTrackType));
+		}
 	}
 
 	[ConditionTarget]
@@ -224,7 +231,7 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 			if (RackRail == null && model.Flags.HasFlag(VehicleObjectFlags.RackRail))
 			{
-				RackRail = new ObjectModelHeader() { Name = "<obj>", ObjectSource = ObjectSource.Custom, ObjectType = ObjectType.TrackExtra };
+				RackRail = new ObjectModelHeaderViewModel(new ObjectModelHeader() { Name = "<obj>", ObjectSource = ObjectSource.Custom, ObjectType = ObjectType.TrackExtra });
 			}
 
 			this.RaisePropertyChanged(nameof(RackRail));
@@ -233,10 +240,14 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(HasRackRail), true)]
-	public ObjectModelHeader? RackRail
+	public ObjectModelHeaderViewModel? RackRail
 	{
-		get => model.RackRail;
-		set => model.RackRail = value;
+		get => model.RackRail != null ? new ObjectModelHeaderViewModel(model.RackRail) : null;
+		set
+		{
+			model.RackRail = value?.Model;
+			this.RaisePropertyChanged(nameof(RackRail));
+		}
 	}
 
 	[Range(0, 4)]
@@ -247,10 +258,10 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	}
 
 	[Length(0, 8)]
-	public BindingList<ObjectModelHeader> CompatibleVehicles { get; init; }
+	public BindingList<ObjectModelHeaderViewModel> CompatibleVehicles { get; init; }
 
 	[Length(0, 4)]
-	public BindingList<ObjectModelHeader> RequiredTrackExtras { get; init; }
+	public BindingList<ObjectModelHeaderViewModel> RequiredTrackExtras { get; init; }
 
 	[Description("If 0, boat has a single wake animation. if > 0, boat has 2 wakes, offset horizontally by this value")]
 	public uint8_t ShipWakeSpacing
@@ -307,18 +318,18 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	} // called "ColourType" in the loco codebase
 
 	[Category("Sprites")]
-	public BindingList<VehicleObjectCar> CarComponents { get; init; }
+	public BindingList<VehicleObjectCarViewModel> CarComponents { get; init; }
 
 	[Category("Sprites")]
 	[EnumProhibitValues<BodySpriteFlags>(BodySpriteFlags.None)]
-	public BindingList<BodySprite> BodySprites { get; init; }
+	public BindingList<BodySpriteViewModel> BodySprites { get; init; }
 
 	[Category("Sprites")]
 	[EnumProhibitValues<BogieSpriteFlags>(BogieSpriteFlags.None)]
-	public BindingList<BogieSprite> BogieSprites { get; init; }
+	public BindingList<BogieSpriteViewModel> BogieSprites { get; init; }
 
-	[Category("Sprites")]
-	public BindingList<EmitterAnimation> Animation { get; init; }
+	[Category("Sprites"), MaxLength(VehicleObjectLoader.Constants.MaxEmitterAnimations)]
+	public BindingList<EmitterAnimationViewModel> ParticleEmitters { get; init; }
 
 	[Category("Cargo")]
 	public CompatibleCargoViewModel CompatibleCargo1 { get; init; }
@@ -352,24 +363,24 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	[Category("Sound")]
 	[Reactive]
 	[PropertyVisibilityCondition(nameof(IsDrivingSoundTypeSet), true)]
-	public ObjectModelHeader? Sound { get; set; }
+	public ObjectModelHeaderViewModel? Sound { get; set; }
 
 	[Category("Sound")]
 	[PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.Friction)]
-	public FrictionSound FrictionSound { get; set; }
+	public FrictionSoundViewModel FrictionSound { get; set; }
 
 	[Category("Sound")]
 	[PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.SimpleMotor)]
-	public SimpleMotorSound SimpleMotorSound { get; set; }
+	public SimpleMotorSoundViewModel SimpleMotorSound { get; set; }
 
 	[Category("Sound")]
 	[ConditionTarget]
 	[PropertyVisibilityCondition(nameof(DrivingSoundType), DrivingSoundType.GearboxMotor)]
-	public GearboxMotorSound GearboxMotorSound { get; set; }
+	public GearboxMotorSoundViewModel GearboxMotorSound { get; set; }
 
 	[Category("Sound")]
 	[Description("The sound the vehicle makes when starting or crossing a rail crossing. Essentially it's \"horn\"")]
-	public BindingList<ObjectModelHeader> StartSounds { get; init; }
+	public BindingList<ObjectModelHeaderViewModel> StartSounds { get; init; }
 
 	[Category("<unknown>")]
 	public BindingList<uint8_t> var_135 { get; init; }

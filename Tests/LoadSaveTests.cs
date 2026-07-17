@@ -1275,10 +1275,10 @@ public class LoadSaveTests
 				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 2).ToArray(), struc.CompatibleCargoCategories, nameof(struc.CompatibleCargoCategories));
 				//CollectionAssert.AreEqual(Enumerable.Repeat(0, 32).ToArray(), struc.CargoTypeSpriteOffsets, nameof(struc.CargoTypeSpriteOffsets));
 				Assert.That(struc.NumSimultaneousCargoTypes, Is.EqualTo(1), nameof(struc.NumSimultaneousCargoTypes));
-				Assert.That(struc.ParticleEmitters[0].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
+				Assert.That(struc.ParticleEmitters[0].SteamObject, Is.Null, nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[0].EmitterVerticalPos, Is.EqualTo(24), nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[0].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.ParticleEmitters));
-				Assert.That(struc.ParticleEmitters[1].AnimationObject, Is.Null, nameof(struc.ParticleEmitters));
+				Assert.That(struc.ParticleEmitters[1].SteamObject, Is.Null, nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[1].EmitterVerticalPos, Is.Zero, nameof(struc.ParticleEmitters));
 				Assert.That(struc.ParticleEmitters[1].Type, Is.EqualTo(SimpleAnimationType.None), nameof(struc.ParticleEmitters));
 				Assert.That(struc.ShipWakeSpacing, Is.Zero, nameof(struc.ShipWakeSpacing));

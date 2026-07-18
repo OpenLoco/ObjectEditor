@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Track;
+using System.Text.Json;
 
 namespace Definitions.Database;
 
@@ -14,8 +15,12 @@ public class TblObjectTrack : DbSubObject, IConvertibleToTable<TblObjectTrack, T
 	public TrackObjectFlags Flags { get; set; }
 	public uint8_t VehicleDisplayListVerticalOffset { get; set; }
 	public uint8_t var_06 { get; set; }
-	public UniqueObjectId TunnelId { get; set; }
-	public TblObjectTunnel? Tunnel { get; set; }
+	public string Tunnel { get; set; } = "null";
+	public string TrackMods { get; set; } = "[]";
+	public string Signals { get; set; } = "[]";
+	public string TracksAndRoads { get; set; } = "[]";
+	public string Bridges { get; set; } = "[]";
+	public string Stations { get; set; } = "[]";
 
 	public static TblObjectTrack FromObject(TblObject tbl, TrackObject obj)
 		=> new()
@@ -31,5 +36,11 @@ public class TblObjectTrack : DbSubObject, IConvertibleToTable<TblObjectTrack, T
 			Flags = obj.Flags,
 			VehicleDisplayListVerticalOffset = obj.VehicleDisplayListVerticalOffset,
 			var_06 = obj.var_06,
+			Tunnel = JsonSerializer.Serialize(obj.Tunnel),
+			TrackMods = JsonSerializer.Serialize(obj.TrackMods),
+			Signals = JsonSerializer.Serialize(obj.Signals),
+			TracksAndRoads = JsonSerializer.Serialize(obj.TracksAndRoads),
+			Bridges = JsonSerializer.Serialize(obj.Bridges),
+			Stations = JsonSerializer.Serialize(obj.Stations),
 		};
 }

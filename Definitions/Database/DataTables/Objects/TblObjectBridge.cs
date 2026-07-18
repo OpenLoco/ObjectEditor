@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Bridge;
+using System.Text.Json;
 
 namespace Definitions.Database;
 
@@ -17,6 +18,8 @@ public class TblObjectBridge : DbSubObject, IConvertibleToTable<TblObjectBridge,
 	public int16_t SellCostFactor { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public BridgeDisabledTrackFlags DisabledTrackFlags { get; set; }
+	public string CompatibleTrackObjects { get; set; } = "[]";
+	public string CompatibleRoadObjects { get; set; } = "[]";
 
 	public static TblObjectBridge FromObject(TblObject tbl, BridgeObject obj)
 		=> new()
@@ -35,5 +38,7 @@ public class TblObjectBridge : DbSubObject, IConvertibleToTable<TblObjectBridge,
 			SellCostFactor = obj.SellCostFactor,
 			DesignedYear = obj.DesignedYear,
 			DisabledTrackFlags = obj.DisabledTrackFlags,
+			CompatibleTrackObjects = JsonSerializer.Serialize(obj.CompatibleTrackObjects),
+			CompatibleRoadObjects = JsonSerializer.Serialize(obj.CompatibleRoadObjects),
 		};
 }

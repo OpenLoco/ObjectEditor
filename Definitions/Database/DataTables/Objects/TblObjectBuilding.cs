@@ -1,5 +1,6 @@
-using Definitions.ObjectModels.Graphics;
+﻿using Definitions.ObjectModels.Graphics;
 using Definitions.ObjectModels.Objects.Building;
+using System.Text.Json;
 
 namespace Definitions.Database;
 
@@ -16,20 +17,14 @@ public class TblObjectBuilding : DbSubObject, IConvertibleToTable<TblObjectBuild
 	public uint32_t Colours { get; set; }
 	public uint8_t GeneratorFunction { get; set; }
 	public uint8_t AverageNumberOnMap { get; set; }
-
-	//public uint8_t NumBuildingParts { get; set; }
-	//public uint8_t NumBuildingVariations { get; set; }
-	//List<uint8_t> BuildingHeights { get; set; }
-	//List<BuildingPartAnimation> BuildingAnimations { get; set; }
-	//List<List<uint8_t>> BuildingVariations { get; set; }
-	//public uint8_t[] ProducedQuantity { get; set; }
-	//List<S5Header> ProducedCargo { get; set; }
-	//List<S5Header> RequiredCargo { get; set; }
-	//List<uint8_t> var_A6 { get; set; }
-	//List<uint8_t> var_A8 { get; set; }
-	//public uint8_t TownAmenityCategory { get; set; }
-	//public uint8_t NumElevatorSequences { get; set; }
-	//List<uint8_t[]> _ElevatorHeightSequences // 0xAE ->0xB2->0xB6->0xBA->0xBE (4 byte pointers)
+	public string TownAmenityCategory { get; set; } = string.Empty;
+	public string BuildingComponents { get; set; } = "null";
+	public string ProducedQuantity { get; set; } = "[]";
+	public string ProducedCargoQuantity { get; set; } = "[]";
+	public string ConsumedCargoQuantity { get; set; } = "[]";
+	public string ElevatorHeightSequences { get; set; } = "[]";
+	public string ProducedCargoType { get; set; } = "[]";
+	public string ConsumedCargoType { get; set; } = "[]";
 
 	public static TblObjectBuilding FromObject(TblObject tbl, BuildingObject obj)
 		=> new()
@@ -46,5 +41,13 @@ public class TblObjectBuilding : DbSubObject, IConvertibleToTable<TblObjectBuild
 			Colours = obj.Colours,
 			GeneratorFunction = obj.GeneratorFunction,
 			AverageNumberOnMap = obj.AverageNumberOnMap,
+			TownAmenityCategory = obj.TownAmenityCategory.ToString(),
+			BuildingComponents = JsonSerializer.Serialize(obj.BuildingComponents),
+			ProducedQuantity = JsonSerializer.Serialize(obj.ProducedQuantity),
+			ProducedCargoQuantity = JsonSerializer.Serialize(obj.ProducedCargoQuantity),
+			ConsumedCargoQuantity = JsonSerializer.Serialize(obj.ConsumedCargoQuantity),
+			ElevatorHeightSequences = JsonSerializer.Serialize(obj.ElevatorHeightSequences),
+			ProducedCargoType = JsonSerializer.Serialize(obj.ProducedCargoType),
+			ConsumedCargoType = JsonSerializer.Serialize(obj.ConsumedCargoType),
 		};
 }

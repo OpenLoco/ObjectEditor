@@ -3,6 +3,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:vm="using:Gui.ViewModels.Loco.Objects.TownNames"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	xmlns:vi="using:Gui.Views"
 	x:DataType="vm:TownNamesViewModel"
 	x:Class="Gui.Views.TownNamesView"
 	x:Name="Root">
@@ -25,7 +26,7 @@
 			</Button>
 		</StackPanel>
 		<ScrollViewer>
-			<pgc:PropertyGrid
+			<vi:ExtendedPropertyGrid
 				DataContext="{Binding}"
 				IsTitleVisible="False"
 				IsHeaderVisible="False"

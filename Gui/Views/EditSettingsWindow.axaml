@@ -5,6 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	xmlns:vi="using:Gui.Views"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
 	x:Class="Gui.Views.EditSettingsWindow"
 	x:DataType="vm:EditorSettingsWindowViewModel"
@@ -21,7 +22,7 @@
 	</Design.DataContext>
 
 	<ScrollViewer>
-		<pgc:PropertyGrid DataContext="{Binding}" IsQuickFilterVisible ="True" IsHeaderVisible ="true" IsCategoryVisible="False"></pgc:PropertyGrid>
+		<vi:ExtendedPropertyGrid DataContext="{Binding}" IsQuickFilterVisible ="True" IsHeaderVisible ="true" IsCategoryVisible="False"></vi:ExtendedPropertyGrid>
 	</ScrollViewer>
 
 </Window>

@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Vehicle;
+using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using System.ComponentModel;
 
@@ -24,6 +25,7 @@ public class BogieSpriteViewModel : ReactiveObject
 		}
 	}
 
+	[EnumProhibitValues<BogieSpriteFlags>(BogieSpriteFlags.None)]
 	public BogieSpriteFlags Flags
 	{
 		get => _model.Flags;

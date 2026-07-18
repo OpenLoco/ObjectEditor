@@ -135,7 +135,7 @@
 			<DockPanel>
 				<ContentControl Content="{Binding AudioViewModel}" DockPanel.Dock="Left"/>
 				<ScrollViewer>
-					<pgc:PropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding AudioViewModel.WaveStream.WaveFormat}"/>
+					<vi:ExtendedPropertyGrid x:Name="propertyGrid_MusicInfo" DataContext="{Binding AudioViewModel.WaveStream.WaveFormat}"/>
 				</ScrollViewer>
 			</DockPanel>
 		</DataTemplate>

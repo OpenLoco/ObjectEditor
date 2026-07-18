@@ -19,6 +19,7 @@ using System.Linq;
 
 namespace Gui.ViewModels.Loco.Objects.Vehicle;
 
+[TypeConverter(typeof(ExpandableObjectConverter))]
 public class VehicleViewModel : BaseViewModel<VehicleObject>
 {
 	private readonly VehicleObject model;

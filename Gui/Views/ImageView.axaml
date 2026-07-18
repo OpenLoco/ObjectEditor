@@ -6,6 +6,7 @@
 	xmlns:vmg="using:Gui.ViewModels.Graphics"
 	xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	xmlns:vi="using:Gui.Views"
 	xmlns:amxc="using:Avalonia.Markup.Xaml.Converters"
 	xmlns:gmc="using:Gui.Models.Converters"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -19,7 +20,7 @@
 	<ScrollViewer>
 		<DockPanel>
 			<Panel Width="16" DockPanel.Dock="Right"></Panel>
-			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
+			<vi:ExtendedPropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
 		</DockPanel>
 	</ScrollViewer>
 

@@ -1,4 +1,5 @@
 using Definitions.ObjectModels.Objects.Vehicle;
+using PropertyModels.ComponentModel.DataAnnotations;
 using ReactiveUI;
 using System.ComponentModel;
 
@@ -84,6 +85,7 @@ public class BodySpriteViewModel : ReactiveObject
 		}
 	}
 
+	[EnumProhibitValues<BodySpriteFlags>(BodySpriteFlags.None)]
 	public BodySpriteFlags Flags
 	{
 		get => _model.Flags;

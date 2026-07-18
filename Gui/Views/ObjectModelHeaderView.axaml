@@ -5,6 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:vm="using:Gui.ViewModels"
 	xmlns:pgc="clr-namespace:Avalonia.PropertyGrid.Controls;assembly=Avalonia.PropertyGrid"
+	xmlns:vi="using:Gui.Views"
 	mc:Ignorable="d"
 	x:Class="Gui.Views.ObjectModelHeaderView"
 	x:DataType="vm:ObjectModelHeaderViewModel">
@@ -13,5 +14,5 @@
 		<vm:DesignerObjectModelHeaderViewModel/>
 	</Design.DataContext>
 
-	<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False"/>
+	<vi:ExtendedPropertyGrid DataContext="{Binding}" IsCategoryVisible="False"/>
 </UserControl>

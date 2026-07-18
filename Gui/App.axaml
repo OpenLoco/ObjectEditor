@@ -93,10 +93,10 @@ RequestedThemeVariant="Default">
 			<vi:ObjectModelHeaderView />
 		</DataTemplate>
 		<DataTemplate DataType="vm:ObjectDatHeaderViewModel">
-			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
+			<vi:ExtendedPropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
 		</DataTemplate>
 		<DataTemplate DataType="domt:ObjectModelHeader">
-			<pgc:PropertyGrid DataContext="{Binding}" IsCategoryVisible="False" />
+			<vi:ObjectModelHeaderView />
 		</DataTemplate>
 		<DataTemplate DataType="vm:SCV5ViewModel">
 			<vi:SCV5View />

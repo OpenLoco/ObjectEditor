@@ -9,20 +9,36 @@ namespace Gui.ViewModels.Loco.Objects.Vehicle;
 public class EmitterAnimationViewModel : ReactiveObject
 {
 	private readonly EmitterAnimation _model;
+	private readonly ObjectModelHeaderViewModel _steamObjectWrapper;
 
 	public EmitterAnimationViewModel(EmitterAnimation model)
 	{
 		_model = model;
+		_steamObjectWrapper = new ObjectModelHeaderViewModel(model.SteamObject ?? new ObjectModelHeader());
 	}
 
-	public EmitterAnimation Model => _model;
-
-	public ObjectModelHeader? SteamObject
+	public ObjectModelHeaderViewModel SteamObject
 	{
-		get => _model.SteamObject;
+		get
+		{
+			// Keep the wrapper in sync with the model
+			if (_model.SteamObject != null && _steamObjectWrapper.Model != _model.SteamObject)
+			{
+				_steamObjectWrapper.Model.Name = _model.SteamObject.Name;
+				_steamObjectWrapper.Model.ObjectSource = _model.SteamObject.ObjectSource;
+				_steamObjectWrapper.Model.ObjectType = _model.SteamObject.ObjectType;
+			}
+			else
+			{
+				_steamObjectWrapper.Model.Name = string.Empty;
+				_steamObjectWrapper.Model.ObjectSource = ObjectSource.Custom;
+				_steamObjectWrapper.Model.ObjectType = ObjectType.Steam;
+			}
+			return _steamObjectWrapper;
+		}
 		set
 		{
-			_model.SteamObject = value;
+			_model.SteamObject = value.Model;
 			this.RaisePropertyChanged(nameof(SteamObject));
 		}
 	}

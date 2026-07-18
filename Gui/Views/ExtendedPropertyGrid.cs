@@ -15,6 +15,7 @@ public class ExtendedPropertyGrid : PropertyGrid
 	{
 		Factories.AddFactory(new Pos3CellEditFactory());
 		Factories.AddFactory(new InflatableCurrencyCellEditFactory());
+		Factories.AddFactory(new ObjectModelHeaderCellEditFactory());
 	}
 }
 
@@ -140,6 +141,50 @@ internal class InflatableCurrencyCellEditFactory : AbstractCellEditFactory
 			cv.DataContext = model;
 
 			model.PropertyChanged += (s, e) => SetAndRaise(context, control, model.CostFactor);
+			return true;
+		}
+
+		return false;
+	}
+}
+
+internal class ObjectModelHeaderCellEditFactory : AbstractCellEditFactory
+{
+	public override bool Accept(object accessToken)
+		=> accessToken is ExtendedPropertyGrid;
+
+	public override Control? HandleNewProperty(PropertyCellContext context)
+	{
+		var propertyDescriptor = context.Property;
+		_ = context.Target;
+
+		if (propertyDescriptor.PropertyType != typeof(ObjectModelHeaderViewModel)
+			&& !propertyDescriptor.PropertyType.IsSubclassOf(typeof(ObjectModelHeaderViewModel)))
+		{
+			return null;
+		}
+
+		return new ObjectModelHeaderView();
+	}
+
+	public override bool HandlePropertyChanged(PropertyCellContext context)
+	{
+		var propertyDescriptor = context.Property;
+		var target = context.Target;
+		var control = context.CellEdit!;
+
+		if (propertyDescriptor.PropertyType != typeof(ObjectModelHeaderViewModel)
+			&& !propertyDescriptor.PropertyType.IsSubclassOf(typeof(ObjectModelHeaderViewModel)))
+		{
+			return false;
+		}
+
+		ValidateProperty(control, propertyDescriptor, target);
+
+		if (control is ObjectModelHeaderView view)
+		{
+			var vm = (ObjectModelHeaderViewModel)propertyDescriptor.GetValue(target)!;
+			view.DataContext = vm;
 			return true;
 		}
 

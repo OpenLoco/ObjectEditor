@@ -110,7 +110,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 				}
 			}
 
-			br.SkipByte(2); // skips the 0xFFFF bytes
+			br.SkipBytes(2); // skips the 0xFFFF bytes
 
 			if (model.CompatibleCargoCategories[index].Count == 0)
 			{
@@ -170,7 +170,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		model.CompanyColourSchemeIndex = ((DatCompanyColourType)br.ReadByte()).Convert();
 		numCompatibleVehicles = br.ReadByte();
 		br.SkipUInt16(Constants.CompatibleVehicleCount);
-		br.SkipByte(Constants.RequiredTrackExtrasCount);
+		br.SkipBytes(Constants.RequiredTrackExtrasCount);
 		model.CarComponents = [.. br.ReadCarComponents(Constants.MaxCarComponents)];
 		model.BodySprites = [.. br.ReadBodySprites(Constants.MaxBodySprites)];
 		model.BogieSprites = [.. br.ReadBogieSprites(Constants.MaxBogieSprites)];
@@ -179,9 +179,9 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 		model.RackSpeed = br.ReadInt16();
 		model.Weight = br.ReadUInt16();
 		model.Flags = ((DatVehicleObjectFlags)br.ReadUInt16()).Convert();
-		br.SkipByte(Constants.MaxCompatibleCargoCategories * 1); // MaxCargo, read in LoadVariable
-		br.SkipByte(Constants.MaxCompatibleCargoCategories * 4); // CompatibleCargoCategories, read in LoadVariable
-		br.SkipByte(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
+		br.SkipBytes(Constants.MaxCompatibleCargoCategories * 1); // MaxCargo, read in LoadVariable
+		br.SkipBytes(Constants.MaxCompatibleCargoCategories * 4); // CompatibleCargoCategories, read in LoadVariable
+		br.SkipBytes(Constants.CargoTypeSpriteOffsetsLength * 1); // CargoTypeSpriteOffsets, read in LoadVariable
 		br.SkipByte(); // NumSimultaneousCargoTypes, manipulated in LoadVariable
 		model.ParticleEmitters = [.. br.ReadEmitterAnimations(Constants.MaxEmitterAnimations)];
 		model.ShipWakeSpacing = br.ReadByte(); // the distance between each wake of the boat. 0 will be a single wake. anything > 0 gives dual wakes
@@ -195,28 +195,28 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 			case DrivingSoundType.Friction:
 				br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs. it will be read from Sound property
 				model.FrictionSound = br.ReadFrictionSound();
-				br.SkipByte(StructSizes.SoundData - StructSizes.FrictionSound);
+				br.SkipBytes(StructSizes.SoundData - StructSizes.FrictionSound);
 				break;
 			case DrivingSoundType.SimpleMotor:
 				br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs. it will be read from Sound property
 				model.SimpleMotorSound = br.ReadSimpleMotorSound();
-				br.SkipByte(StructSizes.SoundData - StructSizes.SimpleMotorSound);
+				br.SkipBytes(StructSizes.SoundData - StructSizes.SimpleMotorSound);
 				break;
 			case DrivingSoundType.GearboxMotor:
 				br.SkipByte(); // this is the object id which is the first byte of all of the sound union structs. it will be read from Sound property
 				model.GearboxMotorSound = br.ReadGearboxMotorSound();
-				br.SkipByte(StructSizes.SoundData - StructSizes.GearboxMotorSound);
+				br.SkipBytes(StructSizes.SoundData - StructSizes.GearboxMotorSound);
 				break;
 			case DrivingSoundType.None:
-				br.SkipByte(StructSizes.SoundData);
+				br.SkipBytes(StructSizes.SoundData);
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(model.DrivingSoundType), model.DrivingSoundType, null);
 		}
 
-		model.var_135 = br.ReadBytes(0x15A - 0x135);
+		br.SkipBytes(0x15A - 0x135);
 		numStartSounds = br.ReadByte();
-		br.SkipByte(Constants.MaxStartSounds); // StartSounds, not part of object definition
+		br.SkipBytes(Constants.MaxStartSounds); // StartSounds, not part of object definition
 	}
 
 	public static void Save(Stream stream, LocoObject obj)
@@ -288,7 +288,7 @@ public abstract partial class VehicleObjectLoader : IDatObjectLoader
 					throw new ArgumentOutOfRangeException(nameof(model.DrivingSoundType), model.DrivingSoundType, null);
 			}
 
-			bw.Write(model.var_135.Fill(Constants.Var135PadSize, (byte)0).ToArray());
+			bw.WriteEmptyBytes(Constants.Var135PadSize);
 			bw.Write((uint8_t)model.StartSounds.Count);
 			bw.WriteEmptyBytes(Constants.MaxStartSounds * 1); // StartSounds, not part of object
 

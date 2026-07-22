@@ -35,7 +35,6 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 		CompatibleCargo2 = new(model.CompatibleCargoCategories[1], model.MaxCargo[1]);
 		CargoTypeSpriteOffsets = [with([.. model.CargoTypeSpriteOffsets.Select(x => new CargoTypeSpriteOffsetViewModel(x.Key, x.Value))])];
 		StartSounds = [with(model.StartSounds)];
-		var_135 = [with(model.var_135)];
 		RoadOrTrackType = model.RoadOrTrackType;
 		RackRail = model.RackRail;
 
@@ -370,9 +369,6 @@ public class VehicleViewModel : BaseViewModel<VehicleObject>
 	[Category("Sound")]
 	[Description("The sound the vehicle makes when starting or crossing a rail crossing. Essentially it's \"horn\"")]
 	public BindingList<ObjectModelHeader> StartSounds { get; init; }
-
-	[Category("<unknown>")]
-	public BindingList<uint8_t> var_135 { get; init; }
 
 	void OnCompatibleCargo1Changed(object? sender, NotifyCollectionChangedEventArgs e)
 	{

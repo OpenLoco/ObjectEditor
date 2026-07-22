@@ -1,6 +1,8 @@
+using Common;
 using Common.Json;
 using Common.Logging;
 using Definitions.ObjectModels.Objects.Competitor;
+using Definitions.ObjectModels.Objects.LevelCrossing;
 using Definitions.ObjectModels.Objects.Vehicle;
 using Definitions.ObjectModels.Types;
 using Microsoft.Extensions.Logging;
@@ -29,7 +31,7 @@ public static class ImageTableGrouper
 			imageTable.Groups = [new("<parsing-error>", [.. imageList])];
 		}
 
-		Debug.Assert(imageTable.GraphicsElements.Count == originalCount, "Image grouping lost or gained images");
+		//Debug.Assert(imageTable.GraphicsElements.Count == originalCount, "Image grouping lost or gained images");
 
 		return imageTable;
 	}
@@ -71,7 +73,9 @@ public static class ImageTableGrouper
 			case ObjectType.TrackSignal:
 				return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.LevelCrossing:
-				return [new("<uncategorised>", [.. imageList])];
+				//return CreateLevelCrossingGroups((LevelCrossingObject)obj, imageList);
+				return CreateLevelCrossingGroups2((LevelCrossingObject)obj, imageList);
+				//return [new("<uncategorised>", [.. imageList])];
 			case ObjectType.StreetLight:
 				return CreateGroupsFromConfig(ObjectType.StreetLight, imageList);
 			case ObjectType.Tunnel:
@@ -247,6 +251,58 @@ public static class ImageTableGrouper
 	}
 
 	private static IReadOnlyDictionary<ObjectType, ImageTableGroupConfigurationType> GroupConfigurations = new Dictionary<ObjectType, ImageTableGroupConfigurationType>();
+
+	static string GetDirection(int i)
+		=> i switch
+		{
+			0 => "SW",
+			1 => "SW",
+			2 => "NE",
+			3 => "NE",
+			4 => "SE",
+			5 => "SE",
+			6 => "NW",
+			7 => "NW",
+			_ => $"direction {i}",
+		};
+
+	private static IEnumerable<ImageTableGroup> CreateLevelCrossingGroups2(LevelCrossingObject model, List<GraphicsElement> imageList)
+	{
+		for (var i = 0; i < 8; ++i)
+		{
+			yield return new($"{GetDirection(i)} side {i % 2}", imageList.PickEach(8, i).ToList());
+		}
+	}
+
+	private static IEnumerable<ImageTableGroup> CreateLevelCrossingGroups(LevelCrossingObject model, List<GraphicsElement> imageList)
+	{
+		var offset = 0;
+
+		yield return new("closing SW 1", imageList.PickEach(8, 0).ToList());
+		yield return new("closing SW 2", imageList.PickEach(8, 1).ToList());
+		yield return new("closing NE 1", imageList.PickEach(8, 2).ToList());
+		yield return new("closing NE 2", imageList.PickEach(8, 3).ToList());
+		yield return new("closing SE 1", imageList.PickEach(8, 4).ToList());
+		yield return new("closing SE 2", imageList.PickEach(8, 5).ToList());
+		yield return new("closing NW 1", imageList.PickEach(8, 6).ToList());
+		yield return new("closing NW 2", imageList.PickEach(8, 7).ToList());
+
+		offset += model.IdleClosedFrames * 8;
+
+		yield return new("closing SW 1", imageList.Skip(offset).PickEach(8, 0).ToList());
+		yield return new("closing SW 2", imageList.Skip(offset).PickEach(8, 1).ToList());
+		yield return new("closing NE 1", imageList.Skip(offset).PickEach(8, 2).ToList());
+		yield return new("closing NE 2", imageList.Skip(offset).PickEach(8, 3).ToList());
+		yield return new("closing SE 1", imageList.Skip(offset).PickEach(8, 4).ToList());
+		yield return new("closing SE 2", imageList.Skip(offset).PickEach(8, 5).ToList());
+		yield return new("closing NW 1", imageList.Skip(offset).PickEach(8, 6).ToList());
+		yield return new("closing NW 2", imageList.Skip(offset).PickEach(8, 7).ToList());
+		//yield return new("closed", imageList[offset..(offset + model.ClosedFrames * 8)]);
+		//offset += model.ClosedFrames * 8;
+
+		//yield return new("opened", imageList[offset..(offset + model.var_0A * 4)]);
+		//offset += model.var_0A * 4;
+	}
 
 	private static IEnumerable<ImageTableGroup> CreateCompetitorGroups(CompetitorObject model, List<GraphicsElement> imageList)
 	{

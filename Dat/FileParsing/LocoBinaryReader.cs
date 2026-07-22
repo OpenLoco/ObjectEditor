@@ -27,9 +27,12 @@ public class LocoBinaryReader : BinaryReader
 #pragma warning restore CS0809
 
 	public void SkipTerminator()
-		=> SkipByte(1);
+		=> SkipBytes(1);
 
-	public void SkipByte(int count = 1)
+	public void SkipByte()
+		=> SkipBytes(1);
+
+	public void SkipBytes(int count)
 		=> _ = BaseStream.Seek(count, SeekOrigin.Current);
 
 	public void SkipUInt16(int count = 1)
@@ -236,7 +239,7 @@ public class LocoBinaryReader : BinaryReader
 				HeightPositive = ReadByte(),
 			};
 
-			SkipByte(1); // NumFramesPerRotation is not part of object definition, its calculated on load
+			SkipBytes(1); // NumFramesPerRotation is not part of object definition, its calculated on load
 			SkipImageId(3); // image ids not part of object definition
 		}
 	}

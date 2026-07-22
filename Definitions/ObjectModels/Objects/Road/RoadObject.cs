@@ -20,7 +20,6 @@ public class RoadObject : ILocoStruct
 	public List<ObjectModelHeader> RoadMods { get; set; } = [];
 	public List<ObjectModelHeader> TracksAndRoads { get; set; } = [];
 	public TownSize TargetTownSize { get; set; }
-	public uint8_t pad_2F { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

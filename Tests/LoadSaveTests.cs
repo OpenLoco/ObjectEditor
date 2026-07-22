@@ -732,10 +732,10 @@ public class LoadSaveTests
 				Assert.That(struc.CostIndex, Is.EqualTo(1), nameof(struc.CostIndex));
 
 				Assert.That(struc.AnimationSpeed, Is.EqualTo(3), nameof(struc.AnimationSpeed));
-				Assert.That(struc.ClosingFrames, Is.EqualTo(4), nameof(struc.ClosingFrames));
-				Assert.That(struc.ClosedFrames, Is.EqualTo(11), nameof(struc.ClosedFrames));
+				Assert.That(struc.IdleClosedFrames, Is.EqualTo(4), nameof(struc.IdleClosedFrames));
+				Assert.That(struc.ClosingSequenceFrames, Is.EqualTo(11), nameof(struc.ClosingSequenceFrames));
 
-				Assert.That(struc.var_0A, Is.EqualTo(3), nameof(struc.var_0A));
+				Assert.That(struc.AnimationSpeedBitmask, Is.EqualTo(3), nameof(struc.AnimationSpeedBitmask));
 				//Assert.That(struc.pad_0B, Is.Zero, nameof(struc.pad_0B));
 
 				Assert.That(struc.DesignedYear, Is.EqualTo(1955), nameof(struc.DesignedYear));
@@ -1339,7 +1339,6 @@ public class LoadSaveTests
 			using (Assert.EnterMultipleScope())
 			{
 				Assert.That(struc.CostIndex, Is.EqualTo(2), nameof(struc.CostIndex));
-				Assert.That(struc.var_03, Is.Zero, nameof(struc.var_03));
 				Assert.That(struc.CostFactor, Is.EqualTo(51), nameof(struc.CostFactor));
 				//Assert.That(struc.var_0A, Is.EqualTo(0), nameof(struc.var_0A));
 

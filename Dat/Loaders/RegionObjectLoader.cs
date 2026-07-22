@@ -43,7 +43,7 @@ public abstract class RegionObjectLoader : IDatObjectLoader
 				model.CargoInfluenceTownFilter.Add((CargoInfluenceTownFilterType)br.ReadByte()); // Cargo influence town filter
 			}
 
-			br.SkipByte(Constants.MaxCargoInfluenceObjects * StructSizes.CargoInfluenceTownFilterType); // Cargo influence town filter
+			br.SkipBytes(Constants.MaxCargoInfluenceObjects * StructSizes.CargoInfluenceTownFilterType); // Cargo influence town filter
 			br.SkipByte(); // 0x11 is a padding byte
 
 			// sanity check

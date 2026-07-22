@@ -80,8 +80,8 @@ public abstract class IndustryObjectLoader : IDatObjectLoader
 				model.InitialProductionRate.Add(new() { Min = br.ReadUInt16(), Max = br.ReadUInt16() });
 			}
 
-			br.SkipByte(Constants.MaxProducedCargoType); // ProducedCargo, not part of object definition
-			br.SkipByte(Constants.MaxRequiredCargoType); // RequiredCargo, not part of object definition
+			br.SkipBytes(Constants.MaxProducedCargoType); // ProducedCargo, not part of object definition
+			br.SkipBytes(Constants.MaxRequiredCargoType); // RequiredCargo, not part of object definition
 			model.MapColour = (Colour)br.ReadByte();
 			model.Flags = ((DatIndustryObjectFlags)br.ReadUInt32()).Convert();
 			model.var_E8 = br.ReadByte(); // Unused, but must be 0 or 1

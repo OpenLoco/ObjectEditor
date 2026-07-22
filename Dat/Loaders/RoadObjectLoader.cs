@@ -60,7 +60,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			br.SkipUInt16(); // _CompatibleRoads, not part of object definition
 			br.SkipUInt16(); // _CompatibleTracks, not part of object definition
 			model.TargetTownSize = ((DatTownSize)br.ReadByte()).Convert();
-			model.pad_2F = br.ReadByte(); // pad_2F, not part of object definition
+			br.SkipByte(); // pad_2F, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -119,7 +119,7 @@ public abstract class RoadObjectLoader : IDatObjectLoader
 			bw.Write((uint16_t)0); // _CompatibleRoads, not part of object definition
 			bw.Write((uint16_t)0); // _CompatibleTracks, not part of object definition
 			bw.Write((uint8_t)model.TargetTownSize.Convert());
-			bw.Write(model.pad_2F);
+			bw.WriteEmptyBytes(1); // pad_2F, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

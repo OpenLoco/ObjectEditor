@@ -31,7 +31,7 @@ public abstract class ScenarioTextObjectLoader : IDatObjectLoader
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
 			br.SkipStringId(); // Details offset, not part of object definition
-			br.SkipByte(0x06 - 0x04); // pad, not used
+			br.SkipBytes(0x06 - 0x04); // pad, not used
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

@@ -34,7 +34,7 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 			// fixed
 			br.SkipStringId(); // Name offset, not part of object definition
 			model.CostIndex = br.ReadByte();
-			model.var_03 = br.ReadByte();
+			br.SkipByte(); // var_03 is unused
 			model.CostFactor = br.ReadInt16();
 			br.SkipImageId(); // ImageId, not part of object definition
 			br.SkipImageId(); // MapPixelImage, not part of object definition
@@ -67,7 +67,7 @@ public abstract class WaterObjectLoader : IDatObjectLoader
 		{
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.Write(model.CostIndex);
-			bw.Write(model.var_03);
+			bw.WriteEmptyBytes(1); // var_03 is unused
 			bw.Write(model.CostFactor);
 			bw.WriteEmptyImageId(); // ImageId, not part of object definition
 			bw.WriteEmptyImageId(); // MapPixelImage, not part of object definition

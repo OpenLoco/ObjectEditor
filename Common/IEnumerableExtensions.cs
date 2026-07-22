@@ -17,4 +17,17 @@ public static class IEnumerableExtensions
 			yield return fillValue;
 		}
 	}
+
+	public static IEnumerable<T> PickEach<T>(this IEnumerable<T> source, int period, int offset = 0)
+	{
+		var i = 0;
+		foreach (var item in source)
+		{
+			if (i % period == offset)
+			{
+				yield return item;
+			}
+			i++;
+		}
+	}
 }

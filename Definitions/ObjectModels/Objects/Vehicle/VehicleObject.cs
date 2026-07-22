@@ -42,7 +42,6 @@ public class VehicleObject : ILocoStruct
 	public SimpleMotorSound? SimpleMotorSound { get; set; }
 	public GearboxMotorSound? GearboxMotorSound { get; set; }
 	public ObjectModelHeader? Sound { get; set; }
-	public uint8_t[] var_135 { get; set; } = [];
 	public List<ObjectModelHeader> StartSounds { get; set; } = [];
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

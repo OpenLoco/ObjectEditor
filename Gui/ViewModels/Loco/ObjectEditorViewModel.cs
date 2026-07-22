@@ -123,79 +123,132 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		}
 	}
 
+	static DirectoryInfo? FindDirectoryInParentDirectory(string startPath, string targetName)
+	{
+		var current = new DirectoryInfo(startPath);
+
+		while (current != null)
+		{
+			foreach (var dir in current.EnumerateDirectories(targetName, SearchOption.TopDirectoryOnly))
+			{
+				if (string.Equals(dir.Name, targetName, StringComparison.OrdinalIgnoreCase))
+				{
+					return dir;
+				}
+			}
+
+			// Move up to the parent directory
+			current = current.Parent;
+		}
+
+		return null; // Reached root without finding the target directory
+	}
+
 	bool ValidateForOG(bool showPopupOnSuccess)
 	{
-		var validationErrors = new List<string>();
-
-		if (Model?.DatInfo is null)
+		try
 		{
-			validationErrors.Add("Object DAT info is null");
-			return false;
-		}
+			var validationErrors = new List<string>();
 
-		var filename = CurrentFile.FileName;
-		if (string.IsNullOrEmpty(filename))
-		{
-			validationErrors.Add("Filename is null or empty");
-			return false;
-		}
-
-		// split the CurrentFile path on "opengraphics" folder
-		_ = Path.GetRelativePath(EditorContext.Settings.ObjDataDirectory, filename);
-		var parentDirName = Path.GetFileName(Path.GetDirectoryName(CurrentFile.FileName));
-
-		if (string.IsNullOrEmpty(parentDirName))
-		{
-			validationErrors.Add("Parent directory name is null or empty");
-			return false;
-		}
-
-		if (OriginalObjectFiles.Names.TryGetValue(parentDirName, out var fileInfo))
-		{
-			// DAT name is the expected dat name
-			if (Model.DatInfo.S5Header.Name != fileInfo.OpenGraphicsName)
+			if (Model?.DatInfo is null)
 			{
-				validationErrors.Add($"✖ Internal DAT header name is not correct. Actual=\"{Model.DatInfo.S5Header.Name}\" Expected=\"{fileInfo.OpenGraphicsName}\" ");
+				validationErrors.Add("Object DAT info is null");
+				return false;
 			}
-		}
-		else
-		{
-			validationErrors.Add($"✖ Unable to find file info for the vanilla file. Name=\"{parentDirName}\".");
-		}
 
-		var expectedFilename = $"OG_{parentDirName}.dat";
-		var actualFilename = Path.GetFileName(CurrentFile.FileName);
-		if (expectedFilename != actualFilename)
-		{
-			validationErrors.Add($"✖ Filename not correct. Actual=\"{actualFilename}\" Expected=\"{expectedFilename}\" ");
-		}
+			var filename = CurrentFile.FileName;
+			if (string.IsNullOrEmpty(filename))
+			{
+				validationErrors.Add("Filename is null or empty");
+				return false;
+			}
 
-		// DAT name is NOT prefixed by OG_
-		if (Model.DatInfo.S5Header.Name.Contains('_'))
-		{
-			validationErrors.Add("✖ Internal header name should not contain an underscore");
-		}
+			var currentDir = Path.GetDirectoryName(CurrentFile.FileName);
+			if (string.IsNullOrEmpty(currentDir))
+			{
+				validationErrors.Add("Current directory is null or empty");
+				return false;
+			}
 
-		// DAT name is prefixed by OG
-		if (!Model.DatInfo.S5Header.Name.StartsWith("OG"))
-		{
-			validationErrors.Add("✖ Internal header name is not prefixed with OG");
-		}
+			// reject if .gitkeep file still exists
+			var directoryFiles = Directory.GetFiles(currentDir).Select(x => Path.GetFileName(x));
+			if (directoryFiles.Contains(".gitkeep"))
+			{
+				validationErrors.Add("File \".gitkeep\" exists in the current directory");
+			}
 
-		// OpenGraphics object source set
-		if (Model.DatInfo.S5Header.ObjectSource != DatObjectSource.OpenLoco)
-		{
-			validationErrors.Add("✖ Object source is not set to OpenLoco");
-		}
+			// find common textures directory
+			var textureDirectory = FindDirectoryInParentDirectory(currentDir, "textures")?.FullName;
+			if (string.IsNullOrEmpty(textureDirectory))
+			{
+				validationErrors.Add("Texture directory name is null or empty");
+			}
+			else
+			{
+				// reject if any files are here that existing /textures folder
+				var textureFiles = Directory.GetFiles(textureDirectory).Select(x => Path.GetFileName(x));
+				foreach (var textureFile in textureFiles)
+				{
+					if (directoryFiles.Contains(textureFile))
+					{
+						validationErrors.Add($"File \"{Path.GetFileName(textureFile)}\" exists in both the current directory and the textures directory");
+					}
+				}
+			}
 
-		// if Vehicle - use RunLengthSingle
-		if (Model.DatInfo.S5Header.ObjectType == DatObjectType.Vehicle && Model.DatInfo.ObjectHeader.Encoding != SawyerEncoding.RunLengthSingle)
-		{
-			validationErrors.Add("✖ Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
-		}
+			var currentDirName = Path.GetFileName(currentDir);
+			if (OriginalObjectFiles.Names.TryGetValue(currentDirName, out var fileInfo))
+			{
+				// DAT name is the expected dat name
+				if (Model.DatInfo.S5Header.Name != fileInfo.OpenGraphicsName)
+				{
+					validationErrors.Add($"✖ Internal DAT header name is not correct. Actual=\"{Model.DatInfo.S5Header.Name}\" Expected=\"{fileInfo.OpenGraphicsName}\" ");
+				}
+			}
+			else
+			{
+				validationErrors.Add($"✖ Unable to find file info for the vanilla file. Name=\"{currentDirName}\".");
+			}
 
-		ShowValidationMessageBox(validationErrors, showPopupOnSuccess);
-		return validationErrors != null && validationErrors.Count == 0;
+			var expectedFilename = $"OG_{currentDirName}.dat";
+			var actualFilename = Path.GetFileName(CurrentFile.FileName);
+			if (expectedFilename != actualFilename)
+			{
+				validationErrors.Add($"✖ Filename not correct. Actual=\"{actualFilename}\" Expected=\"{expectedFilename}\" ");
+			}
+
+			// DAT name is NOT prefixed by OG_
+			if (Model.DatInfo.S5Header.Name.Contains('_'))
+			{
+				validationErrors.Add("✖ Internal header name should not contain an underscore");
+			}
+
+			// DAT name is prefixed by OG
+			if (!Model.DatInfo.S5Header.Name.StartsWith("OG"))
+			{
+				validationErrors.Add("✖ Internal header name is not prefixed with OG");
+			}
+
+			// OpenGraphics object source set
+			if (Model.DatInfo.S5Header.ObjectSource != DatObjectSource.OpenLoco)
+			{
+				validationErrors.Add("✖ Object source is not set to OpenLoco");
+			}
+
+			// if Vehicle - use RunLengthSingle
+			if (Model.DatInfo.S5Header.ObjectType == DatObjectType.Vehicle && Model.DatInfo.ObjectHeader.Encoding != SawyerEncoding.RunLengthSingle)
+			{
+				validationErrors.Add("✖ Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
+			}
+
+			ShowValidationMessageBox(validationErrors, showPopupOnSuccess);
+			return validationErrors != null && validationErrors.Count == 0;
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "Error validating for OpenGraphics");
+			return false;
+		}
 	}
 
 	static async Task DoShowDialogAsync<TViewModel, TWindow>(IInteractionContext<TViewModel, TViewModel?> interaction) where TWindow : Window, new()

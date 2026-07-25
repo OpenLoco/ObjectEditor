@@ -736,7 +736,6 @@ public class LoadSaveTests
 				Assert.That(struc.ClosedFrames, Is.EqualTo(11), nameof(struc.ClosedFrames));
 
 				Assert.That(struc.var_0A, Is.EqualTo(3), nameof(struc.var_0A));
-				//Assert.That(struc.pad_0B, Is.Zero, nameof(struc.pad_0B));
 
 				Assert.That(struc.DesignedYear, Is.EqualTo(1955), nameof(struc.DesignedYear));
 

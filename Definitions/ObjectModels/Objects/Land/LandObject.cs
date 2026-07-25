@@ -16,7 +16,6 @@ public class LandObject : ILocoStruct
 	public uint8_t DistributionPattern { get; set; }
 	public uint8_t NumVariations { get; set; }
 	public uint8_t VariationLikelihood { get; set; }
-	public uint8_t pad_1D { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

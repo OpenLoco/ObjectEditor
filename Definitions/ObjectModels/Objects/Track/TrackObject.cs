@@ -21,7 +21,6 @@ public class TrackObject : ILocoStruct
 	public uint8_t var_06 { get; set; }
 	public List<ObjectModelHeader> Bridges { get; set; } = [];
 	public List<ObjectModelHeader> Stations { get; set; } = [];
-	public uint8_t pad_35 { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

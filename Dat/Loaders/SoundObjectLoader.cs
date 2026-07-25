@@ -41,7 +41,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			br.SkipStringId(); // Name offset, not part of object definition
 			br.SkipPointer(); // SoundObjectDataPtr, not part of object definition
 			model.ShouldLoop = br.ReadByte();
-			br.SkipByte(); // pad_07, not part of object definition
+			br.SkipByte(); // 0x07 is a padding byte
 			model.Volume = br.ReadUInt32();
 
 			// sanity check
@@ -86,7 +86,7 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 			bw.WriteEmptyStringId(); // Name offset, not part of object definition
 			bw.WriteEmptyPointer();
 			bw.Write(model.ShouldLoop);
-			bw.WriteEmptyBytes(1); // padding
+			bw.WriteEmptyBytes(1); // 0x07 is a padding byte
 			bw.Write(model.Volume);
 
 			// sanity check
@@ -123,87 +123,4 @@ public abstract class SoundObjectLoader : IDatObjectLoader
 
 		bw.Write(model.PcmData);
 	}
-}
-
-[LocoStructSize(0x1E)]
-internal record DatSoundObjectData(
-	[property: LocoStructOffset(0x00)] int32_t var_00,
-	[property: LocoStructOffset(0x04)] int32_t Offset,
-	[property: LocoStructOffset(0x08)] uint32_t Length,
-	[property: LocoStructOffset(0x0C)] DatSoundEffectWaveFormat PcmHeader
-	) : ILocoStruct
-{
-	public DatSoundObjectData() : this(0, 0, 0, new DatSoundEffectWaveFormat())
-	{ }
-
-	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-	{
-		if (Length > 0 && Offset < 0)
-		{
-			yield return new ValidationResult("If Length is greater than 0, Offset must be non-negative.", [nameof(Offset), nameof(Length)]);
-		}
-	}
-}
-
-[LocoStructSize(0x0C)]
-[LocoStructType(DatObjectType.Sound)]
-internal record DatSoundObject(
-	[property: LocoStructOffset(0x00), LocoString, Browsable(false)] string_id Name,
-	[property: LocoStructOffset(0x02), Browsable(false)] uint32_t SoundObjectDataPtr,
-	[property: LocoStructOffset(0x06)] uint8_t ShouldLoop, // 0 means no loop, any other number means loop (usually 1)
-	[property: LocoStructOffset(0x07), Browsable(false)] uint8_t pad_07,
-	[property: LocoStructOffset(0x08)] uint32_t Volume
-	) : ILocoStruct, ILocoStructVariableData
-{
-	[Editable(false)] public DatSoundObjectData SoundObjectData { get; set; }
-
-	[Browsable(false)] public byte[] PcmData { get; set; } = [];
-
-	uint numUnkStructs;
-	uint pcmDataLength;
-	byte[] unkData;
-
-	public ReadOnlySpan<byte> LoadVariable(ReadOnlySpan<byte> remainingData)
-	{
-		// unknown structs
-		numUnkStructs = BitConverter.ToUInt32(remainingData[0..4]);
-		remainingData = remainingData[4..];
-
-		// pcm data length
-		pcmDataLength = BitConverter.ToUInt32(remainingData[0..4]); // unused
-		remainingData = remainingData[4..];
-
-		// unk
-		unkData = remainingData[..(int)(numUnkStructs * 16)].ToArray();
-		remainingData = remainingData[(int)(numUnkStructs * 16)..];
-
-		// pcm data
-		SoundObjectData = ByteReader.ReadLocoStruct<DatSoundObjectData>(remainingData[..ObjectAttributes.StructSize<DatSoundObjectData>()]);
-		remainingData = remainingData[ObjectAttributes.StructSize<DatSoundObjectData>()..];
-
-		PcmData = remainingData.ToArray();
-
-		return remainingData[remainingData.Length..];
-	}
-
-	public ReadOnlySpan<byte> SaveVariable()
-	{
-		using (var ms = new MemoryStream())
-		using (var br = new BinaryWriter(ms))
-		{
-			br.Write(numUnkStructs);
-			br.Write(pcmDataLength);
-			br.Write(unkData);
-			br.Write(ByteWriter.WriteLocoStruct(SoundObjectData));
-			br.Write(PcmData);
-
-			br.Flush();
-			ms.Flush();
-
-			return ms.ToArray();
-		}
-	}
-
-	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-		=> [];
 }

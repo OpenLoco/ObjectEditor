@@ -32,7 +32,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			model.ClosingFrames = br.ReadByte();
 			model.ClosedFrames = br.ReadByte();
 			model.var_0A = br.ReadByte(); // something like IdleAnimationFrames or something
-			model.pad_0B = br.ReadByte();
+			br.SkipByte(); // 0x0B is padding byte
 			model.DesignedYear = br.ReadUInt16();
 			br.SkipImageId();
 
@@ -70,7 +70,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			bw.Write(model.ClosingFrames);
 			bw.Write(model.ClosedFrames);
 			bw.Write(model.var_0A); // something like IdleAnimationFrames
-			bw.Write(model.pad_0B);
+			bw.WriteEmptyBytes(1);  // 0x0B is padding byte
 			bw.Write(model.DesignedYear);
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition
 

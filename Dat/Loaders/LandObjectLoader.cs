@@ -48,7 +48,7 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			model.DistributionPattern = br.ReadByte();
 			model.NumVariations = br.ReadByte();
 			model.VariationLikelihood = br.ReadByte();
-			model.pad_1D = br.ReadByte();
+			br.SkipByte(); // 0x1D is padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -95,7 +95,7 @@ public abstract class LandObjectLoader : IDatObjectLoader
 			bw.Write(model.DistributionPattern);
 			bw.Write(model.NumVariations);
 			bw.Write(model.VariationLikelihood);
-			bw.Write(model.pad_1D);
+			bw.WriteEmptyBytes(1); // 0x1D is a padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

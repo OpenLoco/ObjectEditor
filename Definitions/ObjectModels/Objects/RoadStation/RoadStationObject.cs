@@ -18,7 +18,6 @@ public class RoadStationObject : ILocoStruct
 	public uint16_t DesignedYear { get; set; }
 	public uint16_t ObsoleteYear { get; set; }
 	public ObjectModelHeader? CargoType { get; set; }
-	public uint8_t pad_2D { get; set; }
 	public CargoOffset[][][] CargoOffsets { get; set; } = [];
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

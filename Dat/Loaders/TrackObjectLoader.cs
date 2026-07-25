@@ -57,7 +57,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			var numStations = br.ReadByte();
 			br.SkipObjectId(Constants.MaxStations);
 			model.VehicleDisplayListVerticalOffset = br.ReadByte();
-			model.pad_35 = br.ReadByte(); // pad_35, not part of object definition
+			br.SkipByte(); // 0x35, not part of object definition
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));
@@ -114,7 +114,7 @@ public abstract class TrackObjectLoader : IDatObjectLoader
 			bw.Write((uint8_t)model.Stations.Count);
 			bw.WriteEmptyObjectId(Constants.MaxStations); // Stations, not part of object definition
 			bw.Write(model.VehicleDisplayListVerticalOffset);
-			bw.Write(model.pad_35); // pad_35, not part of object definition
+			bw.WriteEmptyBytes(1); // // 0x35 is a padding byte
 
 			// sanity check
 			ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, initialStreamPosition + ObjectAttributes.StructSize(DatObjectType), nameof(stream.Position));

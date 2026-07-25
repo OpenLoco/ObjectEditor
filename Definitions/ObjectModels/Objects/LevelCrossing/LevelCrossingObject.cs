@@ -12,7 +12,6 @@ public class LevelCrossingObject : ILocoStruct
 	public uint8_t ClosedFrames { get; set; }
 	public uint16_t DesignedYear { get; set; }
 	public uint8_t var_0A { get; set; } // something like IdleAnimationFrames or something
-	public uint8_t pad_0B { get; set; }
 
 	public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
 	{

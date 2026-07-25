@@ -21,9 +21,9 @@ public class TblObjectLevelCrossing : DbSubObject, IConvertibleToTable<TblObject
 			CostFactor = obj.BuildCostFactor,
 			SellCostFactor = obj.SellCostFactor,
 			CostIndex = obj.CostIndex,
-			AnimationSpeed = obj.AnimationSpeed,
-			ClosingFrames = obj.ClosingFrames,
-			ClosedFrames = obj.ClosedFrames,
+			AnimationSpeed = obj.ClosedAnimationDelay,
+			ClosingFrames = obj.ClosedAnimationFrameCount,
+			ClosedFrames = obj.TransitionAnimationFrameCount,
 			DesignedYear = obj.DesignedYear,
 		};
 }

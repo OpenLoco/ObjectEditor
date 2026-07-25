@@ -69,7 +69,7 @@ public abstract class LevelCrossingObjectLoader : IDatObjectLoader
 			bw.Write(model.ClosedAnimationDelay);
 			bw.Write(model.ClosedAnimationFrameCount);
 			bw.Write(model.TransitionAnimationFrameCount);
-			bw.Write(model.TransitionAnimationDelayBitmask); // something like IdleAnimationFrames
+			bw.Write(model.TransitionAnimationDelayBitmask);
 			bw.WriteEmptyBytes(1);  // 0x0B is padding byte
 			bw.Write(model.DesignedYear);
 			bw.WriteEmptyImageId(); // Image offset, not part of object definition

@@ -254,7 +254,7 @@ public static class ImageTableGrouper
 	{
 		for (var i = 0; i < 8; ++i)
 		{
-			yield return new($"{GetDirection(i)} side {i % 2}", imageList.PickEach(8, i).ToList());
+			yield return new($"{GetDirection(i)} side {i % 2}", [.. imageList.PickEach(8, i)]);
 		}
 
 		static string GetDirection(int i)
@@ -270,36 +270,6 @@ public static class ImageTableGrouper
 				7 => "NW",
 				_ => $"direction {i}",
 			};
-	}
-
-	private static IEnumerable<ImageTableGroup> CreateLevelCrossingGroups(LevelCrossingObject model, List<GraphicsElement> imageList)
-	{
-		var offset = 0;
-
-		yield return new("closing SW 1", imageList.PickEach(8, 0).ToList());
-		yield return new("closing SW 2", imageList.PickEach(8, 1).ToList());
-		yield return new("closing NE 1", imageList.PickEach(8, 2).ToList());
-		yield return new("closing NE 2", imageList.PickEach(8, 3).ToList());
-		yield return new("closing SE 1", imageList.PickEach(8, 4).ToList());
-		yield return new("closing SE 2", imageList.PickEach(8, 5).ToList());
-		yield return new("closing NW 1", imageList.PickEach(8, 6).ToList());
-		yield return new("closing NW 2", imageList.PickEach(8, 7).ToList());
-
-		offset += model.TransitionAnimationFrameCount * 8;
-
-		yield return new("closing SW 1", imageList.Skip(offset).PickEach(8, 0).ToList());
-		yield return new("closing SW 2", imageList.Skip(offset).PickEach(8, 1).ToList());
-		yield return new("closing NE 1", imageList.Skip(offset).PickEach(8, 2).ToList());
-		yield return new("closing NE 2", imageList.Skip(offset).PickEach(8, 3).ToList());
-		yield return new("closing SE 1", imageList.Skip(offset).PickEach(8, 4).ToList());
-		yield return new("closing SE 2", imageList.Skip(offset).PickEach(8, 5).ToList());
-		yield return new("closing NW 1", imageList.Skip(offset).PickEach(8, 6).ToList());
-		yield return new("closing NW 2", imageList.Skip(offset).PickEach(8, 7).ToList());
-		//yield return new("closed", imageList[offset..(offset + model.ClosedFrames * 8)]);
-		//offset += model.ClosedFrames * 8;
-
-		//yield return new("opened", imageList[offset..(offset + model.var_0A * 4)]);
-		//offset += model.var_0A * 4;
 	}
 
 	private static IEnumerable<ImageTableGroup> CreateCompetitorGroups(CompetitorObject model, List<GraphicsElement> imageList)

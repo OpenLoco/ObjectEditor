@@ -1,4 +1,5 @@
 using Avalonia.Media.Imaging;
+using Core.Graphics;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Graphics;
 using PropertyModels.ComponentModel;
@@ -196,7 +197,7 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 
 	public void CropImage()
 	{
-		var cropRegion = FindCropRegion(UnderlyingImage);
+		var cropRegion = GraphicsElementOperations.FindCropRegion(UnderlyingImage);
 
 		if (cropRegion.Width <= 0 || cropRegion.Height <= 0)
 		{
@@ -210,57 +211,6 @@ public class ImageViewModel : ReactiveUI.ReactiveObject, IDisposable
 			XOffset += (short)cropRegion.Left;
 			YOffset += (short)cropRegion.Top;
 		}
-
-		static Rectangle FindCropRegion(Image<Rgba32> image)
-		{
-			var minX = image.Width;
-			var maxX = 0;
-			var minY = image.Height;
-			var maxY = 0;
-
-			for (var y = 0; y < image.Height; y++)
-			{
-				for (var x = 0; x < image.Width; x++)
-				{
-					var pixel = image[x, y];
-
-					if (pixel.A > 0)
-					{
-						minX = Math.Min(minX, x);
-						maxX = Math.Max(maxX, x);
-						minY = Math.Min(minY, y);
-						maxY = Math.Max(maxY, y);
-					}
-				}
-			}
-
-			// Calculate the crop area. Ensure it is within image bounds.
-			var width = Math.Max(0, Math.Min(maxX - minX + 1, image.Width - minX));
-			var height = Math.Max(0, Math.Min(maxY - minY + 1, image.Height - minY));
-			return new Rectangle(minX, minY, width, height);
-		}
-	}
-
-	public GraphicsElement ToGraphicsElement(PaletteMap paletteMap)
-	{
-		if (UnderlyingImage == null)
-		{
-			throw new InvalidOperationException("Cannot convert to GraphicsElement when UnderlyingImage is null");
-		}
-
-		// turn rgba32 into raw palette image
-		var rawData = paletteMap.ConvertRgba32ImageToG1Data(UnderlyingImage, Flags);
-		return new GraphicsElement
-		{
-			Width = (short)UnderlyingImage.Width,
-			Height = (short)UnderlyingImage.Height,
-			XOffset = XOffset,
-			YOffset = YOffset,
-			Flags = Flags,
-			ZoomOffset = ZoomOffset,
-			ImageData = rawData,
-			ImageTableIndex = ImageTableIndex,
-		};
 	}
 
 	public void Dispose()

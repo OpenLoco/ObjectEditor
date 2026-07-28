@@ -1,9 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Core.Objects;
+using Core.Validation;
 using Dat.Converters;
 using Dat.Data;
-using Dat.FileParsing;
 using Definitions.DTO;
 using Definitions.ObjectModels;
 using Definitions.ObjectModels.Objects.Common;
@@ -23,13 +24,11 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Gui.ViewModels;
@@ -85,11 +84,15 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 
 	bool ValidateObject(bool showPopupOnSuccess)
 	{
-		var obj = Model?.LocoObject?.Object;
-		var validationErrors = obj?.Validate(new ValidationContext(obj)).ToList() ?? [];
+		var validationErrors = ObjectValidation.Validate(Model?.LocoObject?.Object);
 		ShowValidationMessageBox(validationErrors, showPopupOnSuccess);
-		return validationErrors != null && validationErrors.Count == 0;
+		return validationErrors.Count == 0;
 	}
+
+	LocoObjectFile? AsObjectFile()
+		=> Model?.DatInfo == null || Model.LocoObject == null
+			? null
+			: new LocoObjectFile(CurrentFile.FileName ?? string.Empty, Model.DatInfo, Model.LocoObject);
 
 	static void ShowValidationMessageBox<T>(IEnumerable<T> validationErrors, bool showPopupOnSuccess)
 	{
@@ -123,132 +126,18 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 		}
 	}
 
-	static DirectoryInfo? FindDirectoryInParentDirectory(string startPath, string targetName)
-	{
-		var current = new DirectoryInfo(startPath);
-
-		while (current != null)
-		{
-			foreach (var dir in current.EnumerateDirectories(targetName, SearchOption.TopDirectoryOnly))
-			{
-				if (string.Equals(dir.Name, targetName, StringComparison.OrdinalIgnoreCase))
-				{
-					return dir;
-				}
-			}
-
-			// Move up to the parent directory
-			current = current.Parent;
-		}
-
-		return null; // Reached root without finding the target directory
-	}
-
 	bool ValidateForOG(bool showPopupOnSuccess)
 	{
-		try
+		var objectFile = AsObjectFile();
+		if (objectFile == null)
 		{
-			var validationErrors = new List<string>();
-
-			if (Model?.DatInfo is null)
-			{
-				validationErrors.Add("Object DAT info is null");
-				return false;
-			}
-
-			var filename = CurrentFile.FileName;
-			if (string.IsNullOrEmpty(filename))
-			{
-				validationErrors.Add("Filename is null or empty");
-				return false;
-			}
-
-			var currentDir = Path.GetDirectoryName(CurrentFile.FileName);
-			if (string.IsNullOrEmpty(currentDir))
-			{
-				validationErrors.Add("Current directory is null or empty");
-				return false;
-			}
-
-			// reject if .gitkeep file still exists
-			var directoryFiles = Directory.GetFiles(currentDir).Select(x => Path.GetFileName(x));
-			if (directoryFiles.Contains(".gitkeep"))
-			{
-				validationErrors.Add("File \".gitkeep\" exists in the current directory");
-			}
-
-			// find common textures directory
-			var textureDirectory = FindDirectoryInParentDirectory(currentDir, "textures")?.FullName;
-			if (string.IsNullOrEmpty(textureDirectory))
-			{
-				validationErrors.Add("Texture directory name is null or empty");
-			}
-			else
-			{
-				// reject if any files are here that existing /textures folder
-				var textureFiles = Directory.GetFiles(textureDirectory).Select(x => Path.GetFileName(x));
-				foreach (var textureFile in textureFiles)
-				{
-					if (directoryFiles.Contains(textureFile))
-					{
-						validationErrors.Add($"File \"{Path.GetFileName(textureFile)}\" exists in both the current directory and the textures directory");
-					}
-				}
-			}
-
-			var currentDirName = Path.GetFileName(currentDir);
-			if (OriginalObjectFiles.Names.TryGetValue(currentDirName, out var fileInfo))
-			{
-				// DAT name is the expected dat name
-				if (Model.DatInfo.S5Header.Name != fileInfo.OpenGraphicsName)
-				{
-					validationErrors.Add($"✖ Internal DAT header name is not correct. Actual=\"{Model.DatInfo.S5Header.Name}\" Expected=\"{fileInfo.OpenGraphicsName}\" ");
-				}
-			}
-			else
-			{
-				validationErrors.Add($"✖ Unable to find file info for the vanilla file. Name=\"{currentDirName}\".");
-			}
-
-			var expectedFilename = $"OG_{currentDirName}.dat";
-			var actualFilename = Path.GetFileName(CurrentFile.FileName);
-			if (expectedFilename != actualFilename)
-			{
-				validationErrors.Add($"✖ Filename not correct. Actual=\"{actualFilename}\" Expected=\"{expectedFilename}\" ");
-			}
-
-			// DAT name is NOT prefixed by OG_
-			if (Model.DatInfo.S5Header.Name.Contains('_'))
-			{
-				validationErrors.Add("✖ Internal header name should not contain an underscore");
-			}
-
-			// DAT name is prefixed by OG
-			if (!Model.DatInfo.S5Header.Name.StartsWith("OG"))
-			{
-				validationErrors.Add("✖ Internal header name is not prefixed with OG");
-			}
-
-			// OpenGraphics object source set
-			if (Model.DatInfo.S5Header.ObjectSource != DatObjectSource.OpenLoco)
-			{
-				validationErrors.Add("✖ Object source is not set to OpenLoco");
-			}
-
-			// if Vehicle - use RunLengthSingle
-			if (Model.DatInfo.S5Header.ObjectType == DatObjectType.Vehicle && Model.DatInfo.ObjectHeader.Encoding != SawyerEncoding.RunLengthSingle)
-			{
-				validationErrors.Add("✖ Object is a Vehicle but doesn't have encoding set to RunLengthSingle");
-			}
-
-			ShowValidationMessageBox(validationErrors, showPopupOnSuccess);
-			return validationErrors != null && validationErrors.Count == 0;
-		}
-		catch (Exception ex)
-		{
-			Logger.LogError(ex, "Error validating for OpenGraphics");
+			ShowValidationMessageBox(["Object DAT info is null"], showPopupOnSuccess);
 			return false;
 		}
+
+		var validationErrors = ObjectValidation.ValidateForOG(objectFile, Logger);
+		ShowValidationMessageBox(validationErrors, showPopupOnSuccess);
+		return validationErrors.Count == 0;
 	}
 
 	static async Task DoShowDialogAsync<TViewModel, TWindow>(IInteractionContext<TViewModel, TViewModel?> interaction) where TWindow : Window, new()
@@ -551,25 +440,6 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			return;
 		}
 
-		if (string.IsNullOrEmpty(filename))
-		{
-			Logger.LogError("Cannot save - filename was empty");
-			return;
-		}
-
-		var saveDir = Path.GetDirectoryName(filename);
-
-		if (string.IsNullOrEmpty(saveDir))
-		{
-			Logger.LogError("Cannot save - directory is null or empty");
-			return;
-		}
-		else if (!Directory.Exists(saveDir))
-		{
-			Logger.LogError("Cannot save - directory does not exist: \"{SaveDir}\"", saveDir);
-			return;
-		}
-
 		_ = ValidateObject(showPopupOnSuccess: false);
 
 		foreach (var viewModel in ViewModelGroups.SelectMany(x => x.ViewModels).OfType<BaseViewModel>())
@@ -591,37 +461,30 @@ public class ObjectEditorViewModel : BaseFileViewModel<LocoUIObjectModel>
 			}
 		}
 
-		var header = Model.DatInfo?.S5Header;
-		if (saveParameters.SaveType == SaveType.DAT && header != null)
+		var objectFile = AsObjectFile();
+		if (objectFile == null)
+		{
+			Logger.LogError("Cannot save - DAT info was null");
+			return;
+		}
+
+		if (saveParameters.SaveType == SaveType.DAT)
 		{
 			var objectModelHeader = GetViewModel<ObjectModelHeaderViewModel>();
 			var objectModelDatHeader = GetViewModel<ObjectDatHeaderViewModel>();
 
-			SawyerStreamWriter.Save(filename,
-				objectModelHeader?.Name ?? header.Name,
-				objectModelHeader?.ObjectSource ?? header.ObjectSource.Convert(header.Name, header.Checksum),
-				saveParameters.SawyerEncoding ?? objectModelDatHeader?.Encoding ?? SawyerEncoding.Uncompressed,
-				Model.LocoObject,
+			_ = ObjectFile.SaveDat(
+				objectFile,
+				filename,
 				Logger,
+				saveParameters.SawyerEncoding ?? objectModelDatHeader?.Encoding ?? SawyerEncoding.Uncompressed,
+				objectModelHeader?.Name,
+				objectModelHeader?.ObjectSource,
 				EditorContext.Settings.AllowSavingAsVanillaObject);
 		}
 		else
 		{
-			JsonSerializer.Serialize(
-				new FileStream(filename, FileMode.Create, FileAccess.Write),
-				Model.LocoObject,
-				options);
+			_ = ObjectFile.SaveJson(objectFile, filename, Logger);
 		}
 	}
-
-	readonly JsonSerializerOptions options = new()
-	{
-		WriteIndented = true,
-		//Converters =
-		//{
-		//	new LocoStructJsonConverterFactory(),
-		//	new ObjectTypeJsonConverter(),
-		//	new ObjectSourceJsonConverter(),
-		//}
-	};
 }
